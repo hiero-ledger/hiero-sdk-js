@@ -8,9 +8,9 @@ import Long from "long";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").ICustomFee} proto.ICustomFee
- * @typedef {import("@hashgraph/proto").IFractionalFee} proto.IFractionalFee
- * @typedef {import("@hashgraph/proto").IFraction} proto.IFraction
+ * @typedef {import("@exodus/hashgraph-proto").ICustomFee} proto.ICustomFee
+ * @typedef {import("@exodus/hashgraph-proto").IFractionalFee} proto.IFractionalFee
+ * @typedef {import("@exodus/hashgraph-proto").IFraction} proto.IFraction
  */
 
 export default class CustomFractionalFee extends CustomFee {

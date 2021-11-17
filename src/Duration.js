@@ -2,7 +2,7 @@ import Long from "long";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").IDuration} proto.IDuration
+ * @typedef {import("@exodus/hashgraph-proto").IDuration} proto.IDuration
  */
 
 export default class Duration {

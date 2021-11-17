@@ -5,13 +5,13 @@ import Hbar from "../Hbar.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").IQuery} proto.IQuery
- * @typedef {import("@hashgraph/proto").IQueryHeader} proto.IQueryHeader
- * @typedef {import("@hashgraph/proto").IResponse} proto.IResponse
- * @typedef {import("@hashgraph/proto").IResponseHeader} proto.IResponseHeader
- * @typedef {import("@hashgraph/proto").IAccountInfo} proto.IAccountInfo
- * @typedef {import("@hashgraph/proto").ICryptoGetInfoQuery} proto.ICryptoGetInfoQuery
- * @typedef {import("@hashgraph/proto").ICryptoGetInfoResponse} proto.ICryptoGetInfoResponse
+ * @typedef {import("@exodus/hashgraph-proto").IQuery} proto.IQuery
+ * @typedef {import("@exodus/hashgraph-proto").IQueryHeader} proto.IQueryHeader
+ * @typedef {import("@exodus/hashgraph-proto").IResponse} proto.IResponse
+ * @typedef {import("@exodus/hashgraph-proto").IResponseHeader} proto.IResponseHeader
+ * @typedef {import("@exodus/hashgraph-proto").IAccountInfo} proto.IAccountInfo
+ * @typedef {import("@exodus/hashgraph-proto").ICryptoGetInfoQuery} proto.ICryptoGetInfoQuery
+ * @typedef {import("@exodus/hashgraph-proto").ICryptoGetInfoResponse} proto.ICryptoGetInfoResponse
  */
 
 /**

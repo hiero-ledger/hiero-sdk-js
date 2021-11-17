@@ -1,7 +1,7 @@
 import TransactionId from "../transaction/TransactionId.js";
 import SubscriptionHandle from "./SubscriptionHandle.js";
 import TopicMessage from "./TopicMessage.js";
-import * as proto from "@hashgraph/proto";
+import * as proto from "@exodus/hashgraph-proto";
 import TopicId from "./TopicId.js";
 import Long from "long";
 import Timestamp from "../Timestamp.js";

@@ -4,7 +4,7 @@ import { keyFromProtobuf, keyToProtobuf } from "../cryptography/protobuf.js";
 import Duration from "../Duration.js";
 import Timestamp from "../Timestamp.js";
 import Long from "long";
-import * as proto from "@hashgraph/proto";
+import * as proto from "@exodus/hashgraph-proto";
 import TokenType from "./TokenType.js";
 import TokenSupplyType from "./TokenSupplyType.js";
 import CustomFixedFee from "./CustomFixedFee.js";
@@ -12,7 +12,7 @@ import CustomFractionalFee from "./CustomFractionalFee.js";
 import CustomRoyaltyFee from "./CustomRoyaltyFee.js";
 
 /**
- * @typedef {import("@hashgraph/cryptography").Key} Key
+ * @typedef {import("@exodus/hashgraph-cryptography").Key} Key
  * @typedef {import("./CustomFee.js").default} CustomFee
  */
 

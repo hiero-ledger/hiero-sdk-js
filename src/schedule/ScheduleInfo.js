@@ -13,28 +13,28 @@ import {
     TransactionBody as ProtoTransactionBody,
     SignedTransaction as ProtoSignedTransaction,
     SchedulableTransactionBody as ProtoSchedulableTransactionBody,
-} from "@hashgraph/proto";
+} from "@exodus/hashgraph-proto";
 import TransactionId from "../transaction/TransactionId.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").IScheduleInfo} proto.IScheduleInfo
- * @typedef {import("@hashgraph/proto").IScheduleID} proto.IScheduleID
- * @typedef {import("@hashgraph/proto").ITimestamp} proto.ITimestamp
- * @typedef {import("@hashgraph/proto").IAccountID} proto.IAccountID
- * @typedef {import("@hashgraph/proto").IScheduleID} proto.IScheduledID
- * @typedef {import("@hashgraph/proto").IFileID} proto.IFileID
- * @typedef {import("@hashgraph/proto").IContractID} proto.IContractID
- * @typedef {import("@hashgraph/proto").ITokenID} proto.ITokenID
- * @typedef {import("@hashgraph/proto").IKey} proto.IKey
- * @typedef {import("@hashgraph/proto").IDuration} proto.IDuration
- * @typedef {import("@hashgraph/proto").ISchedulableTransactionBody} proto.ISchedulableTransactionBody
- * @typedef {import("@hashgraph/proto").ITransactionBody} proto.ITransactionBody
+ * @typedef {import("@exodus/hashgraph-proto").IScheduleInfo} proto.IScheduleInfo
+ * @typedef {import("@exodus/hashgraph-proto").IScheduleID} proto.IScheduleID
+ * @typedef {import("@exodus/hashgraph-proto").ITimestamp} proto.ITimestamp
+ * @typedef {import("@exodus/hashgraph-proto").IAccountID} proto.IAccountID
+ * @typedef {import("@exodus/hashgraph-proto").IScheduleID} proto.IScheduledID
+ * @typedef {import("@exodus/hashgraph-proto").IFileID} proto.IFileID
+ * @typedef {import("@exodus/hashgraph-proto").IContractID} proto.IContractID
+ * @typedef {import("@exodus/hashgraph-proto").ITokenID} proto.ITokenID
+ * @typedef {import("@exodus/hashgraph-proto").IKey} proto.IKey
+ * @typedef {import("@exodus/hashgraph-proto").IDuration} proto.IDuration
+ * @typedef {import("@exodus/hashgraph-proto").ISchedulableTransactionBody} proto.ISchedulableTransactionBody
+ * @typedef {import("@exodus/hashgraph-proto").ITransactionBody} proto.ITransactionBody
  */
 
 /**
- * @typedef {import("@hashgraph/cryptography").Key} Key
- * @typedef {import("@hashgraph/cryptography").KeyList} KeyList
+ * @typedef {import("@exodus/hashgraph-cryptography").Key} Key
+ * @typedef {import("@exodus/hashgraph-cryptography").KeyList} KeyList
  */
 
 /**

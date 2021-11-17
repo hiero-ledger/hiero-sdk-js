@@ -6,7 +6,7 @@ import Transfer from "../Transfer.js";
 import ContractFunctionResult from "../contract/ContractFunctionResult.js";
 import TokenTransferMap from "../account/TokenTransferMap.js";
 import TokenNftTransferMap from "../account/TokenNftTransferMap.js";
-import * as proto from "@hashgraph/proto";
+import * as proto from "@exodus/hashgraph-proto";
 import ScheduleId from "../schedule/ScheduleId.js";
 import AssessedCustomFee from "../token/AssessedCustomFee.js";
 import TokenAssocation from "../token/TokenAssociation.js";

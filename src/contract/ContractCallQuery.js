@@ -6,13 +6,13 @@ import Long from "long";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").IQuery} proto.IQuery
- * @typedef {import("@hashgraph/proto").IQueryHeader} proto.IQueryHeader
- * @typedef {import("@hashgraph/proto").IResponse} proto.IResponse
- * @typedef {import("@hashgraph/proto").IResponseHeader} proto.IResponseHeader
- * @typedef {import("@hashgraph/proto").IContractCallLocalQuery} proto.IContractCallLocalQuery
- * @typedef {import("@hashgraph/proto").IContractCallLocalResponse} proto.IContractCallLocalResponse
- * @typedef {import("@hashgraph/proto").IContractFunctionResult} proto.IContractFunctionResult
+ * @typedef {import("@exodus/hashgraph-proto").IQuery} proto.IQuery
+ * @typedef {import("@exodus/hashgraph-proto").IQueryHeader} proto.IQueryHeader
+ * @typedef {import("@exodus/hashgraph-proto").IResponse} proto.IResponse
+ * @typedef {import("@exodus/hashgraph-proto").IResponseHeader} proto.IResponseHeader
+ * @typedef {import("@exodus/hashgraph-proto").IContractCallLocalQuery} proto.IContractCallLocalQuery
+ * @typedef {import("@exodus/hashgraph-proto").IContractCallLocalResponse} proto.IContractCallLocalResponse
+ * @typedef {import("@exodus/hashgraph-proto").IContractFunctionResult} proto.IContractFunctionResult
  */
 
 /**

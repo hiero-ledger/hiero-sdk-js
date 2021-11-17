@@ -7,7 +7,7 @@ import {
     FreezeService,
     TokenService,
     ScheduleService,
-} from "@hashgraph/proto";
+} from "@exodus/hashgraph-proto";
 import * as utf8 from "../encoding/utf8.js";
 
 /**

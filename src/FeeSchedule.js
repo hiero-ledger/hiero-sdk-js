@@ -1,4 +1,4 @@
-import * as proto from "@hashgraph/proto";
+import * as proto from "@exodus/hashgraph-proto";
 import TransactionFeeSchedule from "./TransactionFeeSchedule";
 import Timestamp from "./Timestamp";
 

@@ -285,6 +285,22 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
+"@exodus/protobufjs@^6.11.1-minimal-exodus.1":
+  version "6.11.1-minimal-exodus.2"
+  resolved "https://registry.yarnpkg.com/@exodus/protobufjs/-/protobufjs-6.11.1-minimal-exodus.2.tgz#f569843b6e60cd043ab320773a297e1d2a514072"
+  integrity sha512-PSa9hO6XaXagjGpuBmbH57AUugsxe7YyShSLS0SYB7tSXhrWy67OtT2Wp0YO2UE1k4npZGmq4+N+ns1KDtjySQ==
+  dependencies:
+    "@protobufjs/aspromise" "^1.1.2"
+    "@protobufjs/base64" "^1.1.2"
+    "@protobufjs/eventemitter" "^1.1.0"
+    "@protobufjs/float" "^1.0.2"
+    "@protobufjs/inquire" "^1.1.0"
+    "@protobufjs/pool" "^1.1.0"
+    "@protobufjs/utf8" "^1.1.0"
+    "@types/long" "^4.0.1"
+    "@types/node" ">=13.7.0"
+    long "^4.0.0"
+
 "@nicolo-ribaudo/chokidar-2@2.1.8-no-fsevents.2":
   version "2.1.8-no-fsevents.2"
   resolved "https://registry.yarnpkg.com/@nicolo-ribaudo/chokidar-2/-/chokidar-2-2.1.8-no-fsevents.2.tgz#e324c0a247a5567192dd7180647709d7e2faf94b"

@@ -1,6 +1,6 @@
 import * as entity_id from "../EntityIdHelper.js";
-import { Key } from "@hashgraph/cryptography";
-import * as proto from "@hashgraph/proto";
+import { Key } from "@exodus/hashgraph-cryptography";
+import * as proto from "@exodus/hashgraph-proto";
 
 /**
  * @typedef {import("long").Long} Long

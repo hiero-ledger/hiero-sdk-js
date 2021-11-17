@@ -4,11 +4,11 @@ import ObjectMap from "../ObjectMap.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").ITokenTransferList} proto.ITokenTransferList
- * @typedef {import("@hashgraph/proto").INftTransfer} proto.INftTransfer
- * @typedef {import("@hashgraph/proto").IAccountAmount} proto.IAccountAmount
- * @typedef {import("@hashgraph/proto").ITokenID} proto.ITokenID
- * @typedef {import("@hashgraph/proto").IAccountID} proto.IAccountID
+ * @typedef {import("@exodus/hashgraph-proto").ITokenTransferList} proto.ITokenTransferList
+ * @typedef {import("@exodus/hashgraph-proto").INftTransfer} proto.INftTransfer
+ * @typedef {import("@exodus/hashgraph-proto").IAccountAmount} proto.IAccountAmount
+ * @typedef {import("@exodus/hashgraph-proto").ITokenID} proto.ITokenID
+ * @typedef {import("@exodus/hashgraph-proto").IAccountID} proto.IAccountID
  */
 
 /**

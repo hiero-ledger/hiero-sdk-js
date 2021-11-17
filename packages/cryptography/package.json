@@ -1,39 +1,9 @@
 {
-    "name": "@hashgraph/cryptography",
-    "version": "1.0.21",
+    "name": "@exodus/hashgraph-cryptography",
+    "version": "1.0.21-exodus.6",
     "description": "Cryptographic utilities and primitives for the Hedera™ Hashgraph SDK",
     "main": "./lib/index.cjs",
     "types": "./lib/index.d.ts",
-    "module": "./src/index.js",
-    "react-native": {
-        "./lib/index.cjs": "./src/index.js",
-        "./src/encoding/base64.js": "./src/encoding/base64.native.js",
-        "./src/encoding/hex.js": "./src/encoding/hex.native.js",
-        "./src/encoding/utf8.js": "./src/encoding/utf8.native.js",
-        "./src/primitive/aes.js": "./src/primitive/aes.native.js",
-        "./src/primitive/sha256.js": "./src/primitive/sha256.native.js",
-        "./src/primitive/pbkdf2.js": "./src/primitive/pbkdf2.native.js",
-        "./src/primitive/hmac.js": "./src/primitive/hmac.native.js",
-        "./src/primitive/random.js": "./src/primitive/random.native.js"
-    },
-    "browser": {
-        "./src/index.js": "./src/index.js",
-        "./src/encoding/base64.js": "./src/encoding/base64.browser.js",
-        "./src/encoding/hex.js": "./src/encoding/hex.browser.js",
-        "./src/encoding/utf8.js": "./src/encoding/utf8.browser.js",
-        "./src/primitive/aes.js": "./src/primitive/aes.browser.js",
-        "./src/primitive/sha256.js": "./src/primitive/sha256.browser.js",
-        "./src/primitive/pbkdf2.js": "./src/primitive/pbkdf2.browser.js",
-        "./src/primitive/random.js": "./src/primitive/random.js",
-        "./src/primitive/hmac.js": "./src/primitive/hmac.browser.js"
-    },
-    "exports": {
-        "./package.json": "./package.json",
-        ".": {
-            "import": "./src/index.js",
-            "require": "./lib/index.cjs"
-        }
-    },
     "license": "Apache-2.0",
     "author": "Launchbadge <contact@launchbadge.com>",
     "repository": "https://github.com/hashgraph/hedera-sdk-js",

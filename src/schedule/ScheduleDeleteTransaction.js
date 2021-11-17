@@ -5,18 +5,18 @@ import Transaction, {
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").ITransaction} proto.ITransaction
- * @typedef {import("@hashgraph/proto").ISignedTransaction} proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").TransactionBody} proto.TransactionBody
- * @typedef {import("@hashgraph/proto").ITransactionBody} proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").ITransactionResponse} proto.ITransactionResponse
- * @typedef {import("@hashgraph/proto").IScheduleDeleteTransactionBody} proto.IScheduleDeleteTransactionBody
- * @typedef {import("@hashgraph/proto").IScheduleID} proto.IScheduleID
+ * @typedef {import("@exodus/hashgraph-proto").ITransaction} proto.ITransaction
+ * @typedef {import("@exodus/hashgraph-proto").ISignedTransaction} proto.ISignedTransaction
+ * @typedef {import("@exodus/hashgraph-proto").TransactionBody} proto.TransactionBody
+ * @typedef {import("@exodus/hashgraph-proto").ITransactionBody} proto.ITransactionBody
+ * @typedef {import("@exodus/hashgraph-proto").ITransactionResponse} proto.ITransactionResponse
+ * @typedef {import("@exodus/hashgraph-proto").IScheduleDeleteTransactionBody} proto.IScheduleDeleteTransactionBody
+ * @typedef {import("@exodus/hashgraph-proto").IScheduleID} proto.IScheduleID
  */
 
 /**
  * @typedef {import("bignumber.js").default} BigNumber
- * @typedef {import("@hashgraph/cryptography").Key} Key
+ * @typedef {import("@exodus/hashgraph-cryptography").Key} Key
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../client/Client.js").default<*, *>} Client
  * @typedef {import("../Timestamp.js").default} Timestamp

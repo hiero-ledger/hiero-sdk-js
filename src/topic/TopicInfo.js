@@ -4,10 +4,10 @@ import Timestamp from "../Timestamp.js";
 import { keyFromProtobuf, keyToProtobuf } from "../cryptography/protobuf.js";
 import Long from "long";
 import Duration from "../Duration.js";
-import * as proto from "@hashgraph/proto";
+import * as proto from "@exodus/hashgraph-proto";
 
 /**
- * @typedef {import("@hashgraph/cryptography").Key} Key
+ * @typedef {import("@exodus/hashgraph-cryptography").Key} Key
  */
 
 /**

@@ -6,8 +6,8 @@ import Hbar from "../Hbar.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").ICustomFee} proto.ICustomFee
- * @typedef {import("@hashgraph/proto").IFixedFee} proto.IFixedFee
+ * @typedef {import("@exodus/hashgraph-proto").ICustomFee} proto.ICustomFee
+ * @typedef {import("@exodus/hashgraph-proto").IFixedFee} proto.IFixedFee
  */
 
 export default class CustomFixedFee extends CustomFee {

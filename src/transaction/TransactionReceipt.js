@@ -7,7 +7,7 @@ import ScheduleId from "../schedule/ScheduleId.js";
 import ExchangeRate from "../ExchangeRate.js";
 import Status from "../Status.js";
 import Long from "long";
-import * as proto from "@hashgraph/proto";
+import * as proto from "@exodus/hashgraph-proto";
 import TransactionId from "../transaction/TransactionId.js";
 
 /**

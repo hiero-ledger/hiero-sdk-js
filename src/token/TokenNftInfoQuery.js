@@ -8,17 +8,17 @@ import Long from "long";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").IQuery} proto.IQuery
- * @typedef {import("@hashgraph/proto").IQueryHeader} proto.IQueryHeader
- * @typedef {import("@hashgraph/proto").IResponse} proto.IResponse
- * @typedef {import("@hashgraph/proto").ITokenNftInfo} proto.ITokenNftInfo
- * @typedef {import("@hashgraph/proto").IResponseHeader} proto.IResponseHeader
- * @typedef {import("@hashgraph/proto").ITokenGetNftInfoQuery} proto.ITokenGetNftInfoQuery
- * @typedef {import("@hashgraph/proto").ITokenGetNftInfosQuery} proto.ITokenGetNftInfosQuery
- * @typedef {import("@hashgraph/proto").ITokenGetAccountNftInfosQuery} proto.ITokenGetAccountNftInfosQuery
- * @typedef {import("@hashgraph/proto").ITokenGetNftInfoResponse} proto.ITokenGetNftInfoResponse
- * @typedef {import("@hashgraph/proto").ITokenGetNftInfosResponse} proto.ITokenGetNftInfosResponse
- * @typedef {import("@hashgraph/proto").ITokenGetAccountNftInfosResponse} proto.ITokenGetAccountNftInfosResponse
+ * @typedef {import("@exodus/hashgraph-proto").IQuery} proto.IQuery
+ * @typedef {import("@exodus/hashgraph-proto").IQueryHeader} proto.IQueryHeader
+ * @typedef {import("@exodus/hashgraph-proto").IResponse} proto.IResponse
+ * @typedef {import("@exodus/hashgraph-proto").ITokenNftInfo} proto.ITokenNftInfo
+ * @typedef {import("@exodus/hashgraph-proto").IResponseHeader} proto.IResponseHeader
+ * @typedef {import("@exodus/hashgraph-proto").ITokenGetNftInfoQuery} proto.ITokenGetNftInfoQuery
+ * @typedef {import("@exodus/hashgraph-proto").ITokenGetNftInfosQuery} proto.ITokenGetNftInfosQuery
+ * @typedef {import("@exodus/hashgraph-proto").ITokenGetAccountNftInfosQuery} proto.ITokenGetAccountNftInfosQuery
+ * @typedef {import("@exodus/hashgraph-proto").ITokenGetNftInfoResponse} proto.ITokenGetNftInfoResponse
+ * @typedef {import("@exodus/hashgraph-proto").ITokenGetNftInfosResponse} proto.ITokenGetNftInfosResponse
+ * @typedef {import("@exodus/hashgraph-proto").ITokenGetAccountNftInfosResponse} proto.ITokenGetAccountNftInfosResponse
  */
 
 /**

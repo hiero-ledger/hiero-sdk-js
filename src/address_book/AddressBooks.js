@@ -1,6 +1,6 @@
 import NodeAddressBook from "./NodeAddressBook.js";
 import * as hex from "../encoding/hex.js";
-import * as proto from "@hashgraph/proto";
+import * as proto from "@exodus/hashgraph-proto";
 
 export const PREVIEWNET_ADDRESS_BOOK = NodeAddressBook._fromProtobuf(
     proto.NodeAddressBook.decode(

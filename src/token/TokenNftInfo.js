@@ -5,20 +5,20 @@ import * as hex from "../encoding/hex.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").TokenFreezeStatus} proto.TokenFreezeStatus
- * @typedef {import("@hashgraph/proto").TokenKycStatus} proto.TokenKycStatus
- * @typedef {import("@hashgraph/proto").TokenPauseStatus} proto.TokenPauseStatus
- * @typedef {import("@hashgraph/proto").ITokenNftInfo} proto.ITokenNftInfo
- * @typedef {import("@hashgraph/proto").INftID} proto.INftID
- * @typedef {import("@hashgraph/proto").ITimestamp} proto.ITimestamp
- * @typedef {import("@hashgraph/proto").ITokenID} proto.ITokenID
- * @typedef {import("@hashgraph/proto").IAccountID} proto.IAccountID
- * @typedef {import("@hashgraph/proto").IKey} proto.IKey
- * @typedef {import("@hashgraph/proto").IDuration} proto.IDuration
+ * @typedef {import("@exodus/hashgraph-proto").TokenFreezeStatus} proto.TokenFreezeStatus
+ * @typedef {import("@exodus/hashgraph-proto").TokenKycStatus} proto.TokenKycStatus
+ * @typedef {import("@exodus/hashgraph-proto").TokenPauseStatus} proto.TokenPauseStatus
+ * @typedef {import("@exodus/hashgraph-proto").ITokenNftInfo} proto.ITokenNftInfo
+ * @typedef {import("@exodus/hashgraph-proto").INftID} proto.INftID
+ * @typedef {import("@exodus/hashgraph-proto").ITimestamp} proto.ITimestamp
+ * @typedef {import("@exodus/hashgraph-proto").ITokenID} proto.ITokenID
+ * @typedef {import("@exodus/hashgraph-proto").IAccountID} proto.IAccountID
+ * @typedef {import("@exodus/hashgraph-proto").IKey} proto.IKey
+ * @typedef {import("@exodus/hashgraph-proto").IDuration} proto.IDuration
  */
 
 /**
- * @typedef {import("@hashgraph/cryptography").Key} Key
+ * @typedef {import("@exodus/hashgraph-cryptography").Key} Key
  */
 export default class TokenNftInfo {
     /**

@@ -1,6 +1,6 @@
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").TokenType} proto.TokenType
+ * @typedef {import("@exodus/hashgraph-proto").TokenType} proto.TokenType
  */
 
 export default class TokenType {

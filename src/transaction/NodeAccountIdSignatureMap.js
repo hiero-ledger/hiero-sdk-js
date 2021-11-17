@@ -1,4 +1,4 @@
-import { PublicKey } from "@hashgraph/cryptography";
+import { PublicKey } from "@exodus/hashgraph-cryptography";
 import ObjectMap from "../ObjectMap.js";
 
 /**
@@ -10,7 +10,7 @@ export default class NodeAccountIdSignatureMap extends ObjectMap {
     }
 
     /**
-     * @param {import("@hashgraph/proto").ISignatureMap} sigMap
+     * @param {import("@exodus/hashgraph-proto").ISignatureMap} sigMap
      * @returns {NodeAccountIdSignatureMap}
      */
     static _fromTransactionSigMap(sigMap) {

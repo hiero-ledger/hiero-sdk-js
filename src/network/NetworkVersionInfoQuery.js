@@ -3,12 +3,12 @@ import NetworkVersionInfo from "./NetworkVersionInfo.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").IQuery} proto.IQuery
- * @typedef {import("@hashgraph/proto").IQueryHeader} proto.IQueryHeader
- * @typedef {import("@hashgraph/proto").IResponse} proto.IResponse
- * @typedef {import("@hashgraph/proto").IResponseHeader} proto.IResponseHeader
- * @typedef {import("@hashgraph/proto").INetworkGetVersionInfoQuery} proto.INetworkGetVersionInfoQuery
- * @typedef {import("@hashgraph/proto").INetworkGetVersionInfoResponse} proto.INetworkGetVersionInfoResponse
+ * @typedef {import("@exodus/hashgraph-proto").IQuery} proto.IQuery
+ * @typedef {import("@exodus/hashgraph-proto").IQueryHeader} proto.IQueryHeader
+ * @typedef {import("@exodus/hashgraph-proto").IResponse} proto.IResponse
+ * @typedef {import("@exodus/hashgraph-proto").IResponseHeader} proto.IResponseHeader
+ * @typedef {import("@exodus/hashgraph-proto").INetworkGetVersionInfoQuery} proto.INetworkGetVersionInfoQuery
+ * @typedef {import("@exodus/hashgraph-proto").INetworkGetVersionInfoResponse} proto.INetworkGetVersionInfoResponse
  */
 
 /**

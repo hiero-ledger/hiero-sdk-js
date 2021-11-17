@@ -6,20 +6,20 @@ import Transaction, {
 import { keyFromProtobuf, keyToProtobuf } from "../cryptography/protobuf.js";
 import * as utf8 from "../encoding/utf8.js";
 import Timestamp from "../Timestamp.js";
-import { KeyList } from "@hashgraph/cryptography";
+import { KeyList } from "@exodus/hashgraph-cryptography";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").ITransaction} proto.ITransaction
- * @typedef {import("@hashgraph/proto").ISignedTransaction} proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").TransactionBody} proto.TransactionBody
- * @typedef {import("@hashgraph/proto").ITransactionBody} proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").ITransactionResponse} proto.ITransactionResponse
- * @typedef {import("@hashgraph/proto").IFileCreateTransactionBody} proto.IFileCreateTransactionBody
+ * @typedef {import("@exodus/hashgraph-proto").ITransaction} proto.ITransaction
+ * @typedef {import("@exodus/hashgraph-proto").ISignedTransaction} proto.ISignedTransaction
+ * @typedef {import("@exodus/hashgraph-proto").TransactionBody} proto.TransactionBody
+ * @typedef {import("@exodus/hashgraph-proto").ITransactionBody} proto.ITransactionBody
+ * @typedef {import("@exodus/hashgraph-proto").ITransactionResponse} proto.ITransactionResponse
+ * @typedef {import("@exodus/hashgraph-proto").IFileCreateTransactionBody} proto.IFileCreateTransactionBody
  */
 
 /**
- * @typedef {import("@hashgraph/cryptography").Key} Key
+ * @typedef {import("@exodus/hashgraph-cryptography").Key} Key
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../account/AccountId.js").default} AccountId
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId

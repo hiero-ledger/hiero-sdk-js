@@ -1,7 +1,5 @@
 module.exports = {
     optimizeDeps: {
-        allowNodeBuiltins: [
-            "@hashgraph/cryptography"
-        ]
-    }
-}
+        allowNodeBuiltins: ["@exodus/hashgraph-cryptography"],
+    },
+};

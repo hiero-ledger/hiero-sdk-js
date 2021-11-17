@@ -1,6 +1,6 @@
 import AccountId from "../account/AccountId.js";
 import AccountBalanceQuery from "../account/AccountBalanceQuery.js";
-import { PrivateKey, PublicKey } from "@hashgraph/cryptography";
+import { PrivateKey, PublicKey } from "@exodus/hashgraph-cryptography";
 import Hbar from "../Hbar.js";
 import Network from "./Network.js";
 import MirrorNetwork from "./MirrorNetwork.js";

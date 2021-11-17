@@ -2,7 +2,7 @@ import IPv4Address from "./IPv4Address.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").IServiceEndpoint} proto.IServiceEndpoint
+ * @typedef {import("@exodus/hashgraph-proto").IServiceEndpoint} proto.IServiceEndpoint
  */
 
 /**

@@ -1,4 +1,4 @@
-import * as proto from "@hashgraph/proto";
+import * as proto from "@exodus/hashgraph-proto";
 import RequestType from "./RequestType";
 import FeeData from "./FeeData";
 

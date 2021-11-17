@@ -1,5 +1,5 @@
 import * as entity_id from "../EntityIdHelper.js";
-import { TopicID as ProtoTopicID } from "@hashgraph/proto";
+import { TopicID as ProtoTopicID } from "@exodus/hashgraph-proto";
 
 /**
  * @typedef {import("long").Long} Long
@@ -8,7 +8,7 @@ import { TopicID as ProtoTopicID } from "@hashgraph/proto";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").ITopicID} proto.ITopicID
+ * @typedef {import("@exodus/hashgraph-proto").ITopicID} proto.ITopicID
  */
 
 /**

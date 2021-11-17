@@ -1,12 +1,12 @@
 import FileId from "./FileId.js";
 import Timestamp from "../Timestamp.js";
-import { KeyList } from "@hashgraph/cryptography";
+import { KeyList } from "@exodus/hashgraph-cryptography";
 import Long from "long";
 import {
     keyListFromProtobuf,
     keyListToProtobuf,
 } from "../cryptography/protobuf.js";
-import * as proto from "@hashgraph/proto";
+import * as proto from "@exodus/hashgraph-proto";
 
 /**
  * Response when the client sends the node CryptoGetInfoQuery.

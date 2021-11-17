@@ -3,7 +3,7 @@ import TokenId from "../token/TokenId.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").ITokenAssociation} proto.ITokenAssociation
+ * @typedef {import("@exodus/hashgraph-proto").ITokenAssociation} proto.ITokenAssociation
  */
 
 export default class TokenAssociation {

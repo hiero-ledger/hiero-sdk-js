@@ -5,13 +5,13 @@ import Hbar from "../Hbar.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").IQuery} proto.IQuery
- * @typedef {import("@hashgraph/proto").IQueryHeader} proto.IQueryHeader
- * @typedef {import("@hashgraph/proto").IResponse} proto.IResponse
- * @typedef {import("@hashgraph/proto").IResponseHeader} proto.IResponseHeader
- * @typedef {import("@hashgraph/proto").IScheduleInfo} proto.IScheduleInfo
- * @typedef {import("@hashgraph/proto").IScheduleGetInfoQuery} proto.IScheduleGetInfoQuery
- * @typedef {import("@hashgraph/proto").IScheduleGetInfoResponse} proto.IScheduleGetInfoResponse
+ * @typedef {import("@exodus/hashgraph-proto").IQuery} proto.IQuery
+ * @typedef {import("@exodus/hashgraph-proto").IQueryHeader} proto.IQueryHeader
+ * @typedef {import("@exodus/hashgraph-proto").IResponse} proto.IResponse
+ * @typedef {import("@exodus/hashgraph-proto").IResponseHeader} proto.IResponseHeader
+ * @typedef {import("@exodus/hashgraph-proto").IScheduleInfo} proto.IScheduleInfo
+ * @typedef {import("@exodus/hashgraph-proto").IScheduleGetInfoQuery} proto.IScheduleGetInfoQuery
+ * @typedef {import("@exodus/hashgraph-proto").IScheduleGetInfoResponse} proto.IScheduleGetInfoResponse
  */
 
 /**

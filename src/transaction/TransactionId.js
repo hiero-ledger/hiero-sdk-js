@@ -1,6 +1,6 @@
 import AccountId from "../account/AccountId.js";
 import Timestamp from "../Timestamp.js";
-import * as proto from "@hashgraph/proto";
+import * as proto from "@exodus/hashgraph-proto";
 import Long from "long";
 
 /**

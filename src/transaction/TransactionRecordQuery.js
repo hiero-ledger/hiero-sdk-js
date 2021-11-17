@@ -6,19 +6,19 @@ import Status from "../Status.js";
 import PrecheckStatusError from "../PrecheckStatusError.js";
 import ReceiptStatusError from "../ReceiptStatusError.js";
 import { ExecutionState } from "../Executable.js";
-import { ResponseType, ResponseCodeEnum } from "@hashgraph/proto";
+import { ResponseType, ResponseCodeEnum } from "@exodus/hashgraph-proto";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").IQuery} proto.IQuery
- * @typedef {import("@hashgraph/proto").IQueryHeader} proto.IQueryHeader
- * @typedef {import("@hashgraph/proto").ITransactionRecord} proto.ITransactionRecord
- * @typedef {import("@hashgraph/proto").ITransactionReceipt} proto.ITransactionReceipt
- * @typedef {import("@hashgraph/proto").ITransactionGetRecordResponse} proto.ITransactionGetRecordResponse
- * @typedef {import("@hashgraph/proto").ITransactionGetRecordQuery} proto.ITransactionGetRecordQuery
- * @typedef {import("@hashgraph/proto").IResponse} proto.IResponse
- * @typedef {import("@hashgraph/proto").IResponseHeader} proto.IResponseHeader
- * @typedef {import("@hashgraph/proto").ResponseCodeEnum} proto.ResponseCodeEnum
+ * @typedef {import("@exodus/hashgraph-proto").IQuery} proto.IQuery
+ * @typedef {import("@exodus/hashgraph-proto").IQueryHeader} proto.IQueryHeader
+ * @typedef {import("@exodus/hashgraph-proto").ITransactionRecord} proto.ITransactionRecord
+ * @typedef {import("@exodus/hashgraph-proto").ITransactionReceipt} proto.ITransactionReceipt
+ * @typedef {import("@exodus/hashgraph-proto").ITransactionGetRecordResponse} proto.ITransactionGetRecordResponse
+ * @typedef {import("@exodus/hashgraph-proto").ITransactionGetRecordQuery} proto.ITransactionGetRecordQuery
+ * @typedef {import("@exodus/hashgraph-proto").IResponse} proto.IResponse
+ * @typedef {import("@exodus/hashgraph-proto").IResponseHeader} proto.IResponseHeader
+ * @typedef {import("@exodus/hashgraph-proto").ResponseCodeEnum} proto.ResponseCodeEnum
  */
 
 /**

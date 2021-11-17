@@ -8,8 +8,8 @@ import Long from "long";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").IContractFunctionResult} proto.IContractFunctionResult
- * @typedef {import("@hashgraph/proto").IContractID} proto.IContractID
+ * @typedef {import("@exodus/hashgraph-proto").IContractFunctionResult} proto.IContractFunctionResult
+ * @typedef {import("@exodus/hashgraph-proto").IContractID} proto.IContractID
  */
 /**
  * The result returned by a call to a smart contract function. This is part of the response to

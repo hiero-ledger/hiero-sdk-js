@@ -1,6 +1,6 @@
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").HederaFunctionality} proto.HederaFunctionality
+ * @typedef {import("@exodus/hashgraph-proto").HederaFunctionality} proto.HederaFunctionality
  */
 
 export default class RequestType {

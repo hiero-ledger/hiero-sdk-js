@@ -3,8 +3,8 @@ import Hbar from "../Hbar.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").IProxyStaker} proto.IProxyStaker
- * @typedef {import("@hashgraph/proto").IAccountID} proto.IAccountID
+ * @typedef {import("@exodus/hashgraph-proto").IProxyStaker} proto.IProxyStaker
+ * @typedef {import("@exodus/hashgraph-proto").IAccountID} proto.IAccountID
  */
 
 /**

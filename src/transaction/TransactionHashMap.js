@@ -4,7 +4,7 @@ import ObjectMap from "../ObjectMap.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").ITransaction} proto.ITransaction
+ * @typedef {import("@exodus/hashgraph-proto").ITransaction} proto.ITransaction
  */
 
 /**

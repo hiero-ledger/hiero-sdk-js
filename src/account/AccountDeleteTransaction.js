@@ -5,13 +5,13 @@ import Transaction, {
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").ITransaction} proto.ITransaction
- * @typedef {import("@hashgraph/proto").ISignedTransaction} proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").TransactionBody} proto.TransactionBody
- * @typedef {import("@hashgraph/proto").ITransactionBody} proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").ITransactionResponse} proto.ITransactionResponse
- * @typedef {import("@hashgraph/proto").ICryptoDeleteTransactionBody} proto.ICryptoDeleteTransactionBody
- * @typedef {import("@hashgraph/proto").IAccountID} proto.IAccountID
+ * @typedef {import("@exodus/hashgraph-proto").ITransaction} proto.ITransaction
+ * @typedef {import("@exodus/hashgraph-proto").ISignedTransaction} proto.ISignedTransaction
+ * @typedef {import("@exodus/hashgraph-proto").TransactionBody} proto.TransactionBody
+ * @typedef {import("@exodus/hashgraph-proto").ITransactionBody} proto.ITransactionBody
+ * @typedef {import("@exodus/hashgraph-proto").ITransactionResponse} proto.ITransactionResponse
+ * @typedef {import("@exodus/hashgraph-proto").ICryptoDeleteTransactionBody} proto.ICryptoDeleteTransactionBody
+ * @typedef {import("@exodus/hashgraph-proto").IAccountID} proto.IAccountID
  */
 
 /**

@@ -1243,7 +1243,7 @@ balanced-match@^1.0.0:
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.0.tgz#89b4d199ab2bee49de164ea02b89ce462d71b767"
   integrity sha1-ibTRmasr7kneFk6gK4nORi1xt2c=
 
-base64-js@^1.3.0, base64-js@^1.3.1:
+base64-js@^1.3.1:
   version "1.5.1"
   resolved "https://registry.yarnpkg.com/base64-js/-/base64-js-1.5.1.tgz#1b1b440160a5bf7ad40b650f095963481903930a"
   integrity sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==
@@ -2610,18 +2610,6 @@ expand-brackets@^2.1.4:
     snapdragon "^0.8.1"
     to-regex "^3.0.1"
 
-expo-crypto@^9.2.0:
-  version "9.2.0"
-  resolved "https://registry.yarnpkg.com/expo-crypto/-/expo-crypto-9.2.0.tgz#5d124539836767c019297816f050b8bb73056297"
-  integrity sha512-jc9E7jHlOT8fYs64DIsSOdnLtxtIK1pV78O/nBamPwKdGrvFSNqMSFndxyVSuEimBNoPPNRwN+4Pb4W1RRltJA==
-
-expo-random@^11.2.0:
-  version "11.2.0"
-  resolved "https://registry.yarnpkg.com/expo-random/-/expo-random-11.2.0.tgz#245ff64c1d980fb45caa84e92ae396af0fd3c88e"
-  integrity sha512-kgBJBB02iCX/kpoTHN57V7b4hWOCj4eACIQDl7bN94lycUcZu62T00P/rVZIcE/29x0GAi+Pw5ZWj0NlqBsMQQ==
-  dependencies:
-    base64-js "^1.3.0"
-
 extend-shallow@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/extend-shallow/-/extend-shallow-2.0.1.tgz#51af7d614ad9a9f610ea1bafbb989d6b1c56890f"
@@ -2700,11 +2688,6 @@ fast-url-parser@1.1.3:
   integrity sha1-9K8+qfNNiicc9YrSs3WfQx8LMY0=
   dependencies:
     punycode "^1.3.2"
-
-fastestsmallesttextencoderdecoder@^1.0.22:
-  version "1.0.22"
-  resolved "https://registry.yarnpkg.com/fastestsmallesttextencoderdecoder/-/fastestsmallesttextencoderdecoder-1.0.22.tgz#59b47e7b965f45258629cc6c127bf783281c5e93"
-  integrity sha512-Pb8d48e+oIuY4MaM64Cd7OW1gt4nxCHs7/ddPPZ/Ic3sg8yVGM7O9wDvZ7us6ScaUupzM+pfBolwtYhN1IxBIw==
 
 fastq@^1.6.0:
   version "1.8.0"

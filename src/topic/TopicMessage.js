@@ -4,8 +4,8 @@ import Long from "long";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").IConsensusTopicResponse} proto.IConsensusTopicResponse
- * @typedef {import("@hashgraph/proto").ITimestamp} proto.ITimestamp
+ * @typedef {import("@exodus/hashgraph-proto").IConsensusTopicResponse} proto.IConsensusTopicResponse
+ * @typedef {import("@exodus/hashgraph-proto").ITimestamp} proto.ITimestamp
  */
 
 export default class TopicMessage {

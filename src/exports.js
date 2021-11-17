@@ -1,4 +1,4 @@
-export * from "@hashgraph/cryptography";
+export * from "@exodus/hashgraph-cryptography";
 
 export { default as AccountBalanceQuery } from "./account/AccountBalanceQuery.js";
 export { default as AccountCreateTransaction } from "./account/AccountCreateTransaction.js";

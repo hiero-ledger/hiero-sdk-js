@@ -3,13 +3,13 @@ import Hbar from "../Hbar.js";
 import Executable from "../Executable.js";
 import AccountId from "../account/AccountId.js";
 import { _makePaymentTransaction, COST_QUERY } from "./Query.js";
-import { ResponseType as ProtoResponseType } from "@hashgraph/proto";
+import { ResponseType as ProtoResponseType } from "@exodus/hashgraph-proto";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").IQuery} proto.IQuery
- * @typedef {import("@hashgraph/proto").IResponse} proto.IResponse
- * @typedef {import("@hashgraph/proto").IQueryHeader} proto.IQueryHeader
+ * @typedef {import("@exodus/hashgraph-proto").IQuery} proto.IQuery
+ * @typedef {import("@exodus/hashgraph-proto").IResponse} proto.IResponse
+ * @typedef {import("@exodus/hashgraph-proto").IQueryHeader} proto.IQueryHeader
  */
 
 /**

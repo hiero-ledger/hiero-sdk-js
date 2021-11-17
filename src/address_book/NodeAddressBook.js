@@ -2,7 +2,7 @@ import NodeAddress from "./NodeAddress.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").INodeAddressBook} proto.INodeAddressBook
+ * @typedef {import("@exodus/hashgraph-proto").INodeAddressBook} proto.INodeAddressBook
  */
 
 /**

@@ -2,7 +2,7 @@ import Long from "long";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").ITimestamp} proto.ITimestamp
+ * @typedef {import("@exodus/hashgraph-proto").ITimestamp} proto.ITimestamp
  */
 
 const MAX_NS = Long.fromNumber(1000000000);

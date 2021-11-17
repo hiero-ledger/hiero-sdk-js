@@ -6,12 +6,12 @@ import TokenDecimalMap from "./TokenDecimalMap.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").ITimestamp} proto.ITimestamp
- * @typedef {import("@hashgraph/proto").IAccountID} proto.IAccountID
- * @typedef {import("@hashgraph/proto").ICryptoGetAccountBalanceResponse} proto.ICryptoGetAccountBalanceResponse
- * @typedef {import("@hashgraph/proto").IKey} proto.IKey
- * @typedef {import("@hashgraph/proto").ITokenID} proto.ITokenID
- * @typedef {import("@hashgraph/proto").ITokenBalance} proto.ITokenBalance
+ * @typedef {import("@exodus/hashgraph-proto").ITimestamp} proto.ITimestamp
+ * @typedef {import("@exodus/hashgraph-proto").IAccountID} proto.IAccountID
+ * @typedef {import("@exodus/hashgraph-proto").ICryptoGetAccountBalanceResponse} proto.ICryptoGetAccountBalanceResponse
+ * @typedef {import("@exodus/hashgraph-proto").IKey} proto.IKey
+ * @typedef {import("@exodus/hashgraph-proto").ITokenID} proto.ITokenID
+ * @typedef {import("@exodus/hashgraph-proto").ITokenBalance} proto.ITokenBalance
  */
 
 /**
@@ -28,7 +28,7 @@ import TokenDecimalMap from "./TokenDecimalMap.js";
  */
 
 /**
- * @typedef {import("@hashgraph/cryptography").Key} Key
+ * @typedef {import("@exodus/hashgraph-cryptography").Key} Key
  */
 
 export default class AccountBalance {

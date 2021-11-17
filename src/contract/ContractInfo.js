@@ -5,11 +5,11 @@ import Duration from "../Duration.js";
 import Hbar from "../Hbar.js";
 import { keyFromProtobuf, keyToProtobuf } from "../cryptography/protobuf.js";
 import Long from "long";
-import * as proto from "@hashgraph/proto";
+import * as proto from "@exodus/hashgraph-proto";
 import TokenRelationshipMap from "../account/TokenRelationshipMap.js";
 
 /**
- * @typedef {import("@hashgraph/cryptography").Key} Key
+ * @typedef {import("@exodus/hashgraph-cryptography").Key} Key
  */
 
 /**

@@ -4,7 +4,7 @@ import * as utf8 from "../encoding/utf8.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").INodeAddress} proto.INodeAddress
+ * @typedef {import("@exodus/hashgraph-proto").INodeAddress} proto.INodeAddress
  */
 
 /**
