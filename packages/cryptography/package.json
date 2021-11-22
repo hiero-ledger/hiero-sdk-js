@@ -74,8 +74,6 @@
     "dependencies": {
         "bignumber.js": "^9.0.1",
         "crypto-js": "^4.0.0",
-        "expo-crypto": "^9.2.0",
-        "expo-random": "^11.2.0",
         "js-base64": "^3.6.1",
         "tweetnacl": "^1.0.3",
         "utf8": "^3.0.0"
