@@ -37,8 +37,7 @@
         "transactions"
     ],
     "files": [
-        "lib/",
-        "src/"
+        "lib/"
     ],
     "engines": {
         "node": ">=10.17.0"
