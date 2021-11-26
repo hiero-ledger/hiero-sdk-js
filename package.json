@@ -81,6 +81,8 @@
         "@babel/plugin-transform-modules-commonjs": "^7.15.4",
         "@babel/register": "^7.15.3",
         "@grpc/proto-loader": "^0.6.6",
+        "@types/exodus__hashgraph-cryptography": "file:./packages/cryptography",
+        "@types/exodus__hashgraph-proto": "file:./packages/proto",
         "@types/chai": "^4.2.22",
         "@types/create-hash": "^1.2.0",
         "@types/long": "^4.0.1",
