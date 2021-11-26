@@ -37,7 +37,8 @@
         "transactions"
     ],
     "files": [
-        "lib/"
+        "lib/",
+        "!lib/**/*.d.ts"
     ],
     "engines": {
         "node": ">=10.17.0"
