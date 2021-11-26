@@ -1,17 +1,18 @@
-import CryptoJS from "crypto-js";
-import * as hex from "../encoding/hex.js";
+import createHash from "create-hash";
 
 /**
  * @param {Uint8Array} data
  * @returns {Promise<Uint8Array>}
  */
-// eslint-disable-next-line @typescript-eslint/require-await
-export async function digest(data) {
-    return Promise.resolve(
-        hex.decode(
-            CryptoJS.SHA384(CryptoJS.enc.Hex.parse(hex.encode(data))).toString(
-                CryptoJS.enc.Hex
-            )
-        )
-    );
+export function digest(data) {
+    // fallback to trying node-crypto which could be polyfilled by the browser environment
+    return Promise.resolve(createHash("sha384").update(data).digest());
+}
+
+/**
+ * @param {Uint8Array} data
+ * @returns {Uint8Array}
+ */
+export function digestSync(data) {
+    return createHash("sha384").update(data).digest();
 }

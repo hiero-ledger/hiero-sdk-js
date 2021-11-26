@@ -1,7 +1,8 @@
 import { HashAlgorithm } from "./hmac.js";
 import * as utf8 from "../encoding/utf8.js";
-import * as hex from "../encoding/hex.js";
-import CryptoJS from "crypto-js";
+import util from "util";
+import crypto from "pbkdf2";
+import "./crypto-types.d.ts";
 
 /**
  * @param {HashAlgorithm} algorithm
@@ -12,44 +13,29 @@ import CryptoJS from "crypto-js";
  * @returns {Promise<Uint8Array>}
  */
 export async function deriveKey(algorithm, password, salt, iterations, length) {
-    const pass =
+    const pass0 =
         typeof password === "string"
             ? // Valid ASCII is also valid UTF-8 so encoding the password as UTF-8
               // should be fine if only valid ASCII characters are used in the password
               utf8.encode(password)
             : password;
+    const pass = Buffer.from(pass0);
 
-    const nacl = typeof salt === "string" ? utf8.encode(salt) : salt;
+    const nacl0 = typeof salt === "string" ? utf8.encode(salt) : salt;
+    const nacl = Buffer.from(nacl0);
 
-    const password_ = CryptoJS.enc.Hex.parse(hex.encode(pass));
-    const nacl_ = CryptoJS.enc.Hex.parse(hex.encode(nacl));
+    const pbkdf2 = util.promisify(crypto.pbkdf2);
 
-    let hasher;
     switch (algorithm) {
         case HashAlgorithm.Sha256:
-            hasher = CryptoJS.algo.SHA256;
-            break;
+            return pbkdf2(pass, nacl, iterations, length, "sha256");
         case HashAlgorithm.Sha384:
-            hasher = CryptoJS.algo.SHA384;
-            break;
+            return pbkdf2(pass, nacl, iterations, length, "sha384");
         case HashAlgorithm.Sha512:
-            hasher = CryptoJS.algo.SHA512;
-            break;
+            return pbkdf2(pass, nacl, iterations, length, "sha512");
         default:
             throw new Error(
                 "(BUG) Non-Exhaustive switch statement for algorithms"
             );
     }
-
-    const cfg = {
-        keySize: length / 4,
-        hasher,
-        iterations,
-    };
-
-    return Promise.resolve(
-        hex.decode(
-            CryptoJS.PBKDF2(password_, nacl_, cfg).toString(CryptoJS.enc.Hex)
-        )
-    );
 }

@@ -1,6 +1,5 @@
-import CryptoJS from "crypto-js";
+import createHmac from "create-hmac";
 import * as utf8 from "../encoding/utf8.js";
-import * as hex from "../encoding/hex.js";
 
 /**
  * @enum {string}
@@ -18,31 +17,23 @@ export const HashAlgorithm = {
  * @returns {Promise<Uint8Array>}
  */
 export function hash(algorithm, secretKey, data) {
-    const key =
+    const key0 =
         typeof secretKey === "string" ? utf8.encode(secretKey) : secretKey;
     const value = typeof data === "string" ? utf8.encode(data) : data;
-
-    const key_ = CryptoJS.enc.Hex.parse(hex.encode(key));
-    const value_ = CryptoJS.enc.Hex.parse(hex.encode(value));
+    const key = Buffer.from(key0);
 
     switch (algorithm) {
         case HashAlgorithm.Sha256:
             return Promise.resolve(
-                hex.decode(
-                    CryptoJS.HmacSHA256(value_, key_).toString(CryptoJS.enc.Hex)
-                )
+                createHmac("sha256", key).update(value).digest()
             );
         case HashAlgorithm.Sha384:
             return Promise.resolve(
-                hex.decode(
-                    CryptoJS.HmacSHA384(value_, key_).toString(CryptoJS.enc.Hex)
-                )
+                createHmac("sha384", key).update(value).digest()
             );
         case HashAlgorithm.Sha512:
             return Promise.resolve(
-                hex.decode(
-                    CryptoJS.HmacSHA512(value_, key_).toString(CryptoJS.enc.Hex)
-                )
+                createHmac("sha512", key).update(value).digest()
             );
         default:
             throw new Error(
