@@ -1,5 +1,4 @@
 {
-    "presets": ["minify"],
     "plugins": [
         "@babel/plugin-transform-modules-commonjs",
         "@babel/plugin-syntax-dynamic-import",
@@ -10,5 +9,6 @@
             }
         ]
     ],
+    "compact": false,
     "comments": false
 }
