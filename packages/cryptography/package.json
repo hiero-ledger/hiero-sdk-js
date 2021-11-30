@@ -76,10 +76,8 @@
         "browserify-aes": "^1.2.0",
         "create-hash": "^1.2.0",
         "create-hmac": "^1.1.0",
-        "js-base64": "^3.6.1",
         "pbkdf2": "^3.0.17",
-        "tweetnacl": "^1.0.3",
-        "utf8": "^3.0.0"
+        "tweetnacl": "^1.0.3"
     },
     "devDependencies": {
         "@babel/cli": "^7.14.5",

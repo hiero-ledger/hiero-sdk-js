@@ -83,9 +83,7 @@
         "@hashgraph/proto": "2.0.1-beta.2",
         "bignumber.js": "^9.0.1",
         "create-hash": "^1.2.0",
-        "js-base64": "^3.6.1",
-        "long": "^4.0.0",
-        "utf8": "^3.0.0"
+        "long": "^4.0.0"
     },
     "devDependencies": {
         "@babel/cli": "^7.15.7",

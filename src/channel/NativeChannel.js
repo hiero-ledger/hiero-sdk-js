@@ -1,5 +1,5 @@
 import Channel, { encodeRequest, decodeUnaryResponse } from "./Channel.js";
-import * as base64 from "../encoding/base64.native.js";
+import * as base64 from "../encoding/base64.js";
 
 export default class NativeChannel extends Channel {
     /**

@@ -1,11 +1,9 @@
-import { atob, btoa } from "js-base64";
-
 /**
  * @param {string} text
  * @returns {Uint8Array}
  */
 export function decode(text) {
-    return Uint8Array.from(atob(text), (c) => c.charCodeAt(0));
+    return Buffer.from(text, "base64");
 }
 
 /**
@@ -13,5 +11,5 @@ export function decode(text) {
  * @returns {string};
  */
 export function encode(data) {
-    return btoa(String.fromCharCode.apply(null, Array.from(data)));
+    return Buffer.from(data).toString("base64");
 }
