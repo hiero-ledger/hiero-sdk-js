@@ -85,7 +85,6 @@
         "create-hash": "^1.2.0",
         "js-base64": "^3.6.1",
         "long": "^4.0.0",
-        "protobufjs": "^6.11.2",
         "utf8": "^3.0.0"
     },
     "devDependencies": {
