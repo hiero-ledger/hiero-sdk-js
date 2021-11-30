@@ -38,9 +38,8 @@
         "cp:ts": "copyfiles -u 1 src/index.d.ts src/proto.d.ts lib/",
         "compile": "run-s compile:proto compile:proto_ts compile:js",
         "compile:js": "babel src -d lib",
-        "compile:proto": "pbjs -t static-module -w es6 --force-long --no-beautify --no-convert --no-delimited --no-verify -o src/proto.js src/proto/*.proto",
-        "test-compile:proto": "pbjs -t static-module -w es6 --force-long --no-beautify --no-convert --no-delimited --no-verify -o src/proto.js src/proto/*.proto",
-        "compile:proto_ts": "pbts -o src/proto.d.ts src/proto.js",
+        "compile:proto": "pbjs -t static-module -w es6 --force-long --no-beautify --no-convert --no-delimited --no-verify -o src/proto.js src/proto/*.proto && sed -i 's/ from \"protobufjs\\/minimal\"/ from \"@exodus\\/protobufjs\\/minimal.js\"/' src/proto.js",
+        "compile:proto_ts": "pbts -o src/proto.d.ts src/proto.js && sed -i 's/ from \"protobufjs\"/ from \"@exodus\\/protobufjs\\/minimal.js\"/' src/proto.d.ts",
         "lint": "run-s lint:*",
         "lint:types": "tsc",
         "lint:format": "prettier src '*.json' 'src/*.js' --check",
@@ -50,7 +49,7 @@
         "prepare": "run-s compile cp:ts"
     },
     "dependencies": {
-        "protobufjs": "^6.11.2"
+        "@exodus/protobufjs": "^6.11.1-minimal-exodus.1"
     },
     "devDependencies": {
         "@babel/cli": "^7.13.16",
@@ -66,6 +65,7 @@
         "jsdoc": "^3.6.7",
         "npm-run-all": "^4.1.5",
         "prettier": "^2.3.0",
+        "protobufjs": "^6.11.2",
         "replace-in-file": "^6.2.0",
         "semver": "^7.3.5",
         "tmp": "^0.2.1",

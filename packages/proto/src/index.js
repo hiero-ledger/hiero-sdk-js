@@ -1,4 +1,4 @@
-import * as $protobuf from "protobufjs/minimal.js";
+import * as $protobuf from "@exodus/protobufjs/minimal.js";
 import { proto } from "./proto.js";
 
 // re-export protobuf reader for usage by @hashgraph/sdk

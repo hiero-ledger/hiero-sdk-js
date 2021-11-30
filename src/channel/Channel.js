@@ -198,7 +198,7 @@ export default class Channel {
      * @abstract
      * @protected
      * @param {string} serviceName
-     * @returns {import("protobufjs").RPCImpl}
+     * @returns {import("@exodus/protobufjs/minimal").RPCImpl}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _createUnaryClient(serviceName) {
