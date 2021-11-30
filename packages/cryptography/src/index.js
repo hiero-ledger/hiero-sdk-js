@@ -6,3 +6,6 @@ export { default as Mnemonic } from "./Mnemonic.js";
 export { default as BadKeyError } from "./BadKeyError.js";
 export { default as BadMnemonicError } from "./BadMnemonicError.js";
 export { default as BadMnemonicReason } from "./BadMnemonicReason.js";
+
+import * as encoding from "./encoding.js";
+export { encoding };
