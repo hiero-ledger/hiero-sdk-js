@@ -1,6 +1,6 @@
 {
     "name": "@exodus/hashgraph-proto",
-    "version": "2.0.1-beta.2.exodus.7",
+    "version": "2.0.1-beta.2.exodus.11",
     "description": "Protobufs for the Hedera™ Hashgraph SDK",
     "main": "lib/index.js",
     "types": "lib/index.d.ts",

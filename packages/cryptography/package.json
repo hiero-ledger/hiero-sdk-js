@@ -1,6 +1,6 @@
 {
     "name": "@exodus/hashgraph-cryptography",
-    "version": "1.0.21-exodus.6",
+    "version": "1.0.21-exodus.11",
     "description": "Cryptographic utilities and primitives for the Hedera™ Hashgraph SDK",
     "main": "./lib/index.cjs",
     "types": "./lib/index.d.ts",
