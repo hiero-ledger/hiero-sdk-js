@@ -39,7 +39,7 @@ import { PublicKey } from "@exodus/hashgraph-cryptography";
  */
 
 /**
- * @typedef {import("../schedule/ScheduleCreateTransaction.js").default} ScheduleCreateTransaction
+ * @typedef {any} ScheduleCreateTransaction
  * @typedef {import("@exodus/hashgraph-cryptography").PrivateKey} PrivateKey
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../client/Client.js").default<*, *>} Client
