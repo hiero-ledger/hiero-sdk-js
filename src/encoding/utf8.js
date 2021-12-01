@@ -1,15 +1,6 @@
-/**
- * @param {Uint8Array} data
- * @returns {string}
- */
-export function decode(data) {
-    return Buffer.from(data).toString("utf8");
-}
+import { encoding } from '@exodus/hashgraph-cryptography'
 
-/**
- * @param {string} text
- * @returns {Uint8Array}
- */
-export function encode(text) {
-    return Buffer.from(text, "utf8");
-}
+const lib = encoding.utf8
+
+export const decode = lib.decode
+export const encode = lib.encode
