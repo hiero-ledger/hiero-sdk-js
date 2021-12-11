@@ -5,7 +5,7 @@
  * @typedef {import("./address_book/NodeAddress.js").default} NodeAddress
  */
 
-const HOST_AND_PORT = /^(?<address>.*)(:(?<port>\d+))?/;
+const HOST_AND_PORT = /^(.*)(:(\d+))?/;
 
 export default class ManagedNodeAddress {
     /**
@@ -16,25 +16,22 @@ export default class ManagedNodeAddress {
      */
     constructor(props = {}) {
         if (props.address != null) {
-            const hostAndPortResult = HOST_AND_PORT.exec(props.address);
+            const hostAndPortResultRaw = HOST_AND_PORT.exec(props.address);
+            const hostAndPortResult =
+                hostAndPortResultRaw &&
+                hostAndPortResultRaw.slice(1).filter(val => val);
 
-            if (hostAndPortResult == null || hostAndPortResult.groups == null) {
+            if (hostAndPortResult == null || !hostAndPortResult.length) {
                 throw new Error(`failed to parse address: ${props.address}`);
             }
 
             /** @type {string} */
-            this._address = /** @type {string} */ (
-                hostAndPortResult.groups["address"]
-            );
+            this._address = /** @type {string} */ (hostAndPortResult[0]);
 
             /** @type {number | null} */
             this._port =
-                hostAndPortResult.groups["port"] != null
-                    ? parseInt(
-                          /** @type {string }*/ (
-                              hostAndPortResult.groups["port"]
-                          )
-                      )
+                hostAndPortResult[2] != null
+                    ? parseInt(/** @type {string }*/ (hostAndPortResult[2]))
                     : null;
         } else if (props.host != null && props.port != null) {
             /** @type {string} */
