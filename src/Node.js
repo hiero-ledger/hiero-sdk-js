@@ -4,7 +4,6 @@ import { PREVIEWNET_CERTS, TESTNET_CERTS, MAINNET_CERTS } from "./NodeCerts.js";
 
 /**
  * @typedef {import("./account/AccountId.js").default} AccountId
- * @typedef {import("./address_book/NodeAddress.js").default} NodeAddress
  * @typedef {import("./channel/Channel.js").default} Channel
  * @typedef {import("./ManagedNodeAddress.js").default} ManagedNodeAddress
  */
@@ -37,15 +36,9 @@ export default class Node extends ManagedNode {
         if (props.newNode != null) {
             /** @type {AccountId} */
             this._accountId = props.newNode.accountId;
-
-            /** @type {NodeAddress | null} */
-            this._nodeAddress = null;
         } else if (props.cloneNode != null) {
             /** @type {AccountId} */
             this._accountId = props.cloneNode.node._accountId;
-
-            /** @type {NodeAddress | null} */
-            this._nodeAddress = props.cloneNode.node._nodeAddress;
         } else {
             throw new Error(`failed to create node: ${JSON.stringify(props)}`);
         }
@@ -107,21 +100,5 @@ export default class Node extends ManagedNode {
      */
     get accountId() {
         return this._accountId;
-    }
-
-    /**
-     * @returns {NodeAddress | null}
-     */
-    get nodeAddress() {
-        return this._nodeAddress;
-    }
-
-    /**
-     * @param {NodeAddress} nodeAddress
-     * @returns {this}
-     */
-    setNodeAddress(nodeAddress) {
-        this._nodeAddress = nodeAddress;
-        return this;
     }
 }

@@ -1,14 +1,8 @@
 import { _ledgerIdToNetworkName, _ledgerIdToLedgerId } from "../NetworkName.js";
-// import {
-//     PREVIEWNET_ADDRESS_BOOK,
-//     TESTNET_ADDRESS_BOOK,
-//     MAINNET_ADDRESS_BOOK,
-// } from "../address_book/AddressBooks.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../Node.js").default} Node
- * @typedef {import("../address_book/NodeAddressBook.js").default} NodeAddressBook
  */
 
 /**

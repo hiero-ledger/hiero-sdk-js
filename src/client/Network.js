@@ -1,16 +1,10 @@
 import AccountId from "../account/AccountId.js";
 import Node from "../Node.js";
 import { _ledgerIdToNetworkName } from "../NetworkName.js";
-import {
-    PREVIEWNET_ADDRESS_BOOK,
-    TESTNET_ADDRESS_BOOK,
-    MAINNET_ADDRESS_BOOK,
-} from "../address_book/AddressBooks.js";
 import ManagedNetwork from "./ManagedNetwork.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
- * @typedef {import("../address_book/NodeAddressBook.js").default} NodeAddressBook
  */
 
 /**
@@ -28,9 +22,6 @@ export default class Network extends ManagedNetwork {
         super(createNetworkChannel);
 
         this._maxNodesPerTransaction = -1;
-
-        /** @type {NodeAddressBook | null} */
-        this._addressBook = null;
     }
 
     /**
@@ -77,33 +68,6 @@ export default class Network extends ManagedNetwork {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setNetworkName(networkName) {
         super.setNetworkName(networkName);
-
-        switch (networkName) {
-            case "mainnet":
-                this._addressBook = MAINNET_ADDRESS_BOOK;
-                break;
-            case "testnet":
-                this._addressBook = TESTNET_ADDRESS_BOOK;
-                break;
-            case "previewnet":
-                this._addressBook = PREVIEWNET_ADDRESS_BOOK;
-                break;
-        }
-
-        if (this._addressBook != null) {
-            for (const node of this._nodes) {
-                for (const address of this._addressBook.nodeAddresses) {
-                    if (
-                        address.accountId != null &&
-                        address.accountId.toString() ===
-                            node.accountId.toString()
-                    ) {
-                        node.setNodeAddress(address);
-                    }
-                }
-            }
-        }
-
         return this;
     }
 
