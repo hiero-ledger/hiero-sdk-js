@@ -165,28 +165,10 @@ export default class NativeClient extends Client {
     }
 
     /**
-     * @param {string[] | string | NetworkName} mirrorNetwork
-     * @returns {void}
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    setMirrorNetwork(mirrorNetwork) {
-        // Do nothing as this is not currently supported
-    }
-
-    /**
      * @override
      * @returns {(address: string) => NativeChannel}
      */
     _createNetworkChannel() {
         return (address) => new NativeChannel(address);
-    }
-
-    /**
-     * @abstract
-     * @returns {(address: string) => *}
-     */
-    _createMirrorNetworkChannel() {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        return (address) => null;
     }
 }

@@ -3,19 +3,18 @@ import ManagedNodeAddress from "./ManagedNodeAddress.js";
 /**
  * @typedef {import("./account/AccountId.js").default} AccountId
  * @typedef {import("./channel/Channel.js").default} Channel
- * @typedef {import("./channel/MirrorChannel.js").default} MirrorChannel
  * @typedef {import("./address_book/NodeAddress.js").default} NodeAddress
  */
 
 /**
- * @template {Channel | MirrorChannel} ChannelT
+ * @template {Channel} ChannelT
  * @typedef {object} NewNode
  * @property {string | ManagedNodeAddress} address
  * @property {(address: string, cert?: string) => ChannelT} channelInitFunction
  */
 
 /**
- * @template {Channel | MirrorChannel} ChannelT
+ * @template {Channel} ChannelT
  * @typedef {object} CloneNode
  * @property {ManagedNode<ChannelT>} node
  * @property {ManagedNodeAddress} address
@@ -23,7 +22,7 @@ import ManagedNodeAddress from "./ManagedNodeAddress.js";
 
 /**
  * @abstract
- * @template {Channel | MirrorChannel} ChannelT
+ * @template {Channel} ChannelT
  */
 export default class ManagedNode {
     /**

@@ -1,7 +1,6 @@
 /**
  * @typedef {import("./account/AccountId.js").default} AccountId
  * @typedef {import("./channel/Channel.js").default} Channel
- * @typedef {import("./channel/MirrorChannel.js").default} MirrorChannel
  * @typedef {import("./address_book/NodeAddress.js").default} NodeAddress
  */
 

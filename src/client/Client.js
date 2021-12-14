@@ -3,11 +3,9 @@ import AccountBalanceQuery from "../account/AccountBalanceQuery.js";
 import { PrivateKey, PublicKey } from "@exodus/hashgraph-cryptography";
 import Hbar from "../Hbar.js";
 import Network from "./Network.js";
-import MirrorNetwork from "./MirrorNetwork.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
- * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
  */
 
 /**
@@ -30,14 +28,13 @@ import MirrorNetwork from "./MirrorNetwork.js";
 /**
  * @typedef {object} ClientConfiguration
  * @property {{[key: string]: (string | AccountId)} | NetworkName} network
- * @property {string[] | NetworkName | string} [mirrorNetwork]
  * @property {Operator} [operator]
  */
 
 /**
  * @abstract
  * @template {Channel} ChannelT
- * @template {MirrorChannel} MirrorChannelT
+ * @template {null} MirrorChannelT
  */
 export default class Client {
     /**
@@ -46,16 +43,6 @@ export default class Client {
      * @param {ClientConfiguration} [props]
      */
     constructor(props) {
-        /**
-         * List of mirror network URLs.
-         *
-         * @internal
-         * @type {MirrorNetwork}
-         */
-        this._mirrorNetwork = new MirrorNetwork(
-            this._createMirrorNetworkChannel()
-        );
-
         /**
          * Map of node account ID (as a string)
          * to the node URL.
@@ -137,22 +124,6 @@ export default class Client {
      */
     get network() {
         return this._network.network;
-    }
-
-    /**
-     * @param {string[] | string | NetworkName} mirrorNetwork
-     * @returns {void}
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    setMirrorNetwork(mirrorNetwork) {
-        throw new Error("not implemented");
-    }
-
-    /**
-     * @returns {string[]}
-     */
-    get mirrorNetwork() {
-        return this._mirrorNetwork.network;
     }
 
     /**
@@ -461,7 +432,6 @@ export default class Client {
      */
     close() {
         this._network.close();
-        this._mirrorNetwork.close();
     }
 
     /**
@@ -469,14 +439,6 @@ export default class Client {
      * @returns {(address: string) => ChannelT}
      */
     _createNetworkChannel() {
-        throw new Error("not implemented");
-    }
-
-    /**
-     * @abstract
-     * @returns {(address: string) => MirrorChannelT}
-     */
-    _createMirrorNetworkChannel() {
         throw new Error("not implemented");
     }
 }

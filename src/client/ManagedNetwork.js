@@ -7,9 +7,7 @@ import { _ledgerIdToNetworkName, _ledgerIdToLedgerId } from "../NetworkName.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
- * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
  * @typedef {import("../Node.js").default} Node
- * @typedef {import("../MirrorNode.js").default} MirrorNode
  * @typedef {import("../address_book/NodeAddressBook.js").default} NodeAddressBook
  */
 
@@ -18,12 +16,12 @@ import { _ledgerIdToNetworkName, _ledgerIdToLedgerId } from "../NetworkName.js";
  */
 
 /**
- * @template {Channel | MirrorChannel} ChannelT
+ * @template {Channel} ChannelT
  * @typedef {import("../ManagedNode.js").default<ChannelT>} ManagedNode
  */
 
 /**
- * @template {Channel | MirrorChannel} ChannelT
+ * @template {Channel} ChannelT
  * @template {ManagedNode<ChannelT>} NetworkNodeT
  * @template {{ toString: () => string }} KeyT
  */

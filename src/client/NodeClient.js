@@ -2,7 +2,6 @@ import fs from "fs";
 import util from "util";
 import Client from "./Client.js";
 import NodeChannel from "../channel/NodeChannel.js";
-import NodeMirrorChannel from "../channel/NodeMirrorChannel.js";
 import AccountId from "../account/AccountId.js";
 import NetworkName from "../NetworkName.js";
 
@@ -72,34 +71,8 @@ export const Network = {
     },
 };
 
-export const MirrorNetwork = {
-    /**
-     * @param {string} name
-     * @returns {string[]}
-     */
-    fromName(name) {
-        switch (name) {
-            case "mainnet":
-                return MirrorNetwork.MAINNET;
-
-            case "testnet":
-                return MirrorNetwork.TESTNET;
-
-            case "previewnet":
-                return MirrorNetwork.PREVIEWNET;
-
-            default:
-                throw new Error(`unknown network name: ${name}`);
-        }
-    },
-
-    MAINNET: ["hcs.mainnet.mirrornode.hedera.com:5600"],
-    TESTNET: ["hcs.testnet.mirrornode.hedera.com:5600"],
-    PREVIEWNET: ["hcs.previewnet.mirrornode.hedera.com:5600"],
-};
-
 /**
- * @augments {Client<NodeChannel, NodeMirrorChannel>}
+ * @augments {Client<NodeChannel, null>}
  */
 export default class NodeClient extends Client {
     /**
@@ -113,19 +86,16 @@ export default class NodeClient extends Client {
                 switch (props.network) {
                     case "mainnet":
                         this.setNetwork(Network.MAINNET);
-                        this.setMirrorNetwork(MirrorNetwork.MAINNET);
                         this.setNetworkName(NetworkName.Mainnet);
                         break;
 
                     case "testnet":
                         this.setNetwork(Network.TESTNET);
-                        this.setMirrorNetwork(MirrorNetwork.TESTNET);
                         this.setNetworkName(NetworkName.Testnet);
                         break;
 
                     case "previewnet":
                         this.setNetwork(Network.PREVIEWNET);
-                        this.setMirrorNetwork(MirrorNetwork.PREVIEWNET);
                         this.setNetworkName(NetworkName.Previewnet);
                         break;
 
@@ -137,28 +107,6 @@ export default class NodeClient extends Client {
                 }
             } else if (props.network != null) {
                 this.setNetwork(props.network);
-            }
-
-            if (typeof props.mirrorNetwork === "string") {
-                switch (props.mirrorNetwork) {
-                    case "mainnet":
-                        this.setMirrorNetwork(MirrorNetwork.MAINNET);
-                        break;
-
-                    case "testnet":
-                        this.setMirrorNetwork(MirrorNetwork.TESTNET);
-                        break;
-
-                    case "previewnet":
-                        this.setMirrorNetwork(MirrorNetwork.PREVIEWNET);
-                        break;
-
-                    default:
-                        this.setMirrorNetwork([props.mirrorNetwork]);
-                        break;
-                }
-            } else if (props.mirrorNetwork != null) {
-                this.setMirrorNetwork(props.mirrorNetwork);
             }
         }
     }
@@ -258,44 +206,10 @@ export default class NodeClient extends Client {
     }
 
     /**
-     * @param {string[] | string | NetworkName} mirrorNetwork
-     * @returns {this}
-     */
-    setMirrorNetwork(mirrorNetwork) {
-        if (typeof mirrorNetwork === "string") {
-            switch (mirrorNetwork) {
-                case "previewnet":
-                    this._mirrorNetwork.setNetwork(MirrorNetwork.PREVIEWNET);
-                    break;
-                case "testnet":
-                    this._mirrorNetwork.setNetwork(MirrorNetwork.TESTNET);
-                    break;
-                case "mainnet":
-                    this._mirrorNetwork.setNetwork(MirrorNetwork.MAINNET);
-                    break;
-                default:
-                    this._mirrorNetwork.setNetwork([mirrorNetwork]);
-            }
-        } else {
-            this._mirrorNetwork.setNetwork(mirrorNetwork);
-        }
-
-        return this;
-    }
-
-    /**
      * @override
      * @returns {(address: string, cert?: string) => NodeChannel}
      */
     _createNetworkChannel() {
         return (address, cert) => new NodeChannel(address, cert);
-    }
-
-    /**
-     * @override
-     * @returns {(address: string) => NodeMirrorChannel}
-     */
-    _createMirrorNetworkChannel() {
-        return (address) => new NodeMirrorChannel(address);
     }
 }
