@@ -286,12 +286,20 @@ export default class Executable {
      * @returns {boolean}
      */
     _shouldRetryExceptionally(error) {
-        return (
-            error.status._code === GrpcStatus.Unavailable._code ||
-            error.status._code === GrpcStatus.ResourceExhausted._code ||
-            (error.status._code === GrpcStatus.Internal._code &&
-                RST_STREAM.test(error.message))
-        );
+        if (error instanceof GrpcServiceError) {
+            return (
+                error.status._code === GrpcStatus.Timeout._code ||
+                error.status._code === GrpcStatus.Unavailable._code ||
+                error.status._code === GrpcStatus.ResourceExhausted._code ||
+                error.status._code === GrpcStatus.GrpcWeb._code ||
+                (error.status._code === GrpcStatus.Internal._code &&
+                    RST_STREAM.test(error.message))
+            );
+        } else {
+            // if we get to the 'else' statement, the 'error' is instanceof 'HttpError'
+            // and in this case, we have to retry always
+            return true;
+        }
     }
 
     /**

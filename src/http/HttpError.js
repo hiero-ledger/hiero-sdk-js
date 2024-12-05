@@ -1,0 +1,24 @@
+import HttpStatus from "./HttpStatus";
+
+/**
+ * Describes how the http request failed.
+ */
+export default class HttpError extends Error {
+    /**
+     * @param {HttpStatus} status
+     */
+    constructor(status) {
+        super(`failed with error code: ${status.toString()}`);
+
+        /**
+         * @readonly
+         */
+        this.status = status;
+
+        this.name = "HttpError";
+
+        if (typeof Error.captureStackTrace !== "undefined") {
+            Error.captureStackTrace(this, HttpError);
+        }
+    }
+}

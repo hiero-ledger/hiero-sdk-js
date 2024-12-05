@@ -315,6 +315,10 @@ export function validateChecksum(shard, realm, num, checksum, client) {
  * @returns {string}
  */
 export function toStringWithChecksum(string, client) {
+    if (client == null) {
+        throw new Error("client cannot be null");
+    }
+    
     if (client._network._ledgerId == null) {
         throw new Error(
             "cannot calculate checksum with a client that does not contain a recognzied ledger ID"
