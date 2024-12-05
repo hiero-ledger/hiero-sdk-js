@@ -1,4 +1,4 @@
-import HttpStatus from "./HttpStatus";
+import HttpStatus from "./HttpStatus.js";
 
 /**
  * Describes how the http request failed.
