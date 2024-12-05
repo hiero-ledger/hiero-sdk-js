@@ -2,10 +2,8 @@ import nacl from "tweetnacl";
 import PublicKey from "./PublicKey.js";
 import Mnemonic from "./Mnemonic.js";
 import { arrayStartsWith } from "./util/array.js";
-import { createKeystore, loadKeystore } from "./primitive/keystore.js";
 import BadKeyError from "./BadKeyError.js";
 import * as hex from "./encoding/hex.js";
-import { read as readPem } from "./encoding/pem.js";
 import * as slip10 from "./primitive/slip10.js";
 import Key from "./Key.js";
 import * as random from "./primitive/random.js";
@@ -164,37 +162,6 @@ export default class PrivateKey extends Key {
     }
 
     /**
-     * Recover a private key from a keystore, previously created by `.toKeystore()`.
-     *
-     * This key will _not_ support child key derivation.
-     *
-     * @param {Uint8Array} data
-     * @param {string} [passphrase]
-     * @returns {Promise<PrivateKey>}
-     * @throws {BadKeyError} If the passphrase is incorrect or the hash fails to validate.
-     */
-    static async fromKeystore(data, passphrase = "") {
-        return PrivateKey.fromBytes(await loadKeystore(data, passphrase));
-    }
-
-    /**
-     * Recover a private key from a pem string; the private key may be encrypted.
-     *
-     * This method assumes the .pem file has been converted to a string already.
-     *
-     * If `passphrase` is not null or empty, this looks for the first `ENCRYPTED PRIVATE KEY`
-     * section and uses `passphrase` to decrypt it; otherwise, it looks for the first `PRIVATE KEY`
-     * section and decodes that as a DER-encoded  private key.
-     *
-     * @param {string} data
-     * @param {string} [passphrase]
-     * @returns {Promise<PrivateKey>}
-     */
-    static async fromPem(data, passphrase = "") {
-        return new PrivateKey(await readPem(data, passphrase), null);
-    }
-
-    /**
      * Derive a new private key at the given wallet index.
      *
      * Only currently supported for keys created with `fromMnemonic()`; other keys will throw
@@ -336,21 +303,5 @@ export default class PrivateKey extends Key {
      */
     toString() {
         return derPrefix + hex.encode(this.toBytes());
-    }
-
-    /**
-     * Create a keystore with a given passphrase.
-     *
-     * The key can be recovered later with `fromKeystore()`.
-     *
-     * Note that this will not retain the ancillary data used for
-     * deriving child keys, thus `.derive()` on the restored key will
-     * throw even if this instance supports derivation.
-     *
-     * @param {string} [passphrase]
-     * @returns {Promise<Uint8Array>}
-     */
-    toKeystore(passphrase = "") {
-        return createKeystore(this.toBytes(), passphrase);
     }
 }

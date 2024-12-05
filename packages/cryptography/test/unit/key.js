@@ -3,12 +3,6 @@ import PublicKey from "../../src/PublicKey.js";
 import * as utf8 from "../../src/encoding/utf8.js";
 import * as hex from "../../src/encoding/hex.js";
 import Mnemonic from "../../src/Mnemonic.js";
-import BadKeyError from "../../src/BadKeyError.js";
-import { keystoreV1 } from "./keystore.js";
-
-const keystorePassword = "Harriet Porber And The Bad Boy Parasaurolophus";
-const privateKeystore =
-    "302e020100300506032b6570042204204072d365d02199b5103336cf6a187578ffb6eba4ad6f8b2383c5cc54d00c4409";
 
 // key from hedera-sdk-java tests, not used anywhere
 const privKeyBytes = Uint8Array.of(
@@ -123,23 +117,6 @@ const androidWalletKeyBytes = hex.decode(androidWalletPrivKey);
 const androidWalletPrivKeyBytes = androidWalletKeyBytes.subarray(0, 32);
 const androidWalletPubKeyBytes = androidWalletKeyBytes.subarray(32);
 
-const passphrase = "asdf1234";
-
-const pemString =
-    "-----BEGIN PRIVATE KEY-----\n" +
-    "MC4CAQAwBQYDK2VwBCIEINtIS4KOZLLY8SzjwKDpOguMznrxu485yXcyOUSCU44Q\n" +
-    "-----END PRIVATE KEY-----\n";
-
-const encryptedPem =
-    "-----BEGIN ENCRYPTED PRIVATE KEY-----\n" +
-    "MIGbMFcGCSqGSIb3DQEFDTBKMCkGCSqGSIb3DQEFDDAcBAi8WY7Gy2tThQICCAAw\n" +
-    "DAYIKoZIhvcNAgkFADAdBglghkgBZQMEAQIEEOq46NPss58chbjUn20NoK0EQG1x\n" +
-    "R88hIXcWDOECttPTNlMXWJt7Wufm1YwBibrxmCq1QykIyTYhy1TZMyxyPxlYW6aV\n" +
-    "9hlo4YEh3uEaCmfJzWM=\n" +
-    "-----END ENCRYPTED PRIVATE KEY-----\n";
-
-const pemPassphrase = "this is a passphrase";
-
 describe("PrivateKey", function () {
     it("should be able to sign message", function () {
         expect(privateKey.sign(message)).to.deep.eq(signature);
@@ -180,35 +157,6 @@ describe("PrivateKey", function () {
         );
     });
 
-    it("toKeystore() creates loadable keystores", async function () {
-        const keystoreBytes = await privateKey.toKeystore(passphrase);
-        const key = await PrivateKey.fromKeystore(keystoreBytes, passphrase);
-
-        expect(privateKey.toBytes()).to.deep.equal(key.toBytes());
-
-        await PrivateKey.fromKeystore(
-            keystoreBytes,
-            "some random password"
-        ).catch((err) => {
-            expect(err).to.be.instanceOf(BadKeyError);
-            expect(err).to.have.property(
-                "message",
-                "HMAC mismatch; passphrase is incorrect"
-            );
-        });
-    });
-
-    it("keystore works correctly", async function () {
-        const keystoreBytesFromFile = utf8.encode(keystoreV1);
-
-        const key = await PrivateKey.fromKeystore(
-            keystoreBytesFromFile,
-            keystorePassword
-        );
-
-        expect(privateKeystore).to.deep.equal(key.toString());
-    });
-
     it("derive() produces correct value", async function () {
         const iosMnemonic = await Mnemonic.fromString(iosWalletMnemonic);
         const iosKey = await PrivateKey.fromMnemonic(iosMnemonic, "");
@@ -231,16 +179,6 @@ describe("PrivateKey", function () {
         expect(androidChildKey.publicKey.toBytes()).to.deep.equal(
             androidWalletPubKeyBytes
         );
-    });
-
-    it("fromPem() produces a correct value", async function () {
-        const key = await PrivateKey.fromPem(pemString);
-        expect(key.toString()).to.deep.equal(privKeyStr);
-    });
-
-    it("fromPem() with passphrase produces a correct value", async function () {
-        const key = await PrivateKey.fromPem(encryptedPem, pemPassphrase);
-        expect(key.toString()).to.deep.equal(privKeyStr);
     });
 
     it("PublicKey.fromString() should work", async function () {
