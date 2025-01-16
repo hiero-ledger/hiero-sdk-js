@@ -66,11 +66,19 @@ tasks:
             - pnpm i --no-frozen-lockfile > /dev/null
 
     build:
+        deps:
+            - "build:prep"
+            - "build:actual"
+
+    "build:prep":
         cmds:
             - task: install
             - task: update:addressbooks
             - task: format
             - task: lint
+
+    "build:actual":
+        cmds:
             - npx babel src -d lib --out-file-extension .cjs > /dev/null
             - npx yalc publish > /dev/null
 
