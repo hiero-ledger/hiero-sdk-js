@@ -23,6 +23,7 @@
         ".": {
             "types": "./lib/index.d.ts",
             "import": "./src/index.js",
+            "react-native": "./src/native.js",
             "require": "./lib/index.cjs"
         }
     },
