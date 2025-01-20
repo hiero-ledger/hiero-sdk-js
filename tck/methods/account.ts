@@ -5,6 +5,8 @@ import {
     AccountUpdateTransaction,
     AccountDeleteTransaction,
     Timestamp,
+    AccountAllowanceApproveTransaction,
+    TokenId,
 } from "@hashgraph/sdk";
 import Long from "long";
 
@@ -13,8 +15,10 @@ import { AccountResponse } from "../response/account";
 
 import { getKeyFromString } from "../utils/key";
 import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";
+import { handleNftAllowances } from "../utils/helpers/account";
 
 import {
+    AccountAllowanceApproveParams,
     CreateAccountParams,
     DeleteAccountParams,
     UpdateAccountParams,
@@ -194,6 +198,59 @@ export const deleteAccount = async ({
     }
 
     if (commonTransactionParams != null) {
+        applyCommonTransactionParams(
+            commonTransactionParams,
+            transaction,
+            sdk.getClient(),
+        );
+    }
+
+    const txResponse = await transaction.execute(sdk.getClient());
+    const receipt = await txResponse.getReceipt(sdk.getClient());
+
+    return {
+        status: receipt.status.toString(),
+    };
+};
+
+export const approveAllowance = async ({
+    allowances,
+    commonTransactionParams,
+}: AccountAllowanceApproveParams): Promise<AccountResponse> => {
+    if (!allowances || allowances.length === 0) {
+        throw new Error("Allowances must be provided.");
+    }
+
+    const transaction = new AccountAllowanceApproveTransaction();
+    transaction.setGrpcDeadline(DEFAULT_GRPC_DEADLINE);
+
+    const { ownerAccountId, spenderAccountId, hbar, token, nft } =
+        allowances[0];
+    const owner = AccountId.fromString(ownerAccountId);
+    const spender = AccountId.fromString(spenderAccountId);
+
+    if (hbar) {
+        transaction.approveHbarAllowance(
+            owner,
+            spender,
+            Hbar.fromTinybars(hbar.amount),
+        );
+    } else if (token) {
+        transaction.approveTokenAllowance(
+            TokenId.fromString(token.tokenId),
+            owner,
+            spender,
+            Long.fromString(token.amount),
+        );
+    } else if (nft) {
+        handleNftAllowances(transaction, nft, owner, spender);
+    } else {
+        throw new Error("No valid allowance type provided.");
+    }
+
+    transaction.freezeWith(sdk.getClient());
+
+    if (commonTransactionParams) {
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
