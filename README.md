@@ -4,10 +4,11 @@
 [![Docs](https://img.shields.io/badge/docs-%F0%9F%93%84-blue)](https://docs.hedera.com/guides/getting-started/javascript/environment-set-up)
 [![NPM Package](https://img.shields.io/npm/v/@hashgraph/sdk.svg)](https://www.npmjs.org/package/@hashgraph/sdk)
 
-> The JavaScript SDK for interacting with Hedera Hashgraph: the official distributed
-> consensus platform built using the hashgraph consensus algorithm for fast,
-> fair and secure transactions. Hedera enables and empowers developers to
-> build an entirely new class of decentralized applications.
+> The JavaScript SDK for interacting with a Hiero based network
+
+> [!NOTE]  
+> The project has been transfered from the https://github.com/hashgraph org and therefore the namespace is at several locations still based on `hashgraph` and `hedera`.
+> We are working activly on migration the namespace fully to hiero.
 
 ## Install
 
@@ -56,12 +57,12 @@ After downloading the repo run:
 
 ## React Native Support
 
-The Hedera JavaScript SDK supports the following:
+The Hiero JavaScript SDK supports the following:
 
 * React Native with Expo - keep in mind that the SDK uses some functionalities provided from ethers/ethersproject and there is an issue using parts of ethers.js in this environment. A [shims](https://www.npmjs.com/package/@ethersproject/shims) package has to be installed and imported before importing the SDK in your project as it is showed [here](./examples/react-native-example/App.tsx)
 * Useful information: [here](https://github.com/ethers-io/ethers.js/discussions/3652) and [here](https://docs.ethers.org/v5/cookbook/react-native/)
 
-The Hedera JavaScript SDK does not currently support the following:
+The Hiero JavaScript SDK does not currently support the following:
 
 * React Native Bare
 
@@ -84,14 +85,12 @@ For detailed information on configuring the SDK, including environment variables
 * To start unit tests follow the next steps:
     - Run `task test:unit` (Note: the local node should not be running)
 
-## Contributing to this Project
+## Contributing
+Whether you’re fixing bugs, enhancing features, or improving documentation, your contributions are important — let’s build something great together!
+Please read our [contributing guide](https://github.com/hiero-ledger/.github/blob/main/CONTRIBUTING.md) to see how you can get involved.
 
-We welcome participation from all developers!
-For instructions on how to contribute to this repo, please
-review the [Contributing Guide](CONTRIBUTING.md).
+## Code of Conduct
+Hiero uses the Linux Foundation Decentralised Trust [Code of Conduct](https://www.lfdecentralizedtrust.org/code-of-conduct).
 
-## License Information
-
-Licensed under Apache License,
-Version 2.0 – see [LICENSE](LICENSE) in this repo
-or [apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0).
+## License
+[Apache License 2.0](LICENSE)
