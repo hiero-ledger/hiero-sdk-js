@@ -204,18 +204,18 @@ export default class TopicInfo {
      * @returns {TopicInfo}
      */
     static fromBytes(bytes) {
-        return TopicInfo._fromProtobuf({
-            topicInfo: HashgraphProto.proto.ConsensusTopicInfo.decode(bytes),
-        });
+        return TopicInfo._fromProtobuf(
+            HashgraphProto.proto.ConsensusGetTopicInfoResponse.decode(bytes),
+        );
     }
 
     /**
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.ConsensusTopicInfo.encode(
-            /** @type {HashgraphProto.proto.IConsensusTopicInfo} */ (
-                this._toProtobuf().topicInfo
+        return HashgraphProto.proto.ConsensusGetTopicInfoResponse.encode(
+            /** @type {HashgraphProto.proto.ConsensusGetTopicInfoResponse} */ (
+                this._toProtobuf()
             ),
         ).finish();
     }
