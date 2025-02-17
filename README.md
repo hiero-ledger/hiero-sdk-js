@@ -1,7 +1,7 @@
 # Hiero JavaScript SDK
 
 [![](https://img.shields.io/discord/373889138199494658)](https://discord.com/channels/373889138199494658/616725732650909710)
-[![Docs](https://img.shields.io/badge/docs-%F0%9F%93%84-blue)](https://docs.hedera.com/guides/getting-started/javascript/environment-set-up)
+[![Docs](https://img.shields.io/badge/docs-%F0%9F%93%84-blue)](https://docs.hedera.com/hedera/getting-started/environment-set-up)
 [![NPM Package](https://img.shields.io/npm/v/@hashgraph/sdk.svg)](https://www.npmjs.org/package/@hashgraph/sdk)
 
 > The JavaScript SDK for interacting with a Hiero based network
