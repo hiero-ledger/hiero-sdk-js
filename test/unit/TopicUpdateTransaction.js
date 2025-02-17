@@ -19,9 +19,8 @@ describe("TopicUpdateTransaction", function () {
     describe("HIP-991: Permissionless revenue generating topics", function () {
         it("should set correct the fee schedule key", function () {
             const feeScheduleKey = PrivateKey.generateECDSA();
-            const topicUpdateTransaction = new TopicUpdateTransaction();
-
-            topicUpdateTransaction.setFeeScheduleKey(feeScheduleKey);
+            const topicUpdateTransaction =
+                new TopicUpdateTransaction().setFeeScheduleKey(feeScheduleKey);
 
             expect(
                 topicUpdateTransaction.getFeeScheduleKey().toString(),
@@ -30,9 +29,8 @@ describe("TopicUpdateTransaction", function () {
 
         it("should clear fee schedule key", function () {
             const feeScheduleKey = PrivateKey.generateECDSA();
-            const topicUpdateTransaction = new TopicUpdateTransaction();
-
-            topicUpdateTransaction.setFeeScheduleKey(feeScheduleKey);
+            const topicUpdateTransaction =
+                new TopicUpdateTransaction().setFeeScheduleKey(feeScheduleKey);
 
             topicUpdateTransaction.clearFeeScheduleKey();
 
@@ -45,9 +43,8 @@ describe("TopicUpdateTransaction", function () {
                 PrivateKey.generateECDSA(),
             ];
 
-            const topicUpdateTransaction = new TopicUpdateTransaction();
-
-            topicUpdateTransaction.setFeeExemptKeys(feeExemptKeys);
+            const topicUpdateTransaction =
+                new TopicUpdateTransaction().setFeeExemptKeys(feeExemptKeys);
 
             feeExemptKeys.forEach((feeExemptKey, index) => {
                 expect(
@@ -57,11 +54,11 @@ describe("TopicUpdateTransaction", function () {
         });
 
         it("should add fee exempt key to empty list", function () {
-            const topicUpdateTransaction = new TopicUpdateTransaction();
-
             const feeExemptKeyToBeAdded = PrivateKey.generateECDSA();
-
-            topicUpdateTransaction.addFeeExemptKey(feeExemptKeyToBeAdded);
+            const topicUpdateTransaction =
+                new TopicUpdateTransaction().addFeeExemptKey(
+                    feeExemptKeyToBeAdded,
+                );
 
             expect(feeExemptKeyToBeAdded.toString()).to.eql(
                 topicUpdateTransaction.getFeeExemptKeys()[0].toString(),
@@ -70,12 +67,11 @@ describe("TopicUpdateTransaction", function () {
 
         it("should add fee exempt key to list", function () {
             const feeExemptKey = PrivateKey.generateECDSA();
-
-            const topicUpdateTransaction = new TopicUpdateTransaction();
-
-            topicUpdateTransaction.setFeeExemptKeys([feeExemptKey]);
+            const topicUpdateTransaction =
+                new TopicUpdateTransaction().setFeeExemptKeys([feeExemptKey]);
 
             const feeExemptKeyToBeAdded = PrivateKey.generateECDSA();
+
             topicUpdateTransaction.addFeeExemptKey(feeExemptKeyToBeAdded);
 
             [feeExemptKey, feeExemptKeyToBeAdded].forEach(
@@ -93,9 +89,8 @@ describe("TopicUpdateTransaction", function () {
         it("should clear exempt key list", function () {
             const feeExemptKey = PrivateKey.generateECDSA();
 
-            const topicUpdateTransaction = new TopicUpdateTransaction();
-
-            topicUpdateTransaction.setFeeExemptKeys([feeExemptKey]);
+            const topicUpdateTransaction =
+                new TopicUpdateTransaction().setFeeExemptKeys([feeExemptKey]);
 
             topicUpdateTransaction.clearFeeExemptKeys();
 
@@ -115,9 +110,8 @@ describe("TopicUpdateTransaction", function () {
                     .setDenominatingTokenId(new TokenId(2)),
             ];
 
-            const topicUpdateTransaction = new TopicUpdateTransaction();
-
-            topicUpdateTransaction.setCustomFees(customFixedFees);
+            const topicUpdateTransaction =
+                new TopicUpdateTransaction().setCustomFees(customFixedFees);
 
             customFixedFees.forEach((customFixedFee, index) => {
                 expect(
@@ -154,9 +148,8 @@ describe("TopicUpdateTransaction", function () {
                 customFixedFeeToBeAdded,
             ];
 
-            const topicUpdateTransaction = new TopicUpdateTransaction();
-
-            topicUpdateTransaction.setCustomFees(customFixedFees);
+            const topicUpdateTransaction =
+                new TopicUpdateTransaction().setCustomFees(customFixedFees);
 
             topicUpdateTransaction.addCustomFee(customFixedFeeToBeAdded);
 
@@ -181,9 +174,10 @@ describe("TopicUpdateTransaction", function () {
                 .setAmount(4)
                 .setDenominatingTokenId(new TokenId(3));
 
-            const topicUpdateTransaction = new TopicUpdateTransaction();
-
-            topicUpdateTransaction.addCustomFee(customFixedFeeToBeAdded);
+            const topicUpdateTransaction =
+                new TopicUpdateTransaction().addCustomFee(
+                    customFixedFeeToBeAdded,
+                );
 
             expect(topicUpdateTransaction.getCustomFees().length).to.eql(1);
             expect(
@@ -209,9 +203,8 @@ describe("TopicUpdateTransaction", function () {
                     .setDenominatingTokenId(new TokenId(2)),
             ];
 
-            const topicUpdateTransaction = new TopicUpdateTransaction();
-
-            topicUpdateTransaction.setCustomFees(customFixedFees);
+            const topicUpdateTransaction =
+                new TopicUpdateTransaction().setCustomFees(customFixedFees);
 
             topicUpdateTransaction.clearCustomFees();
 
