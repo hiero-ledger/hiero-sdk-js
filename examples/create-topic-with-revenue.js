@@ -20,19 +20,20 @@ import dotenv from "dotenv";
 dotenv.config();
 
 async function main() {
-    if (process.env.OPERATOR_ID == null || process.env.OPERATOR_KEY == null) {
+    if (
+        process.env.OPERATOR_ID == null ||
+        process.env.OPERATOR_KEY == null ||
+        process.env.HEDERA_NETWORK == null
+    ) {
         throw new Error(
-            "Environment variables OPERATOR_ID, and OPERATOR_KEY are required.",
+            "Environment variables OPERATOR_ID, HEDERA_NETWORK, and OPERATOR_KEY are required.",
         );
     }
+
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
     const operatorKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
 
-    const nodes = {
-        "127.0.0.1:50211": new AccountId(3),
-    };
-
-    const client = Client.forNetwork(nodes).setOperator(
+    const client = Client.forName(process.env.HEDERA_NETWORK).setOperator(
         operatorId,
         operatorKey,
     );
