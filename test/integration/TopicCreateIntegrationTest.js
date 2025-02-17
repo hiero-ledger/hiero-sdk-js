@@ -28,7 +28,7 @@ describe("TopicCreate", function () {
     let env;
 
     before(async function () {
-        env = await IntegrationTestEnv.new({ balance: 100000 });
+        env = await IntegrationTestEnv.new();
     });
 
     it("should be executable", async function () {
