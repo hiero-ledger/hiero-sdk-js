@@ -66,7 +66,6 @@ export default class TopicMessageSubmitTransaction extends Transaction {
      * @param {object} props
      * @param {TopicId | string} [props.topicId]
      * @param {Uint8Array | string} [props.message]
-     * @param {CustomFixedFee[]} [props.customFees]
      * @param {number} [props.maxChunks]
      * @param {number} [props.chunkSize]
      */
