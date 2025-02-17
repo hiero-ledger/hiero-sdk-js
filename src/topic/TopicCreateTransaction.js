@@ -26,6 +26,7 @@ import Transaction, {
 } from "../transaction/Transaction.js";
 import Duration from "../Duration.js";
 import Key from "../Key.js";
+import Hbar from "../Hbar.js";
 
 /**
  * @namespace proto
@@ -60,6 +61,8 @@ export default class TopicCreateTransaction extends Transaction {
      */
     constructor(props = {}) {
         super();
+
+        this._defaultMaxTransactionFee = new Hbar(25);
 
         /**
          * @private

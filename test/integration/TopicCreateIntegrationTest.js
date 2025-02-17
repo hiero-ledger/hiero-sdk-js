@@ -27,7 +27,7 @@ describe("TopicCreate", function () {
      */
     let env;
 
-    before(async function () {
+    beforeEach(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -117,7 +117,6 @@ describe("TopicCreate", function () {
             const response = await new TopicCreateTransaction()
                 .setFeeScheduleKey(env.client.operatorPublicKey)
                 .setSubmitKey(env.client.operatorPublicKey)
-                .setMaxTransactionFee(1000)
                 .setAdminKey(env.client.operatorPublicKey)
                 .setFeeExemptKeys(feeExemptKeys)
                 .setCustomFees(customFixedFees)
@@ -356,7 +355,7 @@ describe("TopicCreate", function () {
                     .setAdminKey(env.client.operatorPublicKey)
                     .setFeeScheduleKey(env.client.operatorPublicKey)
                     .addCustomFee(customFixedFee)
-                    .setMaxTransactionFee(100)
+
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -412,7 +411,7 @@ describe("TopicCreate", function () {
                     .setAdminKey(env.client.operatorPublicKey)
                     .setFeeScheduleKey(env.client.operatorPublicKey)
                     .addCustomFee(customFixedFee)
-                    .setMaxTransactionFee(100)
+
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -478,7 +477,7 @@ describe("TopicCreate", function () {
                     .setAdminKey(env.client.operatorPublicKey)
                     .setFeeScheduleKey(env.client.operatorPublicKey)
                     .addCustomFee(customFixedFee)
-                    .setMaxTransactionFee(100)
+
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -538,7 +537,7 @@ describe("TopicCreate", function () {
                     .setFeeScheduleKey(env.client.operatorPublicKey)
                     .setFeeExemptKeys([feeExemptKey1, feeExemptKey2])
                     .addCustomFee(customFixedFee)
-                    .setMaxTransactionFee(100)
+
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -593,7 +592,7 @@ describe("TopicCreate", function () {
                     .setFeeScheduleKey(env.client.operatorPublicKey)
                     .setFeeExemptKeys([feeExemptKey1, feeExemptKey2])
                     .addCustomFee(customFixedFee)
-                    .setMaxTransactionFee(100)
+
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -649,7 +648,7 @@ describe("TopicCreate", function () {
                     .setAdminKey(env.client.operatorPublicKey)
                     .setFeeScheduleKey(env.client.operatorPublicKey)
                     .addCustomFee(customFixedFee)
-                    .setMaxTransactionFee(100)
+
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -695,7 +694,6 @@ describe("TopicCreate", function () {
                     .setAdminKey(env.client.operatorPublicKey)
                     .setFeeScheduleKey(env.client.operatorPublicKey)
                     .addCustomFee(customFixedFee)
-                    .setMaxTransactionFee(100)
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -754,7 +752,7 @@ describe("TopicCreate", function () {
                     .setAdminKey(env.client.operatorPublicKey)
                     .setFeeScheduleKey(env.client.operatorPublicKey)
                     .addCustomFee(customFixedFee)
-                    .setMaxTransactionFee(100)
+
                     .execute(env.client)
             ).getReceipt(env.client);
 
