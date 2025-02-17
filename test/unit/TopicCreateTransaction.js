@@ -44,14 +44,9 @@ describe("TopicCreateTransaction", function () {
 
             topicCreateTransaction.addFeeExemptKey(feeExemptKeyToBeAdded);
 
-            [feeExemptKeyToBeAdded].forEach((feeExemptKey, index) => {
-                expect(
-                    topicCreateTransaction
-                        .getFeeExemptKeys()
-                        // eslint-disable-next-line no-unexpected-multiline
-                        [index].toString(),
-                ).to.eql(feeExemptKey.toString());
-            });
+            expect(feeExemptKeyToBeAdded.toString()).to.eql(
+                topicCreateTransaction.getFeeExemptKeys()[0].toString(),
+            );
         });
 
         it("should add fee exempt key to list", function () {
