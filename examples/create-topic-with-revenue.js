@@ -311,6 +311,8 @@ async function main() {
         );
     } catch (error) {
         console.error(error);
+    } finally {
+        client.close();
     }
 }
 
