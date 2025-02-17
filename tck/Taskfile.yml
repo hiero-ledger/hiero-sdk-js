@@ -51,6 +51,16 @@ tasks:
             - echo "Building Docker image for tck-js-server..."
             - docker build -t tck-js-server .
 
+    run-specific-test:
+        desc: "Run all services with a specific test"
+        silent: true
+        deps: [start-local-node, build-tck-js-server]
+        vars:
+            TEST: "{{.TEST}}"
+        cmds:
+            - echo "Running all services with TEST=${TEST}..."
+            - TEST=${TEST} docker compose up
+
     start-all-tests:
         desc: "Start Docker Compose services"
         silent: true

@@ -5,14 +5,10 @@ services:
             context: .
         ports:
             - "8544:8544"
-        networks:
-            - tck-network
     tck-client:
         image: ivaylogarnev/tck-client
+        network_mode: "host"
+        environment:
+            TEST: "${TEST:-ALL}"
         depends_on:
             - tck-server
-        networks:
-            - tck-network
-networks:
-    tck-network:
-        driver: bridge

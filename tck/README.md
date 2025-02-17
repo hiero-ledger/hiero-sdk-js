@@ -71,7 +71,21 @@ Build the Docker image for the TCK JS server:
 task build-tck-js-server
 ```
 
-### 5. Start All Services
+### 5. Run a specific test
+
+```bash
+task run-specific-test -- TEST=AccountCreate
+```
+
+This will:
+
+- Spin up the TCK server
+
+- Start required containers
+
+- Run only the AccountCreate tests
+
+### 6. Start All Services
 
 Now, let’s fire up all the services using Docker Compose:
 
