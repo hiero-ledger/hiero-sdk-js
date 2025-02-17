@@ -415,7 +415,6 @@ export default class TopicUpdateTransaction extends Transaction {
      */
     clearFeeScheduleKey() {
         this._requireNotFrozen();
-
         this._feeScheduleKey = null;
 
         return this;
@@ -436,7 +435,6 @@ export default class TopicUpdateTransaction extends Transaction {
      */
     setFeeExemptKeys(feeExemptKeys) {
         this._requireNotFrozen();
-
         this._feeExemptKeys = feeExemptKeys;
 
         return this;
@@ -449,7 +447,6 @@ export default class TopicUpdateTransaction extends Transaction {
      */
     addFeeExemptKey(key) {
         this._requireNotFrozen();
-
         this._feeExemptKeys.push(key);
 
         return this;
@@ -461,7 +458,6 @@ export default class TopicUpdateTransaction extends Transaction {
      */
     clearFeeExemptKeys() {
         this._requireNotFrozen();
-
         this._feeExemptKeys = [];
 
         return this;
@@ -537,7 +533,6 @@ export default class TopicUpdateTransaction extends Transaction {
      */
     setCustomFees(customFees) {
         this._requireNotFrozen();
-
         this._customFees = customFees;
 
         return this;
@@ -551,7 +546,6 @@ export default class TopicUpdateTransaction extends Transaction {
      */
     addCustomFee(customFee) {
         this._requireNotFrozen();
-
         this._customFees.push(customFee);
 
         return this;
@@ -564,7 +558,6 @@ export default class TopicUpdateTransaction extends Transaction {
      */
     clearCustomFees() {
         this._requireNotFrozen();
-
         this._customFees = [];
 
         return this;

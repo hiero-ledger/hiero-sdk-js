@@ -338,7 +338,6 @@ export default class TopicCreateTransaction extends Transaction {
      */
     addFeeExemptKey(key) {
         this._requireNotFrozen();
-
         this._feeExemptKeys.push(key);
 
         return this;
@@ -350,7 +349,6 @@ export default class TopicCreateTransaction extends Transaction {
      */
     clearFeeExemptKeys() {
         this._requireNotFrozen();
-
         this._feeExemptKeys = [];
 
         return this;
