@@ -72,7 +72,6 @@ async function main() {
             await new TopicCreateTransaction()
                 .setAdminKey(operatorKey)
                 .setFeeScheduleKey(operatorKey)
-                .setMaxTransactionFee(100)
                 .setCustomFees([customFee])
                 .execute(client)
         ).getReceipt(client);
@@ -150,7 +149,6 @@ async function main() {
                 .setTokenSymbol("RGT")
                 .setTreasuryAccountId(client.operatorAccountId)
                 .setDecimals(8)
-                .setMaxTransactionFee(100)
                 .setInitialSupply(100)
                 .execute(client)
         ).getReceipt(client);
