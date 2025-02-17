@@ -101,8 +101,11 @@ export { default as Hbar } from "./Hbar.js";
 export { default as HbarAllowance } from "./account/HbarAllowance.js";
 export { default as HbarUnit } from "./HbarUnit.js";
 export { default as LiveHash } from "./account/LiveHash.js";
+// eslint-disable-next-line deprecation/deprecation
 export { default as LiveHashAddTransaction } from "./account/LiveHashAddTransaction.js";
+// eslint-disable-next-line deprecation/deprecation
 export { default as LiveHashDeleteTransaction } from "./account/LiveHashDeleteTransaction.js";
+// eslint-disable-next-line deprecation/deprecation
 export { default as LiveHashQuery } from "./account/LiveHashQuery.js";
 export { default as MaxQueryPaymentExceeded } from "./MaxQueryPaymentExceeded.js";
 export { default as MirrorNodeContractCallQuery } from "./query/MirrorNodeContractCallQuery.js";
@@ -129,7 +132,9 @@ export { default as Signer } from "./Signer.js";
 export { default as SignerSignature } from "./SignerSignature.js";
 export { default as Status } from "./Status.js";
 export { default as SubscriptionHandle } from "./topic/SubscriptionHandle.js";
+// eslint-disable-next-line deprecation/deprecation
 export { default as SystemDeleteTransaction } from "./system/SystemDeleteTransaction.js";
+// eslint-disable-next-line deprecation/deprecation
 export { default as SystemUndeleteTransaction } from "./system/SystemUndeleteTransaction.js";
 export { default as Timestamp } from "./Timestamp.js";
 export { default as TokenAllowance } from "./account/TokenAllowance.js";

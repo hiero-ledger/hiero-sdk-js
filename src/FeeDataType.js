@@ -53,6 +53,8 @@ export default class FeeDataType {
                 return "TOKEN_NON_FUNGIBLE_UNIQUE_WITH_CUSTOM_FEES";
             case FeeDataType.ScheduleCreateContractCall:
                 return "SCHEDULE_CREATE_CONTRACT_CALL";
+            case FeeDataType.TopicCreateWithCustomFees:
+                return "TOPIC_CREATE_WITH_CUSTOM_FEES";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -77,6 +79,8 @@ export default class FeeDataType {
                 return FeeDataType.TokenNonFungibleUniqueWithCustomFees;
             case 5:
                 return FeeDataType.ScheduleCreateContractCall;
+            case 6:
+                return FeeDataType.TopicCreateWithCustomFees;
         }
 
         throw new Error(
@@ -121,3 +125,9 @@ FeeDataType.TokenNonFungibleUniqueWithCustomFees = new FeeDataType(4);
  * The resource prices are scoped to a ScheduleCreate containing a ContractCall.
  */
 FeeDataType.ScheduleCreateContractCall = new FeeDataType(5);
+
+/**
+ * The resource cost for the transaction type includes a TopicCreate
+ * with custom fees.
+ */
+FeeDataType.TopicCreateWithCustomFees = new FeeDataType(6);

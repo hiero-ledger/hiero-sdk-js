@@ -200,10 +200,12 @@ describe("Client", function () {
     });
 
     describe("forMirrorNetwork method tests", function () {
+        let client;
+
         it("should create a NodeClient with the specified mirror network", async function () {
             const networkAddress = "testnet.mirrornode.hedera.com:443";
 
-            const client = await Client.forMirrorNetwork(networkAddress);
+            client = await Client.forMirrorNetwork(networkAddress);
 
             expect(client).to.be.instanceOf(NodeClient);
 
@@ -228,8 +230,12 @@ describe("Client", function () {
         });
 
         it("should set a default update period for network address book query", async function () {
-            const client = await NodeClient.forMirrorNetwork("testnet");
+            client = await NodeClient.forMirrorNetwork("testnet");
             expect(client._networkUpdatePeriod).to.equal(10000);
+        });
+
+        afterEach(async function () {
+            await client.close();
         });
     });
 });

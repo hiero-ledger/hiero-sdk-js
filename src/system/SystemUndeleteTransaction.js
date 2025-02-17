@@ -44,8 +44,8 @@ import ContractId from "../contract/ContractId.js";
  */
 
 /**
- * Recover a file or contract bytecode deleted from the Hedera File
- * System (HFS) by a `systemDelete` transaction.
+ * Deprecated: Do not use.
+ * @deprecated
  */
 export default class SystemUndeleteTransaction extends Transaction {
     /**
@@ -101,6 +101,7 @@ export default class SystemUndeleteTransaction extends Transaction {
             );
 
         return Transaction._fromProtobufTransactions(
+            // eslint-disable-next-line deprecation/deprecation
             new SystemUndeleteTransaction({
                 fileId:
                     systemUndelete.fileID != null
@@ -219,6 +220,6 @@ export default class SystemUndeleteTransaction extends Transaction {
 
 TRANSACTION_REGISTRY.set(
     "systemUndelete",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
+    // eslint-disable-next-line @typescript-eslint/unbound-method, deprecation/deprecation
     SystemUndeleteTransaction._fromProtobuf,
 );

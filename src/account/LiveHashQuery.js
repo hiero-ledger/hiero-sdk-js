@@ -40,11 +40,8 @@ import LiveHash from "./LiveHash.js";
 
 /**
  * @augments {Query<LiveHash>}
- * A query that retrieves a livehash associated with a Hedera™ account.
- *
- * Livehashes are SHA-384 hash values that can be associated with an account and used for tracking
- * or verification purposes. This query allows you to retrieve a specific livehash and its associated
- * metadata from an account.
+ * @deprecated
+ * Тhis query is no longer supported.
  */
 export default class LiveHashQuery extends Query {
     /**
@@ -87,6 +84,7 @@ export default class LiveHashQuery extends Query {
                 query.cryptoGetLiveHash
             );
 
+        // eslint-disable-next-line deprecation/deprecation
         return new LiveHashQuery({
             accountId:
                 hash.accountID != null
@@ -226,5 +224,5 @@ export default class LiveHashQuery extends Query {
 }
 
 // @ts-ignore
-// eslint-disable-next-line @typescript-eslint/unbound-method
+// eslint-disable-next-line @typescript-eslint/unbound-method, deprecation/deprecation
 QUERY_REGISTRY.set("cryptoGetLiveHash", LiveHashQuery._fromProtobuf);

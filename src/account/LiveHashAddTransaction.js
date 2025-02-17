@@ -43,6 +43,10 @@ import KeyList from "../KeyList.js";
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  */
 
+/**
+ * @deprecated
+ * This transaction is no longer supported.
+ */
 export default class LiveHashAddTransaction extends Transaction {
     /**
      * @param {object} [props]
@@ -121,6 +125,7 @@ export default class LiveHashAddTransaction extends Transaction {
         );
 
         return Transaction._fromProtobufTransactions(
+            // eslint-disable-next-line deprecation/deprecation
             new LiveHashAddTransaction({
                 hash: liveHash_.hash != null ? liveHash_.hash : undefined,
                 keys:
@@ -297,6 +302,6 @@ export default class LiveHashAddTransaction extends Transaction {
 
 TRANSACTION_REGISTRY.set(
     "cryptoAddLiveHash",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
+    // eslint-disable-next-line @typescript-eslint/unbound-method, deprecation/deprecation
     LiveHashAddTransaction._fromProtobuf,
 );

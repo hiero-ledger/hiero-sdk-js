@@ -44,7 +44,8 @@ import Timestamp from "../Timestamp.js";
  */
 
 /**
- * Delete a file or contract bytecode as an administrative transaction.
+ * Deprecated: Do not use.
+ * @deprecated
  */
 export default class SystemDeleteTransaction extends Transaction {
     /**
@@ -110,6 +111,7 @@ export default class SystemDeleteTransaction extends Transaction {
             );
 
         return Transaction._fromProtobufTransactions(
+            // eslint-disable-next-line deprecation/deprecation
             new SystemDeleteTransaction({
                 fileId:
                     systemDelete.fileID != null
@@ -251,5 +253,5 @@ export default class SystemDeleteTransaction extends Transaction {
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/unbound-method
+// eslint-disable-next-line @typescript-eslint/unbound-method, deprecation/deprecation
 TRANSACTION_REGISTRY.set("systemDelete", SystemDeleteTransaction._fromProtobuf);

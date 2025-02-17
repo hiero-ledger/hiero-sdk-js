@@ -707,6 +707,33 @@ export default class Status {
                 return "NO_SCHEDULING_ALLOWED_AFTER_SCHEDULED_RECURSION";
             case Status.RecursiveSchedulingLimitReached:
                 return "RECURSIVE_SCHEDULING_LIMIT_REACHED";
+            case Status.WaitingForLedgerId:
+                return "WAITING_FOR_LEDGER_ID";
+            case Status.MaxEntriesForFeeExemptKeyListExceeded:
+                return "MAX_ENTRIES_FOR_FEE_EXEMPT_KEY_LIST_EXCEEDED";
+            case Status.FeeExemptKeyListContainsDuplicatedKeys:
+                return "FEE_EXEMPT_KEY_LIST_CONTAINS_DUPLICATED_KEYS";
+            case Status.InvalidKeyInFeeExemptKeyList:
+                return "INVALID_KEY_IN_FEE_EXEMPT_KEY_LIST";
+            case Status.InvalidFeeScheduleKey:
+                return "INVALID_FEE_SCHEDULE_KEY";
+            case Status.FeeScheduleKeyCannotBeUpdated:
+                return "FEE_SCHEDULE_KEY_CANNOT_BE_UPDATED";
+            case Status.FeeScheduleKeyNotSet:
+                return "FEE_SCHEDULE_KEY_NOT_SET";
+            case Status.MaxCustomFeeLimitExceeded:
+                return "MAX_CUSTOM_FEE_LIMIT_EXCEEDED";
+            case Status.NoValidMaxCustomFee:
+                return "NO_VALID_MAX_CUSTOM_FEE";
+            case Status.InvalidMaxCustomFees:
+                return "INVALID_MAX_CUSTOM_FEES";
+            case Status.DuplicateDenominationInMaxCustomFeeList:
+                return "DUPLICATE_DENOMINATION_IN_MAX_CUSTOM_FEE_LIST";
+            case Status.DuplicateAccountIdInMaxCustomFeeList:
+                return "DUPLICATE_ACCOUNT_ID_IN_MAX_CUSTOM_FEE_LIST";
+            case Status.MaxCustomFeesIsNotSupported:
+                return "MAX_CUSTOM_FEES_IS_NOT_SUPPORTED";
+
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -1385,6 +1412,32 @@ export default class Status {
                 return Status.NoSchedulingAllowedAfterScheduledRecursion;
             case 374:
                 return Status.RecursiveSchedulingLimitReached;
+            case 375:
+                return Status.WaitingForLedgerId;
+            case 376:
+                return Status.MaxEntriesForFeeExemptKeyListExceeded;
+            case 377:
+                return Status.FeeExemptKeyListContainsDuplicatedKeys;
+            case 378:
+                return Status.InvalidKeyInFeeExemptKeyList;
+            case 379:
+                return Status.InvalidFeeScheduleKey;
+            case 380:
+                return Status.FeeScheduleKeyCannotBeUpdated;
+            case 381:
+                return Status.FeeScheduleKeyNotSet;
+            case 382:
+                return Status.MaxCustomFeeLimitExceeded;
+            case 383:
+                return Status.NoValidMaxCustomFee;
+            case 384:
+                return Status.InvalidMaxCustomFees;
+            case 385:
+                return Status.DuplicateDenominationInMaxCustomFeeList;
+            case 386:
+                return Status.DuplicateAccountIdInMaxCustomFeeList;
+            case 387:
+                return Status.MaxCustomFeesIsNotSupported;
             default:
                 throw new Error(
                     `(BUG) Status.fromCode() does not handle code: ${code}`,
@@ -3127,3 +3180,74 @@ Status.NoSchedulingAllowedAfterScheduledRecursion = new Status(373);
  * approximately four million times with typical network configuration.)
  */
 Status.RecursiveSchedulingLimitReached = new Status(374);
+
+/**
+ * The target network is waiting for the ledger ID to be set, which is a
+ * side effect of finishing the network's TSS construction.
+ */
+Status.WaitingForLedgerId = new Status(375);
+
+/**
+ * The provided fee exempt key list size exceeded the limit.
+ */
+Status.MaxEntriesForFeeExemptKeyListExceeded = new Status(376);
+
+/**
+ * The provided fee exempt key list contains duplicated keys.
+ */
+Status.FeeExemptKeyListContainsDuplicatedKeys = new Status(377);
+
+/**
+ * The provided fee exempt key list contains an invalid key.
+ */
+Status.InvalidKeyInFeeExemptKeyList = new Status(378);
+
+/**
+ * The provided fee schedule key contains an invalid key.
+ */
+Status.InvalidFeeScheduleKey = new Status(379);
+
+/**
+ * If a fee schedule key is not set when we create a topic
+ * we cannot add it on update.
+ */
+Status.FeeScheduleKeyCannotBeUpdated = new Status(380);
+
+/**
+ * If the topic's custom fees are updated the topic SHOULD have a
+ * fee schedule key
+ */
+Status.FeeScheduleKeyNotSet = new Status(381);
+
+/**
+ * The fee amount is exceeding the amount that the payer
+ * is willing to pay.
+ */
+Status.MaxCustomFeeLimitExceeded = new Status(382);
+
+/**
+ * There are no corresponding custom fees.
+ */
+Status.NoValidMaxCustomFee = new Status(383);
+
+/**
+ * The provided list contains invalid max custom fee.
+ */
+Status.InvalidMaxCustomFees = new Status(384);
+
+/**
+ * The provided max custom fee list contains fees with
+ * duplicate denominations.
+ */
+Status.DuplicateDenominationInMaxCustomFeeList = new Status(385);
+
+/**
+ * The provided max custom fee list contains fees with
+ * duplicate account id.
+ */
+Status.DuplicateAccountIdInMaxCustomFeeList = new Status(386);
+
+/**
+ * Max custom fees list is not supported for this operation.
+ */
+Status.MaxCustomFeesIsNotSupported = new Status(387);

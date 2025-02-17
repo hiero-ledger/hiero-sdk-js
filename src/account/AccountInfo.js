@@ -131,10 +131,12 @@ export default class AccountInfo {
         this.proxyAccountId = props.proxyAccountId;
 
         /**
+         * @deprecated
          * The total number of tinybars proxy staked to this account.
          *
          * @readonly
          */
+        // eslint-disable-next-line deprecation/deprecation
         this.proxyReceived = props.proxyReceived;
 
         /**
@@ -351,6 +353,7 @@ export default class AccountInfo {
                     ? // eslint-disable-next-line deprecation/deprecation
                       this.proxyAccountId._toProtobuf()
                     : null,
+            // eslint-disable-next-line deprecation/deprecation
             proxyReceived: this.proxyReceived.toTinybars(),
             key: this.key._toProtobufKey(),
             balance: this.balance.toTinybars(),
@@ -427,6 +430,7 @@ export default class AccountInfo {
                     ? // eslint-disable-next-line deprecation/deprecation
                       this.proxyAccountId.toString()
                     : null,
+            // eslint-disable-next-line deprecation/deprecation
             proxyReceived: this.proxyReceived.toString(),
             key: this.key != null ? this.key.toString() : null,
             sendRecordThreshold: this.sendRecordThreshold.toString(),

@@ -21,11 +21,11 @@ importers:
         specifier: ^5.7.0
         version: 5.7.0
       '@grpc/grpc-js':
-        specifier: 1.8.2
-        version: 1.8.2
+        specifier: ^1.12.6
+        version: 1.12.6
       '@hashgraph/cryptography':
-        specifier: 1.4.8-beta.14
-        version: 1.4.8-beta.14(expo@49.0.23(@babel/core@7.26.0))
+        specifier: 1.4.8-beta.15
+        version: 1.4.8-beta.15(expo@49.0.23(@babel/core@7.26.0))
       '@hashgraph/proto':
         specifier: 2.16.0-beta.8
         version: 2.16.0-beta.8
@@ -1244,17 +1244,17 @@ packages:
     peerDependencies:
       graphql: ^0.8.0 || ^0.9.0 || ^0.10.0 || ^0.11.0 || ^0.12.0 || ^0.13.0 || ^14.0.0 || ^15.0.0 || ^16.0.0 || ^17.0.0
 
-  '@grpc/grpc-js@1.8.2':
-    resolution: {integrity: sha512-5cqCjUvDKJWHGeu1prlrFOUmjuML0NequZKJ38PsCkfwIqPnZq4Q9burPP3It7/+46wpl0KsqVN3s6Te3B9Qtw==}
-    engines: {node: ^8.13.0 || >=10.10.0}
+  '@grpc/grpc-js@1.12.6':
+    resolution: {integrity: sha512-JXUj6PI0oqqzTGvKtzOkxtpsyPRNsrmhh41TtIz/zEB6J+AUiZZ0dxWzcMwO9Ns5rmSPuMdghlTbUuqIM48d3Q==}
+    engines: {node: '>=12.10.0'}
 
   '@grpc/proto-loader@0.7.13':
     resolution: {integrity: sha512-AiXO/bfe9bmxBjxxtYxFAXGZvMaN5s8kO+jBHAJCON8rJoB5YS/D6X7ZNc6XQkuHNmyl4CYaMI1fJ/Gn27RGGw==}
     engines: {node: '>=6'}
     hasBin: true
 
-  '@hashgraph/cryptography@1.4.8-beta.14':
-    resolution: {integrity: sha512-KAYTDiVcEuAr7FtG8yNfDQhvaxJr+EjTvxqUEYf58ZVeWHvVzhjeFKlGTH8jLWvh4D39Tn+opdIN6NmHYGOBLQ==}
+  '@hashgraph/cryptography@1.4.8-beta.15':
+    resolution: {integrity: sha512-xTn+Ef29MYjnC5EA4EH8cxaM3Sksqs7AyeDDCospEcbeHKM4mBPLTlTfBFMaYKRrV2AG/puJUe5j9r/9r4U7cQ==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
       expo: ^49.0.16
@@ -1318,6 +1318,9 @@ packages:
 
   '@jridgewell/trace-mapping@0.3.25':
     resolution: {integrity: sha512-vNk6aEwybGtawWmy/PzwnGDOjCkLWSD2wqvjGGAgOAwCGWySYXfYoxt00IJkTF+8Lb57DwOb3Aa0o9CApepiYQ==}
+
+  '@js-sdsl/ordered-map@4.4.2':
+    resolution: {integrity: sha512-iUKgm52T8HOE/makSxjqoWhe95ZJA1/G1sYsGev2JDKUSS14KAgg1LHb+Ba+IPow0xflbnSkOsZcO08C7w1gYw==}
 
   '@mdn/browser-compat-data@5.6.18':
     resolution: {integrity: sha512-WCQcQGyydquw7NXPL2NopMCgmUvIQDG7KM/IGR4PMJSDH5SHZKXUDEF6rdpGWj0MtcjQseOCl/hjzYzj0fMMeA==}
@@ -6720,10 +6723,10 @@ snapshots:
     dependencies:
       graphql: 15.8.0
 
-  '@grpc/grpc-js@1.8.2':
+  '@grpc/grpc-js@1.12.6':
     dependencies:
       '@grpc/proto-loader': 0.7.13
-      '@types/node': 22.12.0
+      '@js-sdsl/ordered-map': 4.4.2
 
   '@grpc/proto-loader@0.7.13':
     dependencies:
@@ -6732,7 +6735,7 @@ snapshots:
       protobufjs: 7.2.5
       yargs: 17.7.2
 
-  '@hashgraph/cryptography@1.4.8-beta.14(expo@49.0.23(@babel/core@7.26.0))':
+  '@hashgraph/cryptography@1.4.8-beta.15(expo@49.0.23(@babel/core@7.26.0))':
     dependencies:
       asn1js: 3.0.5
       bignumber.js: 9.1.2
@@ -6808,6 +6811,8 @@ snapshots:
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.0
+
+  '@js-sdsl/ordered-map@4.4.2': {}
 
   '@mdn/browser-compat-data@5.6.18': {}
 

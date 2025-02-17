@@ -40,10 +40,8 @@ import AccountId from "./AccountId.js";
  */
 
 /**
- * A transaction that deletes a livehash from a Hedera™ account.
- *
- * Livehashes are hash values associated with an account that can be used for tracking or verification purposes.
- * This transaction allows you to remove a previously added livehash from an account.
+ * @deprecated
+ * This transaction is no longer supported.
  */
 export default class LiveHashDeleteTransaction extends Transaction {
     /**
@@ -98,6 +96,7 @@ export default class LiveHashDeleteTransaction extends Transaction {
             );
 
         return Transaction._fromProtobufTransactions(
+            // eslint-disable-next-line deprecation/deprecation
             new LiveHashDeleteTransaction({
                 hash:
                     hashes.liveHashToDelete != null
@@ -210,6 +209,6 @@ export default class LiveHashDeleteTransaction extends Transaction {
 
 TRANSACTION_REGISTRY.set(
     "cryptoDeleteLiveHash",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
+    // eslint-disable-next-line @typescript-eslint/unbound-method, deprecation/deprecation
     LiveHashDeleteTransaction._fromProtobuf,
 );
