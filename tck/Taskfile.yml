@@ -54,20 +54,37 @@ tasks:
     run-specific-test:
         desc: "Run all services with a specific test"
         silent: true
-        deps: [start-local-node, build-tck-js-server]
+        deps: [build-tck-js-server]
         vars:
-            TEST: "{{.TEST}}"
+            TEST: '{{.TEST | default "ALL"}}'
+            NETWORK: '{{.NETWORK | default "local"}}'
+            OPERATOR_ACCOUNT_ID: "{{.OPERATOR_ACCOUNT_ID}}"
+            OPERATOR_ACCOUNT_PRIVATE_KEY: "{{.OPERATOR_ACCOUNT_PRIVATE_KEY}}"
         cmds:
-            - echo "Running all services with TEST=${TEST}..."
-            - TEST=${TEST} docker compose up
+            - sh -c 'echo "Running all services with TEST={{.TEST}}, NETWORK={{.NETWORK}}..."'
+            - |
+                export TEST={{.TEST | default "ALL"}}
+                export NETWORK={{.NETWORK | default "local"}}
+                export OPERATOR_ACCOUNT_ID={{.OPERATOR_ACCOUNT_ID}}
+                export OPERATOR_ACCOUNT_PRIVATE_KEY="{{.OPERATOR_ACCOUNT_PRIVATE_KEY}}"
+                docker compose up
 
     start-all-tests:
         desc: "Start Docker Compose services"
         silent: true
         deps: [start-local-node, build-tck-js-server]
+        vars:
+            NETWORK: '{{.NETWORK | default "local"}}'
+            OPERATOR_ACCOUNT_ID: "{{.OPERATOR_ACCOUNT_ID}}"
+            OPERATOR_ACCOUNT_PRIVATE_KEY: "{{.OPERATOR_ACCOUNT_PRIVATE_KEY}}"
         cmds:
             - echo "Starting Docker Compose services..."
-            - docker compose up
+            - |
+                export TEST={{.TEST | default "ALL"}}
+                export NETWORK={{.NETWORK | default "local"}}
+                export OPERATOR_ACCOUNT_ID={{.OPERATOR_ACCOUNT_ID}} 
+                export OPERATOR_ACCOUNT_PRIVATE_KEY="{{.OPERATOR_ACCOUNT_PRIVATE_KEY}}"
+                docker compose up
 
     default:
         desc: "Start local node and Docker Compose"
