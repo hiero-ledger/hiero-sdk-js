@@ -28,6 +28,7 @@ import Hbar from "../Hbar.js";
  * @namespace proto
  * @typedef {import("@hashgraph/proto").proto.ICustomFee} HashgraphProto.proto.ICustomFee
  * @typedef {import("@hashgraph/proto").proto.IFixedFee} HashgraphProto.proto.IFixedFee
+ * @typedef {import("@hashgraph/proto").proto.IFixedCustomFee} HashgraphProto.proto.IFixedCustomFee
  */
 
 export default class CustomFixedFee extends CustomFee {
@@ -127,7 +128,7 @@ export default class CustomFixedFee extends CustomFee {
      * @internal
      * @override
      * @param {HashgraphProto.proto.ICustomFee} info
-     * @returns {CustomFee}
+     * @returns {CustomFixedFee}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     static _fromProtobuf(info) {
@@ -164,6 +165,27 @@ export default class CustomFixedFee extends CustomFee {
                     ? this.feeCollectorAccountId._toProtobuf()
                     : null,
             allCollectorsAreExempt: this.allCollectorsAreExempt,
+            fixedFee: {
+                denominatingTokenId:
+                    this._denominatingTokenId != null
+                        ? this._denominatingTokenId._toProtobuf()
+                        : null,
+                amount: this._amount,
+            },
+        };
+    }
+
+    /**
+     * @internal
+     * @abstract
+     * @returns {HashgraphProto.proto.IFixedCustomFee}
+     */
+    _toTopicFeeProtobuf() {
+        return {
+            feeCollectorAccountId:
+                this.feeCollectorAccountId != null
+                    ? this.feeCollectorAccountId._toProtobuf()
+                    : null,
             fixedFee: {
                 denominatingTokenId:
                     this._denominatingTokenId != null
