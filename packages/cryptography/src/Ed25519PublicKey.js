@@ -4,6 +4,7 @@ import nacl from "tweetnacl";
 import { arrayEqual } from "./util/array.js";
 import * as hex from "./encoding/hex.js";
 import forge from "node-forge";
+import { ed25519 } from "@noble/curves/ed25519";
 
 const derPrefix = "302a300506032b6570032100";
 const derPrefixBytes = hex.decode(derPrefix);
@@ -77,21 +78,40 @@ export default class Ed25519PublicKey extends Key {
             );
         }
 
-        return new Ed25519PublicKey(publicKey);
+        return Ed25519PublicKey.fromBytesRaw(publicKey);
     }
 
     /**
-     * @param {Uint8Array} data
+     * Creates an Ed25519 public key from raw bytes after validating the input
+     * @param {Uint8Array} data - Raw byte data for the public key
      * @returns {Ed25519PublicKey}
+     * @throws {BadKeyError} If the key is invalid or has an incorrect length
      */
     static fromBytesRaw(data) {
-        if (data.length != 32) {
+        // Check length first
+        if (data.length !== 32) {
             throw new BadKeyError(
                 `invalid public key length: ${data.length} bytes`,
             );
         }
 
-        return new Ed25519PublicKey(data);
+        // Create a buffer from the input data
+        const bufferData = Buffer.from(data);
+
+        // Check for empty buffer (all zeros)
+        // SEE HIP-540
+        const emptyBuffer = Buffer.alloc(33);
+        if (bufferData.equals(emptyBuffer)) {
+            return new Ed25519PublicKey(data);
+        }
+
+        // Attempt to validate the key using ed25519 library
+        try {
+            ed25519.ExtendedPoint.fromHex(data);
+            return new Ed25519PublicKey(data);
+        } catch {
+            throw new BadKeyError("invalid public key");
+        }
     }
 
     /**

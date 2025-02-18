@@ -4,6 +4,7 @@ import { arrayEqual } from "./util/array.js";
 import * as hex from "./encoding/hex.js";
 import * as ecdsa from "./primitive/ecdsa.js";
 import { keccak256 } from "./primitive/keccak.js";
+import { secp256k1 } from "@noble/curves/secp256k1";
 import elliptic from "elliptic";
 const ec = new elliptic.ec("secp256k1");
 
@@ -92,12 +93,15 @@ export default class EcdsaPublicKey extends Key {
                 `cannot decode ECDSA private key data from DER format`,
             );
         }
-        return new EcdsaPublicKey(ecdsaPublicKeyBytes);
+
+        return EcdsaPublicKey.fromBytesRaw(ecdsaPublicKeyBytes);
     }
 
     /**
-     * @param {Uint8Array} data
+     * Creates an ECDSA public key from raw bytes after validating the input
+     * @param {Uint8Array} data - Raw byte data for the public key
      * @returns {EcdsaPublicKey}
+     * @throws {BadKeyError} If the key is invalid or has an incorrect length
      */
     static fromBytesRaw(data) {
         if (data.length != 33) {
@@ -106,7 +110,25 @@ export default class EcdsaPublicKey extends Key {
             );
         }
 
-        return new EcdsaPublicKey(data);
+        const EMPTY_BUFFER_33_BYTES = Buffer.alloc(33);
+        const EMPTY_BUFFER_65_BYTES = Buffer.alloc(65);
+        const bufferData = Buffer.from(data);
+
+        // Check for empty buffers (as per HIP-540)
+        if (
+            EMPTY_BUFFER_33_BYTES.equals(bufferData) ||
+            EMPTY_BUFFER_65_BYTES.equals(bufferData)
+        ) {
+            return new EcdsaPublicKey(data);
+        }
+
+        // Attempt to validate the key using secp256k1 library
+        try {
+            secp256k1.ProjectivePoint.fromHex(data);
+            return new EcdsaPublicKey(data);
+        } catch {
+            throw new BadKeyError("invalid public key");
+        }
     }
 
     /**

@@ -106,4 +106,42 @@ describe("PublicKey", function () {
         const ed25519PublicKey1 = PublicKey.fromString(PUBLIC_KEY_DER1);
         expect(ed25519PublicKey1.toStringRaw()).to.be.equal(PUBLIC_KEY1);
     });
+
+    it("should throw error when creating ED25519 key from invalid bytes", function () {
+        const CURVE_ORDER_ED25519 =
+            7237005577332262213973186563042994240857116359379907606001950938285454250989n;
+        const invalidKey = (CURVE_ORDER_ED25519 + 1n).toString(16);
+        const invalidKeyBuffer = Buffer.from(invalidKey, "hex");
+        const invalidPrivateKeyBytes = Uint8Array.from(invalidKeyBuffer);
+
+        expect(() => {
+            PublicKey.fromBytesED25519(invalidPrivateKeyBytes);
+        }).to.throw;
+    });
+
+    it("should throw error when creating ECDSA key from invalid bytes", function () {
+        const CURVE_ORDER_ECDSA =
+            115792089237316195423570985008687907852837564279074904382605163141518161494337n;
+        const invalidKey = (CURVE_ORDER_ECDSA + 1n).toString(16);
+        const invalidKeyBuffer = Buffer.from(invalidKey, "hex");
+        const invalidPrivateKeyBytes = Uint8Array.from(invalidKeyBuffer);
+
+        expect(() => {
+            PublicKey.fromBytesECDSA(invalidPrivateKeyBytes);
+        }).to.throw;
+    });
+
+    it("should be able to create ECDSA key from valid bytes", function () {
+        const validPubKey = PrivateKey.generateECDSA().publicKey;
+        const bytes = validPubKey.toBytes();
+        const publicKey = PublicKey.fromBytes(bytes);
+        expect(publicKey.toString()).to.be.equal(validPubKey.toString());
+    });
+
+    it("should be able to create ED25519 key from valid bytes", function () {
+        const validPubKey = PrivateKey.generateED25519().publicKey;
+        const bytes = validPubKey.toBytes();
+        const publicKey = PublicKey.fromBytes(bytes);
+        expect(publicKey.toString()).to.be.equal(validPubKey.toString());
+    });
 });
