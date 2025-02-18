@@ -54,19 +54,24 @@ tasks:
     run-specific-test:
         desc: "Run all services with a specific test"
         silent: true
-        deps: [build-tck-js-server]
+        deps: [start-local-node, build-tck-js-server]
         vars:
             TEST: '{{.TEST | default "ALL"}}'
             NETWORK: '{{.NETWORK | default "local"}}'
             OPERATOR_ACCOUNT_ID: "{{.OPERATOR_ACCOUNT_ID}}"
             OPERATOR_ACCOUNT_PRIVATE_KEY: "{{.OPERATOR_ACCOUNT_PRIVATE_KEY}}"
         cmds:
-            - sh -c 'echo "Running all services with TEST={{.TEST}}, NETWORK={{.NETWORK}}..."'
             - |
                 export TEST={{.TEST | default "ALL"}}
                 export NETWORK={{.NETWORK | default "local"}}
                 export OPERATOR_ACCOUNT_ID={{.OPERATOR_ACCOUNT_ID}}
                 export OPERATOR_ACCOUNT_PRIVATE_KEY="{{.OPERATOR_ACCOUNT_PRIVATE_KEY}}"
+                if [ "$NETWORK" = "testnet" ]; then
+                    if [ -z "$OPERATOR_ACCOUNT_ID" ] || [ -z "$OPERATOR_ACCOUNT_PRIVATE_KEY" ]; then
+                        echo "Error: OPERATOR_ACCOUNT_ID and OPERATOR_ACCOUNT_PRIVATE_KEY must be provided for testnet."
+                        exit 1
+                    fi
+                fi
                 docker compose up
 
     start-all-tests:
@@ -84,6 +89,12 @@ tasks:
                 export NETWORK={{.NETWORK | default "local"}}
                 export OPERATOR_ACCOUNT_ID={{.OPERATOR_ACCOUNT_ID}} 
                 export OPERATOR_ACCOUNT_PRIVATE_KEY="{{.OPERATOR_ACCOUNT_PRIVATE_KEY}}"
+                if [ "$NETWORK" = "testnet" ]; then
+                    if [ -z "$OPERATOR_ACCOUNT_ID" ] || [ -z "$OPERATOR_ACCOUNT_PRIVATE_KEY" ]; then
+                        echo "Error: OPERATOR_ACCOUNT_ID and OPERATOR_ACCOUNT_PRIVATE_KEY must be provided for testnet."
+                        exit 1
+                    fi
+                fi
                 docker compose up
 
     default:

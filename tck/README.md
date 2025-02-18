@@ -103,6 +103,19 @@ This will:
 
 Sit back and let Docker do the magic!
 
+### Additional info:
+
+To run tests against Hiero Testnet:
+
+```bash
+task run-specific-test \
+  NETWORK=testnet \
+  OPERATOR_ACCOUNT_ID=your-account-id \
+  OPERATOR_ACCOUNT_PRIVATE_KEY=your-private-key \
+  # Run specific test
+  TEST=AccountCreate
+```
+
 ### 🎉 All Done!
 
 Your TCK server is now running inside Docker! 🚀 You can now execute tests and validate the system.
