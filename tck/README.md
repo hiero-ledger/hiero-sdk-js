@@ -74,7 +74,7 @@ task build-tck-js-server
 ### 5. Run a specific test
 
 ```bash
-task run-specific-test -- TEST=AccountCreate
+task run-specific-test TEST=AccountCreate
 ```
 
 This will:
