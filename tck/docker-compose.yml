@@ -1,6 +1,9 @@
 services:
     tck-server:
         image: tck-js-server
+        networks:
+            - hedera-network-node
+            - hedera-mirror-node
         environment:
             NETWORK: "${NETWORK:-local}"
         build:
@@ -8,8 +11,10 @@ services:
         ports:
             - "8544:8544"
     tck-client:
-        image: ivaylogarnev/tck-client
-        network_mode: "host"
+        image: ivaylogarnev/tck-client-cross-network
+        networks:
+            - hedera-network-node
+            - hedera-mirror-node
         environment:
             TEST: "${TEST:-ALL}"
             NETWORK: "${NETWORK:-local}"
@@ -17,3 +22,9 @@ services:
             OPERATOR_ACCOUNT_PRIVATE_KEY: "${OPERATOR_ACCOUNT_PRIVATE_KEY:-302e020100300506032b657004220420a608e2130a0a3cb34f86e757303c862bee353d9ab77ba4387ec084f881d420d4}"
         depends_on:
             - tck-server
+
+networks:
+    hedera-network-node:
+        external: true
+    hedera-mirror-node:
+        external: true

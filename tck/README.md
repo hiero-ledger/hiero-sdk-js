@@ -25,7 +25,7 @@ Once started, your TCK server will be up and running! 🚦
 
 # Start All TCK Tests with Docker 🐳
 
-This guide will help you set up and start the TCK server, local node and run all TKC tests using Docker. Follow these steps to ensure all dependencies are installed and the server runs smoothly.
+This section covers setting up and running TCK tests using Docker.
 
 ## Prerequisites
 
@@ -36,42 +36,7 @@ Before you begin, ensure you have the following installed:
 - **Docker**: Latest version
 - **Docker Compose**: Latest version
 
-## 🔧 Setup Instructions
-
-### 1. Check Node.js and npm
-
-Verify that Node.js and npm are installed and meet the version requirements:
-
-```bash
-node -v
-npm -v
-```
-
-### 2. Install Hedera Local Node CLI
-
-If not already installed, run the following command:
-
-```bash
-npm install @hashgraph/hedera-local -g
-```
-
-### 3. Start the Local Hedera Network
-
-Run the following command to start the local Hedera network:
-
-```bash
-task start-local-node
-```
-
-### 4. Build the Docker Image
-
-Build the Docker image for the TCK JS server:
-
-```bash
-task build-tck-js-server
-```
-
-### 5. Run a specific test
+## 🔹 Run a specific test
 
 ```bash
 task run-specific-test TEST=AccountCreate
@@ -79,15 +44,17 @@ task run-specific-test TEST=AccountCreate
 
 This will:
 
-- Spin up the TCK server
+- Verifies prerequisites
 
-- Start required containers
+- Starts the TCK server
 
-- Run only the AccountCreate tests
+- Launches required containers
 
-### 6. Start All Services
+- Run only the `AccountCreate` tests
 
-Now, let’s fire up all the services using Docker Compose:
+## 🔹 Run all tests
+
+To run all tests:
 
 ```bash
 task start-all-tests
@@ -95,17 +62,19 @@ task start-all-tests
 
 This will:
 
-- Spin up the TCK server
+- Verifies prerequisites
 
-- Start required containers
+- Starts the TCK server
+
+- Launches required containers
 
 - Run all tests automatically
 
-Sit back and let Docker do the magic!
+Sit back and let Docker do the work! 🚀
 
-### Additional info:
+### ⚙️ Running Tests Against Hiero Testnet
 
-To run tests against Hiero Testnet:
+To run tests against the Hiero Testnet, use the following command:
 
 ```bash
 task run-specific-test \

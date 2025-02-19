@@ -9,7 +9,7 @@ export const sdk = {
 
         if (process.env.RUNNING_IN_DOCKER && process.env.NETWORK === "local") {
             this.client.setNetwork({
-                "host.docker.internal:50211": new AccountId(3),
+                "network-node:50211": new AccountId(3),
             });
         }
 
