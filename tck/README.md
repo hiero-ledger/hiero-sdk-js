@@ -1,6 +1,6 @@
-# Go SDK TCK server
+# JS SDK TCK server
 
-This is a server that implements the [SDK TCK specification](https://github.com/hiero-ledger/hiero-sdk-tck/) for the Js SDK.
+This is a server that implements the [SDK TCK specification](https://github.com/hiero-ledger/hiero-sdk-tck/) for the JS SDK.
 
 # TCK Server Start-Up Guide 🛠️
 
