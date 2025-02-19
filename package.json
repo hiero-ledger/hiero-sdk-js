@@ -58,7 +58,6 @@
         "@ethersproject/bytes": "^5.7.0",
         "@ethersproject/rlp": "^5.7.0",
         "@grpc/grpc-js": "1.8.2",
-        "axios": "^1.6.4",
         "@hashgraph/cryptography": "file:.yalc/@hashgraph/cryptography",
         "@hashgraph/proto": "file:.yalc/@hashgraph/proto",
         "@rollup/plugin-terser": "^0.4.4",

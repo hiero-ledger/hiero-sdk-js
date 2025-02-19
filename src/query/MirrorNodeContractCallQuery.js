@@ -38,14 +38,11 @@ export default class MirrorNodeContractCallQuery extends MirrorNodeContractQuery
      * @returns {Promise<string>}
      */
     async execute(client) {
-        /**
-         * @type { { data: { result: string } } }
-         */
         const mirrorNodeRequest = await this.performMirrorNodeRequest(
             client,
             this.JSONPayload,
         );
 
-        return mirrorNodeRequest.data.result;
+        return mirrorNodeRequest.result;
     }
 }

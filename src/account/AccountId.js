@@ -27,7 +27,6 @@ import CACHE from "../Cache.js";
 import EvmAddress from "../EvmAddress.js";
 import * as hex from ".././encoding/hex.js";
 import { isLongZeroAddress } from "../util.js";
-import axios from "axios";
 
 /**
  * @typedef {import("../client/Client.js").default<*, *>} Client
@@ -202,7 +201,9 @@ export default class AccountId {
 
         /* eslint-disable */
         const url = `https://${mirrorUrl}/api/v1/accounts/${this.evmAddress.toString()}`;
-        const mirrorAccountId = (await axios.get(url)).data.account;
+        const response = await fetch(url);
+        const data = await response.json();
+        const mirrorAccountId = data.account;
 
         this.num = Long.fromString(
             mirrorAccountId.slice(mirrorAccountId.lastIndexOf(".") + 1),
@@ -232,7 +233,9 @@ export default class AccountId {
 
         /* eslint-disable */
         const url = `https://${mirrorUrl}/api/v1/accounts/${this.num.toString()}`;
-        const mirrorAccountId = (await axios.get(url)).data.evm_address;
+        const response = await fetch(url);
+        const data = await response.json();
+        const mirrorAccountId = data.evm_address;
 
         this.evmAddress = EvmAddress.fromString(mirrorAccountId);
         /* eslint-enable */
