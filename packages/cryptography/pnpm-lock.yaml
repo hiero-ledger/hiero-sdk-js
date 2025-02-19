@@ -26,12 +26,15 @@ importers:
       elliptic:
         specifier: ^6.6.1
         version: 6.6.1
+      expo-random:
+        specifier: ^12.1.2
+        version: 12.3.0(expo@49.0.21(@babel/core@7.23.3))
+      forge-light:
+        specifier: 1.1.4
+        version: 1.1.4
       js-base64:
         specifier: ^3.7.4
         version: 3.7.5
-      node-forge:
-        specifier: ^1.3.1
-        version: 1.3.1
       spark-md5:
         specifier: ^3.0.2
         version: 3.0.2
@@ -69,9 +72,6 @@ importers:
       '@types/node':
         specifier: ^22.0.0
         version: 22.12.0
-      '@types/node-forge':
-        specifier: ^1.3.4
-        version: 1.3.5
       '@types/spark-md5':
         specifier: ^3.0.2
         version: 3.0.2
@@ -138,9 +138,6 @@ importers:
       expo-crypto:
         specifier: ^12.0.0
         version: 12.6.0(expo@49.0.21(@babel/core@7.23.3))
-      expo-random:
-        specifier: ^13.0.0
-        version: 13.4.0(expo@49.0.21(@babel/core@7.23.3))
       geckodriver:
         specifier: ^5.0.0
         version: 5.0.0
@@ -1402,9 +1399,6 @@ packages:
   '@types/json5@0.0.29':
     resolution: {integrity: sha512-dRLjCWHYg4oaA77cxO64oO+7JwCwnIzkZPdrrC71jQmQtlhM556pwKo5bUzqvZndkVbeFLIIi+9TC40JNF5hNQ==}
 
-  '@types/node-forge@1.3.5':
-    resolution: {integrity: sha512-GASdDr5u+BDTUcmWaS9Ljs1QTcyI+iPuCh/FdpDqLuLJP7Stx+j3DI0g4/cBn0zFjOnajMKATkq6PqBD0K5uzQ==}
-
   '@types/node@22.12.0':
     resolution: {integrity: sha512-Fll2FZ1riMjNmlmJOdAyY5pUbkftXslB5DgEzlIuNaiWhXd00FhWxVC/r4yV/4wBb9JfImTu+jiSvXTkJ7F/gA==}
 
@@ -2563,8 +2557,8 @@ packages:
   expo-modules-core@1.5.12:
     resolution: {integrity: sha512-mY4wTDU458dhwk7IVxLNkePlYXjs9BTgk4NQHBUXf0LapXsvr+i711qPZaFNO4egf5qq6fQV+Yfd/KUguHstnQ==}
 
-  expo-random@13.4.0:
-    resolution: {integrity: sha512-Z/Bbd+1MbkK8/4ukspgA3oMlcu0q3YTCu//7q2xHwy35huN6WCv4/Uw2OGyCiOQjAbU02zwq6swA+VgVmJRCEw==}
+  expo-random@12.3.0:
+    resolution: {integrity: sha512-q+AsTfGNT+Q+fb2sRrYtRkI3g5tV4H0kuYXM186aueILGO/vLn/YYFa7xFZj1IZ8LJZg2h96JDPDpsqHfRG2mQ==}
     deprecated: This package is now deprecated in favor of expo-crypto, which provides the same functionality. To migrate, replace all imports from expo-random with imports from expo-crypto.
     peerDependencies:
       expo: '*'
@@ -2675,6 +2669,10 @@ packages:
   foreground-child@3.1.1:
     resolution: {integrity: sha512-TMKDUnIte6bfb5nWv7V/caI169OHgvwjb7V4WkeUvbQQdjr5rWKqHFiKWb/fcOwB+CzBT+qbWjvj+DVwRskpIg==}
     engines: {node: '>=14'}
+
+  forge-light@1.1.4:
+    resolution: {integrity: sha512-Nr0xdu93LJawgBZVU/tC+A+4pbKqigdY5PRBz8CXNm4e5saAZIqU2Qe9+nVFtVO5TWCHSgvI0LaZZuatgE5J1g==}
+    engines: {node: '>= 6.13.0'}
 
   form-data@3.0.1:
     resolution: {integrity: sha512-RHkBKtLWUVwd7SqRIvCZMEvAMoGUp0XU+seQiZejj0COz3RI3hWP4sCv3gZWWLjJTd7rGwcsF5eKZGii0r/hbg==}
@@ -6393,10 +6391,6 @@ snapshots:
 
   '@types/json5@0.0.29': {}
 
-  '@types/node-forge@1.3.5':
-    dependencies:
-      '@types/node': 22.12.0
-
   '@types/node@22.12.0':
     dependencies:
       undici-types: 6.20.0
@@ -7799,7 +7793,7 @@ snapshots:
       compare-versions: 3.6.0
       invariant: 2.2.4
 
-  expo-random@13.4.0(expo@49.0.21(@babel/core@7.23.3)):
+  expo-random@12.3.0(expo@49.0.21(@babel/core@7.23.3)):
     dependencies:
       base64-js: 1.5.1
       expo: 49.0.21(@babel/core@7.23.3)
@@ -7959,6 +7953,8 @@ snapshots:
     dependencies:
       cross-spawn: 7.0.3
       signal-exit: 4.1.0
+
+  forge-light@1.1.4: {}
 
   form-data@3.0.1:
     dependencies:
