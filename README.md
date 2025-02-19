@@ -79,9 +79,9 @@ For detailed information on configuring the SDK, including environment variables
 ## Start tests
 
 * To start the integration tests follow the next steps:
-    - Run the [local node](https://github.com/hashgraph/hedera-local-node)
+    - Run the [local node](https://github.com/hiero-ledger/hiero-local-node)
     - Run `task test:integration:node`
-    - Stop the [local node](https://github.com/hashgraph/hedera-local-node)
+    - Stop the [local node](https://github.com/hiero-ledger/hiero-local-node)
 * To start unit tests follow the next steps:
     - Run `task test:unit` (Note: the local node should not be running)
 

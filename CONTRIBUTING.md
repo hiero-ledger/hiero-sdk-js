@@ -1,6 +1,6 @@
-# Contributing to the Hedera SDK for JavaScript
+# Contributing to the Hiero SDK for JavaScript
 
-Thank you for your interest in contributing the Hedera SDK for JavaScript!
+Thank you for your interest in contributing the Hiero SDK for JavaScript!
 
 We appreciate your interest in helping us and the rest of our community. We welcome bug reports, feature requests, and code contributions.
 
@@ -52,7 +52,7 @@ Please ensure that your bug report contains the following:
 4. Run `task build`
 5. Run `node::name of the example file`
 
-Please note: Some of the examples require to run a [Local Node.](https://github.com/hashgraph/hedera-local-node)
+Please note: Some of the examples require to run a [Local Node.](https://github.com/hiero-ledger/hiero-local-node)
 
 ## Feature Requests
 
@@ -107,13 +107,13 @@ All Pull Requests must be approved by at least one member of the SDK team before
 
 ## Getting in Contact
 
--   Join us in our [Discord][discord] channel; there you can engage with the Hedera team and other developers and enthusiasts.
+-   Join us in our [Discord][discord] channel; there you can engage with the Hiero team and other developers and enthusiasts.
 
-[license]: https://github.com/hashgraph/hedera-sdk-js/blob/main/LICENSE
+[license]: https://github.com/hiero-ledger/hiero-sdk-js/blob/main/LICENSE
 [mwe]: https://en.wikipedia.org/wiki/Minimal_Working_Example
 [markdown]: https://guides.github.com/features/mastering-markdown/
-[issues]: https://github.com/hashgraph/hedera-sdk-js/issues
-[pull-requests]: https://github.com/hashgraph/hedera-sdk-js/pulls
-[label-bug]: https://github.com/hashgraph/hedera-sdk-js/labels/bug
-[label-enhancement]: https://github.com/hashgraph/hedera-sdk-js/labels/enhancement
+[issues]: https://github.com/hiero-ledger/hiero-sdk-js/issues
+[pull-requests]: https://github.com/hiero-ledger/hiero-sdk-js/pulls
+[label-bug]: https://github.com/hiero-ledger/hiero-sdk-js/labels/bug
+[label-enhancement]: https://github.com/hiero-ledger/hiero-sdk-js/labels/enhancement
 [discord]: https://hedera.com/discord

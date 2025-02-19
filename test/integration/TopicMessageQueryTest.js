@@ -25,7 +25,7 @@ describe("TopicMessageQuery", function () {
             .execute(env.client);
 
         const { topicId } = await response.getReceipt(env.client);
-        const contents = "Hello from Hedera SDK JS";
+        const contents = "Hello from Hiero SDK JS";
         let expectedContents = "";
 
         let finished = false;

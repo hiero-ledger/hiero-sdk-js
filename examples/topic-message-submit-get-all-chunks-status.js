@@ -12,7 +12,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 async function main() {
-    /* Source and context:https://github.com/hashgraph/hedera-sdk-js/issues/1333
+    /* Source and context:https://github.com/hiero-ledger/hiero-sdk-js/issues/1333
 
         In when we are submiting a message to a topic ID, if this message is large, the SDK is separating it on chunks:
             -   The default max chunks are set to 20
