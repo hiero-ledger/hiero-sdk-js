@@ -35,6 +35,7 @@ import PublicKey from "../PublicKey.js";
 import List from "./List.js";
 import Timestamp from "../Timestamp.js";
 import * as util from "../util.js";
+import CustomFeeLimit from "./CustomFeeLimit.js";
 
 /**
  * @typedef {import("bignumber.js").default} BigNumber
@@ -137,6 +138,13 @@ export default class Transaction extends Executable {
          * @type {Hbar}
          */
         this._defaultMaxTransactionFee = new Hbar(2);
+
+        /**
+         * The maximum custom fee that the user is willing to pay for the message. If left empty, the user is willing to pay any custom fee.
+         * If used with a transaction type that does not support custom fee limits, the transaction will fail.
+         * @type {CustomFeeLimit[]}
+         */
+        this._customFeeLimits = [];
 
         /**
          * The max transaction fee on the request. This field is what users are able
@@ -492,6 +500,12 @@ export default class Transaction extends Executable {
             body.transactionFee > new Long(0, 0, true)
                 ? Hbar.fromTinybars(body.transactionFee)
                 : null;
+        transaction._customFeeLimits =
+            body.maxCustomFees != null
+                ? body.maxCustomFees?.map((fee) =>
+                      CustomFeeLimit._fromProtobuf(fee),
+                  )
+                : [];
         transaction._transactionMemo = body.memo != null ? body.memo : "";
 
         // Loop over a single row of `signedTransactions` and add all the public
@@ -1728,6 +1742,12 @@ export default class Transaction extends Executable {
             transactionValidDuration: {
                 seconds: Long.fromNumber(this._transactionValidDuration),
             },
+            maxCustomFees:
+                this._customFeeLimits != null
+                    ? this._customFeeLimits.map((maxCustomFee) =>
+                          maxCustomFee._toProtobuf(),
+                      )
+                    : null,
         };
     }
 

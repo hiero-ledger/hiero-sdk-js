@@ -26,6 +26,7 @@ import Duration from "../Duration.js";
 import * as HashgraphProto from "@hashgraph/proto";
 import Key from "../Key.js";
 import LedgerId from "../LedgerId.js";
+import CustomFixedFee from "../token/CustomFixedFee.js";
 
 /**
  * Current state of a topic.
@@ -41,8 +42,11 @@ export default class TopicInfo {
      * @param {?Timestamp} props.expirationTime
      * @param {?Key} props.adminKey
      * @param {?Key} props.submitKey
+     * @param {?Key} props.feeScheduleKey
+     * @param {?Key[]} props.feeExemptKeys
      * @param {?Duration} props.autoRenewPeriod
      * @param {?AccountId} props.autoRenewAccountId
+     * @param {?CustomFixedFee[]} props.customFees
      * @param {LedgerId|null} props.ledgerId
      */
     constructor(props) {
@@ -96,6 +100,18 @@ export default class TopicInfo {
         this.submitKey = props.submitKey;
 
         /**
+         * Access control for updating topic fees. Null If there is no key.
+         *
+         * @readonly
+         */
+        this.feeScheduleKey = props.feeScheduleKey;
+
+        /**
+         * The keys that will are exempt from paying fees.
+         * @readonly
+         */
+        this.feeExemptKeys = props.feeExemptKeys;
+        /**
          * @readonly
          */
         this.autoRenewPeriod = props.autoRenewPeriod;
@@ -104,6 +120,12 @@ export default class TopicInfo {
          * @readonly
          */
         this.autoRenewAccountId = props.autoRenewAccountId;
+
+        /**
+         * The fixed fees assessed when a message is submitted to the topic.
+         * @readonly
+         */
+        this.customFees = props.customFees;
 
         this.ledgerId = props.ledgerId;
 
@@ -147,6 +169,16 @@ export default class TopicInfo {
                 info.submitKey != null
                     ? Key._fromProtobufKey(info.submitKey)
                     : null,
+            feeScheduleKey:
+                info.feeScheduleKey != null
+                    ? Key._fromProtobufKey(info.feeScheduleKey)
+                    : null,
+            feeExemptKeys:
+                info.feeExemptKeyList != null
+                    ? info.feeExemptKeyList.map((key) =>
+                          Key._fromProtobufKey(key),
+                      )
+                    : null,
             autoRenewPeriod:
                 info.autoRenewPeriod != null
                     ? new Duration(
@@ -156,6 +188,12 @@ export default class TopicInfo {
             autoRenewAccountId:
                 info.autoRenewAccount != null
                     ? AccountId._fromProtobuf(info.autoRenewAccount)
+                    : null,
+            customFees:
+                info.customFees != null
+                    ? info.customFees.map((customFee) =>
+                          CustomFixedFee._fromProtobuf(customFee),
+                      )
                     : null,
             ledgerId:
                 info.ledgerId != null
@@ -187,6 +225,14 @@ export default class TopicInfo {
                     this.submitKey != null
                         ? this.submitKey._toProtobufKey()
                         : null,
+                feeScheduleKey:
+                    this.feeScheduleKey != null
+                        ? this.feeScheduleKey._toProtobufKey()
+                        : null,
+                feeExemptKeyList:
+                    this.feeExemptKeys != null
+                        ? this.feeExemptKeys.map((key) => key._toProtobufKey())
+                        : null,
                 autoRenewPeriod:
                     this.autoRenewPeriod != null
                         ? this.autoRenewPeriod._toProtobuf()
@@ -194,6 +240,12 @@ export default class TopicInfo {
                 autoRenewAccount:
                     this.autoRenewAccountId != null
                         ? this.autoRenewAccountId._toProtobuf()
+                        : null,
+                customFees:
+                    this.customFees != null
+                        ? this.customFees.map((customFee) =>
+                              customFee._toProtobuf(),
+                          )
                         : null,
             },
         };
