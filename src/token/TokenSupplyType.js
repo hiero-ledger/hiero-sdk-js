@@ -2,7 +2,7 @@
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.TokenSupplyType} HashgraphProto.proto.TokenSupplyType
+ * @typedef {import("@hashgraph/proto").proto.TokenSupplyType} HieroProto.proto.TokenSupplyType
  */
 
 export default class TokenSupplyType {
@@ -51,7 +51,7 @@ export default class TokenSupplyType {
     }
 
     /**
-     * @returns {HashgraphProto.proto.TokenSupplyType}
+     * @returns {HieroProto.proto.TokenSupplyType}
      */
     valueOf() {
         return this._code;

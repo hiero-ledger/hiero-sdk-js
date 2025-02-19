@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import ExchangeRate from "./ExchangeRate.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 
-const { proto } = HashgraphProto;
+const { proto } = HieroProto;
 
 /**
  *  Represents a pair of exchange rates for HBAR to USD cents conversion.
@@ -32,18 +32,18 @@ export default class ExchangeRates {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IExchangeRateSet} rateSet
+     * @param {HieroProto.proto.IExchangeRateSet} rateSet
      * @returns {ExchangeRates}
      */
     static _fromProtobuf(rateSet) {
         return new ExchangeRates({
             currentRate: ExchangeRate._fromProtobuf(
-                /** @type {HashgraphProto.proto.IExchangeRate} */ (
+                /** @type {HieroProto.proto.IExchangeRate} */ (
                     rateSet.currentRate
                 ),
             ),
             nextRate: ExchangeRate._fromProtobuf(
-                /** @type {HashgraphProto.proto.IExchangeRate} */ (
+                /** @type {HieroProto.proto.IExchangeRate} */ (
                     rateSet.nextRate
                 ),
             ),
@@ -52,7 +52,7 @@ export default class ExchangeRates {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.IExchangeRateSet}
+     * @returns {HieroProto.proto.IExchangeRateSet}
      */
     _toProtobuf() {
         return {

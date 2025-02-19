@@ -10,13 +10,13 @@ import CustomRoyaltyFee from "./CustomRoyaltyFee.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HashgraphProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HashgraphProto.proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HashgraphProto.proto.TransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HashgraphProto.proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HashgraphProto.proto.ITransactionResponse
- * @typedef {import("@hashgraph/proto").proto.ITokenFeeScheduleUpdateTransactionBody} HashgraphProto.proto.ITokenFeeScheduleUpdateTransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITokenID} HashgraphProto.proto.ITokenID
+ * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
+ * @typedef {import("@hashgraph/proto").proto.ITokenFeeScheduleUpdateTransactionBody} HieroProto.proto.ITokenFeeScheduleUpdateTransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITokenID} HieroProto.proto.ITokenID
  */
 
 /**
@@ -62,11 +62,11 @@ export default class TokenFeeScheduleUpdateTransaction extends Transaction {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransaction[]} transactions
-     * @param {HashgraphProto.proto.ISignedTransaction[]} signedTransactions
+     * @param {HieroProto.proto.ITransaction[]} transactions
+     * @param {HieroProto.proto.ISignedTransaction[]} signedTransactions
      * @param {TransactionId[]} transactionIds
      * @param {AccountId[]} nodeIds
-     * @param {HashgraphProto.proto.ITransactionBody[]} bodies
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
      * @returns {TokenFeeScheduleUpdateTransaction}
      */
     static _fromProtobuf(
@@ -78,7 +78,7 @@ export default class TokenFeeScheduleUpdateTransaction extends Transaction {
     ) {
         const body = bodies[0];
         const feeScheduleUpdate =
-            /** @type {HashgraphProto.proto.ITokenFeeScheduleUpdateTransactionBody} */ (
+            /** @type {HieroProto.proto.ITokenFeeScheduleUpdateTransactionBody} */ (
                 body.tokenFeeScheduleUpdate
             );
 
@@ -152,8 +152,8 @@ export default class TokenFeeScheduleUpdateTransaction extends Transaction {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.ITransaction} request
-     * @returns {Promise<HashgraphProto.proto.ITransactionResponse>}
+     * @param {HieroProto.proto.ITransaction} request
+     * @returns {Promise<HieroProto.proto.ITransactionResponse>}
      */
     _execute(channel, request) {
         return channel.token.updateTokenFeeSchedule(request);
@@ -162,7 +162,7 @@ export default class TokenFeeScheduleUpdateTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {NonNullable<HashgraphProto.proto.TransactionBody["data"]>}
+     * @returns {NonNullable<HieroProto.proto.TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
         return "tokenFeeScheduleUpdate";
@@ -171,7 +171,7 @@ export default class TokenFeeScheduleUpdateTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {HashgraphProto.proto.ITokenFeeScheduleUpdateTransactionBody}
+     * @returns {HieroProto.proto.ITokenFeeScheduleUpdateTransactionBody}
      */
     _makeTransactionData() {
         return {

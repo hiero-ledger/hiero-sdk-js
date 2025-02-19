@@ -5,7 +5,7 @@ import AccountId from "../account/AccountId.js";
 import Timestamp from "../Timestamp.js";
 import Long from "long";
 import Duration from "../Duration.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import Key from "../Key.js";
 import LedgerId from "../LedgerId.js";
 import CustomFixedFee from "../token/CustomFixedFee.js";
@@ -116,19 +116,17 @@ export default class TopicInfo {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IConsensusGetTopicInfoResponse} infoResponse
+     * @param {HieroProto.proto.IConsensusGetTopicInfoResponse} infoResponse
      * @returns {TopicInfo}
      */
     static _fromProtobuf(infoResponse) {
-        const info = /** @type {HashgraphProto.proto.IConsensusTopicInfo} */ (
+        const info = /** @type {HieroProto.proto.IConsensusTopicInfo} */ (
             infoResponse.topicInfo
         );
 
         return new TopicInfo({
             topicId: TopicId._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITopicID} */ (
-                    infoResponse.topicID
-                ),
+                /** @type {HieroProto.proto.ITopicID} */ (infoResponse.topicID),
             ),
             topicMemo: info.memo != null ? info.memo : "",
             runningHash:
@@ -186,7 +184,7 @@ export default class TopicInfo {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.IConsensusGetTopicInfoResponse}
+     * @returns {HieroProto.proto.IConsensusGetTopicInfoResponse}
      */
     _toProtobuf() {
         return {
@@ -239,7 +237,7 @@ export default class TopicInfo {
      */
     static fromBytes(bytes) {
         return TopicInfo._fromProtobuf(
-            HashgraphProto.proto.ConsensusGetTopicInfoResponse.decode(bytes),
+            HieroProto.proto.ConsensusGetTopicInfoResponse.decode(bytes),
         );
     }
 
@@ -247,8 +245,8 @@ export default class TopicInfo {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.ConsensusGetTopicInfoResponse.encode(
-            /** @type {HashgraphProto.proto.ConsensusGetTopicInfoResponse} */ (
+        return HieroProto.proto.ConsensusGetTopicInfoResponse.encode(
+            /** @type {HieroProto.proto.ConsensusGetTopicInfoResponse} */ (
                 this._toProtobuf()
             ),
         ).finish();

@@ -5,7 +5,7 @@ import * as hex from "./encoding/hex.js";
 import BadEntityIdError from "./BadEntityIdError.js";
 import * as util from "./util.js";
 import base32 from "./base32.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import PublicKey from "./PublicKey.js";
 import { arrayify } from "@ethersproject/bytes";
 
@@ -436,7 +436,7 @@ export function aliasToPublicKey(alias) {
     }
     let key;
     try {
-        key = HashgraphProto.proto.Key.decode(bytes);
+        key = HieroProto.proto.Key.decode(bytes);
     } catch (e) {
         throw new Error(
             "The alias is created with hollow account. Please use aliasToEvmAddress!",
@@ -468,7 +468,7 @@ export function aliasToEvmAddress(alias) {
         return null;
     }
     try {
-        HashgraphProto.proto.Key.decode(bytes);
+        HieroProto.proto.Key.decode(bytes);
         throw new Error(
             "The alias is created with ed25519 or ECDSASecp256k1 account. Please use aliasToPublicKey!",
         );

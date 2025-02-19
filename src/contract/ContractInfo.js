@@ -7,12 +7,12 @@ import Timestamp from "../Timestamp.js";
 import Duration from "../Duration.js";
 import Hbar from "../Hbar.js";
 import Long from "long";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import TokenRelationshipMap from "../account/TokenRelationshipMap.js";
 import Key from "../Key.js";
 import LedgerId from "../LedgerId.js";
 
-const { proto } = HashgraphProto;
+const { proto } = HieroProto;
 
 /**
  * @typedef {import("../StakingInfo.js").StakingInfoJson} StakingInfoJson
@@ -152,23 +152,21 @@ export default class ContractInfo {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ContractGetInfoResponse.IContractInfo} info
+     * @param {HieroProto.proto.ContractGetInfoResponse.IContractInfo} info
      * @returns {ContractInfo}
      */
     static _fromProtobuf(info) {
         const autoRenewPeriod = /** @type {Long | number} */ (
-            /** @type {HashgraphProto.proto.IDuration} */ (info.autoRenewPeriod)
+            /** @type {HieroProto.proto.IDuration} */ (info.autoRenewPeriod)
                 .seconds
         );
 
         return new ContractInfo({
             contractId: ContractId._fromProtobuf(
-                /** @type {HashgraphProto.proto.IContractID} */ (
-                    info.contractID
-                ),
+                /** @type {HieroProto.proto.IContractID} */ (info.contractID),
             ),
             accountId: AccountId._fromProtobuf(
-                /** @type {HashgraphProto.proto.IAccountID} */ (info.accountID),
+                /** @type {HieroProto.proto.IAccountID} */ (info.accountID),
             ),
             contractAccountId:
                 info.contractAccountID != null ? info.contractAccountID : "",
@@ -177,7 +175,7 @@ export default class ContractInfo {
                     ? Key._fromProtobufKey(info.adminKey)
                     : null,
             expirationTime: Timestamp._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITimestamp} */ (
+                /** @type {HieroProto.proto.ITimestamp} */ (
                     info.expirationTime
                 ),
             ),
@@ -211,7 +209,7 @@ export default class ContractInfo {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.ContractGetInfoResponse.IContractInfo}
+     * @returns {HieroProto.proto.ContractGetInfoResponse.IContractInfo}
      */
     _toProtobuf() {
         return {

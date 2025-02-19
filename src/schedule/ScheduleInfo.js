@@ -4,12 +4,12 @@ import ScheduleId from "./ScheduleId.js";
 import AccountId from "../account/AccountId.js";
 import Timestamp from "../Timestamp.js";
 import Transaction from "../transaction/Transaction.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import TransactionId from "../transaction/TransactionId.js";
 import Key from "../Key.js";
 import KeyList from "../KeyList.js";
 
-const { proto } = HashgraphProto;
+const { proto } = HieroProto;
 
 /**
  * Response when the client sends the node ScheduleGetInfoQuery.
@@ -21,7 +21,7 @@ export default class ScheduleInfo {
      * @param {ScheduleId} props.scheduleId;
      * @param {?AccountId} props.creatorAccountID;
      * @param {?AccountId} props.payerAccountID;
-     * @param {?HashgraphProto.proto.ISchedulableTransactionBody} props.schedulableTransactionBody;
+     * @param {?HieroProto.proto.ISchedulableTransactionBody} props.schedulableTransactionBody;
      * @param {?Key} props.adminKey
      * @param {?KeyList} props.signers;
      * @param {?string} props.scheduleMemo;
@@ -98,20 +98,18 @@ export default class ScheduleInfo {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IScheduleInfo} info
+     * @param {HieroProto.proto.IScheduleInfo} info
      * @returns {ScheduleInfo}
      */
     static _fromProtobuf(info) {
         return new ScheduleInfo({
             scheduleId: ScheduleId._fromProtobuf(
-                /** @type {HashgraphProto.proto.IScheduleID} */ (
-                    info.scheduleID
-                ),
+                /** @type {HieroProto.proto.IScheduleID} */ (info.scheduleID),
             ),
             creatorAccountID:
                 info.creatorAccountID != null
                     ? AccountId._fromProtobuf(
-                          /** @type {HashgraphProto.proto.IAccountID} */ (
+                          /** @type {HieroProto.proto.IAccountID} */ (
                               info.creatorAccountID
                           ),
                       )
@@ -119,7 +117,7 @@ export default class ScheduleInfo {
             payerAccountID:
                 info.payerAccountID != null
                     ? AccountId._fromProtobuf(
-                          /** @type {HashgraphProto.proto.IAccountID} */ (
+                          /** @type {HieroProto.proto.IAccountID} */ (
                               info.payerAccountID
                           ),
                       )
@@ -140,7 +138,7 @@ export default class ScheduleInfo {
             expirationTime:
                 info.expirationTime != null
                     ? Timestamp._fromProtobuf(
-                          /** @type {HashgraphProto.proto.ITimestamp} */ (
+                          /** @type {HieroProto.proto.ITimestamp} */ (
                               info.expirationTime
                           ),
                       )
@@ -148,7 +146,7 @@ export default class ScheduleInfo {
             executed:
                 info.executionTime != null
                     ? Timestamp._fromProtobuf(
-                          /** @type {HashgraphProto.proto.ITimestamp} */ (
+                          /** @type {HieroProto.proto.ITimestamp} */ (
                               info.executionTime
                           ),
                       )
@@ -156,7 +154,7 @@ export default class ScheduleInfo {
             deleted:
                 info.deletionTime != null
                     ? Timestamp._fromProtobuf(
-                          /** @type {HashgraphProto.proto.ITimestamp} */ (
+                          /** @type {HieroProto.proto.ITimestamp} */ (
                               info.deletionTime
                           ),
                       )
@@ -171,7 +169,7 @@ export default class ScheduleInfo {
     }
 
     /**
-     * @returns {HashgraphProto.proto.IScheduleInfo}
+     * @returns {HieroProto.proto.IScheduleInfo}
      */
     _toProtobuf() {
         return {
@@ -220,7 +218,7 @@ export default class ScheduleInfo {
             this.schedulableTransactionBody,
         );
         const data =
-            /** @type {NonNullable<HashgraphProto.proto.SchedulableTransactionBody["data"]>} */ (
+            /** @type {NonNullable<HieroProto.proto.SchedulableTransactionBody["data"]>} */ (
                 scheduled.data
             );
 

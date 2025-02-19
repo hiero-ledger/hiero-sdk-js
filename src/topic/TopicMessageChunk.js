@@ -5,7 +5,7 @@ import Long from "long";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITimestamp} HashgraphProto.proto.ITimestamp
+ * @typedef {import("@hashgraph/proto").proto.ITimestamp} HieroProto.proto.ITimestamp
  */
 
 /**
@@ -43,7 +43,7 @@ export default class TopicMessageChunk {
     static _fromProtobuf(response) {
         return new TopicMessageChunk({
             consensusTimestamp: Timestamp._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITimestamp} */
+                /** @type {HieroProto.proto.ITimestamp} */
                 (response.consensusTimestamp),
             ),
             contents:

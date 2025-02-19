@@ -12,12 +12,12 @@ import CustomFixedFee from "../token/CustomFixedFee.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IConsensusUpdateTopicTransactionBody} HashgraphProto.proto.IConsensusUpdateTopicTransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HashgraphProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HashgraphProto.proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HashgraphProto.proto.TransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HashgraphProto.proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HashgraphProto.proto.ITransactionResponse
+ * @typedef {import("@hashgraph/proto").proto.IConsensusUpdateTopicTransactionBody} HieroProto.proto.IConsensusUpdateTopicTransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
  */
 
 /**
@@ -155,11 +155,11 @@ export default class TopicUpdateTransaction extends Transaction {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransaction[]} transactions
-     * @param {HashgraphProto.proto.ISignedTransaction[]} signedTransactions
+     * @param {HieroProto.proto.ITransaction[]} transactions
+     * @param {HieroProto.proto.ISignedTransaction[]} signedTransactions
      * @param {TransactionId[]} transactionIds
      * @param {AccountId[]} nodeIds
-     * @param {HashgraphProto.proto.ITransactionBody[]} bodies
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
      * @returns {TopicUpdateTransaction}
      */
     static _fromProtobuf(
@@ -171,7 +171,7 @@ export default class TopicUpdateTransaction extends Transaction {
     ) {
         const body = bodies[0];
         const update =
-            /** @type {HashgraphProto.proto.IConsensusUpdateTopicTransactionBody} */ (
+            /** @type {HieroProto.proto.IConsensusUpdateTopicTransactionBody} */ (
                 body.consensusUpdateTopic
             );
 
@@ -562,8 +562,8 @@ export default class TopicUpdateTransaction extends Transaction {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.ITransaction} request
-     * @returns {Promise<HashgraphProto.proto.ITransactionResponse>}
+     * @param {HieroProto.proto.ITransaction} request
+     * @returns {Promise<HieroProto.proto.ITransactionResponse>}
      */
     _execute(channel, request) {
         return channel.consensus.updateTopic(request);
@@ -572,7 +572,7 @@ export default class TopicUpdateTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {NonNullable<HashgraphProto.proto.TransactionBody["data"]>}
+     * @returns {NonNullable<HieroProto.proto.TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
         return "consensusUpdateTopic";
@@ -581,7 +581,7 @@ export default class TopicUpdateTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {HashgraphProto.proto.IConsensusUpdateTopicTransactionBody}
+     * @returns {HieroProto.proto.IConsensusUpdateTopicTransactionBody}
      */
     _makeTransactionData() {
         return {

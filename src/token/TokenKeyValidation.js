@@ -2,7 +2,7 @@
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.TokenKeyValidation} HashgraphProto.proto.TokenKeyValidation
+ * @typedef {import("@hashgraph/proto").proto.TokenKeyValidation} HieroProto.proto.TokenKeyValidation
  */
 
 /** Types of validation strategies for token keys. */
@@ -52,7 +52,7 @@ export default class TokenKeyValidation {
     }
 
     /**
-     * @returns {HashgraphProto.proto.TokenKeyValidation}
+     * @returns {HieroProto.proto.TokenKeyValidation}
      */
     valueOf() {
         return this._code;

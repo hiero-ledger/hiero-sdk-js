@@ -13,7 +13,7 @@ import TokenTransferAccountMap from "../account/TokenTransferAccountMap.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITokenAirdropTransactionBody} HashgraphProto.proto.ITokenAirdropTransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITokenAirdropTransactionBody} HieroProto.proto.ITokenAirdropTransactionBody
  */
 
 /**
@@ -416,7 +416,7 @@ export default class AbstractTokenTransferTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {HashgraphProto.proto.ITokenAirdropTransactionBody}
+     * @returns {HieroProto.proto.ITokenAirdropTransactionBody}
      */
     _makeTransactionData() {
         /** @type {{tokenId: TokenId; expectedDecimals: number | null; transfers: TokenTransfer[]; nftTransfers: TokenNftTransfer[];}[]} */

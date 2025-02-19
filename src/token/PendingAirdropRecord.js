@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.PendingAirdropRecord} HashgraphProto.proto.PendingAirdropRecord
+ * @typedef {import("@hashgraph/proto").proto.PendingAirdropRecord} HieroProto.proto.PendingAirdropRecord
  */
 
 import Long from "long";
@@ -19,7 +19,7 @@ export default class PendingAirdropRecord {
     }
 
     /**
-     * @returns {HashgraphProto.proto.PendingAirdropRecord}
+     * @returns {HieroProto.proto.PendingAirdropRecord}
      */
     toBytes() {
         return {
@@ -31,7 +31,7 @@ export default class PendingAirdropRecord {
     }
 
     /**
-     * @param {HashgraphProto.proto.PendingAirdropRecord} pb
+     * @param {HieroProto.proto.PendingAirdropRecord} pb
      * @returns {PendingAirdropRecord}
      */
     static fromBytes(pb) {

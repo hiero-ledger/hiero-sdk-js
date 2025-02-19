@@ -6,15 +6,15 @@ import Transaction, {
 import { isNumber } from "./util.js";
 
 /**
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HashgraphProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.Transaction} HashgraphProto.proto.Transaction
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HashgraphProto.proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.SignedTransaction} HashgraphProto.proto.SignedTransaction
- * @typedef {import("@hashgraph/proto").proto.IUtilPrngTransactionBody } HashgraphProto.proto.IUtilPrngTransactionBody
- * @typedef {import("@hashgraph/proto").proto.UtilPrngTransactionBody} HashgraphProto.proto.UtilPrngTransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HashgraphProto.proto.TransactionResponse
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HashgraphProto.proto.TransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HashgraphProto.proto.ITransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hashgraph/proto").proto.Transaction} HieroProto.proto.Transaction
+ * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hashgraph/proto").proto.SignedTransaction} HieroProto.proto.SignedTransaction
+ * @typedef {import("@hashgraph/proto").proto.IUtilPrngTransactionBody } HieroProto.proto.IUtilPrngTransactionBody
+ * @typedef {import("@hashgraph/proto").proto.UtilPrngTransactionBody} HieroProto.proto.UtilPrngTransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HieroProto.proto.TransactionResponse
+ * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
  * @typedef {import("./account/AccountId.js").default} AccountId
  * @typedef {import("./transaction/TransactionId.js").default} TransactionId
  */
@@ -72,8 +72,8 @@ export default class PrngTransaction extends Transaction {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.ITransaction} request
-     * @returns {Promise<HashgraphProto.proto.TransactionResponse>}
+     * @param {HieroProto.proto.ITransaction} request
+     * @returns {Promise<HieroProto.proto.TransactionResponse>}
      */
     _execute(channel, request) {
         return channel.util.prng(request);
@@ -81,11 +81,11 @@ export default class PrngTransaction extends Transaction {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransaction[]} transactions
-     * @param {HashgraphProto.proto.ISignedTransaction[]} signedTransactions
+     * @param {HieroProto.proto.ITransaction[]} transactions
+     * @param {HieroProto.proto.ISignedTransaction[]} signedTransactions
      * @param {TransactionId[]} transactionIds
      * @param {AccountId[]} nodeIds
-     * @param {HashgraphProto.proto.ITransactionBody[]} bodies
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
      * @returns {PrngTransaction}
      */
     static _fromProtobuf(
@@ -95,11 +95,11 @@ export default class PrngTransaction extends Transaction {
         nodeIds,
         bodies,
     ) {
-        const body = /** @type {HashgraphProto.proto.ITransactionBody} */ (
+        const body = /** @type {HieroProto.proto.ITransactionBody} */ (
             bodies[0]
         );
         const transactionRange =
-            /** @type {HashgraphProto.proto.IUtilPrngTransactionBody} */ (
+            /** @type {HieroProto.proto.IUtilPrngTransactionBody} */ (
                 body.utilPrng
             );
         return Transaction._fromProtobufTransactions(
@@ -117,7 +117,7 @@ export default class PrngTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {NonNullable<HashgraphProto.proto.TransactionBody["data"]>}
+     * @returns {NonNullable<HieroProto.proto.TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
         return "utilPrng";
@@ -126,7 +126,7 @@ export default class PrngTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {HashgraphProto.proto.IUtilPrngTransactionBody}
+     * @returns {HieroProto.proto.IUtilPrngTransactionBody}
      */
     _makeTransactionData() {
         return {

@@ -6,13 +6,13 @@ import LiveHash from "./LiveHash.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IQuery} HashgraphProto.proto.IQuery
- * @typedef {import("@hashgraph/proto").proto.IQueryHeader} HashgraphProto.proto.IQueryHeader
- * @typedef {import("@hashgraph/proto").proto.IResponse} HashgraphProto.proto.IResponse
- * @typedef {import("@hashgraph/proto").proto.IResponseHeader} HashgraphProto.proto.IResponseHeader
- * @typedef {import("@hashgraph/proto").proto.ICryptoGetLiveHashQuery} HashgraphProto.proto.ICryptoGetLiveHashQuery
- * @typedef {import("@hashgraph/proto").proto.ICryptoGetLiveHashResponse} HashgraphProto.proto.ICryptoGetLiveHashResponse
- * @typedef {import("@hashgraph/proto").proto.ILiveHash} HashgraphProto.proto.ILiveHash
+ * @typedef {import("@hashgraph/proto").proto.IQuery} HieroProto.proto.IQuery
+ * @typedef {import("@hashgraph/proto").proto.IQueryHeader} HieroProto.proto.IQueryHeader
+ * @typedef {import("@hashgraph/proto").proto.IResponse} HieroProto.proto.IResponse
+ * @typedef {import("@hashgraph/proto").proto.IResponseHeader} HieroProto.proto.IResponseHeader
+ * @typedef {import("@hashgraph/proto").proto.ICryptoGetLiveHashQuery} HieroProto.proto.ICryptoGetLiveHashQuery
+ * @typedef {import("@hashgraph/proto").proto.ICryptoGetLiveHashResponse} HieroProto.proto.ICryptoGetLiveHashResponse
+ * @typedef {import("@hashgraph/proto").proto.ILiveHash} HieroProto.proto.ILiveHash
  */
 
 /**
@@ -57,14 +57,13 @@ export default class LiveHashQuery extends Query {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IQuery} query
+     * @param {HieroProto.proto.IQuery} query
      * @returns {LiveHashQuery}
      */
     static _fromProtobuf(query) {
-        const hash =
-            /** @type {HashgraphProto.proto.ICryptoGetLiveHashQuery} */ (
-                query.cryptoGetLiveHash
-            );
+        const hash = /** @type {HieroProto.proto.ICryptoGetLiveHashQuery} */ (
+            query.cryptoGetLiveHash
+        );
 
         // eslint-disable-next-line deprecation/deprecation
         return new LiveHashQuery({
@@ -130,8 +129,8 @@ export default class LiveHashQuery extends Query {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.IQuery} request
-     * @returns {Promise<HashgraphProto.proto.IResponse>}
+     * @param {HieroProto.proto.IQuery} request
+     * @returns {Promise<HieroProto.proto.IResponse>}
      */
     _execute(channel, request) {
         return channel.crypto.getLiveHash(request);
@@ -140,15 +139,15 @@ export default class LiveHashQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IResponse} response
-     * @returns {HashgraphProto.proto.IResponseHeader}
+     * @param {HieroProto.proto.IResponse} response
+     * @returns {HieroProto.proto.IResponseHeader}
      */
     _mapResponseHeader(response) {
         const cryptoGetLiveHash =
-            /** @type {HashgraphProto.proto.ICryptoGetLiveHashResponse} */ (
+            /** @type {HieroProto.proto.ICryptoGetLiveHashResponse} */ (
                 response.cryptoGetLiveHash
             );
-        return /** @type {HashgraphProto.proto.IResponseHeader} */ (
+        return /** @type {HieroProto.proto.IResponseHeader} */ (
             cryptoGetLiveHash.header
         );
     }
@@ -156,18 +155,18 @@ export default class LiveHashQuery extends Query {
     /**
      * @protected
      * @override
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IResponse} response
      * @returns {Promise<LiveHash>}
      */
     _mapResponse(response) {
         const hashes =
-            /** @type {HashgraphProto.proto.ICryptoGetLiveHashResponse} */ (
+            /** @type {HieroProto.proto.ICryptoGetLiveHashResponse} */ (
                 response.cryptoGetLiveHash
             );
 
         return Promise.resolve(
             LiveHash._fromProtobuf(
-                /** @type {HashgraphProto.proto.ILiveHash} */ (hashes.liveHash),
+                /** @type {HieroProto.proto.ILiveHash} */ (hashes.liveHash),
             ),
         );
     }
@@ -175,8 +174,8 @@ export default class LiveHashQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IQueryHeader} header
-     * @returns {HashgraphProto.proto.IQuery}
+     * @param {HieroProto.proto.IQueryHeader} header
+     * @returns {HieroProto.proto.IQuery}
      */
     _onMakeRequest(header) {
         return {

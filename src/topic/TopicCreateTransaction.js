@@ -12,12 +12,12 @@ import Hbar from "../Hbar.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IConsensusCreateTopicTransactionBody} HashgraphProto.proto.IConsensusCreateTopicTransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HashgraphProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HashgraphProto.proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HashgraphProto.proto.TransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HashgraphProto.proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HashgraphProto.proto.ITransactionResponse
+ * @typedef {import("@hashgraph/proto").proto.IConsensusCreateTopicTransactionBody} HieroProto.proto.IConsensusCreateTopicTransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
  */
 
 /**
@@ -129,11 +129,11 @@ export default class TopicCreateTransaction extends Transaction {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransaction[]} transactions
-     * @param {HashgraphProto.proto.ISignedTransaction[]} signedTransactions
+     * @param {HieroProto.proto.ITransaction[]} transactions
+     * @param {HieroProto.proto.ISignedTransaction[]} signedTransactions
      * @param {TransactionId[]} transactionIds
      * @param {AccountId[]} nodeIds
-     * @param {HashgraphProto.proto.ITransactionBody[]} bodies
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
      * @returns {TopicCreateTransaction}
      */
     static _fromProtobuf(
@@ -145,7 +145,7 @@ export default class TopicCreateTransaction extends Transaction {
     ) {
         const body = bodies[0];
         const create =
-            /** @type {HashgraphProto.proto.IConsensusCreateTopicTransactionBody} */ (
+            /** @type {HieroProto.proto.IConsensusCreateTopicTransactionBody} */ (
                 body.consensusCreateTopic
             );
 
@@ -457,8 +457,8 @@ export default class TopicCreateTransaction extends Transaction {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.ITransaction} request
-     * @returns {Promise<HashgraphProto.proto.ITransactionResponse>}
+     * @param {HieroProto.proto.ITransaction} request
+     * @returns {Promise<HieroProto.proto.ITransactionResponse>}
      */
     _execute(channel, request) {
         return channel.consensus.createTopic(request);
@@ -467,7 +467,7 @@ export default class TopicCreateTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {NonNullable<HashgraphProto.proto.TransactionBody["data"]>}
+     * @returns {NonNullable<HieroProto.proto.TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
         return "consensusCreateTopic";
@@ -476,7 +476,7 @@ export default class TopicCreateTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {HashgraphProto.proto.IConsensusCreateTopicTransactionBody}
+     * @returns {HieroProto.proto.IConsensusCreateTopicTransactionBody}
      */
     _makeTransactionData() {
         return {

@@ -10,13 +10,13 @@ import KeyList from "../KeyList.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HashgraphProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HashgraphProto.proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HashgraphProto.proto.TransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HashgraphProto.proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HashgraphProto.proto.ITransactionResponse
- * @typedef {import("@hashgraph/proto").proto.ICryptoAddLiveHashTransactionBody} HashgraphProto.proto.ICryptoAddLiveHashTransactionBody
- * @typedef {import("@hashgraph/proto").proto.ILiveHash} HashgraphProto.proto.ILiveHash
+ * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
+ * @typedef {import("@hashgraph/proto").proto.ICryptoAddLiveHashTransactionBody} HieroProto.proto.ICryptoAddLiveHashTransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ILiveHash} HieroProto.proto.ILiveHash
  */
 
 /**
@@ -83,11 +83,11 @@ export default class LiveHashAddTransaction extends Transaction {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransaction[]} transactions
-     * @param {HashgraphProto.proto.ISignedTransaction[]} signedTransactions
+     * @param {HieroProto.proto.ITransaction[]} transactions
+     * @param {HieroProto.proto.ISignedTransaction[]} signedTransactions
      * @param {TransactionId[]} transactionIds
      * @param {AccountId[]} nodeIds
-     * @param {HashgraphProto.proto.ITransactionBody[]} bodies
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
      * @returns {LiveHashAddTransaction}
      */
     static _fromProtobuf(
@@ -99,10 +99,10 @@ export default class LiveHashAddTransaction extends Transaction {
     ) {
         const body = bodies[0];
         const hashes =
-            /** @type {HashgraphProto.proto.ICryptoAddLiveHashTransactionBody} */ (
+            /** @type {HieroProto.proto.ICryptoAddLiveHashTransactionBody} */ (
                 body.cryptoAddLiveHash
             );
-        const liveHash_ = /** @type {HashgraphProto.proto.ILiveHash} */ (
+        const liveHash_ = /** @type {HieroProto.proto.ILiveHash} */ (
             hashes.liveHash
         );
 
@@ -226,8 +226,8 @@ export default class LiveHashAddTransaction extends Transaction {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.ITransaction} request
-     * @returns {Promise<HashgraphProto.proto.ITransactionResponse>}
+     * @param {HieroProto.proto.ITransaction} request
+     * @returns {Promise<HieroProto.proto.ITransactionResponse>}
      */
     _execute(channel, request) {
         return channel.crypto.addLiveHash(request);
@@ -236,7 +236,7 @@ export default class LiveHashAddTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {NonNullable<HashgraphProto.proto.TransactionBody["data"]>}
+     * @returns {NonNullable<HieroProto.proto.TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
         return "cryptoAddLiveHash";
@@ -245,7 +245,7 @@ export default class LiveHashAddTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {HashgraphProto.proto.ICryptoAddLiveHashTransactionBody}
+     * @returns {HieroProto.proto.ICryptoAddLiveHashTransactionBody}
      */
     _makeTransactionData() {
         return {

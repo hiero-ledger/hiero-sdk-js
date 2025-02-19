@@ -7,9 +7,9 @@ import TransactionId from "./TransactionId.js";
 import PrecheckStatusError from "../PrecheckStatusError.js";
 import ReceiptStatusError from "../ReceiptStatusError.js";
 import { ExecutionState } from "../Executable.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 
-const { proto } = HashgraphProto;
+const { proto } = HieroProto;
 
 /**
  * @typedef {import("../account/AccountId.js").default} AccountId
@@ -76,12 +76,12 @@ export default class TransactionReceiptQuery extends Query {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IQuery} query
+     * @param {HieroProto.proto.IQuery} query
      * @returns {TransactionReceiptQuery}
      */
     static _fromProtobuf(query) {
         const receipt =
-            /** @type {HashgraphProto.proto.ITransactionGetReceiptQuery} */ (
+            /** @type {HieroProto.proto.ITransactionGetReceiptQuery} */ (
                 query.transactionGetReceipt
             );
 
@@ -184,8 +184,8 @@ export default class TransactionReceiptQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IQuery} request
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IQuery} request
+     * @param {HieroProto.proto.IResponse} response
      * @returns {[Status, ExecutionState]}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -218,17 +218,14 @@ export default class TransactionReceiptQuery extends Query {
         }
 
         const transactionGetReceipt =
-            /** @type {HashgraphProto.proto.ITransactionGetReceiptResponse} */ (
+            /** @type {HieroProto.proto.ITransactionGetReceiptResponse} */ (
                 response.transactionGetReceipt
             );
-        const receipt =
-            /** @type {HashgraphProto.proto.ITransactionReceipt} */ (
-                transactionGetReceipt.receipt
-            );
+        const receipt = /** @type {HieroProto.proto.ITransactionReceipt} */ (
+            transactionGetReceipt.receipt
+        );
         const receiptStatusCode =
-            /** @type {HashgraphProto.proto.ResponseCodeEnum} */ (
-                receipt.status
-            );
+            /** @type {HieroProto.proto.ResponseCodeEnum} */ (receipt.status);
 
         status = Status._fromCode(receiptStatusCode);
 
@@ -270,8 +267,8 @@ export default class TransactionReceiptQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IQuery} request
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IQuery} request
+     * @param {HieroProto.proto.IResponse} response
      * @param {AccountId} nodeId
      * @returns {Error}
      */
@@ -301,17 +298,14 @@ export default class TransactionReceiptQuery extends Query {
         }
 
         const transactionGetReceipt =
-            /** @type {HashgraphProto.proto.ITransactionGetReceiptResponse} */ (
+            /** @type {HieroProto.proto.ITransactionGetReceiptResponse} */ (
                 response.transactionGetReceipt
             );
-        const receipt =
-            /** @type {HashgraphProto.proto.ITransactionReceipt} */ (
-                transactionGetReceipt.receipt
-            );
+        const receipt = /** @type {HieroProto.proto.ITransactionReceipt} */ (
+            transactionGetReceipt.receipt
+        );
         const receiptStatusCode =
-            /** @type {HashgraphProto.proto.ResponseCodeEnum} */ (
-                receipt.status
-            );
+            /** @type {HieroProto.proto.ResponseCodeEnum} */ (receipt.status);
 
         status = Status._fromCode(receiptStatusCode);
 
@@ -346,8 +340,8 @@ export default class TransactionReceiptQuery extends Query {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.IQuery} request
-     * @returns {Promise<HashgraphProto.proto.IResponse>}
+     * @param {HieroProto.proto.IQuery} request
+     * @returns {Promise<HieroProto.proto.IResponse>}
      */
     _execute(channel, request) {
         return channel.crypto.getTransactionReceipts(request);
@@ -356,15 +350,15 @@ export default class TransactionReceiptQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IResponse} response
-     * @returns {HashgraphProto.proto.IResponseHeader}
+     * @param {HieroProto.proto.IResponse} response
+     * @returns {HieroProto.proto.IResponseHeader}
      */
     _mapResponseHeader(response) {
         const transactionGetReceipt =
-            /** @type {HashgraphProto.proto.ITransactionGetReceiptResponse} */ (
+            /** @type {HieroProto.proto.ITransactionGetReceiptResponse} */ (
                 response.transactionGetReceipt
             );
-        return /** @type {HashgraphProto.proto.IResponseHeader} */ (
+        return /** @type {HieroProto.proto.IResponseHeader} */ (
             transactionGetReceipt.header
         );
     }
@@ -372,15 +366,15 @@ export default class TransactionReceiptQuery extends Query {
     /**
      * @protected
      * @override
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IResponse} response
      * @param {AccountId} nodeAccountId
-     * @param {HashgraphProto.proto.IQuery} request
+     * @param {HieroProto.proto.IQuery} request
      * @returns {Promise<TransactionReceipt>}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _mapResponse(response, nodeAccountId, request) {
         const transactionGetReceipt =
-            /** @type {HashgraphProto.proto.ITransactionGetReceiptResponse} */ (
+            /** @type {HieroProto.proto.ITransactionGetReceiptResponse} */ (
                 response.transactionGetReceipt
             );
 
@@ -392,8 +386,8 @@ export default class TransactionReceiptQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IQueryHeader} header
-     * @returns {HashgraphProto.proto.IQuery}
+     * @param {HieroProto.proto.IQueryHeader} header
+     * @returns {HieroProto.proto.IQuery}
      */
     _onMakeRequest(header) {
         return {

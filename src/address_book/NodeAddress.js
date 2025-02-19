@@ -6,7 +6,7 @@ import * as utf8 from "../encoding/utf8.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.INodeAddress} HashgraphProto.proto.INodeAddress
+ * @typedef {import("@hashgraph/proto").proto.INodeAddress} HieroProto.proto.INodeAddress
  */
 
 /**
@@ -218,7 +218,7 @@ export default class NodeAddress {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.INodeAddress} nodeAddress
+     * @param {HieroProto.proto.INodeAddress} nodeAddress
      * @returns {NodeAddress}
      */
     static _fromProtobuf(nodeAddress) {
@@ -251,7 +251,7 @@ export default class NodeAddress {
     }
 
     /**
-     * @returns {HashgraphProto.proto.INodeAddress}
+     * @returns {HieroProto.proto.INodeAddress}
      */
     _toProtobuf() {
         return {

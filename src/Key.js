@@ -4,14 +4,14 @@ import CACHE from "./Cache.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IKey} HashgraphProto.proto.IKey
+ * @typedef {import("@hashgraph/proto").proto.IKey} HieroProto.proto.IKey
  */
 
 export default class Key {
     /**
      * @internal
      * @abstract
-     * @returns {HashgraphProto.proto.IKey}
+     * @returns {HieroProto.proto.IKey}
      */
     // eslint-disable-next-line jsdoc/require-returns-check
     _toProtobufKey() {
@@ -20,7 +20,7 @@ export default class Key {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IKey} key
+     * @param {HieroProto.proto.IKey} key
      * @returns {Key}
      */
     static _fromProtobufKey(key) {

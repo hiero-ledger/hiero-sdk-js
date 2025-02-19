@@ -15,14 +15,14 @@ import TokenNftAllowance from "./TokenNftAllowance.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HashgraphProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HashgraphProto.proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HashgraphProto.proto.TransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HashgraphProto.proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HashgraphProto.proto.ITransactionResponse
- * @typedef {import("@hashgraph/proto").proto.ICryptoApproveAllowanceTransactionBody} HashgraphProto.proto.ICryptoApproveAllowanceTransactionBody
- * @typedef {import("@hashgraph/proto").proto.IAccountID} HashgraphProto.proto.IAccountID
- * @typedef {import("@hashgraph/proto").proto.IContractID} HashgraphProto.proto.IContractID
+ * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
+ * @typedef {import("@hashgraph/proto").proto.ICryptoApproveAllowanceTransactionBody} HieroProto.proto.ICryptoApproveAllowanceTransactionBody
+ * @typedef {import("@hashgraph/proto").proto.IAccountID} HieroProto.proto.IAccountID
+ * @typedef {import("@hashgraph/proto").proto.IContractID} HieroProto.proto.IContractID
  */
 
 /**
@@ -70,11 +70,11 @@ export default class AccountAllowanceApproveTransaction extends Transaction {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransaction[]} transactions
-     * @param {HashgraphProto.proto.ISignedTransaction[]} signedTransactions
+     * @param {HieroProto.proto.ITransaction[]} transactions
+     * @param {HieroProto.proto.ISignedTransaction[]} signedTransactions
      * @param {TransactionId[]} transactionIds
      * @param {AccountId[]} nodeIds
-     * @param {HashgraphProto.proto.ITransactionBody[]} bodies
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
      * @returns {AccountAllowanceApproveTransaction}
      */
     static _fromProtobuf(
@@ -86,7 +86,7 @@ export default class AccountAllowanceApproveTransaction extends Transaction {
     ) {
         const body = bodies[0];
         const allowanceApproval =
-            /** @type {HashgraphProto.proto.ICryptoApproveAllowanceTransactionBody} */ (
+            /** @type {HieroProto.proto.ICryptoApproveAllowanceTransactionBody} */ (
                 body.cryptoApproveAllowance
             );
 
@@ -516,8 +516,8 @@ export default class AccountAllowanceApproveTransaction extends Transaction {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.ITransaction} request
-     * @returns {Promise<HashgraphProto.proto.ITransactionResponse>}
+     * @param {HieroProto.proto.ITransaction} request
+     * @returns {Promise<HieroProto.proto.ITransactionResponse>}
      */
     _execute(channel, request) {
         return channel.crypto.approveAllowances(request);
@@ -526,7 +526,7 @@ export default class AccountAllowanceApproveTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {NonNullable<HashgraphProto.proto.TransactionBody["data"]>}
+     * @returns {NonNullable<HieroProto.proto.TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
         return "cryptoApproveAllowance";
@@ -535,7 +535,7 @@ export default class AccountAllowanceApproveTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {HashgraphProto.proto.ICryptoApproveAllowanceTransactionBody}
+     * @returns {HieroProto.proto.ICryptoApproveAllowanceTransactionBody}
      */
     _makeTransactionData() {
         return {

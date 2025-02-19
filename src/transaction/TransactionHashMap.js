@@ -6,7 +6,7 @@ import ObjectMap from "../ObjectMap.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HashgraphProto.proto.ITransaction
+ * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
  */
 
 /**
@@ -26,7 +26,7 @@ export default class TransactionHashMap extends ObjectMap {
 
         for (let i = 0; i < transaction._nodeAccountIds.length; i++) {
             const nodeAccountId = transaction._nodeAccountIds.list[i];
-            const tx = /** @type {HashgraphProto.proto.ITransaction} */ (
+            const tx = /** @type {HieroProto.proto.ITransaction} */ (
                 transaction._transactions.get(i)
             );
             const hash = await sha384.digest(

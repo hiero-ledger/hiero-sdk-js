@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import ContractId from "./ContractId.js";
 import StorageChange from "./StorageChange.js";
 
@@ -23,16 +23,14 @@ export default class ContractStateChange {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IContractStateChange} change
+     * @param {HieroProto.proto.IContractStateChange} change
      * @returns {ContractStateChange}
      */
     static _fromProtobuf(change) {
         // eslint-disable-next-line deprecation/deprecation
         return new ContractStateChange({
             contractId: ContractId._fromProtobuf(
-                /** @type {HashgraphProto.proto.IContractID} */ (
-                    change.contractId
-                ),
+                /** @type {HieroProto.proto.IContractID} */ (change.contractId),
             ),
             storageChanges: (change.storageChanges != null
                 ? change.storageChanges
@@ -50,13 +48,13 @@ export default class ContractStateChange {
     static fromBytes(bytes) {
         // eslint-disable-next-line deprecation/deprecation
         return ContractStateChange._fromProtobuf(
-            HashgraphProto.proto.ContractStateChange.decode(bytes),
+            HieroProto.proto.ContractStateChange.decode(bytes),
         );
     }
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.IContractStateChange} change
+     * @returns {HieroProto.proto.IContractStateChange} change
      */
     _toProtobuf() {
         return {
@@ -72,7 +70,7 @@ export default class ContractStateChange {
      */
     toBytes() {
         // eslint-disable-next-line deprecation/deprecation
-        return HashgraphProto.proto.ContractStateChange.encode(
+        return HieroProto.proto.ContractStateChange.encode(
             this._toProtobuf(),
         ).finish();
     }

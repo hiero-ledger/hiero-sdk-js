@@ -5,9 +5,9 @@ import Hbar from "../Hbar.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IGrantedCryptoAllowance} HashgraphProto.proto.IGrantedCryptoAllowance
- * @typedef {import("@hashgraph/proto").proto.ICryptoAllowance} HashgraphProto.proto.ICryptoAllowance
- * @typedef {import("@hashgraph/proto").proto.IAccountID} HashgraphProto.proto.IAccountID
+ * @typedef {import("@hashgraph/proto").proto.IGrantedCryptoAllowance} HieroProto.proto.IGrantedCryptoAllowance
+ * @typedef {import("@hashgraph/proto").proto.ICryptoAllowance} HieroProto.proto.ICryptoAllowance
+ * @typedef {import("@hashgraph/proto").proto.IAccountID} HieroProto.proto.IAccountID
  */
 
 /**
@@ -57,20 +57,18 @@ export default class HbarAllowance {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ICryptoAllowance} allowance
+     * @param {HieroProto.proto.ICryptoAllowance} allowance
      * @returns {HbarAllowance}
      */
     static _fromProtobuf(allowance) {
         return new HbarAllowance({
             spenderAccountId: AccountId._fromProtobuf(
-                /** @type {HashgraphProto.proto.IAccountID} */ (
-                    allowance.spender
-                ),
+                /** @type {HieroProto.proto.IAccountID} */ (allowance.spender),
             ),
             ownerAccountId:
                 allowance.owner != null
                     ? AccountId._fromProtobuf(
-                          /**@type {HashgraphProto.proto.IAccountID}*/ (
+                          /**@type {HieroProto.proto.IAccountID}*/ (
                               allowance.owner
                           ),
                       )
@@ -83,16 +81,14 @@ export default class HbarAllowance {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IGrantedCryptoAllowance} allowance
+     * @param {HieroProto.proto.IGrantedCryptoAllowance} allowance
      * @param {AccountId} ownerAccountId
      * @returns {HbarAllowance}
      */
     static _fromGrantedProtobuf(allowance, ownerAccountId) {
         return new HbarAllowance({
             spenderAccountId: AccountId._fromProtobuf(
-                /** @type {HashgraphProto.proto.IAccountID} */ (
-                    allowance.spender
-                ),
+                /** @type {HieroProto.proto.IAccountID} */ (allowance.spender),
             ),
             ownerAccountId,
             amount: Hbar.fromTinybars(
@@ -103,7 +99,7 @@ export default class HbarAllowance {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.ICryptoAllowance}
+     * @returns {HieroProto.proto.ICryptoAllowance}
      */
     _toProtobuf() {
         return {

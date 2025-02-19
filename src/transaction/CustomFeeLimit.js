@@ -3,8 +3,8 @@ import CustomFixedFee from "../token/CustomFixedFee.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IFixedFee} HashgraphProto.proto.IFixedFee
- * @typedef {import("@hashgraph/proto").proto.ICustomFeeLimit} HashgraphProto.proto.ICustomFeeLimit
+ * @typedef {import("@hashgraph/proto").proto.IFixedFee} HieroProto.proto.IFixedFee
+ * @typedef {import("@hashgraph/proto").proto.ICustomFeeLimit} HieroProto.proto.ICustomFeeLimit
  */
 
 export default class CustomFeeLimit {
@@ -36,7 +36,7 @@ export default class CustomFeeLimit {
 
     /**
      * @static
-     * @param {HashgraphProto.proto.ICustomFeeLimit} customFeeLimit
+     * @param {HieroProto.proto.ICustomFeeLimit} customFeeLimit
      * @returns {CustomFeeLimit}
      */
     static _fromProtobuf(customFeeLimit) {
@@ -97,10 +97,10 @@ export default class CustomFeeLimit {
 
     /**
      *
-     * @returns {HashgraphProto.proto.ICustomFeeLimit}
+     * @returns {HieroProto.proto.ICustomFeeLimit}
      */
     _toProtobuf() {
-        /** @type {HashgraphProto.proto.IFixedFee[]} */
+        /** @type {HieroProto.proto.IFixedFee[]} */
         const protoFixedFees = [];
 
         if (this._fees != null) {

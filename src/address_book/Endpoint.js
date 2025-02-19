@@ -4,7 +4,7 @@ import IPv4Address from "./IPv4Address.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IServiceEndpoint} HashgraphProto.proto.IServiceEndpoint
+ * @typedef {import("@hashgraph/proto").proto.IServiceEndpoint} HieroProto.proto.IServiceEndpoint
  */
 
 /**
@@ -73,7 +73,7 @@ export default class EndPoint {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IServiceEndpoint} endpoint
+     * @param {HieroProto.proto.IServiceEndpoint} endpoint
      * @returns {EndPoint}
      */
     static _fromProtobuf(endpoint) {
@@ -87,7 +87,7 @@ export default class EndPoint {
     }
 
     /**
-     * @returns {HashgraphProto.proto.IServiceEndpoint}
+     * @returns {HieroProto.proto.IServiceEndpoint}
      */
     _toProtobuf() {
         return {

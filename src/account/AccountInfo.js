@@ -7,7 +7,7 @@ import Hbar from "../Hbar.js";
 import Timestamp from "../Timestamp.js";
 import Long from "long";
 import TokenRelationshipMap from "./TokenRelationshipMap.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import Duration from "../Duration.js";
 import Key from "../Key.js";
 import PublicKey from "../PublicKey.js";
@@ -222,15 +222,13 @@ export default class AccountInfo {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.CryptoGetInfoResponse.IAccountInfo} info
+     * @param {HieroProto.proto.CryptoGetInfoResponse.IAccountInfo} info
      * @returns {AccountInfo}
      */
     static _fromProtobuf(info) {
         let aliasKey =
             info.alias != null && info.alias.length > 0
-                ? Key._fromProtobufKey(
-                      HashgraphProto.proto.Key.decode(info.alias),
-                  )
+                ? Key._fromProtobufKey(HieroProto.proto.Key.decode(info.alias))
                 : null;
 
         if (!(aliasKey instanceof PublicKey)) {
@@ -238,7 +236,7 @@ export default class AccountInfo {
         }
 
         const accountId = AccountId._fromProtobuf(
-            /** @type {HashgraphProto.proto.IAccountID} */ (info.accountID),
+            /** @type {HieroProto.proto.IAccountID} */ (info.accountID),
         );
 
         return new AccountInfo({
@@ -247,7 +245,7 @@ export default class AccountInfo {
                 info.contractAccountID != null ? info.contractAccountID : null,
             isDeleted: info.deleted != null ? info.deleted : false,
             key: Key._fromProtobufKey(
-                /** @type {HashgraphProto.proto.IKey} */ (info.key),
+                /** @type {HieroProto.proto.IKey} */ (info.key),
             ),
             balance: Hbar.fromTinybars(info.balance != null ? info.balance : 0),
             sendRecordThreshold: Hbar.fromTinybars(
@@ -265,7 +263,7 @@ export default class AccountInfo {
                     ? info.receiverSigRequired
                     : false,
             expirationTime: Timestamp._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITimestamp} */ (
+                /** @type {HieroProto.proto.ITimestamp} */ (
                     info.expirationTime
                 ),
             ),
@@ -322,7 +320,7 @@ export default class AccountInfo {
     }
 
     /**
-     * @returns {HashgraphProto.proto.CryptoGetInfoResponse.IAccountInfo}
+     * @returns {HieroProto.proto.CryptoGetInfoResponse.IAccountInfo}
      */
     _toProtobuf() {
         return {
@@ -356,7 +354,7 @@ export default class AccountInfo {
                 this.maxAutomaticTokenAssociations.toInt(),
             alias:
                 this.aliasKey != null
-                    ? HashgraphProto.proto.Key.encode(
+                    ? HieroProto.proto.Key.encode(
                           this.aliasKey._toProtobufKey(),
                       ).finish()
                     : null,
@@ -375,9 +373,7 @@ export default class AccountInfo {
      */
     static fromBytes(bytes) {
         return AccountInfo._fromProtobuf(
-            HashgraphProto.proto.CryptoGetInfoResponse.AccountInfo.decode(
-                bytes,
-            ),
+            HieroProto.proto.CryptoGetInfoResponse.AccountInfo.decode(bytes),
         );
     }
 
@@ -385,7 +381,7 @@ export default class AccountInfo {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.CryptoGetInfoResponse.AccountInfo.encode(
+        return HieroProto.proto.CryptoGetInfoResponse.AccountInfo.encode(
             this._toProtobuf(),
         ).finish();
     }

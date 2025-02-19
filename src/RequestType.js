@@ -2,7 +2,7 @@
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.HederaFunctionality} HashgraphProto.proto.HederaFunctionality
+ * @typedef {import("@hashgraph/proto").proto.HederaFunctionality} HieroProto.proto.HederaFunctionality
  */
 
 export default class RequestType {
@@ -403,7 +403,7 @@ export default class RequestType {
     }
 
     /**
-     * @returns {HashgraphProto.proto.HederaFunctionality}
+     * @returns {HieroProto.proto.HederaFunctionality}
      */
     valueOf() {
         return this._code;

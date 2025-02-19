@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import SemanticVersion from "./SemanticVersion.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 
 /**
  * Response when the client sends the node CryptoGetVersionInfoQuery.
@@ -33,17 +33,17 @@ export default class NetworkVersionInfo {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.INetworkGetVersionInfoResponse} info
+     * @param {HieroProto.proto.INetworkGetVersionInfoResponse} info
      * @returns {NetworkVersionInfo}
      */
     static _fromProtobuf(info) {
         return new NetworkVersionInfo({
             protobufVersion: SemanticVersion._fromProtobuf(
-                /** @type {HashgraphProto.proto.ISemanticVersion} */
+                /** @type {HieroProto.proto.ISemanticVersion} */
                 (info.hapiProtoVersion),
             ),
             servicesVersion: SemanticVersion._fromProtobuf(
-                /** @type {HashgraphProto.proto.ISemanticVersion} */
+                /** @type {HieroProto.proto.ISemanticVersion} */
                 (info.hederaServicesVersion),
             ),
         });
@@ -51,7 +51,7 @@ export default class NetworkVersionInfo {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.INetworkGetVersionInfoResponse}
+     * @returns {HieroProto.proto.INetworkGetVersionInfoResponse}
      */
     _toProtobuf() {
         return {
@@ -66,7 +66,7 @@ export default class NetworkVersionInfo {
      */
     static fromBytes(bytes) {
         return NetworkVersionInfo._fromProtobuf(
-            HashgraphProto.proto.NetworkGetVersionInfoResponse.decode(bytes),
+            HieroProto.proto.NetworkGetVersionInfoResponse.decode(bytes),
         );
     }
 
@@ -74,7 +74,7 @@ export default class NetworkVersionInfo {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.NetworkGetVersionInfoResponse.encode(
+        return HieroProto.proto.NetworkGetVersionInfoResponse.encode(
             this._toProtobuf(),
         ).finish();
     }

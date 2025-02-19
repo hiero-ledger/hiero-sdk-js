@@ -6,7 +6,7 @@ import Hbar from "../Hbar.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITokenAssociation} HashgraphProto.proto.ITokenAssociation
+ * @typedef {import("@hashgraph/proto").proto.ITokenAssociation} HieroProto.proto.ITokenAssociation
  */
 
 /**
@@ -82,7 +82,7 @@ export default class TokenAssociation {
     /**
      * @internal
      * @abstract
-     * @param {HashgraphProto.proto.ITokenAssociation} association
+     * @param {HieroProto.proto.ITokenAssociation} association
      * @returns {TokenAssociation}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -102,7 +102,7 @@ export default class TokenAssociation {
     /**
      * @internal
      * @abstract
-     * @returns {HashgraphProto.proto.ITokenAssociation}
+     * @returns {HieroProto.proto.ITokenAssociation}
      */
     _toProtobuf() {
         return {

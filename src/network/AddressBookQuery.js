@@ -3,7 +3,7 @@
 import Query from "../query/Query.js";
 import NodeAddress from "../address_book/NodeAddress.js";
 import NodeAddressBook from "../address_book/NodeAddressBook.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import FileId from "../file/FileId.js";
 import { RST_STREAM } from "../Executable.js";
 import CACHE from "../Cache.js";
@@ -190,7 +190,7 @@ export default class AddressBookQuery extends Query {
      */
     _makeServerStreamRequest(client, resolve, reject, requestTimeout) {
         const request =
-            HashgraphProto.com.hedera.mirror.api.proto.AddressBookQuery.encode({
+            HieroProto.com.hedera.mirror.api.proto.AddressBookQuery.encode({
                 fileId:
                     this._fileId != null ? this._fileId._toProtobuf() : null,
                 limit: this._limit,
@@ -206,7 +206,7 @@ export default class AddressBookQuery extends Query {
                 (data) => {
                     this._addresses.push(
                         NodeAddress._fromProtobuf(
-                            HashgraphProto.proto.NodeAddress.decode(data),
+                            HieroProto.proto.NodeAddress.decode(data),
                         ),
                     );
 

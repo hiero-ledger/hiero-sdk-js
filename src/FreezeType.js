@@ -2,7 +2,7 @@
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.FreezeType} HashgraphProto.proto.FreezeType
+ * @typedef {import("@hashgraph/proto").proto.FreezeType} HieroProto.proto.FreezeType
  */
 
 export default class FreezeType {
@@ -67,7 +67,7 @@ export default class FreezeType {
     }
 
     /**
-     * @returns {HashgraphProto.proto.FreezeType}
+     * @returns {HieroProto.proto.FreezeType}
      */
     valueOf() {
         return this._code;

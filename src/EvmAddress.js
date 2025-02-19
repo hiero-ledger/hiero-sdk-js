@@ -6,7 +6,7 @@ import { arrayEqual } from "./util.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IKey} HashgraphProto.proto.IKey
+ * @typedef {import("@hashgraph/proto").proto.IKey} HieroProto.proto.IKey
  */
 
 /**

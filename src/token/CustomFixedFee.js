@@ -8,9 +8,9 @@ import Hbar from "../Hbar.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ICustomFee} HashgraphProto.proto.ICustomFee
- * @typedef {import("@hashgraph/proto").proto.IFixedFee} HashgraphProto.proto.IFixedFee
- * @typedef {import("@hashgraph/proto").proto.IFixedCustomFee} HashgraphProto.proto.IFixedCustomFee
+ * @typedef {import("@hashgraph/proto").proto.ICustomFee} HieroProto.proto.ICustomFee
+ * @typedef {import("@hashgraph/proto").proto.IFixedFee} HieroProto.proto.IFixedFee
+ * @typedef {import("@hashgraph/proto").proto.IFixedCustomFee} HieroProto.proto.IFixedCustomFee
  */
 
 export default class CustomFixedFee extends CustomFee {
@@ -109,14 +109,12 @@ export default class CustomFixedFee extends CustomFee {
     /**
      * @internal
      * @override
-     * @param {HashgraphProto.proto.ICustomFee} info
+     * @param {HieroProto.proto.ICustomFee} info
      * @returns {CustomFixedFee}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     static _fromProtobuf(info) {
-        const fee = /** @type {HashgraphProto.proto.IFixedFee} */ (
-            info.fixedFee
-        );
+        const fee = /** @type {HieroProto.proto.IFixedFee} */ (info.fixedFee);
 
         return new CustomFixedFee({
             feeCollectorAccountId:
@@ -138,7 +136,7 @@ export default class CustomFixedFee extends CustomFee {
     /**
      * @internal
      * @abstract
-     * @returns {HashgraphProto.proto.ICustomFee}
+     * @returns {HieroProto.proto.ICustomFee}
      */
     _toProtobuf() {
         return {
@@ -160,7 +158,7 @@ export default class CustomFixedFee extends CustomFee {
     /**
      * @internal
      * @abstract
-     * @returns {HashgraphProto.proto.IFixedCustomFee}
+     * @returns {HieroProto.proto.IFixedCustomFee}
      */
     _toTopicFeeProtobuf() {
         return {

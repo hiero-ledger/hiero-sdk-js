@@ -8,13 +8,13 @@ import Hbar from "../Hbar.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IQuery} HashgraphProto.proto.IQuery
- * @typedef {import("@hashgraph/proto").proto.IQueryHeader} HashgraphProto.proto.IQueryHeader
- * @typedef {import("@hashgraph/proto").proto.IResponse} HashgraphProto.proto.IResponse
- * @typedef {import("@hashgraph/proto").proto.IResponseHeader} HashgraphProto.proto.IResponseHeader
- * @typedef {import("@hashgraph/proto").proto.ITokenInfo} HashgraphProto.proto.ITokenInfo
- * @typedef {import("@hashgraph/proto").proto.ITokenGetInfoQuery} HashgraphProto.proto.ITokenGetInfoQuery
- * @typedef {import("@hashgraph/proto").proto.ITokenGetInfoResponse} HashgraphProto.proto.ITokenGetInfoResponse
+ * @typedef {import("@hashgraph/proto").proto.IQuery} HieroProto.proto.IQuery
+ * @typedef {import("@hashgraph/proto").proto.IQueryHeader} HieroProto.proto.IQueryHeader
+ * @typedef {import("@hashgraph/proto").proto.IResponse} HieroProto.proto.IResponse
+ * @typedef {import("@hashgraph/proto").proto.IResponseHeader} HieroProto.proto.IResponseHeader
+ * @typedef {import("@hashgraph/proto").proto.ITokenInfo} HieroProto.proto.ITokenInfo
+ * @typedef {import("@hashgraph/proto").proto.ITokenGetInfoQuery} HieroProto.proto.ITokenGetInfoQuery
+ * @typedef {import("@hashgraph/proto").proto.ITokenGetInfoResponse} HieroProto.proto.ITokenGetInfoResponse
  */
 
 /**
@@ -47,11 +47,11 @@ export default class TokenInfoQuery extends Query {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IQuery} query
+     * @param {HieroProto.proto.IQuery} query
      * @returns {TokenInfoQuery}
      */
     static _fromProtobuf(query) {
-        const info = /** @type {HashgraphProto.proto.ITokenGetInfoQuery} */ (
+        const info = /** @type {HieroProto.proto.ITokenGetInfoQuery} */ (
             query.tokenGetInfo
         );
 
@@ -107,8 +107,8 @@ export default class TokenInfoQuery extends Query {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.IQuery} request
-     * @returns {Promise<HashgraphProto.proto.IResponse>}
+     * @param {HieroProto.proto.IQuery} request
+     * @returns {Promise<HieroProto.proto.IResponse>}
      */
     _execute(channel, request) {
         return channel.token.getTokenInfo(request);
@@ -117,15 +117,15 @@ export default class TokenInfoQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IResponse} response
-     * @returns {HashgraphProto.proto.IResponseHeader}
+     * @param {HieroProto.proto.IResponse} response
+     * @returns {HieroProto.proto.IResponseHeader}
      */
     _mapResponseHeader(response) {
         const tokenGetInfo =
-            /** @type {HashgraphProto.proto.ITokenGetInfoResponse} */ (
+            /** @type {HieroProto.proto.ITokenGetInfoResponse} */ (
                 response.tokenGetInfo
             );
-        return /** @type {HashgraphProto.proto.IResponseHeader} */ (
+        return /** @type {HieroProto.proto.IResponseHeader} */ (
             tokenGetInfo.header
         );
     }
@@ -133,20 +133,20 @@ export default class TokenInfoQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IResponse} response
      * @param {AccountId} nodeAccountId
-     * @param {HashgraphProto.proto.IQuery} request
+     * @param {HieroProto.proto.IQuery} request
      * @returns {Promise<TokenInfo>}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _mapResponse(response, nodeAccountId, request) {
-        const info = /** @type {HashgraphProto.proto.ITokenGetInfoResponse} */ (
+        const info = /** @type {HieroProto.proto.ITokenGetInfoResponse} */ (
             response.tokenGetInfo
         );
 
         return Promise.resolve(
             TokenInfo._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITokenInfo} */ (info.tokenInfo),
+                /** @type {HieroProto.proto.ITokenInfo} */ (info.tokenInfo),
             ),
         );
     }
@@ -154,8 +154,8 @@ export default class TokenInfoQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IQueryHeader} header
-     * @returns {HashgraphProto.proto.IQuery}
+     * @param {HieroProto.proto.IQueryHeader} header
+     * @returns {HieroProto.proto.IQuery}
      */
     _onMakeRequest(header) {
         return {

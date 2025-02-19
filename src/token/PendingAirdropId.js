@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.PendingAirdropId} HashgraphProto.proto.PendingAirdropId
+ * @typedef {import("@hashgraph/proto").proto.PendingAirdropId} HieroProto.proto.PendingAirdropId
  */
 
 import AccountId from "../account/AccountId.js";
@@ -44,7 +44,7 @@ export default class PendingAirdropId {
     }
 
     /**
-     * @param {HashgraphProto.proto.PendingAirdropId} pb
+     * @param {HieroProto.proto.PendingAirdropId} pb
      * @returns {PendingAirdropId}
      */
     static fromBytes(pb) {
@@ -144,7 +144,7 @@ export default class PendingAirdropId {
     }
 
     /**
-     *  @returns {HashgraphProto.proto.PendingAirdropId}
+     *  @returns {HieroProto.proto.PendingAirdropId}
      */
     toBytes() {
         return {

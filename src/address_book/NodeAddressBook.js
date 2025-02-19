@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import NodeAddress from "./NodeAddress.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 
 /**
  * @typedef {import("./NodeAddress.js").NodeAddressJson} NodeAddressJson
@@ -57,13 +57,13 @@ export default class NodeAddressBook {
      */
     static fromBytes(bytes) {
         return NodeAddressBook._fromProtobuf(
-            HashgraphProto.proto.NodeAddressBook.decode(bytes),
+            HieroProto.proto.NodeAddressBook.decode(bytes),
         );
     }
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.INodeAddressBook} nodeAddressBook
+     * @param {HieroProto.proto.INodeAddressBook} nodeAddressBook
      * @returns {NodeAddressBook}
      */
     static _fromProtobuf(nodeAddressBook) {
@@ -78,7 +78,7 @@ export default class NodeAddressBook {
     }
 
     /**
-     * @returns {HashgraphProto.proto.INodeAddressBook}
+     * @returns {HieroProto.proto.INodeAddressBook}
      */
     _toProtobuf() {
         return {
@@ -107,7 +107,7 @@ export default class NodeAddressBook {
     }
 
     toBytes() {
-        return HashgraphProto.proto.NodeAddressBook.encode(
+        return HieroProto.proto.NodeAddressBook.encode(
             this._toProtobuf(),
         ).finish();
     }

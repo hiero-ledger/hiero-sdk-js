@@ -17,11 +17,11 @@ import { proto } from "@hashgraph/proto";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IKey} HashgraphProto.proto.IKey
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HashgraphProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.ISignaturePair} HashgraphProto.proto.ISignaturePair
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HashgraphProto.proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HashgraphProto.proto.TransactionBody
+ * @typedef {import("@hashgraph/proto").proto.IKey} HieroProto.proto.IKey
+ * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hashgraph/proto").proto.ISignaturePair} HieroProto.proto.ISignaturePair
+ * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
  */
 
 export default class PrivateKey extends Key {
@@ -409,7 +409,7 @@ export default class PrivateKey extends Key {
     }
 
     /**
-     * @returns {HashgraphProto.proto.IKey}
+     * @returns {HieroProto.proto.IKey}
      */
     _toProtobufKey() {
         return this.publicKey._toProtobufKey();

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 
 /**
  * @deprecated - Use mirror node for contract traceability instead
@@ -21,7 +21,7 @@ export default class StorageChange {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IStorageChange} change
+     * @param {HieroProto.proto.IStorageChange} change
      * @returns {StorageChange}
      */
     static _fromProtobuf(change) {
@@ -43,13 +43,13 @@ export default class StorageChange {
     static fromBytes(bytes) {
         // eslint-disable-next-line deprecation/deprecation
         return StorageChange._fromProtobuf(
-            HashgraphProto.proto.StorageChange.decode(bytes),
+            HieroProto.proto.StorageChange.decode(bytes),
         );
     }
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.IStorageChange}
+     * @returns {HieroProto.proto.IStorageChange}
      */
     _toProtobuf() {
         return {
@@ -64,7 +64,7 @@ export default class StorageChange {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.StorageChange.encode(
+        return HieroProto.proto.StorageChange.encode(
             this._toProtobuf(),
         ).finish();
     }

@@ -4,7 +4,7 @@ import Long from "long";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IDuration} HashgraphProto.proto.IDuration
+ * @typedef {import("@hashgraph/proto").proto.IDuration} HieroProto.proto.IDuration
  */
 
 /**
@@ -29,7 +29,7 @@ export default class Duration {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.IDuration}
+     * @returns {HieroProto.proto.IDuration}
      */
     _toProtobuf() {
         return {
@@ -39,7 +39,7 @@ export default class Duration {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IDuration} duration
+     * @param {HieroProto.proto.IDuration} duration
      * @returns {Duration}
      */
     static _fromProtobuf(duration) {

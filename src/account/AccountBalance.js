@@ -5,7 +5,7 @@ import Hbar from "../Hbar.js";
 import TokenId from "../token/TokenId.js";
 import TokenBalanceMap from "./TokenBalanceMap.js";
 import TokenDecimalMap from "./TokenDecimalMap.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 
 /**
  * @typedef {object} TokenBalanceJson
@@ -52,13 +52,13 @@ export default class AccountBalance {
      */
     static fromBytes(bytes) {
         return AccountBalance._fromProtobuf(
-            HashgraphProto.proto.CryptoGetAccountBalanceResponse.decode(bytes),
+            HieroProto.proto.CryptoGetAccountBalanceResponse.decode(bytes),
         );
     }
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ICryptoGetAccountBalanceResponse} accountBalance
+     * @param {HieroProto.proto.ICryptoGetAccountBalanceResponse} accountBalance
      * @returns {AccountBalance}
      */
     static _fromProtobuf(accountBalance) {
@@ -68,9 +68,7 @@ export default class AccountBalance {
         if (accountBalance.tokenBalances != null) {
             for (const balance of accountBalance.tokenBalances) {
                 const tokenId = TokenId._fromProtobuf(
-                    /** @type {HashgraphProto.proto.ITokenID} */ (
-                        balance.tokenId
-                    ),
+                    /** @type {HieroProto.proto.ITokenID} */ (balance.tokenId),
                 );
 
                 tokenDecimals._set(
@@ -94,10 +92,10 @@ export default class AccountBalance {
     }
 
     /**
-     * @returns {HashgraphProto.proto.ICryptoGetAccountBalanceResponse}
+     * @returns {HieroProto.proto.ICryptoGetAccountBalanceResponse}
      */
     _toProtobuf() {
-        /** @type {HashgraphProto.proto.ITokenBalance[]} */
+        /** @type {HieroProto.proto.ITokenBalance[]} */
         const list = [];
 
         // eslint-disable-next-line deprecation/deprecation
@@ -124,7 +122,7 @@ export default class AccountBalance {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.CryptoGetAccountBalanceResponse.encode(
+        return HieroProto.proto.CryptoGetAccountBalanceResponse.encode(
             this._toProtobuf(),
         ).finish();
     }

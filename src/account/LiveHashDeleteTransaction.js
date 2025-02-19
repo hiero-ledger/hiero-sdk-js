@@ -7,12 +7,12 @@ import AccountId from "./AccountId.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HashgraphProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HashgraphProto.proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HashgraphProto.proto.TransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HashgraphProto.proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HashgraphProto.proto.ITransactionResponse
- * @typedef {import("@hashgraph/proto").proto.ICryptoDeleteLiveHashTransactionBody} HashgraphProto.proto.ICryptoDeleteLiveHashTransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
+ * @typedef {import("@hashgraph/proto").proto.ICryptoDeleteLiveHashTransactionBody} HieroProto.proto.ICryptoDeleteLiveHashTransactionBody
  */
 
 /**
@@ -57,11 +57,11 @@ export default class LiveHashDeleteTransaction extends Transaction {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransaction[]} transactions
-     * @param {HashgraphProto.proto.ISignedTransaction[]} signedTransactions
+     * @param {HieroProto.proto.ITransaction[]} transactions
+     * @param {HieroProto.proto.ISignedTransaction[]} signedTransactions
      * @param {TransactionId[]} transactionIds
      * @param {AccountId[]} nodeIds
-     * @param {HashgraphProto.proto.ITransactionBody[]} bodies
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
      * @returns {LiveHashDeleteTransaction}
      */
     static _fromProtobuf(
@@ -73,7 +73,7 @@ export default class LiveHashDeleteTransaction extends Transaction {
     ) {
         const body = bodies[0];
         const hashes =
-            /** @type {HashgraphProto.proto.ICryptoDeleteLiveHashTransactionBody} */ (
+            /** @type {HieroProto.proto.ICryptoDeleteLiveHashTransactionBody} */ (
                 body.cryptoDeleteLiveHash
             );
 
@@ -149,8 +149,8 @@ export default class LiveHashDeleteTransaction extends Transaction {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.ITransaction} request
-     * @returns {Promise<HashgraphProto.proto.ITransactionResponse>}
+     * @param {HieroProto.proto.ITransaction} request
+     * @returns {Promise<HieroProto.proto.ITransactionResponse>}
      */
     _execute(channel, request) {
         return channel.crypto.deleteLiveHash(request);
@@ -159,7 +159,7 @@ export default class LiveHashDeleteTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {NonNullable<HashgraphProto.proto.TransactionBody["data"]>}
+     * @returns {NonNullable<HieroProto.proto.TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
         return "cryptoDeleteLiveHash";
@@ -168,7 +168,7 @@ export default class LiveHashDeleteTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {HashgraphProto.proto.ICryptoDeleteLiveHashTransactionBody}
+     * @returns {HieroProto.proto.ICryptoDeleteLiveHashTransactionBody}
      */
     _makeTransactionData() {
         return {

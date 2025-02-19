@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import TransactionFeeSchedule from "./TransactionFeeSchedule.js";
 import Timestamp from "./Timestamp.js";
 
@@ -36,13 +36,13 @@ export default class FeeSchedule {
      */
     static fromBytes(bytes) {
         return FeeSchedule._fromProtobuf(
-            HashgraphProto.proto.FeeSchedule.decode(bytes),
+            HieroProto.proto.FeeSchedule.decode(bytes),
         );
     }
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IFeeSchedule} feeSchedule
+     * @param {HieroProto.proto.IFeeSchedule} feeSchedule
      * @returns {FeeSchedule}
      */
     static _fromProtobuf(feeSchedule) {
@@ -62,7 +62,7 @@ export default class FeeSchedule {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.IFeeSchedule}
+     * @returns {HieroProto.proto.IFeeSchedule}
      */
     _toProtobuf() {
         return {
@@ -83,8 +83,6 @@ export default class FeeSchedule {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.FeeSchedule.encode(
-            this._toProtobuf(),
-        ).finish();
+        return HieroProto.proto.FeeSchedule.encode(this._toProtobuf()).finish();
     }
 }

@@ -12,8 +12,8 @@ import Hbar from "./Hbar.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IAccountAmount} HashgraphProto.proto.IAccountAmount
- * @typedef {import("@hashgraph/proto").proto.IAccountID} HashgraphProto.proto.IAccountID
+ * @typedef {import("@hashgraph/proto").proto.IAccountAmount} HieroProto.proto.IAccountAmount
+ * @typedef {import("@hashgraph/proto").proto.IAccountID} HieroProto.proto.IAccountID
  */
 
 /**
@@ -56,7 +56,7 @@ export default class Transfer {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IAccountAmount[]} accountAmounts
+     * @param {HieroProto.proto.IAccountAmount[]} accountAmounts
      * @returns {Transfer[]}
      */
     static _fromProtobuf(accountAmounts) {
@@ -66,7 +66,7 @@ export default class Transfer {
             transfers.push(
                 new Transfer({
                     accountId: AccountId._fromProtobuf(
-                        /** @type {HashgraphProto.proto.IAccountID} */ (
+                        /** @type {HieroProto.proto.IAccountID} */ (
                             transfer.accountID
                         ),
                     ),
@@ -83,7 +83,7 @@ export default class Transfer {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.IAccountAmount}
+     * @returns {HieroProto.proto.IAccountAmount}
      */
     _toProtobuf() {
         return {

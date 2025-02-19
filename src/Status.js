@@ -2,7 +2,7 @@
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ResponseCodeEnum} HashgraphProto.proto.ResponseCodeEnum
+ * @typedef {import("@hashgraph/proto").proto.ResponseCodeEnum} HieroProto.proto.ResponseCodeEnum
  */
 
 export default class Status {
@@ -1428,7 +1428,7 @@ export default class Status {
     }
 
     /**
-     * @returns {HashgraphProto.proto.ResponseCodeEnum}
+     * @returns {HieroProto.proto.ResponseCodeEnum}
      */
     valueOf() {
         return this._code;

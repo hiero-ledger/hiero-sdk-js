@@ -18,8 +18,8 @@ import ContractNonceInfo from "./ContractNonceInfo.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IContractFunctionResult} HashgraphProto.proto.IContractFunctionResult
- * @typedef {import("@hashgraph/proto").proto.IContractID} HashgraphProto.proto.IContractID
+ * @typedef {import("@hashgraph/proto").proto.IContractFunctionResult} HieroProto.proto.IContractFunctionResult
+ * @typedef {import("@hashgraph/proto").proto.IContractID} HieroProto.proto.IContractID
  */
 
 /**
@@ -141,15 +141,14 @@ export default class ContractFunctionResult {
     }
 
     /**
-     * @param {HashgraphProto.proto.IContractFunctionResult} result
+     * @param {HieroProto.proto.IContractFunctionResult} result
      * @param {boolean} _createResult
      * @returns {ContractFunctionResult}
      */
     static _fromProtobuf(result, _createResult) {
-        const contractId =
-            /** @type {HashgraphProto.proto.IContractID | null} */ (
-                result.contractID
-            );
+        const contractId = /** @type {HieroProto.proto.IContractID | null} */ (
+            result.contractID
+        );
         const gasUsed = /** @type {Long} */ (result.gasUsed);
         const gas = /** @type {Long} */ (result.gas ? result.gas : -1);
         const amount = /** @type {Long} */ (result.amount ? result.amount : -1);
@@ -1019,7 +1018,7 @@ export default class ContractFunctionResult {
     }
 
     /**
-     * @returns {HashgraphProto.proto.IContractFunctionResult}
+     * @returns {HieroProto.proto.IContractFunctionResult}
      */
     _toProtobuf() {
         return {

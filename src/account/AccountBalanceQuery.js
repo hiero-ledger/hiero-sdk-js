@@ -7,12 +7,12 @@ import AccountBalance from "./AccountBalance.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IQuery} HashgraphProto.proto.IQuery
- * @typedef {import("@hashgraph/proto").proto.IQueryHeader} HashgraphProto.proto.IQueryHeader
- * @typedef {import("@hashgraph/proto").proto.IResponse} HashgraphProto.proto.IResponse
- * @typedef {import("@hashgraph/proto").proto.IResponseHeader} HashgraphProto.proto.IResponseHeader
- * @typedef {import("@hashgraph/proto").proto.ICryptoGetAccountBalanceQuery} HashgraphProto.proto.ICryptoGetAccountBalanceQuery
- * @typedef {import("@hashgraph/proto").proto.ICryptoGetAccountBalanceResponse} HashgraphProto.proto.ICryptoGetAccountBalanceResponse
+ * @typedef {import("@hashgraph/proto").proto.IQuery} HieroProto.proto.IQuery
+ * @typedef {import("@hashgraph/proto").proto.IQueryHeader} HieroProto.proto.IQueryHeader
+ * @typedef {import("@hashgraph/proto").proto.IResponse} HieroProto.proto.IResponse
+ * @typedef {import("@hashgraph/proto").proto.IResponseHeader} HieroProto.proto.IResponseHeader
+ * @typedef {import("@hashgraph/proto").proto.ICryptoGetAccountBalanceQuery} HieroProto.proto.ICryptoGetAccountBalanceQuery
+ * @typedef {import("@hashgraph/proto").proto.ICryptoGetAccountBalanceResponse} HieroProto.proto.ICryptoGetAccountBalanceResponse
  */
 
 /**
@@ -62,12 +62,12 @@ export default class AccountBalanceQuery extends Query {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IQuery} query
+     * @param {HieroProto.proto.IQuery} query
      * @returns {AccountBalanceQuery}
      */
     static _fromProtobuf(query) {
         const balance =
-            /** @type {HashgraphProto.proto.ICryptoGetAccountBalanceQuery} */ (
+            /** @type {HieroProto.proto.ICryptoGetAccountBalanceQuery} */ (
                 query.cryptogetAccountBalance
             );
 
@@ -157,8 +157,8 @@ export default class AccountBalanceQuery extends Query {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.IQuery} request
-     * @returns {Promise<HashgraphProto.proto.IResponse>}
+     * @param {HieroProto.proto.IQuery} request
+     * @returns {Promise<HieroProto.proto.IResponse>}
      */
     _execute(channel, request) {
         return channel.crypto.cryptoGetBalance(request);
@@ -168,15 +168,15 @@ export default class AccountBalanceQuery extends Query {
      * @override
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IResponse} response
-     * @returns {HashgraphProto.proto.IResponseHeader}
+     * @param {HieroProto.proto.IResponse} response
+     * @returns {HieroProto.proto.IResponseHeader}
      */
     _mapResponseHeader(response) {
         const cryptogetAccountBalance =
-            /** @type {HashgraphProto.proto.ICryptoGetAccountBalanceResponse} */ (
+            /** @type {HieroProto.proto.ICryptoGetAccountBalanceResponse} */ (
                 response.cryptogetAccountBalance
             );
-        return /** @type {HashgraphProto.proto.IResponseHeader} */ (
+        return /** @type {HieroProto.proto.IResponseHeader} */ (
             cryptogetAccountBalance.header
         );
     }
@@ -185,15 +185,15 @@ export default class AccountBalanceQuery extends Query {
      * @override
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IResponse} response
      * @param {AccountId} nodeAccountId
-     * @param {HashgraphProto.proto.IQuery} request
+     * @param {HieroProto.proto.IQuery} request
      * @returns {Promise<AccountBalance>}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _mapResponse(response, nodeAccountId, request) {
         const cryptogetAccountBalance =
-            /** @type {HashgraphProto.proto.ICryptoGetAccountBalanceResponse} */ (
+            /** @type {HieroProto.proto.ICryptoGetAccountBalanceResponse} */ (
                 response.cryptogetAccountBalance
             );
         return Promise.resolve(
@@ -204,8 +204,8 @@ export default class AccountBalanceQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IQueryHeader} header
-     * @returns {HashgraphProto.proto.IQuery}
+     * @param {HieroProto.proto.IQueryHeader} header
+     * @returns {HieroProto.proto.IQuery}
      */
     _onMakeRequest(header) {
         return {

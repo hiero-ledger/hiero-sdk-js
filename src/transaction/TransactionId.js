@@ -2,7 +2,7 @@
 
 import AccountId from "../account/AccountId.js";
 import Timestamp from "../Timestamp.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import Long from "long";
 import CACHE from "../Cache.js";
 
@@ -156,7 +156,7 @@ export default class TransactionId {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransactionID} id
+     * @param {HieroProto.proto.ITransactionID} id
      * @returns {TransactionId}
      */
     static _fromProtobuf(id) {
@@ -176,7 +176,7 @@ export default class TransactionId {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.ITransactionID}
+     * @returns {HieroProto.proto.ITransactionID}
      */
     _toProtobuf() {
         return {
@@ -195,7 +195,7 @@ export default class TransactionId {
      */
     static fromBytes(bytes) {
         return TransactionId._fromProtobuf(
-            HashgraphProto.proto.TransactionID.decode(bytes),
+            HieroProto.proto.TransactionID.decode(bytes),
         );
     }
 
@@ -203,7 +203,7 @@ export default class TransactionId {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.TransactionID.encode(
+        return HieroProto.proto.TransactionID.encode(
             this._toProtobuf(),
         ).finish();
     }

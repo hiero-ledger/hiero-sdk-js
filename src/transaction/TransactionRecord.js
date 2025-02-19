@@ -8,7 +8,7 @@ import Transfer from "../Transfer.js";
 import ContractFunctionResult from "../contract/ContractFunctionResult.js";
 import TokenTransferMap from "../account/TokenTransferMap.js";
 import TokenNftTransferMap from "../account/TokenNftTransferMap.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import ScheduleId from "../schedule/ScheduleId.js";
 import AssessedCustomFee from "../token/AssessedCustomFee.js";
 import TokenAssocation from "../token/TokenAssociation.js";
@@ -300,7 +300,7 @@ export default class TransactionRecord {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.ITransactionGetRecordResponse}
+     * @returns {HieroProto.proto.ITransactionGetRecordResponse}
      */
     _toProtobuf() {
         const tokenTransfers = this.tokenTransfers._toProtobuf();
@@ -333,13 +333,13 @@ export default class TransactionRecord {
 
         const duplicates = this.duplicates.map(
             (record) =>
-                /** @type {HashgraphProto.proto.ITransactionRecord} */ (
+                /** @type {HieroProto.proto.ITransactionRecord} */ (
                     record._toProtobuf().transactionRecord
                 ),
         );
         const children = this.children.map(
             (record) =>
-                /** @type {HashgraphProto.proto.ITransactionRecord} */ (
+                /** @type {HieroProto.proto.ITransactionRecord} */ (
                     record._toProtobuf().transactionRecord
                 ),
         );
@@ -405,7 +405,7 @@ export default class TransactionRecord {
                         : null,
                 alias:
                     this.aliasKey != null
-                        ? HashgraphProto.proto.Key.encode(
+                        ? HieroProto.proto.Key.encode(
                               this.aliasKey._toProtobufKey(),
                           ).finish()
                         : null,
@@ -428,18 +428,18 @@ export default class TransactionRecord {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransactionGetRecordResponse} response
+     * @param {HieroProto.proto.ITransactionGetRecordResponse} response
      * @returns {TransactionRecord}
      */
     static _fromProtobuf(response) {
-        const record = /** @type {HashgraphProto.proto.ITransactionRecord} */ (
+        const record = /** @type {HieroProto.proto.ITransactionRecord} */ (
             response.transactionRecord
         );
 
         let aliasKey =
             record.alias != null && record.alias.length > 0
                 ? Key._fromProtobufKey(
-                      HashgraphProto.proto.Key.decode(record.alias),
+                      HieroProto.proto.Key.decode(record.alias),
                   )
                 : null;
 
@@ -487,21 +487,20 @@ export default class TransactionRecord {
 
         return new TransactionRecord({
             receipt: TransactionReceipt._fromProtobuf({
-                receipt:
-                    /** @type {HashgraphProto.proto.ITransactionReceipt} */ (
-                        record.receipt
-                    ),
+                receipt: /** @type {HieroProto.proto.ITransactionReceipt} */ (
+                    record.receipt
+                ),
             }),
             transactionHash:
                 record.transactionHash != null
                     ? record.transactionHash
                     : new Uint8Array(),
             consensusTimestamp: Timestamp._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITimestamp} */
+                /** @type {HieroProto.proto.ITimestamp} */
                 (record.consensusTimestamp),
             ),
             transactionId: TransactionId._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITransactionID} */ (
+                /** @type {HieroProto.proto.ITransactionID} */ (
                     record.transactionID
                 ),
             ),
@@ -580,7 +579,7 @@ export default class TransactionRecord {
      */
     static fromBytes(bytes) {
         return TransactionRecord._fromProtobuf(
-            HashgraphProto.proto.TransactionGetRecordResponse.decode(bytes),
+            HieroProto.proto.TransactionGetRecordResponse.decode(bytes),
         );
     }
 
@@ -588,7 +587,7 @@ export default class TransactionRecord {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.TransactionGetRecordResponse.encode(
+        return HieroProto.proto.TransactionGetRecordResponse.encode(
             this._toProtobuf(),
         ).finish();
     }

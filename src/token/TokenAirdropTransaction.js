@@ -8,14 +8,14 @@ import AbstractTokenTransferTransaction from "./AbstractTokenTransferTransaction
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITokenAirdropTransactionBody} HashgraphProto.proto.ITokenAirdropTransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HashgraphProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.TransactionID} HashgraphProto.proto.TransactionID
- * @typedef {import("@hashgraph/proto").proto.AccountID} HashgraphProto.proto.AccountID
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HashgraphProto.proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HashgraphProto.proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HashgraphProto.proto.TransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HashgraphProto.proto.ITransactionResponse
+ * @typedef {import("@hashgraph/proto").proto.ITokenAirdropTransactionBody} HieroProto.proto.ITokenAirdropTransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hashgraph/proto").proto.TransactionID} HieroProto.proto.TransactionID
+ * @typedef {import("@hashgraph/proto").proto.AccountID} HieroProto.proto.AccountID
+ * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
+ * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
  */
 
 /**
@@ -142,11 +142,11 @@ export default class TokenAirdropTransaction extends AbstractTokenTransferTransa
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransaction[]} transactions
-     * @param {HashgraphProto.proto.ISignedTransaction[]} signedTransactions
+     * @param {HieroProto.proto.ITransaction[]} transactions
+     * @param {HieroProto.proto.ISignedTransaction[]} signedTransactions
      * @param {TransactionId[]} transactionIds
      * @param {AccountId[]} nodeIds
-     * @param {HashgraphProto.proto.ITransactionBody[]} bodies
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
      * @returns {TokenAirdropTransaction}
      */
     static _fromProtobuf(
@@ -158,7 +158,7 @@ export default class TokenAirdropTransaction extends AbstractTokenTransferTransa
     ) {
         const body = bodies[0];
         const tokenAirdrop =
-            /** @type {HashgraphProto.proto.ITokenAirdropTransactionBody} */ (
+            /** @type {HieroProto.proto.ITokenAirdropTransactionBody} */ (
                 body.tokenAirdrop
             );
 
@@ -186,8 +186,8 @@ export default class TokenAirdropTransaction extends AbstractTokenTransferTransa
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.ITransaction} request
-     * @returns {Promise<HashgraphProto.proto.ITransactionResponse>}
+     * @param {HieroProto.proto.ITransaction} request
+     * @returns {Promise<HieroProto.proto.ITransactionResponse>}
      */
     _execute(channel, request) {
         return channel.token.airdropTokens(request);
@@ -196,7 +196,7 @@ export default class TokenAirdropTransaction extends AbstractTokenTransferTransa
     /**
      * @override
      * @protected
-     * @returns {NonNullable<HashgraphProto.proto.TransactionBody["data"]>}
+     * @returns {NonNullable<HieroProto.proto.TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
         return "tokenAirdrop";

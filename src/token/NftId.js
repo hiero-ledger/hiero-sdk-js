@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import TokenId from "../token/TokenId.js";
 import Long from "long";
 
 /**
  * The ID for a crypto-currency token on Hedera.
  *
- * @augments {EntityId<HashgraphProto.proto.INftID>}
+ * @augments {EntityId<HieroProto.proto.INftID>}
  */
 export default class NftId {
     /**
@@ -46,13 +46,13 @@ export default class NftId {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.INftID} id
+     * @param {HieroProto.proto.INftID} id
      * @returns {NftId}
      */
     static _fromProtobuf(id) {
         return new NftId(
             TokenId._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITokenID} */ (id.token_ID),
+                /** @type {HieroProto.proto.ITokenID} */ (id.token_ID),
             ),
             id.serialNumber != null ? id.serialNumber : Long.ZERO,
         );
@@ -63,12 +63,12 @@ export default class NftId {
      * @returns {NftId}
      */
     static fromBytes(bytes) {
-        return NftId._fromProtobuf(HashgraphProto.proto.NftID.decode(bytes));
+        return NftId._fromProtobuf(HieroProto.proto.NftID.decode(bytes));
     }
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.INftID}
+     * @returns {HieroProto.proto.INftID}
      */
     _toProtobuf() {
         return {
@@ -90,6 +90,6 @@ export default class NftId {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.NftID.encode(this._toProtobuf()).finish();
+        return HieroProto.proto.NftID.encode(this._toProtobuf()).finish();
     }
 }

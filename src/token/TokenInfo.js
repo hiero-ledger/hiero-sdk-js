@@ -5,7 +5,7 @@ import AccountId from "../account/AccountId.js";
 import Duration from "../Duration.js";
 import Timestamp from "../Timestamp.js";
 import Long from "long";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import TokenType from "./TokenType.js";
 import TokenSupplyType from "./TokenSupplyType.js";
 import CustomFixedFee from "./CustomFixedFee.js";
@@ -239,22 +239,21 @@ export default class TokenInfo {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITokenInfo} info
+     * @param {HieroProto.proto.ITokenInfo} info
      * @returns {TokenInfo}
      */
     static _fromProtobuf(info) {
         const defaultFreezeStatus =
-            /** @type {HashgraphProto.proto.TokenFreezeStatus} */ (
+            /** @type {HieroProto.proto.TokenFreezeStatus} */ (
                 info.defaultFreezeStatus
             );
         const defaultKycStatus =
-            /** @type {HashgraphProto.proto.TokenKycStatus} */ (
+            /** @type {HieroProto.proto.TokenKycStatus} */ (
                 info.defaultKycStatus
             );
-        const pauseStatus =
-            /**@type {HashgraphProto.proto.TokenPauseStatus} */ (
-                info.pauseStatus
-            );
+        const pauseStatus = /**@type {HieroProto.proto.TokenPauseStatus} */ (
+            info.pauseStatus
+        );
 
         const autoRenewAccountId =
             info.autoRenewAccount != null
@@ -263,7 +262,7 @@ export default class TokenInfo {
 
         return new TokenInfo({
             tokenId: TokenId._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITokenID} */ (info.tokenId),
+                /** @type {HieroProto.proto.ITokenID} */ (info.tokenId),
             ),
             name: /** @type {string} */ (info.name),
             symbol: /** @type {string} */ (info.symbol),
@@ -272,7 +271,7 @@ export default class TokenInfo {
             treasuryAccountId:
                 info.treasury != null
                     ? AccountId._fromProtobuf(
-                          /** @type {HashgraphProto.proto.IAccountID} */ (
+                          /** @type {HieroProto.proto.IAccountID} */ (
                               info.treasury
                           ),
                       )
@@ -319,7 +318,7 @@ export default class TokenInfo {
             autoRenewPeriod:
                 info.autoRenewPeriod != null
                     ? Duration._fromProtobuf(
-                          /** @type {HashgraphProto.proto.IDuration} */ (
+                          /** @type {HieroProto.proto.IDuration} */ (
                               info.autoRenewPeriod
                           ),
                       )
@@ -327,7 +326,7 @@ export default class TokenInfo {
             expirationTime:
                 info.expiry != null
                     ? Timestamp._fromProtobuf(
-                          /** @type {HashgraphProto.proto.ITimestamp} */ (
+                          /** @type {HieroProto.proto.ITimestamp} */ (
                               info.expiry
                           ),
                       )
@@ -367,7 +366,7 @@ export default class TokenInfo {
     }
 
     /**
-     * @returns {HashgraphProto.proto.ITokenInfo}
+     * @returns {HieroProto.proto.ITokenInfo}
      */
     _toProtobuf() {
         return {
@@ -442,7 +441,7 @@ export default class TokenInfo {
      */
     static fromBytes(bytes) {
         return TokenInfo._fromProtobuf(
-            HashgraphProto.proto.TokenInfo.decode(bytes),
+            HieroProto.proto.TokenInfo.decode(bytes),
         );
     }
 
@@ -450,8 +449,6 @@ export default class TokenInfo {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.TokenInfo.encode(
-            this._toProtobuf(),
-        ).finish();
+        return HieroProto.proto.TokenInfo.encode(this._toProtobuf()).finish();
     }
 }

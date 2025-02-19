@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import Long from "long";
 
@@ -108,13 +108,13 @@ export default class FeeComponents {
      */
     static fromBytes(bytes) {
         return FeeComponents._fromProtobuf(
-            HashgraphProto.proto.FeeComponents.decode(bytes),
+            HieroProto.proto.FeeComponents.decode(bytes),
         );
     }
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IFeeComponents} feeComponents
+     * @param {HieroProto.proto.IFeeComponents} feeComponents
      * @returns {FeeComponents}
      */
     static _fromProtobuf(feeComponents) {
@@ -146,7 +146,7 @@ export default class FeeComponents {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.IFeeComponents}
+     * @returns {HieroProto.proto.IFeeComponents}
      */
     _toProtobuf() {
         return {
@@ -192,7 +192,7 @@ export default class FeeComponents {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.FeeComponents.encode(
+        return HieroProto.proto.FeeComponents.encode(
             this._toProtobuf(),
         ).finish();
     }

@@ -6,8 +6,8 @@ import * as hex from "../encoding/hex.js";
 
 /**
  * @namespace {proto}
- * @typedef {import("@hashgraph/proto").proto.IContractID} HashgraphProto.proto.IContractID
- * @typedef {import("@hashgraph/proto").proto.IKey} HashgraphProto.proto.IKey
+ * @typedef {import("@hashgraph/proto").proto.IContractID} HieroProto.proto.IContractID
+ * @typedef {import("@hashgraph/proto").proto.IKey} HieroProto.proto.IKey
  */
 
 /**
@@ -50,7 +50,7 @@ export default class DelegateContractId extends ContractId {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IContractID} id
+     * @param {HieroProto.proto.IContractID} id
      * @returns {DelegateContractId}
      */
     static _fromProtobuf(id) {
@@ -84,7 +84,7 @@ export default class DelegateContractId extends ContractId {
     }
 
     /**
-     * @returns {HashgraphProto.proto.IKey}
+     * @returns {HieroProto.proto.IKey}
      */
     _toProtobufKey() {
         return {
@@ -93,7 +93,7 @@ export default class DelegateContractId extends ContractId {
     }
 
     /**
-     * @param {HashgraphProto.proto.IContractID} key
+     * @param {HieroProto.proto.IContractID} key
      * @returns {DelegateContractId}
      */
     static __fromProtobufKey(key) {

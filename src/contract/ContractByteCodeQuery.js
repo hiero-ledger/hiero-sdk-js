@@ -5,12 +5,12 @@ import ContractId from "./ContractId.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IQuery} HashgraphProto.proto.IQuery
- * @typedef {import("@hashgraph/proto").proto.IQueryHeader} HashgraphProto.proto.IQueryHeader
- * @typedef {import("@hashgraph/proto").proto.IResponse} HashgraphProto.proto.IResponse
- * @typedef {import("@hashgraph/proto").proto.IResponseHeader} HashgraphProto.proto.IResponseHeader
- * @typedef {import("@hashgraph/proto").proto.IContractGetBytecodeQuery} HashgraphProto.proto.IContractGetBytecodeQuery
- * @typedef {import("@hashgraph/proto").proto.IContractGetBytecodeResponse} HashgraphProto.proto.IContractGetBytecodeResponse
+ * @typedef {import("@hashgraph/proto").proto.IQuery} HieroProto.proto.IQuery
+ * @typedef {import("@hashgraph/proto").proto.IQueryHeader} HieroProto.proto.IQueryHeader
+ * @typedef {import("@hashgraph/proto").proto.IResponse} HieroProto.proto.IResponse
+ * @typedef {import("@hashgraph/proto").proto.IResponseHeader} HieroProto.proto.IResponseHeader
+ * @typedef {import("@hashgraph/proto").proto.IContractGetBytecodeQuery} HieroProto.proto.IContractGetBytecodeQuery
+ * @typedef {import("@hashgraph/proto").proto.IContractGetBytecodeResponse} HieroProto.proto.IContractGetBytecodeResponse
  */
 
 /**
@@ -48,12 +48,12 @@ export default class ContractByteCodeQuery extends Query {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IQuery} query
+     * @param {HieroProto.proto.IQuery} query
      * @returns {ContractByteCodeQuery}
      */
     static _fromProtobuf(query) {
         const bytecode =
-            /** @type {HashgraphProto.proto.IContractGetBytecodeQuery} */ (
+            /** @type {HieroProto.proto.IContractGetBytecodeQuery} */ (
                 query.contractGetBytecode
             );
 
@@ -100,8 +100,8 @@ export default class ContractByteCodeQuery extends Query {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.IQuery} request
-     * @returns {Promise<HashgraphProto.proto.IResponse>}
+     * @param {HieroProto.proto.IQuery} request
+     * @returns {Promise<HieroProto.proto.IResponse>}
      */
     _execute(channel, request) {
         return channel.smartContract.contractGetBytecode(request);
@@ -110,15 +110,15 @@ export default class ContractByteCodeQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IResponse} response
-     * @returns {HashgraphProto.proto.IResponseHeader}
+     * @param {HieroProto.proto.IResponse} response
+     * @returns {HieroProto.proto.IResponseHeader}
      */
     _mapResponseHeader(response) {
         const contractGetBytecodeResponse =
-            /** @type {HashgraphProto.proto.IContractGetBytecodeResponse} */ (
+            /** @type {HieroProto.proto.IContractGetBytecodeResponse} */ (
                 response.contractGetBytecodeResponse
             );
-        return /** @type {HashgraphProto.proto.IResponseHeader} */ (
+        return /** @type {HieroProto.proto.IResponseHeader} */ (
             contractGetBytecodeResponse.header
         );
     }
@@ -126,12 +126,12 @@ export default class ContractByteCodeQuery extends Query {
     /**
      * @protected
      * @override
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IResponse} response
      * @returns {Promise<Uint8Array>}
      */
     _mapResponse(response) {
         const contractGetBytecodeResponse =
-            /** @type {HashgraphProto.proto.IContractGetBytecodeResponse} */ (
+            /** @type {HieroProto.proto.IContractGetBytecodeResponse} */ (
                 response.contractGetBytecodeResponse
             );
 
@@ -145,8 +145,8 @@ export default class ContractByteCodeQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IQueryHeader} header
-     * @returns {HashgraphProto.proto.IQuery}
+     * @param {HieroProto.proto.IQueryHeader} header
+     * @returns {HieroProto.proto.IQuery}
      */
     _onMakeRequest(header) {
         return {

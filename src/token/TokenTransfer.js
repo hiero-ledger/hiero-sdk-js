@@ -6,10 +6,10 @@ import TokenId from "./TokenId.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITokenTransferList} HashgraphProto.proto.ITokenTransferList
- * @typedef {import("@hashgraph/proto").proto.IAccountAmount} HashgraphProto.proto.IAccountAmount
- * @typedef {import("@hashgraph/proto").proto.IAccountID} HashgraphProto.proto.IAccountID
- * @typedef {import("@hashgraph/proto").proto.ITokenID} HashgraphProto.proto.ITokenID
+ * @typedef {import("@hashgraph/proto").proto.ITokenTransferList} HieroProto.proto.ITokenTransferList
+ * @typedef {import("@hashgraph/proto").proto.IAccountAmount} HieroProto.proto.IAccountAmount
+ * @typedef {import("@hashgraph/proto").proto.IAccountID} HieroProto.proto.IAccountID
+ * @typedef {import("@hashgraph/proto").proto.ITokenID} HieroProto.proto.ITokenID
  */
 
 /**
@@ -66,7 +66,7 @@ export default class TokenTransfer {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITokenTransferList[]} tokenTransfers
+     * @param {HieroProto.proto.ITokenTransferList[]} tokenTransfers
      * @returns {TokenTransfer[]}
      */
     static _fromProtobuf(tokenTransfers) {
@@ -74,9 +74,7 @@ export default class TokenTransfer {
 
         for (const tokenTransfer of tokenTransfers) {
             const tokenId = TokenId._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITokenID} */ (
-                    tokenTransfer.token
-                ),
+                /** @type {HieroProto.proto.ITokenID} */ (tokenTransfer.token),
             );
             const expectedDecimals =
                 tokenTransfer.expectedDecimals != null
@@ -92,7 +90,7 @@ export default class TokenTransfer {
                     new TokenTransfer({
                         tokenId,
                         accountId: AccountId._fromProtobuf(
-                            /** @type {HashgraphProto.proto.IAccountID} */ (
+                            /** @type {HieroProto.proto.IAccountID} */ (
                                 transfer.accountID
                             ),
                         ),
@@ -112,7 +110,7 @@ export default class TokenTransfer {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.IAccountAmount}
+     * @returns {HieroProto.proto.IAccountAmount}
      */
     _toProtobuf() {
         return {

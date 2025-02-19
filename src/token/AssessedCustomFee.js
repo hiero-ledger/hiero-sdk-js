@@ -6,7 +6,7 @@ import Long from "long";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IAssessedCustomFee} HashgraphProto.proto.IAssessedCustomFee
+ * @typedef {import("@hashgraph/proto").proto.IAssessedCustomFee} HieroProto.proto.IAssessedCustomFee
  */
 
 /**
@@ -139,7 +139,7 @@ export default class AssessedCustomFee {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IAssessedCustomFee} fee
+     * @param {HieroProto.proto.IAssessedCustomFee} fee
      * @returns {AssessedCustomFee}
      */
     static _fromProtobuf(fee) {
@@ -165,7 +165,7 @@ export default class AssessedCustomFee {
     /**
      * @internal
      * @abstract
-     * @returns {HashgraphProto.proto.IAssessedCustomFee}
+     * @returns {HieroProto.proto.IAssessedCustomFee}
      */
     _toProtobuf() {
         return {

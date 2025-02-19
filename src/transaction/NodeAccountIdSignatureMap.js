@@ -3,7 +3,7 @@
 import ObjectMap from "../ObjectMap.js";
 import TransactionId from "./TransactionId.js";
 import SignaturePairMap from "./SignaturePairMap.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 
 /**
  * @augments {ObjectMap<TransactionId, SignaturePairMap>}
@@ -23,8 +23,7 @@ export default class NodeAccountIdSignatureMap extends ObjectMap {
 
         for (const { bodyBytes, sigMap } of signedTransactions.list) {
             if (bodyBytes != null && sigMap != null) {
-                const body =
-                    HashgraphProto.proto.TransactionBody.decode(bodyBytes);
+                const body = HieroProto.proto.TransactionBody.decode(bodyBytes);
 
                 if (body.transactionID != null) {
                     const transactionId = TransactionId._fromProtobuf(

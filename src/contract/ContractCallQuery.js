@@ -6,7 +6,7 @@ import AccountId from "../account/AccountId.js";
 import ContractFunctionParameters from "./ContractFunctionParameters.js";
 import ContractFunctionResult from "./ContractFunctionResult.js";
 import Long from "long";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import PrecheckStatusError from "../PrecheckStatusError.js";
 import Status from "../Status.js";
 
@@ -97,14 +97,13 @@ export default class ContractCallQuery extends Query {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IQuery} query
+     * @param {HieroProto.proto.IQuery} query
      * @returns {ContractCallQuery}
      */
     static _fromProtobuf(query) {
-        const call =
-            /** @type {HashgraphProto.proto.IContractCallLocalQuery} */ (
-                query.contractCallLocal
-            );
+        const call = /** @type {HieroProto.proto.IContractCallLocalQuery} */ (
+            query.contractCallLocal
+        );
 
         return new ContractCallQuery({
             contractId:
@@ -229,8 +228,8 @@ export default class ContractCallQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IQuery} request
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IQuery} request
+     * @param {HieroProto.proto.IResponse} response
      * @param {AccountId} nodeId
      * @returns {Error}
      */
@@ -241,12 +240,12 @@ export default class ContractCallQuery extends Query {
         const status = Status._fromCode(
             nodeTransactionPrecheckCode != null
                 ? nodeTransactionPrecheckCode
-                : HashgraphProto.proto.ResponseCodeEnum.OK,
+                : HieroProto.proto.ResponseCodeEnum.OK,
         );
 
         const call =
             /**
-             *@type {HashgraphProto.proto.IContractCallLocalResponse}
+             *@type {HieroProto.proto.IContractCallLocalResponse}
              */
             (response.contractCallLocal);
         if (!call.functionResult) {
@@ -272,8 +271,8 @@ export default class ContractCallQuery extends Query {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.IQuery} request
-     * @returns {Promise<HashgraphProto.proto.IResponse>}
+     * @param {HieroProto.proto.IQuery} request
+     * @returns {Promise<HieroProto.proto.IResponse>}
      */
     _execute(channel, request) {
         return channel.smartContract.contractCallLocalMethod(request);
@@ -282,15 +281,15 @@ export default class ContractCallQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IResponse} response
-     * @returns {HashgraphProto.proto.IResponseHeader}
+     * @param {HieroProto.proto.IResponse} response
+     * @returns {HieroProto.proto.IResponseHeader}
      */
     _mapResponseHeader(response) {
         const contractCallLocal =
-            /** @type {HashgraphProto.proto.IContractCallLocalResponse} */ (
+            /** @type {HieroProto.proto.IContractCallLocalResponse} */ (
                 response.contractCallLocal
             );
-        return /** @type {HashgraphProto.proto.IResponseHeader} */ (
+        return /** @type {HieroProto.proto.IResponseHeader} */ (
             contractCallLocal.header
         );
     }
@@ -298,20 +297,20 @@ export default class ContractCallQuery extends Query {
     /**
      * @protected
      * @override
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IResponse} response
      * @returns {Promise<ContractFunctionResult>}
      */
     _mapResponse(response) {
         const call =
             /**
-             *@type {HashgraphProto.proto.IContractCallLocalResponse}
+             *@type {HieroProto.proto.IContractCallLocalResponse}
              */
             (response.contractCallLocal);
 
         return Promise.resolve(
             ContractFunctionResult._fromProtobuf(
                 /**
-                 * @type {HashgraphProto.proto.IContractFunctionResult}
+                 * @type {HieroProto.proto.IContractFunctionResult}
                  */
                 (call.functionResult),
                 false,
@@ -321,19 +320,19 @@ export default class ContractCallQuery extends Query {
 
     /**
      * @private
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IResponse} response
      * @returns {ContractFunctionResult}
      */
     _mapResponseSync(response) {
         const call =
             /**
-             *@type {HashgraphProto.proto.IContractCallLocalResponse}
+             *@type {HieroProto.proto.IContractCallLocalResponse}
              */
             (response.contractCallLocal);
 
         return ContractFunctionResult._fromProtobuf(
             /**
-             * @type {HashgraphProto.proto.IContractFunctionResult}
+             * @type {HieroProto.proto.IContractFunctionResult}
              */
             (call.functionResult),
             false,
@@ -343,8 +342,8 @@ export default class ContractCallQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IQueryHeader} header
-     * @returns {HashgraphProto.proto.IQuery}
+     * @param {HieroProto.proto.IQueryHeader} header
+     * @returns {HieroProto.proto.IQuery}
      */
     _onMakeRequest(header) {
         return {

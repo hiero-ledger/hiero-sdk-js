@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as entity_id from "../EntityIdHelper.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 
 /**
  * @typedef {import("long")} Long
@@ -15,7 +15,7 @@ import * as HashgraphProto from "@hashgraph/proto";
  * Shard ID: The shard number where the schedule exists
  * Realm ID: The realm number within the shard
  * Schedule Number: The unique number identifying the schedule
- * @augments {EntityId<HashgraphProto.proto.IScheduleID>}
+ * @augments {EntityId<HieroProto.proto.IScheduleID>}
  */
 
 export default class ScheduleId {
@@ -50,7 +50,7 @@ export default class ScheduleId {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IScheduleID} id
+     * @param {HieroProto.proto.IScheduleID} id
      * @returns {ScheduleId}
      */
     static _fromProtobuf(id) {
@@ -98,7 +98,7 @@ export default class ScheduleId {
      */
     static fromBytes(bytes) {
         return ScheduleId._fromProtobuf(
-            HashgraphProto.proto.ScheduleID.decode(bytes),
+            HieroProto.proto.ScheduleID.decode(bytes),
         );
     }
 
@@ -119,7 +119,7 @@ export default class ScheduleId {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.ScheduleID}
+     * @returns {HieroProto.proto.ScheduleID}
      */
     _toProtobuf() {
         return {
@@ -148,9 +148,7 @@ export default class ScheduleId {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.ScheduleID.encode(
-            this._toProtobuf(),
-        ).finish();
+        return HieroProto.proto.ScheduleID.encode(this._toProtobuf()).finish();
     }
 
     /**

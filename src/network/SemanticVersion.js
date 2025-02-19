@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 /**
  * Represents a semantic versioning structure for software components.
  *
@@ -30,7 +30,7 @@ export default class SemanticVersion {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ISemanticVersion} version
+     * @param {HieroProto.proto.ISemanticVersion} version
      * @returns {SemanticVersion}
      */
     static _fromProtobuf(version) {
@@ -43,7 +43,7 @@ export default class SemanticVersion {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.ISemanticVersion}
+     * @returns {HieroProto.proto.ISemanticVersion}
      */
     _toProtobuf() {
         return {
@@ -59,7 +59,7 @@ export default class SemanticVersion {
      */
     static fromBytes(bytes) {
         return SemanticVersion._fromProtobuf(
-            HashgraphProto.proto.SemanticVersion.decode(bytes),
+            HieroProto.proto.SemanticVersion.decode(bytes),
         );
     }
 
@@ -67,7 +67,7 @@ export default class SemanticVersion {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.SemanticVersion.encode(
+        return HieroProto.proto.SemanticVersion.encode(
             this._toProtobuf(),
         ).finish();
     }

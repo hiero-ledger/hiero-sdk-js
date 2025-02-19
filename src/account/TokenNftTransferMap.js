@@ -7,11 +7,11 @@ import ObjectMap from "../ObjectMap.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITokenTransferList} HashgraphProto.proto.ITokenTransferList
- * @typedef {import("@hashgraph/proto").proto.INftTransfer} HashgraphProto.proto.INftTransfer
- * @typedef {import("@hashgraph/proto").proto.IAccountAmount} HashgraphProto.proto.IAccountAmount
- * @typedef {import("@hashgraph/proto").proto.ITokenID} HashgraphProto.proto.ITokenID
- * @typedef {import("@hashgraph/proto").proto.IAccountID} HashgraphProto.proto.IAccountID
+ * @typedef {import("@hashgraph/proto").proto.ITokenTransferList} HieroProto.proto.ITokenTransferList
+ * @typedef {import("@hashgraph/proto").proto.INftTransfer} HieroProto.proto.INftTransfer
+ * @typedef {import("@hashgraph/proto").proto.IAccountAmount} HieroProto.proto.IAccountAmount
+ * @typedef {import("@hashgraph/proto").proto.ITokenID} HieroProto.proto.ITokenID
+ * @typedef {import("@hashgraph/proto").proto.IAccountID} HieroProto.proto.IAccountID
  */
 
 /**
@@ -49,7 +49,7 @@ export default class TokenNftTransferMap extends ObjectMap {
     }
 
     /**
-     * @param {HashgraphProto.proto.ITokenTransferList[]} transfers
+     * @param {HieroProto.proto.ITokenTransferList[]} transfers
      * @returns {TokenNftTransferMap}
      */
     static _fromProtobuf(transfers) {
@@ -57,19 +57,19 @@ export default class TokenNftTransferMap extends ObjectMap {
 
         for (const transfer of transfers) {
             const token = TokenId._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITokenID} */ (transfer.token),
+                /** @type {HieroProto.proto.ITokenID} */ (transfer.token),
             );
 
             for (const aa of transfer.nftTransfers != null
                 ? transfer.nftTransfers
                 : []) {
                 const sender = AccountId._fromProtobuf(
-                    /** @type {HashgraphProto.proto.IAccountID} */ (
+                    /** @type {HieroProto.proto.IAccountID} */ (
                         aa.senderAccountID
                     ),
                 );
                 const recipient = AccountId._fromProtobuf(
-                    /** @type {HashgraphProto.proto.IAccountID} */ (
+                    /** @type {HieroProto.proto.IAccountID} */ (
                         aa.receiverAccountID
                     ),
                 );
@@ -89,14 +89,14 @@ export default class TokenNftTransferMap extends ObjectMap {
     }
 
     /**
-     * @returns {HashgraphProto.proto.ITokenTransferList[]}
+     * @returns {HieroProto.proto.ITokenTransferList[]}
      */
     _toProtobuf() {
-        /** @type {HashgraphProto.proto.ITokenTransferList[]} */
+        /** @type {HieroProto.proto.ITokenTransferList[]} */
         const tokenTransferList = [];
 
         for (const [tokenId, value] of this) {
-            /** @type {HashgraphProto.proto.INftTransfer[]} */
+            /** @type {HieroProto.proto.INftTransfer[]} */
             const transfers = [];
 
             for (const transfer of value) {

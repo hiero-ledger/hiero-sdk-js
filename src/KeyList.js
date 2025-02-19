@@ -5,9 +5,9 @@ import CACHE from "./Cache.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IKey} HashgraphProto.proto.IKey
- * @typedef {import("@hashgraph/proto").proto.IKeyList} HashgraphProto.proto.IKeyList
- * @typedef {import("@hashgraph/proto").proto.IThresholdKey} HashgraphProto.proto.IThresholdKey
+ * @typedef {import("@hashgraph/proto").proto.IKey} HieroProto.proto.IKey
+ * @typedef {import("@hashgraph/proto").proto.IKeyList} HieroProto.proto.IKeyList
+ * @typedef {import("@hashgraph/proto").proto.IThresholdKey} HieroProto.proto.IThresholdKey
  */
 
 /**
@@ -133,7 +133,7 @@ export default class KeyList extends Key {
     }
 
     /**
-     * @returns {HashgraphProto.proto.IKey}
+     * @returns {HieroProto.proto.IKey}
      */
     _toProtobufKey() {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
@@ -152,7 +152,7 @@ export default class KeyList extends Key {
     }
 
     /**
-     * @param {HashgraphProto.proto.IKeyList} key
+     * @param {HieroProto.proto.IKeyList} key
      * @returns {KeyList}
      */
     static __fromProtobufKeyList(key) {
@@ -163,7 +163,7 @@ export default class KeyList extends Key {
     }
 
     /**
-     * @param {HashgraphProto.proto.IThresholdKey} key
+     * @param {HieroProto.proto.IThresholdKey} key
      * @returns {KeyList}
      */
     static __fromProtobufThresoldKey(key) {

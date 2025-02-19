@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as entity_id from "../EntityIdHelper.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 
 /**
  * @typedef {import("long")} Long
@@ -43,7 +43,7 @@ export default class TokenId {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITokenID} id
+     * @param {HieroProto.proto.ITokenID} id
      * @returns {TokenId}
      */
     static _fromProtobuf(id) {
@@ -90,9 +90,7 @@ export default class TokenId {
      * @returns {TokenId}
      */
     static fromBytes(bytes) {
-        return TokenId._fromProtobuf(
-            HashgraphProto.proto.TokenID.decode(bytes),
-        );
+        return TokenId._fromProtobuf(HieroProto.proto.TokenID.decode(bytes));
     }
 
     /**
@@ -112,7 +110,7 @@ export default class TokenId {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.ITokenID}
+     * @returns {HieroProto.proto.ITokenID}
      */
     _toProtobuf() {
         return {
@@ -141,7 +139,7 @@ export default class TokenId {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.TokenID.encode(this._toProtobuf()).finish();
+        return HieroProto.proto.TokenID.encode(this._toProtobuf()).finish();
     }
 
     /**

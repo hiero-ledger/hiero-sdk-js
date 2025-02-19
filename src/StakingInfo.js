@@ -3,7 +3,7 @@
 import AccountId from "./account/AccountId.js";
 import Hbar from "./Hbar.js";
 import Timestamp from "./Timestamp.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 
 /**
  * @typedef {import("long")} Long
@@ -86,7 +86,7 @@ export default class StakingInfo {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IStakingInfo} info
+     * @param {HieroProto.proto.IStakingInfo} info
      * @returns {StakingInfo}
      */
     static _fromProtobuf(info) {
@@ -113,7 +113,7 @@ export default class StakingInfo {
     }
 
     /**
-     * @returns {HashgraphProto.proto.IStakingInfo}
+     * @returns {HieroProto.proto.IStakingInfo}
      */
     _toProtobuf() {
         return {
@@ -142,7 +142,7 @@ export default class StakingInfo {
      */
     static fromBytes(bytes) {
         return StakingInfo._fromProtobuf(
-            HashgraphProto.proto.StakingInfo.decode(bytes),
+            HieroProto.proto.StakingInfo.decode(bytes),
         );
     }
 
@@ -150,9 +150,7 @@ export default class StakingInfo {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.StakingInfo.encode(
-            this._toProtobuf(),
-        ).finish();
+        return HieroProto.proto.StakingInfo.encode(this._toProtobuf()).finish();
     }
 
     /**

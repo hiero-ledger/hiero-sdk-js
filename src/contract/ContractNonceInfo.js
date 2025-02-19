@@ -7,8 +7,8 @@ const { proto } = protos;
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IContractNonceInfo} HashgraphProto.proto.IContractNonceInfo
- * @typedef {import("@hashgraph/proto").proto.IContractID} HashgraphProto.proto.IContractID
+ * @typedef {import("@hashgraph/proto").proto.IContractNonceInfo} HieroProto.proto.IContractNonceInfo
+ * @typedef {import("@hashgraph/proto").proto.IContractID} HieroProto.proto.IContractID
  * @typedef {object} ContractNonceInfoJSON
  * @property {string} contractId
  * @property {number} nonce
@@ -46,13 +46,13 @@ export default class ContractNonceInfo {
      *  Extract the contractNonce from the protobuf.
      *
      * @internal
-     * @param {HashgraphProto.proto.IContractNonceInfo} contractNonceInfo the protobuf
+     * @param {HieroProto.proto.IContractNonceInfo} contractNonceInfo the protobuf
      * @returns {ContractNonceInfo} the contract object
      */
     static _fromProtobuf(contractNonceInfo) {
         return new ContractNonceInfo({
             contractId: ContractId._fromProtobuf(
-                /** @type {HashgraphProto.proto.IContractID} */ (
+                /** @type {HieroProto.proto.IContractID} */ (
                     contractNonceInfo.contractId
                 ),
             ),
@@ -67,7 +67,7 @@ export default class ContractNonceInfo {
      * Build the protobuf
      *
      * @internal
-     * @returns {HashgraphProto.proto.IContractNonceInfo} the protobuf representation
+     * @returns {HieroProto.proto.IContractNonceInfo} the protobuf representation
      */
     _toProtobuf() {
         return {

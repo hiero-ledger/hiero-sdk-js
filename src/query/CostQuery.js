@@ -5,7 +5,7 @@ import Hbar from "../Hbar.js";
 import Executable from "../Executable.js";
 import AccountId from "../account/AccountId.js";
 import { _makePaymentTransaction, COST_QUERY } from "./Query.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -15,7 +15,7 @@ import * as HashgraphProto from "@hashgraph/proto";
 
 /**
  * @template OutputT
- * @augments {Executable<HashgraphProto.proto.IQuery, HashgraphProto.proto.IResponse, Hbar>}
+ * @augments {Executable<HieroProto.proto.IQuery, HieroProto.proto.IResponse, Hbar>}
  */
 export default class CostQuery extends Executable {
     /**
@@ -31,7 +31,7 @@ export default class CostQuery extends Executable {
         this._operator = query._operator;
 
         /**
-         * @type {HashgraphProto.proto.IQueryHeader | null}
+         * @type {HieroProto.proto.IQueryHeader | null}
          */
         this._header = null;
     }
@@ -101,19 +101,19 @@ export default class CostQuery extends Executable {
                 operator,
                 paymentAmount,
             ),
-            responseType: HashgraphProto.proto.ResponseType.COST_ANSWER,
+            responseType: HieroProto.proto.ResponseType.COST_ANSWER,
         };
     }
 
     /**
      * @abstract
      * @internal
-     * @returns {Promise<HashgraphProto.proto.IQuery>}
+     * @returns {Promise<HieroProto.proto.IQuery>}
      */
     _makeRequestAsync() {
         return Promise.resolve(
             this._query._onMakeRequest(
-                /** @type {HashgraphProto.proto.IQueryHeader} */ (this._header),
+                /** @type {HieroProto.proto.IQueryHeader} */ (this._header),
             ),
         );
     }
@@ -121,8 +121,8 @@ export default class CostQuery extends Executable {
     /**
      * @abstract
      * @internal
-     * @param {HashgraphProto.proto.IQuery} request
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IQuery} request
+     * @param {HieroProto.proto.IResponse} response
      * @returns {[Status, ExecutionState]}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -133,8 +133,8 @@ export default class CostQuery extends Executable {
     /**
      * @abstract
      * @internal
-     * @param {HashgraphProto.proto.IQuery} request
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IQuery} request
+     * @param {HieroProto.proto.IResponse} response
      * @param {AccountId} nodeId
      * @returns {Error}
      */
@@ -146,9 +146,9 @@ export default class CostQuery extends Executable {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IResponse} response
      * @param {AccountId} nodeAccountId
-     * @param {HashgraphProto.proto.IQuery} request
+     * @param {HieroProto.proto.IQuery} request
      * @returns {Promise<Hbar>}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -163,15 +163,15 @@ export default class CostQuery extends Executable {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.IQuery} request
-     * @returns {Promise<HashgraphProto.proto.IResponse>}
+     * @param {HieroProto.proto.IQuery} request
+     * @returns {Promise<HieroProto.proto.IResponse>}
      */
     _execute(channel, request) {
         return this._query._execute(channel, request);
     }
 
     /**
-     * @param {HashgraphProto.proto.Query} request
+     * @param {HieroProto.proto.Query} request
      * @returns {Uint8Array}
      */
     _requestToBytes(request) {
@@ -179,7 +179,7 @@ export default class CostQuery extends Executable {
     }
 
     /**
-     * @param {HashgraphProto.proto.Response} response
+     * @param {HieroProto.proto.Response} response
      * @returns {Uint8Array}
      */
     _responseToBytes(response) {

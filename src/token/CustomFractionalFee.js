@@ -7,9 +7,9 @@ import Long from "long";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ICustomFee} HashgraphProto.proto.ICustomFee
- * @typedef {import("@hashgraph/proto").proto.IFractionalFee} HashgraphProto.proto.IFractionalFee
- * @typedef {import("@hashgraph/proto").proto.IFraction} HashgraphProto.proto.IFraction
+ * @typedef {import("@hashgraph/proto").proto.ICustomFee} HieroProto.proto.ICustomFee
+ * @typedef {import("@hashgraph/proto").proto.IFractionalFee} HieroProto.proto.IFractionalFee
+ * @typedef {import("@hashgraph/proto").proto.IFraction} HieroProto.proto.IFraction
  */
 
 export default class CustomFractionalFee extends CustomFee {
@@ -161,15 +161,15 @@ export default class CustomFractionalFee extends CustomFee {
     /**
      * @internal
      * @override
-     * @param {HashgraphProto.proto.ICustomFee} info
+     * @param {HieroProto.proto.ICustomFee} info
      * @returns {CustomFee}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     static _fromProtobuf(info) {
-        const fee = /** @type {HashgraphProto.proto.IFractionalFee} */ (
+        const fee = /** @type {HieroProto.proto.IFractionalFee} */ (
             info.fractionalFee
         );
-        const fractional = /** @type {HashgraphProto.proto.IFraction} */ (
+        const fractional = /** @type {HieroProto.proto.IFraction} */ (
             fee.fractionalAmount
         );
 
@@ -200,7 +200,7 @@ export default class CustomFractionalFee extends CustomFee {
     /**
      * @internal
      * @abstract
-     * @returns {HashgraphProto.proto.ICustomFee}
+     * @returns {HieroProto.proto.ICustomFee}
      */
     _toProtobuf() {
         return {
