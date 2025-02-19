@@ -1,5 +1,5 @@
 # Stage 1: Build
-FROM node:20-slim AS build
+FROM node:20-alpine AS build
 
 WORKDIR /app
 
@@ -19,7 +19,7 @@ RUN pnpm install
 COPY . .
 
 # Stage 2: Runtime
-FROM node:20-slim
+FROM node:20-alpine
 
 WORKDIR /app
 
