@@ -1,6 +1,6 @@
 {
     "name": "@hashgraph/sdk",
-    "version": "2.58.0",
+    "version": "2.59.0",
     "description": "Hedera™ Hashgraph SDK",
     "types": "./lib/index.d.ts",
     "main": "./lib/index.cjs",
@@ -57,9 +57,9 @@
         "@ethersproject/bignumber": "^5.7.0",
         "@ethersproject/bytes": "^5.7.0",
         "@ethersproject/rlp": "^5.7.0",
-        "@grpc/grpc-js": "1.8.2",
-        "@hashgraph/cryptography": "file:.yalc/@hashgraph/cryptography",
-        "@hashgraph/proto": "file:.yalc/@hashgraph/proto",
+        "@grpc/grpc-js": "^1.12.6",
+        "@hashgraph/cryptography": "1.4.8",
+        "@hashgraph/proto": "2.16.0",
         "@rollup/plugin-terser": "^0.4.4",
         "bignumber.js": "^9.1.1",
         "bn.js": "^5.1.1",
@@ -135,6 +135,5 @@
     },
     "resolutions": {
         "bn.js": "5.2.1"
-    },
-    "packageManager": "pnpm@8.15.4+sha512.0bd3a9be9eb0e9a692676deec00a303ba218ba279d99241475616b398dbaeedd11146f92c2843458f557b1d127e09d4c171e105bdcd6b61002b39685a8016b9e"
+    }
 }

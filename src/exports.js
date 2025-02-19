@@ -173,6 +173,7 @@ export { default as TopicMessageChunk } from "./topic/TopicMessageChunk.js";
 export { default as TopicMessageQuery } from "./topic/TopicMessageQuery.js";
 export { default as TopicMessageSubmitTransaction } from "./topic/TopicMessageSubmitTransaction.js";
 export { default as TopicUpdateTransaction } from "./topic/TopicUpdateTransaction.js";
+export { default as CustomFeeLimit } from "./transaction/CustomFeeLimit.js";
 export { default as Transaction } from "./transaction/Transaction.js";
 export { default as TransactionFeeSchedule } from "./TransactionFeeSchedule.js";
 export { default as TransactionId } from "./transaction/TransactionId.js";
