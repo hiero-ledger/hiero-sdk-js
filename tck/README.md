@@ -1,3 +1,7 @@
+# Go SDK TCK server
+
+This is a server that implements the [SDK TCK specification](https://github.com/hiero-ledger/hiero-sdk-tck/) for the Js SDK.
+
 # TCK Server Start-Up Guide 🛠️
 
 This guide will help you set up, start, and test the TCK server using Docker and Node.js. Follow the steps below to ensure a smooth setup.
