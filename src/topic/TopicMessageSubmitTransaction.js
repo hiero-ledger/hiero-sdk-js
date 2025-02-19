@@ -37,13 +37,17 @@ import * as util from "../util.js";
  * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HashgraphProto.proto.ITransactionBody
  * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HashgraphProto.proto.ITransactionResponse
  * @typedef {import("@hashgraph/proto").proto.IConsensusMessageChunkInfo} HashgraphProto.proto.IConsensusMessageChunkInfo
+ * @typedef {import("@hashgraph/proto").proto.IFixedFee} HashgraphProto.proto.IFixedFee
+ * @typedef {import("@hashgraph/proto").proto.ICustomFeeLimit} HashgraphProto.proto.ICustomFeeLimit
  */
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../token/CustomFixedFee.js").default} CustomFixedFee
  * @typedef {import("../account/AccountId.js").default} AccountId
  * @typedef {import("../transaction/TransactionResponse.js").default} TransactionResponse
  * @typedef {import("../schedule/ScheduleCreateTransaction.js").default} ScheduleCreateTransaction
+ * @typedef {import("../transaction/CustomFeeLimit.js").default} CustomFeeLimit
  */
 
 /**
@@ -200,6 +204,40 @@ export default class TopicMessageSubmitTransaction extends Transaction {
         message = util.requireStringOrUint8Array(message);
         this._message =
             message instanceof Uint8Array ? message : utf8.encode(message);
+        return this;
+    }
+
+    /**
+     * Gets the maximum custom fee that the user is willing to pay for the message.
+     * @returns {CustomFeeLimit[]}
+     */
+    getCustomFeeLimits() {
+        return this._customFeeLimits;
+    }
+
+    /**
+     * Sets the maximum custom fee that the user is willing to pay for message submission.
+     * @param {CustomFeeLimit[]} customFeeLimits
+     * @returns {this}
+     */
+    setCustomFeeLimits(customFeeLimits) {
+        this._requireNotFrozen();
+
+        this._customFeeLimits = customFeeLimits;
+
+        return this;
+    }
+
+    /**
+     * Adds a maximum custom fee that the user is willing to pay for message submission.
+     * @param {CustomFeeLimit} customFeeLimit
+     * @returns {this}
+     */
+    addCustomFeeLimit(customFeeLimit) {
+        this._requireNotFrozen();
+
+        this._customFeeLimits.push(customFeeLimit);
+
         return this;
     }
 
