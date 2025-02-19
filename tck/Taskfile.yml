@@ -44,8 +44,15 @@ tasks:
             - echo "Starting local Hedera network..."
             - hedera start
 
+    pull-tck-client-server:
+        desc: "Pull the Docker image for tck-client"
+        cmds:
+            - echo "Pulling Docker image for tck-client..."
+            - docker pull ivaylogarnev/tck-client-cross-network
+
     build-tck-js-server:
         desc: "Build the Docker image for tck-js-server"
+        deps: [pull-tck-client-server]
         silent: true
         cmds:
             - echo "Building Docker image for tck-js-server..."
