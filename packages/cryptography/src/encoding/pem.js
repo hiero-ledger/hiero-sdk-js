@@ -6,7 +6,7 @@ import Ed25519PrivateKey from "../Ed25519PrivateKey.js";
 import EcdsaPrivateKey from "../EcdsaPrivateKey.js";
 import * as asn1 from "asn1js";
 // @ts-ignore
-import pem2 from "forge-light/lib/pem.js";
+import pemForge from "forge-light/lib/pem.js";
 import * as hex from "./hex.js";
 import * as aes from "../primitive/aes.js";
 import { Buffer } from "buffer";
@@ -83,7 +83,7 @@ export async function readPemECDSA(pem, passphrase) {
 
     if (passphrase) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-        const decodedPem = pem2.decode(pem)[0];
+        const decodedPem = pemForge.decode(pem)[0];
         /** @type {string} */
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
         const ivString = decodedPem.dekInfo.parameters;
