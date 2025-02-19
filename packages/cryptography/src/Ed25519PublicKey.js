@@ -3,7 +3,6 @@ import BadKeyError from "./BadKeyError.js";
 import nacl from "tweetnacl";
 import { arrayEqual } from "./util/array.js";
 import * as hex from "./encoding/hex.js";
-import forge from "node-forge";
 
 const derPrefix = "302a300506032b6570032100";
 const derPrefixBytes = hex.decode(derPrefix);
@@ -57,27 +56,27 @@ export default class Ed25519PublicKey extends Key {
      * @returns {Ed25519PublicKey}
      */
     static fromBytesDer(data) {
-        // @ts-ignore
-        const asn = forge.asn1.fromDer(new forge.util.ByteStringBuffer(data));
-
-        /** * @type {Uint8Array} */
-        let publicKey;
-
         try {
-            publicKey = forge.pki.ed25519.publicKeyFromAsn1(asn);
+            // Verify minimum length (44 bytes is standard for Ed25519 public key in DER)
+            if (data.length !== 44) {
+                throw new Error(`invalid length: ${data.length} bytes`);
+            }
+
+            const actualPrefix = data.subarray(0, 12);
+
+            if (!actualPrefix.every((byte, i) => byte === derPrefixBytes[i])) {
+                throw new Error("invalid DER prefix");
+            }
+            // Extract the public key (last 32 bytes)
+            const publicKey = data.subarray(12);
+            return new Ed25519PublicKey(publicKey);
         } catch (error) {
-            const message =
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                error != null && /** @type {Error} */ (error).message != null
-                    ? // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                      /** @type {Error} */ (error).message
-                    : "";
             throw new BadKeyError(
-                `cannot decode ED25519 public key data from DER format: ${message}`,
+                `cannot decode ED25519 public key data from DER format: ${
+                    error instanceof Error ? error.message : "unknown error"
+                }`,
             );
         }
-
-        return new Ed25519PublicKey(publicKey);
     }
 
     /**

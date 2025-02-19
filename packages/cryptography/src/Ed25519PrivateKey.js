@@ -4,7 +4,6 @@ import nacl from "tweetnacl";
 import * as hex from "./encoding/hex.js";
 import * as random from "./primitive/random.js";
 import * as slip10 from "./primitive/slip10.js";
-import forge from "node-forge";
 
 export const derPrefix = "302e020100300506032b657004220420";
 export const derPrefixBytes = hex.decode(derPrefix);
@@ -96,15 +95,22 @@ export default class Ed25519PrivateKey {
      * @returns {Ed25519PrivateKey}
      */
     static fromBytesDer(data) {
-        // @ts-ignore
-        const asn = forge.asn1.fromDer(new forge.util.ByteStringBuffer(data));
-
         /** * @type {Uint8Array} */
         let privateKey;
-
         try {
-            privateKey =
-                forge.pki.ed25519.privateKeyFromAsn1(asn).privateKeyBytes;
+            const arr = new Uint8Array(data);
+            const header = arr.subarray(0, data.length - 32);
+            const isValidED25519 = header.every((byte, index) => {
+                return derPrefixBytes[index] === byte;
+            });
+
+            if (!isValidED25519) {
+                throw new BadKeyError(
+                    `invalid DER prefix for ED25519 private key`,
+                );
+            }
+
+            privateKey = arr.slice(data.length - 32);
         } catch (error) {
             const message =
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
