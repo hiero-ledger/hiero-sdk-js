@@ -22,7 +22,7 @@
         "./package.json": "./package.json",
         ".": {
             "types": "./lib/index.d.ts",
-            "import": "./src/index.js",
+            "import": "./lib/index.js",
             "require": "./lib/index.cjs"
         }
     },
@@ -37,6 +37,7 @@
         "sdk",
         "transactions"
     ],
+    "sideEffects": false,
     "files": [
         "lib/",
         "src/"
@@ -57,9 +58,10 @@
         "@ethersproject/bytes": "^5.7.0",
         "@ethersproject/rlp": "^5.7.0",
         "@grpc/grpc-js": "1.8.2",
-        "@hashgraph/cryptography": "1.4.8-beta.15",
-        "@hashgraph/proto": "2.16.0-beta.8",
         "axios": "^1.6.4",
+        "@hashgraph/cryptography": "file:.yalc/@hashgraph/cryptography",
+        "@hashgraph/proto": "file:.yalc/@hashgraph/proto",
+        "@rollup/plugin-terser": "^0.4.4",
         "bignumber.js": "^9.1.1",
         "bn.js": "^5.1.1",
         "crypto-js": "^4.2.0",
@@ -115,18 +117,25 @@
         "npx": "^10.2.2",
         "nyc": "^17.1.0",
         "prettier": "^3.0.3",
+        "rollup": "^4.34.8",
         "sinon": "^19.0.2",
         "typedoc": "^0.27.6",
         "typescript": "^5.7.2",
         "vite": "^6.1.0",
+        "vite-bundle-analyzer": "^0.17.0",
         "yalc": "1.0.0-pre.53"
     },
     "peerDependencies": {
+        "bn.js": "^5.2.1",
         "expo": "^49.0.16"
     },
     "peerDependenciesMeta": {
         "expo": {
             "optional": true
         }
-    }
+    },
+    "resolutions": {
+        "bn.js": "5.2.1"
+    },
+    "packageManager": "pnpm@8.15.4+sha512.0bd3a9be9eb0e9a692676deec00a303ba218ba279d99241475616b398dbaeedd11146f92c2843458f557b1d127e09d4c171e105bdcd6b61002b39685a8016b9e"
 }
