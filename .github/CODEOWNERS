@@ -1,5 +1,5 @@
 # Default code owners for entire repository
-*                                               @hiero-ledger/hiero-sdk-js-maintainers
+*                                               @hiero-ledger/hiero-sdk-js-maintainers @hiero-ledger/hiero-sdk-js-committers
 
 #########################
 #####  Core Files  ######
@@ -12,8 +12,8 @@
 /.github/workflows/                             @hiero-ledger/github-committers @hiero-ledger/github-maintainers
 
 # Codacy Tool Configurations
-/config/                                        @hiero-ledger/hiero-sdk-js-maintainers @hiero-ledger/github-committers @hiero-ledger/github-maintainers
-.remarkrc                                       @hiero-ledger/hiero-sdk-js-maintainers @hiero-ledger/github-committers @hiero-ledger/github-maintainers
+/config/                                        @hiero-ledger/hiero-sdk-js-maintainers @hiero-ledger/hiero-sdk-js-committers @hiero-ledger/github-committers @hiero-ledger/github-maintainers
+.remarkrc                                       @hiero-ledger/hiero-sdk-js-maintainers @hiero-ledger/hiero-sdk-js-committers @hiero-ledger/github-committers @hiero-ledger/github-maintainers
 
 # Self-protection for root CODEOWNERS files (this file should not exist and should definitely require approval)
 /CODEOWNERS                                     @hiero-ledger/github-maintainers
@@ -26,5 +26,5 @@
 **/codecov.yml                                  @hiero-ledger/github-committers @hiero-ledger/github-maintainers
 
 # Git Ignore definitions
-**/.gitignore                                   @hiero-ledger/github-committers @hiero-ledger/github-maintainers @hiero-ledger/hiero-sdk-js-maintainers @hiero-ledger/tsc
-**/.gitignore.*                                 @hiero-ledger/github-committers @hiero-ledger/github-maintainers @hiero-ledger/hiero-sdk-js-maintainers @hiero-ledger/tsc
+**/.gitignore                                   @hiero-ledger/github-committers @hiero-ledger/github-maintainers @hiero-ledger/hiero-sdk-js-maintainers @hiero-ledger/hiero-sdk-js-committers @hiero-ledger/tsc
+**/.gitignore.*                                 @hiero-ledger/github-committers @hiero-ledger/github-maintainers @hiero-ledger/hiero-sdk-js-maintainers @hiero-ledger/hiero-sdk-js-committers @hiero-ledger/tsc
