@@ -18,7 +18,7 @@
  * ‍
  */
 
-import * as cryptography from "@hashgraph/cryptography";
+import { Mnemonic as MnemonicCryptography } from "@hashgraph/cryptography";
 import CACHE from "./Cache.js";
 
 /**
@@ -35,7 +35,7 @@ const HARDENED_BIT = 0x80000000;
  */
 export default class Mnemonic {
     /**
-     * @param {cryptography.Mnemonic} mnemonic
+     * @param {MnemonicCryptography} mnemonic
      * @hideconstructor
      * @private
      */
@@ -50,7 +50,7 @@ export default class Mnemonic {
      * @returns {Promise<Mnemonic>}
      */
     static async generate() {
-        return new Mnemonic(await cryptography.Mnemonic._generate(24));
+        return new Mnemonic(await MnemonicCryptography._generate(24));
     }
 
     /**
@@ -60,7 +60,7 @@ export default class Mnemonic {
      * @returns {Promise<Mnemonic>}
      */
     static async generate12() {
-        return new Mnemonic(await cryptography.Mnemonic._generate(12));
+        return new Mnemonic(await MnemonicCryptography._generate(12));
     }
 
     /**
@@ -77,7 +77,7 @@ export default class Mnemonic {
      * @returns {Promise<Mnemonic>}
      */
     static async fromWords(words) {
-        return new Mnemonic(await cryptography.Mnemonic.fromWords(words));
+        return new Mnemonic(await MnemonicCryptography.fromWords(words));
     }
 
     /**
@@ -236,7 +236,7 @@ export default class Mnemonic {
      * @returns {Promise<Mnemonic>}
      */
     static async fromString(mnemonic) {
-        return new Mnemonic(await cryptography.Mnemonic.fromString(mnemonic));
+        return new Mnemonic(await MnemonicCryptography.fromString(mnemonic));
     }
 
     /**
@@ -253,7 +253,7 @@ export default class Mnemonic {
      * @returns {Promise<Uint8Array>}
      */
     async toSeed(passphrase) {
-        return await cryptography.Mnemonic.toSeed(
+        return await MnemonicCryptography.toSeed(
             this._mnemonic.words,
             passphrase,
         );
