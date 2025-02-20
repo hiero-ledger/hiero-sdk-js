@@ -93,6 +93,8 @@ tasks:
             NETWORK: '{{.NETWORK | default "local"}}'
             OPERATOR_ACCOUNT_ID: "{{.OPERATOR_ACCOUNT_ID}}"
             OPERATOR_ACCOUNT_PRIVATE_KEY: "{{.OPERATOR_ACCOUNT_PRIVATE_KEY}}"
+            MIRROR_NODE_REST_URL: "{{.MIRROR_NODE_REST_URL}}"
+            MIRROR_NODE_REST_JAVA_URL: "{{.MIRROR_NODE_REST_JAVA_URL}}"
         cmds:
             - echo "Starting Docker Compose services..."
             - |
@@ -100,6 +102,8 @@ tasks:
                 export NETWORK={{.NETWORK | default "local"}}
                 export OPERATOR_ACCOUNT_ID={{.OPERATOR_ACCOUNT_ID}} 
                 export OPERATOR_ACCOUNT_PRIVATE_KEY="{{.OPERATOR_ACCOUNT_PRIVATE_KEY}}"
+                export MIRROR_NODE_REST_URL="{{.MIRROR_NODE_REST_URL}}"
+                export MIRROR_NODE_REST_JAVA_URL="{{.MIRROR_NODE_REST_JAVA_URL}}"
                 if [ "$NETWORK" = "testnet" ]; then
                     if [ -z "$OPERATOR_ACCOUNT_ID" ] || [ -z "$OPERATOR_ACCOUNT_PRIVATE_KEY" ]; then
                         echo "Error: OPERATOR_ACCOUNT_ID and OPERATOR_ACCOUNT_PRIVATE_KEY must be provided for testnet."
