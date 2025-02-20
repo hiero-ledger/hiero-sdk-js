@@ -60,7 +60,6 @@
         "@grpc/grpc-js": "^1.12.6",
         "@hashgraph/cryptography": "1.4.8",
         "@hashgraph/proto": "2.16.0",
-        "@rollup/plugin-terser": "^0.4.4",
         "bignumber.js": "^9.1.1",
         "bn.js": "^5.1.1",
         "crypto-js": "^4.2.0",
@@ -135,5 +134,6 @@
     },
     "resolutions": {
         "bn.js": "5.2.1"
-    }
+    },
+    "packageManager": "pnpm@10.4.1+sha512.c753b6c3ad7afa13af388fa6d808035a008e30ea9993f58c6663e2bc5ff21679aa834db094987129aa4d488b86df57f7b634981b2f827cdcacc698cc0cfb88af"
 }
