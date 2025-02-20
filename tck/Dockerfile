@@ -29,8 +29,6 @@ RUN npm install -g pnpm
 # Copy only the necessary files from the build stage
 COPY --from=build /app .
 
-ENV RUNNING_IN_DOCKER=true 
-
 # Expose the port used by the server
 EXPOSE 8544
 

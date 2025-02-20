@@ -11,7 +11,7 @@ services:
         ports:
             - "8544:8544"
     tck-client:
-        image: ivaylogarnev/tck-client-cross-network
+        image: ivaylogarnev/tck-client
         networks:
             - hedera-network-node
             - hedera-mirror-node
@@ -20,6 +20,10 @@ services:
             NETWORK: "${NETWORK:-local}"
             OPERATOR_ACCOUNT_ID: "${OPERATOR_ACCOUNT_ID:-0.0.1022}"
             OPERATOR_ACCOUNT_PRIVATE_KEY: "${OPERATOR_ACCOUNT_PRIVATE_KEY:-302e020100300506032b657004220420a608e2130a0a3cb34f86e757303c862bee353d9ab77ba4387ec084f881d420d4}"
+            JSON_RPC_SERVER_URL: "http://tck-server:8544"
+            NODE_IP: "network-node:50211"
+            MIRROR_NODE_REST_URL: "${MIRROR_NODE_REST_URL:-http://mirror-node-rest:5551}"
+            MIRROR_NODE_REST_JAVA_URL: "${MIRROR_NODE_REST_JAVA_URL:-http://mirror-node-rest-java:8084}"
         depends_on:
             - tck-server
 
