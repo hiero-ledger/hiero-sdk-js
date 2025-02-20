@@ -32,7 +32,7 @@
     "exports": {
         "./package.json": "./package.json",
         ".": {
-            "import": "./src/index.js",
+            "import": "./lib/index.js",
             "require": "./lib/index.cjs"
         }
     },
@@ -41,6 +41,7 @@
     "repository": "https://github.com/hashgraph/hedera-sdk-js",
     "bugs": "https://github.com/hashgraph/hedera-sdk-js/issues",
     "type": "module",
+    "sideEffects": false,
     "keywords": [
         "hedera",
         "hashgraph",

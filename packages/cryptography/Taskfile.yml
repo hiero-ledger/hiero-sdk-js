@@ -28,6 +28,7 @@ tasks:
             - task: format
             - task: lint
             - npx babel src -d lib --out-file-extension .cjs > /dev/null
+            - npx rollup -c > /dev/null
             - npx yalc publish > /dev/null
 
     clean:
