@@ -61,7 +61,7 @@ tasks:
     run-specific-test:
         desc: "Run all services with a specific test"
         silent: true
-        deps: [build-tck-js-server]
+        deps: [start-local-node, build-tck-js-server]
         vars:
             TEST: '{{.TEST | default "ALL"}}'
             NETWORK: '{{.NETWORK | default "local"}}'
