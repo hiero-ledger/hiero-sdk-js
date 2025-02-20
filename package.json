@@ -120,7 +120,6 @@
         "typedoc": "^0.27.6",
         "typescript": "^5.7.2",
         "vite": "^6.1.0",
-        "vite-bundle-analyzer": "^0.17.0",
         "yalc": "1.0.0-pre.53"
     },
     "peerDependencies": {
