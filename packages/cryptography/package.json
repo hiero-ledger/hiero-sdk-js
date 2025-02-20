@@ -18,21 +18,21 @@
         "./src/primitive/bip32.js": "./src/primitive/bip32.native.js"
     },
     "browser": {
-        "./lib/index.js": "./lib/index.js",
-        "./lib/encoding/base64.js": "./lib/encoding/base64.browser.js",
-        "./lib/encoding/hex.js": "./lib/encoding/hex.browser.js",
-        "./lib/encoding/utf8.js": "./lib/encoding/utf8.browser.js",
-        "./lib/primitive/aes.js": "./lib/primitive/aes.browser.js",
-        "./lib/primitive/sha256.js": "./lib/primitive/sha256.browser.js",
-        "./lib/primitive/pbkdf2.js": "./lib/primitive/pbkdf2.browser.js",
-        "./lib/primitive/random.js": "./lib/primitive/random.js",
-        "./lib/primitive/hmac.js": "./lib/primitive/hmac.browser.js",
-        "./lib/primitive/bip32.js": "./lib/primitive/bip32.browser.js"
+        "./src/index.js": "./src/index.js",
+        "./src/encoding/base64.js": "./src/encoding/base64.browser.js",
+        "./src/encoding/hex.js": "./src/encoding/hex.browser.js",
+        "./src/encoding/utf8.js": "./src/encoding/utf8.browser.js",
+        "./src/primitive/aes.js": "./src/primitive/aes.browser.js",
+        "./src/primitive/sha256.js": "./src/primitive/sha256.browser.js",
+        "./src/primitive/pbkdf2.js": "./src/primitive/pbkdf2.browser.js",
+        "./src/primitive/random.js": "./src/primitive/random.js",
+        "./src/primitive/hmac.js": "./src/primitive/hmac.browser.js",
+        "./src/primitive/bip32.js": "./src/primitive/bip32.browser.js"
     },
     "exports": {
         "./package.json": "./package.json",
         ".": {
-            "import": "./lib/index.js",
+            "import": "./src/index.js",
             "require": "./lib/index.cjs"
         }
     },
@@ -60,7 +60,6 @@
         "last 1 Firefox versions"
     ],
     "dependencies": {
-        "@rollup/plugin-terser": "^0.4.4",
         "asn1js": "^3.0.5",
         "bignumber.js": "^9.1.1",
         "bn.js": "^5.2.1",
@@ -126,7 +125,6 @@
         "npm-run-all": "^4.1.5",
         "npx": "^10.2.2",
         "prettier": "^3.0.3",
-        "rollup": "^4.34.8",
         "serve": "^14.1.2",
         "typescript": "^5.7.2",
         "vite": "^6.1.0"
