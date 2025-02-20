@@ -208,9 +208,6 @@ devDependencies:
   vite:
     specifier: ^6.1.0
     version: 6.1.0(@types/node@22.13.4)
-  vite-bundle-analyzer:
-    specifier: ^0.17.0
-    version: 0.17.1
   yalc:
     specifier: 1.0.0-pre.53
     version: 1.0.0-pre.53
@@ -9062,11 +9059,6 @@ packages:
     resolution: {integrity: sha512-M6w37eVCMMouJ9V/sdPGnC5H4uDr73/+xdq0FBLO3TFFX1+7wiUY6Es328NN+y43tmY+doUdN9g9J21vqB7iLw==}
     dependencies:
       builtins: 1.0.3
-
-  /vite-bundle-analyzer@0.17.1:
-    resolution: {integrity: sha512-ubjLhkuRgOSBNck+6xBbQmjmh8SeLTG4alEM5PX2TNzyGhKLwWlyCz1YG0an3RQnscbhVzSb6kYteoHXhP///A==}
-    hasBin: true
-    dev: true
 
   /vite@6.1.0(@types/node@22.13.4):
     resolution: {integrity: sha512-RjjMipCKVoR4hVfPY6GQTgveinjNuyLw+qruksLDvA5ktI1150VmcMBKmQaEWJhg/j6Uaf6dNCNA0AfdzUb/hQ==}

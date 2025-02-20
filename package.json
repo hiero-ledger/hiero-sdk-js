@@ -60,6 +60,7 @@
         "@grpc/grpc-js": "^1.12.6",
         "@hashgraph/cryptography": "1.4.8",
         "@hashgraph/proto": "2.16.0",
+        "@rollup/plugin-terser": "^0.4.4",
         "bignumber.js": "^9.1.1",
         "bn.js": "^5.1.1",
         "crypto-js": "^4.2.0",
