@@ -26,5 +26,5 @@
 **/codecov.yml                                  @hiero-ledger/github-committers @hiero-ledger/github-maintainers
 
 # Git Ignore definitions
-**/.gitignore                                   @hiero-ledger/github-committers @hiero-ledger/github-maintainers @hiero-ledger/hiero-sdk-js-maintainers @hiero-ledger/hiero-sdk-js-committers @hiero-ledger/tsc
-**/.gitignore.*                                 @hiero-ledger/github-committers @hiero-ledger/github-maintainers @hiero-ledger/hiero-sdk-js-maintainers @hiero-ledger/hiero-sdk-js-committers @hiero-ledger/tsc
+**/.gitignore                                   @hiero-ledger/github-committers @hiero-ledger/github-maintainers @hiero-ledger/hiero-sdk-js-maintainers @hiero-ledger/tsc
+**/.gitignore.*                                 @hiero-ledger/github-committers @hiero-ledger/github-maintainers @hiero-ledger/hiero-sdk-js-maintainers @hiero-ledger/tsc
