@@ -63,7 +63,14 @@ export function sign(keydata, message) {
     const msg = hex.encode(message);
     const data = hex.decode(keccak256(`0x${msg}`));
     const keypair = secp256k1.keyFromPrivate(keydata);
-    const signature = keypair.sign(data);
+    const signature = keypair.sign(data, {
+        // the elliptic library generates a non-normalized s value by-default
+        // this seems to be legacy behavior that they are loathe to change 
+        // as its pretty silent if someone was depending on it
+        // most every other client I can normalizes the s value, passing `true`
+        // here will return a normalized s value
+        canonical: true,
+    });
 
     const r = signature.r.toArray("be", 32);
     const s = signature.s.toArray("be", 32);
