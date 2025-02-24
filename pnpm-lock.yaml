@@ -45,8 +45,8 @@ importers:
         specifier: ^3.7.4
         version: 3.7.7
       long:
-        specifier: ^5.2.3
-        version: 5.2.3
+        specifier: ^5.3.1
+        version: 5.3.1
       pino:
         specifier: ^9.6.0
         version: 9.6.0
@@ -1153,7 +1153,7 @@ packages:
 
   '@expo/bunyan@4.0.1':
     resolution: {integrity: sha512-+Lla7nYSiHZirgK+U/uYzsLv/X+HaJienbD5AKX1UQZHYfWaP+9uuQluRB4GrEVWF0GZ7vEVp/jzaOT9k/SQlg==}
-    engines: {node: '>=0.10.0'}
+    engines: {'0': node >=0.10.0}
 
   '@expo/cli@0.10.17':
     resolution: {integrity: sha512-HkHDvHPzq4M244hIerwnsw2IdjOo7RSsMYWGhc7ZY7DQWIMUC88b7f5+0RtD4JQfXQrgKS5Tvqm/5E6kAH0rIA==}
@@ -3613,8 +3613,8 @@ packages:
     resolution: {integrity: sha512-HgMmCqIJSAKqo68l0rS2AanEWfkxaZ5wNiEFb5ggm08lDs9Xl2KxBlX3PTcaD2chBM1gXAYf491/M2Rv8Jwayg==}
     engines: {node: '>= 0.6.0'}
 
-  long@5.2.3:
-    resolution: {integrity: sha512-lcHwpNoggQTObv5apGNCTdJrO69eHOZMi4BNC+rTLER8iHAqGrUVeLh/irVIM7zTw2bOXA8T6uNPeujwOLg/2Q==}
+  long@5.3.1:
+    resolution: {integrity: sha512-ka87Jz3gcx/I7Hal94xaN2tZEOPoUOEVftkQqZx2EeQRN7LGdfLlI3FvZ+7WDplm+vK2Urx9ULrvSowtdCieng==}
 
   loose-envify@1.4.0:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
@@ -6731,7 +6731,7 @@ snapshots:
   '@grpc/proto-loader@0.7.13':
     dependencies:
       lodash.camelcase: 4.3.0
-      long: 5.2.3
+      long: 5.3.1
       protobufjs: 7.2.5
       yargs: 17.7.2
 
@@ -6753,7 +6753,7 @@ snapshots:
 
   '@hashgraph/proto@2.16.0-beta.8':
     dependencies:
-      long: 5.2.3
+      long: 5.3.1
       protobufjs: 7.2.5
 
   '@humanwhocodes/config-array@0.13.0':
@@ -9352,7 +9352,7 @@ snapshots:
 
   loglevel@1.9.2: {}
 
-  long@5.2.3: {}
+  long@5.3.1: {}
 
   loose-envify@1.4.0:
     dependencies:
@@ -10069,7 +10069,7 @@ snapshots:
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
       '@types/node': 22.12.0
-      long: 5.2.3
+      long: 5.3.1
 
   proxy-agent@6.5.0:
     dependencies:
