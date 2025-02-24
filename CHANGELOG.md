@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v2.60.0-beta.1
 
-* fix: Changed Protobufs submodule path by @ivaylogarnev-limechain in https://github.com/hiero-ledger/hiero-sdk-js/pull/2890
+* fix: Changed Protobufs submodule path by @ivaylogarnev-limechain in https://github.com/hiero-ledger/hiero-sdk-js/pull/2884
 
 ## v2.59.0
 
