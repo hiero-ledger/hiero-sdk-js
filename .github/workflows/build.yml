@@ -118,7 +118,7 @@ jobs:
         id: start-local-node
         if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
         run: |
-          ${{ env.CG_EXEC }} npx @hashgraph/hedera-local start -d -—network local --balance=10000000 --network-tag=0.57.0
+          ${{ env.CG_EXEC }} npx @hashgraph/hedera-local start -d -—network local --balance=10000000
           # Wait for the network to fully start
           sleep 30
 
@@ -210,7 +210,7 @@ jobs:
         id: start-local-node
         if: ${{ !cancelled() && always() }}
         run: |
-          ${{ env.CG_EXEC }} npx @hashgraph/hedera-local start -d -—network local --balance=100000 --network-tag=0.57.0
+          ${{ env.CG_EXEC }} npx @hashgraph/hedera-local start -d -—network local --balance=100000
           sleep 30
 
       - name: Install dependencies

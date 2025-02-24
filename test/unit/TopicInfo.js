@@ -2,10 +2,12 @@ import { expect } from "chai";
 import Duration from "../../src/Duration.js";
 import {
     AccountId,
+    CustomFixedFee,
     LedgerId,
     Long,
     PrivateKey,
     Timestamp,
+    TokenId,
     TopicId,
     TopicInfo,
 } from "../../src/index.js";
@@ -14,6 +16,18 @@ describe("TopicInfo", function () {
     it("encodes to correct protobuf", function () {
         const adminKey = PrivateKey.generateED25519();
         const submitKey = PrivateKey.generateED25519();
+        const feeScheduleKey = PrivateKey.generateED25519();
+        const feeExemptKeys = [
+            PrivateKey.generateED25519(),
+            PrivateKey.generateED25519(),
+        ];
+
+        const denominatingTokenId = new TokenId(0);
+        const amount = 100;
+
+        const customFees = [
+            new CustomFixedFee({ denominatingTokenId, amount }),
+        ];
         const autoRenewAccountId = new AccountId(1, 2, 3);
         const autoRenewPeriod = new Duration(123);
         const topicId = new TopicId(0);
@@ -31,6 +45,9 @@ describe("TopicInfo", function () {
             expirationTime,
             adminKey,
             submitKey,
+            feeScheduleKey,
+            feeExemptKeys,
+            customFees,
             autoRenewAccountId,
             autoRenewPeriod,
             ledgerId,
@@ -45,6 +62,11 @@ describe("TopicInfo", function () {
                 expirationTime: expirationTime._toProtobuf(),
                 adminKey: adminKey._toProtobufKey(),
                 submitKey: submitKey._toProtobufKey(),
+                feeScheduleKey: feeScheduleKey._toProtobufKey(),
+                customFees: customFees.map((fee) => fee._toProtobuf()),
+                feeExemptKeyList: feeExemptKeys.map((key) =>
+                    key._toProtobufKey(),
+                ),
                 autoRenewAccount: autoRenewAccountId._toProtobuf(),
                 autoRenewPeriod: autoRenewPeriod,
             },
@@ -56,6 +78,16 @@ describe("TopicInfo", function () {
     it("decodes from correct protobuf", function () {
         const adminKey = PrivateKey.generateED25519().publicKey;
         const submitKey = PrivateKey.generateED25519().publicKey;
+        const feeScheduleKey = PrivateKey.generateED25519().publicKey;
+        const feeExemptKeys = [
+            PrivateKey.generateED25519().publicKey,
+            PrivateKey.generateED25519().publicKey,
+        ];
+        const denominatingTokenId = new TokenId(0);
+        const amount = 100;
+        const customFees = [
+            new CustomFixedFee({ denominatingTokenId, amount }),
+        ];
         const autoRenewAccountId = new AccountId(1, 2, 3);
         const autoRenewPeriod = new Duration(123);
         const topicId = new TopicId(0);
@@ -73,6 +105,11 @@ describe("TopicInfo", function () {
                 expirationTime: expirationTime._toProtobuf(),
                 adminKey: adminKey._toProtobufKey(),
                 submitKey: submitKey._toProtobufKey(),
+                feeScheduleKey: feeScheduleKey._toProtobufKey(),
+                customFees: customFees.map((fee) => fee._toProtobuf()),
+                feeExemptKeyList: feeExemptKeys.map((key) =>
+                    key._toProtobufKey(),
+                ),
                 autoRenewAccount: autoRenewAccountId._toProtobuf(),
                 autoRenewPeriod: autoRenewPeriod,
             },
@@ -86,6 +123,9 @@ describe("TopicInfo", function () {
             expirationTime,
             adminKey,
             submitKey,
+            feeScheduleKey,
+            feeExemptKeys,
+            customFees,
             autoRenewAccountId,
             autoRenewPeriod,
             ledgerId: null,
