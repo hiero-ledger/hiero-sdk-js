@@ -1,12 +1,12 @@
 {
     "name": "@hashgraph/cryptography",
-    "version": "1.4.8",
+    "version": "1.5.0-beta.1",
     "description": "Cryptographic utilities and primitives for the Hedera™ Hashgraph SDK",
     "main": "./lib/index.cjs",
     "types": "./lib/index.d.ts",
     "module": "./src/index.js",
     "react-native": {
-        "./lib/index.cjs": "./src/index.js",
+        "./lib/index.cjs": "./src/index.native.js",
         "./src/encoding/base64.js": "./src/encoding/base64.native.js",
         "./src/encoding/hex.js": "./src/encoding/hex.native.js",
         "./src/encoding/utf8.js": "./src/encoding/utf8.native.js",
@@ -14,7 +14,6 @@
         "./src/primitive/sha256.js": "./src/primitive/sha256.native.js",
         "./src/primitive/pbkdf2.js": "./src/primitive/pbkdf2.native.js",
         "./src/primitive/hmac.js": "./src/primitive/hmac.native.js",
-        "./src/primitive/random.js": "./src/primitive/random.native.js",
         "./src/primitive/bip32.js": "./src/primitive/bip32.native.js"
     },
     "browser": {
@@ -25,7 +24,6 @@
         "./src/primitive/aes.js": "./src/primitive/aes.browser.js",
         "./src/primitive/sha256.js": "./src/primitive/sha256.browser.js",
         "./src/primitive/pbkdf2.js": "./src/primitive/pbkdf2.browser.js",
-        "./src/primitive/random.js": "./src/primitive/random.js",
         "./src/primitive/hmac.js": "./src/primitive/hmac.browser.js",
         "./src/primitive/bip32.js": "./src/primitive/bip32.browser.js"
     },
@@ -73,18 +71,10 @@
         "utf8": "^3.0.0"
     },
     "peerDependencies": {
-        "expo": "^49.0.16",
-        "expo-crypto": "^10.1.2",
-        "expo-random": "^12.1.2"
+        "expo": ">=50.0.0"
     },
     "peerDependenciesMeta": {
-        "expo": {
-            "optional": true
-        },
         "expo-crypto": {
-            "optional": true
-        },
-        "expo-random": {
             "optional": true
         }
     },

@@ -250,7 +250,7 @@ jobs:
       - name: Install PNPM
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
         with:
-          version: 8.15.4
+          version: 9.15.5
 
       - name: Setup Node
         uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
@@ -288,7 +288,7 @@ jobs:
       - name: Install PNPM
         uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
         with:
-          version: 8.15.4
+          version: 9.15.5
 
       - name: Setup Node
         uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
@@ -362,7 +362,7 @@ jobs:
         run: task -v publish -- ${{ steps.sdk-publish.outputs.args }}
 
       - name: Generate Github Release
-        uses: ncipollo/release-action@cdcc88a9acf3ca41c16c37bb7d21b9ad48560d87 # v1.15.0
+        uses: ncipollo/release-action@440c8c1cb0ed28b9f43e4d1d670870f059653174 # v1.16.0
         if: ${{ github.event.inputs.dry-run-enabled != 'true' && !cancelled() && !failure() }}
         with:
           tag: ${{ needs.validate-release.outputs.tag }}
