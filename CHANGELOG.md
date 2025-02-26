@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v2.60.0-beta.2
 
-* chore(deps-dev): bump expo in /packages/cryptography by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2896
 * feat: add expo sdk v51+ support by @venilinvasilev in https://github.com/hiero-ledger/hiero-sdk-js/pull/2895
 * chore: optimize bundle size by @ivaylonikolov7 in https://github.com/hiero-ledger/hiero-sdk-js/pull/2863
+* chore(deps-dev): bump expo in /packages/cryptography by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2896
 
 ## v2.60.0-beta.1
 
