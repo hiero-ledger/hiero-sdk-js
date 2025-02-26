@@ -1366,8 +1366,8 @@
     "@ethersproject/bytes" "^5.7.0"
     "@ethersproject/rlp" "^5.7.0"
     "@grpc/grpc-js" "^1.12.6"
-    "@hashgraph/cryptography" "file:../../../../../Library/Caches/Yarn/v6/npm-@hashgraph-sdk-2.60.0-beta.1-e6391538-8955-4eab-aba7-e0d0df090b67-1740506230282/node_modules/@hashgraph/sdk/.yalc/@hashgraph/cryptography"
-    "@hashgraph/proto" "file:../../../../../Library/Caches/Yarn/v6/npm-@hashgraph-sdk-2.60.0-beta.1-e6391538-8955-4eab-aba7-e0d0df090b67-1740506230282/node_modules/@hashgraph/sdk/.yalc/@hashgraph/proto"
+    "@hashgraph/cryptography" "file:.yalc/@hashgraph/sdk/.yalc/@hashgraph/cryptography"
+    "@hashgraph/proto" "file:.yalc/@hashgraph/sdk/.yalc/@hashgraph/proto"
     axios "^1.6.4"
     bignumber.js "^9.1.1"
     bn.js "^5.1.1"
@@ -3159,10 +3159,10 @@ expo-modules-core@2.2.2:
   dependencies:
     invariant "^2.2.4"
 
-expo-status-bar@~1.7.1:
-  version "1.7.1"
-  resolved "https://registry.yarnpkg.com/expo-status-bar/-/expo-status-bar-1.7.1.tgz#f2772a529187282eaa0741279ed8d525bdce54c4"
-  integrity sha512-Wkm9uCmuQQBSU+l/AekWAQ1d0FYw560yL116+OAKJDyKBOUpPURoWkFbabM1EDxv+5scTuSThr/CvsA0nsSCow==
+expo-status-bar@~2.0.1:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/expo-status-bar/-/expo-status-bar-2.0.1.tgz#fc07726346dc30fbb68aadb0d7890b34fba42eee"
+  integrity sha512-AkIPX7jWHRPp83UBZ1iXtVvyr0g+DgBVvIXTtlmPtmUsm8Vq9Bb5IGj86PW8osuFlgoTVAg7HI/+Ok7yEYwiRg==
 
 expo@~52.0.37:
   version "52.0.37"
