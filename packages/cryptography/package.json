@@ -110,7 +110,7 @@
         "eslint-plugin-jsdoc": "^50.6.3",
         "eslint-plugin-mocha": "^10.1.0",
         "eslint-plugin-n": "^16.2.0",
-        "expo": "^49.0.16",
+        "expo": "^52.0.37",
         "expo-crypto": "^12.0.0",
         "geckodriver": "^5.0.0",
         "mocha": "^11.0.1",
