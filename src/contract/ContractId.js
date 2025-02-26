@@ -51,7 +51,6 @@ export default class ContractId extends Key {
      * @returns {ContractId}
      */
     static fromEvmAddress(shard, realm, evmAddress) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         if (isLongZeroAddress(hex.decode(evmAddress))) {
             return new ContractId(...entity_id.fromSolidityAddress(evmAddress));
         } else {
