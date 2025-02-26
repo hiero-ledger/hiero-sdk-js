@@ -1,3 +1,4 @@
+import { setTimeout } from "timers/promises";
 import {
     Status,
     TopicCreateTransaction,
@@ -15,31 +16,24 @@ describe("TopicMessage", function () {
         env = await IntegrationTestEnv.new({ throwaway: true });
     });
 
-    // TODO: find out why this test fails, if it can be fixed
-    // and when did it stop working.
     // eslint-disable-next-line mocha/no-skipped-tests
     it.skip("should be executable", async function () {
-        const operatorId = env.operatorId;
         const operatorKey = env.operatorKey.publicKey;
 
-        // Skip this test if we do not have a mirror network
-        if (env.client.mirrorNetwork.length == 0) {
-            return;
-        }
-
-        const response = await new TopicCreateTransaction()
-            .setAdminKey(operatorKey)
-            .setSubmitKey(operatorKey)
-            .setAutoRenewAccountId(operatorId)
-            .execute(env.client);
-
-        const topic = (await response.getReceipt(env.client)).topicId;
-
         let finished = false;
-        const contents = "Hello from Hedera SDK JS";
+        const contents = "Hello from Hiero SDK JS";
 
-        const handle = new TopicMessageQuery()
-            .setTopicId(topic)
+        const { topicId } = await (
+            await new TopicCreateTransaction()
+                .setAdminKey(operatorKey)
+                .execute(env.client)
+        ).getReceipt(env.client);
+
+        // wait for mirror node to see new topic id
+        await setTimeout(2500);
+
+        new TopicMessageQuery()
+            .setTopicId(topicId)
             .setStartTime(0)
             .setLimit(1)
             .setCompletionHandler(() => {
@@ -50,36 +44,30 @@ describe("TopicMessage", function () {
                 // Do nothing
             });
 
-        const startTime = Date.now();
-
+        // waiting for mirror node
+        await setTimeout(2500);
         await (
             await new TopicMessageSubmitTransaction()
-                .setTopicId(topic)
+                .setTopicId(topicId)
                 .setMessage(contents)
                 .execute(env.client)
         ).getReceipt(env.client);
 
-        while (!finished && Date.now() < startTime + 45000) {
-            //NOSONAR
-            await new Promise((resolved) => setTimeout(resolved, 2000));
-        }
-
         await (
             await new TopicDeleteTransaction()
-                .setTopicId(topic)
+                .setTopicId(topicId)
                 .execute(env.client)
         ).getReceipt(env.client);
 
-        handle.unsubscribe();
+        // waiting for setCompletionHandler to be executed
+        await setTimeout(1000);
 
         if (!finished) {
             throw new Error("Failed to receive message in 30s");
         }
     });
-    // TODO: find out why this test fails, if it can be fixed
-    // and when did it stop working.
-    // eslint-disable-next-line mocha/no-skipped-tests
-    it.skip("should be executable with large message", async function () {
+
+    it("should be executable with large message", async function () {
         const operatorId = env.operatorId;
         const operatorKey = env.operatorKey.publicKey;
 
@@ -98,7 +86,9 @@ describe("TopicMessage", function () {
 
         let finished = false;
 
-        const handle = new TopicMessageQuery()
+        // waiting for mirror node to see the new topic
+        await setTimeout(1000);
+        new TopicMessageQuery()
             .setTopicId(topic)
             .setStartTime(0)
             .setLimit(14)
@@ -110,6 +100,7 @@ describe("TopicMessage", function () {
                 // Do nothing
             });
 
+        await setTimeout(1000);
         const startTime = Date.now();
 
         await (
@@ -122,7 +113,7 @@ describe("TopicMessage", function () {
 
         while (!finished && Date.now() < startTime + 45000) {
             //NOSONAR
-            await new Promise((resolved) => setTimeout(resolved, 2000));
+            await setTimeout(2000);
         }
 
         await (
@@ -131,7 +122,8 @@ describe("TopicMessage", function () {
                 .execute(env.client)
         ).getReceipt(env.client);
 
-        handle.unsubscribe();
+        // need to wait for completionHandler to be called
+        await setTimeout(1000);
 
         if (!finished) {
             throw new Error("Failed to receive message in 45s");
@@ -160,7 +152,7 @@ describe("TopicMessage", function () {
 
         const topic = (await response.getReceipt(env.client)).topicId;
 
-        const contents = "Hello from Hedera SDK JS";
+        const contents = "Hello from Hiero SDK JS";
 
         let err = false;
 

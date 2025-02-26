@@ -1,24 +1,6 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import FeeComponents from "./FeeComponents.js";
 import FeeDataType from "./FeeDataType.js";
 
@@ -81,14 +63,12 @@ export default class FeeData {
      * @returns {FeeData}
      */
     static fromBytes(bytes) {
-        return FeeData._fromProtobuf(
-            HashgraphProto.proto.FeeData.decode(bytes),
-        );
+        return FeeData._fromProtobuf(HieroProto.proto.FeeData.decode(bytes));
     }
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IFeeData} feeData
+     * @param {HieroProto.proto.IFeeData} feeData
      * @returns {FeeData}
      */
     static _fromProtobuf(feeData) {
@@ -114,7 +94,7 @@ export default class FeeData {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.IFeeData}
+     * @returns {HieroProto.proto.IFeeData}
      */
     _toProtobuf() {
         return {
@@ -142,6 +122,6 @@ export default class FeeData {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.FeeData.encode(this._toProtobuf()).finish();
+        return HieroProto.proto.FeeData.encode(this._toProtobuf()).finish();
     }
 }

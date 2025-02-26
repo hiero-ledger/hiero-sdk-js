@@ -32,7 +32,7 @@ describe("AccountInfo", function () {
 
         let createTransaction = await new AccountCreateTransaction()
             .setInitialBalance(new Hbar(10)) // 10 h
-            .setKey(newKey.publicKey)
+            .setKeyWithoutAlias(newKey.publicKey)
             .execute(env.client);
 
         const receiptCreateTransaction = await createTransaction.getReceipt(
@@ -70,7 +70,7 @@ describe("AccountInfo", function () {
         const key = PrivateKey.generateED25519();
 
         const response = await new AccountCreateTransaction()
-            .setKey(key.publicKey)
+            .setKeyWithoutAlias(key.publicKey)
             .setInitialBalance(new Hbar(2))
             .execute(env.client);
 
@@ -115,7 +115,7 @@ describe("AccountInfo", function () {
 
         for (let i = 0; i < 300; i++) {
             response[i] = await new AccountCreateTransaction()
-                .setKey(key.publicKey)
+                .setKeyWithoutAlias(key.publicKey)
                 .setInitialBalance(new Hbar(2))
                 .execute(env.client);
         }

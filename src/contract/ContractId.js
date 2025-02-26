@@ -1,32 +1,13 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import * as entity_id from "../EntityIdHelper.js";
 import Key from "../Key.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import CACHE from "../Cache.js";
 import * as hex from "../encoding/hex.js";
 import { arrayEqual } from "../array.js";
 import Long from "long";
 import { isLongZeroAddress } from "../util.js";
-import axios from "axios";
 
 /**
  * @typedef {import("../client/Client.js").default<*, *>} Client
@@ -103,7 +84,7 @@ export default class ContractId extends Key {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IContractID} id
+     * @param {HieroProto.proto.IContractID} id
      * @returns {ContractId}
      */
     static _fromProtobuf(id) {
@@ -143,7 +124,9 @@ export default class ContractId extends Key {
         const url = `https://${mirrorUrl}/api/v1/contracts/${hex.encode(
             this.evmAddress,
         )}`;
-        const mirrorAccountId = (await axios.get(url)).data.contract_id;
+        const response = await fetch(url);
+        const data = await response.json();
+        const mirrorAccountId = data.contract_id;
 
         this.num = Long.fromString(
             mirrorAccountId.slice(mirrorAccountId.lastIndexOf(".") + 1),
@@ -181,7 +164,7 @@ export default class ContractId extends Key {
      */
     static fromBytes(bytes) {
         return ContractId._fromProtobuf(
-            HashgraphProto.proto.ContractID.decode(bytes),
+            HieroProto.proto.ContractID.decode(bytes),
         );
     }
 
@@ -216,7 +199,7 @@ export default class ContractId extends Key {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.IContractID}
+     * @returns {HieroProto.proto.IContractID}
      */
     _toProtobuf() {
         return {
@@ -252,9 +235,7 @@ export default class ContractId extends Key {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.ContractID.encode(
-            this._toProtobuf(),
-        ).finish();
+        return HieroProto.proto.ContractID.encode(this._toProtobuf()).finish();
     }
 
     /**
@@ -297,7 +278,7 @@ export default class ContractId extends Key {
     }
 
     /**
-     * @returns {HashgraphProto.proto.IKey}
+     * @returns {HieroProto.proto.IKey}
      */
     _toProtobufKey() {
         return {
@@ -306,7 +287,7 @@ export default class ContractId extends Key {
     }
 
     /**
-     * @param {HashgraphProto.proto.IContractID} key
+     * @param {HieroProto.proto.IContractID} key
      * @returns {ContractId}
      */
     static __fromProtobufKey(key) {

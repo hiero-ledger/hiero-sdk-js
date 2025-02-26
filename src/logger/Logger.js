@@ -1,25 +1,20 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 import pino from "pino";
 import LogLevel from "./LogLevel.js";
 
+/**
+ * A Logger class for logging messages in the Hiero JavaScript SDK.
+ * This class provides a flexible logging mechanism that can log messages
+ * to various outputs, including the console and log files. It supports
+ * different log levels (e.g., trace, debug, info, warn, error, fatal)
+ * and allows for configuration of logging behavior, such as synchronous
+ * writes and file management.
+ *
+ * The Logger can be initialized with a specific log level, a log file path,
+ * and options for synchronous writes and file synchronization. It also
+ * provides methods to change the logging level and to enable or disable
+ * silent mode, which suppresses all log messages.
+ */
 export default class Logger {
     /**
      * @param {LogLevel} level

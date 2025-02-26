@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import ScheduleId from "./ScheduleId.js";
 import Transaction, {
@@ -26,13 +8,13 @@ import Hbar from "../Hbar.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HashgraphProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HashgraphProto.proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HashgraphProto.proto.TransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HashgraphProto.proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HashgraphProto.proto.ITransactionResponse
- * @typedef {import("@hashgraph/proto").proto.IScheduleDeleteTransactionBody} HashgraphProto.proto.IScheduleDeleteTransactionBody
- * @typedef {import("@hashgraph/proto").proto.IScheduleID} HashgraphProto.proto.IScheduleID
+ * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
+ * @typedef {import("@hashgraph/proto").proto.IScheduleDeleteTransactionBody} HieroProto.proto.IScheduleDeleteTransactionBody
+ * @typedef {import("@hashgraph/proto").proto.IScheduleID} HieroProto.proto.IScheduleID
  */
 
 /**
@@ -71,11 +53,11 @@ export default class ScheduleDeleteTransaction extends Transaction {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransaction[]} transactions
-     * @param {HashgraphProto.proto.ISignedTransaction[]} signedTransactions
+     * @param {HieroProto.proto.ITransaction[]} transactions
+     * @param {HieroProto.proto.ISignedTransaction[]} signedTransactions
      * @param {TransactionId[]} transactionIds
      * @param {AccountId[]} nodeIds
-     * @param {HashgraphProto.proto.ITransactionBody[]} bodies
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
      * @returns {ScheduleDeleteTransaction}
      */
     static _fromProtobuf(
@@ -87,7 +69,7 @@ export default class ScheduleDeleteTransaction extends Transaction {
     ) {
         const body = bodies[0];
         const scheduleDelete =
-            /** @type {HashgraphProto.proto.IScheduleDeleteTransactionBody} */ (
+            /** @type {HieroProto.proto.IScheduleDeleteTransactionBody} */ (
                 body.scheduleDelete
             );
 
@@ -96,7 +78,7 @@ export default class ScheduleDeleteTransaction extends Transaction {
                 scheduleId:
                     scheduleDelete.scheduleID != null
                         ? ScheduleId._fromProtobuf(
-                              /** @type {HashgraphProto.proto.IScheduleID} */ (
+                              /** @type {HieroProto.proto.IScheduleID} */ (
                                   scheduleDelete.scheduleID
                               ),
                           )
@@ -144,8 +126,8 @@ export default class ScheduleDeleteTransaction extends Transaction {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.ITransaction} request
-     * @returns {Promise<HashgraphProto.proto.ITransactionResponse>}
+     * @param {HieroProto.proto.ITransaction} request
+     * @returns {Promise<HieroProto.proto.ITransactionResponse>}
      */
     _execute(channel, request) {
         return channel.schedule.deleteSchedule(request);
@@ -154,7 +136,7 @@ export default class ScheduleDeleteTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {NonNullable<HashgraphProto.proto.TransactionBody["data"]>}
+     * @returns {NonNullable<HieroProto.proto.TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
         return "scheduleDelete";
@@ -163,7 +145,7 @@ export default class ScheduleDeleteTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {HashgraphProto.proto.IScheduleDeleteTransactionBody}
+     * @returns {HieroProto.proto.IScheduleDeleteTransactionBody}
      */
     _makeTransactionData() {
         return {

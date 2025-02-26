@@ -50,7 +50,7 @@ describe("TokenRejectIntegrationTest", function () {
         // create receiver account
         let receiverPrivateKey = await PrivateKey.generateECDSA();
         const receiverCreateAccount = await new AccountCreateTransaction()
-            .setKey(receiverPrivateKey)
+            .setKeyWithoutAlias(receiverPrivateKey)
             .setInitialBalance(new Hbar(1))
             .execute(env.client);
 
@@ -137,7 +137,7 @@ describe("TokenRejectIntegrationTest", function () {
         // create receiver account
         let receiverPrivateKey = await PrivateKey.generateECDSA();
         const receiverCreateAccount = await new AccountCreateTransaction()
-            .setKey(receiverPrivateKey)
+            .setKeyWithoutAlias(receiverPrivateKey)
             .setInitialBalance(new Hbar(1))
             .execute(env.client);
 

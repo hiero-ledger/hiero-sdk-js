@@ -23,7 +23,7 @@ describe("TokenGrantKyc", function () {
         const key = PrivateKey.generateED25519();
 
         const response = await new AccountCreateTransaction()
-            .setKey(key)
+            .setKeyWithoutAlias(key)
             .setInitialBalance(new Hbar(2))
             .execute(env.client);
 
@@ -84,7 +84,7 @@ describe("TokenGrantKyc", function () {
         const key = PrivateKey.generateED25519();
 
         const response = await new AccountCreateTransaction()
-            .setKey(key)
+            .setKeyWithoutAlias(key)
             .setInitialBalance(new Hbar(2))
             .execute(env.client);
 

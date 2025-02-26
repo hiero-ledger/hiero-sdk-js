@@ -1,31 +1,13 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import TokenId from "../token/TokenId.js";
 import Long from "long";
 
 /**
  * The ID for a crypto-currency token on Hedera.
  *
- * @augments {EntityId<HashgraphProto.proto.INftID>}
+ * @augments {EntityId<HieroProto.proto.INftID>}
  */
 export default class NftId {
     /**
@@ -64,13 +46,13 @@ export default class NftId {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.INftID} id
+     * @param {HieroProto.proto.INftID} id
      * @returns {NftId}
      */
     static _fromProtobuf(id) {
         return new NftId(
             TokenId._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITokenID} */ (id.token_ID),
+                /** @type {HieroProto.proto.ITokenID} */ (id.token_ID),
             ),
             id.serialNumber != null ? id.serialNumber : Long.ZERO,
         );
@@ -81,12 +63,12 @@ export default class NftId {
      * @returns {NftId}
      */
     static fromBytes(bytes) {
-        return NftId._fromProtobuf(HashgraphProto.proto.NftID.decode(bytes));
+        return NftId._fromProtobuf(HieroProto.proto.NftID.decode(bytes));
     }
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.INftID}
+     * @returns {HieroProto.proto.INftID}
      */
     _toProtobuf() {
         return {
@@ -108,6 +90,6 @@ export default class NftId {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.NftID.encode(this._toProtobuf()).finish();
+        return HieroProto.proto.NftID.encode(this._toProtobuf()).finish();
     }
 }

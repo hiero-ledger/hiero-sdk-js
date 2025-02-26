@@ -96,6 +96,7 @@ export async function messageDigest(passphrase, iv) {
     const pass = utf8.encode(passphrase);
     const sliced = hex.decode(iv).slice(0, 8);
     const result = SparkMD5.ArrayBuffer.hash(
+        // @ts-ignore
         Buffer.concat([Buffer.from(pass), Buffer.from(sliced)]),
     );
 

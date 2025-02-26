@@ -2,7 +2,7 @@
 
 import * as hashgraph from "@hashgraph/sdk";
 import ContractHelper from "./ContractHelper.js";
-import contract from "./precompile-example/ZeroTokenOperations.json" assert { type: "json" };
+import contract from "./precompile-example/ZeroTokenOperations.json" with { type: "json" };
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -47,7 +47,7 @@ async function main() {
 
     try {
         let transaction = await new hashgraph.AccountCreateTransaction()
-            .setKey(alicePublicKey)
+            .setKeyWithoutAlias(alicePublicKey)
             .setInitialBalance(hashgraph.Hbar.fromString("10"))
             .freezeWithSigner(wallet);
         transaction = await transaction.signWithSigner(wallet);

@@ -67,7 +67,7 @@ describe("ClientIntegration", function () {
         const key = PrivateKey.generateED25519();
 
         const response = await new AccountCreateTransaction()
-            .setKey(key.publicKey)
+            .setKeyWithoutAlias(key.publicKey)
             .setInitialBalance(new Hbar(2))
             .execute(env.client);
 
@@ -109,7 +109,7 @@ describe("ClientIntegration", function () {
 
         const bytes = (
             await new AccountCreateTransaction()
-                .setKey(key.publicKey)
+                .setKeyWithoutAlias(key.publicKey)
                 .setInitialBalance(new Hbar(2))
                 .freezeWith(env.client)
                 .sign(key)
@@ -151,7 +151,8 @@ describe("ClientIntegration", function () {
             "0.testnet.hedera.com:50211": new AccountId(3),
             "34.94.106.61:50211": new AccountId(3),
             "50.18.132.211:50211": new AccountId(3),
-            "138.91.142.219:50211": new AccountId(3),
+            // IP address currently not responding
+            // "138.91.142.219:50211": new AccountId(3)
         };
 
         const clientForNetwork = Client.forNetwork(nodes);

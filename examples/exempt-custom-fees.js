@@ -62,7 +62,7 @@ async function main() {
     let firstAccountPublicKey = firstAccountPrivateKey.publicKey;
 
     let createAccountAtx = await new AccountCreateTransaction()
-        .setKey(firstAccountPublicKey)
+        .setKeyWithoutAlias(firstAccountPublicKey)
         .setInitialBalance(Hbar.fromString("1000"))
         .freezeWithSigner(wallet);
     createAccountAtx = await createAccountAtx.signWithSigner(wallet);
@@ -74,14 +74,14 @@ async function main() {
     const firstAccountWallet = new Wallet(
         firstAccountId,
         firstAccountPrivateKey,
-        new LocalProvider(),
+        provider,
     );
 
     let secondAccountPrivateKey = PrivateKey.generateED25519();
     let secondAccountPublicKey = secondAccountPrivateKey.publicKey;
 
     let createAccountBtx = await new AccountCreateTransaction()
-        .setKey(secondAccountPublicKey)
+        .setKeyWithoutAlias(secondAccountPublicKey)
         .setInitialBalance(Hbar.fromString("1000"))
         .freezeWithSigner(wallet);
     createAccountBtx = await createAccountBtx.signWithSigner(wallet);
@@ -93,14 +93,14 @@ async function main() {
     const secondAccountWallet = new Wallet(
         secondAccountId,
         secondAccountPrivateKey,
-        new LocalProvider(),
+        provider,
     );
 
     let thirdAccountPrivateKey = PrivateKey.generateED25519();
     let thirdAccountPublicKey = thirdAccountPrivateKey.publicKey;
 
     let createAccountCtx = await new AccountCreateTransaction()
-        .setKey(thirdAccountPublicKey)
+        .setKeyWithoutAlias(thirdAccountPublicKey)
         .setInitialBalance(Hbar.fromString("1000"))
         .freezeWithSigner(wallet);
     createAccountCtx = await createAccountCtx.signWithSigner(wallet);
@@ -112,7 +112,7 @@ async function main() {
     const thirdAccountWallet = new Wallet(
         thirdAccountId,
         thirdAccountPrivateKey,
-        new LocalProvider(),
+        provider,
     );
 
     /**

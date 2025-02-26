@@ -20,7 +20,7 @@ describe("TransactionResponse", function () {
         const key = PrivateKey.generateED25519();
 
         const transaction = await new AccountCreateTransaction()
-            .setKey(key.publicKey)
+            .setKeyWithoutAlias(key.publicKey)
             .execute(env.client);
 
         const record = await transaction.getRecord(env.client);
@@ -50,7 +50,7 @@ describe("TransactionResponse", function () {
         const key = PrivateKey.generateED25519();
 
         const transaction = await new AccountCreateTransaction()
-            .setKey(key.publicKey)
+            .setKeyWithoutAlias(key.publicKey)
             .execute(env.client);
 
         const transactionReceiptQuery = transaction.getReceiptQuery();
@@ -79,7 +79,7 @@ describe("TransactionResponse", function () {
         const key = PrivateKey.generateED25519();
 
         const transaction = await new AccountCreateTransaction()
-            .setKey(key.publicKey)
+            .setKeyWithoutAlias(key.publicKey)
             .execute(env.client);
 
         const transactionRecordQuery = transaction.getRecordQuery();
@@ -109,7 +109,7 @@ describe("TransactionResponse", function () {
 
         const receipt = await (
             await new AccountCreateTransaction()
-                .setKey(key.publicKey)
+                .setKeyWithoutAlias(key.publicKey)
                 .execute(env.client)
         ).getReceipt(env.client);
 

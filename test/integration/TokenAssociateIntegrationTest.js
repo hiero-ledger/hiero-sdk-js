@@ -30,7 +30,7 @@ describe("TokenAssociate", function () {
         const key = PrivateKey.generateED25519();
 
         const response = await new AccountCreateTransaction()
-            .setKey(key)
+            .setKeyWithoutAlias(key)
             .setInitialBalance(new Hbar(2))
             .execute(env.client);
 
@@ -138,7 +138,7 @@ describe("TokenAssociate", function () {
         beforeEach(async function () {
             receiverKey = PrivateKey.generateECDSA();
             const receiverAccountCreateTx = await new AccountCreateTransaction()
-                .setKey(receiverKey)
+                .setKeyWithoutAlias(receiverKey)
                 .freezeWith(env.client)
                 .sign(receiverKey);
             receiverId = (
@@ -600,7 +600,7 @@ describe("TokenAssociate", function () {
                 const spenderKey = PrivateKey.generateECDSA();
                 const spenderAccountCreateTx =
                     await new AccountCreateTransaction()
-                        .setKey(spenderKey)
+                        .setKeyWithoutAlias(spenderKey)
                         .setMaxAutomaticTokenAssociations(-1)
                         .setInitialBalance(new Hbar(1))
                         .execute(env.client);
@@ -702,7 +702,7 @@ describe("TokenAssociate", function () {
 
                 const spenderAccountCreateTx =
                     await new AccountCreateTransaction()
-                        .setKey(spenderKey)
+                        .setKeyWithoutAlias(spenderKey)
                         .setInitialBalance(new Hbar(1))
                         .setMaxAutomaticTokenAssociations(-1)
                         .execute(env.client);
@@ -802,7 +802,7 @@ describe("TokenAssociate", function () {
                 const receiverKey = PrivateKey.generateECDSA();
                 const receiverAccountResponse =
                     await new AccountCreateTransaction()
-                        .setKey(receiverKey)
+                        .setKeyWithoutAlias(receiverKey)
                         .setMaxAutomaticTokenAssociations(-1)
                         .setInitialBalance(new Hbar(1))
                         .execute(env.client);
@@ -866,7 +866,7 @@ describe("TokenAssociate", function () {
                     const key = PrivateKey.generateECDSA();
                     const accountCreateInvalidAutoAssociation =
                         await new AccountCreateTransaction()
-                            .setKey(key)
+                            .setKeyWithoutAlias(key)
                             .setMaxAutomaticTokenAssociations(-2)
                             .execute(env.client);
 

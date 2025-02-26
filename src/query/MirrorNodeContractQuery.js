@@ -1,12 +1,19 @@
-import axios from "axios";
 import ContractFunctionParameters from "../contract/ContractFunctionParameters.js";
 
 /**
  * @typedef {import("../contract/ContractId").default} ContractId
  * @typedef {import("../account/AccountId").default} AccountId
  * @typedef {import("../client/Client.js").default<*, *>} Client
- * @typedef {import("axios").AxiosResponse} AxiosResponse
  *
+ */
+
+/**
+ * @typedef {object} MirrorNodeResponse
+ * @property {string} result
+ * @property {string} [error]
+ * @property {string} [gasUsed]
+ * @property {string} [contractAddress]
+ * @property {string} [status]
  */
 
 /**
@@ -195,7 +202,7 @@ export default class MirrorNodeContractQuery {
      *
      * @param {Client} client
      * @param {object} jsonPayload
-     * @returns {Promise<AxiosResponse>}
+     * @returns {Promise<MirrorNodeResponse>}
      */
     async performMirrorNodeRequest(client, jsonPayload) {
         if (this.contractId == null) {
@@ -215,8 +222,21 @@ export default class MirrorNodeContractQuery {
                 .concat(contractCallEndpoint);
         }
 
-        let result = await axios.post(mirrorNetworkAddress, jsonPayload);
-        return result;
+        const response = await fetch(mirrorNetworkAddress, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(jsonPayload),
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const data = /** @type {MirrorNodeResponse} */ (await response.json());
+        return data;
     }
 
     // eslint-disable-next-line jsdoc/require-returns-check

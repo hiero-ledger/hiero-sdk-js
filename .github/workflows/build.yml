@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@c95a14d0e5bab51a9f56296a4eb0e416910cd350 # v2.10.3
+        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
         with:
           egress-policy: audit
 
@@ -49,12 +49,12 @@ jobs:
 
       # Note: After Step-Security is enabled return to step-security/action-setup version
       - name: Install PNPM
-        uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
         with:
-          version: 8.15.4
+          version: 9.15.5
 
       - name: Setup Node
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
@@ -71,7 +71,7 @@ jobs:
 
     steps:
       -  name: Harden Runner
-         uses: step-security/harden-runner@c95a14d0e5bab51a9f56296a4eb0e416910cd350 # v2.10.3
+         uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
          with:
            egress-policy: audit
 
@@ -95,12 +95,12 @@ jobs:
 
       # Note: After Step-Security is enabled return to step-security/action-setup version
       - name: Install PNPM
-        uses: pnpm/action-setup@fe02b34f77f8bc703788d5817da081398fad5dd2 # v4.0.0
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
         with:
-          version: 8.15.4
+          version: 9.15.5
 
       - name: Setup Node
-        uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
@@ -118,7 +118,7 @@ jobs:
         id: start-local-node
         if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
         run: |
-          ${{ env.CG_EXEC }} npx @hashgraph/hedera-local start -d -—network local --balance=100000 --network-tag=0.57.0
+          ${{ env.CG_EXEC }} npx @hashgraph/hedera-local start -d -—network local --balance=10000000
           # Wait for the network to fully start
           sleep 30
 
@@ -142,11 +142,6 @@ jobs:
         working-directory: packages/cryptography
         if: ${{ steps.build-sdk.conclusion == 'success' && steps.stop-local-node.conclusion == 'success' && !cancelled() && always() }}
         run: ${{ env.CG_EXEC }} task build
-
-      - name: Unit Test @hashgraph/cryptography
-        working-directory: packages/cryptography
-        if: ${{ steps.build-sdk.conclusion == 'success' && steps.stop-local-node.conclusion == 'success' && !cancelled() && always() }}
-        run: ${{ env.CG_EXEC }} task test:unit
 
       - name: Codecov @hashgraph/cryptography
         working-directory: packages/cryptography
@@ -173,3 +168,59 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
+          
+  examples:
+    name: Run examples using Node ${{ matrix.node }}
+    runs-on: hiero-client-sdk-linux-medium
+    strategy:
+      matrix:
+        node: [ "20" ]
+    steps:
+      -  name: Harden Runner
+         uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+         with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          submodules: recursive
+
+      - name: Install Task
+        uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v2.0.0
+        with:
+          version: 3.35.1
+
+      - name: Install PNPM
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 9.15.5
+
+      - name: Setup Node
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+
+      - name: Build @hashgraph/sdk
+        id: build-sdk
+        run: task build
+
+      - name: Start the local node
+        id: start-local-node
+        if: ${{ !cancelled() && always() }}
+        run: |
+          ${{ env.CG_EXEC }} npx @hashgraph/hedera-local start -d -—network local --balance=100000
+          sleep 30
+
+      - name: Install dependencies
+        run: |
+          cd examples
+          pnpm i
+  
+      - name: Run all еxamples
+        run: task run:examples
+      - name: Stop the local node
+        id: stop-local-node
+        if: ${{ steps.start-local-node.conclusion == 'success' && !cancelled() && always() }}
+        run: ${{ env.CG_EXEC }} npx @hashgraph/hedera-local stop

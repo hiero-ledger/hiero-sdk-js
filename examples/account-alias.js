@@ -53,7 +53,7 @@ async function main() {
      *
      * There is no record in the Hedera network of an account associated with a given aliasKey
      * until an amount of Hbar is transferred to the account.  The moment that Hbar is transferred to that aliasKey
-     * AccountId is the moment that that account actually begins to exist in the Hedera ledger.
+     * AccountId is the moment that that account actually begins to exist in the Hiero ledger.
      */
 
     console.log('"Creating" a new account');

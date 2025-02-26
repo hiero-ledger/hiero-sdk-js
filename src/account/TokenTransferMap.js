@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import TokenId from "../token/TokenId.js";
 import AccountId from "../account/AccountId.js";
@@ -25,10 +7,10 @@ import ObjectMap from "../ObjectMap.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITokenTransferList} HashgraphProto.proto.ITokenTransferList
- * @typedef {import("@hashgraph/proto").proto.IAccountAmount} HashgraphProto.proto.IAccountAmount
- * @typedef {import("@hashgraph/proto").proto.ITokenID} HashgraphProto.proto.ITokenID
- * @typedef {import("@hashgraph/proto").proto.IAccountID} HashgraphProto.proto.IAccountID
+ * @typedef {import("@hashgraph/proto").proto.ITokenTransferList} HieroProto.proto.ITokenTransferList
+ * @typedef {import("@hashgraph/proto").proto.IAccountAmount} HieroProto.proto.IAccountAmount
+ * @typedef {import("@hashgraph/proto").proto.ITokenID} HieroProto.proto.ITokenID
+ * @typedef {import("@hashgraph/proto").proto.IAccountID} HieroProto.proto.IAccountID
  */
 
 /**
@@ -59,7 +41,7 @@ export default class TokenTransferMap extends ObjectMap {
     }
 
     /**
-     * @param {HashgraphProto.proto.ITokenTransferList[]} transfers
+     * @param {HieroProto.proto.ITokenTransferList[]} transfers
      * @returns {TokenTransferMap}
      */
     static _fromProtobuf(transfers) {
@@ -67,16 +49,14 @@ export default class TokenTransferMap extends ObjectMap {
 
         for (const transfer of transfers) {
             const token = TokenId._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITokenID} */ (transfer.token),
+                /** @type {HieroProto.proto.ITokenID} */ (transfer.token),
             );
 
             for (const aa of transfer.transfers != null
                 ? transfer.transfers
                 : []) {
                 const account = AccountId._fromProtobuf(
-                    /** @type {HashgraphProto.proto.IAccountID} */ (
-                        aa.accountID
-                    ),
+                    /** @type {HieroProto.proto.IAccountID} */ (aa.accountID),
                 );
 
                 tokenTransfersMap.__set(
@@ -91,14 +71,14 @@ export default class TokenTransferMap extends ObjectMap {
     }
 
     /**
-     * @returns {HashgraphProto.proto.ITokenTransferList[]}
+     * @returns {HieroProto.proto.ITokenTransferList[]}
      */
     _toProtobuf() {
-        /** @type {HashgraphProto.proto.ITokenTransferList[]} */
+        /** @type {HieroProto.proto.ITokenTransferList[]} */
         const tokenTransferList = [];
 
         for (const [tokenId, value] of this) {
-            /** @type {HashgraphProto.proto.IAccountAmount[]} */
+            /** @type {HieroProto.proto.IAccountAmount[]} */
             const transfers = [];
 
             for (const [accountId, amount] of value) {

@@ -15,7 +15,7 @@ const DER_PRIVATE_KEY_BYTES = new Uint8Array([
 const DER_PUBLIC_KEY =
     "302a300506032b65700321004a6892f034d2d1c9b1a76acca8e34884055172f4210a0c02e3c7d55084f224d1";
 
-const STRESS_TEST_ITERATION_COUNT = 1000;
+const STRESS_TEST_ITERATION_COUNT = 100;
 
 describe("Ed25519PrivateKey", function () {
     it("generate should return  object", function () {

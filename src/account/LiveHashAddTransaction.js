@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import Transaction, {
     TRANSACTION_REGISTRY,
@@ -28,13 +10,13 @@ import KeyList from "../KeyList.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HashgraphProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HashgraphProto.proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HashgraphProto.proto.TransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HashgraphProto.proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HashgraphProto.proto.ITransactionResponse
- * @typedef {import("@hashgraph/proto").proto.ICryptoAddLiveHashTransactionBody} HashgraphProto.proto.ICryptoAddLiveHashTransactionBody
- * @typedef {import("@hashgraph/proto").proto.ILiveHash} HashgraphProto.proto.ILiveHash
+ * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
+ * @typedef {import("@hashgraph/proto").proto.ICryptoAddLiveHashTransactionBody} HieroProto.proto.ICryptoAddLiveHashTransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ILiveHash} HieroProto.proto.ILiveHash
  */
 
 /**
@@ -43,6 +25,10 @@ import KeyList from "../KeyList.js";
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  */
 
+/**
+ * @deprecated
+ * This transaction is no longer supported.
+ */
 export default class LiveHashAddTransaction extends Transaction {
     /**
      * @param {object} [props]
@@ -97,11 +83,11 @@ export default class LiveHashAddTransaction extends Transaction {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransaction[]} transactions
-     * @param {HashgraphProto.proto.ISignedTransaction[]} signedTransactions
+     * @param {HieroProto.proto.ITransaction[]} transactions
+     * @param {HieroProto.proto.ISignedTransaction[]} signedTransactions
      * @param {TransactionId[]} transactionIds
      * @param {AccountId[]} nodeIds
-     * @param {HashgraphProto.proto.ITransactionBody[]} bodies
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
      * @returns {LiveHashAddTransaction}
      */
     static _fromProtobuf(
@@ -113,14 +99,15 @@ export default class LiveHashAddTransaction extends Transaction {
     ) {
         const body = bodies[0];
         const hashes =
-            /** @type {HashgraphProto.proto.ICryptoAddLiveHashTransactionBody} */ (
+            /** @type {HieroProto.proto.ICryptoAddLiveHashTransactionBody} */ (
                 body.cryptoAddLiveHash
             );
-        const liveHash_ = /** @type {HashgraphProto.proto.ILiveHash} */ (
+        const liveHash_ = /** @type {HieroProto.proto.ILiveHash} */ (
             hashes.liveHash
         );
 
         return Transaction._fromProtobufTransactions(
+            // eslint-disable-next-line deprecation/deprecation
             new LiveHashAddTransaction({
                 hash: liveHash_.hash != null ? liveHash_.hash : undefined,
                 keys:
@@ -239,8 +226,8 @@ export default class LiveHashAddTransaction extends Transaction {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.ITransaction} request
-     * @returns {Promise<HashgraphProto.proto.ITransactionResponse>}
+     * @param {HieroProto.proto.ITransaction} request
+     * @returns {Promise<HieroProto.proto.ITransactionResponse>}
      */
     _execute(channel, request) {
         return channel.crypto.addLiveHash(request);
@@ -249,7 +236,7 @@ export default class LiveHashAddTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {NonNullable<HashgraphProto.proto.TransactionBody["data"]>}
+     * @returns {NonNullable<HieroProto.proto.TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
         return "cryptoAddLiveHash";
@@ -258,7 +245,7 @@ export default class LiveHashAddTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {HashgraphProto.proto.ICryptoAddLiveHashTransactionBody}
+     * @returns {HieroProto.proto.ICryptoAddLiveHashTransactionBody}
      */
     _makeTransactionData() {
         return {
@@ -297,6 +284,6 @@ export default class LiveHashAddTransaction extends Transaction {
 
 TRANSACTION_REGISTRY.set(
     "cryptoAddLiveHash",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
+    // eslint-disable-next-line @typescript-eslint/unbound-method, deprecation/deprecation
     LiveHashAddTransaction._fromProtobuf,
 );

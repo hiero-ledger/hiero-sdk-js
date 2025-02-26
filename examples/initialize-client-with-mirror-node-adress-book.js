@@ -39,7 +39,7 @@ async function main() {
     try {
         let transaction = new AccountCreateTransaction()
             .setInitialBalance(new Hbar(1))
-            .setKey(accountKey)
+            .setKeyWithoutAlias(accountKey)
             .freezeWith(client);
 
         transaction = await transaction.sign(accountKey);

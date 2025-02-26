@@ -105,7 +105,7 @@ async function main() {
 
         // Create an account to transfer the NFT to
         const accountCreateTx = new AccountCreateTransaction()
-            .setKey(operatorKey)
+            .setKeyWithoutAlias(operatorKey)
             .setMaxAutomaticTokenAssociations(10)
             .setInitialBalance(new Hbar(100))
             .freezeWith(client);

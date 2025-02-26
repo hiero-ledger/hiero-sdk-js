@@ -19,7 +19,7 @@ tasks:
 
     install:submodules:
         vars:
-            scommit_hash: "a9692704da783ef3754b84a23fa1b1aa0654f920" # v0.58.0
+            scommit_hash: "b44fa0a2a34ea7728421d6525f0b24a8f4858cbe" # v0.59.0-alpha.0
         cmds:
             - git submodule update --init --recursive --remote
             - |
@@ -41,6 +41,7 @@ tasks:
             - rm -rf src/proto/streams
             - mv src/services/hapi/hedera-protobufs/streams src/proto/
             - mv src/services/hapi/hedera-protobufs/platform/event/* src/proto/services
+            - mv src/proto/services/auxiliary/history/* src/proto/services
             - echo "Protobufs moved successfully!"
             - task "delete:submodule"
 

@@ -29,7 +29,7 @@ describe("WalletIntegration", function () {
 
         // Create account id for the signer
         let createTransaction = await new AccountCreateTransaction()
-            .setKey(signerKey)
+            .setKeyWithoutAlias(signerKey)
             .setInitialBalance(new Hbar(5))
             .signWithOperator(env.client);
 

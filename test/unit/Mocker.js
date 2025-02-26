@@ -72,6 +72,11 @@ const PROTOS = [
     "./packages/proto/src/proto/services/freeze.proto",
     "./packages/proto/src/proto/services/freeze_service.proto",
     "./packages/proto/src/proto/services/freeze_type.proto",
+    "./packages/proto/src/proto/services/history_proof_key_publication.proto",
+    "./packages/proto/src/proto/services/history_proof_signature.proto",
+    "./packages/proto/src/proto/services/history_proof_vote.proto",
+    "./packages/proto/src/proto/services/freeze_type.proto",
+    "./packages/proto/src/proto/services/freeze_type.proto",
     "./packages/proto/src/proto/services/get_by_key.proto",
     "./packages/proto/src/proto/services/get_by_solidity_id.proto",
     "./packages/proto/src/proto/services/network_get_execution_time.proto",
@@ -114,7 +119,6 @@ const PROTOS = [
     "./packages/proto/src/proto/services/token_update.proto",
     "./packages/proto/src/proto/services/token_wipe_account.proto",
     "./packages/proto/src/proto/services/transaction.proto",
-    "./packages/proto/src/proto/services/transaction_body.proto",
     "./packages/proto/src/proto/services/transaction_contents.proto",
     "./packages/proto/src/proto/services/transaction_get_fast_record.proto",
     "./packages/proto/src/proto/services/transaction_get_receipt.proto",
@@ -129,6 +133,7 @@ const PROTOS = [
     "./packages/proto/src/proto/services/event_transaction.proto",
     "./packages/proto/src/proto/services/gossip_event.proto",
     "./packages/proto/src/proto/services/state_signature_transaction.proto",
+    "./packages/proto/src/proto/services/state/entity/entity_counts.proto",
 ];
 
 export const ABORTED = {

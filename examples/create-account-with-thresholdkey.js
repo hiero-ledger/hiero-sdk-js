@@ -82,7 +82,7 @@ async function main() {
          */
         console.log("Creating new account...");
         const accountCreateTxResponse = await new AccountCreateTransaction()
-            .setKey(thresholdKey)
+            .setKeyWithoutAlias(thresholdKey)
             .setInitialBalance(new Hbar(100))
             .execute(client);
 

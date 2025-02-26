@@ -101,7 +101,7 @@ This example behaves the same way as the React Native example.
 
 ## Which network to use?
 
--   The maintainers of this repository use `hedera-local-node` when running integration tests. Running integration tests on testnet costs far too much HBARs making it unsustainable.
+-   The maintainers of this repository use `hiero-local-node` when running integration tests. Running integration tests on testnet costs far too much HBARs making it unsustainable.
 -   When running the examples, you can use any network of your choice. These examples are designed to demonstrate how a feature is intended to work and are optimized to function on any network you prefer.
 -   Unit tests do not require environment variables.
 
@@ -180,7 +180,7 @@ or
 let client = Client.forNetwork().setLedgerId("previewnet");
 ```
 
--   `setTransportSecurity` - The `setTransportSecurity` method in the Hedera JavaScript SDK is used to enable or disable transport security for the communication between the SDK and the Hedera network nodes. Transport security refers to the mechanisms used to secure the communication channel, typically involving encryption and authentication protocols.
+-   `setTransportSecurity` - The `setTransportSecurity` method in the Hiero JavaScript SDK is used to enable or disable transport security for the communication between the SDK and the Hedera network nodes. Transport security refers to the mechanisms used to secure the communication channel, typically involving encryption and authentication protocols.
     When transport security is enabled, the SDK will establish a secure connection with the Hedera network nodes using protocols like Transport Layer Security (TLS). This ensures that the data transmitted between the SDK and the nodes is encrypted, protecting it from eavesdropping and tampering. It also provides authentication mechanisms to verify the identity of the nodes and prevent man-in-the-middle attacks.
 
 ```javascript
@@ -226,7 +226,7 @@ client.setDefaultRegenerateTransactionId(true);
 
 -   `setSignOnDemand` - Configure on-demand transaction signing
 
-The `setSignOnDemand` method in the Hedera JavaScript SDK allows you to configure how transactions are signed before being submitted to the Hedera network. By default, transactions are signed immediately after being constructed. However, in some cases, you may want to delay the signing process until just before the transaction is submitted. This can be useful in scenarios where you need to perform additional operations or validations on the transaction before signing it.
+The `setSignOnDemand` method in the Hiero JavaScript SDK allows you to configure how transactions are signed before being submitted to the Hedera network. By default, transactions are signed immediately after being constructed. However, in some cases, you may want to delay the signing process until just before the transaction is submitted. This can be useful in scenarios where you need to perform additional operations or validations on the transaction before signing it.
 
 When you call `client.setSignOnDemand(true)`, it instructs the SDK to defer the signing of transactions until the transaction.sign() method is explicitly called. This means that when you create a transaction using the SDK, it will not be signed automatically. Instead, you will need to call `transaction.sign()` manually before submitting the transaction to the network.
 
@@ -291,7 +291,7 @@ client.setNodeMinBackoff(500); // Set minimum node backoff to 500 milliseconds (
 -   `setNodeMaxReadmitPeriod` - Set maximum node readmit period.
     The setNodeMaxReadmitPeriod method allows you to configure the maximum amount of time that a node can be excluded from the pool of available nodes. After this period has elapsed, the SDK will automatically readmit the node to the pool, regardless of whether it has recovered or not.
 
--   `setNodeWaitTime` - The `setNodeWaitTime` method in the Hedera JavaScript SDK is used to set the minimum amount of time (in milliseconds) that the SDK will wait before attempting to send a request to a node that has recently failed or encountered an error.
+-   `setNodeWaitTime` - The `setNodeWaitTime` method in the Hiero JavaScript SDK is used to set the minimum amount of time (in milliseconds) that the SDK will wait before attempting to send a request to a node that has recently failed or encountered an error.
 
 ```javascript
 const client = Client.forNetwork();
@@ -300,7 +300,7 @@ client.setNodeWaitTime(5000); // Set node wait time to 5 seconds (5000 milliseco
 
 ### Network Update Settings
 
--   `setNetworkUpdatePeriod` - The setNetworkUpdatePeriod method in the Hedera JavaScript SDK is used to configure the frequency at which the SDK updates its internal representation of the Hedera network topology.
+-   `setNetworkUpdatePeriod` - The setNetworkUpdatePeriod method in the Hiero JavaScript SDK is used to configure the frequency at which the SDK updates its internal representation of the Hedera network topology.
     The Hedera network is a distributed ledger system that consists of multiple nodes spread across different geographic locations. These nodes can join or leave the network at any time, and their availability and performance can vary depending on various factors such as network conditions, hardware issues, or software updates.
     To ensure that the SDK has an up-to-date view of the network topology, it periodically retrieves information about the available nodes and their respective performance metrics. This information is used to determine which nodes to send requests to and to adjust the load balancing and failover strategies accordingly.
 

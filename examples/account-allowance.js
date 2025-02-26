@@ -46,7 +46,7 @@ async function main() {
 
     try {
         let transaction = await new AccountCreateTransaction()
-            .setKey(aliceKey)
+            .setKeyWithoutAlias(aliceKey)
             .setInitialBalance(new Hbar(5))
             .freezeWithSigner(wallet);
         transaction = await transaction.signWithSigner(wallet);
@@ -55,7 +55,7 @@ async function main() {
         const aliceId = (await response.getReceiptWithSigner(wallet)).accountId;
 
         transaction = await new AccountCreateTransaction()
-            .setKey(bobKey)
+            .setKeyWithoutAlias(bobKey)
             .setInitialBalance(new Hbar(5))
             .freezeWithSigner(wallet);
         transaction = await transaction.signWithSigner(wallet);
@@ -67,7 +67,7 @@ async function main() {
         ).accountId;
 
         transaction = await new AccountCreateTransaction()
-            .setKey(charlieKey)
+            .setKeyWithoutAlias(charlieKey)
             .setInitialBalance(new Hbar(5))
             .freezeWithSigner(wallet);
         transaction = await transaction.signWithSigner(wallet);

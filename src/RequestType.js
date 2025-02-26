@@ -1,26 +1,8 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.HederaFunctionality} HashgraphProto.proto.HederaFunctionality
+ * @typedef {import("@hashgraph/proto").proto.HederaFunctionality} HieroProto.proto.HederaFunctionality
  */
 
 export default class RequestType {
@@ -215,6 +197,12 @@ export default class RequestType {
                 return "TssEncryptionKey";
             case RequestType.StateSignatureTransaction:
                 return "StateSignatureTransaction";
+            case RequestType.HistoryAssemblySignature:
+                return "HistoryAssemblySignature";
+            case RequestType.HistoryProofKeyPublication:
+                return "HistoryProofKeyPublication";
+            case RequestType.HistoryProofVote:
+                return "HistoryProofVote";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -401,6 +389,12 @@ export default class RequestType {
                 return RequestType.TssEncryptionKey;
             case 100:
                 return RequestType.StateSignatureTransaction;
+            case 104:
+                return RequestType.HistoryAssemblySignature;
+            case 105:
+                return RequestType.HistoryProofKeyPublication;
+            case 106:
+                return RequestType.HistoryProofVote;
         }
 
         throw new Error(
@@ -409,7 +403,7 @@ export default class RequestType {
     }
 
     /**
-     * @returns {HashgraphProto.proto.HederaFunctionality}
+     * @returns {HieroProto.proto.HederaFunctionality}
      */
     valueOf() {
         return this._code;
@@ -849,3 +843,18 @@ RequestType.TssEncryptionKey = new RequestType(99);
  * Submit a signature of a state root hash gossiped to other nodes
  */
 RequestType.StateSignatureTransaction = new RequestType(100);
+
+/**
+ * Sign a particular history assembly.
+ */
+RequestType.HistoryAssemblySignature = new RequestType(104);
+
+/**
+ * Publish a roster history proof key to the network.
+ */
+RequestType.HistoryProofKeyPublication = new RequestType(105);
+
+/**
+ * Vote for a particular history proof.
+ */
+RequestType.HistoryProofVote = new RequestType(106);

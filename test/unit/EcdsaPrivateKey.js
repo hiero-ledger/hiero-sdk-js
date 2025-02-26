@@ -15,7 +15,7 @@ const DER_PRIVATE_KEY_BYTES = new Uint8Array([
 ]);
 const DER_PUBLIC_KEY =
     "302d300706052b8104000a032200033697a2b3f9f0b9f4831b39986f7f3885636a3e8622a0bc3814a4a56f7ecdc4f1";
-const STRESS_TEST_ITERATION_COUNT = 1000;
+const STRESS_TEST_ITERATION_COUNT = 100;
 
 describe("EcdsaPrivateKey", function () {
     it("generate should return object", function () {

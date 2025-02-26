@@ -93,6 +93,8 @@ async function main() {
     const decodedStringMessage = decodedSimulationResult[0];
     console.log("Simulation result: " + decodedStringMessage);
     console.log("Contract call result: " + result.getString(0));
+
+    client.close();
 }
 
 void main();

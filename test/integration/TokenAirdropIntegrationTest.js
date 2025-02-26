@@ -58,7 +58,7 @@ describe("TokenAirdropIntegrationTest", function () {
 
         const receiverPrivateKey = PrivateKey.generateED25519();
         const accountCreateResponse = await new AccountCreateTransaction()
-            .setKey(receiverPrivateKey.publicKey)
+            .setKeyWithoutAlias(receiverPrivateKey.publicKey)
             .setMaxAutomaticTokenAssociations(-1)
             .execute(env.client);
 
@@ -132,7 +132,7 @@ describe("TokenAirdropIntegrationTest", function () {
 
         const receiverPrivateKey = PrivateKey.generateED25519();
         const accountCreateResponse = await new AccountCreateTransaction()
-            .setKey(receiverPrivateKey.publicKey)
+            .setKeyWithoutAlias(receiverPrivateKey.publicKey)
             .execute(env.client);
 
         const { accountId: receiverId } =
@@ -261,7 +261,7 @@ describe("TokenAirdropIntegrationTest", function () {
         const FEE_AMOUNT = 1;
         const receiverPrivateKey = PrivateKey.generateED25519();
         const createAccountResponse = await new AccountCreateTransaction()
-            .setKey(receiverPrivateKey.publicKey)
+            .setKeyWithoutAlias(receiverPrivateKey.publicKey)
             .setMaxAutomaticTokenAssociations(-1)
             .execute(env.client);
 
@@ -322,7 +322,7 @@ describe("TokenAirdropIntegrationTest", function () {
         const senderPrivateKey = PrivateKey.generateED25519();
         const { accountId: senderAccountId } = await (
             await new AccountCreateTransaction()
-                .setKey(senderPrivateKey.publicKey)
+                .setKeyWithoutAlias(senderPrivateKey.publicKey)
                 .setMaxAutomaticTokenAssociations(-1)
                 .setInitialBalance(new Hbar(10))
                 .execute(env.client)
@@ -452,7 +452,7 @@ describe("TokenAirdropIntegrationTest", function () {
         const receiverPublicKey = receiverPrivateKey.publicKey;
         const accountCreateResponse = await (
             await new AccountCreateTransaction()
-                .setKey(receiverPublicKey)
+                .setKeyWithoutAlias(receiverPublicKey)
                 .setReceiverSignatureRequired(true)
                 .freezeWith(env.client)
                 .sign(receiverPrivateKey)

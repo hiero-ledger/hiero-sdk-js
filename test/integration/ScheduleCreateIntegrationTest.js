@@ -45,7 +45,7 @@ describe("ScheduleCreate", function () {
 
         const response = await new AccountCreateTransaction()
             .setInitialBalance(new Hbar(50))
-            .setKey(keyList)
+            .setKeyWithoutAlias(keyList)
             .execute(env.client);
 
         expect((await response.getReceipt(env.client)).accountId).to.be.not
@@ -129,7 +129,7 @@ describe("ScheduleCreate", function () {
 
         const response = await new AccountCreateTransaction()
             .setInitialBalance(new Hbar(10))
-            .setKey(keyList)
+            .setKeyWithoutAlias(keyList)
             .execute(env.client);
 
         expect((await response.getReceipt(env.client)).accountId).to.be.not
@@ -192,7 +192,7 @@ describe("ScheduleCreate", function () {
         const privateKey = PrivateKey.generateED25519();
         const { accountId: receiverId } = await (
             await new AccountCreateTransaction()
-                .setKey(privateKey)
+                .setKeyWithoutAlias(privateKey)
                 .execute(env.client)
         ).getReceipt(env.client);
 
@@ -226,7 +226,7 @@ describe("ScheduleCreate", function () {
         const privateKey = PrivateKey.generateED25519();
         const { accountId: receiverId } = await (
             await new AccountCreateTransaction()
-                .setKey(privateKey)
+                .setKeyWithoutAlias(privateKey)
                 .execute(env.client)
         ).getReceipt(env.client);
 
@@ -258,7 +258,7 @@ describe("ScheduleCreate", function () {
         const privateKey = PrivateKey.generateED25519();
         const { accountId: receiverId } = await (
             await new AccountCreateTransaction()
-                .setKey(privateKey)
+                .setKeyWithoutAlias(privateKey)
                 .setInitialBalance(Hbar.from(1))
                 .execute(env.client)
         ).getReceipt(env.client);
@@ -315,7 +315,7 @@ describe("ScheduleCreate", function () {
 
         const { accountId: receiverId } = await (
             await new AccountCreateTransaction()
-                .setKey(keyList)
+                .setKeyWithoutAlias(keyList)
                 .setInitialBalance(Hbar.from(1))
                 .execute(env.client)
         ).getReceipt(env.client);
@@ -391,7 +391,7 @@ describe("ScheduleCreate", function () {
 
         const { accountId } = await (
             await new AccountCreateTransaction()
-                .setKey(keyList)
+                .setKeyWithoutAlias(keyList)
                 .setInitialBalance(new Hbar(10))
                 .execute(env.client)
         ).getReceipt(env.client);
@@ -484,7 +484,7 @@ describe("ScheduleCreate", function () {
 
         const { accountId } = await (
             await new AccountCreateTransaction()
-                .setKey(key)
+                .setKeyWithoutAlias(key)
                 .setInitialBalance(new Hbar(10))
                 .execute(env.client)
         ).getReceipt(env.client);

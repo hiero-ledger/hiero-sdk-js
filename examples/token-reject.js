@@ -42,7 +42,7 @@ async function main() {
     const treasuryAccountId = (
         await (
             await new AccountCreateTransaction()
-                .setKey(treasuryPrivateKey)
+                .setKeyWithoutAlias(treasuryPrivateKey)
                 .setMaxAutomaticTokenAssociations(100)
                 .execute(client)
         ).getReceipt(client)
@@ -53,7 +53,7 @@ async function main() {
     const receiverAccountId = (
         await (
             await new AccountCreateTransaction()
-                .setKey(receiverPrivateKey)
+                .setKeyWithoutAlias(receiverPrivateKey)
                 .setMaxAutomaticTokenAssociations(-1)
                 .execute(client)
         ).getReceipt(client)

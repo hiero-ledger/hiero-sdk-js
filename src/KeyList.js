@@ -1,31 +1,13 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import Key from "./Key.js";
 import CACHE from "./Cache.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IKey} HashgraphProto.proto.IKey
- * @typedef {import("@hashgraph/proto").proto.IKeyList} HashgraphProto.proto.IKeyList
- * @typedef {import("@hashgraph/proto").proto.IThresholdKey} HashgraphProto.proto.IThresholdKey
+ * @typedef {import("@hashgraph/proto").proto.IKey} HieroProto.proto.IKey
+ * @typedef {import("@hashgraph/proto").proto.IKeyList} HieroProto.proto.IKeyList
+ * @typedef {import("@hashgraph/proto").proto.IThresholdKey} HieroProto.proto.IThresholdKey
  */
 
 /**
@@ -151,7 +133,7 @@ export default class KeyList extends Key {
     }
 
     /**
-     * @returns {HashgraphProto.proto.IKey}
+     * @returns {HieroProto.proto.IKey}
      */
     _toProtobufKey() {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-return
@@ -170,7 +152,7 @@ export default class KeyList extends Key {
     }
 
     /**
-     * @param {HashgraphProto.proto.IKeyList} key
+     * @param {HieroProto.proto.IKeyList} key
      * @returns {KeyList}
      */
     static __fromProtobufKeyList(key) {
@@ -181,7 +163,7 @@ export default class KeyList extends Key {
     }
 
     /**
-     * @param {HashgraphProto.proto.IThresholdKey} key
+     * @param {HieroProto.proto.IThresholdKey} key
      * @returns {KeyList}
      */
     static __fromProtobufThresoldKey(key) {

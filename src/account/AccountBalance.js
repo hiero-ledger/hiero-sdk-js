@@ -1,29 +1,11 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import Long from "long";
 import Hbar from "../Hbar.js";
 import TokenId from "../token/TokenId.js";
 import TokenBalanceMap from "./TokenBalanceMap.js";
 import TokenDecimalMap from "./TokenDecimalMap.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 
 /**
  * @typedef {object} TokenBalanceJson
@@ -70,13 +52,13 @@ export default class AccountBalance {
      */
     static fromBytes(bytes) {
         return AccountBalance._fromProtobuf(
-            HashgraphProto.proto.CryptoGetAccountBalanceResponse.decode(bytes),
+            HieroProto.proto.CryptoGetAccountBalanceResponse.decode(bytes),
         );
     }
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ICryptoGetAccountBalanceResponse} accountBalance
+     * @param {HieroProto.proto.ICryptoGetAccountBalanceResponse} accountBalance
      * @returns {AccountBalance}
      */
     static _fromProtobuf(accountBalance) {
@@ -86,9 +68,7 @@ export default class AccountBalance {
         if (accountBalance.tokenBalances != null) {
             for (const balance of accountBalance.tokenBalances) {
                 const tokenId = TokenId._fromProtobuf(
-                    /** @type {HashgraphProto.proto.ITokenID} */ (
-                        balance.tokenId
-                    ),
+                    /** @type {HieroProto.proto.ITokenID} */ (balance.tokenId),
                 );
 
                 tokenDecimals._set(
@@ -112,10 +92,10 @@ export default class AccountBalance {
     }
 
     /**
-     * @returns {HashgraphProto.proto.ICryptoGetAccountBalanceResponse}
+     * @returns {HieroProto.proto.ICryptoGetAccountBalanceResponse}
      */
     _toProtobuf() {
-        /** @type {HashgraphProto.proto.ITokenBalance[]} */
+        /** @type {HieroProto.proto.ITokenBalance[]} */
         const list = [];
 
         // eslint-disable-next-line deprecation/deprecation
@@ -142,7 +122,7 @@ export default class AccountBalance {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.CryptoGetAccountBalanceResponse.encode(
+        return HieroProto.proto.CryptoGetAccountBalanceResponse.encode(
             this._toProtobuf(),
         ).finish();
     }

@@ -8,6 +8,7 @@ import {
 } from "@hashgraph/sdk";
 
 import dotenv from "dotenv";
+import { setTimeout } from "node:timers/promises";
 
 dotenv.config();
 
@@ -39,6 +40,9 @@ async function main() {
 
         console.log(`topicId = ${topicId.toString()}`);
 
+        // need to wait before the mirror node can see new topic
+        await setTimeout(5000);
+
         new TopicMessageQuery()
             .setTopicId(topicId)
             .setStartTime(0)
@@ -52,6 +56,10 @@ async function main() {
                     console.log(Buffer.from(message.contents).toString("utf8")),
             );
         const MESSAGES_LIMIT = 20;
+
+        // need to wait some time before we can receive messages
+        await setTimeout(5000);
+
         for (let i = 0; i < MESSAGES_LIMIT; i += 1) {
             //NOSONAR
             // eslint-disable-next-line no-await-in-loop
@@ -62,25 +70,14 @@ async function main() {
                     .setMessage(bigContents)
                     .execute(client)
             ).getReceipt(client);
-
             console.log(`Sent message ${i}`);
-
-            // eslint-disable-next-line no-await-in-loop
-            await sleep(2500);
+            await setTimeout(5000);
         }
     } catch (error) {
         console.error(error);
     }
 
     client.close();
-}
-
-/**
- * @param {number} ms
- * @returns {Promise<void>}
- */
-function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 void main();

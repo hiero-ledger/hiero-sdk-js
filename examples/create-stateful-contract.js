@@ -14,7 +14,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Import the compiled contract
-import stateful from "./stateful.json" assert { type: "json" };
+import stateful from "./stateful.json" with { type: "json" };
 
 async function main() {
     if (
@@ -70,7 +70,7 @@ async function main() {
                 ),
             )
             // Set gas to create the contract
-            .setGas(100000)
+            .setGas(150000)
             // The contract bytecode must be set to the file ID containing the contract bytecode
             .setBytecodeFileId(fileId)
             // Set the admin key on the contract in case the contract should be deleted or
@@ -150,7 +150,7 @@ async function main() {
             .freezeWithSigner(wallet);
         await contractExecuteTransaction.signWithSigner(wallet);
         const contractExecTransactionResponse =
-            await transaction.executeWithSigner(wallet);
+            await contractExecuteTransaction.executeWithSigner(wallet);
 
         await contractExecTransactionResponse.getReceiptWithSigner(wallet);
 

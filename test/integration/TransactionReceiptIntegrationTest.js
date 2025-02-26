@@ -36,7 +36,7 @@ describe("TransactionReceipt", function () {
 
         const response = await new AccountCreateTransaction()
             .setInitialBalance(new Hbar(50))
-            .setKey(keyList)
+            .setKeyWithoutAlias(keyList)
             .execute(env.client);
 
         expect((await response.getReceipt(env.client)).accountId).to.be.not

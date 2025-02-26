@@ -29,7 +29,7 @@ describe("TokenNft", function () {
         const account = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .setInitialBalance(new Hbar(2))
                     .execute(env.client)
             ).getReceipt(env.client)
@@ -126,7 +126,7 @@ describe("TokenNft", function () {
         const account = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .setInitialBalance(new Hbar(2))
                     .execute(env.client)
             ).getReceipt(env.client)
@@ -194,7 +194,7 @@ describe("TokenNft", function () {
         const account = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .setInitialBalance(new Hbar(2))
                     .execute(env.client)
             ).getReceipt(env.client)
@@ -290,7 +290,7 @@ describe("TokenNft", function () {
         const account = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .setInitialBalance(new Hbar(2))
                     .execute(env.client)
             ).getReceipt(env.client)
@@ -462,7 +462,7 @@ describe("TokenNft", function () {
         const account = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .setInitialBalance(new Hbar(2))
                     .execute(env.client)
             ).getReceipt(env.client)
@@ -532,7 +532,7 @@ describe("TokenNft", function () {
         const account = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .setInitialBalance(new Hbar(2))
                     .execute(env.client)
             ).getReceipt(env.client)
@@ -594,7 +594,7 @@ describe("TokenNft", function () {
         const account = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .setInitialBalance(new Hbar(2))
                     .execute(env.client)
             ).getReceipt(env.client)
@@ -705,7 +705,7 @@ describe("TokenNft", function () {
         const account = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .setInitialBalance(new Hbar(2))
                     .execute(env.client)
             ).getReceipt(env.client)

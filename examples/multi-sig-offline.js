@@ -48,7 +48,7 @@ async function main() {
 
     const createAccountTransaction = new AccountCreateTransaction()
         .setInitialBalance(new Hbar(2)) // 5 h
-        .setKey(keyList);
+        .setKeyWithoutAlias(keyList);
 
     const response = await createAccountTransaction.execute(client);
 

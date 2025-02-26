@@ -1,26 +1,8 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import AccountId from "../account/AccountId.js";
 import Timestamp from "../Timestamp.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import Long from "long";
 import CACHE from "../Cache.js";
 
@@ -174,7 +156,7 @@ export default class TransactionId {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransactionID} id
+     * @param {HieroProto.proto.ITransactionID} id
      * @returns {TransactionId}
      */
     static _fromProtobuf(id) {
@@ -194,7 +176,7 @@ export default class TransactionId {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.ITransactionID}
+     * @returns {HieroProto.proto.ITransactionID}
      */
     _toProtobuf() {
         return {
@@ -213,7 +195,7 @@ export default class TransactionId {
      */
     static fromBytes(bytes) {
         return TransactionId._fromProtobuf(
-            HashgraphProto.proto.TransactionID.decode(bytes),
+            HieroProto.proto.TransactionID.decode(bytes),
         );
     }
 
@@ -221,7 +203,7 @@ export default class TransactionId {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.TransactionID.encode(
+        return HieroProto.proto.TransactionID.encode(
             this._toProtobuf(),
         ).finish();
     }

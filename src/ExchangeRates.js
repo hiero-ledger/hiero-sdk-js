@@ -1,27 +1,9 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import ExchangeRate from "./ExchangeRate.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 
-const { proto } = HashgraphProto;
+const { proto } = HieroProto;
 
 /**
  *  Represents a pair of exchange rates for HBAR to USD cents conversion.
@@ -50,18 +32,18 @@ export default class ExchangeRates {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IExchangeRateSet} rateSet
+     * @param {HieroProto.proto.IExchangeRateSet} rateSet
      * @returns {ExchangeRates}
      */
     static _fromProtobuf(rateSet) {
         return new ExchangeRates({
             currentRate: ExchangeRate._fromProtobuf(
-                /** @type {HashgraphProto.proto.IExchangeRate} */ (
+                /** @type {HieroProto.proto.IExchangeRate} */ (
                     rateSet.currentRate
                 ),
             ),
             nextRate: ExchangeRate._fromProtobuf(
-                /** @type {HashgraphProto.proto.IExchangeRate} */ (
+                /** @type {HieroProto.proto.IExchangeRate} */ (
                     rateSet.nextRate
                 ),
             ),
@@ -70,7 +52,7 @@ export default class ExchangeRates {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.IExchangeRateSet}
+     * @returns {HieroProto.proto.IExchangeRateSet}
      */
     _toProtobuf() {
         return {

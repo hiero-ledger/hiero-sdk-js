@@ -149,7 +149,7 @@ describe("TokenUpdate", function () {
             await (
                 await (
                     await new AccountCreateTransaction()
-                        .setKey(key5)
+                        .setKeyWithoutAlias(key5)
                         .freezeWith(env.client)
                         .sign(key5)
                 ).execute(env.client)
@@ -368,7 +368,7 @@ describe("TokenUpdate", function () {
         const account = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key.publicKey)
+                    .setKeyWithoutAlias(key.publicKey)
                     .execute(env.client)
             ).getReceipt(env.client)
         ).accountId;

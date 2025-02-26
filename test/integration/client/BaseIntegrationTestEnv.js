@@ -128,7 +128,7 @@ export default class BaseIntegrationTestEnv {
         const newOperatorKey = PrivateKey.generateECDSA();
 
         const response = await new AccountCreateTransaction()
-            .setKey(newOperatorKey)
+            .setKeyWithoutAlias(newOperatorKey)
             .setInitialBalance(
                 new Hbar(options.balance != null ? options.balance : 100),
             )

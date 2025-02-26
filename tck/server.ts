@@ -132,13 +132,13 @@ app.post("/", (req, res) => {
     });
 });
 
-let port = 80; // Default port
+let port = 8544; // Default port
 const args = process.argv.slice(2);
 if (args.length > 0) {
     try {
         port = parseInt(args[0]);
     } catch (err) {
-        console.warn("Port args error! Defaulting to port 80");
+        console.warn("Port args error! Defaulting to port 8544");
     }
 }
 

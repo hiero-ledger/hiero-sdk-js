@@ -45,7 +45,7 @@ describe("TokenRejectIntegrationTest", function () {
             // create receiver account
             receiverPrivateKey = await PrivateKey.generateECDSA();
             const receiverCreateAccount = await new AccountCreateTransaction()
-                .setKey(receiverPrivateKey)
+                .setKeyWithoutAlias(receiverPrivateKey)
                 .setInitialBalance(new Hbar(1))
                 .setMaxAutomaticTokenAssociations(-1)
                 .execute(env.client);
@@ -170,7 +170,7 @@ describe("TokenRejectIntegrationTest", function () {
             const spenderAccountResponse = await new AccountCreateTransaction()
                 .setMaxAutomaticTokenAssociations(-1)
                 .setInitialBalance(new Hbar(10))
-                .setKey(spenderAccountPrivateKey)
+                .setKeyWithoutAlias(spenderAccountPrivateKey)
                 .execute(env.client);
 
             const { accountId: spenderAccountId } =
@@ -341,7 +341,7 @@ describe("TokenRejectIntegrationTest", function () {
                 const receiverPrivateKey = PrivateKey.generateED25519();
                 const { accountId: emptyBalanceUserId } = await (
                     await new AccountCreateTransaction()
-                        .setKey(receiverPrivateKey)
+                        .setKeyWithoutAlias(receiverPrivateKey)
                         .setMaxAutomaticTokenAssociations(-1)
                         .execute(env.client)
                 ).getReceipt(env.client);
@@ -440,7 +440,7 @@ describe("TokenRejectIntegrationTest", function () {
             receiverId = (
                 await (
                     await new AccountCreateTransaction()
-                        .setKey(receiverPrivateKey)
+                        .setKeyWithoutAlias(receiverPrivateKey)
                         .setMaxAutomaticTokenAssociations(-1)
                         .execute(env.client)
                 ).getReceipt(env.client)
@@ -573,7 +573,7 @@ describe("TokenRejectIntegrationTest", function () {
             const spenderAccountResponse = await new AccountCreateTransaction()
                 .setMaxAutomaticTokenAssociations(-1)
                 .setInitialBalance(new Hbar(10))
-                .setKey(spenderAccountPrivateKey)
+                .setKeyWithoutAlias(spenderAccountPrivateKey)
                 .execute(env.client);
 
             const { accountId: spenderAccountId } =
@@ -807,7 +807,7 @@ describe("TokenRejectIntegrationTest", function () {
                 const wrongOwnerPrivateKey = PrivateKey.generateED25519();
                 const { accountId: wrongOwnerId } = await (
                     await new AccountCreateTransaction()
-                        .setKey(wrongOwnerPrivateKey)
+                        .setKeyWithoutAlias(wrongOwnerPrivateKey)
                         .setMaxAutomaticTokenAssociations(-1)
                         .execute(env.client)
                 ).getReceipt(env.client);
@@ -860,7 +860,7 @@ describe("TokenRejectIntegrationTest", function () {
             receiverPrivateKey = await PrivateKey.generateECDSA();
             const receiverCreateAccountResponse =
                 await new AccountCreateTransaction()
-                    .setKey(receiverPrivateKey)
+                    .setKeyWithoutAlias(receiverPrivateKey)
                     .setInitialBalance(new Hbar(1))
                     .setMaxAutomaticTokenAssociations(-1)
                     .execute(env.client);

@@ -23,7 +23,7 @@ describe("AccountCreate", function () {
         const key = PrivateKey.generateED25519();
 
         const response = await new AccountCreateTransaction()
-            .setKey(key.publicKey)
+            .setKeyWithoutAlias(key.publicKey)
             .setInitialBalance(new Hbar(2))
             .execute(env.client);
 
@@ -62,7 +62,7 @@ describe("AccountCreate", function () {
         const key = PrivateKey.generateECDSA();
 
         const response = await new AccountCreateTransaction()
-            .setKey(key.publicKey)
+            .setKeyWithoutAlias(key.publicKey)
             .setInitialBalance(new Hbar(2))
             .execute(env.client);
 
@@ -102,7 +102,7 @@ describe("AccountCreate", function () {
         const key = PrivateKey.generateED25519();
 
         const response = await new AccountCreateTransaction()
-            .setKey(key.publicKey)
+            .setKeyWithoutAlias(key.publicKey)
             .execute(env.client);
 
         const receipt = await response.getReceipt(env.client);
@@ -155,7 +155,7 @@ describe("AccountCreate", function () {
         const key = PrivateKey.generateED25519();
 
         const response = await new AccountCreateTransaction()
-            .setKey(key.publicKey)
+            .setKeyWithoutAlias(key.publicKey)
             .execute(env.client);
 
         const receipt = await response.getReceipt(env.client);
@@ -195,7 +195,7 @@ describe("AccountCreate", function () {
         const thresholdKey = new KeyList(publicKey, 1);
 
         let transaction = new AccountCreateTransaction()
-            .setKey(thresholdKey)
+            .setKeyWithoutAlias(thresholdKey)
             .setInitialBalance(Hbar.fromTinybars(1))
             .freezeWith(env.client);
 
@@ -218,6 +218,41 @@ describe("AccountCreate", function () {
         );
     });
 
+    it("should create account with no alias", async function () {
+        // Tests the third row of this table
+        // https://github.com/hashgraph/hedera-improvement-proposal/blob/d39f740021d7da592524cffeaf1d749803798e9a/HIP/hip-583.md#signatures
+
+        const adminKey = PrivateKey.generateECDSA();
+        const accountKey = PrivateKey.generateECDSA();
+
+        // create an admin account
+        await new AccountCreateTransaction()
+            .setKeyWithoutAlias(adminKey)
+            .execute(env.client);
+
+        let receipt = await (
+            await new AccountCreateTransaction()
+                .setKeyWithoutAlias(accountKey)
+                .freezeWith(env.client)
+                .execute(env.client)
+        ).getReceipt(env.client);
+
+        const accountId = receipt.accountId;
+
+        expect(accountId).to.not.be.null;
+
+        const info = await new AccountInfoQuery()
+            .setAccountId(accountId)
+            .execute(env.client);
+
+        expect(info.accountId.toString()).to.not.be.null;
+        expect(
+            info.contractAccountId
+                .toString()
+                .startsWith("00000000000000000000"),
+        ).to.be.true;
+    });
+
     it("should create account with alias from admin key", async function () {
         // Tests the third row of this table
         // https://github.com/hashgraph/hedera-improvement-proposal/blob/d39f740021d7da592524cffeaf1d749803798e9a/HIP/hip-583.md#signatures
@@ -227,12 +262,12 @@ describe("AccountCreate", function () {
 
         // create an admin account
         await new AccountCreateTransaction()
-            .setKey(adminKey)
+            .setKeyWithoutAlias(adminKey)
             .execute(env.client);
 
         let receipt = await (
             await new AccountCreateTransaction()
-                .setKey(adminKey)
+                .setKeyWithoutAlias(adminKey)
                 .setAlias(evmAddress)
                 .freezeWith(env.client)
                 .execute(env.client)
@@ -253,6 +288,69 @@ describe("AccountCreate", function () {
         expect(info.key.toString()).to.be.equal(adminKey.publicKey.toString());
     });
 
+    it("should create account with alias derived from ECDSA private admin key", async function () {
+        const adminKey = PrivateKey.generateECDSA();
+        const evmAddress = adminKey.publicKey.toEvmAddress();
+
+        // create an admin account
+        await new AccountCreateTransaction()
+            .setKeyWithoutAlias(adminKey)
+            .freezeWith(env.client)
+            .execute(env.client);
+
+        // create an account with alias derived from admin key
+        let receipt = await (
+            await new AccountCreateTransaction()
+                .setECDSAKeyWithAlias(adminKey)
+                .freezeWith(env.client)
+                .execute(env.client)
+        ).getReceipt(env.client);
+
+        const accountId = receipt.accountId;
+
+        expect(accountId).to.not.be.null;
+
+        const info = await new AccountInfoQuery()
+            .setAccountId(accountId)
+            .execute(env.client);
+
+        expect(info.accountId.toString()).to.not.be.null;
+        expect(info.contractAccountId.toString()).to.be.equal(
+            evmAddress.toString(),
+        );
+        expect(info.key.toString()).to.be.equal(adminKey.publicKey.toString());
+    });
+
+    it("should error when trying to create an account with alias derived from admin key when provided admin key is non-ECDSA private", async function () {
+        const adminKey = PrivateKey.generateED25519();
+
+        // create an admin account
+        await new AccountCreateTransaction()
+            .setKeyWithoutAlias(adminKey)
+            .freezeWith(env.client)
+            .execute(env.client);
+
+        let err = false;
+
+        try {
+            await (
+                await new AccountCreateTransaction()
+                    .setECDSAKeyWithAlias(adminKey)
+                    .freezeWith(env.client)
+                    .execute(env.client)
+            ).getReceipt(env.client);
+        } catch (error) {
+            err = error
+                .toString()
+                .includes(
+                    "'key' must be an ECDSA private key when 'aliasKey' is not provided.",
+                );
+        }
+        if (!err) {
+            throw new Error("account creation did not error");
+        }
+    });
+
     it("should create account with alias from admin key with receiver sig required", async function () {
         // Tests the fourth row of this table
         // https://github.com/hashgraph/hedera-improvement-proposal/blob/d39f740021d7da592524cffeaf1d749803798e9a/HIP/hip-583.md#signatures
@@ -262,7 +360,7 @@ describe("AccountCreate", function () {
 
         // create an admin account
         await new AccountCreateTransaction()
-            .setKey(adminKey)
+            .setKeyWithoutAlias(adminKey)
             .freezeWith(env.client)
             .execute(env.client);
 
@@ -270,8 +368,47 @@ describe("AccountCreate", function () {
             await (
                 await new AccountCreateTransaction()
                     .setReceiverSignatureRequired(true)
-                    .setKey(adminKey)
+                    .setKeyWithoutAlias(adminKey)
                     .setAlias(evmAddress)
+                    .freezeWith(env.client)
+                    .sign(adminKey)
+            ).execute(env.client)
+        ).getReceipt(env.client);
+
+        const accountId = receipt.accountId;
+
+        expect(accountId).to.not.be.null;
+
+        const info = await new AccountInfoQuery()
+            .setAccountId(accountId)
+            .execute(env.client);
+
+        expect(info.accountId.toString()).to.not.be.null;
+        expect(info.contractAccountId.toString()).to.be.equal(
+            evmAddress.toString(),
+        );
+        expect(info.key.toString()).to.be.equal(adminKey.publicKey.toString());
+    });
+
+    it("should create account with alias derived from ECDSA private admin key with receiver sig required", async function () {
+        // Tests the fourth row of this table
+        // https://github.com/hashgraph/hedera-improvement-proposal/blob/d39f740021d7da592524cffeaf1d749803798e9a/HIP/hip-583.md#signatures
+
+        const adminKey = PrivateKey.generateECDSA();
+        const evmAddress = adminKey.publicKey.toEvmAddress();
+
+        // create an admin account
+        await new AccountCreateTransaction()
+            .setKeyWithoutAlias(adminKey)
+            .freezeWith(env.client)
+            .execute(env.client);
+
+        // create an account with alias derived from admin key
+        let receipt = await (
+            await (
+                await new AccountCreateTransaction()
+                    .setReceiverSignatureRequired(true)
+                    .setECDSAKeyWithAlias(adminKey)
                     .freezeWith(env.client)
                     .sign(adminKey)
             ).execute(env.client)
@@ -298,7 +435,7 @@ describe("AccountCreate", function () {
 
         // create an admin account
         await new AccountCreateTransaction()
-            .setKey(adminKey)
+            .setKeyWithoutAlias(adminKey)
             .freezeWith(env.client)
             .execute(env.client);
 
@@ -307,8 +444,37 @@ describe("AccountCreate", function () {
             await (
                 await new AccountCreateTransaction()
                     .setReceiverSignatureRequired(true)
-                    .setKey(adminKey)
+                    .setKeyWithoutAlias(adminKey)
                     .setAlias(evmAddress)
+                    .freezeWith(env.client)
+                    .execute(env.client)
+            ).getReceipt(env.client);
+        } catch (error) {
+            err = error.toString().includes(Status.InvalidSignature.toString());
+        }
+
+        if (!err) {
+            throw new Error("account creation did not error");
+        }
+    });
+
+    it("should error when trying to create account with alias derived from ECDSA private admin key with receiver sig required without signature", async function () {
+        const adminKey = PrivateKey.generateECDSA();
+
+        // create an admin account
+        await new AccountCreateTransaction()
+            .setKeyWithoutAlias(adminKey)
+            .freezeWith(env.client)
+            .execute(env.client);
+
+        let err = false;
+
+        try {
+            // create an account with alias derived from admin key
+            await (
+                await new AccountCreateTransaction()
+                    .setReceiverSignatureRequired(true)
+                    .setECDSAKeyWithAlias(adminKey)
                     .freezeWith(env.client)
                     .execute(env.client)
             ).getReceipt(env.client);
@@ -329,7 +495,7 @@ describe("AccountCreate", function () {
 
         // create an admin account
         await new AccountCreateTransaction()
-            .setKey(adminKey)
+            .setKeyWithoutAlias(adminKey)
             .freezeWith(env.client)
             .execute(env.client);
 
@@ -339,7 +505,7 @@ describe("AccountCreate", function () {
         let receipt = await (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(adminKey)
+                    .setKeyWithoutAlias(adminKey)
                     .setAlias(evmAddress)
                     .freezeWith(env.client)
                     .sign(key)
@@ -361,12 +527,83 @@ describe("AccountCreate", function () {
         expect(info.key.toString()).to.be.equal(adminKey.publicKey.toString());
     });
 
+    it("should create account with admin key and alias derived from different ECDSA private alias key", async function () {
+        // Tests the fifth row of this table
+        // https://github.com/hashgraph/hedera-improvement-proposal/blob/d39f740021d7da592524cffeaf1d749803798e9a/HIP/hip-583.md#signatures
+
+        const adminKey = PrivateKey.generateED25519();
+
+        // create an admin account
+        await new AccountCreateTransaction()
+            .setKeyWithoutAlias(adminKey)
+            .freezeWith(env.client)
+            .execute(env.client);
+
+        const aliasKey = PrivateKey.generateECDSA();
+        const evmAddress = aliasKey.publicKey.toEvmAddress();
+
+        // create an account with alias derived from ECDSA private alias key
+        let receipt = await (
+            await (
+                await new AccountCreateTransaction()
+                    .setKeyWithAlias(adminKey, aliasKey)
+                    .freezeWith(env.client)
+                    .sign(aliasKey)
+            ).execute(env.client)
+        ).getReceipt(env.client);
+
+        const accountId = receipt.accountId;
+
+        expect(accountId).to.not.be.null;
+
+        const info = await new AccountInfoQuery()
+            .setAccountId(accountId)
+            .execute(env.client);
+
+        expect(info.accountId.toString()).to.not.be.null;
+        expect(info.contractAccountId.toString()).to.be.equal(
+            evmAddress.toString(),
+        );
+        expect(info.key.toString()).to.be.equal(adminKey.publicKey.toString());
+    });
+
+    it("should error when trying to create an account with alias derived from different alias key when provided alias key is non-ECDSA private", async function () {
+        const adminKey = PrivateKey.generateED25519();
+        const aliasKey = PrivateKey.generateED25519();
+
+        // create an admin account
+        await new AccountCreateTransaction()
+            .setKeyWithoutAlias(adminKey)
+            .freezeWith(env.client)
+            .execute(env.client);
+
+        let err = false;
+
+        try {
+            await (
+                await new AccountCreateTransaction()
+                    .setKeyWithAlias(adminKey, aliasKey)
+                    .freezeWith(env.client)
+                    .execute(env.client)
+            ).getReceipt(env.client);
+        } catch (error) {
+            err = error
+                .toString()
+                .includes(
+                    "'aliasKey' must be an ECDSA private key when provided.",
+                );
+        }
+        if (!err) {
+            throw new Error("account creation did not error");
+        }
+    });
+
     it("should error when trying to create account with alias different from admin key without signature", async function () {
         const adminKey = PrivateKey.generateED25519();
 
         // create an admin account
         await new AccountCreateTransaction()
-            .setKey(adminKey)
+            .setKeyWithoutAlias(adminKey)
             .freezeWith(env.client)
             .execute(env.client);
 
@@ -378,8 +615,36 @@ describe("AccountCreate", function () {
             await (
                 await new AccountCreateTransaction()
                     .setReceiverSignatureRequired(true)
-                    .setKey(adminKey)
+                    .setKeyWithoutAlias(adminKey)
                     .setAlias(evmAddress)
+                    .freezeWith(env.client)
+                    .execute(env.client)
+            ).getReceipt(env.client);
+        } catch (error) {
+            err = error.toString().includes(Status.InvalidSignature.toString());
+        }
+
+        if (!err) {
+            throw new Error("account creation did not error");
+        }
+    });
+
+    it("should error when trying to create account with admin key and alias derived from different ECDSA private alias key without signature", async function () {
+        const adminKey = PrivateKey.generateED25519();
+        // create an admin account
+        await new AccountCreateTransaction()
+            .setKeyWithoutAlias(adminKey)
+            .freezeWith(env.client)
+            .execute(env.client);
+
+        const aliasKey = PrivateKey.generateECDSA();
+
+        let err = false;
+        try {
+            await (
+                await new AccountCreateTransaction()
+                    .setReceiverSignatureRequired(true)
+                    .setKeyWithAlias(adminKey, aliasKey)
                     .freezeWith(env.client)
                     .execute(env.client)
             ).getReceipt(env.client);
@@ -400,7 +665,7 @@ describe("AccountCreate", function () {
 
         // create an admin account
         await new AccountCreateTransaction()
-            .setKey(adminKey)
+            .setKeyWithoutAlias(adminKey)
             .freezeWith(env.client)
             .execute(env.client);
 
@@ -412,10 +677,52 @@ describe("AccountCreate", function () {
                 await (
                     await new AccountCreateTransaction()
                         .setReceiverSignatureRequired(true)
-                        .setKey(adminKey)
+                        .setKeyWithoutAlias(adminKey)
                         .setAlias(evmAddress)
                         .freezeWith(env.client)
                         .sign(key)
+                ).sign(adminKey)
+            ).execute(env.client)
+        ).getReceipt(env.client);
+
+        const accountId = receipt.accountId;
+
+        expect(accountId).to.not.be.null;
+
+        const info = await new AccountInfoQuery()
+            .setAccountId(accountId)
+            .execute(env.client);
+
+        expect(info.accountId.toString()).to.not.be.null;
+        expect(info.contractAccountId.toString()).to.be.equal(
+            evmAddress.toString(),
+        );
+        expect(info.key.toString()).to.be.equal(adminKey.publicKey.toString());
+    });
+
+    it("should create account with admin key and alias derived from ECDSA private alias key with receiver sig required", async function () {
+        // Tests the sixth row of this table
+        // https://github.com/hashgraph/hedera-improvement-proposal/blob/d39f740021d7da592524cffeaf1d749803798e9a/HIP/hip-583.md#signatures
+
+        const adminKey = PrivateKey.generateED25519();
+
+        // create an admin account
+        await new AccountCreateTransaction()
+            .setKeyWithoutAlias(adminKey)
+            .freezeWith(env.client)
+            .execute(env.client);
+
+        const aliasKey = PrivateKey.generateECDSA();
+        const evmAddress = aliasKey.publicKey.toEvmAddress();
+
+        let receipt = await (
+            await (
+                await (
+                    await new AccountCreateTransaction()
+                        .setReceiverSignatureRequired(true)
+                        .setKeyWithAlias(adminKey, aliasKey)
+                        .freezeWith(env.client)
+                        .sign(aliasKey)
                 ).sign(adminKey)
             ).execute(env.client)
         ).getReceipt(env.client);
@@ -440,7 +747,7 @@ describe("AccountCreate", function () {
 
         // create an admin account
         await new AccountCreateTransaction()
-            .setKey(adminKey)
+            .setKeyWithoutAlias(adminKey)
             .freezeWith(env.client)
             .execute(env.client);
 
@@ -453,10 +760,41 @@ describe("AccountCreate", function () {
                 await (
                     await new AccountCreateTransaction()
                         .setReceiverSignatureRequired(true)
-                        .setKey(adminKey)
+                        .setKeyWithoutAlias(adminKey)
                         .setAlias(evmAddress)
                         .freezeWith(env.client)
                         .sign(key)
+                ).execute(env.client)
+            ).getReceipt(env.client);
+        } catch (error) {
+            err = error.toString().includes(Status.InvalidSignature.toString());
+        }
+
+        if (!err) {
+            throw new Error("account creation did not error");
+        }
+    });
+
+    it("should error when trying to create account with admin key and alias derived from ECDSA private alias key and receiver sig required without signature", async function () {
+        const adminKey = PrivateKey.generateED25519();
+
+        // create an admin account
+        await new AccountCreateTransaction()
+            .setKeyWithoutAlias(adminKey)
+            .freezeWith(env.client)
+            .execute(env.client);
+
+        const aliasKey = PrivateKey.generateECDSA();
+
+        let err = false;
+        try {
+            await (
+                await (
+                    await new AccountCreateTransaction()
+                        .setReceiverSignatureRequired(true)
+                        .setKeyWithAlias(adminKey, aliasKey)
+                        .freezeWith(env.client)
+                        .sign(aliasKey)
                 ).execute(env.client)
             ).getReceipt(env.client);
         } catch (error) {

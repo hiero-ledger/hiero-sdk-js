@@ -30,7 +30,7 @@ const ACCOUNT_INFO_QUERY_RESPONSE = {
             accountID: {
                 shardNum: Long.ZERO,
                 realmNum: Long.ZERO,
-                accountNum: Long.fromNumber(10),
+                accountNum: Long.fromNumber(3),
             },
             key: {
                 ed25519: PRIVATE_KEY.publicKey.toBytesRaw(),
@@ -92,7 +92,7 @@ describe("AccountInfoMocking", function () {
             .setAccountId("0.0.3")
             .execute(client);
 
-        expect(info.accountId.toString()).to.be.equal("0.0.10");
+        expect(info.accountId.toString()).to.be.equal("0.0.3");
     });
 
     it("should retry on UNAVAILABLE", async function () {
@@ -108,7 +108,7 @@ describe("AccountInfoMocking", function () {
             .setAccountId("0.0.3")
             .execute(client);
 
-        expect(info.accountId.toString()).to.be.equal("0.0.10");
+        expect(info.accountId.toString()).to.be.equal("0.0.3");
     });
 
     it("should error when cost is greater than max cost set on client", async function () {
@@ -255,7 +255,7 @@ describe("AccountInfoMocking", function () {
             .setAccountId("0.0.3")
             .execute(client);
 
-        expect(info.accountId.toString()).to.be.equal("0.0.10");
+        expect(info.accountId.toString()).to.be.equal("0.0.3");
     });
 
     it("should be able to execute after getting transaction hashes", async function () {
@@ -590,5 +590,107 @@ describe("AccountInfoMocking", function () {
                 "Attempting to execute a transaction against node 0.0.4, which is not included in the Client's node list. Please review your Client configuration.",
             );
         }
+    });
+
+    it("should demonstrate UNAVAILABLE behavior with multiple nodes", async function () {
+        ({ client, servers } = await Mocker.withResponses([
+            // First node (0.0.3)
+            [
+                { error: UNAVAILABLE },
+                { error: UNAVAILABLE },
+                { error: UNAVAILABLE },
+            ],
+            // Second node (0.0.4)
+            [
+                { error: UNAVAILABLE },
+                { response: ACCOUNT_INFO_QUERY_COST_RESPONSE },
+                { response: ACCOUNT_INFO_QUERY_RESPONSE },
+            ],
+        ]));
+
+        const info = await new AccountInfoQuery()
+            .setNodeAccountIds([new AccountId(3), new AccountId(4)])
+            .setAccountId("0.0.3")
+            .execute(client);
+
+        expect(info.accountId.toString()).to.be.equal("0.0.3");
+    });
+
+    describe("Node health checks", function () {
+        beforeEach(async function () {
+            const responses1 = [
+                { response: ACCOUNT_INFO_QUERY_COST_RESPONSE },
+                { response: ACCOUNT_INFO_QUERY_RESPONSE },
+            ];
+
+            const responses2 = [
+                { response: ACCOUNT_INFO_QUERY_COST_RESPONSE },
+                { response: ACCOUNT_INFO_QUERY_RESPONSE },
+            ];
+
+            const responses3 = [
+                { response: ACCOUNT_INFO_QUERY_COST_RESPONSE },
+                { response: ACCOUNT_INFO_QUERY_RESPONSE },
+            ];
+
+            ({ client, servers } = await Mocker.withResponses([
+                responses1,
+                responses2,
+                responses3,
+            ]));
+        });
+
+        it("should throw error because every node is unhealthy", async function () {
+            // Make node 3 unhealthy
+            client._network._network.get("0.0.3")[0]._readmitTime =
+                Date.now() + 100 * 10010;
+
+            // Make node 4 unhealthy
+            client._network._network.get("0.0.4")[0]._readmitTime =
+                Date.now() + 100 * 10010;
+
+            try {
+                await new AccountInfoQuery()
+                    .setNodeAccountIds([new AccountId(3), new AccountId(4)])
+                    .setAccountId("0.0.3")
+                    .execute(client);
+                throw new Error("should have thrown");
+            } catch (error) {
+                expect(error.message).to.equal(
+                    "Network connectivity issue: All nodes are unhealthy. Original node list: 0.0.3, 0.0.4",
+                );
+            }
+        });
+
+        it("should skip unhealthy node and execute with healthy node", async function () {
+            // Make node 3 unhealthy
+            client._network._network.get("0.0.3")[0]._readmitTime =
+                Date.now() + 100 * 10010;
+
+            const info = await new AccountInfoQuery()
+                .setNodeAccountIds([new AccountId(3), new AccountId(4)])
+                .setAccountId("0.0.3")
+                .execute(client);
+
+            expect(info.accountId.toString()).to.be.equal("0.0.3");
+        });
+
+        it("should execute with last healthy node when multiple nodes are unhealthy", async function () {
+            // Make nodes 3 and 5 unhealthy
+            client._network._network.get("0.0.3")[0]._readmitTime =
+                Date.now() + 100 * 10010;
+            client._network._network.get("0.0.5")[0]._readmitTime =
+                Date.now() + 100 * 10010;
+
+            const info = await new AccountInfoQuery()
+                .setNodeAccountIds([
+                    new AccountId(3),
+                    new AccountId(4),
+                    new AccountId(5),
+                ])
+                .execute(client);
+
+            expect(info.accountId.toString()).to.be.equal("0.0.3");
+        });
     });
 });

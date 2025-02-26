@@ -83,7 +83,7 @@ async function main() {
         const accountCreateTx = new AccountCreateTransaction()
             .setReceiverSignatureRequired(true)
             .setInitialBalance(Hbar.fromTinybars(100))
-            .setKey(adminKey)
+            .setKeyWithoutAlias(adminKey)
             .setAlias(evmAddress)
             .freezeWith(client);
 

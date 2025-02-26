@@ -32,7 +32,7 @@ describe("PrivateKey signTransaction", function () {
         // Create account
         const createAccountTransaction = new AccountCreateTransaction()
             .setInitialBalance(new Hbar(2))
-            .setKey(keyList);
+            .setKeyWithoutAlias(keyList);
 
         const createResponse = await createAccountTransaction.execute(
             env.client,

@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import GrpcServiceError from "./grpc/GrpcServiceError.js";
 import GrpcStatus from "./grpc/GrpcStatus.js";
@@ -425,20 +407,6 @@ export default class Executable {
     }
 
     /**
-     * Advance the request to the next node
-     *
-     * FIXME: This method used to perform different code depending on if we're
-     * executing a query or transaction, but that is no longer the case
-     * and hence could be removed.
-     *
-     * @protected
-     * @returns {void}
-     */
-    _advanceRequest() {
-        this._nodeAccountIds.advance();
-    }
-
-    /**
      * Determine if we should continue the execution process, error, or finish.
      *
      * FIXME: This method should really be called something else. Initially it returned
@@ -523,6 +491,10 @@ export default class Executable {
      * @returns {Promise<OutputT>}
      */
     async execute(client, requestTimeout) {
+        // we check if its local node then backoff mechanism should be disabled
+        // and we increase the retry attempts
+        const isLocalNode = client.network["127.0.0.1:50211"] != null;
+
         // If the logger on the request is not set, use the logger in client
         // (if set, otherwise do not use logger)
         this._logger =
@@ -555,21 +527,22 @@ export default class Executable {
             this._minBackoff = client.minBackoff;
         }
 
-        // If the max attempts on the request is not set, use the default value in client
-        // If the default value in client is not set, use a default of 10.
-        //
-        // FIXME: current implementation is wrong, update to follow comment above.
-        const maxAttempts =
-            client._maxAttempts != null
-                ? client._maxAttempts
-                : this._maxAttempts;
-
         // Save the start time to be used later with request timeout
         const startTime = Date.now();
 
         // Saves each error we get so when we err due to max attempts exceeded we'll have
         // the last error that was returned by the consensus node
         let persistentError = null;
+
+        // If the max attempts on the request is not set, use the default value in client
+        // If the default value in client is not set, use a default of 10.
+        //
+        // FIXME: current implementation is wrong, update to follow comment above.
+        // ... existing code ...
+        const LOCAL_NODE_ATTEMPTS = 1000;
+        const maxAttempts = isLocalNode
+            ? LOCAL_NODE_ATTEMPTS
+            : (client._maxAttempts ?? this._maxAttempts);
 
         // Checks if has a valid nodes to which the TX can be sent
         if (this.transactionNodeIds.length) {
@@ -654,28 +627,30 @@ export default class Executable {
             const channel = node.getChannel();
             const request = await this._makeRequestAsync();
 
-            // advance the internal index
-            // non-free queries and transactions map to more than 1 actual transaction and this will cause
-            // the next invocation of makeRequest to return the _next_ transaction
-            // FIXME: This is likely no longer relavent after we've transitioned to using our `List` type
-            // can be replaced with `this._nodeAccountIds.advance();`
-            this._advanceRequest();
-
             let response;
 
-            // If the node is unhealthy, wait for it to be healthy
-            // FIXME: This is wrong, we should skip to the next node, and only perform
-            // a request backoff after we've tried all nodes in the current list.
-            if (!node.isHealthy() && this._nodeAccountIds.length > 1) {
-                if (this._logger) {
-                    this._logger.debug(
-                        `[${logId}] node is not healthy, skipping waiting ${node.getRemainingTime()}`,
+            if (!node.isHealthy()) {
+                const isLastNode =
+                    this._nodeAccountIds.index ===
+                    this._nodeAccountIds.list.length - 1;
+
+                if (isLastNode || this._nodeAccountIds.length <= 1) {
+                    throw new Error(
+                        `Network connectivity issue: All nodes are unhealthy. Original node list: ${this._nodeAccountIds.list.join(", ")}`,
                     );
                 }
 
-                // We don't need to wait, we can proceed to the next attempt.
+                if (this._logger) {
+                    this._logger.debug(
+                        `[${logId}] Node is not healthy, trying the next node.`,
+                    );
+                }
+
+                this._nodeAccountIds.advance();
                 continue;
             }
+
+            this._nodeAccountIds.advance();
 
             try {
                 // Race the execution promise against the grpc timeout to prevent grpc connections
@@ -773,6 +748,7 @@ export default class Executable {
             switch (shouldRetry) {
                 case ExecutionState.Retry:
                     await delayForAttempt(
+                        isLocalNode,
                         attempt,
                         this._minBackoff,
                         this._maxBackoff,
@@ -840,12 +816,17 @@ export default class Executable {
 /**
  * A simple function that returns a promise timeout for a specific period of time
  *
+ * @param {boolean} isLocalNode
  * @param {number} attempt
  * @param {number} minBackoff
  * @param {number} maxBackoff
  * @returns {Promise<void>}
  */
-function delayForAttempt(attempt, minBackoff, maxBackoff) {
+function delayForAttempt(isLocalNode, attempt, minBackoff, maxBackoff) {
+    if (isLocalNode) {
+        return new Promise((resolve) => setTimeout(resolve, minBackoff));
+    }
+
     // 0.1s, 0.2s, 0.4s, 0.8s, ...
     const ms = Math.min(
         Math.floor(minBackoff * Math.pow(2, attempt)),

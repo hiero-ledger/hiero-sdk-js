@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import CustomFee from "./CustomFee.js";
 import AccountId from "../account/AccountId.js";
@@ -25,9 +7,9 @@ import Long from "long";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ICustomFee} HashgraphProto.proto.ICustomFee
- * @typedef {import("@hashgraph/proto").proto.IFractionalFee} HashgraphProto.proto.IFractionalFee
- * @typedef {import("@hashgraph/proto").proto.IFraction} HashgraphProto.proto.IFraction
+ * @typedef {import("@hashgraph/proto").proto.ICustomFee} HieroProto.proto.ICustomFee
+ * @typedef {import("@hashgraph/proto").proto.IFractionalFee} HieroProto.proto.IFractionalFee
+ * @typedef {import("@hashgraph/proto").proto.IFraction} HieroProto.proto.IFraction
  */
 
 export default class CustomFractionalFee extends CustomFee {
@@ -179,15 +161,15 @@ export default class CustomFractionalFee extends CustomFee {
     /**
      * @internal
      * @override
-     * @param {HashgraphProto.proto.ICustomFee} info
+     * @param {HieroProto.proto.ICustomFee} info
      * @returns {CustomFee}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     static _fromProtobuf(info) {
-        const fee = /** @type {HashgraphProto.proto.IFractionalFee} */ (
+        const fee = /** @type {HieroProto.proto.IFractionalFee} */ (
             info.fractionalFee
         );
-        const fractional = /** @type {HashgraphProto.proto.IFraction} */ (
+        const fractional = /** @type {HieroProto.proto.IFraction} */ (
             fee.fractionalAmount
         );
 
@@ -218,7 +200,7 @@ export default class CustomFractionalFee extends CustomFee {
     /**
      * @internal
      * @abstract
-     * @returns {HashgraphProto.proto.ICustomFee}
+     * @returns {HieroProto.proto.ICustomFee}
      */
     _toProtobuf() {
         return {

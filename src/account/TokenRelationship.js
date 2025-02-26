@@ -1,32 +1,14 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import Long from "long";
 import TokenId from "../token/TokenId.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITokenRelationship} HashgraphProto.proto.ITokenRelationship
- * @typedef {import("@hashgraph/proto").proto.TokenKycStatus} HashgraphProto.proto.TokenKycStatus
- * @typedef {import("@hashgraph/proto").proto.TokenFreezeStatus} HashgraphProto.proto.TokenFreezeStatus
- * @typedef {import("@hashgraph/proto").proto.ITokenID} HashgraphProto.proto.ITokenID
+ * @typedef {import("@hashgraph/proto").proto.ITokenRelationship} HieroProto.proto.ITokenRelationship
+ * @typedef {import("@hashgraph/proto").proto.TokenKycStatus} HieroProto.proto.TokenKycStatus
+ * @typedef {import("@hashgraph/proto").proto.TokenFreezeStatus} HieroProto.proto.TokenFreezeStatus
+ * @typedef {import("@hashgraph/proto").proto.ITokenID} HieroProto.proto.ITokenID
  */
 
 /**
@@ -92,12 +74,12 @@ export default class TokenRelationship {
     }
 
     /**
-     * @param {HashgraphProto.proto.ITokenRelationship} relationship
+     * @param {HieroProto.proto.ITokenRelationship} relationship
      * @returns {TokenRelationship}
      */
     static _fromProtobuf(relationship) {
         const tokenId = TokenId._fromProtobuf(
-            /** @type {HashgraphProto.proto.ITokenID} */ (relationship.tokenId),
+            /** @type {HieroProto.proto.ITokenID} */ (relationship.tokenId),
         );
         const isKycGranted =
             relationship.kycStatus == null || relationship.kycStatus === 0
@@ -127,7 +109,7 @@ export default class TokenRelationship {
     }
 
     /**
-     * @returns {HashgraphProto.proto.ITokenRelationship}
+     * @returns {HieroProto.proto.ITokenRelationship}
      */
     _toProtobuf() {
         return {

@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import NftId from "./NftId.js";
 import AccountId from "../account/AccountId.js";
@@ -26,16 +8,16 @@ import LedgerId from "../LedgerId.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.TokenFreezeStatus} HashgraphProto.proto.TokenFreezeStatus
- * @typedef {import("@hashgraph/proto").proto.TokenKycStatus} HashgraphProto.proto.TokenKycStatus
- * @typedef {import("@hashgraph/proto").proto.TokenPauseStatus} HashgraphProto.proto.TokenPauseStatus
- * @typedef {import("@hashgraph/proto").proto.ITokenNftInfo} HashgraphProto.proto.ITokenNftInfo
- * @typedef {import("@hashgraph/proto").proto.INftID} HashgraphProto.proto.INftID
- * @typedef {import("@hashgraph/proto").proto.ITimestamp} HashgraphProto.proto.ITimestamp
- * @typedef {import("@hashgraph/proto").proto.ITokenID} HashgraphProto.proto.ITokenID
- * @typedef {import("@hashgraph/proto").proto.IAccountID} HashgraphProto.proto.IAccountID
- * @typedef {import("@hashgraph/proto").proto.IKey} HashgraphProto.proto.IKey
- * @typedef {import("@hashgraph/proto").proto.IDuration} HashgraphProto.proto.IDuration
+ * @typedef {import("@hashgraph/proto").proto.TokenFreezeStatus} HieroProto.proto.TokenFreezeStatus
+ * @typedef {import("@hashgraph/proto").proto.TokenKycStatus} HieroProto.proto.TokenKycStatus
+ * @typedef {import("@hashgraph/proto").proto.TokenPauseStatus} HieroProto.proto.TokenPauseStatus
+ * @typedef {import("@hashgraph/proto").proto.ITokenNftInfo} HieroProto.proto.ITokenNftInfo
+ * @typedef {import("@hashgraph/proto").proto.INftID} HieroProto.proto.INftID
+ * @typedef {import("@hashgraph/proto").proto.ITimestamp} HieroProto.proto.ITimestamp
+ * @typedef {import("@hashgraph/proto").proto.ITokenID} HieroProto.proto.ITokenID
+ * @typedef {import("@hashgraph/proto").proto.IAccountID} HieroProto.proto.IAccountID
+ * @typedef {import("@hashgraph/proto").proto.IKey} HieroProto.proto.IKey
+ * @typedef {import("@hashgraph/proto").proto.IDuration} HieroProto.proto.IDuration
  */
 
 export default class TokenNftInfo {
@@ -81,21 +63,19 @@ export default class TokenNftInfo {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITokenNftInfo} info
+     * @param {HieroProto.proto.ITokenNftInfo} info
      * @returns {TokenNftInfo}
      */
     static _fromProtobuf(info) {
         return new TokenNftInfo({
             nftId: NftId._fromProtobuf(
-                /** @type {HashgraphProto.proto.INftID} */ (info.nftID),
+                /** @type {HieroProto.proto.INftID} */ (info.nftID),
             ),
             accountId: AccountId._fromProtobuf(
-                /** @type {HashgraphProto.proto.IAccountID} */ (info.accountID),
+                /** @type {HieroProto.proto.IAccountID} */ (info.accountID),
             ),
             creationTime: Timestamp._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITimestamp} */ (
-                    info.creationTime
-                ),
+                /** @type {HieroProto.proto.ITimestamp} */ (info.creationTime),
             ),
             metadata: info.metadata !== undefined ? info.metadata : null,
             ledgerId:
@@ -110,7 +90,7 @@ export default class TokenNftInfo {
     }
 
     /**
-     * @returns {HashgraphProto.proto.ITokenNftInfo}
+     * @returns {HieroProto.proto.ITokenNftInfo}
      */
     _toProtobuf() {
         return {

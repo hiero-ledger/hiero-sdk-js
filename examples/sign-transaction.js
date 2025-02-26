@@ -44,7 +44,7 @@ async function main() {
     try {
         let transaction = await new AccountCreateTransaction()
             .setInitialBalance(new Hbar(2)) // 5 h
-            .setKey(keyList)
+            .setKeyWithoutAlias(keyList)
             .freezeWithSigner(wallet);
         transaction = await transaction.signWithSigner(wallet);
         const response = await transaction.executeWithSigner(wallet);

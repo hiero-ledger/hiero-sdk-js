@@ -26,7 +26,7 @@ describe("AccountUpdate", function () {
         const key2 = PrivateKey.generateED25519();
 
         let response = await new AccountCreateTransaction()
-            .setKey(key1.publicKey)
+            .setKeyWithoutAlias(key1.publicKey)
             .setInitialBalance(new Hbar(2))
             .execute(env.client);
 
@@ -94,7 +94,7 @@ describe("AccountUpdate", function () {
         const key2 = PrivateKey.generateED25519();
 
         let response = await new AccountCreateTransaction()
-            .setKey(key1.publicKey)
+            .setKeyWithoutAlias(key1.publicKey)
             .setInitialBalance(new Hbar(2))
             .execute(env.client);
 
@@ -146,7 +146,7 @@ describe("AccountUpdate", function () {
         const key2 = PrivateKey.generateED25519();
 
         let response = await new AccountCreateTransaction()
-            .setKey(key1.publicKey)
+            .setKeyWithoutAlias(key1.publicKey)
             .setInitialBalance(new Hbar(2))
             .execute(env.client);
 
@@ -201,7 +201,7 @@ describe("AccountUpdate", function () {
         const key1 = PrivateKey.generateED25519();
 
         let response = await new AccountCreateTransaction()
-            .setKey(key1.publicKey)
+            .setKeyWithoutAlias(key1.publicKey)
             .setInitialBalance(new Hbar(2))
             .execute(env.client);
 
@@ -236,7 +236,7 @@ describe("AccountUpdate", function () {
         const key2 = PrivateKey.generateED25519();
 
         let response = await new AccountCreateTransaction()
-            .setKey(key1.publicKey)
+            .setKeyWithoutAlias(key1.publicKey)
             .setInitialBalance(new Hbar(2))
             .execute(env.client);
 

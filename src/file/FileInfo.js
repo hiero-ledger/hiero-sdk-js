@@ -1,31 +1,13 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import FileId from "./FileId.js";
 import Timestamp from "../Timestamp.js";
 import Long from "long";
 import KeyList from "../KeyList.js";
 import LedgerId from "../LedgerId.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 
-const { proto } = HashgraphProto;
+const { proto } = HieroProto;
 
 /**
  * Response when the client sends the node CryptoGetInfoQuery.
@@ -88,7 +70,7 @@ export default class FileInfo {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.FileGetInfoResponse.IFileInfo} info
+     * @param {HieroProto.proto.FileGetInfoResponse.IFileInfo} info
      * @returns {FileInfo}
      */
     static _fromProtobuf(info) {
@@ -96,11 +78,11 @@ export default class FileInfo {
 
         return new FileInfo({
             fileId: FileId._fromProtobuf(
-                /** @type {HashgraphProto.proto.IFileID} */ (info.fileID),
+                /** @type {HieroProto.proto.IFileID} */ (info.fileID),
             ),
             size: size instanceof Long ? size : Long.fromValue(size),
             expirationTime: Timestamp._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITimestamp} */ (
+                /** @type {HieroProto.proto.ITimestamp} */ (
                     info.expirationTime
                 ),
             ),
@@ -119,7 +101,7 @@ export default class FileInfo {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.FileGetInfoResponse.IFileInfo}
+     * @returns {HieroProto.proto.FileGetInfoResponse.IFileInfo}
      */
     _toProtobuf() {
         return {
@@ -139,7 +121,7 @@ export default class FileInfo {
      */
     static fromBytes(bytes) {
         return FileInfo._fromProtobuf(
-            HashgraphProto.proto.FileGetInfoResponse.FileInfo.decode(bytes),
+            HieroProto.proto.FileGetInfoResponse.FileInfo.decode(bytes),
         );
     }
 

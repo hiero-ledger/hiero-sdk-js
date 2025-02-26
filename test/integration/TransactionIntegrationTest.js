@@ -30,7 +30,7 @@ describe("TransactionIntegration", function () {
         const key = PrivateKey.generateED25519();
 
         const transaction = await new AccountCreateTransaction()
-            .setKey(key.publicKey)
+            .setKeyWithoutAlias(key.publicKey)
             .freezeWith(env.client)
             .signWithOperator(env.client);
 
@@ -772,7 +772,7 @@ describe("TransactionIntegration", function () {
             // Create account
             const createAccountTransaction = new AccountCreateTransaction()
                 .setInitialBalance(new Hbar(2))
-                .setKey(keyList);
+                .setKeyWithoutAlias(keyList);
 
             const createResponse = await createAccountTransaction.execute(
                 env.client,

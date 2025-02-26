@@ -1,6 +1,6 @@
 import * as hashgraph from "@hashgraph/sdk";
 import ContractHelper from "./ContractHelper.js";
-import contract from "./precompile-example/PrecompileExample.json" assert { type: "json" };
+import contract from "./precompile-example/PrecompileExample.json" with { type: "json" };
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -24,7 +24,7 @@ async function main() {
         provider,
     );
 
-    const operatorPrivateKey = hashgraph.PrivateKey.fromStringDer(
+    const operatorPrivateKey = hashgraph.PrivateKey.fromStringED25519(
         process.env.OPERATOR_KEY,
     );
     const operatorPublicKey = operatorPrivateKey.publicKey;
@@ -38,7 +38,7 @@ async function main() {
 
     try {
         let transaction = await new hashgraph.AccountCreateTransaction()
-            .setKey(alicePublicKey)
+            .setKeyWithoutAlias(alicePublicKey)
             .setInitialBalance(hashgraph.Hbar.fromString("1000"))
             .freezeWithSigner(wallet);
         transaction = await transaction.signWithSigner(wallet);
@@ -50,7 +50,7 @@ async function main() {
         const walletWithAlice = new hashgraph.Wallet(
             aliceAccountId,
             alicePrivateKey,
-            new hashgraph.LocalProvider(),
+            provider,
         );
 
         // Instantiate ContractHelper
@@ -207,9 +207,9 @@ async function main() {
         console.log("All steps completed with valid results.");
     } catch (error) {
         console.error(error);
+    } finally {
+        provider.close();
     }
-
-    provider.close();
 }
 
 void main();

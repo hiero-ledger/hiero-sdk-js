@@ -33,6 +33,6 @@
         "nyc": "^15.1.0",
         "prettier": "^3.0.3",
         "typedoc": "^0.25.1",
-        "typescript": "5.5.4"
+        "typescript": "^5.7.2"
     }
 }

@@ -140,7 +140,7 @@ describe("MirrorNodeContractQuery", function () {
 
         const { accountId } = await (
             await new AccountCreateTransaction()
-                .setKey(newOwnerKey)
+                .setKeyWithoutAlias(newOwnerKey)
                 .setInitialBalance(new Hbar(10))
                 .execute(env.client)
         ).getReceipt(env.client);

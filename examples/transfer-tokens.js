@@ -44,7 +44,7 @@ async function main() {
 
     try {
         let transaction = await new AccountCreateTransaction()
-            .setKey(newKey.publicKey)
+            .setKeyWithoutAlias(newKey.publicKey)
             .setInitialBalance(new Hbar(2))
             .freezeWithSigner(wallet);
         transaction = await transaction.signWithSigner(wallet);

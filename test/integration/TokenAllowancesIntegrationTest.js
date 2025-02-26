@@ -33,7 +33,7 @@ describe("TokenAllowances", function () {
         const spenderAccountId = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(spenderKey)
+                    .setKeyWithoutAlias(spenderKey)
                     .setInitialBalance(new Hbar(2))
                     .execute(env.client)
             ).getReceipt(env.client)
@@ -43,7 +43,7 @@ describe("TokenAllowances", function () {
         const receiverAccountId = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(receiverKey)
+                    .setKeyWithoutAlias(receiverKey)
                     .setInitialBalance(new Hbar(2))
                     .execute(env.client)
             ).getReceipt(env.client)
@@ -100,7 +100,7 @@ describe("TokenAllowances", function () {
         const spenderAccountId = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(spenderKey)
+                    .setKeyWithoutAlias(spenderKey)
                     .setInitialBalance(new Hbar(2))
                     .execute(env.client)
             ).getReceipt(env.client)
@@ -110,7 +110,7 @@ describe("TokenAllowances", function () {
         const receiverAccountId = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(receiverKey)
+                    .setKeyWithoutAlias(receiverKey)
                     .setInitialBalance(new Hbar(2))
                     .execute(env.client)
             ).getReceipt(env.client)
@@ -184,7 +184,7 @@ describe("TokenAllowances", function () {
         const receiverAccountId = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(receiverKey)
+                    .setKeyWithoutAlias(receiverKey)
                     .setInitialBalance(new Hbar(2))
                     .execute(env.client)
             ).getReceipt(env.client)

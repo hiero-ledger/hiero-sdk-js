@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 import * as EntityIdHelper from "./EntityIdHelper.js";
 
 export { default as Cache } from "./Cache.js";
@@ -101,8 +83,11 @@ export { default as Hbar } from "./Hbar.js";
 export { default as HbarAllowance } from "./account/HbarAllowance.js";
 export { default as HbarUnit } from "./HbarUnit.js";
 export { default as LiveHash } from "./account/LiveHash.js";
+// eslint-disable-next-line deprecation/deprecation
 export { default as LiveHashAddTransaction } from "./account/LiveHashAddTransaction.js";
+// eslint-disable-next-line deprecation/deprecation
 export { default as LiveHashDeleteTransaction } from "./account/LiveHashDeleteTransaction.js";
+// eslint-disable-next-line deprecation/deprecation
 export { default as LiveHashQuery } from "./account/LiveHashQuery.js";
 export { default as MaxQueryPaymentExceeded } from "./MaxQueryPaymentExceeded.js";
 export { default as MirrorNodeContractCallQuery } from "./query/MirrorNodeContractCallQuery.js";
@@ -129,7 +114,9 @@ export { default as Signer } from "./Signer.js";
 export { default as SignerSignature } from "./SignerSignature.js";
 export { default as Status } from "./Status.js";
 export { default as SubscriptionHandle } from "./topic/SubscriptionHandle.js";
+// eslint-disable-next-line deprecation/deprecation
 export { default as SystemDeleteTransaction } from "./system/SystemDeleteTransaction.js";
+// eslint-disable-next-line deprecation/deprecation
 export { default as SystemUndeleteTransaction } from "./system/SystemUndeleteTransaction.js";
 export { default as Timestamp } from "./Timestamp.js";
 export { default as TokenAllowance } from "./account/TokenAllowance.js";
@@ -168,6 +155,7 @@ export { default as TopicMessageChunk } from "./topic/TopicMessageChunk.js";
 export { default as TopicMessageQuery } from "./topic/TopicMessageQuery.js";
 export { default as TopicMessageSubmitTransaction } from "./topic/TopicMessageSubmitTransaction.js";
 export { default as TopicUpdateTransaction } from "./topic/TopicUpdateTransaction.js";
+export { default as CustomFeeLimit } from "./transaction/CustomFeeLimit.js";
 export { default as Transaction } from "./transaction/Transaction.js";
 export { default as TransactionFeeSchedule } from "./TransactionFeeSchedule.js";
 export { default as TransactionId } from "./transaction/TransactionId.js";

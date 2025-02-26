@@ -54,7 +54,7 @@ describe("TokenCancelAirdropIntegrationTest", function () {
         const receiverKey = PrivateKey.generateED25519();
         const { accountId: receiverId } = await (
             await new AccountCreateTransaction()
-                .setKey(receiverKey)
+                .setKeyWithoutAlias(receiverKey)
                 .execute(env.client)
         ).getReceipt(env.client);
 
@@ -113,7 +113,7 @@ describe("TokenCancelAirdropIntegrationTest", function () {
         const receiverKey = PrivateKey.generateED25519();
         const { accountId: receiverId } = await (
             await new AccountCreateTransaction()
-                .setKey(receiverKey)
+                .setKeyWithoutAlias(receiverKey)
                 .execute(env.client)
         ).getReceipt(env.client);
 
@@ -170,7 +170,7 @@ describe("TokenCancelAirdropIntegrationTest", function () {
         const receiverKey = PrivateKey.generateED25519();
         const { accountId: receiverId } = await (
             await new AccountCreateTransaction()
-                .setKey(receiverKey)
+                .setKeyWithoutAlias(receiverKey)
                 .execute(env.client)
         ).getReceipt(env.client);
 
@@ -216,7 +216,7 @@ describe("TokenCancelAirdropIntegrationTest", function () {
         const receiverKey = PrivateKey.generateED25519();
         const { accountId: receiverId } = await (
             await new AccountCreateTransaction()
-                .setKey(receiverKey)
+                .setKeyWithoutAlias(receiverKey)
                 .execute(env.client)
         ).getReceipt(env.client);
 
@@ -292,14 +292,14 @@ describe("TokenCancelAirdropIntegrationTest", function () {
         const receiverPrivateKey = PrivateKey.generateED25519();
         const { accountId: receiverId } = await (
             await new AccountCreateTransaction()
-                .setKey(receiverPrivateKey)
+                .setKeyWithoutAlias(receiverPrivateKey)
                 .execute(env.client)
         ).getReceipt(env.client);
 
         const receiverPrivateKey2 = PrivateKey.generateED25519();
         const { accountId: receiverId2 } = await (
             await new AccountCreateTransaction()
-                .setKey(receiverPrivateKey2)
+                .setKeyWithoutAlias(receiverPrivateKey2)
                 .execute(env.client)
         ).getReceipt(env.client);
 
@@ -377,7 +377,7 @@ describe("TokenCancelAirdropIntegrationTest", function () {
         const receiverKey = PrivateKey.generateED25519();
         const { accountId: receiverId } = await (
             await new AccountCreateTransaction()
-                .setKey(receiverKey)
+                .setKeyWithoutAlias(receiverKey)
                 .execute(env.client)
         ).getReceipt(env.client);
 
@@ -426,7 +426,7 @@ describe("TokenCancelAirdropIntegrationTest", function () {
         const receiverKey = PrivateKey.generateED25519();
         const { accountId: receiverId } = await (
             await new AccountCreateTransaction()
-                .setKey(receiverKey)
+                .setKeyWithoutAlias(receiverKey)
                 .execute(env.client)
         ).getReceipt(env.client);
 
@@ -440,7 +440,7 @@ describe("TokenCancelAirdropIntegrationTest", function () {
         const randomAccountKey = PrivateKey.generateED25519();
         const { accountId: randomAccountId } = await (
             await new AccountCreateTransaction()
-                .setKey(randomAccountKey)
+                .setKeyWithoutAlias(randomAccountKey)
                 .execute(env.client)
         ).getReceipt(env.client);
 
@@ -490,7 +490,7 @@ describe("TokenCancelAirdropIntegrationTest", function () {
         const receiverKey = PrivateKey.generateED25519();
         const { accountId: receiverId } = await (
             await new AccountCreateTransaction()
-                .setKey(receiverKey)
+                .setKeyWithoutAlias(receiverKey)
                 .execute(env.client)
         ).getReceipt(env.client);
 
@@ -545,7 +545,7 @@ describe("TokenCancelAirdropIntegrationTest", function () {
         const receiverKey = PrivateKey.generateED25519();
         const { accountId: receiverId } = await (
             await new AccountCreateTransaction()
-                .setKey(receiverKey)
+                .setKeyWithoutAlias(receiverKey)
                 .execute(env.client)
         ).getReceipt(env.client);
 

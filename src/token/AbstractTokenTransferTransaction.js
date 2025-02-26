@@ -1,23 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2024 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
-
+// SPDX-License-Identifier: Apache-2.0
 import TokenTransfer from "./TokenTransfer.js";
 import TokenNftTransfer from "../token/TokenNftTransfer.js";
 import TokenId from "./TokenId.js";
@@ -32,7 +13,7 @@ import TokenTransferAccountMap from "../account/TokenTransferAccountMap.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITokenAirdropTransactionBody} HashgraphProto.proto.ITokenAirdropTransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITokenAirdropTransactionBody} HieroProto.proto.ITokenAirdropTransactionBody
  */
 
 /**
@@ -435,7 +416,7 @@ export default class AbstractTokenTransferTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {HashgraphProto.proto.ITokenAirdropTransactionBody}
+     * @returns {HieroProto.proto.ITokenAirdropTransactionBody}
      */
     _makeTransactionData() {
         /** @type {{tokenId: TokenId; expectedDecimals: number | null; transfers: TokenTransfer[]; nftTransfers: TokenNftTransfer[];}[]} */

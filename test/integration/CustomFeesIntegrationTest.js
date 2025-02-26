@@ -302,7 +302,7 @@ describe("CustomFees", function () {
         const account = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .setInitialBalance(new Hbar(2))
                     .execute(env.client)
             ).getReceipt(env.client)
@@ -534,7 +534,7 @@ describe("CustomFees", function () {
         const account = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .setInitialBalance(new Hbar(2))
                     .execute(env.client)
             ).getReceipt(env.client)
@@ -629,7 +629,7 @@ describe("CustomFees", function () {
         const account = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .setInitialBalance(new Hbar(2))
                     .execute(env.client)
             ).getReceipt(env.client)
@@ -759,7 +759,7 @@ describe("CustomFees", function () {
         const accountId = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key.publicKey)
+                    .setKeyWithoutAlias(key.publicKey)
                     .execute(env.client)
             ).getReceipt(env.client)
         ).accountId;
@@ -1008,7 +1008,7 @@ describe("CustomFees", function () {
         const account1 = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .setInitialBalance(new Hbar(2))
                     .execute(env.client)
             ).getReceipt(env.client)
@@ -1017,7 +1017,7 @@ describe("CustomFees", function () {
         const account2 = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .setInitialBalance(new Hbar(2))
                     .execute(env.client)
             ).getReceipt(env.client)
@@ -1157,7 +1157,7 @@ describe("CustomFees", function () {
         const account1 = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .execute(env.client)
             ).getReceipt(env.client)
         ).accountId;
@@ -1165,7 +1165,7 @@ describe("CustomFees", function () {
         const account2 = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .execute(env.client)
             ).getReceipt(env.client)
         ).accountId;
@@ -1173,7 +1173,7 @@ describe("CustomFees", function () {
         const account3 = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .execute(env.client)
             ).getReceipt(env.client)
         ).accountId;
@@ -1181,7 +1181,7 @@ describe("CustomFees", function () {
         const account4 = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .execute(env.client)
             ).getReceipt(env.client)
         ).accountId;
@@ -1189,7 +1189,7 @@ describe("CustomFees", function () {
         const account5 = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .execute(env.client)
             ).getReceipt(env.client)
         ).accountId;
@@ -1197,7 +1197,7 @@ describe("CustomFees", function () {
         const account6 = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .execute(env.client)
             ).getReceipt(env.client)
         ).accountId;
@@ -1205,7 +1205,7 @@ describe("CustomFees", function () {
         const account7 = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .execute(env.client)
             ).getReceipt(env.client)
         ).accountId;
@@ -1213,7 +1213,7 @@ describe("CustomFees", function () {
         const account8 = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .execute(env.client)
             ).getReceipt(env.client)
         ).accountId;
@@ -1221,7 +1221,7 @@ describe("CustomFees", function () {
         const account9 = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key)
+                    .setKeyWithoutAlias(key)
                     .execute(env.client)
             ).getReceipt(env.client)
         ).accountId;
