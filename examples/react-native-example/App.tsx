@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { Alert, StyleSheet, Text, View } from "react-native";
-import "@ethersproject/shims";
-
 import {
     Client,
     AccountId,
@@ -35,7 +33,7 @@ const App = () => {
     const client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
     const [transaction, setTransaction] = useState<TransactionResponse | null>(
-        null
+        null,
     );
     const [info, setInfo] = useState<AccountInfo | null>(null);
     const [balance, setBalance] = useState<AccountBalance | null>(null);
