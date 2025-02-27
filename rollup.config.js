@@ -1,7 +1,7 @@
 import terser from "@rollup/plugin-terser";
 import alias from "@rollup/plugin-alias";
 
-const aliases = {
+const browserAliases = {
     entries: [
         {
             find: "../src/encoding/hex.js",
@@ -62,20 +62,28 @@ const aliases = {
     ],
 };
 
+const nativeAliases = {
+    entries: [
+        { find: "../src/index.js", replacement: "../src/native.js" },
+        {
+            find: "../src/encoding/hex.js",
+            replacement: "../src/encoding/hex.native.js",
+        },
+        {
+            find: "../src/encoding/utf8.js",
+            replacement: "../src/encoding/utf8.native.js",
+        },
+        {
+            find: "../src/cryptography/sha384.js",
+            replacement: "../src/cryptography/sha384.native.js",
+        },
+    ],
+};
+
 export default [
     {
-        input: "src/index.js",
-        plugins: [alias(aliases), terser()],
-        output: {
-            dir: "lib/",
-            format: "esm",
-            sourcemap: true,
-            preserveModules: true,
-        },
-    },
-    {
         input: "src/browser.js",
-        plugins: [alias(aliases), terser()],
+        plugins: [alias(browserAliases), terser()],
         output: {
             dir: "lib/",
             format: "esm",
@@ -85,7 +93,17 @@ export default [
     },
     {
         input: "src/native.js",
-        plugins: [alias(aliases), terser()],
+        plugins: [terser(), alias(nativeAliases)],
+        output: {
+            dir: "lib/",
+            format: "esm",
+            sourcemap: true,
+            preserveModules: true,
+        },
+    },
+    {
+        input: "src/index.js",
+        plugins: [terser()],
         output: {
             dir: "lib/",
             format: "esm",
