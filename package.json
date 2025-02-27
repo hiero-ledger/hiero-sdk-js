@@ -61,7 +61,6 @@
         "@grpc/grpc-js": "^1.12.6",
         "@hashgraph/cryptography": "1.5.0-beta.2",
         "@hashgraph/proto": "2.17.0-beta.1",
-        "@rollup/plugin-terser": "^0.4.4",
         "bignumber.js": "^9.1.1",
         "bn.js": "^5.1.1",
         "crypto-js": "^4.2.0",
@@ -85,6 +84,8 @@
         "@babel/register": "^7.22.5",
         "@grpc/proto-loader": "^0.7.9",
         "@playwright/test": "^1.30.0",
+        "@rollup/plugin-alias": "^5.1.1",
+        "@rollup/plugin-terser": "^0.4.4",
         "@types/chai": "^4.3.4",
         "@types/crypto-js": "^4.2.0",
         "@types/mocha": "^10.0.1",
@@ -128,5 +129,6 @@
     },
     "resolutions": {
         "bn.js": "5.2.1"
-    }
+    },
+    "packageManager": "pnpm@10.5.2+sha512.da9dc28cd3ff40d0592188235ab25d3202add8a207afbedc682220e4a0029ffbff4562102b9e6e46b4e3f9e8bd53e6d05de48544b0c57d4b0179e22c76d1199b"
 }
