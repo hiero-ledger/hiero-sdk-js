@@ -12,10 +12,10 @@
         "./src/cryptography/sha384.js": "./src/cryptography/sha384.native.js"
     },
     "browser": {
-        "./src/index.js": "./src/browser.js",
-        "./src/encoding/hex.js": "./src/encoding/hex.browser.js",
-        "./src/encoding/utf8.js": "./src/encoding/utf8.browser.js",
-        "./src/cryptography/sha384.js": "./src/cryptography/sha384.browser.js",
+        "./lib/index.js": "./lib/browser.js",
+        "./lib/encoding/hex.js": "./lib/encoding/hex.browser.js",
+        "./lib/encoding/utf8.js": "./lib/encoding/utf8.browser.js",
+        "./lib/cryptography/sha384.js": "./lib/cryptography/sha384.browser.js",
         "crypto": false
     },
     "exports": {
@@ -61,7 +61,6 @@
         "@grpc/grpc-js": "^1.12.6",
         "@hashgraph/cryptography": "1.5.0-beta.2",
         "@hashgraph/proto": "2.17.0-beta.1",
-        "@rollup/plugin-terser": "^0.4.4",
         "bignumber.js": "^9.1.1",
         "bn.js": "^5.1.1",
         "crypto-js": "^4.2.0",
@@ -85,6 +84,8 @@
         "@babel/register": "^7.22.5",
         "@grpc/proto-loader": "^0.7.9",
         "@playwright/test": "^1.30.0",
+        "@rollup/plugin-alias": "^5.1.1",
+        "@rollup/plugin-terser": "^0.4.4",
         "@types/chai": "^4.3.4",
         "@types/crypto-js": "^4.2.0",
         "@types/mocha": "^10.0.1",

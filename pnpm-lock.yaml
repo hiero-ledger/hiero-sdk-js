@@ -27,14 +27,11 @@ importers:
         specifier: ^1.12.6
         version: 1.12.6
       '@hashgraph/cryptography':
-        specifier: 1.5.0-beta.1
-        version: 1.5.0-beta.1(expo@52.0.37(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(graphql@15.8.0)(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))(react@19.0.0))(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))
+        specifier: 1.5.0-beta.2
+        version: 1.5.0-beta.2(expo@52.0.37(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(graphql@15.8.0)(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))(react@19.0.0))(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))
       '@hashgraph/proto':
-        specifier: 2.16.0
-        version: 2.16.0
-      '@rollup/plugin-terser':
-        specifier: ^0.4.4
-        version: 0.4.4(rollup@4.34.8)
+        specifier: 2.17.0-beta.1
+        version: 2.17.0-beta.1
       bignumber.js:
         specifier: ^9.1.1
         version: 9.1.2
@@ -99,6 +96,12 @@ importers:
       '@playwright/test':
         specifier: ^1.30.0
         version: 1.49.0
+      '@rollup/plugin-alias':
+        specifier: ^5.1.1
+        version: 5.1.1(rollup@4.34.8)
+      '@rollup/plugin-terser':
+        specifier: ^0.4.4
+        version: 0.4.4(rollup@4.34.8)
       '@types/chai':
         specifier: ^4.3.4
         version: 4.3.20
@@ -1284,8 +1287,8 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
-  '@hashgraph/cryptography@1.5.0-beta.1':
-    resolution: {integrity: sha512-jAPvzgHOK2ZfaR1UMmoTdlebC7TczY37ioWLlZJCRjOP7rV30hvMOz2GIPIa5hJDuVI7A5HRx1EqTOaAktznwA==}
+  '@hashgraph/cryptography@1.5.0-beta.2':
+    resolution: {integrity: sha512-yyNupkVjs0E4+oaqbskN30uYwJ7zDAUs1ZJg/WjP3T1Y4yqmP6TiUcfkBh08ymfhZ0KwtCkHkQ1RZaEkzWVsqg==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
       expo: '>=50.0.0'
@@ -1294,8 +1297,8 @@ packages:
       expo-crypto:
         optional: true
 
-  '@hashgraph/proto@2.16.0':
-    resolution: {integrity: sha512-d22IhjMdlhWqToZJV/DnQjfQ/M+cNmU6dFliZuxyPYMzsWYDqHig7WqgzZaSmHK3aIDrltlnLl47ssV4kEmo1w==}
+  '@hashgraph/proto@2.17.0-beta.1':
+    resolution: {integrity: sha512-WPML6aXHkp6hD/wUz0WJyDBGUMgBHpH+eBVRqfU3BiP9de7HkmDHA0YB2IbPDv/29DMxiLi0O65+o7XXIKAb2g==}
     engines: {node: '>=10.0.0'}
 
   '@humanwhocodes/config-array@0.13.0':
@@ -1533,6 +1536,15 @@ packages:
       react-native: '*'
     peerDependenciesMeta:
       '@types/react':
+        optional: true
+
+  '@rollup/plugin-alias@5.1.1':
+    resolution: {integrity: sha512-PR9zDb+rOzkRb2VD+EuKB7UC41vU5DIwZ5qqCpk0KJudcWAyi8rvYOhS7+L5aZCspw1stTViLgN5v6FF1p5cgQ==}
+    engines: {node: '>=14.0.0'}
+    peerDependencies:
+      rollup: ^1.20.0||^2.0.0||^3.0.0||^4.0.0
+    peerDependenciesMeta:
+      rollup:
         optional: true
 
   '@rollup/plugin-terser@0.4.4':
@@ -3121,6 +3133,10 @@ packages:
   foreground-child@3.3.0:
     resolution: {integrity: sha512-Ld2g8rrAyMYFXBhEqMz8ZAHBi4J4uS1i/CxGMDnjyFWddMXLVcDp051DZfu+t7+ab7Wv6SMqpWmyFIj5UbfFvg==}
     engines: {node: '>=14'}
+
+  forge-light@1.1.4:
+    resolution: {integrity: sha512-Nr0xdu93LJawgBZVU/tC+A+4pbKqigdY5PRBz8CXNm4e5saAZIqU2Qe9+nVFtVO5TWCHSgvI0LaZZuatgE5J1g==}
+    engines: {node: '>= 6.13.0'}
 
   form-data@3.0.2:
     resolution: {integrity: sha512-sJe+TQb2vIaIyO783qN6BlMYWMw3WBOHA1Ay2qxsnjuafEOQFJ2JakedOQirT6D5XPRxDvS7AHYyem9fTpb4LQ==}
@@ -7247,7 +7263,7 @@ snapshots:
       protobufjs: 7.2.5
       yargs: 17.7.2
 
-  '@hashgraph/cryptography@1.5.0-beta.1(expo@52.0.37(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(graphql@15.8.0)(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))(react@19.0.0))(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))':
+  '@hashgraph/cryptography@1.5.0-beta.2(expo@52.0.37(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(graphql@15.8.0)(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))(react@19.0.0))(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))':
     dependencies:
       asn1js: 3.0.5
       bignumber.js: 9.1.2
@@ -7256,8 +7272,8 @@ snapshots:
       crypto-js: 4.2.0
       elliptic: 6.6.1
       expo: 52.0.37(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(graphql@15.8.0)(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))(react@19.0.0)
+      forge-light: 1.1.4
       js-base64: 3.7.7
-      node-forge: 1.3.1
       react-native-get-random-values: 1.11.0(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))
       spark-md5: 3.0.2
       tweetnacl: 1.0.3
@@ -7265,7 +7281,7 @@ snapshots:
     transitivePeerDependencies:
       - react-native
 
-  '@hashgraph/proto@2.16.0':
+  '@hashgraph/proto@2.17.0-beta.1':
     dependencies:
       long: 5.3.1
       protobufjs: 7.2.5
@@ -7668,6 +7684,10 @@ snapshots:
       nullthrows: 1.1.1
       react: 19.0.0
       react-native: 0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0)
+
+  '@rollup/plugin-alias@5.1.1(rollup@4.34.8)':
+    optionalDependencies:
+      rollup: 4.34.8
 
   '@rollup/plugin-terser@0.4.4(rollup@4.34.8)':
     dependencies:
@@ -9537,6 +9557,8 @@ snapshots:
     dependencies:
       cross-spawn: 7.0.6
       signal-exit: 4.1.0
+
+  forge-light@1.1.4: {}
 
   form-data@3.0.2:
     dependencies:
