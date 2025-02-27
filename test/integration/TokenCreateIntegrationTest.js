@@ -7,6 +7,7 @@ import {
     TokenInfoQuery,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import { DEFAULT_AUTO_RENEW_PERIOD } from "../../src/transaction/Transaction.js";
 
 describe("TokenCreate", function () {
     let env;
@@ -56,11 +57,15 @@ describe("TokenCreate", function () {
         expect(info.freezeKey.toString()).to.eql(key2.publicKey.toString());
         expect(info.wipeKey.toString()).to.eql(key3.publicKey.toString());
         expect(info.supplyKey.toString()).to.eql(key4.publicKey.toString());
+        expect(info.autoRenewAccountId.toString()).to.be.eql(
+            operatorId.toString(),
+        );
+        expect(info.autoRenewPeriod.seconds.toInt()).to.eql(
+            DEFAULT_AUTO_RENEW_PERIOD.toInt(),
+        );
         expect(info.defaultFreezeStatus).to.be.false;
         expect(info.defaultKycStatus).to.be.false;
         expect(info.isDeleted).to.be.false;
-        expect(info.autoRenewAccountId).to.be.null;
-        expect(info.autoRenewPeriod).to.be.null;
         expect(info.expirationTime).to.be.not.null;
     });
 
@@ -87,7 +92,12 @@ describe("TokenCreate", function () {
         expect(info.treasuryAccountId.toString()).to.be.equal(
             operatorId.toString(),
         );
-        expect(info.adminKey).to.be.null;
+        expect(info.autoRenewAccountId.toString()).to.be.equal(
+            operatorId.toString(),
+        );
+        expect(info.autoRenewPeriod.seconds.toInt()).to.eql(
+            DEFAULT_AUTO_RENEW_PERIOD.toInt(),
+        );
         expect(info.kycKey).to.be.null;
         expect(info.freezeKey).to.be.null;
         expect(info.wipeKey).to.be.null;
@@ -95,8 +105,6 @@ describe("TokenCreate", function () {
         expect(info.defaultFreezeStatus).to.be.null;
         expect(info.defaultKycStatus).to.be.null;
         expect(info.isDeleted).to.be.false;
-        expect(info.autoRenewAccountId).to.be.null;
-        expect(info.autoRenewPeriod).to.be.null;
         expect(info.expirationTime).to.be.not.null;
 
         let err = false;
@@ -123,7 +131,6 @@ describe("TokenCreate", function () {
             .setTokenName("ffff")
             .setTokenSymbol("F")
             .setTreasuryAccountId(operatorId)
-            .setAutoRenewAccountId(operatorId)
             .execute(env.client);
 
         const tokenId = (await response.getReceipt(env.client)).tokenId;
@@ -132,7 +139,6 @@ describe("TokenCreate", function () {
             .setTokenId(tokenId)
             .execute(env.client);
 
-        expect(info.autoRenewAccountId).to.be.not.null;
         expect(info.autoRenewAccountId.toString()).to.be.eql(
             operatorId.toString(),
         );
@@ -165,7 +171,7 @@ describe("TokenCreate", function () {
         );
     });
 
-    it("when autoRenewAccountId and expirationTime are set", async function () {
+    it("expirationTime should override autoRenewPeriod", async function () {
         const operatorId = env.operatorId;
         const DAYS_90_IN_SECONDS = 7776000;
         const expirationTime = new Timestamp(
@@ -178,7 +184,6 @@ describe("TokenCreate", function () {
             .setTokenSymbol("F")
             .setTreasuryAccountId(operatorId)
             .setExpirationTime(expirationTime)
-            .setAutoRenewAccountId(operatorId)
             .execute(env.client);
 
         const tokenId = (await response.getReceipt(env.client)).tokenId;
@@ -187,15 +192,12 @@ describe("TokenCreate", function () {
             .setTokenId(tokenId)
             .execute(env.client);
 
-        expect(info.autoRenewAccountId).to.be.not.null;
         expect(info.autoRenewAccountId.toString()).to.be.eql(
             operatorId.toString(),
         );
-        expect(info.autoRenewPeriod).to.be.not.null;
-        expect(info.autoRenewPeriod.seconds.toInt()).to.be.eql(7776000);
-        expect(info.expirationTime).to.be.not.null;
-        expect(info.expirationTime.toDate().getTime()).to.be.at.least(
-            expirationTime.toDate().getTime(),
+        expect(info.autoRenewPeriod.seconds.toInt()).to.equal(0);
+        expect(info.expirationTime.seconds.toInt()).to.equal(
+            expirationTime.seconds.toInt(),
         );
     });
 

@@ -559,6 +559,20 @@ export default class TokenCreateTransaction extends Transaction {
     }
 
     /**
+     * @override
+     * @param {?import("../client/Client.js").default<Channel, *>} client
+     * @returns {this}
+     */
+    freezeWith(client) {
+        if (!this._autoRenewAccountId && this.transactionId?.accountId) {
+            this.setAutoRenewAccountId(this.transactionId?.accountId);
+        } else if (!this._autoRenewAccountId && client?.operatorAccountId) {
+            this.setAutoRenewAccountId(client.operatorAccountId);
+        }
+        return super.freezeWith(client);
+    }
+
+    /**
      * @param {Key} key
      * @returns {this}
      */
@@ -667,6 +681,8 @@ export default class TokenCreateTransaction extends Transaction {
     }
 
     /**
+     * If autoRenewPeriod is set - this value will be ignored and the expiration time will be calculated based on the autoRenewPeriod + time.now()
+     * Setting this value will clear the autoRenewPeriod as the autoRenewPeriod period has default value of 7890000 seconds and leaving it set will override the expiration time
      * @param {Timestamp | Date} time
      * @returns {this}
      */
@@ -674,6 +690,7 @@ export default class TokenCreateTransaction extends Transaction {
         this._requireNotFrozen();
         this._expirationTime =
             time instanceof Timestamp ? time : Timestamp.fromDate(time);
+        this._autoRenewPeriod = null;
 
         return this;
     }
@@ -705,7 +722,7 @@ export default class TokenCreateTransaction extends Transaction {
     }
 
     /**
-     * Set the auto renew period for this token.
+     * If expirationTime is set - autoRenewPeriod will be effectively ignored and it's effect will be replaced by expirationTime
      *
      * @param {Duration | Long | number} autoRenewPeriod
      * @returns {this}

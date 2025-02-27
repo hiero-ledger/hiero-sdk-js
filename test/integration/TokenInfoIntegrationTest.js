@@ -1,8 +1,11 @@
 import {
+    AccountCreateTransaction,
+    Hbar,
     PrivateKey,
     Status,
     TokenCreateTransaction,
     TokenInfoQuery,
+    TransactionId,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 
@@ -57,11 +60,14 @@ describe("TokenInfo", function () {
         expect(info.wipeKey.toString()).to.eql(key3.publicKey.toString());
         expect(info.supplyKey.toString()).to.eql(key4.publicKey.toString());
         expect(info.metadataKey.toString()).to.eql(key5.publicKey.toString());
+        expect(info.autoRenewAccountId.toString()).to.eql(
+            operatorId.toString(),
+        );
         expect(info.defaultFreezeStatus).to.be.false;
         expect(info.defaultKycStatus).to.be.false;
         expect(info.isDeleted).to.be.false;
-        expect(info.autoRenewAccountId).to.be.null;
-        expect(info.autoRenewPeriod).to.be.null;
+
+        expect(info.autoRenewPeriod).to.be.not.null;
         expect(info.expirationTime).to.be.not.null;
     });
 
@@ -88,6 +94,9 @@ describe("TokenInfo", function () {
         expect(info.treasuryAccountId.toString()).to.be.equal(
             operatorId.toString(),
         );
+        expect(info.autoRenewAccountId.toString()).to.be.eql(
+            operatorId.toString(),
+        );
         expect(info.adminKey).to.be.null;
         expect(info.kycKey).to.be.null;
         expect(info.freezeKey).to.be.null;
@@ -97,8 +106,7 @@ describe("TokenInfo", function () {
         expect(info.defaultFreezeStatus).to.be.null;
         expect(info.defaultKycStatus).to.be.null;
         expect(info.isDeleted).to.be.false;
-        expect(info.autoRenewAccountId).to.be.null;
-        expect(info.autoRenewPeriod).to.be.null;
+        expect(info.autoRenewPeriod).to.be.not.null;
         expect(info.expirationTime).to.be.not.null;
     });
 
@@ -145,6 +153,45 @@ describe("TokenInfo", function () {
         if (!err) {
             throw new Error("token info query did not error");
         }
+    });
+
+    it("should set autorenew account from transaction ID", async function () {
+        // Create a new account with 10 Hbar
+        const accountKey = PrivateKey.generateECDSA();
+        const response = await new AccountCreateTransaction()
+            .setKeyWithoutAlias(accountKey.publicKey)
+            .setInitialBalance(new Hbar(10))
+            .execute(env.client);
+
+        const { accountId } = await response.getReceipt(env.client);
+
+        // Create transaction ID with the new account
+        const txId = TransactionId.generate(accountId);
+
+        const { tokenId } = await (
+            await (
+                await new TokenCreateTransaction()
+                    .setTransactionId(txId)
+                    .setTokenName("ffff")
+                    .setTokenSymbol("F")
+                    .setDecimals(3)
+                    .setTreasuryAccountId(accountId)
+                    .freezeWith(env.client)
+                    .sign(accountKey)
+            ).execute(env.client)
+        ).getReceipt(env.client);
+
+        console.log("tokenId", tokenId);
+        // Query token info
+        const info = await new TokenInfoQuery()
+
+            .setTokenId(tokenId)
+            .execute(env.client);
+
+        // Verify autoRenewAccountId matches the account that created the token
+        expect(info.autoRenewAccountId.toString()).to.equal(
+            accountId.toString(),
+        );
     });
 
     after(async function () {
