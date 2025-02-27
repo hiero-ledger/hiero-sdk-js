@@ -12,17 +12,17 @@
         "./src/cryptography/sha384.js": "./src/cryptography/sha384.native.js"
     },
     "browser": {
-        "./src/index.js": "./src/browser.js",
-        "./src/encoding/hex.js": "./src/encoding/hex.browser.js",
-        "./src/encoding/utf8.js": "./src/encoding/utf8.browser.js",
-        "./src/cryptography/sha384.js": "./src/cryptography/sha384.browser.js",
+        "./lib/index.js": "./lib/browser.js",
+        "./lib/encoding/hex.js": "./lib/encoding/hex.browser.js",
+        "./lib/encoding/utf8.js": "./lib/encoding/utf8.browser.js",
+        "./lib/cryptography/sha384.js": "./lib/cryptography/sha384.browser.js",
         "crypto": false
     },
     "exports": {
         "./package.json": "./package.json",
         ".": {
             "types": "./lib/index.d.ts",
-            "import": "./lib/index.js",
+            "import": "./lib/browser.js",
             "require": "./lib/index.cjs"
         }
     },
