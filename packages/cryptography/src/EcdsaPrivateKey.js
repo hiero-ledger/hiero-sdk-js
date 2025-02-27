@@ -181,8 +181,10 @@ export default class EcdsaPrivateKey {
      * @returns {Uint8Array}
      */
     toBytesRaw() {
+        const privateKey = this._keyPair.privateKey.subarray(-32); // Takes the last 32 bytes (or fewer if shorter)
+        const leadingZeroes = 32 - privateKey.length;
         const bytes = new Uint8Array(32);
-        bytes.set(this._keyPair.privateKey.slice(0, 32), 0);
+        bytes.set(privateKey, leadingZeroes);
         return bytes;
     }
 }
