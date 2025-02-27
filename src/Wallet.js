@@ -65,6 +65,7 @@ export default class Wallet {
 
     /**
      * @returns {Promise<Wallet>}
+     * @deprecated
      */
     static createRandomED25519() {
         const privateKey = PrivateKey.generateED25519();
@@ -75,6 +76,7 @@ export default class Wallet {
 
     /**
      * @returns {Promise<Wallet>}
+     * @deprecated
      */
     static createRandomECDSA() {
         const privateKey = PrivateKey.generateECDSA();
