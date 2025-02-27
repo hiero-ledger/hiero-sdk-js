@@ -1,4 +1,4 @@
-import { Client } from "../lib";
+import { Client } from "@hashgraph/sdk";
 
 export const sdk = {
     client: null,
@@ -6,6 +6,7 @@ export const sdk = {
         if (this.client == null) {
             throw new Error("Client not set up");
         }
+
         return this.client;
     },
 };
