@@ -24,6 +24,21 @@ describe("PrivateKey signTransaction", function () {
             .freeze();
     });
 
+    it("should add zeroes at the beginning of <32 bytes private key", async function () {
+        const EXPECTED_PRIVATE_KEY =
+            "0000000000000000fd2fe3d732d3412140accab21b4b7303ff05f9c9127542cd";
+        const derPrefix = "3030020100300706052b8104000a04220420";
+        const EXPECTED_DER_PRIVATE_KEY = derPrefix + EXPECTED_PRIVATE_KEY;
+
+        const SHORT_PRIVATE_KEY =
+            PrivateKey.fromStringECDSA(EXPECTED_PRIVATE_KEY);
+
+        expect(SHORT_PRIVATE_KEY.toStringRaw()).to.equal(EXPECTED_PRIVATE_KEY);
+        expect(SHORT_PRIVATE_KEY.toStringDer()).to.equal(
+            EXPECTED_DER_PRIVATE_KEY,
+        );
+    });
+
     it("should sign transaction and add signature", function () {
         const { bodyBytes } = transaction._signedTransactions.list[0];
         const sig = privateKey.sign(bodyBytes);
