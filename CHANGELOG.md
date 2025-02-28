@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * feat: Improve assignment of auto renew account id for topics(HIP-1021) by @ivaylonikolov7 in https://github.com/hiero-ledger/hiero-sdk-js/pull/2890
 * fix: zero assumed shard and realm by @venilinvasilev in https://github.com/hiero-ledger/hiero-sdk-js/pull/2897
-* fix: build issues with browser aliases (#2902) by @ivaylonikolov7 in https://github.com/hiero-ledger/hiero-sdk-js/pull/2902
+* fix: build issues with browser aliases by @ivaylonikolov7 in https://github.com/hiero-ledger/hiero-sdk-js/pull/2902
 
 ## v2.60.0-beta.2
 
