@@ -89,9 +89,7 @@ describe("TokenCreateTransaction", function () {
                 customFees: [],
                 decimals: 7,
                 autoRenewAccount: autoRenewAccountId._toProtobuf(),
-                autoRenewPeriod: {
-                    seconds: Long.fromValue(7776000),
-                },
+                autoRenewPeriod: null,
                 expiry: expirationTime._toProtobuf(),
                 treasury: treasuryAccountId._toProtobuf(),
                 adminKey: {

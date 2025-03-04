@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import AccountId from "./AccountId.js";
 import StakingInfo from "../StakingInfo.js";
@@ -25,7 +7,7 @@ import Hbar from "../Hbar.js";
 import Timestamp from "../Timestamp.js";
 import Long from "long";
 import TokenRelationshipMap from "./TokenRelationshipMap.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import Duration from "../Duration.js";
 import Key from "../Key.js";
 import PublicKey from "../PublicKey.js";
@@ -240,15 +222,13 @@ export default class AccountInfo {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.CryptoGetInfoResponse.IAccountInfo} info
+     * @param {HieroProto.proto.CryptoGetInfoResponse.IAccountInfo} info
      * @returns {AccountInfo}
      */
     static _fromProtobuf(info) {
         let aliasKey =
             info.alias != null && info.alias.length > 0
-                ? Key._fromProtobufKey(
-                      HashgraphProto.proto.Key.decode(info.alias),
-                  )
+                ? Key._fromProtobufKey(HieroProto.proto.Key.decode(info.alias))
                 : null;
 
         if (!(aliasKey instanceof PublicKey)) {
@@ -256,7 +236,7 @@ export default class AccountInfo {
         }
 
         const accountId = AccountId._fromProtobuf(
-            /** @type {HashgraphProto.proto.IAccountID} */ (info.accountID),
+            /** @type {HieroProto.proto.IAccountID} */ (info.accountID),
         );
 
         return new AccountInfo({
@@ -265,7 +245,7 @@ export default class AccountInfo {
                 info.contractAccountID != null ? info.contractAccountID : null,
             isDeleted: info.deleted != null ? info.deleted : false,
             key: Key._fromProtobufKey(
-                /** @type {HashgraphProto.proto.IKey} */ (info.key),
+                /** @type {HieroProto.proto.IKey} */ (info.key),
             ),
             balance: Hbar.fromTinybars(info.balance != null ? info.balance : 0),
             sendRecordThreshold: Hbar.fromTinybars(
@@ -283,7 +263,7 @@ export default class AccountInfo {
                     ? info.receiverSigRequired
                     : false,
             expirationTime: Timestamp._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITimestamp} */ (
+                /** @type {HieroProto.proto.ITimestamp} */ (
                     info.expirationTime
                 ),
             ),
@@ -340,7 +320,7 @@ export default class AccountInfo {
     }
 
     /**
-     * @returns {HashgraphProto.proto.CryptoGetInfoResponse.IAccountInfo}
+     * @returns {HieroProto.proto.CryptoGetInfoResponse.IAccountInfo}
      */
     _toProtobuf() {
         return {
@@ -374,7 +354,7 @@ export default class AccountInfo {
                 this.maxAutomaticTokenAssociations.toInt(),
             alias:
                 this.aliasKey != null
-                    ? HashgraphProto.proto.Key.encode(
+                    ? HieroProto.proto.Key.encode(
                           this.aliasKey._toProtobufKey(),
                       ).finish()
                     : null,
@@ -393,9 +373,7 @@ export default class AccountInfo {
      */
     static fromBytes(bytes) {
         return AccountInfo._fromProtobuf(
-            HashgraphProto.proto.CryptoGetInfoResponse.AccountInfo.decode(
-                bytes,
-            ),
+            HieroProto.proto.CryptoGetInfoResponse.AccountInfo.decode(bytes),
         );
     }
 
@@ -403,7 +381,7 @@ export default class AccountInfo {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.CryptoGetInfoResponse.AccountInfo.encode(
+        return HieroProto.proto.CryptoGetInfoResponse.AccountInfo.encode(
             this._toProtobuf(),
         ).finish();
     }

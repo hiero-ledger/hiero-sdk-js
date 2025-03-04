@@ -3,7 +3,7 @@ import TokenId from "./TokenId.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.TokenReference} HashgraphProto.proto.TokenReference
+ * @typedef {import("@hashgraph/proto").proto.TokenReference} HieroProto.proto.TokenReference
  */
 
 export default class TokenReference {
@@ -22,7 +22,7 @@ export default class TokenReference {
 
     /**
      * @public
-     * @param {HashgraphProto.proto.TokenReference} reference
+     * @param {HieroProto.proto.TokenReference} reference
      * @returns {TokenReference}
      */
     static _fromProtobuf(reference) {

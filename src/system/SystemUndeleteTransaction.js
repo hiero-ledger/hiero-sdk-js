@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import Transaction, {
     TRANSACTION_REGISTRY,
@@ -26,14 +8,14 @@ import ContractId from "../contract/ContractId.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HashgraphProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HashgraphProto.proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HashgraphProto.proto.TransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HashgraphProto.proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HashgraphProto.proto.ITransactionResponse
- * @typedef {import("@hashgraph/proto").proto.ISystemUndeleteTransactionBody} HashgraphProto.proto.ISystemUndeleteTransactionBody
- * @typedef {import("@hashgraph/proto").proto.IContractID} HashgraphProto.proto.IContractID
- * @typedef {import("@hashgraph/proto").proto.IFileID} HashgraphProto.proto.IFileID
+ * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
+ * @typedef {import("@hashgraph/proto").proto.ISystemUndeleteTransactionBody} HieroProto.proto.ISystemUndeleteTransactionBody
+ * @typedef {import("@hashgraph/proto").proto.IContractID} HieroProto.proto.IContractID
+ * @typedef {import("@hashgraph/proto").proto.IFileID} HieroProto.proto.IFileID
  */
 
 /**
@@ -80,11 +62,11 @@ export default class SystemUndeleteTransaction extends Transaction {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransaction[]} transactions
-     * @param {HashgraphProto.proto.ISignedTransaction[]} signedTransactions
+     * @param {HieroProto.proto.ITransaction[]} transactions
+     * @param {HieroProto.proto.ISignedTransaction[]} signedTransactions
      * @param {TransactionId[]} transactionIds
      * @param {AccountId[]} nodeIds
-     * @param {HashgraphProto.proto.ITransactionBody[]} bodies
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
      * @returns {SystemUndeleteTransaction}
      */
     static _fromProtobuf(
@@ -96,7 +78,7 @@ export default class SystemUndeleteTransaction extends Transaction {
     ) {
         const body = bodies[0];
         const systemUndelete =
-            /** @type {HashgraphProto.proto.ISystemUndeleteTransactionBody} */ (
+            /** @type {HieroProto.proto.ISystemUndeleteTransactionBody} */ (
                 body.systemUndelete
             );
 
@@ -106,7 +88,7 @@ export default class SystemUndeleteTransaction extends Transaction {
                 fileId:
                     systemUndelete.fileID != null
                         ? FileId._fromProtobuf(
-                              /** @type {HashgraphProto.proto.IFileID} */ (
+                              /** @type {HieroProto.proto.IFileID} */ (
                                   systemUndelete.fileID
                               ),
                           )
@@ -114,7 +96,7 @@ export default class SystemUndeleteTransaction extends Transaction {
                 contractId:
                     systemUndelete.contractID != null
                         ? ContractId._fromProtobuf(
-                              /** @type {HashgraphProto.proto.IContractID} */ (
+                              /** @type {HieroProto.proto.IContractID} */ (
                                   systemUndelete.contractID
                               ),
                           )
@@ -172,8 +154,8 @@ export default class SystemUndeleteTransaction extends Transaction {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.ITransaction} request
-     * @returns {Promise<HashgraphProto.proto.ITransactionResponse>}
+     * @param {HieroProto.proto.ITransaction} request
+     * @returns {Promise<HieroProto.proto.ITransactionResponse>}
      */
     _execute(channel, request) {
         if (this._fileId != null) {
@@ -186,7 +168,7 @@ export default class SystemUndeleteTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {NonNullable<HashgraphProto.proto.TransactionBody["data"]>}
+     * @returns {NonNullable<HieroProto.proto.TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
         return "systemUndelete";
@@ -195,7 +177,7 @@ export default class SystemUndeleteTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {HashgraphProto.proto.ISystemUndeleteTransactionBody}
+     * @returns {HieroProto.proto.ISystemUndeleteTransactionBody}
      */
     _makeTransactionData() {
         return {

@@ -1,27 +1,9 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import TransactionId from "../transaction/TransactionId.js";
 import SubscriptionHandle from "./SubscriptionHandle.js";
 import TopicMessage from "./TopicMessage.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import TopicId from "./TopicId.js";
 import Long from "long";
 import Timestamp from "../Timestamp.js";
@@ -358,7 +340,7 @@ export default class TopicMessageQuery {
      */
     _makeServerStreamRequest(client) {
         const request = this._buildConsensusRequest();
-        /** @type {Map<string, HashgraphProto.com.hedera.mirror.api.proto.ConsensusTopicResponse[]>} */
+        /** @type {Map<string, HieroProto.com.hedera.mirror.api.proto.ConsensusTopicResponse[]>} */
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const list = new Map();
 
@@ -409,7 +391,7 @@ export default class TopicMessageQuery {
      * @returns {Uint8Array} Encoded consensus topic query
      */
     _buildConsensusRequest() {
-        return HashgraphProto.com.hedera.mirror.api.proto.ConsensusTopicQuery.encode(
+        return HieroProto.com.hedera.mirror.api.proto.ConsensusTopicQuery.encode(
             {
                 topicID: this._topicId?._toProtobuf() ?? null,
                 consensusStartTime: this._startTime?._toProtobuf() ?? null,
@@ -423,11 +405,11 @@ export default class TopicMessageQuery {
      * Handles an incoming message from the topic subscription
      * @private
      * @param {Uint8Array} data - Raw message data
-     * @param {Map<string, HashgraphProto.com.hedera.mirror.api.proto.ConsensusTopicResponse[]>} list
+     * @param {Map<string, HieroProto.com.hedera.mirror.api.proto.ConsensusTopicResponse[]>} list
      */
     _handleMessage(data, list) {
         const message =
-            HashgraphProto.com.hedera.mirror.api.proto.ConsensusTopicResponse.decode(
+            HieroProto.com.hedera.mirror.api.proto.ConsensusTopicResponse.decode(
                 data,
             );
 
@@ -436,7 +418,7 @@ export default class TopicMessageQuery {
         }
 
         this._startTime = Timestamp._fromProtobuf(
-            /** @type {HashgraphProto.proto.ITimestamp} */ (
+            /** @type {HieroProto.proto.ITimestamp} */ (
                 message.consensusTimestamp
             ),
         ).plusNanos(1);
@@ -454,23 +436,23 @@ export default class TopicMessageQuery {
     /**
      * Handles a chunked message from the topic subscription
      * @private
-     * @param {HashgraphProto.com.hedera.mirror.api.proto.ConsensusTopicResponse} message - The message response
-     * @param {Map<string, HashgraphProto.com.hedera.mirror.api.proto.ConsensusTopicResponse[]>} list
+     * @param {HieroProto.com.hedera.mirror.api.proto.ConsensusTopicResponse} message - The message response
+     * @param {Map<string, HieroProto.com.hedera.mirror.api.proto.ConsensusTopicResponse[]>} list
      */
     _handleChunkedMessage(message, list) {
         const chunkInfo =
-            /** @type {HashgraphProto.proto.IConsensusMessageChunkInfo} */ (
+            /** @type {HieroProto.proto.IConsensusMessageChunkInfo} */ (
                 message.chunkInfo
             );
         const initialTransactionID =
-            /** @type {HashgraphProto.proto.ITransactionID} */ (
+            /** @type {HieroProto.proto.ITransactionID} */ (
                 chunkInfo.initialTransactionID
             );
         const total = /** @type {number} */ (chunkInfo.total);
         const transactionId =
             TransactionId._fromProtobuf(initialTransactionID).toString();
 
-        /** @type {HashgraphProto.com.hedera.mirror.api.proto.ConsensusTopicResponse[]} */
+        /** @type {HieroProto.com.hedera.mirror.api.proto.ConsensusTopicResponse[]} */
         let responses = [];
 
         const temp = list.get(transactionId);

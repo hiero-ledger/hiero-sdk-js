@@ -10,7 +10,7 @@ const keystorePassword = "Harriet Porber And The Bad Boy Parasaurolophus";
 const privateKeystore =
     "302e020100300506032b6570042204204072d365d02199b5103336cf6a187578ffb6eba4ad6f8b2383c5cc54d00c4409";
 
-// key from hedera-sdk-java tests, not used anywhere
+// key from hiero-sdk-java tests, not used anywhere
 const privKeyBytes = Uint8Array.of(
     -37,
     72,

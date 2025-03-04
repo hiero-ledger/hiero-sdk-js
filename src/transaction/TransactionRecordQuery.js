@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import Query, { QUERY_REGISTRY } from "../query/Query.js";
 import TransactionRecord from "./TransactionRecord.js";
@@ -27,9 +9,9 @@ import PrecheckStatusError from "../PrecheckStatusError.js";
 import ReceiptStatusError from "../ReceiptStatusError.js";
 import RecordStatusError from "../RecordStatusError.js";
 import { ExecutionState } from "../Executable.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 
-const { proto } = HashgraphProto;
+const { proto } = HieroProto;
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -105,12 +87,12 @@ export default class TransactionRecordQuery extends Query {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IQuery} query
+     * @param {HieroProto.proto.IQuery} query
      * @returns {TransactionRecordQuery}
      */
     static _fromProtobuf(query) {
         const record =
-            /** @type {HashgraphProto.proto.ITransactionGetRecordQuery} */ (
+            /** @type {HieroProto.proto.ITransactionGetRecordQuery} */ (
                 query.transactionGetRecord
             );
 
@@ -195,8 +177,8 @@ export default class TransactionRecordQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IQuery} request
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IQuery} request
+     * @param {HieroProto.proto.IResponse} response
      * @returns {[Status, ExecutionState]}
      */
     _shouldRetry(request, response) {
@@ -231,31 +213,25 @@ export default class TransactionRecordQuery extends Query {
         }
 
         const transactionGetRecord =
-            /** @type {HashgraphProto.proto.ITransactionGetRecordResponse} */ (
+            /** @type {HieroProto.proto.ITransactionGetRecordResponse} */ (
                 response.transactionGetRecord
             );
-        const header = /** @type {HashgraphProto.proto.IResponseHeader} */ (
+        const header = /** @type {HieroProto.proto.IResponseHeader} */ (
             transactionGetRecord.header
         );
 
-        if (
-            header.responseType ===
-            HashgraphProto.proto.ResponseType.COST_ANSWER
-        ) {
+        if (header.responseType === HieroProto.proto.ResponseType.COST_ANSWER) {
             return [status, ExecutionState.Finished];
         }
 
-        const record = /** @type {HashgraphProto.proto.ITransactionRecord} */ (
+        const record = /** @type {HieroProto.proto.ITransactionRecord} */ (
             transactionGetRecord.transactionRecord
         );
-        const receipt =
-            /** @type {HashgraphProto.proto.ITransactionReceipt} */ (
-                record.receipt
-            );
+        const receipt = /** @type {HieroProto.proto.ITransactionReceipt} */ (
+            record.receipt
+        );
         const receiptStatusCode =
-            /** @type {HashgraphProto.proto.ResponseCodeEnum} */ (
-                receipt.status
-            );
+            /** @type {HieroProto.proto.ResponseCodeEnum} */ (receipt.status);
         status = Status._fromCode(receiptStatusCode);
 
         if (this._logger) {
@@ -288,8 +264,8 @@ export default class TransactionRecordQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IQuery} request
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IQuery} request
+     * @param {HieroProto.proto.IResponse} response
      * @param {AccountId} nodeId
      * @returns {Error}
      */
@@ -329,20 +305,17 @@ export default class TransactionRecordQuery extends Query {
         }
 
         const transactionGetRecord =
-            /** @type {HashgraphProto.proto.ITransactionGetRecordResponse} */ (
+            /** @type {HieroProto.proto.ITransactionGetRecordResponse} */ (
                 response.transactionGetRecord
             );
-        const record = /** @type {HashgraphProto.proto.ITransactionRecord} */ (
+        const record = /** @type {HieroProto.proto.ITransactionRecord} */ (
             transactionGetRecord.transactionRecord
         );
-        const receipt =
-            /** @type {HashgraphProto.proto.ITransactionReceipt} */ (
-                record.receipt
-            );
+        const receipt = /** @type {HieroProto.proto.ITransactionReceipt} */ (
+            record.receipt
+        );
         const receiptStatusError =
-            /** @type {HashgraphProto.proto.ResponseCodeEnum} */ (
-                receipt.status
-            );
+            /** @type {HieroProto.proto.ResponseCodeEnum} */ (receipt.status);
 
         status = Status._fromCode(receiptStatusError);
 
@@ -385,8 +358,8 @@ export default class TransactionRecordQuery extends Query {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.IQuery} request
-     * @returns {Promise<HashgraphProto.proto.IResponse>}
+     * @param {HieroProto.proto.IQuery} request
+     * @returns {Promise<HieroProto.proto.IResponse>}
      */
     _execute(channel, request) {
         return channel.crypto.getTxRecordByTxID(request);
@@ -396,15 +369,15 @@ export default class TransactionRecordQuery extends Query {
      * @override
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IResponse} response
-     * @returns {HashgraphProto.proto.IResponseHeader}
+     * @param {HieroProto.proto.IResponse} response
+     * @returns {HieroProto.proto.IResponseHeader}
      */
     _mapResponseHeader(response) {
         const transactionGetRecord =
-            /** @type {HashgraphProto.proto.ITransactionGetRecordResponse} */ (
+            /** @type {HieroProto.proto.ITransactionGetRecordResponse} */ (
                 response.transactionGetRecord
             );
-        return /** @type {HashgraphProto.proto.IResponseHeader} */ (
+        return /** @type {HieroProto.proto.IResponseHeader} */ (
             transactionGetRecord.header
         );
     }
@@ -412,15 +385,15 @@ export default class TransactionRecordQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IResponse} response
      * @param {AccountId} nodeAccountId
-     * @param {HashgraphProto.proto.IQuery} request
+     * @param {HieroProto.proto.IQuery} request
      * @returns {Promise<TransactionRecord>}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _mapResponse(response, nodeAccountId, request) {
         const record =
-            /** @type {HashgraphProto.proto.ITransactionGetRecordResponse} */ (
+            /** @type {HieroProto.proto.ITransactionGetRecordResponse} */ (
                 response.transactionGetRecord
             );
         return Promise.resolve(TransactionRecord._fromProtobuf(record));
@@ -429,8 +402,8 @@ export default class TransactionRecordQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IQueryHeader} header
-     * @returns {HashgraphProto.proto.IQuery}
+     * @param {HieroProto.proto.IQueryHeader} header
+     * @returns {HieroProto.proto.IQuery}
      */
     _onMakeRequest(header) {
         return {

@@ -1,34 +1,16 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import Query, { QUERY_REGISTRY } from "../query/Query.js";
 import NetworkVersionInfo from "./NetworkVersionInfo.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IQuery} HashgraphProto.proto.IQuery
- * @typedef {import("@hashgraph/proto").proto.IQueryHeader} HashgraphProto.proto.IQueryHeader
- * @typedef {import("@hashgraph/proto").proto.IResponse} HashgraphProto.proto.IResponse
- * @typedef {import("@hashgraph/proto").proto.IResponseHeader} HashgraphProto.proto.IResponseHeader
- * @typedef {import("@hashgraph/proto").proto.INetworkGetVersionInfoQuery} HashgraphProto.proto.INetworkGetVersionInfoQuery
- * @typedef {import("@hashgraph/proto").proto.INetworkGetVersionInfoResponse} HashgraphProto.proto.INetworkGetVersionInfoResponse
+ * @typedef {import("@hashgraph/proto").proto.IQuery} HieroProto.proto.IQuery
+ * @typedef {import("@hashgraph/proto").proto.IQueryHeader} HieroProto.proto.IQueryHeader
+ * @typedef {import("@hashgraph/proto").proto.IResponse} HieroProto.proto.IResponse
+ * @typedef {import("@hashgraph/proto").proto.IResponseHeader} HieroProto.proto.IResponseHeader
+ * @typedef {import("@hashgraph/proto").proto.INetworkGetVersionInfoQuery} HieroProto.proto.INetworkGetVersionInfoQuery
+ * @typedef {import("@hashgraph/proto").proto.INetworkGetVersionInfoResponse} HieroProto.proto.INetworkGetVersionInfoResponse
  */
 
 /**
@@ -51,7 +33,7 @@ export default class NetworkVersionInfoQuery extends Query {
     }
 
     /**
-     * @param {HashgraphProto.proto.IQuery} query
+     * @param {HieroProto.proto.IQuery} query
      * @returns {NetworkVersionInfoQuery}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -63,8 +45,8 @@ export default class NetworkVersionInfoQuery extends Query {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.IQuery} request
-     * @returns {Promise<HashgraphProto.proto.IResponse>}
+     * @param {HieroProto.proto.IQuery} request
+     * @returns {Promise<HieroProto.proto.IResponse>}
      */
     _execute(channel, request) {
         return channel.network.getVersionInfo(request);
@@ -73,15 +55,15 @@ export default class NetworkVersionInfoQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IResponse} response
-     * @returns {HashgraphProto.proto.IResponseHeader}
+     * @param {HieroProto.proto.IResponse} response
+     * @returns {HieroProto.proto.IResponseHeader}
      */
     _mapResponseHeader(response) {
         const networkGetVersionInfo =
-            /** @type {HashgraphProto.proto.INetworkGetVersionInfoResponse} */ (
+            /** @type {HieroProto.proto.INetworkGetVersionInfoResponse} */ (
                 response.networkGetVersionInfo
             );
-        return /** @type {HashgraphProto.proto.IResponseHeader} */ (
+        return /** @type {HieroProto.proto.IResponseHeader} */ (
             networkGetVersionInfo.header
         );
     }
@@ -89,12 +71,12 @@ export default class NetworkVersionInfoQuery extends Query {
     /**
      * @protected
      * @override
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IResponse} response
      * @returns {Promise<NetworkVersionInfo>}
      */
     _mapResponse(response) {
         const info =
-            /** @type {HashgraphProto.proto.INetworkGetVersionInfoResponse} */ (
+            /** @type {HieroProto.proto.INetworkGetVersionInfoResponse} */ (
                 response.networkGetVersionInfo
             );
         return Promise.resolve(NetworkVersionInfo._fromProtobuf(info));
@@ -103,8 +85,8 @@ export default class NetworkVersionInfoQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IQueryHeader} header
-     * @returns {HashgraphProto.proto.IQuery}
+     * @param {HieroProto.proto.IQueryHeader} header
+     * @returns {HieroProto.proto.IQuery}
      */
     _onMakeRequest(header) {
         return {

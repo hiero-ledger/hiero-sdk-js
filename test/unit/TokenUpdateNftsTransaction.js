@@ -9,7 +9,7 @@ describe("TokenUpdateNftsTransaction", function () {
         const metadata = new Uint8Array([1, 2, 3]);
 
         /**
-         * @type {HashgraphProto.proto.ITokenUpdateNftsTransactionBody}
+         * @type {HieroProto.proto.ITokenUpdateNftsTransactionBody}
          */
         const body = {
             tokenUpdateNfts: {

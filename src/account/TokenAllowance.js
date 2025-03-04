@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import TokenId from "../token/TokenId.js";
 import AccountId from "./AccountId.js";
@@ -24,10 +6,10 @@ import Long from "long";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IGrantedTokenAllowance} HashgraphProto.proto.IGrantedTokenAllowance
- * @typedef {import("@hashgraph/proto").proto.ITokenAllowance} HashgraphProto.proto.ITokenAllowance
- * @typedef {import("@hashgraph/proto").proto.ITokenID} HashgraphProto.proto.ITokenID
- * @typedef {import("@hashgraph/proto").proto.IAccountID} HashgraphProto.proto.IAccountID
+ * @typedef {import("@hashgraph/proto").proto.IGrantedTokenAllowance} HieroProto.proto.IGrantedTokenAllowance
+ * @typedef {import("@hashgraph/proto").proto.ITokenAllowance} HieroProto.proto.ITokenAllowance
+ * @typedef {import("@hashgraph/proto").proto.ITokenID} HieroProto.proto.ITokenID
+ * @typedef {import("@hashgraph/proto").proto.IAccountID} HieroProto.proto.IAccountID
  */
 
 /**
@@ -86,25 +68,21 @@ export default class TokenAllowance {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITokenAllowance} allowance
+     * @param {HieroProto.proto.ITokenAllowance} allowance
      * @returns {TokenAllowance}
      */
     static _fromProtobuf(allowance) {
         return new TokenAllowance({
             tokenId: TokenId._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITokenID} */ (
-                    allowance.tokenId
-                ),
+                /** @type {HieroProto.proto.ITokenID} */ (allowance.tokenId),
             ),
             spenderAccountId: AccountId._fromProtobuf(
-                /** @type {HashgraphProto.proto.IAccountID} */ (
-                    allowance.spender
-                ),
+                /** @type {HieroProto.proto.IAccountID} */ (allowance.spender),
             ),
             ownerAccountId:
                 allowance.owner != null
                     ? AccountId._fromProtobuf(
-                          /**@type {HashgraphProto.proto.IAccountID}*/ (
+                          /**@type {HieroProto.proto.IAccountID}*/ (
                               allowance.owner
                           ),
                       )
@@ -118,21 +96,17 @@ export default class TokenAllowance {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IGrantedTokenAllowance} allowance
+     * @param {HieroProto.proto.IGrantedTokenAllowance} allowance
      * @param {AccountId} ownerAccountId
      * @returns {TokenAllowance}
      */
     static _fromGrantedProtobuf(allowance, ownerAccountId) {
         return new TokenAllowance({
             tokenId: TokenId._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITokenID} */ (
-                    allowance.tokenId
-                ),
+                /** @type {HieroProto.proto.ITokenID} */ (allowance.tokenId),
             ),
             spenderAccountId: AccountId._fromProtobuf(
-                /** @type {HashgraphProto.proto.IAccountID} */ (
-                    allowance.spender
-                ),
+                /** @type {HieroProto.proto.IAccountID} */ (allowance.spender),
             ),
             ownerAccountId,
             amount:
@@ -144,7 +118,7 @@ export default class TokenAllowance {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.ITokenAllowance}
+     * @returns {HieroProto.proto.ITokenAllowance}
      */
     _toProtobuf() {
         return {

@@ -13,7 +13,7 @@ import {
 } from "../../src/index.js";
 import * as hex from "../../src/encoding/hex.js";
 import Client from "../../src/client/NodeClient.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import Long from "long";
 import BigNumber from "bignumber.js";
 import SignatureMap from "../../src/transaction/SignatureMap.js";
@@ -172,23 +172,21 @@ describe("Transaction", function () {
         };
 
         const bodyBytes1 =
-            HashgraphProto.proto.TransactionBody.encode(body1).finish();
+            HieroProto.proto.TransactionBody.encode(body1).finish();
         const bodyBytes2 =
-            HashgraphProto.proto.TransactionBody.encode(body2).finish();
+            HieroProto.proto.TransactionBody.encode(body2).finish();
 
-        const signedTransaction1 =
-            HashgraphProto.proto.SignedTransaction.encode({
-                bodyBytes: bodyBytes1,
-            }).finish();
-        const signedTransaction2 =
-            HashgraphProto.proto.SignedTransaction.encode({
-                bodyBytes: bodyBytes2,
-            }).finish();
+        const signedTransaction1 = HieroProto.proto.SignedTransaction.encode({
+            bodyBytes: bodyBytes1,
+        }).finish();
+        const signedTransaction2 = HieroProto.proto.SignedTransaction.encode({
+            bodyBytes: bodyBytes2,
+        }).finish();
 
         const transaction1 = { signedTransactionBytes: signedTransaction1 };
         const transaction2 = { signedTransactionBytes: signedTransaction2 };
 
-        const list = HashgraphProto.proto.TransactionList.encode({
+        const list = HieroProto.proto.TransactionList.encode({
             transactionList: [transaction1, transaction2],
         }).finish();
 
@@ -342,7 +340,7 @@ describe("Transaction", function () {
             const signaturesArray = [];
             for (const tx of transaction._signedTransactions.list) {
                 //                const sig = op.sign(txChunk.bodyBytes);
-                const txBody = HashgraphProto.proto.TransactionBody.decode(
+                const txBody = HieroProto.proto.TransactionBody.decode(
                     tx.bodyBytes,
                 );
                 const txId = TransactionId._fromProtobuf(txBody.transactionID);
@@ -407,7 +405,7 @@ describe("Transaction", function () {
         const createSigmap = (transaction, key) => {
             const sigMap = new SignatureMap();
             for (const tx of transaction._signedTransactions.list) {
-                const txBody = HashgraphProto.proto.TransactionBody.decode(
+                const txBody = HieroProto.proto.TransactionBody.decode(
                     tx.bodyBytes,
                 );
                 const txId = TransactionId._fromProtobuf(txBody.transactionID);

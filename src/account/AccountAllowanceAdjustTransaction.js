@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import Transaction from "../transaction/Transaction.js";
 import AccountId from "./AccountId.js";
@@ -32,13 +14,13 @@ import * as util from "../util.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HashgraphProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HashgraphProto.proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HashgraphProto.proto.TransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HashgraphProto.proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HashgraphProto.proto.ITransactionResponse
- * @typedef {import("@hashgraph/proto").proto.IAccountID} HashgraphProto.proto.IAccountID
- * @typedef {import("@hashgraph/proto").proto.IContractID} HashgraphProto.proto.IContractID
+ * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
+ * @typedef {import("@hashgraph/proto").proto.IAccountID} HieroProto.proto.IAccountID
+ * @typedef {import("@hashgraph/proto").proto.IContractID} HieroProto.proto.IContractID
  */
 
 /**
@@ -123,8 +105,8 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
                         ? AccountId.fromString(spenderAccountId)
                         : spenderAccountId instanceof ContractId
                           ? AccountId.fromEvmAddress(
-                                0,
-                                0,
+                                spenderAccountId.shard,
+                                spenderAccountId.realm,
                                 spenderAccountId.toSolidityAddress(),
                             )
                           : spenderAccountId,
@@ -133,8 +115,8 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
                         ? AccountId.fromString(ownerAccountId)
                         : ownerAccountId instanceof ContractId
                           ? AccountId.fromEvmAddress(
-                                0,
-                                0,
+                                ownerAccountId.shard,
+                                ownerAccountId.realm,
                                 ownerAccountId.toSolidityAddress(),
                             )
                           : ownerAccountId,
@@ -221,8 +203,8 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
                         ? AccountId.fromString(spenderAccountId)
                         : spenderAccountId instanceof ContractId
                           ? AccountId.fromEvmAddress(
-                                0,
-                                0,
+                                spenderAccountId.shard,
+                                spenderAccountId.realm,
                                 spenderAccountId.toSolidityAddress(),
                             )
                           : spenderAccountId,
@@ -231,8 +213,8 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
                         ? AccountId.fromString(ownerAccountId)
                         : ownerAccountId instanceof ContractId
                           ? AccountId.fromEvmAddress(
-                                0,
-                                0,
+                                ownerAccountId.shard,
+                                ownerAccountId.realm,
                                 ownerAccountId.toSolidityAddress(),
                             )
                           : ownerAccountId,
@@ -305,8 +287,8 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
                 ? AccountId.fromString(spenderAccountId)
                 : spenderAccountId instanceof ContractId
                   ? AccountId.fromEvmAddress(
-                        0,
-                        0,
+                        spenderAccountId.shard,
+                        spenderAccountId.realm,
                         spenderAccountId.toSolidityAddress(),
                     )
                   : spenderAccountId;
@@ -315,8 +297,8 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
                 ? AccountId.fromString(ownerAccountId)
                 : ownerAccountId instanceof ContractId
                   ? AccountId.fromEvmAddress(
-                        0,
-                        0,
+                        ownerAccountId.shard,
+                        ownerAccountId.realm,
                         ownerAccountId.toSolidityAddress(),
                     )
                   : ownerAccountId;
@@ -471,8 +453,8 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
                             ? AccountId.fromString(ownerAccountId)
                             : ownerAccountId instanceof ContractId
                               ? AccountId.fromEvmAddress(
-                                    0,
-                                    0,
+                                    ownerAccountId.shard,
+                                    ownerAccountId.realm,
                                     ownerAccountId.toSolidityAddress(),
                                 )
                               : ownerAccountId
@@ -482,8 +464,8 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
                         ? AccountId.fromString(spenderAccountId)
                         : spenderAccountId instanceof ContractId
                           ? AccountId.fromEvmAddress(
-                                0,
-                                0,
+                                spenderAccountId.shard,
+                                spenderAccountId.realm,
                                 spenderAccountId.toSolidityAddress(),
                             )
                           : spenderAccountId,
@@ -515,8 +497,8 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.ITransaction} request
-     * @returns {Promise<HashgraphProto.proto.ITransactionResponse>}
+     * @param {HieroProto.proto.ITransaction} request
+     * @returns {Promise<HieroProto.proto.ITransactionResponse>}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _execute(channel, request) {
@@ -530,7 +512,7 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
      * @deprecated
      * @override
      * @protected
-     * @returns {NonNullable<HashgraphProto.proto.TransactionBody["data"]>}
+     * @returns {NonNullable<HieroProto.proto.TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
         throw new Error("This feature has been deprecated for this class.");

@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import AccountId from "../account/AccountId.js";
 import ContractId from "../contract/ContractId.js";
@@ -27,7 +9,7 @@ import ScheduleId from "../schedule/ScheduleId.js";
 import ExchangeRate from "../ExchangeRate.js";
 import Status from "../Status.js";
 import Long from "long";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import TransactionId from "../transaction/TransactionId.js";
 import * as hex from "../encoding/hex.js";
 
@@ -197,18 +179,18 @@ export default class TransactionReceipt {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.ITransactionGetReceiptResponse}
+     * @returns {HieroProto.proto.ITransactionGetReceiptResponse}
      */
     _toProtobuf() {
         const duplicates = this.duplicates.map(
             (receipt) =>
-                /** @type {HashgraphProto.proto.ITransactionReceipt} */ (
+                /** @type {HieroProto.proto.ITransactionReceipt} */ (
                     receipt._toProtobuf().receipt
                 ),
         );
         const children = this.children.map(
             (receipt) =>
-                /** @type {HashgraphProto.proto.ITransactionReceipt} */ (
+                /** @type {HieroProto.proto.ITransactionReceipt} */ (
                     receipt._toProtobuf().receipt
                 ),
         );
@@ -269,14 +251,13 @@ export default class TransactionReceipt {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransactionGetReceiptResponse} response
+     * @param {HieroProto.proto.ITransactionGetReceiptResponse} response
      * @returns {TransactionReceipt}
      */
     static _fromProtobuf(response) {
-        const receipt =
-            /** @type {HashgraphProto.proto.ITransactionReceipt} */ (
-                response.receipt
-            );
+        const receipt = /** @type {HieroProto.proto.ITransactionReceipt} */ (
+            response.receipt
+        );
 
         const children =
             response.childTransactionReceipts != null
@@ -330,7 +311,7 @@ export default class TransactionReceipt {
             exchangeRate:
                 receipt.exchangeRate != null
                     ? ExchangeRate._fromProtobuf(
-                          /** @type {HashgraphProto.proto.IExchangeRate} */
+                          /** @type {HieroProto.proto.IExchangeRate} */
                           (receipt.exchangeRate.currentRate),
                       )
                     : null,
@@ -338,7 +319,7 @@ export default class TransactionReceipt {
             nextExchangeRate:
                 receipt.exchangeRate != null
                     ? ExchangeRate._fromProtobuf(
-                          /** @type {HashgraphProto.proto.IExchangeRate} */
+                          /** @type {HieroProto.proto.IExchangeRate} */
                           (receipt.exchangeRate.nextRate),
                       )
                     : null,
@@ -382,7 +363,7 @@ export default class TransactionReceipt {
      */
     static fromBytes(bytes) {
         return TransactionReceipt._fromProtobuf(
-            HashgraphProto.proto.TransactionGetReceiptResponse.decode(bytes),
+            HieroProto.proto.TransactionGetReceiptResponse.decode(bytes),
         );
     }
 
@@ -390,7 +371,7 @@ export default class TransactionReceipt {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.TransactionGetReceiptResponse.encode(
+        return HieroProto.proto.TransactionGetReceiptResponse.encode(
             this._toProtobuf(),
         ).finish();
     }

@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.60.0-beta.3
+
+* feat: Improve assignment of auto renew account id for topics(HIP-1021) by @ivaylonikolov7 in https://github.com/hiero-ledger/hiero-sdk-js/pull/2890
+* fix: zero assumed shard and realm by @venilinvasilev in https://github.com/hiero-ledger/hiero-sdk-js/pull/2897
+* fix: build issues with browser aliases by @ivaylonikolov7 in https://github.com/hiero-ledger/hiero-sdk-js/pull/2902
+
+## v2.60.0-beta.2
+
+* feat: add expo sdk v51+ support by @venilinvasilev in https://github.com/hiero-ledger/hiero-sdk-js/pull/2895
+* chore: optimize bundle size by @ivaylonikolov7 in https://github.com/hiero-ledger/hiero-sdk-js/pull/2863
+* chore(deps-dev): bump expo in /packages/cryptography by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2896
+
+## v2.60.0-beta.1
+
+* fix: Changed Protobufs submodule path by @ivaylogarnev-limechain in https://github.com/hiero-ledger/hiero-sdk-js/pull/2884
+
 ## v2.59.0
 
 * feat(hip 991): Permissionless revenue generating topics by @venilinvasilev in https://github.com/hiero-ledger/hiero-sdk-js/pull/2875

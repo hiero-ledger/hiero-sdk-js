@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import Hbar from "../Hbar.js";
 import TransactionResponse from "./TransactionResponse.js";
@@ -28,7 +10,7 @@ import Status from "../Status.js";
 import Long from "long";
 import * as sha384 from "../cryptography/sha384.js";
 import * as hex from "../encoding/hex.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import PrecheckStatusError from "../PrecheckStatusError.js";
 import AccountId from "../account/AccountId.js";
 import PublicKey from "../PublicKey.js";
@@ -65,7 +47,7 @@ const DEFAULT_TRANSACTION_VALID_DURATION = 120;
 export const CHUNK_SIZE = 1024;
 
 /**
- * @type {Map<NonNullable<HashgraphProto.proto.TransactionBody["data"]>, (transactions: HashgraphProto.proto.ITransaction[], signedTransactions: HashgraphProto.proto.ISignedTransaction[], transactionIds: TransactionId[], nodeIds: AccountId[], bodies: HashgraphProto.proto.TransactionBody[]) => Transaction>}
+ * @type {Map<NonNullable<HieroProto.proto.TransactionBody["data"]>, (transactions: HieroProto.proto.ITransaction[], signedTransactions: HieroProto.proto.ISignedTransaction[], transactionIds: TransactionId[], nodeIds: AccountId[], bodies: HieroProto.proto.TransactionBody[]) => Transaction>}
  */
 export const TRANSACTION_REGISTRY = new Map();
 
@@ -73,7 +55,7 @@ export const TRANSACTION_REGISTRY = new Map();
  * Base class for all transactions that may be submitted to Hedera.
  *
  * @abstract
- * @augments {Executable<HashgraphProto.proto.ITransaction, HashgraphProto.proto.ITransactionResponse, TransactionResponse>}
+ * @augments {Executable<HieroProto.proto.ITransaction, HieroProto.proto.ITransactionResponse, TransactionResponse>}
  */
 export default class Transaction extends Executable {
     // A SDK transaction is composed of multiple, raw protobuf transactions.
@@ -95,7 +77,7 @@ export default class Transaction extends Executable {
          * where `rowLength` is `nodeAccountIds.length`
          *
          * @internal
-         * @type {List<HashgraphProto.proto.ITransaction | null>}
+         * @type {List<HieroProto.proto.ITransaction | null>}
          */
         this._transactions = new List();
 
@@ -108,7 +90,7 @@ export default class Transaction extends Executable {
          * where `rowLength` is `nodeAccountIds.length`
          *
          * @internal
-         * @type {List<HashgraphProto.proto.ISignedTransaction>}
+         * @type {List<HieroProto.proto.ISignedTransaction>}
          */
         this._signedTransactions = new List();
 
@@ -211,7 +193,7 @@ export default class Transaction extends Executable {
      * @returns {Transaction}
      */
     static fromBytes(bytes) {
-        /** @type {HashgraphProto.proto.ISignedTransaction[]} */
+        /** @type {HieroProto.proto.ISignedTransaction[]} */
         const signedTransactions = [];
 
         /** @type {TransactionId[]} */
@@ -226,11 +208,11 @@ export default class Transaction extends Executable {
         /** @type {string[]} */
         const nodeIdStrings = [];
 
-        /** @type {HashgraphProto.proto.TransactionBody[]} */
+        /** @type {HieroProto.proto.TransactionBody[]} */
         const bodies = [];
 
         const list =
-            HashgraphProto.proto.TransactionList.decode(bytes).transactionList;
+            HieroProto.proto.TransactionList.decode(bytes).transactionList;
 
         // If the list is of length 0, then teh bytes provided were not a
         // `proto.TransactionList`
@@ -238,7 +220,7 @@ export default class Transaction extends Executable {
         // FIXME: We should also check to make sure the bytes length is greater than
         // 0 otherwise this check is wrong?
         if (list.length === 0) {
-            const transaction = HashgraphProto.proto.Transaction.decode(bytes);
+            const transaction = HieroProto.proto.Transaction.decode(bytes);
 
             // We support `Transaction.signedTransactionBytes` and
             // `Transaction.bodyBytes` + `Transaction.sigMap`. If the bytes represent the
@@ -248,7 +230,7 @@ export default class Transaction extends Executable {
             } else {
                 list.push({
                     signedTransactionBytes:
-                        HashgraphProto.proto.SignedTransaction.encode({
+                        HieroProto.proto.SignedTransaction.encode({
                             sigMap: transaction.sigMap,
                             bodyBytes: transaction.bodyBytes,
                         }).finish(),
@@ -271,14 +253,14 @@ export default class Transaction extends Executable {
 
             if (transaction.bodyBytes && transaction.bodyBytes.length != 0) {
                 // Decode a transaction
-                const body = HashgraphProto.proto.TransactionBody.decode(
+                const body = HieroProto.proto.TransactionBody.decode(
                     transaction.bodyBytes,
                 );
 
                 // Make sure the transaction ID within the body is set
                 if (body.transactionID != null) {
                     const transactionId = TransactionId._fromProtobuf(
-                        /** @type {HashgraphProto.proto.ITransactionID} */ (
+                        /** @type {HieroProto.proto.ITransactionID} */ (
                             body.transactionID
                         ),
                     );
@@ -295,7 +277,7 @@ export default class Transaction extends Executable {
                 // Make sure the node account ID within the body is set
                 if (body.nodeAccountID != null) {
                     const nodeAccountId = AccountId._fromProtobuf(
-                        /** @type {HashgraphProto.proto.IAccountID} */ (
+                        /** @type {HieroProto.proto.IAccountID} */ (
                             body.nodeAccountID
                         ),
                     );
@@ -323,21 +305,21 @@ export default class Transaction extends Executable {
             ) {
                 // Decode a signed transaction
                 const signedTransaction =
-                    HashgraphProto.proto.SignedTransaction.decode(
+                    HieroProto.proto.SignedTransaction.decode(
                         transaction.signedTransactionBytes,
                     );
 
                 signedTransactions.push(signedTransaction);
 
                 // Decode a transaction body
-                const body = HashgraphProto.proto.TransactionBody.decode(
+                const body = HieroProto.proto.TransactionBody.decode(
                     signedTransaction.bodyBytes,
                 );
 
                 // Make sure the transaction ID within the body is set
                 if (body.transactionID != null) {
                     const transactionId = TransactionId._fromProtobuf(
-                        /** @type {HashgraphProto.proto.ITransactionID} */ (
+                        /** @type {HieroProto.proto.ITransactionID} */ (
                             body.transactionID
                         ),
                     );
@@ -354,7 +336,7 @@ export default class Transaction extends Executable {
                 // Make sure the node account ID within the body is set
                 if (body.nodeAccountID != null) {
                     const nodeAccountId = AccountId._fromProtobuf(
-                        /** @type {HashgraphProto.proto.IAccountID} */ (
+                        /** @type {HieroProto.proto.IAccountID} */ (
                             body.nodeAccountID
                         ),
                     );
@@ -432,11 +414,11 @@ export default class Transaction extends Executable {
      *
      * @template {Transaction} TransactionT
      * @param {TransactionT} transaction
-     * @param {HashgraphProto.proto.ITransaction[]} transactions
-     * @param {HashgraphProto.proto.ISignedTransaction[]} signedTransactions
+     * @param {HieroProto.proto.ITransaction[]} transactions
+     * @param {HieroProto.proto.ISignedTransaction[]} signedTransactions
      * @param {TransactionId[]} transactionIds
      * @param {AccountId[]} nodeIds
-     * @param {HashgraphProto.proto.ITransactionBody[]} bodies
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
      * @returns {TransactionT}
      */
     static _fromProtobufTransactions(
@@ -855,7 +837,7 @@ export default class Transaction extends Executable {
 
             if (signedTransaction.bodyBytes) {
                 const { transactionID, nodeAccountID } =
-                    HashgraphProto.proto.TransactionBody.decode(
+                    HieroProto.proto.TransactionBody.decode(
                         signedTransaction.bodyBytes,
                     );
 
@@ -1226,11 +1208,10 @@ export default class Transaction extends Executable {
         }
 
         // Construct and encode the transaction list
-        return HashgraphProto.proto.TransactionList.encode({
-            transactionList:
-                /** @type {HashgraphProto.proto.ITransaction[]} */ (
-                    this._transactions.list
-                ),
+        return HieroProto.proto.TransactionList.encode({
+            transactionList: /** @type {HieroProto.proto.ITransaction[]} */ (
+                this._transactions.list
+            ),
         }).finish();
     }
 
@@ -1259,11 +1240,10 @@ export default class Transaction extends Executable {
         this._signedTransactions.setLocked();
 
         // Construct and encode the transaction list
-        return HashgraphProto.proto.TransactionList.encode({
-            transactionList:
-                /** @type {HashgraphProto.proto.ITransaction[]} */ (
-                    this._transactions.list
-                ),
+        return HieroProto.proto.TransactionList.encode({
+            transactionList: /** @type {HieroProto.proto.ITransaction[]} */ (
+                this._transactions.list
+            ),
         }).finish();
     }
 
@@ -1287,7 +1267,7 @@ export default class Transaction extends Executable {
 
         return sha384.digest(
             /** @type {Uint8Array} */ (
-                /** @type {HashgraphProto.proto.ITransaction} */ (
+                /** @type {HieroProto.proto.ITransaction} */ (
                     this._transactions.get(0)
                 ).signedTransactionBytes
             ),
@@ -1404,7 +1384,7 @@ export default class Transaction extends Executable {
      *
      * @override
      * @internal
-     * @returns {Promise<HashgraphProto.proto.ITransaction>}
+     * @returns {Promise<HieroProto.proto.ITransaction>}
      */
     async _makeRequestAsync() {
         // The index for the transaction
@@ -1416,7 +1396,7 @@ export default class Transaction extends Executable {
         // and return the result, without signing
         if (!this._signOnDemand) {
             this._buildTransaction(index);
-            return /** @type {HashgraphProto.proto.ITransaction} */ (
+            return /** @type {HieroProto.proto.ITransaction} */ (
                 this._transactions.get(index)
             );
         }
@@ -1429,7 +1409,7 @@ export default class Transaction extends Executable {
      * Sign a `proto.SignedTransaction` with all the keys
      *
      * @private
-     * @returns {Promise<HashgraphProto.proto.ISignedTransaction>}
+     * @returns {Promise<HieroProto.proto.ISignedTransaction>}
      */
     async _signTransaction() {
         const signedTransaction = this._makeSignedTransaction(
@@ -1539,7 +1519,7 @@ export default class Transaction extends Executable {
         if (this._transactions.list[index] != null) {
             this._transactions.set(index, {
                 signedTransactionBytes:
-                    HashgraphProto.proto.SignedTransaction.encode(
+                    HieroProto.proto.SignedTransaction.encode(
                         this._signedTransactions.get(index),
                     ).finish(),
             });
@@ -1548,7 +1528,7 @@ export default class Transaction extends Executable {
         this._transactions.setIfAbsent(index, () => {
             return {
                 signedTransactionBytes:
-                    HashgraphProto.proto.SignedTransaction.encode(
+                    HieroProto.proto.SignedTransaction.encode(
                         this._signedTransactions.get(index),
                     ).finish(),
             };
@@ -1561,14 +1541,13 @@ export default class Transaction extends Executable {
      * `this._transactionIds.index`
      *
      * @private
-     * @returns {Promise<HashgraphProto.proto.ITransaction>}
+     * @returns {Promise<HieroProto.proto.ITransaction>}
      */
     async _buildTransactionAsync() {
         return {
-            signedTransactionBytes:
-                HashgraphProto.proto.SignedTransaction.encode(
-                    await this._signTransaction(),
-                ).finish(),
+            signedTransactionBytes: HieroProto.proto.SignedTransaction.encode(
+                await this._signTransaction(),
+            ).finish(),
         };
     }
 
@@ -1577,8 +1556,8 @@ export default class Transaction extends Executable {
      *
      * @override
      * @internal
-     * @param {HashgraphProto.proto.ITransaction} request
-     * @param {HashgraphProto.proto.ITransactionResponse} response
+     * @param {HieroProto.proto.ITransaction} request
+     * @param {HieroProto.proto.ITransactionResponse} response
      * @returns {[Status, ExecutionState]}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1589,7 +1568,7 @@ export default class Transaction extends Executable {
         const status = Status._fromCode(
             nodeTransactionPrecheckCode != null
                 ? nodeTransactionPrecheckCode
-                : HashgraphProto.proto.ResponseCodeEnum.OK,
+                : HieroProto.proto.ResponseCodeEnum.OK,
         );
 
         if (this._logger) {
@@ -1631,8 +1610,8 @@ export default class Transaction extends Executable {
      *
      * @override
      * @internal
-     * @param {HashgraphProto.proto.ITransaction} request
-     * @param {HashgraphProto.proto.ITransactionResponse} response
+     * @param {HieroProto.proto.ITransaction} request
+     * @param {HieroProto.proto.ITransactionResponse} response
      * @param {AccountId} nodeId
      * @returns {Error}
      */
@@ -1643,7 +1622,7 @@ export default class Transaction extends Executable {
         const status = Status._fromCode(
             nodeTransactionPrecheckCode != null
                 ? nodeTransactionPrecheckCode
-                : HashgraphProto.proto.ResponseCodeEnum.OK,
+                : HieroProto.proto.ResponseCodeEnum.OK,
         );
         if (this._logger) {
             this._logger.info(
@@ -1665,9 +1644,9 @@ export default class Transaction extends Executable {
      *
      * @override
      * @protected
-     * @param {HashgraphProto.proto.ITransactionResponse} response
+     * @param {HieroProto.proto.ITransactionResponse} response
      * @param {AccountId} nodeId
-     * @param {HashgraphProto.proto.ITransaction} request
+     * @param {HieroProto.proto.ITransaction} request
      * @returns {Promise<TransactionResponse>}
      */
     async _mapResponse(response, nodeId, request) {
@@ -1701,7 +1680,7 @@ export default class Transaction extends Executable {
      *
      * @internal
      * @param {?AccountId} nodeId
-     * @returns {HashgraphProto.proto.ISignedTransaction}
+     * @returns {HieroProto.proto.ISignedTransaction}
      */
     _makeSignedTransaction(nodeId) {
         const body = this._makeTransactionBody(nodeId);
@@ -1709,7 +1688,7 @@ export default class Transaction extends Executable {
             this._logger.info(`Transaction Body: ${JSON.stringify(body)}`);
         }
         const bodyBytes =
-            HashgraphProto.proto.TransactionBody.encode(body).finish();
+            HieroProto.proto.TransactionBody.encode(body).finish();
 
         return {
             sigMap: {
@@ -1724,7 +1703,7 @@ export default class Transaction extends Executable {
      *
      * @private
      * @param {?AccountId} nodeId
-     * @returns {HashgraphProto.proto.ITransactionBody}
+     * @returns {HieroProto.proto.ITransactionBody}
      */
     _makeTransactionBody(nodeId) {
         return {
@@ -1758,7 +1737,7 @@ export default class Transaction extends Executable {
      *
      * @abstract
      * @protected
-     * @returns {NonNullable<HashgraphProto.proto.TransactionBody["data"]>}
+     * @returns {NonNullable<HieroProto.proto.TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
         throw new Error("not implemented");
@@ -1769,7 +1748,7 @@ export default class Transaction extends Executable {
      * FIXME: Should really call this `makeScheduledTransactionBody` to be consistent
      *
      * @internal
-     * @returns {HashgraphProto.proto.ISchedulableTransactionBody}
+     * @returns {HieroProto.proto.ISchedulableTransactionBody}
      */
     _getScheduledTransactionBody() {
         return {
@@ -1855,27 +1834,25 @@ export default class Transaction extends Executable {
     }
 
     /**
-     * @param {HashgraphProto.proto.Transaction} request
+     * @param {HieroProto.proto.Transaction} request
      * @returns {Uint8Array}
      */
     _requestToBytes(request) {
-        return HashgraphProto.proto.Transaction.encode(request).finish();
+        return HieroProto.proto.Transaction.encode(request).finish();
     }
 
     /**
-     * @param {HashgraphProto.proto.TransactionResponse} response
+     * @param {HieroProto.proto.TransactionResponse} response
      * @returns {Uint8Array}
      */
     _responseToBytes(response) {
-        return HashgraphProto.proto.TransactionResponse.encode(
-            response,
-        ).finish();
+        return HieroProto.proto.TransactionResponse.encode(response).finish();
     }
 
     /**
      * Removes all signatures from a transaction and collects the removed signatures.
      *
-     * @param {HashgraphProto.proto.ISignedTransaction} transaction - The transaction object to process.
+     * @param {HieroProto.proto.ISignedTransaction} transaction - The transaction object to process.
      * @param {string} publicKeyHex - The hexadecimal representation of the public key.
      * @returns {Uint8Array[]} An array of removed signatures.
      */
@@ -1909,7 +1886,7 @@ export default class Transaction extends Executable {
     /**
      * Determines whether a signature should be removed based on the provided public key.
      *
-     * @param {HashgraphProto.proto.ISignaturePair} sigPair - The signature pair object that contains
+     * @param {HieroProto.proto.ISignaturePair} sigPair - The signature pair object that contains
      *        the public key prefix and signature to be evaluated.
      * @param {string} publicKeyHex - The hexadecimal representation of the public key to compare against.
      * @returns {boolean} `true` if the public key prefix in the signature pair matches the provided public key,

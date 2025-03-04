@@ -24,6 +24,7 @@ $ yarn add @hashgraph/sdk
 # with PNPM
 $ pnpm add @hashgraph/sdk
 ```
+
 ## Build
 
 ### Prerequisites
@@ -57,14 +58,57 @@ After downloading the repo run:
 
 ## React Native Support
 
-The Hiero JavaScript SDK supports the following:
+The Hiero JavaScript SDK provides comprehensive support for React Native environments, including Expo. To ensure seamless integration, follow the guidelines based on your Expo version:
 
-* React Native with Expo - keep in mind that the SDK uses some functionalities provided from ethers/ethersproject and there is an issue using parts of ethers.js in this environment. A [shims](https://www.npmjs.com/package/@ethersproject/shims) package has to be installed and imported before importing the SDK in your project as it is showed [here](./examples/react-native-example/App.tsx)
-* Useful information: [here](https://github.com/ethers-io/ethers.js/discussions/3652) and [here](https://docs.ethers.org/v5/cookbook/react-native/)
+✅ Hiero Javascript SDK Version 2.60 and Above
+For projects using SDK version 2.60 and above, Expo SDK version 51+ is supported, the SDK requires the `react-native-get-random-values` package in order to work.
+To install it, run:
+
+```bash
+npm install react-native-get-random-values
+```
+
+After installation, the native dependency must be linked for the respective platforms:
+
+🔗 Linking for Native Platforms
+
+1. iOS:
+   Run the following command to install the native modules:
+
+```bash
+cd ios && pod install
+```
+
+Then, rebuild the iOS project.
+
+2. Android:
+   Rebuild the Android project to link the dependency
+
+⚠️ ✅ Hiero Javascript SDK Version 2.59 and Below
+For projects using SDK version 2.59 and below, Expo SDK Version 49 and below is supported, keep in mind that the SDK uses some functionalities provided from ethers/ethersproject and there is an issue using parts of ethers.js in this environment. A [shims](https://www.npmjs.com/package/@ethersproject/shims) package has to be installed and imported before importing the SDK in your project.
+
+-   Useful information: [here](https://github.com/ethers-io/ethers.js/discussions/3652) and [here](https://docs.ethers.org/v5/cookbook/react-native/)
+
+```bash
+npm install @ethersproject/shims
+```
+
+Import it before importing the SDK as shown below:
+
+```bash
+import '@ethersproject/shims';
+
+import {
+    Client,
+    PrivateKey
+    AccountBalance,
+} from "@hashgraph/sdk";
+...
+```
 
 The Hiero JavaScript SDK does not currently support the following:
 
-* React Native Bare
+-   React Native Bare
 
 ## Usage
 
@@ -79,18 +123,21 @@ For detailed information on configuring the SDK, including environment variables
 ## Start tests
 
 * To start the integration tests follow the next steps:
-    - Run the [local node](https://github.com/hashgraph/hedera-local-node)
+    - Run the [local node](https://github.com/hiero-ledger/hiero-local-node)
     - Run `task test:integration:node`
-    - Stop the [local node](https://github.com/hashgraph/hedera-local-node)
+    - Stop the [local node](https://github.com/hiero-ledger/hiero-local-node)
 * To start unit tests follow the next steps:
     - Run `task test:unit` (Note: the local node should not be running)
 
 ## Contributing
+
 Whether you’re fixing bugs, enhancing features, or improving documentation, your contributions are important — let’s build something great together!
 Please read our [contributing guide](https://github.com/hiero-ledger/.github/blob/main/CONTRIBUTING.md) to see how you can get involved.
 
 ## Code of Conduct
+
 Hiero uses the Linux Foundation Decentralised Trust [Code of Conduct](https://www.lfdecentralizedtrust.org/code-of-conduct).
 
 ## License
+
 [Apache License 2.0](LICENSE)

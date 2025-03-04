@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import Hbar from "../Hbar.js";
 import Transaction, {
@@ -36,13 +18,13 @@ import Key from "../Key.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HashgraphProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HashgraphProto.proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HashgraphProto.proto.TransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HashgraphProto.proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HashgraphProto.proto.ITransactionResponse
- * @typedef {import("@hashgraph/proto").proto.ITokenCreateTransactionBody} HashgraphProto.proto.ITokenCreateTransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITokenID} HashgraphProto.proto.ITokenID
+ * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
+ * @typedef {import("@hashgraph/proto").proto.ITokenCreateTransactionBody} HieroProto.proto.ITokenCreateTransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITokenID} HieroProto.proto.ITokenID
  */
 
 /**
@@ -327,11 +309,11 @@ export default class TokenCreateTransaction extends Transaction {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransaction[]} transactions
-     * @param {HashgraphProto.proto.ISignedTransaction[]} signedTransactions
+     * @param {HieroProto.proto.ITransaction[]} transactions
+     * @param {HieroProto.proto.ISignedTransaction[]} signedTransactions
      * @param {TransactionId[]} transactionIds
      * @param {AccountId[]} nodeIds
-     * @param {HashgraphProto.proto.ITransactionBody[]} bodies
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
      * @returns {TokenCreateTransaction}
      */
     static _fromProtobuf(
@@ -343,7 +325,7 @@ export default class TokenCreateTransaction extends Transaction {
     ) {
         const body = bodies[0];
         const create =
-            /** @type {HashgraphProto.proto.ITokenCreateTransactionBody} */ (
+            /** @type {HieroProto.proto.ITokenCreateTransactionBody} */ (
                 body.tokenCreation
             );
 
@@ -577,6 +559,20 @@ export default class TokenCreateTransaction extends Transaction {
     }
 
     /**
+     * @override
+     * @param {?import("../client/Client.js").default<Channel, *>} client
+     * @returns {this}
+     */
+    freezeWith(client) {
+        if (!this._autoRenewAccountId && this.transactionId?.accountId) {
+            this.setAutoRenewAccountId(this.transactionId?.accountId);
+        } else if (!this._autoRenewAccountId && client?.operatorAccountId) {
+            this.setAutoRenewAccountId(client.operatorAccountId);
+        }
+        return super.freezeWith(client);
+    }
+
+    /**
      * @param {Key} key
      * @returns {this}
      */
@@ -685,6 +681,8 @@ export default class TokenCreateTransaction extends Transaction {
     }
 
     /**
+     * If autoRenewPeriod is set - this value will be ignored and the expiration time will be calculated based on the autoRenewPeriod + time.now()
+     * Setting this value will clear the autoRenewPeriod as the autoRenewPeriod period has default value of 7890000 seconds and leaving it set will override the expiration time
      * @param {Timestamp | Date} time
      * @returns {this}
      */
@@ -692,6 +690,7 @@ export default class TokenCreateTransaction extends Transaction {
         this._requireNotFrozen();
         this._expirationTime =
             time instanceof Timestamp ? time : Timestamp.fromDate(time);
+        this._autoRenewPeriod = null;
 
         return this;
     }
@@ -723,7 +722,7 @@ export default class TokenCreateTransaction extends Transaction {
     }
 
     /**
-     * Set the auto renew period for this token.
+     * If expirationTime is set - autoRenewPeriod will be effectively ignored and it's effect will be replaced by expirationTime
      *
      * @param {Duration | Long | number} autoRenewPeriod
      * @returns {this}
@@ -876,8 +875,8 @@ export default class TokenCreateTransaction extends Transaction {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.ITransaction} request
-     * @returns {Promise<HashgraphProto.proto.ITransactionResponse>}
+     * @param {HieroProto.proto.ITransaction} request
+     * @returns {Promise<HieroProto.proto.ITransactionResponse>}
      */
     _execute(channel, request) {
         return channel.token.createToken(request);
@@ -886,7 +885,7 @@ export default class TokenCreateTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {NonNullable<HashgraphProto.proto.TransactionBody["data"]>}
+     * @returns {NonNullable<HieroProto.proto.TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
         return "tokenCreation";
@@ -895,7 +894,7 @@ export default class TokenCreateTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {HashgraphProto.proto.ITokenCreateTransactionBody}
+     * @returns {HieroProto.proto.ITokenCreateTransactionBody}
      */
     _makeTransactionData() {
         return {

@@ -1,27 +1,9 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import Query from "../query/Query.js";
 import NodeAddress from "../address_book/NodeAddress.js";
 import NodeAddressBook from "../address_book/NodeAddressBook.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import FileId from "../file/FileId.js";
 import { RST_STREAM } from "../Executable.js";
 import CACHE from "../Cache.js";
@@ -208,7 +190,7 @@ export default class AddressBookQuery extends Query {
      */
     _makeServerStreamRequest(client, resolve, reject, requestTimeout) {
         const request =
-            HashgraphProto.com.hedera.mirror.api.proto.AddressBookQuery.encode({
+            HieroProto.com.hedera.mirror.api.proto.AddressBookQuery.encode({
                 fileId:
                     this._fileId != null ? this._fileId._toProtobuf() : null,
                 limit: this._limit,
@@ -224,7 +206,7 @@ export default class AddressBookQuery extends Query {
                 (data) => {
                     this._addresses.push(
                         NodeAddress._fromProtobuf(
-                            HashgraphProto.proto.NodeAddress.decode(data),
+                            HieroProto.proto.NodeAddress.decode(data),
                         ),
                     );
 

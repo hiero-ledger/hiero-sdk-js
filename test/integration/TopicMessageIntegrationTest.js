@@ -21,7 +21,7 @@ describe("TopicMessage", function () {
         const operatorKey = env.operatorKey.publicKey;
 
         let finished = false;
-        const contents = "Hello from Hedera SDK JS";
+        const contents = "Hello from Hiero SDK JS";
 
         const { topicId } = await (
             await new TopicCreateTransaction()
@@ -152,7 +152,7 @@ describe("TopicMessage", function () {
 
         const topic = (await response.getReceipt(env.client)).topicId;
 
-        const contents = "Hello from Hedera SDK JS";
+        const contents = "Hello from Hiero SDK JS";
 
         let err = false;
 
