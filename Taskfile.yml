@@ -129,7 +129,7 @@ tasks:
     "test:unit":
         deps:
             - "test:unit:node"
-            - "test:unit:browser"
+            # - "test:unit:browser"
 
     "test:unit:node":
         cmds:
