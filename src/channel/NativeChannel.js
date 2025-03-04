@@ -41,6 +41,9 @@ export default class NativeChannel extends Channel {
                     new Uint8Array(encodeRequest(requestData)),
                 );
 
+                // this will be executed in react native environment sho
+                // fetch should be available
+                //eslint-disable-next-line n/no-unsupported-features/node-builtins
                 const response = await fetch(
                     `${this._address}/proto.${serviceName}/${method.name}`,
                     {
