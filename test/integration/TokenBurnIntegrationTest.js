@@ -1,12 +1,13 @@
 import {
     Status,
     TokenBurnTransaction,
-    TokenCreateTransaction,
-    TokenSupplyType,
-    TokenType,
     AccountBalanceQuery,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import {
+    createFungibleToken,
+    createNonFungibleToken,
+} from "./utils/Fixtures.js";
 
 describe("TokenBurn", function () {
     let env;
@@ -16,24 +17,7 @@ describe("TokenBurn", function () {
     });
 
     it("should be executable", async function () {
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
-
-        const response = await new TokenCreateTransaction()
-            .setTokenName("ffff")
-            .setTokenSymbol("F")
-            .setDecimals(3)
-            .setInitialSupply(1000000)
-            .setTreasuryAccountId(operatorId)
-            .setAdminKey(operatorKey)
-            .setKycKey(operatorKey)
-            .setFreezeKey(operatorKey)
-            .setWipeKey(operatorKey)
-            .setSupplyKey(operatorKey)
-            .setFreezeDefault(false)
-            .execute(env.client);
-
-        const token = (await response.getReceipt(env.client)).tokenId;
+        const token = await createFungibleToken(env.client);
 
         await (
             await new TokenBurnTransaction()
@@ -63,23 +47,8 @@ describe("TokenBurn", function () {
 
     it("should not error when amount is not set", async function () {
         const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
 
-        const response = await new TokenCreateTransaction()
-            .setTokenName("ffff")
-            .setTokenSymbol("F")
-            .setDecimals(3)
-            .setInitialSupply(1000000)
-            .setTreasuryAccountId(operatorId)
-            .setAdminKey(operatorKey)
-            .setKycKey(operatorKey)
-            .setFreezeKey(operatorKey)
-            .setWipeKey(operatorKey)
-            .setSupplyKey(operatorKey)
-            .setFreezeDefault(false)
-            .execute(env.client);
-
-        const token = (await response.getReceipt(env.client)).tokenId;
+        const token = await createFungibleToken(env.client);
 
         let err = false;
 
@@ -107,25 +76,7 @@ describe("TokenBurn", function () {
     });
 
     it("cannot burn token with invalid metadata", async function () {
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
-
-        const response = await new TokenCreateTransaction()
-            .setTokenName("ffff")
-            .setTokenSymbol("F")
-            .setTreasuryAccountId(operatorId)
-            .setAdminKey(operatorKey)
-            .setKycKey(operatorKey)
-            .setFreezeKey(operatorKey)
-            .setWipeKey(operatorKey)
-            .setSupplyKey(operatorKey)
-            .setFreezeDefault(false)
-            .setMaxSupply(10)
-            .setTokenType(TokenType.NonFungibleUnique)
-            .setSupplyType(TokenSupplyType.Finite)
-            .execute(env.client);
-
-        const token = (await response.getReceipt(env.client)).tokenId;
+        const token = await createNonFungibleToken(env.client);
 
         let err = false;
 

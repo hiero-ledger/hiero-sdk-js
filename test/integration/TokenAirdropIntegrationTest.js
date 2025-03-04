@@ -1,9 +1,6 @@
 import {
-    AccountCreateTransaction,
     TokenAirdropTransaction,
-    TokenCreateTransaction,
     TokenMintTransaction,
-    TokenType,
     PrivateKey,
     NftId,
     AccountBalanceQuery,
@@ -15,6 +12,11 @@ import {
     TokenId,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import {
+    createAccount,
+    createFungibleToken,
+    createNonFungibleToken,
+} from "./utils/Fixtures.js";
 
 describe("TokenAirdropIntegrationTest", function () {
     let env;
@@ -25,28 +27,17 @@ describe("TokenAirdropIntegrationTest", function () {
     });
 
     it("should transfer tokens when the account is associated", async function () {
-        const ftCreateResponse = await new TokenCreateTransaction()
-            .setTokenName("ffff")
-            .setTokenSymbol("FFF")
-            .setInitialSupply(INITIAL_SUPPLY)
-            .setTreasuryAccountId(env.operatorId)
-            .setSupplyKey(env.operatorKey)
-            .execute(env.client);
-
-        const { tokenId: ftTokenId } = await ftCreateResponse.getReceipt(
-            env.client,
+        const ftTokenId = await createFungibleToken(env.client, (transaction) =>
+            transaction
+                .setTokenName("ffff")
+                .setTokenSymbol("FFF")
+                .setInitialSupply(INITIAL_SUPPLY),
         );
 
-        const nftCreateResponse = await new TokenCreateTransaction()
-            .setTokenName("FFFFF")
-            .setTokenSymbol("FFF")
-            .setTokenType(TokenType.NonFungibleUnique)
-            .setSupplyKey(env.operatorKey)
-            .setTreasuryAccountId(env.operatorId)
-            .execute(env.client);
-
-        const { tokenId: nftTokenId } = await nftCreateResponse.getReceipt(
+        const nftTokenId = await createNonFungibleToken(
             env.client,
+            (transaction) =>
+                transaction.setTokenName("FFFFF").setTokenSymbol("FFF"),
         );
 
         const mintResponse = await new TokenMintTransaction()
@@ -56,14 +47,10 @@ describe("TokenAirdropIntegrationTest", function () {
 
         const { serials } = await mintResponse.getReceipt(env.client);
 
-        const receiverPrivateKey = PrivateKey.generateED25519();
-        const accountCreateResponse = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(receiverPrivateKey.publicKey)
-            .setMaxAutomaticTokenAssociations(-1)
-            .execute(env.client);
-
-        const { accountId: receiverId } =
-            await accountCreateResponse.getReceipt(env.client);
+        const { accountId: receiverId } = await createAccount(
+            env.client,
+            (transaction) => transaction.setMaxAutomaticTokenAssociations(-1),
+        );
 
         // airdrop the tokens
         const transactionResponse = await new TokenAirdropTransaction()
@@ -99,28 +86,17 @@ describe("TokenAirdropIntegrationTest", function () {
     });
 
     it("tokens should be in pending state when no automatic association", async function () {
-        const ftCreateResponse = await new TokenCreateTransaction()
-            .setTokenName("ffff")
-            .setTokenSymbol("FFF")
-            .setInitialSupply(INITIAL_SUPPLY)
-            .setTreasuryAccountId(env.operatorId)
-            .setSupplyKey(env.operatorKey)
-            .execute(env.client);
-
-        const { tokenId: ftTokenId } = await ftCreateResponse.getReceipt(
-            env.client,
+        const ftTokenId = await createFungibleToken(env.client, (transaction) =>
+            transaction
+                .setTokenName("ffff")
+                .setTokenSymbol("FFF")
+                .setInitialSupply(INITIAL_SUPPLY),
         );
 
-        const nftCreateResponse = await new TokenCreateTransaction()
-            .setTokenName("FFFFF")
-            .setTokenSymbol("FFF")
-            .setTokenType(TokenType.NonFungibleUnique)
-            .setSupplyKey(env.operatorKey)
-            .setTreasuryAccountId(env.operatorId)
-            .execute(env.client);
-
-        const { tokenId: nftTokenId } = await nftCreateResponse.getReceipt(
+        const nftTokenId = await createNonFungibleToken(
             env.client,
+            (transaction) =>
+                transaction.setTokenName("FFFFF").setTokenSymbol("FFF"),
         );
 
         const mintResponse = await new TokenMintTransaction()
@@ -130,13 +106,7 @@ describe("TokenAirdropIntegrationTest", function () {
 
         const { serials } = await mintResponse.getReceipt(env.client);
 
-        const receiverPrivateKey = PrivateKey.generateED25519();
-        const accountCreateResponse = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(receiverPrivateKey.publicKey)
-            .execute(env.client);
-
-        const { accountId: receiverId } =
-            await accountCreateResponse.getReceipt(env.client);
+        const { accountId: receiverId } = await createAccount(env.client);
 
         const airdropTokenResponse = await new TokenAirdropTransaction()
             .addTokenTransfer(ftTokenId, receiverId, INITIAL_SUPPLY)
@@ -195,29 +165,19 @@ describe("TokenAirdropIntegrationTest", function () {
     });
 
     it("should create hollow account when airdropping tokens and transfers them", async function () {
-        const ftCreateResponse = await new TokenCreateTransaction()
-            .setTokenName("ffff")
-            .setTokenSymbol("FFF")
-            .setInitialSupply(INITIAL_SUPPLY)
-            .setTreasuryAccountId(env.operatorId)
-            .setSupplyKey(env.operatorKey)
-            .execute(env.client);
-
-        const { tokenId: ftTokenId } = await ftCreateResponse.getReceipt(
-            env.client,
+        const ftTokenId = await createFungibleToken(env.client, (transaction) =>
+            transaction
+                .setTokenName("ffff")
+                .setTokenSymbol("FFF")
+                .setInitialSupply(INITIAL_SUPPLY),
         );
 
-        const nftCreateResponse = await new TokenCreateTransaction()
-            .setTokenName("FFFFF")
-            .setTokenSymbol("FFF")
-            .setTokenType(TokenType.NonFungibleUnique)
-            .setTreasuryAccountId(env.operatorId)
-            .setSupplyKey(env.operatorKey)
-            .execute(env.client);
-
-        const { tokenId: nftTokenId } = await nftCreateResponse.getReceipt(
+        const nftTokenId = await createNonFungibleToken(
             env.client,
+            (transaction) =>
+                transaction.setTokenName("FFFFF").setTokenSymbol("FFF"),
         );
+
         const mintResponse = await new TokenMintTransaction()
             .setTokenId(nftTokenId)
             .addMetadata(Buffer.from("metadata"))
@@ -259,25 +219,19 @@ describe("TokenAirdropIntegrationTest", function () {
 
     it("should airdrop with custom fees", async function () {
         const FEE_AMOUNT = 1;
-        const receiverPrivateKey = PrivateKey.generateED25519();
-        const createAccountResponse = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(receiverPrivateKey.publicKey)
-            .setMaxAutomaticTokenAssociations(-1)
-            .execute(env.client);
 
-        const { accountId: receiverId } =
-            await createAccountResponse.getReceipt(env.client);
-
-        const feeTokenIdResponse = await new TokenCreateTransaction()
-            .setTokenName("fee")
-            .setTokenSymbol("FEE")
-            .setInitialSupply(INITIAL_SUPPLY)
-            .setTreasuryAccountId(env.operatorId)
-            .setSupplyKey(env.operatorKey)
-            .execute(env.client);
-
-        const { tokenId: feeTokenId } = await feeTokenIdResponse.getReceipt(
+        const { accountId: receiverId } = await createAccount(
             env.client,
+            (transaction) => transaction.setMaxAutomaticTokenAssociations(-1),
+        );
+
+        const feeTokenId = await createFungibleToken(
+            env.client,
+            (transaction) =>
+                transaction
+                    .setTokenName("fee")
+                    .setTokenSymbol("FEE")
+                    .setInitialSupply(INITIAL_SUPPLY),
         );
 
         let customFixedFee = new CustomFixedFee()
@@ -286,30 +240,23 @@ describe("TokenAirdropIntegrationTest", function () {
             .setAmount(FEE_AMOUNT)
             .setAllCollectorsAreExempt(true);
 
-        let tokenWithFee = await new TokenCreateTransaction()
-            .setTokenName("tokenWithFee")
-            .setTokenSymbol("TWF")
-            .setInitialSupply(INITIAL_SUPPLY)
-            .setTreasuryAccountId(env.operatorId)
-            .setSupplyKey(env.operatorKey)
-            .setCustomFees([customFixedFee])
-            .execute(env.client);
-
-        const { tokenId: tokenWithFeeId } = await tokenWithFee.getReceipt(
+        const tokenWithFeeId = await createFungibleToken(
             env.client,
+            (transaction) =>
+                transaction
+                    .setTokenName("tokenWithFee")
+                    .setTokenSymbol("TWF")
+                    .setInitialSupply(INITIAL_SUPPLY)
+                    .setCustomFees([customFixedFee]),
         );
 
-        let nftTokenWithFee = await new TokenCreateTransaction()
-            .setTokenName("tokenWithFee")
-            .setTokenSymbol("TWF")
-            .setTokenType(TokenType.NonFungibleUnique)
-            .setTreasuryAccountId(env.operatorId)
-            .setSupplyKey(env.operatorKey)
-            .setCustomFees([customFixedFee])
-            .execute(env.client);
-
-        const { tokenId: nftTokenId } = await nftTokenWithFee.getReceipt(
+        const nftTokenId = await createNonFungibleToken(
             env.client,
+            (transaction) =>
+                transaction
+                    .setTokenName("tokenWithFee")
+                    .setTokenSymbol("TWF")
+                    .setCustomFees([customFixedFee]),
         );
 
         const mintResponse = await new TokenMintTransaction()
@@ -319,14 +266,12 @@ describe("TokenAirdropIntegrationTest", function () {
 
         const { serials } = await mintResponse.getReceipt(env.client);
 
-        const senderPrivateKey = PrivateKey.generateED25519();
-        const { accountId: senderAccountId } = await (
-            await new AccountCreateTransaction()
-                .setKeyWithoutAlias(senderPrivateKey.publicKey)
-                .setMaxAutomaticTokenAssociations(-1)
-                .setInitialBalance(new Hbar(10))
-                .execute(env.client)
-        ).getReceipt(env.client);
+        const { accountId: senderAccountId, newKey: senderPrivateKey } =
+            await createAccount(env.client, (transaction) =>
+                transaction
+                    .setMaxAutomaticTokenAssociations(-1)
+                    .setInitialBalance(new Hbar(10)),
+            );
 
         await (
             await (
@@ -420,25 +365,17 @@ describe("TokenAirdropIntegrationTest", function () {
     });
 
     it("should airdrop with receiver sig set to true", async function () {
-        const tokenCreateResponse = await new TokenCreateTransaction()
-            .setTokenName("FFFFFFFFFF")
-            .setTokenSymbol("FFF")
-            .setInitialSupply(INITIAL_SUPPLY)
-            .setTreasuryAccountId(env.operatorId)
-            .execute(env.client);
+        const tokenId = await createFungibleToken(env.client, (transaction) =>
+            transaction
+                .setTokenName("FFFFFFFFFF")
+                .setTokenSymbol("FFF")
+                .setInitialSupply(INITIAL_SUPPLY),
+        );
 
-        const { tokenId } = await tokenCreateResponse.getReceipt(env.client);
-
-        const nftTokenResponse = await new TokenCreateTransaction()
-            .setTokenName("FFFFFFFFFF")
-            .setTokenSymbol("FFF")
-            .setTokenType(TokenType.NonFungibleUnique)
-            .setSupplyKey(env.operatorKey)
-            .setTreasuryAccountId(env.operatorId)
-            .execute(env.client);
-
-        const { tokenId: nftTokenId } = await nftTokenResponse.getReceipt(
+        const nftTokenId = await createNonFungibleToken(
             env.client,
+            (transaction) =>
+                transaction.setTokenName("FFFFFFFFFF").setTokenSymbol("FFF"),
         );
 
         const mintResponse = await new TokenMintTransaction()
@@ -448,18 +385,19 @@ describe("TokenAirdropIntegrationTest", function () {
 
         const { serials } = await mintResponse.getReceipt(env.client);
 
-        const receiverPrivateKey = PrivateKey.generateED25519();
-        const receiverPublicKey = receiverPrivateKey.publicKey;
-        const accountCreateResponse = await (
-            await new AccountCreateTransaction()
-                .setKeyWithoutAlias(receiverPublicKey)
-                .setReceiverSignatureRequired(true)
-                .freezeWith(env.client)
-                .sign(receiverPrivateKey)
-        ).execute(env.client);
+        const receiverPrivateKey = PrivateKey.generateECDSA();
 
-        const { accountId: receiverId } =
-            await accountCreateResponse.getReceipt(env.client);
+        const { accountId: receiverId } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction
+                    .setInitialBalance(new Hbar(10))
+                    .setKeyWithoutAlias(receiverPrivateKey.publicKey)
+                    .setReceiverSignatureRequired(true)
+                    .freezeWith(env.client)
+                    .sign(receiverPrivateKey);
+            },
+        );
 
         let err = false;
         try {

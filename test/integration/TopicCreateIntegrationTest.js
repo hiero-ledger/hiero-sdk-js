@@ -17,7 +17,7 @@ import {
     TransferTransaction,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
-import { createAccount, createToken } from "./utils/Fixtures.js";
+import { createAccount, createFungibleToken } from "./utils/Fixtures.js";
 
 /**
  * @typedef {import("./client/BaseIntegrationTestEnv.js").default} BaseIntegrationTestEnv
@@ -135,13 +135,15 @@ describe("TopicCreate", function () {
                 PrivateKey.generateECDSA(),
             ];
 
-            const denominatingTokenId1 = await createToken(env.client);
+            const denominatingTokenId1 = await createFungibleToken(env.client);
             const amount1 = 1;
 
-            const denominatingTokenId2 = await createToken(env.client, {
-                tokenName: "denom2",
-                tokenSymbol: "D2",
-            });
+            const denominatingTokenId2 = await createFungibleToken(
+                env.client,
+                (transaction) => {
+                    transaction.setTokenName("denom2").setTokenSymbol("D2");
+                },
+            );
 
             const amount2 = 2;
 
@@ -199,17 +201,21 @@ describe("TopicCreate", function () {
 
             const newAmount1 = 3;
 
-            const newDenominatingTokenId1 = await createToken(env.client, {
-                tokenName: "Favor",
-                tokenSymbol: "FVR",
-            });
+            const newDenominatingTokenId1 = await createFungibleToken(
+                env.client,
+                (transaction) => {
+                    transaction.setTokenName("Favor").setTokenSymbol("FVR");
+                },
+            );
 
             const newAmount2 = 4;
 
-            const newDenominatingTokenId2 = await createToken(env.client, {
-                tokenName: "Duty",
-                tokenSymbol: "DUT",
-            });
+            const newDenominatingTokenId2 = await createFungibleToken(
+                env.client,
+                (transaction) => {
+                    transaction.setTokenName("Duty").setTokenSymbol("DUT");
+                },
+            );
 
             const newCustomFixedFees = [
                 new CustomFixedFee()
@@ -350,13 +356,15 @@ describe("TopicCreate", function () {
                     .execute(env.client)
             ).getReceipt(env.client);
 
-            const denominatingTokenId1 = await createToken(env.client);
+            const denominatingTokenId1 = await createFungibleToken(env.client);
             const amount1 = 1;
 
-            const denominatingTokenId2 = await createToken(env.client, {
-                tokenName: "denom2",
-                tokenSymbol: "D2",
-            });
+            const denominatingTokenId2 = await createFungibleToken(
+                env.client,
+                (transaction) => {
+                    transaction.setTokenName("denom2").setTokenSymbol("D2");
+                },
+            );
 
             const amount2 = 2;
 
@@ -402,19 +410,19 @@ describe("TopicCreate", function () {
             ).getReceipt(env.client);
 
             // Create payer with 1 Hbar
-            const payerAccount = await createAccount(env.client, {
-                balance: new Hbar(1),
+            const {
+                accountId: payerAccountId,
+                newKey: payerAccountPrivateKey,
+            } = await createAccount(env.client, (transaction) => {
+                transaction.setInitialBalance(new Hbar(1));
             });
 
             const customFeeLimit = new CustomFeeLimit()
-                .setAccountId(payerAccount.accountId)
+                .setAccountId(payerAccountId)
                 .setFees([customFixedFee]);
 
             // Submit a message to the revenue generating topic with custom fee limit
-            env.client.setOperator(
-                payerAccount.accountId,
-                payerAccount.privateKey,
-            );
+            env.client.setOperator(payerAccountId, payerAccountPrivateKey);
 
             const submitMessageResponse =
                 await new TopicMessageSubmitTransaction()
@@ -431,7 +439,7 @@ describe("TopicCreate", function () {
             // Verify the custom fee charged
 
             const accountInfo = await new AccountBalanceQuery()
-                .setAccountId(payerAccount.accountId)
+                .setAccountId(payerAccountId)
                 .execute(env.client);
 
             expect(accountInfo.hbars.toTinybars().toNumber()).to.be.below(
@@ -440,7 +448,7 @@ describe("TopicCreate", function () {
         });
 
         it("should charge tokens with limit", async function () {
-            const tokenId = await createToken(env.client);
+            const tokenId = await createFungibleToken(env.client);
 
             const customFixedFee = new CustomFixedFee()
                 .setAmount(1)
@@ -458,20 +466,23 @@ describe("TopicCreate", function () {
             ).getReceipt(env.client);
 
             // Create payer
-            const payerAccount = await createAccount(env.client, {
-                maxAutomaticTokenAssociations: -1,
+            const {
+                accountId: payerAccountId,
+                newKey: payerAccountPrivateKey,
+            } = await createAccount(env.client, (transaction) => {
+                transaction.setMaxAutomaticTokenAssociations(-1);
             });
 
             // Send tokens to payer
             await (
                 await new TransferTransaction()
                     .addTokenTransfer(tokenId, env.client.operatorAccountId, -1)
-                    .addTokenTransfer(tokenId, payerAccount.accountId, 1)
+                    .addTokenTransfer(tokenId, payerAccountId, 1)
                     .execute(env.client)
             ).getReceipt(env.client);
 
             const customFeeLimit = new CustomFeeLimit()
-                .setAccountId(payerAccount.accountId)
+                .setAccountId(payerAccountId)
                 .setFees([
                     new CustomFixedFee()
                         .setAmount(1)
@@ -479,10 +490,7 @@ describe("TopicCreate", function () {
                 ]);
 
             // Submit a message to the revenue generating topic with custom fee limit
-            env.client.setOperator(
-                payerAccount.accountId,
-                payerAccount.privateKey,
-            );
+            env.client.setOperator(payerAccountId, payerAccountPrivateKey);
 
             const submitMessageResponse =
                 await new TopicMessageSubmitTransaction()
@@ -499,14 +507,14 @@ describe("TopicCreate", function () {
             // Verify the custom fee charged
 
             const accountInfo = await new AccountBalanceQuery()
-                .setAccountId(payerAccount.accountId)
+                .setAccountId(payerAccountId)
                 .execute(env.client);
 
             expect(accountInfo.tokens.get(tokenId).toNumber()).to.be.eql(0);
         });
 
         it("should charge tokens without limit", async function () {
-            const tokenId = await createToken(env.client);
+            const tokenId = await createFungibleToken(env.client);
 
             const customFixedFee = new CustomFixedFee()
                 .setAmount(1)
@@ -524,23 +532,23 @@ describe("TopicCreate", function () {
             ).getReceipt(env.client);
 
             // Create payer
-            const payerAccount = await createAccount(env.client, {
-                maxAutomaticTokenAssociations: -1,
+            const {
+                accountId: payerAccountId,
+                newKey: payerAccountPrivateKey,
+            } = await createAccount(env.client, (transaction) => {
+                transaction.setMaxAutomaticTokenAssociations(-1);
             });
 
             // Send tokens to payer
             await (
                 await new TransferTransaction()
                     .addTokenTransfer(tokenId, env.client.operatorAccountId, -1)
-                    .addTokenTransfer(tokenId, payerAccount.accountId, 1)
+                    .addTokenTransfer(tokenId, payerAccountId, 1)
                     .execute(env.client)
             ).getReceipt(env.client);
 
             // Submit a message to the revenue generating topic without custom fee limit
-            env.client.setOperator(
-                payerAccount.accountId,
-                payerAccount.privateKey,
-            );
+            env.client.setOperator(payerAccountId, payerAccountPrivateKey);
 
             const submitMessageResponse =
                 await new TopicMessageSubmitTransaction()
@@ -556,7 +564,7 @@ describe("TopicCreate", function () {
             // Verify the custom fee charged
 
             const accountInfo = await new AccountBalanceQuery()
-                .setAccountId(payerAccount.accountId)
+                .setAccountId(payerAccountId)
                 .execute(env.client);
 
             expect(accountInfo.tokens.get(tokenId).toNumber()).to.be.eql(0);
@@ -579,21 +587,20 @@ describe("TopicCreate", function () {
                     .setFeeScheduleKey(env.client.operatorPublicKey)
                     .setFeeExemptKeys([feeExemptKey1, feeExemptKey2])
                     .addCustomFee(customFixedFee)
-
                     .execute(env.client)
             ).getReceipt(env.client);
 
             // Create payer with 1 Hbar and fee exempt key
-            const payerAccount = await createAccount(env.client, {
-                balance: new Hbar(1),
-                key: feeExemptKey1,
-            });
+            const { accountId: payerAccountId } = await createAccount(
+                env.client,
+                (transaction) => {
+                    transaction.setInitialBalance(new Hbar(1));
+                    transaction.setKeyWithoutAlias(feeExemptKey1);
+                },
+            );
 
             // Submit a message to the revenue generating topic without custom fee limit
-            env.client.setOperator(
-                payerAccount.accountId,
-                payerAccount.privateKey,
-            );
+            env.client.setOperator(payerAccountId, feeExemptKey1);
 
             const submitMessageResponse =
                 await new TopicMessageSubmitTransaction()
@@ -608,7 +615,7 @@ describe("TopicCreate", function () {
             // Verify the custom fee is not charged
 
             const accountInfo = await new AccountBalanceQuery()
-                .setAccountId(payerAccount.accountId)
+                .setAccountId(payerAccountId)
                 .execute(env.client);
 
             expect(accountInfo.hbars.toTinybars().toNumber()).to.be.above(
@@ -617,7 +624,7 @@ describe("TopicCreate", function () {
         });
 
         it("should not charge tokens for fee exempt keys", async function () {
-            const tokenId = await createToken(env.client);
+            const tokenId = await createFungibleToken(env.client);
 
             const customFixedFee = new CustomFixedFee()
                 .setDenominatingTokenId(tokenId)
@@ -639,24 +646,25 @@ describe("TopicCreate", function () {
             ).getReceipt(env.client);
 
             // Create payer with fee exempt key and unlimited token associations
-            const payerAccount = await createAccount(env.client, {
-                key: feeExemptKey1,
-                maxAutomaticTokenAssociations: -1,
-            });
+            const { accountId: payerAccountId } = await createAccount(
+                env.client,
+                (transaction) => {
+                    transaction
+                        .setKeyWithoutAlias(feeExemptKey1.publicKey)
+                        .setMaxAutomaticTokenAssociations(-1);
+                },
+            );
 
             // Send tokens to payer
             await (
                 await new TransferTransaction()
                     .addTokenTransfer(tokenId, env.client.operatorAccountId, -1)
-                    .addTokenTransfer(tokenId, payerAccount.accountId, 1)
+                    .addTokenTransfer(tokenId, payerAccountId, 1)
                     .execute(env.client)
             ).getReceipt(env.client);
 
             // Submit a message to the revenue generating topic without custom fee limit
-            env.client.setOperator(
-                payerAccount.accountId,
-                payerAccount.privateKey,
-            );
+            env.client.setOperator(payerAccountId, feeExemptKey1);
 
             const submitMessageResponse =
                 await new TopicMessageSubmitTransaction()
@@ -671,7 +679,7 @@ describe("TopicCreate", function () {
             // Verify the custom fee is not charged
 
             const accountInfo = await new AccountBalanceQuery()
-                .setAccountId(payerAccount.accountId)
+                .setAccountId(payerAccountId)
                 .execute(env.client);
 
             expect(accountInfo.tokens.get(tokenId).toNumber()).to.eql(1);
@@ -695,20 +703,20 @@ describe("TopicCreate", function () {
             ).getReceipt(env.client);
 
             // Create payer with 1 Hbar
-            const payerAccount = await createAccount(env.client, {
-                balance: new Hbar(1),
+            const {
+                accountId: payerAccountId,
+                newKey: payerAccountPrivateKey,
+            } = await createAccount(env.client, (transaction) => {
+                transaction.setInitialBalance(new Hbar(1));
             });
 
             // Set custom fee limit with lower amount than the custom fee
             const customFeeLimit = new CustomFeeLimit()
-                .setAccountId(payerAccount.accountId)
+                .setAccountId(payerAccountId)
                 .setFees([new CustomFixedFee().setAmount(hbar / 2 - 1)]);
 
             // Submit a message to the revenue generating topic with custom fee limit
-            env.client.setOperator(
-                payerAccount.accountId,
-                payerAccount.privateKey,
-            );
+            env.client.setOperator(payerAccountId, payerAccountPrivateKey);
 
             try {
                 await new TopicMessageSubmitTransaction()
@@ -723,7 +731,7 @@ describe("TopicCreate", function () {
         });
 
         it("should not charge tokens with lower limit", async function () {
-            const tokenId = await createToken(env.client);
+            const tokenId = await createFungibleToken(env.client);
 
             const customFixedFee = new CustomFixedFee()
                 .setAmount(2)
@@ -740,21 +748,24 @@ describe("TopicCreate", function () {
             ).getReceipt(env.client);
 
             // Create payer with unlimited token associacions
-            const payerAccount = await createAccount(env.client, {
-                maxAutomaticTokenAssociations: -1,
+            const {
+                accountId: payerAccountId,
+                newKey: payerAccountPrivateKey,
+            } = await createAccount(env.client, (transaction) => {
+                transaction.setMaxAutomaticTokenAssociations(-1);
             });
 
             // Send tokens to payer
             await (
                 await new TransferTransaction()
                     .addTokenTransfer(tokenId, env.client.operatorAccountId, -2)
-                    .addTokenTransfer(tokenId, payerAccount.accountId, 2)
+                    .addTokenTransfer(tokenId, payerAccountId, 2)
                     .execute(env.client)
             ).getReceipt(env.client);
 
             // Set custom fee limit with lower amount than the custom fee
             const customFeeLimit = new CustomFeeLimit()
-                .setAccountId(payerAccount.accountId)
+                .setAccountId(payerAccountId)
                 .setFees([
                     new CustomFixedFee()
                         .setAmount(1)
@@ -762,10 +773,7 @@ describe("TopicCreate", function () {
                 ]);
 
             // Submit a message to the revenue generating topic with custom fee limit
-            env.client.setOperator(
-                payerAccount.accountId,
-                payerAccount.privateKey,
-            );
+            env.client.setOperator(payerAccountId, payerAccountPrivateKey);
 
             // Submit a message to the revenue generating topic with custom fee limit - fails with MAX_CUSTOM_FEE_LIMIT_EXCEEDED
             try {
@@ -781,7 +789,7 @@ describe("TopicCreate", function () {
         });
 
         it("should not execute with invalid custom fee limit", async function () {
-            const tokenId = await createToken(env.client);
+            const tokenId = await createFungibleToken(env.client);
 
             const customFixedFee = new CustomFixedFee()
                 .setAmount(2)
@@ -799,21 +807,24 @@ describe("TopicCreate", function () {
             ).getReceipt(env.client);
 
             // Create payer with unlimited token associacions
-            const payerAccount = await createAccount(env.client, {
-                maxAutomaticTokenAssociations: -1,
+            const {
+                accountId: payerAccountId,
+                newKey: payerAccountPrivateKey,
+            } = await createAccount(env.client, (transaction) => {
+                transaction.setMaxAutomaticTokenAssociations(-1);
             });
 
             // Send tokens to payer
             await (
                 await new TransferTransaction()
                     .addTokenTransfer(tokenId, env.client.operatorAccountId, -2)
-                    .addTokenTransfer(tokenId, payerAccount.accountId, 2)
+                    .addTokenTransfer(tokenId, payerAccountId, 2)
                     .execute(env.client)
             ).getReceipt(env.client);
 
             // Set custom fee limit with lower amount than the custom fee
             let customFeeLimit = new CustomFeeLimit()
-                .setAccountId(payerAccount.accountId)
+                .setAccountId(payerAccountId)
                 .setFees([
                     new CustomFixedFee()
                         .setAmount(1)
@@ -821,10 +832,7 @@ describe("TopicCreate", function () {
                 ]);
 
             // Submit a message to the revenue generating topic with custom fee limit
-            env.client.setOperator(
-                payerAccount.accountId,
-                payerAccount.privateKey,
-            );
+            env.client.setOperator(payerAccountId, payerAccountPrivateKey);
 
             // Submit a message to the revenue generating topic with invalid custom fee limit - fails with NO_VALID_MAX_CUSTOM_FEE
             try {
@@ -839,7 +847,7 @@ describe("TopicCreate", function () {
             }
 
             customFeeLimit = new CustomFeeLimit()
-                .setAccountId(payerAccount.accountId)
+                .setAccountId(payerAccountId)
                 .setFees([
                     new CustomFixedFee()
                         .setAmount(1)

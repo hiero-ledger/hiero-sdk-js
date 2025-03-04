@@ -1,14 +1,11 @@
 import {
-    AccountCreateTransaction,
     AccountInfoQuery,
-    Hbar,
-    PrivateKey,
     Status,
     TokenAssociateTransaction,
-    TokenCreateTransaction,
     TokenFreezeTransaction,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import { createAccount, createFungibleToken } from "./utils/Fixtures.js";
 
 describe("TokenFreeze", function () {
     let env;
@@ -18,34 +15,13 @@ describe("TokenFreeze", function () {
     });
 
     it("should be executable", async function () {
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
-        const key = PrivateKey.generateED25519();
+        const { accountId: account, newKey: key } = await createAccount(
+            env.client,
+        );
 
-        const response = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(key)
-            .setInitialBalance(new Hbar(2))
-            .execute(env.client);
-
-        const account = (await response.getReceipt(env.client)).accountId;
-
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setDecimals(3)
-                    .setInitialSupply(1000000)
-                    .setTreasuryAccountId(operatorId)
-                    .setAdminKey(operatorKey)
-                    .setKycKey(operatorKey)
-                    .setFreezeKey(operatorKey)
-                    .setWipeKey(operatorKey)
-                    .setSupplyKey(operatorKey)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const token = await createFungibleToken(env.client, (transaction) =>
+            transaction.setKycKey(env.client.operatorPublicKey),
+        );
 
         await (
             await (
@@ -81,14 +57,9 @@ describe("TokenFreeze", function () {
     });
 
     it("should be executable with no tokens set", async function () {
-        const key = PrivateKey.generateED25519();
-
-        const response = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(key)
-            .setInitialBalance(new Hbar(2))
-            .execute(env.client);
-
-        const account = (await response.getReceipt(env.client)).accountId;
+        const { accountId: account, newKey: key } = await createAccount(
+            env.client,
+        );
 
         let err = false;
 
@@ -111,24 +82,7 @@ describe("TokenFreeze", function () {
     });
 
     it("should error when account ID is not set", async function () {
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
-
-        const response = await new TokenCreateTransaction()
-            .setTokenName("ffff")
-            .setTokenSymbol("F")
-            .setDecimals(3)
-            .setInitialSupply(1000000)
-            .setTreasuryAccountId(operatorId)
-            .setAdminKey(operatorKey)
-            .setKycKey(operatorKey)
-            .setFreezeKey(operatorKey)
-            .setWipeKey(operatorKey)
-            .setSupplyKey(operatorKey)
-            .setFreezeDefault(false)
-            .execute(env.client);
-
-        const token = (await response.getReceipt(env.client)).tokenId;
+        const token = await createFungibleToken(env.client);
 
         let err = false;
 

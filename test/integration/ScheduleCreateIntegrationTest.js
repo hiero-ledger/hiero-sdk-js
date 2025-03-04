@@ -1,6 +1,5 @@
 import { setTimeout } from "timers/promises";
 import {
-    AccountCreateTransaction,
     Hbar,
     KeyList,
     PrivateKey,
@@ -15,6 +14,7 @@ import {
     AccountUpdateTransaction,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import { createAccount } from "./utils/Fixtures.js";
 
 describe("ScheduleCreate", function () {
     let env;
@@ -43,13 +43,13 @@ describe("ScheduleCreate", function () {
             key3.publicKey,
         );
 
-        const response = await new AccountCreateTransaction()
-            .setInitialBalance(new Hbar(50))
-            .setKeyWithoutAlias(keyList)
-            .execute(env.client);
+        const { accountId } = await createAccount(env.client, (transaction) =>
+            transaction
+                .setInitialBalance(new Hbar(50))
+                .setKeyWithoutAlias(keyList),
+        );
 
-        expect((await response.getReceipt(env.client)).accountId).to.be.not
-            .null;
+        expect(accountId).to.be.not.null;
 
         const topicId = (
             await (
@@ -127,13 +127,13 @@ describe("ScheduleCreate", function () {
             key3.publicKey,
         );
 
-        const response = await new AccountCreateTransaction()
-            .setInitialBalance(new Hbar(10))
-            .setKeyWithoutAlias(keyList)
-            .execute(env.client);
+        const { accountId } = await createAccount(env.client, (transaction) =>
+            transaction
+                .setInitialBalance(new Hbar(10))
+                .setKeyWithoutAlias(keyList),
+        );
 
-        expect((await response.getReceipt(env.client)).accountId).to.be.not
-            .null;
+        expect(accountId).to.be.not.null;
 
         const topicId = (
             await (
@@ -189,13 +189,7 @@ describe("ScheduleCreate", function () {
     it("should not schedule 1 year into the future", async function () {
         const operatorId = env.operatorId;
 
-        const privateKey = PrivateKey.generateED25519();
-        const { accountId: receiverId } = await (
-            await new AccountCreateTransaction()
-                .setKeyWithoutAlias(privateKey)
-                .execute(env.client)
-        ).getReceipt(env.client);
-
+        const { accountId: receiverId } = await createAccount(env.client);
         const transaction = new TransferTransaction()
             .addHbarTransfer(operatorId, Hbar.from("-1"))
             .addHbarTransfer(receiverId, Hbar.from("1"));
@@ -223,13 +217,7 @@ describe("ScheduleCreate", function () {
     it("should not schedule in the past", async function () {
         const operatorId = env.operatorId;
 
-        const privateKey = PrivateKey.generateED25519();
-        const { accountId: receiverId } = await (
-            await new AccountCreateTransaction()
-                .setKeyWithoutAlias(privateKey)
-                .execute(env.client)
-        ).getReceipt(env.client);
-
+        const { accountId: receiverId } = await createAccount(env.client);
         const transaction = new TransferTransaction()
             .addHbarTransfer(operatorId, Hbar.from("-1"))
             .addHbarTransfer(receiverId, Hbar.from("1"));
@@ -255,13 +243,10 @@ describe("ScheduleCreate", function () {
     it("should sign schedule and wait for expiry", async function () {
         const operatorId = env.operatorId;
 
-        const privateKey = PrivateKey.generateED25519();
-        const { accountId: receiverId } = await (
-            await new AccountCreateTransaction()
-                .setKeyWithoutAlias(privateKey)
-                .setInitialBalance(Hbar.from(1))
-                .execute(env.client)
-        ).getReceipt(env.client);
+        const { accountId: receiverId, newKey: privateKey } =
+            await createAccount(env.client, (transaction) =>
+                transaction.setInitialBalance(Hbar.from(1)),
+            );
 
         const transaction = new TransferTransaction()
             .addHbarTransfer(operatorId, Hbar.from("1"))
@@ -313,12 +298,13 @@ describe("ScheduleCreate", function () {
             privateKey3.publicKey,
         );
 
-        const { accountId: receiverId } = await (
-            await new AccountCreateTransaction()
-                .setKeyWithoutAlias(keyList)
-                .setInitialBalance(Hbar.from(1))
-                .execute(env.client)
-        ).getReceipt(env.client);
+        const { accountId: receiverId } = await createAccount(
+            env.client,
+            (transaction) =>
+                transaction
+                    .setKeyWithoutAlias(keyList)
+                    .setInitialBalance(Hbar.from(1)),
+        );
 
         const transaction = new TransferTransaction()
             .addHbarTransfer(operatorId, Hbar.from("1"))
@@ -389,12 +375,11 @@ describe("ScheduleCreate", function () {
             2,
         );
 
-        const { accountId } = await (
-            await new AccountCreateTransaction()
+        const { accountId } = await createAccount(env.client, (transaction) =>
+            transaction
                 .setKeyWithoutAlias(keyList)
-                .setInitialBalance(new Hbar(10))
-                .execute(env.client)
-        ).getReceipt(env.client);
+                .setInitialBalance(new Hbar(10)),
+        );
 
         // Create the transaction
         const transfer = new TransferTransaction()
@@ -478,16 +463,13 @@ describe("ScheduleCreate", function () {
     });
 
     it("should execute with short expiration time", async function () {
-        const key = PrivateKey.generateED25519();
         const hasJitter = false;
         const SHORT_EXPIRATION_TIME = 10_000;
 
-        const { accountId } = await (
-            await new AccountCreateTransaction()
-                .setKeyWithoutAlias(key)
-                .setInitialBalance(new Hbar(10))
-                .execute(env.client)
-        ).getReceipt(env.client);
+        const { accountId, newKey } = await createAccount(
+            env.client,
+            (transaction) => transaction.setInitialBalance(new Hbar(10)),
+        );
 
         const transfer = new TransferTransaction()
             .addHbarTransfer(accountId, new Hbar(1).negated())
@@ -515,7 +497,7 @@ describe("ScheduleCreate", function () {
                 await new ScheduleSignTransaction()
                     .setScheduleId(scheduleId)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(newKey)
             ).execute(env.client)
         ).getReceipt(env.client);
 
