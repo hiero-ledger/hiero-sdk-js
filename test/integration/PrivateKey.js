@@ -8,6 +8,8 @@ import {
     FileAppendTransaction,
     FileCreateTransaction,
     TransactionId,
+    Mnemonic,
+    AccountUpdateTransaction,
 } from "../../src/exports.js";
 import dotenv from "dotenv";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
@@ -42,6 +44,35 @@ describe("PrivateKey signTransaction", function () {
         createdAccountId = createReceipt.accountId;
 
         expect(createdAccountId).to.exist;
+    });
+
+    it("should be able to sign tx with priv key that is <32 bytes from mnemonic", async function () {
+        const MNEMONIC_SHORT_PRIVATE_KEY_STRING =
+            "marriage bounce fiscal express wink wire trick allow faith mandate base bone";
+        const mnemonic = await Mnemonic.fromString(
+            MNEMONIC_SHORT_PRIVATE_KEY_STRING,
+        );
+        const privateKey = await mnemonic.toStandardECDSAsecp256k1PrivateKey();
+        const { accountId } = await (
+            await (
+                await new AccountCreateTransaction()
+                    .setKeyWithoutAlias(privateKey.publicKey)
+                    .freezeWith(env.client)
+                    .sign(privateKey)
+            ).execute(env.client)
+        ).getReceipt(env.client);
+
+        const { status } = await (
+            await (
+                await new AccountUpdateTransaction()
+                    .setAccountId(accountId)
+                    .setAccountMemo("test")
+                    .freezeWith(env.client)
+                    .sign(privateKey)
+            ).execute(env.client)
+        ).getReceipt(env.client);
+
+        expect(status).to.be.equal(Status.Success);
     });
 
     // this skip is temporary before we add SOLO for the CI tests
