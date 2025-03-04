@@ -8,8 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## v2.60.1
 
 * fix: ECDSA private key by @ivaylonikolov7 in https://github.com/hiero-ledger/hiero-sdk-js/pull/2903
-* chore(deps-dev): bump chromedriver from 132.0.0 to 133.0.3 in /packages/cryptography by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2910
+* chore: fix committers group access by @PavelSBorisov in https://github.com/hiero-ledger/hiero-sdk-js/pull/2885
 * chore(deps): bump pino-pretty from 10.3.1 to 13.0.0 by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2907
+* chore(deps-dev): bump chromedriver from 132.0.0 to 133.0.3 in /packages/cryptography by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2910
 * chore(deps-dev): bump chromedriver from 132.0.0 to 133.0.3 by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2906
 * chore(deps-dev): bump mocha from 10.8.2 to 11.1.0 by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2909
 * chore(deps-dev): bump eslint-plugin-compat from 4.2.0 to 6.0.2 by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2905
