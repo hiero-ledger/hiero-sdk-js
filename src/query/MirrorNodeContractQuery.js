@@ -222,6 +222,7 @@ export default class MirrorNodeContractQuery {
                 .concat(contractCallEndpoint);
         }
 
+        // eslint-disable-next-line n/no-unsupported-features/node-builtins
         const response = await fetch(mirrorNetworkAddress, {
             method: "POST",
             headers: {
