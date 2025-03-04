@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.60.0
+
+* fix: ECDSA private key by @ivaylonikolov7 in https://github.com/hiero-ledger/hiero-sdk-js/pull/2903
+* chore(deps-dev): bump chromedriver from 132.0.0 to 133.0.3 in /packages/cryptography by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2910
+* chore(deps): bump pino-pretty from 10.3.1 to 13.0.0 by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2907
+* chore(deps-dev): bump chromedriver from 132.0.0 to 133.0.3 by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2906
+* chore(deps-dev): bump mocha from 10.8.2 to 11.1.0 by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2909
+* chore(deps-dev): bump eslint-plugin-compat from 4.2.0 to 6.0.2 by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2905
+* chore(deps-dev): bump chai from 4.3.8 to 5.2.0 in /packages/cryptography by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2917
+
 ## v2.60.0-beta.3
 
 * feat: Improve assignment of auto renew account id for topics(HIP-1021) by @ivaylonikolov7 in https://github.com/hiero-ledger/hiero-sdk-js/pull/2890
