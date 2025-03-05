@@ -278,6 +278,8 @@ export default class AccountId {
     }
 
     /**
+     * @description Statically compute the EVM address. Use only with non-native EVM accounts.
+     * If the account is EVM-native, the EVM address depends on the public key and is not directly related to the account ID.
      * @returns {string}
      */
     toSolidityAddress() {
