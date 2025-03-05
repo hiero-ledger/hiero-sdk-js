@@ -1,3 +1,6 @@
+// this will be executed in browser environment so we can use window.crypto
+/* eslint-disable n/no-unsupported-features/node-builtins */
+
 /**
  * @param {Uint8Array} data
  * @returns {Promise<Uint8Array>}

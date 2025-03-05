@@ -1,5 +1,8 @@
 import * as utf8 from "../encoding/utf8.js";
 
+// this will be executed in browser environment so we can use window.crypto
+/* eslint-disable n/no-unsupported-features/node-builtins */
+
 /**
  * @typedef {import("./hmac.js").HashAlgorithm} HashAlgorithm
  */
