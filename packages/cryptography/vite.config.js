@@ -1,7 +1,26 @@
+// Vite plugin to inject Chai's expect globally in browser environment
+const chaiPlugin = {
+    name: "chai-global",
+    transform(code, id) {
+        if (id.endsWith(".js")) {
+            return {
+                code: `
+                    import { expect } from 'chai';
+                    window.expect = expect; // Use window for browser context
+                    ${code}
+                `,
+                map: null,
+            };
+        }
+    },
+};
+
 /** @type {import('vite').UserConfig} */
 export default {
+    plugins: [chaiPlugin],
     server: {
         hmr: false,
+        port: 9001,
     },
     envDir: "./",
     build: {
