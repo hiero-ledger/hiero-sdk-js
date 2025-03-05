@@ -1,6 +1,5 @@
 import {
     PrivateKey,
-    AccountCreateTransaction,
     Hbar,
     AccountId,
     KeyList,
@@ -13,6 +12,7 @@ import {
 } from "../../src/exports.js";
 import dotenv from "dotenv";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import { createAccount } from "./utils/Fixtures.js";
 import SignatureMap from "../../src/transaction/SignatureMap.js";
 
 import { proto } from "@hashgraph/proto";
@@ -21,7 +21,7 @@ import { expect } from "chai";
 dotenv.config();
 
 describe("PrivateKey signTransaction", function () {
-    let env, user1Key, user2Key, createdAccountId, keyList;
+    let env, user1Key, user2Key, keyList;
 
     // Setting up the environment and creating a new account with a key list
     before(async function () {
@@ -32,18 +32,13 @@ describe("PrivateKey signTransaction", function () {
         keyList = new KeyList([user1Key.publicKey, user2Key.publicKey]);
 
         // Create account
-        const createAccountTransaction = new AccountCreateTransaction()
-            .setInitialBalance(new Hbar(2))
-            .setKeyWithoutAlias(keyList);
+        const { accountId } = await createAccount(env.client, (transaction) => {
+            return transaction
+                .setInitialBalance(new Hbar(2))
+                .setKeyWithoutAlias(keyList);
+        });
 
-        const createResponse = await createAccountTransaction.execute(
-            env.client,
-        );
-        const createReceipt = await createResponse.getReceipt(env.client);
-
-        createdAccountId = createReceipt.accountId;
-
-        expect(createdAccountId).to.exist;
+        expect(accountId).to.exist;
     });
 
     it("should be able to sign tx with priv key that is <32 bytes from mnemonic", async function () {
@@ -53,14 +48,12 @@ describe("PrivateKey signTransaction", function () {
             MNEMONIC_SHORT_PRIVATE_KEY_STRING,
         );
         const privateKey = await mnemonic.toStandardECDSAsecp256k1PrivateKey();
-        const { accountId } = await (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(privateKey.publicKey)
-                    .freezeWith(env.client)
-                    .sign(privateKey)
-            ).execute(env.client)
-        ).getReceipt(env.client);
+
+        const { accountId } = await createAccount(env.client, (transaction) => {
+            return transaction
+                .setInitialBalance(new Hbar(2))
+                .setKeyWithoutAlias(privateKey);
+        });
 
         const { status } = await (
             await (

@@ -1,5 +1,4 @@
 import {
-    AccountCreateTransaction,
     AccountId,
     CustomFixedFee,
     CustomFractionalFee,
@@ -9,14 +8,18 @@ import {
     PrivateKey,
     Status,
     TokenAssociateTransaction,
-    TokenCreateTransaction,
     TokenFeeScheduleUpdateTransaction,
     TokenGrantKycTransaction,
     TokenId,
-    TokenType,
     TransferTransaction,
+    TokenType,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import {
+    createAccount,
+    createFungibleToken,
+    createNonFungibleToken,
+} from "./utils/Fixtures.js";
 
 describe("CustomFees", function () {
     it("User can create a fungible token with a fixed custom fee schedule", async function () {
@@ -26,27 +29,13 @@ describe("CustomFees", function () {
             .setFeeCollectorAccountId(env.operatorId)
             .setAmount(1);
 
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setCustomFees([fee])
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const tokenId = await createFungibleToken(env.client, (transaction) => {
+            transaction.setCustomFees([fee]);
+        });
 
-        expect(token).to.not.be.null;
+        expect(tokenId).to.not.be.null;
 
-        await env.close({ token });
+        await env.close({ token: tokenId });
     });
 
     it("User can create a fungible token with a fractional fee schedule", async function () {
@@ -59,27 +48,13 @@ describe("CustomFees", function () {
             .setMax(0)
             .setMin(0);
 
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setCustomFees([fee])
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const tokenId = await createFungibleToken(env.client, (transaction) => {
+            transaction.setCustomFees([fee]);
+        });
 
-        expect(token).to.not.be.null;
+        expect(tokenId).to.not.be.null;
 
-        await env.close({ token });
+        await env.close({ token: tokenId });
     });
 
     it("User cannot create a fungible token with a fractional fee schedule that has a denominator zero", async function () {
@@ -95,21 +70,9 @@ describe("CustomFees", function () {
         let err = false;
 
         try {
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setCustomFees([fee])
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client);
+            await createFungibleToken(env.client, (transaction) => {
+                transaction.setCustomFees([fee]);
+            });
         } catch (error) {
             err = error.toString().includes(Status.FractionDividesByZero);
         }
@@ -134,33 +97,21 @@ describe("CustomFees", function () {
         let err = false;
 
         try {
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setCustomFees([
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                    ])
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client);
+            await createFungibleToken(env.client, (transaction) => {
+                transaction.setCustomFees([
+                    fee,
+                    fee,
+                    fee,
+                    fee,
+                    fee,
+                    fee,
+                    fee,
+                    fee,
+                    fee,
+                    fee,
+                    fee,
+                ]);
+            });
         } catch (error) {
             err = error.toString().includes(Status.CustomFeesListTooLong);
         }
@@ -179,38 +130,24 @@ describe("CustomFees", function () {
             .setFeeCollectorAccountId(env.operatorId)
             .setAmount(1);
 
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setCustomFees([
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                    ])
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const tokenId = await createFungibleToken(env.client, (transaction) => {
+            transaction.setCustomFees([
+                fee,
+                fee,
+                fee,
+                fee,
+                fee,
+                fee,
+                fee,
+                fee,
+                fee,
+                fee,
+            ]);
+        });
 
-        expect(token).to.not.be.null;
+        expect(tokenId).to.not.be.null;
 
-        await env.close({ token });
+        await env.close({ token: tokenId });
     });
 
     it("User can create custom fractional fee schedule with up to 10 entries", async function () {
@@ -223,38 +160,24 @@ describe("CustomFees", function () {
             .setMax(0)
             .setMin(0);
 
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setCustomFees([
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                        fee,
-                    ])
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const tokenId = await createFungibleToken(env.client, (transaction) => {
+            transaction.setCustomFees([
+                fee,
+                fee,
+                fee,
+                fee,
+                fee,
+                fee,
+                fee,
+                fee,
+                fee,
+                fee,
+            ]);
+        });
 
-        expect(token).to.not.be.null;
+        expect(tokenId).to.not.be.null;
 
-        await env.close();
+        await env.close({ token: tokenId });
     });
 
     it("User has an invalid custom fee collector account ID(s)", async function () {
@@ -267,21 +190,9 @@ describe("CustomFees", function () {
         let err = false;
 
         try {
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setCustomFees([fee])
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client);
+            await createFungibleToken(env.client, (transaction) => {
+                transaction.setCustomFees([fee]);
+            });
         } catch (error) {
             err = error.toString().includes(Status.InvalidCustomFeeCollector);
         }
@@ -299,45 +210,26 @@ describe("CustomFees", function () {
 
         const key = PrivateKey.generateED25519();
 
-        const account = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
+        const { accountId } = await createAccount(env.client, (transaction) => {
+            transaction.setKeyWithoutAlias(key).setInitialBalance(new Hbar(2));
+        });
 
         const fee = new CustomFixedFee()
             .setFeeCollectorAccountId(env.operatorId)
             .setAmount(1);
 
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setCustomFees([fee])
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const tokenId = await createFungibleToken(env.client, (transaction) => {
+            transaction.setCustomFees([fee]);
+        });
 
-        fee.setFeeCollectorAccountId(account);
+        fee.setFeeCollectorAccountId(accountId);
 
         let err = false;
 
         try {
             await (
                 await new TokenFeeScheduleUpdateTransaction()
-                    .setTokenId(token)
+                    .setTokenId(tokenId)
                     .setCustomFees([fee])
                     .execute(env.client)
             ).getReceipt(env.client);
@@ -361,26 +253,14 @@ describe("CustomFees", function () {
 
         let err = false;
 
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const tokenId = await createFungibleToken(env.client, (transaction) => {
+            transaction.setFeeScheduleKey(null);
+        });
 
         try {
             await (
                 await new TokenFeeScheduleUpdateTransaction()
-                    .setTokenId(token)
+                    .setTokenId(tokenId)
                     .setCustomFees([fee])
                     .execute(env.client)
             ).getReceipt(env.client);
@@ -392,7 +272,7 @@ describe("CustomFees", function () {
             throw new Error("token creation did not error");
         }
 
-        await env.close({ token });
+        await env.close({ token: tokenId });
     });
 
     it("User cannot create a token with a fractional fee schedule where the maximum amount is less than the minimum amount", async function () {
@@ -408,21 +288,9 @@ describe("CustomFees", function () {
         let err = false;
 
         try {
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setCustomFees([fee])
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client);
+            await createFungibleToken(env.client, (transaction) => {
+                transaction.setCustomFees([fee]);
+            });
         } catch (error) {
             err = error
                 .toString()
@@ -450,21 +318,9 @@ describe("CustomFees", function () {
         let err = false;
 
         try {
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setCustomFees([fee])
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client);
+            await createFungibleToken(env.client, (transaction) => {
+                transaction.setCustomFees([fee]);
+            });
         } catch (error) {
             err = error
                 .toString()
@@ -488,27 +344,12 @@ describe("CustomFees", function () {
 
         let err = false;
 
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const tokenId = await createFungibleToken(env.client);
 
         try {
             await (
                 await new TokenFeeScheduleUpdateTransaction()
-                    .setTokenId(token)
+                    .setTokenId(tokenId)
                     .setCustomFees([fee])
                     .execute(env.client)
             ).getReceipt(env.client);
@@ -529,47 +370,26 @@ describe("CustomFees", function () {
     it.skip("User cannot sign the fee schedule update transaction with any key besides the key schedule key", async function () {
         const env = await IntegrationTestEnv.new();
 
-        const key = PrivateKey.generateED25519();
-
-        const account = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
+        const { accountId, privateKey } = await createAccount(env.client, {
+            initialBalance: new Hbar(2),
+        });
 
         const fee = new CustomFixedFee()
-            .setFeeCollectorAccountId(account)
+            .setFeeCollectorAccountId(accountId)
             .setAmount(1);
 
         let err = false;
 
-        const token = (
-            await (
-                await (
-                    await new TokenCreateTransaction()
-                        .setTokenName("ffff")
-                        .setTokenSymbol("F")
-                        .setTreasuryAccountId(env.operatorId)
-                        .setAdminKey(env.operatorKey)
-                        .setKycKey(env.operatorKey)
-                        .setFreezeKey(env.operatorKey)
-                        .setWipeKey(env.operatorKey)
-                        .setSupplyKey(env.operatorKey)
-                        .setFeeScheduleKey(key)
-                        .setFreezeDefault(false)
-                        .freezeWith(env.client)
-                        .sign(key)
-                ).execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const tokenId = await createFungibleToken(env.client, (transaction) => {
+            transaction
+                .setFeeScheduleKey(privateKey.publicKey)
+                .sign(privateKey);
+        });
 
         try {
             await (
                 await new TokenFeeScheduleUpdateTransaction()
-                    .setTokenId(token)
+                    .setTokenId(tokenId)
                     .setCustomFees([fee])
                     .execute(env.client)
             ).getReceipt(env.client);
@@ -591,23 +411,9 @@ describe("CustomFees", function () {
             .setFeeCollectorAccountId(env.operatorId)
             .setAmount(1);
 
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setCustomFees([fee])
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const token = await createFungibleToken(env.client, (transaction) => {
+            transaction.setCustomFees([fee]);
+        });
 
         fee.setAmount(2);
 
@@ -624,40 +430,21 @@ describe("CustomFees", function () {
     it("User cannot have an invalid token ID in the custom fee field", async function () {
         const env = await IntegrationTestEnv.new();
 
-        const key = PrivateKey.generateED25519();
-
-        const account = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
+        const { accountId } = await createAccount(env.client, (transaction) => {
+            transaction.setInitialBalance(new Hbar(2));
+        });
 
         const fee = new CustomFixedFee()
-            .setFeeCollectorAccountId(account)
+            .setFeeCollectorAccountId(accountId)
             .setDenominatingTokenId(new TokenId(0xffffffff))
             .setAmount(1);
 
         let err = false;
 
         try {
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setCustomFees([fee])
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client);
+            await createFungibleToken(env.client, (transaction) => {
+                transaction.setCustomFees([fee]);
+            });
         } catch (error) {
             err = error.toString().includes(Status.InvalidTokenIdInCustomFees);
         }
@@ -682,26 +469,14 @@ describe("CustomFees", function () {
                     .setAmount(1),
             );
 
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setCustomFees([fee])
-                    .setTokenType(TokenType.NonFungibleUnique)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const tokenId = await createNonFungibleToken(
+            env.client,
+            (transaction) => {
+                transaction.setCustomFees([fee]);
+            },
+        );
 
-        await env.close({ token });
+        await env.close({ token: tokenId });
     });
 
     it("User cannot add RoyaltyFees on FTs", async function () {
@@ -720,22 +495,9 @@ describe("CustomFees", function () {
         let err = false;
 
         try {
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setCustomFees([fee])
-                    .setTokenType(TokenType.FungibleCommon)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client);
+            await createFungibleToken(env.client, (transaction) => {
+                transaction.setCustomFees([fee]);
+            });
         } catch (error) {
             err = error
                 .toString()
@@ -754,33 +516,14 @@ describe("CustomFees", function () {
     it("cannot create custom fee with un-associated token fee collector", async function () {
         const env = await IntegrationTestEnv.new();
 
-        const key = PrivateKey.generateED25519();
+        const { accountId } = await createAccount(env.client);
 
-        const accountId = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key.publicKey)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
-
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setTokenType(TokenType.FungibleUnique)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const token = await createNonFungibleToken(
+            env.client,
+            (transaction) => {
+                transaction.setTokenType(TokenType.FungibleUnique);
+            },
+        );
 
         const fee = new CustomFixedFee()
             .setFeeCollectorAccountId(accountId)
@@ -818,23 +561,12 @@ describe("CustomFees", function () {
 
         let err = false;
 
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setCustomFees([fee])
-                    .setTokenType(TokenType.FungibleUnique)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const token = await createNonFungibleToken(
+            env.client,
+            (transaction) => {
+                transaction.setFeeScheduleKey(null).setCustomFees([fee]);
+            },
+        );
 
         try {
             await (
@@ -865,21 +597,9 @@ describe("CustomFees", function () {
         let err = false;
 
         try {
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setCustomFees([fee])
-                    .setTokenType(TokenType.NonFungibleUnique)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client);
+            await createNonFungibleToken(env.client, (transaction) => {
+                transaction.setCustomFees([fee]);
+            });
         } catch (error) {
             err = error
                 .toString()
@@ -900,23 +620,7 @@ describe("CustomFees", function () {
 
         let err = false;
 
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setTokenType(TokenType.FungibleUnique)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const token = await createNonFungibleToken(env.client);
 
         try {
             await (
@@ -943,46 +647,17 @@ describe("CustomFees", function () {
 
         let err = false;
 
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setTokenType(TokenType.NonFungibleUnique)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const tokenId = await createNonFungibleToken(env.client);
 
         const fee = new CustomFixedFee()
             .setFeeCollectorAccountId(env.operatorId)
-            .setDenominatingTokenId(token)
+            .setDenominatingTokenId(tokenId)
             .setAmount(1);
 
         try {
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setCustomFees([fee])
-                    .setTokenType(TokenType.FungibleUnique)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client);
+            await createFungibleToken(env.client, (transaction) => {
+                transaction.setCustomFees([fee]);
+            });
         } catch (error) {
             err = error
                 .toString()
@@ -993,7 +668,7 @@ describe("CustomFees", function () {
             throw new Error("token creation did not error");
         }
 
-        await env.close({ token });
+        await env.close({ token: tokenId });
     });
 
     // Cannot reproduce `CustomFeeChargingExceededMaxRecursionDepth`
@@ -1003,78 +678,47 @@ describe("CustomFees", function () {
 
         let err = false;
 
-        const key = PrivateKey.generateED25519();
+        const { accountId: accountId1, privateKey: privateKey1 } =
+            await createAccount(env.client, (transaction) => {
+                transaction.setInitialBalance(new Hbar(2));
+            });
 
-        const account1 = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
+        const { accountId: accountId2 } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction
+                    .setKeyWithoutAlias(privateKey1)
+                    .setInitialBalance(new Hbar(2));
+            },
+        );
 
-        const account2 = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
-
-        const token1 = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setTokenType(TokenType.FungibleUnique)
-                    .setInitialSupply(100)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const tokenId1 = await createNonFungibleToken(
+            env.client,
+            (transaction) => {
+                transaction.setInitialSupply(100);
+            },
+        );
 
         const fee2 = new CustomFixedFee()
             .setFeeCollectorAccountId(env.operatorId)
-            .setDenominatingTokenId(token1)
+            .setDenominatingTokenId(tokenId1)
             .setAmount(1);
 
-        const token2 = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setTokenType(TokenType.FungibleUnique)
-                    .setInitialSupply(100)
-                    .setCustomFees([fee2])
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const tokenId2 = await createNonFungibleToken(
+            env.client,
+            (transaction) => {
+                transaction.setInitialSupply(100).setCustomFees([fee2]);
+            },
+        );
 
         const fee1 = new CustomFixedFee()
             .setFeeCollectorAccountId(env.operatorId)
-            .setDenominatingTokenId(token2)
+            .setDenominatingTokenId(tokenId2)
             .setAmount(1);
 
         await (
             await new TokenFeeScheduleUpdateTransaction()
-                .setTokenId(token1)
+                .setTokenId(tokenId1)
                 .setCustomFees([fee1])
                 .execute(env.client)
         ).getReceipt(env.client);
@@ -1082,55 +726,55 @@ describe("CustomFees", function () {
         await (
             await (
                 await new TokenAssociateTransaction()
-                    .setTokenIds([token1])
-                    .setAccountId(account1)
+                    .setTokenIds([tokenId1])
+                    .setAccountId(accountId1)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(privateKey1)
             ).execute(env.client)
         ).getReceipt(env.client);
 
         await (
             await (
                 await new TokenGrantKycTransaction()
-                    .setTokenId(token1)
-                    .setAccountId(account1)
+                    .setTokenId(tokenId1)
+                    .setAccountId(accountId1)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(privateKey1)
             ).execute(env.client)
         ).getReceipt(env.client);
 
         await (
             await (
                 await new TokenAssociateTransaction()
-                    .setTokenIds([token1])
-                    .setAccountId(account2)
+                    .setTokenIds([tokenId1])
+                    .setAccountId(accountId2)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(privateKey1)
             ).execute(env.client)
         ).getReceipt(env.client);
 
         await (
             await (
                 await new TokenGrantKycTransaction()
-                    .setTokenId(token1)
-                    .setAccountId(account2)
+                    .setTokenId(tokenId1)
+                    .setAccountId(accountId2)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(privateKey1)
             ).execute(env.client)
         ).getReceipt(env.client);
 
         await (
             await new TransferTransaction()
-                .addTokenTransfer(token1, env.operatorId, -10)
-                .addTokenTransfer(token1, account1, 10)
+                .addTokenTransfer(tokenId1, env.operatorId, -10)
+                .addTokenTransfer(tokenId1, accountId1, 10)
                 .execute(env.client)
         ).getReceipt(env.client);
 
         try {
             await (
                 await new TransferTransaction()
-                    .addTokenTransfer(token1, account1, -1)
-                    .addTokenTransfer(token1, account2, 1)
+                    .addTokenTransfer(tokenId1, accountId1, -1)
+                    .addTokenTransfer(tokenId1, accountId2, 1)
                     .execute(env.client)
             ).getReceipt(env.client);
         } catch (error) {
@@ -1143,7 +787,7 @@ describe("CustomFees", function () {
             throw new Error("token transfer did not error");
         }
 
-        await env.close({ token: [token1, token2] });
+        await env.close({ token: [tokenId1, tokenId2] });
     });
 
     // eslint-disable-next-line mocha/no-skipped-tests
@@ -1152,132 +796,93 @@ describe("CustomFees", function () {
 
         let err = false;
 
-        const key = PrivateKey.generateED25519();
+        const { accountId: accountId1, privateKey: key1 } = await createAccount(
+            env.client,
+        );
 
-        const account1 = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
+        const { accountId: accountId2 } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setKeyWithoutAlias(key1);
+            },
+        );
 
-        const account2 = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
+        const { accountId: accountId3 } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setKeyWithoutAlias(key1);
+            },
+        );
 
-        const account3 = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
+        const { accountId: accountId4 } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setKeyWithoutAlias(key1);
+            },
+        );
 
-        const account4 = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
+        const { accountId: accountId5 } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setKeyWithoutAlias(key1);
+            },
+        );
 
-        const account5 = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
+        const { accountId: accountId6 } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setKeyWithoutAlias(key1);
+            },
+        );
 
-        const account6 = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
+        const { accountId: accountId7 } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setKeyWithoutAlias(key1);
+            },
+        );
 
-        const account7 = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
+        const { accountId: accountId8 } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setKeyWithoutAlias(key1);
+            },
+        );
 
-        const account8 = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
+        const { accountId: accountId9 } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setKeyWithoutAlias(key1);
+            },
+        );
 
-        const account9 = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
-
-        const token1 = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setTokenType(TokenType.FungibleUnique)
-                    .setInitialSupply(100)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const tokenId1 = await createNonFungibleToken(
+            env.client,
+            (transaction) => {
+                transaction.setInitialSupply(100);
+            },
+        );
 
         const fee2 = new CustomFixedFee()
             .setFeeCollectorAccountId(env.operatorId)
-            .setDenominatingTokenId(token1)
+            .setDenominatingTokenId(tokenId1)
             .setAmount(1);
 
-        const token2 = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setTokenType(TokenType.FungibleUnique)
-                    .setInitialSupply(100)
-                    .setCustomFees([fee2])
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const tokenId2 = await createFungibleToken(
+            env.client,
+            (transaction) => {
+                transaction.setInitialSupply(100).setCustomFees([fee2]);
+            },
+        );
 
         const fee1 = new CustomFixedFee()
             .setFeeCollectorAccountId(env.operatorId)
-            .setDenominatingTokenId(token2)
+            .setDenominatingTokenId(tokenId2)
             .setAmount(1);
 
         await (
             await new TokenFeeScheduleUpdateTransaction()
-                .setTokenId(token1)
+                .setTokenId(tokenId1)
                 .setCustomFees([fee1])
                 .execute(env.client)
         ).getReceipt(env.client);
@@ -1285,40 +890,40 @@ describe("CustomFees", function () {
         await (
             await (
                 await new TokenAssociateTransaction()
-                    .setTokenIds([token1])
-                    .setAccountId(account1)
+                    .setTokenIds([tokenId1])
+                    .setAccountId(accountId1)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(key1)
             ).execute(env.client)
         ).getReceipt(env.client);
 
         await (
             await (
                 await new TokenGrantKycTransaction()
-                    .setTokenId(token1)
-                    .setAccountId(account1)
+                    .setTokenId(tokenId1)
+                    .setAccountId(accountId1)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(key1)
             ).execute(env.client)
         ).getReceipt(env.client);
 
         await (
             await (
                 await new TokenAssociateTransaction()
-                    .setTokenIds([token1])
-                    .setAccountId(account2)
+                    .setTokenIds([tokenId1])
+                    .setAccountId(accountId2)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(key1)
             ).execute(env.client)
         ).getReceipt(env.client);
 
         await (
             await (
                 await new TokenGrantKycTransaction()
-                    .setTokenId(token1)
-                    .setAccountId(account2)
+                    .setTokenId(tokenId1)
+                    .setAccountId(accountId2)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(key1)
             ).execute(env.client)
         ).getReceipt(env.client);
 
@@ -1326,26 +931,26 @@ describe("CustomFees", function () {
             await (
                 await new TransferTransaction()
                     .addHbarTransfer(env.operatorId, -14)
-                    .addHbarTransfer(account1, 1)
-                    .addHbarTransfer(account2, 1)
-                    .addHbarTransfer(account3, 1)
-                    .addHbarTransfer(account4, 1)
-                    .addHbarTransfer(account5, 1)
-                    .addHbarTransfer(account6, 1)
-                    .addHbarTransfer(account7, 1)
-                    .addHbarTransfer(account8, 1)
-                    .addHbarTransfer(account9, 1)
+                    .addHbarTransfer(accountId1, 1)
+                    .addHbarTransfer(accountId2, 1)
+                    .addHbarTransfer(accountId3, 1)
+                    .addHbarTransfer(accountId4, 1)
+                    .addHbarTransfer(accountId5, 1)
+                    .addHbarTransfer(accountId6, 1)
+                    .addHbarTransfer(accountId7, 1)
+                    .addHbarTransfer(accountId8, 1)
+                    .addHbarTransfer(accountId9, 1)
                     .addHbarTransfer("0.0.3", 1)
                     .addHbarTransfer("0.0.4", 1)
                     .addHbarTransfer("0.0.5", 1)
                     .addHbarTransfer("0.0.6", 1)
                     .addHbarTransfer("0.0.7", 1)
-                    .addTokenTransfer(token1, env.operatorId, -2)
-                    .addTokenTransfer(token1, account1, 1)
-                    .addTokenTransfer(token1, account2, 1)
-                    .addTokenTransfer(token2, env.operatorId, -2)
-                    .addTokenTransfer(token2, account1, 1)
-                    .addTokenTransfer(token2, account2, 1)
+                    .addTokenTransfer(tokenId1, env.operatorId, -2)
+                    .addTokenTransfer(tokenId1, accountId1, 1)
+                    .addTokenTransfer(tokenId1, accountId2, 1)
+                    .addTokenTransfer(tokenId2, env.operatorId, -2)
+                    .addTokenTransfer(tokenId2, accountId1, 1)
+                    .addTokenTransfer(tokenId2, accountId2, 1)
                     .execute(env.client)
             ).getReceipt(env.client);
         } catch (error) {
@@ -1359,7 +964,7 @@ describe("CustomFees", function () {
             throw new Error("token transfer did not error");
         }
 
-        await env.close({ token: [token1, token2] });
+        await env.close({ token: [tokenId1, tokenId2] });
     });
 
     it("cannot set invalid schedule key", async function () {
@@ -1368,21 +973,9 @@ describe("CustomFees", function () {
         let err = false;
 
         try {
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(new KeyList(KeyList.of(), 1))
-                    .setTokenType(TokenType.NonFungibleUnique)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client);
+            await createNonFungibleToken(env.client, (transaction) => {
+                transaction.setFeeScheduleKey(new KeyList(KeyList.of(), 1));
+            });
         } catch (error) {
             err = error.toString().includes(Status.InvalidCustomFeeScheduleKey);
         }

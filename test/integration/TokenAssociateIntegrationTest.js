@@ -1,21 +1,22 @@
 import {
     AccountAllowanceApproveTransaction,
     AccountBalanceQuery,
-    AccountCreateTransaction,
     AccountUpdateTransaction,
     Hbar,
     NftId,
     AccountInfoQuery,
-    PrivateKey,
     Status,
     TokenAssociateTransaction,
-    TokenCreateTransaction,
     TokenMintTransaction,
-    TokenType,
     TransactionId,
     TransferTransaction,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import {
+    createAccount,
+    createFungibleToken,
+    createNonFungibleToken,
+} from "./utils/Fixtures.js";
 
 describe("TokenAssociate", function () {
     let env;
@@ -25,53 +26,36 @@ describe("TokenAssociate", function () {
     });
 
     it("should be executable", async function () {
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
-        const key = PrivateKey.generateED25519();
+        const { accountId, newKey: key } = await createAccount(
+            env.client,
+            (transaction) => transaction.setInitialBalance(new Hbar(2)),
+        );
 
-        const response = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(key)
-            .setInitialBalance(new Hbar(2))
-            .execute(env.client);
-
-        const account = (await response.getReceipt(env.client)).accountId;
-
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setDecimals(3)
-                    .setInitialSupply(1000000)
-                    .setTreasuryAccountId(operatorId)
-                    .setAdminKey(operatorKey)
-                    .setKycKey(operatorKey)
-                    .setFreezeKey(operatorKey)
-                    .setWipeKey(operatorKey)
-                    .setSupplyKey(operatorKey)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const token = await createFungibleToken(env.client, (transaction) => {
+            transaction
+                .setKycKey(env.client.operatorPublicKey)
+                .setDecimals(3)
+                .setInitialSupply(1000000);
+        });
 
         await (
             await (
                 await new TokenAssociateTransaction()
                     .setTokenIds([token])
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
                     .sign(key)
             ).execute(env.client)
         ).getReceipt(env.client);
 
         const balances = await new AccountBalanceQuery()
-            .setAccountId(account)
+            .setAccountId(accountId)
             .execute(env.client);
 
         expect(balances.tokens.get(token).toInt()).to.be.equal(0);
 
         const info = await new AccountInfoQuery()
-            .setAccountId(account)
+            .setAccountId(accountId)
             .execute(env.client);
 
         const relationship = info.tokenRelationships.get(token);
@@ -94,24 +78,13 @@ describe("TokenAssociate", function () {
     });
 
     it("should error when account ID is not set", async function () {
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
-
-        const response = await new TokenCreateTransaction()
-            .setTokenName("ffff")
-            .setTokenSymbol("F")
-            .setDecimals(3)
-            .setInitialSupply(1000000)
-            .setTreasuryAccountId(operatorId)
-            .setAdminKey(operatorKey)
-            .setKycKey(operatorKey)
-            .setFreezeKey(operatorKey)
-            .setWipeKey(operatorKey)
-            .setSupplyKey(operatorKey)
-            .setFreezeDefault(false)
-            .execute(env.client);
-
-        const token = (await response.getReceipt(env.client)).tokenId;
+        const token = await createFungibleToken(env.client, (transaction) =>
+            transaction
+                .setTokenName("ffff")
+                .setTokenSymbol("F")
+                .setDecimals(3)
+                .setInitialSupply(1000000),
+        );
 
         let err = false;
 
@@ -136,16 +109,10 @@ describe("TokenAssociate", function () {
             TRANSFER_AMOUNT = 10;
 
         beforeEach(async function () {
-            receiverKey = PrivateKey.generateECDSA();
-            const receiverAccountCreateTx = await new AccountCreateTransaction()
-                .setKeyWithoutAlias(receiverKey)
-                .freezeWith(env.client)
-                .sign(receiverKey);
-            receiverId = (
-                await (
-                    await receiverAccountCreateTx.execute(env.client)
-                ).getReceipt(env.client)
-            ).accountId;
+            const accountCreateResult = await createAccount(env.client);
+
+            receiverId = accountCreateResult.accountId;
+            receiverKey = accountCreateResult.newKey;
         });
 
         describe("Limited Auto Associations", function () {
@@ -161,42 +128,27 @@ describe("TokenAssociate", function () {
                     await accountUpdateTx.execute(env.client)
                 ).getReceipt(env.client);
 
-                const tokenCreateTransaction =
-                    await new TokenCreateTransaction()
-                        .setTokenType(TokenType.FungibleCommon)
-                        .setTokenName("FFFFF")
-                        .setTokenSymbol("ffff")
-                        .setInitialSupply(TOKEN_SUPPLY)
-                        .setTreasuryAccountId(env.operatorId)
-                        .setAdminKey(env.operatorKey)
-                        .setFreezeKey(env.operatorKey)
-                        .setWipeKey(env.operatorKey)
-                        .setSupplyKey(env.operatorKey)
-                        .execute(env.client);
-
-                const { tokenId } = await tokenCreateTransaction.getReceipt(
+                const tokenId1 = await createFungibleToken(
                     env.client,
+                    (transaction) => {
+                        transaction.setInitialSupply(TOKEN_SUPPLY);
+                    },
                 );
 
-                const tokenCreateTransaction2 =
-                    await new TokenCreateTransaction()
-                        .setTokenType(TokenType.FungibleCommon)
-                        .setTokenName("FFFFF")
-                        .setTokenSymbol("ffff")
-                        .setInitialSupply(TOKEN_SUPPLY)
-                        .setTreasuryAccountId(env.operatorId)
-                        .setAdminKey(env.operatorKey)
-                        .setFreezeKey(env.operatorKey)
-                        .setWipeKey(env.operatorKey)
-                        .setSupplyKey(env.operatorKey)
-                        .execute(env.client);
-
-                const { tokenId: tokenId2 } =
-                    await tokenCreateTransaction2.getReceipt(env.client);
+                const tokenId2 = await createFungibleToken(
+                    env.client,
+                    (transaction) => {
+                        transaction.setInitialSupply(TOKEN_SUPPLY);
+                    },
+                );
 
                 const sendTokenToReceiverTx = await new TransferTransaction()
-                    .addTokenTransfer(tokenId, env.operatorId, -TRANSFER_AMOUNT)
-                    .addTokenTransfer(tokenId, receiverId, TRANSFER_AMOUNT)
+                    .addTokenTransfer(
+                        tokenId1,
+                        env.operatorId,
+                        -TRANSFER_AMOUNT,
+                    )
+                    .addTokenTransfer(tokenId1, receiverId, TRANSFER_AMOUNT)
                     .execute(env.client);
 
                 await sendTokenToReceiverTx.getReceipt(env.client);
@@ -240,24 +192,12 @@ describe("TokenAssociate", function () {
                 ).getReceipt(env.client);
 
                 // create token 1
-                const tokenCreateTransaction =
-                    await new TokenCreateTransaction()
-                        .setTokenType(TokenType.NonFungibleUnique)
-                        .setTokenName("FFFFF")
-                        .setTokenSymbol("ffff")
-                        .setTreasuryAccountId(env.operatorId)
-                        .setAdminKey(env.operatorKey)
-                        .setSupplyKey(env.operatorKey)
-                        .execute(env.client);
-
-                const { tokenId } = await tokenCreateTransaction.getReceipt(
-                    env.client,
-                );
+                const tokenId1 = await createNonFungibleToken(env.client);
 
                 // mint a token in token 1
                 const tokenMintSignedTransaction =
                     await new TokenMintTransaction()
-                        .setTokenId(tokenId)
+                        .setTokenId(tokenId1)
                         .setMetadata([Buffer.from("-")])
                         .execute(env.client);
 
@@ -269,7 +209,7 @@ describe("TokenAssociate", function () {
 
                 const transferTxSign = await new TransferTransaction()
                     .addNftTransfer(
-                        tokenId,
+                        tokenId1,
                         serials[0],
                         env.operatorId,
                         receiverId,
@@ -279,18 +219,7 @@ describe("TokenAssociate", function () {
                 await transferTxSign.getReceipt(env.client);
 
                 // create token 2
-                const tokenCreateTransaction2 =
-                    await new TokenCreateTransaction()
-                        .setTokenType(TokenType.NonFungibleUnique)
-                        .setTokenName("FFFFF")
-                        .setTokenSymbol("ffff")
-                        .setTreasuryAccountId(env.operatorId)
-                        .setAdminKey(env.operatorKey)
-                        .setSupplyKey(env.operatorKey)
-                        .execute(env.client);
-
-                const { tokenId: tokenId2 } =
-                    await tokenCreateTransaction2.getReceipt(env.client);
+                const tokenId2 = await createNonFungibleToken(env.client);
 
                 // mint token 2
                 const tokenMintSignedTransaction2 =
@@ -331,21 +260,11 @@ describe("TokenAssociate", function () {
             });
 
             it("should contain sent balance when transfering FT to account with manual token association", async function () {
-                const tokenCreateTransaction =
-                    await new TokenCreateTransaction()
-                        .setTokenType(TokenType.FungibleCommon)
-                        .setTokenName("FFFFF")
-                        .setTokenSymbol("ffff")
-                        .setInitialSupply(TOKEN_SUPPLY)
-                        .setTreasuryAccountId(env.operatorId)
-                        .setAdminKey(env.operatorKey)
-                        .setFreezeKey(env.operatorKey)
-                        .setWipeKey(env.operatorKey)
-                        .setSupplyKey(env.operatorKey)
-                        .execute(env.client);
-
-                const { tokenId } = await tokenCreateTransaction.getReceipt(
+                const tokenId = await createFungibleToken(
                     env.client,
+                    (transaction) => {
+                        transaction.setInitialSupply(TOKEN_SUPPLY);
+                    },
                 );
 
                 const tokenAssociateTransaction =
@@ -376,19 +295,7 @@ describe("TokenAssociate", function () {
             });
 
             it("should contain sent balance when transfering NFT to account with manual token association", async function () {
-                const tokenCreateTransaction =
-                    await new TokenCreateTransaction()
-                        .setTokenType(TokenType.NonFungibleUnique)
-                        .setTokenName("FFFFF")
-                        .setTokenSymbol("ffff")
-                        .setTreasuryAccountId(env.operatorId)
-                        .setAdminKey(env.operatorKey)
-                        .setSupplyKey(env.operatorKey)
-                        .execute(env.client);
-
-                const { tokenId } = await tokenCreateTransaction.getReceipt(
-                    env.client,
-                );
+                const tokenId = await createNonFungibleToken(env.client);
 
                 const tokenAssociateTransaction =
                     await new TokenAssociateTransaction()
@@ -432,36 +339,19 @@ describe("TokenAssociate", function () {
 
         describe("Unlimited Auto Associations", function () {
             it("receiver should contain FTs when transfering to account with unlimited auto associations", async function () {
-                const tokenCreateResponse = await new TokenCreateTransaction()
-                    .setTokenType(TokenType.FungibleCommon)
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setInitialSupply(TOKEN_SUPPLY)
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .execute(env.client);
-
-                const { tokenId } = await tokenCreateResponse.getReceipt(
+                const tokenId1 = await createFungibleToken(
                     env.client,
+                    (transaction) => {
+                        transaction.setInitialSupply(TOKEN_SUPPLY);
+                    },
                 );
 
-                const tokenCreateResponse2 = await new TokenCreateTransaction()
-                    .setTokenType(TokenType.FungibleCommon)
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setInitialSupply(TOKEN_SUPPLY)
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .execute(env.client);
-
-                const { tokenId: tokenId2 } =
-                    await tokenCreateResponse2.getReceipt(env.client);
+                const tokenId2 = await createFungibleToken(
+                    env.client,
+                    (transaction) => {
+                        transaction.setInitialSupply(TOKEN_SUPPLY);
+                    },
+                );
 
                 const updateUnlimitedAutomaticAssociations =
                     await new AccountUpdateTransaction()
@@ -477,8 +367,12 @@ describe("TokenAssociate", function () {
                 ).getReceipt(env.client);
 
                 const tokenTransferResponse = await new TransferTransaction()
-                    .addTokenTransfer(tokenId, env.operatorId, -TRANSFER_AMOUNT)
-                    .addTokenTransfer(tokenId, receiverId, TRANSFER_AMOUNT)
+                    .addTokenTransfer(
+                        tokenId1,
+                        env.operatorId,
+                        -TRANSFER_AMOUNT,
+                    )
+                    .addTokenTransfer(tokenId1, receiverId, TRANSFER_AMOUNT)
                     .execute(env.client);
 
                 await tokenTransferResponse.getReceipt(env.client);
@@ -498,7 +392,7 @@ describe("TokenAssociate", function () {
                     await new AccountBalanceQuery()
                         .setAccountId(receiverId)
                         .execute(env.client)
-                ).tokens.get(tokenId);
+                ).tokens.get(tokenId1);
 
                 const newTokenBalance2 = (
                     await new AccountBalanceQuery()
@@ -511,33 +405,12 @@ describe("TokenAssociate", function () {
             });
 
             it("receiver should contain NFTs when transfering to account with unlimited auto associations", async function () {
-                const tokenCreateResponse = await new TokenCreateTransaction()
-                    .setTokenType(TokenType.NonFungibleUnique)
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .execute(env.client);
+                const tokenId1 = await createNonFungibleToken(env.client);
 
-                const { tokenId } = await tokenCreateResponse.getReceipt(
-                    env.client,
-                );
-
-                const tokenCreateResponse2 = await new TokenCreateTransaction()
-                    .setTokenType(TokenType.NonFungibleUnique)
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .execute(env.client);
-
-                const { tokenId: tokenId2 } =
-                    await tokenCreateResponse2.getReceipt(env.client);
+                const tokenId2 = await createNonFungibleToken(env.client);
 
                 const mintTokenTx = await new TokenMintTransaction()
-                    .setTokenId(tokenId)
+                    .setTokenId(tokenId1)
                     .setMetadata([Buffer.from("-")])
                     .execute(env.client);
 
@@ -565,7 +438,7 @@ describe("TokenAssociate", function () {
 
                 const tokenTransferResponse = await new TransferTransaction()
                     .addNftTransfer(
-                        tokenId,
+                        tokenId1,
                         serials[0],
                         env.operatorId,
                         receiverId,
@@ -584,7 +457,7 @@ describe("TokenAssociate", function () {
                     await new AccountBalanceQuery()
                         .setAccountId(receiverId)
                         .execute(env.client)
-                ).tokens.get(tokenId);
+                ).tokens.get(tokenId1);
 
                 const newTokenBalance2 = (
                     await new AccountBalanceQuery()
@@ -597,17 +470,12 @@ describe("TokenAssociate", function () {
             });
 
             it("receiver should have token balance even if it has given allowance to spender", async function () {
-                const spenderKey = PrivateKey.generateECDSA();
-                const spenderAccountCreateTx =
-                    await new AccountCreateTransaction()
-                        .setKeyWithoutAlias(spenderKey)
-                        .setMaxAutomaticTokenAssociations(-1)
-                        .setInitialBalance(new Hbar(1))
-                        .execute(env.client);
-
-                const spenderId = (
-                    await spenderAccountCreateTx.getReceipt(env.client)
-                ).accountId;
+                const { accountId: spenderAccountId, newKey: spenderKey } =
+                    await createAccount(env.client, (transaction) => {
+                        transaction
+                            .setInitialBalance(new Hbar(1))
+                            .setMaxAutomaticTokenAssociations(-1);
+                    });
 
                 const unlimitedAutoAssociationReceiverTx =
                     await new AccountUpdateTransaction()
@@ -620,25 +488,19 @@ describe("TokenAssociate", function () {
                     await unlimitedAutoAssociationReceiverTx.execute(env.client)
                 ).getReceipt(env.client);
 
-                const tokenCreateResponse = await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setInitialSupply(TOKEN_SUPPLY)
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .execute(env.client);
-
-                const { tokenId } = await tokenCreateResponse.getReceipt(
+                const tokenId1 = await createFungibleToken(
                     env.client,
+                    (transaction) => {
+                        transaction.setInitialSupply(TOKEN_SUPPLY);
+                    },
                 );
 
                 const tokenAllowanceTx =
                     await new AccountAllowanceApproveTransaction()
                         .approveTokenAllowance(
-                            tokenId,
+                            tokenId1,
                             env.operatorId,
-                            spenderId,
+                            spenderAccountId,
                             TRANSFER_AMOUNT,
                         )
                         .execute(env.client);
@@ -646,16 +508,16 @@ describe("TokenAssociate", function () {
                 await tokenAllowanceTx.getReceipt(env.client);
 
                 const onBehalfOfTransactionId =
-                    TransactionId.generate(spenderId);
+                    TransactionId.generate(spenderAccountId);
                 const tokenTransferApprovedSupply =
                     await new TransferTransaction()
                         .setTransactionId(onBehalfOfTransactionId)
                         .addApprovedTokenTransfer(
-                            tokenId,
+                            tokenId1,
                             env.operatorId,
                             -TRANSFER_AMOUNT,
                         )
-                        .addTokenTransfer(tokenId, receiverId, TRANSFER_AMOUNT)
+                        .addTokenTransfer(tokenId1, receiverId, TRANSFER_AMOUNT)
                         .freezeWith(env.client)
                         .sign(spenderKey);
 
@@ -668,7 +530,7 @@ describe("TokenAssociate", function () {
                     .execute(env.client);
 
                 const tokenBalanceSpender = await new AccountBalanceQuery()
-                    .setAccountId(spenderId)
+                    .setAccountId(spenderAccountId)
                     .execute(env.client);
 
                 const tokenBalanceTreasury = await new AccountBalanceQuery()
@@ -676,19 +538,17 @@ describe("TokenAssociate", function () {
                     .execute(env.client);
 
                 expect(
-                    tokenBalanceReceiver.tokens.get(tokenId).toInt(),
+                    tokenBalanceReceiver.tokens.get(tokenId1).toInt(),
                 ).to.equal(TRANSFER_AMOUNT);
 
-                expect(tokenBalanceSpender.tokens.get(tokenId)).to.equal(null);
+                expect(tokenBalanceSpender.tokens.get(tokenId1)).to.equal(null);
 
                 expect(
-                    tokenBalanceTreasury.tokens.get(tokenId).toInt(),
+                    tokenBalanceTreasury.tokens.get(tokenId1).toInt(),
                 ).to.equal(TOKEN_SUPPLY - TRANSFER_AMOUNT);
             });
 
             it("receiver should have nft even if it has given allowance to spender", async function () {
-                const spenderKey = PrivateKey.generateECDSA();
-
                 const unlimitedAutoAssociationReceiverTx =
                     await new AccountUpdateTransaction()
                         .setAccountId(receiverId)
@@ -700,29 +560,14 @@ describe("TokenAssociate", function () {
                     await unlimitedAutoAssociationReceiverTx.execute(env.client)
                 ).getReceipt(env.client);
 
-                const spenderAccountCreateTx =
-                    await new AccountCreateTransaction()
-                        .setKeyWithoutAlias(spenderKey)
-                        .setInitialBalance(new Hbar(1))
-                        .setMaxAutomaticTokenAssociations(-1)
-                        .execute(env.client);
+                const { accountId: spenderAccountId, newKey: spenderKey } =
+                    await createAccount(env.client, (transaction) => {
+                        transaction
+                            .setInitialBalance(new Hbar(1))
+                            .setMaxAutomaticTokenAssociations(-1);
+                    });
 
-                const spenderId = (
-                    await spenderAccountCreateTx.getReceipt(env.client)
-                ).accountId;
-
-                const tokenCreateResponse = await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTokenType(TokenType.NonFungibleUnique)
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .execute(env.client);
-
-                const { tokenId } = await tokenCreateResponse.getReceipt(
-                    env.client,
-                );
+                const tokenId = await createNonFungibleToken(env.client);
 
                 await (
                     await new TokenMintTransaction()
@@ -737,7 +582,7 @@ describe("TokenAssociate", function () {
                         .approveTokenNftAllowance(
                             nftId,
                             env.operatorId,
-                            spenderId,
+                            spenderAccountId,
                         )
                         .execute(env.client);
 
@@ -746,7 +591,7 @@ describe("TokenAssociate", function () {
                 // Generate TransactionId from spender's account id in order
                 // for the transaction to be to be executed on behalf of the spender
                 const onBehalfOfTransactionId =
-                    TransactionId.generate(spenderId);
+                    TransactionId.generate(spenderAccountId);
 
                 const nftTransferToReceiver = await new TransferTransaction()
                     .addApprovedNftTransfer(nftId, env.operatorId, receiverId)
@@ -763,7 +608,7 @@ describe("TokenAssociate", function () {
                     .execute(env.client);
 
                 const tokenBalanceSpender = await new AccountBalanceQuery()
-                    .setAccountId(spenderId)
+                    .setAccountId(spenderAccountId)
                     .execute(env.client);
 
                 const tokenBalanceTreasury = await new AccountBalanceQuery()
@@ -782,33 +627,19 @@ describe("TokenAssociate", function () {
             });
 
             it("receiver with unlimited auto associations should have FTs with decimal when sender transfers FTs", async function () {
-                const tokenCreateResponse = await new TokenCreateTransaction()
-                    .setTokenType(TokenType.FungibleCommon)
-                    .setTokenName("FFFFFFF")
-                    .setTokenSymbol("fff")
-                    .setDecimals(3)
-                    .setInitialSupply(TOKEN_SUPPLY)
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .execute(env.client);
-
-                const { tokenId } = await tokenCreateResponse.getReceipt(
+                const tokenId = await createFungibleToken(
                     env.client,
+                    (transaction) => {
+                        transaction.setInitialSupply(TOKEN_SUPPLY);
+                    },
                 );
 
-                const receiverKey = PrivateKey.generateECDSA();
-                const receiverAccountResponse =
-                    await new AccountCreateTransaction()
-                        .setKeyWithoutAlias(receiverKey)
-                        .setMaxAutomaticTokenAssociations(-1)
-                        .setInitialBalance(new Hbar(1))
-                        .execute(env.client);
-
-                const { accountId: receiverAccountId } =
-                    await receiverAccountResponse.getReceipt(env.client);
+                const { accountId: receiverAccountId } = await createAccount(
+                    env.client,
+                    (transaction) => {
+                        transaction.setMaxAutomaticTokenAssociations(-1);
+                    },
+                );
 
                 await (
                     await new TokenAssociateTransaction()
@@ -863,16 +694,11 @@ describe("TokenAssociate", function () {
                 }
 
                 try {
-                    const key = PrivateKey.generateECDSA();
-                    const accountCreateInvalidAutoAssociation =
-                        await new AccountCreateTransaction()
-                            .setKeyWithoutAlias(key)
-                            .setMaxAutomaticTokenAssociations(-2)
-                            .execute(env.client);
-
-                    await accountCreateInvalidAutoAssociation.getReceipt(
-                        env.client,
-                    );
+                    await createAccount(env.client, (transaction) => {
+                        transaction
+                            .setKeyWithoutAlias(receiverKey)
+                            .setMaxAutomaticTokenAssociations(-2);
+                    });
                 } catch (error) {
                     err = error
                         .toString()

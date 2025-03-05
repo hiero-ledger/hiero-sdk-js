@@ -1,12 +1,9 @@
-import {
-    AccountBalanceQuery,
-    Status,
-    TokenCreateTransaction,
-} from "../../src/exports.js";
+import { AccountBalanceQuery, Status } from "../../src/exports.js";
 import IntegrationTestEnv, {
     Client,
     skipTestDueToNodeJsVersion,
 } from "./client/NodeIntegrationTestEnv.js";
+import { createFungibleToken } from "./utils/Fixtures.js";
 
 describe("AccountBalanceQuery", function () {
     let clientPreviewNet;
@@ -77,23 +74,23 @@ describe("AccountBalanceQuery", function () {
     });
 
     it("should reflect token with no keys", async function () {
-        const operatorId = env.operatorId;
-
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(operatorId)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const tokenId = await createFungibleToken(env.client, (transaction) => {
+            transaction
+                .setInitialSupply(0)
+                .setAdminKey(null)
+                .setFreezeKey(null)
+                .setPauseKey(null)
+                .setWipeKey(null)
+                .setFeeScheduleKey(null)
+                .setMetadataKey(null)
+                .setSupplyKey(null);
+        });
 
         const balances = await new AccountBalanceQuery()
             .setAccountId(env.operatorId)
             .execute(env.client);
 
-        expect(balances.tokens.get(token).toInt()).to.be.equal(0);
+        expect(balances.tokens.get(tokenId.toString()).toInt()).to.be.equal(0);
     });
 
     after(async function () {

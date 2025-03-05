@@ -8,11 +8,10 @@ import {
     ContractId,
     Hbar,
     ContractExecuteTransaction,
-    AccountCreateTransaction,
-    PrivateKey,
     ContractCallQuery,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import { createAccount } from "./utils/Fixtures.js";
 
 describe("MirrorNodeContractQuery", function () {
     let env, contractId;
@@ -136,14 +135,9 @@ describe("MirrorNodeContractQuery", function () {
                 .execute(env.client)
         ).substring(26);
 
-        const newOwnerKey = PrivateKey.generateECDSA();
-
-        const { accountId } = await (
-            await new AccountCreateTransaction()
-                .setKeyWithoutAlias(newOwnerKey)
-                .setInitialBalance(new Hbar(10))
-                .execute(env.client)
-        ).getReceipt(env.client);
+        const { accountId } = await createAccount(env.client, (transaction) => {
+            transaction.setInitialBalance(new Hbar(10));
+        });
 
         const newOwnerSolidityAddress = accountId.toSolidityAddress();
 

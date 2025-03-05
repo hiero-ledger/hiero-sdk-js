@@ -1,5 +1,4 @@
 import {
-    AccountCreateTransaction,
     AccountDeleteTransaction,
     AccountInfoQuery,
     Hbar,
@@ -8,6 +7,7 @@ import {
     TransactionId,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import { createAccount } from "./utils/Fixtures.js";
 
 describe("AccountDelete", function () {
     let env;
@@ -20,21 +20,19 @@ describe("AccountDelete", function () {
         const operatorId = env.operatorId;
         const key = PrivateKey.generateED25519();
 
-        const response = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(key.publicKey)
-            .setInitialBalance(new Hbar(2))
-            .execute(env.client);
+        const { accountId } = await createAccount(env.client, (transaction) => {
+            transaction
+                .setKeyWithoutAlias(key.publicKey)
+                .setInitialBalance(new Hbar(2));
+        });
 
-        const receipt = await response.getReceipt(env.client);
-
-        expect(receipt.accountId).to.not.be.null;
-        const account = receipt.accountId;
+        expect(accountId).to.not.be.null;
 
         const info = await new AccountInfoQuery()
-            .setAccountId(account)
+            .setAccountId(accountId)
             .execute(env.client);
 
-        expect(info.accountId.toString()).to.be.equal(account.toString());
+        expect(info.accountId.toString()).to.be.equal(accountId.toString());
         expect(info.isDeleted).to.be.false;
         expect(info.key.toString()).to.be.equal(key.publicKey.toString());
         expect(info.balance.toTinybars().toInt()).to.be.equal(
@@ -47,9 +45,9 @@ describe("AccountDelete", function () {
         await (
             await (
                 await new AccountDeleteTransaction()
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .setTransferAccountId(operatorId)
-                    .setTransactionId(TransactionId.generate(account))
+                    .setTransactionId(TransactionId.generate(accountId))
                     .freezeWith(env.client)
                     .sign(key)
             ).execute(env.client)
@@ -60,24 +58,22 @@ describe("AccountDelete", function () {
         const operatorId = env.operatorId;
         const key = PrivateKey.generateED25519();
 
-        const response = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(key.publicKey)
-            .setInitialBalance(new Hbar(2))
-            .execute(env.client);
+        const { accountId } = await createAccount(env.client, (transaction) => {
+            transaction
+                .setKeyWithoutAlias(key.publicKey)
+                .setInitialBalance(new Hbar(2));
+        });
 
-        const receipt = await response.getReceipt(env.client);
-
-        expect(receipt.accountId).to.not.be.null;
-        const account = receipt.accountId;
+        expect(accountId).to.not.be.null;
 
         let err = false;
 
         try {
             await (
                 await new AccountDeleteTransaction()
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .setTransferAccountId(operatorId)
-                    .setTransactionId(TransactionId.generate(account))
+                    .setTransactionId(TransactionId.generate(accountId))
                     .execute(env.client)
             ).getReceipt(env.client);
         } catch (error) {

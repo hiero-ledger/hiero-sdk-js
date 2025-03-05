@@ -1,6 +1,4 @@
 import {
-    AccountCreateTransaction,
-    AccountDeleteTransaction,
     Hbar,
     PrivateKey,
     Status,
@@ -8,6 +6,7 @@ import {
     TransferTransaction,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import { createAccount, deleteAccount } from "./utils/Fixtures.js";
 
 describe("CryptoTransfer", function () {
     let env;
@@ -18,57 +17,47 @@ describe("CryptoTransfer", function () {
 
     it("should be executable", async function () {
         const operatorId = env.operatorId;
-        const key = PrivateKey.generateED25519();
 
-        const response = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(key)
-            .setInitialBalance(new Hbar(2))
-            .execute(env.client);
+        const { accountId, newKey } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setInitialBalance(new Hbar(2));
+            },
+        );
 
-        const receipt = await response.getReceipt(env.client);
-
-        expect(receipt.accountId).to.not.be.null;
-        const account = receipt.accountId;
+        expect(accountId).to.not.be.null;
 
         await (
             await new TransferTransaction()
-                .addHbarTransfer(account, new Hbar(1))
+                .addHbarTransfer(accountId, new Hbar(1))
                 .addHbarTransfer(operatorId, new Hbar(-1))
                 .execute(env.client)
         ).getReceipt(env.client);
 
-        await (
-            await (
-                await new AccountDeleteTransaction()
-                    .setAccountId(account)
-                    .setTransferAccountId(operatorId)
-                    .setTransactionId(TransactionId.generate(account))
-                    .freezeWith(env.client)
-                    .sign(key)
-            ).execute(env.client)
-        ).getReceipt(env.client);
+        await deleteAccount(env.client, newKey, (transaction) => {
+            transaction
+                .setAccountId(accountId)
+                .setTransferAccountId(operatorId)
+                .setTransactionId(TransactionId.generate(accountId));
+        });
     });
 
     it("should error when there is invalid account amounts", async function () {
         const operatorId = env.operatorId;
         const key = PrivateKey.generateED25519();
 
-        const response = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(key)
-            .setInitialBalance(new Hbar(0))
-            .execute(env.client);
+        const { accountId } = await createAccount(env.client, (transaction) => {
+            transaction.setKeyWithoutAlias(key).setInitialBalance(new Hbar(0));
+        });
 
-        const receipt = await response.getReceipt(env.client);
-
-        expect(receipt.accountId).to.not.be.null;
-        const account = receipt.accountId;
+        expect(accountId).to.not.be.null;
 
         let err = false;
 
         try {
             await (
                 await new TransferTransaction()
-                    .addHbarTransfer(account, new Hbar(1))
+                    .addHbarTransfer(accountId, new Hbar(1))
                     .addHbarTransfer(operatorId, new Hbar(1))
                     .execute(env.client)
             ).getReceipt(env.client);

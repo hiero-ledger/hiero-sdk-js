@@ -1,20 +1,20 @@
 import {
     AccountBalanceQuery,
-    AccountCreateTransaction,
     AccountInfoQuery,
-    Hbar,
-    PrivateKey,
     Status,
     TokenAssociateTransaction,
-    TokenCreateTransaction,
     TokenDissociateTransaction,
     TokenGrantKycTransaction,
     TokenMintTransaction,
-    TokenSupplyType,
-    TokenType,
     TransferTransaction,
+    Hbar,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import {
+    createAccount,
+    createFungibleToken,
+    createNonFungibleToken,
+} from "./utils/Fixtures.js";
 
 describe("TokenDissociate", function () {
     let env;
@@ -24,34 +24,14 @@ describe("TokenDissociate", function () {
     });
 
     it("should be executable", async function () {
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
-        const key = PrivateKey.generateED25519();
+        const { accountId: account, newKey: key } = await createAccount(
+            env.client,
+            (transaction) => transaction.setInitialBalance(new Hbar(2)),
+        );
 
-        const response = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(key)
-            .setInitialBalance(new Hbar(2))
-            .execute(env.client);
-
-        const account = (await response.getReceipt(env.client)).accountId;
-
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setDecimals(3)
-                    .setInitialSupply(1000000)
-                    .setTreasuryAccountId(operatorId)
-                    .setAdminKey(operatorKey)
-                    .setKycKey(operatorKey)
-                    .setFreezeKey(operatorKey)
-                    .setWipeKey(operatorKey)
-                    .setSupplyKey(operatorKey)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const token = await createFungibleToken(env.client, (transaction) => {
+            transaction.setKycKey(env.client.operatorPublicKey);
+        });
 
         await (
             await (
@@ -116,31 +96,15 @@ describe("TokenDissociate", function () {
 
     it("should error when account ID is not set", async function () {
         const env = await IntegrationTestEnv.new();
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
 
-        const response = await new TokenCreateTransaction()
-            .setTokenName("ffff")
-            .setTokenSymbol("F")
-            .setDecimals(3)
-            .setInitialSupply(1000000)
-            .setTreasuryAccountId(operatorId)
-            .setAdminKey(operatorKey)
-            .setKycKey(operatorKey)
-            .setFreezeKey(operatorKey)
-            .setWipeKey(operatorKey)
-            .setSupplyKey(operatorKey)
-            .setFreezeDefault(false)
-            .execute(env.client);
-
-        const token = (await response.getReceipt(env.client)).tokenId;
+        const tokenId = await createFungibleToken(env.client);
 
         let err = false;
 
         try {
             await (
                 await new TokenDissociateTransaction()
-                    .setTokenIds([token])
+                    .setTokenIds([tokenId])
                     .execute(env.client)
             ).getReceipt(env.client);
         } catch (error) {
@@ -153,47 +117,27 @@ describe("TokenDissociate", function () {
     });
 
     it("cannot dissociate account which owns NFTs", async function () {
-        const key = PrivateKey.generateED25519();
+        const { accountId, newKey: key } = await createAccount(env.client);
 
-        const account = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key.publicKey)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
-
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setTokenType(TokenType.NonFungibleUnique)
-                    .setSupplyType(TokenSupplyType.Finite)
-                    .setMaxSupply(10)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const tokenId = await createNonFungibleToken(
+            env.client,
+            (transaction) => {
+                transaction.setKycKey(env.client.operatorPublicKey);
+            },
+        );
 
         await (
             await new TokenMintTransaction()
                 .setMetadata([Uint8Array.of([0, 1, 2])])
-                .setTokenId(token)
+                .setTokenId(tokenId)
                 .execute(env.client)
         ).getReceipt(env.client);
 
         await (
             await (
                 await new TokenAssociateTransaction()
-                    .setTokenIds([token])
-                    .setAccountId(account)
+                    .setTokenIds([tokenId])
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
                     .sign(key)
             ).execute(env.client)
@@ -202,8 +146,8 @@ describe("TokenDissociate", function () {
         await (
             await (
                 await new TokenGrantKycTransaction()
-                    .setTokenId(token)
-                    .setAccountId(account)
+                    .setTokenId(tokenId)
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
                     .sign(key)
             ).execute(env.client)
@@ -211,7 +155,7 @@ describe("TokenDissociate", function () {
 
         await (
             await new TransferTransaction()
-                .addNftTransfer(token, 1, env.operatorId, account)
+                .addNftTransfer(tokenId, 1, env.operatorId, accountId)
                 .execute(env.client)
         ).getReceipt(env.client);
 
@@ -221,8 +165,8 @@ describe("TokenDissociate", function () {
             await (
                 await (
                     await new TokenDissociateTransaction()
-                        .setTokenIds([token])
-                        .setAccountId(account)
+                        .setTokenIds([tokenId])
+                        .setAccountId(accountId)
                         .freezeWith(env.client)
                         .sign(key)
                 ).execute(env.client)

@@ -1,6 +1,5 @@
 import {
     AccountCreateTransaction,
-    AccountDeleteTransaction,
     TransferTransaction,
     AccountInfoQuery,
     Hbar,
@@ -10,6 +9,7 @@ import {
     KeyList,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import { deleteAccount } from "./utils/Fixtures.js";
 
 describe("AccountCreate", function () {
     let env;
@@ -46,16 +46,12 @@ describe("AccountCreate", function () {
         expect(info.proxyAccountId).to.be.null;
         expect(info.proxyReceived.toTinybars().toNumber()).to.be.equal(0);
 
-        await (
-            await (
-                await new AccountDeleteTransaction()
-                    .setAccountId(account)
-                    .setTransferAccountId(operatorId)
-                    .setTransactionId(TransactionId.generate(account))
-                    .freezeWith(env.client)
-                    .sign(key)
-            ).execute(env.client)
-        ).getReceipt(env.client);
+        await deleteAccount(env.client, key, (transaction) => {
+            transaction
+                .setAccountId(account)
+                .setTransferAccountId(operatorId)
+                .setTransactionId(TransactionId.generate(account));
+        });
     });
 
     it("should be able to create an account with an ECDSA private key", async function () {
@@ -122,15 +118,9 @@ describe("AccountCreate", function () {
         expect(info.proxyAccountId).to.be.null;
         expect(info.proxyReceived.toTinybars().toNumber()).to.be.equal(0);
 
-        await (
-            await (
-                await new AccountDeleteTransaction()
-                    .setAccountId(account)
-                    .setTransferAccountId(operatorId)
-                    .freezeWith(env.client)
-                    .sign(key)
-            ).execute(env.client)
-        ).getReceipt(env.client);
+        await deleteAccount(env.client, key, (transaction) => {
+            transaction.setAccountId(account).setTransferAccountId(operatorId);
+        });
     });
 
     it("should error when key is not set", async function () {
@@ -176,18 +166,18 @@ describe("AccountCreate", function () {
         expect(info.proxyAccountId).to.be.null;
         expect(info.proxyReceived.toTinybars().toNumber()).to.be.equal(0);
 
-        const transaction = new AccountDeleteTransaction()
-            .setNodeAccountIds([response.nodeId])
-            .setAccountId(account)
-            .setTransferAccountId(operatorId)
-            .freezeWith(env.client);
+        await deleteAccount(env.client, key, (transaction) => {
+            transaction
+                .setNodeAccountIds([response.nodeId])
+                .setAccountId(account)
+                .setTransferAccountId(operatorId)
+                .freezeWith(env.client);
 
-        key.signTransaction(transaction);
+            key.signTransaction(transaction);
 
-        expect(key.publicKey.verifyTransaction(transaction)).to.be.true;
-        expect(operatorKey.verifyTransaction(transaction)).to.be.false;
-
-        await (await transaction.execute(env.client)).getReceipt(env.client);
+            expect(key.publicKey.verifyTransaction(transaction)).to.be.true;
+            expect(operatorKey.verifyTransaction(transaction)).to.be.false;
+        });
     });
 
     it("should create account with a single key passed to `KeyList`", async function () {

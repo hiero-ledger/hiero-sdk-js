@@ -1,6 +1,5 @@
 import {
     AccountCreateTransaction,
-    AccountDeleteTransaction,
     AccountId,
     AccountInfoQuery,
     Hbar,
@@ -9,6 +8,7 @@ import {
     TransactionId,
 } from "../../src/exports.js";
 import IntegrationTestEnv, { Client } from "./client/NodeIntegrationTestEnv.js";
+import { createAccount, deleteAccount } from "./utils/Fixtures.js";
 
 describe("ClientIntegration", function () {
     let env;
@@ -66,21 +66,19 @@ describe("ClientIntegration", function () {
         const operatorId = env.operatorId;
         const key = PrivateKey.generateED25519();
 
-        const response = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(key.publicKey)
-            .setInitialBalance(new Hbar(2))
-            .execute(env.client);
+        const { accountId } = await createAccount(env.client, (transaction) => {
+            transaction
+                .setKeyWithoutAlias(key.publicKey)
+                .setInitialBalance(new Hbar(2));
+        });
 
-        const receipt = await response.getReceipt(env.client);
-
-        expect(receipt.accountId).to.not.be.null;
-        const account = receipt.accountId;
+        expect(accountId).to.not.be.null;
 
         const info = await new AccountInfoQuery()
-            .setAccountId(account)
+            .setAccountId(accountId)
             .execute(env.client);
 
-        expect(info.accountId.toString()).to.be.equal(account.toString());
+        expect(info.accountId.toString()).to.be.equal(accountId.toString());
         expect(info.isDeleted).to.be.false;
         expect(info.key.toString()).to.be.equal(key.publicKey.toString());
         expect(info.balance.toTinybars().toNumber()).to.be.equal(
@@ -90,16 +88,12 @@ describe("ClientIntegration", function () {
         expect(info.proxyAccountId).to.be.null;
         expect(info.proxyReceived.toTinybars().toNumber()).to.be.equal(0);
 
-        await (
-            await (
-                await new AccountDeleteTransaction()
-                    .setAccountId(account)
-                    .setTransferAccountId(operatorId)
-                    .setTransactionId(TransactionId.generate(account))
-                    .freezeWith(env.client)
-                    .sign(key)
-            ).execute(env.client)
-        ).getReceipt(env.client);
+        await deleteAccount(env.client, key, (transaction) => {
+            transaction
+                .setAccountId(accountId)
+                .setTransferAccountId(operatorId)
+                .setTransactionId(TransactionId.generate(accountId));
+        });
     });
 
     it("can get bytes without sign on demand", async function () {
