@@ -17,7 +17,12 @@ async function main() {
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
     const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
 
-    // Step 1: Initialize the client
+    /*
+     * Step 1: Initialize the client.
+     * Note: By default, the first network address book update will be triggered after 24 hours,
+     * and subsequent updates will occur every 24 hours.
+     * This is controlled by `networkUpdatePeriod`, which defaults to 86400000 milliseconds or 24 hours.
+     */
     const client = Client.forName(process.env.HEDERA_NETWORK).setOperator(
         operatorId,
         operatorKey,
