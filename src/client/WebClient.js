@@ -213,4 +213,14 @@ export default class WebClient extends Client {
             throw new Error("mirror support is not supported in browsers");
         };
     }
+
+    /**
+     * @override
+     * @returns {Promise<void>}
+     */
+    updateNetwork() {
+        return Promise.reject(
+            new Error("Update network is not supported in browsers"),
+        );
+    }
 }

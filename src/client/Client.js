@@ -697,6 +697,17 @@ export default class Client {
     }
 
     /**
+     * Update the network address book.
+     * @returns {Promise<void>}
+     */
+    async updateNetwork() {
+        const addressBook = await CACHE.addressBookQueryConstructor()
+            .setFileId(FileId.ADDRESS_BOOK)
+            .execute(this);
+        this.setNetworkFromAddressBook(addressBook);
+    }
+
+    /**
      * @returns {void}
      */
     close() {
@@ -730,10 +741,7 @@ export default class Client {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises,@typescript-eslint/no-misused-promises
         this._timer = setTimeout(async () => {
             try {
-                const addressBook = await CACHE.addressBookQueryConstructor()
-                    .setFileId(FileId.ADDRESS_BOOK)
-                    .execute(this);
-                this.setNetworkFromAddressBook(addressBook);
+                await this.updateNetwork();
 
                 if (!this._isShutdown) {
                     // Recall this method to continuously update the network
