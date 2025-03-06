@@ -2,7 +2,6 @@ import {
     AccountDeleteTransaction,
     AccountInfoQuery,
     Hbar,
-    PrivateKey,
     Status,
     TransactionId,
 } from "../../src/exports.js";
@@ -18,13 +17,13 @@ describe("AccountDelete", function () {
 
     it("should be executable", async function () {
         const operatorId = env.operatorId;
-        const key = PrivateKey.generateED25519();
 
-        const { accountId } = await createAccount(env.client, (transaction) => {
-            transaction
-                .setKeyWithoutAlias(key.publicKey)
-                .setInitialBalance(new Hbar(2));
-        });
+        const { accountId, newKey } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setInitialBalance(new Hbar(2));
+            },
+        );
 
         expect(accountId).to.not.be.null;
 
@@ -34,7 +33,7 @@ describe("AccountDelete", function () {
 
         expect(info.accountId.toString()).to.be.equal(accountId.toString());
         expect(info.isDeleted).to.be.false;
-        expect(info.key.toString()).to.be.equal(key.publicKey.toString());
+        expect(info.key.toString()).to.be.equal(newKey.publicKey.toString());
         expect(info.balance.toTinybars().toInt()).to.be.equal(
             new Hbar(2).toTinybars().toInt(),
         );
@@ -49,19 +48,16 @@ describe("AccountDelete", function () {
                     .setTransferAccountId(operatorId)
                     .setTransactionId(TransactionId.generate(accountId))
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(newKey)
             ).execute(env.client)
         ).getReceipt(env.client);
     });
 
     it("should error with invalid signature", async function () {
         const operatorId = env.operatorId;
-        const key = PrivateKey.generateED25519();
 
         const { accountId } = await createAccount(env.client, (transaction) => {
-            transaction
-                .setKeyWithoutAlias(key.publicKey)
-                .setInitialBalance(new Hbar(2));
+            transaction.setInitialBalance(new Hbar(2));
         });
 
         expect(accountId).to.not.be.null;

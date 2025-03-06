@@ -1,17 +1,18 @@
 import {
     AccountBalanceQuery,
-    AccountCreateTransaction,
     Hbar,
     NftId,
-    PrivateKey,
     TokenAssociateTransaction,
-    TokenCreateTransaction,
     TokenMintTransaction,
     TokenRejectFlow,
-    TokenType,
     TransferTransaction,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import {
+    createFungibleToken,
+    createNonFungibleToken,
+    createAccount,
+} from "./utils/Fixtures.js";
 
 describe("TokenRejectIntegrationTest", function () {
     let env;
@@ -20,42 +21,38 @@ describe("TokenRejectIntegrationTest", function () {
         env = await IntegrationTestEnv.new();
         const FULL_TREASURY_BALANCE = 1000000;
 
-        // create token
-        const tokenCreateTx = await new TokenCreateTransaction()
-            .setTokenName("ffff")
-            .setTokenSymbol("F")
-            .setDecimals(3)
-            .setInitialSupply(FULL_TREASURY_BALANCE)
-            .setTreasuryAccountId(env.operatorId)
-            .setPauseKey(env.operatorKey)
-            .setAdminKey(env.operatorKey)
-            .setSupplyKey(env.operatorKey)
-            .execute(env.client);
+        // create tokens
+        const tokenId1 = await createFungibleToken(
+            env.client,
+            (transaction) => {
+                transaction
+                    .setDecimals(3)
+                    .setInitialSupply(FULL_TREASURY_BALANCE)
+                    .setTreasuryAccountId(env.operatorId)
+                    .setPauseKey(env.operatorKey)
+                    .setAdminKey(env.operatorKey)
+                    .setSupplyKey(env.operatorKey);
+            },
+        );
 
-        let tokenId1 = (await tokenCreateTx.getReceipt(env.client)).tokenId;
+        const tokenId2 = await createFungibleToken(
+            env.client,
+            (transaction) => {
+                transaction
+                    .setDecimals(3)
+                    .setInitialSupply(1000000)
+                    .setTreasuryAccountId(env.operatorId)
+                    .setPauseKey(env.operatorKey)
+                    .setAdminKey(env.operatorKey)
+                    .setSupplyKey(env.operatorKey);
+            },
+        );
 
-        // create token
-        const tokenCreateTx2 = await new TokenCreateTransaction()
-            .setTokenName("ffff")
-            .setTokenSymbol("F")
-            .setDecimals(3)
-            .setInitialSupply(1000000)
-            .setTreasuryAccountId(env.operatorId)
-            .setPauseKey(env.operatorKey)
-            .setAdminKey(env.operatorKey)
-            .setSupplyKey(env.operatorKey)
-            .execute(env.client);
-
-        let tokenId2 = (await tokenCreateTx2.getReceipt(env.client)).tokenId;
         // create receiver account
-        let receiverPrivateKey = await PrivateKey.generateECDSA();
-        const receiverCreateAccount = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(receiverPrivateKey)
-            .setInitialBalance(new Hbar(1))
-            .execute(env.client);
-
-        let receiverId = (await receiverCreateAccount.getReceipt(env.client))
-            .accountId;
+        const { accountId: receiverId, newKey: receiverPrivateKey } =
+            await createAccount(env.client, (transaction) => {
+                transaction.setInitialBalance(new Hbar(1));
+            });
 
         await (
             await new TokenAssociateTransaction()
@@ -122,28 +119,22 @@ describe("TokenRejectIntegrationTest", function () {
         env = await IntegrationTestEnv.new();
 
         // create token
-        const tokenCreateTx = await new TokenCreateTransaction()
-            .setTokenType(TokenType.NonFungibleUnique)
-            .setTokenName("ffff")
-            .setTokenSymbol("F")
-            .setTreasuryAccountId(env.operatorId)
-            .setPauseKey(env.operatorKey)
-            .setAdminKey(env.operatorKey)
-            .setSupplyKey(env.operatorKey)
-            .execute(env.client);
-
-        let { tokenId } = await tokenCreateTx.getReceipt(env.client);
+        const tokenId = await createNonFungibleToken(
+            env.client,
+            (transaction) => {
+                transaction
+                    .setTreasuryAccountId(env.operatorId)
+                    .setPauseKey(env.operatorKey)
+                    .setAdminKey(env.operatorKey)
+                    .setSupplyKey(env.operatorKey);
+            },
+        );
 
         // create receiver account
-        let receiverPrivateKey = await PrivateKey.generateECDSA();
-        const receiverCreateAccount = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(receiverPrivateKey)
-            .setInitialBalance(new Hbar(1))
-            .execute(env.client);
-
-        let { accountId: receiverId } = await receiverCreateAccount.getReceipt(
-            env.client,
-        );
+        const { accountId: receiverId, newKey: receiverPrivateKey } =
+            await createAccount(env.client, (transaction) => {
+                transaction.setInitialBalance(new Hbar(1));
+            });
 
         await (
             await new TokenAssociateTransaction()
