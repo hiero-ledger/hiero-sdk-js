@@ -1,14 +1,13 @@
 import {
-    TokenCreateTransaction,
-    TokenType,
-    PrivateKey,
     TokenMintTransaction,
     TokenUpdateNftsTransaction,
     TokenNftInfoQuery,
     NftId,
     Status,
+    PrivateKey,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import { createNonFungibleToken } from "./utils/Fixtures.js";
 
 describe("TokenUpdateNftsTransaction", function () {
     let client,
@@ -17,8 +16,6 @@ describe("TokenUpdateNftsTransaction", function () {
         metadata,
         newMetadata,
         metadataKey,
-        tokenName,
-        tokenSymbol,
         supplyKey,
         wrongMetadataKey,
         nftCount;
@@ -32,26 +29,18 @@ describe("TokenUpdateNftsTransaction", function () {
         newMetadata = new Uint8Array([1, 2]);
         metadataKey = PrivateKey.generateECDSA();
         supplyKey = PrivateKey.generateECDSA();
-        tokenName = "Test";
-        tokenSymbol = "T";
         wrongMetadataKey = PrivateKey.generateECDSA();
         nftCount = 4;
     });
 
     it("should update the metadata of entire NFT collection", async function () {
-        const createTokenTx = new TokenCreateTransaction()
-            .setTokenName(tokenName)
-            .setTokenSymbol(tokenSymbol)
-            .setAdminKey(operatorKey)
-            .setSupplyKey(supplyKey)
-            .setMetadataKey(metadataKey)
-            .setTreasuryAccountId(operatorId)
-            .setTokenType(TokenType.NonFungibleUnique);
-
-        const createTokenTxResponse = await createTokenTx.execute(client);
-        const createTokenTxReceipt =
-            await createTokenTxResponse.getReceipt(client);
-        const tokenId = createTokenTxReceipt.tokenId;
+        const tokenId = await createNonFungibleToken(client, (transaction) => {
+            transaction
+                .setAdminKey(operatorKey)
+                .setSupplyKey(supplyKey)
+                .setMetadataKey(metadataKey)
+                .setTreasuryAccountId(operatorId);
+        });
 
         const tokenMintTx = new TokenMintTransaction()
             .setMetadata(generateMetadataList(metadata, nftCount))
@@ -91,19 +80,13 @@ describe("TokenUpdateNftsTransaction", function () {
     });
 
     it("should update the NFT's metadata", async function () {
-        const createTokenTx = new TokenCreateTransaction()
-            .setTokenName(tokenName)
-            .setTokenSymbol(tokenSymbol)
-            .setAdminKey(operatorKey)
-            .setSupplyKey(supplyKey)
-            .setMetadataKey(metadataKey)
-            .setTreasuryAccountId(operatorId)
-            .setTokenType(TokenType.NonFungibleUnique);
-
-        const createTokenTxResponse = await createTokenTx.execute(client);
-        const createTokenTxReceipt =
-            await createTokenTxResponse.getReceipt(client);
-        const tokenId = createTokenTxReceipt.tokenId;
+        const tokenId = await createNonFungibleToken(client, (transaction) => {
+            transaction
+                .setAdminKey(operatorKey)
+                .setSupplyKey(supplyKey)
+                .setMetadataKey(metadataKey)
+                .setTreasuryAccountId(operatorId);
+        });
 
         const tokenMintTx = new TokenMintTransaction()
             .setMetadata(generateMetadataList(metadata, nftCount))
@@ -143,19 +126,13 @@ describe("TokenUpdateNftsTransaction", function () {
     });
 
     it("should NOT update the NFT's metadata", async function () {
-        const createTokenTx = new TokenCreateTransaction()
-            .setTokenName(tokenName)
-            .setTokenSymbol(tokenSymbol)
-            .setAdminKey(operatorKey)
-            .setSupplyKey(supplyKey)
-            .setMetadataKey(metadataKey)
-            .setTreasuryAccountId(operatorId)
-            .setTokenType(TokenType.NonFungibleUnique);
-
-        const createTokenTxResponse = await createTokenTx.execute(client);
-        const createTokenTxReceipt =
-            await createTokenTxResponse.getReceipt(client);
-        const tokenId = createTokenTxReceipt.tokenId;
+        const tokenId = await createNonFungibleToken(client, (transaction) => {
+            transaction
+                .setAdminKey(operatorKey)
+                .setSupplyKey(supplyKey)
+                .setMetadataKey(metadataKey)
+                .setTreasuryAccountId(operatorId);
+        });
 
         const tokenMintTx = new TokenMintTransaction()
             .setMetadata(generateMetadataList(metadata, nftCount))
@@ -194,19 +171,13 @@ describe("TokenUpdateNftsTransaction", function () {
     });
 
     it("should earse the metadata of entire NFT collection", async function () {
-        const createTokenTx = new TokenCreateTransaction()
-            .setTokenName(tokenName)
-            .setTokenSymbol(tokenSymbol)
-            .setAdminKey(operatorKey)
-            .setSupplyKey(supplyKey)
-            .setMetadataKey(metadataKey)
-            .setTreasuryAccountId(operatorId)
-            .setTokenType(TokenType.NonFungibleUnique);
-
-        const createTokenTxResponse = await createTokenTx.execute(client);
-        const createTokenTxReceipt =
-            await createTokenTxResponse.getReceipt(client);
-        const tokenId = createTokenTxReceipt.tokenId;
+        const tokenId = await createNonFungibleToken(client, (transaction) => {
+            transaction
+                .setAdminKey(operatorKey)
+                .setSupplyKey(supplyKey)
+                .setMetadataKey(metadataKey)
+                .setTreasuryAccountId(operatorId);
+        });
 
         const tokenMintTx = new TokenMintTransaction()
             .setMetadata(generateMetadataList(metadata, nftCount))
@@ -247,18 +218,15 @@ describe("TokenUpdateNftsTransaction", function () {
 
     it("should NOT update the NFTs metadata if the metadataKey is NOT set", async function () {
         try {
-            const createTokenTx = new TokenCreateTransaction()
-                .setTokenName(tokenName)
-                .setTokenSymbol(tokenSymbol)
-                .setAdminKey(operatorKey)
-                .setSupplyKey(supplyKey)
-                .setTreasuryAccountId(operatorId)
-                .setTokenType(TokenType.NonFungibleUnique);
-
-            const createTokenTxResponse = await createTokenTx.execute(client);
-            const createTokenTxReceipt =
-                await createTokenTxResponse.getReceipt(client);
-            const tokenId = createTokenTxReceipt.tokenId;
+            const tokenId = await createNonFungibleToken(
+                client,
+                (transaction) => {
+                    transaction
+                        .setAdminKey(operatorKey)
+                        .setSupplyKey(supplyKey)
+                        .setTreasuryAccountId(operatorId);
+                },
+            );
 
             const tokenMintTx = new TokenMintTransaction()
                 .setMetadata(generateMetadataList(metadata, nftCount))
@@ -290,19 +258,16 @@ describe("TokenUpdateNftsTransaction", function () {
 
     it("should NOT update the NFTs metadata when the transaction is not signed with the metadataKey", async function () {
         try {
-            const createTokenTx = new TokenCreateTransaction()
-                .setTokenName(tokenName)
-                .setTokenSymbol(tokenSymbol)
-                .setAdminKey(operatorKey)
-                .setMetadataKey(metadataKey)
-                .setSupplyKey(supplyKey)
-                .setTreasuryAccountId(operatorId)
-                .setTokenType(TokenType.NonFungibleUnique);
-
-            const createTokenTxResponse = await createTokenTx.execute(client);
-            const createTokenTxReceipt =
-                await createTokenTxResponse.getReceipt(client);
-            const tokenId = createTokenTxReceipt.tokenId;
+            const tokenId = await createNonFungibleToken(
+                client,
+                (transaction) => {
+                    transaction
+                        .setAdminKey(operatorKey)
+                        .setMetadataKey(metadataKey)
+                        .setSupplyKey(supplyKey)
+                        .setTreasuryAccountId(operatorId);
+                },
+            );
 
             const tokenMintTx = new TokenMintTransaction()
                 .setMetadata(generateMetadataList(metadata, nftCount))
