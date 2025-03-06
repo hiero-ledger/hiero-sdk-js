@@ -1,11 +1,8 @@
 import {
-    AccountCreateTransaction,
-    AccountDeleteTransaction,
     AccountId,
     FileCreateTransaction,
     Hbar,
     PrivateKey,
-    TokenCreateTransaction,
     TransferTransaction,
     TransactionReceipt,
     TransactionResponse,
@@ -20,6 +17,11 @@ import * as hex from "../../src/encoding/hex.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { expect } from "chai";
 import { Client } from "./client/NodeIntegrationTestEnv.js";
+import {
+    createAccount,
+    deleteAccount,
+    createFungibleToken,
+} from "./utils/Fixtures.js";
 
 describe("TransactionIntegration", function () {
     it("should be executable", async function () {
@@ -29,33 +31,29 @@ describe("TransactionIntegration", function () {
 
         const key = PrivateKey.generateED25519();
 
-        const transaction = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(key.publicKey)
-            .freezeWith(env.client)
-            .signWithOperator(env.client);
+        const { accountId } = await createAccount(
+            env.client,
+            async (transaction) => {
+                await transaction
+                    .setKeyWithoutAlias(key.publicKey)
+                    .freezeWith(env.client)
+                    .signWithOperator(env.client);
+                const expectedHash = await transaction.getTransactionHash();
+                const record = await transaction.getRecord(env.client);
 
-        const expectedHash = await transaction.getTransactionHash();
+                expect(hex.encode(expectedHash)).to.be.equal(
+                    hex.encode(record.transactionHash),
+                );
 
-        const response = await transaction.execute(env.client);
-
-        const record = await response.getRecord(env.client);
-
-        expect(hex.encode(expectedHash)).to.be.equal(
-            hex.encode(record.transactionHash),
+                expect(accountId).to.not.be.null;
+            },
         );
 
-        const account = record.receipt.accountId;
-        expect(account).to.not.be.null;
-
-        await (
-            await (
-                await new AccountDeleteTransaction()
-                    .setAccountId(account)
-                    .setTransferAccountId(operatorId)
-                    .freezeWith(env.client)
-                    .sign(key)
-            ).execute(env.client)
-        ).getReceipt(env.client);
+        await deleteAccount(env.client, key, (transaction) => {
+            transaction
+                .setAccountId(accountId)
+                .setTransferAccountId(operatorId);
+        });
 
         await env.close();
     });
@@ -81,27 +79,25 @@ describe("TransactionIntegration", function () {
         const env = await IntegrationTestEnv.new();
         const key = PrivateKey.generateED25519();
 
-        let transaction = await (
-            await new TokenCreateTransaction()
-                .setAdminKey(key.publicKey)
-                .freezeWith(env.client)
-                .sign(key)
-        ).signWithOperator(env.client);
+        await createFungibleToken(env.client, async (transaction) => {
+            transaction.setAdminKey(key.publicKey);
+            await transaction.freezeWith(env.client);
+            await transaction.sign(key);
+            await transaction.signWithOperator(env.client);
+            expect(
+                transaction._signedTransactions.list[0].sigMap.sigPair.length,
+            ).to.eql(2);
+        });
 
-        expect(
-            transaction._signedTransactions.list[0].sigMap.sigPair.length,
-        ).to.eql(2);
-
-        transaction = await (
-            await new TokenCreateTransaction()
-                .setAdminKey(key.publicKey)
-                .freezeWith(env.client)
-                .signWithOperator(env.client)
-        ).sign(key);
-
-        expect(
-            transaction._signedTransactions.list[0].sigMap.sigPair.length,
-        ).to.eql(2);
+        await createFungibleToken(env.client, async (transaction) => {
+            transaction.setAdminKey(key.publicKey);
+            await transaction.freezeWith(env.client);
+            await transaction.signWithOperator(env.client);
+            await transaction.sign(key);
+            expect(
+                transaction._signedTransactions.list[0].sigMap.sigPair.length,
+            ).to.eql(2);
+        });
 
         await env.close();
     });
@@ -770,17 +766,16 @@ describe("TransactionIntegration", function () {
             keyList = new KeyList([user1Key.publicKey, user2Key.publicKey]);
 
             // Create account
-            const createAccountTransaction = new AccountCreateTransaction()
-                .setInitialBalance(new Hbar(2))
-                .setKeyWithoutAlias(keyList);
-
-            const createResponse = await createAccountTransaction.execute(
+            const { accountId } = await createAccount(
                 env.client,
+                (transaction) => {
+                    transaction
+                        .setInitialBalance(new Hbar(2))
+                        .setKeyWithoutAlias(keyList);
+                },
             );
-            const createReceipt = await createResponse.getReceipt(env.client);
 
-            createdAccountId = createReceipt.accountId;
-
+            createdAccountId = accountId;
             expect(createdAccountId).to.exist;
         });
 
