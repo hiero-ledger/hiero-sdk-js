@@ -4,6 +4,7 @@ import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 
 describe("AddressBookQuery", function () {
     it("should be query the addressbook on local node", async function () {
+        // NOTE: Ensure the environment is configured for local use
         const env = await IntegrationTestEnv.new();
 
         const addressBook = await new AddressBookQuery()
