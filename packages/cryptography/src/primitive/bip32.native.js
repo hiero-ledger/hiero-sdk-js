@@ -1,15 +1,8 @@
 import * as hmac from "./hmac.js";
-import * as hex from "../encoding/hex.js";
-import elliptic from "elliptic";
-import BN from "bn.js";
+import { secp256k1 } from "@noble/curves/secp256k1";
+import { bytesToNumberBE, numberToBytesBE } from "@noble/curves/abstract/utils";
 
-const secp256k1 = new elliptic.ec("secp256k1");
-
-// https://github.com/ethers-io/ethers.js/blob/master/packages/hdnode/src.ts/index.ts#L23
-const N = new BN(
-    "fffffffffffffffffffffffffffffffebaaedce6af48a03bbfd25e8cd0364141",
-    "hex",
-);
+const N = secp256k1.CURVE.n;
 const HARDENED_BIT = 0x80000000;
 
 /**
@@ -25,9 +18,7 @@ export async function derive(parentKey, chainCode, index) {
     const isHardened = isHardenedIndex(index);
     const data = new Uint8Array(37);
 
-    const publicKey = hex.decode(
-        secp256k1.keyFromPrivate(parentKey).getPublic(true, "hex"),
-    );
+    const publicKey = secp256k1.getPublicKey(parentKey, true);
 
     // Hardened child
     if (isHardened) {
@@ -55,24 +46,21 @@ export async function derive(parentKey, chainCode, index) {
     // if parse256(IL) >= n, proceed with the next value for i
     try {
         // ki = parse256(IL) + kpar (mod n)
-        const ki = secp256k1
-            .keyFromPrivate(parentKey)
-            .getPrivate()
-            .add(secp256k1.keyFromPrivate(IL).getPrivate())
-            .mod(N);
-        const hexZeroPadded = hex.hexZeroPadded(
-            Uint8Array.from(ki.toArray()),
-            32,
-        );
-        // const ki = Buffer.from(ecc.privateAdd(this.privateKey!, IL)!);
+        const parentKeyBigInt = bytesToNumberBE(parentKey);
+        const ILBigInt = bytesToNumberBE(IL);
+
+        // Add private keys mod N
+        const ki = (parentKeyBigInt + ILBigInt) % N;
 
         // In case ki == 0, proceed with the next value for i
-        if (ki.eqn(0)) {
+        if (ki === 0n) {
             return derive(parentKey, chainCode, index + 1);
         }
 
+        const keyData = numberToBytesBE(ki, 32);
+
         return {
-            keyData: hex.decode(hexZeroPadded),
+            keyData,
             chainCode: IR,
         };
     } catch {

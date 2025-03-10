@@ -156,9 +156,6 @@ importers:
       dpdm:
         specifier: ^3.11.0
         version: 3.14.0
-      elliptic:
-        specifier: ^6.6.1
-        version: 6.6.1
       eslint:
         specifier: ^8.52.0
         version: 8.57.1
