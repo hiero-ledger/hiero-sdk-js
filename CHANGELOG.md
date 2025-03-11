@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.61.0-beta.1
+
+
+* feat: Added AddressBookQuery test against Local node/Solo by @ivaylogarnev-limechain in https://github.com/hiero-ledger/hiero-sdk-js/pull/2933
+* fix: Enabled gRPC retry mechanism by @ivaylogarnev-limechain in https://github.com/hiero-ledger/hiero-sdk-js/pull/2940
+* fix: Hashgraph/cryptography within browser tests by @ivaylogarnev-limechain in https://github.com/hiero-ledger/hiero-sdk-js/pull/2927
+* ci: refactor: used fixtures in tests by @venilinvasilev in https://github.com/hiero-ledger/hiero-sdk-js/pull/2914
+* ci: change workflow to pull_request_target by @andrewb1269hg in https://github.com/hiero-ledger/hiero-sdk-js/pull/2925
+* chore: remove node08,node13,node23 from mainnet constants by @kfbr in https://github.com/hiero-ledger/hiero-sdk-js/pull/2913
+* chore(deps-dev): bump c8 from 8.0.1 to 10.1.3 by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2785
+* chore(deps-dev): bump chai and @types/chai by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2908
+* chore(deps-dev): bump eslint-plugin-n from 16.6.2 to 17.16.1 by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2916
+* chore(deps-dev): bump eslint-plugin-n from 16.2.0 to 17.16.1 in /packages/cryptography by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2915
+
 ## v2.60.1
 
 * fix: ECDSA private key by @ivaylonikolov7 in https://github.com/hiero-ledger/hiero-sdk-js/pull/2903
