@@ -107,7 +107,7 @@ export default class NodeChannel extends Channel {
             "grpc.keepalive_time_ms": 100000,
             "grpc.keepalive_timeout_ms": 10000,
             "grpc.keepalive_permit_without_calls": 1,
-            "grpc.enable_retries": 0,
+            "grpc.enable_retries": 1,
         };
 
         // If the port is 50212, use TLS
