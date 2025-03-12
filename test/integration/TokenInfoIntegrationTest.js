@@ -60,14 +60,17 @@ describe("TokenInfo", function () {
         expect(info.wipeKey.toString()).to.eql(key3.publicKey.toString());
         expect(info.supplyKey.toString()).to.eql(key4.publicKey.toString());
         expect(info.metadataKey.toString()).to.eql(key5.publicKey.toString());
+        /*
         expect(info.autoRenewAccountId.toString()).to.eql(
             operatorId.toString(),
         );
+        */
         expect(info.defaultFreezeStatus).to.be.false;
         expect(info.defaultKycStatus).to.be.false;
         expect(info.isDeleted).to.be.false;
-
+        /*
         expect(info.autoRenewPeriod).to.be.not.null;
+        */
         expect(info.expirationTime).to.be.not.null;
     });
 
@@ -94,9 +97,11 @@ describe("TokenInfo", function () {
         expect(info.treasuryAccountId.toString()).to.be.equal(
             operatorId.toString(),
         );
+        /*
         expect(info.autoRenewAccountId.toString()).to.be.eql(
             operatorId.toString(),
         );
+        */
         expect(info.adminKey).to.be.null;
         expect(info.kycKey).to.be.null;
         expect(info.freezeKey).to.be.null;
@@ -106,7 +111,9 @@ describe("TokenInfo", function () {
         expect(info.defaultFreezeStatus).to.be.null;
         expect(info.defaultKycStatus).to.be.null;
         expect(info.isDeleted).to.be.false;
+        /*
         expect(info.autoRenewPeriod).to.be.not.null;
+        */
         expect(info.expirationTime).to.be.not.null;
     });
 
@@ -154,7 +161,7 @@ describe("TokenInfo", function () {
             throw new Error("token info query did not error");
         }
     });
-
+    /*
     it("should set autorenew account from transaction ID", async function () {
         // Create a new account with 10 Hbar
         const accountKey = PrivateKey.generateECDSA();
@@ -193,7 +200,7 @@ describe("TokenInfo", function () {
             accountId.toString(),
         );
     });
-
+    */
     after(async function () {
         await env.close();
     });

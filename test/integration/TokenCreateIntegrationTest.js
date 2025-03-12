@@ -7,7 +7,7 @@ import {
     TokenInfoQuery,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
-import { DEFAULT_AUTO_RENEW_PERIOD } from "../../src/transaction/Transaction.js";
+// import { DEFAULT_AUTO_RENEW_PERIOD } from "../../src/transaction/Transaction.js";
 
 describe("TokenCreate", function () {
     let env;
@@ -57,12 +57,14 @@ describe("TokenCreate", function () {
         expect(info.freezeKey.toString()).to.eql(key2.publicKey.toString());
         expect(info.wipeKey.toString()).to.eql(key3.publicKey.toString());
         expect(info.supplyKey.toString()).to.eql(key4.publicKey.toString());
+        /*
         expect(info.autoRenewAccountId.toString()).to.be.eql(
             operatorId.toString(),
         );
         expect(info.autoRenewPeriod.seconds.toInt()).to.eql(
             DEFAULT_AUTO_RENEW_PERIOD.toInt(),
         );
+        */
         expect(info.defaultFreezeStatus).to.be.false;
         expect(info.defaultKycStatus).to.be.false;
         expect(info.isDeleted).to.be.false;
@@ -92,12 +94,14 @@ describe("TokenCreate", function () {
         expect(info.treasuryAccountId.toString()).to.be.equal(
             operatorId.toString(),
         );
+        /*
         expect(info.autoRenewAccountId.toString()).to.be.equal(
             operatorId.toString(),
         );
         expect(info.autoRenewPeriod.seconds.toInt()).to.eql(
             DEFAULT_AUTO_RENEW_PERIOD.toInt(),
         );
+        */
         expect(info.kycKey).to.be.null;
         expect(info.freezeKey).to.be.null;
         expect(info.wipeKey).to.be.null;

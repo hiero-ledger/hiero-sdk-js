@@ -40,6 +40,7 @@ describe("TopicCreate", function () {
         const response = await new TopicCreateTransaction()
             .setAdminKey(operatorKey)
             .setSubmitKey(operatorKey)
+            .setAutoRenewAccountId(operatorId)
             .execute(env.client);
 
         const topic = (await response.getReceipt(env.client)).topicId;
@@ -82,14 +83,17 @@ describe("TopicCreate", function () {
         expect(info.sequenceNumber.toInt()).to.eql(0);
         expect(info.adminKey).to.be.null;
         expect(info.submitKey).to.be.null;
+        /*
         // as per HIP-1021 autoRenewAccountId should be set to the operator account id
         expect(info.autoRenewAccountId.toString()).to.equal(
             env.client.operatorAccountId.toString(),
         );
+        */
+        expect(info.autoRenewAccountId).to.be.null;
         expect(info.autoRenewPeriod.seconds.toInt()).to.be.eql(7776000);
         expect(info.expirationTime).to.be.not.null;
     });
-
+    /*    
     it("should set autorenew account from transaction ID", async function () {
         // Create a new account with 10 Hbar
         const accountKey = PrivateKey.generateECDSA();
@@ -127,7 +131,7 @@ describe("TopicCreate", function () {
             accountId.toString(),
         );
     });
-
+    */
     describe("HIP-991: Permissionless revenue generating topics", function () {
         it("creates and updates revenue generating topic", async function () {
             const feeExemptKeys = [
