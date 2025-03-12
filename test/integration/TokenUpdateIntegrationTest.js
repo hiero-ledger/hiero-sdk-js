@@ -76,9 +76,7 @@ describe("TokenUpdate", function () {
         expect(info.metadataKey.toString()).to.eql(
             metadataKey.publicKey.toString(),
         );
-        expect(info.autoRenewAccountId.toString()).to.be.eql(
-            operatorId.toString(),
-        );
+        expect(info.autoRenewAccountId).to.be.null;
         expect(info.metadata).to.eql(metadata);
         expect(info.defaultFreezeStatus).to.be.false;
         expect(info.defaultKycStatus).to.be.false;
@@ -178,9 +176,7 @@ describe("TokenUpdate", function () {
         expect(info.freezeKey.toString()).to.eql(key2.publicKey.toString());
         expect(info.wipeKey.toString()).to.eql(key3.publicKey.toString());
         expect(info.supplyKey.toString()).to.eql(key4.publicKey.toString());
-        expect(info.autoRenewAccountId.toString()).to.be.eql(
-            operatorId.toString(),
-        );
+        expect(info.autoRenewAccountId).to.be.null;
         expect(info.defaultFreezeStatus).to.be.false;
         expect(info.defaultKycStatus).to.be.false;
         expect(info.isDeleted).to.be.false;
