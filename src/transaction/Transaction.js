@@ -5,6 +5,7 @@ import TransactionResponse from "./TransactionResponse.js";
 import TransactionId from "./TransactionId.js";
 import TransactionHashMap from "./TransactionHashMap.js";
 import SignatureMap from "./SignatureMap.js";
+import SignatureMapLegacy from "./SignatureMapLegacy.js";
 import Executable, { ExecutionState } from "../Executable.js";
 import Status from "../Status.js";
 import Long from "long";
@@ -798,10 +799,14 @@ export default class Transaction extends Executable {
      * Add a signature explicitly
      *
      * @param {PublicKey} publicKey
-     * @param {SignatureMap} signatureMap
+     * @param {SignatureMap | Uint8Array |Uint8Array[]} signatureMap
      * @returns {this}
      */
     addSignature(publicKey, signatureMap) {
+        if (!(signatureMap instanceof SignatureMap)) {
+            return this._addSignatureLegacy(publicKey, signatureMap);
+        }
+
         // If the transaction isn't frozen, freeze it.
         if (!this.isFrozen()) {
             this.freeze();
@@ -871,6 +876,113 @@ export default class Transaction extends Executable {
         this._transactionSigners.push(null);
 
         return this;
+    }
+
+    /**
+     * Add a signature explicitly
+     * This method supports both single and multiple signatures. A single signature will be applied to all transactions,
+     *
+     * While an array of signatures must correspond to each transaction individually.
+     *
+     * @param {PublicKey} publicKey
+     * @param {Uint8Array | Uint8Array[]} signature
+     * @returns {this}
+     */
+    _addSignatureLegacy(publicKey, signature) {
+        const isSingleSignature = signature instanceof Uint8Array;
+
+        const isArraySignature = Array.isArray(signature);
+
+        if (this.getRequiredChunks() > 1) {
+            throw new Error(
+                "Add signature is not supported for chunked transactions",
+            );
+        }
+
+        // Check if it is a single signature with NOT exactly one transaction
+
+        if (isSingleSignature && this._signedTransactions.length !== 1) {
+            throw new Error(
+                "Signature array must match the number of transactions",
+            );
+        }
+
+        // Check if it's an array but the array length doesn't match the number of transactions
+
+        if (
+            isArraySignature &&
+            signature.length !== this._signedTransactions.length
+        ) {
+            throw new Error(
+                "Signature array must match the number of transactions",
+            );
+        }
+
+        // If the transaction isn't frozen, freeze it.
+        if (!this.isFrozen()) {
+            this.freeze();
+        }
+
+        const publicKeyData = publicKey.toBytesRaw();
+        const publicKeyHex = hex.encode(publicKeyData);
+
+        if (this._signerPublicKeys.has(publicKeyHex)) {
+            // this public key has already signed this transaction
+            return this;
+        }
+
+        // If we add a new signer, then we need to re-create all transactions
+        this._transactions.clear();
+
+        // Locking the transaction IDs and node account IDs is necessary for consistency
+        // between before and after execution
+        this._transactionIds.setLocked();
+        this._nodeAccountIds.setLocked();
+        this._signedTransactions.setLocked();
+        const signatureArray = isSingleSignature ? [signature] : signature;
+
+        // Add the signature to the signed transaction list
+        for (let index = 0; index < this._signedTransactions.length; index++) {
+            const signedTransaction = this._signedTransactions.get(index);
+            if (signedTransaction.sigMap == null) {
+                signedTransaction.sigMap = {};
+            }
+
+            if (signedTransaction.sigMap.sigPair == null) {
+                signedTransaction.sigMap.sigPair = [];
+            }
+
+            signedTransaction.sigMap.sigPair.push(
+                publicKey._toProtobufSignature(signatureArray[index]),
+            );
+        }
+
+        this._signerPublicKeys.add(publicKeyHex);
+        this._publicKeys.push(publicKey);
+        this._transactionSigners.push(null);
+
+        return this;
+    }
+
+    /**
+     * Get the current signatures on the request
+     * **NOTE**: Does NOT support sign on demand
+     * @returns {SignatureMapLegacy}
+     */
+    getSignaturesLegacy() {
+        // If a user is attempting to get signatures for a transaction, then the
+        // transaction must be frozen.
+        this._requireFrozen();
+        // Sign on demand must be disabled because this is the non-async version and
+        // signing requires awaiting callbacks.
+        this._requireNotSignOnDemand();
+        // Build all the transactions
+        this._buildAllTransactions();
+        // Lock transaction IDs, and node account IDs
+        this._transactionIds.setLocked();
+        this._nodeAccountIds.setLocked();
+        // Construct a signature map from this transaction
+        return SignatureMapLegacy._fromTransaction(this);
     }
 
     /**
@@ -949,13 +1061,26 @@ export default class Transaction extends Executable {
     }
 
     /**
+     * @overload
+     * @param {true} [legacy]
+     * @returns {SignatureMapLegacy}
+     */
+    /**
+     * @overload
+     * @param {false} [legacy]
+     * @returns {SignatureMap}
+     */
+    /**
      * Get the current signatures on the request
      *
      * **NOTE**: Does NOT support sign on demand
-     *
-     * @returns {SignatureMap}
+     * @param {boolean} [legacy]
+     * @returns {SignatureMap | SignatureMapLegacy}
      */
-    getSignatures() {
+    getSignatures(legacy) {
+        if (legacy) {
+            return this.getSignaturesLegacy();
+        }
         // If a user is attempting to get signatures for a transaction, then the
         // transaction must be frozen.
         this._requireFrozen();
