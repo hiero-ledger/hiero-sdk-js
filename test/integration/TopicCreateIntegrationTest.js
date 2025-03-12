@@ -12,6 +12,7 @@ import {
     TopicMessageSubmitTransaction,
     TopicUpdateTransaction,
     TransferTransaction,
+    AccountBalanceQuery,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { createAccount, createFungibleToken } from "./utils/Fixtures.js";
