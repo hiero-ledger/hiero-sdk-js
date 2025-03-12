@@ -11,7 +11,7 @@
         "format": "prettier '*.js' '*.json' --write"
     },
     "engines": {
-        "node": ">=14.0.0"
+        "node": ">=16.0.0"
     },
     "dependencies": {
         "@ethersproject/abi": "^5.7.0",
