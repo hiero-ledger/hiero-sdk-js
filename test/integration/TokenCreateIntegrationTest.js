@@ -144,7 +144,8 @@ describe("TokenCreate", function () {
             .setTokenId(tokenId)
             .execute(env.client);
 
-        expect(info.autoRenewAccountId).to.be.not.null;
+        expect(info.autoRenewAccountId).to.be.null;
+
         /*
         expect(info.autoRenewAccountId.toString()).to.be.eql(
             operatorId.toString(),

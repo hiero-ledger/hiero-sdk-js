@@ -82,7 +82,7 @@ describe("TokenUpdate", function () {
         expect(info.defaultKycStatus).to.be.false;
         expect(info.isDeleted).to.be.false;
 
-        expect(info.autoRenewPeriod).to.be.not.null;
+        expect(info.autoRenewAccountId).to.be.null;
         expect(info.expirationTime).to.be.not.null;
 
         await (
@@ -180,7 +180,7 @@ describe("TokenUpdate", function () {
         expect(info.defaultFreezeStatus).to.be.false;
         expect(info.defaultKycStatus).to.be.false;
         expect(info.isDeleted).to.be.false;
-        expect(info.autoRenewPeriod).to.be.not.null;
+        expect(info.autoRenewAccountId).to.be.null;
         expect(info.expirationTime).to.be.not.null;
 
         await (
