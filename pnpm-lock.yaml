@@ -27,8 +27,8 @@ importers:
         specifier: ^1.12.6
         version: 1.12.6
       '@hashgraph/cryptography':
-        specifier: 1.5.0-beta.4
-        version: 1.5.0-beta.4(expo@52.0.37(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(graphql@15.8.0)(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))(react@19.0.0))(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))
+        specifier: 1.5.0-beta.5
+        version: 1.5.0-beta.5(expo@52.0.37(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(graphql@15.8.0)(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))(react@19.0.0))(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))
       '@hashgraph/proto':
         specifier: 2.17.0-beta.1
         version: 2.17.0-beta.1
@@ -1369,8 +1369,8 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
-  '@hashgraph/cryptography@1.5.0-beta.4':
-    resolution: {integrity: sha512-Y9XsC3r1gT2sxf/YdxWOjf/fbC4D7V12oN2gMEo0RU2A1fl79zVL4aYMXPmVq93SjAZ2iAMkgeAlEcPxD0cLBA==}
+  '@hashgraph/cryptography@1.5.0-beta.5':
+    resolution: {integrity: sha512-mXJqGGEJNZGKg2uRLZBjtt7ubDBRRweuVFhSBbfFbPyKlDrpm3h9GO9XyV3tFaYnfUaq5+tv5jXAqDWc2M6eTQ==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
       expo: '>=50.0.0'
@@ -7757,7 +7757,7 @@ snapshots:
       protobufjs: 7.2.5
       yargs: 17.7.2
 
-  '@hashgraph/cryptography@1.5.0-beta.4(expo@52.0.37(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(graphql@15.8.0)(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))(react@19.0.0))(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))':
+  '@hashgraph/cryptography@1.5.0-beta.5(expo@52.0.37(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(graphql@15.8.0)(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))(react@19.0.0))(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))':
     dependencies:
       asn1js: 3.0.5
       bignumber.js: 9.1.2
