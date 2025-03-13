@@ -1,6 +1,6 @@
 {
     "name": "@hashgraph/sdk",
-    "version": "2.60.1",
+    "version": "2.61.0-beta.2",
     "description": "Hiero SDK",
     "types": "./lib/index.d.ts",
     "main": "./lib/index.cjs",
@@ -59,7 +59,7 @@
         "@ethersproject/bytes": "^5.7.0",
         "@ethersproject/rlp": "^5.7.0",
         "@grpc/grpc-js": "^1.12.6",
-        "@hashgraph/cryptography": "1.5.0-beta.4",
+        "@hashgraph/cryptography": "1.5.0-beta.5",
         "@hashgraph/proto": "2.17.0-beta.1",
         "bignumber.js": "^9.1.1",
         "bn.js": "^5.1.1",
