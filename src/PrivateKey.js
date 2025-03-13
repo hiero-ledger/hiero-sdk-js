@@ -367,7 +367,7 @@ export default class PrivateKey extends Key {
                 return this._key.sign(bodyBytes);
             },
         );
-        transaction.addSignature(this.publicKey, signatures, true);
+        transaction.addSignature(this.publicKey, signatures);
         // Return directly Uint8Array if there is only one signature
         return signatures.length === 1 ? signatures[0] : signatures;
     }
