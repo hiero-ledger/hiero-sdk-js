@@ -1,8 +1,10 @@
+/* eslint-disable deprecation/deprecation */
 import NodeAccountIdSignatureMapLegacy from "./NodeAccountIdSignatureMapLegacy.js";
 import ObjectMap from "../ObjectMap.js";
 import AccountId from "../account/AccountId.js";
 
 /**
+ * @deprecated
  * @augments {ObjectMap<AccountId, NodeAccountIdSignatureMapLegacy>}
  */
 export default class SignatureMap extends ObjectMap {

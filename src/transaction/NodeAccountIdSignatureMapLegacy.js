@@ -2,6 +2,7 @@ import ObjectMap from "../ObjectMap.js";
 import PublicKey from "../PublicKey.js";
 
 /**
+ * @deprecated
  * @augments {ObjectMap<PublicKey, Uint8Array>}
  */
 export default class NodeAccountIdSignatureMap extends ObjectMap {
@@ -14,6 +15,7 @@ export default class NodeAccountIdSignatureMap extends ObjectMap {
      * @returns {NodeAccountIdSignatureMap}
      */
     static _fromTransactionSigMap(sigMap) {
+        // eslint-disable-next-line deprecation/deprecation
         const signatures = new NodeAccountIdSignatureMap();
         const sigPairs = sigMap.sigPair != null ? sigMap.sigPair : [];
 

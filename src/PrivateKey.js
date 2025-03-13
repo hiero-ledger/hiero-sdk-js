@@ -353,6 +353,7 @@ export default class PrivateKey extends Key {
     }
 
     /**
+     * @deprecated
      * @param {Transaction} transaction
      * @returns {Uint8Array | Uint8Array[]}
      */
