@@ -796,6 +796,22 @@ export default class Transaction extends Executable {
     }
 
     /**
+     * @deprecated - Using uint8array and uint8array[] as signaturemap is deprecated,
+     * use SignatureMap insted.
+     * @overload
+     * @param { PublicKey } publicKey
+     * @param { Uint8Array | Uint8Array[] } signatureMap
+     * @returns {this}
+     */
+
+    /**
+     * @overload
+     * @param {PublicKey} publicKey
+     * @param { SignatureMap } signatureMap
+     * @returns {this}
+     */
+
+    /**
      * Add a signature explicitly
      *
      * @param {PublicKey} publicKey
@@ -1061,15 +1077,18 @@ export default class Transaction extends Executable {
     }
 
     /**
+     * @deprecated - Use the legacy=flag instead to use the modern approach
      * @overload
-     * @param {true} [legacy]
+     * @param {true} legacy
      * @returns {SignatureMapLegacy}
      */
+
     /**
      * @overload
      * @param {false} [legacy]
      * @returns {SignatureMap}
      */
+
     /**
      * Get the current signatures on the request
      *

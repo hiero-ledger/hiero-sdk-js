@@ -303,7 +303,7 @@ export default class PrivateKey extends Key {
     }
 
     /**
-     * @deprecated
+     * @deprecated - Use legacy=false flag to use the modern approach
      * @overload
      * @param {Transaction} transaction
      * @param {true} legacy
@@ -320,7 +320,7 @@ export default class PrivateKey extends Key {
     /**
      * @param {Transaction} transaction
      * @param {boolean} [legacy]
-     * @returns { Uint8Array | Uint8Array[]  | SignatureMap}
+     * @returns {Uint8Array | Uint8Array[] | SignatureMap}
      */
     signTransaction(transaction, legacy = false) {
         if (legacy) {
