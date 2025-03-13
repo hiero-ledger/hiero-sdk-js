@@ -3,11 +3,6 @@ import ObjectMap from "../ObjectMap.js";
 import AccountId from "../account/AccountId.js";
 
 /**
- * @overload
- * @augments {ObjectMap<AccountId, NodeAccountIdSignatureMapLegacy>}
- */
-
-/**
  * @augments {ObjectMap<AccountId, NodeAccountIdSignatureMapLegacy>}
  */
 export default class SignatureMap extends ObjectMap {
