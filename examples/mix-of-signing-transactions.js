@@ -3,7 +3,6 @@ import {
     Client,
     AccountId,
     AccountCreateTransaction,
-    Status,
     KeyList,
     TransferTransaction,
     Hbar,
