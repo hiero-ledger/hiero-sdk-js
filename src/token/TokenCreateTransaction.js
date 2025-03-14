@@ -558,16 +558,12 @@ export default class TokenCreateTransaction extends Transaction {
         return this._freezeKey;
     }
 
-    /*
-     * Temporarily disabled due to issues with consensus node version 0.60.
-     * This will be reintroduced once all networks (previewnet, testnet, mainnet)
-     * are on version 0.60.
-     *
+    /**
      * @override
      * @param {?import("../client/Client.js").default<Channel, *>} client
      * @returns {this}
      */
-    /*
+    
     freezeWith(client) {
         if (!this._autoRenewAccountId && this.transactionId?.accountId) {
             this.setAutoRenewAccountId(this.transactionId?.accountId);
@@ -576,8 +572,7 @@ export default class TokenCreateTransaction extends Transaction {
         }
         return super.freezeWith(client);
     }
-    */
-
+    
     /**
      * @param {Key} key
      * @returns {this}
