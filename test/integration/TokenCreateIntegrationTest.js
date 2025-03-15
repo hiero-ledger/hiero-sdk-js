@@ -36,6 +36,8 @@ describe("TokenCreate", function () {
             .setWipeKey(key3)
             .setSupplyKey(key4)
             .setFreezeDefault(false)
+            .setAutoRenewAccountId(operatorId)
+            .setAutoRenewAccountId(operatorId)
             .execute(env.client);
 
         const tokenId = (await response.getReceipt(env.client)).tokenId;
@@ -138,7 +140,7 @@ describe("TokenCreate", function () {
         const info = await new TokenInfoQuery()
             .setTokenId(tokenId)
             .execute(env.client);
-
+        expect(info.autoRenewAccountId).to.be.not.null;
         expect(info.autoRenewAccountId.toString()).to.be.eql(
             operatorId.toString(),
         );

@@ -563,6 +563,7 @@ export default class TokenCreateTransaction extends Transaction {
      * @param {?import("../client/Client.js").default<Channel, *>} client
      * @returns {this}
      */
+    
     freezeWith(client) {
         if (!this._autoRenewAccountId && this.transactionId?.accountId) {
             this.setAutoRenewAccountId(this.transactionId?.accountId);
@@ -571,7 +572,7 @@ export default class TokenCreateTransaction extends Transaction {
         }
         return super.freezeWith(client);
     }
-
+    
     /**
      * @param {Key} key
      * @returns {this}
