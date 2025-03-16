@@ -114,7 +114,11 @@ The Hiero JavaScript SDK does not currently support the following:
 
 See [examples](./examples).
 
-Every example can be executed using the following command from the root directory: `node examples/[name-of-example].js`
+Every example can be executed using the following command from the root directory: `node examples/[name-of-example].js`.
+
+**Note:** Before running any examples, ensure you have:
+1. Installed dependencies by running `pnpm install` in the `examples` directory
+2. Built the SDK by running `task build` in the root directory.
 
 ## Configuration
 
