@@ -19,9 +19,8 @@ describe("ContractCreate", function () {
     before(async function () {
         env = await IntegrationTestEnv.new();
     });
-    it("should be executable", async function () {
-        this.timeout(120000);
 
+    it("should be executable", async function () {
         const operatorKey = env.operatorKey.publicKey;
 
         let response = await new FileCreateTransaction()
@@ -90,82 +89,7 @@ describe("ContractCreate", function () {
         ).getReceipt(env.client);
     });
 
-    it("should be able to create without admin key", async function () {
-        this.timeout(120000);
-
-        const operatorKey = env.operatorKey.publicKey;
-
-        let response = await new FileCreateTransaction()
-            .setKeys([operatorKey])
-            .setContents(smartContractBytecode)
-            .execute(env.client);
-
-        let receipt = await response.getReceipt(env.client);
-
-        expect(receipt.fileId).to.not.be.null;
-        expect(receipt.fileId != null ? receipt.fileId.num > 0 : false).to.be
-            .true;
-
-        const file = receipt.fileId;
-
-        response = await new ContractCreateTransaction()
-            .setGas(200000)
-            .setConstructorParameters(
-                new ContractFunctionParameters().addString(
-                    "Hello from Hedera.",
-                ),
-            )
-            .setBytecodeFileId(file)
-            .setContractMemo("[e2e::ContractCreateTransaction]")
-            .execute(env.client);
-
-        receipt = await response.getReceipt(env.client);
-
-        expect(receipt.contractId).to.not.be.null;
-        expect(receipt.contractId != null ? receipt.contractId.num > 0 : false)
-            .to.be.true;
-
-        let contract = receipt.contractId;
-
-        let info = await new ContractInfoQuery()
-            .setContractId(contract)
-            .setQueryPayment(new Hbar(1))
-            .execute(env.client);
-
-        expect(info.contractId.toString()).to.be.equal(contract.toString());
-        expect(info.accountId).to.be.not.null;
-        expect(
-            info.contractId != null ? info.contractId.toString() : "",
-        ).to.be.equal(contract.toString());
-        expect(info.adminKey).to.be.not.null;
-        // expect(info.adminKey.toString()).to.be.equal(
-        //     info.contractId.toString()
-        // );
-        expect(info.storage.toInt()).to.be.equal(128);
-        expect(info.contractMemo).to.be.equal(
-            "[e2e::ContractCreateTransaction]",
-        );
-
-        let err = false;
-
-        try {
-            await (
-                await new ContractDeleteTransaction()
-                    .setContractId(contract)
-                    .execute(env.client)
-            ).getReceipt(env.client);
-        } catch (error) {
-            err = error.toString().includes(Status.ModifyingImmutableContract);
-        }
-
-        if (!err) {
-            throw new Error("contract deletion did not error");
-        }
-    });
-
     it("should error when gas is not set", async function () {
-        this.timeout(120000);
-
         const operatorKey = env.operatorKey.publicKey;
 
         let response = await new FileCreateTransaction()
@@ -206,8 +130,6 @@ describe("ContractCreate", function () {
     });
 
     it("should error when contructor parameters are not set", async function () {
-        this.timeout(120000);
-
         const operatorKey = env.operatorKey.publicKey;
 
         let response = await new FileCreateTransaction()
@@ -244,8 +166,6 @@ describe("ContractCreate", function () {
     });
 
     it("should error when bytecode file ID is not set", async function () {
-        this.timeout(120000);
-
         const operatorKey = env.operatorKey.publicKey;
 
         let err = false;

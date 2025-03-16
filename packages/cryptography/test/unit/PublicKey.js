@@ -80,4 +80,22 @@ describe("PublicKey", function () {
         expect(publicKey.toStringDer()).to.be.equal(ED25519_PUBLIC_DER);
         expect(publicKey.toStringRaw()).to.be.equal(ED25519_PUBLIC_RAW);
     });
+
+    it("ECDSA verify message", function () {
+        const key = PrivateKey.fromStringECDSA(ECDSA_PRIVATE_DER);
+        const publicKey = PublicKey.fromString(key.publicKey.toString());
+        const message = new TextEncoder().encode("hello world");
+        const signature = key.sign(message);
+
+        expect(publicKey.verify(message, signature)).to.be.true;
+    });
+
+    it("ED25519 verify message", function () {
+        const key = PrivateKey.fromStringED25519(ED25519_PRIVATE_DER);
+        const publicKey = PublicKey.fromString(key.publicKey.toString());
+        const message = new TextEncoder().encode("hello world");
+        const signature = key.sign(message);
+
+        expect(publicKey.verify(message, signature)).to.be.true;
+    });
 });

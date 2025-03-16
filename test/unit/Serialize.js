@@ -38,6 +38,12 @@ function deserialize(s) {
     return Transaction.fromBytes(hex.decode(s));
 }
 
+/**
+ *
+ * @param {Transaction} tx
+ * @param {SignatureMap} privateKeyHex
+ * @returns
+ */
 function sign(tx, privateKeyHex) {
     return PrivateKey.fromBytes(hex.decode(privateKeyHex)).signTransaction(tx);
 }

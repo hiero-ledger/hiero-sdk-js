@@ -1,14 +1,11 @@
 import {
-    AccountCreateTransaction,
-    // AccountInfoQuery,
-    Hbar,
-    PrivateKey,
+    AccountInfoQuery,
     Status,
-    // TokenAssociateTransaction,
-    TokenCreateTransaction,
+    TokenAssociateTransaction,
     TokenFreezeTransaction,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import { createAccount, createFungibleToken } from "./utils/Fixtures.js";
 
 describe("TokenFreeze", function () {
     let env;
@@ -17,87 +14,52 @@ describe("TokenFreeze", function () {
         env = await IntegrationTestEnv.new();
     });
 
-    /**
-     *
-     * @description The test is temporarily commented because AccountInfoQuery does a query to the consensus node which was deprecated.
-     * @todo Uncomment a test when the new query to the mirror node is implemented as it described here https://github.com/hashgraph/hedera-sdk-reference/issues/144
-     */
-    // it("should be executable", async function () {
-    //     this.timeout(120000);
+    it("should be executable", async function () {
+        const { accountId: account, newKey: key } = await createAccount(
+            env.client,
+        );
 
-    //     const operatorId = env.operatorId;
-    //     const operatorKey = env.operatorKey.publicKey;
-    //     const key = PrivateKey.generateED25519();
+        const token = await createFungibleToken(env.client, (transaction) =>
+            transaction.setKycKey(env.client.operatorPublicKey),
+        );
 
-    //     const response = await new AccountCreateTransaction()
-    //         .setKey(key)
-    //         .setInitialBalance(new Hbar(2))
-    //         .execute(env.client);
+        await (
+            await (
+                await new TokenAssociateTransaction()
+                    .setTokenIds([token])
+                    .setAccountId(account)
+                    .freezeWith(env.client)
+                    .sign(key)
+            ).execute(env.client)
+        ).getReceipt(env.client);
 
-    //     const account = (await response.getReceipt(env.client)).accountId;
+        await (
+            await (
+                await new TokenFreezeTransaction()
+                    .setTokenId(token)
+                    .setAccountId(account)
+                    .freezeWith(env.client)
+                    .sign(key)
+            ).execute(env.client)
+        ).getReceipt(env.client);
 
-    //     const token = (
-    //         await (
-    //             await new TokenCreateTransaction()
-    //                 .setTokenName("ffff")
-    //                 .setTokenSymbol("F")
-    //                 .setDecimals(3)
-    //                 .setInitialSupply(1000000)
-    //                 .setTreasuryAccountId(operatorId)
-    //                 .setAdminKey(operatorKey)
-    //                 .setKycKey(operatorKey)
-    //                 .setFreezeKey(operatorKey)
-    //                 .setWipeKey(operatorKey)
-    //                 .setSupplyKey(operatorKey)
-    //                 .setFreezeDefault(false)
-    //                 .execute(env.client)
-    //         ).getReceipt(env.client)
-    //     ).tokenId;
-
-    //     await (
-    //         await (
-    //             await new TokenAssociateTransaction()
-    //                 .setTokenIds([token])
-    //                 .setAccountId(account)
-    //                 .freezeWith(env.client)
-    //                 .sign(key)
-    //         ).execute(env.client)
-    //     ).getReceipt(env.client);
-
-    //     await (
-    //         await (
-    //             await new TokenFreezeTransaction()
-    //                 .setTokenId(token)
-    //                 .setAccountId(account)
-    //                 .freezeWith(env.client)
-    //                 .sign(key)
-    //         ).execute(env.client)
-    //     ).getReceipt(env.client);
-
-    //     const info = await new AccountInfoQuery()
-    //         .setAccountId(account)
-    //         .execute(env.client);
-
-    //     const relationship = info.tokenRelationships.get(token);
-
-    //     expect(relationship).to.be.not.null;
-    //     expect(relationship.tokenId.toString()).to.be.equal(token.toString());
-    //     expect(relationship.balance.toInt()).to.be.equal(0);
-    //     expect(relationship.isKycGranted).to.be.false;
-    //     expect(relationship.isFrozen).to.be.true;
-    // });
-
-    it("should be executable with no tokens set", async function () {
-        this.timeout(120000);
-
-        const key = PrivateKey.generateED25519();
-
-        const response = await new AccountCreateTransaction()
-            .setKey(key)
-            .setInitialBalance(new Hbar(2))
+        const info = await new AccountInfoQuery()
+            .setAccountId(account)
             .execute(env.client);
 
-        const account = (await response.getReceipt(env.client)).accountId;
+        const relationship = info.tokenRelationships.get(token);
+
+        expect(relationship).to.be.not.null;
+        expect(relationship.tokenId.toString()).to.be.equal(token.toString());
+        expect(relationship.balance.toInt()).to.be.equal(0);
+        expect(relationship.isKycGranted).to.be.false;
+        expect(relationship.isFrozen).to.be.true;
+    });
+
+    it("should be executable with no tokens set", async function () {
+        const { accountId: account, newKey: key } = await createAccount(
+            env.client,
+        );
 
         let err = false;
 
@@ -120,26 +82,7 @@ describe("TokenFreeze", function () {
     });
 
     it("should error when account ID is not set", async function () {
-        this.timeout(120000);
-
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
-
-        const response = await new TokenCreateTransaction()
-            .setTokenName("ffff")
-            .setTokenSymbol("F")
-            .setDecimals(3)
-            .setInitialSupply(1000000)
-            .setTreasuryAccountId(operatorId)
-            .setAdminKey(operatorKey)
-            .setKycKey(operatorKey)
-            .setFreezeKey(operatorKey)
-            .setWipeKey(operatorKey)
-            .setSupplyKey(operatorKey)
-            .setFreezeDefault(false)
-            .execute(env.client);
-
-        const token = (await response.getReceipt(env.client)).tokenId;
+        const token = await createFungibleToken(env.client);
 
         let err = false;
 

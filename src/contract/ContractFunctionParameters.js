@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import ContractFunctionSelector, {
     ArgumentType,
@@ -29,9 +11,18 @@ import BigNumber from "bignumber.js";
 import * as util from "../util.js";
 import { defaultAbiCoder } from "@ethersproject/abi";
 import { arrayify } from "@ethersproject/bytes";
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import EvmAddress from "../EvmAddress.js";
 
+/**
+ * Class to help construct parameters for a Hedera smart contract function call.
+ *
+ * This class provides methods to add different types of parameters that will be passed to a smart contract function.
+ * It supports all Solidity parameter types including basic types (uint/int of various sizes, bool, address),
+ * arrays, strings, and bytes.
+ *
+ */
 export default class ContractFunctionParameters {
     constructor() {
         /**

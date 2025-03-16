@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import ContractLogInfo from "./ContractLogInfo.js";
 import ContractId from "./ContractId.js";
@@ -36,8 +18,8 @@ import ContractNonceInfo from "./ContractNonceInfo.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IContractFunctionResult} HashgraphProto.proto.IContractFunctionResult
- * @typedef {import("@hashgraph/proto").proto.IContractID} HashgraphProto.proto.IContractID
+ * @typedef {import("@hashgraph/proto").proto.IContractFunctionResult} HieroProto.proto.IContractFunctionResult
+ * @typedef {import("@hashgraph/proto").proto.IContractID} HieroProto.proto.IContractID
  */
 
 /**
@@ -159,15 +141,14 @@ export default class ContractFunctionResult {
     }
 
     /**
-     * @param {HashgraphProto.proto.IContractFunctionResult} result
+     * @param {HieroProto.proto.IContractFunctionResult} result
      * @param {boolean} _createResult
      * @returns {ContractFunctionResult}
      */
     static _fromProtobuf(result, _createResult) {
-        const contractId =
-            /** @type {HashgraphProto.proto.IContractID | null} */ (
-                result.contractID
-            );
+        const contractId = /** @type {HieroProto.proto.IContractID | null} */ (
+            result.contractID
+        );
         const gasUsed = /** @type {Long} */ (result.gasUsed);
         const gas = /** @type {Long} */ (result.gas ? result.gas : -1);
         const amount = /** @type {Long} */ (result.amount ? result.amount : -1);
@@ -192,7 +173,9 @@ export default class ContractFunctionResult {
                 : []
             ).map((contractId) => ContractId._fromProtobuf(contractId)),
             evmAddress:
-                result.evmAddress != null && result.evmAddress.value != null
+                result.evmAddress != null &&
+                Object.hasOwn(result.evmAddress, "value") &&
+                result.evmAddress.value != null
                     ? result.evmAddress.value
                     : null,
             stateChanges: [],
@@ -213,8 +196,8 @@ export default class ContractFunctionResult {
             ),
             signerNonce:
                 result.signerNonce != null
-                    ? result.signerNonce.value
-                        ? result.signerNonce.value
+                    ? Object.hasOwn(result.signerNonce, "value")
+                        ? result.signerNonce.value || null
                         : null
                     : null,
         });
@@ -1035,7 +1018,7 @@ export default class ContractFunctionResult {
     }
 
     /**
-     * @returns {HashgraphProto.proto.IContractFunctionResult}
+     * @returns {HieroProto.proto.IContractFunctionResult}
      */
     _toProtobuf() {
         return {

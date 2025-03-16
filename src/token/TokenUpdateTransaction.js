@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import TokenId from "./TokenId.js";
 import Transaction, {
@@ -26,16 +8,17 @@ import AccountId from "../account/AccountId.js";
 import Timestamp from "../Timestamp.js";
 import Duration from "../Duration.js";
 import Key from "../Key.js";
+import TokenKeyValidation from "./TokenKeyValidation.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HashgraphProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HashgraphProto.proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HashgraphProto.proto.TransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HashgraphProto.proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HashgraphProto.proto.ITransactionResponse
- * @typedef {import("@hashgraph/proto").proto.ITokenUpdateTransactionBody} HashgraphProto.proto.ITokenUpdateTransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITokenID} HashgraphProto.proto.ITokenID
+ * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
+ * @typedef {import("@hashgraph/proto").proto.ITokenUpdateTransactionBody} HieroProto.proto.ITokenUpdateTransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITokenID} HieroProto.proto.ITokenID
  */
 
 /**
@@ -52,8 +35,8 @@ export default class TokenUpdateTransaction extends Transaction {
     /**
      * @param {object} [props]
      * @param {TokenId | string} [props.tokenId]
-     * @param {string} [props.tokenName]
-     * @param {string} [props.tokenSymbol]
+     * @param {?string} [props.tokenName]
+     * @param {?string} [props.tokenSymbol]
      * @param {AccountId | string} [props.treasuryAccountId]
      * @param {Key} [props.adminKey]
      * @param {Key} [props.kycKey]
@@ -63,9 +46,12 @@ export default class TokenUpdateTransaction extends Transaction {
      * @param {AccountId | string} [props.autoRenewAccountId]
      * @param {Timestamp | Date} [props.expirationTime]
      * @param {Duration | Long | number} [props.autoRenewPeriod]
-     * @param {string} [props.tokenMemo]
+     * @param {?string} [props.tokenMemo]
      * @param {Key} [props.feeScheduleKey]
      * @param {Key} [props.pauseKey]
+     * @param {Key} [props.metadataKey]
+     * @param {?Uint8Array} [props.metadata]
+     * @param {TokenKeyValidation} [props.keyVerificationMode]
      */
     constructor(props = {}) {
         super();
@@ -160,6 +146,26 @@ export default class TokenUpdateTransaction extends Transaction {
          */
         this._pauseKey = null;
 
+        /**
+         * @private
+         * @type {?Key}
+         */
+        this._metadataKey = null;
+
+        /**
+         * @private
+         * @type {?Uint8Array}
+         */
+        this._metadata = null;
+
+        /**
+         * @private
+         * @type {?TokenKeyValidation}
+         * Determines whether the system should check the validity of the passed keys for update.
+         * Defaults to FULL_VALIDATION
+         */
+        this._keyVerificationMode = TokenKeyValidation.FullValidation;
+
         if (props.tokenId != null) {
             this.setTokenId(props.tokenId);
         }
@@ -219,15 +225,27 @@ export default class TokenUpdateTransaction extends Transaction {
         if (props.pauseKey != null) {
             this.setPauseKey(props.pauseKey);
         }
+
+        if (props.metadataKey != null) {
+            this.setMetadataKey(props.metadataKey);
+        }
+
+        if (props.metadata != null) {
+            this.setMetadata(props.metadata);
+        }
+
+        if (props.keyVerificationMode != null) {
+            this.setKeyVerificationMode(props.keyVerificationMode);
+        }
     }
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransaction[]} transactions
-     * @param {HashgraphProto.proto.ISignedTransaction[]} signedTransactions
+     * @param {HieroProto.proto.ITransaction[]} transactions
+     * @param {HieroProto.proto.ISignedTransaction[]} signedTransactions
      * @param {TransactionId[]} transactionIds
      * @param {AccountId[]} nodeIds
-     * @param {HashgraphProto.proto.ITransactionBody[]} bodies
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
      * @returns {TokenUpdateTransaction}
      */
     static _fromProtobuf(
@@ -239,7 +257,7 @@ export default class TokenUpdateTransaction extends Transaction {
     ) {
         const body = bodies[0];
         const update =
-            /** @type {HashgraphProto.proto.ITokenUpdateTransactionBody} */ (
+            /** @type {HieroProto.proto.ITokenUpdateTransactionBody} */ (
                 body.tokenUpdate
             );
 
@@ -249,8 +267,12 @@ export default class TokenUpdateTransaction extends Transaction {
                     update.token != null
                         ? TokenId._fromProtobuf(update.token)
                         : undefined,
-                tokenName: update.name != null ? update.name : undefined,
-                tokenSymbol: update.symbol != null ? update.symbol : undefined,
+                tokenName: Object.hasOwn(update, "name")
+                    ? update.name
+                    : undefined,
+                tokenSymbol: Object.hasOwn(update, "symbol")
+                    ? update.symbol
+                    : undefined,
                 treasuryAccountId:
                     update.treasury != null
                         ? AccountId._fromProtobuf(update.treasury)
@@ -289,7 +311,7 @@ export default class TokenUpdateTransaction extends Transaction {
                         : undefined,
                 tokenMemo:
                     update.memo != null
-                        ? update.memo.value != null
+                        ? Object.hasOwn(update.memo, "value")
                             ? update.memo.value
                             : undefined
                         : undefined,
@@ -300,6 +322,22 @@ export default class TokenUpdateTransaction extends Transaction {
                 pauseKey:
                     update.pauseKey != null
                         ? Key._fromProtobufKey(update.pauseKey)
+                        : undefined,
+                metadataKey:
+                    update.metadataKey != null
+                        ? Key._fromProtobufKey(update.metadataKey)
+                        : undefined,
+                metadata:
+                    update.metadata != null
+                        ? Object.hasOwn(update.metadata, "value")
+                            ? update.metadata.value
+                            : undefined
+                        : undefined,
+                keyVerificationMode:
+                    update.keyVerificationMode != null
+                        ? TokenKeyValidation._fromCode(
+                              update.keyVerificationMode,
+                          )
                         : undefined,
             }),
             transactions,
@@ -603,6 +641,60 @@ export default class TokenUpdateTransaction extends Transaction {
     }
 
     /**
+     * @returns {?Key}
+     */
+    get metadataKey() {
+        return this._metadataKey;
+    }
+
+    /**
+     * @param {Key} metadataKey
+     * @returns {this}
+     */
+    setMetadataKey(metadataKey) {
+        this._requireNotFrozen();
+        this._metadataKey = metadataKey;
+
+        return this;
+    }
+
+    /**
+     * @returns {?Uint8Array}
+     */
+    get metadata() {
+        return this._metadata;
+    }
+
+    /**
+     * @param {Uint8Array} metadata
+     * @returns {this}
+     */
+    setMetadata(metadata) {
+        this._requireNotFrozen();
+        this._metadata = metadata;
+
+        return this;
+    }
+
+    /**
+     * @returns {?TokenKeyValidation}
+     */
+    get keyVerificationMode() {
+        return this._keyVerificationMode;
+    }
+
+    /**
+     * @param {TokenKeyValidation} keyVerificationMode
+     * @returns {this}
+     */
+    setKeyVerificationMode(keyVerificationMode) {
+        this._requireNotFrozen();
+        this._keyVerificationMode = keyVerificationMode;
+
+        return this;
+    }
+
+    /**
      * @returns {this}
      */
     clearTokenMemo() {
@@ -633,8 +725,8 @@ export default class TokenUpdateTransaction extends Transaction {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.ITransaction} request
-     * @returns {Promise<HashgraphProto.proto.ITransactionResponse>}
+     * @param {HieroProto.proto.ITransaction} request
+     * @returns {Promise<HieroProto.proto.ITransactionResponse>}
      */
     _execute(channel, request) {
         return channel.token.updateToken(request);
@@ -643,7 +735,7 @@ export default class TokenUpdateTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {NonNullable<HashgraphProto.proto.TransactionBody["data"]>}
+     * @returns {NonNullable<HieroProto.proto.TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
         return "tokenUpdate";
@@ -652,12 +744,12 @@ export default class TokenUpdateTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {HashgraphProto.proto.ITokenUpdateTransactionBody}
+     * @returns {HieroProto.proto.ITokenUpdateTransactionBody}
      */
     _makeTransactionData() {
         return {
             token: this._tokenId != null ? this._tokenId._toProtobuf() : null,
-            name: this.tokenName,
+            name: this.tokenName != null ? this.tokenName : null,
             symbol: this.tokenSymbol,
             treasury:
                 this._treasuryAccountId != null
@@ -700,6 +792,20 @@ export default class TokenUpdateTransaction extends Transaction {
                 this._feeScheduleKey != null
                     ? this._feeScheduleKey._toProtobufKey()
                     : null,
+            metadataKey:
+                this._metadataKey != null
+                    ? this._metadataKey._toProtobufKey()
+                    : null,
+            metadata:
+                this._metadata != null
+                    ? {
+                          value: this._metadata,
+                      }
+                    : null,
+            keyVerificationMode:
+                this._keyVerificationMode != null
+                    ? this._keyVerificationMode._code
+                    : undefined,
         };
     }
 

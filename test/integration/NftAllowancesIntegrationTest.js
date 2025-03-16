@@ -1,20 +1,18 @@
 import {
-    AccountCreateTransaction,
     AccountAllowanceApproveTransaction,
     AccountAllowanceDeleteTransaction,
     Hbar,
     NftId,
-    PrivateKey,
     Status,
     TransactionId,
     TokenAssociateTransaction,
-    TokenCreateTransaction,
     TokenMintTransaction,
     TokenNftInfoQuery,
     TokenType,
     TransferTransaction,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import { createAccount, createNonFungibleToken } from "./utils/Fixtures.js";
 
 describe("TokenNftAllowances", function () {
     let env;
@@ -24,44 +22,19 @@ describe("TokenNftAllowances", function () {
     });
 
     it("Cannot transfer on behalf of `spender` account without allowance approval", async function () {
-        this.timeout(120000);
+        let status;
 
-        const spenderKey = PrivateKey.generateED25519();
-        const spenderAccountId = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKey(spenderKey)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
+        const { accountId: spenderAccountId, newKey: spenderKey } =
+            await createAccount(env.client, (transaction) =>
+                transaction.setInitialBalance(new Hbar(2)),
+            );
 
-        const receiverKey = PrivateKey.generateED25519();
-        const receiverAccountId = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKey(receiverKey)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
+        const { accountId: receiverAccountId } = await createAccount(
+            env.client,
+            (transaction) => transaction.setInitialBalance(new Hbar(2)),
+        );
 
-        const nftTokenId = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTokenType(TokenType.NonFungibleUnique)
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const nftTokenId = await createNonFungibleToken(env.client);
 
         await (
             await (
@@ -84,7 +57,6 @@ describe("TokenNftAllowances", function () {
 
         const nft1 = new NftId(nftTokenId, serials[0]);
 
-        let err = false;
         const onBehalfOfTransactionId =
             TransactionId.generate(spenderAccountId);
         try {
@@ -102,38 +74,29 @@ describe("TokenNftAllowances", function () {
                 ).execute(env.client)
             ).getReceipt(env.client);
         } catch (error) {
-            err = error.toString().includes(Status.SpenderDoesNotHaveAllowance);
+            status = error.status;
         }
 
-        expect(err).to.be.true;
+        expect(status).to.be.eql(Status.TokenNotAssociatedToAccount);
     });
 
     it("Cannot transfer on behalf of `spender` account after removing the allowance approval", async function () {
-        this.timeout(120000);
+        // Use createAccount fixture
+        const { accountId: spenderAccountId, newKey: spenderKey } =
+            await createAccount(env.client, (transaction) =>
+                transaction.setInitialBalance(new Hbar(2)),
+            );
 
-        const spenderKey = PrivateKey.generateED25519();
-        const spenderAccountId = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKey(spenderKey)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
+        const { accountId: receiverAccountId, newKey: receiverKey } =
+            await createAccount(env.client, (transaction) =>
+                transaction.setInitialBalance(new Hbar(2)),
+            );
 
-        const receiverKey = PrivateKey.generateED25519();
-        const receiverAccountId = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKey(receiverKey)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
-
-        const nftTokenId = (
-            await (
-                await new TokenCreateTransaction()
+        // Use createNonFungibleToken fixture
+        const nftTokenId = await createNonFungibleToken(
+            env.client,
+            (transaction) =>
+                transaction
                     .setTokenName("ffff")
                     .setTokenSymbol("F")
                     .setTokenType(TokenType.NonFungibleUnique)
@@ -142,10 +105,8 @@ describe("TokenNftAllowances", function () {
                     .setFreezeKey(env.operatorKey)
                     .setWipeKey(env.operatorKey)
                     .setSupplyKey(env.operatorKey)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+                    .setFreezeDefault(false),
+        );
 
         await (
             await (
@@ -240,31 +201,22 @@ describe("TokenNftAllowances", function () {
     });
 
     it("Cannot remove single serial number allowance when the allowance is given for all serials at once", async function () {
-        this.timeout(120000);
+        // Use createAccount fixture
+        const { accountId: spenderAccountId, newKey: spenderKey } =
+            await createAccount(env.client, (transaction) =>
+                transaction.setInitialBalance(new Hbar(2)),
+            );
 
-        const spenderKey = PrivateKey.generateED25519();
-        const spenderAccountId = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKey(spenderKey)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
+        const { accountId: receiverAccountId, newKey: receiverKey } =
+            await createAccount(env.client, (transaction) =>
+                transaction.setInitialBalance(new Hbar(2)),
+            );
 
-        const receiverKey = PrivateKey.generateED25519();
-        const receiverAccountId = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKey(receiverKey)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
-
-        const nftTokenId = (
-            await (
-                await new TokenCreateTransaction()
+        // Use createNonFungibleToken fixture
+        const nftTokenId = await createNonFungibleToken(
+            env.client,
+            (transaction) =>
+                transaction
                     .setTokenName("ffff")
                     .setTokenSymbol("F")
                     .setTokenType(TokenType.NonFungibleUnique)
@@ -273,10 +225,8 @@ describe("TokenNftAllowances", function () {
                     .setFreezeKey(env.operatorKey)
                     .setWipeKey(env.operatorKey)
                     .setSupplyKey(env.operatorKey)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+                    .setFreezeDefault(false),
+        );
 
         await (
             await (
@@ -376,41 +326,28 @@ describe("TokenNftAllowances", function () {
     });
 
     it("Account, which given the allowance for all serials at once, should be able to give allowances for single serial numbers to other accounts", async function () {
-        this.timeout(120000);
+        const {
+            accountId: delegatingSpenderAccountId,
+            newKey: delegatingSpenderKey,
+        } = await createAccount(env.client, (transaction) =>
+            transaction.setInitialBalance(new Hbar(2)),
+        );
 
-        const delegatingSpenderKey = PrivateKey.generateED25519();
-        const delegatingSpenderAccountId = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKey(delegatingSpenderKey)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
+        const { accountId: spenderAccountId, newKey: spenderKey } =
+            await createAccount(env.client, (transaction) =>
+                transaction.setInitialBalance(new Hbar(2)),
+            );
 
-        const spenderKey = PrivateKey.generateED25519();
-        const spenderAccountId = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKey(spenderKey)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
+        const { accountId: receiverAccountId, newKey: receiverKey } =
+            await createAccount(env.client, (transaction) =>
+                transaction.setInitialBalance(new Hbar(2)),
+            );
 
-        const receiverKey = PrivateKey.generateED25519();
-        const receiverAccountId = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKey(receiverKey)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
-
-        const nftTokenId = (
-            await (
-                await new TokenCreateTransaction()
+        // Use createNonFungibleToken fixture
+        const nftTokenId = await createNonFungibleToken(
+            env.client,
+            (transaction) =>
+                transaction
                     .setTokenName("ffff")
                     .setTokenSymbol("F")
                     .setTokenType(TokenType.NonFungibleUnique)
@@ -419,10 +356,8 @@ describe("TokenNftAllowances", function () {
                     .setFreezeKey(env.operatorKey)
                     .setWipeKey(env.operatorKey)
                     .setSupplyKey(env.operatorKey)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+                    .setFreezeDefault(false),
+        );
 
         await (
             await (

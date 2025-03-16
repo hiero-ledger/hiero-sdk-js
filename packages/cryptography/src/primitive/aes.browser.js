@@ -3,6 +3,9 @@ import * as utf8 from "../encoding/utf8.js";
 import SparkMD5 from "spark-md5";
 import { Buffer } from "buffer";
 
+// this will be executed in browser environment so we can use window.crypto
+/* eslint-disable n/no-unsupported-features/node-builtins */
+
 export const CipherAlgorithm = {
     Aes128Ctr: "AES-128-CTR",
     Aes128Cbc: "AES-128-CBC",
@@ -123,6 +126,7 @@ export async function messageDigest(passphrase, iv) {
     const pass = utf8.encode(passphrase);
     const sliced = hex.decode(iv).slice(0, 8);
     const result = SparkMD5.ArrayBuffer.hash(
+        // @ts-ignore
         Buffer.concat([Buffer.from(pass), Buffer.from(sliced)]),
     );
 

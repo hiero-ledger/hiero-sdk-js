@@ -1,25 +1,6 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import ManagedNode from "./ManagedNode.js";
-import { PREVIEWNET_CERTS, TESTNET_CERTS, MAINNET_CERTS } from "./NodeCerts.js";
 
 /**
  * @typedef {import("./account/AccountId.js").default} AccountId
@@ -33,7 +14,7 @@ import { PREVIEWNET_CERTS, TESTNET_CERTS, MAINNET_CERTS } from "./NodeCerts.js";
  * @typedef {object} NewNode
  * @property {AccountId} accountId
  * @property {string} address
- * @property {(address: string, cert?: string) => Channel} channelInitFunction
+ * @property {(address: string) => Channel} channelInitFunction
  */
 
 /**
@@ -98,26 +79,6 @@ export default class Node extends ManagedNode {
                 cloneNode: { node: this, address: this._address.toSecure() },
             })
         );
-    }
-
-    /**
-     * @param {LedgerId|string} ledgerId
-     * @returns {this}
-     */
-    setCert(ledgerId) {
-        switch (ledgerId.toString()) {
-            case "previewnet":
-                this._cert = PREVIEWNET_CERTS[this._accountId.toString()];
-                break;
-            case "testnet":
-                this._cert = TESTNET_CERTS[this._accountId.toString()];
-                break;
-            case "mainnet":
-                this._cert = MAINNET_CERTS[this._accountId.toString()];
-                break;
-        }
-
-        return this;
     }
 
     /**

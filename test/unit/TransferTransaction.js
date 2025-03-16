@@ -374,4 +374,27 @@ describe("TransferTransaction", function () {
             ],
         });
     });
+
+    it("should return hbarTransfer list", function () {
+        const accountId1 = AccountId.fromString("0.0.0");
+        const accountId2 = AccountId.fromString("0.0.1");
+        const amount = new Hbar(1);
+
+        const tx = new TransferTransaction()
+            .addHbarTransfer(accountId1, amount.negated())
+            .addHbarTransfer(accountId2, amount);
+
+        expect(tx.hbarTransfersList).to.deep.equal([
+            {
+                accountId: accountId1,
+                amount: amount.negated(),
+                isApproved: false,
+            },
+            {
+                accountId: accountId2,
+                amount: amount,
+                isApproved: false,
+            },
+        ]);
+    });
 });

@@ -14,9 +14,8 @@ describe("FileContents", function () {
     before(async function () {
         env = await IntegrationTestEnv.new();
     });
-    it("should be executable", async function () {
-        this.timeout(120000);
 
+    it("should be executable", async function () {
         const operatorKey = env.operatorKey.publicKey;
 
         let response = await new FileCreateTransaction()
@@ -49,8 +48,6 @@ describe("FileContents", function () {
     });
 
     it("should be executable with empty contents", async function () {
-        this.timeout(120000);
-
         const operatorKey = env.operatorKey.publicKey;
 
         let response = await new FileCreateTransaction()
@@ -80,14 +77,10 @@ describe("FileContents", function () {
     });
 
     it("should error when file ID is not set", async function () {
-        this.timeout(120000);
-
         let err = false;
 
         try {
-            await new FileContentsQuery()
-                .setQueryPayment(new Hbar(1))
-                .execute(env.client);
+            await new FileContentsQuery().execute(env.client);
         } catch (error) {
             err = error.toString().includes(Status.InvalidFileId);
         }

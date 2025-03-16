@@ -14,7 +14,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 async function main() {
-    const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
+    const operatorKey = PrivateKey.fromStringED25519(process.env.OPERATOR_KEY);
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
 
     const client = Client.forName(process.env.HEDERA_NETWORK).setOperator(

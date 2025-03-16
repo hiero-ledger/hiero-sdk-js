@@ -1,10 +1,10 @@
 import {
     AccountCreateTransaction,
-    // AccountInfoQuery,
+    AccountInfoQuery,
     Hbar,
     PrivateKey,
     Status,
-    // TokenAssociateTransaction,
+    TokenAssociateTransaction,
     TokenCreateTransaction,
     TokenGrantKycTransaction,
 } from "../../src/exports.js";
@@ -17,83 +17,74 @@ describe("TokenGrantKyc", function () {
         env = await IntegrationTestEnv.new();
     });
 
-    /**
-     *
-     * @description The test is temporarily commented because AccountInfoQuery does a query to the consensus node which was deprecated.
-     * @todo Uncomment a test when the new query to the mirror node is implemented as it described here https://github.com/hashgraph/hedera-sdk-reference/issues/144
-     */
-    // it("should be executable", async function () {
-    //     this.timeout(120000);
-
-    //     const operatorId = env.operatorId;
-    //     const operatorKey = env.operatorKey.publicKey;
-    //     const key = PrivateKey.generateED25519();
-
-    //     const response = await new AccountCreateTransaction()
-    //         .setKey(key)
-    //         .setInitialBalance(new Hbar(2))
-    //         .execute(env.client);
-
-    //     const account = (await response.getReceipt(env.client)).accountId;
-
-    //     const token = (
-    //         await (
-    //             await new TokenCreateTransaction()
-    //                 .setTokenName("ffff")
-    //                 .setTokenSymbol("F")
-    //                 .setDecimals(3)
-    //                 .setInitialSupply(1000000)
-    //                 .setTreasuryAccountId(operatorId)
-    //                 .setAdminKey(operatorKey)
-    //                 .setKycKey(operatorKey)
-    //                 .setFreezeKey(operatorKey)
-    //                 .setWipeKey(operatorKey)
-    //                 .setSupplyKey(operatorKey)
-    //                 .setFreezeDefault(false)
-    //                 .execute(env.client)
-    //         ).getReceipt(env.client)
-    //     ).tokenId;
-
-    //     await (
-    //         await (
-    //             await new TokenAssociateTransaction()
-    //                 .setTokenIds([token])
-    //                 .setAccountId(account)
-    //                 .freezeWith(env.client)
-    //                 .sign(key)
-    //         ).execute(env.client)
-    //     ).getReceipt(env.client);
-
-    //     await (
-    //         await (
-    //             await new TokenGrantKycTransaction()
-    //                 .setTokenId(token)
-    //                 .setAccountId(account)
-    //                 .freezeWith(env.client)
-    //                 .sign(key)
-    //         ).execute(env.client)
-    //     ).getReceipt(env.client);
-
-    //     const info = await new AccountInfoQuery()
-    //         .setAccountId(account)
-    //         .execute(env.client);
-
-    //     const relationship = info.tokenRelationships.get(token);
-
-    //     expect(relationship).to.be.not.null;
-    //     expect(relationship.tokenId.toString()).to.be.equal(token.toString());
-    //     expect(relationship.balance.toInt()).to.be.equal(0);
-    //     expect(relationship.isKycGranted).to.be.true;
-    //     expect(relationship.isFrozen).to.be.false;
-    // });
-
-    it("should be executable even when no token IDs are set", async function () {
-        this.timeout(120000);
-
+    it("should be executable", async function () {
+        const operatorId = env.operatorId;
+        const operatorKey = env.operatorKey.publicKey;
         const key = PrivateKey.generateED25519();
 
         const response = await new AccountCreateTransaction()
-            .setKey(key)
+            .setKeyWithoutAlias(key)
+            .setInitialBalance(new Hbar(2))
+            .execute(env.client);
+
+        const account = (await response.getReceipt(env.client)).accountId;
+
+        const token = (
+            await (
+                await new TokenCreateTransaction()
+                    .setTokenName("ffff")
+                    .setTokenSymbol("F")
+                    .setDecimals(3)
+                    .setInitialSupply(1000000)
+                    .setTreasuryAccountId(operatorId)
+                    .setAdminKey(operatorKey)
+                    .setKycKey(operatorKey)
+                    .setFreezeKey(operatorKey)
+                    .setWipeKey(operatorKey)
+                    .setSupplyKey(operatorKey)
+                    .setFreezeDefault(false)
+                    .execute(env.client)
+            ).getReceipt(env.client)
+        ).tokenId;
+
+        await (
+            await (
+                await new TokenAssociateTransaction()
+                    .setTokenIds([token])
+                    .setAccountId(account)
+                    .freezeWith(env.client)
+                    .sign(key)
+            ).execute(env.client)
+        ).getReceipt(env.client);
+
+        await (
+            await (
+                await new TokenGrantKycTransaction()
+                    .setTokenId(token)
+                    .setAccountId(account)
+                    .freezeWith(env.client)
+                    .sign(key)
+            ).execute(env.client)
+        ).getReceipt(env.client);
+
+        const info = await new AccountInfoQuery()
+            .setAccountId(account)
+            .execute(env.client);
+
+        const relationship = info.tokenRelationships.get(token);
+
+        expect(relationship).to.be.not.null;
+        expect(relationship.tokenId.toString()).to.be.equal(token.toString());
+        expect(relationship.balance.toInt()).to.be.equal(0);
+        expect(relationship.isKycGranted).to.be.true;
+        expect(relationship.isFrozen).to.be.false;
+    });
+
+    it("should be executable even when no token IDs are set", async function () {
+        const key = PrivateKey.generateED25519();
+
+        const response = await new AccountCreateTransaction()
+            .setKeyWithoutAlias(key)
             .setInitialBalance(new Hbar(2))
             .execute(env.client);
 
@@ -120,8 +111,6 @@ describe("TokenGrantKyc", function () {
     });
 
     it("should error when account ID is not set", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
         const operatorKey = env.operatorKey.publicKey;
 

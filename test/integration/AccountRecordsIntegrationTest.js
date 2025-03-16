@@ -1,6 +1,4 @@
 import {
-    AccountCreateTransaction,
-    AccountDeleteTransaction,
     AccountRecordsQuery,
     Hbar,
     PrivateKey,
@@ -8,6 +6,7 @@ import {
     TransferTransaction,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import { createAccount, deleteAccount } from "./utils/Fixtures.js";
 
 describe("AccountRecords", function () {
     let env;
@@ -17,24 +16,20 @@ describe("AccountRecords", function () {
     });
 
     it("should be executable", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
         const key = PrivateKey.generateED25519();
 
-        const response = await new AccountCreateTransaction()
-            .setKey(key.publicKey)
-            .setInitialBalance(new Hbar(2))
-            .execute(env.client);
+        const { accountId } = await createAccount(env.client, (transaction) => {
+            transaction
+                .setKeyWithoutAlias(key.publicKey)
+                .setInitialBalance(new Hbar(2));
+        });
 
-        const receipt = await response.getReceipt(env.client);
-
-        expect(receipt.accountId).to.not.be.null;
-        const account = receipt.accountId;
+        expect(accountId).to.not.be.null;
 
         await (
             await new TransferTransaction()
-                .addHbarTransfer(account, new Hbar(1))
+                .addHbarTransfer(accountId, new Hbar(1))
                 .addHbarTransfer(operatorId, new Hbar(1).negated())
                 .execute(env.client)
         ).getReceipt(env.client);
@@ -46,16 +41,12 @@ describe("AccountRecords", function () {
 
         expect(records.length).to.be.gt(0);
 
-        await (
-            await (
-                await new AccountDeleteTransaction()
-                    .setAccountId(account)
-                    .setTransferAccountId(operatorId)
-                    .setTransactionId(TransactionId.generate(account))
-                    .freezeWith(env.client)
-                    .sign(key)
-            ).execute(env.client)
-        ).getReceipt(env.client);
+        await deleteAccount(env.client, key, (transaction) => {
+            transaction
+                .setAccountId(accountId)
+                .setTransferAccountId(operatorId)
+                .setTransactionId(TransactionId.generate(accountId));
+        });
     });
 
     after(async function () {

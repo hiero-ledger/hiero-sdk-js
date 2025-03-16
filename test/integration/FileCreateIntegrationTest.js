@@ -14,9 +14,8 @@ describe("FileCreate", function () {
     before(async function () {
         env = await IntegrationTestEnv.new();
     });
-    it("should be executable", async function () {
-        this.timeout(120000);
 
+    it("should be executable", async function () {
         const operatorKey = env.operatorKey.publicKey;
 
         let response = await new FileCreateTransaction()
@@ -54,8 +53,6 @@ describe("FileCreate", function () {
     });
 
     it("should be executable with empty contents", async function () {
-        this.timeout(120000);
-
         const operatorKey = env.operatorKey.publicKey;
 
         let response = await new FileCreateTransaction()
@@ -78,8 +75,6 @@ describe("FileCreate", function () {
     });
 
     it("should be executable with no keys", async function () {
-        this.timeout(120000);
-
         let response = await new FileCreateTransaction().execute(env.client);
 
         let receipt = await response.getReceipt(env.client);
@@ -90,27 +85,23 @@ describe("FileCreate", function () {
     });
 
     it("should error with too large expiration time", async function () {
-        this.timeout(120000);
-
+        let status;
+        const timestamp = new Timestamp(Date.now() / 1000 + 9999999999, 0);
         const operatorKey = env.operatorKey.publicKey;
-
-        let err = false;
 
         try {
             await (
                 await new FileCreateTransaction()
                     .setKeys([operatorKey])
                     .setContents("[e2e::FileCreateTransaction]")
-                    .setExpirationTime(new Timestamp(Date.now() + 99999999, 0))
+                    .setExpirationTime(timestamp)
                     .execute(env.client)
             ).getReceipt(env.client);
         } catch (error) {
-            err = error.toString().includes(Status.AutorenewDurationNotInRange);
+            status = error.status;
         }
 
-        if (!err) {
-            throw new Error("file creation did not error");
-        }
+        expect(status).to.be.eql(Status.AutorenewDurationNotInRange);
     });
 
     after(async function () {

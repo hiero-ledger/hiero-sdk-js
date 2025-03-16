@@ -1,20 +1,20 @@
 import {
-    // AccountBalanceQuery,
-    AccountCreateTransaction,
-    // AccountInfoQuery,
-    // Hbar,
-    PrivateKey,
+    AccountBalanceQuery,
+    AccountInfoQuery,
     Status,
     TokenAssociateTransaction,
-    TokenCreateTransaction,
     TokenDissociateTransaction,
     TokenGrantKycTransaction,
     TokenMintTransaction,
-    TokenSupplyType,
-    TokenType,
     TransferTransaction,
+    Hbar,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import {
+    createAccount,
+    createFungibleToken,
+    createNonFungibleToken,
+} from "./utils/Fixtures.js";
 
 describe("TokenDissociate", function () {
     let env;
@@ -23,97 +23,68 @@ describe("TokenDissociate", function () {
         env = await IntegrationTestEnv.new();
     });
 
-    /**
-     *
-     * @description The test is temporarily commented because AccountBalanceQuery does a query to the consensus node which was deprecated.
-     * @todo Uncomment a test when the new query to the mirror node is implemented as it described here https://github.com/hashgraph/hedera-sdk-reference/issues/144
-     */
-    // it("should be executable", async function () {
-    //     this.timeout(120000);
+    it("should be executable", async function () {
+        const { accountId: account, newKey: key } = await createAccount(
+            env.client,
+            (transaction) => transaction.setInitialBalance(new Hbar(2)),
+        );
 
-    //     const operatorId = env.operatorId;
-    //     const operatorKey = env.operatorKey.publicKey;
-    //     const key = PrivateKey.generateED25519();
+        const token = await createFungibleToken(env.client, (transaction) => {
+            transaction.setKycKey(env.client.operatorPublicKey);
+        });
 
-    //     const response = await new AccountCreateTransaction()
-    //         .setKey(key)
-    //         .setInitialBalance(new Hbar(2))
-    //         .execute(env.client);
+        await (
+            await (
+                await new TokenAssociateTransaction()
+                    .setTokenIds([token])
+                    .setAccountId(account)
+                    .freezeWith(env.client)
+                    .sign(key)
+            ).execute(env.client)
+        ).getReceipt(env.client);
 
-    //     const account = (await response.getReceipt(env.client)).accountId;
+        let balances = await new AccountBalanceQuery()
+            .setAccountId(account)
+            .execute(env.client);
 
-    //     const token = (
-    //         await (
-    //             await new TokenCreateTransaction()
-    //                 .setTokenName("ffff")
-    //                 .setTokenSymbol("F")
-    //                 .setDecimals(3)
-    //                 .setInitialSupply(1000000)
-    //                 .setTreasuryAccountId(operatorId)
-    //                 .setAdminKey(operatorKey)
-    //                 .setKycKey(operatorKey)
-    //                 .setFreezeKey(operatorKey)
-    //                 .setWipeKey(operatorKey)
-    //                 .setSupplyKey(operatorKey)
-    //                 .setFreezeDefault(false)
-    //                 .execute(env.client)
-    //         ).getReceipt(env.client)
-    //     ).tokenId;
+        expect(balances.tokens.get(token).toInt()).to.be.equal(0);
 
-    //     await (
-    //         await (
-    //             await new TokenAssociateTransaction()
-    //                 .setTokenIds([token])
-    //                 .setAccountId(account)
-    //                 .freezeWith(env.client)
-    //                 .sign(key)
-    //         ).execute(env.client)
-    //     ).getReceipt(env.client);
+        let info = await new AccountInfoQuery()
+            .setAccountId(account)
+            .execute(env.client);
 
-    //     let balances = await new AccountBalanceQuery()
-    //         .setAccountId(account)
-    //         .execute(env.client);
+        const relationship = info.tokenRelationships.get(token);
 
-    //     expect(balances.tokens.get(token).toInt()).to.be.equal(0);
+        expect(relationship).to.be.not.null;
+        expect(relationship.tokenId.toString()).to.be.equal(token.toString());
+        expect(relationship.balance.toInt()).to.be.equal(0);
+        expect(relationship.isKycGranted).to.be.false;
+        expect(relationship.isFrozen).to.be.false;
 
-    //     let info = await new AccountInfoQuery()
-    //         .setAccountId(account)
-    //         .execute(env.client);
+        await (
+            await (
+                await new TokenDissociateTransaction()
+                    .setTokenIds([token])
+                    .setAccountId(account)
+                    .freezeWith(env.client)
+                    .sign(key)
+            ).execute(env.client)
+        ).getReceipt(env.client);
 
-    //     const relationship = info.tokenRelationships.get(token);
+        balances = await new AccountBalanceQuery()
+            .setAccountId(account)
+            .execute(env.client);
 
-    //     expect(relationship).to.be.not.null;
-    //     expect(relationship.tokenId.toString()).to.be.equal(token.toString());
-    //     expect(relationship.balance.toInt()).to.be.equal(0);
-    //     expect(relationship.isKycGranted).to.be.false;
-    //     expect(relationship.isFrozen).to.be.false;
+        expect(balances.tokens.get(token)).to.be.null;
 
-    //     await (
-    //         await (
-    //             await new TokenDissociateTransaction()
-    //                 .setTokenIds([token])
-    //                 .setAccountId(account)
-    //                 .freezeWith(env.client)
-    //                 .sign(key)
-    //         ).execute(env.client)
-    //     ).getReceipt(env.client);
+        info = await new AccountInfoQuery()
+            .setAccountId(account)
+            .execute(env.client);
 
-    //     balances = await new AccountBalanceQuery()
-    //         .setAccountId(account)
-    //         .execute(env.client);
-
-    //     expect(balances.tokens.get(token)).to.be.null;
-
-    //     info = await new AccountInfoQuery()
-    //         .setAccountId(account)
-    //         .execute(env.client);
-
-    //     expect(info.tokenRelationships.get(token)).to.be.null;
-    // });
+        expect(info.tokenRelationships.get(token)).to.be.null;
+    });
 
     it("should be executable even when no token IDs are set", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
 
         await (
@@ -124,34 +95,16 @@ describe("TokenDissociate", function () {
     });
 
     it("should error when account ID is not set", async function () {
-        this.timeout(120000);
-
         const env = await IntegrationTestEnv.new();
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
 
-        const response = await new TokenCreateTransaction()
-            .setTokenName("ffff")
-            .setTokenSymbol("F")
-            .setDecimals(3)
-            .setInitialSupply(1000000)
-            .setTreasuryAccountId(operatorId)
-            .setAdminKey(operatorKey)
-            .setKycKey(operatorKey)
-            .setFreezeKey(operatorKey)
-            .setWipeKey(operatorKey)
-            .setSupplyKey(operatorKey)
-            .setFreezeDefault(false)
-            .execute(env.client);
-
-        const token = (await response.getReceipt(env.client)).tokenId;
+        const tokenId = await createFungibleToken(env.client);
 
         let err = false;
 
         try {
             await (
                 await new TokenDissociateTransaction()
-                    .setTokenIds([token])
+                    .setTokenIds([tokenId])
                     .execute(env.client)
             ).getReceipt(env.client);
         } catch (error) {
@@ -164,49 +117,27 @@ describe("TokenDissociate", function () {
     });
 
     it("cannot dissociate account which owns NFTs", async function () {
-        this.timeout(120000);
+        const { accountId, newKey: key } = await createAccount(env.client);
 
-        const key = PrivateKey.generateED25519();
-
-        const account = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKey(key.publicKey)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
-
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setTokenType(TokenType.NonFungibleUnique)
-                    .setSupplyType(TokenSupplyType.Finite)
-                    .setMaxSupply(10)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const tokenId = await createNonFungibleToken(
+            env.client,
+            (transaction) => {
+                transaction.setKycKey(env.client.operatorPublicKey);
+            },
+        );
 
         await (
             await new TokenMintTransaction()
                 .setMetadata([Uint8Array.of([0, 1, 2])])
-                .setTokenId(token)
+                .setTokenId(tokenId)
                 .execute(env.client)
         ).getReceipt(env.client);
 
         await (
             await (
                 await new TokenAssociateTransaction()
-                    .setTokenIds([token])
-                    .setAccountId(account)
+                    .setTokenIds([tokenId])
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
                     .sign(key)
             ).execute(env.client)
@@ -215,8 +146,8 @@ describe("TokenDissociate", function () {
         await (
             await (
                 await new TokenGrantKycTransaction()
-                    .setTokenId(token)
-                    .setAccountId(account)
+                    .setTokenId(tokenId)
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
                     .sign(key)
             ).execute(env.client)
@@ -224,7 +155,7 @@ describe("TokenDissociate", function () {
 
         await (
             await new TransferTransaction()
-                .addNftTransfer(token, 1, env.operatorId, account)
+                .addNftTransfer(tokenId, 1, env.operatorId, accountId)
                 .execute(env.client)
         ).getReceipt(env.client);
 
@@ -234,8 +165,8 @@ describe("TokenDissociate", function () {
             await (
                 await (
                     await new TokenDissociateTransaction()
-                        .setTokenIds([token])
-                        .setAccountId(account)
+                        .setTokenIds([tokenId])
+                        .setAccountId(accountId)
                         .freezeWith(env.client)
                         .sign(key)
                 ).execute(env.client)

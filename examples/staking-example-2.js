@@ -41,7 +41,7 @@ async function main() {
         // If you really want to stake to node 0, you should use
         // `.setStakedNodeId()` instead
         let transaction = await new AccountCreateTransaction()
-            .setKey(newKey.publicKey)
+            .setKeyWithoutAlias(newKey.publicKey)
             .setInitialBalance(20)
             .setStakedAccountId("0.0.3")
             .freezeWithSigner(wallet);

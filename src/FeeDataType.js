@@ -1,26 +1,8 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.SubType} HashgraphProto.proto.SubType
+ * @typedef {import("@hashgraph/proto").proto.SubType} HieroProto.proto.SubType
  */
 
 export default class FeeDataType {
@@ -53,6 +35,8 @@ export default class FeeDataType {
                 return "TOKEN_NON_FUNGIBLE_UNIQUE_WITH_CUSTOM_FEES";
             case FeeDataType.ScheduleCreateContractCall:
                 return "SCHEDULE_CREATE_CONTRACT_CALL";
+            case FeeDataType.TopicCreateWithCustomFees:
+                return "TOPIC_CREATE_WITH_CUSTOM_FEES";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -77,6 +61,8 @@ export default class FeeDataType {
                 return FeeDataType.TokenNonFungibleUniqueWithCustomFees;
             case 5:
                 return FeeDataType.ScheduleCreateContractCall;
+            case 6:
+                return FeeDataType.TopicCreateWithCustomFees;
         }
 
         throw new Error(
@@ -85,7 +71,7 @@ export default class FeeDataType {
     }
 
     /**
-     * @returns {HashgraphProto.proto.SubType}
+     * @returns {HieroProto.proto.SubType}
      */
     valueOf() {
         return this._code;
@@ -121,3 +107,9 @@ FeeDataType.TokenNonFungibleUniqueWithCustomFees = new FeeDataType(4);
  * The resource prices are scoped to a ScheduleCreate containing a ContractCall.
  */
 FeeDataType.ScheduleCreateContractCall = new FeeDataType(5);
+
+/**
+ * The resource cost for the transaction type includes a TopicCreate
+ * with custom fees.
+ */
+FeeDataType.TopicCreateWithCustomFees = new FeeDataType(6);

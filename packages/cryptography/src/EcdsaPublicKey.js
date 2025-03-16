@@ -58,6 +58,7 @@ export default class EcdsaPublicKey extends Key {
      * @returns {EcdsaPublicKey}
      */
     static fromBytesDer(data) {
+        /** @type {Uint8Array} */
         let ecdsaPublicKeyBytes = new Uint8Array();
 
         switch (data.length) {

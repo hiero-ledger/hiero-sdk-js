@@ -12,7 +12,11 @@ const excludedDirectories = [
     "./react-native-example",
     "./simple_rest_signature_provider",
 ];
-const excludedJSFile = "run-all-examples.js";
+const excludedJSFile = [
+    "run-all-examples.js",
+    "consensus-pub-sub.js",
+    "create-update-delete-node.js",
+];
 const cmd = process.env.NODE_COMMAND;
 
 fs.readdir(examplesDirectory, (err, files) => {
@@ -36,7 +40,7 @@ fs.readdir(examplesDirectory, (err, files) => {
     const examples = files.filter(
         (file) =>
             file.endsWith(".js") &&
-            file !== excludedJSFile &&
+            !excludedJSFile.includes(file) &&
             excludedDirectories.some(
                 (directory) => !isPathStartsWith(directory, file),
             ),
@@ -57,7 +61,7 @@ fs.readdir(examplesDirectory, (err, files) => {
             console.log(`✅ Successfully executed.`);
         } else {
             failed += 1;
-            console.error(`❌ Failed.`);
+            throw new Error("Task failed");
         }
     });
 

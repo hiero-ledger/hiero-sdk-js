@@ -12,7 +12,7 @@ import {
 import dotenv from "dotenv";
 
 /**
- * @description Create, serialize and deserialize so-called incompleted transaction, then freeze it, serialize and deserialize it again, and execute it
+ * @description Create, serialize and deserialize so-called incomplete transaction, then freeze it, serialize and deserialize it again, and execute it
  */
 
 async function main() {

@@ -48,7 +48,7 @@ async function main() {
 
     const createAccountTransaction = new AccountCreateTransaction()
         .setInitialBalance(new Hbar(2)) // 5 h
-        .setKey(keyList);
+        .setKeyWithoutAlias(keyList);
 
     const response = await createAccountTransaction.execute(client);
 
@@ -68,8 +68,8 @@ async function main() {
     const transactionToExecute = Transaction.fromBytes(transactionBytes);
 
     // ask users to sign and return signature
-    const user1Signature = user1Signs(transactionBytes);
-    const user2Signature = user2Signs(transactionBytes);
+    const user1Signature = user1Key.signTransaction(transferTransaction);
+    const user2Signature = user2Key.signTransaction(transferTransaction);
 
     try {
         // recreate the transaction from bytes
@@ -85,24 +85,6 @@ async function main() {
     }
 
     client.close();
-}
-
-/**
- * @param {Uint8Array} transactionBytes
- * @returns {Uint8Array}
- */
-function user1Signs(transactionBytes) {
-    const transaction = Transaction.fromBytes(transactionBytes);
-    return user1Key.signTransaction(transaction);
-}
-
-/**
- * @param {Uint8Array} transactionBytes
- * @returns {Uint8Array}
- */
-function user2Signs(transactionBytes) {
-    const transaction = Transaction.fromBytes(transactionBytes);
-    return user2Key.signTransaction(transaction);
 }
 
 void main();

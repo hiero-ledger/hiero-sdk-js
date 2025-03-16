@@ -1,26 +1,8 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ResponseCodeEnum} HashgraphProto.proto.ResponseCodeEnum
+ * @typedef {import("@hashgraph/proto").proto.ResponseCodeEnum} HieroProto.proto.ResponseCodeEnum
  */
 
 export default class Status {
@@ -631,6 +613,109 @@ export default class Status {
                 return "MISSING_TOKEN_METADATA";
             case Status.MissingSerialNumbers:
                 return "MISSING_SERIAL_NUMBERS";
+            case Status.TokenHasNoAdminKey:
+                return "TOKEN_HAS_NO_ADMIN_KEY";
+            case Status.NodeDeleted:
+                return "NODE_DELETED";
+            case Status.InvalidNodeId:
+                return "INVALID_NODE_ID";
+            case Status.InvalidGossipEndpoint:
+                return "INVALID_GOSSIP_ENDPOINT";
+            case Status.InvalidNodeAccountId:
+                return "INVALID_NODE_ACCOUNT_ID";
+            case Status.InvalidNodeDescription:
+                return "INVALID_NODE_DESCRIPTION";
+            case Status.InvalidServiceEndpoint:
+                return "INVALID_SERVICE_ENDPOINT";
+            case Status.InvalidGossipCaCertificate:
+                return "INVALID_GOSSIP_CA_CERTIFICATE";
+            case Status.InvalidGrpcCertificate:
+                return "INVALID_GRPC_CERTIFICATE";
+            case Status.InvalidMaxAutoAssociations:
+                return "INVALID_MAX_AUTO_ASSOCIATIONS";
+            case Status.MaxNodesCreated:
+                return "MAX_NODES_CREATED";
+            case Status.IpFqdnCannotBeSetForSameEndpoint:
+                return "IP_FQDN_CANNOT_BE_SET_FOR_SAME_ENDPOINT";
+            case Status.GossipEndpointCannotHaveFqdn:
+                return "GOSSIP_ENDPOINT_CANNOT_HAVE_FQDN";
+            case Status.FqdnSizeTooLarge:
+                return "FQDN_SIZE_TOO_LARGE";
+            case Status.InvalidEndpoint:
+                return "INVALID_ENDPOINT";
+            case Status.GossipEndpointsExceededLimit:
+                return "GOSSIP_ENDPOINTS_EXCEEDED_LIMIT";
+            case Status.ServiceEndpointsExceededLimit:
+                return "SERVICE_ENDPOINTS_EXCEEDED_LIMIT";
+            case Status.InvalidIpv4Address:
+                return "INVALID_IPV4_ADDRESS";
+            case Status.TokenReferenceRepeated:
+                return "TOKEN_REFERENCE_REPEATED";
+            case Status.InvalidOwnerId:
+                return "INVALID_OWNER_ID";
+            case Status.TokenReferenceListSizeLimitExceeded:
+                return "TOKEN_REFERENCE_LIST_SIZE_LIMIT_EXCEEDED";
+            case Status.EmptyTokenReferenceList:
+                return "EMPTY_TOKEN_REFERENCE_LIST";
+            case Status.UpdateNodeAccountNotAllowed:
+                return "UPDATE_NODE_ACCOUNT_NOT_ALLOWED";
+            case Status.TokenHasNoMetadataOrSupplyKey:
+                return "TOKEN_HAS_NO_METADATA_OR_SUPPLY_KEY";
+            case Status.EmptyPendingAirdropIdList:
+                return "EMPTY_PENDING_AIRDROP_ID_LIST";
+            case Status.PendingAirdropIdRepeated:
+                return "PENDING_AIRDROP_ID_REPEATED";
+            case Status.MaxPendingAirdropIdExceeded:
+                return "PENDING_AIRDROP_ID_LIST_TOO_LONG";
+            case Status.PendingNftAirdropAlreadyExists:
+                return "PENDING_NFT_AIRDROP_ALREADY_EXISTS";
+            case Status.AccountHasPendingAirdrops:
+                return "ACCOUNT_HAS_PENDING_AIRDROPS";
+            case Status.ThrottledAtConsensus:
+                return "THROTTLED_AT_CONSENSUS";
+            case Status.InvalidPendingAirdropId:
+                return "INVALID_PENDING_AIRDROP_ID";
+            case Status.TokenAirdropWithFallbackRoyalty:
+                return "TOKEN_AIRDROP_WITH_FALLBACK_ROYALTY";
+            case Status.InvalidTokenInPendingAirdrop:
+                return "INVALID_TOKEN_IN_PENDING_AIRDROP";
+            case Status.ScheduleExpiryIsBusy:
+                return "SCHEDULE_EXPIRY_IS_BUSY";
+            case Status.InvalidGrpcCertificateHash:
+                return "INVALID_GRPC_CERTIFICATE_HASH";
+            case Status.MissingExpiryTime:
+                return "MISSING_EXPIRY_TIME";
+            case Status.NoSchedulingAllowedAfterScheduledRecursion:
+                return "NO_SCHEDULING_ALLOWED_AFTER_SCHEDULED_RECURSION";
+            case Status.RecursiveSchedulingLimitReached:
+                return "RECURSIVE_SCHEDULING_LIMIT_REACHED";
+            case Status.WaitingForLedgerId:
+                return "WAITING_FOR_LEDGER_ID";
+            case Status.MaxEntriesForFeeExemptKeyListExceeded:
+                return "MAX_ENTRIES_FOR_FEE_EXEMPT_KEY_LIST_EXCEEDED";
+            case Status.FeeExemptKeyListContainsDuplicatedKeys:
+                return "FEE_EXEMPT_KEY_LIST_CONTAINS_DUPLICATED_KEYS";
+            case Status.InvalidKeyInFeeExemptKeyList:
+                return "INVALID_KEY_IN_FEE_EXEMPT_KEY_LIST";
+            case Status.InvalidFeeScheduleKey:
+                return "INVALID_FEE_SCHEDULE_KEY";
+            case Status.FeeScheduleKeyCannotBeUpdated:
+                return "FEE_SCHEDULE_KEY_CANNOT_BE_UPDATED";
+            case Status.FeeScheduleKeyNotSet:
+                return "FEE_SCHEDULE_KEY_NOT_SET";
+            case Status.MaxCustomFeeLimitExceeded:
+                return "MAX_CUSTOM_FEE_LIMIT_EXCEEDED";
+            case Status.NoValidMaxCustomFee:
+                return "NO_VALID_MAX_CUSTOM_FEE";
+            case Status.InvalidMaxCustomFees:
+                return "INVALID_MAX_CUSTOM_FEES";
+            case Status.DuplicateDenominationInMaxCustomFeeList:
+                return "DUPLICATE_DENOMINATION_IN_MAX_CUSTOM_FEE_LIST";
+            case Status.DuplicateAccountIdInMaxCustomFeeList:
+                return "DUPLICATE_ACCOUNT_ID_IN_MAX_CUSTOM_FEE_LIST";
+            case Status.MaxCustomFeesIsNotSupported:
+                return "MAX_CUSTOM_FEES_IS_NOT_SUPPORTED";
+
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -1233,6 +1318,108 @@ export default class Status {
                 return Status.MissingTokenMetadata;
             case 336:
                 return Status.MissingSerialNumbers;
+            case 337:
+                return Status.TokenHasNoAdminKey;
+            case 338:
+                return Status.NodeDeleted;
+            case 339:
+                return Status.InvalidNodeId;
+            case 340:
+                return Status.InvalidGossipEndpoint;
+            case 341:
+                return Status.InvalidNodeAccountId;
+            case 342:
+                return Status.InvalidNodeDescription;
+            case 343:
+                return Status.InvalidServiceEndpoint;
+            case 344:
+                return Status.InvalidGossipCaCertificate;
+            case 345:
+                return Status.InvalidGrpcCertificate;
+            case 346:
+                return Status.InvalidMaxAutoAssociations;
+            case 347:
+                return Status.MaxNodesCreated;
+            case 348:
+                return Status.IpFqdnCannotBeSetForSameEndpoint;
+            case 349:
+                return Status.GossipEndpointCannotHaveFqdn;
+            case 350:
+                return Status.FqdnSizeTooLarge;
+            case 351:
+                return Status.InvalidEndpoint;
+            case 352:
+                return Status.GossipEndpointsExceededLimit;
+            case 353:
+                return Status.TokenReferenceRepeated;
+            case 354:
+                return Status.InvalidOwnerId;
+            case 355:
+                return Status.TokenReferenceListSizeLimitExceeded;
+            case 356:
+                return Status.ServiceEndpointsExceededLimit;
+            case 357:
+                return Status.InvalidIpv4Address;
+            case 358:
+                return Status.EmptyTokenReferenceList;
+            case 359:
+                return Status.UpdateNodeAccountNotAllowed;
+            case 360:
+                return Status.TokenHasNoMetadataOrSupplyKey;
+            case 361:
+                return Status.EmptyPendingAirdropIdList;
+            case 362:
+                return Status.PendingAirdropIdRepeated;
+            case 363:
+                return Status.MaxPendingAirdropIdExceeded;
+            case 364:
+                return Status.PendingNftAirdropAlreadyExists;
+            case 365:
+                return Status.AccountHasPendingAirdrops;
+            case 366:
+                return Status.ThrottledAtConsensus;
+            case 367:
+                return Status.InvalidPendingAirdropId;
+            case 368:
+                return Status.TokenAirdropWithFallbackRoyalty;
+            case 369:
+                return Status.InvalidTokenInPendingAirdrop;
+            case 370:
+                return Status.ScheduleExpiryIsBusy;
+            case 371:
+                return Status.InvalidGrpcCertificateHash;
+            case 372:
+                return Status.MissingExpiryTime;
+            case 373:
+                return Status.NoSchedulingAllowedAfterScheduledRecursion;
+            case 374:
+                return Status.RecursiveSchedulingLimitReached;
+            case 375:
+                return Status.WaitingForLedgerId;
+            case 376:
+                return Status.MaxEntriesForFeeExemptKeyListExceeded;
+            case 377:
+                return Status.FeeExemptKeyListContainsDuplicatedKeys;
+            case 378:
+                return Status.InvalidKeyInFeeExemptKeyList;
+            case 379:
+                return Status.InvalidFeeScheduleKey;
+            case 380:
+                return Status.FeeScheduleKeyCannotBeUpdated;
+            case 381:
+                return Status.FeeScheduleKeyNotSet;
+            case 382:
+                return Status.MaxCustomFeeLimitExceeded;
+            case 383:
+                return Status.NoValidMaxCustomFee;
+            case 384:
+                return Status.InvalidMaxCustomFees;
+            case 385:
+                return Status.DuplicateDenominationInMaxCustomFeeList;
+            case 386:
+                return Status.DuplicateAccountIdInMaxCustomFeeList;
+            case 387:
+                return Status.MaxCustomFeesIsNotSupported;
             default:
                 throw new Error(
                     `(BUG) Status.fromCode() does not handle code: ${code}`,
@@ -1241,7 +1428,7 @@ export default class Status {
     }
 
     /**
-     * @returns {HashgraphProto.proto.ResponseCodeEnum}
+     * @returns {HieroProto.proto.ResponseCodeEnum}
      */
     valueOf() {
         return this._code;
@@ -2764,3 +2951,285 @@ Status.MissingTokenMetadata = new Status(335);
  * NFT serial numbers are missing in the TokenUpdateNftsTransactionBody
  */
 Status.MissingSerialNumbers = new Status(336);
+
+/**
+ * Admin key is not set on token
+ */
+Status.TokenHasNoAdminKey = new Status(337);
+
+/**
+ * The node has been marked as deleted
+ */
+Status.NodeDeleted = new Status(338);
+
+/**
+ * A node is not found during update and delete node transaction
+ */
+Status.InvalidNodeId = new Status(339);
+
+/**
+ * gossip_endpoint has a fully qualified domain name instead of ip
+ */
+Status.InvalidGossipEndpoint = new Status(340);
+
+/**
+ * The node account_id is invalid
+ */
+Status.InvalidNodeAccountId = new Status(341);
+
+/**
+ * The node description is invalid
+ */
+Status.InvalidNodeDescription = new Status(342);
+
+/**
+ * service_endpoint is invalid
+ */
+Status.InvalidServiceEndpoint = new Status(343);
+
+/**
+ * gossip_ca_certificate is invalid
+ */
+Status.InvalidGossipCaCertificate = new Status(344);
+
+/**
+ * grpc_certificate_hash is invalid
+ */
+Status.InvalidGrpcCertificate = new Status(345);
+
+/**
+ * The maximum automatic associations value is not valid.
+ * The most common cause for this error is a value less than `-1`.
+ */
+Status.InvalidMaxAutoAssociations = new Status(346);
+
+/**
+ * The maximum number of nodes allowed in the address book have been created.
+ */
+Status.MaxNodesCreated = new Status(347);
+
+/**
+ * In ServiceEndpoint, domain_name and ipAddressV4 are mutually exclusive
+ */
+Status.IpFqdnCannotBeSetForSameEndpoint = new Status(348);
+
+/**
+ * Fully qualified domain name is not allowed in gossip_endpoint
+ */
+Status.GossipEndpointCannotHaveFqdn = new Status(349);
+
+/**
+ * In ServiceEndpoint, domain_name size too large
+ */
+Status.FqdnSizeTooLarge = new Status(350);
+
+/**
+ * ServiceEndpoint is invalid
+ */
+Status.InvalidEndpoint = new Status(351);
+
+/**
+ * The number of gossip endpoints exceeds the limit
+ */
+Status.GossipEndpointsExceededLimit = new Status(352);
+
+/**
+ * The transaction attempted to use duplicate `TokenReference`.<br/>
+ * This affects `TokenReject` attempting to reject same token reference more than once.
+ */
+Status.TokenReferenceRepeated = new Status(353);
+
+/**
+ * The account id specified as the owner in `TokenReject` is invalid or does not exist.
+ */
+Status.InvalidOwnerId = new Status(354);
+
+/**
+ * The transaction attempted to use more than the allowed number of `TokenReference`.
+ */
+Status.TokenReferenceListSizeLimitExceeded = new Status(355);
+
+/**
+ * The number of service endpoints exceeds the limit
+ */
+Status.ServiceEndpointsExceededLimit = new Status(356);
+
+/*
+ * The IPv4 address is invalid
+ */
+Status.InvalidIpv4Address = new Status(357);
+
+/**
+ * The transaction attempted to use empty `TokenReference` list.
+ */
+Status.EmptyTokenReferenceList = new Status(358);
+
+/*
+ * The node account is not allowed to be updated
+ */
+Status.UpdateNodeAccountNotAllowed = new Status(359);
+
+/*
+ * The token has no metadata or supply key
+ */
+Status.TokenHasNoMetadataOrSupplyKey = new Status(360);
+
+/**
+ * The transaction attempted to the use an empty List of `PendingAirdropId`.
+ */
+Status.EmptyPendingAirdropIdList = new Status(361);
+
+/**
+ * The transaction attempted to the same `PendingAirdropId` twice.
+ */
+Status.PendingAirdropIdRepeated = new Status(362);
+
+/**
+ * The transaction attempted to use more than the allowed number of `PendingAirdropId`.
+ */
+Status.MaxPendingAirdropIdExceeded = new Status(363);
+
+/*
+ * A pending airdrop already exists for the specified NFT.
+ */
+Status.PendingNftAirdropAlreadyExists = new Status(364);
+
+/*
+ * The identified account is sender for one or more pending airdrop(s)
+ * and cannot be deleted.<br/>
+ * Requester should cancel all pending airdrops before resending
+ * this transaction.
+ */
+Status.AccountHasPendingAirdrops = new Status(365);
+
+/**
+ * Consensus throttle did not allow execution of this transaction.<br/>
+ * The transaction should be retried after a modest delay.
+ */
+Status.ThrottledAtConsensus = new Status(366);
+
+/**
+ * The provided pending airdrop id is invalid.<br/>
+ * This pending airdrop MAY already be claimed or cancelled.
+ * <p>
+ * The client SHOULD query a mirror node to determine the current status of
+ * the pending airdrop.
+ */
+Status.InvalidPendingAirdropId = new Status(367);
+
+/**
+ * The token to be airdropped has a fallback royalty fee and cannot be
+ * sent or claimed via an airdrop transaction.
+ */
+Status.TokenAirdropWithFallbackRoyalty = new Status(368);
+
+/**
+ * This airdrop claim is for a pending airdrop with an invalid token.<br/>
+ * The token might be deleted, or the sender may not have enough tokens
+ * to fulfill the offer.
+ * <p>
+ * The client SHOULD query mirror node to determine the status of the pending
+ * airdrop and whether the sender can fulfill the offer.
+ */
+Status.InvalidTokenInPendingAirdrop = new Status(369);
+
+/**
+ * A scheduled transaction configured to wait for expiry to execute was given
+ * an expiry time at which there is already too many transactions scheduled to
+ * expire; its creation must be retried with a different expiry.
+ */
+Status.ScheduleExpiryIsBusy = new Status(370);
+
+/**
+ * The provided gRPC certificate hash is invalid.
+ */
+Status.InvalidGrpcCertificateHash = new Status(371);
+
+/**
+ * A scheduled transaction configured to wait for expiry to execute was not
+ * given an explicit expiration time.
+ */
+Status.MissingExpiryTime = new Status(372);
+
+/**
+ * A contract operation attempted to schedule another transaction after it
+ * had already scheduled a recursive contract call.
+ */
+Status.NoSchedulingAllowedAfterScheduledRecursion = new Status(373);
+
+/**
+ * A contract can schedule recursive calls a finite number of times (this is
+ * approximately four million times with typical network configuration.)
+ */
+Status.RecursiveSchedulingLimitReached = new Status(374);
+
+/**
+ * The target network is waiting for the ledger ID to be set, which is a
+ * side effect of finishing the network's TSS construction.
+ */
+Status.WaitingForLedgerId = new Status(375);
+
+/**
+ * The provided fee exempt key list size exceeded the limit.
+ */
+Status.MaxEntriesForFeeExemptKeyListExceeded = new Status(376);
+
+/**
+ * The provided fee exempt key list contains duplicated keys.
+ */
+Status.FeeExemptKeyListContainsDuplicatedKeys = new Status(377);
+
+/**
+ * The provided fee exempt key list contains an invalid key.
+ */
+Status.InvalidKeyInFeeExemptKeyList = new Status(378);
+
+/**
+ * The provided fee schedule key contains an invalid key.
+ */
+Status.InvalidFeeScheduleKey = new Status(379);
+
+/**
+ * If a fee schedule key is not set when we create a topic
+ * we cannot add it on update.
+ */
+Status.FeeScheduleKeyCannotBeUpdated = new Status(380);
+
+/**
+ * If the topic's custom fees are updated the topic SHOULD have a
+ * fee schedule key
+ */
+Status.FeeScheduleKeyNotSet = new Status(381);
+
+/**
+ * The fee amount is exceeding the amount that the payer
+ * is willing to pay.
+ */
+Status.MaxCustomFeeLimitExceeded = new Status(382);
+
+/**
+ * There are no corresponding custom fees.
+ */
+Status.NoValidMaxCustomFee = new Status(383);
+
+/**
+ * The provided list contains invalid max custom fee.
+ */
+Status.InvalidMaxCustomFees = new Status(384);
+
+/**
+ * The provided max custom fee list contains fees with
+ * duplicate denominations.
+ */
+Status.DuplicateDenominationInMaxCustomFeeList = new Status(385);
+
+/**
+ * The provided max custom fee list contains fees with
+ * duplicate account id.
+ */
+Status.DuplicateAccountIdInMaxCustomFeeList = new Status(386);
+
+/**
+ * Max custom fees list is not supported for this operation.
+ */
+Status.MaxCustomFeesIsNotSupported = new Status(387);

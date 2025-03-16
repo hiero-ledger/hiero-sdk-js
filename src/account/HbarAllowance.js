@@ -1,31 +1,13 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import AccountId from "./AccountId.js";
 import Hbar from "../Hbar.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IGrantedCryptoAllowance} HashgraphProto.proto.IGrantedCryptoAllowance
- * @typedef {import("@hashgraph/proto").proto.ICryptoAllowance} HashgraphProto.proto.ICryptoAllowance
- * @typedef {import("@hashgraph/proto").proto.IAccountID} HashgraphProto.proto.IAccountID
+ * @typedef {import("@hashgraph/proto").proto.IGrantedCryptoAllowance} HieroProto.proto.IGrantedCryptoAllowance
+ * @typedef {import("@hashgraph/proto").proto.ICryptoAllowance} HieroProto.proto.ICryptoAllowance
+ * @typedef {import("@hashgraph/proto").proto.IAccountID} HieroProto.proto.IAccountID
  */
 
 /**
@@ -36,6 +18,10 @@ import Hbar from "../Hbar.js";
  * @typedef {import("../client/Client.js").default<*, *>} Client
  */
 
+/**
+ * Represents an HBAR allowance granted to a spender account by an owner account.
+ * This class manages the permissions for one account to spend HBAR on behalf of another account.
+ */
 export default class HbarAllowance {
     /**
      * @internal
@@ -71,20 +57,18 @@ export default class HbarAllowance {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ICryptoAllowance} allowance
+     * @param {HieroProto.proto.ICryptoAllowance} allowance
      * @returns {HbarAllowance}
      */
     static _fromProtobuf(allowance) {
         return new HbarAllowance({
             spenderAccountId: AccountId._fromProtobuf(
-                /** @type {HashgraphProto.proto.IAccountID} */ (
-                    allowance.spender
-                ),
+                /** @type {HieroProto.proto.IAccountID} */ (allowance.spender),
             ),
             ownerAccountId:
                 allowance.owner != null
                     ? AccountId._fromProtobuf(
-                          /**@type {HashgraphProto.proto.IAccountID}*/ (
+                          /**@type {HieroProto.proto.IAccountID}*/ (
                               allowance.owner
                           ),
                       )
@@ -97,16 +81,14 @@ export default class HbarAllowance {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IGrantedCryptoAllowance} allowance
+     * @param {HieroProto.proto.IGrantedCryptoAllowance} allowance
      * @param {AccountId} ownerAccountId
      * @returns {HbarAllowance}
      */
     static _fromGrantedProtobuf(allowance, ownerAccountId) {
         return new HbarAllowance({
             spenderAccountId: AccountId._fromProtobuf(
-                /** @type {HashgraphProto.proto.IAccountID} */ (
-                    allowance.spender
-                ),
+                /** @type {HieroProto.proto.IAccountID} */ (allowance.spender),
             ),
             ownerAccountId,
             amount: Hbar.fromTinybars(
@@ -117,7 +99,7 @@ export default class HbarAllowance {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.ICryptoAllowance}
+     * @returns {HieroProto.proto.ICryptoAllowance}
      */
     _toProtobuf() {
         return {

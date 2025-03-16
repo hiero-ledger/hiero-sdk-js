@@ -19,8 +19,6 @@ describe("ContractCreateFlowMocking", function () {
     });
 
     it("signs all transactions", async function () {
-        this.timeout(10000);
-
         const key = PrivateKey.generate();
 
         const verifyTransactionCall = (request) => {
@@ -67,8 +65,6 @@ describe("ContractCreateFlowMocking", function () {
     });
 
     it("signs all transactions with wallet", async function () {
-        this.timeout(10000);
-
         const key = PrivateKey.generate();
 
         const verifyTransactionCall = (request) => {

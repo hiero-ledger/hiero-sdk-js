@@ -1,3 +1,3 @@
-[submodule "packages/proto/src/proto"]
-	path = packages/proto/src/proto
-	url = https://github.com/hashgraph/hedera-protobufs.git
+[submodule "packages/proto/src/services"]
+	path = packages/proto/src/services
+	url = https://github.com/hiero-ledger/hiero-consensus-node.git

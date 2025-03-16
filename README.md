@@ -1,13 +1,14 @@
-# Hedera™ Hashgraph JavaScript SDK
+# Hiero JavaScript SDK
 
 [![](https://img.shields.io/discord/373889138199494658)](https://discord.com/channels/373889138199494658/616725732650909710)
-[![Docs](https://img.shields.io/badge/docs-%F0%9F%93%84-blue)](https://docs.hedera.com/guides/getting-started/javascript/environment-set-up)
+[![Docs](https://img.shields.io/badge/docs-%F0%9F%93%84-blue)](https://docs.hedera.com/hedera/getting-started/environment-set-up)
 [![NPM Package](https://img.shields.io/npm/v/@hashgraph/sdk.svg)](https://www.npmjs.org/package/@hashgraph/sdk)
 
-> The JavaScript SDK for interacting with Hedera Hashgraph: the official distributed
-> consensus platform built using the hashgraph consensus algorithm for fast,
-> fair and secure transactions. Hedera enables and empowers developers to
-> build an entirely new class of decentralized applications.
+> The JavaScript SDK for interacting with a Hiero based network
+
+> [!NOTE]  
+> The project has been transfered from the https://github.com/hashgraph org and therefore the namespace is at several locations still based on `hashgraph` and `hedera`.
+> We are working activly on migration the namespace fully to hiero.
 
 ## Install
 
@@ -23,20 +24,91 @@ $ yarn add @hashgraph/sdk
 # with PNPM
 $ pnpm add @hashgraph/sdk
 ```
+
 ## Build
 
-After downloading the repo run `task build` to build the SDK.
+### Prerequisites
+
+1. [Taskfile](https://taskfile.dev/) tool installation
+2. **Node.js**: It is **recommended** to use Node.js **v20 or higher** for best performance and compatibility. The package may also work with **Node.js v16**, but this version has **not been officially tested**.
+
+```
+# with npm
+$ npm install -g @go-task/cli
+
+# with homebrew
+$ brew install go-task
+```
+
+2. [pNpm](https://pnpm.io/) package manager installation
+
+```
+# with npm
+$ npm install -g pnpm
+
+# with homebrew
+$ brew install pnpm
+```
+
+After downloading the repo run:
+
+1. `task install`
+
+2. `task build` to build the SDK
 
 ## React Native Support
 
-The Hedera JavaScript SDK supports the following:
+The Hiero JavaScript SDK provides comprehensive support for React Native environments, including Expo. To ensure seamless integration, follow the guidelines based on your Expo version:
 
-* React Native with Expo - keep in mind that the SDK uses some functionalities provided from ethers/ethersproject and there is an issue using parts of ethers.js in this environment. A [shims](https://www.npmjs.com/package/@ethersproject/shims) package has to be installed and imported before importing the SDK in your project as it is showed [here](./examples/react-native-example/App.tsx)
-* Useful information: [here](https://github.com/ethers-io/ethers.js/discussions/3652) and [here](https://docs.ethers.org/v5/cookbook/react-native/)
+✅ Hiero Javascript SDK Version 2.60 and Above
+For projects using SDK version 2.60 and above, Expo SDK version 51+ is supported, the SDK requires the `react-native-get-random-values` package in order to work.
+To install it, run:
 
-The Hedera JavaScript SDK does not currently support the following:
+```bash
+npm install react-native-get-random-values
+```
 
-* React Native Bare
+After installation, the native dependency must be linked for the respective platforms:
+
+🔗 Linking for Native Platforms
+
+1. iOS:
+   Run the following command to install the native modules:
+
+```bash
+cd ios && pod install
+```
+
+Then, rebuild the iOS project.
+
+2. Android:
+   Rebuild the Android project to link the dependency
+
+⚠️ ✅ Hiero Javascript SDK Version 2.59 and Below
+For projects using SDK version 2.59 and below, Expo SDK Version 49 and below is supported, keep in mind that the SDK uses some functionalities provided from ethers/ethersproject and there is an issue using parts of ethers.js in this environment. A [shims](https://www.npmjs.com/package/@ethersproject/shims) package has to be installed and imported before importing the SDK in your project.
+
+-   Useful information: [here](https://github.com/ethers-io/ethers.js/discussions/3652) and [here](https://docs.ethers.org/v5/cookbook/react-native/)
+
+```bash
+npm install @ethersproject/shims
+```
+
+Import it before importing the SDK as shown below:
+
+```bash
+import '@ethersproject/shims';
+
+import {
+    Client,
+    PrivateKey
+    AccountBalance,
+} from "@hashgraph/sdk";
+...
+```
+
+The Hiero JavaScript SDK does not currently support the following:
+
+-   React Native Bare
 
 ## Usage
 
@@ -44,23 +116,28 @@ See [examples](./examples).
 
 Every example can be executed using the following command from the root directory: `node examples/[name-of-example].js`
 
+## Configuration
+
+For detailed information on configuring the SDK, including environment variables and client settings, please refer to the [CONFIGURATION.md](CONFIGURATION.md) file.
+
 ## Start tests
 
 * To start the integration tests follow the next steps:
-    - Run the [local node](https://github.com/hashgraph/hedera-local-node)
-    - Run `task test:intergration:node`
-    - Stop the [local node](https://github.com/hashgraph/hedera-local-node)
+    - Run the [local node](https://github.com/hiero-ledger/hiero-local-node)
+    - Run `task test:integration:node`
+    - Stop the [local node](https://github.com/hiero-ledger/hiero-local-node)
 * To start unit tests follow the next steps:
     - Run `task test:unit` (Note: the local node should not be running)
 
-## Contributing to this Project
+## Contributing
 
-We welcome participation from all developers!
-For instructions on how to contribute to this repo, please
-review the [Contributing Guide](CONTRIBUTING.md).
+Whether you’re fixing bugs, enhancing features, or improving documentation, your contributions are important — let’s build something great together!
+Please read our [contributing guide](https://github.com/hiero-ledger/.github/blob/main/CONTRIBUTING.md) to see how you can get involved.
 
-## License Information
+## Code of Conduct
 
-Licensed under Apache License,
-Version 2.0 – see [LICENSE](LICENSE) in this repo
-or [apache.org/licenses/LICENSE-2.0](http://www.apache.org/licenses/LICENSE-2.0).
+Hiero uses the Linux Foundation Decentralised Trust [Code of Conduct](https://www.lfdecentralizedtrust.org/code-of-conduct).
+
+## License
+
+[Apache License 2.0](LICENSE)

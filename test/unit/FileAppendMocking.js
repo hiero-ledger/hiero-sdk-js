@@ -168,7 +168,7 @@ describe("FileAppendMocking", function () {
         } catch (error) {
             if (
                 error.message !==
-                "max attempts of 1 was reached for request with last error being: GrpcServiceError: node is UNAVAILABLE"
+                "max attempts of 1 was reached for request with last error being: GrpcServiceError: gRPC service failed with: Status: UNAVAILABLE, Code: 14: node is UNAVAILABLE"
             ) {
                 throw error;
             }

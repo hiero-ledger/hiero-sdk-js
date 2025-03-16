@@ -1,4 +1,5 @@
 /* eslint-disable mocha/no-setup-in-describe */
+import { setTimeout } from "timers/promises";
 import {
     FileCreateTransaction,
     ContractCreateTransaction,
@@ -8,6 +9,7 @@ import {
     ContractDeleteTransaction,
     FileAppendTransaction,
     FileDeleteTransaction,
+    MirrorNodeContractEstimateQuery,
 } from "../../src/exports.js";
 import { REQUIRE_ARRAY_ERROR } from "../../src/util.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
@@ -117,12 +119,11 @@ const bitSizes = [
 ];
 
 describe("ContractFunctionParameters", function () {
-    this.timeout(120000);
     let env;
     let newContractId;
 
     before(async function () {
-        env = await IntegrationTestEnv.new({ balance: 10000 });
+        env = await IntegrationTestEnv.new({ balance: 100000 });
         // Create a file on Hedera and store the bytecode
         const fileCreateTx = new FileCreateTransaction()
             .setKeys([env.operatorKey])
@@ -148,7 +149,7 @@ describe("ContractFunctionParameters", function () {
         );
 
         // Instantiate the contract instance
-        const contractTx = await new ContractCreateTransaction()
+        const contractTx = new ContractCreateTransaction()
             //Set the file ID of the Hedera file storing the bytecode
             .setBytecodeFileId(bytecodeFileId)
             //Set the gas to instantiate the contract
@@ -161,6 +162,8 @@ describe("ContractFunctionParameters", function () {
 
         //Get the receipt of the file create transaction
         const contractReceipt = await contractResponse.getReceipt(env.client);
+
+        await setTimeout(2500);
 
         //Get the smart contract ID
         newContractId = contractReceipt.contractId;
@@ -179,21 +182,26 @@ describe("ContractFunctionParameters", function () {
                     METHOD_TYPE.INT,
                 ),
                 async function () {
-                    const contractQuery = await new ContractCallQuery()
+                    const contractParams = new ContractFunctionParameters()[
+                        `addInt${bitSize}`
+                    ](-calculateRange(bitSize, INPUT_TYPE.NUMBER).min);
+
+                    const gasEstimte =
+                        await new MirrorNodeContractEstimateQuery()
+                            .setContractId(newContractId)
+                            .setFunction(`returnInt${bitSize}`, contractParams)
+                            .execute(env.client);
+
+                    const contractQuery = new ContractCallQuery()
                         //Set the gas for the query
-                        .setGas(15000000)
+                        .setGas(gasEstimte)
                         //Set the contract ID to return the request for
                         .setContractId(newContractId)
                         //Set the contract function to call
-                        .setFunction(
-                            `returnInt${bitSize}`,
-                            new ContractFunctionParameters()[
-                                `addInt${bitSize}`
-                            ](-calculateRange(bitSize, INPUT_TYPE.NUMBER).min),
-                        )
+                        .setFunction(`returnInt${bitSize}`, contractParams)
                         //Set the query payment for the node returning the request
                         //This value must cover the cost of the request otherwise will fail
-                        .setQueryPayment(new Hbar(15));
+                        .setQueryPayment(new Hbar(10));
 
                     //Submit to a Hedera network
                     const txResponse = await contractQuery.execute(env.client);
@@ -205,6 +213,7 @@ describe("ContractFunctionParameters", function () {
                     );
                 },
             );
+
             it(
                 getDescription(
                     EXTREMUM.MAX,
@@ -213,21 +222,25 @@ describe("ContractFunctionParameters", function () {
                     METHOD_TYPE.INT,
                 ),
                 async function () {
-                    const contractQuery = await new ContractCallQuery()
+                    const functionParams = new ContractFunctionParameters()[
+                        `addInt${bitSize}`
+                    ](calculateRange(bitSize, INPUT_TYPE.NUMBER).max);
+
+                    const gasEstimte =
+                        await new MirrorNodeContractEstimateQuery()
+                            .setContractId(newContractId)
+                            .setFunction(`returnInt${bitSize}`, functionParams)
+                            .execute(env.client);
+                    const contractQuery = new ContractCallQuery()
                         //Set the gas for the query
-                        .setGas(15000000)
+                        .setGas(gasEstimte)
                         //Set the contract ID to return the request for
                         .setContractId(newContractId)
                         //Set the contract function to call
-                        .setFunction(
-                            `returnInt${bitSize}`,
-                            new ContractFunctionParameters()[
-                                `addInt${bitSize}`
-                            ](calculateRange(bitSize, INPUT_TYPE.NUMBER).max),
-                        )
+                        .setFunction(`returnInt${bitSize}`, functionParams)
                         //Set the query payment for the node returning the request
                         //This value must cover the cost of the request otherwise will fail
-                        .setQueryPayment(new Hbar(15));
+                        .setQueryPayment(new Hbar(10));
 
                     //Submit to a Hedera network
                     const txResponse = await contractQuery.execute(env.client);
@@ -240,6 +253,7 @@ describe("ContractFunctionParameters", function () {
                     );
                 },
             );
+
             it(
                 getDescription(
                     EXTREMUM.MIN,
@@ -248,21 +262,25 @@ describe("ContractFunctionParameters", function () {
                     METHOD_TYPE.INT,
                 ),
                 async function () {
-                    const contractQuery = await new ContractCallQuery()
+                    const contractParams = new ContractFunctionParameters()[
+                        `addInt${bitSize}`
+                    ](new BigNumber(-2).pow(bitSize - 1));
+                    const gasEstimte =
+                        await new MirrorNodeContractEstimateQuery()
+                            .setContractId(newContractId)
+                            .setFunction(`returnInt${bitSize}`, contractParams)
+                            .execute(env.client);
+
+                    const contractQuery = new ContractCallQuery()
                         //Set the gas for the query
-                        .setGas(15000000)
+                        .setGas(gasEstimte)
                         //Set the contract ID to return the request for
                         .setContractId(newContractId)
                         //Set the contract function to call
-                        .setFunction(
-                            `returnInt${bitSize}`,
-                            new ContractFunctionParameters()[
-                                `addInt${bitSize}`
-                            ](new BigNumber(-2).pow(bitSize - 1)),
-                        )
+                        .setFunction(`returnInt${bitSize}`, contractParams)
                         //Set the query payment for the node returning the request
                         //This value must cover the cost of the request otherwise will fail
-                        .setQueryPayment(new Hbar(15));
+                        .setQueryPayment(new Hbar(10));
 
                     //Submit to a Hedera network
                     const txResponse = await contractQuery.execute(env.client);
@@ -273,6 +291,7 @@ describe("ContractFunctionParameters", function () {
                     );
                 },
             );
+
             it(
                 getDescription(
                     EXTREMUM.MAX,
@@ -281,21 +300,26 @@ describe("ContractFunctionParameters", function () {
                     METHOD_TYPE.INT,
                 ),
                 async function () {
-                    const contractQuery = await new ContractCallQuery()
+                    const contractParams = new ContractFunctionParameters()[
+                        `addInt${bitSize}`
+                    ](new BigNumber(2).pow(bitSize - 1).minus(1));
+
+                    const gasEstimte =
+                        await new MirrorNodeContractEstimateQuery()
+                            .setContractId(newContractId)
+                            .setFunction(`returnInt${bitSize}`, contractParams)
+                            .execute(env.client);
+
+                    const contractQuery = new ContractCallQuery()
                         //Set the gas for the query
-                        .setGas(15000000)
+                        .setGas(gasEstimte)
                         //Set the contract ID to return the request for
                         .setContractId(newContractId)
                         //Set the contract function to call
-                        .setFunction(
-                            `returnInt${bitSize}`,
-                            new ContractFunctionParameters()[
-                                `addInt${bitSize}`
-                            ](new BigNumber(2).pow(bitSize - 1).minus(1)),
-                        )
+                        .setFunction(`returnInt${bitSize}`, contractParams)
                         //Set the query payment for the node returning the request
                         //This value must cover the cost of the request otherwise will fail
-                        .setQueryPayment(new Hbar(15));
+                        .setQueryPayment(new Hbar(10));
 
                     //Submit to a Hedera network
                     const txResponse = await contractQuery.execute(env.client);
@@ -309,6 +333,7 @@ describe("ContractFunctionParameters", function () {
                     );
                 },
             );
+
             it(
                 getDescription(
                     EXTREMUM.MIN,
@@ -317,21 +342,26 @@ describe("ContractFunctionParameters", function () {
                     METHOD_TYPE.INT,
                 ),
                 async function () {
-                    const contractQuery = await new ContractCallQuery()
+                    const contractParams = new ContractFunctionParameters()[
+                        `addInt${bitSize}`
+                    ](new Long(calculateRange(bitSize).min).neg());
+
+                    const gasEstimte =
+                        await new MirrorNodeContractEstimateQuery()
+                            .setContractId(newContractId)
+                            .setFunction(`returnInt${bitSize}`, contractParams)
+                            .execute(env.client);
+
+                    const contractQuery = new ContractCallQuery()
                         //Set the gas for the query
-                        .setGas(15000000)
+                        .setGas(gasEstimte)
                         //Set the contract ID to return the request for
                         .setContractId(newContractId)
                         //Set the contract function to call
-                        .setFunction(
-                            `returnInt${bitSize}`,
-                            new ContractFunctionParameters()[
-                                `addInt${bitSize}`
-                            ](new Long(calculateRange(bitSize).min).neg()),
-                        )
+                        .setFunction(`returnInt${bitSize}`, contractParams)
                         //Set the query payment for the node returning the request
                         //This value must cover the cost of the request otherwise will fail
-                        .setQueryPayment(new Hbar(15));
+                        .setQueryPayment(new Hbar(10));
 
                     //Submit to a Hedera network
                     const txResponse = await contractQuery.execute(env.client);
@@ -344,6 +374,7 @@ describe("ContractFunctionParameters", function () {
                     );
                 },
             );
+
             it(
                 getDescription(
                     EXTREMUM.MAX,
@@ -352,21 +383,24 @@ describe("ContractFunctionParameters", function () {
                     METHOD_TYPE.INT,
                 ),
                 async function () {
-                    const contractQuery = await new ContractCallQuery()
+                    const contractParams = new ContractFunctionParameters()[
+                        `addInt${bitSize}`
+                    ](new Long(calculateRange(bitSize).max));
+                    const gasEstimte =
+                        await new MirrorNodeContractEstimateQuery()
+                            .setContractId(newContractId)
+                            .setFunction(`returnInt${bitSize}`, contractParams)
+                            .execute(env.client);
+                    const contractQuery = new ContractCallQuery()
                         //Set the gas for the query
-                        .setGas(15000000)
+                        .setGas(gasEstimte)
                         //Set the contract ID to return the request for
                         .setContractId(newContractId)
                         //Set the contract function to call
-                        .setFunction(
-                            `returnInt${bitSize}`,
-                            new ContractFunctionParameters()[
-                                `addInt${bitSize}`
-                            ](new Long(calculateRange(bitSize).max)),
-                        )
+                        .setFunction(`returnInt${bitSize}`, contractParams)
                         //Set the query payment for the node returning the request
                         //This value must cover the cost of the request otherwise will fail
-                        .setQueryPayment(new Hbar(15));
+                        .setQueryPayment(new Hbar(10));
 
                     //Submit to a Hedera network
                     const txResponse = await contractQuery.execute(env.client);
@@ -388,21 +422,30 @@ describe("ContractFunctionParameters", function () {
                 ),
                 async function () {
                     const arr = createArray(bitSize, INPUT_TYPE.NUMBER);
-                    const contractQuery = await new ContractCallQuery()
+                    const contractParams = new ContractFunctionParameters()[
+                        `addInt${bitSize}Array`
+                    ](arr);
+
+                    const gasEstimte =
+                        await new MirrorNodeContractEstimateQuery()
+                            .setContractId(newContractId)
+                            .setFunction(
+                                `returnInt${bitSize}Array`,
+                                contractParams,
+                            )
+                            .execute(env.client);
+
+                    const contractQuery = new ContractCallQuery()
                         //Set the gas for the query
-                        .setGas(15000000)
+                        .setGas(gasEstimte)
                         //Set the contract ID to return the request for
                         .setContractId(newContractId)
                         //Set the contract function to call
-                        .setFunction(
-                            `returnInt${bitSize}Array`,
-                            new ContractFunctionParameters()[
-                                `addInt${bitSize}Array`
-                            ](arr),
-                        )
+                        .setFunction(`returnInt${bitSize}Array`, contractParams)
                         //Set the query payment for the node returning the request
                         //This value must cover the cost of the request otherwise will fail
-                        .setQueryPayment(new Hbar(15));
+                        .setQueryPayment(new Hbar(10));
+
                     //Submit to a Hedera network
                     const txResponse = await contractQuery.execute(env.client);
                     const result = txResponse.getResult([`int${bitSize}[]`])[0];
@@ -424,9 +467,21 @@ describe("ContractFunctionParameters", function () {
                 ),
                 async function () {
                     const arr = createArray(bitSize, INPUT_TYPE.BIG_NUMBER);
-                    const contractQuery = await new ContractCallQuery()
+                    const contractParams = new ContractFunctionParameters()[
+                        `addInt${bitSize}Array`
+                    ](arr);
+
+                    const gasEstimte =
+                        await new MirrorNodeContractEstimateQuery()
+                            .setContractId(newContractId)
+                            .setFunction(
+                                `returnInt${bitSize}Array`,
+                                contractParams,
+                            )
+                            .execute(env.client);
+                    const contractQuery = new ContractCallQuery()
                         //Set the gas for the query
-                        .setGas(15000000)
+                        .setGas(gasEstimte)
                         //Set the contract ID to return the request for
                         .setContractId(newContractId)
                         //Set the contract function to call
@@ -438,7 +493,8 @@ describe("ContractFunctionParameters", function () {
                         )
                         //Set the query payment for the node returning the request
                         //This value must cover the cost of the request otherwise will fail
-                        .setQueryPayment(new Hbar(15));
+                        .setQueryPayment(new Hbar(10));
+
                     //Submit to a Hedera network
                     const txResponse = await contractQuery.execute(env.client);
                     const result = txResponse.getResult([`int${bitSize}[]`])[0];
@@ -460,21 +516,30 @@ describe("ContractFunctionParameters", function () {
                 ),
                 async function () {
                     const arr = createArray(bitSize, INPUT_TYPE.LONG);
-                    const contractQuery = await new ContractCallQuery()
+                    const contractParams = new ContractFunctionParameters()[
+                        `addInt${bitSize}Array`
+                    ](arr);
+
+                    const gasEstimte =
+                        await new MirrorNodeContractEstimateQuery()
+                            .setContractId(newContractId)
+                            .setFunction(
+                                `returnInt${bitSize}Array`,
+                                contractParams,
+                            )
+                            .execute(env.client);
+
+                    const contractQuery = new ContractCallQuery()
                         //Set the gas for the query
-                        .setGas(15000000)
+                        .setGas(gasEstimte)
                         //Set the contract ID to return the request for
                         .setContractId(newContractId)
                         //Set the contract function to call
-                        .setFunction(
-                            `returnInt${bitSize}Array`,
-                            new ContractFunctionParameters()[
-                                `addInt${bitSize}Array`
-                            ](arr),
-                        )
+                        .setFunction(`returnInt${bitSize}Array`, contractParams)
                         //Set the query payment for the node returning the request
                         //This value must cover the cost of the request otherwise will fail
-                        .setQueryPayment(new Hbar(15));
+                        .setQueryPayment(new Hbar(10));
+
                     //Submit to a Hedera network
                     const txResponse = await contractQuery.execute(env.client);
                     const result = txResponse.getResult([`int${bitSize}[]`])[0];
@@ -489,24 +554,27 @@ describe("ContractFunctionParameters", function () {
             );
 
             it(`addInt${bitSize}Array method should return an empty array`, async function () {
-                const contractQuery = await new ContractCallQuery()
+                const contractParams = new ContractFunctionParameters()[
+                    `addInt${bitSize}Array`
+                ](
+                    // eslint-disable-next-line no-loss-of-precision
+                    [],
+                );
+
+                const gasEstimte = await new MirrorNodeContractEstimateQuery()
+                    .setContractId(newContractId)
+                    .setFunction(`returnInt${bitSize}Array`, contractParams)
+                    .execute(env.client);
+                const contractQuery = new ContractCallQuery()
                     //Set the gas for the query
-                    .setGas(15000000)
+                    .setGas(gasEstimte)
                     //Set the contract ID to return the request for
                     .setContractId(newContractId)
                     //Set the contract function to call
-                    .setFunction(
-                        `returnInt${bitSize}Array`,
-                        new ContractFunctionParameters()[
-                            `addInt${bitSize}Array`
-                        ](
-                            // eslint-disable-next-line no-loss-of-precision
-                            [],
-                        ),
-                    )
+                    .setFunction(`returnInt${bitSize}Array`, contractParams)
                     //Set the query payment for the node returning the request
                     //This value must cover the cost of the request otherwise will fail
-                    .setQueryPayment(new Hbar(15));
+                    .setQueryPayment(new Hbar(10));
 
                 //Submit to a Hedera network
                 const txResponse = await contractQuery.execute(env.client);
@@ -515,22 +583,25 @@ describe("ContractFunctionParameters", function () {
             });
 
             it(`addInt${bitSize}Array method should throw an error`, async function () {
+                const contractParams = new ContractFunctionParameters()[
+                    `addInt${bitSize}`
+                ](calculateRange(bitSize, INPUT_TYPE.NUMBER).max);
+
+                const gasEstimte = await new MirrorNodeContractEstimateQuery()
+                    .setContractId(newContractId)
+                    .setFunction(`returnInt${bitSize}`, contractParams)
+                    .execute(env.client);
                 try {
-                    await new ContractCallQuery()
+                    new ContractCallQuery()
                         //Set the gas for the query
-                        .setGas(15000000)
+                        .setGas(gasEstimte)
                         //Set the contract ID to return the request for
                         .setContractId(newContractId)
                         //Set the contract function to call
-                        .setFunction(
-                            `returnInt${bitSize}Array`,
-                            new ContractFunctionParameters()[
-                                `addInt${bitSize}Array`
-                            ](),
-                        )
+                        .setFunction(`returnInt${bitSize}Array`, contractParams)
                         //Set the query payment for the node returning the request
                         //This value must cover the cost of the request otherwise will fail
-                        .setQueryPayment(new Hbar(15));
+                        .setQueryPayment(new Hbar(10));
                 } catch (error) {
                     expect(error).to.be.instanceOf(Error);
                     expect(error.message).to.be.equal(REQUIRE_ARRAY_ERROR);
@@ -547,21 +618,20 @@ describe("ContractFunctionParameters", function () {
                     METHOD_TYPE.UINT,
                 ),
                 async function () {
-                    const contractQuery = await new ContractCallQuery()
+                    const contractParams = new ContractFunctionParameters()[
+                        `addUint${bitSize}`
+                    ](calculateRange(bitSize, INPUT_TYPE.NUMBER).max);
+
+                    const contractQuery = new ContractCallQuery()
                         //Set the gas for the query
-                        .setGas(15000000)
+                        .setGas(1_500_000)
                         //Set the contract ID to return the request for
                         .setContractId(newContractId)
                         //Set the contract function to call
-                        .setFunction(
-                            `returnUint${bitSize}`,
-                            new ContractFunctionParameters()[
-                                `addUint${bitSize}`
-                            ](calculateRange(bitSize, INPUT_TYPE.NUMBER).max),
-                        )
+                        .setFunction(`returnUint${bitSize}`, contractParams)
                         //Set the query payment for the node returning the request
                         //This value must cover the cost of the request otherwise will fail
-                        .setQueryPayment(new Hbar(15));
+                        .setQueryPayment(new Hbar(10));
 
                     //Submit to a Hedera network
                     const txResponse = await contractQuery.execute(env.client);
@@ -574,6 +644,7 @@ describe("ContractFunctionParameters", function () {
                     );
                 },
             );
+
             it(
                 getDescription(
                     EXTREMUM.MAX,
@@ -582,21 +653,20 @@ describe("ContractFunctionParameters", function () {
                     METHOD_TYPE.UINT,
                 ),
                 async function () {
-                    const contractQuery = await new ContractCallQuery()
+                    const contractParams = new ContractFunctionParameters()[
+                        `addUint${bitSize}`
+                    ](new BigNumber(2).pow(bitSize - 1).minus(1));
+
+                    const contractQuery = new ContractCallQuery()
                         //Set the gas for the query
-                        .setGas(15000000)
+                        .setGas(1_500_000)
                         //Set the contract ID to return the request for
                         .setContractId(newContractId)
                         //Set the contract function to call
-                        .setFunction(
-                            `returnUint${bitSize}`,
-                            new ContractFunctionParameters()[
-                                `addUint${bitSize}`
-                            ](new BigNumber(2).pow(bitSize - 1).minus(1)),
-                        )
+                        .setFunction(`returnUint${bitSize}`, contractParams)
                         //Set the query payment for the node returning the request
                         //This value must cover the cost of the request otherwise will fail
-                        .setQueryPayment(new Hbar(15));
+                        .setQueryPayment(new Hbar(10));
 
                     //Submit to a Hedera network
                     const txResponse = await contractQuery.execute(env.client);
@@ -610,6 +680,7 @@ describe("ContractFunctionParameters", function () {
                     );
                 },
             );
+
             it(
                 getDescription(
                     EXTREMUM.MAX,
@@ -618,21 +689,20 @@ describe("ContractFunctionParameters", function () {
                     METHOD_TYPE.UINT,
                 ),
                 async function () {
-                    const contractQuery = await new ContractCallQuery()
+                    const contractParams = new ContractFunctionParameters()[
+                        `addUint${bitSize}`
+                    ](new Long(calculateRange(bitSize).max));
+
+                    const contractQuery = new ContractCallQuery()
                         //Set the gas for the query
-                        .setGas(15000000)
+                        .setGas(1_500_000)
                         //Set the contract ID to return the request for
                         .setContractId(newContractId)
                         //Set the contract function to call
-                        .setFunction(
-                            `returnUint${bitSize}`,
-                            new ContractFunctionParameters()[
-                                `addUint${bitSize}`
-                            ](new Long(calculateRange(bitSize).max)),
-                        )
+                        .setFunction(`returnUint${bitSize}`, contractParams)
                         //Set the query payment for the node returning the request
                         //This value must cover the cost of the request otherwise will fail
-                        .setQueryPayment(new Hbar(15));
+                        .setQueryPayment(new Hbar(10));
 
                     //Submit to a Hedera network
                     const txResponse = await contractQuery.execute(env.client);
@@ -655,21 +725,24 @@ describe("ContractFunctionParameters", function () {
                 async function () {
                     const range = calculateRange(bitSize, INPUT_TYPE.NUMBER);
                     const arr = [0, range.min + range.max];
-                    const contractQuery = await new ContractCallQuery()
+                    const contractParams = new ContractFunctionParameters()[
+                        `addUint${bitSize}Array`
+                    ](arr);
+
+                    const contractQuery = new ContractCallQuery()
                         //Set the gas for the query
-                        .setGas(15000000)
+                        .setGas(1_500_000)
                         //Set the contract ID to return the request for
                         .setContractId(newContractId)
                         //Set the contract function to call
                         .setFunction(
                             `returnUint${bitSize}Array`,
-                            new ContractFunctionParameters()[
-                                `addUint${bitSize}Array`
-                            ](arr),
+                            contractParams,
                         )
                         //Set the query payment for the node returning the request
                         //This value must cover the cost of the request otherwise will fail
-                        .setQueryPayment(new Hbar(15));
+                        .setQueryPayment(new Hbar(10));
+
                     //Submit to a Hedera network
                     const txResponse = await contractQuery.execute(env.client);
                     const result = txResponse.getResult([
@@ -684,6 +757,7 @@ describe("ContractFunctionParameters", function () {
                     });
                 },
             );
+
             it(
                 getDescriptionForArrayMethod(
                     bitSize,
@@ -692,21 +766,24 @@ describe("ContractFunctionParameters", function () {
                 ),
                 async function () {
                     const arr = [0, new BigNumber(2).pow(bitSize - 1).minus(1)];
-                    const contractQuery = await new ContractCallQuery()
+                    const contractParams = new ContractFunctionParameters()[
+                        `addUint${bitSize}Array`
+                    ](arr);
+
+                    const contractQuery = new ContractCallQuery()
                         //Set the gas for the query
-                        .setGas(15000000)
+                        .setGas(1_500_000)
                         //Set the contract ID to return the request for
                         .setContractId(newContractId)
                         //Set the contract function to call
                         .setFunction(
                             `returnUint${bitSize}Array`,
-                            new ContractFunctionParameters()[
-                                `addUint${bitSize}Array`
-                            ](arr),
+                            contractParams,
                         )
                         //Set the query payment for the node returning the request
                         //This value must cover the cost of the request otherwise will fail
-                        .setQueryPayment(new Hbar(15));
+                        .setQueryPayment(new Hbar(10));
+
                     //Submit to a Hedera network
                     const txResponse = await contractQuery.execute(env.client);
                     const result = txResponse.getResult([
@@ -721,6 +798,7 @@ describe("ContractFunctionParameters", function () {
                     });
                 },
             );
+
             it(
                 getDescriptionForArrayMethod(
                     bitSize,
@@ -730,21 +808,24 @@ describe("ContractFunctionParameters", function () {
                 async function () {
                     const range = calculateRange(bitSize, INPUT_TYPE.NUMBER);
                     const arr = [0, new Long(range.min + range.max)];
-                    const contractQuery = await new ContractCallQuery()
+                    const contractParams = new ContractFunctionParameters()[
+                        `addUint${bitSize}Array`
+                    ](arr);
+
+                    const contractQuery = new ContractCallQuery()
                         //Set the gas for the query
-                        .setGas(15000000)
+                        .setGas(1_500_000)
                         //Set the contract ID to return the request for
                         .setContractId(newContractId)
                         //Set the contract function to call
                         .setFunction(
                             `returnUint${bitSize}Array`,
-                            new ContractFunctionParameters()[
-                                `addUint${bitSize}Array`
-                            ](arr),
+                            contractParams,
                         )
                         //Set the query payment for the node returning the request
                         //This value must cover the cost of the request otherwise will fail
-                        .setQueryPayment(new Hbar(15));
+                        .setQueryPayment(new Hbar(10));
+
                     //Submit to a Hedera network
                     const txResponse = await contractQuery.execute(env.client);
                     const result = txResponse.getResult([
@@ -761,24 +842,23 @@ describe("ContractFunctionParameters", function () {
             );
 
             it(`addUint${bitSize}Array method should return an empty array`, async function () {
-                const contractQuery = await new ContractCallQuery()
+                const contractParams = new ContractFunctionParameters()[
+                    `addUint${bitSize}Array`
+                ](
+                    // eslint-disable-next-line no-loss-of-precision
+                    [],
+                );
+
+                const contractQuery = new ContractCallQuery()
                     //Set the gas for the query
-                    .setGas(15000000)
+                    .setGas(1_500_000)
                     //Set the contract ID to return the request for
                     .setContractId(newContractId)
                     //Set the contract function to call
-                    .setFunction(
-                        `returnUint${bitSize}Array`,
-                        new ContractFunctionParameters()[
-                            `addUint${bitSize}Array`
-                        ](
-                            // eslint-disable-next-line no-loss-of-precision
-                            [],
-                        ),
-                    )
+                    .setFunction(`returnUint${bitSize}Array`, contractParams)
                     //Set the query payment for the node returning the request
                     //This value must cover the cost of the request otherwise will fail
-                    .setQueryPayment(new Hbar(15));
+                    .setQueryPayment(new Hbar(10));
 
                 //Submit to a Hedera network
                 const txResponse = await contractQuery.execute(env.client);
@@ -788,21 +868,22 @@ describe("ContractFunctionParameters", function () {
 
             it(`addUint${bitSize}Array method should throw an error`, async function () {
                 try {
-                    await new ContractCallQuery()
+                    const contractParams = new ContractFunctionParameters()[
+                        `addUint${bitSize}Array`
+                    ]();
+                    new ContractCallQuery()
                         //Set the gas for the query
-                        .setGas(15000000)
+                        .setGas(1_500_000)
                         //Set the contract ID to return the request for
                         .setContractId(newContractId)
                         //Set the contract function to call
                         .setFunction(
                             `returnUint${bitSize}Array`,
-                            new ContractFunctionParameters()[
-                                `addUint${bitSize}Array`
-                            ](),
+                            contractParams,
                         )
                         //Set the query payment for the node returning the request
                         //This value must cover the cost of the request otherwise will fail
-                        .setQueryPayment(new Hbar(15));
+                        .setQueryPayment(new Hbar(10));
                 } catch (error) {
                     expect(error).to.be.instanceOf(Error);
                     expect(error.message).to.be.equal(REQUIRE_ARRAY_ERROR);
@@ -812,19 +893,20 @@ describe("ContractFunctionParameters", function () {
     });
 
     it("should return the right min multiple int8 value", async function () {
-        const contractQuery = await new ContractCallQuery()
+        const contractParams = new ContractFunctionParameters().addInt8(-128);
+        const contractQuery = new ContractCallQuery()
             //Set the gas for the query
-            .setGas(15000000)
+            .setGas(1_500_000)
             //Set the contract ID to return the request for
             .setContractId(newContractId)
             //Set the contract function to call
             .setFunction(
                 "returnInt8Multiple", // return two params: input & input (+) 20 // -128 + 20 = - 108
-                new ContractFunctionParameters().addInt8(-128),
+                contractParams,
             )
             //Set the query payment for the node returning the request
             //This value must cover the cost of the request otherwise will fail
-            .setQueryPayment(new Hbar(15));
+            .setQueryPayment(new Hbar(10));
 
         //Submit to a Hedera network
         const txResponse = await contractQuery.execute(env.client);
@@ -834,19 +916,17 @@ describe("ContractFunctionParameters", function () {
     });
 
     it("should work the right way with 0 uint32 value", async function () {
-        const contractQuery = await new ContractCallQuery()
+        const contractParams = new ContractFunctionParameters().addUint32(0);
+        const contractQuery = new ContractCallQuery()
             //Set the gas for the query
-            .setGas(15000000)
+            .setGas(1_500_000)
             //Set the contract ID to return the request for
             .setContractId(newContractId)
             //Set the contract function to call
-            .setFunction(
-                "returnUint32",
-                new ContractFunctionParameters().addUint32(0),
-            )
+            .setFunction("returnUint32", contractParams)
             //Set the query payment for the node returning the request
             //This value must cover the cost of the request otherwise will fail
-            .setQueryPayment(new Hbar(15));
+            .setQueryPayment(new Hbar(10));
 
         //Submit to a Hedera network
         const txResponse = await contractQuery.execute(env.client);
@@ -855,19 +935,19 @@ describe("ContractFunctionParameters", function () {
     });
 
     it("should return the right multiple values", async function () {
-        const contractQuery = await new ContractCallQuery()
+        const contractParams = new ContractFunctionParameters().addUint32(
+            4294967295,
+        );
+        const contractQuery = new ContractCallQuery()
             //Set the gas for the query
-            .setGas(15000000)
+            .setGas(1_500_000)
             //Set the contract ID to return the request for
             .setContractId(newContractId)
             //Set the contract function to call
-            .setFunction(
-                "returnMultipleTypeParams",
-                new ContractFunctionParameters().addUint32(4294967295),
-            )
+            .setFunction("returnMultipleTypeParams", contractParams)
             //Set the query payment for the node returning the request
             //This value must cover the cost of the request otherwise will fail
-            .setQueryPayment(new Hbar(15));
+            .setQueryPayment(new Hbar(10));
 
         //Submit to a Hedera network
         const txResponse = await contractQuery.execute(env.client);
@@ -879,19 +959,19 @@ describe("ContractFunctionParameters", function () {
     });
 
     it("should return the right multiple int40 values", async function () {
-        const contractQuery = await new ContractCallQuery()
+        const contractParams = new ContractFunctionParameters().addInt40(
+            549755813885,
+        );
+        const contractQuery = new ContractCallQuery()
             //Set the gas for the query
-            .setGas(15000000)
+            .setGas(1_500_000)
             //Set the contract ID to return the request for
             .setContractId(newContractId)
             //Set the contract function to call
-            .setFunction(
-                "returnMultipleInt40",
-                new ContractFunctionParameters().addInt40(549755813885),
-            )
+            .setFunction("returnMultipleInt40", contractParams)
             //Set the query payment for the node returning the request
             //This value must cover the cost of the request otherwise will fail
-            .setQueryPayment(new Hbar(15));
+            .setQueryPayment(new Hbar(10));
 
         //Submit to a Hedera network
         const txResponse = await contractQuery.execute(env.client);
@@ -901,22 +981,20 @@ describe("ContractFunctionParameters", function () {
     });
 
     it("should return the right zero uint256 value", async function () {
-        const contractQuery = await new ContractCallQuery()
+        const contractParams = new ContractFunctionParameters().addUint256(
+            // eslint-disable-next-line no-loss-of-precision
+            0,
+        );
+        const contractQuery = new ContractCallQuery()
             //Set the gas for the query
-            .setGas(15000000)
+            .setGas(1_500_000)
             //Set the contract ID to return the request for
             .setContractId(newContractId)
             //Set the contract function to call
-            .setFunction(
-                "returnUint256",
-                new ContractFunctionParameters().addUint256(
-                    // eslint-disable-next-line no-loss-of-precision
-                    0,
-                ),
-            )
+            .setFunction("returnUint256", contractParams)
             //Set the query payment for the node returning the request
             //This value must cover the cost of the request otherwise will fail
-            .setQueryPayment(new Hbar(15));
+            .setQueryPayment(new Hbar(10));
 
         //Submit to a Hedera network
         const txResponse = await contractQuery.execute(env.client);
@@ -928,22 +1006,20 @@ describe("ContractFunctionParameters", function () {
     });
 
     it("should return the right 20 decimal uint256 value", async function () {
-        const contractQuery = await new ContractCallQuery()
+        const contractParams = new ContractFunctionParameters().addUint256(
+            // eslint-disable-next-line no-loss-of-precision
+            5000000000000000000000,
+        );
+        const contractQuery = new ContractCallQuery()
             //Set the gas for the query
-            .setGas(15000000)
+            .setGas(1_500_000)
             //Set the contract ID to return the request for
             .setContractId(newContractId)
             //Set the contract function to call
-            .setFunction(
-                "returnUint256",
-                new ContractFunctionParameters().addUint256(
-                    // eslint-disable-next-line no-loss-of-precision
-                    5000000000000000000000,
-                ),
-            )
+            .setFunction("returnUint256", contractParams)
             //Set the query payment for the node returning the request
             //This value must cover the cost of the request otherwise will fail
-            .setQueryPayment(new Hbar(15));
+            .setQueryPayment(new Hbar(10));
 
         //Submit to a Hedera network
         const txResponse = await contractQuery.execute(env.client);
@@ -955,22 +1031,20 @@ describe("ContractFunctionParameters", function () {
     });
 
     it("should return the again right uint256 value", async function () {
-        const contractQuery = await new ContractCallQuery()
+        const contractParams = new ContractFunctionParameters().addUint256(
+            // eslint-disable-next-line no-loss-of-precision
+            50,
+        );
+        const contractQuery = new ContractCallQuery()
             //Set the gas for the query
-            .setGas(15000000)
+            .setGas(1_500_000)
             //Set the contract ID to return the request for
             .setContractId(newContractId)
             //Set the contract function to call
-            .setFunction(
-                "returnUint256",
-                new ContractFunctionParameters().addUint256(
-                    // eslint-disable-next-line no-loss-of-precision
-                    50,
-                ),
-            )
+            .setFunction("returnUint256", contractParams)
             //Set the query payment for the node returning the request
             //This value must cover the cost of the request otherwise will fail
-            .setQueryPayment(new Hbar(15));
+            .setQueryPayment(new Hbar(10));
 
         //Submit to a Hedera network
         const txResponse = await contractQuery.execute(env.client);

@@ -19,8 +19,6 @@ describe("TokenMint", function () {
     });
 
     it("should be executable", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
         const operatorKey = env.operatorKey.publicKey;
 
@@ -49,8 +47,6 @@ describe("TokenMint", function () {
     });
 
     it("toBytes/fromBytes", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
         const operatorKey = env.operatorKey.publicKey;
 
@@ -83,8 +79,6 @@ describe("TokenMint", function () {
     });
 
     it("should error when token ID is not set", async function () {
-        this.timeout(120000);
-
         let err = false;
 
         try {
@@ -103,8 +97,6 @@ describe("TokenMint", function () {
     });
 
     it("should not error when amount is not set", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
         const operatorKey = env.operatorKey.publicKey;
 
@@ -142,8 +134,6 @@ describe("TokenMint", function () {
     });
 
     it("User cannot mint more than the tokens defined max supply value", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
         const operatorKey = env.operatorKey.publicKey;
 
@@ -184,8 +174,6 @@ describe("TokenMint", function () {
     });
 
     it("cannot mint token with invalid metadata", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
         const operatorKey = env.operatorKey.publicKey;
 
@@ -225,8 +213,6 @@ describe("TokenMint", function () {
     });
 
     it("should retrieve the correct token balance", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
         const operatorKey = env.operatorKey.publicKey;
 

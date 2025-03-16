@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
     <head>
         <meta charset="utf-8" />
 
-        <title>Hedera™ JavaScript SDK > Tests</title>
+        <title>Hiero JavaScript SDK > Tests</title>
 
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
@@ -13,12 +13,11 @@
         />
 
         <link rel="stylesheet" href="node_modules/mocha/mocha.css" />
-        <base href=".">
+        <base href="." />
     </head>
     <body>
         <div id="mocha"></div>
 
-        <script src="node_modules/chai/chai.js"></script>
         <script src="node_modules/mocha/mocha.js"></script>
         <script src="node_modules/mocha-webdriver-runner/dist/mocha-webdriver-client.js"></script>
 
@@ -27,8 +26,9 @@
             mocha.checkLeaks();
         </script>
 
-        <script class="chai-init">
-            window.expect = chai.expect;
+        <script type="module">
+            import { expect } from "chai";
+            window.expect = expect;
         </script>
 
         <!-- NOTE: all unit tests need to be imported here -->
@@ -40,8 +40,6 @@
         <script type="module" src="test/unit/Mnemonic.js"></script>
         <script type="module" src="test/unit/key.js"></script>
         <script type="module" src="test/unit/EcdsaPrivateKey.js"></script>
-
-
 
         <script type="module" class="mocha-run">
             mocha.run();

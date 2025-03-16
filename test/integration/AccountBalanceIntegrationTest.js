@@ -1,12 +1,9 @@
-import {
-    AccountBalanceQuery,
-    Status,
-    // TokenCreateTransaction,
-} from "../../src/exports.js";
+import { AccountBalanceQuery, Status } from "../../src/exports.js";
 import IntegrationTestEnv, {
     Client,
     skipTestDueToNodeJsVersion,
 } from "./client/NodeIntegrationTestEnv.js";
+import { createFungibleToken } from "./utils/Fixtures.js";
 
 describe("AccountBalanceQuery", function () {
     let clientPreviewNet;
@@ -20,18 +17,13 @@ describe("AccountBalanceQuery", function () {
     });
 
     it("can query balance of node 0.0.3", async function () {
-        this.timeout(50000);
-
         const balance = await new AccountBalanceQuery()
             .setAccountId("0.0.3")
             .execute(clientTestnet);
         expect(balance.hbars.toTinybars().compare(0)).to.be.equal(1);
     });
 
-    // TODO(2023-11-01 NK) - test is consistently failing and should be enabled once fixed.
-    // eslint-disable-next-line mocha/no-skipped-tests
-    xit("can connect to previewnet with TLS", async function () {
-        this.timeout(30000);
+    it("can connect to previewnet with TLS", async function () {
         if (skipTestDueToNodeJsVersion(16)) {
             return;
         }
@@ -49,8 +41,6 @@ describe("AccountBalanceQuery", function () {
     });
 
     it("can connect to testnet with TLS", async function () {
-        this.timeout(30000);
-
         if (skipTestDueToNodeJsVersion(16)) {
             return;
         }
@@ -68,8 +58,6 @@ describe("AccountBalanceQuery", function () {
     });
 
     it("an account that does not exist should return an error", async function () {
-        this.timeout(120000);
-
         let err = false;
 
         try {
@@ -85,32 +73,25 @@ describe("AccountBalanceQuery", function () {
         }
     });
 
-    /**
-     *
-     * @description The test is temporarily commented because AccountBalanceQuery does a query to the consensus node which was deprecated.
-     * @todo Uncomment a test when the new query to the mirror node is implemented as it described here https://github.com/hashgraph/hedera-sdk-reference/issues/144
-     */
-    // it("should reflect token with no keys", async function () {
-    //     this.timeout(120000);
+    it("should reflect token with no keys", async function () {
+        const tokenId = await createFungibleToken(env.client, (transaction) => {
+            transaction
+                .setInitialSupply(0)
+                .setAdminKey(null)
+                .setFreezeKey(null)
+                .setPauseKey(null)
+                .setWipeKey(null)
+                .setFeeScheduleKey(null)
+                .setMetadataKey(null)
+                .setSupplyKey(null);
+        });
 
-    //     const operatorId = env.operatorId;
+        const balances = await new AccountBalanceQuery()
+            .setAccountId(env.operatorId)
+            .execute(env.client);
 
-    //     const token = (
-    //         await (
-    //             await new TokenCreateTransaction()
-    //                 .setTokenName("ffff")
-    //                 .setTokenSymbol("F")
-    //                 .setTreasuryAccountId(operatorId)
-    //                 .execute(env.client)
-    //         ).getReceipt(env.client)
-    //     ).tokenId;
-
-    //     const balances = await new AccountBalanceQuery()
-    //         .setAccountId(env.operatorId)
-    //         .execute(env.client);
-
-    //     expect(balances.tokens.get(token).toInt()).to.be.equal(0);
-    // });
+        expect(balances.tokens.get(tokenId.toString()).toInt()).to.be.equal(0);
+    });
 
     after(async function () {
         clientPreviewNet.close();

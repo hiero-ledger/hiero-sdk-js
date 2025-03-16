@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import TokenId from "./TokenId.js";
 import CustomFee from "./CustomFee.js";
@@ -26,8 +8,9 @@ import Hbar from "../Hbar.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ICustomFee} HashgraphProto.proto.ICustomFee
- * @typedef {import("@hashgraph/proto").proto.IFixedFee} HashgraphProto.proto.IFixedFee
+ * @typedef {import("@hashgraph/proto").proto.ICustomFee} HieroProto.proto.ICustomFee
+ * @typedef {import("@hashgraph/proto").proto.IFixedFee} HieroProto.proto.IFixedFee
+ * @typedef {import("@hashgraph/proto").proto.IFixedCustomFee} HieroProto.proto.IFixedCustomFee
  */
 
 export default class CustomFixedFee extends CustomFee {
@@ -126,14 +109,12 @@ export default class CustomFixedFee extends CustomFee {
     /**
      * @internal
      * @override
-     * @param {HashgraphProto.proto.ICustomFee} info
-     * @returns {CustomFee}
+     * @param {HieroProto.proto.ICustomFee} info
+     * @returns {CustomFixedFee}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     static _fromProtobuf(info) {
-        const fee = /** @type {HashgraphProto.proto.IFixedFee} */ (
-            info.fixedFee
-        );
+        const fee = /** @type {HieroProto.proto.IFixedFee} */ (info.fixedFee);
 
         return new CustomFixedFee({
             feeCollectorAccountId:
@@ -155,7 +136,7 @@ export default class CustomFixedFee extends CustomFee {
     /**
      * @internal
      * @abstract
-     * @returns {HashgraphProto.proto.ICustomFee}
+     * @returns {HieroProto.proto.ICustomFee}
      */
     _toProtobuf() {
         return {
@@ -164,6 +145,27 @@ export default class CustomFixedFee extends CustomFee {
                     ? this.feeCollectorAccountId._toProtobuf()
                     : null,
             allCollectorsAreExempt: this.allCollectorsAreExempt,
+            fixedFee: {
+                denominatingTokenId:
+                    this._denominatingTokenId != null
+                        ? this._denominatingTokenId._toProtobuf()
+                        : null,
+                amount: this._amount,
+            },
+        };
+    }
+
+    /**
+     * @internal
+     * @abstract
+     * @returns {HieroProto.proto.IFixedCustomFee}
+     */
+    _toTopicFeeProtobuf() {
+        return {
+            feeCollectorAccountId:
+                this.feeCollectorAccountId != null
+                    ? this.feeCollectorAccountId._toProtobuf()
+                    : null,
             fixedFee: {
                 denominatingTokenId:
                     this._denominatingTokenId != null

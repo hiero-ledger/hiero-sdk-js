@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 /**
  * @typedef {import("./contract/ContractId.js").default} ContractId
@@ -34,10 +16,10 @@
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IKey} HashgraphProto.proto.IKey
- * @typedef {import("@hashgraph/proto").proto.IKeyList} HashgraphProto.proto.IKeyList
- * @typedef {import("@hashgraph/proto").proto.IThresholdKey} HashgraphProto.proto.IThresholdKey
- * @typedef {import("@hashgraph/proto").proto.IContractID} HashgraphProto.proto.IContractID
+ * @typedef {import("@hashgraph/proto").proto.IKey} HieroProto.proto.IKey
+ * @typedef {import("@hashgraph/proto").proto.IKeyList} HieroProto.proto.IKeyList
+ * @typedef {import("@hashgraph/proto").proto.IThresholdKey} HieroProto.proto.IThresholdKey
+ * @typedef {import("@hashgraph/proto").proto.IContractID} HieroProto.proto.IContractID
  */
 
 /**
@@ -53,20 +35,22 @@
  */
 
 /**
- * This variable is strictly designed to prevent cyclic dependencies.
+ * Cache class is designed to prevent cyclic dependencies in the Hiero JavaScript SDK.
+ * It stores various conversion functions and configuration values that are used across
+ * different parts of the SDK.
  */
 class Cache {
     constructor() {
         /** @type {number} */
         this._timeDrift = 0;
 
-        /** @type {FromProtobufKeyFuncT<HashgraphProto.proto.IContractID, ContractId> | null} */
+        /** @type {FromProtobufKeyFuncT<HieroProto.proto.IContractID, ContractId> | null} */
         this._contractId = null;
 
-        /** @type {FromProtobufKeyFuncT<HashgraphProto.proto.IKeyList, KeyList> | null} */
+        /** @type {FromProtobufKeyFuncT<HieroProto.proto.IKeyList, KeyList> | null} */
         this._keyList = null;
 
-        /** @type {FromProtobufKeyFuncT<HashgraphProto.proto.IThresholdKey, KeyList> | null} */
+        /** @type {FromProtobufKeyFuncT<HieroProto.proto.IThresholdKey, KeyList> | null} */
         this._thresholdKey = null;
 
         /** @type {FromProtobufKeyFuncT<Uint8Array, PublicKey> | null} */
@@ -84,7 +68,7 @@ class Cache {
         /** @type {((shard: Long | number, realm: Long | number, key: PublicKey) => AccountId) | null} */
         this._accountIdConstructor = null;
 
-        /** @type {FromProtobufKeyFuncT<HashgraphProto.proto.IContractID, ContractId> | null} */
+        /** @type {FromProtobufKeyFuncT<HieroProto.proto.IContractID, ContractId> | null} */
         this._delegateContractId = null;
 
         /** @type {FromProtobufKeyFuncT<Uint8Array, EvmAddress> | null} */
@@ -125,14 +109,14 @@ class Cache {
     }
 
     /**
-     * @param {FromProtobufKeyFuncT<HashgraphProto.proto.IContractID, ContractId>} contractId
+     * @param {FromProtobufKeyFuncT<HieroProto.proto.IContractID, ContractId>} contractId
      */
     setContractId(contractId) {
         this._contractId = contractId;
     }
 
     /**
-     * @returns {FromProtobufKeyFuncT<HashgraphProto.proto.IContractID, ContractId>}
+     * @returns {FromProtobufKeyFuncT<HieroProto.proto.IContractID, ContractId>}
      */
     get contractId() {
         if (this._contractId == null) {
@@ -143,14 +127,14 @@ class Cache {
     }
 
     /**
-     * @param {FromProtobufKeyFuncT<HashgraphProto.proto.IKeyList, KeyList>} keyList
+     * @param {FromProtobufKeyFuncT<HieroProto.proto.IKeyList, KeyList>} keyList
      */
     setKeyList(keyList) {
         this._keyList = keyList;
     }
 
     /**
-     * @returns {FromProtobufKeyFuncT<HashgraphProto.proto.IKeyList, KeyList>}
+     * @returns {FromProtobufKeyFuncT<HieroProto.proto.IKeyList, KeyList>}
      */
     get keyList() {
         if (this._keyList == null) {
@@ -161,14 +145,14 @@ class Cache {
     }
 
     /**
-     * @param {FromProtobufKeyFuncT<HashgraphProto.proto.IThresholdKey, KeyList>} thresholdKey
+     * @param {FromProtobufKeyFuncT<HieroProto.proto.IThresholdKey, KeyList>} thresholdKey
      */
     setThresholdKey(thresholdKey) {
         this._thresholdKey = thresholdKey;
     }
 
     /**
-     * @returns {FromProtobufKeyFuncT<HashgraphProto.proto.IThresholdKey, KeyList>}
+     * @returns {FromProtobufKeyFuncT<HieroProto.proto.IThresholdKey, KeyList>}
      */
     get thresholdKey() {
         if (this._thresholdKey == null) {
@@ -277,14 +261,14 @@ class Cache {
     }
 
     /**
-     * @param {FromProtobufKeyFuncT<HashgraphProto.proto.IContractID, ContractId>} delegateContractId
+     * @param {FromProtobufKeyFuncT<HieroProto.proto.IContractID, ContractId>} delegateContractId
      */
     setDelegateContractId(delegateContractId) {
         this._delegateContractId = delegateContractId;
     }
 
     /**
-     * @returns {FromProtobufKeyFuncT<HashgraphProto.proto.IContractID, ContractId>}
+     * @returns {FromProtobufKeyFuncT<HieroProto.proto.IContractID, ContractId>}
      */
     get delegateContractId() {
         if (this._delegateContractId == null) {
@@ -446,6 +430,9 @@ class Cache {
     }
 }
 
+/**
+ * This variable is strictly designed to prevent cyclic dependencies.
+ */
 const CACHE = new Cache();
 
 export default CACHE;

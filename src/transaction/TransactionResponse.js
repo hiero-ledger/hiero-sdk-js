@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import ReceiptStatusError from "../ReceiptStatusError.js";
 import Status from "../Status.js";
@@ -40,6 +22,15 @@ import * as hex from "../encoding/hex.js";
  * @property {string} transactionId
  */
 
+/**
+ * When the client sends the node a transaction of any kind, the node
+ * replies with this, which simply says that the transaction passed
+ * the pre-check (so the node will submit it to the network) or it failed
+ * (so it won't). To learn the consensus result, the client should later
+ * obtain a receipt (free), or can buy a more detailed record (not free).
+ * <br>
+ * See <a href="https://docs.hedera.com/guides/docs/hedera-api/miscellaneous/transactionresponse">Hedera Documentation</a>
+ */
 export default class TransactionResponse {
     /**
      * @internal
@@ -80,7 +71,10 @@ export default class TransactionResponse {
     async getReceipt(client) {
         const receipt = await this.getReceiptQuery().execute(client);
 
-        if (receipt.status !== Status.Success) {
+        if (
+            receipt.status !== Status.Success &&
+            receipt.status !== Status.FeeScheduleFilePartUploaded
+        ) {
             throw new ReceiptStatusError({
                 transactionReceipt: receipt,
                 status: receipt.status,

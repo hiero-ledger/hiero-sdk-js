@@ -13,8 +13,6 @@ describe("TopicDelete", function () {
     });
 
     it("should be executable", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
         const operatorKey = env.operatorKey.publicKey;
 
@@ -34,8 +32,6 @@ describe("TopicDelete", function () {
     });
 
     it("should error when deleting immutable topic", async function () {
-        this.timeout(120000);
-
         const response = await new TopicCreateTransaction().execute(env.client);
         const topic = (await response.getReceipt(env.client)).topicId;
 

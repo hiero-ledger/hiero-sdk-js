@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import Transaction, {
     TRANSACTION_REGISTRY,
@@ -26,15 +8,16 @@ import TopicId from "./TopicId.js";
 import Duration from "../Duration.js";
 import Key from "../Key.js";
 import Timestamp from "../Timestamp.js";
+import CustomFixedFee from "../token/CustomFixedFee.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IConsensusUpdateTopicTransactionBody} HashgraphProto.proto.IConsensusUpdateTopicTransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HashgraphProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HashgraphProto.proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HashgraphProto.proto.TransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HashgraphProto.proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HashgraphProto.proto.ITransactionResponse
+ * @typedef {import("@hashgraph/proto").proto.IConsensusUpdateTopicTransactionBody} HieroProto.proto.IConsensusUpdateTopicTransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
  */
 
 /**
@@ -59,9 +42,12 @@ export default class TopicUpdateTransaction extends Transaction {
      * @param {TopicId | string} [props.topicId]
      * @param {Key} [props.adminKey]
      * @param {Key} [props.submitKey]
+     * @param {Key} [props.feeScheduleKey]
+     * @param {Key[]} [props.feeExemptKeys]
      * @param {Duration | Long | number} [props.autoRenewPeriod]
      * @param {AccountId | string} [props.autoRenewAccountId]
-     * @param {string} [props.topicMemo]
+     * @param {CustomFixedFee[]} [props.customFees]
+     * @param {?string} [props.topicMemo]
      * @param {Timestamp | Date} [props.expirationTime]
      */
     constructor(props = {}) {
@@ -106,6 +92,25 @@ export default class TopicUpdateTransaction extends Transaction {
         if (props.adminKey != null) {
             this.setAdminKey(props.adminKey);
         }
+        /**
+         * @private
+         * @type {?Key}
+         */
+        this._feeScheduleKey = null;
+
+        if (props.feeScheduleKey != null) {
+            this.setFeeScheduleKey(props.feeScheduleKey);
+        }
+
+        /**
+         * @private
+         * @type {Key[]}
+         */
+        this._feeExemptKeys = [];
+
+        if (props.feeExemptKeys != null) {
+            this.setFeeExemptKeys(props.feeExemptKeys);
+        }
 
         /**
          * @private
@@ -129,6 +134,16 @@ export default class TopicUpdateTransaction extends Transaction {
 
         /**
          * @private
+         * @type {CustomFixedFee[]}
+         */
+        this._customFees = [];
+
+        if (props.customFees != null) {
+            this.setCustomFees(props.customFees);
+        }
+
+        /**
+         * @private
          * @type {?Timestamp}
          */
         this._expirationTime = null;
@@ -140,11 +155,11 @@ export default class TopicUpdateTransaction extends Transaction {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransaction[]} transactions
-     * @param {HashgraphProto.proto.ISignedTransaction[]} signedTransactions
+     * @param {HieroProto.proto.ITransaction[]} transactions
+     * @param {HieroProto.proto.ISignedTransaction[]} signedTransactions
      * @param {TransactionId[]} transactionIds
      * @param {AccountId[]} nodeIds
-     * @param {HashgraphProto.proto.ITransactionBody[]} bodies
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
      * @returns {TopicUpdateTransaction}
      */
     static _fromProtobuf(
@@ -156,7 +171,7 @@ export default class TopicUpdateTransaction extends Transaction {
     ) {
         const body = bodies[0];
         const update =
-            /** @type {HashgraphProto.proto.IConsensusUpdateTopicTransactionBody} */ (
+            /** @type {HieroProto.proto.IConsensusUpdateTopicTransactionBody} */ (
                 body.consensusUpdateTopic
             );
 
@@ -174,6 +189,17 @@ export default class TopicUpdateTransaction extends Transaction {
                     update.submitKey != null
                         ? Key._fromProtobufKey(update.submitKey)
                         : undefined,
+                feeScheduleKey:
+                    update.feeScheduleKey != null
+                        ? Key._fromProtobufKey(update.feeScheduleKey)
+                        : undefined,
+                feeExemptKeys:
+                    update.feeExemptKeyList != null &&
+                    update.feeExemptKeyList.keys != null
+                        ? update?.feeExemptKeyList.keys.map((key) =>
+                              Key._fromProtobufKey(key),
+                          )
+                        : undefined,
                 autoRenewAccountId:
                     update.autoRenewAccount != null
                         ? AccountId._fromProtobuf(update.autoRenewAccount)
@@ -184,9 +210,15 @@ export default class TopicUpdateTransaction extends Transaction {
                             ? update.autoRenewPeriod.seconds
                             : undefined
                         : undefined,
+                customFees:
+                    update.customFees != null && update.customFees.fees != null
+                        ? update.customFees.fees.map((customFee) =>
+                              CustomFixedFee._fromProtobuf(customFee),
+                          )
+                        : undefined,
                 topicMemo:
                     update.memo != null
-                        ? update.memo.value != null
+                        ? Object.hasOwn(update.memo, "value")
                             ? update.memo.value
                             : undefined
                         : undefined,
@@ -341,6 +373,79 @@ export default class TopicUpdateTransaction extends Transaction {
     }
 
     /**
+     * Returns the key which allows updates to the new topic’s fees.
+     * @returns {?Key}
+     */
+    getFeeScheduleKey() {
+        return this._feeScheduleKey;
+    }
+
+    /**
+     * Sets the key which allows updates to the new topic’s fees.
+     * @param {Key} feeScheduleKey
+     * @returns {this}
+     */
+    setFeeScheduleKey(feeScheduleKey) {
+        this._requireNotFrozen();
+        this._feeScheduleKey = feeScheduleKey;
+
+        return this;
+    }
+
+    /**
+     * @returns {TopicUpdateTransaction}
+     */
+    clearFeeScheduleKey() {
+        this._requireNotFrozen();
+        this._feeScheduleKey = null;
+
+        return this;
+    }
+
+    /**
+     * Returns the keys that will be exempt from paying fees.
+     * @returns {Key[]}
+     */
+    getFeeExemptKeys() {
+        return this._feeExemptKeys;
+    }
+
+    /**
+     * Sets the keys that will be exempt from paying fees.
+     * @param {Key[]} feeExemptKeys
+     * @returns {this}
+     */
+    setFeeExemptKeys(feeExemptKeys) {
+        this._requireNotFrozen();
+        this._feeExemptKeys = feeExemptKeys;
+
+        return this;
+    }
+
+    /**
+     * Adds a key that will be exempt from paying fees.
+     * @param {Key} key
+     * @returns {this}
+     */
+    addFeeExemptKey(key) {
+        this._requireNotFrozen();
+        this._feeExemptKeys.push(key);
+
+        return this;
+    }
+
+    /**
+     * Clears all keys that will be exempt from paying fees.
+     * @returns {this}
+     */
+    clearFeeExemptKeys() {
+        this._requireNotFrozen();
+        this._feeExemptKeys = [];
+
+        return this;
+    }
+
+    /**
      * @returns {?AccountId}
      */
     get autoRenewAccountId() {
@@ -395,6 +500,52 @@ export default class TopicUpdateTransaction extends Transaction {
     }
 
     /**
+     * Returns the fixed fees to assess when a message is submitted to the new topic.
+     * @returns {CustomFixedFee[]}
+     */
+    getCustomFees() {
+        return this._customFees;
+    }
+
+    /**
+     * Sets the fixed fees to assess when a message is submitted to the new topic.
+     *
+     * @param {CustomFixedFee[]} customFees
+     * @returns {this}
+     */
+    setCustomFees(customFees) {
+        this._requireNotFrozen();
+        this._customFees = customFees;
+
+        return this;
+    }
+
+    /**
+     * Adds fixed fee to assess when a message is submitted to the new topic.
+     *
+     * @param {CustomFixedFee} customFee
+     * @returns {this}
+     */
+    addCustomFee(customFee) {
+        this._requireNotFrozen();
+        this._customFees.push(customFee);
+
+        return this;
+    }
+
+    /**
+     * Clears fixed fees.
+     *
+     * @returns {this}
+     */
+    clearCustomFees() {
+        this._requireNotFrozen();
+        this._customFees = [];
+
+        return this;
+    }
+
+    /**
      * @param {Client} client
      */
     _validateChecksums(client) {
@@ -411,8 +562,8 @@ export default class TopicUpdateTransaction extends Transaction {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.ITransaction} request
-     * @returns {Promise<HashgraphProto.proto.ITransactionResponse>}
+     * @param {HieroProto.proto.ITransaction} request
+     * @returns {Promise<HieroProto.proto.ITransactionResponse>}
      */
     _execute(channel, request) {
         return channel.consensus.updateTopic(request);
@@ -421,7 +572,7 @@ export default class TopicUpdateTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {NonNullable<HashgraphProto.proto.TransactionBody["data"]>}
+     * @returns {NonNullable<HieroProto.proto.TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
         return "consensusUpdateTopic";
@@ -430,7 +581,7 @@ export default class TopicUpdateTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {HashgraphProto.proto.IConsensusUpdateTopicTransactionBody}
+     * @returns {HieroProto.proto.IConsensusUpdateTopicTransactionBody}
      */
     _makeTransactionData() {
         return {
@@ -441,6 +592,13 @@ export default class TopicUpdateTransaction extends Transaction {
                 this._submitKey != null
                     ? this._submitKey._toProtobufKey()
                     : null,
+            feeScheduleKey:
+                this._feeScheduleKey != null
+                    ? this._feeScheduleKey._toProtobufKey()
+                    : null,
+            feeExemptKeyList: {
+                keys: this._feeExemptKeys.map((key) => key._toProtobufKey()),
+            },
             memo:
                 this._topicMemo != null
                     ? {
@@ -455,6 +613,11 @@ export default class TopicUpdateTransaction extends Transaction {
                 this._autoRenewPeriod != null
                     ? this._autoRenewPeriod._toProtobuf()
                     : null,
+            customFees: {
+                fees: this._customFees.map((customFee) =>
+                    customFee._toTopicFeeProtobuf(),
+                ),
+            },
             expirationTime:
                 this._expirationTime != null
                     ? this._expirationTime._toProtobuf()

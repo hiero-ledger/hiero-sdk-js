@@ -80,7 +80,7 @@ async function main() {
 
         const accountCreateTx = await new AccountCreateTransaction()
             .setInitialBalance(new Hbar(10)) // 10 h
-            .setKey(newKey.publicKey)
+            .setKeyWithoutAlias(newKey.publicKey)
             .freezeWith(client)
             .execute(client);
 

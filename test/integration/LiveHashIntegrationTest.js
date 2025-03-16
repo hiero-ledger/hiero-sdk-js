@@ -1,16 +1,14 @@
 import {
-    AccountCreateTransaction,
-    AccountDeleteTransaction,
     Hbar,
     LiveHashAddTransaction,
     LiveHashDeleteTransaction,
     LiveHashQuery,
     PrivateKey,
     TransactionId,
-    TransactionReceiptQuery,
 } from "../../src/exports.js";
 import * as hex from "../../src/encoding/hex.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import { createAccount, deleteAccount } from "./utils/Fixtures.js";
 import Long from "long";
 
 describe("LiveHash", function () {
@@ -21,8 +19,6 @@ describe("LiveHash", function () {
     });
 
     it("should be executable", async function () {
-        this.timeout(120000);
-
         const _hash = hex.decode(
             "100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000002",
         );
@@ -31,25 +27,15 @@ describe("LiveHash", function () {
         let errorThrown = false;
 
         const key = PrivateKey.generateED25519();
+        const { accountId } = await createAccount(env.client, (transaction) => {
+            transaction.setKeyWithoutAlias(key).setInitialBalance(new Hbar(2));
+        });
 
-        const response = await new AccountCreateTransaction()
-            .setKey(key.publicKey)
-            .setInitialBalance(new Hbar(2))
-            .execute(env.client);
-
-        let receipt = await new TransactionReceiptQuery()
-            .setTransactionId(response.transactionId)
-            .execute(env.client);
-
-        expect(receipt.accountId).to.not.be.null;
-        expect(receipt.accountId != null ? receipt.accountId.num > 0 : false).to
-            .be.true;
-
-        const account = receipt.accountId;
+        expect(accountId).to.not.be.null;
 
         try {
             await new LiveHashAddTransaction()
-                .setAccountId(account)
+                .setAccountId(accountId)
                 .setDuration(Long.fromInt(30))
                 .setHash(_hash)
                 .setKeys(key)
@@ -63,7 +49,7 @@ describe("LiveHash", function () {
 
         try {
             await new LiveHashDeleteTransaction()
-                .setAccountId(account)
+                .setAccountId(accountId)
                 .setHash(_hash)
                 .execute(env.client);
         } catch (_) {
@@ -75,7 +61,7 @@ describe("LiveHash", function () {
 
         try {
             await new LiveHashQuery()
-                .setAccountId(account)
+                .setAccountId(accountId)
                 .setHash(_hash)
                 .execute(env.client);
         } catch (_) {
@@ -84,17 +70,14 @@ describe("LiveHash", function () {
 
         expect(errorThrown).to.be.true;
 
-        await (
-            await (
-                await new AccountDeleteTransaction()
-                    .setAccountId(account)
-                    .setTransferAccountId(operatorId)
-                    .setTransactionId(TransactionId.generate(account))
-                    .freezeWith(env.client)
-                    .sign(key)
-            ).execute(env.client)
-        ).getReceipt(env.client);
+        await deleteAccount(env.client, key, (transaction) => {
+            transaction
+                .setAccountId(accountId)
+                .setTransferAccountId(operatorId)
+                .setTransactionId(TransactionId.generate(accountId));
+        });
     });
+
     after(async function () {
         await env.close();
     });

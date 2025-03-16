@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import Transaction, {
     TRANSACTION_REGISTRY,
@@ -30,22 +12,37 @@ import * as util from "../util.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IConsensusSubmitMessageTransactionBody} HashgraphProto.proto.IConsensusSubmitMessageTransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HashgraphProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HashgraphProto.proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HashgraphProto.proto.TransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HashgraphProto.proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HashgraphProto.proto.ITransactionResponse
- * @typedef {import("@hashgraph/proto").proto.IConsensusMessageChunkInfo} HashgraphProto.proto.IConsensusMessageChunkInfo
+ * @typedef {import("@hashgraph/proto").proto.IConsensusSubmitMessageTransactionBody} HieroProto.proto.IConsensusSubmitMessageTransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
+ * @typedef {import("@hashgraph/proto").proto.IConsensusMessageChunkInfo} HieroProto.proto.IConsensusMessageChunkInfo
+ * @typedef {import("@hashgraph/proto").proto.IFixedFee} HieroProto.proto.IFixedFee
+ * @typedef {import("@hashgraph/proto").proto.ICustomFeeLimit} HieroProto.proto.ICustomFeeLimit
  */
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../token/CustomFixedFee.js").default} CustomFixedFee
  * @typedef {import("../account/AccountId.js").default} AccountId
  * @typedef {import("../transaction/TransactionResponse.js").default} TransactionResponse
  * @typedef {import("../schedule/ScheduleCreateTransaction.js").default} ScheduleCreateTransaction
+ * @typedef {import("../transaction/CustomFeeLimit.js").default} CustomFeeLimit
  */
 
+/**
+ * <p>
+ * Valid and authorized messages on valid topics will be ordered by the
+ * consensus service, published in the block stream, and available to all
+ * subscribers on this topic via the mirror nodes.<br/>
+ * If this transaction succeeds the resulting TransactionReceipt SHALL
+ * contain the latest topicSequenceNumber and topicRunningHash for the
+ * topic.<br/>
+ * If the topic has a `submitKey` then that key MUST sign this
+ * transaction.<br/>
+ */
 export default class TopicMessageSubmitTransaction extends Transaction {
     /**
      * @param {object} props
@@ -80,12 +77,16 @@ export default class TopicMessageSubmitTransaction extends Transaction {
         /**
          * @private
          * @type {number}
+         * The maximum number of chunks a topic message can be split into.
+         * Default max chunk size: 20
+         * This value can be overridden with `setMaxChunks`
          */
         this._maxChunks = 20;
 
         /**
          * @private
          * @type {number}
+         * The size of each chunk for a given topic message in bytes.
          */
         this._chunkSize = CHUNK_SIZE;
 
@@ -97,17 +98,17 @@ export default class TopicMessageSubmitTransaction extends Transaction {
             this.setChunkSize(props.chunkSize);
         }
 
-        /** @type {HashgraphProto.proto.IConsensusMessageChunkInfo | null} */
+        /** @type {HieroProto.proto.IConsensusMessageChunkInfo | null} */
         this._chunkInfo = null;
     }
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransaction[]} transactions
-     * @param {HashgraphProto.proto.ISignedTransaction[]} signedTransactions
+     * @param {HieroProto.proto.ITransaction[]} transactions
+     * @param {HieroProto.proto.ISignedTransaction[]} signedTransactions
      * @param {TransactionId[]} transactionIds
      * @param {AccountId[]} nodeIds
-     * @param {HashgraphProto.proto.ITransactionBody[]} bodies
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
      * @returns {TopicMessageSubmitTransaction}
      */
     static _fromProtobuf(
@@ -119,7 +120,7 @@ export default class TopicMessageSubmitTransaction extends Transaction {
     ) {
         const body = bodies[0];
         const message =
-            /** @type {HashgraphProto.proto.IConsensusSubmitMessageTransactionBody} */ (
+            /** @type {HieroProto.proto.IConsensusSubmitMessageTransactionBody} */ (
                 body.consensusSubmitMessage
             );
 
@@ -185,6 +186,40 @@ export default class TopicMessageSubmitTransaction extends Transaction {
         message = util.requireStringOrUint8Array(message);
         this._message =
             message instanceof Uint8Array ? message : utf8.encode(message);
+        return this;
+    }
+
+    /**
+     * Gets the maximum custom fee that the user is willing to pay for the message.
+     * @returns {CustomFeeLimit[]}
+     */
+    getCustomFeeLimits() {
+        return this._customFeeLimits;
+    }
+
+    /**
+     * Sets the maximum custom fee that the user is willing to pay for message submission.
+     * @param {CustomFeeLimit[]} customFeeLimits
+     * @returns {this}
+     */
+    setCustomFeeLimits(customFeeLimits) {
+        this._requireNotFrozen();
+
+        this._customFeeLimits = customFeeLimits;
+
+        return this;
+    }
+
+    /**
+     * Adds a maximum custom fee that the user is willing to pay for message submission.
+     * @param {CustomFeeLimit} customFeeLimit
+     * @returns {this}
+     */
+    addCustomFeeLimit(customFeeLimit) {
+        this._requireNotFrozen();
+
+        this._customFeeLimits.push(customFeeLimit);
+
         return this;
     }
 
@@ -376,8 +411,8 @@ export default class TopicMessageSubmitTransaction extends Transaction {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.ITransaction} request
-     * @returns {Promise<HashgraphProto.proto.ITransactionResponse>}
+     * @param {HieroProto.proto.ITransaction} request
+     * @returns {Promise<HieroProto.proto.ITransactionResponse>}
      */
     _execute(channel, request) {
         return channel.consensus.submitMessage(request);
@@ -386,7 +421,7 @@ export default class TopicMessageSubmitTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {NonNullable<HashgraphProto.proto.TransactionBody["data"]>}
+     * @returns {NonNullable<HieroProto.proto.TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
         return "consensusSubmitMessage";
@@ -395,7 +430,7 @@ export default class TopicMessageSubmitTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {HashgraphProto.proto.IConsensusSubmitMessageTransactionBody}
+     * @returns {HieroProto.proto.IConsensusSubmitMessageTransactionBody}
      */
     _makeTransactionData() {
         if (this._chunkInfo != null && this._message != null) {

@@ -37,8 +37,6 @@ describe("TopicMessageMocking", function () {
     });
 
     it("is able to receive messages", async function () {
-        this.timeout(10000);
-
         ({ client, servers } = await Mocker.withResponses([
             [{ response: TOPIC_MESSAGE }],
         ]));
@@ -59,5 +57,30 @@ describe("TopicMessageMocking", function () {
         }
 
         expect(finished).to.be.true;
+    });
+
+    it("should stop processing messages after unsubscription", async function () {
+        ({ client, servers } = await Mocker.withResponses([
+            [{ response: TOPIC_MESSAGE }],
+            [{ response: TOPIC_MESSAGE }],
+        ]));
+
+        let messageProcessed = false;
+
+        handle = new TopicMessageQuery()
+            .setTopicId("0.0.3")
+            .subscribe(client, () => {
+                messageProcessed = true;
+            });
+
+        handle.unsubscribe();
+
+        const startTime = Date.now();
+
+        while (!messageProcessed && Date.now() < startTime + 5000) {
+            await new Promise((resolved) => setTimeout(resolved, 2000));
+        }
+
+        expect(messageProcessed).to.be.false;
     });
 });

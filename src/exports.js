@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 import * as EntityIdHelper from "./EntityIdHelper.js";
 
 export { default as Cache } from "./Cache.js";
@@ -33,6 +15,9 @@ export { default as PublicKey } from "./PublicKey.js";
 export { default as KeyList } from "./KeyList.js";
 export { default as Key } from "./Key.js";
 export { default as Mnemonic } from "./Mnemonic.js";
+export { default as TokenAirdropTransaction } from "./token/TokenAirdropTransaction.js";
+export { default as TokenClaimAirdropTransaction } from "./token/TokenClaimAirdropTransaction.js";
+export { default as TokenCancelAirdropTransaction } from "./token/TokenCancelAirdropTransaction.js";
 // eslint-disable-next-line deprecation/deprecation
 export { default as AccountAllowanceAdjustTransaction } from "./account/AccountAllowanceAdjustTransaction.js";
 export { default as AccountAllowanceApproveTransaction } from "./account/AccountAllowanceApproveTransaction.js";
@@ -46,7 +31,6 @@ export { default as AccountInfo } from "./account/AccountInfo.js";
 export { default as AccountInfoFlow } from "./account/AccountInfoFlow.js";
 export { default as AccountInfoQuery } from "./account/AccountInfoQuery.js";
 export { default as AccountRecordsQuery } from "./account/AccountRecordsQuery.js";
-export { default as AccountStakersQuery } from "./account/AccountStakersQuery.js";
 export { default as AccountUpdateTransaction } from "./account/AccountUpdateTransaction.js";
 export { default as AddressBookQuery } from "./network/AddressBookQuery.js";
 export { default as AssessedCustomFee } from "./token/AssessedCustomFee.js";
@@ -99,13 +83,20 @@ export { default as Hbar } from "./Hbar.js";
 export { default as HbarAllowance } from "./account/HbarAllowance.js";
 export { default as HbarUnit } from "./HbarUnit.js";
 export { default as LiveHash } from "./account/LiveHash.js";
+// eslint-disable-next-line deprecation/deprecation
 export { default as LiveHashAddTransaction } from "./account/LiveHashAddTransaction.js";
+// eslint-disable-next-line deprecation/deprecation
 export { default as LiveHashDeleteTransaction } from "./account/LiveHashDeleteTransaction.js";
+// eslint-disable-next-line deprecation/deprecation
 export { default as LiveHashQuery } from "./account/LiveHashQuery.js";
 export { default as MaxQueryPaymentExceeded } from "./MaxQueryPaymentExceeded.js";
+export { default as MirrorNodeContractCallQuery } from "./query/MirrorNodeContractCallQuery.js";
+export { default as MirrorNodeContractEstimateQuery } from "./query/MirrorNodeContractEstimateQuery.js";
+export { default as NodeAddressBook } from "./address_book/NodeAddressBook.js";
 export { default as NetworkVersionInfo } from "./network/NetworkVersionInfo.js";
 export { default as NetworkVersionInfoQuery } from "./network/NetworkVersionInfoQuery.js";
 export { default as NftId } from "./token/NftId.js";
+export { default as PendingAirdropId } from "./token/PendingAirdropId.js";
 export { default as Provider } from "./Provider.js";
 export { default as PrngTransaction } from "./PrngTransaction.js";
 export { default as ProxyStaker } from "./account/ProxyStaker.js";
@@ -118,16 +109,21 @@ export { default as ScheduleInfo } from "./schedule/ScheduleInfo.js";
 export { default as ScheduleInfoQuery } from "./schedule/ScheduleInfoQuery.js";
 export { default as ScheduleSignTransaction } from "./schedule/ScheduleSignTransaction.js";
 export { default as SemanticVersion } from "./network/SemanticVersion.js";
+export { default as SignatureMap } from "./transaction/SignatureMap.js";
 export { default as Signer } from "./Signer.js";
 export { default as SignerSignature } from "./SignerSignature.js";
 export { default as Status } from "./Status.js";
 export { default as SubscriptionHandle } from "./topic/SubscriptionHandle.js";
+// eslint-disable-next-line deprecation/deprecation
 export { default as SystemDeleteTransaction } from "./system/SystemDeleteTransaction.js";
+// eslint-disable-next-line deprecation/deprecation
 export { default as SystemUndeleteTransaction } from "./system/SystemUndeleteTransaction.js";
 export { default as Timestamp } from "./Timestamp.js";
 export { default as TokenAllowance } from "./account/TokenAllowance.js";
 export { default as TokenAssociateTransaction } from "./token/TokenAssociateTransaction.js";
 export { default as TokenBurnTransaction } from "./token/TokenBurnTransaction.js";
+export { default as TokenRejectTransaction } from "./token/TokenRejectTransaction.js";
+export { default as TokenRejectFlow } from "./token/TokenRejectFlow.js";
 export { default as TokenCreateTransaction } from "./token/TokenCreateTransaction.js";
 export { default as TokenDeleteTransaction } from "./token/TokenDeleteTransaction.js";
 export { default as TokenDissociateTransaction } from "./token/TokenDissociateTransaction.js";
@@ -159,6 +155,7 @@ export { default as TopicMessageChunk } from "./topic/TopicMessageChunk.js";
 export { default as TopicMessageQuery } from "./topic/TopicMessageQuery.js";
 export { default as TopicMessageSubmitTransaction } from "./topic/TopicMessageSubmitTransaction.js";
 export { default as TopicUpdateTransaction } from "./topic/TopicUpdateTransaction.js";
+export { default as CustomFeeLimit } from "./transaction/CustomFeeLimit.js";
 export { default as Transaction } from "./transaction/Transaction.js";
 export { default as TransactionFeeSchedule } from "./TransactionFeeSchedule.js";
 export { default as TransactionId } from "./transaction/TransactionId.js";
@@ -175,11 +172,20 @@ export { default as LogLevel } from "./logger/LogLevel.js";
 export { EntityIdHelper };
 export { default as Long } from "long";
 export { default as FreezeType } from "./FreezeType.js";
+export { default as TokenKeyValidation } from "./token/TokenKeyValidation.js";
 
 export { default as StatusError } from "./StatusError.js";
+export { default as MaxAttemptsOrTimeoutError } from "./MaxAttemptsOrTimeoutError.js";
 export { default as PrecheckStatusError } from "./PrecheckStatusError.js";
 export { default as ReceiptStatusError } from "./ReceiptStatusError.js";
 export { default as LedgerId } from "./LedgerId.js";
+export { default as TokenUpdateNftsTransaction } from "./token/TokenUpdateNftsTransaction.js";
+export { default as NodeCreateTransaction } from "./node/NodeCreateTransaction.js";
+export { default as ServiceEndpoint } from "./node/ServiceEndpoint.js";
+export { default as NodeDeleteTransaction } from "./node/NodeDeleteTransaction.js";
+export { default as NodeUpdateTransaction } from "./node/NodeUpdateTransaction.js";
+
+export { default as WebClient } from "./client/WebClient.js";
 
 /**
  * @typedef {import("./client/Client.js").NetworkName} ClientNetworkName

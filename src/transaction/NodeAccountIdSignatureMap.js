@@ -1,59 +1,62 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import ObjectMap from "../ObjectMap.js";
-import PublicKey from "../PublicKey.js";
+import TransactionId from "./TransactionId.js";
+import SignaturePairMap from "./SignaturePairMap.js";
+import * as HieroProto from "@hashgraph/proto";
 
 /**
- * @augments {ObjectMap<PublicKey, Uint8Array>}
+ * @augments {ObjectMap<TransactionId, SignaturePairMap>}
  */
 export default class NodeAccountIdSignatureMap extends ObjectMap {
     constructor() {
-        super((s) => PublicKey.fromString(s));
+        super((s) => TransactionId.fromString(s));
     }
 
     /**
-     * @param {import("@hashgraph/proto").proto.ISignatureMap} sigMap
+     * This function is used to create a NodeAccountIdSignaturemap from an already built transaction.
+     * @param { import('./List.js').default<import("@hashgraph/proto").proto.ISignedTransaction>} signedTransactions
      * @returns {NodeAccountIdSignatureMap}
      */
-    static _fromTransactionSigMap(sigMap) {
+    static _fromSignedTransactions(signedTransactions) {
         const signatures = new NodeAccountIdSignatureMap();
 
-        const sigPairs = sigMap.sigPair != null ? sigMap.sigPair : [];
+        for (const { bodyBytes, sigMap } of signedTransactions.list) {
+            if (bodyBytes != null && sigMap != null) {
+                const body = HieroProto.proto.TransactionBody.decode(bodyBytes);
 
-        for (const sigPair of sigPairs) {
-            if (sigPair.pubKeyPrefix != null) {
-                if (sigPair.ed25519 != null) {
-                    signatures._set(
-                        PublicKey.fromBytesED25519(sigPair.pubKeyPrefix),
-                        sigPair.ed25519,
+                if (body.transactionID != null) {
+                    const transactionId = TransactionId._fromProtobuf(
+                        body.transactionID,
                     );
-                } else if (sigPair.ECDSASecp256k1 != null) {
+
                     signatures._set(
-                        PublicKey.fromBytesECDSA(sigPair.pubKeyPrefix),
-                        sigPair.ECDSASecp256k1,
+                        transactionId,
+                        SignaturePairMap._fromTransactionSigMap(sigMap),
                     );
                 }
             }
         }
 
         return signatures;
+    }
+
+    /**
+     *
+     * Adds a signature pair for this transaction id.
+     * @param {TransactionId} txId
+     * @param {import("../SignerSignature.js").PublicKey} publicKey
+     * @param {Uint8Array} signature
+     */
+    addSignature(txId, publicKey, signature) {
+        const sigPairMap = this.get(txId);
+        if (sigPairMap) {
+            sigPairMap.addSignature(publicKey, signature);
+        } else {
+            this._set(
+                txId,
+                new SignaturePairMap().addSignature(publicKey, signature),
+            );
+        }
     }
 }

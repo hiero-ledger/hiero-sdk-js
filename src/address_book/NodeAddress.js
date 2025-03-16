@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import AccountId from "../account/AccountId.js";
 import Endpoint from "./Endpoint.js";
@@ -24,12 +6,12 @@ import * as utf8 from "../encoding/utf8.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.INodeAddress} HashgraphProto.proto.INodeAddress
+ * @typedef {import("@hashgraph/proto").proto.INodeAddress} HieroProto.proto.INodeAddress
  */
 
 /**
  * @typedef {import("./Endpoint.js").EndPointJson} EndpointJson
- * @typedef {import("long").Long} Long
+ * @typedef {import("long")} Long
  */
 
 /**
@@ -236,7 +218,7 @@ export default class NodeAddress {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.INodeAddress} nodeAddress
+     * @param {HieroProto.proto.INodeAddress} nodeAddress
      * @returns {NodeAddress}
      */
     static _fromProtobuf(nodeAddress) {
@@ -269,7 +251,7 @@ export default class NodeAddress {
     }
 
     /**
-     * @returns {HashgraphProto.proto.INodeAddress}
+     * @returns {HieroProto.proto.INodeAddress}
      */
     _toProtobuf() {
         return {

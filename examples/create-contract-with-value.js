@@ -13,7 +13,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Import the compiled contract
-import payableContract from "./payable.json" assert { type: "json" };
+import payableContract from "./payable.json" with { type: "json" };
 
 async function main() {
     if (
@@ -126,7 +126,7 @@ async function main() {
             .freezeWithSigner(wallet);
         await contractDeleteTransaction.signWithSigner(wallet);
         const contractDeleteResult =
-            await transaction.executeWithSigner(wallet);
+            await contractDeleteTransaction.executeWithSigner(wallet);
 
         // Delete the contract
         // Note: The admin key of the contract needs to sign the transaction

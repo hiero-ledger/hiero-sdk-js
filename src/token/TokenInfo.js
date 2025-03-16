@@ -1,29 +1,11 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import TokenId from "./TokenId.js";
 import AccountId from "../account/AccountId.js";
 import Duration from "../Duration.js";
 import Timestamp from "../Timestamp.js";
 import Long from "long";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import TokenType from "./TokenType.js";
 import TokenSupplyType from "./TokenSupplyType.js";
 import CustomFixedFee from "./CustomFixedFee.js";
@@ -68,7 +50,9 @@ export default class TokenInfo {
      * @param {TokenType | null} props.tokenType;
      * @param {TokenSupplyType | null} props.supplyType;
      * @param {Long | null} props.maxSupply;
-     * @param {LedgerId|null} props.ledgerId
+     * @param {LedgerId|null} props.ledgerId;
+     * @param {Key | null} props.metadataKey;
+     * @param {Uint8Array | null} props.metadata;
      */
     constructor(props) {
         /**
@@ -238,26 +222,38 @@ export default class TokenInfo {
         this.maxSupply = props.maxSupply;
 
         this.ledgerId = props.ledgerId;
+
+        /**
+         * @description The key which can change the metadata of a token (token definition and individual NFTs).
+         *
+         * @readonly
+         */
+        this.metadataKey = props.metadataKey;
+
+        /**
+         * @description Metadata of the created token definition.
+         * @readonly
+         */
+        this.metadata = props.metadata;
     }
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITokenInfo} info
+     * @param {HieroProto.proto.ITokenInfo} info
      * @returns {TokenInfo}
      */
     static _fromProtobuf(info) {
         const defaultFreezeStatus =
-            /** @type {HashgraphProto.proto.TokenFreezeStatus} */ (
+            /** @type {HieroProto.proto.TokenFreezeStatus} */ (
                 info.defaultFreezeStatus
             );
         const defaultKycStatus =
-            /** @type {HashgraphProto.proto.TokenKycStatus} */ (
+            /** @type {HieroProto.proto.TokenKycStatus} */ (
                 info.defaultKycStatus
             );
-        const pauseStatus =
-            /**@type {HashgraphProto.proto.TokenPauseStatus} */ (
-                info.pauseStatus
-            );
+        const pauseStatus = /**@type {HieroProto.proto.TokenPauseStatus} */ (
+            info.pauseStatus
+        );
 
         const autoRenewAccountId =
             info.autoRenewAccount != null
@@ -266,7 +262,7 @@ export default class TokenInfo {
 
         return new TokenInfo({
             tokenId: TokenId._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITokenID} */ (info.tokenId),
+                /** @type {HieroProto.proto.ITokenID} */ (info.tokenId),
             ),
             name: /** @type {string} */ (info.name),
             symbol: /** @type {string} */ (info.symbol),
@@ -275,7 +271,7 @@ export default class TokenInfo {
             treasuryAccountId:
                 info.treasury != null
                     ? AccountId._fromProtobuf(
-                          /** @type {HashgraphProto.proto.IAccountID} */ (
+                          /** @type {HieroProto.proto.IAccountID} */ (
                               info.treasury
                           ),
                       )
@@ -322,7 +318,7 @@ export default class TokenInfo {
             autoRenewPeriod:
                 info.autoRenewPeriod != null
                     ? Duration._fromProtobuf(
-                          /** @type {HashgraphProto.proto.IDuration} */ (
+                          /** @type {HieroProto.proto.IDuration} */ (
                               info.autoRenewPeriod
                           ),
                       )
@@ -330,7 +326,7 @@ export default class TokenInfo {
             expirationTime:
                 info.expiry != null
                     ? Timestamp._fromProtobuf(
-                          /** @type {HashgraphProto.proto.ITimestamp} */ (
+                          /** @type {HieroProto.proto.ITimestamp} */ (
                               info.expiry
                           ),
                       )
@@ -361,11 +357,16 @@ export default class TokenInfo {
                 info.ledgerId != null
                     ? LedgerId.fromBytes(info.ledgerId)
                     : null,
+            metadataKey:
+                info.metadataKey != null
+                    ? Key._fromProtobufKey(info.metadataKey)
+                    : null,
+            metadata: info.metadata != null ? info.metadata : new Uint8Array(),
         });
     }
 
     /**
-     * @returns {HashgraphProto.proto.ITokenInfo}
+     * @returns {HieroProto.proto.ITokenInfo}
      */
     _toProtobuf() {
         return {
@@ -426,6 +427,11 @@ export default class TokenInfo {
             supplyType: this.supplyType != null ? this.supplyType._code : null,
             maxSupply: this.maxSupply,
             ledgerId: this.ledgerId != null ? this.ledgerId.toBytes() : null,
+            metadataKey:
+                this.metadataKey != null
+                    ? this.metadataKey._toProtobufKey()
+                    : null,
+            metadata: this.metadata != null ? this.metadata : null,
         };
     }
 
@@ -435,7 +441,7 @@ export default class TokenInfo {
      */
     static fromBytes(bytes) {
         return TokenInfo._fromProtobuf(
-            HashgraphProto.proto.TokenInfo.decode(bytes),
+            HieroProto.proto.TokenInfo.decode(bytes),
         );
     }
 
@@ -443,8 +449,6 @@ export default class TokenInfo {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.TokenInfo.encode(
-            this._toProtobuf(),
-        ).finish();
+        return HieroProto.proto.TokenInfo.encode(this._toProtobuf()).finish();
     }
 }

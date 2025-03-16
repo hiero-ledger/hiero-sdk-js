@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import fs from "fs";
 import util from "util";
@@ -30,6 +12,8 @@ import * as mainnet from "./addressbooks/mainnet.js";
 import * as testnet from "./addressbooks/testnet.js";
 import * as previewnet from "./addressbooks/previewnet.js";
 import * as hex from "../encoding/hex.js";
+import AddressBookQuery from "../network/AddressBookQuery.js";
+import FileId from "../file/FileId.js";
 
 const readFileAsync = util.promisify(fs.readFile);
 
@@ -75,6 +59,8 @@ export const MirrorNetwork = {
 
 /**
  * @augments {Client<NodeChannel, NodeMirrorChannel>}
+ * Client for interacting with the Hedera network using Node.js.
+ * Extends the base Client class with Node.js specific implementations.
  */
 export default class NodeClient extends Client {
     /**
@@ -187,6 +173,25 @@ export default class NodeClient extends Client {
      */
     static forTestnet(props = {}) {
         return new NodeClient({ network: "testnet", ...props });
+    }
+
+    /**
+     * @param {string[] | string} mirrorNetwork
+     * @returns {Promise<NodeClient>}
+     */
+    static async forMirrorNetwork(mirrorNetwork) {
+        const client = new NodeClient();
+
+        client.setMirrorNetwork(mirrorNetwork).setNetworkUpdatePeriod(10000);
+
+        // Execute an address book query to get the network nodes
+        const addressBook = await new AddressBookQuery()
+            .setFileId(FileId.ADDRESS_BOOK)
+            .execute(client);
+
+        client.setNetworkFromAddressBook(addressBook);
+
+        return client;
     }
 
     /**
@@ -316,8 +321,7 @@ export default class NodeClient extends Client {
      * @returns {(address: string, cert?: string) => NodeChannel}
      */
     _createNetworkChannel() {
-        return (address, cert) =>
-            new NodeChannel(address, cert, this._maxExecutionTime);
+        return (address) => new NodeChannel(address, this._maxExecutionTime);
     }
 
     /**

@@ -1,26 +1,8 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.HederaFunctionality} HashgraphProto.proto.HederaFunctionality
+ * @typedef {import("@hashgraph/proto").proto.HederaFunctionality} HieroProto.proto.HederaFunctionality
  */
 
 export default class RequestType {
@@ -191,6 +173,36 @@ export default class RequestType {
                 return "TransactionGetFastRecord";
             case RequestType.TokenUpdateNfts:
                 return "TokenUpdateNfts";
+            case RequestType.NodeCreate:
+                return "NodeCreate";
+            case RequestType.NodeUpdate:
+                return "NodeUpdate";
+            case RequestType.NodeDelete:
+                return "NodeDelete";
+            case RequestType.TokenReject:
+                return "TokenReject";
+            case RequestType.TokenAirdrop:
+                return "TokenAirdrop";
+            case RequestType.TokenCancelAirdrop:
+                return "TokenCancelAirdrop";
+            case RequestType.TokenClaimAirdrop:
+                return "TokenClaimAirdrop";
+            case RequestType.TssMessage:
+                return "TssMessage";
+            case RequestType.TssVote:
+                return "TssVote";
+            case RequestType.TssShareSignature:
+                return "TssShareSignature";
+            case RequestType.TssEncryptionKey:
+                return "TssEncryptionKey";
+            case RequestType.StateSignatureTransaction:
+                return "StateSignatureTransaction";
+            case RequestType.HistoryAssemblySignature:
+                return "HistoryAssemblySignature";
+            case RequestType.HistoryProofKeyPublication:
+                return "HistoryProofKeyPublication";
+            case RequestType.HistoryProofVote:
+                return "HistoryProofVote";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -353,6 +365,36 @@ export default class RequestType {
                 return RequestType.TransactionGetFastRecord;
             case 88:
                 return RequestType.TokenUpdateNfts;
+            case 89:
+                return RequestType.NodeCreate;
+            case 90:
+                return RequestType.NodeUpdate;
+            case 91:
+                return RequestType.NodeDelete;
+            case 92:
+                return RequestType.TokenReject;
+            case 93:
+                return RequestType.TokenAirdrop;
+            case 94:
+                return RequestType.TokenCancelAirdrop;
+            case 95:
+                return RequestType.TokenClaimAirdrop;
+            case 96:
+                return RequestType.TssMessage;
+            case 97:
+                return RequestType.TssVote;
+            case 98:
+                return RequestType.TssShareSignature;
+            case 99:
+                return RequestType.TssEncryptionKey;
+            case 100:
+                return RequestType.StateSignatureTransaction;
+            case 104:
+                return RequestType.HistoryAssemblySignature;
+            case 105:
+                return RequestType.HistoryProofKeyPublication;
+            case 106:
+                return RequestType.HistoryProofVote;
         }
 
         throw new Error(
@@ -361,7 +403,7 @@ export default class RequestType {
     }
 
     /**
-     * @returns {HashgraphProto.proto.HederaFunctionality}
+     * @returns {HieroProto.proto.HederaFunctionality}
      */
     valueOf() {
         return this._code;
@@ -740,3 +782,79 @@ RequestType.TransactionGetFastRecord = new RequestType(87);
  * Update the metadata of one or more NFT's of a specific token type.
  */
 RequestType.TokenUpdateNfts = new RequestType(88);
+
+/**
+ * A transaction body for a `createNode` request.
+ */
+RequestType.NodeCreate = new RequestType(89);
+
+/**
+ * A transaction body for an `updateNode` request.
+ */
+RequestType.NodeUpdate = new RequestType(90);
+
+/**
+ * A transaction body for a `deleteNode` request.
+ */
+RequestType.NodeDelete = new RequestType(91);
+
+/**
+ * Transfer one or more token balances held by the requesting account to the treasury for each token type.
+ */
+RequestType.TokenReject = new RequestType(92);
+
+/**
+ * Airdrop one or more tokens to one or more accounts.
+ */
+RequestType.TokenAirdrop = new RequestType(93);
+
+/**
+ * Remove one or more pending airdrops from state on behalf of the sender(s) for each airdrop.
+ */
+RequestType.TokenCancelAirdrop = new RequestType(94);
+
+/**
+ * Claim one or more pending airdrops
+ */
+RequestType.TokenClaimAirdrop = new RequestType(95);
+
+/**
+ * (TSS) Messages for a candidate roster.
+ */
+RequestType.TssMessage = new RequestType(96);
+
+/**
+ * Vote on the validity of Threshold Signature Scheme (TSS)
+ */
+RequestType.TssVote = new RequestType(97);
+
+/**
+ * Communicates a node's signature of a block hash
+ * using its private share within the TSS process
+ */
+RequestType.TssShareSignature = new RequestType(98);
+
+/**
+ * Submit a node public tss encryption key as part of the Threshold Signature Scheme (TSS).
+ */
+RequestType.TssEncryptionKey = new RequestType(99);
+
+/**
+ * Submit a signature of a state root hash gossiped to other nodes
+ */
+RequestType.StateSignatureTransaction = new RequestType(100);
+
+/**
+ * Sign a particular history assembly.
+ */
+RequestType.HistoryAssemblySignature = new RequestType(104);
+
+/**
+ * Publish a roster history proof key to the network.
+ */
+RequestType.HistoryProofKeyPublication = new RequestType(105);
+
+/**
+ * Vote for a particular history proof.
+ */
+RequestType.HistoryProofVote = new RequestType(106);

@@ -1,9 +1,10 @@
 import { Logger, LogLevel, Transaction } from "../../src/exports.js";
 import { Client } from "../../src/index.js";
+import { tmpdir } from "node:os";
+import fs from "fs";
+import { spy } from "sinon";
 
 describe("Logger", function () {
-    this.timeout(50000);
-
     it("set and get log level correctly inside the `Client` object", async function () {
         const client = Client.forPreviewnet({
             scheduleNetworkUpdate: false,
@@ -67,5 +68,60 @@ describe("Logger", function () {
         expect(levels).to.include("warn");
         expect(levels).to.include("error");
         expect(levels).to.include("fatal");
+    });
+
+    it("check that it can write to a log file", function () {
+        const logFile = `${tmpdir()}/test.log`;
+        fs.rmSync(logFile, { force: true });
+        const logger = new Logger(LogLevel.Trace, logFile);
+        let assertionCount = 0;
+        for (const level of Object.values(LogLevel)) {
+            if (level === LogLevel.Silent) continue;
+            logger[level](`This is a test ${level} message`);
+
+            const logContent = fs.readFileSync(logFile, "utf8");
+            expect(logContent).to.contain(`This is a test ${level} message`);
+            expect(logContent).to.contain(
+                level.toString().toUpperCase(),
+                `should contain ${level.toString().toUpperCase()}`,
+            );
+            assertionCount += 2;
+        }
+        expect(assertionCount).to.be.equal(
+            12,
+            "should have made 12 assertions",
+        );
+    });
+
+    it("check that it can write to stdout", function () {
+        let assertionCount = 0;
+        const logger = new Logger(LogLevel.Trace);
+        for (const level of Object.values(LogLevel)) {
+            if (level === LogLevel.Silent) continue;
+            const loggerLogSpy = spy(logger._logger, level);
+            logger[level](`This is a test ${level} message`);
+            expect(loggerLogSpy.calledWith(`This is a test ${level} message`))
+                .to.be.true;
+            assertionCount++;
+        }
+        expect(assertionCount).to.be.equal(6, "should have made 6 assertions");
+    });
+
+    it("check that silent blocks output", function () {
+        const logFile = `${tmpdir()}/test2.log`;
+        fs.rmSync(logFile, { force: true });
+        const logger = new Logger(LogLevel.Trace, logFile);
+        expect(logger.silent).to.be.equal(false);
+        logger.warn("This is a test warn message");
+        logger.setSilent(true);
+        expect(logger.silent).to.be.equal(true);
+        logger.fatal("This is a test fatal message");
+        logger.setSilent(false);
+        logger.error("This is a test error message");
+        const logContent = fs.readFileSync(logFile, "utf8");
+        expect(logger.silent).to.be.equal(false);
+        expect(logContent).to.contain("This is a test warn message");
+        expect(logContent).to.contain("This is a test error message");
+        expect(logContent).to.not.contain("This is a test fatal message");
     });
 });

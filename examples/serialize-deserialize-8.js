@@ -11,7 +11,7 @@ import {
 import dotenv from "dotenv";
 
 /**
- * @description Serialize and deserialize so-called incompleted transaction (chunked), and execute it
+ * @description Serialize and deserialize so-called incomplete transaction (chunked), and execute it
  */
 
 async function main() {

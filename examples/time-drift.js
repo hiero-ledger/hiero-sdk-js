@@ -66,7 +66,7 @@ async function main() {
 
     const response = await new AccountCreateTransaction()
         .setInitialBalance(10) // 10 h
-        .setKey(newKey.publicKey)
+        .setKeyWithoutAlias(newKey.publicKey)
         .execute(client);
 
     const receipt = await response.getReceipt(client);

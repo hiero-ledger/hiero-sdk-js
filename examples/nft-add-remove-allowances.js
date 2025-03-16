@@ -103,7 +103,7 @@ async function main() {
         // Create `spender` account
         const spenderKey = PrivateKey.generateECDSA();
         const createSpenderTx = await new AccountCreateTransaction()
-            .setKey(spenderKey)
+            .setKeyWithoutAlias(spenderKey)
             .setInitialBalance(new Hbar(2))
             .execute(client);
 
@@ -114,7 +114,7 @@ async function main() {
         // Create `receiver` account
         const receiverKey = PrivateKey.generateECDSA();
         const createReceiverTx = await new AccountCreateTransaction()
-            .setKey(receiverKey)
+            .setKeyWithoutAlias(receiverKey)
             .setInitialBalance(new Hbar(2))
             .execute(client);
         const receiverAccountId = (await createReceiverTx.getReceipt(client))
@@ -280,7 +280,7 @@ async function main() {
         // Create `delegating spender` account
         const delegatingSpenderKey = PrivateKey.generateECDSA();
         const createDelegateSpenderTx = await new AccountCreateTransaction()
-            .setKey(delegatingSpenderKey)
+            .setKeyWithoutAlias(delegatingSpenderKey)
             .setInitialBalance(new Hbar(2))
             .execute(client);
 
@@ -294,7 +294,7 @@ async function main() {
         // Create `receiver` account
         const receiverKey2 = PrivateKey.generateECDSA();
         const createReceiverTx2 = await new AccountCreateTransaction()
-            .setKey(receiverKey2)
+            .setKeyWithoutAlias(receiverKey2)
             .setInitialBalance(new Hbar(2))
             .execute(client);
         const receiverAccountId2 = (await createReceiverTx2.getReceipt(client))
@@ -359,7 +359,7 @@ async function main() {
         // Create `spender` account
         const spenderKey2 = PrivateKey.generateECDSA();
         const createSpenderTx2 = await new AccountCreateTransaction()
-            .setKey(spenderKey2)
+            .setKeyWithoutAlias(spenderKey2)
             .setInitialBalance(new Hbar(2))
             .execute(client);
 

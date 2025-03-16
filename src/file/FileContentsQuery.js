@@ -1,35 +1,17 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import Query, { QUERY_REGISTRY } from "../query/Query.js";
 import FileId from "./FileId.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IQuery} HashgraphProto.proto.IQuery
- * @typedef {import("@hashgraph/proto").proto.IQueryHeader} HashgraphProto.proto.IQueryHeader
- * @typedef {import("@hashgraph/proto").proto.IResponse} HashgraphProto.proto.IResponse
- * @typedef {import("@hashgraph/proto").proto.IResponseHeader} HashgraphProto.proto.IResponseHeader
- * @typedef {import("@hashgraph/proto").proto.IFileGetContentsQuery} HashgraphProto.proto.IFileGetContentsQuery
- * @typedef {import("@hashgraph/proto").proto.IFileGetContentsResponse} HashgraphProto.proto.IFileGetContentsResponse
- * @typedef {import("@hashgraph/proto").proto.FileGetContentsResponse.IFileContents} HashgraphProto.proto.FileGetContentsResponse.IFileContents
+ * @typedef {import("@hashgraph/proto").proto.IQuery} HieroProto.proto.IQuery
+ * @typedef {import("@hashgraph/proto").proto.IQueryHeader} HieroProto.proto.IQueryHeader
+ * @typedef {import("@hashgraph/proto").proto.IResponse} HieroProto.proto.IResponse
+ * @typedef {import("@hashgraph/proto").proto.IResponseHeader} HieroProto.proto.IResponseHeader
+ * @typedef {import("@hashgraph/proto").proto.IFileGetContentsQuery} HieroProto.proto.IFileGetContentsQuery
+ * @typedef {import("@hashgraph/proto").proto.IFileGetContentsResponse} HieroProto.proto.IFileGetContentsResponse
+ * @typedef {import("@hashgraph/proto").proto.FileGetContentsResponse.IFileContents} HieroProto.proto.FileGetContentsResponse.IFileContents
  */
 
 /**
@@ -40,6 +22,9 @@ import FileId from "./FileId.js";
 
 /**
  * @augments {Query<Uint8Array>}
+ * Retrieve the content of a file in HFS.<br/>
+ * Note that this query retrieves _only_ the file content, not any of
+ * the metadata for the file.
  */
 export default class FileContentsQuery extends Query {
     /**
@@ -61,14 +46,13 @@ export default class FileContentsQuery extends Query {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IQuery} query
+     * @param {HieroProto.proto.IQuery} query
      * @returns {FileContentsQuery}
      */
     static _fromProtobuf(query) {
-        const contents =
-            /** @type {HashgraphProto.proto.IFileGetContentsQuery} */ (
-                query.fileGetContents
-            );
+        const contents = /** @type {HieroProto.proto.IFileGetContentsQuery} */ (
+            query.fileGetContents
+        );
 
         return new FileContentsQuery({
             fileId:
@@ -91,8 +75,8 @@ export default class FileContentsQuery extends Query {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.IQuery} request
-     * @returns {Promise<HashgraphProto.proto.IResponse>}
+     * @param {HieroProto.proto.IQuery} request
+     * @returns {Promise<HieroProto.proto.IResponse>}
      */
     _execute(channel, request) {
         return channel.file.getFileContent(request);
@@ -123,15 +107,15 @@ export default class FileContentsQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IResponse} response
-     * @returns {HashgraphProto.proto.IResponseHeader}
+     * @param {HieroProto.proto.IResponse} response
+     * @returns {HieroProto.proto.IResponseHeader}
      */
     _mapResponseHeader(response) {
         const fileGetContents =
-            /** @type {HashgraphProto.proto.IFileGetContentsResponse} */ (
+            /** @type {HieroProto.proto.IFileGetContentsResponse} */ (
                 response.fileGetContents
             );
-        return /** @type {HashgraphProto.proto.IResponseHeader} */ (
+        return /** @type {HieroProto.proto.IResponseHeader} */ (
             fileGetContents.header
         );
     }
@@ -139,16 +123,16 @@ export default class FileContentsQuery extends Query {
     /**
      * @protected
      * @override
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IResponse} response
      * @returns {Promise<Uint8Array>}
      */
     _mapResponse(response) {
         const fileContentsResponse =
-            /** @type {HashgraphProto.proto.IFileGetContentsResponse} */ (
+            /** @type {HieroProto.proto.IFileGetContentsResponse} */ (
                 response.fileGetContents
             );
         const fileConents =
-            /** @type {HashgraphProto.proto.FileGetContentsResponse.IFileContents} */ (
+            /** @type {HieroProto.proto.FileGetContentsResponse.IFileContents} */ (
                 fileContentsResponse.fileContents
             );
         const contents = /** @type {Uint8Array} */ (fileConents.contents);
@@ -159,8 +143,8 @@ export default class FileContentsQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IQueryHeader} header
-     * @returns {HashgraphProto.proto.IQuery}
+     * @param {HieroProto.proto.IQueryHeader} header
+     * @returns {HieroProto.proto.IQuery}
      */
     _onMakeRequest(header) {
         return {

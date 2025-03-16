@@ -1,29 +1,11 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import Status from "../Status.js";
 import AccountId from "../account/AccountId.js";
 import Hbar from "../Hbar.js";
 import Executable, { ExecutionState } from "../Executable.js";
 import TransactionId from "../transaction/TransactionId.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import PrecheckStatusError from "../PrecheckStatusError.js";
 import MaxQueryPaymentExceeded from "../MaxQueryPaymentExceeded.js";
 import Long from "long";
@@ -42,7 +24,7 @@ import Long from "long";
  * Since this is essentially aa cache, perhaps we should move this variable into the `Cache`
  * type for consistency?
  *
- * @type {Map<HashgraphProto.proto.Query["query"], (query: HashgraphProto.proto.IQuery) => Query<*>>}
+ * @type {Map<HieroProto.proto.Query["query"], (query: HieroProto.proto.IQuery) => Query<*>>}
  */
 export const QUERY_REGISTRY = new Map();
 
@@ -51,7 +33,7 @@ export const QUERY_REGISTRY = new Map();
  *
  * @abstract
  * @template OutputT
- * @augments {Executable<HashgraphProto.proto.IQuery, HashgraphProto.proto.IResponse, OutputT>}
+ * @augments {Executable<HieroProto.proto.IQuery, HieroProto.proto.IResponse, OutputT>}
  */
 export default class Query extends Executable {
     constructor() {
@@ -67,7 +49,7 @@ export default class Query extends Executable {
         /**
          * The payment transactions list where each index points to a different node
          *
-         * @type {HashgraphProto.proto.ITransaction[]}
+         * @type {HieroProto.proto.ITransaction[]}
          */
         this._paymentTransactions = [];
 
@@ -107,14 +89,14 @@ export default class Query extends Executable {
      * @returns {Query<T>}
      */
     static fromBytes(bytes) {
-        const query = HashgraphProto.proto.Query.decode(bytes);
+        const query = HieroProto.proto.Query.decode(bytes);
 
         if (query.query == null) {
             throw new Error("(BUG) query.query was not set in the protobuf");
         }
 
         const fromProtobuf =
-            /** @type {(query: HashgraphProto.proto.IQuery) => Query<T>} */ (
+            /** @type {(query: HieroProto.proto.IQuery) => Query<T>} */ (
                 QUERY_REGISTRY.get(query.query)
             );
 
@@ -135,7 +117,7 @@ export default class Query extends Executable {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.Query.encode(this._makeRequest()).finish();
+        return HieroProto.proto.Query.encode(this._makeRequest()).finish();
     }
 
     /**
@@ -278,30 +260,32 @@ export default class Query extends Executable {
         this._operator =
             this._operator != null ? this._operator : client._operator;
 
-        // If the payment transaction ID is not set
-        if (this._paymentTransactionId == null) {
-            // And payment is required
-            if (this._isPaymentRequired()) {
-                // And the client has an operator
-                if (this._operator != null) {
-                    // Generate the payment transaction ID
-                    this._paymentTransactionId = TransactionId.generate(
-                        this._operator.accountId,
-                    );
-                } else {
-                    // If payment is required, but an operator did not exist, throw an error
-                    throw new Error(
-                        "`client` must have an `operator` or an explicit payment transaction must be provided",
-                    );
-                }
-            } else {
-                // If the payment transaction ID is not set, but this query doesn't require a payment
-                // set the payment transaction ID to an empty transaction ID.
-                // FIXME: Should use `TransactionId.withValidStart()` instead
+        // And payment is required
+        if (this._isPaymentRequired()) {
+            // Assign the account IDs to which the transaction should be sent.
+            this.transactionNodeIds = Object.values(client.network).map(
+                (accountNodeId) => accountNodeId.toString(),
+            );
+
+            // And the client has an operator
+            if (this._operator != null) {
+                // Generate the payment transaction ID
                 this._paymentTransactionId = TransactionId.generate(
-                    new AccountId(0),
+                    this._operator.accountId,
+                );
+            } else {
+                // If payment is required, but an operator did not exist, throw an error
+                throw new Error(
+                    "`client` must have an `operator` or an explicit payment transaction must be provided",
                 );
             }
+        } else {
+            // If the payment transaction ID is not set, but this query doesn't require a payment
+            // set the payment transaction ID to an empty transaction ID.
+            // FIXME: Should use `TransactionId.withValidStart()` instead
+            this._paymentTransactionId = TransactionId.generate(
+                new AccountId(0),
+            );
         }
 
         let cost = new Hbar(0);
@@ -376,8 +360,8 @@ export default class Query extends Executable {
     /**
      * @abstract
      * @internal
-     * @param {HashgraphProto.proto.IResponse} response
-     * @returns {HashgraphProto.proto.IResponseHeader}
+     * @param {HieroProto.proto.IResponse} response
+     * @returns {HieroProto.proto.IResponseHeader}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _mapResponseHeader(response) {
@@ -386,15 +370,15 @@ export default class Query extends Executable {
 
     /**
      * @protected
-     * @returns {HashgraphProto.proto.IQueryHeader}
+     * @returns {HieroProto.proto.IQueryHeader}
      */
     _makeRequestHeader() {
-        /** @type {HashgraphProto.proto.IQueryHeader} */
+        /** @type {HieroProto.proto.IQueryHeader} */
         let header = {};
 
         if (this._isPaymentRequired() && this._paymentTransactions.length > 0) {
             header = {
-                responseType: HashgraphProto.proto.ResponseType.ANSWER_ONLY,
+                responseType: HieroProto.proto.ResponseType.ANSWER_ONLY,
                 payment: this._paymentTransactions[this._nodeAccountIds.index],
             };
         }
@@ -405,8 +389,8 @@ export default class Query extends Executable {
     /**
      * @abstract
      * @internal
-     * @param {HashgraphProto.proto.IQueryHeader} header
-     * @returns {HashgraphProto.proto.IQuery}
+     * @param {HieroProto.proto.IQueryHeader} header
+     * @returns {HieroProto.proto.IQuery}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _onMakeRequest(header) {
@@ -415,16 +399,16 @@ export default class Query extends Executable {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.IQuery}
+     * @returns {HieroProto.proto.IQuery}
      */
     _makeRequest() {
-        /** @type {HashgraphProto.proto.IQueryHeader} */
+        /** @type {HieroProto.proto.IQueryHeader} */
         let header = {};
 
         if (this._isPaymentRequired() && this._paymentTransactions != null) {
             header = {
                 payment: this._paymentTransactions[this._nodeAccountIds.index],
-                responseType: HashgraphProto.proto.ResponseType.ANSWER_ONLY,
+                responseType: HieroProto.proto.ResponseType.ANSWER_ONLY,
             };
         }
 
@@ -434,41 +418,33 @@ export default class Query extends Executable {
     /**
      * @override
      * @internal
-     * @returns {Promise<HashgraphProto.proto.IQuery>}
+     * @returns {Promise<HieroProto.proto.IQuery>}
      */
     async _makeRequestAsync() {
-        /** @type {HashgraphProto.proto.IQueryHeader} */
+        /** @type {HieroProto.proto.IQueryHeader} */
         let header = {
-            responseType: HashgraphProto.proto.ResponseType.ANSWER_ONLY,
+            responseType: HieroProto.proto.ResponseType.ANSWER_ONLY,
         };
 
-        if (this._isPaymentRequired() && this._paymentTransactions != null) {
-            if (this._nodeAccountIds.locked) {
-                header.payment =
-                    this._paymentTransactions[this._nodeAccountIds.index];
-            } else {
-                const logId = this._getLogId();
-                const nodeId = this._nodeAccountIds.current;
-                const paymentTransactionId =
-                    /** @type {import("../transaction/TransactionId.js").default} */ (
-                        this._paymentTransactionId
-                    );
-                const paymentAmount = /** @type {Hbar} */ (this._queryPayment);
+        const logId = this._getLogId();
+        const nodeId = this._nodeAccountIds.current;
+        const paymentTransactionId = TransactionId.generate(
+            this._operator ? this._operator.accountId : new AccountId(0),
+        );
+        const paymentAmount = /** @type {Hbar} */ (this._queryPayment);
 
-                if (this._logger) {
-                    this._logger.debug(
-                        `[${logId}] making a payment transaction for node ${nodeId.toString()} and transaction ID ${paymentTransactionId.toString()} with amount ${paymentAmount.toString()}`,
-                    );
-                }
-
-                header.payment = await _makePaymentTransaction(
-                    paymentTransactionId,
-                    nodeId,
-                    this._isPaymentRequired() ? this._operator : null,
-                    paymentAmount,
-                );
-            }
+        if (this._logger) {
+            this._logger.debug(
+                `[${logId}] making a payment transaction for node ${nodeId.toString()} and transaction ID ${paymentTransactionId.toString()} with amount ${paymentAmount.toString()}`,
+            );
         }
+
+        header.payment = await _makePaymentTransaction(
+            paymentTransactionId,
+            nodeId,
+            this._isPaymentRequired() ? this._operator : null,
+            paymentAmount,
+        );
 
         return this._onMakeRequest(header);
     }
@@ -476,8 +452,8 @@ export default class Query extends Executable {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IQuery} request
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IQuery} request
+     * @param {HieroProto.proto.IResponse} response
      * @returns {[Status, ExecutionState]}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -488,7 +464,7 @@ export default class Query extends Executable {
         const status = Status._fromCode(
             nodeTransactionPrecheckCode != null
                 ? nodeTransactionPrecheckCode
-                : HashgraphProto.proto.ResponseCodeEnum.OK,
+                : HieroProto.proto.ResponseCodeEnum.OK,
         );
         if (this._logger) {
             this._logger.debug(
@@ -500,6 +476,7 @@ export default class Query extends Executable {
             case Status.Busy:
             case Status.Unknown:
             case Status.PlatformTransactionNotCreated:
+            case Status.PlatformNotActive:
                 return [status, ExecutionState.Retry];
             case Status.Ok:
                 return [status, ExecutionState.Finished];
@@ -511,22 +488,24 @@ export default class Query extends Executable {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IQuery} request
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IQuery} request
+     * @param {HieroProto.proto.IResponse} response
+     * @param {AccountId} nodeId
      * @returns {Error}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _mapStatusError(request, response) {
+    _mapStatusError(request, response, nodeId) {
         const { nodeTransactionPrecheckCode } =
             this._mapResponseHeader(response);
 
         const status = Status._fromCode(
             nodeTransactionPrecheckCode != null
                 ? nodeTransactionPrecheckCode
-                : HashgraphProto.proto.ResponseCodeEnum.OK,
+                : HieroProto.proto.ResponseCodeEnum.OK,
         );
 
         return new PrecheckStatusError({
+            nodeId,
             status,
             transactionId: this._getTransactionId(),
             contractFunctionResult: null,
@@ -534,19 +513,19 @@ export default class Query extends Executable {
     }
 
     /**
-     * @param {HashgraphProto.proto.Query} request
+     * @param {HieroProto.proto.Query} request
      * @returns {Uint8Array}
      */
     _requestToBytes(request) {
-        return HashgraphProto.proto.Query.encode(request).finish();
+        return HieroProto.proto.Query.encode(request).finish();
     }
 
     /**
-     * @param {HashgraphProto.proto.Response} response
+     * @param {HieroProto.proto.Response} response
      * @returns {Uint8Array}
      */
     _responseToBytes(response) {
-        return HashgraphProto.proto.Response.encode(response).finish();
+        return HieroProto.proto.Response.encode(response).finish();
     }
 }
 
@@ -557,7 +536,7 @@ export default class Query extends Executable {
  * @param {AccountId} nodeId
  * @param {?ClientOperator} operator
  * @param {Hbar} paymentAmount
- * @returns {Promise<HashgraphProto.proto.ITransaction>}
+ * @returns {Promise<HieroProto.proto.ITransaction>}
  */
 export async function _makePaymentTransaction(
     paymentTransactionId,
@@ -593,7 +572,7 @@ export async function _makePaymentTransaction(
         });
     }
     /**
-     * @type {HashgraphProto.proto.ITransactionBody}
+     * @type {HieroProto.proto.ITransactionBody}
      */
     const body = {
         transactionID: paymentTransactionId._toProtobuf(),
@@ -609,9 +588,9 @@ export async function _makePaymentTransaction(
         },
     };
 
-    /** @type {HashgraphProto.proto.ISignedTransaction} */
+    /** @type {HieroProto.proto.ISignedTransaction} */
     const signedTransaction = {
-        bodyBytes: HashgraphProto.proto.TransactionBody.encode(body).finish(),
+        bodyBytes: HieroProto.proto.TransactionBody.encode(body).finish(),
     };
 
     // Sign the transaction if an operator is provided
@@ -631,7 +610,7 @@ export async function _makePaymentTransaction(
     // Create and return a `proto.Transaction`
     return {
         signedTransactionBytes:
-            HashgraphProto.proto.SignedTransaction.encode(
+            HieroProto.proto.SignedTransaction.encode(
                 signedTransaction,
             ).finish(),
     };

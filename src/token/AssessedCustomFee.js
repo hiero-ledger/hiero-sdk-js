@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import TokenId from "./TokenId.js";
 import AccountId from "../account/AccountId.js";
@@ -24,7 +6,7 @@ import Long from "long";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IAssessedCustomFee} HashgraphProto.proto.IAssessedCustomFee
+ * @typedef {import("@hashgraph/proto").proto.IAssessedCustomFee} HieroProto.proto.IAssessedCustomFee
  */
 
 /**
@@ -35,6 +17,11 @@ import Long from "long";
  * @property {string[]} payerAccountIds
  */
 
+/**
+ * Represents an assessed custom fee that has been evaluated and attached to a transaction.
+ * This includes details about who collects the fee, which token the fee is paid in,
+ * the amount of the fee, and which accounts are responsible for paying it.
+ */
 export default class AssessedCustomFee {
     /**
      * @param {object} props
@@ -152,7 +139,7 @@ export default class AssessedCustomFee {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IAssessedCustomFee} fee
+     * @param {HieroProto.proto.IAssessedCustomFee} fee
      * @returns {AssessedCustomFee}
      */
     static _fromProtobuf(fee) {
@@ -178,7 +165,7 @@ export default class AssessedCustomFee {
     /**
      * @internal
      * @abstract
-     * @returns {HashgraphProto.proto.IAssessedCustomFee}
+     * @returns {HieroProto.proto.IAssessedCustomFee}
      */
     _toProtobuf() {
         return {

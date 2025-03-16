@@ -14,8 +14,6 @@ describe("TopicInfo", function () {
     });
 
     it("should be executable", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
         const operatorKey = env.operatorKey.publicKey;
 
@@ -42,6 +40,8 @@ describe("TopicInfo", function () {
         );
         expect(info.autoRenewPeriod.seconds.toInt()).to.be.eql(7776000);
         expect(info.expirationTime).to.be.not.null;
+        expect(info.metadataKey).to.be.not.null;
+        expect(info.metadata).to.be.not.null;
 
         await (
             await new TopicDeleteTransaction()
@@ -51,8 +51,6 @@ describe("TopicInfo", function () {
     });
 
     it("should be executable when no fields are set", async function () {
-        this.timeout(120000);
-
         const response = await new TopicCreateTransaction().execute(env.client);
 
         const topic = (await response.getReceipt(env.client)).topicId;
@@ -67,13 +65,14 @@ describe("TopicInfo", function () {
         expect(info.sequenceNumber.toInt()).to.eql(0);
         expect(info.adminKey).to.be.null;
         expect(info.submitKey).to.be.null;
-        expect(info.autoRenewAccountId).to.be.null;
+        expect(info.autoRenewAccountId.toString()).to.be.eql(
+            env.operatorId.toString(),
+        );
         expect(info.autoRenewPeriod.seconds.toInt()).to.be.eql(7776000);
         expect(info.expirationTime).to.be.not.null;
     });
 
     it("should be able to query cost", async function () {
-        this.timeout(120000);
         const operatorId = env.operatorId;
         const operatorKey = env.operatorKey.publicKey;
 
@@ -93,7 +92,6 @@ describe("TopicInfo", function () {
     });
 
     it("should error on query cost on deleted topic with INVALID_TOPIC_ID", async function () {
-        this.timeout(120000);
         const operatorId = env.operatorId;
         const operatorKey = env.operatorKey.publicKey;
 

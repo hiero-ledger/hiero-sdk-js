@@ -1,32 +1,15 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import GrpcServiceError from "./grpc/GrpcServiceError.js";
 import GrpcStatus from "./grpc/GrpcStatus.js";
 import List from "./transaction/List.js";
 import * as hex from "./encoding/hex.js";
 import HttpError from "./http/HttpError.js";
+import Status from "./Status.js";
+import MaxAttemptsOrTimeoutError from "./MaxAttemptsOrTimeoutError.js";
 
 /**
  * @typedef {import("./account/AccountId.js").default} AccountId
- * @typedef {import("./Status.js").default} Status
  * @typedef {import("./channel/Channel.js").default} Channel
  * @typedef {import("./channel/MirrorChannel.js").default} MirrorChannel
  * @typedef {import("./transaction/TransactionId.js").default} TransactionId
@@ -46,6 +29,7 @@ export const ExecutionState = {
 };
 
 export const RST_STREAM = /\brst[^0-9a-zA-Z]stream\b/i;
+export const DEFAULT_MAX_ATTEMPTS = 10;
 
 /**
  * @abstract
@@ -62,7 +46,7 @@ export default class Executable {
          * @internal
          * @type {number}
          */
-        this._maxAttempts = 10;
+        this._maxAttempts = DEFAULT_MAX_ATTEMPTS;
 
         /**
          * List of node account IDs for each transaction that has been
@@ -72,6 +56,15 @@ export default class Executable {
          * @type {List<AccountId>}
          */
         this._nodeAccountIds = new List();
+
+        /**
+         * List of the transaction node account IDs to check if
+         * the node account ID of the request is in the list
+         *
+         * @protected
+         * @type {Array<string>}
+         */
+        this.transactionNodeIds = [];
 
         /**
          * @internal
@@ -314,10 +307,11 @@ export default class Executable {
      * @internal
      * @param {RequestT} request
      * @param {ResponseT} response
+     * @param {AccountId} nodeId
      * @returns {Error}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _mapStatusError(request, response) {
+    _mapStatusError(request, response, nodeId) {
         throw new Error("not implemented");
     }
 
@@ -413,20 +407,6 @@ export default class Executable {
     }
 
     /**
-     * Advance the request to the next node
-     *
-     * FIXME: This method used to perform different code depending on if we're
-     * executing a query or transaction, but that is no longer the case
-     * and hence could be removed.
-     *
-     * @protected
-     * @returns {void}
-     */
-    _advanceRequest() {
-        this._nodeAccountIds.advance();
-    }
-
-    /**
      * Determine if we should continue the execution process, error, or finish.
      *
      * FIXME: This method should really be called something else. Initially it returned
@@ -511,6 +491,10 @@ export default class Executable {
      * @returns {Promise<OutputT>}
      */
     async execute(client, requestTimeout) {
+        // we check if its local node then backoff mechanism should be disabled
+        // and we increase the retry attempts
+        const isLocalNode = client.network["127.0.0.1:50211"] != null;
+
         // If the logger on the request is not set, use the logger in client
         // (if set, otherwise do not use logger)
         this._logger =
@@ -543,21 +527,46 @@ export default class Executable {
             this._minBackoff = client.minBackoff;
         }
 
-        // If the max attempts on the request is not set, use the default value in client
-        // If the default value in client is not set, use a default of 10.
-        //
-        // FIXME: current implementation is wrong, update to follow comment above.
-        const maxAttempts =
-            client._maxAttempts != null
-                ? client._maxAttempts
-                : this._maxAttempts;
-
         // Save the start time to be used later with request timeout
         const startTime = Date.now();
 
         // Saves each error we get so when we err due to max attempts exceeded we'll have
         // the last error that was returned by the consensus node
         let persistentError = null;
+
+        // If the max attempts on the request is not set, use the default value in client
+        // If the default value in client is not set, use a default of 10.
+        //
+        // FIXME: current implementation is wrong, update to follow comment above.
+        // ... existing code ...
+        const LOCAL_NODE_ATTEMPTS = 1000;
+        const maxAttempts = isLocalNode
+            ? LOCAL_NODE_ATTEMPTS
+            : (client._maxAttempts ?? this._maxAttempts);
+
+        // Checks if has a valid nodes to which the TX can be sent
+        if (this.transactionNodeIds.length) {
+            const nodeAccountIds = this._nodeAccountIds.list.map((nodeId) =>
+                nodeId.toString(),
+            );
+
+            const hasValidNodes = this.transactionNodeIds.some((nodeId) =>
+                nodeAccountIds.includes(nodeId),
+            );
+
+            if (!hasValidNodes) {
+                const displayNodeAccountIds =
+                    nodeAccountIds.length > 2
+                        ? `${nodeAccountIds.slice(0, 2).join(", ")} ...`
+                        : nodeAccountIds.join(", ");
+                const isSingleNode = nodeAccountIds.length === 1;
+
+                throw new Error(
+                    `Attempting to execute a transaction against node${isSingleNode ? "" : "s"} ${displayNodeAccountIds}, ` +
+                        `which ${isSingleNode ? "is" : "are"} not included in the Client's node list. Please review your Client configuration.`,
+                );
+            }
+        }
 
         // The retry loop
         for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
@@ -566,7 +575,12 @@ export default class Executable {
                 this._requestTimeout != null &&
                 startTime + this._requestTimeout <= Date.now()
             ) {
-                throw new Error("timeout exceeded");
+                throw new MaxAttemptsOrTimeoutError(
+                    `timeout exceeded`,
+                    this._nodeAccountIds.isEmpty
+                        ? "No node account ID set"
+                        : this._nodeAccountIds.current.toString(),
+                );
             }
 
             let nodeAccountId;
@@ -587,6 +601,21 @@ export default class Executable {
                 );
             }
 
+            if (this.transactionNodeIds.length) {
+                const isNodeAccountIdValid = this.transactionNodeIds.includes(
+                    nodeAccountId.toString(),
+                );
+
+                if (!isNodeAccountIdValid) {
+                    console.error(
+                        `Attempting to execute a transaction against node ${nodeAccountId.toString()}, which is not included in the Client's node list. Please review your Client configuration.`,
+                    );
+
+                    this._nodeAccountIds.advance();
+                    continue;
+                }
+            }
+
             // Get the log ID for the request.
             const logId = this._getLogId();
             if (this._logger) {
@@ -598,28 +627,30 @@ export default class Executable {
             const channel = node.getChannel();
             const request = await this._makeRequestAsync();
 
-            // advance the internal index
-            // non-free queries and transactions map to more than 1 actual transaction and this will cause
-            // the next invocation of makeRequest to return the _next_ transaction
-            // FIXME: This is likely no longer relavent after we've transitioned to using our `List` type
-            // can be replaced with `this._nodeAccountIds.advance();`
-            this._advanceRequest();
-
             let response;
 
-            // If the node is unhealthy, wait for it to be healthy
-            // FIXME: This is wrong, we should skip to the next node, and only perform
-            // a request backoff after we've tried all nodes in the current list.
             if (!node.isHealthy()) {
-                if (this._logger) {
-                    this._logger.debug(
-                        `[${logId}] node is not healthy, skipping waiting ${node.getRemainingTime()}`,
+                const isLastNode =
+                    this._nodeAccountIds.index ===
+                    this._nodeAccountIds.list.length - 1;
+
+                if (isLastNode || this._nodeAccountIds.length <= 1) {
+                    throw new Error(
+                        `Network connectivity issue: All nodes are unhealthy. Original node list: ${this._nodeAccountIds.list.join(", ")}`,
                     );
                 }
 
-                // We don't need to wait, we can proceed to the next attempt.
+                if (this._logger) {
+                    this._logger.debug(
+                        `[${logId}] Node is not healthy, trying the next node.`,
+                    );
+                }
+
+                this._nodeAccountIds.advance();
                 continue;
             }
+
+            this._nodeAccountIds.advance();
 
             try {
                 // Race the execution promise against the grpc timeout to prevent grpc connections
@@ -705,15 +736,19 @@ export default class Executable {
             // For transactions this would be as simple as checking the response status is `OK`
             // while for _most_ queries it would check if the response status is `SUCCESS`
             // The only odd balls are `TransactionReceiptQuery` and `TransactionRecordQuery`
-            const [err, shouldRetry] = this._shouldRetry(request, response);
-            if (err != null) {
-                persistentError = err;
+            const [status, shouldRetry] = this._shouldRetry(request, response);
+            if (
+                status.toString() !== Status.Ok.toString() &&
+                status.toString() !== Status.Success.toString()
+            ) {
+                persistentError = status;
             }
 
             // Determine by the executing state what we should do
             switch (shouldRetry) {
                 case ExecutionState.Retry:
                     await delayForAttempt(
+                        isLocalNode,
                         attempt,
                         this._minBackoff,
                         this._maxBackoff,
@@ -722,27 +757,33 @@ export default class Executable {
                 case ExecutionState.Finished:
                     return this._mapResponse(response, nodeAccountId, request);
                 case ExecutionState.Error:
-                    throw this._mapStatusError(request, response);
+                    throw this._mapStatusError(
+                        request,
+                        response,
+                        nodeAccountId,
+                    );
                 default:
                     throw new Error(
-                        "(BUG) non-exhuastive switch statement for `ExecutionState`",
+                        "(BUG) non-exhaustive switch statement for `ExecutionState`",
                     );
             }
         }
 
         // We'll only get here if we've run out of attempts, so we return an error wrapping the
         // persistent error we saved before.
-        throw new Error(
+
+        throw new MaxAttemptsOrTimeoutError(
             `max attempts of ${maxAttempts.toString()} was reached for request with last error being: ${
                 persistentError != null ? persistentError.toString() : ""
             }`,
+            this._nodeAccountIds.current.toString(),
         );
     }
 
     /**
      * The current purpose of this method is to easily support signature providers since
      * signature providers need to serialize _any_ request into bytes. `Query` and `Transaction`
-     * already implement `toBytes()` so it only made sense to make it avaiable here too.
+     * already implement `toBytes()` so it only made sense to make it available here too.
      *
      * @abstract
      * @returns {Uint8Array}
@@ -775,12 +816,17 @@ export default class Executable {
 /**
  * A simple function that returns a promise timeout for a specific period of time
  *
+ * @param {boolean} isLocalNode
  * @param {number} attempt
  * @param {number} minBackoff
  * @param {number} maxBackoff
  * @returns {Promise<void>}
  */
-function delayForAttempt(attempt, minBackoff, maxBackoff) {
+function delayForAttempt(isLocalNode, attempt, minBackoff, maxBackoff) {
+    if (isLocalNode) {
+        return new Promise((resolve) => setTimeout(resolve, minBackoff));
+    }
+
     // 0.1s, 0.2s, 0.4s, 0.8s, ...
     const ms = Math.min(
         Math.floor(minBackoff * Math.pow(2, attempt)),

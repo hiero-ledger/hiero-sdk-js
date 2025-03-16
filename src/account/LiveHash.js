@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import AccountId from "./AccountId.js";
 import Duration from "../Duration.js";
@@ -24,9 +6,9 @@ import KeyList from "../KeyList.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IAccountID} HashgraphProto.proto.IAccountID
- * @typedef {import("@hashgraph/proto").proto.ILiveHash} HashgraphProto.proto.ILiveHash
- * @typedef {import("@hashgraph/proto").proto.IDuration} HashgraphProto.proto.IDuration
+ * @typedef {import("@hashgraph/proto").proto.IAccountID} HieroProto.proto.IAccountID
+ * @typedef {import("@hashgraph/proto").proto.ILiveHash} HieroProto.proto.ILiveHash
+ * @typedef {import("@hashgraph/proto").proto.IDuration} HieroProto.proto.IDuration
  */
 
 /**
@@ -59,17 +41,15 @@ export default class LiveHash {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ILiveHash} liveHash
+     * @param {HieroProto.proto.ILiveHash} liveHash
      * @returns {LiveHash}
      */
     static _fromProtobuf(liveHash) {
-        const liveHash_ = /** @type {HashgraphProto.proto.ILiveHash} */ (
-            liveHash
-        );
+        const liveHash_ = /** @type {HieroProto.proto.ILiveHash} */ (liveHash);
 
         return new LiveHash({
             accountId: AccountId._fromProtobuf(
-                /** @type {HashgraphProto.proto.IAccountID} */ (
+                /** @type {HieroProto.proto.IAccountID} */ (
                     liveHash_.accountId
                 ),
             ),
@@ -79,16 +59,14 @@ export default class LiveHash {
                     ? KeyList.__fromProtobufKeyList(liveHash_.keys)
                     : new KeyList(),
             duration: Duration._fromProtobuf(
-                /** @type {HashgraphProto.proto.IDuration} */ (
-                    liveHash_.duration
-                ),
+                /** @type {HieroProto.proto.IDuration} */ (liveHash_.duration),
             ),
         });
     }
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.ILiveHash}
+     * @returns {HieroProto.proto.ILiveHash}
      */
     _toProtobuf() {
         return {

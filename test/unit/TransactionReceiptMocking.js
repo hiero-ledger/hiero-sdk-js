@@ -44,8 +44,6 @@ describe("TransactionReceiptMocking", function () {
     });
 
     it("should error with max attempts", async function () {
-        this.timeout(10000);
-
         ({ client, servers } = await Mocker.withResponses([
             [
                 {
@@ -76,8 +74,6 @@ describe("TransactionReceiptMocking", function () {
     });
 
     it("should error with transaction ID in the message instead of payment transaction ID", async function () {
-        this.timeout(10000);
-
         ({ client, servers } = await Mocker.withResponses([
             [
                 {
@@ -102,8 +98,6 @@ describe("TransactionReceiptMocking", function () {
     });
 
     it("should not error if validate status is disabled", async function () {
-        this.timeout(10000);
-
         ({ client, servers } = await Mocker.withResponses([
             [
                 {

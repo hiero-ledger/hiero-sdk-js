@@ -12,9 +12,8 @@ describe("GetCost", function () {
     before(async function () {
         env = await IntegrationTestEnv.new();
     });
-    it("should be executable", async function () {
-        this.timeout(120000);
 
+    it("should be executable", async function () {
         const operatorId = env.operatorId;
 
         const cost = await new AccountInfoQuery()
@@ -28,8 +27,6 @@ describe("GetCost", function () {
     });
 
     it("should be executable when max query payment is large", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
 
         env.client.setMaxQueryPayment(new Hbar(100));
@@ -45,8 +42,6 @@ describe("GetCost", function () {
     });
 
     it("should be executable when max query payment is small", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
 
         env.client.setMaxQueryPayment(new Hbar(1));
@@ -62,8 +57,6 @@ describe("GetCost", function () {
     });
 
     it("should be executable when free queries have set zero cost", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
 
         await new AccountInfoQuery()
@@ -78,8 +71,6 @@ describe("GetCost", function () {
     });
 
     it("should be executable when paid queries have set large cost", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
 
         await new AccountInfoQuery()
@@ -94,8 +85,6 @@ describe("GetCost", function () {
     });
 
     it("should error when paid query are set to zero", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
 
         let err = false;

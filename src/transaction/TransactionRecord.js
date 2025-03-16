@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import TransactionReceipt from "./TransactionReceipt.js";
 import TransactionId from "./TransactionId.js";
@@ -26,7 +8,7 @@ import Transfer from "../Transfer.js";
 import ContractFunctionResult from "../contract/ContractFunctionResult.js";
 import TokenTransferMap from "../account/TokenTransferMap.js";
 import TokenNftTransferMap from "../account/TokenNftTransferMap.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import ScheduleId from "../schedule/ScheduleId.js";
 import AssessedCustomFee from "../token/AssessedCustomFee.js";
 import TokenAssocation from "../token/TokenAssociation.js";
@@ -35,6 +17,7 @@ import PublicKey from "../PublicKey.js";
 import TokenTransfer from "../token/TokenTransfer.js";
 import EvmAddress from "../EvmAddress.js";
 import * as hex from "../encoding/hex.js";
+import PendingAirdropRecord from "../token/PendingAirdropRecord.js";
 
 /**
  * @typedef {import("../token/TokenId.js").default} TokenId
@@ -108,6 +91,7 @@ export default class TransactionRecord {
      * @param {?Uint8Array} props.prngBytes
      * @param {?number} props.prngNumber
      * @param {?EvmAddress} props.evmAddress
+     * @param {PendingAirdropRecord[]} props.newPendingAirdrops
      */
     constructor(props) {
         /**
@@ -303,12 +287,20 @@ export default class TransactionRecord {
          */
         this.evmAddress = props.evmAddress;
 
+        /**
+         * The new default EVM address of the account created by this transaction.
+         * This field is populated only when the EVM address is not specified in the related transaction body.
+         *
+         * @readonly
+         */
+        this.newPendingAirdrops = props.newPendingAirdrops;
+
         Object.freeze(this);
     }
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.ITransactionGetRecordResponse}
+     * @returns {HieroProto.proto.ITransactionGetRecordResponse}
      */
     _toProtobuf() {
         const tokenTransfers = this.tokenTransfers._toProtobuf();
@@ -341,13 +333,13 @@ export default class TransactionRecord {
 
         const duplicates = this.duplicates.map(
             (record) =>
-                /** @type {HashgraphProto.proto.ITransactionRecord} */ (
+                /** @type {HieroProto.proto.ITransactionRecord} */ (
                     record._toProtobuf().transactionRecord
                 ),
         );
         const children = this.children.map(
             (record) =>
-                /** @type {HashgraphProto.proto.ITransactionRecord} */ (
+                /** @type {HieroProto.proto.ITransactionRecord} */ (
                     record._toProtobuf().transactionRecord
                 ),
         );
@@ -413,7 +405,7 @@ export default class TransactionRecord {
                         : null,
                 alias:
                     this.aliasKey != null
-                        ? HashgraphProto.proto.Key.encode(
+                        ? HieroProto.proto.Key.encode(
                               this.aliasKey._toProtobufKey(),
                           ).finish()
                         : null,
@@ -427,24 +419,27 @@ export default class TransactionRecord {
                 prngNumber: this.prngNumber != null ? this.prngNumber : null,
                 evmAddress:
                     this.evmAddress != null ? this.evmAddress.toBytes() : null,
+                newPendingAirdrops: this.newPendingAirdrops.map((airdrop) =>
+                    airdrop.toBytes(),
+                ),
             },
         };
     }
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransactionGetRecordResponse} response
+     * @param {HieroProto.proto.ITransactionGetRecordResponse} response
      * @returns {TransactionRecord}
      */
     static _fromProtobuf(response) {
-        const record = /** @type {HashgraphProto.proto.ITransactionRecord} */ (
+        const record = /** @type {HieroProto.proto.ITransactionRecord} */ (
             response.transactionRecord
         );
 
         let aliasKey =
             record.alias != null && record.alias.length > 0
                 ? Key._fromProtobufKey(
-                      HashgraphProto.proto.Key.decode(record.alias),
+                      HieroProto.proto.Key.decode(record.alias),
                   )
                 : null;
 
@@ -483,23 +478,29 @@ export default class TransactionRecord {
                     )
                   : undefined;
 
+        const newPendingAirdrops =
+            record.newPendingAirdrops != null
+                ? record.newPendingAirdrops.map((airdrop) =>
+                      PendingAirdropRecord.fromBytes(airdrop),
+                  )
+                : [];
+
         return new TransactionRecord({
             receipt: TransactionReceipt._fromProtobuf({
-                receipt:
-                    /** @type {HashgraphProto.proto.ITransactionReceipt} */ (
-                        record.receipt
-                    ),
+                receipt: /** @type {HieroProto.proto.ITransactionReceipt} */ (
+                    record.receipt
+                ),
             }),
             transactionHash:
                 record.transactionHash != null
                     ? record.transactionHash
                     : new Uint8Array(),
             consensusTimestamp: Timestamp._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITimestamp} */
+                /** @type {HieroProto.proto.ITimestamp} */
                 (record.consensusTimestamp),
             ),
             transactionId: TransactionId._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITransactionID} */ (
+                /** @type {HieroProto.proto.ITransactionID} */ (
                     record.transactionID
                 ),
             ),
@@ -568,6 +569,7 @@ export default class TransactionRecord {
                 record.evmAddress != null
                     ? EvmAddress.fromBytes(record.evmAddress)
                     : null,
+            newPendingAirdrops: newPendingAirdrops,
         });
     }
 
@@ -577,7 +579,7 @@ export default class TransactionRecord {
      */
     static fromBytes(bytes) {
         return TransactionRecord._fromProtobuf(
-            HashgraphProto.proto.TransactionGetRecordResponse.decode(bytes),
+            HieroProto.proto.TransactionGetRecordResponse.decode(bytes),
         );
     }
 
@@ -585,7 +587,7 @@ export default class TransactionRecord {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.TransactionGetRecordResponse.encode(
+        return HieroProto.proto.TransactionGetRecordResponse.encode(
             this._toProtobuf(),
         ).finish();
     }

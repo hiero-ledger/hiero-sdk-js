@@ -1,8 +1,6 @@
 import { ContractId, ContractNonceInfo } from "../../src/exports.js";
 
 describe("ContractNonceInfo", function () {
-    this.timeout(50000);
-
     it("provides nonce correctly", async function () {
         const info = new ContractNonceInfo({
             contractId: ContractId.fromString("1.2.3"),

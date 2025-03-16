@@ -60,7 +60,10 @@ export async function derive(parentKey, chainCode, index) {
             .getPrivate()
             .add(secp256k1.keyFromPrivate(IL).getPrivate())
             .mod(N);
-        const hexZeroPadded = hex.hexZeroPadded(ki.toBuffer(), 32);
+        const hexZeroPadded = hex.hexZeroPadded(
+            Uint8Array.from(ki.toArray()),
+            32,
+        );
         // const ki = Buffer.from(ecc.privateAdd(this.privateKey!, IL)!);
 
         // In case ki == 0, proceed with the next value for i

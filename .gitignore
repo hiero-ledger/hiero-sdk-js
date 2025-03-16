@@ -9,6 +9,7 @@ node_modules/
 # this enables us to easily support older versions of Node
 lib/
 test/lib/
+**/test-results/
 
 # generated documentation
 docs/

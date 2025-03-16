@@ -1,7 +1,7 @@
 {
     "name": "@hashgraph/sdk",
-    "version": "2.43.0",
-    "description": "Hedera™ Hashgraph SDK",
+    "version": "2.61.0-beta.2",
+    "description": "Hiero SDK",
     "types": "./lib/index.d.ts",
     "main": "./lib/index.cjs",
     "module": "./src/index.js",
@@ -12,37 +12,39 @@
         "./src/cryptography/sha384.js": "./src/cryptography/sha384.native.js"
     },
     "browser": {
-        "./src/index.js": "./src/browser.js",
-        "./src/encoding/hex.js": "./src/encoding/hex.browser.js",
-        "./src/encoding/utf8.js": "./src/encoding/utf8.browser.js",
-        "./src/cryptography/sha384.js": "./src/cryptography/sha384.browser.js",
+        "./lib/index.js": "./lib/browser.js",
+        "./lib/encoding/hex.js": "./lib/encoding/hex.browser.js",
+        "./lib/encoding/utf8.js": "./lib/encoding/utf8.browser.js",
+        "./lib/cryptography/sha384.js": "./lib/cryptography/sha384.browser.js",
         "crypto": false
     },
     "exports": {
         "./package.json": "./package.json",
         ".": {
             "types": "./lib/index.d.ts",
-            "import": "./src/index.js",
+            "import": "./lib/index.js",
             "require": "./lib/index.cjs"
         }
     },
     "license": "Apache-2.0",
     "author": "Launchbadge <contact@launchbadge.com>",
-    "repository": "https://github.com/hashgraph/hedera-sdk-js",
-    "bugs": "https://github.com/hashgraph/hedera-sdk-js/issues",
+    "repository": "https://github.com/hiero-ledger/hiero-sdk-js",
+    "bugs": "https://github.com/hiero-ledger/hiero-sdk-js/issues",
     "type": "module",
     "keywords": [
+        "hiero",
         "hedera",
         "hashgraph",
         "sdk",
         "transactions"
     ],
+    "sideEffects": false,
     "files": [
         "lib/",
         "src/"
     ],
     "engines": {
-        "node": ">=14.0.0"
+        "node": ">=18.0.0"
     },
     "browserslist": [
         "> 0.5%",
@@ -56,20 +58,19 @@
         "@ethersproject/bignumber": "^5.7.0",
         "@ethersproject/bytes": "^5.7.0",
         "@ethersproject/rlp": "^5.7.0",
-        "@grpc/grpc-js": "1.8.2",
-        "@hashgraph/cryptography": "1.4.8-beta.5",
-        "@hashgraph/proto": "2.14.0-beta.5",
-        "axios": "^1.6.4",
+        "@grpc/grpc-js": "^1.12.6",
+        "@hashgraph/cryptography": "1.5.0-beta.5",
+        "@hashgraph/proto": "2.17.0-beta.1",
         "bignumber.js": "^9.1.1",
         "bn.js": "^5.1.1",
         "crypto-js": "^4.2.0",
         "js-base64": "^3.7.4",
-        "long": "^4.0.0",
-        "pino": "^8.14.1",
-        "pino-pretty": "^10.0.0",
-        "protobufjs": "^7.2.5",
-        "utf8": "^3.0.0",
-        "rfc4648": "^1.5.3"
+        "long": "^5.3.1",
+        "pino": "^9.6.0",
+        "pino-pretty": "^13.0.0",
+        "protobufjs": "7.2.5",
+        "rfc4648": "^1.5.3",
+        "utf8": "^3.0.0"
     },
     "devDependencies": {
         "@babel/cli": "^7.23.4",
@@ -83,50 +84,50 @@
         "@babel/register": "^7.22.5",
         "@grpc/proto-loader": "^0.7.9",
         "@playwright/test": "^1.30.0",
-        "@types/chai": "^4.3.4",
+        "@rollup/plugin-alias": "^5.1.1",
+        "@rollup/plugin-terser": "^0.4.4",
+        "@types/chai": "^5.0.1",
         "@types/crypto-js": "^4.2.0",
-        "@types/long": "^4.0.2",
         "@types/mocha": "^10.0.1",
-        "@types/node": "^20.8.10",
+        "@types/node": "^22.0.0",
         "@types/utf8": "^3.0.1",
         "@typescript-eslint/eslint-plugin": "^5.48.2",
         "@typescript-eslint/parser": "^5.62.0",
         "babel-plugin-dynamic-import-node": "^2.3.3",
         "babel-plugin-module-rewrite": "^0.2.0",
-        "c8": "^8.0.1",
-        "chai": "^4.3.7",
-        "chromedriver": "^119.0.1",
+        "c8": "^10.1.3",
+        "chai": "^5.2.0",
+        "chromedriver": "^133.0.3",
         "codecov": "^3.8.3",
         "dotenv": "^16.0.3",
         "dpdm": "^3.11.0",
         "elliptic": "^6.5.4",
         "eslint": "^8.52.0",
         "eslint-plugin-chai-expect": "^3.0.0",
-        "eslint-plugin-compat": "^4.0.2",
-        "eslint-plugin-deprecation": "^2.0.0",
+        "eslint-plugin-compat": "^6.0.2",
+        "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-ie11": "^1.0.0",
         "eslint-plugin-import": "^2.28.1",
-        "eslint-plugin-jsdoc": "^46.8.2",
+        "eslint-plugin-jsdoc": "^50.6.1",
         "eslint-plugin-mocha": "^10.1.0",
-        "eslint-plugin-n": "^16.2.0",
-        "expo": "^49.0.16",
-        "geckodriver": "^4.2.1",
-        "mocha": "^10.2.0",
+        "eslint-plugin-n": "^17.16.1",
+        "geckodriver": "^5.0.0",
+        "mocha": "^11.1.0",
         "npm-run-all": "^4.1.5",
         "npx": "^10.2.2",
-        "nyc": "^15.1.0",
+        "nyc": "^17.1.0",
         "prettier": "^3.0.3",
-        "typedoc": "^0.25.1",
-        "typescript": "^5.1.6",
-        "vite": "^4.4.9",
+        "rollup": "^4.34.8",
+        "sinon": "^19.0.2",
+        "typedoc": "^0.27.6",
+        "typescript": "^5.7.2",
+        "vite": "^6.1.0",
         "yalc": "1.0.0-pre.53"
     },
     "peerDependencies": {
-        "expo": "^49.0.16"
+        "bn.js": "^5.2.1"
     },
-    "peerDependenciesMeta": {
-        "expo": {
-            "optional": true
-        }
+    "resolutions": {
+        "bn.js": "5.2.1"
     }
 }

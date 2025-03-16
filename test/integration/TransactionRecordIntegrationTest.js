@@ -17,8 +17,6 @@ describe("TransactionRecord", function () {
     });
 
     it("should return the verbose record log when a transaction failed ", async function () {
-        this.timeout(120000);
-
         const privateKey = env.operatorKey;
 
         // Create a file on Hedera and store the bytecode

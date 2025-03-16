@@ -18,33 +18,43 @@ defaults:
 
 permissions:
   contents: read
+  pull-requests: write
+
+env:
+  CG_EXEC: ionice -c 2 -n 2 nice -n 19
 
 jobs:
   build:
     name: Build using Node ${{ matrix.node }}
-    runs-on: [self-hosted, Linux, medium, ephemeral]
+    runs-on: hiero-client-sdk-linux-medium
     strategy:
       matrix:
-        node: [ "16", "18" ]
+        node: [ "20", "22" ]
 
     steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        with:
+          egress-policy: audit
+
       - name: Checkout Code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           submodules: true
 
       - name: Install Task
         uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v2.0.0
         with:
-          version: 3.7.0
+          version: 3.35.1
 
+      # Note: After Step-Security is enabled return to step-security/action-setup version
       - name: Install PNPM
-        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3.0.0
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
         with:
-          version: 8.10.0
+          version: 9.15.5
 
       - name: Setup Node
-        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
@@ -54,21 +64,26 @@ jobs:
 
   test:
     name: Test using Node ${{ matrix.node }}
-    runs-on: [self-hosted, Linux, large, ephemeral]
+    runs-on: hiero-client-sdk-linux-large
     strategy:
       matrix:
-        node: [ "16" ]
+        node: [ "20" ]
 
     steps:
+      -  name: Harden Runner
+         uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+         with:
+           egress-policy: audit
+
       - name: Checkout Code
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           submodules: recursive
 
       - name: Install Task
         uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v2.0.0
         with:
-          version: 3.7.0
+          version: 3.35.1
 
       - name: "Create env file"
         run: |
@@ -78,13 +93,14 @@ jobs:
           echo HEDERA_NETWORK="local-node" >> .env
           cat .env
 
+      # Note: After Step-Security is enabled return to step-security/action-setup version
       - name: Install PNPM
-        uses: pnpm/action-setup@a3252b78c470c02df07e9d59298aecedc3ccdd6d # v3.0.0
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
         with:
-          version: 8.10.0
+          version: 9.15.5
 
       - name: Setup Node
-        uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v4.0.2
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
@@ -102,38 +118,109 @@ jobs:
         id: start-local-node
         if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
         run: |
-          npx @hashgraph/hedera-local start -d --network local --balance=100000
+          ${{ env.CG_EXEC }} npx @hashgraph/hedera-local start -d -—network local --balance=100000 --network-tag=0.60.0-alpha.0
           # Wait for the network to fully start
-          sleep 30 
+          sleep 30
 
-      - name: Run Hedera SDK Integration Tests Codecov
+      - name: Run Hedera SDK Integration Tests
         if: ${{ steps.build-sdk.conclusion == 'success' && steps.start-local-node.conclusion == 'success' && !cancelled() && always() }}
-        run: task test:integration:codecov
+        run: ${{ env.CG_EXEC }} task test:integration:codecov
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
 
       - name: Stop the local node
         id: stop-local-node
         if: ${{ steps.start-local-node.conclusion == 'success' && !cancelled() && always() }}
-        run: npx @hashgraph/hedera-local stop
+        run: ${{ env.CG_EXEC }} npx @hashgraph/hedera-local stop
 
       - name: Build @hashgraph/cryptography
         working-directory: packages/cryptography
         if: ${{ steps.build-sdk.conclusion == 'success' && steps.stop-local-node.conclusion == 'success' && !cancelled() && always() }}
-        run: task build
-
-      - name: Unit Test @hashgraph/cryptography
-        working-directory: packages/cryptography
-        if: ${{ steps.build-sdk.conclusion == 'success' && steps.stop-local-node.conclusion == 'success' && !cancelled() && always() }}
-        run: task test:unit
+        run: ${{ env.CG_EXEC }} task build
 
       - name: Codecov @hashgraph/cryptography
         working-directory: packages/cryptography
         if: ${{ steps.build-sdk.conclusion == 'success' && steps.stop-local-node.conclusion == 'success' && !cancelled() && always() }}
-        run: task test:unit:codecov
+        run: ${{ env.CG_EXEC }} task test:unit:codecov
+
+      - name: Upload @hashgraph/cryptography coverage to Codecov
+        uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./packages/cryptography/coverage/lcov.info
+          fail_ci_if_error: false
 
       - name: Unit Test @hashgraph/sdk
         if: ${{ steps.build-sdk.conclusion == 'success' && steps.stop-local-node.conclusion == 'success' && steps.playwright-deps.conclusion == 'success' && !cancelled() && always() }}
-        run: task test:unit
+        run: ${{ env.CG_EXEC }} task test:unit
 
       - name: Codecov @hashgraph/sdk
         if: ${{ steps.build-sdk.conclusion == 'success' && steps.stop-local-node.conclusion == 'success' && !cancelled() && always() }}
-        run: task test:unit:codecov
+        run: ${{ env.CG_EXEC }} task test:unit:codecov
+
+      - name: Upload @hashgraph/sdk coverage to Codecov
+        uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
+          
+  examples:
+    name: Run examples using Node ${{ matrix.node }}
+    runs-on: hiero-client-sdk-linux-medium
+    strategy:
+      matrix:
+        node: [ "20" ]
+    steps:
+      -  name: Harden Runner
+         uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+         with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          submodules: recursive
+
+      - name: Install Task
+        uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v2.0.0
+        with:
+          version: 3.35.1
+
+      - name: Install PNPM
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        with:
+          version: 9.15.5
+
+      - name: Setup Node
+        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+
+      - name: Build @hashgraph/sdk
+        id: build-sdk
+        run: task build
+
+      - name: Start the local node
+        id: start-local-node
+        if: ${{ !cancelled() && always() }}
+        run: |
+          ${{ env.CG_EXEC }} npx @hashgraph/hedera-local start -d -—network local --balance=100000 --network-tag=0.60.0-alpha.0
+          sleep 30
+
+      - name: Install dependencies
+        run: |
+          cd examples
+          pnpm i
+  
+      - name: Run all еxamples
+        run: task run:examples
+      - name: Stop the local node
+        id: stop-local-node
+        if: ${{ steps.start-local-node.conclusion == 'success' && !cancelled() && always() }}
+        run: ${{ env.CG_EXEC }} npx @hashgraph/hedera-local stop

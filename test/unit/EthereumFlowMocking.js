@@ -37,8 +37,6 @@ describe("EthereumFlowMocking", function () {
     });
 
     it("doesn't truncate ethereum data if it's not long enough", async function () {
-        this.timeout(10000);
-
         ({ client, servers } = await Mocker.withResponses([
             [
                 {
@@ -66,8 +64,6 @@ describe("EthereumFlowMocking", function () {
     });
 
     it("errors if ethereum data is not provided", async function () {
-        this.timeout(10000);
-
         ({ client, servers } = await Mocker.withResponses([
             [
                 {
@@ -103,8 +99,6 @@ describe("EthereumFlowMocking", function () {
     });
 
     it("extracts the calldata if it's too large", async function () {
-        this.timeout(10000);
-
         const decoded = rlp.decode(bytes);
         const longCallData = "0x" + "00".repeat(5121);
         decoded[5] = longCallData;
@@ -202,8 +196,6 @@ describe("EthereumFlowMocking", function () {
     });
 
     it("extracts the calldata if it's too large and try to deploy it by chunks, but thrown", async function () {
-        this.timeout(10000);
-
         const decoded = rlp.decode(bytes);
         const longCallData = "0x" + "00".repeat(7000);
         decoded[5] = longCallData;
@@ -355,8 +347,6 @@ describe("EthereumFlowMocking", function () {
     });
 
     it("extracts the calldata if it's too large and deploy it by the right amount of chunks", async function () {
-        this.timeout(10000);
-
         const decoded = rlp.decode(bytes);
         const longCallData = "0x" + "00".repeat(7000);
         decoded[5] = longCallData;

@@ -10,20 +10,21 @@ tasks:
     docs:
         cmds:
             - npx typedoc
-                --excludeInternal 
-                --excludePrivate 
-                --excludeProtected 
-                --out docs 
-                --validation.invalidLink 
-                --entryPoints src/index.js src/browser.js src/native.js
+              --excludeInternal
+              --excludePrivate
+              --excludeProtected
+              --out docs
+              --validation.invalidLink
+              --entryPoints src/index.js src/browser.js src/native.js
 
     install:
         cmds:
             - pnpm i > /dev/null 2>&1
 
     build:
+        deps:
+            - install
         cmds:
-            - task: install
             - task: format
             - task: lint
             - npx babel src -d lib --out-file-extension .cjs > /dev/null
@@ -50,7 +51,7 @@ tasks:
 
     "lint:dpdm":
         cmds:
-           # It's really annoying seeing [X/X] Analyze done. If a circular dep is found remove `2>&1`
+            # It's really annoying seeing [X/X] Analyze done. If a circular dep is found remove `2>&1`
             - npx dpdm src/index.js --circular true --tree false --warning false > /dev/null 2>&1
 
     "lint:format":
@@ -77,13 +78,12 @@ tasks:
 
     "test:unit:node":
         cmds:
-            - npx mocha --inline-diffs -r @babel/register -r chai/register-expect.js "test/unit/*.js" {{.CLI_ARGS}}
+            - npx mocha --inline-diffs -r @babel/register -r chai/register-expect.js "test/unit/*.js" --timeout 120000 {{.CLI_ARGS}}
 
     "test:unit:codecov":
         cmds:
-           - npx c8 --reporter=lcov --reporter=text-summary ./node_modules/.bin/mocha --inline-diffs -r @babel/register -r chai/register-expect.js "test/unit/*.js" {{.CLI_ARGS}}
-           - npx c8 report
-           - npx codecov
+            - npx c8 --reporter=lcov --reporter=text-summary ./node_modules/.bin/mocha --inline-diffs -r @babel/register -r chai/register-expect.js "test/unit/*.js" --timeout 120000 {{.CLI_ARGS}}
+            - npx c8 report
 
     "test:unit:browser":
         cmds:
@@ -95,7 +95,7 @@ tasks:
 
     publish:
         preconditions:
-            - "! grep '\".*\": \"link:.*\"' package.json > /dev/null"
+            - '! grep ''".*": "link:.*"'' package.json > /dev/null'
         deps:
             - "test:release"
         cmds:

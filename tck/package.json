@@ -1,0 +1,29 @@
+{
+    "name": "tck",
+    "version": "1.0.0",
+    "description": "",
+    "main": "server.ts",
+    "scripts": {
+        "start": "nodemon server.ts",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "start:debug": "nodemon --inspect=9229 --exec node --inspect --require ts-node/register server.ts"
+    },
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "@hashgraph/sdk": "file:..",
+        "body-parser": "^1.20.2",
+        "express": "^4.19.2",
+        "glob": "^8.0.3",
+        "json-rpc-2.0": "^1.7.0",
+        "lossless-json": "^1.0.5"
+    },
+    "devDependencies": {
+        "@types/body-parser": "^1.19.5",
+        "@types/express": "^4.17.21",
+        "@types/glob": "^8.1.0",
+        "@types/lossless-json": "^1.0.4",
+        "nodemon": "^3.1.4",
+        "ts-node": "^10.9.2"
+    }
+}

@@ -10,28 +10,51 @@ tasks:
     docs:
         cmds:
             - npx typedoc
-                --excludeInternal 
-                --excludePrivate 
-                --excludeProtected 
-                --out docs 
-                --validation.invalidLink 
-                --entryPoints src/index.js src/browser.js src/native.js
+              --excludeInternal
+              --excludePrivate
+              --excludeProtected
+              --out docs
+              --validation.invalidLink
+              --entryPoints src/index.js src/browser.js src/native.js
 
-    "install:submodules":
+    install:submodules:
+        vars:
+            scommit_hash: "b44fa0a2a34ea7728421d6525f0b24a8f4858cbe" # v0.59.0-alpha.0
         cmds:
-            # TODO: How do we support this build step when we update the
-            # protobufs? Currently, this step results in reseting any protobuf
-            # updates we may have.
-            #- git submodule update --init
-            # using tag --remote in order to always apply the newest proto changes
-            - git submodule update --init --remote
-        status:
-            - test -d packages/proto/src/proto
+            - git submodule update --init --recursive --remote
+            - |
+                (
+                cd src/services &&
+                if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
+                    git fetch --unshallow
+                fi &&
+                git checkout {{.scommit_hash}}
+                )
+
+    move:protobufs:
+        after:
+            - "install:submodules"
+        desc: "Move protobufs from src/services/hapi/hedera-protobufs/services to src/proto"
+        cmds:
+            - rm -rf src/proto/services
+            - mv src/services/hapi/hedera-protobufs/services src/proto/
+            - rm -rf src/proto/streams
+            - mv src/services/hapi/hedera-protobufs/streams src/proto/
+            - mv src/services/hapi/hedera-protobufs/platform/event/* src/proto/services
+            - mv src/proto/services/auxiliary/history/* src/proto/services
+            - echo "Protobufs moved successfully!"
+            - task "delete:submodule"
+
+    delete:submodule:
+        cmds:
+            - find src/services -mindepth 1 -delete
+            - echo "Submodule contents removed successfully, folder retained."
 
     install:
         deps:
             - "install:submodules"
         cmds:
+            - task "move:protobufs"
             - pnpm i > /dev/null
 
     build:
@@ -46,7 +69,7 @@ tasks:
             - npx babel src -d lib
             - npx copyfiles -u 1 src/index.d.ts src/proto.d.ts lib/ > /dev/null
             # This is necessary to correctly run browser tests with an unpublished proto package
-            # - ../../node_modules/.bin/yalc publish > /dev/null
+            - npx yalc publish > /dev/null
 
     clean:
         cmds:
@@ -79,9 +102,21 @@ tasks:
             - build
 
     update:
+        dir: src/services
+        vars:
+            latest_tag:
+                sh: git -c versionsort.suffix=-alpha
+                    -c versionsort.suffix=-beta
+                    -c versionsort.suffix=-rc
+                    tag -l --sort=version:refname|tail -1
+            proto: "{{.proto | default .latest_tag}}"
         cmds:
-            - cd src/proto && git pull origin main && git checkout main
+            - echo "Protobuf version set to {{.proto}}"
+            - git fetch origin
+            - git checkout {{.proto}}
+            - git show-ref --verify -q refs/heads/{{.proto}} && git pull origin || exit 0
             - task: build
+            - echo "Sucessfully updated protobufs to {{.proto}}"
 
     publish:
         preconditions:

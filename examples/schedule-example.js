@@ -43,7 +43,7 @@ async function main() {
 
     try {
         let transaction = await new AccountCreateTransaction()
-            .setKey(KeyList.of(key1.publicKey, key2.publicKey))
+            .setKeyWithoutAlias(KeyList.of(key1.publicKey, key2.publicKey))
             .setInitialBalance(20)
             .setStakedAccountId("0.0.3")
             .freezeWithSigner(wallet);

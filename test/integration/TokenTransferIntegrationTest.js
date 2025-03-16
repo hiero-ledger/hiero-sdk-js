@@ -24,14 +24,12 @@ describe("TokenTransfer", function () {
     });
 
     it("should be executable", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
         const operatorKey = env.operatorKey.publicKey;
         const key = PrivateKey.generateED25519();
 
         const response = await new AccountCreateTransaction()
-            .setKey(key)
+            .setKeyWithoutAlias(key)
             .setInitialBalance(new Hbar(2))
             .execute(env.client);
 
@@ -95,14 +93,12 @@ describe("TokenTransfer", function () {
     });
 
     it("should not error when no amount is transferred", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
         const operatorKey = env.operatorKey.publicKey;
         const key = PrivateKey.generateED25519();
 
         const response = await new AccountCreateTransaction()
-            .setKey(key)
+            .setKeyWithoutAlias(key)
             .setInitialBalance(new Hbar(2))
             .execute(env.client);
 
@@ -168,14 +164,12 @@ describe("TokenTransfer", function () {
     });
 
     it("should error when no  is transferred", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
         const operatorKey = env.operatorKey.publicKey;
         const key = PrivateKey.generateED25519();
 
         const response = await new AccountCreateTransaction()
-            .setKey(key)
+            .setKeyWithoutAlias(key)
             .setInitialBalance(new Hbar(2))
             .execute(env.client);
 
@@ -241,14 +235,12 @@ describe("TokenTransfer", function () {
     });
 
     it("cannot transfer NFT as if it were FT", async function () {
-        this.timeout(120000);
-
         const key = PrivateKey.generateED25519();
 
         const account = (
             await (
                 await new AccountCreateTransaction()
-                    .setKey(key.publicKey)
+                    .setKeyWithoutAlias(key.publicKey)
                     .execute(env.client)
             ).getReceipt(env.client)
         ).accountId;
@@ -322,14 +314,12 @@ describe("TokenTransfer", function () {
     });
 
     it("automatically associates to account", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
         const operatorKey = env.operatorKey.publicKey;
         const key = PrivateKey.generateED25519();
 
         const response = await new AccountCreateTransaction()
-            .setKey(key)
+            .setKeyWithoutAlias(key)
             .setInitialBalance(new Hbar(2))
             .setMaxAutomaticTokenAssociations(10)
             .execute(env.client);

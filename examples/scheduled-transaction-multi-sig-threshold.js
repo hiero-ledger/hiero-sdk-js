@@ -57,7 +57,7 @@ async function main() {
     try {
         // create multi-sig account
         let transaction = await new AccountCreateTransaction()
-            .setKey(thresholdKey)
+            .setKeyWithoutAlias(thresholdKey)
             .setInitialBalance(Hbar.fromTinybars(1))
             .setAccountMemo("3-of-4 multi-sig account")
             .freezeWithSigner(wallet);

@@ -1,31 +1,14 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import TopicId from "./TopicId.js";
 import AccountId from "../account/AccountId.js";
 import Timestamp from "../Timestamp.js";
 import Long from "long";
 import Duration from "../Duration.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import Key from "../Key.js";
 import LedgerId from "../LedgerId.js";
+import CustomFixedFee from "../token/CustomFixedFee.js";
 
 /**
  * Current state of a topic.
@@ -41,8 +24,11 @@ export default class TopicInfo {
      * @param {?Timestamp} props.expirationTime
      * @param {?Key} props.adminKey
      * @param {?Key} props.submitKey
+     * @param {?Key} props.feeScheduleKey
+     * @param {?Key[]} props.feeExemptKeys
      * @param {?Duration} props.autoRenewPeriod
      * @param {?AccountId} props.autoRenewAccountId
+     * @param {?CustomFixedFee[]} props.customFees
      * @param {LedgerId|null} props.ledgerId
      */
     constructor(props) {
@@ -96,6 +82,18 @@ export default class TopicInfo {
         this.submitKey = props.submitKey;
 
         /**
+         * Access control for updating topic fees. Null If there is no key.
+         *
+         * @readonly
+         */
+        this.feeScheduleKey = props.feeScheduleKey;
+
+        /**
+         * The keys that will are exempt from paying fees.
+         * @readonly
+         */
+        this.feeExemptKeys = props.feeExemptKeys;
+        /**
          * @readonly
          */
         this.autoRenewPeriod = props.autoRenewPeriod;
@@ -105,6 +103,12 @@ export default class TopicInfo {
          */
         this.autoRenewAccountId = props.autoRenewAccountId;
 
+        /**
+         * The fixed fees assessed when a message is submitted to the topic.
+         * @readonly
+         */
+        this.customFees = props.customFees;
+
         this.ledgerId = props.ledgerId;
 
         Object.freeze(this);
@@ -112,19 +116,17 @@ export default class TopicInfo {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IConsensusGetTopicInfoResponse} infoResponse
+     * @param {HieroProto.proto.IConsensusGetTopicInfoResponse} infoResponse
      * @returns {TopicInfo}
      */
     static _fromProtobuf(infoResponse) {
-        const info = /** @type {HashgraphProto.proto.IConsensusTopicInfo} */ (
+        const info = /** @type {HieroProto.proto.IConsensusTopicInfo} */ (
             infoResponse.topicInfo
         );
 
         return new TopicInfo({
             topicId: TopicId._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITopicID} */ (
-                    infoResponse.topicID
-                ),
+                /** @type {HieroProto.proto.ITopicID} */ (infoResponse.topicID),
             ),
             topicMemo: info.memo != null ? info.memo : "",
             runningHash:
@@ -147,6 +149,16 @@ export default class TopicInfo {
                 info.submitKey != null
                     ? Key._fromProtobufKey(info.submitKey)
                     : null,
+            feeScheduleKey:
+                info.feeScheduleKey != null
+                    ? Key._fromProtobufKey(info.feeScheduleKey)
+                    : null,
+            feeExemptKeys:
+                info.feeExemptKeyList != null
+                    ? info.feeExemptKeyList.map((key) =>
+                          Key._fromProtobufKey(key),
+                      )
+                    : null,
             autoRenewPeriod:
                 info.autoRenewPeriod != null
                     ? new Duration(
@@ -157,6 +169,12 @@ export default class TopicInfo {
                 info.autoRenewAccount != null
                     ? AccountId._fromProtobuf(info.autoRenewAccount)
                     : null,
+            customFees:
+                info.customFees != null
+                    ? info.customFees.map((customFee) =>
+                          CustomFixedFee._fromProtobuf(customFee),
+                      )
+                    : null,
             ledgerId:
                 info.ledgerId != null
                     ? LedgerId.fromBytes(info.ledgerId)
@@ -166,7 +184,7 @@ export default class TopicInfo {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.IConsensusGetTopicInfoResponse}
+     * @returns {HieroProto.proto.IConsensusGetTopicInfoResponse}
      */
     _toProtobuf() {
         return {
@@ -187,6 +205,14 @@ export default class TopicInfo {
                     this.submitKey != null
                         ? this.submitKey._toProtobufKey()
                         : null,
+                feeScheduleKey:
+                    this.feeScheduleKey != null
+                        ? this.feeScheduleKey._toProtobufKey()
+                        : null,
+                feeExemptKeyList:
+                    this.feeExemptKeys != null
+                        ? this.feeExemptKeys.map((key) => key._toProtobufKey())
+                        : null,
                 autoRenewPeriod:
                     this.autoRenewPeriod != null
                         ? this.autoRenewPeriod._toProtobuf()
@@ -194,6 +220,12 @@ export default class TopicInfo {
                 autoRenewAccount:
                     this.autoRenewAccountId != null
                         ? this.autoRenewAccountId._toProtobuf()
+                        : null,
+                customFees:
+                    this.customFees != null
+                        ? this.customFees.map((customFee) =>
+                              customFee._toProtobuf(),
+                          )
                         : null,
             },
         };
@@ -204,18 +236,18 @@ export default class TopicInfo {
      * @returns {TopicInfo}
      */
     static fromBytes(bytes) {
-        return TopicInfo._fromProtobuf({
-            topicInfo: HashgraphProto.proto.ConsensusTopicInfo.decode(bytes),
-        });
+        return TopicInfo._fromProtobuf(
+            HieroProto.proto.ConsensusGetTopicInfoResponse.decode(bytes),
+        );
     }
 
     /**
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.ConsensusTopicInfo.encode(
-            /** @type {HashgraphProto.proto.IConsensusTopicInfo} */ (
-                this._toProtobuf().topicInfo
+        return HieroProto.proto.ConsensusGetTopicInfoResponse.encode(
+            /** @type {HieroProto.proto.ConsensusGetTopicInfoResponse} */ (
+                this._toProtobuf()
             ),
         ).finish();
     }

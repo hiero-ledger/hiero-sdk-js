@@ -40,8 +40,6 @@ describe.skip("EthereumTransactionIntegrationTest", function () {
     });
 
     it("Signer nonce changed on Ethereum transaction", async function () {
-        this.timeout(120000);
-
         try {
             const fileResponse = await (
                 await (

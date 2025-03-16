@@ -1,6 +1,4 @@
 import {
-    AccountCreateTransaction,
-    AccountDeleteTransaction,
     AccountInfoQuery,
     AccountUpdateTransaction,
     Hbar,
@@ -11,6 +9,7 @@ import {
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import Long from "long";
+import { createAccount, deleteAccount } from "./utils/Fixtures.js";
 
 describe("AccountUpdate", function () {
     let env;
@@ -20,28 +19,24 @@ describe("AccountUpdate", function () {
     });
 
     it("should be executable", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
 
         const key1 = PrivateKey.generateED25519();
         const key2 = PrivateKey.generateED25519();
 
-        let response = await new AccountCreateTransaction()
-            .setKey(key1.publicKey)
-            .setInitialBalance(new Hbar(2))
-            .execute(env.client);
+        const { accountId } = await createAccount(env.client, (transaction) => {
+            transaction
+                .setKeyWithoutAlias(key1.publicKey)
+                .setInitialBalance(new Hbar(2));
+        });
 
-        const receipt = await response.getReceipt(env.client);
-
-        expect(receipt.accountId).to.not.be.null;
-        const account = receipt.accountId;
+        expect(accountId).to.not.be.null;
 
         let info = await new AccountInfoQuery()
-            .setAccountId(account)
+            .setAccountId(accountId)
             .execute(env.client);
 
-        expect(info.accountId.toString()).to.be.equal(account.toString());
+        expect(info.accountId.toString()).to.be.equal(accountId.toString());
         expect(info.isDeleted).to.be.false;
         expect(info.key.toString()).to.be.equal(key1.publicKey.toString());
         expect(info.balance.toTinybars().toInt()).to.be.equal(
@@ -51,10 +46,10 @@ describe("AccountUpdate", function () {
         expect(info.proxyAccountId).to.be.null;
         expect(info.proxyReceived.toTinybars().toInt()).to.be.equal(0);
 
-        response = await (
+        const response = await (
             await (
                 await new AccountUpdateTransaction()
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .setKey(key2.publicKey)
                     // .setAutoRenewPeriod(777600000)
                     // .setExpirationTime(new Date(Date.now() + 7776000000))
@@ -66,10 +61,10 @@ describe("AccountUpdate", function () {
         await response.getReceipt(env.client);
 
         info = await new AccountInfoQuery()
-            .setAccountId(account)
+            .setAccountId(accountId)
             .execute(env.client);
 
-        expect(info.accountId.toString()).to.be.equal(account.toString());
+        expect(info.accountId.toString()).to.be.equal(accountId.toString());
         expect(info.isDeleted).to.be.false;
         expect(info.key.toString()).to.be.equal(key2.publicKey.toString());
         expect(info.balance.toTinybars().toInt()).to.be.equal(
@@ -79,33 +74,25 @@ describe("AccountUpdate", function () {
         expect(info.proxyAccountId).to.be.null;
         expect(info.proxyReceived.toTinybars().toInt()).to.be.equal(0);
 
-        await (
-            await (
-                await new AccountDeleteTransaction()
-                    .setAccountId(account)
-                    .setTransferAccountId(operatorId)
-                    .setTransactionId(TransactionId.generate(account))
-                    .freezeWith(env.client)
-                    .sign(key2)
-            ).execute(env.client)
-        ).getReceipt(env.client);
+        await deleteAccount(env.client, key2, (transaction) => {
+            transaction
+                .setAccountId(accountId)
+                .setTransferAccountId(operatorId)
+                .setTransactionId(TransactionId.generate(accountId));
+        });
     });
 
     it("should error with invalid auto renew period", async function () {
-        this.timeout(120000);
-
         const key1 = PrivateKey.generateED25519();
         const key2 = PrivateKey.generateED25519();
 
-        let response = await new AccountCreateTransaction()
-            .setKey(key1.publicKey)
-            .setInitialBalance(new Hbar(2))
-            .execute(env.client);
+        const { accountId } = await createAccount(env.client, (transaction) => {
+            transaction
+                .setKeyWithoutAlias(key1.publicKey)
+                .setInitialBalance(new Hbar(2));
+        });
 
-        const receipt = await response.getReceipt(env.client);
-
-        expect(receipt.accountId).to.not.be.null;
-        const account = receipt.accountId;
+        expect(accountId).to.not.be.null;
 
         let err = false;
 
@@ -114,7 +101,7 @@ describe("AccountUpdate", function () {
                 await (
                     await (
                         await new AccountUpdateTransaction()
-                            .setAccountId(account)
+                            .setAccountId(accountId)
                             .setKey(key2.publicKey)
                             .setAutoRenewPeriod(777600000)
                             .freezeWith(env.client)
@@ -128,16 +115,12 @@ describe("AccountUpdate", function () {
                 .includes(Status.AutorenewDurationNotInRange.toString());
         }
 
-        await (
-            await (
-                await new AccountDeleteTransaction()
-                    .setAccountId(account)
-                    .setTransferAccountId(env.client.operatorAccountId)
-                    .setTransactionId(TransactionId.generate(account))
-                    .freezeWith(env.client)
-                    .sign(key1)
-            ).execute(env.client)
-        ).getReceipt(env.client);
+        await deleteAccount(env.client, key1, (transaction) => {
+            transaction
+                .setAccountId(accountId)
+                .setTransferAccountId(env.client.operatorAccountId)
+                .setTransactionId(TransactionId.generate(accountId));
+        });
 
         if (!err) {
             throw new Error("account update did not error");
@@ -146,20 +129,15 @@ describe("AccountUpdate", function () {
 
     // eslint-disable-next-line mocha/no-skipped-tests
     it.skip("should error with insufficent tx fee when a large expiration time is set", async function () {
-        this.timeout(120000);
-
         const key1 = PrivateKey.generateED25519();
         const key2 = PrivateKey.generateED25519();
 
-        let response = await new AccountCreateTransaction()
-            .setKey(key1.publicKey)
-            .setInitialBalance(new Hbar(2))
-            .execute(env.client);
+        const { accountId } = await createAccount(env.client, {
+            key: key1.publicKey,
+            initialBalance: new Hbar(2),
+        });
 
-        const receipt = await response.getReceipt(env.client);
-
-        expect(receipt.accountId).to.not.be.null;
-        const account = receipt.accountId;
+        expect(accountId).to.not.be.null;
 
         let err = false;
 
@@ -168,7 +146,7 @@ describe("AccountUpdate", function () {
                 await (
                     await (
                         await new AccountUpdateTransaction()
-                            .setAccountId(account)
+                            .setAccountId(accountId)
                             .setKey(key2.publicKey)
                             .setExpirationTime(new Timestamp(Long.MAX, 0))
                             .freezeWith(env.client)
@@ -188,9 +166,7 @@ describe("AccountUpdate", function () {
     });
 
     it("should error when account ID is not set", async function () {
-        this.timeout(120000);
-
-        let err = false;
+        let status;
 
         try {
             await (
@@ -199,67 +175,51 @@ describe("AccountUpdate", function () {
                     .execute(env.client)
             ).getReceipt(env.client);
         } catch (error) {
-            err = error
-                .toString()
-                .includes(Status.AccountIdDoesNotExist.toString());
+            status = error.status;
         }
 
-        if (!err) {
-            throw new Error("account update did not error");
-        }
+        expect(status).to.be.eql(Status.AccountIdDoesNotExist);
     });
 
     it("should execute with only account ID", async function () {
-        this.timeout(120000);
-
         const key1 = PrivateKey.generateED25519();
 
-        let response = await new AccountCreateTransaction()
-            .setKey(key1.publicKey)
-            .setInitialBalance(new Hbar(2))
-            .execute(env.client);
+        const { accountId } = await createAccount(env.client, (transaction) => {
+            transaction
+                .setKeyWithoutAlias(key1.publicKey)
+                .setInitialBalance(new Hbar(2));
+        });
 
-        const receipt = await response.getReceipt(env.client);
-
-        expect(receipt.accountId).to.not.be.null;
-        const account = receipt.accountId;
+        expect(accountId).to.not.be.null;
 
         await (
             await (
                 await new AccountUpdateTransaction()
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
                     .sign(key1)
             ).execute(env.client)
         ).getReceipt(env.client);
 
-        await (
-            await (
-                await new AccountDeleteTransaction()
-                    .setAccountId(account)
-                    .setTransferAccountId(env.client.operatorAccountId)
-                    .setTransactionId(TransactionId.generate(account))
-                    .freezeWith(env.client)
-                    .sign(key1)
-            ).execute(env.client)
-        ).getReceipt(env.client);
+        await deleteAccount(env.client, key1, (transaction) => {
+            transaction
+                .setAccountId(accountId)
+                .setTransferAccountId(env.client.operatorAccountId)
+                .setTransactionId(TransactionId.generate(accountId));
+        });
     });
 
     it("should error with invalid signature", async function () {
-        this.timeout(120000);
-
         const key1 = PrivateKey.generateED25519();
         const key2 = PrivateKey.generateED25519();
 
-        let response = await new AccountCreateTransaction()
-            .setKey(key1.publicKey)
-            .setInitialBalance(new Hbar(2))
-            .execute(env.client);
+        const { accountId } = await createAccount(env.client, (transaction) => {
+            transaction
+                .setKeyWithoutAlias(key1.publicKey)
+                .setInitialBalance(new Hbar(2));
+        });
 
-        const receipt = await response.getReceipt(env.client);
-
-        expect(receipt.accountId).to.not.be.null;
-        const account = receipt.accountId;
+        expect(accountId).to.not.be.null;
 
         let err = false;
 
@@ -267,7 +227,7 @@ describe("AccountUpdate", function () {
             await (
                 await (
                     await new AccountUpdateTransaction()
-                        .setAccountId(account)
+                        .setAccountId(accountId)
                         .setKey(key2.publicKey)
                         .freezeWith(env.client)
                         .sign(key1)
@@ -277,16 +237,12 @@ describe("AccountUpdate", function () {
             err = error.toString().includes(Status.InvalidSignature.toString());
         }
 
-        await (
-            await (
-                await new AccountDeleteTransaction()
-                    .setAccountId(account)
-                    .setTransferAccountId(env.client.operatorAccountId)
-                    .setTransactionId(TransactionId.generate(account))
-                    .freezeWith(env.client)
-                    .sign(key1)
-            ).execute(env.client)
-        ).getReceipt(env.client);
+        await deleteAccount(env.client, key1, (transaction) => {
+            transaction
+                .setAccountId(accountId)
+                .setTransferAccountId(env.client.operatorAccountId)
+                .setTransactionId(TransactionId.generate(accountId));
+        });
 
         if (!err) {
             throw new Error("account update did not error");

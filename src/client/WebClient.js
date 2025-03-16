@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import Client from "./Client.js";
 import WebChannel from "../channel/WebChannel.js";
@@ -60,6 +42,11 @@ export const Network = {
 };
 
 /**
+ * Represents a client for interacting with the Hedera network over the web.
+ * The `WebClient` class extends the base `Client` class and provides methods
+ * for configuring and managing connections to the Hedera network, including
+ * setting the network type (mainnet, testnet, previewnet) and handling
+ * transactions and queries.
  * @augments {Client<WebChannel, *>}
  */
 export default class WebClient extends Client {
@@ -225,5 +212,15 @@ export default class WebClient extends Client {
         return () => {
             throw new Error("mirror support is not supported in browsers");
         };
+    }
+
+    /**
+     * @override
+     * @returns {Promise<void>}
+     */
+    updateNetwork() {
+        return Promise.reject(
+            new Error("Update network is not supported in browsers"),
+        );
     }
 }

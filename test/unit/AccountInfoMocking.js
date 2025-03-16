@@ -30,7 +30,7 @@ const ACCOUNT_INFO_QUERY_RESPONSE = {
             accountID: {
                 shardNum: Long.ZERO,
                 realmNum: Long.ZERO,
-                accountNum: Long.fromNumber(10),
+                accountNum: Long.fromNumber(3),
             },
             key: {
                 ed25519: PRIVATE_KEY.publicKey.toBytesRaw(),
@@ -54,8 +54,6 @@ describe("AccountInfoMocking", function () {
     });
 
     it("payment transaction is correctly constructed", async function () {
-        this.timeout(10000);
-
         ({ client, servers } = await Mocker.withResponses([
             [
                 {
@@ -94,12 +92,10 @@ describe("AccountInfoMocking", function () {
             .setAccountId("0.0.3")
             .execute(client);
 
-        expect(info.accountId.toString()).to.be.equal("0.0.10");
+        expect(info.accountId.toString()).to.be.equal("0.0.3");
     });
 
     it("should retry on UNAVAILABLE", async function () {
-        this.timeout(10000);
-
         ({ client, servers } = await Mocker.withResponses([
             [
                 { error: UNAVAILABLE },
@@ -112,11 +108,11 @@ describe("AccountInfoMocking", function () {
             .setAccountId("0.0.3")
             .execute(client);
 
-        expect(info.accountId.toString()).to.be.equal("0.0.10");
+        expect(info.accountId.toString()).to.be.equal("0.0.3");
     });
 
     it("should error when cost is greater than max cost set on client", async function () {
-        this.timeout(10000);
+        let errorName;
 
         ({ client, servers } = await Mocker.withResponses([
             [
@@ -127,22 +123,18 @@ describe("AccountInfoMocking", function () {
 
         client.setDefaultMaxQueryPayment(Hbar.fromTinybars(10));
 
-        let err = false;
-
         try {
             await new AccountInfoQuery()
                 .setAccountId("0.0.3")
                 .execute(client, 1);
         } catch (error) {
-            err = error instanceof MaxQueryPaymentExceeded;
+            errorName = error.name;
         }
 
-        expect(err).to.be.true;
+        expect(errorName).to.be.eql("MaxQueryPaymentExceededError");
     });
 
     it("setQueryPayemnt() avoids querying actual cost", async function () {
-        this.timeout(10000);
-
         ({ client, servers } = await Mocker.withResponses([
             [{ response: ACCOUNT_INFO_QUERY_RESPONSE }],
         ]));
@@ -154,11 +146,9 @@ describe("AccountInfoMocking", function () {
         await query.execute(client, 1);
 
         expect(query._queryPayment.toTinybars().toInt()).to.be.equal(10);
-    });
+    }, 15000);
 
     it("setQueryPayemnt() + setMaxQueryPayment() avoids querying actual cost", async function () {
-        this.timeout(10000);
-
         ({ client, servers } = await Mocker.withResponses([
             [{ response: ACCOUNT_INFO_QUERY_RESPONSE }],
         ]));
@@ -174,8 +164,6 @@ describe("AccountInfoMocking", function () {
     });
 
     it("actual cost is compared to Client.maxQueryPayment if Query.setMaxQueryPayment is not used", async function () {
-        this.timeout(10000);
-
         ({ client, servers } = await Mocker.withResponses([
             [
                 { response: ACCOUNT_INFO_QUERY_COST_RESPONSE },
@@ -199,8 +187,6 @@ describe("AccountInfoMocking", function () {
     });
 
     it("actual cost is compared to Query.setMaxQueryPayment when set", async function () {
-        this.timeout(10000);
-
         ({ client, servers } = await Mocker.withResponses([
             [
                 { response: ACCOUNT_INFO_QUERY_COST_RESPONSE },
@@ -224,8 +210,6 @@ describe("AccountInfoMocking", function () {
     });
 
     it("should not error when cost is less than max cost set on request", async function () {
-        this.timeout(10000);
-
         ({ client, servers } = await Mocker.withResponses([
             [
                 { response: ACCOUNT_INFO_QUERY_COST_RESPONSE },
@@ -248,8 +232,6 @@ describe("AccountInfoMocking", function () {
     });
 
     it("should retry on `INTERNAL` and retry multiple nodes", async function () {
-        this.timeout(10000);
-
         const responses1 = [
             { error: INTERNAL },
             { response: ACCOUNT_INFO_QUERY_COST_RESPONSE },
@@ -273,12 +255,10 @@ describe("AccountInfoMocking", function () {
             .setAccountId("0.0.3")
             .execute(client);
 
-        expect(info.accountId.toString()).to.be.equal("0.0.10");
+        expect(info.accountId.toString()).to.be.equal("0.0.3");
     });
 
     it("should be able to execute after getting transaction hashes", async function () {
-        this.timeout(10000);
-
         const responses1 = [{ response: { nodeTransactionPrecheckCode: 0 } }];
 
         ({ client, servers } = await Mocker.withResponses([responses1]));
@@ -300,8 +280,6 @@ describe("AccountInfoMocking", function () {
     });
 
     it("should be able to execute after getting transaction hashes with sign on demand disabled", async function () {
-        this.timeout(10000);
-
         const responses1 = [{ response: { nodeTransactionPrecheckCode: 0 } }];
 
         ({ client, servers } = await Mocker.withResponses([responses1]));
@@ -321,8 +299,6 @@ describe("AccountInfoMocking", function () {
     });
 
     it("should generate new transaction ID when TRANSACTION_EXPIRED is return", async function () {
-        this.timeout(10000);
-
         const transactionIds = new Set();
         const callResponses = [
             {
@@ -373,8 +349,6 @@ describe("AccountInfoMocking", function () {
     });
 
     it("should error `TRANSACTION_EXPIRED` is return and client disabled transaction regeneration", async function () {
-        this.timeout(10000);
-
         const responses1 = [
             {
                 response: {
@@ -399,7 +373,7 @@ describe("AccountInfoMocking", function () {
         } catch (error) {
             if (
                 error.message !==
-                "transaction 0.0.1854@1651168054.029348185 failed precheck with status TRANSACTION_EXPIRED"
+                "transaction 0.0.1854@1651168054.029348185 failed precheck with status TRANSACTION_EXPIRED against node account id 0.0.3"
             ) {
                 throw error;
             }
@@ -407,8 +381,6 @@ describe("AccountInfoMocking", function () {
     });
 
     it("should still regenerate transaction IDs on `TRANSACTION_EXPIRED` when client disabled it, but transaction re-enabled it", async function () {
-        this.timeout(10000);
-
         const transactionIds = new Set();
         const callResponses = [
             {
@@ -544,8 +516,6 @@ describe("AccountInfoMocking", function () {
     });
 
     it("should timeout immediately", async function () {
-        this.timeout(10000);
-
         ({ client, servers } = await Mocker.withResponses([
             [
                 { error: UNAVAILABLE },
@@ -571,8 +541,6 @@ describe("AccountInfoMocking", function () {
     });
 
     it("should doesn't timeout immediately", async function () {
-        this.timeout(10000);
-
         ({ client, servers } = await Mocker.withResponses([
             [
                 { error: UNAVAILABLE },
@@ -597,9 +565,7 @@ describe("AccountInfoMocking", function () {
         expect(err).to.be.false;
     });
 
-    it("should re-create a transaction if sign on demand is enabled and a random node is chosen which is not in the current list", async function () {
-        this.timeout(10000);
-
+    it("should throw an error if trying to execute the transaction with node which is not within client`s node list", async function () {
         const responses1 = [{ response: { nodeTransactionPrecheckCode: 0 } }];
 
         ({ client, servers } = await Mocker.withResponses([responses1]));
@@ -611,11 +577,120 @@ describe("AccountInfoMocking", function () {
             .freezeWith(client);
 
         // Sets the nodeAccountIds to a different list, but doesn't lock the list
-        // this similates when `freezeWith()` sets the node account IDs to a list
+        // this simulates when `freezeWith()` sets the node account IDs to a list
         // without locking it, but this list overwritten when executing.
         transaction._nodeAccountIds.setList([new AccountId(4)]);
-
         await transaction.signWithOperator(client);
-        await transaction.execute(client);
+
+        try {
+            await transaction.execute(client);
+        } catch (error) {
+            // Attempting to execute the transaction with a node that is not in the client's node list
+            expect(error.message).to.be.equal(
+                "Attempting to execute a transaction against node 0.0.4, which is not included in the Client's node list. Please review your Client configuration.",
+            );
+        }
+    });
+
+    it("should demonstrate UNAVAILABLE behavior with multiple nodes", async function () {
+        ({ client, servers } = await Mocker.withResponses([
+            // First node (0.0.3)
+            [
+                { error: UNAVAILABLE },
+                { error: UNAVAILABLE },
+                { error: UNAVAILABLE },
+            ],
+            // Second node (0.0.4)
+            [
+                { error: UNAVAILABLE },
+                { response: ACCOUNT_INFO_QUERY_COST_RESPONSE },
+                { response: ACCOUNT_INFO_QUERY_RESPONSE },
+            ],
+        ]));
+
+        const info = await new AccountInfoQuery()
+            .setNodeAccountIds([new AccountId(3), new AccountId(4)])
+            .setAccountId("0.0.3")
+            .execute(client);
+
+        expect(info.accountId.toString()).to.be.equal("0.0.3");
+    });
+
+    describe("Node health checks", function () {
+        beforeEach(async function () {
+            const responses1 = [
+                { response: ACCOUNT_INFO_QUERY_COST_RESPONSE },
+                { response: ACCOUNT_INFO_QUERY_RESPONSE },
+            ];
+
+            const responses2 = [
+                { response: ACCOUNT_INFO_QUERY_COST_RESPONSE },
+                { response: ACCOUNT_INFO_QUERY_RESPONSE },
+            ];
+
+            const responses3 = [
+                { response: ACCOUNT_INFO_QUERY_COST_RESPONSE },
+                { response: ACCOUNT_INFO_QUERY_RESPONSE },
+            ];
+
+            ({ client, servers } = await Mocker.withResponses([
+                responses1,
+                responses2,
+                responses3,
+            ]));
+        });
+
+        it("should throw error because every node is unhealthy", async function () {
+            // Make node 3 unhealthy
+            client._network._network.get("0.0.3")[0]._readmitTime =
+                Date.now() + 100 * 10010;
+
+            // Make node 4 unhealthy
+            client._network._network.get("0.0.4")[0]._readmitTime =
+                Date.now() + 100 * 10010;
+
+            try {
+                await new AccountInfoQuery()
+                    .setNodeAccountIds([new AccountId(3), new AccountId(4)])
+                    .setAccountId("0.0.3")
+                    .execute(client);
+                throw new Error("should have thrown");
+            } catch (error) {
+                expect(error.message).to.equal(
+                    "Network connectivity issue: All nodes are unhealthy. Original node list: 0.0.3, 0.0.4",
+                );
+            }
+        });
+
+        it("should skip unhealthy node and execute with healthy node", async function () {
+            // Make node 3 unhealthy
+            client._network._network.get("0.0.3")[0]._readmitTime =
+                Date.now() + 100 * 10010;
+
+            const info = await new AccountInfoQuery()
+                .setNodeAccountIds([new AccountId(3), new AccountId(4)])
+                .setAccountId("0.0.3")
+                .execute(client);
+
+            expect(info.accountId.toString()).to.be.equal("0.0.3");
+        });
+
+        it("should execute with last healthy node when multiple nodes are unhealthy", async function () {
+            // Make nodes 3 and 5 unhealthy
+            client._network._network.get("0.0.3")[0]._readmitTime =
+                Date.now() + 100 * 10010;
+            client._network._network.get("0.0.5")[0]._readmitTime =
+                Date.now() + 100 * 10010;
+
+            const info = await new AccountInfoQuery()
+                .setNodeAccountIds([
+                    new AccountId(3),
+                    new AccountId(4),
+                    new AccountId(5),
+                ])
+                .execute(client);
+
+            expect(info.accountId.toString()).to.be.equal("0.0.3");
+        });
     });
 });

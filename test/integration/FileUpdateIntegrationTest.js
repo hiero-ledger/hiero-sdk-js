@@ -5,8 +5,10 @@ import {
     FileInfoQuery,
     Hbar,
     Status,
+    AccountId,
+    PrivateKey,
 } from "../../src/exports.js";
-import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import IntegrationTestEnv, { Client } from "./client/NodeIntegrationTestEnv.js";
 
 describe("FileUpdate", function () {
     let env;
@@ -14,9 +16,8 @@ describe("FileUpdate", function () {
     before(async function () {
         env = await IntegrationTestEnv.new();
     });
-    it("should be executable", async function () {
-        this.timeout(120000);
 
+    it("should be executable", async function () {
         const operatorKey = env.operatorKey.publicKey;
 
         let response = await new FileCreateTransaction()
@@ -75,8 +76,6 @@ describe("FileUpdate", function () {
     });
 
     it("should error when file ID is not set", async function () {
-        this.timeout(120000);
-
         let err = false;
 
         try {
@@ -92,6 +91,27 @@ describe("FileUpdate", function () {
         if (!err) {
             throw new Error("file update did not error");
         }
+    });
+
+    it("should not error when FEE_SCHEDULE_FILE_PART_UPLOADED response", async function () {
+        const OPERATOR_ID = AccountId.fromString("0.0.2");
+        const OPERATOR_KEY = PrivateKey.fromStringED25519(
+            "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137",
+        );
+        const FEES_FILE_ID = "0.0.111";
+        const DUMMY_TEXT = "Hello, Hedera!";
+
+        const client = Client.forLocalNode().setOperator(
+            OPERATOR_ID,
+            OPERATOR_KEY,
+        );
+
+        await (
+            await new FileUpdateTransaction()
+                .setFileId(FEES_FILE_ID)
+                .setContents(DUMMY_TEXT)
+                .execute(client)
+        ).getReceipt(client);
     });
 
     after(async function () {

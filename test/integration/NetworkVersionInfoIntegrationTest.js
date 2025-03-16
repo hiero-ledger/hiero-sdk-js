@@ -9,8 +9,6 @@ describe("NetworkVersionInfo", function () {
     });
 
     it("should be executable", async function () {
-        this.timeout(120000);
-
         try {
             await new NetworkVersionInfoQuery().execute(env.client);
         } catch {

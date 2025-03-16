@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import Hbar from "../Hbar.js";
 import AccountId from "../account/AccountId.js";
@@ -32,14 +14,14 @@ import Key from "../Key.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HashgraphProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HashgraphProto.proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HashgraphProto.proto.TransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HashgraphProto.proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HashgraphProto.proto.ITransactionResponse
- * @typedef {import("@hashgraph/proto").proto.IContractCreateTransactionBody} HashgraphProto.proto.IContractCreateTransactionBody
- * @typedef {import("@hashgraph/proto").proto.IAccountID} HashgraphProto.proto.IAccountID
- * @typedef {import("@hashgraph/proto").proto.IFileID} HashgraphProto.proto.IFileID
+ * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
+ * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
+ * @typedef {import("@hashgraph/proto").proto.IContractCreateTransactionBody} HieroProto.proto.IContractCreateTransactionBody
+ * @typedef {import("@hashgraph/proto").proto.IAccountID} HieroProto.proto.IAccountID
+ * @typedef {import("@hashgraph/proto").proto.IFileID} HieroProto.proto.IFileID
  */
 
 /**
@@ -47,6 +29,27 @@ import Key from "../Key.js";
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../client/Client.js").default<*, *>} Client
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
+ */
+
+/**
+ * Create a new smart contract.
+ *
+ * If this transaction succeeds, the `ContractID` for the new smart contract
+ * SHALL be set in the transaction receipt.<br/>
+ * The contract is defined by the initial bytecode (or `initcode`). The
+ * `initcode` SHALL be stored either in a previously created file, or in the
+ * transaction body itself for very small contracts.
+ *
+ * As part of contract creation, the constructor defined for the new smart
+ * contract SHALL run with the parameters provided in the
+ * `constructorParameters` field.<br/>
+ * The gas to "power" that constructor MUST be provided via the `gas` field,
+ * and SHALL be charged to the payer for this transaction.<br/>
+ * If the contract _constructor_ stores information, it is charged gas for that
+ * storage. There is a separate fee in HBAR to maintain that storage until the
+ * expiration, and that fee SHALL be added to this transaction as part of the
+ * _transaction fee_, rather than gas.
+ *
  */
 
 export default class ContractCreateTransaction extends Transaction {
@@ -217,11 +220,11 @@ export default class ContractCreateTransaction extends Transaction {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransaction[]} transactions
-     * @param {HashgraphProto.proto.ISignedTransaction[]} signedTransactions
+     * @param {HieroProto.proto.ITransaction[]} transactions
+     * @param {HieroProto.proto.ISignedTransaction[]} signedTransactions
      * @param {TransactionId[]} transactionIds
      * @param {AccountId[]} nodeIds
-     * @param {HashgraphProto.proto.ITransactionBody[]} bodies
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
      * @returns {ContractCreateTransaction}
      */
     static _fromProtobuf(
@@ -233,7 +236,7 @@ export default class ContractCreateTransaction extends Transaction {
     ) {
         const body = bodies[0];
         const create =
-            /** @type {HashgraphProto.proto.IContractCreateTransactionBody} */ (
+            /** @type {HieroProto.proto.IContractCreateTransactionBody} */ (
                 body.contractCreateInstance
             );
 
@@ -242,7 +245,7 @@ export default class ContractCreateTransaction extends Transaction {
                 bytecodeFileId:
                     create.fileID != null
                         ? FileId._fromProtobuf(
-                              /** @type {HashgraphProto.proto.IFileID} */ (
+                              /** @type {HieroProto.proto.IFileID} */ (
                                   create.fileID
                               ),
                           )
@@ -259,7 +262,7 @@ export default class ContractCreateTransaction extends Transaction {
                 proxyAccountId:
                     create.proxyAccountID != null
                         ? AccountId._fromProtobuf(
-                              /** @type {HashgraphProto.proto.IAccountID} */ (
+                              /** @type {HieroProto.proto.IAccountID} */ (
                                   create.proxyAccountID
                               ),
                           )
@@ -600,8 +603,8 @@ export default class ContractCreateTransaction extends Transaction {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.ITransaction} request
-     * @returns {Promise<HashgraphProto.proto.ITransactionResponse>}
+     * @param {HieroProto.proto.ITransaction} request
+     * @returns {Promise<HieroProto.proto.ITransactionResponse>}
      */
     _execute(channel, request) {
         return channel.smartContract.createContract(request);
@@ -610,7 +613,7 @@ export default class ContractCreateTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {NonNullable<HashgraphProto.proto.TransactionBody["data"]>}
+     * @returns {NonNullable<HieroProto.proto.TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
         return "contractCreateInstance";
@@ -619,7 +622,7 @@ export default class ContractCreateTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {HashgraphProto.proto.IContractCreateTransactionBody}
+     * @returns {HieroProto.proto.IContractCreateTransactionBody}
      */
     _makeTransactionData() {
         return {

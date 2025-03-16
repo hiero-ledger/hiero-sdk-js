@@ -20,9 +20,8 @@ describe("ContractBytecode", function () {
     before(async function () {
         env = await IntegrationTestEnv.new();
     });
-    it("should be executable", async function () {
-        this.timeout(120000);
 
+    it("should be executable", async function () {
         const operatorKey = env.operatorKey.publicKey;
 
         let response = await new FileCreateTransaction()
@@ -82,8 +81,6 @@ describe("ContractBytecode", function () {
     });
 
     it("should error when contract ID is not set", async function () {
-        this.timeout(120000);
-
         let err = false;
 
         try {

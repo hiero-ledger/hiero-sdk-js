@@ -12,9 +12,8 @@ describe("FileInfo", function () {
     before(async function () {
         env = await IntegrationTestEnv.new();
     });
-    it("should be executable", async function () {
-        this.timeout(120000);
 
+    it("should be executable", async function () {
         const operatorKey = env.operatorKey.publicKey;
 
         let response = await new FileCreateTransaction()
@@ -52,8 +51,6 @@ describe("FileInfo", function () {
     });
 
     it("should be executable with empty contents", async function () {
-        this.timeout(120000);
-
         const operatorKey = env.operatorKey.publicKey;
 
         const response = await new FileCreateTransaction()
@@ -90,8 +87,6 @@ describe("FileInfo", function () {
     });
 
     it("should be executable with no keys", async function () {
-        this.timeout(120000);
-
         const response = await new FileCreateTransaction().execute(env.client);
 
         const receipt = await response.getReceipt(env.client);
@@ -114,7 +109,6 @@ describe("FileInfo", function () {
     });
 
     it("should be able to query cost", async function () {
-        this.timeout(120000);
         const operatorKey = env.operatorKey.publicKey;
 
         const response = await new FileCreateTransaction()

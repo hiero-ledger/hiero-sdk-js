@@ -77,7 +77,6 @@ async function main() {
             .setCustomFees([nftCustomFee])
             .setAdminKey(adminKey)
             .setSupplyKey(supplyKey)
-            // .setPauseKey(pauseKey)
             .setFreezeKey(freezeKey)
             .setWipeKey(wipeKey)
             .freezeWith(client)

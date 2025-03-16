@@ -13,7 +13,7 @@ import {
 import dotenv from "dotenv";
 
 /**
- * @description Serialize and deserialize so-called incompleted transaction (chunked), set transaction id and execute it
+ * @description Serialize and deserialize so-called incomplete transaction (chunked), set transaction id and execute it
  */
 
 async function main() {

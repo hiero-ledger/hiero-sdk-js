@@ -496,4 +496,78 @@ describe("Mnemonic", function () {
         expect(key6.toStringRaw()).to.be.equal(PRIVATE_KEY6);
         expect(key6.publicKey.toStringRaw()).to.be.equal(PUBLIC_KEY6);
     });
+
+    it("Mnemonic.calculateDerivationPathValues() test vector", async function () {
+        const DPATH_1 = "m/44'/60'/0'/0/0";
+        const DPATH_2 = "m/44/60/0/2147483647'/2147483646'";
+
+        const mnemonic1 = await Mnemonic.fromString(MNEMONIC_24_WORD_STRING);
+        const result1 = await mnemonic1.calculateDerivationPathValues(DPATH_1);
+        const result2 = await mnemonic1.calculateDerivationPathValues(DPATH_2);
+
+        // NOTE that 0x80000000 == 2147483648
+        expect(result1).to.deep.equal([
+            -2147483604, -2147483588, -2147483648, 0, 0,
+        ]);
+        expect(result2).to.deep.equal([44, 60, 0, -1, -2]);
+    });
+
+    it("Mnemonic.toStandardECDSAsecp256k1PrivateKeyCustomDerivationPath() test vector", async function () {
+        const DPATH_1 = "m/44'/60'/0'/0/0";
+        const PASSPHRASE_1 = "";
+        const CHAIN_CODE_1 =
+            "58a9ee31eaf7499abc01952b44dbf0a2a5d6447512367f09d99381c9605bf9e8";
+        const PRIVATE_KEY_1 =
+            "78f9545e40025cf7da9126a4d6a861ae34031d1c74c3404df06110c9fde371ad";
+        const PUBLIC_KEY_1 =
+            "02a8f4c22eea66617d4f119e3a951b93f584949bbfee90bd555305402da6c4e569";
+
+        const DPATH_2 = "m/44'/60'/0'/0/1";
+        const PASSPHRASE_2 = "";
+        const CHAIN_CODE_2 =
+            "6dcfc7a4914bd0e75b94a2f38afee8c247b34810202a2c64fe599ee1b88afdc9";
+        const PRIVATE_KEY_2 =
+            "77ca263661ebdd5a8b33c224aeff5e7bf67eedacee68a1699d97ee8929d7b130";
+        const PUBLIC_KEY_2 =
+            "03e84c9be9be53ad722038cc1943e79df27e5c1d31088adb4f0e62444f4dece683";
+
+        const DPATH_3 = "m/44'/60'/0'/0/2";
+        const PASSPHRASE_3 = "";
+        const CHAIN_CODE_3 =
+            "c8c798d2b3696be1e7a29d1cea205507eedc2057006b9ef1cde1b4e346089e17";
+        const PRIVATE_KEY_3 =
+            "31c24292eac951279b659c335e44a2e812d0f1a228b1d4d87034874d376e605a";
+        const PUBLIC_KEY_3 =
+            "0207ff3faf4055c1aa7a5ad94d6ff561fac35b9ae695ef486706243667d2b4d10e";
+
+        const mnemonic1 = await Mnemonic.fromString(MNEMONIC_24_WORD_STRING);
+        const key1 =
+            await mnemonic1.toStandardECDSAsecp256k1PrivateKeyCustomDerivationPath(
+                PASSPHRASE_1,
+                DPATH_1,
+            );
+        expect(hex.encode(key1.chainCode)).to.equal(CHAIN_CODE_1);
+        expect(key1.toStringRaw()).to.equal(PRIVATE_KEY_1);
+        expect(key1.publicKey.toStringRaw()).to.include(PUBLIC_KEY_1);
+
+        const mnemonic2 = await Mnemonic.fromString(MNEMONIC_24_WORD_STRING);
+        const key2 =
+            await mnemonic2.toStandardECDSAsecp256k1PrivateKeyCustomDerivationPath(
+                PASSPHRASE_2,
+                DPATH_2,
+            );
+        expect(hex.encode(key2.chainCode)).to.equal(CHAIN_CODE_2);
+        expect(key2.toStringRaw()).to.equal(PRIVATE_KEY_2);
+        expect(key2.publicKey.toStringRaw()).to.include(PUBLIC_KEY_2);
+
+        const mnemonic3 = await Mnemonic.fromString(MNEMONIC_24_WORD_STRING);
+        const key3 =
+            await mnemonic3.toStandardECDSAsecp256k1PrivateKeyCustomDerivationPath(
+                PASSPHRASE_3,
+                DPATH_3,
+            );
+        expect(hex.encode(key3.chainCode)).to.equal(CHAIN_CODE_3);
+        expect(key3.toStringRaw()).to.equal(PRIVATE_KEY_3);
+        expect(key3.publicKey.toStringRaw()).to.include(PUBLIC_KEY_3);
+    });
 });

@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import Query, { QUERY_REGISTRY } from "../query/Query.js";
 import Status from "../Status.js";
@@ -25,9 +7,9 @@ import TransactionId from "./TransactionId.js";
 import PrecheckStatusError from "../PrecheckStatusError.js";
 import ReceiptStatusError from "../ReceiptStatusError.js";
 import { ExecutionState } from "../Executable.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 
-const { proto } = HashgraphProto;
+const { proto } = HieroProto;
 
 /**
  * @typedef {import("../account/AccountId.js").default} AccountId
@@ -36,6 +18,12 @@ const { proto } = HashgraphProto;
  */
 
 /**
+ * Get the receipt of a transaction, given its transaction ID.
+ *
+ * <p>Once a transaction reaches consensus, then information about whether it succeeded or failed
+ * will be available until the end of the receipt period.
+ *
+ * <p>This query is free.
  * @augments {Query<TransactionReceipt>}
  */
 export default class TransactionReceiptQuery extends Query {
@@ -88,12 +76,12 @@ export default class TransactionReceiptQuery extends Query {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IQuery} query
+     * @param {HieroProto.proto.IQuery} query
      * @returns {TransactionReceiptQuery}
      */
     static _fromProtobuf(query) {
         const receipt =
-            /** @type {HashgraphProto.proto.ITransactionGetReceiptQuery} */ (
+            /** @type {HieroProto.proto.ITransactionGetReceiptQuery} */ (
                 query.transactionGetReceipt
             );
 
@@ -196,8 +184,8 @@ export default class TransactionReceiptQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IQuery} request
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IQuery} request
+     * @param {HieroProto.proto.IResponse} response
      * @returns {[Status, ExecutionState]}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -221,6 +209,7 @@ export default class TransactionReceiptQuery extends Query {
             case Status.Busy:
             case Status.Unknown:
             case Status.ReceiptNotFound:
+            case Status.PlatformNotActive:
                 return [status, ExecutionState.Retry];
             case Status.Ok:
                 break;
@@ -229,17 +218,14 @@ export default class TransactionReceiptQuery extends Query {
         }
 
         const transactionGetReceipt =
-            /** @type {HashgraphProto.proto.ITransactionGetReceiptResponse} */ (
+            /** @type {HieroProto.proto.ITransactionGetReceiptResponse} */ (
                 response.transactionGetReceipt
             );
-        const receipt =
-            /** @type {HashgraphProto.proto.ITransactionReceipt} */ (
-                transactionGetReceipt.receipt
-            );
+        const receipt = /** @type {HieroProto.proto.ITransactionReceipt} */ (
+            transactionGetReceipt.receipt
+        );
         const receiptStatusCode =
-            /** @type {HashgraphProto.proto.ResponseCodeEnum} */ (
-                receipt.status
-            );
+            /** @type {HieroProto.proto.ResponseCodeEnum} */ (receipt.status);
 
         status = Status._fromCode(receiptStatusCode);
 
@@ -255,6 +241,7 @@ export default class TransactionReceiptQuery extends Query {
             case Status.ReceiptNotFound:
                 return [status, ExecutionState.Retry];
             case Status.Success:
+            case Status.FeeScheduleFilePartUploaded:
                 return [status, ExecutionState.Finished];
             default:
                 return [
@@ -280,12 +267,13 @@ export default class TransactionReceiptQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IQuery} request
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IQuery} request
+     * @param {HieroProto.proto.IResponse} response
+     * @param {AccountId} nodeId
      * @returns {Error}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _mapStatusError(request, response) {
+    _mapStatusError(request, response, nodeId) {
         const { nodeTransactionPrecheckCode } =
             this._mapResponseHeader(response);
 
@@ -302,6 +290,7 @@ export default class TransactionReceiptQuery extends Query {
 
             default:
                 return new PrecheckStatusError({
+                    nodeId,
                     status,
                     transactionId: this._getTransactionId(),
                     contractFunctionResult: null,
@@ -309,17 +298,14 @@ export default class TransactionReceiptQuery extends Query {
         }
 
         const transactionGetReceipt =
-            /** @type {HashgraphProto.proto.ITransactionGetReceiptResponse} */ (
+            /** @type {HieroProto.proto.ITransactionGetReceiptResponse} */ (
                 response.transactionGetReceipt
             );
-        const receipt =
-            /** @type {HashgraphProto.proto.ITransactionReceipt} */ (
-                transactionGetReceipt.receipt
-            );
+        const receipt = /** @type {HieroProto.proto.ITransactionReceipt} */ (
+            transactionGetReceipt.receipt
+        );
         const receiptStatusCode =
-            /** @type {HashgraphProto.proto.ResponseCodeEnum} */ (
-                receipt.status
-            );
+            /** @type {HieroProto.proto.ResponseCodeEnum} */ (receipt.status);
 
         status = Status._fromCode(receiptStatusCode);
 
@@ -354,8 +340,8 @@ export default class TransactionReceiptQuery extends Query {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {HashgraphProto.proto.IQuery} request
-     * @returns {Promise<HashgraphProto.proto.IResponse>}
+     * @param {HieroProto.proto.IQuery} request
+     * @returns {Promise<HieroProto.proto.IResponse>}
      */
     _execute(channel, request) {
         return channel.crypto.getTransactionReceipts(request);
@@ -364,15 +350,15 @@ export default class TransactionReceiptQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IResponse} response
-     * @returns {HashgraphProto.proto.IResponseHeader}
+     * @param {HieroProto.proto.IResponse} response
+     * @returns {HieroProto.proto.IResponseHeader}
      */
     _mapResponseHeader(response) {
         const transactionGetReceipt =
-            /** @type {HashgraphProto.proto.ITransactionGetReceiptResponse} */ (
+            /** @type {HieroProto.proto.ITransactionGetReceiptResponse} */ (
                 response.transactionGetReceipt
             );
-        return /** @type {HashgraphProto.proto.IResponseHeader} */ (
+        return /** @type {HieroProto.proto.IResponseHeader} */ (
             transactionGetReceipt.header
         );
     }
@@ -380,15 +366,15 @@ export default class TransactionReceiptQuery extends Query {
     /**
      * @protected
      * @override
-     * @param {HashgraphProto.proto.IResponse} response
+     * @param {HieroProto.proto.IResponse} response
      * @param {AccountId} nodeAccountId
-     * @param {HashgraphProto.proto.IQuery} request
+     * @param {HieroProto.proto.IQuery} request
      * @returns {Promise<TransactionReceipt>}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _mapResponse(response, nodeAccountId, request) {
         const transactionGetReceipt =
-            /** @type {HashgraphProto.proto.ITransactionGetReceiptResponse} */ (
+            /** @type {HieroProto.proto.ITransactionGetReceiptResponse} */ (
                 response.transactionGetReceipt
             );
 
@@ -400,8 +386,8 @@ export default class TransactionReceiptQuery extends Query {
     /**
      * @override
      * @internal
-     * @param {HashgraphProto.proto.IQueryHeader} header
-     * @returns {HashgraphProto.proto.IQuery}
+     * @param {HieroProto.proto.IQueryHeader} header
+     * @returns {HieroProto.proto.IQuery}
      */
     _onMakeRequest(header) {
         return {

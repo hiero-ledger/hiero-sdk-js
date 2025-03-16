@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import AccountId from "../account/AccountId.js";
 import AccountBalanceQuery from "../account/AccountBalanceQuery.js";
@@ -29,6 +11,7 @@ import LedgerId from "../LedgerId.js";
 import FileId from "../file/FileId.js";
 import CACHE from "../Cache.js";
 import Logger from "../logger/Logger.js"; // eslint-disable-line
+import { convertToNumber } from "../util.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -62,6 +45,10 @@ import Logger from "../logger/Logger.js"; // eslint-disable-line
  */
 
 /**
+ * The `Client` class is the main entry point for interacting with the Hedera Hashgraph network.
+ * It provides methods for managing network connections, setting operators, handling transactions
+ * and queries, and configuring various client settings.
+ *
  * @abstract
  * @template {Channel} ChannelT
  * @template {MirrorChannel} MirrorChannelT
@@ -140,6 +127,12 @@ export default class Client {
         /** @private */
         this._requestTimeout = null;
 
+        /**
+         * @private
+         * @type {boolean}
+         */
+        this._isUpdatingNetwork = false;
+
         /** @private */
         this._networkUpdatePeriod = 24 * 60 * 60 * 1000;
 
@@ -147,7 +140,6 @@ export default class Client {
         this._isShutdown = false;
 
         if (props != null && props.scheduleNetworkUpdate !== false) {
-            this._initialNetworkUpdate();
             this._scheduleNetworkUpdate();
         }
 
@@ -449,7 +441,9 @@ export default class Client {
      * @returns {Client<ChannelT, MirrorChannelT>}
      */
     setDefaultMaxQueryPayment(defaultMaxQueryPayment) {
-        if (defaultMaxQueryPayment.toTinybars().toInt() < 0) {
+        const isMaxQueryPaymentNegative =
+            convertToNumber(defaultMaxQueryPayment.toTinybars()) < 0;
+        if (isMaxQueryPaymentNegative) {
             throw new Error("defaultMaxQueryPayment must be non-negative");
         }
         this._defaultMaxQueryPayment = defaultMaxQueryPayment;
@@ -709,6 +703,35 @@ export default class Client {
     }
 
     /**
+     * Update the network address book.
+     * @returns {Promise<void>}
+     */
+    async updateNetwork() {
+        if (this._isUpdatingNetwork) {
+            return;
+        }
+
+        this._isUpdatingNetwork = true;
+
+        try {
+            const addressBook = await CACHE.addressBookQueryConstructor()
+                .setFileId(FileId.ADDRESS_BOOK)
+                .execute(this);
+            this.setNetworkFromAddressBook(addressBook);
+        } catch (error) {
+            if (this._logger) {
+                this._logger.trace(
+                    `failed to update client address book: ${
+                        /** @type {Error} */ (error).toString()
+                    }`,
+                );
+            }
+        } finally {
+            this._isUpdatingNetwork = false;
+        }
+    }
+
+    /**
      * @returns {void}
      */
     close() {
@@ -741,51 +764,14 @@ export default class Client {
         // This is the automatic network update promise that _eventually_ completes
         // eslint-disable-next-line @typescript-eslint/no-floating-promises,@typescript-eslint/no-misused-promises
         this._timer = setTimeout(async () => {
-            try {
-                const addressBook = await CACHE.addressBookQueryConstructor()
-                    .setFileId(FileId.ADDRESS_BOOK)
-                    .execute(this);
-                this.setNetworkFromAddressBook(addressBook);
+            await this.updateNetwork();
 
-                if (!this._isShutdown) {
-                    // Recall this method to continuously update the network
-                    // every `networkUpdatePeriod` amount of itme
-                    this._scheduleNetworkUpdate();
-                }
-            } catch (error) {
-                if (this._logger) {
-                    this._logger.trace(
-                        `failed to update client address book: ${
-                            /** @type {Error} */ (error).toString()
-                        }`,
-                    );
-                }
+            if (!this._isShutdown) {
+                // Recall this method to continuously update the network
+                // every `networkUpdatePeriod` amount of itme
+                this._scheduleNetworkUpdate();
             }
         }, this._networkUpdatePeriod);
-    }
-
-    /**
-     * @private
-     */
-    _initialNetworkUpdate() {
-        // This is the automatic network update promise that _eventually_ completes
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises,@typescript-eslint/no-misused-promises
-        setTimeout(async () => {
-            try {
-                const addressBook = await CACHE.addressBookQueryConstructor()
-                    .setFileId(FileId.ADDRESS_BOOK)
-                    .execute(this);
-                this.setNetworkFromAddressBook(addressBook);
-            } catch (error) {
-                if (this._logger) {
-                    this._logger.trace(
-                        `failed to update client address book: ${
-                            /** @type {Error} */ (error).toString()
-                        }`,
-                    );
-                }
-            }
-        }, 1000);
     }
 
     /**

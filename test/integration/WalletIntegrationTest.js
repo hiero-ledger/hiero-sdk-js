@@ -22,7 +22,6 @@ describe("WalletIntegration", function () {
     });
 
     it("issue-1530", async function () {
-        this.timeout(30000);
         const env = await IntegrationTestEnv.new();
 
         // Generate a key for the signer
@@ -30,7 +29,7 @@ describe("WalletIntegration", function () {
 
         // Create account id for the signer
         let createTransaction = await new AccountCreateTransaction()
-            .setKey(signerKey)
+            .setKeyWithoutAlias(signerKey)
             .setInitialBalance(new Hbar(5))
             .signWithOperator(env.client);
 

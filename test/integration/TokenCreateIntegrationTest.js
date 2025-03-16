@@ -1,11 +1,13 @@
 import {
     PrivateKey,
     Status,
+    Timestamp,
     TokenCreateTransaction,
     TokenDeleteTransaction,
     TokenInfoQuery,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import { DEFAULT_AUTO_RENEW_PERIOD } from "../../src/transaction/Transaction.js";
 
 describe("TokenCreate", function () {
     let env;
@@ -13,9 +15,8 @@ describe("TokenCreate", function () {
     before(async function () {
         env = await IntegrationTestEnv.new();
     });
-    it("should be executable", async function () {
-        this.timeout(120000);
 
+    it("should be executable", async function () {
         const operatorId = env.operatorId;
         const operatorKey = env.operatorKey.publicKey;
         const key1 = PrivateKey.generateED25519();
@@ -56,21 +57,19 @@ describe("TokenCreate", function () {
         expect(info.freezeKey.toString()).to.eql(key2.publicKey.toString());
         expect(info.wipeKey.toString()).to.eql(key3.publicKey.toString());
         expect(info.supplyKey.toString()).to.eql(key4.publicKey.toString());
-        expect(info.defaultFreezeStatus).to.be.false;
-        expect(info.defaultKycStatus).to.be.false;
-        expect(info.isDeleted).to.be.false;
-        expect(info.autoRenewAccountId).to.be.not.null;
         expect(info.autoRenewAccountId.toString()).to.be.eql(
             operatorId.toString(),
         );
-        expect(info.autoRenewPeriod).to.be.not.null;
-        expect(info.autoRenewPeriod.seconds.toInt()).to.be.eql(7776000);
+        expect(info.autoRenewPeriod.seconds.toInt()).to.eql(
+            DEFAULT_AUTO_RENEW_PERIOD.toInt(),
+        );
+        expect(info.defaultFreezeStatus).to.be.false;
+        expect(info.defaultKycStatus).to.be.false;
+        expect(info.isDeleted).to.be.false;
         expect(info.expirationTime).to.be.not.null;
     });
 
     it("should be executable with minimal properties set", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
 
         const response = await new TokenCreateTransaction()
@@ -93,7 +92,12 @@ describe("TokenCreate", function () {
         expect(info.treasuryAccountId.toString()).to.be.equal(
             operatorId.toString(),
         );
-        expect(info.adminKey).to.be.null;
+        expect(info.autoRenewAccountId.toString()).to.be.equal(
+            operatorId.toString(),
+        );
+        expect(info.autoRenewPeriod.seconds.toInt()).to.eql(
+            DEFAULT_AUTO_RENEW_PERIOD.toInt(),
+        );
         expect(info.kycKey).to.be.null;
         expect(info.freezeKey).to.be.null;
         expect(info.wipeKey).to.be.null;
@@ -101,12 +105,6 @@ describe("TokenCreate", function () {
         expect(info.defaultFreezeStatus).to.be.null;
         expect(info.defaultKycStatus).to.be.null;
         expect(info.isDeleted).to.be.false;
-        expect(info.autoRenewAccountId).to.be.not.null;
-        expect(info.autoRenewAccountId.toString()).to.be.eql(
-            operatorId.toString(),
-        );
-        expect(info.autoRenewPeriod).to.be.not.null;
-        expect(info.autoRenewPeriod.seconds.toInt()).to.be.eql(7776000);
         expect(info.expirationTime).to.be.not.null;
 
         let err = false;
@@ -126,9 +124,84 @@ describe("TokenCreate", function () {
         }
     });
 
-    it("should error when token name is not set", async function () {
-        this.timeout(120000);
+    it("when autoRenewAccountId is set", async function () {
+        const operatorId = env.operatorId;
 
+        const response = await new TokenCreateTransaction()
+            .setTokenName("ffff")
+            .setTokenSymbol("F")
+            .setTreasuryAccountId(operatorId)
+            .execute(env.client);
+
+        const tokenId = (await response.getReceipt(env.client)).tokenId;
+
+        const info = await new TokenInfoQuery()
+            .setTokenId(tokenId)
+            .execute(env.client);
+
+        expect(info.autoRenewAccountId.toString()).to.be.eql(
+            operatorId.toString(),
+        );
+    });
+
+    it("when expirationTime is set", async function () {
+        const operatorId = env.operatorId;
+        const DAYS_45_IN_SECONDS = 3888000;
+        const expirationTime = new Timestamp(
+            Math.floor(Date.now() / 1000 + DAYS_45_IN_SECONDS),
+            0,
+        );
+
+        const response = await new TokenCreateTransaction()
+            .setTokenName("ffff")
+            .setTokenSymbol("F")
+            .setTreasuryAccountId(operatorId)
+            .setExpirationTime(expirationTime)
+            .execute(env.client);
+
+        const tokenId = (await response.getReceipt(env.client)).tokenId;
+
+        const info = await new TokenInfoQuery()
+            .setTokenId(tokenId)
+            .execute(env.client);
+
+        expect(info.expirationTime).to.be.not.null;
+        expect(info.expirationTime.toString()).to.be.eql(
+            expirationTime.toString(),
+        );
+    });
+
+    it("expirationTime should override autoRenewPeriod", async function () {
+        const operatorId = env.operatorId;
+        const DAYS_90_IN_SECONDS = 7776000;
+        const expirationTime = new Timestamp(
+            Math.floor(Date.now() / 1000 + DAYS_90_IN_SECONDS),
+            0,
+        );
+
+        const response = await new TokenCreateTransaction()
+            .setTokenName("ffff")
+            .setTokenSymbol("F")
+            .setTreasuryAccountId(operatorId)
+            .setExpirationTime(expirationTime)
+            .execute(env.client);
+
+        const tokenId = (await response.getReceipt(env.client)).tokenId;
+
+        const info = await new TokenInfoQuery()
+            .setTokenId(tokenId)
+            .execute(env.client);
+
+        expect(info.autoRenewAccountId.toString()).to.be.eql(
+            operatorId.toString(),
+        );
+        expect(info.autoRenewPeriod.seconds.toInt()).to.equal(0);
+        expect(info.expirationTime.seconds.toInt()).to.equal(
+            expirationTime.seconds.toInt(),
+        );
+    });
+
+    it("should error when token name is not set", async function () {
         const env = await IntegrationTestEnv.new();
         const operatorId = env.operatorId;
 
@@ -151,8 +224,6 @@ describe("TokenCreate", function () {
     });
 
     it("should error when token symbol is not set", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
 
         let err = false;
@@ -174,8 +245,6 @@ describe("TokenCreate", function () {
     });
 
     it("should error when treasury account ID is not set", async function () {
-        this.timeout(120000);
-
         let err = false;
 
         try {
@@ -197,8 +266,6 @@ describe("TokenCreate", function () {
     });
 
     it("should error when admin key does not sign transaction", async function () {
-        this.timeout(120000);
-
         const operatorId = env.operatorId;
 
         let err = false;

@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import Long from "long";
 import AccountId from "../account/AccountId.js";
@@ -24,10 +6,10 @@ import TokenId from "./TokenId.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITokenTransferList} HashgraphProto.proto.ITokenTransferList
- * @typedef {import("@hashgraph/proto").proto.IAccountAmount} HashgraphProto.proto.IAccountAmount
- * @typedef {import("@hashgraph/proto").proto.IAccountID} HashgraphProto.proto.IAccountID
- * @typedef {import("@hashgraph/proto").proto.ITokenID} HashgraphProto.proto.ITokenID
+ * @typedef {import("@hashgraph/proto").proto.ITokenTransferList} HieroProto.proto.ITokenTransferList
+ * @typedef {import("@hashgraph/proto").proto.IAccountAmount} HieroProto.proto.IAccountAmount
+ * @typedef {import("@hashgraph/proto").proto.IAccountID} HieroProto.proto.IAccountID
+ * @typedef {import("@hashgraph/proto").proto.ITokenID} HieroProto.proto.ITokenID
  */
 
 /**
@@ -84,7 +66,7 @@ export default class TokenTransfer {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITokenTransferList[]} tokenTransfers
+     * @param {HieroProto.proto.ITokenTransferList[]} tokenTransfers
      * @returns {TokenTransfer[]}
      */
     static _fromProtobuf(tokenTransfers) {
@@ -92,15 +74,13 @@ export default class TokenTransfer {
 
         for (const tokenTransfer of tokenTransfers) {
             const tokenId = TokenId._fromProtobuf(
-                /** @type {HashgraphProto.proto.ITokenID} */ (
-                    tokenTransfer.token
-                ),
+                /** @type {HieroProto.proto.ITokenID} */ (tokenTransfer.token),
             );
             const expectedDecimals =
                 tokenTransfer.expectedDecimals != null
-                    ? /** @type {number | null } */ (
-                          tokenTransfer.expectedDecimals.value
-                      )
+                    ? Object.hasOwn(tokenTransfer.expectedDecimals, "value")
+                        ? tokenTransfer.expectedDecimals.value
+                        : null
                     : null;
 
             for (const transfer of tokenTransfer.transfers != null
@@ -110,11 +90,11 @@ export default class TokenTransfer {
                     new TokenTransfer({
                         tokenId,
                         accountId: AccountId._fromProtobuf(
-                            /** @type {HashgraphProto.proto.IAccountID} */ (
+                            /** @type {HieroProto.proto.IAccountID} */ (
                                 transfer.accountID
                             ),
                         ),
-                        expectedDecimals,
+                        expectedDecimals: expectedDecimals || null,
                         amount:
                             transfer.amount != null
                                 ? transfer.amount
@@ -130,7 +110,7 @@ export default class TokenTransfer {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.IAccountAmount}
+     * @returns {HieroProto.proto.IAccountAmount}
      */
     _toProtobuf() {
         return {

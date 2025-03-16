@@ -81,6 +81,7 @@ export default class EcdsaPrivateKey {
      * @returns {EcdsaPrivateKey}
      */
     static fromBytesDer(data) {
+        /** @type {Uint8Array} */
         let ecdsaPrivateKeyBytes = new Uint8Array();
 
         if (arrayStartsWith(data, derPrefixBytes)) {
@@ -168,13 +169,11 @@ export default class EcdsaPrivateKey {
      */
     toBytesDer() {
         const bytes = new Uint8Array(derPrefixBytes.length + 32);
-
+        const privateKey = this._keyPair.privateKey.subarray(0, 32);
+        const leadingZeroes = 32 - privateKey.length;
+        const privateKeyOffset = derPrefixBytes.length + leadingZeroes;
         bytes.set(derPrefixBytes, 0);
-        bytes.set(
-            this._keyPair.privateKey.subarray(0, 32),
-            derPrefixBytes.length,
-        );
-
+        bytes.set(privateKey, privateKeyOffset);
         return bytes;
     }
 
@@ -182,8 +181,10 @@ export default class EcdsaPrivateKey {
      * @returns {Uint8Array}
      */
     toBytesRaw() {
+        const privateKey = this._keyPair.privateKey.subarray(-32); // Takes the last 32 bytes (or fewer if shorter)
+        const leadingZeroes = 32 - privateKey.length;
         const bytes = new Uint8Array(32);
-        bytes.set(this._keyPair.privateKey.slice(0, 32), 0);
+        bytes.set(privateKey, leadingZeroes);
         return bytes;
     }
 }

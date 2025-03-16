@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import CACHE from "../Cache.js";
 import ContractId from "./ContractId.js";
@@ -24,15 +6,19 @@ import * as hex from "../encoding/hex.js";
 
 /**
  * @namespace {proto}
- * @typedef {import("@hashgraph/proto").proto.IContractID} HashgraphProto.proto.IContractID
- * @typedef {import("@hashgraph/proto").proto.IKey} HashgraphProto.proto.IKey
+ * @typedef {import("@hashgraph/proto").proto.IContractID} HieroProto.proto.IContractID
+ * @typedef {import("@hashgraph/proto").proto.IKey} HieroProto.proto.IKey
  */
 
 /**
- * @typedef {import("long").Long} Long
+ * @typedef {import("long")} Long
  * @typedef {import("../client/Client.js").default<*, *>} Client
  */
 
+/**
+ * epresents a delegatable smart contract ID on the Hedera network.
+ * This class extends ContractId and provides additional functionality for delegatable contracts.
+ */
 export default class DelegateContractId extends ContractId {
     /**
      * @param {number | Long | import("../EntityIdHelper").IEntityId} props
@@ -64,7 +50,7 @@ export default class DelegateContractId extends ContractId {
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IContractID} id
+     * @param {HieroProto.proto.IContractID} id
      * @returns {DelegateContractId}
      */
     static _fromProtobuf(id) {
@@ -98,7 +84,7 @@ export default class DelegateContractId extends ContractId {
     }
 
     /**
-     * @returns {HashgraphProto.proto.IKey}
+     * @returns {HieroProto.proto.IKey}
      */
     _toProtobufKey() {
         return {
@@ -107,7 +93,7 @@ export default class DelegateContractId extends ContractId {
     }
 
     /**
-     * @param {HashgraphProto.proto.IContractID} key
+     * @param {HieroProto.proto.IContractID} key
      * @returns {DelegateContractId}
      */
     static __fromProtobufKey(key) {

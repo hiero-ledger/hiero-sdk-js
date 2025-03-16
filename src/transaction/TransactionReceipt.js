@@ -1,22 +1,4 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
 import AccountId from "../account/AccountId.js";
 import ContractId from "../contract/ContractId.js";
@@ -27,7 +9,7 @@ import ScheduleId from "../schedule/ScheduleId.js";
 import ExchangeRate from "../ExchangeRate.js";
 import Status from "../Status.js";
 import Long from "long";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import TransactionId from "../transaction/TransactionId.js";
 import * as hex from "../encoding/hex.js";
 
@@ -45,6 +27,7 @@ import * as hex from "../encoding/hex.js";
  * @property {?string} tokenId
  * @property {?string} scheduleId
  * @property {?ExchangeRateJSON} exchangeRate
+ * @property {?ExchangeRateJSON} nextExchangeRate
  * @property {?string} topicSequenceNumber
  * @property {?string} topicRunningHash
  * @property {?string} totalSupply
@@ -52,6 +35,7 @@ import * as hex from "../encoding/hex.js";
  * @property {string[]} serials
  * @property {TransactionReceiptJSON[]} duplicates
  * @property {TransactionReceiptJSON[]} children
+ * @property {?string} nodeId
  */
 
 /**
@@ -70,6 +54,7 @@ export default class TransactionReceipt {
      * @param {?TokenId} props.tokenId
      * @param {?ScheduleId} props.scheduleId
      * @param {?ExchangeRate} props.exchangeRate
+     * @param {?ExchangeRate} props.nextExchangeRate
      * @param {?Long} props.topicSequenceNumber
      * @param {?Uint8Array} props.topicRunningHash
      * @param {?Long} props.totalSupply
@@ -77,6 +62,7 @@ export default class TransactionReceipt {
      * @param {Long[]} props.serials
      * @param {TransactionReceipt[]} props.duplicates
      * @param {TransactionReceipt[]} props.children
+     * @param {?Long} props.nodeId
      */
     constructor(props) {
         /**
@@ -136,6 +122,13 @@ export default class TransactionReceipt {
         this.exchangeRate = props.exchangeRate;
 
         /**
+         * The next exchange rate of Hbars to cents (USD).
+         *
+         * @readonly
+         */
+        this.nextExchangeRate = props.nextExchangeRate;
+
+        /**
          * Updated sequence number for a consensus service topic.
          *
          * @readonly
@@ -170,23 +163,34 @@ export default class TransactionReceipt {
          */
         this.children = props.children ?? [];
 
+        /**
+         * @readonly
+         * @description In the receipt of a NodeCreate, NodeUpdate, NodeDelete, the id of the newly created node.
+         * An affected node identifier.
+         * This value SHALL be set following a `createNode` transaction.
+         * This value SHALL be set following a `updateNode` transaction.
+         * This value SHALL be set following a `deleteNode` transaction.
+         * This value SHALL NOT be set following any other transaction.
+         */
+        this.nodeId = props.nodeId;
+
         Object.freeze(this);
     }
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.ITransactionGetReceiptResponse}
+     * @returns {HieroProto.proto.ITransactionGetReceiptResponse}
      */
     _toProtobuf() {
         const duplicates = this.duplicates.map(
             (receipt) =>
-                /** @type {HashgraphProto.proto.ITransactionReceipt} */ (
+                /** @type {HieroProto.proto.ITransactionReceipt} */ (
                     receipt._toProtobuf().receipt
                 ),
         );
         const children = this.children.map(
             (receipt) =>
-                /** @type {HashgraphProto.proto.ITransactionReceipt} */ (
+                /** @type {HieroProto.proto.ITransactionReceipt} */ (
                     receipt._toProtobuf().receipt
                 ),
         );
@@ -223,7 +227,10 @@ export default class TransactionReceipt {
                 topicSequenceNumber: this.topicSequenceNumber,
 
                 exchangeRate: {
-                    nextRate: null,
+                    nextRate:
+                        this.nextExchangeRate != null
+                            ? this.nextExchangeRate._toProtobuf()
+                            : null,
                     currentRate:
                         this.exchangeRate != null
                             ? this.exchangeRate._toProtobuf()
@@ -237,25 +244,20 @@ export default class TransactionReceipt {
 
                 serialNumbers: this.serials,
                 newTotalSupply: this.totalSupply,
+                nodeId: this.nodeId,
             },
         };
     }
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.ITransactionGetReceiptResponse} response
+     * @param {HieroProto.proto.ITransactionGetReceiptResponse} response
      * @returns {TransactionReceipt}
      */
     static _fromProtobuf(response) {
-        const receipt =
-            /** @type {HashgraphProto.proto.ITransactionReceipt} */ (
-                response.receipt
-            );
-
-        const exchangeRateSet =
-            /** @type {HashgraphProto.proto.IExchangeRateSet} */ (
-                receipt.exchangeRate
-            );
+        const receipt = /** @type {HieroProto.proto.ITransactionReceipt} */ (
+            response.receipt
+        );
 
         const children =
             response.childTransactionReceipts != null
@@ -309,8 +311,16 @@ export default class TransactionReceipt {
             exchangeRate:
                 receipt.exchangeRate != null
                     ? ExchangeRate._fromProtobuf(
-                          /** @type {HashgraphProto.proto.IExchangeRate} */
-                          (exchangeRateSet.currentRate),
+                          /** @type {HieroProto.proto.IExchangeRate} */
+                          (receipt.exchangeRate.currentRate),
+                      )
+                    : null,
+
+            nextExchangeRate:
+                receipt.exchangeRate != null
+                    ? ExchangeRate._fromProtobuf(
+                          /** @type {HieroProto.proto.IExchangeRate} */
+                          (receipt.exchangeRate.nextRate),
                       )
                     : null,
 
@@ -343,6 +353,7 @@ export default class TransactionReceipt {
                     : [],
             children,
             duplicates,
+            nodeId: receipt.nodeId != null ? receipt.nodeId : null,
         });
     }
 
@@ -352,7 +363,7 @@ export default class TransactionReceipt {
      */
     static fromBytes(bytes) {
         return TransactionReceipt._fromProtobuf(
-            HashgraphProto.proto.TransactionGetReceiptResponse.decode(bytes),
+            HieroProto.proto.TransactionGetReceiptResponse.decode(bytes),
         );
     }
 
@@ -360,7 +371,7 @@ export default class TransactionReceipt {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.TransactionGetReceiptResponse.encode(
+        return HieroProto.proto.TransactionGetReceiptResponse.encode(
             this._toProtobuf(),
         ).finish();
     }
@@ -378,6 +389,7 @@ export default class TransactionReceipt {
             tokenId: this.tokenId?.toString() || null,
             scheduleId: this.scheduleId?.toString() || null,
             exchangeRate: this.exchangeRate?.toJSON() || null,
+            nextExchangeRate: this.nextExchangeRate?.toJSON() || null,
             topicSequenceNumber: this.topicSequenceNumber?.toString() || null,
             topicRunningHash:
                 this.topicRunningHash != null
@@ -389,6 +401,7 @@ export default class TransactionReceipt {
             serials: this.serials.map((serial) => serial.toString()),
             duplicates: this.duplicates.map((receipt) => receipt.toJSON()),
             children: this.children.map((receipt) => receipt.toJSON()),
+            nodeId: this.nodeId?.toString() || null,
         };
     }
 

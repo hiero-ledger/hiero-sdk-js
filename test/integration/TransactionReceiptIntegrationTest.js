@@ -18,7 +18,6 @@ describe("TransactionReceipt", function () {
     });
 
     it("should exist in the `ReceiptStatusError`", async function () {
-        this.timeout(120000);
         const operatorKey = env.operatorKey.publicKey;
         const operatorId = env.operatorId;
 
@@ -37,7 +36,7 @@ describe("TransactionReceipt", function () {
 
         const response = await new AccountCreateTransaction()
             .setInitialBalance(new Hbar(50))
-            .setKey(keyList)
+            .setKeyWithoutAlias(keyList)
             .execute(env.client);
 
         expect((await response.getReceipt(env.client)).accountId).to.be.not

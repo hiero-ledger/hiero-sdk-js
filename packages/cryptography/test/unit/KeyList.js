@@ -2,8 +2,6 @@ import PublicKey from "../../src/PublicKey.js";
 import KeyList from "../../src/KeyList.js";
 
 describe("KeyList", function () {
-    this.timeout(15000);
-
     it("KeyList.toString()", async function () {
         const key1 = PublicKey.fromString(
             "302a300506032b65700321008f41f9476ded1bfb887ef49b40b2a33c97c9a90324e79ce53465e15968bb4503",

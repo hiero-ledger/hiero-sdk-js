@@ -8,8 +8,6 @@ import * as hex from "../../src/encoding/hex.js";
 import { BigNumber } from "@ethersproject/bignumber";
 
 describe("ContractFunctionResult", function () {
-    this.timeout(120000);
-
     it("provides results correctly", async function () {
         const CALL_RESULT_HEX =
             "00000000000000000000000000000000000000000000000000000000ffffffff" +

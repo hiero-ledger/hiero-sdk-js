@@ -11,7 +11,7 @@ import {
 import dotenv from "dotenv";
 
 /**
- * @description Serialize and deserialize so-called incompleted transaction, and execute it
+ * @description Serialize and deserialize so-called incomplete transaction, and execute it
  */
 
 async function main() {

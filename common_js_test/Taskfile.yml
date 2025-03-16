@@ -23,4 +23,4 @@ tasks:
         deps:
             - install
         cmds:
-            - ./node_modules/.bin/mocha --exit --inline-diffs -r @babel/register -r chai/register-expect.js "src/test.js"
+            - ./node_modules/.bin/mocha --exit --inline-diffs -r @babel/register -r chai/register-expect.js "src/test.js" --timeout 120000

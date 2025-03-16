@@ -1,27 +1,9 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HieroProto from "@hashgraph/proto";
 import * as utf8 from "../encoding/utf8.js";
 
-const { proto } = HashgraphProto;
+const { proto } = HieroProto;
 
 /**
  * @internal
@@ -34,57 +16,63 @@ export default class Channel {
     constructor() {
         /**
          * @protected
-         * @type {?HashgraphProto.proto.CryptoService}
+         * @type {?HieroProto.proto.CryptoService}
          */
         this._crypto = null;
 
         /**
          * @protected
-         * @type {?HashgraphProto.proto.SmartContractService}
+         * @type {?HieroProto.proto.SmartContractService}
          */
         this._smartContract = null;
 
         /**
          * @protected
-         * @type {?HashgraphProto.proto.FileService}
+         * @type {?HieroProto.proto.FileService}
          */
         this._file = null;
 
         /**
          * @protected
-         * @type {?HashgraphProto.proto.ConsensusService}
+         * @type {?HieroProto.proto.ConsensusService}
          */
         this._consensus = null;
 
         /**
          * @protected
-         * @type {?HashgraphProto.proto.FreezeService}
+         * @type {?HieroProto.proto.FreezeService}
          */
         this._freeze = null;
 
         /**
          * @protected
-         * @type {?HashgraphProto.proto.NetworkService}
+         * @type {?HieroProto.proto.NetworkService}
          */
         this._network = null;
 
         /**
          * @protected
-         * @type {?HashgraphProto.proto.TokenService}
+         * @type {?HieroProto.proto.TokenService}
          */
         this._token = null;
 
         /**
          * @protected
-         * @type {?HashgraphProto.proto.ScheduleService}
+         * @type {?HieroProto.proto.ScheduleService}
          */
         this._schedule = null;
 
         /**
          * @protected
-         * @type {?HashgraphProto.proto.UtilService}
+         * @type {?HieroProto.proto.UtilService}
          */
         this._util = null;
+
+        /**
+         * @protected
+         * @type {?HieroProto.proto.AddressBookService}
+         */
+        this._addressBook = null;
     }
 
     /**
@@ -96,7 +84,7 @@ export default class Channel {
     }
 
     /**
-     * @returns {HashgraphProto.proto.CryptoService}
+     * @returns {HieroProto.proto.CryptoService}
      */
     get crypto() {
         if (this._crypto != null) {
@@ -111,7 +99,7 @@ export default class Channel {
     }
 
     /**
-     * @returns {HashgraphProto.proto.SmartContractService}
+     * @returns {HieroProto.proto.SmartContractService}
      */
     get smartContract() {
         if (this._smartContract != null) {
@@ -126,7 +114,7 @@ export default class Channel {
     }
 
     /**
-     * @returns {HashgraphProto.proto.FileService}
+     * @returns {HieroProto.proto.FileService}
      */
     get file() {
         if (this._file != null) {
@@ -141,7 +129,7 @@ export default class Channel {
     }
 
     /**
-     * @returns {HashgraphProto.proto.ConsensusService}
+     * @returns {HieroProto.proto.ConsensusService}
      */
     get consensus() {
         if (this._consensus != null) {
@@ -156,7 +144,7 @@ export default class Channel {
     }
 
     /**
-     * @returns {HashgraphProto.proto.FreezeService}
+     * @returns {HieroProto.proto.FreezeService}
      */
     get freeze() {
         if (this._freeze != null) {
@@ -171,7 +159,7 @@ export default class Channel {
     }
 
     /**
-     * @returns {HashgraphProto.proto.NetworkService}
+     * @returns {HieroProto.proto.NetworkService}
      */
     get network() {
         if (this._network != null) {
@@ -186,7 +174,7 @@ export default class Channel {
     }
 
     /**
-     * @returns {HashgraphProto.proto.TokenService}
+     * @returns {HieroProto.proto.TokenService}
      */
     get token() {
         if (this._token != null) {
@@ -201,7 +189,7 @@ export default class Channel {
     }
 
     /**
-     * @returns {HashgraphProto.proto.ScheduleService}
+     * @returns {HieroProto.proto.ScheduleService}
      */
     get schedule() {
         if (this._schedule != null) {
@@ -216,7 +204,7 @@ export default class Channel {
     }
 
     /**
-     * @returns {HashgraphProto.proto.UtilService}
+     * @returns {HieroProto.proto.UtilService}
      */
     get util() {
         if (this._util != null) {
@@ -228,6 +216,21 @@ export default class Channel {
         );
 
         return this._util;
+    }
+
+    /**
+     * @returns {HieroProto.proto.AddressBookService}
+     */
+    get addressBook() {
+        if (this._addressBook != null) {
+            return this._addressBook;
+        }
+
+        this._addressBook = proto.AddressBookService.create(
+            this._createUnaryClient("AddressBookService"),
+        );
+
+        return this._addressBook;
     }
 
     /**

@@ -1,25 +1,13 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
+// SPDX-License-Identifier: Apache-2.0
+
+import * as HieroProto from "@hashgraph/proto";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import Long from "long";
+
+/**
+ * A set of values the nodes use in determining transaction and query fees, and
+ * constants involved in fee calculations.
  */
-
-import * as HashgraphProto from "@hashgraph/proto";
-
 export default class FeeComponents {
     /**
      * @param {object} [props]
@@ -120,13 +108,13 @@ export default class FeeComponents {
      */
     static fromBytes(bytes) {
         return FeeComponents._fromProtobuf(
-            HashgraphProto.proto.FeeComponents.decode(bytes),
+            HieroProto.proto.FeeComponents.decode(bytes),
         );
     }
 
     /**
      * @internal
-     * @param {HashgraphProto.proto.IFeeComponents} feeComponents
+     * @param {HieroProto.proto.IFeeComponents} feeComponents
      * @returns {FeeComponents}
      */
     static _fromProtobuf(feeComponents) {
@@ -158,7 +146,7 @@ export default class FeeComponents {
 
     /**
      * @internal
-     * @returns {HashgraphProto.proto.IFeeComponents}
+     * @returns {HieroProto.proto.IFeeComponents}
      */
     _toProtobuf() {
         return {
@@ -204,7 +192,7 @@ export default class FeeComponents {
      * @returns {Uint8Array}
      */
     toBytes() {
-        return HashgraphProto.proto.FeeComponents.encode(
+        return HieroProto.proto.FeeComponents.encode(
             this._toProtobuf(),
         ).finish();
     }

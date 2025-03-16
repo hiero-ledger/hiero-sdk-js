@@ -1,6 +1,6 @@
 import { expect } from "chai";
 
-import { PrivateKey } from "../../src/index.js";
+import { Mnemonic, PrivateKey } from "../../src/index.js";
 import * as hex from "../../src/encoding/hex.js";
 
 const RAW_KEY =
@@ -14,6 +14,8 @@ const DER_PRIVATE_KEY_BYTES = new Uint8Array([
 ]);
 const DER_PUBLIC_KEY =
     "302a300506032b65700321004a6892f034d2d1c9b1a76acca8e34884055172f4210a0c02e3c7d55084f224d1";
+
+const STRESS_TEST_ITERATION_COUNT = 100;
 
 describe("Ed25519PrivateKey", function () {
     it("generate should return  object", function () {
@@ -298,5 +300,110 @@ describe("Ed25519PrivateKey", function () {
         const privateKey = PrivateKey.generateED25519();
 
         expect(privateKey.type).to.be.string("ED25519");
+    });
+
+    it("should produce consistent public key from 12 word mnemonic and fromStringED25519", async function () {
+        for (let i = 0; i < STRESS_TEST_ITERATION_COUNT; i++) {
+            const mnemonic = await Mnemonic.generate12();
+            const privateKeyFromMnemonic =
+                await mnemonic.toStandardEd25519PrivateKey();
+            const publicKeyFromMnemonic = privateKeyFromMnemonic.publicKey;
+
+            const privateKeyFromString = PrivateKey.fromStringED25519(
+                privateKeyFromMnemonic.toStringDer(),
+            );
+            const publicKeyFromString = privateKeyFromString.publicKey;
+
+            if (
+                publicKeyFromMnemonic.toStringDer() !==
+                publicKeyFromString.toStringDer()
+            ) {
+                console.log(
+                    "Public key from mnemonic: ",
+                    publicKeyFromMnemonic,
+                );
+                console.log("Public key from string: ", publicKeyFromString);
+                throw new Error("Public key mismatch");
+            }
+        }
+    });
+
+    it("should produce consistent public key from 12 word mnemonic and fromBytesED25519", async function () {
+        for (let i = 0; i < STRESS_TEST_ITERATION_COUNT; i++) {
+            const mnemonic = await Mnemonic.generate12();
+            const privateKeyFromMnemonic =
+                await mnemonic.toStandardEd25519PrivateKey();
+            const publicKeyFromMnemonic = privateKeyFromMnemonic.publicKey;
+
+            const privateKeyFromString = PrivateKey.fromBytesED25519(
+                privateKeyFromMnemonic.toBytesDer(),
+            );
+            const publicKeyFromString = privateKeyFromString.publicKey;
+
+            if (
+                publicKeyFromMnemonic.toStringDer() !==
+                publicKeyFromString.toStringDer()
+            ) {
+                console.log(
+                    "Public key from mnemonic: ",
+                    publicKeyFromMnemonic,
+                );
+                console.log("Public key from string: ", publicKeyFromString);
+                throw new Error("Public key mismatch");
+            }
+        }
+    });
+
+    it("should produce consistent public key from 24 word mnemonic and fromStringED5519", async function () {
+        for (let i = 0; i < STRESS_TEST_ITERATION_COUNT; i++) {
+            const mnemonic = await Mnemonic.generate();
+            const privateKeyFromMnemonic =
+                await mnemonic.toStandardEd25519PrivateKey();
+            const publicKeyFromMnemonic = privateKeyFromMnemonic.publicKey;
+
+            const privateKeyFromString = PrivateKey.fromStringED25519(
+                privateKeyFromMnemonic.toStringDer(),
+            );
+            const publicKeyFromString = privateKeyFromString.publicKey;
+
+            if (
+                publicKeyFromMnemonic.toStringDer() !==
+                publicKeyFromString.toStringDer()
+            ) {
+                console.log(
+                    "Public key from mnemonic: ",
+                    publicKeyFromMnemonic,
+                );
+                console.log("Public key from string: ", publicKeyFromString);
+                throw new Error("Public key mismatch");
+            }
+        }
+    });
+
+    it("should produce consistent public key from 24 word mnemonic and fromBytesED25519", async function () {
+        this.timeout(120000);
+        for (let i = 0; i < STRESS_TEST_ITERATION_COUNT; i++) {
+            const mnemonic = await Mnemonic.generate();
+            const privateKeyFromMnemonic =
+                await mnemonic.toStandardEd25519PrivateKey();
+            const publicKeyFromMnemonic = privateKeyFromMnemonic.publicKey;
+
+            const privateKeyFromString = PrivateKey.fromBytesED25519(
+                privateKeyFromMnemonic.toBytesDer(),
+            );
+            const publicKeyFromString = privateKeyFromString.publicKey;
+
+            if (
+                publicKeyFromMnemonic.toStringDer() !==
+                publicKeyFromString.toStringDer()
+            ) {
+                console.log(
+                    "Public key from mnemonic: ",
+                    publicKeyFromMnemonic,
+                );
+                console.log("Public key from string: ", publicKeyFromString);
+                throw new Error("Public key mismatch");
+            }
+        }
     });
 });

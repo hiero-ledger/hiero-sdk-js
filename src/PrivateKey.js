@@ -1,47 +1,34 @@
-/*-
- * ‌
- * Hedera JavaScript SDK
- * ​
- * Copyright (C) 2020 - 2023 Hedera Hashgraph, LLC
- * ​
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * ‍
- */
+// SPDX-License-Identifier: Apache-2.0
 
-import * as cryptography from "@hashgraph/cryptography";
+import { PrivateKey as PrivateKeyCrypto } from "@hashgraph/cryptography";
 import Mnemonic from "./Mnemonic.js";
 import PublicKey from "./PublicKey.js";
 import Key from "./Key.js";
 import CACHE from "./Cache.js";
+import SignatureMap from "./transaction/SignatureMap.js";
+
+import AccountId from "./account/AccountId.js";
+import TransactionId from "./transaction/TransactionId.js";
+import { proto } from "@hashgraph/proto";
 
 /**
  * @typedef {import("./transaction/Transaction.js").default} Transaction
- * @typedef {import("./account/AccountId.js").default} AccountId
  */
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IKey} HashgraphProto.proto.IKey
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HashgraphProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.ISignaturePair} HashgraphProto.proto.ISignaturePair
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HashgraphProto.proto.ISignedTransaction
+ * @typedef {import("@hashgraph/proto").proto.IKey} HieroProto.proto.IKey
+ * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hashgraph/proto").proto.ISignaturePair} HieroProto.proto.ISignaturePair
+ * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
  */
 
 export default class PrivateKey extends Key {
     /**
      * @internal
      * @hideconstructor
-     * @param {cryptography.PrivateKey} key
+     * @param {PrivateKeyCrypto} key
      */
     constructor(key) {
         super();
@@ -55,7 +42,7 @@ export default class PrivateKey extends Key {
      * @returns {PrivateKey}
      */
     static generateED25519() {
-        return new PrivateKey(cryptography.PrivateKey.generateED25519());
+        return new PrivateKey(PrivateKeyCrypto.generateED25519());
     }
 
     /**
@@ -64,7 +51,7 @@ export default class PrivateKey extends Key {
      * @returns {PrivateKey}
      */
     static generateECDSA() {
-        return new PrivateKey(cryptography.PrivateKey.generateECDSA());
+        return new PrivateKey(PrivateKeyCrypto.generateECDSA());
     }
 
     /**
@@ -84,7 +71,7 @@ export default class PrivateKey extends Key {
      * @returns {Promise<PrivateKey>}
      */
     static async generateAsync() {
-        return new PrivateKey(await cryptography.PrivateKey.generateAsync());
+        return new PrivateKey(await PrivateKeyCrypto.generateAsync());
     }
 
     /**
@@ -93,9 +80,7 @@ export default class PrivateKey extends Key {
      * @returns {Promise<PrivateKey>}
      */
     static async generateED25519Async() {
-        return new PrivateKey(
-            await cryptography.PrivateKey.generateED25519Async(),
-        );
+        return new PrivateKey(await PrivateKeyCrypto.generateED25519Async());
     }
 
     /**
@@ -104,9 +89,7 @@ export default class PrivateKey extends Key {
      * @returns {Promise<PrivateKey>}
      */
     static async generateECDSAAsync() {
-        return new PrivateKey(
-            await cryptography.PrivateKey.generateECDSAAsync(),
-        );
+        return new PrivateKey(await PrivateKeyCrypto.generateECDSAAsync());
     }
 
     /**
@@ -116,7 +99,7 @@ export default class PrivateKey extends Key {
      * @returns {PrivateKey}
      */
     static fromBytes(data) {
-        return new PrivateKey(cryptography.PrivateKey.fromBytes(data));
+        return new PrivateKey(PrivateKeyCrypto.fromBytes(data));
     }
 
     /**
@@ -126,7 +109,7 @@ export default class PrivateKey extends Key {
      * @returns {PrivateKey}
      */
     static fromBytesECDSA(data) {
-        return new PrivateKey(cryptography.PrivateKey.fromBytesECDSA(data));
+        return new PrivateKey(PrivateKeyCrypto.fromBytesECDSA(data));
     }
 
     /**
@@ -136,7 +119,7 @@ export default class PrivateKey extends Key {
      * @returns {PrivateKey}
      */
     static fromBytesED25519(data) {
-        return new PrivateKey(cryptography.PrivateKey.fromBytesED25519(data));
+        return new PrivateKey(PrivateKeyCrypto.fromBytesED25519(data));
     }
 
     /**
@@ -147,7 +130,7 @@ export default class PrivateKey extends Key {
      * @returns {PrivateKey}
      */
     static fromString(text) {
-        return new PrivateKey(cryptography.PrivateKey.fromString(text));
+        return new PrivateKey(PrivateKeyCrypto.fromString(text));
     }
 
     /**
@@ -157,7 +140,7 @@ export default class PrivateKey extends Key {
      * @returns {PrivateKey}
      */
     static fromStringDer(text) {
-        return new PrivateKey(cryptography.PrivateKey.fromString(text));
+        return new PrivateKey(PrivateKeyCrypto.fromString(text));
     }
 
     /**
@@ -167,7 +150,7 @@ export default class PrivateKey extends Key {
      * @returns {PrivateKey}
      */
     static fromStringECDSA(text) {
-        return new PrivateKey(cryptography.PrivateKey.fromStringECDSA(text));
+        return new PrivateKey(PrivateKeyCrypto.fromStringECDSA(text));
     }
 
     /**
@@ -177,7 +160,7 @@ export default class PrivateKey extends Key {
      * @returns {PrivateKey}
      */
     static fromStringED25519(text) {
-        return new PrivateKey(cryptography.PrivateKey.fromStringED25519(text));
+        return new PrivateKey(PrivateKeyCrypto.fromStringED25519(text));
     }
 
     /**
@@ -187,9 +170,7 @@ export default class PrivateKey extends Key {
      * @returns {Promise<PrivateKey>}
      */
     static async fromSeedED25519(seed) {
-        return new PrivateKey(
-            await cryptography.PrivateKey.fromSeedED25519(seed),
-        );
+        return new PrivateKey(await PrivateKeyCrypto.fromSeedED25519(seed));
     }
 
     /**
@@ -200,7 +181,7 @@ export default class PrivateKey extends Key {
      */
     static async fromSeedECDSAsecp256k1(seed) {
         return new PrivateKey(
-            await cryptography.PrivateKey.fromSeedECDSAsecp256k1(seed),
+            await PrivateKeyCrypto.fromSeedECDSAsecp256k1(seed),
         );
     }
 
@@ -208,7 +189,7 @@ export default class PrivateKey extends Key {
      * @deprecated - Use `Mnemonic.from[Words|String]().to[Ed25519|Ecdsa]PrivateKey()` instead
      *
      * Recover a private key from a mnemonic phrase (and optionally a password).
-     * @param {Mnemonic | cryptography.Mnemonic | string} mnemonic
+     * @param {Mnemonic  | string} mnemonic
      * @param {string} [passphrase]
      * @returns {Promise<PrivateKey>}
      */
@@ -216,7 +197,7 @@ export default class PrivateKey extends Key {
         if (mnemonic instanceof Mnemonic) {
             return new PrivateKey(
                 // eslint-disable-next-line deprecation/deprecation
-                await cryptography.PrivateKey.fromMnemonic(
+                await PrivateKeyCrypto.fromMnemonic(
                     mnemonic._mnemonic,
                     passphrase,
                 ),
@@ -225,7 +206,7 @@ export default class PrivateKey extends Key {
 
         return new PrivateKey(
             // eslint-disable-next-line deprecation/deprecation
-            await cryptography.PrivateKey.fromMnemonic(mnemonic, passphrase),
+            await PrivateKeyCrypto.fromMnemonic(mnemonic, passphrase),
         );
     }
 
@@ -241,7 +222,7 @@ export default class PrivateKey extends Key {
      */
     static async fromKeystore(data, passphrase = "") {
         return new PrivateKey(
-            await cryptography.PrivateKey.fromKeystore(data, passphrase),
+            await PrivateKeyCrypto.fromKeystore(data, passphrase),
         );
     }
 
@@ -259,9 +240,7 @@ export default class PrivateKey extends Key {
      * @returns {Promise<PrivateKey>}
      */
     static async fromPem(data, passphrase = "") {
-        return new PrivateKey(
-            await cryptography.PrivateKey.fromPem(data, passphrase),
-        );
+        return new PrivateKey(await PrivateKeyCrypto.fromPem(data, passphrase));
     }
 
     /**
@@ -325,18 +304,33 @@ export default class PrivateKey extends Key {
 
     /**
      * @param {Transaction} transaction
-     * @returns {Uint8Array}
+     * @returns {SignatureMap}
      */
     signTransaction(transaction) {
-        const tx = transaction._signedTransactions.get(0);
-        const signature =
-            tx.bodyBytes != null ? this.sign(tx.bodyBytes) : new Uint8Array();
+        const sigMap = new SignatureMap();
 
-        transaction.addSignature(this.publicKey, signature);
+        for (const signedTx of transaction._signedTransactions.list) {
+            const bodyBytes = signedTx.bodyBytes;
+            if (!bodyBytes) throw new Error("Body bytes are missing");
 
-        return signature;
+            const body = proto.TransactionBody.decode(bodyBytes);
+            if (!body.transactionID || !body.nodeAccountID) {
+                throw new Error(
+                    "Transaction ID or Node Account ID not found in the signed transaction",
+                );
+            }
+
+            const nodeId = AccountId._fromProtobuf(body.nodeAccountID);
+            const transactionId = TransactionId._fromProtobuf(
+                body.transactionID,
+            );
+            const sig = this._key.sign(bodyBytes);
+            sigMap.addSignature(nodeId, transactionId, this.publicKey, sig);
+        }
+
+        transaction.addSignature(this.publicKey, sigMap);
+        return sigMap;
     }
-
     /**
      * Check if `derive` can be called on this private key.
      *
@@ -407,7 +401,7 @@ export default class PrivateKey extends Key {
     }
 
     /**
-     * @returns {HashgraphProto.proto.IKey}
+     * @returns {HieroProto.proto.IKey}
      */
     _toProtobufKey() {
         return this.publicKey._toProtobufKey();

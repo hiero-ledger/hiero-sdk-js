@@ -42,38 +42,28 @@ tasks:
               --validation.invalidLink
               --entryPoints src/index.js src/browser.js src/native.js
 
-    "install:deps":
-        run: once
+    "yalc:install":
         cmds:
-            - pnpm i --dev > /dev/null
+            - npm install -g yalc > /dev/null
 
-    "install:cryptography:local":
+    "yalc:add":
         cmds:
-            - task: "install:deps"
-            - task: "cryptography:build"
-            - npx yalc add @hashgraph/cryptography > /dev/null
-        status:
-            - ./check_yalc_dep.sh @hashgraph/cryptography
-
-    "install:proto:local":
-        cmds:
-            - task: "install:deps"
-            - task: "proto:build"
             - npx yalc add @hashgraph/proto > /dev/null
-        status:
-            - ./check_yalc_dep.sh @hashgraph/proto
+            - npx yalc add @hashgraph/cryptography > /dev/null
 
-    "build:proto":
+    "yalc:remove":
         cmds:
-            - task: "proto:build"
+            - npx yalc remove @hashgraph/proto > /dev/null
+            - npx yalc remove @hashgraph/cryptography > /dev/null
 
     install:
         deps:
-            - "build:proto"
-            - "install:cryptography:local"
-            - "install:proto:local"
+            - "yalc:install"
+            - "proto:build"
+            - "cryptography:build"
         cmds:
-            - pnpm i > /dev/null
+            - task: "yalc:add"
+            - pnpm i --no-frozen-lockfile > /dev/null
 
     build:
         cmds:
@@ -82,6 +72,7 @@ tasks:
             - task: format
             - task: lint
             - npx babel src -d lib --out-file-extension .cjs > /dev/null
+            - npx rollup -c > /dev/null
             - npx yalc publish > /dev/null
 
     clean:
@@ -142,13 +133,12 @@ tasks:
 
     "test:unit:node":
         cmds:
-            - npx mocha --inline-diffs -r @babel/register -r chai/register-expect.js "test/unit/*.js" {{.CLI_ARGS}}
+            - npx mocha --inline-diffs --exit -r @babel/register -r chai/register-expect.js "test/unit/*.js" --timeout 120000 {{.CLI_ARGS}}
 
     "test:unit:codecov":
         cmds:
-            - npx c8 --reporter=lcov --reporter=text-summary ./node_modules/.bin/mocha --inline-diffs -r @babel/register -r chai/register-expect.js "test/unit/*.js" {{.CLI_ARGS}}
+            - npx c8 --reporter=lcov --reporter=text-summary ./node_modules/.bin/mocha --inline-diffs -r @babel/register -r chai/register-expect.js "test/unit/*.js" --timeout 120000 {{.CLI_ARGS}}
             - npx c8 report
-            - npx codecov
 
     "test:unit:browser":
         cmds:
@@ -160,13 +150,12 @@ tasks:
 
     "test:integration:node":
         cmds:
-            - npx mocha --exit -r @babel/register -r chai/register-expect.js "test/integration/*.js" {{.CLI_ARGS}}
+            - npx mocha --exit --parallel -jobs 4 -r @babel/register -r chai/register-expect.js "test/integration/*.js" --timeout 120000 {{.CLI_ARGS}}
 
     "test:integration:codecov":
         cmds:
-            - npx c8 --reporter=lcov --reporter=text-summary ./node_modules/.bin/mocha --exit -r @babel/register -r chai/register-expect.js "test/integration/*.js" {{.CLI_ARGS}}
+            - npx c8 --reporter=lcov --reporter=text-summary ./node_modules/.bin/mocha --exit --parallel -jobs 4 -r @babel/register -r chai/register-expect.js "test/integration/*.js" --timeout 120000 {{.CLI_ARGS}}
             - npx c8 report
-            - npx codecov
 
     "update:proto":
         deps:
@@ -187,8 +176,14 @@ tasks:
             - task: build
 
     publish:
+        deps:
+            - "test:release"
+        cmds:
+            - task: "yalc:remove"
+            - task: "publish:release"
+
+    "publish:release":
         preconditions:
             - "! grep '\".*\": \"\\(link\\|file\\):.*\"' package.json > /dev/null"
         cmds:
-            - task: "test:release"
             - pnpm publish {{.CLI_ARGS}}
