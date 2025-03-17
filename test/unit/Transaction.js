@@ -1,7 +1,9 @@
 import {
     AccountCreateTransaction,
     AccountId,
+    FileAppendTransaction,
     FileCreateTransaction,
+    FileId,
     Hbar,
     HbarUnit,
     PrivateKey,
@@ -420,9 +422,6 @@ describe("Transaction", function () {
         it("should remove a specific signature", function () {
             // Sign the transaction with multiple keys
             signAndAddSignatures(transaction, key1);
-
-            // console.log(transaction);
-
             //Check if the transaction internal tracking of signer public keys is correct
             expect(transaction._signerPublicKeys.size).to.equal(1);
             expect(transaction._publicKeys.length).to.equal(1);
@@ -714,5 +713,182 @@ describe("Transaction", function () {
         expect(hashesPerNode.size).to.be.equal(2);
         expect(hashesPerNode.get(new AccountId(3))).to.be.not.null;
         expect(hashesPerNode.get(new AccountId(4))).to.be.not.null;
+    });
+
+    describe("size", function () {
+        let transaction;
+        let account;
+        let nodeAccountId;
+        let transactionId;
+
+        beforeEach(function () {
+            account = AccountId.fromString("0.0.1004");
+            nodeAccountId = new AccountId(3);
+            const validStart = new Timestamp(1451, 590);
+            transactionId = new TransactionId(account, validStart);
+
+            transaction = new AccountCreateTransaction()
+                .setInitialBalance(new Hbar(2))
+                .setTransactionId(transactionId)
+                .setNodeAccountIds([nodeAccountId])
+                .freeze();
+        });
+
+        it("should return the correct transaction size in bytes", async function () {
+            const size = await transaction.size;
+            expect(size).to.be.a("number");
+            expect(size).to.be.greaterThan(0);
+        });
+
+        it("should return proper sizes for FileAppend transactions when chunked tx", async function () {
+            const content = Buffer.alloc(2048).fill("a"); // 2KB of data, larger than CHUNK_SIZE (1024)
+
+            const fileAppendTx = new FileAppendTransaction()
+                .setFileId(new FileId(1))
+                .setContents(content)
+                .setTransactionId(transactionId)
+                .setNodeAccountIds([nodeAccountId])
+                .freeze();
+
+            // Get size of the chunked transaction
+            const size = await fileAppendTx.size;
+
+            // Since content is 2KB and CHUNK_SIZE is 1KB, this should create 2 chunks
+            // Each chunk should have its own transaction, so size should reflect total size of all chunks
+            expect(size).to.be.greaterThan(1024); // Size should be greater than single chunk
+
+            // Create a small content transaction for comparison
+            const smallContent = Buffer.alloc(512).fill("a"); // 512 bytes, smaller than CHUNK_SIZE
+            const smallFileAppendTx = new FileAppendTransaction()
+                .setFileId(new FileId(1))
+                .setContents(smallContent)
+                .setTransactionId(transactionId)
+                .setNodeAccountIds([nodeAccountId])
+                .freeze();
+
+            const smallSize = await smallFileAppendTx.size;
+
+            // The larger chunked transaction should be bigger than the small single-chunk transaction
+            expect(size).to.be.greaterThan(smallSize);
+        });
+
+        it("should return different sizes for transactions with different signatures", async function () {
+            const key = PrivateKey.generateED25519();
+            const sizeBeforeSign = await transaction.size;
+
+            await transaction.sign(key);
+            const sizeAfterSign = await transaction.size;
+
+            expect(sizeAfterSign).to.be.greaterThan(sizeBeforeSign);
+        });
+
+        it("should return the same size for identical transactions", async function () {
+            const size1 = await transaction.size;
+            const size2 = await transaction.size;
+
+            expect(size1).to.equal(size2);
+        });
+
+        it("should return the correct transaction body size in bytes", function () {
+            const bodySize = transaction.bodySize;
+            expect(bodySize).to.be.a("number");
+            expect(bodySize).to.be.greaterThan(0);
+        });
+
+        it("should return different sizes for transactions with different contents", function () {
+            const transaction1 = new FileCreateTransaction().setContents(
+                Buffer.from("a"),
+            );
+
+            const transaction2 = new FileCreateTransaction().setContents(
+                Buffer.from("abcdefghjk"),
+            );
+            expect(transaction1.bodySize).to.not.equal(transaction2.bodySize);
+        });
+
+        it("should return the same size for identical transaction bodies", function () {
+            const bodySize1 = transaction.bodySize;
+            const bodySize2 = transaction.bodySize;
+
+            expect(bodySize1).to.equal(bodySize2);
+        });
+
+        it("should be smaller than total transaction size", async function () {
+            const totalSize = await transaction.size;
+            const bodySize = transaction.bodySize;
+
+            expect(bodySize).to.be.lessThan(totalSize);
+        });
+
+        it("should handle empty optional fields", function () {
+            const minimalTx = new AccountCreateTransaction()
+                .setTransactionId(transactionId)
+                .setNodeAccountIds([nodeAccountId])
+                .freeze();
+
+            const fullTx = new AccountCreateTransaction()
+                .setInitialBalance(new Hbar(1))
+                .setTransactionMemo("memo")
+                .setMaxTransactionFee(new Hbar(1))
+                .setTransactionValidDuration(120)
+                .setTransactionId(transactionId)
+                .setNodeAccountIds([nodeAccountId])
+                .freeze();
+
+            expect(minimalTx.bodySize).to.be.lessThan(fullTx.bodySize);
+        });
+
+        it("should return array of body sizes for multi-chunk transaction", function () {
+            // Create content larger than chunk size to force multiple chunks
+            const CHUNK_SIZE = 1024;
+            const content = Buffer.alloc(CHUNK_SIZE * 3).fill("a"); // Will create 3 chunks
+
+            const fileAppendTx = new FileAppendTransaction()
+                .setFileId(new FileId(1))
+                .setChunkSize(CHUNK_SIZE)
+                .setContents(content)
+                .setTransactionId(transactionId)
+                .setNodeAccountIds([nodeAccountId])
+                .freeze();
+
+            const bodySizes = fileAppendTx.bodySizeAllChunks;
+
+            // Verify we got an array of sizes
+            expect(Array.isArray(bodySizes)).to.be.true;
+            expect(bodySizes).to.have.lengthOf(3);
+            bodySizes.forEach((size) => {
+                expect(size).to.be.a("number").and.be.greaterThan(0);
+            });
+        });
+
+        it("should return array of one size for single-chunk transaction", function () {
+            const smallContent = Buffer.alloc(500).fill("a"); // Small enough for one chunk
+
+            const fileAppendTx = new FileAppendTransaction()
+                .setFileId(new FileId(1))
+                .setContents(smallContent)
+                .setTransactionId(transactionId)
+                .setNodeAccountIds([nodeAccountId])
+                .freeze();
+
+            const bodySizes = fileAppendTx.bodySizeAllChunks;
+
+            expect(Array.isArray(bodySizes)).to.be.true;
+            expect(bodySizes).to.have.lengthOf(1);
+            expect(bodySizes[0]).to.be.a("number").and.be.greaterThan(0);
+        });
+
+        it("should return empty array for transaction with no content", function () {
+            const fileAppendTx = new FileAppendTransaction()
+                .setFileId(new FileId(1))
+                .setTransactionId(transactionId)
+                .setNodeAccountIds([nodeAccountId])
+                .freeze();
+
+            const bodySizes = fileAppendTx.bodySizeAllChunks;
+
+            expect(Array.isArray(bodySizes)).to.be.true;
+            expect(bodySizes).to.have.lengthOf(1); // Should still have one empty chunk
+        });
     });
 });
