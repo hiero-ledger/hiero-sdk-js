@@ -67,10 +67,18 @@ tasks:
 
     build:
         cmds:
+            - task: build:prep
+            - task: build:actual
+
+    "build:prep":
+        cmds:
             - task: install
             - task: update:addressbooks
             - task: format
             - task: lint
+
+    "build:actual":
+        cmds:
             - npx babel src -d lib --out-file-extension .cjs > /dev/null
             - npx rollup -c > /dev/null
             - npx yalc publish > /dev/null
