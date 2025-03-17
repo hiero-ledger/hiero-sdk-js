@@ -37,7 +37,6 @@ describe("TokenCreate", function () {
             .setSupplyKey(key4)
             .setFreezeDefault(false)
             .setAutoRenewAccountId(operatorId)
-            .setAutoRenewAccountId(operatorId)
             .execute(env.client);
 
         const tokenId = (await response.getReceipt(env.client)).tokenId;
