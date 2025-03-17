@@ -585,6 +585,34 @@ export default class Transaction extends Executable {
     }
 
     /**
+     *  Protobuf encoding has specific rules about how data is serialized
+     *  Different fields take different amounts of space depending on their values
+     *  The actual wire format size can only be determined after encoding
+     *
+     * @returns {Promise<number>}
+     */
+    get size() {
+        return this._makeRequestAsync().then(
+            (request) =>
+                HieroProto.proto.Transaction.encode(request).finish().length,
+        );
+    }
+
+    /**
+     * Get the transaction body size
+     * Protobuf encoding has specific rules about how data is serialized
+     * Different fields take different amounts of space depending on their values
+     * The actual wire format size can only be determined after encoding
+     *
+     * @returns {number}
+     */
+    get bodySize() {
+        const body = this._makeTransactionBody(AccountId.fromString("0.0.0"));
+
+        return HieroProto.proto.TransactionBody.encode(body).finish().length;
+    }
+
+    /**
      * Sets the duration (in seconds) that this transaction is valid for.
      *
      * This is defaulted to 120 seconds (from the time its executed).
