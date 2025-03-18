@@ -640,7 +640,7 @@ describe("Transaction", function () {
         });
     });
 
-    describe.only("size", function () {
+    describe("size", function () {
         let transaction;
         let account;
         let nodeAccountId;
