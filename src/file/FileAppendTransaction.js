@@ -252,6 +252,8 @@ export default class FileAppendTransaction extends Transaction {
      * The size is calculated by encoding the transaction body to protobuf format.
      *
      * @returns {number[]} An array of body sizes, where each element represents
+     * the size in bytes of a chunk's transaction body
+     *
      */
     get bodySizeAllChunks() {
         const bodySizes = [];
