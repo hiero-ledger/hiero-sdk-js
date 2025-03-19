@@ -124,9 +124,7 @@ describe("AccountInfoMocking", function () {
         client.setDefaultMaxQueryPayment(Hbar.fromTinybars(10));
 
         try {
-            await new AccountInfoQuery()
-                .setAccountId("0.0.3")
-                .execute(client, 1);
+            await new AccountInfoQuery().setAccountId("0.0.3").execute(client);
         } catch (error) {
             errorName = error.name;
         }
@@ -143,7 +141,7 @@ describe("AccountInfoMocking", function () {
             .setAccountId("0.0.3")
             .setQueryPayment(Hbar.fromTinybars(10));
 
-        await query.execute(client, 1);
+        await query.execute(client);
 
         expect(query._queryPayment.toTinybars().toInt()).to.be.equal(10);
     }, 15000);
@@ -158,7 +156,7 @@ describe("AccountInfoMocking", function () {
             .setMaxQueryPayment(Hbar.fromTinybars(1))
             .setQueryPayment(Hbar.fromTinybars(10));
 
-        await query.execute(client, 1);
+        await query.execute(client);
 
         expect(query._queryPayment.toTinybars().toInt()).to.be.equal(10);
     });
@@ -178,7 +176,7 @@ describe("AccountInfoMocking", function () {
         const query = new AccountInfoQuery().setAccountId("0.0.3");
 
         try {
-            await query.execute(client, 1);
+            await query.execute(client);
         } catch (error) {
             err = error instanceof MaxQueryPaymentExceeded;
         }
@@ -201,7 +199,7 @@ describe("AccountInfoMocking", function () {
             .setAccountId("0.0.3");
 
         try {
-            await query.execute(client, 1);
+            await query.execute(client);
         } catch (error) {
             err = error instanceof MaxQueryPaymentExceeded;
         }
@@ -223,7 +221,7 @@ describe("AccountInfoMocking", function () {
             await new AccountInfoQuery()
                 .setAccountId("0.0.3")
                 .setMaxQueryPayment(Hbar.fromTinybars(28))
-                .execute(client, 1);
+                .execute(client);
         } catch (error) {
             err = error instanceof MaxQueryPaymentExceeded;
         }
@@ -555,9 +553,7 @@ describe("AccountInfoMocking", function () {
         let err = false;
 
         try {
-            await new AccountInfoQuery()
-                .setAccountId("0.0.3")
-                .execute(client, 10000);
+            await new AccountInfoQuery().setAccountId("0.0.3").execute(client);
         } catch (error) {
             err = error.message === "timeout exceeded";
         }
