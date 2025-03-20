@@ -126,6 +126,7 @@ describe("PrivateKey signTransaction", function () {
 
     it("should create, sign, and execute a transaction with multiple signatures", async function () {
         // Step 1: Generate private keys
+        const THRESHOLD = 2;
         const key1 = PrivateKey.generateED25519();
         const key2 = PrivateKey.generateED25519();
         const key3 = PrivateKey.generateED25519();
@@ -141,7 +142,7 @@ describe("PrivateKey signTransaction", function () {
                 key4.publicKey,
                 key5.publicKey,
             ],
-            2,
+            THRESHOLD,
         );
 
         // Step 2: Create account with key list
@@ -167,14 +168,14 @@ describe("PrivateKey signTransaction", function () {
             .freezeWith(env.client);
 
         // Step 4: Sign transaction
-        const signature1 = key1.signTransaction(transferTx, true);
-        const signature2 = key2.signTransaction(transferTx);
+        const signatureBytes = key1.signTransaction(transferTx, true);
+        const signatureSigMap = key2.signTransaction(transferTx);
 
         // Step 5: Add signatures and execute transaction
         const { status } = await (
             await transferTx
-                .addSignature(key1.publicKey, signature1)
-                .addSignature(key2.publicKey, signature2)
+                .addSignature(key1.publicKey, signatureBytes)
+                .addSignature(key2.publicKey, signatureSigMap)
                 .execute(env.client)
         ).getReceipt(env.client);
 
