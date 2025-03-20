@@ -1,20 +1,20 @@
 import {
-    AccountCreateTransaction,
     AccountInfoQuery,
     AccountUpdateTransaction,
     Hbar,
-    PrivateKey,
     Status,
     TokenAssociateTransaction,
-    TokenCreateTransaction,
     TokenGrantKycTransaction,
     TokenMintTransaction,
-    TokenSupplyType,
-    TokenType,
     TokenWipeTransaction,
     TransferTransaction,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import {
+    createAccount,
+    createFungibleToken,
+    createNonFungibleToken,
+} from "./utils/Fixtures.js";
 
 describe("TokenTransfer", function () {
     let env;
@@ -24,37 +24,25 @@ describe("TokenTransfer", function () {
     });
 
     it("should be executable", async function () {
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
-        const key = PrivateKey.generateED25519();
+        // Create token with required keys
+        const token = await createFungibleToken(env.client, (transaction) => {
+            transaction
+                .setDecimals(3)
+                .setInitialSupply(1000000)
+                .setKycKey(env.operatorKey)
+                .setFreezeKey(env.operatorKey)
+                .setWipeKey(env.operatorKey)
+                .setSupplyKey(env.operatorKey)
+                .setFreezeDefault(false);
+        });
 
-        const response = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(key)
-            .setInitialBalance(new Hbar(2))
-            .execute(env.client);
-
-        const receipt = await response.getReceipt(env.client);
-
-        expect(receipt.accountId).to.not.be.null;
-        const account = receipt.accountId;
-
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setDecimals(3)
-                    .setInitialSupply(1000000)
-                    .setTreasuryAccountId(operatorId)
-                    .setAdminKey(operatorKey)
-                    .setKycKey(operatorKey)
-                    .setFreezeKey(operatorKey)
-                    .setWipeKey(operatorKey)
-                    .setSupplyKey(operatorKey)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        // Create account
+        const { accountId: account, newKey: key } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setInitialBalance(new Hbar(2));
+            },
+        );
 
         await (
             await (
@@ -93,37 +81,25 @@ describe("TokenTransfer", function () {
     });
 
     it("should not error when no amount is transferred", async function () {
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
-        const key = PrivateKey.generateED25519();
+        // Create token with required keys
+        const token = await createFungibleToken(env.client, (transaction) => {
+            transaction
+                .setDecimals(3)
+                .setInitialSupply(10000000)
+                .setKycKey(env.operatorKey)
+                .setFreezeKey(env.operatorKey)
+                .setWipeKey(env.operatorKey)
+                .setSupplyKey(env.operatorKey)
+                .setFreezeDefault(false);
+        });
 
-        const response = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(key)
-            .setInitialBalance(new Hbar(2))
-            .execute(env.client);
-
-        const receipt = await response.getReceipt(env.client);
-
-        expect(receipt.accountId).to.not.be.null;
-        const account = receipt.accountId;
-
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setDecimals(3)
-                    .setInitialSupply(10000000)
-                    .setTreasuryAccountId(operatorId)
-                    .setAdminKey(operatorKey)
-                    .setKycKey(operatorKey)
-                    .setFreezeKey(operatorKey)
-                    .setWipeKey(operatorKey)
-                    .setSupplyKey(operatorKey)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        // Create account
+        const { accountId: account, newKey: key } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setInitialBalance(new Hbar(2));
+            },
+        );
 
         await (
             await (
@@ -164,37 +140,25 @@ describe("TokenTransfer", function () {
     });
 
     it("should error when no  is transferred", async function () {
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
-        const key = PrivateKey.generateED25519();
+        // Create token with required keys
+        const token = await createFungibleToken(env.client, (transaction) => {
+            transaction
+                .setDecimals(3)
+                .setInitialSupply(0)
+                .setKycKey(env.operatorKey)
+                .setFreezeKey(env.operatorKey)
+                .setWipeKey(env.operatorKey)
+                .setSupplyKey(env.operatorKey)
+                .setFreezeDefault(false);
+        });
 
-        const response = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(key)
-            .setInitialBalance(new Hbar(2))
-            .execute(env.client);
-
-        const receipt = await response.getReceipt(env.client);
-
-        expect(receipt.accountId).to.not.be.null;
-        const account = receipt.accountId;
-
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setDecimals(3)
-                    .setInitialSupply(0)
-                    .setTreasuryAccountId(operatorId)
-                    .setAdminKey(operatorKey)
-                    .setKycKey(operatorKey)
-                    .setFreezeKey(operatorKey)
-                    .setWipeKey(operatorKey)
-                    .setSupplyKey(operatorKey)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        // Create account
+        const { accountId: account, newKey: key } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setInitialBalance(new Hbar(2));
+            },
+        );
 
         await (
             await (
@@ -235,34 +199,24 @@ describe("TokenTransfer", function () {
     });
 
     it("cannot transfer NFT as if it were FT", async function () {
-        const key = PrivateKey.generateED25519();
+        // Create account
+        const { accountId: account, newKey: key } = await createAccount(
+            env.client,
+        );
 
-        const account = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key.publicKey)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
-
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
+        // Create NFT collection
+        const token = await createNonFungibleToken(
+            env.client,
+            (transaction) => {
+                transaction
                     .setKycKey(env.operatorKey)
                     .setFreezeKey(env.operatorKey)
                     .setWipeKey(env.operatorKey)
                     .setSupplyKey(env.operatorKey)
                     .setFeeScheduleKey(env.operatorKey)
-                    .setTokenType(TokenType.NonFungibleUnique)
-                    .setSupplyType(TokenSupplyType.Finite)
-                    .setMaxSupply(10)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+                    .setMaxSupply(10);
+            },
+        );
 
         await (
             await new TokenMintTransaction()
@@ -314,20 +268,15 @@ describe("TokenTransfer", function () {
     });
 
     it("automatically associates to account", async function () {
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
-        const key = PrivateKey.generateED25519();
-
-        const response = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(key)
-            .setInitialBalance(new Hbar(2))
-            .setMaxAutomaticTokenAssociations(10)
-            .execute(env.client);
-
-        const receipt = await response.getReceipt(env.client);
-
-        expect(receipt.accountId).to.not.be.null;
-        const account = receipt.accountId;
+        // Create account with automatic token associations
+        const { accountId: account, newKey: key } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction
+                    .setInitialBalance(new Hbar(2))
+                    .setMaxAutomaticTokenAssociations(10);
+            },
+        );
 
         let info = await new AccountInfoQuery()
             .setAccountId(account)
@@ -351,22 +300,16 @@ describe("TokenTransfer", function () {
 
         expect(info.maxAutomaticTokenAssociations.toInt()).to.be.equal(1);
 
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setDecimals(3)
-                    .setInitialSupply(1000000)
-                    .setTreasuryAccountId(operatorId)
-                    .setAdminKey(operatorKey)
-                    .setFreezeKey(operatorKey)
-                    .setWipeKey(operatorKey)
-                    .setSupplyKey(operatorKey)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        // Create token
+        const token = await createFungibleToken(env.client, (transaction) => {
+            transaction
+                .setDecimals(3)
+                .setInitialSupply(1000000)
+                .setFreezeKey(env.operatorKey)
+                .setWipeKey(env.operatorKey)
+                .setSupplyKey(env.operatorKey)
+                .setFreezeDefault(false);
+        });
 
         const record = await (
             await new TransferTransaction()
