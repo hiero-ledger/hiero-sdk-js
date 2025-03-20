@@ -571,7 +571,7 @@ export default class TokenCreateTransaction extends Transaction {
         }
         return super.freezeWith(client);
     }
-    
+
     /**
      * @param {Key} key
      * @returns {this}
