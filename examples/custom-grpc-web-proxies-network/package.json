@@ -3,14 +3,14 @@
     "version": "0.1.0",
     "private": true,
     "dependencies": {
-        "@hashgraph/sdk": "^2.55.1",
-        "@testing-library/jest-dom": "^5.17.0",
-        "@testing-library/react": "^13.4.0",
-        "@testing-library/user-event": "^13.5.0",
-        "react": "^18.3.1",
-        "react-dom": "^18.3.1",
+        "@hashgraph/sdk": "^2.61.0-beta.2",
+        "@testing-library/jest-dom": "^6.6.3",
+        "@testing-library/react": "^16.2.0",
+        "@testing-library/user-event": "^14.6.1",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0",
         "react-scripts": "5.0.1",
-        "web-vitals": "^2.1.4"
+        "web-vitals": "^4.2.4"
     },
     "scripts": {
         "start": "react-scripts start",
