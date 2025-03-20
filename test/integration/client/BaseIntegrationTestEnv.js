@@ -1,8 +1,6 @@
 import {
     PrivateKey,
-    AccountCreateTransaction,
     TokenDeleteTransaction,
-    Hbar,
     AccountId,
     Wallet,
 } from "../../../src/exports.js";
@@ -20,8 +18,8 @@ export default class BaseIntegrationTestEnv {
      * @property {PublicKey} options.originalOperatorKey
      * @property {AccountId} options.originalOperatorId
      * @property {PrivateKey} options.originalOperatorKey
-     * @property {AccountId} options.newOperatorKey
-     * @property {AccountId[]} options.newOperatorId
+     * @property {AccountId} options.operatorKey
+     * @property {AccountId[]} options.operatorId
      * @property {Wallet} options.wallet
      */
     constructor(options) {
@@ -29,16 +27,10 @@ export default class BaseIntegrationTestEnv {
         this.client = options.client;
 
         /** @type {PrivateKey} */
-        this.operatorKey = options.newOperatorKey;
+        this.operatorKey = options.operatorKey;
 
         /** @type {AccountId} */
-        this.operatorId = options.newOperatorId;
-
-        /** @type {PrivateKey} */
-        this.originalOperatorKey = options.originalOperatorKey;
-
-        /** @type {AccountId} */
-        this.originalOperatorId = options.originalOperatorId;
+        this.operatorId = options.operatorId;
 
         this.throwaway = options.throwaway;
 
@@ -53,11 +45,10 @@ export default class BaseIntegrationTestEnv {
      * @property {Client<*, *>} options.client
      * @property {{ [key: string]: string}} options.env
      * @property {number} [options.nodeAccountIds]
-     * @property {number} [options.balance]
      * @property {boolean} [options.throwaway]
      */
     static async new(options = {}) {
-        let client, wallet;
+        let client, wallet, operatorId, operatorKey;
 
         if (
             options.env.HEDERA_NETWORK != null &&
@@ -91,20 +82,14 @@ export default class BaseIntegrationTestEnv {
             options.env.OPERATOR_ID != null &&
             options.env.OPERATOR_KEY != null
         ) {
-            const operatorId = AccountId.fromString(options.env.OPERATOR_ID);
-            const operatorKey = PrivateKey.fromStringED25519(
+            operatorId = AccountId.fromString(options.env.OPERATOR_ID);
+            operatorKey = PrivateKey.fromStringED25519(
                 options.env.OPERATOR_KEY,
             );
 
             client.setOperator(operatorId, operatorKey);
             client.setMirrorNetwork(options.env.HEDERA_NETWORK);
         }
-
-        expect(client.operatorAccountId).to.not.be.null;
-        expect(client.operatorPublicKey).to.not.be.null;
-
-        const originalOperatorKey = client.operatorAccountKey;
-        const originalOperatorId = client.operatorAccountId;
 
         client
             .setMaxNodeAttempts(1)
@@ -125,28 +110,13 @@ export default class BaseIntegrationTestEnv {
         }
         client.setNetwork(network);
 
-        const newOperatorKey = PrivateKey.generateECDSA();
-
-        const response = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(newOperatorKey)
-            .setInitialBalance(
-                new Hbar(options.balance != null ? options.balance : 100),
-            )
-            .execute(client);
-
-        const newOperatorId = (await response.getReceipt(client)).accountId;
-
-        client.setOperator(newOperatorId, newOperatorKey);
-
-        wallet = new Wallet(newOperatorId, newOperatorKey, new LocalProvider());
+        wallet = new Wallet(operatorId, operatorKey, new LocalProvider());
 
         return new BaseIntegrationTestEnv({
             client: client,
             wallet: wallet,
-            originalOperatorKey: originalOperatorKey,
-            originalOperatorId: originalOperatorId,
-            newOperatorKey: newOperatorKey,
-            newOperatorId: newOperatorId,
+            operatorKey,
+            operatorId,
             throwaway: options.throwaway,
         });
     }

@@ -24,6 +24,20 @@ describe("WalletIntegration", function () {
     it("issue-1530", async function () {
         const env = await IntegrationTestEnv.new();
 
+        // Create receiver account
+        const receiverKey = PrivateKey.generateED25519();
+        const receiverCreateTx = await new AccountCreateTransaction()
+            .setKeyWithoutAlias(receiverKey)
+            .setInitialBalance(new Hbar(10))
+            .signWithOperator(env.client);
+
+        const receiverResponse = await receiverCreateTx.execute(env.client);
+        const receiverRecord = await receiverResponse.getRecord(env.client);
+        const receiverId = receiverRecord.receipt.accountId;
+
+        // Set the client operator to the receiver account
+        env.client.setOperator(receiverId, receiverKey);
+
         // Generate a key for the signer
         const signerKey = PrivateKey.generateED25519();
 
@@ -40,11 +54,11 @@ describe("WalletIntegration", function () {
         const wallet = new Wallet(signerId, signerKey, new LocalProvider());
 
         // The operator and the signer are different
-        expect(env.operatorId).not.to.eql(signerId);
+        expect(env.client.getOperator().accountId).not.to.eql(signerId);
 
         let transferTx = new TransferTransaction()
             .addHbarTransfer(signerId, new Hbar(-1))
-            .addHbarTransfer(env.operatorId, new Hbar(1));
+            .addHbarTransfer(receiverId, new Hbar(1));
 
         wallet.populateTransaction(transferTx);
 

@@ -123,7 +123,7 @@ describe("ContractFunctionParameters", function () {
     let newContractId;
 
     before(async function () {
-        env = await IntegrationTestEnv.new({ balance: 100000 });
+        env = await IntegrationTestEnv.new();
         // Create a file on Hedera and store the bytecode
         const fileCreateTx = new FileCreateTransaction()
             .setKeys([env.operatorKey])
