@@ -5,6 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.62.0-beta.1
+
+-   chore: return Privatekey, Transaction and PublicKey legacy functionality by @ivaylonikolov7 in https://github.com/hiero-ledger/hiero-sdk-js/pull/2943
+
 ## v2.61.0
 
 -   fix: disable auto renew assignment on topic and token create by @SimiHunjan in @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2945
