@@ -109,6 +109,7 @@ describe("PublicKey", function () {
 
     it("ECDSA verify transaction", function () {
         const transaction = new TransferTransaction()
+            .setNodeAccountIds([new AccountId(3)])
             .setTransactionId(TransactionId.generate(new AccountId(0, 0, 4)))
             .freeze();
 
@@ -120,6 +121,7 @@ describe("PublicKey", function () {
 
     it("ED25519 verify transaction", function () {
         const transaction = new TransferTransaction()
+            .setNodeAccountIds([new AccountId(3)])
             .setTransactionId(TransactionId.generate(new AccountId(0, 0, 4)))
             .freeze();
 
