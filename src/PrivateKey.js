@@ -304,6 +304,7 @@ export default class PrivateKey extends Key {
 
     /**
      * @deprecated - Use legacy=false flag to use the modern approach
+     * or don't pass it at all.
      * @overload
      * @param {Transaction} transaction
      * @param {true} legacy
@@ -353,7 +354,9 @@ export default class PrivateKey extends Key {
     }
 
     /**
-     * @deprecated
+     * deprecated - This method is deprecated and will be removed in future versions.
+     * Use the `signTransaction` method with the `legacy=false` flag or don't
+     * pass it all for the modern approach.
      * @param {Transaction} transaction
      * @returns {Uint8Array | Uint8Array[]}
      */
