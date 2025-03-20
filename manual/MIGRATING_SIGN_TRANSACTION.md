@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Hedera SDK has updated its transaction signing mechanism to provide better type safety and a more structured approach to managing signatures. This guide will help you migrate from the legacy mode to the new mode.
+The Hedera SDK has updated its transaction signing mechanism to provide functionaly that can work with multi-node chunked transaction and a more structured approach to managing signatures. This guide will help you migrate from the legacy mode to the new mode.
 
 ## Key Changes
 
@@ -89,7 +89,7 @@ transaction.addSignature(privateKey.publicKey, signatureMap);
 
 ## When did we make this change?
 
--   Current Status: The change is being implemented in response to Issue [#2595](https://github.com/hiero-ledger/hiero-sdk-js/issues/2595)
+-   Current Status: The change is being implemented in response to issue [#2595](https://github.com/hiero-ledger/hiero-sdk-js/issues/2595)
 
 ## Implementation Timeline:
 
