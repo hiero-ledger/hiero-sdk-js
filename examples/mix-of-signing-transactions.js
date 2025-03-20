@@ -61,6 +61,7 @@ async function main() {
         .addHbarTransfer(recipientId2, new Hbar(1))
         .freezeWith(client);
 
+    // Sign transaction and add the signatures to the transaction
     const signature1 = key1.signTransaction(transferTx, true);
     const signature2 = key2.signTransaction(transferTx);
 
