@@ -28,8 +28,7 @@ The Hedera SDK has updated its transaction signing mechanism to provide better t
 
 ## Important Considerations
 
-1. Backward Compatibility - Legacy mode still works
-   New code should always use the new mode
+1. Backward Compatibility - Legacy mode still works but new code should always use the new mode
 2. Performance wasn't reduced with these latest changes
 3. Error Handling:
 
@@ -90,7 +89,7 @@ transaction.addSignature(privateKey.publicKey, signatureMap);
 
 ## When did we make this change?
 
--   Current Status: The change is being implemented in response to Issue (#2595)[https://github.com/hiero-ledger/hiero-sdk-js/issues/2595]
+-   Current Status: The change is being implemented in response to Issue [#2595](https://github.com/hiero-ledger/hiero-sdk-js/issues/2595)
 
 ## Implementation Timeline:
 
