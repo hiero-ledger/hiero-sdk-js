@@ -116,7 +116,7 @@ describe("PublicKey", function () {
         const key = PrivateKey.generateECDSA();
         key.signTransaction(transaction);
 
-        expect(key.publicKey.verifyTransaction(transaction)).isTrue();
+        expect(key.publicKey.verifyTransaction(transaction)).to.be.true;
     });
 
     it("ED25519 verify transaction", function () {
@@ -128,6 +128,6 @@ describe("PublicKey", function () {
         const key = PrivateKey.generateED25519();
         key.signTransaction(transaction);
 
-        expect(key.publicKey.verifyTransaction(transaction)).isTrue();
+        expect(key.publicKey.verifyTransaction(transaction)).to.be.true;
     });
 });
