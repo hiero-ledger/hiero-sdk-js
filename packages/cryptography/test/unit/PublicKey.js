@@ -1,4 +1,8 @@
-import { TransferTransaction } from "../../../../src/exports.js";
+import {
+    AccountId,
+    TransactionId,
+    TransferTransaction,
+} from "../../../../src/exports.js";
 import PrivateKey from "../../src/PrivateKey.js";
 import PublicKey from "../../src/PublicKey.js";
 import * as hex from "../../src/encoding/hex.js";
