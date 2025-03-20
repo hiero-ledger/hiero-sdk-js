@@ -3,7 +3,6 @@ import {
     Client,
     AccountId,
     AccountCreateTransaction,
-    Status,
 } from "@hashgraph/sdk";
 
 import dotenv from "dotenv";
@@ -28,10 +27,12 @@ async function main() {
         .freezeWith(client);
 
     // Step 3: Sign transaction using your private key
+    // eslint-disable-next-line deprecation/deprecation
     const signature = key.signTransaction(tx, true);
 
     // Step 4: add the generated signature to transaction
     // it will use the old legacy way because of the type of signature
+    // eslint-disable-next-line deprecation/deprecation
     tx.addSignature(key.publicKey, signature);
 
     // Step 5: get the outcome of the transaction

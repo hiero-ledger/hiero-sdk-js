@@ -998,6 +998,7 @@ export default class Transaction extends Executable {
         this._transactionIds.setLocked();
         this._nodeAccountIds.setLocked();
         // Construct a signature map from this transaction
+        // eslint-disable-next-line deprecation/deprecation
         return SignatureMapLegacy._fromTransaction(this);
     }
 
