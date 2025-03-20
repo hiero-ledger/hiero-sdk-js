@@ -1,3 +1,4 @@
+import { TransferTransaction } from "../../../../src/exports.js";
 import PrivateKey from "../../src/PrivateKey.js";
 import PublicKey from "../../src/PublicKey.js";
 import * as hex from "../../src/encoding/hex.js";
@@ -97,5 +98,33 @@ describe("PublicKey", function () {
         const signature = key.sign(message);
 
         expect(publicKey.verify(message, signature)).to.be.true;
+    });
+
+    it("ECDSA verify transaction", function () {
+        const transaction = new TransferTransaction()
+            .setNodeAccountIds(
+                Collections.singletonList(new AccountId(0, 0, 3)),
+            )
+            .setTransactionId(TransactionId.generate(new AccountId(0, 0, 4)))
+            .freeze();
+
+        const key = PrivateKey.generateECDSA();
+        key.signTransaction(transaction);
+
+        expect(key.getPublicKey().verifyTransaction(transaction)).isTrue();
+    });
+
+    it("ED25519 verify transaction", function () {
+        const transaction = new TransferTransaction()
+            .setNodeAccountIds(
+                Collections.singletonList(new AccountId(0, 0, 3)),
+            )
+            .setTransactionId(TransactionId.generate(new AccountId(0, 0, 4)))
+            .freeze();
+
+        const key = PrivateKey.generateED25519();
+        key.signTransaction(transaction);
+
+        expect(key.getPublicKey().verifyTransaction(transaction)).isTrue();
     });
 });
