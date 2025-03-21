@@ -4,6 +4,7 @@ import {
     Hbar,
     TransactionId,
     PrivateKey,
+    AccountId,
 } from "@hashgraph/sdk";
 
 import { getKeyFromString } from "../utils/key";
@@ -32,8 +33,15 @@ export const applyCommonTransactionParams = (
     } = params;
 
     if (transactionId) {
-        const txId = TransactionId.fromString(transactionId);
-        transaction.setTransactionId(txId);
+        try {
+            const txId = TransactionId.fromString(transactionId);
+            transaction.setTransactionId(txId);
+        } catch (error) {
+            const txId = TransactionId.generate(
+                AccountId.fromString(transactionId),
+            );
+            transaction.setTransactionId(txId);
+        }
     }
 
     if (maxTransactionFee) {
