@@ -14,9 +14,9 @@
         "node": ">=16.0.0"
     },
     "dependencies": {
-        "@ethersproject/abi": "^5.7.0",
+        "@ethersproject/abi": "^5.8.0",
         "@hashgraph/sdk": "link:..",
-        "axios": "^1.6.4",
+        "axios": "^1.8.2",
         "dotenv": "^16.3.1"
     },
     "devDependencies": {

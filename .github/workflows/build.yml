@@ -54,7 +54,7 @@ jobs:
           version: 9.15.5
 
       - name: Setup Node
-        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
@@ -88,8 +88,8 @@ jobs:
       - name: "Create env file"
         run: |
           touch .env
-          echo OPERATOR_KEY="302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137" >> .env
-          echo OPERATOR_ID="0.0.2" >> .env
+          echo OPERATOR_KEY="0xa608e2130a0a3cb34f86e757303c862bee353d9ab77ba4387ec084f881d420d4" >> .env
+          echo OPERATOR_ID="0.0.1022" >> .env
           echo HEDERA_NETWORK="local-node" >> .env
           cat .env
 
@@ -100,7 +100,7 @@ jobs:
           version: 9.15.5
 
       - name: Setup Node
-        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
@@ -197,7 +197,7 @@ jobs:
           version: 9.15.5
 
       - name: Setup Node
-        uses: actions/setup-node@1d0ff469b7ec7b3cb9d8673fde0c81c44821de2a # v4.2.0
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm

@@ -127,6 +127,12 @@ export default class Client {
         /** @private */
         this._requestTimeout = null;
 
+        /**
+         * @private
+         * @type {boolean}
+         */
+        this._isUpdatingNetwork = false;
+
         /** @private */
         this._networkUpdatePeriod = 24 * 60 * 60 * 1000;
 
@@ -697,6 +703,35 @@ export default class Client {
     }
 
     /**
+     * Update the network address book.
+     * @returns {Promise<void>}
+     */
+    async updateNetwork() {
+        if (this._isUpdatingNetwork) {
+            return;
+        }
+
+        this._isUpdatingNetwork = true;
+
+        try {
+            const addressBook = await CACHE.addressBookQueryConstructor()
+                .setFileId(FileId.ADDRESS_BOOK)
+                .execute(this);
+            this.setNetworkFromAddressBook(addressBook);
+        } catch (error) {
+            if (this._logger) {
+                this._logger.trace(
+                    `failed to update client address book: ${
+                        /** @type {Error} */ (error).toString()
+                    }`,
+                );
+            }
+        } finally {
+            this._isUpdatingNetwork = false;
+        }
+    }
+
+    /**
      * @returns {void}
      */
     close() {
@@ -729,25 +764,12 @@ export default class Client {
         // This is the automatic network update promise that _eventually_ completes
         // eslint-disable-next-line @typescript-eslint/no-floating-promises,@typescript-eslint/no-misused-promises
         this._timer = setTimeout(async () => {
-            try {
-                const addressBook = await CACHE.addressBookQueryConstructor()
-                    .setFileId(FileId.ADDRESS_BOOK)
-                    .execute(this);
-                this.setNetworkFromAddressBook(addressBook);
+            await this.updateNetwork();
 
-                if (!this._isShutdown) {
-                    // Recall this method to continuously update the network
-                    // every `networkUpdatePeriod` amount of itme
-                    this._scheduleNetworkUpdate();
-                }
-            } catch (error) {
-                if (this._logger) {
-                    this._logger.trace(
-                        `failed to update client address book: ${
-                            /** @type {Error} */ (error).toString()
-                        }`,
-                    );
-                }
+            if (!this._isShutdown) {
+                // Recall this method to continuously update the network
+                // every `networkUpdatePeriod` amount of itme
+                this._scheduleNetworkUpdate();
             }
         }, this._networkUpdatePeriod);
     }
