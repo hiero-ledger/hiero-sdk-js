@@ -308,121 +308,96 @@ export const deleteAllowance = async ({
     };
 };
 
-export const transferCrypto = async (
-    params: TransferCryptoParams,
-): Promise<AccountResponse> => {
+export const transferCrypto = async ({
+    transfers,
+    commonTransactionParams,
+}: TransferCryptoParams): Promise<AccountResponse> => {
+    if (!transfers.length) {
+        throw new Error("No transfers provided.");
+    }
+
     let transaction = new TransferTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
 
-    if (params.transfers) {
-        for (const txParams of params.transfers) {
-            const approved = txParams.approved ?? false;
+    for (const txParams of transfers) {
+        const isApproved = txParams.approved ?? false;
 
-            if (txParams.hbar) {
-                const amount = Hbar.fromTinybars(txParams.hbar.amount);
+        if (txParams.hbar) {
+            const amount = Hbar.fromTinybars(txParams.hbar.amount);
 
-                if (txParams.hbar.accountId != null) {
-                    const accountId = AccountId.fromString(
-                        txParams.hbar.accountId,
-                    );
+            if (txParams.hbar.accountId != null) {
+                const accountId = AccountId.fromString(txParams.hbar.accountId);
 
-                    if (approved) {
-                        transaction.addApprovedHbarTransfer(accountId, amount);
-                    } else {
-                        transaction.addHbarTransfer(accountId, amount);
-                    }
-                } else if (txParams.hbar.evmAddress != null) {
-                    const evmAddress = EvmAddress.fromString(
-                        txParams.hbar.evmAddress,
-                    );
-
-                    const accountId = AccountId.fromEvmAddress(
-                        0,
-                        0,
-                        evmAddress,
-                    );
-
-                    if (approved) {
-                        transaction.addApprovedHbarTransfer(accountId, amount);
-                    } else {
-                        // CHECK THIS WITH OTHERS
-                        if (accountId.aliasKey === null) {
-                            throw new Error("EVM address is wrong");
-                        }
-
-                        transaction.addHbarTransfer(accountId, amount);
-                    }
-                }
-            } else if (txParams.token != null) {
-                const accountId = AccountId.fromString(
-                    txParams.token.accountId,
+                isApproved
+                    ? transaction.addApprovedHbarTransfer(accountId, amount)
+                    : transaction.addHbarTransfer(accountId, amount);
+            } else if (txParams.hbar.evmAddress != null) {
+                const evmAddress = EvmAddress.fromString(
+                    txParams.hbar.evmAddress,
                 );
-                const tokenId = TokenId.fromString(txParams.token.tokenId);
-                const amount = Long.fromString(txParams.token.amount);
+                const accountId = AccountId.fromEvmAddress(0, 0, evmAddress);
 
-                if (txParams.token.decimals !== undefined) {
-                    if (approved) {
-                        transaction.addApprovedTokenTransfer(
-                            tokenId,
-                            accountId,
-                            amount,
-                        );
-                    } else {
-                        transaction.addTokenTransferWithDecimals(
-                            tokenId,
-                            accountId,
-                            amount,
-                            txParams.token.decimals,
-                        );
-                    }
-                } else {
-                    if (approved) {
-                        transaction.addApprovedTokenTransfer(
-                            tokenId,
-                            accountId,
-                            amount,
-                        );
-                    } else {
-                        transaction.addTokenTransfer(
-                            tokenId,
-                            accountId,
-                            amount,
-                        );
-                    }
-                }
-            } else if (txParams.nft != null) {
-                const senderAccountId = AccountId.fromString(
-                    txParams.nft.senderAccountId,
-                );
-                const receiverAccountId = AccountId.fromString(
-                    txParams.nft.receiverAccountId,
-                );
-                const nftId = new NftId(
-                    TokenId.fromString(txParams.nft.tokenId),
-                    Long.fromString(txParams.nft.serialNumber),
-                );
-
-                if (approved) {
-                    transaction.addApprovedNftTransfer(
-                        nftId,
-                        senderAccountId,
-                        receiverAccountId,
-                    );
-                } else {
-                    transaction.addNftTransfer(
-                        nftId,
-                        senderAccountId,
-                        receiverAccountId,
-                    );
-                }
+                isApproved
+                    ? transaction.addApprovedHbarTransfer(accountId, amount)
+                    : transaction.addHbarTransfer(accountId, amount);
             }
+        } else if (txParams.token != null) {
+            const accountId = AccountId.fromString(txParams.token.accountId);
+            const tokenId = TokenId.fromString(txParams.token.tokenId);
+            const amount = Long.fromString(txParams.token.amount);
+
+            if (txParams.token.decimals !== undefined) {
+                isApproved
+                    ? transaction.addApprovedTokenTransfer(
+                          tokenId,
+                          accountId,
+                          amount,
+                      )
+                    : transaction.addTokenTransferWithDecimals(
+                          tokenId,
+                          accountId,
+                          amount,
+                          txParams.token.decimals,
+                      );
+            } else {
+                isApproved
+                    ? transaction.addApprovedTokenTransfer(
+                          tokenId,
+                          accountId,
+                          amount,
+                      )
+                    : transaction.addTokenTransfer(tokenId, accountId, amount);
+            }
+        } else if (txParams.nft != null) {
+            const senderAccountId = AccountId.fromString(
+                txParams.nft.senderAccountId,
+            );
+            const receiverAccountId = AccountId.fromString(
+                txParams.nft.receiverAccountId,
+            );
+            const nftId = new NftId(
+                TokenId.fromString(txParams.nft.tokenId),
+                Long.fromString(txParams.nft.serialNumber),
+            );
+
+            isApproved
+                ? transaction.addApprovedNftTransfer(
+                      nftId,
+                      senderAccountId,
+                      receiverAccountId,
+                  )
+                : transaction.addNftTransfer(
+                      nftId,
+                      senderAccountId,
+                      receiverAccountId,
+                  );
         }
     }
 
-    if (params.commonTransactionParams != null) {
+    if (commonTransactionParams != null) {
         applyCommonTransactionParams(
-            params.commonTransactionParams,
+            commonTransactionParams,
             transaction,
             sdk.getClient(),
         );
