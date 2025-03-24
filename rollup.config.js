@@ -1,5 +1,8 @@
-import terser from "@rollup/plugin-terser";
 import alias from "@rollup/plugin-alias";
+import commonjs from "@rollup/plugin-commonjs";
+import json from "@rollup/plugin-json";
+import { nodeResolve } from "@rollup/plugin-node-resolve";
+import terser from "@rollup/plugin-terser";
 
 const browserAliases = {
     entries: [
