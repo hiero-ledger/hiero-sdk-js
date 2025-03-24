@@ -111,4 +111,47 @@ export default [
             preserveModules: true,
         },
     },
+    {
+        input: "src/browser.js",
+        plugins: [
+            alias(browserAliases),
+            nodeResolve({
+                browser: true,
+                preferBuiltins: false,
+            }),
+            commonjs({
+                transformMixedEsModules: true,
+            }),
+            json(),
+        ],
+        output: {
+            file: "umd/umd.js",
+            format: "umd",
+            name: "sdk",
+            sourceMap: true,
+        },
+        context: "window",
+    },
+    {
+        input: "src/browser.js",
+        plugins: [
+            alias(browserAliases),
+            nodeResolve({
+                browser: true,
+                preferBuiltins: false,
+            }),
+            commonjs({
+                transformMixedEsModules: true,
+            }),
+            json(),
+            terser(),
+        ],
+        output: {
+            format: "umd",
+            name: "sdk",
+            sourceMap: true,
+            file: "umd/umd.min.js",
+        },
+        context: "window",
+    },
 ];
