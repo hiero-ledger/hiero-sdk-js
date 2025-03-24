@@ -147,7 +147,7 @@ describe("TokenInfo", function () {
         const { accountId, newKey: accountKey } = await createAccount(
             env.client,
             (transaction) => {
-                transaction.setInitialBalance(new Hbar(10));
+                transaction.setInitialBalance(new Hbar(20));
             },
         );
 
@@ -159,17 +159,8 @@ describe("TokenInfo", function () {
             async (transaction) => {
                 await transaction
                     .setTreasuryAccountId(accountId)
-                    .setAdminKey(null)
-                    .setKycKey(null)
-                    .setFreezeKey(null)
-                    .setWipeKey(null)
-                    .setFeeScheduleKey(null)
-                    .setMetadataKey(null)
-                    .setTokenType(null)
-                    .setSupplyType(null)
                     .setTransactionId(txId)
                     .setInitialSupply(0)
-                    .setTokenMemo(null)
                     .setDecimals(3)
                     .freezeWith(env.client)
                     .sign(accountKey);

@@ -31,12 +31,7 @@ describe("TokenNft", function () {
         const token = await createNonFungibleToken(
             env.client,
             (transaction) => {
-                transaction
-                    .setKycKey(env.client.operatorPublicKey)
-                    .setPauseKey(null)
-                    .setFeeScheduleKey(null)
-                    .setMetadataKey(null)
-                    .setTokenMemo(null);
+                transaction.setKycKey(env.client.operatorPublicKey);
             },
         );
 
@@ -119,12 +114,7 @@ describe("TokenNft", function () {
         const token = await createNonFungibleToken(
             env.client,
             (transaction) => {
-                transaction
-                    .setKycKey(env.client.operatorPublicKey)
-                    .setPauseKey(null)
-                    .setFeeScheduleKey(null)
-                    .setMetadataKey(null)
-                    .setTokenMemo(null);
+                transaction.setKycKey(env.client.operatorPublicKey);
             },
         );
 
@@ -178,12 +168,7 @@ describe("TokenNft", function () {
         const token = await createNonFungibleToken(
             env.client,
             (transaction) => {
-                transaction
-                    .setKycKey(env.client.operatorPublicKey)
-                    .setPauseKey(null)
-                    .setFeeScheduleKey(null)
-                    .setMetadataKey(null)
-                    .setTokenMemo(null);
+                transaction.setKycKey(env.client.operatorPublicKey);
             },
         );
 
@@ -265,12 +250,7 @@ describe("TokenNft", function () {
         const token = await createNonFungibleToken(
             env.client,
             (transaction) => {
-                transaction
-                    .setKycKey(env.client.operatorPublicKey)
-                    .setPauseKey(null)
-                    .setFeeScheduleKey(null)
-                    .setMetadataKey(null)
-                    .setTokenMemo(null);
+                transaction.setKycKey(env.client.operatorPublicKey);
             },
         );
 
@@ -484,12 +464,7 @@ describe("TokenNft", function () {
         const token = await createNonFungibleToken(
             env.client,
             (transaction) => {
-                transaction
-                    .setKycKey(env.client.operatorPublicKey)
-                    .setPauseKey(null)
-                    .setFeeScheduleKey(null)
-                    .setMetadataKey(null)
-                    .setTokenMemo(null);
+                transaction.setKycKey(env.client.operatorPublicKey);
             },
         );
 
@@ -537,12 +512,7 @@ describe("TokenNft", function () {
         const token = await createNonFungibleToken(
             env.client,
             (transaction) => {
-                transaction
-                    .setKycKey(env.client.operatorPublicKey)
-                    .setPauseKey(null)
-                    .setFeeScheduleKey(null)
-                    .setMetadataKey(null)
-                    .setTokenMemo(null);
+                transaction.setKycKey(env.client.operatorPublicKey);
             },
         );
 
@@ -644,12 +614,7 @@ describe("TokenNft", function () {
         const token = await createNonFungibleToken(
             env.client,
             (transaction) => {
-                transaction
-                    .setKycKey(env.client.operatorPublicKey)
-                    .setPauseKey(null)
-                    .setFeeScheduleKey(null)
-                    .setMetadataKey(null)
-                    .setTokenMemo(null);
+                transaction.setKycKey(env.client.operatorPublicKey);
             },
         );
 
