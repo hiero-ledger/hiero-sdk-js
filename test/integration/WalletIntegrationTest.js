@@ -21,15 +21,12 @@ describe("WalletIntegration", function () {
         const env = await IntegrationTestEnv.new();
 
         // Create receiver account
-        const receiverKey = PrivateKey.generateED25519();
-        const receiverCreateTx = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(receiverKey)
-            .setInitialBalance(new Hbar(10))
-            .signWithOperator(env.client);
-
-        const receiverResponse = await receiverCreateTx.execute(env.client);
-        const receiverRecord = await receiverResponse.getRecord(env.client);
-        const receiverId = receiverRecord.receipt.accountId;
+        const { accountId: receiverId, newKey: receiverKey } =
+            await createAccount(env.client, (transaction) => {
+                transaction
+                    .setKeyWithoutAlias(receiverKey)
+                    .setInitialBalance(new Hbar(10));
+            });
 
         // Set the client operator to the receiver account
         env.client.setOperator(receiverId, receiverKey);
