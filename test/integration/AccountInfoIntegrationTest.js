@@ -129,17 +129,7 @@ describe("AccountInfo", function () {
         const operatorId = env.operatorId;
 
         const tokenId = await createFungibleToken(env.client, (transaction) => {
-            transaction
-                .setSupplyKey(null)
-                .setKycKey(null)
-                .setWipeKey(null)
-                .setFreezeKey(null)
-                .setAdminKey(null)
-                .setPauseKey(null)
-                .setMetadataKey(null)
-                .setSupplyKey(null)
-                .setFeeScheduleKey(null)
-                .setInitialSupply(0);
+            transaction.setFreezeKey(null).setInitialSupply(0);
         });
 
         const info = await new AccountInfoQuery()

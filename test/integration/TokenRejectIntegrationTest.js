@@ -383,15 +383,9 @@ describe("TokenRejectIntegrationTest", function () {
                         (transaction) => {
                             transaction
                                 .setTokenMemo(null)
-
                                 .setTokenName("ffff")
                                 .setTokenSymbol("F")
-                                .setInitialSupply(1000)
-                                .setPauseKey(null)
-                                .setWipeKey(null)
-                                .setFeeScheduleKey(null)
-                                .setMetadataKey(null)
-                                .setFreezeKey(null);
+                                .setInitialSupply(1000);
                         },
                     );
                     tokenIds.push(tokenId);
