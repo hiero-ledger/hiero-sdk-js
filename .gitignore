@@ -8,7 +8,7 @@ node_modules/
 # we currently run babel over the JavaScript before shipping
 # this enables us to easily support older versions of Node
 lib/
-umd/
+dist/
 test/lib/
 **/test-results/
 

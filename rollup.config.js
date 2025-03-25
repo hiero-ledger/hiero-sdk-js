@@ -128,7 +128,7 @@ export default [
             json(),
         ],
         output: {
-            file: "umd/umd.js",
+            file: "dist/umd.js",
             format: "umd",
             name: "sdk",
             sourceMap: true,
@@ -153,7 +153,7 @@ export default [
             format: "umd",
             name: "sdk",
             sourceMap: true,
-            file: "umd/umd.min.js",
+            file: "dist/umd.min.js",
         },
         context: "window",
     },
