@@ -210,5 +210,3 @@ export const NetworkName = {
     Testnet: "testnet",
     Previewnet: "previewnet",
 };
-
-import "./query/CostQuery.js";
