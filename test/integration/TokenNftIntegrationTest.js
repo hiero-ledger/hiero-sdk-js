@@ -1,20 +1,17 @@
 import {
-    AccountCreateTransaction,
     Hbar,
     NftId,
-    PrivateKey,
     Status,
     TokenAssociateTransaction,
     TokenBurnTransaction,
-    TokenCreateTransaction,
     TokenGrantKycTransaction,
     TokenMintTransaction,
     TokenNftInfoQuery,
-    TokenType,
     TokenWipeTransaction,
     TransferTransaction,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import { createAccount, createNonFungibleToken } from "./utils/Fixtures.js";
 
 describe("TokenNft", function () {
     let env;
@@ -24,41 +21,27 @@ describe("TokenNft", function () {
     });
 
     it("Should be able to transfer NFT", async function () {
-        const key = PrivateKey.generateED25519();
+        const { accountId, newKey } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setInitialBalance(new Hbar(2));
+            },
+        );
 
-        const account = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
-
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTokenType(TokenType.NonFungibleUnique)
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const token = await createNonFungibleToken(
+            env.client,
+            (transaction) => {
+                transaction.setKycKey(env.client.operatorPublicKey);
+            },
+        );
 
         await (
             await (
                 await new TokenAssociateTransaction()
                     .setTokenIds([token])
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(newKey)
             ).execute(env.client)
         ).getReceipt(env.client);
 
@@ -66,9 +49,9 @@ describe("TokenNft", function () {
             await (
                 await new TokenGrantKycTransaction()
                     .setTokenId(token)
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(newKey)
             ).execute(env.client)
         ).getReceipt(env.client);
 
@@ -94,7 +77,7 @@ describe("TokenNft", function () {
 
         await (
             await new TransferTransaction()
-                .addNftTransfer(token, serial, env.operatorId, account)
+                .addNftTransfer(token, serial, env.operatorId, accountId)
                 .execute(env.client)
         ).getReceipt(env.client);
 
@@ -102,12 +85,12 @@ describe("TokenNft", function () {
             .setNftId(new NftId(token, serial))
             .execute(env.client);
 
-        expect(info[0].accountId.toString()).to.be.equal(account.toString());
+        expect(info[0].accountId.toString()).to.be.equal(accountId.toString());
 
         await (
             await new TokenWipeTransaction()
                 .setTokenId(token)
-                .setAccountId(account)
+                .setAccountId(accountId)
                 .setSerials([serial])
                 .execute(env.client)
         ).getReceipt(env.client);
@@ -121,41 +104,27 @@ describe("TokenNft", function () {
     });
 
     it("should be able to query cost", async function () {
-        const key = PrivateKey.generateED25519();
+        const { accountId, newKey } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setInitialBalance(new Hbar(2));
+            },
+        );
 
-        const account = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
-
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTokenType(TokenType.NonFungibleUnique)
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const token = await createNonFungibleToken(
+            env.client,
+            (transaction) => {
+                transaction.setKycKey(env.client.operatorPublicKey);
+            },
+        );
 
         await (
             await (
                 await new TokenAssociateTransaction()
                     .setTokenIds([token])
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(newKey)
             ).execute(env.client)
         ).getReceipt(env.client);
 
@@ -163,9 +132,9 @@ describe("TokenNft", function () {
             await (
                 await new TokenGrantKycTransaction()
                     .setTokenId(token)
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(newKey)
             ).execute(env.client)
         ).getReceipt(env.client);
 
@@ -189,41 +158,27 @@ describe("TokenNft", function () {
     });
 
     it("Cannot burn NFTs when NFT is not owned by treasury", async function () {
-        const key = PrivateKey.generateED25519();
+        const { accountId, newKey } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setInitialBalance(new Hbar(2));
+            },
+        );
 
-        const account = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
-
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTokenType(TokenType.NonFungibleUnique)
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const token = await createNonFungibleToken(
+            env.client,
+            (transaction) => {
+                transaction.setKycKey(env.client.operatorPublicKey);
+            },
+        );
 
         await (
             await (
                 await new TokenAssociateTransaction()
                     .setTokenIds([token])
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(newKey)
             ).execute(env.client)
         ).getReceipt(env.client);
 
@@ -231,9 +186,9 @@ describe("TokenNft", function () {
             await (
                 await new TokenGrantKycTransaction()
                     .setTokenId(token)
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(newKey)
             ).execute(env.client)
         ).getReceipt(env.client);
 
@@ -258,7 +213,7 @@ describe("TokenNft", function () {
 
         await (
             await new TransferTransaction()
-                .addNftTransfer(token, serial, env.operatorId, account)
+                .addNftTransfer(token, serial, env.operatorId, accountId)
                 .execute(env.client)
         ).getReceipt(env.client);
 
@@ -266,7 +221,7 @@ describe("TokenNft", function () {
             .setNftId(new NftId(token, serial))
             .execute(env.client);
 
-        expect(info[0].accountId.toString()).to.be.equal(account.toString());
+        expect(info[0].accountId.toString()).to.be.equal(accountId.toString());
 
         let err = false;
 
@@ -285,41 +240,27 @@ describe("TokenNft", function () {
     });
 
     it("Cannot mint NFTs if metadata too big", async function () {
-        const key = PrivateKey.generateED25519();
+        const { accountId, newKey } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setInitialBalance(new Hbar(2));
+            },
+        );
 
-        const account = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
-
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTokenType(TokenType.NonFungibleUnique)
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const token = await createNonFungibleToken(
+            env.client,
+            (transaction) => {
+                transaction.setKycKey(env.client.operatorPublicKey);
+            },
+        );
 
         await (
             await (
                 await new TokenAssociateTransaction()
                     .setTokenIds([token])
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(newKey)
             ).execute(env.client)
         ).getReceipt(env.client);
 
@@ -327,9 +268,9 @@ describe("TokenNft", function () {
             await (
                 await new TokenGrantKycTransaction()
                     .setTokenId(token)
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(newKey)
             ).execute(env.client)
         ).getReceipt(env.client);
 
@@ -457,41 +398,27 @@ describe("TokenNft", function () {
     });
 
     it("Cannot query NFT info by invalid NftId", async function () {
-        const key = PrivateKey.generateED25519();
+        const { accountId, newKey } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setInitialBalance(new Hbar(2));
+            },
+        );
 
-        const account = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
-
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTokenType(TokenType.NonFungibleUnique)
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const token = await createNonFungibleToken(
+            env.client,
+            (transaction) => {
+                transaction.setKycKey(env.client.operatorPublicKey);
+            },
+        );
 
         await (
             await (
                 await new TokenAssociateTransaction()
                     .setTokenIds([token])
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(newKey)
             ).execute(env.client)
         ).getReceipt(env.client);
 
@@ -499,9 +426,9 @@ describe("TokenNft", function () {
             await (
                 await new TokenGrantKycTransaction()
                     .setTokenId(token)
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(newKey)
             ).execute(env.client)
         ).getReceipt(env.client);
 
@@ -527,41 +454,27 @@ describe("TokenNft", function () {
     });
 
     it("Cannot query NFT info by invalid NftId Serial Number", async function () {
-        const key = PrivateKey.generateED25519();
+        const { accountId, newKey } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setInitialBalance(new Hbar(2));
+            },
+        );
 
-        const account = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
-
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTokenType(TokenType.NonFungibleUnique)
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const token = await createNonFungibleToken(
+            env.client,
+            (transaction) => {
+                transaction.setKycKey(env.client.operatorPublicKey);
+            },
+        );
 
         await (
             await (
                 await new TokenAssociateTransaction()
                     .setTokenIds([token])
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(newKey)
             ).execute(env.client)
         ).getReceipt(env.client);
 
@@ -569,9 +482,9 @@ describe("TokenNft", function () {
             await (
                 await new TokenGrantKycTransaction()
                     .setTokenId(token)
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(newKey)
             ).execute(env.client)
         ).getReceipt(env.client);
 
@@ -589,41 +502,27 @@ describe("TokenNft", function () {
     });
 
     it("Cannot transfer NFTs you don't own", async function () {
-        const key = PrivateKey.generateED25519();
+        const { accountId, newKey } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setInitialBalance(new Hbar(2));
+            },
+        );
 
-        const account = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
-
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTokenType(TokenType.NonFungibleUnique)
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const token = await createNonFungibleToken(
+            env.client,
+            (transaction) => {
+                transaction.setKycKey(env.client.operatorPublicKey);
+            },
+        );
 
         await (
             await (
                 await new TokenAssociateTransaction()
                     .setTokenIds([token])
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(newKey)
             ).execute(env.client)
         ).getReceipt(env.client);
 
@@ -631,9 +530,9 @@ describe("TokenNft", function () {
             await (
                 await new TokenGrantKycTransaction()
                     .setTokenId(token)
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(newKey)
             ).execute(env.client)
         ).getReceipt(env.client);
 
@@ -659,7 +558,7 @@ describe("TokenNft", function () {
 
         await (
             await new TransferTransaction()
-                .addNftTransfer(token, serial, env.operatorId, account)
+                .addNftTransfer(token, serial, env.operatorId, accountId)
                 .execute(env.client)
         ).getReceipt(env.client);
 
@@ -667,7 +566,7 @@ describe("TokenNft", function () {
             .setNftId(new NftId(token, serial))
             .execute(env.client);
 
-        expect(info[0].accountId.toString()).to.be.equal(account.toString());
+        expect(info[0].accountId.toString()).to.be.equal(accountId.toString());
 
         serial = serials[1];
 
@@ -677,9 +576,14 @@ describe("TokenNft", function () {
             await (
                 await (
                     await new TransferTransaction()
-                        .addNftTransfer(token, serial, account, env.operatorId)
+                        .addNftTransfer(
+                            token,
+                            serial,
+                            accountId,
+                            env.operatorId,
+                        )
                         .freezeWith(env.client)
-                        .sign(key)
+                        .sign(newKey)
                 ).execute(env.client)
             ).getReceipt(env.client);
         } catch (error) {
@@ -693,48 +597,34 @@ describe("TokenNft", function () {
         await (
             await new TokenWipeTransaction()
                 .setTokenId(token)
-                .setAccountId(account)
+                .setAccountId(accountId)
                 .setSerials([serial])
                 .execute(env.client)
         ).getReceipt(env.client);
     });
 
     it("Cannot wipe accounts NFTs if the account doesn't own them", async function () {
-        const key = PrivateKey.generateED25519();
+        const { accountId, newKey } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setInitialBalance(new Hbar(2));
+            },
+        );
 
-        const account = (
-            await (
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(key)
-                    .setInitialBalance(new Hbar(2))
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).accountId;
-
-        const token = (
-            await (
-                await new TokenCreateTransaction()
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTokenType(TokenType.NonFungibleUnique)
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFreezeDefault(false)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).tokenId;
+        const token = await createNonFungibleToken(
+            env.client,
+            (transaction) => {
+                transaction.setKycKey(env.client.operatorPublicKey);
+            },
+        );
 
         await (
             await (
                 await new TokenAssociateTransaction()
                     .setTokenIds([token])
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(newKey)
             ).execute(env.client)
         ).getReceipt(env.client);
 
@@ -742,9 +632,9 @@ describe("TokenNft", function () {
             await (
                 await new TokenGrantKycTransaction()
                     .setTokenId(token)
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .freezeWith(env.client)
-                    .sign(key)
+                    .sign(newKey)
             ).execute(env.client)
         ).getReceipt(env.client);
 
@@ -770,7 +660,7 @@ describe("TokenNft", function () {
 
         await (
             await new TransferTransaction()
-                .addNftTransfer(token, serial, env.operatorId, account)
+                .addNftTransfer(token, serial, env.operatorId, accountId)
                 .execute(env.client)
         ).getReceipt(env.client);
 
@@ -778,7 +668,7 @@ describe("TokenNft", function () {
             .setNftId(new NftId(token, serial))
             .execute(env.client);
 
-        expect(info[0].accountId.toString()).to.be.equal(account.toString());
+        expect(info[0].accountId.toString()).to.be.equal(accountId.toString());
 
         serial = serials[1];
 
@@ -788,7 +678,7 @@ describe("TokenNft", function () {
             await (
                 await new TokenWipeTransaction()
                     .setTokenId(token)
-                    .setAccountId(account)
+                    .setAccountId(accountId)
                     .setSerials([serial])
                     .execute(env.client)
             ).getReceipt(env.client);

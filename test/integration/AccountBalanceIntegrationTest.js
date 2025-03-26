@@ -75,15 +75,7 @@ describe("AccountBalanceQuery", function () {
 
     it("should reflect token with no keys", async function () {
         const tokenId = await createFungibleToken(env.client, (transaction) => {
-            transaction
-                .setInitialSupply(0)
-                .setAdminKey(null)
-                .setFreezeKey(null)
-                .setPauseKey(null)
-                .setWipeKey(null)
-                .setFeeScheduleKey(null)
-                .setMetadataKey(null)
-                .setSupplyKey(null);
+            transaction.setInitialSupply(0);
         });
 
         const balances = await new AccountBalanceQuery()
