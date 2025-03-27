@@ -4,24 +4,7 @@ export default {
         hmr: false,
     },
     envDir: "./",
-    build: {
-        polyfillDynamicImport: false,
-    },
-    optimizeDeps: {
-        force: true,
-        entries: [
-            "./test/unit/AccountId.js",
-            "./test/unit/Hbar.js",
-            "./test/unit/keccak256.js",
-            "./test/unit/Transaction.js",
-            "./test/unit/TransactionId.js",
-            "./test/integration/AccountBalanceIntegrationTest.js",
-            "./test/integration/ClientIntegrationTest.js",
-            "./test/integration/TokenCreateIntegrationTest.js",
-            "./test/integration/TransactionIntegrationTest.js",
-            "./test/integration/TransactionResponseTest.js",
-        ],
-    },
+
     resolve: {
         alias: {
             // redirect src/ to src/browser
@@ -29,9 +12,10 @@ export default {
             // will take care of this
             "../../src/index.js": "../../src/browser.js",
             "../src/index.js": "../src/browser.js",
-            // TODO: extract `encoding/hex.js` etc into a variable and call a function to generate 
+            // TODO: extract `encoding/hex.js` etc into a variable and call a function to generate
             // all the prefixes.
-            "../../../src/encoding/hex.js": "../../../src/encoding/hex.browser.js",
+            "../../../src/encoding/hex.js":
+                "../../../src/encoding/hex.browser.js",
             "../../src/encoding/hex.js": "../../src/encoding/hex.browser.js",
             "../src/encoding/hex.js": "../src/encoding/hex.browser.js",
             "src/encoding/hex.js": "src/encoding/hex.browser.js",
@@ -40,10 +24,13 @@ export default {
             "../src/encoding/utf8.js": "../src/encoding/utf8.browser.js",
             "../../src/encoding/utf8.js": "../../src/encoding/utf8.browser.js",
             "../encoding/utf8.js": "../encoding/utf8.browser.js",
-            "../src/cryptography/sha384.js": "../src/cryptography/sha384.browser.js",
+            "../src/cryptography/sha384.js":
+                "../src/cryptography/sha384.browser.js",
             "../cryptography/sha384.js": "../cryptography/sha384.browser.js",
-            "./client/NodeIntegrationTestEnv.js": "./client/WebIntegrationTestEnv.js",
-            "../integration/client/NodeIntegrationTestEnv.js": "../integration/client/WebIntegrationTestEnv.js",
+            "./client/NodeIntegrationTestEnv.js":
+                "./client/WebIntegrationTestEnv.js",
+            "../integration/client/NodeIntegrationTestEnv.js":
+                "../integration/client/WebIntegrationTestEnv.js",
             "../../src/client/NodeClient.js": "../../src/client/WebClient.js",
         },
     },
