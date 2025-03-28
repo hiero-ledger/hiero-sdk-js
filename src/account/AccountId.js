@@ -323,6 +323,7 @@ export default class AccountId {
         const isHollowAccount = this.num.eq(Long.fromBigInt(0n)) && alias;
 
         if (isHollowAccount) {
+            // if is hollow accont pass accountNum null
             return {
                 alias,
                 accountNum: null,
@@ -330,6 +331,7 @@ export default class AccountId {
                 realmNum: this.realm,
             };
         } else if (this.num && alias) {
+            // if both num and alias are set ignore the alias
             return {
                 alias: null,
                 accountNum: this.num,
@@ -337,6 +339,7 @@ export default class AccountId {
                 realmNum: this.realm,
             };
         } else if (alias) {
+            // then if alias is set ignore the account num
             return {
                 alias,
                 accountNum: null,
@@ -344,6 +347,7 @@ export default class AccountId {
                 realmNum: this.realm,
             };
         }
+        // all other cases ignore the alias
         return {
             alias: null,
             accountNum: this.num,
