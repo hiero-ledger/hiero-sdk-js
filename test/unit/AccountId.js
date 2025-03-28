@@ -1,9 +1,9 @@
+import { proto } from "@hashgraph/proto";
 import { expect } from "chai";
-
-import { AccountId, PublicKey } from "../../src/index.js";
 
 import BigNumber from "bignumber.js";
 import EvmAddress from "../../src/EvmAddress.js";
+import { AccountId, PublicKey, Long, PrivateKey } from "../../src/index.js";
 
 describe("AccountId", function () {
     it("constructors", function () {
@@ -177,6 +177,56 @@ describe("AccountId", function () {
         if (!err) {
             throw new Error("`AccountId.fromString()` did not error");
         }
+    });
+
+    it("should handle hollow account (num=0 with alias)", function () {
+        const alias = PrivateKey.generateECDSA().publicKey;
+        const protoKey = proto.Key.encode(alias._toProtobufKey()).finish();
+        const accountId = new AccountId(0, 0, 0, alias);
+
+        const result = accountId._toProtobuf();
+
+        expect(result).to.deep.equal({
+            alias: protoKey,
+            shardNum: Long.fromNumber(0),
+            realmNum: Long.fromNumber(0),
+            accountNum: null,
+        });
+    });
+
+    it("should handle non-hollow account with both num and alias", function () {
+        const accountId = new AccountId({
+            num: Long.fromNumber(123),
+            alias: "test-alias",
+            shard: 1,
+            realm: 2,
+        });
+
+        const result = accountId._toProtobuf();
+
+        expect(result).to.deep.equal({
+            alias: null,
+            accountNum: Long.fromNumber(123),
+            shardNum: Long.fromNumber(1),
+            realmNum: Long.fromNumber(2),
+        });
+    });
+
+    it("should handle account with only num", function () {
+        const accountId = new AccountId({
+            num: Long.fromNumber(123),
+            shard: 1,
+            realm: 2,
+        });
+
+        const result = accountId._toProtobuf();
+
+        expect(result).to.deep.equal({
+            alias: null,
+            accountNum: Long.fromNumber(123),
+            shardNum: Long.fromNumber(1),
+            realmNum: Long.fromNumber(2),
+        });
     });
 
     it("should error when string negative numbers are directly passed to constructor", function () {
