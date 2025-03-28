@@ -106,4 +106,28 @@ describe("PublicKey", function () {
         const ed25519PublicKey1 = PublicKey.fromString(PUBLIC_KEY_DER1);
         expect(ed25519PublicKey1.toStringRaw()).to.be.equal(PUBLIC_KEY1);
     });
+
+    it("ECDSA verify transaction", function () {
+        const transaction = new TransferTransaction()
+            .setNodeAccountIds([new AccountId(3)])
+            .setTransactionId(TransactionId.generate(new AccountId(0, 0, 4)))
+            .freeze();
+
+        const key = PrivateKey.generateECDSA();
+        key.signTransaction(transaction);
+
+        expect(key.publicKey.verifyTransaction(transaction)).to.be.true;
+    });
+
+    it("ED25519 verify transaction", function () {
+        const transaction = new TransferTransaction()
+            .setNodeAccountIds([new AccountId(3)])
+            .setTransactionId(TransactionId.generate(new AccountId(0, 0, 4)))
+            .freeze();
+
+        const key = PrivateKey.generateED25519();
+        key.signTransaction(transaction);
+
+        expect(key.publicKey.verifyTransaction(transaction)).to.be.true;
+    });
 });
