@@ -320,12 +320,39 @@ export default class AccountId {
             evmAddress = this.evmAddress._bytes;
         } */
 
+        const isHollowAccount = this.num.eq(Long.fromBigInt(0n)) && alias;
+
+        if (isHollowAccount) {
+            // if is hollow accont pass accountNum null
+            return {
+                alias,
+                accountNum: null,
+                shardNum: this.shard,
+                realmNum: this.realm,
+            };
+        } else if (this.num && alias) {
+            // if both num and alias are set ignore the alias
+            return {
+                alias: null,
+                accountNum: this.num,
+                shardNum: this.shard,
+                realmNum: this.realm,
+            };
+        } else if (alias) {
+            // then if alias is set ignore the account num
+            return {
+                alias,
+                accountNum: null,
+                shardNum: this.shard,
+                realmNum: this.realm,
+            };
+        }
+        // all other cases ignore the alias
         return {
-            alias,
-            accountNum: this.aliasKey != null ? null : this.num,
+            alias: null,
+            accountNum: this.num,
             shardNum: this.shard,
             realmNum: this.realm,
-            //evmAddress,
         };
     }
 
