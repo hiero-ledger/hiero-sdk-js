@@ -19,7 +19,18 @@ import ContractFunctionParameters from "../contract/ContractFunctionParameters.j
 /**
  * MirrorNodeContractQuery returns a result from EVM execution such as cost-free execution of read-only smart contract
  * queries, gas estimation, and transient simulation of read-write operations.
- */
+ * @important When working with accounts that use ECDSA keys with aliases, you MUST:
+ * 1. Retrieve the account's EVM address from the Mirror Node API first
+ * 2. Use setSenderEvmAddress() instead of setSender()
+ * 
+ * This is because EVM addresses for accounts with ECDSA keys and aliases cannot be automatically
+ * derived and must be fetched from the Mirror Node. Example:
+ * 
+ * ```javascript
+ * // For accounts with ECDSA keys and aliases:
+ * const evmAddress = // ... fetch from Mirror Node API ...
+ * query.setSenderEvmAddress(evmAddress);
+ * 
 export default class MirrorNodeContractQuery {
     constructor() {
         this._contractId = null;
@@ -56,9 +67,10 @@ export default class MirrorNodeContractQuery {
     }
 
     /**
-     *
      * @param {string} sender
      * @description Set the 20-byte EVM address of the sender.
+     * This method must be used explicitly when working with accounts that have ECDSA keys with aliases,
+     * as their EVM addresses cannot be automatically derived and must be retrieved from the Mirror Node API.
      * @returns {this}
      */
     setSenderEvmAddress(sender) {
@@ -154,13 +166,7 @@ export default class MirrorNodeContractQuery {
      * @returns {string | null }
      */
     get senderEvmAddress() {
-        if (this.sender) {
-            return this.sender.toSolidityAddress();
-        } else if (this._senderEvmAddress) {
-            return this._senderEvmAddress;
-        }
-
-        return null;
+        return this._senderEvmAddress;
     }
 
     /**
@@ -208,6 +214,7 @@ export default class MirrorNodeContractQuery {
         if (this.contractId == null) {
             throw new Error("Contract ID is not set");
         }
+        this._fillEvmAddress();
         let mirrorNetworkAddress = client.mirrorNetwork[0];
         const contractCallEndpoint = "/api/v1/contracts/call";
 
@@ -240,6 +247,11 @@ export default class MirrorNodeContractQuery {
         return data;
     }
 
+    _fillEvmAddress() {
+        if (this.senderEvmAddress == null && this.sender != null) {
+            this._senderEvmAddress = this.sender.toSolidityAddress();
+        }
+    }
     // eslint-disable-next-line jsdoc/require-returns-check
     /**
      * @returns {object}
