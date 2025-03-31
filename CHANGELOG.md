@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.62.0-beta.2
+
+- fix: remove circular dependancy in dependencies by @ivaylonikolov7 in https://github.com/hiero-ledger/hiero-sdk-js/pull/2985
+- chore: bump elliptic peer dep by @venilinvasilev in https://github.com/hiero-ledger/hiero-sdk-js/pull/2976
+- refactor: remove account creation in integration tests by @venilinvasilev in https://github.com/hiero-ledger/hiero-sdk-js/pull/2970
+- chore: bump elliptic version by @venilinvasilev in https://github.com/hiero-ledger/hiero-sdk-js/pull/2977
+- chore: regenerate lock file for tck by @venilinvasilev in https://github.com/hiero-ledger/hiero-sdk-js/pull/2978
+
 ## v2.62.0-beta.1
 
 -   chore: return Privatekey, Transaction and PublicKey legacy functionality by @ivaylonikolov7 in https://github.com/hiero-ledger/hiero-sdk-js/pull/2943
