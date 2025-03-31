@@ -7,7 +7,6 @@ import {
     TokenGrantKycTransaction,
     TokenMintTransaction,
     TransferTransaction,
-    Hbar,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import {
@@ -26,7 +25,6 @@ describe("TokenDissociate", function () {
     it("should be executable", async function () {
         const { accountId: account, newKey: key } = await createAccount(
             env.client,
-            (transaction) => transaction.setInitialBalance(new Hbar(2)),
         );
 
         const token = await createFungibleToken(env.client, (transaction) => {

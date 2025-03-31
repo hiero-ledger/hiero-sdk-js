@@ -11,8 +11,6 @@ import { createNonFungibleToken } from "./utils/Fixtures.js";
 
 describe("TokenUpdateNftsTransaction", function () {
     let client,
-        operatorId,
-        operatorKey,
         metadata,
         newMetadata,
         metadataKey,
@@ -23,8 +21,6 @@ describe("TokenUpdateNftsTransaction", function () {
     before(async function () {
         const env = await IntegrationTestEnv.new();
         client = env.client;
-        operatorId = env.operatorId;
-        operatorKey = env.operatorKey;
         metadata = new Uint8Array([1]);
         newMetadata = new Uint8Array([1, 2]);
         metadataKey = PrivateKey.generateECDSA();
@@ -35,11 +31,7 @@ describe("TokenUpdateNftsTransaction", function () {
 
     it("should update the metadata of entire NFT collection", async function () {
         const tokenId = await createNonFungibleToken(client, (transaction) => {
-            transaction
-                .setAdminKey(operatorKey)
-                .setSupplyKey(supplyKey)
-                .setMetadataKey(metadataKey)
-                .setTreasuryAccountId(operatorId);
+            transaction.setSupplyKey(supplyKey).setMetadataKey(metadataKey);
         });
 
         const tokenMintTx = new TokenMintTransaction()
@@ -81,11 +73,7 @@ describe("TokenUpdateNftsTransaction", function () {
 
     it("should update the NFT's metadata", async function () {
         const tokenId = await createNonFungibleToken(client, (transaction) => {
-            transaction
-                .setAdminKey(operatorKey)
-                .setSupplyKey(supplyKey)
-                .setMetadataKey(metadataKey)
-                .setTreasuryAccountId(operatorId);
+            transaction.setSupplyKey(supplyKey).setMetadataKey(metadataKey);
         });
 
         const tokenMintTx = new TokenMintTransaction()
@@ -127,11 +115,7 @@ describe("TokenUpdateNftsTransaction", function () {
 
     it("should NOT update the NFT's metadata", async function () {
         const tokenId = await createNonFungibleToken(client, (transaction) => {
-            transaction
-                .setAdminKey(operatorKey)
-                .setSupplyKey(supplyKey)
-                .setMetadataKey(metadataKey)
-                .setTreasuryAccountId(operatorId);
+            transaction.setSupplyKey(supplyKey).setMetadataKey(metadataKey);
         });
 
         const tokenMintTx = new TokenMintTransaction()
@@ -172,11 +156,7 @@ describe("TokenUpdateNftsTransaction", function () {
 
     it("should earse the metadata of entire NFT collection", async function () {
         const tokenId = await createNonFungibleToken(client, (transaction) => {
-            transaction
-                .setAdminKey(operatorKey)
-                .setSupplyKey(supplyKey)
-                .setMetadataKey(metadataKey)
-                .setTreasuryAccountId(operatorId);
+            transaction.setSupplyKey(supplyKey).setMetadataKey(metadataKey);
         });
 
         const tokenMintTx = new TokenMintTransaction()
@@ -221,10 +201,7 @@ describe("TokenUpdateNftsTransaction", function () {
             const tokenId = await createNonFungibleToken(
                 client,
                 (transaction) => {
-                    transaction
-                        .setAdminKey(operatorKey)
-                        .setSupplyKey(supplyKey)
-                        .setTreasuryAccountId(operatorId);
+                    transaction.setSupplyKey(supplyKey);
                 },
             );
 
@@ -262,10 +239,8 @@ describe("TokenUpdateNftsTransaction", function () {
                 client,
                 (transaction) => {
                     transaction
-                        .setAdminKey(operatorKey)
                         .setMetadataKey(metadataKey)
-                        .setSupplyKey(supplyKey)
-                        .setTreasuryAccountId(operatorId);
+                        .setSupplyKey(supplyKey);
                 },
             );
 

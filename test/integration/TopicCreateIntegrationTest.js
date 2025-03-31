@@ -2,7 +2,6 @@ import {
     AccountBalanceQuery,
     CustomFeeLimit,
     CustomFixedFee,
-    Hbar,
     PrivateKey,
     PublicKey,
     Status,
@@ -136,12 +135,7 @@ describe("TopicCreate", function () {
             const denominatingTokenId1 = await createFungibleToken(env.client);
             const amount1 = 1;
 
-            const denominatingTokenId2 = await createFungibleToken(
-                env.client,
-                (transaction) => {
-                    transaction.setTokenName("denom2").setTokenSymbol("D2");
-                },
-            );
+            const denominatingTokenId2 = await createFungibleToken(env.client);
 
             const amount2 = 2;
 
@@ -201,18 +195,12 @@ describe("TopicCreate", function () {
 
             const newDenominatingTokenId1 = await createFungibleToken(
                 env.client,
-                (transaction) => {
-                    transaction.setTokenName("Favor").setTokenSymbol("FVR");
-                },
             );
 
             const newAmount2 = 4;
 
             const newDenominatingTokenId2 = await createFungibleToken(
                 env.client,
-                (transaction) => {
-                    transaction.setTokenName("Duty").setTokenSymbol("DUT");
-                },
             );
 
             const newCustomFixedFees = [
@@ -357,12 +345,7 @@ describe("TopicCreate", function () {
             const denominatingTokenId1 = await createFungibleToken(env.client);
             const amount1 = 1;
 
-            const denominatingTokenId2 = await createFungibleToken(
-                env.client,
-                (transaction) => {
-                    transaction.setTokenName("denom2").setTokenSymbol("D2");
-                },
-            );
+            const denominatingTokenId2 = await createFungibleToken(env.client);
 
             const amount2 = 2;
 
@@ -410,9 +393,7 @@ describe("TopicCreate", function () {
             const {
                 accountId: payerAccountId,
                 newKey: payerAccountPrivateKey,
-            } = await createAccount(env.client, (transaction) => {
-                transaction.setInitialBalance(new Hbar(1));
-            });
+            } = await createAccount(env.client);
 
             const customFeeLimit = new CustomFeeLimit()
                 .setAccountId(payerAccountId)
@@ -587,7 +568,6 @@ describe("TopicCreate", function () {
             const { accountId: payerAccountId } = await createAccount(
                 env.client,
                 (transaction) => {
-                    transaction.setInitialBalance(new Hbar(1));
                     transaction.setKeyWithoutAlias(feeExemptKey1);
                 },
             );
@@ -697,9 +677,7 @@ describe("TopicCreate", function () {
             const {
                 accountId: payerAccountId,
                 newKey: payerAccountPrivateKey,
-            } = await createAccount(env.client, (transaction) => {
-                transaction.setInitialBalance(new Hbar(1));
-            });
+            } = await createAccount(env.client);
 
             // Set custom fee limit with lower amount than the custom fee
             const customFeeLimit = new CustomFeeLimit()

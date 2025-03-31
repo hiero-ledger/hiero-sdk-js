@@ -18,14 +18,7 @@ describe("TokenRevokeKyc", function () {
     it("should be executable", async function () {
         // Create token with required keys
         const token = await createFungibleToken(env.client, (transaction) => {
-            transaction
-                .setDecimals(3)
-                .setInitialSupply(1000000)
-                .setKycKey(env.operatorKey)
-                .setFreezeKey(env.operatorKey)
-                .setWipeKey(env.operatorKey)
-                .setSupplyKey(env.operatorKey)
-                .setFreezeDefault(false);
+            transaction.setKycKey(env.operatorKey).setFreezeDefault(false);
         });
 
         // Create account
@@ -117,14 +110,7 @@ describe("TokenRevokeKyc", function () {
     it("should error when account ID is not set", async function () {
         // Create token with required keys
         const token = await createFungibleToken(env.client, (transaction) => {
-            transaction
-                .setDecimals(3)
-                .setInitialSupply(1000000)
-                .setKycKey(env.operatorKey)
-                .setFreezeKey(env.operatorKey)
-                .setWipeKey(env.operatorKey)
-                .setSupplyKey(env.operatorKey)
-                .setFreezeDefault(false);
+            transaction.setKycKey(env.operatorKey).setFreezeDefault(false);
         });
 
         let err = false;

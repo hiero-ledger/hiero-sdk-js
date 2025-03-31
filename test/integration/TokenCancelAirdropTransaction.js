@@ -123,9 +123,7 @@ describe("TokenCancelAirdropIntegrationTest", function () {
 
     it("should cancel the token if paused", async function () {
         const tokenId = await createFungibleToken(env.client, (transaction) =>
-            transaction
-                .setInitialSupply(INITIAL_SUPPLY)
-                .setPauseKey(env.operatorKey),
+            transaction.setInitialSupply(INITIAL_SUPPLY),
         );
 
         const { accountId: receiverId } = await createAccount(env.client);
@@ -160,11 +158,7 @@ describe("TokenCancelAirdropIntegrationTest", function () {
 
     it("should cancel the token if token is deleted", async function () {
         const tokenId = await createFungibleToken(env.client, (transaction) =>
-            transaction
-                .setTokenName("FFFFFFFFF")
-                .setTokenSymbol("FFF")
-                .setInitialSupply(INITIAL_SUPPLY)
-                .setAdminKey(env.operatorKey),
+            transaction.setInitialSupply(INITIAL_SUPPLY),
         );
 
         const { accountId: receiverId } = await createAccount(env.client);
@@ -199,10 +193,7 @@ describe("TokenCancelAirdropIntegrationTest", function () {
 
     it("should cancel the tokens to multiple receivers when they are in pending state", async function () {
         const tokenId = await createFungibleToken(env.client, (transaction) =>
-            transaction
-                .setTokenName("FFFFFF")
-                .setTokenSymbol("FFF")
-                .setInitialSupply(INITIAL_SUPPLY),
+            transaction.setInitialSupply(INITIAL_SUPPLY),
         );
 
         const nftId = await createNonFungibleToken(env.client, (transaction) =>
@@ -263,15 +254,10 @@ describe("TokenCancelAirdropIntegrationTest", function () {
 
     it("should cancel the tokens when they are in pending state with multiple airdrop ids", async function () {
         const tokenId = await createFungibleToken(env.client, (transaction) =>
-            transaction
-                .setTokenName("FFFFFF")
-                .setTokenSymbol("FFF")
-                .setInitialSupply(INITIAL_SUPPLY),
+            transaction.setInitialSupply(INITIAL_SUPPLY),
         );
 
-        const nftId = await createNonFungibleToken(env.client, (transaction) =>
-            transaction.setTokenName("nft").setTokenSymbol("NFT"),
-        );
+        const nftId = await createNonFungibleToken(env.client);
 
         // mint nfts
         const tokenMintResponse = await new TokenMintTransaction()
@@ -325,10 +311,7 @@ describe("TokenCancelAirdropIntegrationTest", function () {
 
     it("should not be able to cancel the tokens when they are not airdropped", async function () {
         const tokenId = await createFungibleToken(env.client, (transaction) =>
-            transaction
-                .setTokenName("FFFFFFFFF")
-                .setTokenSymbol("FFF")
-                .setInitialSupply(INITIAL_SUPPLY),
+            transaction.setInitialSupply(INITIAL_SUPPLY),
         );
 
         const { accountId: receiverId } = await createAccount(env.client);
@@ -411,9 +394,7 @@ describe("TokenCancelAirdropIntegrationTest", function () {
     });
 
     it("cannot cancel the tokens with duplicate entries", async function () {
-        const tokenId = await createFungibleToken(env.client, (transaction) =>
-            transaction.setInitialSupply(100),
-        );
+        const tokenId = await createFungibleToken(env.client);
 
         const { accountId: receiverId } = await createAccount(env.client);
 

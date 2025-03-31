@@ -2,7 +2,6 @@ import {
     AccountAllowanceApproveTransaction,
     AccountBalanceQuery,
     AccountUpdateTransaction,
-    Hbar,
     NftId,
     AccountInfoQuery,
     Status,
@@ -26,16 +25,10 @@ describe("TokenAssociate", function () {
     });
 
     it("should be executable", async function () {
-        const { accountId, newKey: key } = await createAccount(
-            env.client,
-            (transaction) => transaction.setInitialBalance(new Hbar(2)),
-        );
+        const { accountId, newKey: key } = await createAccount(env.client);
 
         const token = await createFungibleToken(env.client, (transaction) => {
-            transaction
-                .setKycKey(env.client.operatorPublicKey)
-                .setDecimals(3)
-                .setInitialSupply(1000000);
+            transaction.setKycKey(env.client.operatorPublicKey);
         });
 
         await (
@@ -78,13 +71,7 @@ describe("TokenAssociate", function () {
     });
 
     it("should error when account ID is not set", async function () {
-        const token = await createFungibleToken(env.client, (transaction) =>
-            transaction
-                .setTokenName("ffff")
-                .setTokenSymbol("F")
-                .setDecimals(3)
-                .setInitialSupply(1000000),
-        );
+        const token = await createFungibleToken(env.client);
 
         let err = false;
 
@@ -472,9 +459,7 @@ describe("TokenAssociate", function () {
             it("receiver should have token balance even if it has given allowance to spender", async function () {
                 const { accountId: spenderAccountId, newKey: spenderKey } =
                     await createAccount(env.client, (transaction) => {
-                        transaction
-                            .setInitialBalance(new Hbar(1))
-                            .setMaxAutomaticTokenAssociations(-1);
+                        transaction.setMaxAutomaticTokenAssociations(-1);
                     });
 
                 const unlimitedAutoAssociationReceiverTx =
@@ -562,9 +547,7 @@ describe("TokenAssociate", function () {
 
                 const { accountId: spenderAccountId, newKey: spenderKey } =
                     await createAccount(env.client, (transaction) => {
-                        transaction
-                            .setInitialBalance(new Hbar(1))
-                            .setMaxAutomaticTokenAssociations(-1);
+                        transaction.setMaxAutomaticTokenAssociations(-1);
                     });
 
                 const tokenId = await createNonFungibleToken(env.client);

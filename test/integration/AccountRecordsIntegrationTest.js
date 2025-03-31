@@ -1,8 +1,6 @@
 import {
     AccountRecordsQuery,
     Hbar,
-    PrivateKey,
-    TransactionId,
     TransferTransaction,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
@@ -17,13 +15,8 @@ describe("AccountRecords", function () {
 
     it("should be executable", async function () {
         const operatorId = env.operatorId;
-        const key = PrivateKey.generateED25519();
 
-        const { accountId } = await createAccount(env.client, (transaction) => {
-            transaction
-                .setKeyWithoutAlias(key.publicKey)
-                .setInitialBalance(new Hbar(2));
-        });
+        const { accountId, newKey } = await createAccount(env.client);
 
         expect(accountId).to.not.be.null;
 
@@ -41,11 +34,10 @@ describe("AccountRecords", function () {
 
         expect(records.length).to.be.gt(0);
 
-        await deleteAccount(env.client, key, (transaction) => {
+        await deleteAccount(env.client, newKey, (transaction) => {
             transaction
                 .setAccountId(accountId)
-                .setTransferAccountId(operatorId)
-                .setTransactionId(TransactionId.generate(accountId));
+                .setTransferAccountId(operatorId);
         });
     });
 

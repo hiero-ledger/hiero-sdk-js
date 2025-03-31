@@ -1,6 +1,5 @@
 import {
     AccountBalanceQuery,
-    Hbar,
     NftId,
     TokenAssociateTransaction,
     TokenMintTransaction,
@@ -25,34 +24,20 @@ describe("TokenRejectIntegrationTest", function () {
         const tokenId1 = await createFungibleToken(
             env.client,
             (transaction) => {
-                transaction
-                    .setDecimals(3)
-                    .setInitialSupply(FULL_TREASURY_BALANCE)
-                    .setTreasuryAccountId(env.operatorId)
-                    .setPauseKey(env.operatorKey)
-                    .setAdminKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey);
+                transaction.setInitialSupply(FULL_TREASURY_BALANCE);
             },
         );
 
         const tokenId2 = await createFungibleToken(
             env.client,
             (transaction) => {
-                transaction
-                    .setDecimals(3)
-                    .setInitialSupply(1000000)
-                    .setTreasuryAccountId(env.operatorId)
-                    .setPauseKey(env.operatorKey)
-                    .setAdminKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey);
+                transaction.setInitialSupply(FULL_TREASURY_BALANCE);
             },
         );
 
         // create receiver account
         const { accountId: receiverId, newKey: receiverPrivateKey } =
-            await createAccount(env.client, (transaction) => {
-                transaction.setInitialBalance(new Hbar(1));
-            });
+            await createAccount(env.client);
 
         await (
             await new TokenAssociateTransaction()
@@ -119,22 +104,11 @@ describe("TokenRejectIntegrationTest", function () {
         env = await IntegrationTestEnv.new();
 
         // create token
-        const tokenId = await createNonFungibleToken(
-            env.client,
-            (transaction) => {
-                transaction
-                    .setTreasuryAccountId(env.operatorId)
-                    .setPauseKey(env.operatorKey)
-                    .setAdminKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey);
-            },
-        );
+        const tokenId = await createNonFungibleToken(env.client);
 
         // create receiver account
         const { accountId: receiverId, newKey: receiverPrivateKey } =
-            await createAccount(env.client, (transaction) => {
-                transaction.setInitialBalance(new Hbar(1));
-            });
+            await createAccount(env.client);
 
         await (
             await new TokenAssociateTransaction()

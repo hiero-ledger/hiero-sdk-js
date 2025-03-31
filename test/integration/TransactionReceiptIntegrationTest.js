@@ -1,6 +1,5 @@
 import {
     AccountId,
-    Hbar,
     KeyList,
     PrivateKey,
     TopicCreateTransaction,
@@ -32,9 +31,7 @@ describe("TransactionReceipt", function () {
         );
 
         await createAccount(env.client, (transaction) => {
-            transaction
-                .setInitialBalance(new Hbar(50))
-                .setKeyWithoutAlias(keyList);
+            transaction.setKeyWithoutAlias(keyList);
         });
 
         const topicId = (

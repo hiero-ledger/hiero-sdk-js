@@ -40,12 +40,6 @@ describe("TokenUpdate", function () {
 
         const token = await createFungibleToken(env.client, (transaction) => {
             transaction
-                .setTokenName("ffff")
-                .setTokenSymbol("F")
-                .setDecimals(3)
-                .setInitialSupply(1000000)
-                .setTreasuryAccountId(operatorId)
-                .setAdminKey(operatorKey)
                 .setKycKey(key1)
                 .setFreezeKey(key2)
                 .setWipeKey(key3)
@@ -63,7 +57,7 @@ describe("TokenUpdate", function () {
         expect(info.tokenId.toString()).to.eql(token.toString());
         expect(info.name).to.eql("ffff");
         expect(info.symbol).to.eql("F");
-        expect(info.decimals).to.eql(3);
+        expect(info.decimals).to.eql(18);
         expect(info.totalSupply.toInt()).to.eql(1000000);
         expect(info.treasuryAccountId.toString()).to.be.equal(
             operatorId.toString(),
@@ -102,7 +96,7 @@ describe("TokenUpdate", function () {
         expect(info.tokenId.toString()).to.eql(token.toString());
         expect(info.name).to.eql("aaaa");
         expect(info.symbol).to.eql("A");
-        expect(info.decimals).to.eql(3);
+        expect(info.decimals).to.eql(18);
         expect(info.totalSupply.toInt()).to.eql(1000000);
         expect(info.treasuryAccountId.toString()).to.be.equal(
             operatorId.toString(),
@@ -137,12 +131,6 @@ describe("TokenUpdate", function () {
 
         const token = await createFungibleToken(env.client, (transaction) => {
             transaction
-                .setTokenName("ffff")
-                .setTokenSymbol("F")
-                .setDecimals(3)
-                .setInitialSupply(1000000)
-                .setTreasuryAccountId(operatorId)
-                .setAdminKey(operatorKey)
                 .setKycKey(key1)
                 .setFreezeKey(key2)
                 .setWipeKey(key3)
@@ -153,7 +141,7 @@ describe("TokenUpdate", function () {
         const { accountId: treasuryAccountId } = await createAccount(
             env.client,
             (transaction) => {
-                transaction.setKey(key5);
+                transaction.setKeyWithoutAlias(key5);
             },
         );
 
@@ -164,7 +152,7 @@ describe("TokenUpdate", function () {
         expect(info.tokenId.toString()).to.eql(token.toString());
         expect(info.name).to.eql("ffff");
         expect(info.symbol).to.eql("F");
-        expect(info.decimals).to.eql(3);
+        expect(info.decimals).to.eql(18);
         expect(info.totalSupply.toInt()).to.eql(1000000);
         expect(info.treasuryAccountId.toString()).to.be.equal(
             operatorId.toString(),
@@ -208,7 +196,7 @@ describe("TokenUpdate", function () {
         expect(info.tokenId.toString()).to.eql(token.toString());
         expect(info.name).to.eql("aaaa");
         expect(info.symbol).to.eql("A");
-        expect(info.decimals).to.eql(3);
+        expect(info.decimals).to.eql(18);
         expect(info.totalSupply.toInt()).to.eql(1000000);
         expect(info.treasuryAccountId.toString()).to.be.equal(
             treasuryAccountId.toString(),
@@ -229,8 +217,6 @@ describe("TokenUpdate", function () {
     });
 
     it("should be executable when no properties except token ID are set", async function () {
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
         const key1 = PrivateKey.generateED25519();
         const key2 = PrivateKey.generateED25519();
         const key3 = PrivateKey.generateED25519();
@@ -238,12 +224,6 @@ describe("TokenUpdate", function () {
 
         const token = await createFungibleToken(env.client, (transaction) => {
             transaction
-                .setTokenName("ffff")
-                .setTokenSymbol("F")
-                .setDecimals(3)
-                .setInitialSupply(1000000)
-                .setTreasuryAccountId(operatorId)
-                .setAdminKey(operatorKey)
                 .setKycKey(key1)
                 .setFreezeKey(key2)
                 .setWipeKey(key3)
@@ -259,14 +239,8 @@ describe("TokenUpdate", function () {
     });
 
     it("should error updating immutable token", async function () {
-        const operatorId = env.operatorId;
-
         const token = await createFungibleToken(env.client, (transaction) => {
-            transaction
-                .setTokenName("ffff")
-                .setTokenSymbol("F")
-                .setTreasuryAccountId(operatorId)
-                .setAdminKey(null);
+            transaction.setAdminKey(null);
         });
 
         let status;
@@ -304,17 +278,12 @@ describe("TokenUpdate", function () {
 
     it("should return error when updating immutable token", async function () {
         let status;
-        const operatorId = env.operatorId;
 
         try {
             const token = await createFungibleToken(
                 env.client,
                 (transaction) => {
-                    transaction
-                        .setTokenSymbol("F")
-                        .setTokenName("ffff")
-                        .setTreasuryAccountId(operatorId)
-                        .setAdminKey(null);
+                    transaction.setAdminKey(null);
                 },
             );
 
@@ -332,16 +301,12 @@ describe("TokenUpdate", function () {
     });
 
     it("should error when admin key does not sign transaction", async function () {
-        const operatorId = env.operatorId;
         const key = PrivateKey.generateED25519();
 
         const tokenId = await createFungibleToken(
             env.client,
             async (transaction) => {
                 await transaction
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(operatorId)
                     .setAdminKey(key)
                     .freezeWith(env.client)
                     .sign(key);
@@ -374,23 +339,14 @@ describe("TokenUpdate", function () {
         const { accountId: account } = await createAccount(
             env.client,
             (transaction) => {
-                transaction.setKey(key.publicKey);
+                transaction.setKeyWithoutAlias(key.publicKey);
             },
         );
 
         const token = await createNonFungibleToken(
             env.client,
             (transaction) => {
-                transaction
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setTreasuryAccountId(env.operatorId)
-                    .setAdminKey(env.operatorKey)
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey);
+                transaction.setKycKey(env.operatorKey);
             },
         );
 
@@ -456,7 +412,6 @@ describe("TokenUpdate", function () {
     describe("[HIP-646] Fungible Token Metadata Field", function () {
         it("should update the metadata of token after signing the transaction with metadata key", async function () {
             let tokenInfo;
-            const operatorId = env.operatorId;
             const metadataKey = PrivateKey.generateED25519();
             const metadata = new Uint8Array([1]);
             const newMetadata = new Uint8Array([1, 2]);
@@ -465,11 +420,6 @@ describe("TokenUpdate", function () {
                 env.client,
                 (transaction) => {
                     transaction
-                        .setTokenName("Test")
-                        .setTokenSymbol("T")
-                        .setDecimals(3)
-                        .setInitialSupply(1000000)
-                        .setTreasuryAccountId(operatorId)
                         .setMetadata(metadata)
                         .setMetadataKey(metadataKey);
                 },
@@ -499,7 +449,6 @@ describe("TokenUpdate", function () {
         });
 
         it("should update the metadata of token after signing the transaction with admin key", async function () {
-            const operatorId = env.operatorId;
             const adminKey = env.operatorKey;
             const metadata = new Uint8Array([1]);
             const newMetadata = new Uint8Array([1, 2]);
@@ -508,14 +457,7 @@ describe("TokenUpdate", function () {
             const token = await createFungibleToken(
                 env.client,
                 (transaction) => {
-                    transaction
-                        .setTokenName("Test")
-                        .setTokenSymbol("T")
-                        .setDecimals(3)
-                        .setInitialSupply(1000000)
-                        .setTreasuryAccountId(operatorId)
-                        .setAdminKey(adminKey)
-                        .setMetadata(metadata);
+                    transaction.setMetadata(metadata);
                 },
             );
 
@@ -541,7 +483,6 @@ describe("TokenUpdate", function () {
         });
 
         it("should NOT update the metadata of token when the new metadata is NOT set", async function () {
-            const operatorId = env.operatorId;
             const adminKey = env.operatorKey;
             const metadata = new Uint8Array([1]);
             let tokenInfo;
@@ -549,14 +490,7 @@ describe("TokenUpdate", function () {
             const token = await createFungibleToken(
                 env.client,
                 (transaction) => {
-                    transaction
-                        .setTokenName("Test")
-                        .setTokenSymbol("T")
-                        .setDecimals(3)
-                        .setInitialSupply(1000000)
-                        .setTreasuryAccountId(operatorId)
-                        .setAdminKey(adminKey)
-                        .setMetadata(metadata);
+                    transaction.setMetadata(metadata);
                 },
             );
 
@@ -582,7 +516,6 @@ describe("TokenUpdate", function () {
 
         it("should earse the metadata of token after signing the transaction with metadata key", async function () {
             let tokenInfo;
-            const operatorId = env.operatorId;
             const metadataKey = PrivateKey.generateED25519();
             const metadata = new Uint8Array([1]);
             const newMetadata = new Uint8Array();
@@ -591,11 +524,6 @@ describe("TokenUpdate", function () {
                 env.client,
                 (transaction) => {
                     transaction
-                        .setTokenName("Test")
-                        .setTokenSymbol("T")
-                        .setDecimals(3)
-                        .setInitialSupply(1000000)
-                        .setTreasuryAccountId(operatorId)
                         .setMetadata(metadata)
                         .setMetadataKey(metadataKey);
                 },
@@ -625,7 +553,6 @@ describe("TokenUpdate", function () {
         });
 
         it("should earse the metadata of token after signing the transaction with admin key", async function () {
-            const operatorId = env.operatorId;
             const adminKey = env.operatorKey;
             const metadata = new Uint8Array([1]);
             const newMetadata = new Uint8Array();
@@ -634,14 +561,7 @@ describe("TokenUpdate", function () {
             const token = await createFungibleToken(
                 env.client,
                 (transaction) => {
-                    transaction
-                        .setTokenName("Test")
-                        .setTokenSymbol("T")
-                        .setDecimals(3)
-                        .setInitialSupply(1000000)
-                        .setTreasuryAccountId(operatorId)
-                        .setMetadata(metadata)
-                        .setAdminKey(adminKey);
+                    transaction.setMetadata(metadata);
                 },
             );
 
@@ -668,7 +588,6 @@ describe("TokenUpdate", function () {
 
         it("should NOT update the metadata of token when the transaction is not signed with metadata or admin key", async function () {
             let status;
-            const operatorId = env.operatorId;
             const adminKey = PrivateKey.generateED25519();
             const metadataKey = PrivateKey.generateED25519();
             const wrongKey = PrivateKey.generateED25519();
@@ -680,11 +599,6 @@ describe("TokenUpdate", function () {
                     env.client,
                     (transaction) => {
                         transaction
-                            .setTokenName("Test")
-                            .setTokenSymbol("T")
-                            .setDecimals(3)
-                            .setInitialSupply(1000000)
-                            .setTreasuryAccountId(operatorId)
                             .setAdminKey(adminKey)
                             .setMetadata(metadata)
                             .setMetadataKey(metadataKey);
@@ -709,7 +623,6 @@ describe("TokenUpdate", function () {
 
         it("should NOT update the metadata of token if the metadata or admin keys are NOT set", async function () {
             let status;
-            const operatorId = env.operatorId;
             const metadata = new Uint8Array([1]);
             const newMetadata = new Uint8Array([1, 2]);
 
@@ -718,11 +631,6 @@ describe("TokenUpdate", function () {
                     env.client,
                     (transaction) => {
                         transaction
-                            .setTokenName("Test")
-                            .setTokenSymbol("T")
-                            .setDecimals(3)
-                            .setInitialSupply(1000000)
-                            .setTreasuryAccountId(operatorId)
                             .setAdminKey(null)
                             .setMetadataKey(null)
                             .setMetadata(metadata);
@@ -746,7 +654,6 @@ describe("TokenUpdate", function () {
 
     describe("[HIP-765] Non Fungible Token Metadata Field", function () {
         it("should update the metadata of token after signing the transaction with admin key", async function () {
-            const operatorId = env.operatorId;
             const adminKey = env.operatorKey;
             const metadata = new Uint8Array([1]);
             const newMetadata = new Uint8Array([1, 2]);
@@ -755,12 +662,7 @@ describe("TokenUpdate", function () {
             const token = await createNonFungibleToken(
                 env.client,
                 (transaction) => {
-                    transaction
-                        .setTokenName("Test")
-                        .setTokenSymbol("T")
-                        .setTreasuryAccountId(operatorId)
-                        .setAdminKey(adminKey)
-                        .setMetadata(metadata);
+                    transaction.setAdminKey(adminKey).setMetadata(metadata);
                 },
             );
 
@@ -786,7 +688,6 @@ describe("TokenUpdate", function () {
         });
 
         it("should NOT update the metadata of token when the new metadata is NOT set", async function () {
-            const operatorId = env.operatorId;
             const adminKey = env.operatorKey;
             const metadata = new Uint8Array([1]);
             let tokenInfo;
@@ -794,12 +695,7 @@ describe("TokenUpdate", function () {
             const token = await createNonFungibleToken(
                 env.client,
                 (transaction) => {
-                    transaction
-                        .setTokenName("Test")
-                        .setTokenSymbol("T")
-                        .setTreasuryAccountId(operatorId)
-                        .setAdminKey(adminKey)
-                        .setMetadata(metadata);
+                    transaction.setMetadata(metadata);
                 },
             );
 
@@ -825,7 +721,6 @@ describe("TokenUpdate", function () {
 
         it("should earse the metadata of token after signing the transaction with metadata key", async function () {
             let tokenInfo;
-            const operatorId = env.operatorId;
             const metadataKey = PrivateKey.generateED25519();
             const metadata = new Uint8Array([1]);
             const newMetadata = new Uint8Array();
@@ -834,9 +729,6 @@ describe("TokenUpdate", function () {
                 env.client,
                 (transaction) => {
                     transaction
-                        .setTokenName("Test")
-                        .setTokenSymbol("T")
-                        .setTreasuryAccountId(operatorId)
                         .setMetadata(metadata)
                         .setMetadataKey(metadataKey);
                 },
@@ -866,7 +758,6 @@ describe("TokenUpdate", function () {
         });
 
         it("should earse the metadata of token after signing the transaction with admin key", async function () {
-            const operatorId = env.operatorId;
             const adminKey = env.operatorKey;
             const metadata = new Uint8Array([1]);
             const newMetadata = new Uint8Array();
@@ -875,12 +766,7 @@ describe("TokenUpdate", function () {
             const token = await createNonFungibleToken(
                 env.client,
                 (transaction) => {
-                    transaction
-                        .setTokenName("Test")
-                        .setTokenSymbol("T")
-                        .setTreasuryAccountId(operatorId)
-                        .setMetadata(metadata)
-                        .setAdminKey(adminKey);
+                    transaction.setMetadata(metadata);
                 },
             );
 
@@ -907,7 +793,6 @@ describe("TokenUpdate", function () {
 
         it("should NOT update the metadata of token when the transaction is not signed with metadata or admin key", async function () {
             let status;
-            const operatorId = env.operatorId;
             const adminKey = PrivateKey.generateED25519();
             const metadataKey = PrivateKey.generateED25519();
             const wrongKey = PrivateKey.generateED25519();
@@ -919,9 +804,6 @@ describe("TokenUpdate", function () {
                     env.client,
                     (transaction) => {
                         transaction
-                            .setTokenName("Test")
-                            .setTokenSymbol("T")
-                            .setTreasuryAccountId(operatorId)
                             .setAdminKey(adminKey)
                             .setMetadata(metadata)
                             .setMetadataKey(metadataKey);
@@ -946,7 +828,6 @@ describe("TokenUpdate", function () {
 
         it("should NOT update the metadata of token if the metadata or admin keys are NOT set", async function () {
             let status;
-            const operatorId = env.operatorId;
             const metadata = new Uint8Array([1]);
             const newMetadata = new Uint8Array([1, 2]);
 
@@ -955,9 +836,6 @@ describe("TokenUpdate", function () {
                     env.client,
                     (transaction) => {
                         transaction
-                            .setTokenName("Test")
-                            .setTokenSymbol("T")
-                            .setTreasuryAccountId(operatorId)
                             .setAdminKey(null)
                             .setMetadataKey(null)
                             .setMetadata(metadata);
@@ -995,9 +873,6 @@ describe("TokenUpdate", function () {
                 env.client,
                 async (transaction) => {
                     transaction
-                        .setTokenName("Token")
-                        .setTokenSymbol("T")
-                        .setTreasuryAccountId(env.operatorId)
                         .setAdminKey(adminKey)
                         .setWipeKey(wipeKey)
                         .setFreezeKey(freezeKey)
@@ -1014,8 +889,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -1063,8 +938,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -1093,9 +968,6 @@ describe("TokenUpdate", function () {
                 env.client,
                 async (transaction) => {
                     await transaction
-                        .setTokenName("Token")
-                        .setTokenSymbol("T")
-                        .setTreasuryAccountId(env.operatorId)
                         .setAdminKey(adminKey)
                         .setWipeKey(wipeKey)
                         .setFreezeKey(freezeKey)
@@ -1112,8 +984,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -1162,8 +1034,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -1194,9 +1066,6 @@ describe("TokenUpdate", function () {
                 env.client,
                 async (transaction) => {
                     await transaction
-                        .setTokenName("Token")
-                        .setTokenSymbol("T")
-                        .setTreasuryAccountId(env.operatorId)
                         .setAdminKey(adminKey)
                         .setWipeKey(wipeKey)
                         .setFreezeKey(freezeKey)
@@ -1213,8 +1082,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -1263,8 +1132,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -1309,8 +1178,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -1358,9 +1227,6 @@ describe("TokenUpdate", function () {
                 env.client,
                 async (transaction) => {
                     await transaction
-                        .setTokenName("Token")
-                        .setTokenSymbol("T")
-                        .setTreasuryAccountId(env.operatorId)
                         .setAdminKey(adminKey)
                         .setWipeKey(wipeKey)
                         .setFreezeKey(freezeKey)
@@ -1377,8 +1243,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -1427,8 +1293,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -1471,9 +1337,6 @@ describe("TokenUpdate", function () {
                 env.client,
                 async (transaction) => {
                     await transaction
-                        .setTokenName("Token")
-                        .setTokenSymbol("T")
-                        .setTreasuryAccountId(env.operatorId)
                         .setAdminKey(adminKey)
                         .setWipeKey(wipeKey)
                         .setFreezeKey(freezeKey)
@@ -1490,8 +1353,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -1561,9 +1424,6 @@ describe("TokenUpdate", function () {
                 env.client,
                 async (transaction) => {
                     await transaction
-                        .setTokenName("Token")
-                        .setTokenSymbol("T")
-                        .setTreasuryAccountId(env.operatorId)
                         .setAdminKey(adminKey)
                         .setWipeKey(wipeKey)
                         .setFreezeKey(freezeKey)
@@ -1580,8 +1440,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -1645,9 +1505,6 @@ describe("TokenUpdate", function () {
                 env.client,
                 async (transaction) => {
                     await transaction
-                        .setTokenName("Token")
-                        .setTokenSymbol("T")
-                        .setTreasuryAccountId(env.operatorId)
                         .setAdminKey(adminKey)
                         .setSupplyKey(supplyKey)
                         .freezeWith(env.client)
@@ -1659,8 +1516,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -1705,9 +1562,6 @@ describe("TokenUpdate", function () {
                 env.client,
                 (transaction) => {
                     transaction
-                        .setTokenName("Token")
-                        .setTokenSymbol("T")
-                        .setTreasuryAccountId(env.operatorId)
                         .setWipeKey(wipeKey)
                         .setFreezeKey(freezeKey)
                         .setPauseKey(pauseKey)
@@ -1722,8 +1576,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -1779,8 +1633,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -1822,9 +1676,6 @@ describe("TokenUpdate", function () {
                 env.client,
                 (transaction) => {
                     transaction
-                        .setTokenName("Token")
-                        .setTokenSymbol("T")
-                        .setTreasuryAccountId(env.operatorId)
                         .setWipeKey(wipeKey)
                         .setFreezeKey(freezeKey)
                         .setPauseKey(pauseKey)
@@ -1839,8 +1690,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -1925,8 +1776,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -1970,9 +1821,6 @@ describe("TokenUpdate", function () {
                 env.client,
                 (transaction) => {
                     transaction
-                        .setTokenName("Token")
-                        .setTokenSymbol("T")
-                        .setTreasuryAccountId(env.operatorId)
                         .setWipeKey(wipeKey)
                         .setFreezeKey(freezeKey)
                         .setPauseKey(pauseKey)
@@ -1987,8 +1835,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -2045,8 +1893,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -2085,9 +1933,6 @@ describe("TokenUpdate", function () {
                 env.client,
                 async (transaction) => {
                     await transaction
-                        .setTokenName("Token")
-                        .setTokenSymbol("T")
-                        .setTreasuryAccountId(env.operatorId)
                         .setWipeKey(wipeKey)
                         .setFreezeKey(freezeKey)
                         .setPauseKey(pauseKey)
@@ -2103,8 +1948,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -2179,9 +2024,6 @@ describe("TokenUpdate", function () {
                 env.client,
                 (transaction) => {
                     transaction
-                        .setTokenName("Token")
-                        .setTokenSymbol("T")
-                        .setTreasuryAccountId(env.operatorId)
                         .setWipeKey(wipeKey)
                         .setFreezeKey(freezeKey)
                         .setPauseKey(pauseKey)
@@ -2197,8 +2039,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -2263,9 +2105,6 @@ describe("TokenUpdate", function () {
                 env.client,
                 (transaction) => {
                     transaction
-                        .setTokenName("Token")
-                        .setTokenSymbol("T")
-                        .setTreasuryAccountId(env.operatorId)
                         .setWipeKey(wipeKey)
                         .setFreezeKey(freezeKey)
                         .setPauseKey(pauseKey)
@@ -2281,8 +2120,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -2444,9 +2283,6 @@ describe("TokenUpdate", function () {
                 env.client,
                 (transaction) => {
                     transaction
-                        .setTokenName("Token")
-                        .setTokenSymbol("T")
-                        .setTreasuryAccountId(env.operatorId)
                         .setWipeKey(wipeKey)
                         .setFreezeKey(freezeKey)
                         .setPauseKey(pauseKey)
@@ -2462,8 +2298,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(tokenId)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -2630,9 +2466,6 @@ describe("TokenUpdate", function () {
                 env.client,
                 (transaction) => {
                     transaction
-                        .setTokenName("Token")
-                        .setTokenSymbol("T")
-                        .setTreasuryAccountId(env.operatorId)
                         .setWipeKey(wipeKey)
                         .setFreezeKey(freezeKey)
                         .setPauseKey(pauseKey)
@@ -2648,8 +2481,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),
@@ -2806,9 +2639,6 @@ describe("TokenUpdate", function () {
                 env.client,
                 (transaction) => {
                     transaction
-                        .setTokenName("Token")
-                        .setTokenSymbol("T")
-                        .setTreasuryAccountId(env.operatorId)
                         .setWipeKey(wipeKey)
                         .setFreezeKey(freezeKey)
                         .setPauseKey(pauseKey)
@@ -2823,8 +2653,8 @@ describe("TokenUpdate", function () {
                 .setTokenId(token)
                 .execute(env.client);
 
-            expect(tokenInfo.name).to.eql("Token");
-            expect(tokenInfo.symbol).to.eql("T");
+            expect(tokenInfo.name).to.eql("ffff");
+            expect(tokenInfo.symbol).to.eql("F");
             expect(tokenInfo.tokenType).to.eql(TokenType.NonFungibleUnique);
             expect(tokenInfo.treasuryAccountId.toString()).to.eql(
                 env.operatorId.toString(),

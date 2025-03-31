@@ -1,7 +1,6 @@
 import {
     AccountInfoQuery,
     AccountUpdateTransaction,
-    Hbar,
     Status,
     TokenAssociateTransaction,
     TokenGrantKycTransaction,
@@ -26,22 +25,12 @@ describe("TokenTransfer", function () {
     it("should be executable", async function () {
         // Create token with required keys
         const token = await createFungibleToken(env.client, (transaction) => {
-            transaction
-                .setDecimals(3)
-                .setInitialSupply(1000000)
-                .setKycKey(env.operatorKey)
-                .setFreezeKey(env.operatorKey)
-                .setWipeKey(env.operatorKey)
-                .setSupplyKey(env.operatorKey)
-                .setFreezeDefault(false);
+            transaction.setKycKey(env.operatorKey).setFreezeDefault(false);
         });
 
         // Create account
         const { accountId: account, newKey: key } = await createAccount(
             env.client,
-            (transaction) => {
-                transaction.setInitialBalance(new Hbar(2));
-            },
         );
 
         await (
@@ -83,22 +72,12 @@ describe("TokenTransfer", function () {
     it("should not error when no amount is transferred", async function () {
         // Create token with required keys
         const token = await createFungibleToken(env.client, (transaction) => {
-            transaction
-                .setDecimals(3)
-                .setInitialSupply(10000000)
-                .setKycKey(env.operatorKey)
-                .setFreezeKey(env.operatorKey)
-                .setWipeKey(env.operatorKey)
-                .setSupplyKey(env.operatorKey)
-                .setFreezeDefault(false);
+            transaction.setKycKey(env.operatorKey).setFreezeDefault(false);
         });
 
         // Create account
         const { accountId: account, newKey: key } = await createAccount(
             env.client,
-            (transaction) => {
-                transaction.setInitialBalance(new Hbar(2));
-            },
         );
 
         await (
@@ -139,25 +118,18 @@ describe("TokenTransfer", function () {
         }
     });
 
-    it("should error when no  is transferred", async function () {
+    it("should error when no amount is transferred", async function () {
         // Create token with required keys
         const token = await createFungibleToken(env.client, (transaction) => {
             transaction
-                .setDecimals(3)
                 .setInitialSupply(0)
                 .setKycKey(env.operatorKey)
-                .setFreezeKey(env.operatorKey)
-                .setWipeKey(env.operatorKey)
-                .setSupplyKey(env.operatorKey)
                 .setFreezeDefault(false);
         });
 
         // Create account
         const { accountId: account, newKey: key } = await createAccount(
             env.client,
-            (transaction) => {
-                transaction.setInitialBalance(new Hbar(2));
-            },
         );
 
         await (
@@ -208,13 +180,7 @@ describe("TokenTransfer", function () {
         const token = await createNonFungibleToken(
             env.client,
             (transaction) => {
-                transaction
-                    .setKycKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey)
-                    .setWipeKey(env.operatorKey)
-                    .setSupplyKey(env.operatorKey)
-                    .setFeeScheduleKey(env.operatorKey)
-                    .setMaxSupply(10);
+                transaction.setKycKey(env.operatorKey);
             },
         );
 
@@ -272,9 +238,7 @@ describe("TokenTransfer", function () {
         const { accountId: account, newKey: key } = await createAccount(
             env.client,
             (transaction) => {
-                transaction
-                    .setInitialBalance(new Hbar(2))
-                    .setMaxAutomaticTokenAssociations(10);
+                transaction.setMaxAutomaticTokenAssociations(10);
             },
         );
 
@@ -302,13 +266,7 @@ describe("TokenTransfer", function () {
 
         // Create token
         const token = await createFungibleToken(env.client, (transaction) => {
-            transaction
-                .setDecimals(3)
-                .setInitialSupply(1000000)
-                .setFreezeKey(env.operatorKey)
-                .setWipeKey(env.operatorKey)
-                .setSupplyKey(env.operatorKey)
-                .setFreezeDefault(false);
+            transaction.setFreezeDefault(false);
         });
 
         const record = await (

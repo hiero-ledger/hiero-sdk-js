@@ -29,13 +29,10 @@ describe("TransactionIntegration", function () {
         const operatorId = env.operatorId;
         expect(operatorId).to.not.be.null;
 
-        const key = PrivateKey.generateED25519();
-
-        const { accountId } = await createAccount(
+        const { accountId, newKey: key } = await createAccount(
             env.client,
             async (transaction) => {
                 await transaction
-                    .setKeyWithoutAlias(key.publicKey)
                     .freezeWith(env.client)
                     .signWithOperator(env.client);
                 const expectedHash = await transaction.getTransactionHash();
@@ -80,20 +77,24 @@ describe("TransactionIntegration", function () {
         const key = PrivateKey.generateED25519();
 
         await createFungibleToken(env.client, async (transaction) => {
-            transaction.setAdminKey(key.publicKey);
-            await transaction.freezeWith(env.client);
-            await transaction.sign(key);
-            await transaction.signWithOperator(env.client);
+            await (
+                await transaction
+                    .setAdminKey(key.publicKey)
+                    .freezeWith(env.client)
+                    .sign(key)
+            ).signWithOperator(env.client);
             expect(
                 transaction._signedTransactions.list[0].sigMap.sigPair.length,
             ).to.eql(2);
         });
 
         await createFungibleToken(env.client, async (transaction) => {
-            transaction.setAdminKey(key.publicKey);
-            await transaction.freezeWith(env.client);
-            await transaction.signWithOperator(env.client);
-            await transaction.sign(key);
+            await (
+                await transaction
+                    .setAdminKey(key.publicKey)
+                    .freezeWith(env.client)
+                    .sign(key)
+            ).signWithOperator(env.client);
             expect(
                 transaction._signedTransactions.list[0].sigMap.sigPair.length,
             ).to.eql(2);
@@ -769,9 +770,7 @@ describe("TransactionIntegration", function () {
             const { accountId } = await createAccount(
                 env.client,
                 (transaction) => {
-                    transaction
-                        .setInitialBalance(new Hbar(2))
-                        .setKeyWithoutAlias(keyList);
+                    transaction.setKeyWithoutAlias(keyList);
                 },
             );
 

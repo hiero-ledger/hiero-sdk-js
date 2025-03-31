@@ -135,9 +135,7 @@ describe("MirrorNodeContractQuery", function () {
                 .execute(env.client)
         ).substring(26);
 
-        const { accountId } = await createAccount(env.client, (transaction) => {
-            transaction.setInitialBalance(new Hbar(10));
-        });
+        const { accountId } = await createAccount(env.client);
 
         const newOwnerSolidityAddress = accountId.toSolidityAddress();
 

@@ -3,16 +3,13 @@ import {
     CustomFixedFee,
     CustomFractionalFee,
     CustomRoyaltyFee,
-    Hbar,
     KeyList,
-    PrivateKey,
     Status,
     TokenAssociateTransaction,
     TokenFeeScheduleUpdateTransaction,
     TokenGrantKycTransaction,
     TokenId,
     TransferTransaction,
-    TokenType,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import {
@@ -208,11 +205,7 @@ describe("CustomFees", function () {
     it.skip("User cannot transfer a custom fee schedule token to a fee collecting account that is not associated with it", async function () {
         const env = await IntegrationTestEnv.new();
 
-        const key = PrivateKey.generateED25519();
-
-        const { accountId } = await createAccount(env.client, (transaction) => {
-            transaction.setKeyWithoutAlias(key).setInitialBalance(new Hbar(2));
-        });
+        const { accountId } = await createAccount(env.client);
 
         const fee = new CustomFixedFee()
             .setFeeCollectorAccountId(env.operatorId)
@@ -370,9 +363,7 @@ describe("CustomFees", function () {
     it.skip("User cannot sign the fee schedule update transaction with any key besides the key schedule key", async function () {
         const env = await IntegrationTestEnv.new();
 
-        const { accountId, privateKey } = await createAccount(env.client, {
-            initialBalance: new Hbar(2),
-        });
+        const { accountId, newKey } = await createAccount(env.client);
 
         const fee = new CustomFixedFee()
             .setFeeCollectorAccountId(accountId)
@@ -381,9 +372,7 @@ describe("CustomFees", function () {
         let err = false;
 
         const tokenId = await createFungibleToken(env.client, (transaction) => {
-            transaction
-                .setFeeScheduleKey(privateKey.publicKey)
-                .sign(privateKey);
+            transaction.setFeeScheduleKey(newKey.publicKey).sign(newKey);
         });
 
         try {
@@ -430,9 +419,7 @@ describe("CustomFees", function () {
     it("User cannot have an invalid token ID in the custom fee field", async function () {
         const env = await IntegrationTestEnv.new();
 
-        const { accountId } = await createAccount(env.client, (transaction) => {
-            transaction.setInitialBalance(new Hbar(2));
-        });
+        const { accountId } = await createAccount(env.client);
 
         const fee = new CustomFixedFee()
             .setFeeCollectorAccountId(accountId)
@@ -518,12 +505,7 @@ describe("CustomFees", function () {
 
         const { accountId } = await createAccount(env.client);
 
-        const token = await createNonFungibleToken(
-            env.client,
-            (transaction) => {
-                transaction.setTokenType(TokenType.FungibleUnique);
-            },
-        );
+        const token = await createFungibleToken(env.client);
 
         const fee = new CustomFixedFee()
             .setFeeCollectorAccountId(accountId)
@@ -678,26 +660,12 @@ describe("CustomFees", function () {
 
         let err = false;
 
-        const { accountId: accountId1, privateKey: privateKey1 } =
-            await createAccount(env.client, (transaction) => {
-                transaction.setInitialBalance(new Hbar(2));
-            });
+        const { accountId: accountId1, newKey: privateKey1 } =
+            await createAccount(env.client);
 
-        const { accountId: accountId2 } = await createAccount(
-            env.client,
-            (transaction) => {
-                transaction
-                    .setKeyWithoutAlias(privateKey1)
-                    .setInitialBalance(new Hbar(2));
-            },
-        );
+        const { accountId: accountId2 } = await createAccount(env.client);
 
-        const tokenId1 = await createNonFungibleToken(
-            env.client,
-            (transaction) => {
-                transaction.setInitialSupply(100);
-            },
-        );
+        const tokenId1 = await createNonFungibleToken(env.client);
 
         const fee2 = new CustomFixedFee()
             .setFeeCollectorAccountId(env.operatorId)
@@ -707,7 +675,7 @@ describe("CustomFees", function () {
         const tokenId2 = await createNonFungibleToken(
             env.client,
             (transaction) => {
-                transaction.setInitialSupply(100).setCustomFees([fee2]);
+                transaction.setCustomFees([fee2]);
             },
         );
 
@@ -856,12 +824,7 @@ describe("CustomFees", function () {
             },
         );
 
-        const tokenId1 = await createNonFungibleToken(
-            env.client,
-            (transaction) => {
-                transaction.setInitialSupply(100);
-            },
-        );
+        const tokenId1 = await createNonFungibleToken(env.client);
 
         const fee2 = new CustomFixedFee()
             .setFeeCollectorAccountId(env.operatorId)
@@ -871,7 +834,7 @@ describe("CustomFees", function () {
         const tokenId2 = await createFungibleToken(
             env.client,
             (transaction) => {
-                transaction.setInitialSupply(100).setCustomFees([fee2]);
+                transaction.setCustomFees([fee2]);
             },
         );
 

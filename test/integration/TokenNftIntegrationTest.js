@@ -1,5 +1,4 @@
 import {
-    Hbar,
     NftId,
     Status,
     TokenAssociateTransaction,
@@ -21,12 +20,7 @@ describe("TokenNft", function () {
     });
 
     it("Should be able to transfer NFT", async function () {
-        const { accountId, newKey } = await createAccount(
-            env.client,
-            (transaction) => {
-                transaction.setInitialBalance(new Hbar(2));
-            },
-        );
+        const { accountId, newKey } = await createAccount(env.client);
 
         const token = await createNonFungibleToken(
             env.client,
@@ -104,12 +98,7 @@ describe("TokenNft", function () {
     });
 
     it("should be able to query cost", async function () {
-        const { accountId, newKey } = await createAccount(
-            env.client,
-            (transaction) => {
-                transaction.setInitialBalance(new Hbar(2));
-            },
-        );
+        const { accountId, newKey } = await createAccount(env.client);
 
         const token = await createNonFungibleToken(
             env.client,
@@ -158,12 +147,7 @@ describe("TokenNft", function () {
     });
 
     it("Cannot burn NFTs when NFT is not owned by treasury", async function () {
-        const { accountId, newKey } = await createAccount(
-            env.client,
-            (transaction) => {
-                transaction.setInitialBalance(new Hbar(2));
-            },
-        );
+        const { accountId, newKey } = await createAccount(env.client);
 
         const token = await createNonFungibleToken(
             env.client,
@@ -240,12 +224,7 @@ describe("TokenNft", function () {
     });
 
     it("Cannot mint NFTs if metadata too big", async function () {
-        const { accountId, newKey } = await createAccount(
-            env.client,
-            (transaction) => {
-                transaction.setInitialBalance(new Hbar(2));
-            },
-        );
+        const { accountId, newKey } = await createAccount(env.client);
 
         const token = await createNonFungibleToken(
             env.client,
@@ -398,12 +377,7 @@ describe("TokenNft", function () {
     });
 
     it("Cannot query NFT info by invalid NftId", async function () {
-        const { accountId, newKey } = await createAccount(
-            env.client,
-            (transaction) => {
-                transaction.setInitialBalance(new Hbar(2));
-            },
-        );
+        const { accountId, newKey } = await createAccount(env.client);
 
         const token = await createNonFungibleToken(
             env.client,
@@ -454,12 +428,7 @@ describe("TokenNft", function () {
     });
 
     it("Cannot query NFT info by invalid NftId Serial Number", async function () {
-        const { accountId, newKey } = await createAccount(
-            env.client,
-            (transaction) => {
-                transaction.setInitialBalance(new Hbar(2));
-            },
-        );
+        const { accountId, newKey } = await createAccount(env.client);
 
         const token = await createNonFungibleToken(
             env.client,
@@ -502,12 +471,7 @@ describe("TokenNft", function () {
     });
 
     it("Cannot transfer NFTs you don't own", async function () {
-        const { accountId, newKey } = await createAccount(
-            env.client,
-            (transaction) => {
-                transaction.setInitialBalance(new Hbar(2));
-            },
-        );
+        const { accountId, newKey } = await createAccount(env.client);
 
         const token = await createNonFungibleToken(
             env.client,
@@ -604,12 +568,7 @@ describe("TokenNft", function () {
     });
 
     it("Cannot wipe accounts NFTs if the account doesn't own them", async function () {
-        const { accountId, newKey } = await createAccount(
-            env.client,
-            (transaction) => {
-                transaction.setInitialBalance(new Hbar(2));
-            },
-        );
+        const { accountId, newKey } = await createAccount(env.client);
 
         const token = await createNonFungibleToken(
             env.client,

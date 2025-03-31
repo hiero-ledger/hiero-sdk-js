@@ -1,10 +1,7 @@
 import {
-    Hbar,
     LiveHashAddTransaction,
     LiveHashDeleteTransaction,
     LiveHashQuery,
-    PrivateKey,
-    TransactionId,
 } from "../../src/exports.js";
 import * as hex from "../../src/encoding/hex.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
@@ -26,10 +23,7 @@ describe("LiveHash", function () {
         const operatorId = env.operatorId;
         let errorThrown = false;
 
-        const key = PrivateKey.generateED25519();
-        const { accountId } = await createAccount(env.client, (transaction) => {
-            transaction.setKeyWithoutAlias(key).setInitialBalance(new Hbar(2));
-        });
+        const { accountId, newKey: key } = await createAccount(env.client);
 
         expect(accountId).to.not.be.null;
 
@@ -73,8 +67,7 @@ describe("LiveHash", function () {
         await deleteAccount(env.client, key, (transaction) => {
             transaction
                 .setAccountId(accountId)
-                .setTransferAccountId(operatorId)
-                .setTransactionId(TransactionId.generate(accountId));
+                .setTransferAccountId(operatorId);
         });
     });
 

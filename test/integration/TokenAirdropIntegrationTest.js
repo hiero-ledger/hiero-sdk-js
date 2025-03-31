@@ -7,7 +7,6 @@ import {
     CustomFixedFee,
     TokenAssociateTransaction,
     TransferTransaction,
-    Hbar,
     AccountId,
     TokenId,
 } from "../../src/exports.js";
@@ -28,17 +27,10 @@ describe("TokenAirdropIntegrationTest", function () {
 
     it("should transfer tokens when the account is associated", async function () {
         const ftTokenId = await createFungibleToken(env.client, (transaction) =>
-            transaction
-                .setTokenName("ffff")
-                .setTokenSymbol("FFF")
-                .setInitialSupply(INITIAL_SUPPLY),
+            transaction.setInitialSupply(INITIAL_SUPPLY),
         );
 
-        const nftTokenId = await createNonFungibleToken(
-            env.client,
-            (transaction) =>
-                transaction.setTokenName("FFFFF").setTokenSymbol("FFF"),
-        );
+        const nftTokenId = await createNonFungibleToken(env.client);
 
         const mintResponse = await new TokenMintTransaction()
             .setTokenId(nftTokenId)
@@ -87,17 +79,10 @@ describe("TokenAirdropIntegrationTest", function () {
 
     it("tokens should be in pending state when no automatic association", async function () {
         const ftTokenId = await createFungibleToken(env.client, (transaction) =>
-            transaction
-                .setTokenName("ffff")
-                .setTokenSymbol("FFF")
-                .setInitialSupply(INITIAL_SUPPLY),
+            transaction.setInitialSupply(INITIAL_SUPPLY),
         );
 
-        const nftTokenId = await createNonFungibleToken(
-            env.client,
-            (transaction) =>
-                transaction.setTokenName("FFFFF").setTokenSymbol("FFF"),
-        );
+        const nftTokenId = await createNonFungibleToken(env.client);
 
         const mintResponse = await new TokenMintTransaction()
             .setTokenId(nftTokenId)
@@ -166,17 +151,10 @@ describe("TokenAirdropIntegrationTest", function () {
 
     it("should create hollow account when airdropping tokens and transfers them", async function () {
         const ftTokenId = await createFungibleToken(env.client, (transaction) =>
-            transaction
-                .setTokenName("ffff")
-                .setTokenSymbol("FFF")
-                .setInitialSupply(INITIAL_SUPPLY),
+            transaction.setInitialSupply(INITIAL_SUPPLY),
         );
 
-        const nftTokenId = await createNonFungibleToken(
-            env.client,
-            (transaction) =>
-                transaction.setTokenName("FFFFF").setTokenSymbol("FFF"),
-        );
+        const nftTokenId = await createNonFungibleToken(env.client);
 
         const mintResponse = await new TokenMintTransaction()
             .setTokenId(nftTokenId)
@@ -227,11 +205,7 @@ describe("TokenAirdropIntegrationTest", function () {
 
         const feeTokenId = await createFungibleToken(
             env.client,
-            (transaction) =>
-                transaction
-                    .setTokenName("fee")
-                    .setTokenSymbol("FEE")
-                    .setInitialSupply(INITIAL_SUPPLY),
+            (transaction) => transaction.setInitialSupply(INITIAL_SUPPLY),
         );
 
         let customFixedFee = new CustomFixedFee()
@@ -244,19 +218,13 @@ describe("TokenAirdropIntegrationTest", function () {
             env.client,
             (transaction) =>
                 transaction
-                    .setTokenName("tokenWithFee")
-                    .setTokenSymbol("TWF")
                     .setInitialSupply(INITIAL_SUPPLY)
                     .setCustomFees([customFixedFee]),
         );
 
         const nftTokenId = await createNonFungibleToken(
             env.client,
-            (transaction) =>
-                transaction
-                    .setTokenName("tokenWithFee")
-                    .setTokenSymbol("TWF")
-                    .setCustomFees([customFixedFee]),
+            (transaction) => transaction.setCustomFees([customFixedFee]),
         );
 
         const mintResponse = await new TokenMintTransaction()
@@ -268,9 +236,7 @@ describe("TokenAirdropIntegrationTest", function () {
 
         const { accountId: senderAccountId, newKey: senderPrivateKey } =
             await createAccount(env.client, (transaction) =>
-                transaction
-                    .setMaxAutomaticTokenAssociations(-1)
-                    .setInitialBalance(new Hbar(10)),
+                transaction.setMaxAutomaticTokenAssociations(-1),
             );
 
         await (
@@ -366,17 +332,10 @@ describe("TokenAirdropIntegrationTest", function () {
 
     it("should airdrop with receiver sig set to true", async function () {
         const tokenId = await createFungibleToken(env.client, (transaction) =>
-            transaction
-                .setTokenName("FFFFFFFFFF")
-                .setTokenSymbol("FFF")
-                .setInitialSupply(INITIAL_SUPPLY),
+            transaction.setInitialSupply(INITIAL_SUPPLY),
         );
 
-        const nftTokenId = await createNonFungibleToken(
-            env.client,
-            (transaction) =>
-                transaction.setTokenName("FFFFFFFFFF").setTokenSymbol("FFF"),
-        );
+        const nftTokenId = await createNonFungibleToken(env.client);
 
         const mintResponse = await new TokenMintTransaction()
             .setTokenId(nftTokenId)
@@ -391,7 +350,6 @@ describe("TokenAirdropIntegrationTest", function () {
             env.client,
             (transaction) => {
                 transaction
-                    .setInitialBalance(new Hbar(10))
                     .setKeyWithoutAlias(receiverPrivateKey.publicKey)
                     .setReceiverSignatureRequired(true)
                     .freezeWith(env.client)

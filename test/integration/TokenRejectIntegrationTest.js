@@ -3,7 +3,6 @@ import {
     AccountAllowanceApproveTransaction,
     AccountBalanceQuery,
     AccountUpdateTransaction,
-    Hbar,
     NftId,
     PrivateKey,
     TokenFreezeTransaction,
@@ -30,20 +29,14 @@ describe("TokenRejectIntegrationTest", function () {
 
             // Create token with required keys
             tokenId = await createFungibleToken(env.client, (transaction) => {
-                transaction
-                    .setDecimals(3)
-                    .setInitialSupply(INITIAL_SUPPLY)
-                    .setPauseKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey);
+                transaction.setInitialSupply(INITIAL_SUPPLY);
             });
 
             // Create receiver account
             const { accountId, newKey } = await createAccount(
                 env.client,
                 (transaction) => {
-                    transaction
-                        .setInitialBalance(new Hbar(1))
-                        .setMaxAutomaticTokenAssociations(-1);
+                    transaction.setMaxAutomaticTokenAssociations(-1);
                 },
             );
             receiverId = accountId;
@@ -55,11 +48,7 @@ describe("TokenRejectIntegrationTest", function () {
             const tokenId2 = await createFungibleToken(
                 env.client,
                 (transaction) => {
-                    transaction
-                        .setTokenName("ffff2")
-                        .setTokenSymbol("F2")
-                        .setDecimals(3)
-                        .setInitialSupply(INITIAL_SUPPLY);
+                    transaction.setInitialSupply(INITIAL_SUPPLY);
                 },
             );
 
@@ -165,9 +154,7 @@ describe("TokenRejectIntegrationTest", function () {
             // Create spender account
             const { accountId: spenderAccountId, newKey: spenderPrivateKey } =
                 await createAccount(env.client, (transaction) => {
-                    transaction
-                        .setMaxAutomaticTokenAssociations(-1)
-                        .setInitialBalance(new Hbar(10));
+                    transaction.setMaxAutomaticTokenAssociations(-1);
                 });
 
             // Transfer token to receiver
@@ -378,16 +365,7 @@ describe("TokenRejectIntegrationTest", function () {
                 const tokenIds = [];
 
                 for (let i = 0; i < 11; i++) {
-                    const tokenId = await createFungibleToken(
-                        env.client,
-                        (transaction) => {
-                            transaction
-                                .setTokenMemo(null)
-                                .setTokenName("ffff")
-                                .setTokenSymbol("F")
-                                .setInitialSupply(1000);
-                        },
-                    );
+                    const tokenId = await createFungibleToken(env.client);
                     tokenIds.push(tokenId);
                 }
 
@@ -414,14 +392,7 @@ describe("TokenRejectIntegrationTest", function () {
             env = await IntegrationTestEnv.new();
 
             // Create NFT collection
-            tokenId = await createNonFungibleToken(
-                env.client,
-                (transaction) => {
-                    transaction
-                        .setPauseKey(env.operatorKey)
-                        .setFreezeKey(env.operatorKey);
-                },
-            );
+            tokenId = await createNonFungibleToken(env.client);
 
             // Create receiver account
             const { accountId, newKey } = await createAccount(
@@ -445,12 +416,7 @@ describe("TokenRejectIntegrationTest", function () {
 
         it("should execute TokenReject Tx", async function () {
             // Create second NFT collection and mint token
-            const tokenId2 = await createNonFungibleToken(
-                env.client,
-                (transaction) => {
-                    transaction.setTokenName("ffff2").setTokenSymbol("F2");
-                },
-            );
+            const tokenId2 = await createNonFungibleToken(env.client);
 
             const nftId2 = new NftId(tokenId2, 1);
             await (
@@ -561,9 +527,7 @@ describe("TokenRejectIntegrationTest", function () {
             // Create spender account
             const { accountId: spenderAccountId, newKey: spenderPrivateKey } =
                 await createAccount(env.client, (transaction) => {
-                    transaction
-                        .setMaxAutomaticTokenAssociations(-1)
-                        .setInitialBalance(new Hbar(10));
+                    transaction.setMaxAutomaticTokenAssociations(-1);
                 });
 
             // Transfer NFT to receiver
@@ -837,21 +801,13 @@ describe("TokenRejectIntegrationTest", function () {
             env = await IntegrationTestEnv.new();
 
             // Create fungible token
-            tokenId = await createFungibleToken(env.client, (transaction) => {
-                transaction
-                    .setDecimals(3)
-                    .setInitialSupply(1000000)
-                    .setPauseKey(env.operatorKey)
-                    .setFreezeKey(env.operatorKey);
-            });
+            tokenId = await createFungibleToken(env.client);
 
             // Create receiver account
             const { accountId, newKey } = await createAccount(
                 env.client,
                 (transaction) => {
-                    transaction
-                        .setInitialBalance(new Hbar(1))
-                        .setMaxAutomaticTokenAssociations(-1);
+                    transaction.setMaxAutomaticTokenAssociations(-1);
                 },
             );
             receiverId = accountId;
@@ -870,16 +826,7 @@ describe("TokenRejectIntegrationTest", function () {
             ).getReceipt(env.client);
 
             // Create fungible token
-            const ftId = await createFungibleToken(
-                env.client,
-                (transaction) => {
-                    transaction
-                        .setTokenName("ffff2")
-                        .setTokenSymbol("F2")
-                        .setDecimals(3)
-                        .setInitialSupply(1000000);
-                },
-            );
+            const ftId = await createFungibleToken(env.client);
 
             // Transfer both tokens to receiver
             const tokenTransferResponse = await new TransferTransaction()

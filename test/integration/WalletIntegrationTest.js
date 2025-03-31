@@ -1,5 +1,5 @@
 import { expect } from "chai";
-import { Hbar, PrivateKey, TransferTransaction } from "../../src/exports.js";
+import { Hbar, TransferTransaction } from "../../src/exports.js";
 import { Wallet, LocalProvider } from "../../src/index.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { createAccount } from "./utils/Fixtures.js";
@@ -23,24 +23,17 @@ describe("WalletIntegration", function () {
         // Create receiver account
         const { accountId: receiverId, newKey: receiverKey } =
             await createAccount(env.client, (transaction) => {
-                transaction
-                    .setKeyWithoutAlias(receiverKey)
-                    .setInitialBalance(new Hbar(10));
+                transaction.setInitialBalance(new Hbar(10));
             });
 
         // Set the client operator to the receiver account
         env.client.setOperator(receiverId, receiverKey);
 
-        // Generate a key for the signer
-        const signerKey = PrivateKey.generateED25519();
-
         // Create account for the signer
-        const { accountId: signerId } = await createAccount(
+        const { accountId: signerId, newKey: signerKey } = await createAccount(
             env.client,
             (transaction) => {
-                transaction
-                    .setKeyWithoutAlias(signerKey)
-                    .setInitialBalance(new Hbar(5));
+                transaction.setInitialBalance(new Hbar(5));
             },
         );
 

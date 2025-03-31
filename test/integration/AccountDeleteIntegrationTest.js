@@ -18,12 +18,7 @@ describe("AccountDelete", function () {
     it("should be executable", async function () {
         const operatorId = env.operatorId;
 
-        const { accountId, newKey } = await createAccount(
-            env.client,
-            (transaction) => {
-                transaction.setInitialBalance(new Hbar(2));
-            },
-        );
+        const { accountId, newKey } = await createAccount(env.client);
 
         expect(accountId).to.not.be.null;
 
@@ -35,7 +30,7 @@ describe("AccountDelete", function () {
         expect(info.isDeleted).to.be.false;
         expect(info.key.toString()).to.be.equal(newKey.publicKey.toString());
         expect(info.balance.toTinybars().toInt()).to.be.equal(
-            new Hbar(2).toTinybars().toInt(),
+            new Hbar(1).toTinybars().toInt(),
         );
         expect(info.autoRenewPeriod.seconds.toNumber()).to.be.equal(7776000);
         expect(info.proxyAccountId).to.be.null;
@@ -56,9 +51,7 @@ describe("AccountDelete", function () {
     it("should error with invalid signature", async function () {
         const operatorId = env.operatorId;
 
-        const { accountId } = await createAccount(env.client, (transaction) => {
-            transaction.setInitialBalance(new Hbar(2));
-        });
+        const { accountId } = await createAccount(env.client);
 
         expect(accountId).to.not.be.null;
 

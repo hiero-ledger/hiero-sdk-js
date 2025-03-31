@@ -1,6 +1,5 @@
 import {
     AccountAllowanceApproveTransaction,
-    Hbar,
     Status,
     TransactionId,
     TokenAssociateTransaction,
@@ -28,15 +27,10 @@ describe("TokenAllowances", function () {
     it("Cannot transfer on behalf of `spender` account without allowance approval", async function () {
         let status;
         const { accountId: spenderAccountId, newKey: spenderKey } =
-            await createAccount(env.client, (transaction) => {
-                transaction.setInitialBalance(new Hbar(2));
-            });
+            await createAccount(env.client);
 
         const { accountId: receiverAccountId } = await createAccount(
             env.client,
-            (transaction) => {
-                transaction.setInitialBalance(new Hbar(2));
-            },
         );
 
         const tokenId = await createFungibleToken(env.client);
@@ -73,14 +67,10 @@ describe("TokenAllowances", function () {
 
     it("Can transfer on behalf of `spender` account with allowance approval", async function () {
         const { accountId: spenderAccountId, newKey: spenderKey } =
-            await createAccount(env.client, (transaction) => {
-                transaction.setInitialBalance(new Hbar(2));
-            });
+            await createAccount(env.client);
 
         const { accountId: receiverAccountId, newKey: receiverKey } =
-            await createAccount(env.client, (transaction) => {
-                transaction.setInitialBalance(new Hbar(2));
-            });
+            await createAccount(env.client);
 
         const tokenId = await createFungibleToken(env.client);
 
@@ -133,9 +123,7 @@ describe("TokenAllowances", function () {
 
     it("Can set `spender` account to be ContractId instead of AccountId", async function () {
         const { accountId: receiverAccountId, newKey: receiverKey } =
-            await createAccount(env.client, (transaction) => {
-                transaction.setInitialBalance(new Hbar(2));
-            });
+            await createAccount(env.client);
 
         const tokenId = await createFungibleToken(env.client);
 

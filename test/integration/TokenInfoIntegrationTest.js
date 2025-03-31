@@ -160,8 +160,6 @@ describe("TokenInfo", function () {
                 await transaction
                     .setTreasuryAccountId(accountId)
                     .setTransactionId(txId)
-                    .setInitialSupply(0)
-                    .setDecimals(3)
                     .freezeWith(env.client)
                     .sign(accountKey);
             },

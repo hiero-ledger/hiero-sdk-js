@@ -20,28 +20,18 @@ describe("TokenWipe", function () {
     });
 
     it("should be executable", async function () {
-        const operatorId = env.operatorId;
         const key = PrivateKey.generateED25519();
 
         const { accountId: account } = await createAccount(
             env.client,
             (transaction) => {
-                transaction.setKey(key);
+                transaction.setKeyWithoutAlias(key);
             },
         );
 
         const token = await createFungibleToken(env.client, (transaction) => {
             transaction
-                .setTokenName("ffff")
-                .setTokenSymbol("F")
-                .setDecimals(3)
-                .setInitialSupply(1000000)
-                .setTreasuryAccountId(operatorId)
-                .setAdminKey(env.operatorKey.publicKey)
                 .setKycKey(env.operatorKey.publicKey)
-                .setFreezeKey(env.operatorKey.publicKey)
-                .setWipeKey(env.operatorKey.publicKey)
-                .setSupplyKey(env.operatorKey.publicKey)
                 .setFreezeDefault(false);
         });
 
@@ -106,13 +96,8 @@ describe("TokenWipe", function () {
     });
 
     it("should error when token ID is not set", async function () {
-        const key = PrivateKey.generateED25519();
-
-        const { accountId: account } = await createAccount(
+        const { accountId: account, newKey: key } = await createAccount(
             env.client,
-            (transaction) => {
-                transaction.setKey(key);
-            },
         );
 
         let err = false;
@@ -137,20 +122,9 @@ describe("TokenWipe", function () {
     });
 
     it("should error when account ID is not set", async function () {
-        const operatorId = env.operatorId;
-
         const token = await createFungibleToken(env.client, (transaction) => {
             transaction
-                .setTokenName("ffff")
-                .setTokenSymbol("F")
-                .setDecimals(3)
-                .setInitialSupply(1000000)
-                .setTreasuryAccountId(operatorId)
-                .setAdminKey(env.operatorKey.publicKey)
                 .setKycKey(env.operatorKey.publicKey)
-                .setFreezeKey(env.operatorKey.publicKey)
-                .setWipeKey(env.operatorKey.publicKey)
-                .setSupplyKey(env.operatorKey.publicKey)
                 .setFreezeDefault(false);
         });
 
@@ -173,28 +147,13 @@ describe("TokenWipe", function () {
     });
 
     it("should not error when amount is not set", async function () {
-        const operatorId = env.operatorId;
-        const key = PrivateKey.generateED25519();
-
-        const { accountId: account } = await createAccount(
+        const { accountId: account, newKey: key } = await createAccount(
             env.client,
-            (transaction) => {
-                transaction.setKey(key);
-            },
         );
 
         const token = await createFungibleToken(env.client, (transaction) => {
             transaction
-                .setTokenName("ffff")
-                .setTokenSymbol("F")
-                .setDecimals(3)
-                .setInitialSupply(1000000)
-                .setTreasuryAccountId(operatorId)
-                .setAdminKey(env.operatorKey.publicKey)
                 .setKycKey(env.operatorKey.publicKey)
-                .setFreezeKey(env.operatorKey.publicKey)
-                .setWipeKey(env.operatorKey.publicKey)
-                .setSupplyKey(env.operatorKey.publicKey)
                 .setFreezeDefault(false);
         });
 
@@ -237,29 +196,13 @@ describe("TokenWipe", function () {
     });
 
     it("should convert fromBytes", async function () {
-        const operatorId = env.operatorId;
-        const key = PrivateKey.generateED25519();
         const serials = [1, 2, 3];
 
-        const { accountId: account } = await createAccount(
-            env.client,
-            (transaction) => {
-                transaction.setKey(key);
-            },
-        );
+        const { accountId: account } = await createAccount(env.client);
 
         const token = await createFungibleToken(env.client, (transaction) => {
             transaction
-                .setTokenName("ffff")
-                .setTokenSymbol("F")
-                .setDecimals(3)
-                .setInitialSupply(1000000)
-                .setTreasuryAccountId(operatorId)
-                .setAdminKey(env.operatorKey.publicKey)
                 .setKycKey(env.operatorKey.publicKey)
-                .setFreezeKey(env.operatorKey.publicKey)
-                .setWipeKey(env.operatorKey.publicKey)
-                .setSupplyKey(env.operatorKey.publicKey)
                 .setFreezeDefault(false);
         });
 

@@ -35,9 +35,7 @@ describe("PrivateKey signTransaction", function () {
 
         // Create account
         const { accountId } = await createAccount(env.client, (transaction) => {
-            return transaction
-                .setInitialBalance(new Hbar(2))
-                .setKeyWithoutAlias(keyList);
+            return transaction.setKeyWithoutAlias(keyList);
         });
 
         expect(accountId).to.exist;
@@ -52,9 +50,7 @@ describe("PrivateKey signTransaction", function () {
         const privateKey = await mnemonic.toStandardECDSAsecp256k1PrivateKey();
 
         const { accountId } = await createAccount(env.client, (transaction) => {
-            return transaction
-                .setInitialBalance(new Hbar(2))
-                .setKeyWithoutAlias(privateKey);
+            return transaction.setKeyWithoutAlias(privateKey);
         });
 
         const { status } = await (
