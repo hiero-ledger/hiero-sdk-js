@@ -29,23 +29,21 @@ export default class EvmAddress extends Key {
 
     /**
      * Creates an EvmAddress from a hex string representation.
-     * @param {string} text - The hex string representing the EVM address
+     * @param {string} evmAddress - The hex string representing the EVM address
      * @returns {EvmAddress}
      * @throws {Error} If the input string is not the correct size
      */
-    static fromString(text) {
-        const EVM_ADDRESS_BYTES = 20; // Standard EVM address is 20 bytes
-        const prefix = "0x";
-        const hasPrefix = text.toLowerCase().startsWith(prefix);
+    static fromString(evmAddress) {
+        evmAddress = evmAddress.startsWith("0x")
+            ? evmAddress.slice(2)
+            : evmAddress;
 
-        // Check input length (40 hex chars = 20 bytes, +2 if has prefix)
-        const expectedLength =
-            EVM_ADDRESS_BYTES * 2 + (hasPrefix ? prefix.length : 0);
-        if (text.length !== expectedLength) {
+        // Standard EVM address is 20 bytes
+        if (evmAddress.length !== 20) {
             throw new Error("Input EVM address string is not the correct size");
         }
 
-        return new EvmAddress(hex.decode(text));
+        return new EvmAddress(hex.decode(evmAddress));
     }
 
     /**
