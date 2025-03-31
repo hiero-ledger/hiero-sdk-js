@@ -106,3 +106,11 @@ export interface BurnTokenParams {
     readonly serialNumbers?: string[];
     readonly commonTransactionParams?: Record<string, any>;
 }
+
+export interface WipeTokenParams {
+    readonly tokenId?: string;
+    readonly accountId?: string;
+    readonly amount?: string;
+    readonly serialNumbers?: string[];
+    readonly commonTransactionParams?: Record<string, any>;
+}
