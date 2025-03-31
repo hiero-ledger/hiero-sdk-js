@@ -1,3 +1,4 @@
+import { expect } from "chai";
 import {
     AccountId,
     KeyList,
@@ -8,7 +9,6 @@ import {
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { createAccount } from "./utils/Fixtures.js";
-import { expect } from "chai";
 
 describe("TransactionReceipt", function () {
     let env;
