@@ -5,13 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.62.0-beta.3
+
+### Added
+
+-   Support for browser and CDN distribution by generating UMD build files. by @ivaylonikolov7 in #2980
+    -   UMD files are output to the `dist/` directory during the build process.
+    -   These files can be served via [unpkg.com](https://www.unpkg.com/) for easy integration in browser environments without a bundler.
+
 ## v2.62.0-beta.2
 
-- fix: remove circular dependancy in dependencies by @ivaylonikolov7 in https://github.com/hiero-ledger/hiero-sdk-js/pull/2985
-- chore: bump elliptic peer dep by @venilinvasilev in https://github.com/hiero-ledger/hiero-sdk-js/pull/2976
-- refactor: remove account creation in integration tests by @venilinvasilev in https://github.com/hiero-ledger/hiero-sdk-js/pull/2970
-- chore: bump elliptic version by @venilinvasilev in https://github.com/hiero-ledger/hiero-sdk-js/pull/2977
-- chore: regenerate lock file for tck by @venilinvasilev in https://github.com/hiero-ledger/hiero-sdk-js/pull/2978
+-   fix: remove circular dependancy in dependencies by @ivaylonikolov7 in https://github.com/hiero-ledger/hiero-sdk-js/pull/2985
+-   chore: bump elliptic peer dep by @venilinvasilev in https://github.com/hiero-ledger/hiero-sdk-js/pull/2976
+-   refactor: remove account creation in integration tests by @venilinvasilev in https://github.com/hiero-ledger/hiero-sdk-js/pull/2970
+-   chore: bump elliptic version by @venilinvasilev in https://github.com/hiero-ledger/hiero-sdk-js/pull/2977
+-   chore: regenerate lock file for tck by @venilinvasilev in https://github.com/hiero-ledger/hiero-sdk-js/pull/2978
 
 ## v2.62.0-beta.1
 
@@ -23,10 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   feat: manual update client address book by @venilinvasilev in https://github.com/hiero-ledger/hiero-sdk-js/pull/2928
 -   docs: add some comments about the toSolidityAddress function by @Neurone in https://github.com/hiero-ledger/hiero-sdk-js/pull/2220
 -   docs: add note in documentation when running examples by @ivaylonikolov7 in https://github.com/hiero-ledger/hiero-sdk-js/pull/2962
--   chore(deps): bump @babel/runtime in /examples/react-native-example by @dependabot in 
-https://github.com/hiero-ledger/hiero-sdk-js/pull/2947
--   chore(deps): bump @babel/helpers in /examples/react-native-example by @dependabot in 
-https://github.com/hiero-ledger/hiero-sdk-js/pull/2949
+-   chore(deps): bump @babel/runtime in /examples/react-native-example by @dependabot in
+    https://github.com/hiero-ledger/hiero-sdk-js/pull/2947
+-   chore(deps): bump @babel/helpers in /examples/react-native-example by @dependabot in
+    https://github.com/hiero-ledger/hiero-sdk-js/pull/2949
 -   chore(deps): bump @babel/helpers from 7.26.0 to 7.26.10 by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2948
 -   chore(deps): bump axios from 1.7.9 to 1.8.2 in /examples by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2942
 -   chore(deps): bump @babel/helpers by @dependabot in https://github.com/hiero-ledger/hiero-sdk-js/pull/2951
