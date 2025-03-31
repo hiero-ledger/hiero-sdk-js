@@ -38,8 +38,8 @@ export default class EvmAddress extends Key {
             ? evmAddress.slice(2)
             : evmAddress;
 
-        // Standard EVM address is 20 bytes
-        if (evmAddress.length !== 20) {
+        // Standard EVM address is 20 bytes which is 40 hex characters
+        if (evmAddress.length !== 40) {
             throw new Error("Input EVM address string is not the correct size");
         }
 
