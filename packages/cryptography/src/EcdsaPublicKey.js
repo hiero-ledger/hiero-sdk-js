@@ -79,7 +79,7 @@ export default class EcdsaPublicKey extends Key {
                     ecdsaPublicKeyBytes = keyPair.toRawBytes(true); // Compressed format
                 } catch (error) {
                     throw new BadKeyError(
-                        `cannot decode ECDSA public key from DER format`,
+                        `cannot decode ECDSA public key from this DER format`,
                     );
                 }
                 break;
@@ -87,7 +87,7 @@ export default class EcdsaPublicKey extends Key {
 
         if (!ecdsaPublicKeyBytes || ecdsaPublicKeyBytes.length === 0) {
             throw new BadKeyError(
-                `cannot decode ECDSA public key from DER format`,
+                `cannot decode ECDSA public key from this DER format`,
             );
         }
         return new EcdsaPublicKey(ecdsaPublicKeyBytes);
