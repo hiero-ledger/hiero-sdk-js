@@ -1,13 +1,12 @@
 import {
-    AccountCreateTransaction,
     Hbar,
     PrivateKey,
     Status,
-    TokenCreateTransaction,
     TokenInfoQuery,
     TransactionId,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import { createAccount, createFungibleToken } from "./utils/Fixtures.js";
 
 describe("TokenInfo", function () {
     let env;
@@ -25,22 +24,15 @@ describe("TokenInfo", function () {
         const key4 = PrivateKey.generateED25519();
         const key5 = PrivateKey.generateED25519();
 
-        const response = await new TokenCreateTransaction()
-            .setTokenName("ffff")
-            .setTokenSymbol("F")
-            .setDecimals(3)
-            .setInitialSupply(1000000)
-            .setTreasuryAccountId(operatorId)
-            .setAdminKey(operatorKey)
-            .setKycKey(key1)
-            .setFreezeKey(key2)
-            .setWipeKey(key3)
-            .setSupplyKey(key4)
-            .setMetadataKey(key5)
-            .setFreezeDefault(false)
-            .execute(env.client);
-
-        const tokenId = (await response.getReceipt(env.client)).tokenId;
+        const tokenId = await createFungibleToken(env.client, (transaction) => {
+            transaction
+                .setKycKey(key1)
+                .setFreezeKey(key2)
+                .setWipeKey(key3)
+                .setSupplyKey(key4)
+                .setMetadataKey(key5)
+                .setDecimals(3);
+        });
 
         const info = await new TokenInfoQuery()
             .setTokenId(tokenId)
@@ -73,19 +65,24 @@ describe("TokenInfo", function () {
     it("should be executable with minimal properties set", async function () {
         const operatorId = env.operatorId;
 
-        const response = await new TokenCreateTransaction()
-            .setTokenName("ffff")
-            .setTokenSymbol("F")
-            .setTreasuryAccountId(operatorId)
-            .execute(env.client);
-
-        const token = (await response.getReceipt(env.client)).tokenId;
+        const tokenId = await createFungibleToken(env.client, (transaction) => {
+            transaction
+                .setAdminKey(null)
+                .setKycKey(null)
+                .setFreezeKey(null)
+                .setWipeKey(null)
+                .setSupplyKey(null)
+                .setMetadataKey(null)
+                .setAutoRenewAccountId(operatorId)
+                .setInitialSupply(0)
+                .setDecimals(0);
+        });
 
         let info = await new TokenInfoQuery()
-            .setTokenId(token)
+            .setTokenId(tokenId)
             .execute(env.client);
 
-        expect(info.tokenId.toString()).to.eql(token.toString());
+        expect(info.tokenId.toString()).to.eql(tokenId.toString());
         expect(info.name).to.eql("ffff");
         expect(info.symbol).to.eql("F");
         expect(info.decimals).to.eql(0);
@@ -110,28 +107,18 @@ describe("TokenInfo", function () {
     });
 
     it("should be able to query cost", async function () {
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
         const key1 = PrivateKey.generateED25519();
         const key2 = PrivateKey.generateED25519();
         const key3 = PrivateKey.generateED25519();
         const key4 = PrivateKey.generateED25519();
 
-        const response = await new TokenCreateTransaction()
-            .setTokenName("ffff")
-            .setTokenSymbol("F")
-            .setDecimals(3)
-            .setInitialSupply(1000000)
-            .setTreasuryAccountId(operatorId)
-            .setAdminKey(operatorKey)
-            .setKycKey(key1)
-            .setFreezeKey(key2)
-            .setWipeKey(key3)
-            .setSupplyKey(key4)
-            .setFreezeDefault(false)
-            .execute(env.client);
-
-        const tokenId = (await response.getReceipt(env.client)).tokenId;
+        const tokenId = await createFungibleToken(env.client, (transaction) => {
+            transaction
+                .setKycKey(key1)
+                .setFreezeKey(key2)
+                .setWipeKey(key3)
+                .setSupplyKey(key4);
+        });
 
         const cost = await new TokenInfoQuery()
             .setTokenId(tokenId)
@@ -156,31 +143,28 @@ describe("TokenInfo", function () {
 
     it("should set autorenew account from transaction ID", async function () {
         // Create a new account with 10 Hbar
-        const accountKey = PrivateKey.generateECDSA();
-        const response = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(accountKey.publicKey)
-            .setInitialBalance(new Hbar(10))
-            .execute(env.client);
 
-        const { accountId } = await response.getReceipt(env.client);
+        const { accountId, newKey: accountKey } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setInitialBalance(new Hbar(20));
+            },
+        );
 
         // Create transaction ID with the new account
         const txId = TransactionId.generate(accountId);
 
-        const { tokenId } = await (
-            await (
-                await new TokenCreateTransaction()
-                    .setTransactionId(txId)
-                    .setTokenName("ffff")
-                    .setTokenSymbol("F")
-                    .setDecimals(3)
+        const tokenId = await createFungibleToken(
+            env.client,
+            async (transaction) => {
+                await transaction
                     .setTreasuryAccountId(accountId)
+                    .setTransactionId(txId)
                     .freezeWith(env.client)
-                    .sign(accountKey)
-            ).execute(env.client)
-        ).getReceipt(env.client);
+                    .sign(accountKey);
+            },
+        );
 
-        console.log("tokenId", tokenId);
         // Query token info
         const info = await new TokenInfoQuery()
 

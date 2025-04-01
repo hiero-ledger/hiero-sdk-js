@@ -7,8 +7,10 @@ import {
     Timestamp,
     AccountAllowanceApproveTransaction,
     AccountAllowanceDeleteTransaction,
+    TransferTransaction,
     NftId,
     TokenId,
+    EvmAddress,
 } from "@hashgraph/sdk";
 import Long from "long";
 
@@ -27,6 +29,7 @@ import {
     UpdateAccountParams,
 } from "../params/account";
 import { applyCommonTransactionParams } from "../params/common-tx-params";
+import { TransferCryptoParams } from "../params/transfer";
 
 export const createAccount = async ({
     key,
@@ -286,6 +289,109 @@ export const deleteAllowance = async ({
             );
 
             transaction.deleteAllTokenNftAllowances(nftId, owner);
+        }
+    }
+
+    if (commonTransactionParams != null) {
+        applyCommonTransactionParams(
+            commonTransactionParams,
+            transaction,
+            sdk.getClient(),
+        );
+    }
+
+    const txResponse = await transaction.execute(sdk.getClient());
+    const receipt = await txResponse.getReceipt(sdk.getClient());
+
+    return {
+        status: receipt.status.toString(),
+    };
+};
+
+export const transferCrypto = async ({
+    transfers,
+    commonTransactionParams,
+}: TransferCryptoParams): Promise<AccountResponse> => {
+    if (!transfers.length) {
+        throw new Error("No transfers provided.");
+    }
+
+    let transaction = new TransferTransaction().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+
+    for (const txParams of transfers) {
+        const isApproved = txParams.approved ?? false;
+
+        if (txParams.hbar) {
+            const amount = Hbar.fromTinybars(txParams.hbar.amount);
+
+            if (txParams.hbar.accountId != null) {
+                const accountId = AccountId.fromString(txParams.hbar.accountId);
+
+                isApproved
+                    ? transaction.addApprovedHbarTransfer(accountId, amount)
+                    : transaction.addHbarTransfer(accountId, amount);
+            } else if (txParams.hbar.evmAddress != null) {
+                const evmAddress = EvmAddress.fromString(
+                    txParams.hbar.evmAddress,
+                );
+                const accountId = AccountId.fromEvmAddress(0, 0, evmAddress);
+
+                isApproved
+                    ? transaction.addApprovedHbarTransfer(accountId, amount)
+                    : transaction.addHbarTransfer(accountId, amount);
+            }
+        } else if (txParams.token != null) {
+            const accountId = AccountId.fromString(txParams.token.accountId);
+            const tokenId = TokenId.fromString(txParams.token.tokenId);
+            const amount = Long.fromString(txParams.token.amount);
+
+            if (txParams.token.decimals !== undefined) {
+                isApproved
+                    ? transaction.addApprovedTokenTransfer(
+                          tokenId,
+                          accountId,
+                          amount,
+                      )
+                    : transaction.addTokenTransferWithDecimals(
+                          tokenId,
+                          accountId,
+                          amount,
+                          txParams.token.decimals,
+                      );
+            } else {
+                isApproved
+                    ? transaction.addApprovedTokenTransfer(
+                          tokenId,
+                          accountId,
+                          amount,
+                      )
+                    : transaction.addTokenTransfer(tokenId, accountId, amount);
+            }
+        } else if (txParams.nft != null) {
+            const senderAccountId = AccountId.fromString(
+                txParams.nft.senderAccountId,
+            );
+            const receiverAccountId = AccountId.fromString(
+                txParams.nft.receiverAccountId,
+            );
+            const nftId = new NftId(
+                TokenId.fromString(txParams.nft.tokenId),
+                Long.fromString(txParams.nft.serialNumber),
+            );
+
+            isApproved
+                ? transaction.addApprovedNftTransfer(
+                      nftId,
+                      senderAccountId,
+                      receiverAccountId,
+                  )
+                : transaction.addNftTransfer(
+                      nftId,
+                      senderAccountId,
+                      receiverAccountId,
+                  );
         }
     }
 

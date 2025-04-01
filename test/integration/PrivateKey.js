@@ -9,6 +9,8 @@ import {
     TransactionId,
     Mnemonic,
     AccountUpdateTransaction,
+    AccountCreateTransaction,
+    TransferTransaction,
 } from "../../src/exports.js";
 import dotenv from "dotenv";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
@@ -33,9 +35,7 @@ describe("PrivateKey signTransaction", function () {
 
         // Create account
         const { accountId } = await createAccount(env.client, (transaction) => {
-            return transaction
-                .setInitialBalance(new Hbar(2))
-                .setKeyWithoutAlias(keyList);
+            return transaction.setKeyWithoutAlias(keyList);
         });
 
         expect(accountId).to.exist;
@@ -50,9 +50,7 @@ describe("PrivateKey signTransaction", function () {
         const privateKey = await mnemonic.toStandardECDSAsecp256k1PrivateKey();
 
         const { accountId } = await createAccount(env.client, (transaction) => {
-            return transaction
-                .setInitialBalance(new Hbar(2))
-                .setKeyWithoutAlias(privateKey);
+            return transaction.setKeyWithoutAlias(privateKey);
         });
 
         const { status } = await (
@@ -120,5 +118,68 @@ describe("PrivateKey signTransaction", function () {
         ).getReceipt(env.client);
 
         expect(receipt.status).to.be.equal(Status.Success);
+    });
+
+    it("should create, sign, and execute a transaction with multiple signatures", async function () {
+        // Step 1: Generate private keys
+        const THRESHOLD = 2;
+        const key1 = PrivateKey.generateED25519();
+        const key2 = PrivateKey.generateED25519();
+        const key3 = PrivateKey.generateED25519();
+        const key4 = PrivateKey.generateED25519();
+        const key5 = PrivateKey.generateED25519();
+        const recipient = PrivateKey.generateED25519().publicKey;
+
+        const keyList = new KeyList(
+            [
+                key1.publicKey,
+                key2.publicKey,
+                key3.publicKey,
+                key4.publicKey,
+                key5.publicKey,
+            ],
+            THRESHOLD,
+        );
+
+        // Step 2: Create account with key list
+        const { accountId } = await (
+            await new AccountCreateTransaction()
+                .setKeyWithoutAlias(keyList)
+                .setInitialBalance(new Hbar(1))
+                .freezeWith(env.client)
+                .execute(env.client)
+        ).getReceipt(env.client);
+
+        const { accountId: recipientId2 } = await (
+            await new AccountCreateTransaction()
+                .setKeyWithoutAlias(recipient)
+                .freezeWith(env.client)
+                .execute(env.client)
+        ).getReceipt(env.client);
+
+        // Step 3: Create and freeze transfer transaction
+        const transferTx = new TransferTransaction()
+            .addHbarTransfer(accountId, new Hbar(-1))
+            .addHbarTransfer(recipientId2, new Hbar(1))
+            .freezeWith(env.client);
+
+        // Step 4: Sign transaction
+        const signatureBytes = key1.signTransaction(transferTx, true);
+        const signatureSigMap = key2.signTransaction(transferTx);
+
+        // Step 5: Add signatures and execute transaction
+        const { status } = await (
+            await transferTx
+                .addSignature(key1.publicKey, signatureBytes)
+                .addSignature(key2.publicKey, signatureSigMap)
+                .execute(env.client)
+        ).getReceipt(env.client);
+
+        // Step 6: Verify transaction status
+        expect(status.toString()).to.be.equal("SUCCESS");
+    });
+
+    after(async function () {
+        await env.close();
     });
 });

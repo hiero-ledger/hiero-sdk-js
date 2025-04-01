@@ -303,10 +303,31 @@ export default class PrivateKey extends Key {
     }
 
     /**
+     * @deprecated - Use legacy=false flag to use the modern approach
+     * or don't pass it at all.
+     * @overload
      * @param {Transaction} transaction
+     * @param {true} legacy
+     * @returns {Uint8Array | Uint8Array[] }
+     */
+
+    /**
+     * @overload
+     * @param {Transaction} transaction
+     * @param {false} [legacy]
      * @returns {SignatureMap}
      */
-    signTransaction(transaction) {
+
+    /**
+     * @param {Transaction} transaction
+     * @param {boolean} [legacy]
+     * @returns {Uint8Array | Uint8Array[] | SignatureMap}
+     */
+    signTransaction(transaction, legacy = false) {
+        if (legacy) {
+            return this._signTransactionLegacy(transaction);
+        }
+
         const sigMap = new SignatureMap();
 
         for (const signedTx of transaction._signedTransactions.list) {
@@ -331,6 +352,30 @@ export default class PrivateKey extends Key {
         transaction.addSignature(this.publicKey, sigMap);
         return sigMap;
     }
+
+    /**
+     * deprecated - This method is deprecated and will be removed in future versions.
+     * Use the `signTransaction` method with the `legacy=false` flag or don't
+     * pass it all for the modern approach.
+     * @param {Transaction} transaction
+     * @returns {Uint8Array | Uint8Array[]}
+     */
+    _signTransactionLegacy(transaction) {
+        const signatures = transaction._signedTransactions.list.map(
+            (signedTransaction) => {
+                const bodyBytes = signedTransaction.bodyBytes;
+                if (!bodyBytes) {
+                    return new Uint8Array();
+                }
+
+                return this._key.sign(bodyBytes);
+            },
+        );
+        transaction.addSignature(this.publicKey, signatures);
+        // Return directly Uint8Array if there is only one signature
+        return signatures.length === 1 ? signatures[0] : signatures;
+    }
+
     /**
      * Check if `derive` can be called on this private key.
      *

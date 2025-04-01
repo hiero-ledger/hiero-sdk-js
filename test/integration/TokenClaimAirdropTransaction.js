@@ -269,9 +269,7 @@ describe("TokenClaimAirdropIntegrationTest", function () {
             transaction.setInitialSupply(INITIAL_SUPPLY),
         );
 
-        const nftId = await createNonFungibleToken(env.client, (transaction) =>
-            transaction.setTokenName("nft").setTokenSymbol("NFT"),
-        );
+        const nftId = await createNonFungibleToken(env.client);
 
         const { serials } = await (
             await new TokenMintTransaction()
@@ -328,9 +326,7 @@ describe("TokenClaimAirdropIntegrationTest", function () {
     });
 
     it("should not claim the tokens with duplicate entries", async function () {
-        const tokenId = await createFungibleToken(env.client, (transaction) =>
-            transaction.setInitialSupply(100),
-        );
+        const tokenId = await createFungibleToken(env.client);
 
         const { accountId: receiverId } = await createAccount(env.client);
 
@@ -355,9 +351,7 @@ describe("TokenClaimAirdropIntegrationTest", function () {
     });
 
     it("should not be able to claim tokens when token is paused", async function () {
-        const tokenId = await createFungibleToken(env.client, (transaction) =>
-            transaction.setInitialSupply(100),
-        );
+        const tokenId = await createFungibleToken(env.client);
 
         await (
             await new TokenPauseTransaction()
@@ -382,9 +376,7 @@ describe("TokenClaimAirdropIntegrationTest", function () {
     });
 
     it("should not be able to claim tokens when token is deleted", async function () {
-        const tokenId = await createFungibleToken(env.client, (transaction) =>
-            transaction.setInitialSupply(100),
-        );
+        const tokenId = await createFungibleToken(env.client);
 
         await (
             await new TokenDeleteTransaction()
@@ -409,9 +401,7 @@ describe("TokenClaimAirdropIntegrationTest", function () {
     });
 
     it("should not be able to claim tokens when token is frozen", async function () {
-        const tokenId = await createFungibleToken(env.client, (transaction) =>
-            transaction.setInitialSupply(100),
-        );
+        const tokenId = await createFungibleToken(env.client);
 
         const { accountId: receiverId, newKey: receiverKey } =
             await createAccount(env.client);

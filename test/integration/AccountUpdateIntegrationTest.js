@@ -21,14 +21,7 @@ describe("AccountUpdate", function () {
     it("should be executable", async function () {
         const operatorId = env.operatorId;
 
-        const key1 = PrivateKey.generateED25519();
-        const key2 = PrivateKey.generateED25519();
-
-        const { accountId } = await createAccount(env.client, (transaction) => {
-            transaction
-                .setKeyWithoutAlias(key1.publicKey)
-                .setInitialBalance(new Hbar(2));
-        });
+        const { accountId, newKey: key1 } = await createAccount(env.client);
 
         expect(accountId).to.not.be.null;
 
@@ -40,11 +33,13 @@ describe("AccountUpdate", function () {
         expect(info.isDeleted).to.be.false;
         expect(info.key.toString()).to.be.equal(key1.publicKey.toString());
         expect(info.balance.toTinybars().toInt()).to.be.equal(
-            new Hbar(2).toTinybars().toInt(),
+            new Hbar(1).toTinybars().toInt(),
         );
         expect(info.autoRenewPeriod.seconds.toNumber()).to.be.equal(7776000);
         expect(info.proxyAccountId).to.be.null;
         expect(info.proxyReceived.toTinybars().toInt()).to.be.equal(0);
+
+        const key2 = PrivateKey.generateED25519();
 
         const response = await (
             await (
@@ -68,7 +63,7 @@ describe("AccountUpdate", function () {
         expect(info.isDeleted).to.be.false;
         expect(info.key.toString()).to.be.equal(key2.publicKey.toString());
         expect(info.balance.toTinybars().toInt()).to.be.equal(
-            new Hbar(2).toTinybars().toInt(),
+            new Hbar(1).toTinybars().toInt(),
         );
         expect(info.autoRenewPeriod.seconds.toNumber()).to.be.equal(7776000);
         expect(info.proxyAccountId).to.be.null;
@@ -83,16 +78,11 @@ describe("AccountUpdate", function () {
     });
 
     it("should error with invalid auto renew period", async function () {
-        const key1 = PrivateKey.generateED25519();
-        const key2 = PrivateKey.generateED25519();
-
-        const { accountId } = await createAccount(env.client, (transaction) => {
-            transaction
-                .setKeyWithoutAlias(key1.publicKey)
-                .setInitialBalance(new Hbar(2));
-        });
+        const { accountId, newKey: key1 } = await createAccount(env.client);
 
         expect(accountId).to.not.be.null;
+
+        const key2 = PrivateKey.generateED25519();
 
         let err = false;
 
@@ -129,15 +119,11 @@ describe("AccountUpdate", function () {
 
     // eslint-disable-next-line mocha/no-skipped-tests
     it.skip("should error with insufficent tx fee when a large expiration time is set", async function () {
-        const key1 = PrivateKey.generateED25519();
-        const key2 = PrivateKey.generateED25519();
-
-        const { accountId } = await createAccount(env.client, {
-            key: key1.publicKey,
-            initialBalance: new Hbar(2),
-        });
+        const { accountId, newKey: key1 } = await createAccount(env.client);
 
         expect(accountId).to.not.be.null;
+
+        const key2 = PrivateKey.generateED25519();
 
         let err = false;
 
@@ -182,13 +168,7 @@ describe("AccountUpdate", function () {
     });
 
     it("should execute with only account ID", async function () {
-        const key1 = PrivateKey.generateED25519();
-
-        const { accountId } = await createAccount(env.client, (transaction) => {
-            transaction
-                .setKeyWithoutAlias(key1.publicKey)
-                .setInitialBalance(new Hbar(2));
-        });
+        const { accountId, newKey: key1 } = await createAccount(env.client);
 
         expect(accountId).to.not.be.null;
 
@@ -204,22 +184,16 @@ describe("AccountUpdate", function () {
         await deleteAccount(env.client, key1, (transaction) => {
             transaction
                 .setAccountId(accountId)
-                .setTransferAccountId(env.client.operatorAccountId)
-                .setTransactionId(TransactionId.generate(accountId));
+                .setTransferAccountId(env.client.operatorAccountId);
         });
     });
 
     it("should error with invalid signature", async function () {
-        const key1 = PrivateKey.generateED25519();
-        const key2 = PrivateKey.generateED25519();
-
-        const { accountId } = await createAccount(env.client, (transaction) => {
-            transaction
-                .setKeyWithoutAlias(key1.publicKey)
-                .setInitialBalance(new Hbar(2));
-        });
+        const { accountId, newKey: key1 } = await createAccount(env.client);
 
         expect(accountId).to.not.be.null;
+
+        const key2 = PrivateKey.generateED25519();
 
         let err = false;
 
@@ -240,8 +214,7 @@ describe("AccountUpdate", function () {
         await deleteAccount(env.client, key1, (transaction) => {
             transaction
                 .setAccountId(accountId)
-                .setTransferAccountId(env.client.operatorAccountId)
-                .setTransactionId(TransactionId.generate(accountId));
+                .setTransferAccountId(env.client.operatorAccountId);
         });
 
         if (!err) {

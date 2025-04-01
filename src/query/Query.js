@@ -8,6 +8,7 @@ import TransactionId from "../transaction/TransactionId.js";
 import * as HieroProto from "@hashgraph/proto";
 import PrecheckStatusError from "../PrecheckStatusError.js";
 import MaxQueryPaymentExceeded from "../MaxQueryPaymentExceeded.js";
+import CostQuery from "./CostQuery.js";
 import Long from "long";
 
 /**
@@ -161,13 +162,9 @@ export default class Query extends Executable {
             );
         }
 
-        if (COST_QUERY.length != 1) {
-            throw new Error("CostQuery has not been loaded yet");
-        }
-
         // Change the timestamp. Should we be doing this?
         this._timestamp = Date.now();
-        const cost = await COST_QUERY[0](this).execute(client);
+        const cost = await new CostQuery(this).execute(client);
         return Hbar.fromTinybars(
             cost._valueInTinybar.multipliedBy(1.1).toFixed(0),
         );
@@ -615,10 +612,3 @@ export async function _makePaymentTransaction(
             ).finish(),
     };
 }
-
-/**
- * Cache for the cost query constructor. This prevents cyclic dependencies.
- *
- * @type {((query: Query<*>) => import("./CostQuery.js").default<*>)[]}
- */
-export const COST_QUERY = [];

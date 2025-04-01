@@ -2,21 +2,22 @@ import { expect } from "chai";
 import {
     AccountAllowanceApproveTransaction,
     AccountBalanceQuery,
-    AccountCreateTransaction,
     AccountUpdateTransaction,
-    Hbar,
     NftId,
     PrivateKey,
-    TokenCreateTransaction,
     TokenFreezeTransaction,
     TokenMintTransaction,
     TokenPauseTransaction,
     TokenRejectTransaction,
-    TokenType,
     TransactionId,
     TransferTransaction,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import {
+    createAccount,
+    createFungibleToken,
+    createNonFungibleToken,
+} from "./utils/Fixtures.js";
 
 describe("TokenRejectIntegrationTest", function () {
     let env, tokenId, receiverId, receiverPrivateKey;
@@ -26,51 +27,32 @@ describe("TokenRejectIntegrationTest", function () {
         beforeEach(async function () {
             env = await IntegrationTestEnv.new();
 
-            // create token
-            const tokenCreateResponse = await new TokenCreateTransaction()
-                .setTokenName("ffff")
-                .setTokenSymbol("F")
-                .setDecimals(3)
-                .setInitialSupply(INITIAL_SUPPLY)
-                .setTreasuryAccountId(env.operatorId)
-                .setPauseKey(env.operatorKey)
-                .setAdminKey(env.operatorKey)
-                .setSupplyKey(env.operatorKey)
-                .setFreezeKey(env.operatorKey)
-                .execute(env.client);
+            // Create token with required keys
+            tokenId = await createFungibleToken(env.client, (transaction) => {
+                transaction.setInitialSupply(INITIAL_SUPPLY);
+            });
 
-            tokenId = (await tokenCreateResponse.getReceipt(env.client))
-                .tokenId;
-
-            // create receiver account
-            receiverPrivateKey = await PrivateKey.generateECDSA();
-            const receiverCreateAccount = await new AccountCreateTransaction()
-                .setKeyWithoutAlias(receiverPrivateKey)
-                .setInitialBalance(new Hbar(1))
-                .setMaxAutomaticTokenAssociations(-1)
-                .execute(env.client);
-
-            receiverId = (await receiverCreateAccount.getReceipt(env.client))
-                .accountId;
+            // Create receiver account
+            const { accountId, newKey } = await createAccount(
+                env.client,
+                (transaction) => {
+                    transaction.setMaxAutomaticTokenAssociations(-1);
+                },
+            );
+            receiverId = accountId;
+            receiverPrivateKey = newKey;
         });
 
         it("should execute TokenReject Tx", async function () {
-            // create another token
-            const tokenCreateResponse2 = await new TokenCreateTransaction()
-                .setTokenName("ffff2")
-                .setTokenSymbol("F2")
-                .setDecimals(3)
-                .setInitialSupply(INITIAL_SUPPLY)
-                .setTreasuryAccountId(env.operatorId)
-                .setAdminKey(env.operatorKey)
-                .setSupplyKey(env.operatorKey)
-                .execute(env.client);
-
-            const { tokenId: tokenId2 } = await tokenCreateResponse2.getReceipt(
+            // Create another token
+            const tokenId2 = await createFungibleToken(
                 env.client,
+                (transaction) => {
+                    transaction.setInitialSupply(INITIAL_SUPPLY);
+                },
             );
 
-            // transfer tokens of both types to receiver
+            // Transfer tokens of both types to receiver
             await (
                 await new TransferTransaction()
                     .addTokenTransfer(tokenId, env.operatorId, -1)
@@ -80,7 +62,7 @@ describe("TokenRejectIntegrationTest", function () {
                     .execute(env.client)
             ).getReceipt(env.client);
 
-            // reject tokens
+            // Reject tokens
             await (
                 await (
                     await new TokenRejectTransaction()
@@ -110,7 +92,7 @@ describe("TokenRejectIntegrationTest", function () {
                 .get(tokenId)
                 .toInt();
             const tokenBalanceTreasury2 = tokenBalanceTreasuryQuery.tokens
-                .get(tokenId)
+                .get(tokenId2)
                 .toInt();
 
             expect(tokenBalanceReceiver).to.be.equal(0);
@@ -121,30 +103,32 @@ describe("TokenRejectIntegrationTest", function () {
         });
 
         it("should return token back when receiver has receiverSigRequired is true", async function () {
-            const TREASURY_TOKENS_AMOUNT = 1000000;
-
+            // Update operator account to require receiver signature
             await new AccountUpdateTransaction()
                 .setAccountId(env.operatorId)
                 .setReceiverSignatureRequired(true)
                 .execute(env.client);
 
-            const transferTransactionResponse = await new TransferTransaction()
-                .addTokenTransfer(tokenId, env.operatorId, -1)
-                .addTokenTransfer(tokenId, receiverId, 1)
-                .execute(env.client);
+            // Transfer token to receiver
+            await (
+                await new TransferTransaction()
+                    .addTokenTransfer(tokenId, env.operatorId, -1)
+                    .addTokenTransfer(tokenId, receiverId, 1)
+                    .execute(env.client)
+            ).getReceipt(env.client);
 
-            await transferTransactionResponse.getReceipt(env.client);
+            // Reject token
+            await (
+                await (
+                    await new TokenRejectTransaction()
+                        .addTokenId(tokenId)
+                        .setOwnerId(receiverId)
+                        .freezeWith(env.client)
+                        .sign(receiverPrivateKey)
+                ).execute(env.client)
+            ).getReceipt(env.client);
 
-            const tokenRejectResponse = await (
-                await new TokenRejectTransaction()
-                    .addTokenId(tokenId)
-                    .setOwnerId(receiverId)
-                    .freezeWith(env.client)
-                    .sign(receiverPrivateKey)
-            ).execute(env.client);
-
-            await tokenRejectResponse.getReceipt(env.client);
-
+            // Check treasury balance
             const tokenBalanceTreasuryQuery = await new AccountBalanceQuery()
                 .setAccountId(env.operatorId)
                 .execute(env.client);
@@ -152,8 +136,9 @@ describe("TokenRejectIntegrationTest", function () {
             const tokenBalanceTreasury = tokenBalanceTreasuryQuery.tokens
                 .get(tokenId)
                 .toInt();
-            expect(tokenBalanceTreasury).to.be.equal(TREASURY_TOKENS_AMOUNT);
+            expect(tokenBalanceTreasury).to.be.equal(INITIAL_SUPPLY);
 
+            // Check receiver balance
             const tokenBalanceReceiverQuery = await new AccountBalanceQuery()
                 .setAccountId(receiverId)
                 .execute(env.client);
@@ -166,16 +151,13 @@ describe("TokenRejectIntegrationTest", function () {
         // temporary disabled until issue re nfts will be resolved on services side
         // eslint-disable-next-line mocha/no-skipped-tests
         it.skip("should not return spender allowance to zero after owner rejects FT", async function () {
-            const spenderAccountPrivateKey = PrivateKey.generateED25519();
-            const spenderAccountResponse = await new AccountCreateTransaction()
-                .setMaxAutomaticTokenAssociations(-1)
-                .setInitialBalance(new Hbar(10))
-                .setKeyWithoutAlias(spenderAccountPrivateKey)
-                .execute(env.client);
+            // Create spender account
+            const { accountId: spenderAccountId, newKey: spenderPrivateKey } =
+                await createAccount(env.client, (transaction) => {
+                    transaction.setMaxAutomaticTokenAssociations(-1);
+                });
 
-            const { accountId: spenderAccountId } =
-                await spenderAccountResponse.getReceipt(env.client);
-
+            // Transfer token to receiver
             await (
                 await new TransferTransaction()
                     .addTokenTransfer(tokenId, env.operatorId, -1)
@@ -183,6 +165,7 @@ describe("TokenRejectIntegrationTest", function () {
                     .execute(env.client)
             ).getReceipt(env.client);
 
+            // Approve allowance for spender
             await (
                 await (
                     await new AccountAllowanceApproveTransaction()
@@ -197,6 +180,7 @@ describe("TokenRejectIntegrationTest", function () {
                 ).execute(env.client)
             ).getReceipt(env.client);
 
+            // Reject token
             await (
                 await (
                     await new TokenRejectTransaction()
@@ -221,8 +205,7 @@ describe("TokenRejectIntegrationTest", function () {
                 INITIAL_SUPPLY,
             );
 
-            // after token reject transaction receiver doesn't have balance
-            // so we need some tokens back from treasury
+            // Transfer token back to receiver for allowance test
             await (
                 await new TransferTransaction()
                     .addTokenTransfer(tokenId, env.operatorId, -1)
@@ -230,6 +213,7 @@ describe("TokenRejectIntegrationTest", function () {
                     .execute(env.client)
             ).getReceipt(env.client);
 
+            // Test that allowance still works
             const transactionId = TransactionId.generate(spenderAccountId);
             await (
                 await (
@@ -238,23 +222,22 @@ describe("TokenRejectIntegrationTest", function () {
                         .addTokenTransfer(tokenId, spenderAccountId, 1)
                         .setTransactionId(transactionId)
                         .freezeWith(env.client)
-                        .sign(spenderAccountPrivateKey)
+                        .sign(spenderPrivateKey)
                 ).execute(env.client)
             ).getReceipt(env.client);
 
-            // Confirm spender has transfered tokens
+            // Verify final balances
             const tokenBalanceReceiverPost = await new AccountBalanceQuery()
                 .setAccountId(receiverId)
                 .execute(env.client);
-
-            expect(tokenBalanceReceiverPost.tokens.get(tokenId).toInt()).to.eq(
-                0,
-            );
 
             const tokenBalanceSpenderPost = await new AccountBalanceQuery()
                 .setAccountId(spenderAccountId)
                 .execute(env.client);
 
+            expect(tokenBalanceReceiverPost.tokens.get(tokenId).toInt()).to.eq(
+                0,
+            );
             expect(tokenBalanceSpenderPost.tokens.get(tokenId).toInt()).to.eq(
                 1,
             );
@@ -337,24 +320,17 @@ describe("TokenRejectIntegrationTest", function () {
             });
 
             it("when user does not have balance", async function () {
-                // create receiver account
-                const receiverPrivateKey = PrivateKey.generateED25519();
-                const { accountId: emptyBalanceUserId } = await (
-                    await new AccountCreateTransaction()
-                        .setKeyWithoutAlias(receiverPrivateKey)
-                        .setMaxAutomaticTokenAssociations(-1)
-                        .execute(env.client)
-                ).getReceipt(env.client);
-
-                await (
-                    await new TransferTransaction()
-                        .addTokenTransfer(tokenId, env.operatorId, -1000)
-                        .addTokenTransfer(tokenId, receiverId, 1000)
-                        .execute(env.client)
-                ).getReceipt(env.client);
-
+                // Create account with no balance
+                const {
+                    accountId: emptyBalanceUserId,
+                    newKey: emptyBalanceUserKey,
+                } = await createAccount(env.client, (transaction) => {
+                    transaction
+                        .setInitialBalance(null)
+                        .setMaxAutomaticTokenAssociations(-1);
+                });
                 const transactionId =
-                    await TransactionId.generate(emptyBalanceUserId);
+                    TransactionId.generate(emptyBalanceUserId);
                 try {
                     await (
                         await (
@@ -363,7 +339,7 @@ describe("TokenRejectIntegrationTest", function () {
                                 .addTokenId(tokenId)
                                 .setTransactionId(transactionId)
                                 .freezeWith(env.client)
-                                .sign(receiverPrivateKey)
+                                .sign(emptyBalanceUserKey)
                         ).execute(env.client)
                     ).getReceipt(env.client);
                 } catch (err) {
@@ -389,19 +365,10 @@ describe("TokenRejectIntegrationTest", function () {
                 const tokenIds = [];
 
                 for (let i = 0; i < 11; i++) {
-                    const { tokenId } = await (
-                        await new TokenCreateTransaction()
-                            .setTokenName("ffff")
-                            .setTokenSymbol("F")
-                            .setTokenType(TokenType.FungibleCommon)
-                            .setInitialSupply(1000)
-                            .setTreasuryAccountId(env.operatorId)
-                            .setAdminKey(env.operatorKey)
-                            .setSupplyKey(env.operatorKey)
-                            .execute(env.client)
-                    ).getReceipt(env.client);
+                    const tokenId = await createFungibleToken(env.client);
                     tokenIds.push(tokenId);
                 }
+
                 try {
                     await (
                         await new TokenRejectTransaction()
@@ -409,6 +376,7 @@ describe("TokenRejectIntegrationTest", function () {
                             .execute(env.client)
                     ).getReceipt(env.client);
                 } catch (err) {
+                    console.log(err.message);
                     expect(err.message).to.include(
                         "TOKEN_REFERENCE_LIST_SIZE_LIMIT_EXCEEDED",
                     );
@@ -418,34 +386,25 @@ describe("TokenRejectIntegrationTest", function () {
     });
 
     describe("Non-Fungible Tokens", function () {
-        let tokenId, receiverPrivateKey, receiverId, nftId;
+        let tokenId, receiverId, receiverPrivateKey, nftId;
 
         beforeEach(async function () {
             env = await IntegrationTestEnv.new();
-            const tokenCreateResponse = await new TokenCreateTransaction()
-                .setTokenType(TokenType.NonFungibleUnique)
-                .setTokenName("ffff")
-                .setTokenSymbol("F")
-                .setTreasuryAccountId(env.operatorId)
-                .setAdminKey(env.operatorKey)
-                .setSupplyKey(env.operatorKey)
-                .setPauseKey(env.operatorKey)
-                .setFreezeKey(env.operatorKey)
-                .execute(env.client);
 
-            tokenId = (await tokenCreateResponse.getReceipt(env.client))
-                .tokenId;
+            // Create NFT collection
+            tokenId = await createNonFungibleToken(env.client);
 
-            receiverPrivateKey = await PrivateKey.generateECDSA();
-            receiverId = (
-                await (
-                    await new AccountCreateTransaction()
-                        .setKeyWithoutAlias(receiverPrivateKey)
-                        .setMaxAutomaticTokenAssociations(-1)
-                        .execute(env.client)
-                ).getReceipt(env.client)
-            ).accountId;
+            // Create receiver account
+            const { accountId, newKey } = await createAccount(
+                env.client,
+                (transaction) => {
+                    transaction.setMaxAutomaticTokenAssociations(-1);
+                },
+            );
+            receiverId = accountId;
+            receiverPrivateKey = newKey;
 
+            // Mint first NFT
             nftId = new NftId(tokenId, 1);
             await (
                 await new TokenMintTransaction()
@@ -456,18 +415,8 @@ describe("TokenRejectIntegrationTest", function () {
         });
 
         it("should execute TokenReject Tx", async function () {
-            const tokenCreateResponse2 = await new TokenCreateTransaction()
-                .setTokenType(TokenType.NonFungibleUnique)
-                .setTokenName("ffff2")
-                .setTokenSymbol("F2")
-                .setTreasuryAccountId(env.operatorId)
-                .setAdminKey(env.operatorKey)
-                .setSupplyKey(env.operatorKey)
-                .execute(env.client);
-
-            const { tokenId: tokenId2 } = await tokenCreateResponse2.getReceipt(
-                env.client,
-            );
+            // Create second NFT collection and mint token
+            const tokenId2 = await createNonFungibleToken(env.client);
 
             const nftId2 = new NftId(tokenId2, 1);
             await (
@@ -477,6 +426,7 @@ describe("TokenRejectIntegrationTest", function () {
                     .execute(env.client)
             ).getReceipt(env.client);
 
+            // Transfer NFTs to receiver
             await (
                 await new TransferTransaction()
                     .addNftTransfer(nftId, env.operatorId, receiverId)
@@ -484,9 +434,10 @@ describe("TokenRejectIntegrationTest", function () {
                     .execute(env.client)
             ).getReceipt(env.client);
 
+            // Reject NFTs
             await (
                 await (
-                    await await new TokenRejectTransaction()
+                    await new TokenRejectTransaction()
                         .setNftIds([nftId, nftId2])
                         .setOwnerId(receiverId)
                         .freezeWith(env.client)
@@ -494,12 +445,9 @@ describe("TokenRejectIntegrationTest", function () {
                 ).execute(env.client)
             ).getReceipt(env.client);
 
+            // Check balances
             const tokenBalanceReceiverQuery = await new AccountBalanceQuery()
                 .setAccountId(receiverId)
-                .execute(env.client);
-
-            const tokenBalanceTreasuryQuery = await new AccountBalanceQuery()
-                .setAccountId(env.operatorId)
                 .execute(env.client);
 
             const tokenBalanceReceiver = tokenBalanceReceiverQuery.tokens
@@ -508,6 +456,10 @@ describe("TokenRejectIntegrationTest", function () {
             const tokenBalanceReceiver2 = tokenBalanceReceiverQuery.tokens
                 .get(tokenId2)
                 .toInt();
+
+            const tokenBalanceTreasuryQuery = await new AccountBalanceQuery()
+                .setAccountId(env.operatorId)
+                .execute(env.client);
 
             const tokenBalanceTreasury = tokenBalanceTreasuryQuery.tokens
                 .get(tokenId)
@@ -524,28 +476,31 @@ describe("TokenRejectIntegrationTest", function () {
         });
 
         it("should return tokens back to treasury receiverSigRequired is true", async function () {
+            // Update operator account to require receiver signature
             await new AccountUpdateTransaction()
                 .setAccountId(env.operatorId)
                 .setReceiverSignatureRequired(true)
                 .execute(env.client);
 
-            const transferTransactionResponse = await new TransferTransaction()
-                .addNftTransfer(nftId, env.operatorId, receiverId)
-                .freezeWith(env.client)
-                .execute(env.client);
+            // Transfer NFT to receiver
+            await (
+                await new TransferTransaction()
+                    .addNftTransfer(nftId, env.operatorId, receiverId)
+                    .execute(env.client)
+            ).getReceipt(env.client);
 
-            await transferTransactionResponse.getReceipt(env.client);
+            // Reject NFT
+            await (
+                await (
+                    await new TokenRejectTransaction()
+                        .addNftId(nftId)
+                        .setOwnerId(receiverId)
+                        .freezeWith(env.client)
+                        .sign(receiverPrivateKey)
+                ).execute(env.client)
+            ).getReceipt(env.client);
 
-            const tokenRejectResponse = await (
-                await new TokenRejectTransaction()
-                    .addNftId(nftId)
-                    .setOwnerId(receiverId)
-                    .freezeWith(env.client)
-                    .sign(receiverPrivateKey)
-            ).execute(env.client);
-
-            await tokenRejectResponse.getReceipt(env.client);
-
+            // Check treasury balance
             const tokenBalanceTreasuryQuery = await new AccountBalanceQuery()
                 .setAccountId(env.operatorId)
                 .execute(env.client);
@@ -555,6 +510,7 @@ describe("TokenRejectIntegrationTest", function () {
                 .toInt();
             expect(tokenBalanceTreasury).to.be.equal(1);
 
+            // Check receiver balance
             const tokenBalanceReceiverQuery = await new AccountBalanceQuery()
                 .setAccountId(receiverId)
                 .execute(env.client);
@@ -568,25 +524,20 @@ describe("TokenRejectIntegrationTest", function () {
         // temporary disabled until issue re nfts will be resolved on services side
         // eslint-disable-next-line mocha/no-skipped-tests
         it.skip("should return spender allowance to 0 after owner rejects NFT", async function () {
-            // create spender account
-            const spenderAccountPrivateKey = PrivateKey.generateED25519();
-            const spenderAccountResponse = await new AccountCreateTransaction()
-                .setMaxAutomaticTokenAssociations(-1)
-                .setInitialBalance(new Hbar(10))
-                .setKeyWithoutAlias(spenderAccountPrivateKey)
-                .execute(env.client);
+            // Create spender account
+            const { accountId: spenderAccountId, newKey: spenderPrivateKey } =
+                await createAccount(env.client, (transaction) => {
+                    transaction.setMaxAutomaticTokenAssociations(-1);
+                });
 
-            const { accountId: spenderAccountId } =
-                await spenderAccountResponse.getReceipt(env.client);
-
-            // transfer nft to receiver
+            // Transfer NFT to receiver
             await (
                 await new TransferTransaction()
                     .addNftTransfer(nftId, env.operatorId, receiverId)
                     .execute(env.client)
             ).getReceipt(env.client);
 
-            // approve nft allowance
+            // Approve NFT allowance
             await (
                 await (
                     await new AccountAllowanceApproveTransaction()
@@ -600,7 +551,7 @@ describe("TokenRejectIntegrationTest", function () {
                 ).execute(env.client)
             ).getReceipt(env.client);
 
-            // reject nft
+            // Reject NFT
             await (
                 await (
                     await new TokenRejectTransaction()
@@ -611,7 +562,7 @@ describe("TokenRejectIntegrationTest", function () {
                 ).execute(env.client)
             ).getReceipt(env.client);
 
-            // transfer nft from receiver to spender using allowance
+            // Try to transfer NFT using allowance - should fail
             try {
                 const transactionId = TransactionId.generate(spenderAccountId);
                 await (
@@ -624,9 +575,10 @@ describe("TokenRejectIntegrationTest", function () {
                             )
                             .setTransactionId(transactionId)
                             .freezeWith(env.client)
-                            .sign(spenderAccountPrivateKey)
+                            .sign(spenderPrivateKey)
                     ).execute(env.client)
                 ).getReceipt(env.client);
+                throw new Error("Transfer should have failed");
             } catch (err) {
                 expect(err.message).to.include(
                     "SPENDER_DOES_NOT_HAVE_ALLOWANCE",
@@ -636,15 +588,19 @@ describe("TokenRejectIntegrationTest", function () {
 
         describe("should throw an error", function () {
             it("when paused NFT", async function () {
+                // Pause token
                 await (
                     await new TokenPauseTransaction()
                         .setTokenId(tokenId)
                         .execute(env.client)
                 ).getReceipt(env.client);
 
+                // Transfer NFT to receiver
                 await new TransferTransaction()
                     .addNftTransfer(nftId, env.operatorId, receiverId)
                     .execute(env.client);
+
+                // Try to reject paused NFT
                 const tokenRejectTx = await new TokenRejectTransaction()
                     .addTokenId(tokenId)
                     .setOwnerId(receiverId)
@@ -655,18 +611,19 @@ describe("TokenRejectIntegrationTest", function () {
                     await (
                         await tokenRejectTx.execute(env.client)
                     ).getReceipt(env.client);
+                    throw new Error("Should have failed");
                 } catch (err) {
                     expect(err.message).to.include("TOKEN_IS_PAUSED");
                 }
             });
 
             it("when NFT is frozen", async function () {
-                // transfer token to receiver
+                // Transfer NFT to receiver
                 await new TransferTransaction()
                     .addNftTransfer(nftId, env.operatorId, receiverId)
                     .execute(env.client);
 
-                // freeze token
+                // Freeze token
                 await (
                     await new TokenFreezeTransaction()
                         .setTokenId(tokenId)
@@ -674,8 +631,8 @@ describe("TokenRejectIntegrationTest", function () {
                         .execute(env.client)
                 ).getReceipt(env.client);
 
+                // Try to reject frozen NFT
                 try {
-                    // reject token on frozen account for thsi token
                     await (
                         await (
                             await new TokenRejectTransaction()
@@ -685,21 +642,22 @@ describe("TokenRejectIntegrationTest", function () {
                                 .sign(receiverPrivateKey)
                         ).execute(env.client)
                     ).getReceipt(env.client);
+                    throw new Error("Should have failed");
                 } catch (err) {
                     expect(err.message).to.include("ACCOUNT_FROZEN_FOR_TOKEN");
                 }
             });
 
             it("when using Fungible Token id when referencing NFTs", async function () {
-                // transfer to receiver
+                // Transfer NFT to receiver
                 await (
                     await new TransferTransaction()
                         .addNftTransfer(nftId, env.operatorId, receiverId)
                         .execute(env.client)
                 ).getReceipt(env.client);
 
+                // Try to reject NFT using addTokenId
                 try {
-                    // reject nft using addTokenId
                     await (
                         await (
                             await new TokenRejectTransaction()
@@ -709,14 +667,15 @@ describe("TokenRejectIntegrationTest", function () {
                                 .sign(receiverPrivateKey)
                         ).execute(env.client)
                     ).getReceipt(env.client);
+                    throw new Error("Should have failed");
                 } catch (err) {
                     expect(err.message).to.include(
                         "ACCOUNT_AMOUNT_TRANSFERS_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON",
                     );
                 }
 
+                // Try to reject NFT using setTokenIds
                 try {
-                    // reject nft using setTokenIds
                     await (
                         await (
                             await new TokenRejectTransaction()
@@ -726,6 +685,7 @@ describe("TokenRejectIntegrationTest", function () {
                                 .sign(receiverPrivateKey)
                         ).execute(env.client)
                     ).getReceipt(env.client);
+                    throw new Error("Should have failed");
                 } catch (err) {
                     expect(err.message).to.include(
                         "ACCOUNT_AMOUNT_TRANSFERS_ONLY_ALLOWED_FOR_FUNGIBLE_COMMON",
@@ -734,34 +694,35 @@ describe("TokenRejectIntegrationTest", function () {
             });
 
             it("when there's a duplicated token reference", async function () {
-                // transfer nft to receiver
+                // Transfer NFT to receiver
                 await (
                     await new TransferTransaction()
                         .addNftTransfer(nftId, env.operatorId, receiverId)
                         .execute(env.client)
                 ).getReceipt(env.client);
 
-                // reject nft
+                // Try to reject NFT with duplicate reference
                 try {
                     await new TokenRejectTransaction()
                         .setNftIds([nftId, nftId])
                         .execute(env.client);
+                    throw new Error("Should have failed");
                 } catch (err) {
                     expect(err.message).to.include("TOKEN_REFERENCE_REPEATED");
                 }
             });
 
             it("when user does not have balance", async function () {
-                // transfer nft to receiver
+                // Transfer NFT to receiver
                 await (
                     await new TransferTransaction()
                         .addNftTransfer(nftId, env.operatorId, receiverId)
                         .execute(env.client)
                 ).getReceipt(env.client);
-                const transactionId = await TransactionId.generate(receiverId);
 
+                // Try to reject NFT without balance
+                const transactionId = TransactionId.generate(receiverId);
                 try {
-                    // reject nft
                     await (
                         await (
                             await new TokenRejectTransaction()
@@ -780,47 +741,44 @@ describe("TokenRejectIntegrationTest", function () {
             });
 
             it("when wrong signature of owner", async function () {
-                // transfer token to receiver
-                await new TransferTransaction()
-                    .addTokenTransfer(tokenId, env.operatorId, -1000)
-                    .addTokenTransfer(tokenId, receiverId, 1000);
+                // Create wrong signature
+                const wrongSignature = PrivateKey.generateED25519();
 
+                // Try to reject token with wrong signature
                 try {
-                    // reject token with wrong signature
-                    const WRONG_SIGNATURE = PrivateKey.generateED25519();
                     await (
                         await (
                             await new TokenRejectTransaction()
                                 .addTokenId(tokenId)
                                 .setOwnerId(receiverId)
                                 .freezeWith(env.client)
-                                .sign(WRONG_SIGNATURE)
+                                .sign(wrongSignature)
                         ).execute(env.client)
                     ).getReceipt(env.client);
+                    throw new Error("Should have failed");
                 } catch (err) {
                     expect(err.message).to.include("INVALID_SIGNATURE");
                 }
             });
 
             it("when wrong owner id", async function () {
-                // generate wrong owner account
-                const wrongOwnerPrivateKey = PrivateKey.generateED25519();
-                const { accountId: wrongOwnerId } = await (
-                    await new AccountCreateTransaction()
-                        .setKeyWithoutAlias(wrongOwnerPrivateKey)
-                        .setMaxAutomaticTokenAssociations(-1)
-                        .execute(env.client)
-                ).getReceipt(env.client);
+                // Create wrong owner account
+                const {
+                    accountId: wrongOwnerId,
+                    newKey: wrongOwnerPrivateKey,
+                } = await createAccount(env.client, (transaction) => {
+                    transaction.setMaxAutomaticTokenAssociations(-1);
+                });
 
-                // transfer token to receiver
+                // Transfer NFT to receiver
                 await (
                     await new TransferTransaction()
                         .addNftTransfer(nftId, env.operatorId, receiverId)
                         .execute(env.client)
                 ).getReceipt(env.client);
 
+                // Try to reject token with wrong owner
                 try {
-                    // reject token with wrong token id
                     await (
                         await (
                             await new TokenRejectTransaction()
@@ -830,6 +788,7 @@ describe("TokenRejectIntegrationTest", function () {
                                 .sign(wrongOwnerPrivateKey)
                         ).execute(env.client)
                     ).getReceipt(env.client);
+                    throw new Error("Should have failed");
                 } catch (err) {
                     expect(err.message).to.include("INVALID_OWNER_ID");
                 }
@@ -841,64 +800,24 @@ describe("TokenRejectIntegrationTest", function () {
         beforeEach(async function () {
             env = await IntegrationTestEnv.new();
 
-            // create token
-            const tokenCreateResponse = await new TokenCreateTransaction()
-                .setTokenName("ffff")
-                .setTokenSymbol("F")
-                .setDecimals(3)
-                .setInitialSupply(1000000)
-                .setTreasuryAccountId(env.operatorId)
-                .setPauseKey(env.operatorKey)
-                .setAdminKey(env.operatorKey)
-                .setSupplyKey(env.operatorKey)
-                .execute(env.client);
+            // Create fungible token
+            tokenId = await createFungibleToken(env.client);
 
-            tokenId = (await tokenCreateResponse.getReceipt(env.client))
-                .tokenId;
-
-            // create receiver account
-            receiverPrivateKey = await PrivateKey.generateECDSA();
-            const receiverCreateAccountResponse =
-                await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(receiverPrivateKey)
-                    .setInitialBalance(new Hbar(1))
-                    .setMaxAutomaticTokenAssociations(-1)
-                    .execute(env.client);
-
-            receiverId = (
-                await receiverCreateAccountResponse.getReceipt(env.client)
-            ).accountId;
+            // Create receiver account
+            const { accountId, newKey } = await createAccount(
+                env.client,
+                (transaction) => {
+                    transaction.setMaxAutomaticTokenAssociations(-1);
+                },
+            );
+            receiverId = accountId;
+            receiverPrivateKey = newKey;
         });
 
         it("should execute TokenReject tx with mixed type of tokens in one tx", async function () {
-            // create NFT collection
-            const tokenCreateResponse = await new TokenCreateTransaction()
-                .setTokenType(TokenType.NonFungibleUnique)
-                .setTokenName("ffff")
-                .setTokenSymbol("F")
-                .setTreasuryAccountId(env.operatorId)
-                .setAdminKey(env.operatorKey)
-                .setSupplyKey(env.operatorKey)
-                .execute(env.client);
-            const { tokenId: nftId } = await tokenCreateResponse.getReceipt(
-                env.client,
-            );
+            // Create NFT collection and mint token
+            const nftId = await createNonFungibleToken(env.client);
             const nftSerialId = new NftId(nftId, 1);
-
-            // create FT
-            const tokenCreateResponse2 = await new TokenCreateTransaction()
-                .setTokenName("ffff2")
-                .setTokenSymbol("F2")
-                .setDecimals(3)
-                .setInitialSupply(1000000)
-                .setTreasuryAccountId(env.operatorId)
-                .setAdminKey(env.operatorKey)
-                .setSupplyKey(env.operatorKey)
-                .execute(env.client);
-            const { tokenId: ftId } = await tokenCreateResponse2.getReceipt(
-                env.client,
-            );
-
             await (
                 await new TokenMintTransaction()
                     .setTokenId(nftId)
@@ -906,6 +825,10 @@ describe("TokenRejectIntegrationTest", function () {
                     .execute(env.client)
             ).getReceipt(env.client);
 
+            // Create fungible token
+            const ftId = await createFungibleToken(env.client);
+
+            // Transfer both tokens to receiver
             const tokenTransferResponse = await new TransferTransaction()
                 .addTokenTransfer(ftId, env.operatorId, -1)
                 .addTokenTransfer(ftId, receiverId, 1)
@@ -914,7 +837,7 @@ describe("TokenRejectIntegrationTest", function () {
 
             await tokenTransferResponse.getReceipt(env.client);
 
-            // reject tokens
+            // Reject both tokens
             await (
                 await (
                     await new TokenRejectTransaction()
@@ -926,7 +849,7 @@ describe("TokenRejectIntegrationTest", function () {
                 ).execute(env.client)
             ).getReceipt(env.client);
 
-            // check token balance of receiver
+            // Check token balances
             const tokenBalanceReceiverQuery = await new AccountBalanceQuery()
                 .setAccountId(receiverId)
                 .execute(env.client);
@@ -941,7 +864,7 @@ describe("TokenRejectIntegrationTest", function () {
             expect(tokenBalanceFTReceiver).to.be.equal(0);
             expect(tokenBalanceNFTReceiver).to.be.equal(0);
 
-            // check token balance of treasury
+            // Check treasury balances
             const tokenBalanceTreasuryQuery = await new AccountBalanceQuery()
                 .setAccountId(env.operatorId)
                 .execute(env.client);
@@ -962,6 +885,7 @@ describe("TokenRejectIntegrationTest", function () {
                 await (
                     await new TokenRejectTransaction().execute(env.client)
                 ).getReceipt(env.client);
+                throw new Error("Should have failed");
             } catch (err) {
                 expect(err.message).to.include("EMPTY_TOKEN_REFERENCE_LIST");
             }

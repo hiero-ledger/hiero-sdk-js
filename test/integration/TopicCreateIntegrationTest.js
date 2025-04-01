@@ -1,7 +1,7 @@
 import {
+    AccountBalanceQuery,
     CustomFeeLimit,
     CustomFixedFee,
-    Hbar,
     PrivateKey,
     PublicKey,
     Status,
@@ -12,7 +12,6 @@ import {
     TopicMessageSubmitTransaction,
     TopicUpdateTransaction,
     TransferTransaction,
-    AccountBalanceQuery,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { createAccount, createFungibleToken } from "./utils/Fixtures.js";
@@ -93,14 +92,10 @@ describe("TopicCreate", function () {
     });
     /*    
     it("should set autorenew account from transaction ID", async function () {
-        // Create a new account with 10 Hbar
         const accountKey = PrivateKey.generateECDSA();
-        const response = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(accountKey.publicKey)
-            .setInitialBalance(new Hbar(10))
-            .execute(env.client);
-
-        const { accountId } = await response.getReceipt(env.client);
+        const { accountId } = await createAccount(env.client, (transaction) => {
+            transaction.setKey(accountKey);
+        });
 
         // Create transaction ID with the new account
         const txId = TransactionId.generate(accountId);
@@ -140,12 +135,7 @@ describe("TopicCreate", function () {
             const denominatingTokenId1 = await createFungibleToken(env.client);
             const amount1 = 1;
 
-            const denominatingTokenId2 = await createFungibleToken(
-                env.client,
-                (transaction) => {
-                    transaction.setTokenName("denom2").setTokenSymbol("D2");
-                },
-            );
+            const denominatingTokenId2 = await createFungibleToken(env.client);
 
             const amount2 = 2;
 
@@ -205,18 +195,12 @@ describe("TopicCreate", function () {
 
             const newDenominatingTokenId1 = await createFungibleToken(
                 env.client,
-                (transaction) => {
-                    transaction.setTokenName("Favor").setTokenSymbol("FVR");
-                },
             );
 
             const newAmount2 = 4;
 
             const newDenominatingTokenId2 = await createFungibleToken(
                 env.client,
-                (transaction) => {
-                    transaction.setTokenName("Duty").setTokenSymbol("DUT");
-                },
             );
 
             const newCustomFixedFees = [
@@ -361,12 +345,7 @@ describe("TopicCreate", function () {
             const denominatingTokenId1 = await createFungibleToken(env.client);
             const amount1 = 1;
 
-            const denominatingTokenId2 = await createFungibleToken(
-                env.client,
-                (transaction) => {
-                    transaction.setTokenName("denom2").setTokenSymbol("D2");
-                },
-            );
+            const denominatingTokenId2 = await createFungibleToken(env.client);
 
             const amount2 = 2;
 
@@ -404,10 +383,9 @@ describe("TopicCreate", function () {
             // Create a revenue generating topic
             const { topicId } = await (
                 await new TopicCreateTransaction()
-                    .setAdminKey(env.client.operatorPublicKey)
-                    .setFeeScheduleKey(env.client.operatorPublicKey)
+                    .setAdminKey(env.operatorPublicKey)
+                    .setFeeScheduleKey(env.operatorPublicKey)
                     .addCustomFee(customFixedFee)
-
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -415,9 +393,7 @@ describe("TopicCreate", function () {
             const {
                 accountId: payerAccountId,
                 newKey: payerAccountPrivateKey,
-            } = await createAccount(env.client, (transaction) => {
-                transaction.setInitialBalance(new Hbar(1));
-            });
+            } = await createAccount(env.client);
 
             const customFeeLimit = new CustomFeeLimit()
                 .setAccountId(payerAccountId)
@@ -439,7 +415,6 @@ describe("TopicCreate", function () {
             env.client.setOperator(env.operatorId, env.operatorKey);
 
             // Verify the custom fee charged
-
             const accountInfo = await new AccountBalanceQuery()
                 .setAccountId(payerAccountId)
                 .execute(env.client);
@@ -460,10 +435,9 @@ describe("TopicCreate", function () {
             // Create a revenue generating topic
             const { topicId } = await (
                 await new TopicCreateTransaction()
-                    .setAdminKey(env.client.operatorPublicKey)
-                    .setFeeScheduleKey(env.client.operatorPublicKey)
+                    .setAdminKey(env.operatorPublicKey)
+                    .setFeeScheduleKey(env.operatorPublicKey)
                     .addCustomFee(customFixedFee)
-
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -507,7 +481,6 @@ describe("TopicCreate", function () {
             env.client.setOperator(env.operatorId, env.operatorKey);
 
             // Verify the custom fee charged
-
             const accountInfo = await new AccountBalanceQuery()
                 .setAccountId(payerAccountId)
                 .execute(env.client);
@@ -526,10 +499,9 @@ describe("TopicCreate", function () {
             // Create a revenue generating topic
             const { topicId } = await (
                 await new TopicCreateTransaction()
-                    .setAdminKey(env.client.operatorPublicKey)
-                    .setFeeScheduleKey(env.client.operatorPublicKey)
+                    .setAdminKey(env.operatorPublicKey)
+                    .setFeeScheduleKey(env.operatorPublicKey)
                     .addCustomFee(customFixedFee)
-
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -585,8 +557,8 @@ describe("TopicCreate", function () {
             // Create a revenue generating topic
             const { topicId } = await (
                 await new TopicCreateTransaction()
-                    .setAdminKey(env.client.operatorPublicKey)
-                    .setFeeScheduleKey(env.client.operatorPublicKey)
+                    .setAdminKey(env.operatorPublicKey)
+                    .setFeeScheduleKey(env.operatorPublicKey)
                     .setFeeExemptKeys([feeExemptKey1, feeExemptKey2])
                     .addCustomFee(customFixedFee)
                     .execute(env.client)
@@ -596,7 +568,6 @@ describe("TopicCreate", function () {
             const { accountId: payerAccountId } = await createAccount(
                 env.client,
                 (transaction) => {
-                    transaction.setInitialBalance(new Hbar(1));
                     transaction.setKeyWithoutAlias(feeExemptKey1);
                 },
             );
@@ -639,11 +610,10 @@ describe("TopicCreate", function () {
             // Create a revenue generating topic
             const { topicId } = await (
                 await new TopicCreateTransaction()
-                    .setAdminKey(env.client.operatorPublicKey)
-                    .setFeeScheduleKey(env.client.operatorPublicKey)
+                    .setAdminKey(env.operatorPublicKey)
+                    .setFeeScheduleKey(env.operatorPublicKey)
                     .setFeeExemptKeys([feeExemptKey1, feeExemptKey2])
                     .addCustomFee(customFixedFee)
-
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -697,10 +667,9 @@ describe("TopicCreate", function () {
             // Create a revenue generating topic with Hbar custom fee
             const { topicId } = await (
                 await new TopicCreateTransaction()
-                    .setAdminKey(env.client.operatorPublicKey)
-                    .setFeeScheduleKey(env.client.operatorPublicKey)
+                    .setAdminKey(env.operatorPublicKey)
+                    .setFeeScheduleKey(env.operatorPublicKey)
                     .addCustomFee(customFixedFee)
-
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -708,9 +677,7 @@ describe("TopicCreate", function () {
             const {
                 accountId: payerAccountId,
                 newKey: payerAccountPrivateKey,
-            } = await createAccount(env.client, (transaction) => {
-                transaction.setInitialBalance(new Hbar(1));
-            });
+            } = await createAccount(env.client);
 
             // Set custom fee limit with lower amount than the custom fee
             const customFeeLimit = new CustomFeeLimit()
@@ -743,13 +710,13 @@ describe("TopicCreate", function () {
             // Create a revenue generating topic
             const { topicId } = await (
                 await new TopicCreateTransaction()
-                    .setAdminKey(env.client.operatorPublicKey)
-                    .setFeeScheduleKey(env.client.operatorPublicKey)
+                    .setAdminKey(env.operatorPublicKey)
+                    .setFeeScheduleKey(env.operatorPublicKey)
                     .addCustomFee(customFixedFee)
                     .execute(env.client)
             ).getReceipt(env.client);
 
-            // Create payer with unlimited token associacions
+            // Create payer with unlimited token associations
             const {
                 accountId: payerAccountId,
                 newKey: payerAccountPrivateKey,
@@ -801,14 +768,13 @@ describe("TopicCreate", function () {
             // Create a revenue generating topic
             const { topicId } = await (
                 await new TopicCreateTransaction()
-                    .setAdminKey(env.client.operatorPublicKey)
-                    .setFeeScheduleKey(env.client.operatorPublicKey)
+                    .setAdminKey(env.operatorPublicKey)
+                    .setFeeScheduleKey(env.operatorPublicKey)
                     .addCustomFee(customFixedFee)
-
                     .execute(env.client)
             ).getReceipt(env.client);
 
-            // Create payer with unlimited token associacions
+            // Create payer with unlimited token associations
             const {
                 accountId: payerAccountId,
                 newKey: payerAccountPrivateKey,

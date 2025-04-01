@@ -1,7 +1,6 @@
+import { expect } from "chai";
 import {
-    AccountCreateTransaction,
     AccountId,
-    Hbar,
     KeyList,
     PrivateKey,
     TopicCreateTransaction,
@@ -9,6 +8,7 @@ import {
     TransactionId,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import { createAccount } from "./utils/Fixtures.js";
 
 describe("TransactionReceipt", function () {
     let env;
@@ -22,25 +22,17 @@ describe("TransactionReceipt", function () {
         const operatorId = env.operatorId;
 
         const key1 = PrivateKey.generateED25519();
-
-        // Submit Key
-        const key2 = PrivateKey.generateED25519();
-
+        const key2 = PrivateKey.generateED25519(); // Submit Key
         const key3 = PrivateKey.generateED25519();
-
         const keyList = KeyList.of(
             key1.publicKey,
             key2.publicKey,
             key3.publicKey,
         );
 
-        const response = await new AccountCreateTransaction()
-            .setInitialBalance(new Hbar(50))
-            .setKeyWithoutAlias(keyList)
-            .execute(env.client);
-
-        expect((await response.getReceipt(env.client)).accountId).to.be.not
-            .null;
+        await createAccount(env.client, (transaction) => {
+            transaction.setKeyWithoutAlias(keyList);
+        });
 
         const topicId = (
             await (

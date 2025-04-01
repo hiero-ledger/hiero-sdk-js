@@ -3,7 +3,6 @@ import {
     Hbar,
     PrivateKey,
     Status,
-    TransactionId,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import {
@@ -30,13 +29,7 @@ describe("AccountInfo", function () {
     });
 
     it("should error on query cost on deleted account with ACCOUNT_DELETED", async function () {
-        const newKey = PrivateKey.generate();
-
-        const { accountId } = await createAccount(env.client, (transaction) => {
-            transaction
-                .setKeyWithoutAlias(newKey.publicKey)
-                .setInitialBalance(new Hbar(10)); // 10 h
-        });
+        const { accountId, newKey } = await createAccount(env.client);
 
         await deleteAccount(env.client, newKey, (transaction) => {
             transaction
@@ -60,13 +53,8 @@ describe("AccountInfo", function () {
 
     it("should be executable", async function () {
         const operatorId = env.operatorId;
-        const key = PrivateKey.generateED25519();
 
-        const { accountId } = await createAccount(env.client, (transaction) => {
-            transaction
-                .setKeyWithoutAlias(key.publicKey)
-                .setInitialBalance(new Hbar(2));
-        });
+        const { accountId, newKey } = await createAccount(env.client);
 
         expect(accountId).to.not.be.null;
 
@@ -76,19 +64,18 @@ describe("AccountInfo", function () {
 
         expect(info.accountId.toString()).to.be.equal(accountId.toString());
         expect(info.isDeleted).to.be.false;
-        expect(info.key.toString()).to.be.equal(key.publicKey.toString());
+        expect(info.key.toString()).to.be.equal(newKey.publicKey.toString());
         expect(info.balance.toTinybars().toInt()).to.be.equal(
-            new Hbar(2).toTinybars().toInt(),
+            new Hbar(1).toTinybars().toInt(),
         );
         expect(info.autoRenewPeriod.seconds.toNumber()).to.be.equal(7776000);
         expect(info.proxyAccountId).to.be.null;
         expect(info.proxyReceived.toTinybars().toInt()).to.be.equal(0);
 
-        await deleteAccount(env.client, key, (transaction) => {
+        await deleteAccount(env.client, newKey, (transaction) => {
             transaction
                 .setAccountId(accountId)
-                .setTransferAccountId(operatorId)
-                .setTransactionId(TransactionId.generate(accountId));
+                .setTransferAccountId(operatorId);
         });
     });
 
@@ -101,9 +88,7 @@ describe("AccountInfo", function () {
 
         for (let i = 0; i < 300; i++) {
             response[i] = await createAccount(env.client, (transaction) => {
-                transaction
-                    .setKeyWithoutAlias(key.publicKey)
-                    .setInitialBalance(new Hbar(2));
+                transaction.setKeyWithoutAlias(key.publicKey);
             });
         }
 
@@ -117,10 +102,7 @@ describe("AccountInfo", function () {
             await deleteAccount(env.client, key, (transaction) => {
                 transaction
                     .setAccountId(response[i].accountId)
-                    .setTransferAccountId(operatorId)
-                    .setTransactionId(
-                        TransactionId.generate(response[i].accountId),
-                    );
+                    .setTransferAccountId(operatorId);
             });
         }
     });
@@ -129,17 +111,7 @@ describe("AccountInfo", function () {
         const operatorId = env.operatorId;
 
         const tokenId = await createFungibleToken(env.client, (transaction) => {
-            transaction
-                .setSupplyKey(null)
-                .setKycKey(null)
-                .setWipeKey(null)
-                .setFreezeKey(null)
-                .setAdminKey(null)
-                .setPauseKey(null)
-                .setMetadataKey(null)
-                .setSupplyKey(null)
-                .setFeeScheduleKey(null)
-                .setInitialSupply(0);
+            transaction.setFreezeKey(null).setInitialSupply(0);
         });
 
         const info = await new AccountInfoQuery()

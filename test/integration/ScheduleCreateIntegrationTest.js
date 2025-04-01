@@ -36,9 +36,7 @@ describe("ScheduleCreate", function () {
         const keyList = KeyList.of(key1.publicKey, key2.publicKey);
 
         const { accountId } = await createAccount(env.client, (transaction) =>
-            transaction
-                .setInitialBalance(new Hbar(2))
-                .setKeyWithoutAlias(keyList),
+            transaction.setKeyWithoutAlias(keyList)
         );
 
         expect(accountId).to.be.not.null;
@@ -110,9 +108,7 @@ describe("ScheduleCreate", function () {
         );
 
         const { accountId } = await createAccount(env.client, (transaction) =>
-            transaction
-                .setInitialBalance(new Hbar(10))
-                .setKeyWithoutAlias(keyList),
+            transaction.setKeyWithoutAlias(keyList),
         );
 
         expect(accountId).to.be.not.null;
@@ -282,10 +278,7 @@ describe("ScheduleCreate", function () {
 
         const { accountId: receiverId } = await createAccount(
             env.client,
-            (transaction) =>
-                transaction
-                    .setKeyWithoutAlias(keyList)
-                    .setInitialBalance(Hbar.from(1)),
+            (transaction) => transaction.setKeyWithoutAlias(keyList),
         );
 
         const transaction = new TransferTransaction()
@@ -358,9 +351,7 @@ describe("ScheduleCreate", function () {
         );
 
         const { accountId } = await createAccount(env.client, (transaction) =>
-            transaction
-                .setKeyWithoutAlias(keyList)
-                .setInitialBalance(new Hbar(10)),
+            transaction.setKeyWithoutAlias(keyList),
         );
 
         // Create the transaction
@@ -448,10 +439,7 @@ describe("ScheduleCreate", function () {
         const hasJitter = false;
         const SHORT_EXPIRATION_TIME = 10_000;
 
-        const { accountId, newKey } = await createAccount(
-            env.client,
-            (transaction) => transaction.setInitialBalance(new Hbar(10)),
-        );
+        const { accountId, newKey } = await createAccount(env.client);
 
         const transfer = new TransferTransaction()
             .addHbarTransfer(accountId, new Hbar(1).negated())

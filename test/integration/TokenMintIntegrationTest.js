@@ -1,15 +1,17 @@
 import {
     Status,
-    TokenCreateTransaction,
     TokenMintTransaction,
     TokenSupplyType,
-    TokenType,
-    Transaction,
     TokenInfoQuery,
     Long,
+    Transaction,
 } from "../../src/exports.js";
 import { wait } from "../../src/util.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import {
+    createFungibleToken,
+    createNonFungibleToken,
+} from "./utils/Fixtures.js";
 
 describe("TokenMint", function () {
     let env;
@@ -19,25 +21,7 @@ describe("TokenMint", function () {
     });
 
     it("should be executable", async function () {
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
-
-        const response = await new TokenCreateTransaction()
-            .setTokenName("ffff")
-            .setTokenSymbol("F")
-            .setDecimals(3)
-            .setInitialSupply(1000000)
-            .setTreasuryAccountId(operatorId)
-            .setAdminKey(operatorKey)
-            .setKycKey(operatorKey)
-            .setFreezeKey(operatorKey)
-            .setWipeKey(operatorKey)
-            .setSupplyKey(operatorKey)
-            .setFreezeDefault(false)
-            .execute(env.client);
-
-        const token = (await response.getReceipt(env.client)).tokenId;
-
+        const token = await createFungibleToken(env.client);
         await (
             await new TokenMintTransaction()
                 .setAmount(10)
@@ -47,24 +31,7 @@ describe("TokenMint", function () {
     });
 
     it("toBytes/fromBytes", async function () {
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
-
-        const response = await new TokenCreateTransaction()
-            .setTokenName("ffff")
-            .setTokenSymbol("F")
-            .setDecimals(3)
-            .setInitialSupply(1000000)
-            .setTreasuryAccountId(operatorId)
-            .setAdminKey(operatorKey)
-            .setKycKey(operatorKey)
-            .setFreezeKey(operatorKey)
-            .setWipeKey(operatorKey)
-            .setSupplyKey(operatorKey)
-            .setFreezeDefault(false)
-            .execute(env.client);
-
-        const token = (await response.getReceipt(env.client)).tokenId;
+        const token = await createFungibleToken(env.client);
 
         let mint = new TokenMintTransaction()
             .setAmount(10)
@@ -97,24 +64,7 @@ describe("TokenMint", function () {
     });
 
     it("should not error when amount is not set", async function () {
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
-
-        const response = await new TokenCreateTransaction()
-            .setTokenName("ffff")
-            .setTokenSymbol("F")
-            .setDecimals(3)
-            .setInitialSupply(1000000)
-            .setTreasuryAccountId(operatorId)
-            .setAdminKey(operatorKey)
-            .setKycKey(operatorKey)
-            .setFreezeKey(operatorKey)
-            .setWipeKey(operatorKey)
-            .setSupplyKey(operatorKey)
-            .setFreezeDefault(false)
-            .execute(env.client);
-
-        const token = (await response.getReceipt(env.client)).tokenId;
+        const token = await createFungibleToken(env.client);
 
         let err = false;
 
@@ -134,26 +84,12 @@ describe("TokenMint", function () {
     });
 
     it("User cannot mint more than the tokens defined max supply value", async function () {
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
-
-        const response = await new TokenCreateTransaction()
-            .setTokenName("ffff")
-            .setTokenSymbol("F")
-            .setDecimals(3)
-            .setInitialSupply(0)
-            .setTreasuryAccountId(operatorId)
-            .setAdminKey(operatorKey)
-            .setKycKey(operatorKey)
-            .setFreezeKey(operatorKey)
-            .setWipeKey(operatorKey)
-            .setSupplyKey(operatorKey)
-            .setFreezeDefault(false)
-            .setMaxSupply(10)
-            .setSupplyType(TokenSupplyType.Finite)
-            .execute(env.client);
-
-        const token = (await response.getReceipt(env.client)).tokenId;
+        const token = await createFungibleToken(env.client, (transaction) =>
+            transaction
+                .setInitialSupply(0)
+                .setMaxSupply(10)
+                .setSupplyType(TokenSupplyType.Finite),
+        );
 
         let err = false;
 
@@ -174,25 +110,7 @@ describe("TokenMint", function () {
     });
 
     it("cannot mint token with invalid metadata", async function () {
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
-
-        const response = await new TokenCreateTransaction()
-            .setTokenName("ffff")
-            .setTokenSymbol("F")
-            .setTreasuryAccountId(operatorId)
-            .setAdminKey(operatorKey)
-            .setKycKey(operatorKey)
-            .setFreezeKey(operatorKey)
-            .setWipeKey(operatorKey)
-            .setSupplyKey(operatorKey)
-            .setFreezeDefault(false)
-            .setMaxSupply(10)
-            .setTokenType(TokenType.NonFungibleUnique)
-            .setSupplyType(TokenSupplyType.Finite)
-            .execute(env.client);
-
-        const token = (await response.getReceipt(env.client)).tokenId;
+        const token = await createNonFungibleToken(env.client);
 
         let err = false;
 
@@ -213,21 +131,10 @@ describe("TokenMint", function () {
     });
 
     it("should retrieve the correct token balance", async function () {
-        const operatorId = env.operatorId;
-        const operatorKey = env.operatorKey.publicKey;
-
-        const tokenCreateTransaction = await new TokenCreateTransaction()
-            .setTokenName("Token")
-            .setTokenSymbol("T")
-            .setTokenType(TokenType.FungibleCommon)
-            .setDecimals(8)
-            .setTreasuryAccountId(operatorId)
-            .setSupplyKey(operatorKey)
-            .execute(env.client);
-
-        const tokenCreateTransactionReceipt =
-            await tokenCreateTransaction.getReceipt(env.client);
-        const tokenId = tokenCreateTransactionReceipt.tokenId;
+        const tokenId = await createFungibleToken(env.client, (transaction) => {
+            transaction.setDecimals(8);
+            transaction.setInitialSupply(0);
+        });
 
         const amount = Long.fromValue("25817858423044461");
 

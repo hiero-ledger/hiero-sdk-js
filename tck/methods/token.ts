@@ -15,6 +15,7 @@ import {
     TokenRevokeKycTransaction,
     TokenMintTransaction,
     TokenBurnTransaction,
+    TokenWipeTransaction,
 } from "@hashgraph/sdk";
 import Long from "long";
 
@@ -41,6 +42,7 @@ import {
     GrantRevokeTokenKycParams,
     BurnTokenParams,
     MintTokenParams,
+    WipeTokenParams,
 } from "../params/token";
 
 import {
@@ -503,5 +505,19 @@ export const burnToken = async (
     return {
         status: receipt.status.toString(),
         newTotalSupply: receipt.totalSupply.toString(),
+    };
+};
+
+export const wipeToken = async (
+    params: WipeTokenParams,
+): Promise<TokenBurnResponse> => {
+    const transaction = new TokenWipeTransaction();
+    configureTokenManagementTransaction(transaction, params, sdk.getClient());
+
+    const txResponse = await transaction.execute(sdk.getClient());
+    const receipt = await txResponse.getReceipt(sdk.getClient());
+
+    return {
+        status: receipt.status.toString(),
     };
 };

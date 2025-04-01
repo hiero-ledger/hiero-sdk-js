@@ -1,12 +1,8 @@
 import { expect } from "chai";
-import {
-    AccountCreateTransaction,
-    Hbar,
-    PrivateKey,
-    TransferTransaction,
-} from "../../src/exports.js";
+import { Hbar, TransferTransaction } from "../../src/exports.js";
 import { Wallet, LocalProvider } from "../../src/index.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import { createAccount } from "./utils/Fixtures.js";
 
 describe("WalletIntegration", function () {
     it("should create a wallet (ECDSA)", async function () {
@@ -24,27 +20,31 @@ describe("WalletIntegration", function () {
     it("issue-1530", async function () {
         const env = await IntegrationTestEnv.new();
 
-        // Generate a key for the signer
-        const signerKey = PrivateKey.generateED25519();
+        // Create receiver account
+        const { accountId: receiverId, newKey: receiverKey } =
+            await createAccount(env.client, (transaction) => {
+                transaction.setInitialBalance(new Hbar(10));
+            });
 
-        // Create account id for the signer
-        let createTransaction = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(signerKey)
-            .setInitialBalance(new Hbar(5))
-            .signWithOperator(env.client);
+        // Set the client operator to the receiver account
+        env.client.setOperator(receiverId, receiverKey);
 
-        const response = await createTransaction.execute(env.client);
-        const record = await response.getRecord(env.client);
-        const signerId = record.receipt.accountId;
+        // Create account for the signer
+        const { accountId: signerId, newKey: signerKey } = await createAccount(
+            env.client,
+            (transaction) => {
+                transaction.setInitialBalance(new Hbar(5));
+            },
+        );
 
         const wallet = new Wallet(signerId, signerKey, new LocalProvider());
 
         // The operator and the signer are different
-        expect(env.operatorId).not.to.eql(signerId);
+        expect(env.client.getOperator().accountId).not.to.eql(signerId);
 
         let transferTx = new TransferTransaction()
             .addHbarTransfer(signerId, new Hbar(-1))
-            .addHbarTransfer(env.operatorId, new Hbar(1));
+            .addHbarTransfer(receiverId, new Hbar(1));
 
         wallet.populateTransaction(transferTx);
 

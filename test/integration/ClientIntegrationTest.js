@@ -5,7 +5,6 @@ import {
     Hbar,
     LedgerId,
     PrivateKey,
-    TransactionId,
 } from "../../src/exports.js";
 import IntegrationTestEnv, { Client } from "./client/NodeIntegrationTestEnv.js";
 import { createAccount, deleteAccount } from "./utils/Fixtures.js";
@@ -64,13 +63,8 @@ describe("ClientIntegration", function () {
         env.client.setSignOnDemand(true);
 
         const operatorId = env.operatorId;
-        const key = PrivateKey.generateED25519();
 
-        const { accountId } = await createAccount(env.client, (transaction) => {
-            transaction
-                .setKeyWithoutAlias(key.publicKey)
-                .setInitialBalance(new Hbar(2));
-        });
+        const { accountId, newKey: key } = await createAccount(env.client);
 
         expect(accountId).to.not.be.null;
 
@@ -82,7 +76,7 @@ describe("ClientIntegration", function () {
         expect(info.isDeleted).to.be.false;
         expect(info.key.toString()).to.be.equal(key.publicKey.toString());
         expect(info.balance.toTinybars().toNumber()).to.be.equal(
-            new Hbar(2).toTinybars().toNumber(),
+            new Hbar(1).toTinybars().toNumber(),
         );
         expect(info.autoRenewPeriod.seconds.toNumber()).to.be.equal(7776000);
         expect(info.proxyAccountId).to.be.null;
@@ -91,8 +85,7 @@ describe("ClientIntegration", function () {
         await deleteAccount(env.client, key, (transaction) => {
             transaction
                 .setAccountId(accountId)
-                .setTransferAccountId(operatorId)
-                .setTransactionId(TransactionId.generate(accountId));
+                .setTransferAccountId(operatorId);
         });
     });
 

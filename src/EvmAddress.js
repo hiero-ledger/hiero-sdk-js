@@ -28,11 +28,22 @@ export default class EvmAddress extends Key {
     }
 
     /**
-     * @param {string} text
+     * Creates an EvmAddress from a hex string representation.
+     * @param {string} evmAddress - The hex string representing the EVM address
      * @returns {EvmAddress}
+     * @throws {Error} If the input string is not the correct size
      */
-    static fromString(text) {
-        return new EvmAddress(hex.decode(text));
+    static fromString(evmAddress) {
+        evmAddress = evmAddress.startsWith("0x")
+            ? evmAddress.slice(2)
+            : evmAddress;
+
+        // Standard EVM address is 20 bytes which is 40 hex characters
+        if (evmAddress.length !== 40) {
+            throw new Error("Input EVM address string is not the correct size");
+        }
+
+        return new EvmAddress(hex.decode(evmAddress));
     }
 
     /**
