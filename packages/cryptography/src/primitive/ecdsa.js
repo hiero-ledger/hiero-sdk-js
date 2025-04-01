@@ -14,8 +14,8 @@ export function generate() {
     const publicKey = secp256k1.getPublicKey(privateKey, true);
 
     return {
-        privateKey: privateKey,
-        publicKey: publicKey,
+        privateKey,
+        publicKey,
     };
 }
 
