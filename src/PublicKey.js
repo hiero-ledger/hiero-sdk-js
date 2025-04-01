@@ -106,6 +106,10 @@ export default class PublicKey extends Key {
     verifyTransaction(transaction) {
         transaction._requireFrozen();
 
+        if (!transaction.isFrozen()) {
+            transaction.freeze();
+        }
+
         // Note: in other SDKs, we need to check the transaction's `_signerPublicKeys` since we don't build the `_signedTransactions` list
         // before we execute the transaction (execute -> makeRequest -> buildTransaction -> signTransaction).
         // However, in JavaScript, we build the `_signedTransactions` list while signing the transaction.
