@@ -217,8 +217,8 @@ importers:
         specifier: ^5.7.2
         version: 5.7.3
       vite:
-        specifier: ^6.1.0
-        version: 6.1.0(@types/node@22.12.0)(lightningcss@1.27.0)(terser@5.39.0)(yaml@2.7.0)
+        specifier: ^6.1.3
+        version: 6.1.3(@types/node@22.12.0)(lightningcss@1.27.0)(terser@5.39.0)(yaml@2.7.0)
       yalc:
         specifier: 1.0.0-pre.53
         version: 1.0.0-pre.53
@@ -4492,11 +4492,6 @@ packages:
     engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
     hasBin: true
 
-  nanoid@3.3.8:
-    resolution: {integrity: sha512-WNLf5Sd8oZxOm+TzppcYk8gVOgP+l58xNy58D0nbUnOxOWRWvlcCV4kUF7ltmI6PsrLl/BgKEyS4mqsGChFN0w==}
-    engines: {node: ^10 || ^12 || ^13.7 || ^14 || >=15.0.1}
-    hasBin: true
-
   natural-compare-lite@1.4.0:
     resolution: {integrity: sha512-Tj+HTDSJJKaZnfiuw+iaF9skdPpTo2GtEly5JHnWV/hfv2Qj/9RKsGISQtLh2ox3l5EAGw487hnBee0sIJ6v2g==}
 
@@ -4889,8 +4884,8 @@ packages:
     resolution: {integrity: sha512-OCVPnIObs4N29kxTjzLfUryOkvZEq+pf8jTF0lg8E7uETuWHA+v7j3c/xJmiqpX450191LlmZfUKkXxkTry7nA==}
     engines: {node: ^10 || ^12 || >=14}
 
-  postcss@8.5.2:
-    resolution: {integrity: sha512-MjOadfU3Ys9KYoX0AdkBlFEF1Vx37uCCeN4ZHnmwm9FfpbsGWMZeBLMmmpY+6Ocqod7mkdZ0DT31OlbsFrLlkA==}
+  postcss@8.5.3:
+    resolution: {integrity: sha512-dle9A3yYxlBSrt8Fu+IpjGT8SY8hN0mlaA6GY8t0P5PjIOZemULz/E2Bnm/2dcUOena75OTNkHI76uZBNUUq3A==}
     engines: {node: ^10 || ^12 || >=14}
 
   prelude-ls@1.2.1:
@@ -5834,8 +5829,8 @@ packages:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
     engines: {node: '>= 0.8'}
 
-  vite@6.1.0:
-    resolution: {integrity: sha512-RjjMipCKVoR4hVfPY6GQTgveinjNuyLw+qruksLDvA5ktI1150VmcMBKmQaEWJhg/j6Uaf6dNCNA0AfdzUb/hQ==}
+  vite@6.1.3:
+    resolution: {integrity: sha512-JMnf752ldN0UhZoPYXuWiRPsC2Z5hPy9JeUwfNSPBY8TyFZbSHRE1f6/WA8umOEJp0EN3zTddgNNSLT6Fc10UQ==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
     peerDependencies:
@@ -11583,8 +11578,6 @@ snapshots:
 
   nanoid@3.3.11: {}
 
-  nanoid@3.3.8: {}
-
   natural-compare-lite@1.4.0: {}
 
   natural-compare@1.4.0: {}
@@ -12008,9 +12001,9 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
-  postcss@8.5.2:
+  postcss@8.5.3:
     dependencies:
-      nanoid: 3.3.8
+      nanoid: 3.3.11
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
@@ -13048,10 +13041,10 @@ snapshots:
 
   vary@1.1.2: {}
 
-  vite@6.1.0(@types/node@22.12.0)(lightningcss@1.27.0)(terser@5.39.0)(yaml@2.7.0):
+  vite@6.1.3(@types/node@22.12.0)(lightningcss@1.27.0)(terser@5.39.0)(yaml@2.7.0):
     dependencies:
       esbuild: 0.24.2
-      postcss: 8.5.2
+      postcss: 8.5.3
       rollup: 4.34.8
     optionalDependencies:
       '@types/node': 22.12.0
