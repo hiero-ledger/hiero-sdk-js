@@ -36,7 +36,7 @@ describe("ScheduleCreate", function () {
         const keyList = KeyList.of(key1.publicKey, key2.publicKey);
 
         const { accountId } = await createAccount(env.client, (transaction) =>
-            transaction.setKeyWithoutAlias(keyList)
+            transaction.setKeyWithoutAlias(keyList),
         );
 
         expect(accountId).to.be.not.null;

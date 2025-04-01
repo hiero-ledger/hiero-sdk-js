@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.62.0
+
+### Added
+
+-   Added support for hollow account detection (`num=0` with alias) in `AccountId`. This improves account alias handling and protobuf conversion logic. by @ivaylonikolov7 in #2994
+
+### Changed
+
+-   Improved `AccountId` behavior with more explicit protobuf conversion in the following scenarios:
+    -   Both `AccountId` number and alias are set
+    -   Only alias is set
+    -   Only `AccountId` number is set  
+        Comprehensive test coverage was added. by @ivaylonikolov7 in #2994
+
+### Documentation
+
+-   Added documentation for mirror node contract queries, providing guidance on usage patterns and expected behavior. by @ivaylonikolov7 in #2993
+
+### Tests
+
+-   Added unit tests for `PublicKey.verifyTransaction` to ensure robust signature validation logic. by @0xivanov in #2971
+
+### Dependencies
+
+-   **Development Dependencies**:
+    -   Bumped `chromedriver` from `133.0.3` to `134.0.5` (including cryptography package).
+    -   Bumped `sinon` from `19.0.2` to `20.0.0`.
+    -   Bumped `vite` from `6.1.0` to `6.1.3` (including cryptography package).
+    -   Bumped `axios` from `1.7.7` to `1.8.2` in `/examples/simple_rest_signature_provider`.
+
 ## v2.62.0-beta.3
 
 ### Added
