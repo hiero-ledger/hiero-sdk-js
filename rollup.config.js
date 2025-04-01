@@ -1,5 +1,8 @@
-import terser from "@rollup/plugin-terser";
 import alias from "@rollup/plugin-alias";
+import commonjs from "@rollup/plugin-commonjs";
+import json from "@rollup/plugin-json";
+import { nodeResolve } from "@rollup/plugin-node-resolve";
+import terser from "@rollup/plugin-terser";
 
 const browserAliases = {
     entries: [
@@ -110,5 +113,48 @@ export default [
             sourcemap: true,
             preserveModules: true,
         },
+    },
+    {
+        input: "src/browser.js",
+        plugins: [
+            alias(browserAliases),
+            nodeResolve({
+                browser: true,
+                preferBuiltins: false,
+            }),
+            commonjs({
+                transformMixedEsModules: true,
+            }),
+            json(),
+        ],
+        output: {
+            file: "dist/umd.js",
+            format: "umd",
+            name: "sdk",
+            sourceMap: true,
+        },
+        context: "window",
+    },
+    {
+        input: "src/browser.js",
+        plugins: [
+            alias(browserAliases),
+            nodeResolve({
+                browser: true,
+                preferBuiltins: false,
+            }),
+            commonjs({
+                transformMixedEsModules: true,
+            }),
+            json(),
+            terser(),
+        ],
+        output: {
+            format: "umd",
+            name: "sdk",
+            sourceMap: true,
+            file: "dist/umd.min.js",
+        },
+        context: "window",
     },
 ];
