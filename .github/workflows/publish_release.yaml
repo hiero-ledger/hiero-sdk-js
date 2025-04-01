@@ -74,7 +74,7 @@ jobs:
           echo "::endgroup::"
 
       - name: Setup JQ
-        uses: dcarbone/install-jq-action@4e6d52de309a4c46bb056c80e038ddb2717d8195 # v3.1.0
+        uses: dcarbone/install-jq-action@f0e10f46ff84f4d32178b4b76e1ef180b16f82c3 # v3.1.1
         with:
           version: 1.7
 
