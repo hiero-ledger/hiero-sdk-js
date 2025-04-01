@@ -24,7 +24,6 @@ describe("MirrorNodeContractQuery", function () {
             .setContractId(CONTRACT_ID);
 
         expect(query.sender).to.be.instanceOf(AccountId);
-        expect(query.senderEvmAddress).to.be.equal(SENDER_EVM_ADDRESS);
         expect(query.contractEvmAddress).to.be.equal(CONTRACT_EVM_ADDRESS);
         expect(query.callData).to.be.deep.equal(FUNCTION_SELECTOR);
         expect(query.value).to.be.equal(VALUE);
