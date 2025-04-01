@@ -19,7 +19,7 @@ import ContractFunctionParameters from "../contract/ContractFunctionParameters.j
 /**
  * MirrorNodeContractQuery returns a result from EVM execution such as cost-free execution of read-only smart contract
  * queries, gas estimation, and transient simulation of read-write operations.
- * When working with accounts that use ECDSA keys with aliases, you MUST:
+ * When working with sender that has ECDSA key with alias, you MUST:
  * 1. Retrieve the account's EVM address from the Mirror Node API first
  * 2. Use setSenderEvmAddress() instead of setSender()
  *
@@ -72,6 +72,7 @@ export default class MirrorNodeContractQuery {
      * @description Set the 20-byte EVM address of the sender.
      * This method must be used explicitly when working with accounts that have ECDSA keys with aliases,
      * as their EVM addresses cannot be automatically derived and must be retrieved from the Mirror Node API.
+     * The EVM address can be filled using `accountId.populateAccountEvmAddress(client)`
      * @returns {this}
      */
     setSenderEvmAddress(sender) {
