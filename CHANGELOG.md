@@ -15,32 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed support of non-normalized signatures by @venilinvasilev in #2937
 
-### Dependencies
-
-- Upgraded asn1js from version 3.0.5 to 3.0.6 by @venilinvasilev in #3015
-- Upgraded @babel/cli from version 7.23.4 to 7.27.0 (dev) by @venilinvasilev in #3015
-- Upgraded @babel/core from version 7.23.3 to 7.26.10 (dev) by @venilinvasilev in #3015
-- Upgraded @babel/eslint-parser from version 7.23.3 to 7.27.0 (dev) by @venilinvasilev in #3015
-- Upgraded @babel/plugin-transform-modules-commonjs from version 7.20.11 to 7.26.3 (dev) by @venilinvasilev in #3015
-- Upgraded @types/bn.js from version 5.1.1 to 5.1.6 (dev) by @venilinvasilev in #3015
-- Upgraded @types/crypto-js from version 4.2.0 to 4.2.2 (dev) by @venilinvasilev in #3015
-- Upgraded @types/node from version 22.0.0 to 22.13.17 (dev) by @venilinvasilev in #3015
-- Upgraded @types/spark-md5 from version 3.0.2 to 3.0.5 (dev) by @venilinvasilev in #3015
-- Upgraded @types/utf8 from version 3.0.1 to 3.0.3 (dev) by @venilinvasilev in #3015
-- Upgraded eslint-plugin-chai-expect from version 3.0.0 to 3.1.0 (dev)  by @venilinvasilev in #3015
-- Upgraded eslint-plugin-import from version 2.27.5 to 2.31.0 (dev) by @venilinvasilev in #3015
-- Upgraded eslint-plugin-jsdoc from version 50.6.3 to 50.6.9 (dev) by @venilinvasilev in #3015
-- Upgraded eslint-plugin-mocha from version 10.1.0 to 10.5.0 (dev) by @venilinvasilev in #3015
-- Upgraded eslint-plugin-n from version 17.16.1 to 17.17.0 (dev) by @venilinvasilev in #3015
-- Upgraded expo from peer version >=50.0.0 to ^52.0.37 (dev) by @venilinvasilev in #3015
-- Upgraded expo-crypto from optional peer to explicit dev dependency version ^12.0.0 (de by @venilinvasilev in #3015v)
-- Upgraded mocha from version 11.0.1 to 11.1.0 (dev) by @venilinvasilev in #3015
-- Upgraded prettier from version 3.0.3 to 3.5.3 (dev) by @venilinvasilev in #3015
-- Upgraded typescript from version 5.7.2 to 5.8.2 (dev) by @venilinvasilev in #3015
-- Upgraded vite from version 6.1.3 to 6.2.4 (dev) by @venilinvasilev in #3015
-- Removed expo (previously in peerDependencies) by @venilinvasilev in #3015
-- Removed expo-crypto (previously in peerDependenciesMeta and optionally required) by @venilinvasilev in #3015
-
 ## v2.62.0
 
 ### Added
