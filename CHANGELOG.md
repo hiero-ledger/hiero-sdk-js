@@ -7,8 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v2.63.0-beta.1
 
-## Stable release v2.62.0
-
 ### Changed
 
 - Replaced elliptic package with @noble/curves package by @venilinvasilev in #2937
