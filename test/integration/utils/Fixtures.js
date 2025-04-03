@@ -14,7 +14,7 @@ import {
 
 /**
  * @param {Client} client
- * @param {?(transaction: TokenCreateTransaction) => TokenCreateTransaction} transactionModifier
+ * @param {?(transaction: TokenCreateTransaction) => Promise<TokenCreateTransaction>} transactionModifier
  * @returns {Promise<TokenId>}
  */
 export const createFungibleToken = async (client, transactionModifier) => {
@@ -36,7 +36,7 @@ export const createFungibleToken = async (client, transactionModifier) => {
         .setTokenType(TokenType.FungibleCommon);
 
     if (transactionModifier) {
-        transactionModifier(transaction);
+        await transactionModifier(transaction);
     }
 
     const tokenId = (
@@ -48,7 +48,7 @@ export const createFungibleToken = async (client, transactionModifier) => {
 
 /**
  * @param {Client} client
- * @param {?(transaction: TokenCreateTransaction) => TokenCreateTransaction} transactionModifier
+ * @param {?(transaction: TokenCreateTransaction) => Promise<TokenCreateTransaction>} transactionModifier
  * @returns {Promise<TokenId>}
  */
 export const createNonFungibleToken = async (client, transactionModifier) => {

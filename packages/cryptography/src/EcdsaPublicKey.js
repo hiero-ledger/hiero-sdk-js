@@ -1,11 +1,10 @@
+import { secp256k1 } from "@noble/curves/secp256k1";
 import Key from "./Key.js";
 import BadKeyError from "./BadKeyError.js";
 import { arrayEqual } from "./util/array.js";
 import * as hex from "./encoding/hex.js";
 import * as ecdsa from "./primitive/ecdsa.js";
 import { keccak256 } from "./primitive/keccak.js";
-import elliptic from "elliptic";
-const ec = new elliptic.ec("secp256k1");
 
 const legacyDerPrefix = "302d300706052b8104000a032200";
 const legacyDerPrefixBytes = hex.decode(legacyDerPrefix);
@@ -14,7 +13,7 @@ const derPrefix = "3036301006072a8648ce3d020106052b8104000a032200";
 const derPrefixBytes = hex.decode(derPrefix);
 
 /**
- * An public key on the Hedera™ network.
+ * A public key on the Hedera™ network.
  */
 export default class EcdsaPublicKey extends Key {
     /**
@@ -58,38 +57,37 @@ export default class EcdsaPublicKey extends Key {
      * @returns {EcdsaPublicKey}
      */
     static fromBytesDer(data) {
-        /** @type {Uint8Array} */
-        let ecdsaPublicKeyBytes = new Uint8Array();
+        let ecdsaPublicKeyBytes;
 
         switch (data.length) {
-            case 47: // In the case of legace DER prefix
+            case 47: // Legacy DER prefix
                 ecdsaPublicKeyBytes = data.subarray(
                     legacyDerPrefixBytes.length,
                 );
                 break;
-            case 56: // The lengths of all other bytePrefixes is equal, so we treat them equally
+            case 56: // Standard DER prefix
                 ecdsaPublicKeyBytes = data.subarray(
                     derPrefixBytes.length,
                     derPrefixBytes.length + 33,
                 );
                 break;
-            default: // In the case of uncompressed DER prefix public keys
-                /* eslint-disable no-case-declarations */
-                const keyPair = ec.keyFromPublic(
-                    data.subarray(derPrefixBytes.length),
-                    "der",
-                );
-
-                const pk = keyPair.getPublic();
-
-                const compressedPublicKeyBytes = pk.encodeCompressed("hex");
-                ecdsaPublicKeyBytes = hex.decode(compressedPublicKeyBytes);
+            default: // Uncompressed DER public keys
+                try {
+                    const keyPair = secp256k1.ProjectivePoint.fromHex(
+                        data.subarray(derPrefixBytes.length),
+                    );
+                    ecdsaPublicKeyBytes = keyPair.toRawBytes(true); // Compressed format
+                } catch (error) {
+                    throw new BadKeyError(
+                        `cannot decode ECDSA public key from this DER format`,
+                    );
+                }
                 break;
-            /* eslint-enable no-case-declarations */
         }
-        if (ecdsaPublicKeyBytes.length == 0) {
+
+        if (!ecdsaPublicKeyBytes || ecdsaPublicKeyBytes.length === 0) {
             throw new BadKeyError(
-                `cannot decode ECDSA private key data from DER format`,
+                `cannot decode ECDSA public key from this DER format`,
             );
         }
         return new EcdsaPublicKey(ecdsaPublicKeyBytes);
@@ -100,17 +98,16 @@ export default class EcdsaPublicKey extends Key {
      * @returns {EcdsaPublicKey}
      */
     static fromBytesRaw(data) {
-        if (data.length != 33) {
+        if (data.length !== 33) {
             throw new BadKeyError(
                 `invalid public key length: ${data.length} bytes`,
             );
         }
-
         return new EcdsaPublicKey(data);
     }
 
     /**
-     * Parse a public key from a string of hexadecimal digits.
+     * Parse a public key from a hexadecimal string.
      *
      * The public key may optionally be prefixed with
      * the DER header.
@@ -156,12 +153,11 @@ export default class EcdsaPublicKey extends Key {
      * @returns {string}
      */
     toEthereumAddress() {
+        const publicKey = secp256k1.ProjectivePoint.fromHex(
+            this._keyData,
+        ).toRawBytes(false);
         const hash = hex.decode(
-            keccak256(
-                `0x${hex.encode(
-                    ecdsa.getFullPublicKey(this.toBytesRaw()).subarray(1),
-                )}`,
-            ),
+            keccak256(`0x${hex.encode(publicKey.subarray(1))}`),
         );
         return hex.encode(hash.subarray(12));
     }

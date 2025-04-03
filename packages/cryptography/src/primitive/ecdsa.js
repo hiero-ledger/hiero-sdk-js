@@ -1,8 +1,6 @@
 import { keccak256 } from "./keccak.js";
 import * as hex from "../encoding/hex.js";
-import elliptic from "elliptic";
-
-const secp256k1 = new elliptic.ec("secp256k1");
+import { secp256k1 } from "@noble/curves/secp256k1";
 
 /**
  * @typedef {import("../EcdsaPrivateKey.js").KeyPair} KeyPair
@@ -12,11 +10,12 @@ const secp256k1 = new elliptic.ec("secp256k1");
  * @returns {KeyPair}
  */
 export function generate() {
-    const keypair = secp256k1.genKeyPair();
+    const privateKey = secp256k1.utils.randomPrivateKey();
+    const publicKey = secp256k1.getPublicKey(privateKey, true);
 
     return {
-        privateKey: hex.decode(keypair.getPrivate("hex")),
-        publicKey: hex.decode(keypair.getPublic(true, "hex")),
+        privateKey,
+        publicKey,
     };
 }
 
@@ -34,11 +33,12 @@ export async function generateAsync() {
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function fromBytes(data) {
-    const keypair = secp256k1.keyFromPrivate(data);
+    const privateKey = new Uint8Array(data);
+    const publicKey = secp256k1.getPublicKey(privateKey, true);
 
     return {
-        privateKey: hex.decode(keypair.getPrivate("hex")),
-        publicKey: hex.decode(keypair.getPublic(true, "hex")),
+        privateKey: privateKey,
+        publicKey: publicKey,
     };
 }
 
@@ -48,9 +48,7 @@ export function fromBytes(data) {
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function getFullPublicKey(data) {
-    const keypair = secp256k1.keyFromPublic(data);
-
-    return hex.decode(keypair.getPublic(false, "hex"));
+    return secp256k1.getPublicKey(data, false);
 }
 
 /**
@@ -62,16 +60,9 @@ export function getFullPublicKey(data) {
 export function sign(keydata, message) {
     const msg = hex.encode(message);
     const data = hex.decode(keccak256(`0x${msg}`));
-    const keypair = secp256k1.keyFromPrivate(keydata);
-    const signature = keypair.sign(data);
+    const signature = secp256k1.sign(data, keydata);
 
-    const r = signature.r.toArray("be", 32);
-    const s = signature.s.toArray("be", 32);
-
-    const result = new Uint8Array(64);
-    result.set(r, 0);
-    result.set(s, 32);
-    return result;
+    return signature.toCompactRawBytes();
 }
 
 /**
@@ -84,10 +75,9 @@ export function sign(keydata, message) {
 export function verify(keydata, message, signature) {
     const msg = hex.encode(message);
     const data = hex.decode(keccak256(`0x${msg}`));
-    const keypair = secp256k1.keyFromPublic(keydata);
 
-    return keypair.verify(data, {
-        r: signature.subarray(0, 32),
-        s: signature.subarray(32, 64),
-    });
+    const r = BigInt("0x" + hex.encode(signature.subarray(0, 32)));
+    const s = BigInt("0x" + hex.encode(signature.subarray(32, 64)));
+
+    return secp256k1.verify({ r, s }, data, keydata);
 }

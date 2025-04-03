@@ -30,84 +30,64 @@ describe("ScheduleCreate", function () {
         const operatorKey = env.operatorKey.publicKey;
         const operatorId = env.operatorId;
 
-        const key1 = PrivateKey.generateED25519();
-
-        // Submit Key
+        const key1 = PrivateKey.generateECDSA();
         const key2 = PrivateKey.generateED25519();
 
-        const key3 = PrivateKey.generateED25519();
-
-        const keyList = KeyList.of(
-            key1.publicKey,
-            key2.publicKey,
-            key3.publicKey,
-        );
+        const keyList = KeyList.of(key1.publicKey, key2.publicKey);
 
         const { accountId } = await createAccount(env.client, (transaction) =>
-            transaction
-                .setInitialBalance(new Hbar(50))
-                .setKeyWithoutAlias(keyList),
+            transaction.setKeyWithoutAlias(keyList),
         );
 
         expect(accountId).to.be.not.null;
 
-        const topicId = (
-            await (
-                await new TopicCreateTransaction()
-                    .setAdminKey(operatorKey)
-                    .setAutoRenewAccountId(operatorId)
-                    .setTopicMemo("HCS Topic_")
-                    .setSubmitKey(key2)
-                    .execute(env.client)
-            ).getReceipt(env.client)
-        ).topicId;
+        const transaction = new TransferTransaction()
+            .addHbarTransfer(accountId, new Hbar(1).negated())
+            .addHbarTransfer(operatorId, new Hbar(1));
 
-        const transaction = new TopicMessageSubmitTransaction()
-            .setTopicId(topicId)
-            .setMessage("scheduled hcs message");
+        const { scheduleId } = await (
+            await transaction
+                .schedule()
+                .setExpirationTime(
+                    Timestamp.generate().plusNanos(ONE_DAY_IN_NANOS),
+                )
+                .execute(env.client)
+        ).getReceipt(env.client);
 
-        const scheduled = transaction
-            .schedule()
-            .setPayerAccountId(operatorId)
-            .setAdminKey(operatorKey)
-            .freezeWith(env.client);
+        const signTransaction = await new ScheduleSignTransaction()
+            .setScheduleId(scheduleId)
+            .freezeWith(env.client)
+            .sign(key1);
+        expect(key1.publicKey.verifyTransaction(signTransaction)).to.be.true;
+        expect(operatorKey.verifyTransaction(signTransaction)).to.be.false;
 
-        const scheduleId = (
-            await (await scheduled.execute(env.client)).getReceipt(env.client)
-        ).scheduleId;
+        await (
+            await signTransaction.execute(env.client)
+        ).getReceipt(env.client);
 
+        // Verify that the schedule is still not executed
         const info = await new ScheduleInfoQuery()
             .setScheduleId(scheduleId)
             .execute(env.client);
+        expect(info.executed).to.be.null;
 
-        const infoTransaction = /** @type {TopicMessageSubmitTransaction} */ (
-            info.scheduledTransaction
-        );
-
-        // TODO: Remove when `ScheduleInfo.scheduledTransaction` works without serializing to bytes
-        transaction.topicId._checksum = null;
-
-        expect(info.scheduleId.toString()).to.be.equal(scheduleId.toString());
-        expect(infoTransaction.topicId.toString()).to.be.equal(
-            transaction.topicId.toString(),
-        );
-        expect(infoTransaction.message.length).to.be.equal(
-            transaction.message.length,
-        );
-        expect(infoTransaction.nodeAccountIds).to.be.null;
+        const signTransaction2 = await new ScheduleSignTransaction()
+            .setScheduleId(scheduleId)
+            .freezeWith(env.client)
+            .sign(key2);
+        expect(key2.publicKey.verifyTransaction(signTransaction2)).to.be.true;
+        expect(operatorKey.verifyTransaction(signTransaction2)).to.be.false;
 
         await (
-            await (
-                await new ScheduleSignTransaction()
-                    .setScheduleId(scheduleId)
-                    .freezeWith(env.client)
-                    .sign(key2)
-            ).execute(env.client)
+            await signTransaction2.execute(env.client)
         ).getReceipt(env.client);
 
-        await new ScheduleInfoQuery()
+        // Verify that the schedule is executed
+        const postSignInfo = await new ScheduleInfoQuery()
             .setScheduleId(scheduleId)
             .execute(env.client);
+
+        expect(postSignInfo.executed).to.be.not.null;
     });
 
     it("should be able to query cost", async function () {
@@ -128,9 +108,7 @@ describe("ScheduleCreate", function () {
         );
 
         const { accountId } = await createAccount(env.client, (transaction) =>
-            transaction
-                .setInitialBalance(new Hbar(10))
-                .setKeyWithoutAlias(keyList),
+            transaction.setKeyWithoutAlias(keyList),
         );
 
         expect(accountId).to.be.not.null;
@@ -300,10 +278,7 @@ describe("ScheduleCreate", function () {
 
         const { accountId: receiverId } = await createAccount(
             env.client,
-            (transaction) =>
-                transaction
-                    .setKeyWithoutAlias(keyList)
-                    .setInitialBalance(Hbar.from(1)),
+            (transaction) => transaction.setKeyWithoutAlias(keyList),
         );
 
         const transaction = new TransferTransaction()
@@ -376,9 +351,7 @@ describe("ScheduleCreate", function () {
         );
 
         const { accountId } = await createAccount(env.client, (transaction) =>
-            transaction
-                .setKeyWithoutAlias(keyList)
-                .setInitialBalance(new Hbar(10)),
+            transaction.setKeyWithoutAlias(keyList),
         );
 
         // Create the transaction
@@ -466,10 +439,7 @@ describe("ScheduleCreate", function () {
         const hasJitter = false;
         const SHORT_EXPIRATION_TIME = 10_000;
 
-        const { accountId, newKey } = await createAccount(
-            env.client,
-            (transaction) => transaction.setInitialBalance(new Hbar(10)),
-        );
+        const { accountId, newKey } = await createAccount(env.client);
 
         const transfer = new TransferTransaction()
             .addHbarTransfer(accountId, new Hbar(1).negated())
