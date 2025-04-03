@@ -515,6 +515,32 @@ export default class PrivateKey extends Key {
     toKeystore(passphrase = "") {
         return createKeystore(this.toBytesRaw(), passphrase);
     }
+
+    /**
+     * Recover the recovery ID used in the signature for the given message.
+     *
+     * **Note:** This method only works for ECDSA secp256k1 keys.
+     * @param {Uint8Array} r - 32-byte `r` component of the signature
+     * @param {Uint8Array} s - 32-byte `s` component of the signature
+     * @param {Uint8Array} message - The original (unhashed) message
+     * @returns {number} Recovery ID (0–3), or -1 if not found or not applicable
+     */
+    getRecoveryId(r, s, message) {
+        if (!(this._key instanceof EcdsaPrivateKey)) {
+            return -1;
+        }
+
+        if (r.length !== 32 || s.length !== 32) {
+            throw new Error("Invalid signature components");
+        }
+
+        const signature = new Uint8Array(64);
+
+        signature.set(r, 0);
+        signature.set(s, 32);
+
+        return this._key.getRecoveryId(signature, message);
+    }
 }
 
 CACHE.privateKeyConstructor = (key) => new PrivateKey(key);

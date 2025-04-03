@@ -467,6 +467,19 @@ export default class PrivateKey extends Key {
     get type() {
         return this._key._type;
     }
+
+    /**
+     * Recover the recovery ID used in the signature for the given message.
+     *
+     * **Note:** This method only works for ECDSA secp256k1 keys.
+     * @param {Uint8Array} r - 32-byte `r` component of the signature
+     * @param {Uint8Array} s - 32-byte `s` component of the signature
+     * @param {Uint8Array} message - The original (unhashed) message
+     * @returns {number} Recovery ID (0–3), or -1 if not found or not applicable
+     */
+    getRecoveryId(r, s, message) {
+        return this._key.getRecoveryId(r, s, message);
+    }
 }
 
 CACHE.setPrivateKeyConstructor((key) => new PrivateKey(key));

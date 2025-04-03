@@ -187,4 +187,18 @@ export default class EcdsaPrivateKey {
         bytes.set(privateKey, leadingZeroes);
         return bytes;
     }
+
+    /**
+     * Recover the recovery ID used in the signature for the given message.
+     * @param {Uint8Array} signature - 64-byte compact signature (r || s)
+     * @param {Uint8Array} message - The original (unhashed) message
+     * @returns {number} Recovery ID (0–3), or -1 if not found
+     */
+    getRecoveryId(signature, message) {
+        return ecdsa.getRecoveryId(
+            this._keyPair.privateKey,
+            signature,
+            message,
+        );
+    }
 }

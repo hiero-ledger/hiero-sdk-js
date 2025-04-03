@@ -81,3 +81,47 @@ export function verify(keydata, message, signature) {
 
     return secp256k1.verify({ r, s }, data, keydata);
 }
+
+/**
+ * @param {Uint8Array} privateKey
+ * @param {Uint8Array} signature - 64-byte compact signature (r || s)
+ * @param {Uint8Array} message - Original message (not hashed)
+ * @returns {number} Recovery ID (0–3), or -1
+ */
+export function getRecoveryId(privateKey, signature, message) {
+    const expectedPubKey = secp256k1.getPublicKey(privateKey, false);
+    const hash = hex.decode(keccak256(`0x${hex.encode(message)}`));
+
+    for (let recovery = 0; recovery < 4; recovery++) {
+        try {
+            const sig =
+                secp256k1.Signature.fromCompact(signature).addRecoveryBit(
+                    recovery,
+                );
+
+            const recovered = sig.recoverPublicKey(hash).toRawBytes(false);
+
+            if (equalBytes(recovered, expectedPubKey)) {
+                return recovery;
+            }
+        } catch {
+            // Ignore invalid recoveries
+        }
+    }
+
+    return -1;
+}
+
+/**
+ * Byte comparison utility
+ * @param {Uint8Array} a
+ * @param {Uint8Array} b
+ * @returns {boolean}
+ */
+function equalBytes(a, b) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+        if (a[i] !== b[i]) return false;
+    }
+    return true;
+}
