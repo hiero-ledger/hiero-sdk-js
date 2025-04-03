@@ -2,10 +2,9 @@
 
 import TransactionId from "../transaction/TransactionId.js";
 import Hbar from "../Hbar.js";
-import Executable from "../Executable.js";
 import AccountId from "../account/AccountId.js";
 import * as HieroProto from "@hashgraph/proto";
-import { _makePaymentTransaction } from "./_MakePaymentTransaction.js";
+import QueryCommon from "./QueryCommon.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -15,9 +14,9 @@ import { _makePaymentTransaction } from "./_MakePaymentTransaction.js";
 
 /**
  * @template OutputT
- * @augments {Executable<HieroProto.proto.IQuery, HieroProto.proto.IResponse, Hbar>}
+ * @augments {QueryCommon<HieroProto.proto.IQuery, HieroProto.proto.IResponse, Hbar>}
  */
-export default class CostQuery extends Executable {
+export default class CostQuery extends QueryCommon {
     /**
      * @param {import("./Query.js").default<OutputT>} query
      */
@@ -95,7 +94,7 @@ export default class CostQuery extends Executable {
         }
 
         this._header = {
-            payment: await _makePaymentTransaction(
+            payment: await this._makePaymentTransaction(
                 paymentTransactionId,
                 new AccountId(0),
                 operator,

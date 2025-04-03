@@ -3,13 +3,13 @@
 import Status from "../Status.js";
 import AccountId from "../account/AccountId.js";
 import Hbar from "../Hbar.js";
-import Executable, { ExecutionState } from "../Executable.js";
+import { ExecutionState } from "../Executable.js";
 import TransactionId from "../transaction/TransactionId.js";
 import * as HieroProto from "@hashgraph/proto";
 import PrecheckStatusError from "../PrecheckStatusError.js";
 import MaxQueryPaymentExceeded from "../MaxQueryPaymentExceeded.js";
+import QueryCommon from "./QueryCommon.js";
 import CostQuery from "./CostQuery.js";
-import { _makePaymentTransaction } from "./_MakePaymentTransaction.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -34,9 +34,9 @@ export const QUERY_REGISTRY = new Map();
  *
  * @abstract
  * @template OutputT
- * @augments {Executable<HieroProto.proto.IQuery, HieroProto.proto.IResponse, OutputT>}
+ * @augments {QueryCommon<HieroProto.proto.IQuery, HieroProto.proto.IResponse, OutputT>}
  */
-export default class Query extends Executable {
+export default class Query extends QueryCommon {
     constructor() {
         super();
 
@@ -344,7 +344,7 @@ export default class Query extends Executable {
             }
 
             this._paymentTransactions.push(
-                await _makePaymentTransaction(
+                await this._makePaymentTransaction(
                     paymentTransactionId,
                     nodeId,
                     this._isPaymentRequired() ? this._operator : null,
@@ -436,7 +436,7 @@ export default class Query extends Executable {
             );
         }
 
-        header.payment = await _makePaymentTransaction(
+        header.payment = await this._makePaymentTransaction(
             paymentTransactionId,
             nodeId,
             this._isPaymentRequired() ? this._operator : null,
