@@ -65,7 +65,6 @@ tasks:
             - npx pbts -n hashgraph -o src/proto.d.ts src/proto.js
             - perl -pi -e "s#(?<!api\.)proto\.#hashgraph.proto.#g" src/proto.d.ts
             - pnpm i > /dev/null
-            - node ../../src/transaction/generateRequestType.js
             - task: format
             - task: lint
             - npx babel src -d lib

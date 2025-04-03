@@ -76,6 +76,7 @@ tasks:
             - task: update:addressbooks
             - task: format
             - task: lint
+            - node ./src/transaction/generateRequestType.js
 
     "build:actual":
         cmds:
