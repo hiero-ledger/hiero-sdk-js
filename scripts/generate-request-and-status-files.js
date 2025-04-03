@@ -2,19 +2,7 @@ import * as HieroProto from "@hashgraph/proto";
 import fs from "fs";
 import path from "path";
 
-/**
- * Converts a SCREAMING_SNAKE_CASE string to PascalCase
- * @param {string} name - The string to convert
- * @returns {string} The converted PascalCase string
- */
-function toPascalCase(name) {
-    const words = name.toLowerCase().split("_");
-    let result = "";
-    for (let i = 0; i < words.length; i++) {
-        result += words[i].charAt(0).toUpperCase() + words[i].slice(1);
-    }
-    return result;
-}
+import { convertToPascalCase } from "../src/util.js";
 
 /**
  * Generates the RequestType.js file dynamically based on HederaFunctionality proto definitions
@@ -96,12 +84,12 @@ export default class RequestType {
     // Generate static properties
     for (const [name, code] of Object.entries(functionalities)) {
         content += `/**
-            * ${name
-                .replace(/([A-Z])/g, " $1")
-                .trim()
-                .toLowerCase()}
-            */
-            RequestType.${name} = new RequestType(${code});\n\n`;
+ * ${name
+     .replace(/([A-Z])/g, " $1")
+     .trim()
+     .toLowerCase()}
+ */
+RequestType.${name} = new RequestType(${code});\n\n`;
     }
 
     // Write the file
@@ -148,7 +136,7 @@ export default class Status {
 
     // Generate toString() cases
     for (const [name] of Object.entries(statusCodes)) {
-        const pascalCase = toPascalCase(name);
+        const pascalCase = convertToPascalCase(name);
         content += `            case Status.${pascalCase}:\n`;
         content += `                return "${name}";\n`;
     }
@@ -169,7 +157,7 @@ export default class Status {
 
     // Generate _fromCode() cases
     for (const [name, code] of Object.entries(statusCodes)) {
-        const pascalCase = toPascalCase(name);
+        const pascalCase = convertToPascalCase(name);
         content += `            case ${code}:\n`;
         content += `                return Status.${pascalCase};\n`;
     }
@@ -191,9 +179,9 @@ export default class Status {
 
 `;
 
-    // Generate static properties with PascalCase names
+    // Generate static properties
     for (const [name, code] of Object.entries(statusCodes)) {
-        const pascalCase = toPascalCase(name);
+        const pascalCase = convertToPascalCase(name);
         content += `/* ${name.toLowerCase().split("_").join(" ")} */
         Status.${pascalCase} = new Status(${code});\n\n`;
     }

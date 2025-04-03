@@ -823,3 +823,4 @@ RequestType.HistoryProofKeyPublication = new RequestType(105);
  * history proof vote
  */
 RequestType.HistoryProofVote = new RequestType(106);
+
