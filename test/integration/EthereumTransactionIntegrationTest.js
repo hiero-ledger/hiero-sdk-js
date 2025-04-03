@@ -29,7 +29,7 @@ import * as hex from "../../src/encoding/hex.js";
  */
 
 // eslint-disable-next-line mocha/no-skipped-tests
-describe.skip("EthereumTransactionIntegrationTest", function () {
+describe("EthereumTransactionIntegrationTest", function () {
     let env, operatorKey, wallet, contractAddress, operatorId;
 
     before(async function () {
@@ -73,6 +73,7 @@ describe.skip("EthereumTransactionIntegrationTest", function () {
                         .freezeWithSigner(wallet)
                 ).signWithSigner(wallet)
             ).executeWithSigner(wallet);
+
             expect(contractResponse).to.be.instanceof(TransactionResponse);
             const contractReceipt =
                 await contractResponse.getReceiptWithSigner(wallet);
@@ -131,11 +132,15 @@ describe.skip("EthereumTransactionIntegrationTest", function () {
         expect(transferReceipt).to.be.instanceof(TransactionReceipt);
         expect(transferReceipt.status).to.be.equal(Status.Success);
 
-        const signedBytes = privateKey.sign(hex.decode(type + encoded));
+        const message = hex.decode(type + encoded);
+        const signedBytes = privateKey.sign(message);
         const middleOfSignedBytes = signedBytes.length / 2;
         const r = signedBytes.slice(0, middleOfSignedBytes);
         const s = signedBytes.slice(middleOfSignedBytes, signedBytes.length);
-        const v = hex.decode("01"); // recovery id
+
+        const recoveryId = privateKey.getRecoveryId(r, s, message);
+
+        const v = new Uint8Array(recoveryId === 0 ? [] : [recoveryId]);
 
         const data = rlp
             .encode([
@@ -165,11 +170,16 @@ describe.skip("EthereumTransactionIntegrationTest", function () {
             ).signWithSigner(wallet)
         ).executeWithSigner(wallet);
         const record = await response.getRecordWithSigner(wallet);
+
         expect(record).to.be.instanceof(TransactionRecord);
         expect(response).to.be.instanceof(TransactionResponse);
 
         const receipt = await response.getReceiptWithSigner(wallet);
         expect(receipt).to.be.instanceof(TransactionReceipt);
         expect(receipt.status).to.be.equal(Status.Success);
+
+        expect(
+            record.contractFunctionResult.signerNonce.toNumber(),
+        ).to.be.equal(1);
     });
 });
