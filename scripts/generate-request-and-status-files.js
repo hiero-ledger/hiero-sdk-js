@@ -2,7 +2,7 @@ import * as HieroProto from "@hashgraph/proto";
 import fs from "fs";
 import path from "path";
 
-import { convertToPascalCase } from "../src/util.js";
+import { screamingSnakeToPascalCase } from "../src/util.js";
 
 /**
  * Generates the RequestType.js file dynamically based on HederaFunctionality proto definitions
@@ -136,7 +136,7 @@ export default class Status {
 
     // Generate toString() cases
     for (const [name] of Object.entries(statusCodes)) {
-        const pascalCase = convertToPascalCase(name);
+        const pascalCase = screamingSnakeToPascalCase(name);
         content += `            case Status.${pascalCase}:\n`;
         content += `                return "${name}";\n`;
     }
@@ -157,7 +157,7 @@ export default class Status {
 
     // Generate _fromCode() cases
     for (const [name, code] of Object.entries(statusCodes)) {
-        const pascalCase = convertToPascalCase(name);
+        const pascalCase = screamingSnakeToPascalCase(name);
         content += `            case ${code}:\n`;
         content += `                return Status.${pascalCase};\n`;
     }
@@ -181,7 +181,7 @@ export default class Status {
 
     // Generate static properties
     for (const [name, code] of Object.entries(statusCodes)) {
-        const pascalCase = convertToPascalCase(name);
+        const pascalCase = screamingSnakeToPascalCase(name);
         content += `/* ${name.toLowerCase().split("_").join(" ")} */
         Status.${pascalCase} = new Status(${code});\n\n`;
     }

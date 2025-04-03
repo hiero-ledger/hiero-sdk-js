@@ -469,7 +469,7 @@ export function wait(ms) {
  * @param {string} name - The string to convert
  * @returns {string} The converted PascalCase string
  */
-export function convertToPascalCase(name) {
+export function screamingSnakeToPascalCase(name) {
     const words = name.toLowerCase().split("_");
     let result = "";
     for (let i = 0; i < words.length; i++) {
