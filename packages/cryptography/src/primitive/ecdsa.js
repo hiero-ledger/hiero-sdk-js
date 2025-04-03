@@ -1,6 +1,7 @@
 import { keccak256 } from "./keccak.js";
 import * as hex from "../encoding/hex.js";
 import { secp256k1 } from "@noble/curves/secp256k1";
+import { equalBytes } from "./utils.js";
 
 /**
  * @typedef {import("../EcdsaPrivateKey.js").KeyPair} KeyPair
@@ -110,18 +111,4 @@ export function getRecoveryId(privateKey, signature, message) {
     }
 
     throw new Error("Unexpected error: could not construct a recoverable key.");
-}
-
-/**
- * Byte comparison utility
- * @param {Uint8Array} a
- * @param {Uint8Array} b
- * @returns {boolean}
- */
-function equalBytes(a, b) {
-    if (a.length !== b.length) return false;
-    for (let i = 0; i < a.length; i++) {
-        if (a[i] !== b[i]) return false;
-    }
-    return true;
 }
