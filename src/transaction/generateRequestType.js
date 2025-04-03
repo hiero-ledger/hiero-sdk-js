@@ -106,7 +106,7 @@ export default class RequestType {
 
     // Write the file
     fs.writeFileSync(
-        path.join(process.cwd(), "../../src/RequestType.js"),
+        path.join(process.cwd(), "src/RequestType.js"),
         content,
         "utf8",
     );
@@ -200,7 +200,7 @@ export default class Status {
 
     // Write the file
     fs.writeFileSync(
-        path.join(process.cwd(), "../../src/Status.js"),
+        path.join(process.cwd(), "src/Status.js"),
         content,
         "utf8",
     );
