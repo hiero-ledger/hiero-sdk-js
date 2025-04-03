@@ -13,21 +13,20 @@ import SignatureMap from "../../src/transaction/SignatureMap.js";
 
 describe("PrivateKey", function () {
     describe("PrivateKey getRecoveryId", function () {
-        it("should return -1 if the key is not an ECDSA key", function () {
+        it("should throw if the key is not an ECDSA key", function () {
             const nonECDSAPrivateKey = PrivateKey.generateED25519();
             const message = new TextEncoder().encode("Invalid signature test");
-
             const signature = nonECDSAPrivateKey.sign(message);
 
             const r = signature.slice(0, 32);
             const s = signature.slice(32, 64);
 
-            expect(nonECDSAPrivateKey.getRecoveryId(r, s, message)).to.equal(
-                -1,
-            );
+            expect(() =>
+                nonECDSAPrivateKey.getRecoveryId(r, s, message),
+            ).to.throw("Invalid key type, must be ECDSA secp256k1.");
         });
 
-        it("should return a valid recovery ID for a proper r and s signagure components", function () {
+        it("should return a valid recovery ID for proper r and s signature components", function () {
             const validECDSAkey = PrivateKey.generateECDSA();
             const message = new TextEncoder().encode("Test message");
             const signature = validECDSAkey.sign(message);
@@ -47,50 +46,52 @@ describe("PrivateKey", function () {
             const signature = key.sign(message);
 
             const r = signature.slice(0, 31); // shorten r
-            const s = signature.slice(32, 64); // valid s
+            const s = signature.slice(32, 64);
 
-            expect(() => key.getRecoveryId(r, s, message)).to.throw();
+            expect(() => key.getRecoveryId(r, s, message)).to.throw(
+                "Invalid signature components.",
+            );
         });
 
         it("should throw if s is not 32 bytes", function () {
             const key = PrivateKey.generateECDSA();
-            const message = new TextEncoder().encode("Bad s");
+            const message = new TextEncoder().encode("Bad s ");
             const signature = key.sign(message);
 
-            const r = signature.slice(0, 32); // valid r
-            const s = new Uint8Array([...signature.slice(32, 64), 0x00]); // s with 33 bytes
+            const r = signature.slice(0, 32);
+            const s = new Uint8Array([...signature.slice(32, 64), 0x00]); // 33 bytes
 
-            expect(() => key.getRecoveryId(r, s, message)).to.throw();
+            expect(() => key.getRecoveryId(r, s, message)).to.throw(
+                "Invalid signature components.",
+            );
         });
 
-        it("should return -1 for tampered r component of signature", function () {
+        it("should throw for tampered r component of signature", function () {
             const validECDSAkey = PrivateKey.generateECDSA();
             const message = new TextEncoder().encode("Test message");
             const signature = validECDSAkey.sign(message);
 
             const r = signature.slice(0, 32);
             const s = signature.slice(32, 64);
+            r[5] ^= 0xff; // Flip byte
 
-            r[5] ^= 0xff; // Flip one byte
-
-            const recId = validECDSAkey.getRecoveryId(r, s, message);
-
-            expect(recId).to.equal(-1);
+            expect(() => validECDSAkey.getRecoveryId(r, s, message)).to.throw(
+                "Unexpected error: could not construct a recoverable key.",
+            );
         });
 
-        it("should return -1 for tampered s component of signature", function () {
+        it("should throw for tampered s component of signature", function () {
             const validECDSAkey = PrivateKey.generateECDSA();
             const message = new TextEncoder().encode("Test message");
             const signature = validECDSAkey.sign(message);
 
             const r = signature.slice(0, 32);
             const s = signature.slice(32, 64);
+            s[6] ^= 0xff; // Flip byte
 
-            s[6] ^= 0xff; // Flip one byte
-
-            const recId = validECDSAkey.getRecoveryId(r, s, message);
-
-            expect(recId).to.equal(-1);
+            expect(() => validECDSAkey.getRecoveryId(r, s, message)).to.throw(
+                "Unexpected error: could not construct a recoverable key.",
+            );
         });
     });
 

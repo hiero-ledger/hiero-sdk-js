@@ -527,11 +527,11 @@ export default class PrivateKey extends Key {
      */
     getRecoveryId(r, s, message) {
         if (!(this._key instanceof EcdsaPrivateKey)) {
-            return -1;
+            throw new Error("Invalid key type, must be ECDSA secp256k1.");
         }
 
         if (r.length !== 32 || s.length !== 32) {
-            throw new Error("Invalid signature components");
+            throw new Error("Invalid signature components.");
         }
 
         const signature = new Uint8Array(64);

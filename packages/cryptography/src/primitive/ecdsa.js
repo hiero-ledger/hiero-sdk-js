@@ -109,7 +109,7 @@ export function getRecoveryId(privateKey, signature, message) {
         }
     }
 
-    return -1;
+    throw new Error("Unexpected error: could not construct a recoverable key.");
 }
 
 /**
