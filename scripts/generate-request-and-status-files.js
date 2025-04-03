@@ -183,7 +183,7 @@ export default class Status {
     for (const [name, code] of Object.entries(statusCodes)) {
         const pascalCase = screamingSnakeToPascalCase(name);
         content += `/* ${name.toLowerCase().split("_").join(" ")} */
-        Status.${pascalCase} = new Status(${code});\n\n`;
+Status.${pascalCase} = new Status(${code});\n\n`;
     }
 
     // Write the file

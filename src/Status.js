@@ -1435,1040 +1435,1040 @@ export default class Status {
 }
 
 /* ok */
-        Status.Ok = new Status(0);
+Status.Ok = new Status(0);
 
 /* invalid transaction */
-        Status.InvalidTransaction = new Status(1);
+Status.InvalidTransaction = new Status(1);
 
 /* payer account not found */
-        Status.PayerAccountNotFound = new Status(2);
+Status.PayerAccountNotFound = new Status(2);
 
 /* invalid node account */
-        Status.InvalidNodeAccount = new Status(3);
+Status.InvalidNodeAccount = new Status(3);
 
 /* transaction expired */
-        Status.TransactionExpired = new Status(4);
+Status.TransactionExpired = new Status(4);
 
 /* invalid transaction start */
-        Status.InvalidTransactionStart = new Status(5);
+Status.InvalidTransactionStart = new Status(5);
 
 /* invalid transaction duration */
-        Status.InvalidTransactionDuration = new Status(6);
+Status.InvalidTransactionDuration = new Status(6);
 
 /* invalid signature */
-        Status.InvalidSignature = new Status(7);
+Status.InvalidSignature = new Status(7);
 
 /* memo too long */
-        Status.MemoTooLong = new Status(8);
+Status.MemoTooLong = new Status(8);
 
 /* insufficient tx fee */
-        Status.InsufficientTxFee = new Status(9);
+Status.InsufficientTxFee = new Status(9);
 
 /* insufficient payer balance */
-        Status.InsufficientPayerBalance = new Status(10);
+Status.InsufficientPayerBalance = new Status(10);
 
 /* duplicate transaction */
-        Status.DuplicateTransaction = new Status(11);
+Status.DuplicateTransaction = new Status(11);
 
 /* busy */
-        Status.Busy = new Status(12);
+Status.Busy = new Status(12);
 
 /* not supported */
-        Status.NotSupported = new Status(13);
+Status.NotSupported = new Status(13);
 
 /* invalid file id */
-        Status.InvalidFileId = new Status(14);
+Status.InvalidFileId = new Status(14);
 
 /* invalid account id */
-        Status.InvalidAccountId = new Status(15);
+Status.InvalidAccountId = new Status(15);
 
 /* invalid contract id */
-        Status.InvalidContractId = new Status(16);
+Status.InvalidContractId = new Status(16);
 
 /* invalid transaction id */
-        Status.InvalidTransactionId = new Status(17);
+Status.InvalidTransactionId = new Status(17);
 
 /* receipt not found */
-        Status.ReceiptNotFound = new Status(18);
+Status.ReceiptNotFound = new Status(18);
 
 /* record not found */
-        Status.RecordNotFound = new Status(19);
+Status.RecordNotFound = new Status(19);
 
 /* invalid solidity id */
-        Status.InvalidSolidityId = new Status(20);
+Status.InvalidSolidityId = new Status(20);
 
 /* unknown */
-        Status.Unknown = new Status(21);
+Status.Unknown = new Status(21);
 
 /* success */
-        Status.Success = new Status(22);
+Status.Success = new Status(22);
 
 /* fail invalid */
-        Status.FailInvalid = new Status(23);
+Status.FailInvalid = new Status(23);
 
 /* fail fee */
-        Status.FailFee = new Status(24);
+Status.FailFee = new Status(24);
 
 /* fail balance */
-        Status.FailBalance = new Status(25);
+Status.FailBalance = new Status(25);
 
 /* key required */
-        Status.KeyRequired = new Status(26);
+Status.KeyRequired = new Status(26);
 
 /* bad encoding */
-        Status.BadEncoding = new Status(27);
+Status.BadEncoding = new Status(27);
 
 /* insufficient account balance */
-        Status.InsufficientAccountBalance = new Status(28);
+Status.InsufficientAccountBalance = new Status(28);
 
 /* invalid solidity address */
-        Status.InvalidSolidityAddress = new Status(29);
+Status.InvalidSolidityAddress = new Status(29);
 
 /* insufficient gas */
-        Status.InsufficientGas = new Status(30);
+Status.InsufficientGas = new Status(30);
 
 /* contract size limit exceeded */
-        Status.ContractSizeLimitExceeded = new Status(31);
+Status.ContractSizeLimitExceeded = new Status(31);
 
 /* local call modification exception */
-        Status.LocalCallModificationException = new Status(32);
+Status.LocalCallModificationException = new Status(32);
 
 /* contract revert executed */
-        Status.ContractRevertExecuted = new Status(33);
+Status.ContractRevertExecuted = new Status(33);
 
 /* contract execution exception */
-        Status.ContractExecutionException = new Status(34);
+Status.ContractExecutionException = new Status(34);
 
 /* invalid receiving node account */
-        Status.InvalidReceivingNodeAccount = new Status(35);
+Status.InvalidReceivingNodeAccount = new Status(35);
 
 /* missing query header */
-        Status.MissingQueryHeader = new Status(36);
+Status.MissingQueryHeader = new Status(36);
 
 /* account update failed */
-        Status.AccountUpdateFailed = new Status(37);
+Status.AccountUpdateFailed = new Status(37);
 
 /* invalid key encoding */
-        Status.InvalidKeyEncoding = new Status(38);
+Status.InvalidKeyEncoding = new Status(38);
 
 /* null solidity address */
-        Status.NullSolidityAddress = new Status(39);
+Status.NullSolidityAddress = new Status(39);
 
 /* contract update failed */
-        Status.ContractUpdateFailed = new Status(40);
+Status.ContractUpdateFailed = new Status(40);
 
 /* invalid query header */
-        Status.InvalidQueryHeader = new Status(41);
+Status.InvalidQueryHeader = new Status(41);
 
 /* invalid fee submitted */
-        Status.InvalidFeeSubmitted = new Status(42);
+Status.InvalidFeeSubmitted = new Status(42);
 
 /* invalid payer signature */
-        Status.InvalidPayerSignature = new Status(43);
+Status.InvalidPayerSignature = new Status(43);
 
 /* key not provided */
-        Status.KeyNotProvided = new Status(44);
+Status.KeyNotProvided = new Status(44);
 
 /* invalid expiration time */
-        Status.InvalidExpirationTime = new Status(45);
+Status.InvalidExpirationTime = new Status(45);
 
 /* no wacl key */
-        Status.NoWaclKey = new Status(46);
+Status.NoWaclKey = new Status(46);
 
 /* file content empty */
-        Status.FileContentEmpty = new Status(47);
+Status.FileContentEmpty = new Status(47);
 
 /* invalid account amounts */
-        Status.InvalidAccountAmounts = new Status(48);
+Status.InvalidAccountAmounts = new Status(48);
 
 /* empty transaction body */
-        Status.EmptyTransactionBody = new Status(49);
+Status.EmptyTransactionBody = new Status(49);
 
 /* invalid transaction body */
-        Status.InvalidTransactionBody = new Status(50);
+Status.InvalidTransactionBody = new Status(50);
 
 /* invalid signature type mismatching key */
-        Status.InvalidSignatureTypeMismatchingKey = new Status(51);
+Status.InvalidSignatureTypeMismatchingKey = new Status(51);
 
 /* invalid signature count mismatching key */
-        Status.InvalidSignatureCountMismatchingKey = new Status(52);
+Status.InvalidSignatureCountMismatchingKey = new Status(52);
 
 /* empty live hash body */
-        Status.EmptyLiveHashBody = new Status(53);
+Status.EmptyLiveHashBody = new Status(53);
 
 /* empty live hash */
-        Status.EmptyLiveHash = new Status(54);
+Status.EmptyLiveHash = new Status(54);
 
 /* empty live hash keys */
-        Status.EmptyLiveHashKeys = new Status(55);
+Status.EmptyLiveHashKeys = new Status(55);
 
 /* invalid live hash size */
-        Status.InvalidLiveHashSize = new Status(56);
+Status.InvalidLiveHashSize = new Status(56);
 
 /* empty query body */
-        Status.EmptyQueryBody = new Status(57);
+Status.EmptyQueryBody = new Status(57);
 
 /* empty live hash query */
-        Status.EmptyLiveHashQuery = new Status(58);
+Status.EmptyLiveHashQuery = new Status(58);
 
 /* live hash not found */
-        Status.LiveHashNotFound = new Status(59);
+Status.LiveHashNotFound = new Status(59);
 
 /* account id does not exist */
-        Status.AccountIdDoesNotExist = new Status(60);
+Status.AccountIdDoesNotExist = new Status(60);
 
 /* live hash already exists */
-        Status.LiveHashAlreadyExists = new Status(61);
+Status.LiveHashAlreadyExists = new Status(61);
 
 /* invalid file wacl */
-        Status.InvalidFileWacl = new Status(62);
+Status.InvalidFileWacl = new Status(62);
 
 /* serialization failed */
-        Status.SerializationFailed = new Status(63);
+Status.SerializationFailed = new Status(63);
 
 /* transaction oversize */
-        Status.TransactionOversize = new Status(64);
+Status.TransactionOversize = new Status(64);
 
 /* transaction too many layers */
-        Status.TransactionTooManyLayers = new Status(65);
+Status.TransactionTooManyLayers = new Status(65);
 
 /* contract deleted */
-        Status.ContractDeleted = new Status(66);
+Status.ContractDeleted = new Status(66);
 
 /* platform not active */
-        Status.PlatformNotActive = new Status(67);
+Status.PlatformNotActive = new Status(67);
 
 /* key prefix mismatch */
-        Status.KeyPrefixMismatch = new Status(68);
+Status.KeyPrefixMismatch = new Status(68);
 
 /* platform transaction not created */
-        Status.PlatformTransactionNotCreated = new Status(69);
+Status.PlatformTransactionNotCreated = new Status(69);
 
 /* invalid renewal period */
-        Status.InvalidRenewalPeriod = new Status(70);
+Status.InvalidRenewalPeriod = new Status(70);
 
 /* invalid payer account id */
-        Status.InvalidPayerAccountId = new Status(71);
+Status.InvalidPayerAccountId = new Status(71);
 
 /* account deleted */
-        Status.AccountDeleted = new Status(72);
+Status.AccountDeleted = new Status(72);
 
 /* file deleted */
-        Status.FileDeleted = new Status(73);
+Status.FileDeleted = new Status(73);
 
 /* account repeated in account amounts */
-        Status.AccountRepeatedInAccountAmounts = new Status(74);
+Status.AccountRepeatedInAccountAmounts = new Status(74);
 
 /* setting negative account balance */
-        Status.SettingNegativeAccountBalance = new Status(75);
+Status.SettingNegativeAccountBalance = new Status(75);
 
 /* obtainer required */
-        Status.ObtainerRequired = new Status(76);
+Status.ObtainerRequired = new Status(76);
 
 /* obtainer same contract id */
-        Status.ObtainerSameContractId = new Status(77);
+Status.ObtainerSameContractId = new Status(77);
 
 /* obtainer does not exist */
-        Status.ObtainerDoesNotExist = new Status(78);
+Status.ObtainerDoesNotExist = new Status(78);
 
 /* modifying immutable contract */
-        Status.ModifyingImmutableContract = new Status(79);
+Status.ModifyingImmutableContract = new Status(79);
 
 /* file system exception */
-        Status.FileSystemException = new Status(80);
+Status.FileSystemException = new Status(80);
 
 /* autorenew duration not in range */
-        Status.AutorenewDurationNotInRange = new Status(81);
+Status.AutorenewDurationNotInRange = new Status(81);
 
 /* error decoding bytestring */
-        Status.ErrorDecodingBytestring = new Status(82);
+Status.ErrorDecodingBytestring = new Status(82);
 
 /* contract file empty */
-        Status.ContractFileEmpty = new Status(83);
+Status.ContractFileEmpty = new Status(83);
 
 /* contract bytecode empty */
-        Status.ContractBytecodeEmpty = new Status(84);
+Status.ContractBytecodeEmpty = new Status(84);
 
 /* invalid initial balance */
-        Status.InvalidInitialBalance = new Status(85);
+Status.InvalidInitialBalance = new Status(85);
 
 /* invalid receive record threshold */
-        Status.InvalidReceiveRecordThreshold = new Status(86);
+Status.InvalidReceiveRecordThreshold = new Status(86);
 
 /* invalid send record threshold */
-        Status.InvalidSendRecordThreshold = new Status(87);
+Status.InvalidSendRecordThreshold = new Status(87);
 
 /* account is not genesis account */
-        Status.AccountIsNotGenesisAccount = new Status(88);
+Status.AccountIsNotGenesisAccount = new Status(88);
 
 /* payer account unauthorized */
-        Status.PayerAccountUnauthorized = new Status(89);
+Status.PayerAccountUnauthorized = new Status(89);
 
 /* invalid freeze transaction body */
-        Status.InvalidFreezeTransactionBody = new Status(90);
+Status.InvalidFreezeTransactionBody = new Status(90);
 
 /* freeze transaction body not found */
-        Status.FreezeTransactionBodyNotFound = new Status(91);
+Status.FreezeTransactionBodyNotFound = new Status(91);
 
 /* transfer list size limit exceeded */
-        Status.TransferListSizeLimitExceeded = new Status(92);
+Status.TransferListSizeLimitExceeded = new Status(92);
 
 /* result size limit exceeded */
-        Status.ResultSizeLimitExceeded = new Status(93);
+Status.ResultSizeLimitExceeded = new Status(93);
 
 /* not special account */
-        Status.NotSpecialAccount = new Status(94);
+Status.NotSpecialAccount = new Status(94);
 
 /* contract negative gas */
-        Status.ContractNegativeGas = new Status(95);
+Status.ContractNegativeGas = new Status(95);
 
 /* contract negative value */
-        Status.ContractNegativeValue = new Status(96);
+Status.ContractNegativeValue = new Status(96);
 
 /* invalid fee file */
-        Status.InvalidFeeFile = new Status(97);
+Status.InvalidFeeFile = new Status(97);
 
 /* invalid exchange rate file */
-        Status.InvalidExchangeRateFile = new Status(98);
+Status.InvalidExchangeRateFile = new Status(98);
 
 /* insufficient local call gas */
-        Status.InsufficientLocalCallGas = new Status(99);
+Status.InsufficientLocalCallGas = new Status(99);
 
 /* entity not allowed to delete */
-        Status.EntityNotAllowedToDelete = new Status(100);
+Status.EntityNotAllowedToDelete = new Status(100);
 
 /* authorization failed */
-        Status.AuthorizationFailed = new Status(101);
+Status.AuthorizationFailed = new Status(101);
 
 /* file uploaded proto invalid */
-        Status.FileUploadedProtoInvalid = new Status(102);
+Status.FileUploadedProtoInvalid = new Status(102);
 
 /* file uploaded proto not saved to disk */
-        Status.FileUploadedProtoNotSavedToDisk = new Status(103);
+Status.FileUploadedProtoNotSavedToDisk = new Status(103);
 
 /* fee schedule file part uploaded */
-        Status.FeeScheduleFilePartUploaded = new Status(104);
+Status.FeeScheduleFilePartUploaded = new Status(104);
 
 /* exchange rate change limit exceeded */
-        Status.ExchangeRateChangeLimitExceeded = new Status(105);
+Status.ExchangeRateChangeLimitExceeded = new Status(105);
 
 /* max contract storage exceeded */
-        Status.MaxContractStorageExceeded = new Status(106);
+Status.MaxContractStorageExceeded = new Status(106);
 
 /* transfer account same as delete account */
-        Status.TransferAccountSameAsDeleteAccount = new Status(107);
+Status.TransferAccountSameAsDeleteAccount = new Status(107);
 
 /* total ledger balance invalid */
-        Status.TotalLedgerBalanceInvalid = new Status(108);
+Status.TotalLedgerBalanceInvalid = new Status(108);
 
 /* expiration reduction not allowed */
-        Status.ExpirationReductionNotAllowed = new Status(110);
+Status.ExpirationReductionNotAllowed = new Status(110);
 
 /* max gas limit exceeded */
-        Status.MaxGasLimitExceeded = new Status(111);
+Status.MaxGasLimitExceeded = new Status(111);
 
 /* max file size exceeded */
-        Status.MaxFileSizeExceeded = new Status(112);
+Status.MaxFileSizeExceeded = new Status(112);
 
 /* receiver sig required */
-        Status.ReceiverSigRequired = new Status(113);
+Status.ReceiverSigRequired = new Status(113);
 
 /* invalid topic id */
-        Status.InvalidTopicId = new Status(150);
+Status.InvalidTopicId = new Status(150);
 
 /* invalid admin key */
-        Status.InvalidAdminKey = new Status(155);
+Status.InvalidAdminKey = new Status(155);
 
 /* invalid submit key */
-        Status.InvalidSubmitKey = new Status(156);
+Status.InvalidSubmitKey = new Status(156);
 
 /* unauthorized */
-        Status.Unauthorized = new Status(157);
+Status.Unauthorized = new Status(157);
 
 /* invalid topic message */
-        Status.InvalidTopicMessage = new Status(158);
+Status.InvalidTopicMessage = new Status(158);
 
 /* invalid autorenew account */
-        Status.InvalidAutorenewAccount = new Status(159);
+Status.InvalidAutorenewAccount = new Status(159);
 
 /* autorenew account not allowed */
-        Status.AutorenewAccountNotAllowed = new Status(160);
+Status.AutorenewAccountNotAllowed = new Status(160);
 
 /* topic expired */
-        Status.TopicExpired = new Status(162);
+Status.TopicExpired = new Status(162);
 
 /* invalid chunk number */
-        Status.InvalidChunkNumber = new Status(163);
+Status.InvalidChunkNumber = new Status(163);
 
 /* invalid chunk transaction id */
-        Status.InvalidChunkTransactionId = new Status(164);
+Status.InvalidChunkTransactionId = new Status(164);
 
 /* account frozen for token */
-        Status.AccountFrozenForToken = new Status(165);
+Status.AccountFrozenForToken = new Status(165);
 
 /* tokens per account limit exceeded */
-        Status.TokensPerAccountLimitExceeded = new Status(166);
+Status.TokensPerAccountLimitExceeded = new Status(166);
 
 /* invalid token id */
-        Status.InvalidTokenId = new Status(167);
+Status.InvalidTokenId = new Status(167);
 
 /* invalid token decimals */
-        Status.InvalidTokenDecimals = new Status(168);
+Status.InvalidTokenDecimals = new Status(168);
 
 /* invalid token initial supply */
-        Status.InvalidTokenInitialSupply = new Status(169);
+Status.InvalidTokenInitialSupply = new Status(169);
 
 /* invalid treasury account for token */
-        Status.InvalidTreasuryAccountForToken = new Status(170);
+Status.InvalidTreasuryAccountForToken = new Status(170);
 
 /* invalid token symbol */
-        Status.InvalidTokenSymbol = new Status(171);
+Status.InvalidTokenSymbol = new Status(171);
 
 /* token has no freeze key */
-        Status.TokenHasNoFreezeKey = new Status(172);
+Status.TokenHasNoFreezeKey = new Status(172);
 
 /* transfers not zero sum for token */
-        Status.TransfersNotZeroSumForToken = new Status(173);
+Status.TransfersNotZeroSumForToken = new Status(173);
 
 /* missing token symbol */
-        Status.MissingTokenSymbol = new Status(174);
+Status.MissingTokenSymbol = new Status(174);
 
 /* token symbol too long */
-        Status.TokenSymbolTooLong = new Status(175);
+Status.TokenSymbolTooLong = new Status(175);
 
 /* account kyc not granted for token */
-        Status.AccountKycNotGrantedForToken = new Status(176);
+Status.AccountKycNotGrantedForToken = new Status(176);
 
 /* token has no kyc key */
-        Status.TokenHasNoKycKey = new Status(177);
+Status.TokenHasNoKycKey = new Status(177);
 
 /* insufficient token balance */
-        Status.InsufficientTokenBalance = new Status(178);
+Status.InsufficientTokenBalance = new Status(178);
 
 /* token was deleted */
-        Status.TokenWasDeleted = new Status(179);
+Status.TokenWasDeleted = new Status(179);
 
 /* token has no supply key */
-        Status.TokenHasNoSupplyKey = new Status(180);
+Status.TokenHasNoSupplyKey = new Status(180);
 
 /* token has no wipe key */
-        Status.TokenHasNoWipeKey = new Status(181);
+Status.TokenHasNoWipeKey = new Status(181);
 
 /* invalid token mint amount */
-        Status.InvalidTokenMintAmount = new Status(182);
+Status.InvalidTokenMintAmount = new Status(182);
 
 /* invalid token burn amount */
-        Status.InvalidTokenBurnAmount = new Status(183);
+Status.InvalidTokenBurnAmount = new Status(183);
 
 /* token not associated to account */
-        Status.TokenNotAssociatedToAccount = new Status(184);
+Status.TokenNotAssociatedToAccount = new Status(184);
 
 /* cannot wipe token treasury account */
-        Status.CannotWipeTokenTreasuryAccount = new Status(185);
+Status.CannotWipeTokenTreasuryAccount = new Status(185);
 
 /* invalid kyc key */
-        Status.InvalidKycKey = new Status(186);
+Status.InvalidKycKey = new Status(186);
 
 /* invalid wipe key */
-        Status.InvalidWipeKey = new Status(187);
+Status.InvalidWipeKey = new Status(187);
 
 /* invalid freeze key */
-        Status.InvalidFreezeKey = new Status(188);
+Status.InvalidFreezeKey = new Status(188);
 
 /* invalid supply key */
-        Status.InvalidSupplyKey = new Status(189);
+Status.InvalidSupplyKey = new Status(189);
 
 /* missing token name */
-        Status.MissingTokenName = new Status(190);
+Status.MissingTokenName = new Status(190);
 
 /* token name too long */
-        Status.TokenNameTooLong = new Status(191);
+Status.TokenNameTooLong = new Status(191);
 
 /* invalid wiping amount */
-        Status.InvalidWipingAmount = new Status(192);
+Status.InvalidWipingAmount = new Status(192);
 
 /* token is immutable */
-        Status.TokenIsImmutable = new Status(193);
+Status.TokenIsImmutable = new Status(193);
 
 /* token already associated to account */
-        Status.TokenAlreadyAssociatedToAccount = new Status(194);
+Status.TokenAlreadyAssociatedToAccount = new Status(194);
 
 /* transaction requires zero token balances */
-        Status.TransactionRequiresZeroTokenBalances = new Status(195);
+Status.TransactionRequiresZeroTokenBalances = new Status(195);
 
 /* account is treasury */
-        Status.AccountIsTreasury = new Status(196);
+Status.AccountIsTreasury = new Status(196);
 
 /* token id repeated in token list */
-        Status.TokenIdRepeatedInTokenList = new Status(197);
+Status.TokenIdRepeatedInTokenList = new Status(197);
 
 /* token transfer list size limit exceeded */
-        Status.TokenTransferListSizeLimitExceeded = new Status(198);
+Status.TokenTransferListSizeLimitExceeded = new Status(198);
 
 /* empty token transfer body */
-        Status.EmptyTokenTransferBody = new Status(199);
+Status.EmptyTokenTransferBody = new Status(199);
 
 /* empty token transfer account amounts */
-        Status.EmptyTokenTransferAccountAmounts = new Status(200);
+Status.EmptyTokenTransferAccountAmounts = new Status(200);
 
 /* invalid schedule id */
-        Status.InvalidScheduleId = new Status(201);
+Status.InvalidScheduleId = new Status(201);
 
 /* schedule is immutable */
-        Status.ScheduleIsImmutable = new Status(202);
+Status.ScheduleIsImmutable = new Status(202);
 
 /* invalid schedule payer id */
-        Status.InvalidSchedulePayerId = new Status(203);
+Status.InvalidSchedulePayerId = new Status(203);
 
 /* invalid schedule account id */
-        Status.InvalidScheduleAccountId = new Status(204);
+Status.InvalidScheduleAccountId = new Status(204);
 
 /* no new valid signatures */
-        Status.NoNewValidSignatures = new Status(205);
+Status.NoNewValidSignatures = new Status(205);
 
 /* unresolvable required signers */
-        Status.UnresolvableRequiredSigners = new Status(206);
+Status.UnresolvableRequiredSigners = new Status(206);
 
 /* scheduled transaction not in whitelist */
-        Status.ScheduledTransactionNotInWhitelist = new Status(207);
+Status.ScheduledTransactionNotInWhitelist = new Status(207);
 
 /* some signatures were invalid */
-        Status.SomeSignaturesWereInvalid = new Status(208);
+Status.SomeSignaturesWereInvalid = new Status(208);
 
 /* transaction id field not allowed */
-        Status.TransactionIdFieldNotAllowed = new Status(209);
+Status.TransactionIdFieldNotAllowed = new Status(209);
 
 /* identical schedule already created */
-        Status.IdenticalScheduleAlreadyCreated = new Status(210);
+Status.IdenticalScheduleAlreadyCreated = new Status(210);
 
 /* invalid zero byte in string */
-        Status.InvalidZeroByteInString = new Status(211);
+Status.InvalidZeroByteInString = new Status(211);
 
 /* schedule already deleted */
-        Status.ScheduleAlreadyDeleted = new Status(212);
+Status.ScheduleAlreadyDeleted = new Status(212);
 
 /* schedule already executed */
-        Status.ScheduleAlreadyExecuted = new Status(213);
+Status.ScheduleAlreadyExecuted = new Status(213);
 
 /* message size too large */
-        Status.MessageSizeTooLarge = new Status(214);
+Status.MessageSizeTooLarge = new Status(214);
 
 /* operation repeated in bucket groups */
-        Status.OperationRepeatedInBucketGroups = new Status(215);
+Status.OperationRepeatedInBucketGroups = new Status(215);
 
 /* bucket capacity overflow */
-        Status.BucketCapacityOverflow = new Status(216);
+Status.BucketCapacityOverflow = new Status(216);
 
 /* node capacity not sufficient for operation */
-        Status.NodeCapacityNotSufficientForOperation = new Status(217);
+Status.NodeCapacityNotSufficientForOperation = new Status(217);
 
 /* bucket has no throttle groups */
-        Status.BucketHasNoThrottleGroups = new Status(218);
+Status.BucketHasNoThrottleGroups = new Status(218);
 
 /* throttle group has zero ops per sec */
-        Status.ThrottleGroupHasZeroOpsPerSec = new Status(219);
+Status.ThrottleGroupHasZeroOpsPerSec = new Status(219);
 
 /* success but missing expected operation */
-        Status.SuccessButMissingExpectedOperation = new Status(220);
+Status.SuccessButMissingExpectedOperation = new Status(220);
 
 /* unparseable throttle definitions */
-        Status.UnparseableThrottleDefinitions = new Status(221);
+Status.UnparseableThrottleDefinitions = new Status(221);
 
 /* invalid throttle definitions */
-        Status.InvalidThrottleDefinitions = new Status(222);
+Status.InvalidThrottleDefinitions = new Status(222);
 
 /* account expired and pending removal */
-        Status.AccountExpiredAndPendingRemoval = new Status(223);
+Status.AccountExpiredAndPendingRemoval = new Status(223);
 
 /* invalid token max supply */
-        Status.InvalidTokenMaxSupply = new Status(224);
+Status.InvalidTokenMaxSupply = new Status(224);
 
 /* invalid token nft serial number */
-        Status.InvalidTokenNftSerialNumber = new Status(225);
+Status.InvalidTokenNftSerialNumber = new Status(225);
 
 /* invalid nft id */
-        Status.InvalidNftId = new Status(226);
+Status.InvalidNftId = new Status(226);
 
 /* metadata too long */
-        Status.MetadataTooLong = new Status(227);
+Status.MetadataTooLong = new Status(227);
 
 /* batch size limit exceeded */
-        Status.BatchSizeLimitExceeded = new Status(228);
+Status.BatchSizeLimitExceeded = new Status(228);
 
 /* invalid query range */
-        Status.InvalidQueryRange = new Status(229);
+Status.InvalidQueryRange = new Status(229);
 
 /* fraction divides by zero */
-        Status.FractionDividesByZero = new Status(230);
+Status.FractionDividesByZero = new Status(230);
 
 /* insufficient payer balance for custom fee */
-        Status.InsufficientPayerBalanceForCustomFee = new Status(231);
+Status.InsufficientPayerBalanceForCustomFee = new Status(231);
 
 /* custom fees list too long */
-        Status.CustomFeesListTooLong = new Status(232);
+Status.CustomFeesListTooLong = new Status(232);
 
 /* invalid custom fee collector */
-        Status.InvalidCustomFeeCollector = new Status(233);
+Status.InvalidCustomFeeCollector = new Status(233);
 
 /* invalid token id in custom fees */
-        Status.InvalidTokenIdInCustomFees = new Status(234);
+Status.InvalidTokenIdInCustomFees = new Status(234);
 
 /* token not associated to fee collector */
-        Status.TokenNotAssociatedToFeeCollector = new Status(235);
+Status.TokenNotAssociatedToFeeCollector = new Status(235);
 
 /* token max supply reached */
-        Status.TokenMaxSupplyReached = new Status(236);
+Status.TokenMaxSupplyReached = new Status(236);
 
 /* sender does not own nft serial no */
-        Status.SenderDoesNotOwnNftSerialNo = new Status(237);
+Status.SenderDoesNotOwnNftSerialNo = new Status(237);
 
 /* custom fee not fully specified */
-        Status.CustomFeeNotFullySpecified = new Status(238);
+Status.CustomFeeNotFullySpecified = new Status(238);
 
 /* custom fee must be positive */
-        Status.CustomFeeMustBePositive = new Status(239);
+Status.CustomFeeMustBePositive = new Status(239);
 
 /* token has no fee schedule key */
-        Status.TokenHasNoFeeScheduleKey = new Status(240);
+Status.TokenHasNoFeeScheduleKey = new Status(240);
 
 /* custom fee outside numeric range */
-        Status.CustomFeeOutsideNumericRange = new Status(241);
+Status.CustomFeeOutsideNumericRange = new Status(241);
 
 /* royalty fraction cannot exceed one */
-        Status.RoyaltyFractionCannotExceedOne = new Status(242);
+Status.RoyaltyFractionCannotExceedOne = new Status(242);
 
 /* fractional fee max amount less than min amount */
-        Status.FractionalFeeMaxAmountLessThanMinAmount = new Status(243);
+Status.FractionalFeeMaxAmountLessThanMinAmount = new Status(243);
 
 /* custom schedule already has no fees */
-        Status.CustomScheduleAlreadyHasNoFees = new Status(244);
+Status.CustomScheduleAlreadyHasNoFees = new Status(244);
 
 /* custom fee denomination must be fungible common */
-        Status.CustomFeeDenominationMustBeFungibleCommon = new Status(245);
+Status.CustomFeeDenominationMustBeFungibleCommon = new Status(245);
 
 /* custom fractional fee only allowed for fungible common */
-        Status.CustomFractionalFeeOnlyAllowedForFungibleCommon = new Status(246);
+Status.CustomFractionalFeeOnlyAllowedForFungibleCommon = new Status(246);
 
 /* invalid custom fee schedule key */
-        Status.InvalidCustomFeeScheduleKey = new Status(247);
+Status.InvalidCustomFeeScheduleKey = new Status(247);
 
 /* invalid token mint metadata */
-        Status.InvalidTokenMintMetadata = new Status(248);
+Status.InvalidTokenMintMetadata = new Status(248);
 
 /* invalid token burn metadata */
-        Status.InvalidTokenBurnMetadata = new Status(249);
+Status.InvalidTokenBurnMetadata = new Status(249);
 
 /* current treasury still owns nfts */
-        Status.CurrentTreasuryStillOwnsNfts = new Status(250);
+Status.CurrentTreasuryStillOwnsNfts = new Status(250);
 
 /* account still owns nfts */
-        Status.AccountStillOwnsNfts = new Status(251);
+Status.AccountStillOwnsNfts = new Status(251);
 
 /* treasury must own burned nft */
-        Status.TreasuryMustOwnBurnedNft = new Status(252);
+Status.TreasuryMustOwnBurnedNft = new Status(252);
 
 /* account does not own wiped nft */
-        Status.AccountDoesNotOwnWipedNft = new Status(253);
+Status.AccountDoesNotOwnWipedNft = new Status(253);
 
 /* account amount transfers only allowed for fungible common */
-        Status.AccountAmountTransfersOnlyAllowedForFungibleCommon = new Status(254);
+Status.AccountAmountTransfersOnlyAllowedForFungibleCommon = new Status(254);
 
 /* max nfts in price regime have been minted */
-        Status.MaxNftsInPriceRegimeHaveBeenMinted = new Status(255);
+Status.MaxNftsInPriceRegimeHaveBeenMinted = new Status(255);
 
 /* payer account deleted */
-        Status.PayerAccountDeleted = new Status(256);
+Status.PayerAccountDeleted = new Status(256);
 
 /* custom fee charging exceeded max recursion depth */
-        Status.CustomFeeChargingExceededMaxRecursionDepth = new Status(257);
+Status.CustomFeeChargingExceededMaxRecursionDepth = new Status(257);
 
 /* custom fee charging exceeded max account amounts */
-        Status.CustomFeeChargingExceededMaxAccountAmounts = new Status(258);
+Status.CustomFeeChargingExceededMaxAccountAmounts = new Status(258);
 
 /* insufficient sender account balance for custom fee */
-        Status.InsufficientSenderAccountBalanceForCustomFee = new Status(259);
+Status.InsufficientSenderAccountBalanceForCustomFee = new Status(259);
 
 /* serial number limit reached */
-        Status.SerialNumberLimitReached = new Status(260);
+Status.SerialNumberLimitReached = new Status(260);
 
 /* custom royalty fee only allowed for non fungible unique */
-        Status.CustomRoyaltyFeeOnlyAllowedForNonFungibleUnique = new Status(261);
+Status.CustomRoyaltyFeeOnlyAllowedForNonFungibleUnique = new Status(261);
 
 /* no remaining automatic associations */
-        Status.NoRemainingAutomaticAssociations = new Status(262);
+Status.NoRemainingAutomaticAssociations = new Status(262);
 
 /* existing automatic associations exceed given limit */
-        Status.ExistingAutomaticAssociationsExceedGivenLimit = new Status(263);
+Status.ExistingAutomaticAssociationsExceedGivenLimit = new Status(263);
 
 /* requested num automatic associations exceeds association limit */
-        Status.RequestedNumAutomaticAssociationsExceedsAssociationLimit = new Status(264);
+Status.RequestedNumAutomaticAssociationsExceedsAssociationLimit = new Status(264);
 
 /* token is paused */
-        Status.TokenIsPaused = new Status(265);
+Status.TokenIsPaused = new Status(265);
 
 /* token has no pause key */
-        Status.TokenHasNoPauseKey = new Status(266);
+Status.TokenHasNoPauseKey = new Status(266);
 
 /* invalid pause key */
-        Status.InvalidPauseKey = new Status(267);
+Status.InvalidPauseKey = new Status(267);
 
 /* freeze update file does not exist */
-        Status.FreezeUpdateFileDoesNotExist = new Status(268);
+Status.FreezeUpdateFileDoesNotExist = new Status(268);
 
 /* freeze update file hash does not match */
-        Status.FreezeUpdateFileHashDoesNotMatch = new Status(269);
+Status.FreezeUpdateFileHashDoesNotMatch = new Status(269);
 
 /* no upgrade has been prepared */
-        Status.NoUpgradeHasBeenPrepared = new Status(270);
+Status.NoUpgradeHasBeenPrepared = new Status(270);
 
 /* no freeze is scheduled */
-        Status.NoFreezeIsScheduled = new Status(271);
+Status.NoFreezeIsScheduled = new Status(271);
 
 /* update file hash changed since prepare upgrade */
-        Status.UpdateFileHashChangedSincePrepareUpgrade = new Status(272);
+Status.UpdateFileHashChangedSincePrepareUpgrade = new Status(272);
 
 /* freeze start time must be future */
-        Status.FreezeStartTimeMustBeFuture = new Status(273);
+Status.FreezeStartTimeMustBeFuture = new Status(273);
 
 /* prepared update file is immutable */
-        Status.PreparedUpdateFileIsImmutable = new Status(274);
+Status.PreparedUpdateFileIsImmutable = new Status(274);
 
 /* freeze already scheduled */
-        Status.FreezeAlreadyScheduled = new Status(275);
+Status.FreezeAlreadyScheduled = new Status(275);
 
 /* freeze upgrade in progress */
-        Status.FreezeUpgradeInProgress = new Status(276);
+Status.FreezeUpgradeInProgress = new Status(276);
 
 /* update file id does not match prepared */
-        Status.UpdateFileIdDoesNotMatchPrepared = new Status(277);
+Status.UpdateFileIdDoesNotMatchPrepared = new Status(277);
 
 /* update file hash does not match prepared */
-        Status.UpdateFileHashDoesNotMatchPrepared = new Status(278);
+Status.UpdateFileHashDoesNotMatchPrepared = new Status(278);
 
 /* consensus gas exhausted */
-        Status.ConsensusGasExhausted = new Status(279);
+Status.ConsensusGasExhausted = new Status(279);
 
 /* reverted success */
-        Status.RevertedSuccess = new Status(280);
+Status.RevertedSuccess = new Status(280);
 
 /* max storage in price regime has been used */
-        Status.MaxStorageInPriceRegimeHasBeenUsed = new Status(281);
+Status.MaxStorageInPriceRegimeHasBeenUsed = new Status(281);
 
 /* invalid alias key */
-        Status.InvalidAliasKey = new Status(282);
+Status.InvalidAliasKey = new Status(282);
 
 /* unexpected token decimals */
-        Status.UnexpectedTokenDecimals = new Status(283);
+Status.UnexpectedTokenDecimals = new Status(283);
 
 /* invalid proxy account id */
-        Status.InvalidProxyAccountId = new Status(284);
+Status.InvalidProxyAccountId = new Status(284);
 
 /* invalid transfer account id */
-        Status.InvalidTransferAccountId = new Status(285);
+Status.InvalidTransferAccountId = new Status(285);
 
 /* invalid fee collector account id */
-        Status.InvalidFeeCollectorAccountId = new Status(286);
+Status.InvalidFeeCollectorAccountId = new Status(286);
 
 /* alias is immutable */
-        Status.AliasIsImmutable = new Status(287);
+Status.AliasIsImmutable = new Status(287);
 
 /* spender account same as owner */
-        Status.SpenderAccountSameAsOwner = new Status(288);
+Status.SpenderAccountSameAsOwner = new Status(288);
 
 /* amount exceeds token max supply */
-        Status.AmountExceedsTokenMaxSupply = new Status(289);
+Status.AmountExceedsTokenMaxSupply = new Status(289);
 
 /* negative allowance amount */
-        Status.NegativeAllowanceAmount = new Status(290);
+Status.NegativeAllowanceAmount = new Status(290);
 
 /* cannot approve for all fungible common */
-        Status.CannotApproveForAllFungibleCommon = new Status(291);
+Status.CannotApproveForAllFungibleCommon = new Status(291);
 
 /* spender does not have allowance */
-        Status.SpenderDoesNotHaveAllowance = new Status(292);
+Status.SpenderDoesNotHaveAllowance = new Status(292);
 
 /* amount exceeds allowance */
-        Status.AmountExceedsAllowance = new Status(293);
+Status.AmountExceedsAllowance = new Status(293);
 
 /* max allowances exceeded */
-        Status.MaxAllowancesExceeded = new Status(294);
+Status.MaxAllowancesExceeded = new Status(294);
 
 /* empty allowances */
-        Status.EmptyAllowances = new Status(295);
+Status.EmptyAllowances = new Status(295);
 
 /* spender account repeated in allowances */
-        Status.SpenderAccountRepeatedInAllowances = new Status(296);
+Status.SpenderAccountRepeatedInAllowances = new Status(296);
 
 /* repeated serial nums in nft allowances */
-        Status.RepeatedSerialNumsInNftAllowances = new Status(297);
+Status.RepeatedSerialNumsInNftAllowances = new Status(297);
 
 /* fungible token in nft allowances */
-        Status.FungibleTokenInNftAllowances = new Status(298);
+Status.FungibleTokenInNftAllowances = new Status(298);
 
 /* nft in fungible token allowances */
-        Status.NftInFungibleTokenAllowances = new Status(299);
+Status.NftInFungibleTokenAllowances = new Status(299);
 
 /* invalid allowance owner id */
-        Status.InvalidAllowanceOwnerId = new Status(300);
+Status.InvalidAllowanceOwnerId = new Status(300);
 
 /* invalid allowance spender id */
-        Status.InvalidAllowanceSpenderId = new Status(301);
+Status.InvalidAllowanceSpenderId = new Status(301);
 
 /* repeated allowances to delete */
-        Status.RepeatedAllowancesToDelete = new Status(302);
+Status.RepeatedAllowancesToDelete = new Status(302);
 
 /* invalid delegating spender */
-        Status.InvalidDelegatingSpender = new Status(303);
+Status.InvalidDelegatingSpender = new Status(303);
 
 /* delegating spender cannot grant approve for all */
-        Status.DelegatingSpenderCannotGrantApproveForAll = new Status(304);
+Status.DelegatingSpenderCannotGrantApproveForAll = new Status(304);
 
 /* delegating spender does not have approve for all */
-        Status.DelegatingSpenderDoesNotHaveApproveForAll = new Status(305);
+Status.DelegatingSpenderDoesNotHaveApproveForAll = new Status(305);
 
 /* schedule expiration time too far in future */
-        Status.ScheduleExpirationTimeTooFarInFuture = new Status(306);
+Status.ScheduleExpirationTimeTooFarInFuture = new Status(306);
 
 /* schedule expiration time must be higher than consensus time */
-        Status.ScheduleExpirationTimeMustBeHigherThanConsensusTime = new Status(307);
+Status.ScheduleExpirationTimeMustBeHigherThanConsensusTime = new Status(307);
 
 /* schedule future throttle exceeded */
-        Status.ScheduleFutureThrottleExceeded = new Status(308);
+Status.ScheduleFutureThrottleExceeded = new Status(308);
 
 /* schedule future gas limit exceeded */
-        Status.ScheduleFutureGasLimitExceeded = new Status(309);
+Status.ScheduleFutureGasLimitExceeded = new Status(309);
 
 /* invalid ethereum transaction */
-        Status.InvalidEthereumTransaction = new Status(310);
+Status.InvalidEthereumTransaction = new Status(310);
 
 /* wrong chain id */
-        Status.WrongChainId = new Status(311);
+Status.WrongChainId = new Status(311);
 
 /* wrong nonce */
-        Status.WrongNonce = new Status(312);
+Status.WrongNonce = new Status(312);
 
 /* access list unsupported */
-        Status.AccessListUnsupported = new Status(313);
+Status.AccessListUnsupported = new Status(313);
 
 /* schedule pending expiration */
-        Status.SchedulePendingExpiration = new Status(314);
+Status.SchedulePendingExpiration = new Status(314);
 
 /* contract is token treasury */
-        Status.ContractIsTokenTreasury = new Status(315);
+Status.ContractIsTokenTreasury = new Status(315);
 
 /* contract has non zero token balances */
-        Status.ContractHasNonZeroTokenBalances = new Status(316);
+Status.ContractHasNonZeroTokenBalances = new Status(316);
 
 /* contract expired and pending removal */
-        Status.ContractExpiredAndPendingRemoval = new Status(317);
+Status.ContractExpiredAndPendingRemoval = new Status(317);
 
 /* contract has no auto renew account */
-        Status.ContractHasNoAutoRenewAccount = new Status(318);
+Status.ContractHasNoAutoRenewAccount = new Status(318);
 
 /* permanent removal requires system initiation */
-        Status.PermanentRemovalRequiresSystemInitiation = new Status(319);
+Status.PermanentRemovalRequiresSystemInitiation = new Status(319);
 
 /* proxy account id field is deprecated */
-        Status.ProxyAccountIdFieldIsDeprecated = new Status(320);
+Status.ProxyAccountIdFieldIsDeprecated = new Status(320);
 
 /* self staking is not allowed */
-        Status.SelfStakingIsNotAllowed = new Status(321);
+Status.SelfStakingIsNotAllowed = new Status(321);
 
 /* invalid staking id */
-        Status.InvalidStakingId = new Status(322);
+Status.InvalidStakingId = new Status(322);
 
 /* staking not enabled */
-        Status.StakingNotEnabled = new Status(323);
+Status.StakingNotEnabled = new Status(323);
 
 /* invalid prng range */
-        Status.InvalidPrngRange = new Status(324);
+Status.InvalidPrngRange = new Status(324);
 
 /* max entities in price regime have been created */
-        Status.MaxEntitiesInPriceRegimeHaveBeenCreated = new Status(325);
+Status.MaxEntitiesInPriceRegimeHaveBeenCreated = new Status(325);
 
 /* invalid full prefix signature for precompile */
-        Status.InvalidFullPrefixSignatureForPrecompile = new Status(326);
+Status.InvalidFullPrefixSignatureForPrecompile = new Status(326);
 
 /* insufficient balances for storage rent */
-        Status.InsufficientBalancesForStorageRent = new Status(327);
+Status.InsufficientBalancesForStorageRent = new Status(327);
 
 /* max child records exceeded */
-        Status.MaxChildRecordsExceeded = new Status(328);
+Status.MaxChildRecordsExceeded = new Status(328);
 
 /* insufficient balances for renewal fees */
-        Status.InsufficientBalancesForRenewalFees = new Status(329);
+Status.InsufficientBalancesForRenewalFees = new Status(329);
 
 /* transaction has unknown fields */
-        Status.TransactionHasUnknownFields = new Status(330);
+Status.TransactionHasUnknownFields = new Status(330);
 
 /* account is immutable */
-        Status.AccountIsImmutable = new Status(331);
+Status.AccountIsImmutable = new Status(331);
 
 /* alias already assigned */
-        Status.AliasAlreadyAssigned = new Status(332);
+Status.AliasAlreadyAssigned = new Status(332);
 
 /* invalid metadata key */
-        Status.InvalidMetadataKey = new Status(333);
+Status.InvalidMetadataKey = new Status(333);
 
 /* token has no metadata key */
-        Status.TokenHasNoMetadataKey = new Status(334);
+Status.TokenHasNoMetadataKey = new Status(334);
 
 /* missing token metadata */
-        Status.MissingTokenMetadata = new Status(335);
+Status.MissingTokenMetadata = new Status(335);
 
 /* missing serial numbers */
-        Status.MissingSerialNumbers = new Status(336);
+Status.MissingSerialNumbers = new Status(336);
 
 /* token has no admin key */
-        Status.TokenHasNoAdminKey = new Status(337);
+Status.TokenHasNoAdminKey = new Status(337);
 
 /* node deleted */
-        Status.NodeDeleted = new Status(338);
+Status.NodeDeleted = new Status(338);
 
 /* invalid node id */
-        Status.InvalidNodeId = new Status(339);
+Status.InvalidNodeId = new Status(339);
 
 /* invalid gossip endpoint */
-        Status.InvalidGossipEndpoint = new Status(340);
+Status.InvalidGossipEndpoint = new Status(340);
 
 /* invalid node account id */
-        Status.InvalidNodeAccountId = new Status(341);
+Status.InvalidNodeAccountId = new Status(341);
 
 /* invalid node description */
-        Status.InvalidNodeDescription = new Status(342);
+Status.InvalidNodeDescription = new Status(342);
 
 /* invalid service endpoint */
-        Status.InvalidServiceEndpoint = new Status(343);
+Status.InvalidServiceEndpoint = new Status(343);
 
 /* invalid gossip ca certificate */
-        Status.InvalidGossipCaCertificate = new Status(344);
+Status.InvalidGossipCaCertificate = new Status(344);
 
 /* invalid grpc certificate */
-        Status.InvalidGrpcCertificate = new Status(345);
+Status.InvalidGrpcCertificate = new Status(345);
 
 /* invalid max auto associations */
-        Status.InvalidMaxAutoAssociations = new Status(346);
+Status.InvalidMaxAutoAssociations = new Status(346);
 
 /* max nodes created */
-        Status.MaxNodesCreated = new Status(347);
+Status.MaxNodesCreated = new Status(347);
 
 /* ip fqdn cannot be set for same endpoint */
-        Status.IpFqdnCannotBeSetForSameEndpoint = new Status(348);
+Status.IpFqdnCannotBeSetForSameEndpoint = new Status(348);
 
 /* gossip endpoint cannot have fqdn */
-        Status.GossipEndpointCannotHaveFqdn = new Status(349);
+Status.GossipEndpointCannotHaveFqdn = new Status(349);
 
 /* fqdn size too large */
-        Status.FqdnSizeTooLarge = new Status(350);
+Status.FqdnSizeTooLarge = new Status(350);
 
 /* invalid endpoint */
-        Status.InvalidEndpoint = new Status(351);
+Status.InvalidEndpoint = new Status(351);
 
 /* gossip endpoints exceeded limit */
-        Status.GossipEndpointsExceededLimit = new Status(352);
+Status.GossipEndpointsExceededLimit = new Status(352);
 
 /* token reference repeated */
-        Status.TokenReferenceRepeated = new Status(353);
+Status.TokenReferenceRepeated = new Status(353);
 
 /* invalid owner id */
-        Status.InvalidOwnerId = new Status(354);
+Status.InvalidOwnerId = new Status(354);
 
 /* token reference list size limit exceeded */
-        Status.TokenReferenceListSizeLimitExceeded = new Status(355);
+Status.TokenReferenceListSizeLimitExceeded = new Status(355);
 
 /* service endpoints exceeded limit */
-        Status.ServiceEndpointsExceededLimit = new Status(356);
+Status.ServiceEndpointsExceededLimit = new Status(356);
 
 /* invalid ipv4 address */
-        Status.InvalidIpv4Address = new Status(357);
+Status.InvalidIpv4Address = new Status(357);
 
 /* empty token reference list */
-        Status.EmptyTokenReferenceList = new Status(358);
+Status.EmptyTokenReferenceList = new Status(358);
 
 /* update node account not allowed */
-        Status.UpdateNodeAccountNotAllowed = new Status(359);
+Status.UpdateNodeAccountNotAllowed = new Status(359);
 
 /* token has no metadata or supply key */
-        Status.TokenHasNoMetadataOrSupplyKey = new Status(360);
+Status.TokenHasNoMetadataOrSupplyKey = new Status(360);
 
 /* empty pending airdrop id list */
-        Status.EmptyPendingAirdropIdList = new Status(361);
+Status.EmptyPendingAirdropIdList = new Status(361);
 
 /* pending airdrop id repeated */
-        Status.PendingAirdropIdRepeated = new Status(362);
+Status.PendingAirdropIdRepeated = new Status(362);
 
 /* pending airdrop id list too long */
-        Status.PendingAirdropIdListTooLong = new Status(363);
+Status.PendingAirdropIdListTooLong = new Status(363);
 
 /* pending nft airdrop already exists */
-        Status.PendingNftAirdropAlreadyExists = new Status(364);
+Status.PendingNftAirdropAlreadyExists = new Status(364);
 
 /* account has pending airdrops */
-        Status.AccountHasPendingAirdrops = new Status(365);
+Status.AccountHasPendingAirdrops = new Status(365);
 
 /* throttled at consensus */
-        Status.ThrottledAtConsensus = new Status(366);
+Status.ThrottledAtConsensus = new Status(366);
 
 /* invalid pending airdrop id */
-        Status.InvalidPendingAirdropId = new Status(367);
+Status.InvalidPendingAirdropId = new Status(367);
 
 /* token airdrop with fallback royalty */
-        Status.TokenAirdropWithFallbackRoyalty = new Status(368);
+Status.TokenAirdropWithFallbackRoyalty = new Status(368);
 
 /* invalid token in pending airdrop */
-        Status.InvalidTokenInPendingAirdrop = new Status(369);
+Status.InvalidTokenInPendingAirdrop = new Status(369);
 
 /* schedule expiry is busy */
-        Status.ScheduleExpiryIsBusy = new Status(370);
+Status.ScheduleExpiryIsBusy = new Status(370);
 
 /* invalid grpc certificate hash */
-        Status.InvalidGrpcCertificateHash = new Status(371);
+Status.InvalidGrpcCertificateHash = new Status(371);
 
 /* missing expiry time */
-        Status.MissingExpiryTime = new Status(372);
+Status.MissingExpiryTime = new Status(372);
 
 /* no scheduling allowed after scheduled recursion */
-        Status.NoSchedulingAllowedAfterScheduledRecursion = new Status(373);
+Status.NoSchedulingAllowedAfterScheduledRecursion = new Status(373);
 
 /* recursive scheduling limit reached */
-        Status.RecursiveSchedulingLimitReached = new Status(374);
+Status.RecursiveSchedulingLimitReached = new Status(374);
 
 /* waiting for ledger id */
-        Status.WaitingForLedgerId = new Status(375);
+Status.WaitingForLedgerId = new Status(375);
 
 /* max entries for fee exempt key list exceeded */
-        Status.MaxEntriesForFeeExemptKeyListExceeded = new Status(376);
+Status.MaxEntriesForFeeExemptKeyListExceeded = new Status(376);
 
 /* fee exempt key list contains duplicated keys */
-        Status.FeeExemptKeyListContainsDuplicatedKeys = new Status(377);
+Status.FeeExemptKeyListContainsDuplicatedKeys = new Status(377);
 
 /* invalid key in fee exempt key list */
-        Status.InvalidKeyInFeeExemptKeyList = new Status(378);
+Status.InvalidKeyInFeeExemptKeyList = new Status(378);
 
 /* invalid fee schedule key */
-        Status.InvalidFeeScheduleKey = new Status(379);
+Status.InvalidFeeScheduleKey = new Status(379);
 
 /* fee schedule key cannot be updated */
-        Status.FeeScheduleKeyCannotBeUpdated = new Status(380);
+Status.FeeScheduleKeyCannotBeUpdated = new Status(380);
 
 /* fee schedule key not set */
-        Status.FeeScheduleKeyNotSet = new Status(381);
+Status.FeeScheduleKeyNotSet = new Status(381);
 
 /* max custom fee limit exceeded */
-        Status.MaxCustomFeeLimitExceeded = new Status(382);
+Status.MaxCustomFeeLimitExceeded = new Status(382);
 
 /* no valid max custom fee */
-        Status.NoValidMaxCustomFee = new Status(383);
+Status.NoValidMaxCustomFee = new Status(383);
 
 /* invalid max custom fees */
-        Status.InvalidMaxCustomFees = new Status(384);
+Status.InvalidMaxCustomFees = new Status(384);
 
 /* duplicate denomination in max custom fee list */
-        Status.DuplicateDenominationInMaxCustomFeeList = new Status(385);
+Status.DuplicateDenominationInMaxCustomFeeList = new Status(385);
 
 /* duplicate account id in max custom fee list */
-        Status.DuplicateAccountIdInMaxCustomFeeList = new Status(386);
+Status.DuplicateAccountIdInMaxCustomFeeList = new Status(386);
 
 /* max custom fees is not supported */
-        Status.MaxCustomFeesIsNotSupported = new Status(387);
+Status.MaxCustomFeesIsNotSupported = new Status(387);
 
