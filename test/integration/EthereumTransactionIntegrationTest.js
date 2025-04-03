@@ -137,9 +137,17 @@ describe("EthereumTransactionIntegrationTest", function () {
         const middleOfSignedBytes = signedBytes.length / 2;
         const r = signedBytes.slice(0, middleOfSignedBytes);
         const s = signedBytes.slice(middleOfSignedBytes, signedBytes.length);
-
         const recoveryId = privateKey.getRecoveryId(r, s, message);
 
+        // When `recoveryId` is 0, we set `v` to an empty Uint8Array (`[]`).
+        // This is intentional: during RLP encoding, an empty value is interpreted as zero,
+        // but without explicitly encoding a `0x00` byte.
+        //
+        // Explicitly setting `v = new Uint8Array([0])` causes RLP to encode `0x00`,
+        // which Ethereum considers non-canonical in some contexts — particularly
+        // with EIP-1559 (type 0x02) transactions. This can result in transaction rejection.
+        //
+        // For `recoveryId` values 1–3, we safely encode them as a single-byte Uint8Array.
         const v = new Uint8Array(recoveryId === 0 ? [] : [recoveryId]);
 
         const data = rlp
@@ -159,6 +167,7 @@ describe("EthereumTransactionIntegrationTest", function () {
             ])
             .substring(2);
         expect(typeof data).to.equal("string");
+
         const ethereumData = hex.decode(type + data);
         expect(ethereumData.length).to.be.gt(0);
 
@@ -169,8 +178,8 @@ describe("EthereumTransactionIntegrationTest", function () {
                     .freezeWithSigner(wallet)
             ).signWithSigner(wallet)
         ).executeWithSigner(wallet);
-        const record = await response.getRecordWithSigner(wallet);
 
+        const record = await response.getRecordWithSigner(wallet);
         expect(record).to.be.instanceof(TransactionRecord);
         expect(response).to.be.instanceof(TransactionResponse);
 
