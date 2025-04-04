@@ -8,7 +8,7 @@ import TransactionId from "../transaction/TransactionId.js";
 import * as HieroProto from "@hashgraph/proto";
 import PrecheckStatusError from "../PrecheckStatusError.js";
 import MaxQueryPaymentExceeded from "../MaxQueryPaymentExceeded.js";
-import QueryCommon from "./QueryCommon.js";
+import QueryBase from "./QueryBase.js";
 import CostQuery from "./CostQuery.js";
 
 /**
@@ -34,9 +34,9 @@ export const QUERY_REGISTRY = new Map();
  *
  * @abstract
  * @template OutputT
- * @augments {QueryCommon<HieroProto.proto.IQuery, HieroProto.proto.IResponse, OutputT>}
+ * @augments {QueryBase<HieroProto.proto.IQuery, HieroProto.proto.IResponse, OutputT>}
  */
-export default class Query extends QueryCommon {
+export default class Query extends QueryBase {
     constructor() {
         super();
 

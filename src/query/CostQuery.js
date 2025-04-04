@@ -4,7 +4,7 @@ import TransactionId from "../transaction/TransactionId.js";
 import Hbar from "../Hbar.js";
 import AccountId from "../account/AccountId.js";
 import * as HieroProto from "@hashgraph/proto";
-import QueryCommon from "./QueryCommon.js";
+import QueryBase from "./QueryBase.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -14,9 +14,9 @@ import QueryCommon from "./QueryCommon.js";
 
 /**
  * @template OutputT
- * @augments {QueryCommon<HieroProto.proto.IQuery, HieroProto.proto.IResponse, Hbar>}
+ * @augments {QueryBase<HieroProto.proto.IQuery, HieroProto.proto.IResponse, Hbar>}
  */
-export default class CostQuery extends QueryCommon {
+export default class CostQuery extends QueryBase {
     /**
      * @param {import("./Query.js").default<OutputT>} query
      */

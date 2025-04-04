@@ -26,7 +26,7 @@ import Long from "long";
  * @template OutputT
  * @augments {Executable<RequestT, ResponseT, OutputT>}
  */
-export default class QueryCommon extends Executable {
+export default class QueryBase extends Executable {
     constructor() {
         super();
     }
