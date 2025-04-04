@@ -23,7 +23,7 @@ export default class RequestType {
      */
     toString() {
         switch (this) {
-            case RequestType.None:
+            case RequestType.NONE:
                 return "NONE";
             case RequestType.CryptoTransfer:
                 return "CryptoTransfer";
@@ -167,7 +167,7 @@ export default class RequestType {
                 return "EthereumTransaction";
             case RequestType.NodeStakeUpdate:
                 return "NodeStakeUpdate";
-            case RequestType.Prng:
+            case RequestType.UtilPrng:
                 return "UtilPrng";
             case RequestType.TransactionGetFastRecord:
                 return "TransactionGetFastRecord";
@@ -187,14 +187,6 @@ export default class RequestType {
                 return "TokenCancelAirdrop";
             case RequestType.TokenClaimAirdrop:
                 return "TokenClaimAirdrop";
-            case RequestType.TssMessage:
-                return "TssMessage";
-            case RequestType.TssVote:
-                return "TssVote";
-            case RequestType.TssShareSignature:
-                return "TssShareSignature";
-            case RequestType.TssEncryptionKey:
-                return "TssEncryptionKey";
             case RequestType.StateSignatureTransaction:
                 return "StateSignatureTransaction";
             case RequestType.HistoryAssemblySignature:
@@ -216,7 +208,7 @@ export default class RequestType {
     static _fromCode(code) {
         switch (code) {
             case 0:
-                return RequestType.None;
+                return RequestType.NONE;
             case 1:
                 return RequestType.CryptoTransfer;
             case 2:
@@ -360,7 +352,7 @@ export default class RequestType {
             case 85:
                 return RequestType.NodeStakeUpdate;
             case 86:
-                return RequestType.Prng;
+                return RequestType.UtilPrng;
             case 87:
                 return RequestType.TransactionGetFastRecord;
             case 88:
@@ -379,14 +371,6 @@ export default class RequestType {
                 return RequestType.TokenCancelAirdrop;
             case 95:
                 return RequestType.TokenClaimAirdrop;
-            case 96:
-                return RequestType.TssMessage;
-            case 97:
-                return RequestType.TssVote;
-            case 98:
-                return RequestType.TssShareSignature;
-            case 99:
-                return RequestType.TssEncryptionKey;
             case 100:
                 return RequestType.StateSignatureTransaction;
             case 104:
@@ -411,10 +395,9 @@ export default class RequestType {
 }
 
 /**
- * UNSPECIFIED - Need to keep first value as unspecified because first element is ignored and
- * not parsed (0 is ignored by parser)
+ * n o n e
  */
-RequestType.None = new RequestType(0);
+RequestType.NONE = new RequestType(0);
 
 /**
  * crypto transfer
@@ -422,57 +405,57 @@ RequestType.None = new RequestType(0);
 RequestType.CryptoTransfer = new RequestType(1);
 
 /**
- * crypto update account
+ * crypto update
  */
 RequestType.CryptoUpdate = new RequestType(2);
 
 /**
- * crypto delete account
+ * crypto delete
  */
 RequestType.CryptoDelete = new RequestType(3);
 
 /**
- * Add a livehash to a crypto account
+ * crypto add live hash
  */
 RequestType.CryptoAddLiveHash = new RequestType(4);
 
 /**
- * Delete a livehash from a crypto account
+ * crypto delete live hash
  */
 RequestType.CryptoDeleteLiveHash = new RequestType(5);
 
 /**
- * Smart Contract Call
+ * contract call
  */
 RequestType.ContractCall = new RequestType(6);
 
 /**
- * Smart Contract Create Contract
+ * contract create
  */
 RequestType.ContractCreate = new RequestType(7);
 
 /**
- * Smart Contract update contract
+ * contract update
  */
 RequestType.ContractUpdate = new RequestType(8);
 
 /**
- * File Operation create file
+ * file create
  */
 RequestType.FileCreate = new RequestType(9);
 
 /**
- * File Operation append file
+ * file append
  */
 RequestType.FileAppend = new RequestType(10);
 
 /**
- * File Operation update file
+ * file update
  */
 RequestType.FileUpdate = new RequestType(11);
 
 /**
- * File Operation delete file
+ * file delete
  */
 RequestType.FileDelete = new RequestType(12);
 
@@ -482,87 +465,87 @@ RequestType.FileDelete = new RequestType(12);
 RequestType.CryptoGetAccountBalance = new RequestType(13);
 
 /**
- * crypto get account record
+ * crypto get account records
  */
 RequestType.CryptoGetAccountRecords = new RequestType(14);
 
 /**
- * Crypto get info
+ * crypto get info
  */
 RequestType.CryptoGetInfo = new RequestType(15);
 
 /**
- * Smart Contract Call
+ * contract call local
  */
 RequestType.ContractCallLocal = new RequestType(16);
 
 /**
- * Smart Contract get info
+ * contract get info
  */
 RequestType.ContractGetInfo = new RequestType(17);
 
 /**
- * Smart Contract, get the runtime code
+ * contract get bytecode
  */
 RequestType.ContractGetBytecode = new RequestType(18);
 
 /**
- * Smart Contract, get by solidity ID
+ * get by solidity i d
  */
 RequestType.GetBySolidityID = new RequestType(19);
 
 /**
- * Smart Contract, get by key
+ * get by key
  */
 RequestType.GetByKey = new RequestType(20);
 
 /**
- * Get a live hash from a crypto account
+ * crypto get live hash
  */
 RequestType.CryptoGetLiveHash = new RequestType(21);
 
 /**
- * Crypto, get the stakers for the node
+ * crypto get stakers
  */
 RequestType.CryptoGetStakers = new RequestType(22);
 
 /**
- * File Operations get file contents
+ * file get contents
  */
 RequestType.FileGetContents = new RequestType(23);
 
 /**
- * File Operations get the info of the file
+ * file get info
  */
 RequestType.FileGetInfo = new RequestType(24);
 
 /**
- * Crypto get the transaction records
+ * transaction get record
  */
 RequestType.TransactionGetRecord = new RequestType(25);
 
 /**
- * Contract get the transaction records
+ * contract get records
  */
 RequestType.ContractGetRecords = new RequestType(26);
 
 /**
- * crypto create account
+ * crypto create
  */
 RequestType.CryptoCreate = new RequestType(27);
 
 /**
- * system delete file
+ * system delete
  */
 RequestType.SystemDelete = new RequestType(28);
 
 /**
- * system undelete file
+ * system undelete
  */
 RequestType.SystemUndelete = new RequestType(29);
 
 /**
- * delete contract
+ * contract delete
  */
 RequestType.ContractDelete = new RequestType(30);
 
@@ -572,289 +555,272 @@ RequestType.ContractDelete = new RequestType(30);
 RequestType.Freeze = new RequestType(31);
 
 /**
- * Create Tx Record
+ * create transaction record
  */
 RequestType.CreateTransactionRecord = new RequestType(32);
 
 /**
- * Crypto Auto Renew
+ * crypto account auto renew
  */
 RequestType.CryptoAccountAutoRenew = new RequestType(33);
 
 /**
- * Contract Auto Renew
+ * contract auto renew
  */
 RequestType.ContractAutoRenew = new RequestType(34);
 
 /**
- * Get Version
+ * get version info
  */
 RequestType.GetVersionInfo = new RequestType(35);
 
 /**
- * Transaction Get Receipt
+ * transaction get receipt
  */
 RequestType.TransactionGetReceipt = new RequestType(36);
 
 /**
- * Create Topic
+ * consensus create topic
  */
 RequestType.ConsensusCreateTopic = new RequestType(50);
 
 /**
- * Update Topic
+ * consensus update topic
  */
 RequestType.ConsensusUpdateTopic = new RequestType(51);
 
 /**
- * Delete Topic
+ * consensus delete topic
  */
 RequestType.ConsensusDeleteTopic = new RequestType(52);
 
 /**
- * Get Topic information
+ * consensus get topic info
  */
 RequestType.ConsensusGetTopicInfo = new RequestType(53);
 
 /**
- * Submit message to topic
+ * consensus submit message
  */
 RequestType.ConsensusSubmitMessage = new RequestType(54);
 
-RequestType.UncheckedSubmit = new RequestType(55);
 /**
- * Create Token
+ * unchecked submit
+ */
+RequestType.UncheckedSubmit = new RequestType(55);
+
+/**
+ * token create
  */
 RequestType.TokenCreate = new RequestType(56);
 
 /**
- * Get Token information
+ * token get info
  */
 RequestType.TokenGetInfo = new RequestType(58);
 
 /**
- * Freeze Account
+ * token freeze account
  */
 RequestType.TokenFreezeAccount = new RequestType(59);
 
 /**
- * Unfreeze Account
+ * token unfreeze account
  */
 RequestType.TokenUnfreezeAccount = new RequestType(60);
 
 /**
- * Grant KYC to Account
+ * token grant kyc to account
  */
 RequestType.TokenGrantKycToAccount = new RequestType(61);
 
 /**
- * Revoke KYC from Account
+ * token revoke kyc from account
  */
 RequestType.TokenRevokeKycFromAccount = new RequestType(62);
 
 /**
- * Delete Token
+ * token delete
  */
 RequestType.TokenDelete = new RequestType(63);
 
 /**
- * Update Token
+ * token update
  */
 RequestType.TokenUpdate = new RequestType(64);
 
 /**
- * Mint tokens to treasury
+ * token mint
  */
 RequestType.TokenMint = new RequestType(65);
 
 /**
- * Burn tokens from treasury
+ * token burn
  */
 RequestType.TokenBurn = new RequestType(66);
 
 /**
- * Wipe token amount from Account holder
+ * token account wipe
  */
 RequestType.TokenAccountWipe = new RequestType(67);
 
 /**
- * Associate tokens to an account
+ * token associate to account
  */
 RequestType.TokenAssociateToAccount = new RequestType(68);
 
 /**
- * Dissociate tokens from an account
+ * token dissociate from account
  */
 RequestType.TokenDissociateFromAccount = new RequestType(69);
 
 /**
- * Create Scheduled Transaction
+ * schedule create
  */
 RequestType.ScheduleCreate = new RequestType(70);
 
 /**
- * Delete Scheduled Transaction
+ * schedule delete
  */
 RequestType.ScheduleDelete = new RequestType(71);
 
 /**
- * Sign Scheduled Transaction
+ * schedule sign
  */
 RequestType.ScheduleSign = new RequestType(72);
 
 /**
- * Get Scheduled Transaction Information
+ * schedule get info
  */
 RequestType.ScheduleGetInfo = new RequestType(73);
 
 /**
- * Get Token Account Nft Information
+ * token get account nft infos
  */
 RequestType.TokenGetAccountNftInfos = new RequestType(74);
 
 /**
- * Get Token Nft Information
+ * token get nft info
  */
 RequestType.TokenGetNftInfo = new RequestType(75);
 
 /**
- * Get Token Nft List Information
+ * token get nft infos
  */
 RequestType.TokenGetNftInfos = new RequestType(76);
 
 /**
- * Update a token's custom fee schedule, if permissible
+ * token fee schedule update
  */
 RequestType.TokenFeeScheduleUpdate = new RequestType(77);
 
 /**
- * Get execution time(s) by TransactionID, if available
+ * network get execution time
  */
 RequestType.NetworkGetExecutionTime = new RequestType(78);
 
 /**
- * Pause the Token
+ * token pause
  */
 RequestType.TokenPause = new RequestType(79);
 
 /**
- * Unpause the Token
+ * token unpause
  */
 RequestType.TokenUnpause = new RequestType(80);
 
 /**
- * Approve allowance for a spender relative to the owner account
+ * crypto approve allowance
  */
 RequestType.CryptoApproveAllowance = new RequestType(81);
 
 /**
- * Deletes granted allowances on owner account
+ * crypto delete allowance
  */
 RequestType.CryptoDeleteAllowance = new RequestType(82);
 
 /**
- * Gets all the information about an account, including balance and allowances. This does not get the list of
- * account records.
+ * get account details
  */
 RequestType.GetAccountDetails = new RequestType(83);
 
 /**
- * Ethereum Transaction
+ * ethereum transaction
  */
 RequestType.EthereumTransaction = new RequestType(84);
 
 /**
- * Updates the staking info at the end of staking period to indicate new staking period has started.
+ * node stake update
  */
 RequestType.NodeStakeUpdate = new RequestType(85);
 
 /**
- * Generates a pseudorandom number.
+ * util prng
  */
-RequestType.Prng = new RequestType(86);
+RequestType.UtilPrng = new RequestType(86);
 
 /**
- * Get a record for a transaction (lasts 180 seconds)
+ * transaction get fast record
  */
 RequestType.TransactionGetFastRecord = new RequestType(87);
 
 /**
- * Update the metadata of one or more NFT's of a specific token type.
+ * token update nfts
  */
 RequestType.TokenUpdateNfts = new RequestType(88);
 
 /**
- * A transaction body for a `createNode` request.
+ * node create
  */
 RequestType.NodeCreate = new RequestType(89);
 
 /**
- * A transaction body for an `updateNode` request.
+ * node update
  */
 RequestType.NodeUpdate = new RequestType(90);
 
 /**
- * A transaction body for a `deleteNode` request.
+ * node delete
  */
 RequestType.NodeDelete = new RequestType(91);
 
 /**
- * Transfer one or more token balances held by the requesting account to the treasury for each token type.
+ * token reject
  */
 RequestType.TokenReject = new RequestType(92);
 
 /**
- * Airdrop one or more tokens to one or more accounts.
+ * token airdrop
  */
 RequestType.TokenAirdrop = new RequestType(93);
 
 /**
- * Remove one or more pending airdrops from state on behalf of the sender(s) for each airdrop.
+ * token cancel airdrop
  */
 RequestType.TokenCancelAirdrop = new RequestType(94);
 
 /**
- * Claim one or more pending airdrops
+ * token claim airdrop
  */
 RequestType.TokenClaimAirdrop = new RequestType(95);
 
 /**
- * (TSS) Messages for a candidate roster.
- */
-RequestType.TssMessage = new RequestType(96);
-
-/**
- * Vote on the validity of Threshold Signature Scheme (TSS)
- */
-RequestType.TssVote = new RequestType(97);
-
-/**
- * Communicates a node's signature of a block hash
- * using its private share within the TSS process
- */
-RequestType.TssShareSignature = new RequestType(98);
-
-/**
- * Submit a node public tss encryption key as part of the Threshold Signature Scheme (TSS).
- */
-RequestType.TssEncryptionKey = new RequestType(99);
-
-/**
- * Submit a signature of a state root hash gossiped to other nodes
+ * state signature transaction
  */
 RequestType.StateSignatureTransaction = new RequestType(100);
 
 /**
- * Sign a particular history assembly.
+ * history assembly signature
  */
 RequestType.HistoryAssemblySignature = new RequestType(104);
 
 /**
- * Publish a roster history proof key to the network.
+ * history proof key publication
  */
 RequestType.HistoryProofKeyPublication = new RequestType(105);
 
 /**
- * Vote for a particular history proof.
+ * history proof vote
  */
 RequestType.HistoryProofVote = new RequestType(106);
+
