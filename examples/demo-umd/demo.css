@@ -57,17 +57,19 @@ body {
     color: #808080;
 }
 
-#input-account-id {
+input {
     padding: 5px;
     display: block;
     margin: 0 auto;
-    margin-top: 30px;
+    margin-top: 10px;
+    width: 230px;
+    text-align: center;
     border-radius: 5px;
     margin-bottom: 10px;
     transition: all 0.3s ease;
 }
 
-#input-account-id:focus {
+input:focus {
     border: 1px solid #000;
     transform: scale(1.05); /* Scale up slightly */
     /* Slightly darker orange */
@@ -81,6 +83,14 @@ body {
 img {
     margin: 0 auto;
     display: block;
+}
+
+#notice {
+    margin-top: 10px;
+    text-align: center;
+    color: #707070;
+    font-size: 12px;
+    text-decoration: underline italic;
 }
 
 #copyright {

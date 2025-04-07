@@ -1,8 +1,3 @@
-const operatorId = sdk.AccountId.fromString("0.0.5684157");
-const operatorKey = sdk.PrivateKey.fromStringED25519(
-    "0xa241d890c3b2db2b1093383ee65fa48c367e87532e5955ed02686e33391d21f9",
-);
-const client = sdk.Client.forTestnet().setOperator(operatorId, operatorKey);
 document.getElementById("execute").addEventListener("click", executeTx);
 
 function syntaxHighlight(json) {
@@ -14,20 +9,30 @@ function syntaxHighlight(json) {
         .replace(/: (true|false)/g, ': <span class="boolean">$1</span>')
         .replace(/: null/g, ': <span class="null">null</span>');
 }
+
 function executeTx() {
+    // get input values
+    const operatorKeyValue = document.getElementById("operator-key").value;
+    const operatorIdValue = document.getElementById("operator-id").value;
     const accountId = document.getElementById("input-account-id").value;
 
-    // hide the json and show the loading screen
+    // setup client and operator
+    const operatorId = sdk.AccountId.fromString(operatorIdValue);
+    const operatorKey = sdk.PrivateKey.fromStringED25519(operatorKeyValue);
+    const client = sdk.Client.forTestnet().setOperator(operatorId, operatorKey);
 
+    // start loading until the query is executed
     document.getElementById("json").style.display = "none";
     document.getElementById("loading").style.display = "block";
-    const tx = new sdk.AccountInfoQuery()
+
+    // execute the query
+    new sdk.AccountInfoQuery()
         .setAccountId(accountId)
         .execute(client)
         .then((data) => {
-            // hide the loadiong and show the result
+            // hide the loading and show the result
             document.getElementById("json").style.display = "block";
-            document.getElementById("json").innerHTML = syntaxHighlight(data);
             document.getElementById("loading").style.display = "none";
+            document.getElementById("json").innerHTML = syntaxHighlight(data);
         });
 }
