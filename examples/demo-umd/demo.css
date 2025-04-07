@@ -1,0 +1,91 @@
+h1 {
+    text-align: center;
+    color: #000000;
+}
+
+body {
+    background-color: #14213d;
+    font-family: "Roboto";
+}
+#wrapper {
+    background-color: #e5e5e5;
+    padding: 25px;
+    width: 600px;
+    margin: 0 auto;
+    border-radius: 5px;
+}
+#execute {
+    background-color: #fca311;
+    padding: 10px;
+    color: #000;
+    margin: 0 auto;
+    display: block;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+#execute:hover {
+    border: 1px solid #000;
+    transform: scale(1.05); /* Scale up slightly */
+    /* Slightly darker orange */
+    cursor: pointer;
+}
+
+.json-container {
+    margin-top: 50px;
+    background: #282c34;
+    color: #ffffff;
+    padding: 15px;
+    border-radius: 8px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    font-family: monospace;
+    display: none;
+}
+.key {
+    color: #9cdcfe;
+}
+.string {
+    color: #ce9178;
+}
+.number {
+    color: #b5cea8;
+}
+.boolean {
+    color: #569cd6;
+}
+.null {
+    color: #808080;
+}
+
+#input-account-id {
+    padding: 5px;
+    display: block;
+    margin: 0 auto;
+    margin-top: 30px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
+}
+
+#input-account-id:focus {
+    border: 1px solid #000;
+    transform: scale(1.05); /* Scale up slightly */
+    /* Slightly darker orange */
+    cursor: pointer;
+}
+
+#loading {
+    display: none;
+}
+
+img {
+    margin: 0 auto;
+    display: block;
+}
+
+#copyright {
+    margin-top: 5px;
+    text-align: center;
+    color: #fff;
+    display: block;
+}

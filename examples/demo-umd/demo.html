@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Hiero JavaScript SDK > Tests</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="Content-Security-Policy" />
+        <link rel="stylesheet" href="demo.css" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <img src="builder.png" width="350px" id="build" />
+        <main id="wrapper">
+            <h1>Hiero UMD Builder</h1>
+            <input
+                type="text"
+                id="input-account-id"
+                placeholder="Please enter an AccountId here"
+            />
+            <button id="execute">Execute AccountInfoQuery</button>
+            <div class="json-container" id="json"></div>
+            <img src="bouncing-circles.svg" id="loading" />
+        </main>
+        <span id="copyright">Copyright Hiero 2025</span>
+        <script src="https://unpkg.com/@hashgraph/sdk@2.62.0-beta.3/dist/umd.js"></script>
+        <script src="main.js"></script>
+    </body>
+</html>
