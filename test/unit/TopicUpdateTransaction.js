@@ -94,7 +94,7 @@ describe("TopicUpdateTransaction", function () {
 
             topicUpdateTransaction.clearFeeExemptKeys();
 
-            expect(topicUpdateTransaction.getFeeExemptKeys().length).to.eql(0);
+            expect(topicUpdateTransaction.getFeeExemptKeys()).to.be.null;
         });
 
         it("should set topic custom fees", function () {
@@ -208,7 +208,41 @@ describe("TopicUpdateTransaction", function () {
 
             topicUpdateTransaction.clearCustomFees();
 
-            expect(topicUpdateTransaction.getCustomFees().length).to.eql(0);
+            expect(topicUpdateTransaction.getCustomFees()).to.be.null;
+        });
+
+        it("should not include feeExemptKeyList in transaction data when feeExemptKeys is null", function () {
+            const transaction = new TopicUpdateTransaction();
+
+            // Access private _makeTransactionData method for testing purposes
+            const transactionData = transaction._makeTransactionData();
+
+            // Verify that feeExemptKeyList is null in the resulting transaction data
+            expect(transactionData.feeExemptKeyList).to.be.null;
+
+            // Create a transaction with bytes and verify data is preserved
+            const bytes = transaction.toBytes();
+            const deserialized = TopicUpdateTransaction.fromBytes(bytes);
+            const deserializedData = deserialized._makeTransactionData();
+
+            expect(deserializedData.feeExemptKeyList).to.be.null;
+        });
+
+        it("should not include customFees in transaction data when customFees is null", function () {
+            const transaction = new TopicUpdateTransaction();
+
+            // Access private _makeTransactionData method for testing purposes
+            const transactionData = transaction._makeTransactionData();
+
+            // Verify that customFees is null in the resulting transaction data
+            expect(transactionData.customFees).to.be.null;
+
+            // Create a transaction with bytes and verify data is preserved
+            const bytes = transaction.toBytes();
+            const deserialized = TopicUpdateTransaction.fromBytes(bytes);
+            const deserializedData = deserialized._makeTransactionData();
+
+            expect(deserializedData.customFees).to.be.null;
         });
     });
 });

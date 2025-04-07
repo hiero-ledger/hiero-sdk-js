@@ -104,9 +104,9 @@ export default class TopicUpdateTransaction extends Transaction {
 
         /**
          * @private
-         * @type {Key[]}
+         * @type {?Key[]}
          */
-        this._feeExemptKeys = [];
+        this._feeExemptKeys = null;
 
         if (props.feeExemptKeys != null) {
             this.setFeeExemptKeys(props.feeExemptKeys);
@@ -134,9 +134,9 @@ export default class TopicUpdateTransaction extends Transaction {
 
         /**
          * @private
-         * @type {CustomFixedFee[]}
+         * @type {?CustomFixedFee[]}
          */
-        this._customFees = [];
+        this._customFees = null;
 
         if (props.customFees != null) {
             this.setCustomFees(props.customFees);
@@ -404,7 +404,7 @@ export default class TopicUpdateTransaction extends Transaction {
 
     /**
      * Returns the keys that will be exempt from paying fees.
-     * @returns {Key[]}
+     * @returns {?Key[]}
      */
     getFeeExemptKeys() {
         return this._feeExemptKeys;
@@ -429,6 +429,10 @@ export default class TopicUpdateTransaction extends Transaction {
      */
     addFeeExemptKey(key) {
         this._requireNotFrozen();
+        if (this._feeExemptKeys == null) {
+            this._feeExemptKeys = [];
+        }
+
         this._feeExemptKeys.push(key);
 
         return this;
@@ -440,7 +444,7 @@ export default class TopicUpdateTransaction extends Transaction {
      */
     clearFeeExemptKeys() {
         this._requireNotFrozen();
-        this._feeExemptKeys = [];
+        this._feeExemptKeys = null;
 
         return this;
     }
@@ -501,7 +505,7 @@ export default class TopicUpdateTransaction extends Transaction {
 
     /**
      * Returns the fixed fees to assess when a message is submitted to the new topic.
-     * @returns {CustomFixedFee[]}
+     * @returns {?CustomFixedFee[]}
      */
     getCustomFees() {
         return this._customFees;
@@ -528,6 +532,10 @@ export default class TopicUpdateTransaction extends Transaction {
      */
     addCustomFee(customFee) {
         this._requireNotFrozen();
+        if (this._customFees == null) {
+            this._customFees = [];
+        }
+
         this._customFees.push(customFee);
 
         return this;
@@ -540,7 +548,7 @@ export default class TopicUpdateTransaction extends Transaction {
      */
     clearCustomFees() {
         this._requireNotFrozen();
-        this._customFees = [];
+        this._customFees = null;
 
         return this;
     }
@@ -596,9 +604,14 @@ export default class TopicUpdateTransaction extends Transaction {
                 this._feeScheduleKey != null
                     ? this._feeScheduleKey._toProtobufKey()
                     : null,
-            feeExemptKeyList: {
-                keys: this._feeExemptKeys.map((key) => key._toProtobufKey()),
-            },
+            feeExemptKeyList:
+                this._feeExemptKeys != null
+                    ? {
+                          keys: this._feeExemptKeys.map((key) =>
+                              key._toProtobufKey(),
+                          ),
+                      }
+                    : null,
             memo:
                 this._topicMemo != null
                     ? {
@@ -613,11 +626,14 @@ export default class TopicUpdateTransaction extends Transaction {
                 this._autoRenewPeriod != null
                     ? this._autoRenewPeriod._toProtobuf()
                     : null,
-            customFees: {
-                fees: this._customFees.map((customFee) =>
-                    customFee._toTopicFeeProtobuf(),
-                ),
-            },
+            customFees:
+                this._customFees != null
+                    ? {
+                          fees: this._customFees.map((customFee) =>
+                              customFee._toTopicFeeProtobuf(),
+                          ),
+                      }
+                    : null,
             expirationTime:
                 this._expirationTime != null
                     ? this._expirationTime._toProtobuf()
