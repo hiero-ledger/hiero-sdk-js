@@ -638,7 +638,7 @@ export default class Executable {
                 // request to retry 10 times, because its getReceiptQuery/getRecordQuery
                 // are single node requests
                 if (isTransactionReceiptOrRecordRequest(request)) {
-                    await delayForAttempt(false, 1, 500, 500);
+                    await delayForAttempt(false, attempt, 500, 1000);
                     continue;
                 }
 
