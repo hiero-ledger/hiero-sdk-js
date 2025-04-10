@@ -634,6 +634,14 @@ export default class Executable {
                     this._nodeAccountIds.index ===
                     this._nodeAccountIds.list.length - 1;
 
+                // Check if the request is a transaction receipt or record
+                // request to retry 10 times, because its getReceiptQuery/getRecordQuery
+                // are single node requests
+                if (isTransactionReceiptOrRecordRequest(request)) {
+                    await delayForAttempt(false, 1, 500, 500);
+                    continue;
+                }
+
                 if (isLastNode || this._nodeAccountIds.length <= 1) {
                     throw new Error(
                         `Network connectivity issue: All nodes are unhealthy. Original node list: ${this._nodeAccountIds.list.join(", ")}`,
@@ -811,6 +819,25 @@ export default class Executable {
     get logger() {
         return this._logger;
     }
+}
+
+/**
+ * Checks if the request is a transaction receipt or record request
+ *
+ * @template T
+ * @param {T} request - The request to check
+ * @returns {boolean} - True if the request is a transaction receipt or record
+ */
+function isTransactionReceiptOrRecordRequest(request) {
+    if (typeof request !== "object" || request === null) {
+        return false;
+    }
+
+    const requestType = Object.keys(request)[0];
+    return (
+        requestType === "transactionGetReceipt" ||
+        requestType === "transactionGetRecord"
+    );
 }
 
 /**
