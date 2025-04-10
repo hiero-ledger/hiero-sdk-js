@@ -3,7 +3,7 @@
 import ContractLogInfo from "./ContractLogInfo.js";
 import ContractId from "./ContractId.js";
 import AccountId from "../account/AccountId.js";
-import BigNumber from "bignumber.js";
+import { BigNumber } from "bignumber.js";
 import * as hex from "../encoding/hex.js";
 import * as utf8 from "../encoding/utf8.js";
 import * as util from "../util.js";
