@@ -76,6 +76,7 @@ tasks:
             - task: update:addressbooks
             - task: format
             - task: lint
+            - node ./scripts/generate-request-and-status-files.js
 
     "build:actual":
         cmds:
