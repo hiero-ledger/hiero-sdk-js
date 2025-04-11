@@ -2,196 +2,150 @@ import * as HieroProto from "@hashgraph/proto";
 import fs from "fs";
 import path from "path";
 
-import { screamingSnakeToPascalCase } from "../src/util.js";
+import {
+    findHighestExistingRequestTypeCode,
+    updateRequestTypeToStringMethod,
+    updateRequestTypeFromCodeMethod,
+    generateRequestTypeStaticProperties,
+    generateCompleteRequestTypeFile,
+} from "./helpers/request-type.js";
+
+import {
+    findHighestExistingStatusCode,
+    updateStatusToStringMethod,
+    updateStatusFromCodeMethod,
+    generateStatusStaticProperties,
+    generateCompleteStatusFile,
+} from "./helpers/status-file.js";
 
 /**
  * Generates the RequestType.js file dynamically based on HederaFunctionality proto definitions
  */
 function generateRequestTypeFile() {
+    const requestTypePath = path.join(process.cwd(), "src/RequestType.js");
+    let existingContent = "";
+
+    if (fs.existsSync(requestTypePath)) {
+        existingContent = fs.readFileSync(requestTypePath, "utf8");
+    }
+
     const functionalities = HieroProto.proto.HederaFunctionality;
 
-    // Start with the file header and class definition
-    let content = `// SPDX-License-Identifier: Apache-2.0
+    // If we have existing content, update the file by appending new codes
+    if (existingContent) {
+        const highestExistingCode =
+            findHighestExistingRequestTypeCode(existingContent);
 
-/**
- * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.HederaFunctionality} HieroProto.proto.HederaFunctionality
- */
-
-export default class RequestType {
-    /**
-     * @hideconstructor
-     * @internal
-     * @param {number} code
-     */
-    constructor(code) {
-        /** @readonly */
-        this._code = code;
-
-        Object.freeze(this);
-    }
-
-    /**
-     * @returns {string}
-     */
-    toString() {
-        switch (this) {
-`;
-
-    // Generate toString() cases
-    for (const [name] of Object.entries(functionalities)) {
-        content += `            case RequestType.${name}:\n`;
-        content += `                return "${name}";\n`;
-    }
-
-    content += `            default:
-                return \`UNKNOWN (\${this._code})\`;
-        }
-    }
-
-    /**
-     * @internal
-     * @param {number} code
-     * @returns {RequestType}
-     */
-    static _fromCode(code) {
-        switch (code) {
-`;
-
-    // Generate _fromCode() cases
-    for (const [name, code] of Object.entries(functionalities)) {
-        content += `            case ${code}:\n`;
-        content += `                return RequestType.${name};\n`;
-    }
-
-    content += `        }
-
-        throw new Error(
-            \`(BUG) RequestType.fromCode() does not handle code: \${code}\`,
+        // Filter only new functionalities that are higher than the highest existing one
+        const newFunctionalities = Object.entries(functionalities).filter(
+            ([_, code]) => code > highestExistingCode,
         );
+
+        if (newFunctionalities.length === 0) {
+            console.log("No new functionalities to add.");
+            return;
+        }
+
+        console.log(
+            `Found ${newFunctionalities.length} new functionality/functionalities to add.`,
+        );
+
+        // Update the toString method
+        let updatedContent = updateRequestTypeToStringMethod(
+            existingContent,
+            newFunctionalities,
+        );
+
+        // Update the _fromCode method
+        updatedContent = updateRequestTypeFromCodeMethod(
+            updatedContent,
+            newFunctionalities,
+        );
+
+        // Append new static properties
+        const newProperties =
+            generateRequestTypeStaticProperties(newFunctionalities);
+        updatedContent += newProperties;
+
+        // Write the updated file
+        fs.writeFileSync(requestTypePath, updatedContent, "utf8");
+        console.log(
+            `Updated RequestType.js with ${newFunctionalities.length} new functionality/functionalities.`,
+        );
+        return;
     }
 
-    /**
-     * @returns {HieroProto.proto.HederaFunctionality}
-     */
-    valueOf() {
-        return this._code;
-    }
-}
-
-`;
-
-    // Generate static properties
-    for (const [name, code] of Object.entries(functionalities)) {
-        content += `/**
- * ${name
-     .replace(/([A-Z])/g, " $1")
-     .trim()
-     .toLowerCase()}
- */
-RequestType.${name} = new RequestType(${code});\n\n`;
-    }
+    // If we don't have existing content, generate the entire file
+    const completeFileContent =
+        generateCompleteRequestTypeFile(functionalities);
 
     // Write the file
-    fs.writeFileSync(
-        path.join(process.cwd(), "src/RequestType.js"),
-        content,
-        "utf8",
-    );
+    fs.writeFileSync(requestTypePath, completeFileContent, "utf8");
+    console.log("Generated new RequestType.js file.");
 }
 
 /**
  * Generates the Status.js file dynamically based on ResponseCodeEnum proto definitions
  */
 function generateStatusFile() {
+    const statusPath = path.join(process.cwd(), "src/Status.js");
+    let existingContent = "";
+
+    if (fs.existsSync(statusPath)) {
+        existingContent = fs.readFileSync(statusPath, "utf8");
+    }
+
     const statusCodes = HieroProto.proto.ResponseCodeEnum;
 
-    // Start with the file header and class definition
-    let content = `// SPDX-License-Identifier: Apache-2.0
+    // If we have existing content, update the file by appending new codes
+    if (existingContent) {
+        const highestExistingCode =
+            findHighestExistingStatusCode(existingContent);
 
-/**
- * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ResponseCodeEnum} HieroProto.proto.ResponseCodeEnum
- */
+        // Filter only new status codes that are higher than the highest existing one
+        const newStatusCodes = Object.entries(statusCodes).filter(
+            ([_, code]) => code > highestExistingCode,
+        );
 
-export default class Status {
-    /**
-     * @hideconstructor
-     * @internal
-     * @param {number} code
-     */
-    constructor(code) {
-        /** @readonly */
-        this._code = code;
-
-        Object.freeze(this);
-    }
-
-    /**
-     * @returns {string}
-     */
-    toString() {
-        switch (this) {
-`;
-
-    // Generate toString() cases
-    for (const [name] of Object.entries(statusCodes)) {
-        const pascalCase = screamingSnakeToPascalCase(name);
-        content += `            case Status.${pascalCase}:\n`;
-        content += `                return "${name}";\n`;
-    }
-
-    content += `            default:
-                return \`UNKNOWN (\${this._code})\`;
+        if (newStatusCodes.length === 0) {
+            console.log("No new status codes to add.");
+            return;
         }
+
+        console.log(
+            `Found ${newStatusCodes.length} new status code(s) to add.`,
+        );
+
+        // Update the toString method
+        let updatedContent = updateStatusToStringMethod(
+            existingContent,
+            newStatusCodes,
+        );
+
+        // Update the _fromCode method
+        updatedContent = updateStatusFromCodeMethod(
+            updatedContent,
+            newStatusCodes,
+        );
+
+        // Append new static properties
+        const newProperties = generateStatusStaticProperties(newStatusCodes);
+        updatedContent += newProperties;
+
+        // Write the updated file
+        fs.writeFileSync(statusPath, updatedContent, "utf8");
+        console.log(
+            `Updated Status.js with ${newStatusCodes.length} new status codes.`,
+        );
+        return;
     }
 
-    /**
-     * @internal
-     * @param {number} code
-     * @returns {Status}
-     */
-    static _fromCode(code) {
-        switch (code) {
-`;
-
-    // Generate _fromCode() cases
-    for (const [name, code] of Object.entries(statusCodes)) {
-        const pascalCase = screamingSnakeToPascalCase(name);
-        content += `            case ${code}:\n`;
-        content += `                return Status.${pascalCase};\n`;
-    }
-
-    content += `            default:
-                throw new Error(
-                    \`(BUG) Status.fromCode() does not handle code: \${code}\`,
-                );
-        }
-    }
-
-    /**
-     * @returns {HieroProto.proto.ResponseCodeEnum}
-     */
-    valueOf() {
-        return this._code;
-    }
-}
-
-`;
-
-    // Generate static properties
-    for (const [name, code] of Object.entries(statusCodes)) {
-        const pascalCase = screamingSnakeToPascalCase(name);
-        content += `/* ${name.toLowerCase().split("_").join(" ")} */
-Status.${pascalCase} = new Status(${code});\n\n`;
-    }
+    // If we don't have existing content, generate the entire file
+    const completeFileContent = generateCompleteStatusFile(statusCodes);
 
     // Write the file
-    fs.writeFileSync(
-        path.join(process.cwd(), "src/Status.js"),
-        content,
-        "utf8",
-    );
+    fs.writeFileSync(statusPath, completeFileContent, "utf8");
+    console.log("Generated new Status.js file.");
 }
 
 // Generate both files

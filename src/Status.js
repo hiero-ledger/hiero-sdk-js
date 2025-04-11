@@ -645,16 +645,16 @@ export default class Status {
                 return "INVALID_ENDPOINT";
             case Status.GossipEndpointsExceededLimit:
                 return "GOSSIP_ENDPOINTS_EXCEEDED_LIMIT";
+            case Status.ServiceEndpointsExceededLimit:
+                return "SERVICE_ENDPOINTS_EXCEEDED_LIMIT";
+            case Status.InvalidIpv4Address:
+                return "INVALID_IPV4_ADDRESS";
             case Status.TokenReferenceRepeated:
                 return "TOKEN_REFERENCE_REPEATED";
             case Status.InvalidOwnerId:
                 return "INVALID_OWNER_ID";
             case Status.TokenReferenceListSizeLimitExceeded:
                 return "TOKEN_REFERENCE_LIST_SIZE_LIMIT_EXCEEDED";
-            case Status.ServiceEndpointsExceededLimit:
-                return "SERVICE_ENDPOINTS_EXCEEDED_LIMIT";
-            case Status.InvalidIpv4Address:
-                return "INVALID_IPV4_ADDRESS";
             case Status.EmptyTokenReferenceList:
                 return "EMPTY_TOKEN_REFERENCE_LIST";
             case Status.UpdateNodeAccountNotAllowed:
@@ -665,7 +665,7 @@ export default class Status {
                 return "EMPTY_PENDING_AIRDROP_ID_LIST";
             case Status.PendingAirdropIdRepeated:
                 return "PENDING_AIRDROP_ID_REPEATED";
-            case Status.PendingAirdropIdListTooLong:
+            case Status.MaxPendingAirdropIdExceeded:
                 return "PENDING_AIRDROP_ID_LIST_TOO_LONG";
             case Status.PendingNftAirdropAlreadyExists:
                 return "PENDING_NFT_AIRDROP_ALREADY_EXISTS";
@@ -715,6 +715,7 @@ export default class Status {
                 return "DUPLICATE_ACCOUNT_ID_IN_MAX_CUSTOM_FEE_LIST";
             case Status.MaxCustomFeesIsNotSupported:
                 return "MAX_CUSTOM_FEES_IS_NOT_SUPPORTED";
+
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -1370,7 +1371,7 @@ export default class Status {
             case 362:
                 return Status.PendingAirdropIdRepeated;
             case 363:
-                return Status.PendingAirdropIdListTooLong;
+                return Status.MaxPendingAirdropIdExceeded;
             case 364:
                 return Status.PendingNftAirdropAlreadyExists;
             case 365:
@@ -1434,1041 +1435,1801 @@ export default class Status {
     }
 }
 
-/* ok */
+/**
+ * The transaction passed the precheck validations.
+ */
 Status.Ok = new Status(0);
 
-/* invalid transaction */
+/**
+ * For any error not handled by specific error codes listed below.
+ */
 Status.InvalidTransaction = new Status(1);
 
-/* payer account not found */
+/**
+ * Payer account does not exist.
+ */
 Status.PayerAccountNotFound = new Status(2);
 
-/* invalid node account */
+/**
+ * Node Account provided does not match the node account of the node the transaction was submitted
+ * to.
+ */
 Status.InvalidNodeAccount = new Status(3);
 
-/* transaction expired */
+/**
+ * Pre-Check error when TransactionValidStart + transactionValidDuration is less than current
+ * consensus time.
+ */
 Status.TransactionExpired = new Status(4);
 
-/* invalid transaction start */
+/**
+ * Transaction start time is greater than current consensus time
+ */
 Status.InvalidTransactionStart = new Status(5);
 
-/* invalid transaction duration */
+/**
+ * The given transactionValidDuration was either non-positive, or greater than the maximum
+ * valid duration of 180 secs.
+ *
+ */
 Status.InvalidTransactionDuration = new Status(6);
 
-/* invalid signature */
+/**
+ * The transaction signature is not valid
+ */
 Status.InvalidSignature = new Status(7);
 
-/* memo too long */
+/**
+ * Transaction memo size exceeded 100 bytes
+ */
 Status.MemoTooLong = new Status(8);
 
-/* insufficient tx fee */
+/**
+ * The fee provided in the transaction is insufficient for this type of transaction
+ */
 Status.InsufficientTxFee = new Status(9);
 
-/* insufficient payer balance */
+/**
+ * The payer account has insufficient cryptocurrency to pay the transaction fee
+ */
 Status.InsufficientPayerBalance = new Status(10);
 
-/* duplicate transaction */
+/**
+ * This transaction ID is a duplicate of one that was submitted to this node or reached consensus
+ * in the last 180 seconds (receipt period)
+ */
 Status.DuplicateTransaction = new Status(11);
 
-/* busy */
+/**
+ * If API is throttled out
+ */
 Status.Busy = new Status(12);
 
-/* not supported */
+/**
+ * The API is not currently supported
+ */
 Status.NotSupported = new Status(13);
 
-/* invalid file id */
+/**
+ * The file id is invalid or does not exist
+ */
 Status.InvalidFileId = new Status(14);
 
-/* invalid account id */
+/**
+ * The account id is invalid or does not exist
+ */
 Status.InvalidAccountId = new Status(15);
 
-/* invalid contract id */
+/**
+ * The contract id is invalid or does not exist
+ */
 Status.InvalidContractId = new Status(16);
 
-/* invalid transaction id */
+/**
+ * Transaction id is not valid
+ */
 Status.InvalidTransactionId = new Status(17);
 
-/* receipt not found */
+/**
+ * Receipt for given transaction id does not exist
+ */
 Status.ReceiptNotFound = new Status(18);
 
-/* record not found */
+/**
+ * Record for given transaction id does not exist
+ */
 Status.RecordNotFound = new Status(19);
 
-/* invalid solidity id */
+/**
+ * The solidity id is invalid or entity with this solidity id does not exist
+ */
 Status.InvalidSolidityId = new Status(20);
 
-/* unknown */
+/**
+ * The responding node has submitted the transaction to the network. Its final status is still
+ * unknown.
+ */
 Status.Unknown = new Status(21);
 
-/* success */
+/**
+ * The transaction succeeded
+ */
 Status.Success = new Status(22);
 
-/* fail invalid */
+/**
+ * There was a system error and the transaction failed because of invalid request parameters.
+ */
 Status.FailInvalid = new Status(23);
 
-/* fail fee */
+/**
+ * There was a system error while performing fee calculation, reserved for future.
+ */
 Status.FailFee = new Status(24);
 
-/* fail balance */
+/**
+ * There was a system error while performing balance checks, reserved for future.
+ */
 Status.FailBalance = new Status(25);
 
-/* key required */
+/**
+ * Key not provided in the transaction body
+ */
 Status.KeyRequired = new Status(26);
 
-/* bad encoding */
+/**
+ * Unsupported algorithm/encoding used for keys in the transaction
+ */
 Status.BadEncoding = new Status(27);
 
-/* insufficient account balance */
+/**
+ * When the account balance is not sufficient for the transfer
+ */
 Status.InsufficientAccountBalance = new Status(28);
 
-/* invalid solidity address */
+/**
+ * During an update transaction when the system is not able to find the Users Solidity address
+ */
 Status.InvalidSolidityAddress = new Status(29);
 
-/* insufficient gas */
+/**
+ * Not enough gas was supplied to execute transaction
+ */
 Status.InsufficientGas = new Status(30);
 
-/* contract size limit exceeded */
+/**
+ * contract byte code size is over the limit
+ */
 Status.ContractSizeLimitExceeded = new Status(31);
 
-/* local call modification exception */
+/**
+ * local execution (query) is requested for a function which changes state
+ */
 Status.LocalCallModificationException = new Status(32);
 
-/* contract revert executed */
+/**
+ * Contract REVERT OPCODE executed
+ */
 Status.ContractRevertExecuted = new Status(33);
 
-/* contract execution exception */
+/**
+ * For any contract execution related error not handled by specific error codes listed above.
+ */
 Status.ContractExecutionException = new Status(34);
 
-/* invalid receiving node account */
+/**
+ * In Query validation, account with +ve(amount) value should be Receiving node account, the
+ * receiver account should be only one account in the list
+ */
 Status.InvalidReceivingNodeAccount = new Status(35);
 
-/* missing query header */
+/**
+ * Header is missing in Query request
+ */
 Status.MissingQueryHeader = new Status(36);
 
-/* account update failed */
+/**
+ * The update of the account failed
+ */
 Status.AccountUpdateFailed = new Status(37);
 
-/* invalid key encoding */
+/**
+ * Provided key encoding was not supported by the system
+ */
 Status.InvalidKeyEncoding = new Status(38);
 
-/* null solidity address */
+/**
+ * null solidity address
+ */
 Status.NullSolidityAddress = new Status(39);
 
-/* contract update failed */
+/**
+ * update of the contract failed
+ */
 Status.ContractUpdateFailed = new Status(40);
 
-/* invalid query header */
+/**
+ * the query header is invalid
+ */
 Status.InvalidQueryHeader = new Status(41);
 
-/* invalid fee submitted */
+/**
+ * Invalid fee submitted
+ */
 Status.InvalidFeeSubmitted = new Status(42);
 
-/* invalid payer signature */
+/**
+ * Payer signature is invalid
+ */
 Status.InvalidPayerSignature = new Status(43);
 
-/* key not provided */
+/**
+ * The keys were not provided in the request.
+ */
 Status.KeyNotProvided = new Status(44);
 
-/* invalid expiration time */
+/**
+ * Expiration time provided in the transaction was invalid.
+ */
 Status.InvalidExpirationTime = new Status(45);
 
-/* no wacl key */
+/**
+ * WriteAccess Control Keys are not provided for the file
+ */
 Status.NoWaclKey = new Status(46);
 
-/* file content empty */
+/**
+ * The contents of file are provided as empty.
+ */
 Status.FileContentEmpty = new Status(47);
 
-/* invalid account amounts */
+/**
+ * The crypto transfer credit and debit do not sum equal to 0
+ */
 Status.InvalidAccountAmounts = new Status(48);
 
-/* empty transaction body */
+/**
+ * Transaction body provided is empty
+ */
 Status.EmptyTransactionBody = new Status(49);
 
-/* invalid transaction body */
+/**
+ * Invalid transaction body provided
+ */
 Status.InvalidTransactionBody = new Status(50);
 
-/* invalid signature type mismatching key */
+/**
+ * the type of key (base ed25519 key, KeyList, or ThresholdKey) does not match the type of
+ * signature (base ed25519 signature, SignatureList, or ThresholdKeySignature)
+ */
 Status.InvalidSignatureTypeMismatchingKey = new Status(51);
 
-/* invalid signature count mismatching key */
+/**
+ * the number of key (KeyList, or ThresholdKey) does not match that of signature (SignatureList,
+ * or ThresholdKeySignature). e.g. if a keyList has 3 base keys, then the corresponding
+ * signatureList should also have 3 base signatures.
+ */
 Status.InvalidSignatureCountMismatchingKey = new Status(52);
 
-/* empty live hash body */
+/**
+ * the livehash body is empty
+ */
 Status.EmptyLiveHashBody = new Status(53);
 
-/* empty live hash */
+/**
+ * the livehash data is missing
+ */
 Status.EmptyLiveHash = new Status(54);
 
-/* empty live hash keys */
+/**
+ * the keys for a livehash are missing
+ */
 Status.EmptyLiveHashKeys = new Status(55);
 
-/* invalid live hash size */
+/**
+ * the livehash data is not the output of a SHA-384 digest
+ */
 Status.InvalidLiveHashSize = new Status(56);
 
-/* empty query body */
+/**
+ * the query body is empty
+ */
 Status.EmptyQueryBody = new Status(57);
 
-/* empty live hash query */
+/**
+ * the crypto livehash query is empty
+ */
 Status.EmptyLiveHashQuery = new Status(58);
 
-/* live hash not found */
+/**
+ * the livehash is not present
+ */
 Status.LiveHashNotFound = new Status(59);
 
-/* account id does not exist */
+/**
+ * the account id passed has not yet been created.
+ */
 Status.AccountIdDoesNotExist = new Status(60);
 
-/* live hash already exists */
+/**
+ * the livehash already exists for a given account
+ */
 Status.LiveHashAlreadyExists = new Status(61);
 
-/* invalid file wacl */
+/**
+ * File WACL keys are invalid
+ */
 Status.InvalidFileWacl = new Status(62);
 
-/* serialization failed */
+/**
+ * Serialization failure
+ */
 Status.SerializationFailed = new Status(63);
 
-/* transaction oversize */
+/**
+ * The size of the Transaction is greater than transactionMaxBytes
+ */
 Status.TransactionOversize = new Status(64);
 
-/* transaction too many layers */
+/**
+ * The Transaction has more than 50 levels
+ */
 Status.TransactionTooManyLayers = new Status(65);
 
-/* contract deleted */
+/**
+ * Contract is marked as deleted
+ */
 Status.ContractDeleted = new Status(66);
 
-/* platform not active */
+/**
+ * the platform node is either disconnected or lagging behind.
+ */
 Status.PlatformNotActive = new Status(67);
 
-/* key prefix mismatch */
+/**
+ * one public key matches more than one prefixes on the signature map
+ */
 Status.KeyPrefixMismatch = new Status(68);
 
-/* platform transaction not created */
+/**
+ * transaction not created by platform due to large backlog
+ */
 Status.PlatformTransactionNotCreated = new Status(69);
 
-/* invalid renewal period */
+/**
+ * auto renewal period is not a positive number of seconds
+ */
 Status.InvalidRenewalPeriod = new Status(70);
 
-/* invalid payer account id */
+/**
+ * the response code when a smart contract id is passed for a crypto API request
+ */
 Status.InvalidPayerAccountId = new Status(71);
 
-/* account deleted */
+/**
+ * the account has been marked as deleted
+ */
 Status.AccountDeleted = new Status(72);
 
-/* file deleted */
+/**
+ * the file has been marked as deleted
+ */
 Status.FileDeleted = new Status(73);
 
-/* account repeated in account amounts */
+/**
+ * same accounts repeated in the transfer account list
+ */
 Status.AccountRepeatedInAccountAmounts = new Status(74);
 
-/* setting negative account balance */
+/**
+ * attempting to set negative balance value for crypto account
+ */
 Status.SettingNegativeAccountBalance = new Status(75);
 
-/* obtainer required */
+/**
+ * when deleting smart contract that has crypto balance either transfer account or transfer smart
+ * contract is required
+ */
 Status.ObtainerRequired = new Status(76);
 
-/* obtainer same contract id */
+/**
+ * when deleting smart contract that has crypto balance you can not use the same contract id as
+ * transferContractId as the one being deleted
+ */
 Status.ObtainerSameContractId = new Status(77);
 
-/* obtainer does not exist */
+/**
+ * transferAccountId or transferContractId specified for contract delete does not exist
+ */
 Status.ObtainerDoesNotExist = new Status(78);
 
-/* modifying immutable contract */
+/**
+ * attempting to modify (update or delete a immutable smart contract, i.e. one created without a
+ * admin key)
+ */
 Status.ModifyingImmutableContract = new Status(79);
 
-/* file system exception */
+/**
+ * Unexpected exception thrown by file system functions
+ */
 Status.FileSystemException = new Status(80);
 
-/* autorenew duration not in range */
+/**
+ * the duration is not a subset of [MINIMUM_AUTORENEW_DURATION,MAXIMUM_AUTORENEW_DURATION]
+ */
 Status.AutorenewDurationNotInRange = new Status(81);
 
-/* error decoding bytestring */
+/**
+ * Decoding the smart contract binary to a byte array failed. Check that the input is a valid hex
+ * string.
+ */
 Status.ErrorDecodingBytestring = new Status(82);
 
-/* contract file empty */
+/**
+ * File to create a smart contract was of length zero
+ */
 Status.ContractFileEmpty = new Status(83);
 
-/* contract bytecode empty */
+/**
+ * Bytecode for smart contract is of length zero
+ */
 Status.ContractBytecodeEmpty = new Status(84);
 
-/* invalid initial balance */
+/**
+ * Attempt to set negative initial balance
+ */
 Status.InvalidInitialBalance = new Status(85);
 
-/* invalid receive record threshold */
+/**
+ * [Deprecated]. attempt to set negative receive record threshold
+ */
 Status.InvalidReceiveRecordThreshold = new Status(86);
 
-/* invalid send record threshold */
+/**
+ * [Deprecated]. attempt to set negative send record threshold
+ */
 Status.InvalidSendRecordThreshold = new Status(87);
 
-/* account is not genesis account */
+/**
+ * Special Account Operations should be performed by only Genesis account, return this code if it
+ * is not Genesis Account
+ */
 Status.AccountIsNotGenesisAccount = new Status(88);
 
-/* payer account unauthorized */
+/**
+ * The fee payer account doesn't have permission to submit such Transaction
+ */
 Status.PayerAccountUnauthorized = new Status(89);
 
-/* invalid freeze transaction body */
+/**
+ * FreezeTransactionBody is invalid
+ */
 Status.InvalidFreezeTransactionBody = new Status(90);
 
-/* freeze transaction body not found */
+/**
+ * FreezeTransactionBody does not exist
+ */
 Status.FreezeTransactionBodyNotFound = new Status(91);
 
-/* transfer list size limit exceeded */
+/**
+ * Exceeded the number of accounts (both from and to) allowed for crypto transfer list
+ */
 Status.TransferListSizeLimitExceeded = new Status(92);
 
-/* result size limit exceeded */
+/**
+ * Smart contract result size greater than specified maxResultSize
+ */
 Status.ResultSizeLimitExceeded = new Status(93);
 
-/* not special account */
+/**
+ * The payer account is not a special account(account 0.0.55)
+ */
 Status.NotSpecialAccount = new Status(94);
 
-/* contract negative gas */
+/**
+ * Negative gas was offered in smart contract call
+ */
 Status.ContractNegativeGas = new Status(95);
 
-/* contract negative value */
+/**
+ * Negative value / initial balance was specified in a smart contract call / create
+ */
 Status.ContractNegativeValue = new Status(96);
 
-/* invalid fee file */
+/**
+ * Failed to update fee file
+ */
 Status.InvalidFeeFile = new Status(97);
 
-/* invalid exchange rate file */
+/**
+ * Failed to update exchange rate file
+ */
 Status.InvalidExchangeRateFile = new Status(98);
 
-/* insufficient local call gas */
+/**
+ * Payment tendered for contract local call cannot cover both the fee and the gas
+ */
 Status.InsufficientLocalCallGas = new Status(99);
 
-/* entity not allowed to delete */
+/**
+ * Entities with Entity ID below 1000 are not allowed to be deleted
+ */
 Status.EntityNotAllowedToDelete = new Status(100);
 
-/* authorization failed */
+/**
+ * Violating one of these rules: 1) treasury account can update all entities below 0.0.1000, 2)
+ * account 0.0.50 can update all entities from 0.0.51 - 0.0.80, 3) Network Function Master Account
+ * A/c 0.0.50 - Update all Network Function accounts & perform all the Network Functions listed
+ * below, 4) Network Function Accounts: i) A/c 0.0.55 - Update Address Book files (0.0.101/102),
+ * ii) A/c 0.0.56 - Update Fee schedule (0.0.111), iii) A/c 0.0.57 - Update Exchange Rate
+ * (0.0.112).
+ */
 Status.AuthorizationFailed = new Status(101);
 
-/* file uploaded proto invalid */
+/**
+ * Fee Schedule Proto uploaded but not valid (append or update is required)
+ */
 Status.FileUploadedProtoInvalid = new Status(102);
 
-/* file uploaded proto not saved to disk */
+/**
+ * Fee Schedule Proto uploaded but not valid (append or update is required)
+ */
 Status.FileUploadedProtoNotSavedToDisk = new Status(103);
 
-/* fee schedule file part uploaded */
+/**
+ * Fee Schedule Proto File Part uploaded
+ */
 Status.FeeScheduleFilePartUploaded = new Status(104);
 
-/* exchange rate change limit exceeded */
+/**
+ * The change on Exchange Rate exceeds Exchange_Rate_Allowed_Percentage
+ */
 Status.ExchangeRateChangeLimitExceeded = new Status(105);
 
-/* max contract storage exceeded */
+/**
+ * Contract permanent storage exceeded the currently allowable limit
+ */
 Status.MaxContractStorageExceeded = new Status(106);
 
-/* transfer account same as delete account */
+/**
+ * Transfer Account should not be same as Account to be deleted
+ */
 Status.TransferAccountSameAsDeleteAccount = new Status(107);
 
-/* total ledger balance invalid */
 Status.TotalLedgerBalanceInvalid = new Status(108);
-
-/* expiration reduction not allowed */
+/**
+ * The expiration date/time on a smart contract may not be reduced
+ */
 Status.ExpirationReductionNotAllowed = new Status(110);
 
-/* max gas limit exceeded */
+/**
+ * Gas exceeded currently allowable gas limit per transaction
+ */
 Status.MaxGasLimitExceeded = new Status(111);
 
-/* max file size exceeded */
+/**
+ * File size exceeded the currently allowable limit
+ */
 Status.MaxFileSizeExceeded = new Status(112);
 
-/* receiver sig required */
+/**
+ * When a valid signature is not provided for operations on account with receiverSigRequired=true
+ */
 Status.ReceiverSigRequired = new Status(113);
 
-/* invalid topic id */
+/**
+ * The Topic ID specified is not in the system.
+ */
 Status.InvalidTopicId = new Status(150);
 
-/* invalid admin key */
+/**
+ * A provided admin key was invalid.
+ */
 Status.InvalidAdminKey = new Status(155);
 
-/* invalid submit key */
+/**
+ * A provided submit key was invalid.
+ */
 Status.InvalidSubmitKey = new Status(156);
 
-/* unauthorized */
+/**
+ * An attempted operation was not authorized (ie - a deleteTopic for a topic with no adminKey).
+ */
 Status.Unauthorized = new Status(157);
 
-/* invalid topic message */
+/**
+ * A ConsensusService message is empty.
+ */
 Status.InvalidTopicMessage = new Status(158);
 
-/* invalid autorenew account */
+/**
+ * The autoRenewAccount specified is not a valid, active account.
+ */
 Status.InvalidAutorenewAccount = new Status(159);
 
-/* autorenew account not allowed */
+/**
+ * An adminKey was not specified on the topic, so there must not be an autoRenewAccount.
+ */
 Status.AutorenewAccountNotAllowed = new Status(160);
 
-/* topic expired */
+/**
+ * The topic has expired, was not automatically renewed, and is in a 7 day grace period before the
+ * topic will be deleted unrecoverably. This error response code will not be returned until
+ * autoRenew functionality is supported by HAPI.
+ */
 Status.TopicExpired = new Status(162);
 
-/* invalid chunk number */
+/**
+ * chunk number must be from 1 to total (chunks) inclusive.
+ */
 Status.InvalidChunkNumber = new Status(163);
 
-/* invalid chunk transaction id */
+/**
+ * For every chunk, the payer account that is part of initialTransactionID must match the Payer Account of this transaction. The entire initialTransactionID should match the transactionID of the first chunk, but this is not checked or enforced by Hedera except when the chunk number is 1.
+ */
 Status.InvalidChunkTransactionId = new Status(164);
 
-/* account frozen for token */
+/**
+ * Account is frozen and cannot transact with the token
+ */
 Status.AccountFrozenForToken = new Status(165);
 
-/* tokens per account limit exceeded */
+/**
+ * An involved account already has more than <tt>tokens.maxPerAccount</tt> associations with non-deleted tokens.
+ */
 Status.TokensPerAccountLimitExceeded = new Status(166);
 
-/* invalid token id */
+/**
+ * The token is invalid or does not exist
+ */
 Status.InvalidTokenId = new Status(167);
 
-/* invalid token decimals */
+/**
+ * Invalid token decimals
+ */
 Status.InvalidTokenDecimals = new Status(168);
 
-/* invalid token initial supply */
+/**
+ * Invalid token initial supply
+ */
 Status.InvalidTokenInitialSupply = new Status(169);
 
-/* invalid treasury account for token */
+/**
+ * Treasury Account does not exist or is deleted
+ */
 Status.InvalidTreasuryAccountForToken = new Status(170);
 
-/* invalid token symbol */
+/**
+ * Token Symbol is not UTF-8 capitalized alphabetical string
+ */
 Status.InvalidTokenSymbol = new Status(171);
 
-/* token has no freeze key */
+/**
+ * Freeze key is not set on token
+ */
 Status.TokenHasNoFreezeKey = new Status(172);
 
-/* transfers not zero sum for token */
+/**
+ * Amounts in transfer list are not net zero
+ */
 Status.TransfersNotZeroSumForToken = new Status(173);
 
-/* missing token symbol */
+/**
+ * A token symbol was not provided
+ */
 Status.MissingTokenSymbol = new Status(174);
 
-/* token symbol too long */
+/**
+ * The provided token symbol was too long
+ */
 Status.TokenSymbolTooLong = new Status(175);
 
-/* account kyc not granted for token */
+/**
+ * KYC must be granted and account does not have KYC granted
+ */
 Status.AccountKycNotGrantedForToken = new Status(176);
 
-/* token has no kyc key */
+/**
+ * KYC key is not set on token
+ */
 Status.TokenHasNoKycKey = new Status(177);
 
-/* insufficient token balance */
+/**
+ * Token balance is not sufficient for the transaction
+ */
 Status.InsufficientTokenBalance = new Status(178);
 
-/* token was deleted */
+/**
+ * Token transactions cannot be executed on deleted token
+ */
 Status.TokenWasDeleted = new Status(179);
 
-/* token has no supply key */
+/**
+ * Supply key is not set on token
+ */
 Status.TokenHasNoSupplyKey = new Status(180);
 
-/* token has no wipe key */
+/**
+ * Wipe key is not set on token
+ */
 Status.TokenHasNoWipeKey = new Status(181);
 
-/* invalid token mint amount */
+/**
+ * The requested token mint amount would cause an invalid total supply
+ */
 Status.InvalidTokenMintAmount = new Status(182);
 
-/* invalid token burn amount */
+/**
+ * The requested token burn amount would cause an invalid total supply
+ */
 Status.InvalidTokenBurnAmount = new Status(183);
 
-/* token not associated to account */
+/**
+ * A required token-account relationship is missing
+ */
 Status.TokenNotAssociatedToAccount = new Status(184);
 
-/* cannot wipe token treasury account */
+/**
+ * The target of a wipe operation was the token treasury account
+ */
 Status.CannotWipeTokenTreasuryAccount = new Status(185);
 
-/* invalid kyc key */
+/**
+ * The provided KYC key was invalid.
+ */
 Status.InvalidKycKey = new Status(186);
 
-/* invalid wipe key */
+/**
+ * The provided wipe key was invalid.
+ */
 Status.InvalidWipeKey = new Status(187);
 
-/* invalid freeze key */
+/**
+ * The provided freeze key was invalid.
+ */
 Status.InvalidFreezeKey = new Status(188);
 
-/* invalid supply key */
+/**
+ * The provided supply key was invalid.
+ */
 Status.InvalidSupplyKey = new Status(189);
 
-/* missing token name */
+/**
+ * Token Name is not provided
+ */
 Status.MissingTokenName = new Status(190);
 
-/* token name too long */
+/**
+ * Token Name is too long
+ */
 Status.TokenNameTooLong = new Status(191);
 
-/* invalid wiping amount */
+/**
+ * The provided wipe amount must not be negative, zero or bigger than the token holder balance
+ */
 Status.InvalidWipingAmount = new Status(192);
 
-/* token is immutable */
+/**
+ * Token does not have Admin key set, thus update/delete transactions cannot be performed
+ */
 Status.TokenIsImmutable = new Status(193);
 
-/* token already associated to account */
+/**
+ * An <tt>associateToken</tt> operation specified a token already associated to the account
+ */
 Status.TokenAlreadyAssociatedToAccount = new Status(194);
 
-/* transaction requires zero token balances */
+/**
+ * An attempted operation is invalid until all token balances for the target account are zero
+ */
 Status.TransactionRequiresZeroTokenBalances = new Status(195);
 
-/* account is treasury */
+/**
+ * An attempted operation is invalid because the account is a treasury
+ */
 Status.AccountIsTreasury = new Status(196);
 
-/* token id repeated in token list */
+/**
+ * Same TokenIDs present in the token list
+ */
 Status.TokenIdRepeatedInTokenList = new Status(197);
 
-/* token transfer list size limit exceeded */
+/**
+ * Exceeded the number of token transfers (both from and to) allowed for token transfer list
+ */
 Status.TokenTransferListSizeLimitExceeded = new Status(198);
 
-/* empty token transfer body */
+/**
+ * TokenTransfersTransactionBody has no TokenTransferList
+ */
 Status.EmptyTokenTransferBody = new Status(199);
 
-/* empty token transfer account amounts */
+/**
+ * TokenTransfersTransactionBody has a TokenTransferList with no AccountAmounts
+ */
 Status.EmptyTokenTransferAccountAmounts = new Status(200);
 
-/* invalid schedule id */
+/**
+ * The Scheduled entity does not exist; or has now expired, been deleted, or been executed
+ */
 Status.InvalidScheduleId = new Status(201);
 
-/* schedule is immutable */
+/**
+ * The Scheduled entity cannot be modified. Admin key not set
+ */
 Status.ScheduleIsImmutable = new Status(202);
 
-/* invalid schedule payer id */
+/**
+ * The provided Scheduled Payer does not exist
+ */
 Status.InvalidSchedulePayerId = new Status(203);
 
-/* invalid schedule account id */
+/**
+ * The Schedule Create Transaction TransactionID account does not exist
+ */
 Status.InvalidScheduleAccountId = new Status(204);
 
-/* no new valid signatures */
+/**
+ * The provided sig map did not contain any new valid signatures from required signers of the scheduled transaction
+ */
 Status.NoNewValidSignatures = new Status(205);
 
-/* unresolvable required signers */
+/**
+ * The required signers for a scheduled transaction cannot be resolved, for example because they do not exist or have been deleted
+ */
 Status.UnresolvableRequiredSigners = new Status(206);
 
-/* scheduled transaction not in whitelist */
+/**
+ * Only whitelisted transaction types may be scheduled
+ */
 Status.ScheduledTransactionNotInWhitelist = new Status(207);
 
-/* some signatures were invalid */
+/**
+ * At least one of the signatures in the provided sig map did not represent a valid signature for any required signer
+ */
 Status.SomeSignaturesWereInvalid = new Status(208);
 
-/* transaction id field not allowed */
+/**
+ * The scheduled field in the TransactionID may not be set to true
+ */
 Status.TransactionIdFieldNotAllowed = new Status(209);
 
-/* identical schedule already created */
+/**
+ * A schedule already exists with the same identifying fields of an attempted ScheduleCreate (that is, all fields other than scheduledPayerAccountID)
+ */
 Status.IdenticalScheduleAlreadyCreated = new Status(210);
 
-/* invalid zero byte in string */
+/**
+ * A string field in the transaction has a UTF-8 encoding with the prohibited zero byte
+ */
 Status.InvalidZeroByteInString = new Status(211);
 
-/* schedule already deleted */
+/**
+ * A schedule being signed or deleted has already been deleted
+ */
 Status.ScheduleAlreadyDeleted = new Status(212);
 
-/* schedule already executed */
+/**
+ * A schedule being signed or deleted has already been executed
+ */
 Status.ScheduleAlreadyExecuted = new Status(213);
 
-/* message size too large */
+/**
+ * ConsensusSubmitMessage request's message size is larger than allowed.
+ */
 Status.MessageSizeTooLarge = new Status(214);
 
-/* operation repeated in bucket groups */
+/**
+ * An operation was assigned to more than one throttle group in a given bucket
+ */
 Status.OperationRepeatedInBucketGroups = new Status(215);
 
-/* bucket capacity overflow */
+/**
+ * The capacity needed to satisfy all opsPerSec groups in a bucket overflowed a signed 8-byte integral type
+ */
 Status.BucketCapacityOverflow = new Status(216);
 
-/* node capacity not sufficient for operation */
+/**
+ * Given the network size in the address book, the node-level capacity for an operation would never be enough to accept a single request; usually means a bucket burstPeriod should be increased
+ */
 Status.NodeCapacityNotSufficientForOperation = new Status(217);
 
-/* bucket has no throttle groups */
+/**
+ * A bucket was defined without any throttle groups
+ */
 Status.BucketHasNoThrottleGroups = new Status(218);
 
-/* throttle group has zero ops per sec */
+/**
+ * A throttle group was granted zero opsPerSec
+ */
 Status.ThrottleGroupHasZeroOpsPerSec = new Status(219);
 
-/* success but missing expected operation */
+/**
+ * The throttle definitions file was updated, but some supported operations were not assigned a bucket
+ */
 Status.SuccessButMissingExpectedOperation = new Status(220);
 
-/* unparseable throttle definitions */
+/**
+ * The new contents for the throttle definitions system file were not valid protobuf
+ */
 Status.UnparseableThrottleDefinitions = new Status(221);
 
-/* invalid throttle definitions */
+/**
+ * The new throttle definitions system file were invalid, and no more specific error could be divined
+ */
 Status.InvalidThrottleDefinitions = new Status(222);
 
-/* account expired and pending removal */
+/**
+ * The transaction references an account which has passed its expiration without renewal funds available, and currently remains in the ledger only because of the grace period given to expired entities
+ */
 Status.AccountExpiredAndPendingRemoval = new Status(223);
 
-/* invalid token max supply */
+/**
+ * Invalid token max supply
+ */
 Status.InvalidTokenMaxSupply = new Status(224);
 
-/* invalid token nft serial number */
+/**
+ * Invalid token nft serial number
+ */
 Status.InvalidTokenNftSerialNumber = new Status(225);
 
-/* invalid nft id */
+/**
+ * Invalid nft id
+ */
 Status.InvalidNftId = new Status(226);
 
-/* metadata too long */
+/**
+ * Nft metadata is too long
+ */
 Status.MetadataTooLong = new Status(227);
 
-/* batch size limit exceeded */
+/**
+ * Repeated operations count exceeds the limit
+ */
 Status.BatchSizeLimitExceeded = new Status(228);
 
-/* invalid query range */
+/**
+ * The range of data to be gathered is out of the set boundaries
+ */
 Status.InvalidQueryRange = new Status(229);
 
-/* fraction divides by zero */
+/**
+ * A custom fractional fee set a denominator of zero
+ */
 Status.FractionDividesByZero = new Status(230);
 
-/* insufficient payer balance for custom fee */
+/**
+ * The transaction payer could not afford a custom fee
+ */
 Status.InsufficientPayerBalanceForCustomFee = new Status(231);
 
-/* custom fees list too long */
+/**
+ * More than 10 custom fees were specified
+ */
 Status.CustomFeesListTooLong = new Status(232);
 
-/* invalid custom fee collector */
+/**
+ * Any of the feeCollector accounts for customFees is invalid
+ */
 Status.InvalidCustomFeeCollector = new Status(233);
 
-/* invalid token id in custom fees */
+/**
+ * Any of the token Ids in customFees is invalid
+ */
 Status.InvalidTokenIdInCustomFees = new Status(234);
 
-/* token not associated to fee collector */
+/**
+ * Any of the token Ids in customFees are not associated to feeCollector
+ */
 Status.TokenNotAssociatedToFeeCollector = new Status(235);
 
-/* token max supply reached */
+/**
+ * A token cannot have more units minted due to its configured supply ceiling
+ */
 Status.TokenMaxSupplyReached = new Status(236);
 
-/* sender does not own nft serial no */
+/**
+ * The transaction attempted to move an NFT serial number from an account other than its owner
+ */
 Status.SenderDoesNotOwnNftSerialNo = new Status(237);
 
-/* custom fee not fully specified */
+/**
+ * A custom fee schedule entry did not specify either a fixed or fractional fee
+ */
 Status.CustomFeeNotFullySpecified = new Status(238);
 
-/* custom fee must be positive */
+/**
+ * Only positive fees may be assessed at this time
+ */
 Status.CustomFeeMustBePositive = new Status(239);
 
-/* token has no fee schedule key */
+/**
+ * Fee schedule key is not set on token
+ */
 Status.TokenHasNoFeeScheduleKey = new Status(240);
 
-/* custom fee outside numeric range */
+/**
+ * A fractional custom fee exceeded the range of a 64-bit signed integer
+ */
 Status.CustomFeeOutsideNumericRange = new Status(241);
 
-/* royalty fraction cannot exceed one */
+/**
+ * A royalty cannot exceed the total fungible value exchanged for an NFT
+ */
 Status.RoyaltyFractionCannotExceedOne = new Status(242);
 
-/* fractional fee max amount less than min amount */
+/**
+ * Each fractional custom fee must have its maximum_amount, if specified, at least its minimum_amount
+ */
 Status.FractionalFeeMaxAmountLessThanMinAmount = new Status(243);
 
-/* custom schedule already has no fees */
+/**
+ * A fee schedule update tried to clear the custom fees from a token whose fee schedule was already empty
+ */
 Status.CustomScheduleAlreadyHasNoFees = new Status(244);
 
-/* custom fee denomination must be fungible common */
+/**
+ * Only tokens of type FUNGIBLE_COMMON can be used to as fee schedule denominations
+ */
 Status.CustomFeeDenominationMustBeFungibleCommon = new Status(245);
 
-/* custom fractional fee only allowed for fungible common */
+/**
+ * Only tokens of type FUNGIBLE_COMMON can have fractional fees
+ */
 Status.CustomFractionalFeeOnlyAllowedForFungibleCommon = new Status(246);
 
-/* invalid custom fee schedule key */
+/**
+ * The provided custom fee schedule key was invalid
+ */
 Status.InvalidCustomFeeScheduleKey = new Status(247);
 
-/* invalid token mint metadata */
+/**
+ * The requested token mint metadata was invalid
+ */
 Status.InvalidTokenMintMetadata = new Status(248);
 
-/* invalid token burn metadata */
+/**
+ * The requested token burn metadata was invalid
+ */
 Status.InvalidTokenBurnMetadata = new Status(249);
 
-/* current treasury still owns nfts */
+/**
+ * The treasury for a unique token cannot be changed until it owns no NFTs
+ */
 Status.CurrentTreasuryStillOwnsNfts = new Status(250);
 
-/* account still owns nfts */
+/**
+ * An account cannot be dissociated from a unique token if it owns NFTs for the token
+ */
 Status.AccountStillOwnsNfts = new Status(251);
 
-/* treasury must own burned nft */
+/**
+ * A NFT can only be burned when owned by the unique token's treasury
+ */
 Status.TreasuryMustOwnBurnedNft = new Status(252);
 
-/* account does not own wiped nft */
+/**
+ * An account did not own the NFT to be wiped
+ */
 Status.AccountDoesNotOwnWipedNft = new Status(253);
 
-/* account amount transfers only allowed for fungible common */
+/**
+ * An AccountAmount token transfers list referenced a token type other than FUNGIBLE_COMMON
+ */
 Status.AccountAmountTransfersOnlyAllowedForFungibleCommon = new Status(254);
 
-/* max nfts in price regime have been minted */
+/**
+ * All the NFTs allowed in the current price regime have already been minted
+ */
 Status.MaxNftsInPriceRegimeHaveBeenMinted = new Status(255);
 
-/* payer account deleted */
+/**
+ * The payer account has been marked as deleted
+ */
 Status.PayerAccountDeleted = new Status(256);
 
-/* custom fee charging exceeded max recursion depth */
+/**
+ * The reference chain of custom fees for a transferred token exceeded the maximum length of 2
+ */
 Status.CustomFeeChargingExceededMaxRecursionDepth = new Status(257);
 
-/* custom fee charging exceeded max account amounts */
+/**
+ * More than 20 balance adjustments were to satisfy a CryptoTransfer and its implied custom fee payments
+ */
 Status.CustomFeeChargingExceededMaxAccountAmounts = new Status(258);
 
-/* insufficient sender account balance for custom fee */
+/**
+ * The sender account in the token transfer transaction could not afford a custom fee
+ */
 Status.InsufficientSenderAccountBalanceForCustomFee = new Status(259);
 
-/* serial number limit reached */
+/**
+ * Currently no more than 4,294,967,295 NFTs may be minted for a given unique token type
+ */
 Status.SerialNumberLimitReached = new Status(260);
 
-/* custom royalty fee only allowed for non fungible unique */
+/**
+ * Only tokens of type NON_FUNGIBLE_UNIQUE can have royalty fees
+ */
 Status.CustomRoyaltyFeeOnlyAllowedForNonFungibleUnique = new Status(261);
 
-/* no remaining automatic associations */
+/**
+ * The account has reached the limit on the automatic associations count.
+ */
 Status.NoRemainingAutomaticAssociations = new Status(262);
 
-/* existing automatic associations exceed given limit */
+/**
+ * Already existing automatic associations are more than the new maximum automatic associations.
+ */
 Status.ExistingAutomaticAssociationsExceedGivenLimit = new Status(263);
 
-/* requested num automatic associations exceeds association limit */
-Status.RequestedNumAutomaticAssociationsExceedsAssociationLimit = new Status(264);
+/**
+ * Cannot set the number of automatic associations for an account more than the maximum allowed
+ * token associations <tt>tokens.maxPerAccount</tt>.
+ */
+Status.RequestedNumAutomaticAssociationsExceedsAssociationLimit = new Status(
+    264,
+);
 
-/* token is paused */
+/**
+ * Token is paused. This Token cannot be a part of any kind of Transaction until unpaused.
+ */
 Status.TokenIsPaused = new Status(265);
 
-/* token has no pause key */
+/**
+ * Pause key is not set on token
+ */
 Status.TokenHasNoPauseKey = new Status(266);
 
-/* invalid pause key */
+/**
+ * The provided pause key was invalid
+ */
 Status.InvalidPauseKey = new Status(267);
 
-/* freeze update file does not exist */
+/**
+ * The update file in a freeze transaction body must exist.
+ */
 Status.FreezeUpdateFileDoesNotExist = new Status(268);
 
-/* freeze update file hash does not match */
+/**
+ * The hash of the update file in a freeze transaction body must match the in-memory hash.
+ */
 Status.FreezeUpdateFileHashDoesNotMatch = new Status(269);
 
-/* no upgrade has been prepared */
+/**
+ * A FREEZE_UPGRADE transaction was handled with no previous update prepared.
+ */
 Status.NoUpgradeHasBeenPrepared = new Status(270);
 
-/* no freeze is scheduled */
+/**
+ * A FREEZE_ABORT transaction was handled with no scheduled freeze.
+ */
 Status.NoFreezeIsScheduled = new Status(271);
 
-/* update file hash changed since prepare upgrade */
+/**
+ * The update file hash when handling a FREEZE_UPGRADE transaction differs from the file
+ * hash at the time of handling the PREPARE_UPGRADE transaction.
+ */
 Status.UpdateFileHashChangedSincePrepareUpgrade = new Status(272);
 
-/* freeze start time must be future */
+/**
+ * The given freeze start time was in the (consensus) past.
+ */
 Status.FreezeStartTimeMustBeFuture = new Status(273);
 
-/* prepared update file is immutable */
+/**
+ * The prepared update file cannot be updated or appended until either the upgrade has
+ * been completed, or a FREEZE_ABORT has been handled.
+ */
 Status.PreparedUpdateFileIsImmutable = new Status(274);
 
-/* freeze already scheduled */
+/**
+ * Once a freeze is scheduled, it must be aborted before any other type of freeze can
+ * can be performed.
+ */
 Status.FreezeAlreadyScheduled = new Status(275);
 
-/* freeze upgrade in progress */
+/**
+ * If an NMT upgrade has been prepared, the following operation must be a FREEZE_UPGRADE.
+ * (To issue a FREEZE_ONLY, submit a FREEZE_ABORT first.)
+ */
 Status.FreezeUpgradeInProgress = new Status(276);
 
-/* update file id does not match prepared */
+/**
+ * If an NMT upgrade has been prepared, the subsequent FREEZE_UPGRADE transaction must
+ * confirm the id of the file to be used in the upgrade.
+ */
 Status.UpdateFileIdDoesNotMatchPrepared = new Status(277);
 
-/* update file hash does not match prepared */
+/**
+ * If an NMT upgrade has been prepared, the subsequent FREEZE_UPGRADE transaction must
+ * confirm the hash of the file to be used in the upgrade.
+ */
 Status.UpdateFileHashDoesNotMatchPrepared = new Status(278);
 
-/* consensus gas exhausted */
+/**
+ * Consensus throttle did not allow execution of this transaction. System is throttled at
+ * consensus level.
+ */
 Status.ConsensusGasExhausted = new Status(279);
 
-/* reverted success */
+/**
+ * A precompiled contract succeeded, but was later reverted.
+ */
 Status.RevertedSuccess = new Status(280);
 
-/* max storage in price regime has been used */
+/**
+ * All contract storage allocated to the current price regime has been consumed.
+ */
 Status.MaxStorageInPriceRegimeHasBeenUsed = new Status(281);
 
-/* invalid alias key */
+/**
+ * An alias used in a CryptoTransfer transaction is not the serialization of a primitive Key
+ * message--that is, a Key with a single Ed25519 or ECDSA(secp256k1) public key and no
+ * unknown protobuf fields.
+ */
 Status.InvalidAliasKey = new Status(282);
 
-/* unexpected token decimals */
+/**
+ * A fungible token transfer expected a different number of decimals than the involved
+ * type actually has.
+ */
 Status.UnexpectedTokenDecimals = new Status(283);
 
-/* invalid proxy account id */
+/**
+ * The proxy account id is invalid or does not exist.
+ */
 Status.InvalidProxyAccountId = new Status(284);
 
-/* invalid transfer account id */
+/**
+ * The transfer account id in CryptoDelete transaction is invalid or does not exist.
+ */
 Status.InvalidTransferAccountId = new Status(285);
 
-/* invalid fee collector account id */
+/**
+ * The fee collector account id in TokenFeeScheduleUpdate is invalid or does not exist.
+ */
 Status.InvalidFeeCollectorAccountId = new Status(286);
 
-/* alias is immutable */
+/**
+ * The alias already set on an account cannot be updated using CryptoUpdate transaction.
+ */
 Status.AliasIsImmutable = new Status(287);
 
-/* spender account same as owner */
+/**
+ * An approved allowance specifies a spender account that is the same as the hbar/token
+ * owner account.
+ */
 Status.SpenderAccountSameAsOwner = new Status(288);
 
-/* amount exceeds token max supply */
+/**
+ * The establishment or adjustment of an approved allowance cause the token allowance
+ * to exceed the token maximum supply.
+ */
 Status.AmountExceedsTokenMaxSupply = new Status(289);
 
-/* negative allowance amount */
+/**
+ * The specified amount for an approved allowance cannot be negative.
+ */
 Status.NegativeAllowanceAmount = new Status(290);
 
-/* cannot approve for all fungible common */
+/**
+ * The approveForAll flag cannot be set for a fungible token.
+ */
 Status.CannotApproveForAllFungibleCommon = new Status(291);
 
-/* spender does not have allowance */
+/**
+ * The spender does not have an existing approved allowance with the hbar/token owner.
+ */
 Status.SpenderDoesNotHaveAllowance = new Status(292);
 
-/* amount exceeds allowance */
+/**
+ * The transfer amount exceeds the current approved allowance for the spender account.
+ */
 Status.AmountExceedsAllowance = new Status(293);
 
-/* max allowances exceeded */
+/**
+ * The payer account of an approveAllowances or adjustAllowance transaction is attempting
+ * to go beyond the maximum allowed number of allowances.
+ */
 Status.MaxAllowancesExceeded = new Status(294);
 
-/* empty allowances */
+/**
+ * No allowances have been specified in the approval/adjust transaction.
+ */
 Status.EmptyAllowances = new Status(295);
 
-/* spender account repeated in allowances */
+/**
+ * Spender is repeated more than once in Crypto or Token or NFT allowance lists in a single
+ * CryptoApproveAllowance or CryptoAdjustAllowance transaction.
+ */
 Status.SpenderAccountRepeatedInAllowances = new Status(296);
 
-/* repeated serial nums in nft allowances */
+/**
+ * Serial numbers are repeated in nft allowance for a single spender account
+ */
 Status.RepeatedSerialNumsInNftAllowances = new Status(297);
 
-/* fungible token in nft allowances */
+/**
+ * Fungible common token used in NFT allowances
+ */
 Status.FungibleTokenInNftAllowances = new Status(298);
 
-/* nft in fungible token allowances */
+/**
+ * Non fungible token used in fungible token allowances
+ */
 Status.NftInFungibleTokenAllowances = new Status(299);
 
-/* invalid allowance owner id */
+/**
+ * The account id specified as the owner is invalid or does not exist.
+ */
 Status.InvalidAllowanceOwnerId = new Status(300);
 
-/* invalid allowance spender id */
+/**
+ * The account id specified as the spender is invalid or does not exist.
+ */
 Status.InvalidAllowanceSpenderId = new Status(301);
 
-/* repeated allowances to delete */
+/**
+ * If the CryptoDeleteAllowance transaction has repeated crypto or token or Nft allowances to delete.
+ */
 Status.RepeatedAllowancesToDelete = new Status(302);
 
-/* invalid delegating spender */
+/**
+ * If the account Id specified as the delegating spender is invalid or does not exist.
+ */
 Status.InvalidDelegatingSpender = new Status(303);
 
-/* delegating spender cannot grant approve for all */
+/**
+ * The delegating Spender cannot grant approveForAll allowance on a NFT token type for another spender.
+ */
 Status.DelegatingSpenderCannotGrantApproveForAll = new Status(304);
 
-/* delegating spender does not have approve for all */
+/**
+ * The delegating Spender cannot grant allowance on a NFT serial for another spender as it doesnt not have approveForAll
+ * granted on token-owner.
+ */
 Status.DelegatingSpenderDoesNotHaveApproveForAll = new Status(305);
 
-/* schedule expiration time too far in future */
+/**
+ * The scheduled transaction could not be created because it's expiration_time was too far in the future.
+ */
 Status.ScheduleExpirationTimeTooFarInFuture = new Status(306);
 
-/* schedule expiration time must be higher than consensus time */
+/**
+ * The scheduled transaction could not be created because it's expiration_time was less than or equal to the consensus time.
+ */
 Status.ScheduleExpirationTimeMustBeHigherThanConsensusTime = new Status(307);
 
-/* schedule future throttle exceeded */
+/**
+ * The scheduled transaction could not be created because it would cause throttles to be violated on the specified expiration_time.
+ */
 Status.ScheduleFutureThrottleExceeded = new Status(308);
 
-/* schedule future gas limit exceeded */
+/**
+ * The scheduled transaction could not be created because it would cause the gas limit to be violated on the specified expiration_time.
+ */
 Status.ScheduleFutureGasLimitExceeded = new Status(309);
 
-/* invalid ethereum transaction */
+/**
+ * The ethereum transaction either failed parsing or failed signature validation, or some other EthereumTransaction error not covered by another response code.
+ */
 Status.InvalidEthereumTransaction = new Status(310);
 
-/* wrong chain id */
+/**
+ * EthereumTransaction was signed against a chainId that this network does not support.
+ */
 Status.WrongChainId = new Status(311);
 
-/* wrong nonce */
+/**
+ * This transaction specified an ethereumNonce that is not the current ethereumNonce of the account.
+ */
 Status.WrongNonce = new Status(312);
 
-/* access list unsupported */
+/**
+ * The ethereum transaction specified an access list, which the network does not support.
+ */
 Status.AccessListUnsupported = new Status(313);
 
-/* schedule pending expiration */
+/**
+ * The scheduled transaction is pending expiration.
+ */
 Status.SchedulePendingExpiration = new Status(314);
 
-/* contract is token treasury */
+/**
+ * A selfdestruct or ContractDelete targeted a contract that is a token treasury.
+ */
 Status.ContractIsTokenTreasury = new Status(315);
 
-/* contract has non zero token balances */
+/**
+ * A selfdestruct or ContractDelete targeted a contract with non-zero token balances.
+ */
 Status.ContractHasNonZeroTokenBalances = new Status(316);
 
-/* contract expired and pending removal */
+/**
+ * A contract referenced by a transaction is "detached"; that is, expired and lacking any
+ * hbar funds for auto-renewal payment---but still within its post-expiry grace period.
+ */
 Status.ContractExpiredAndPendingRemoval = new Status(317);
 
-/* contract has no auto renew account */
+/**
+ * A ContractUpdate requested removal of a contract's auto-renew account, but that contract has
+ * no auto-renew account.
+ */
 Status.ContractHasNoAutoRenewAccount = new Status(318);
 
-/* permanent removal requires system initiation */
+/**
+ * A delete transaction submitted via HAPI set permanent_removal=true
+ */
 Status.PermanentRemovalRequiresSystemInitiation = new Status(319);
 
-/* proxy account id field is deprecated */
+/*
+ * A CryptoCreate or ContractCreate used the deprecated proxyAccountID field.
+ */
 Status.ProxyAccountIdFieldIsDeprecated = new Status(320);
 
-/* self staking is not allowed */
+/**
+ * An account set the staked_account_id to itself in CryptoUpdate or ContractUpdate transactions.
+ */
 Status.SelfStakingIsNotAllowed = new Status(321);
 
-/* invalid staking id */
+/**
+ * The staking account id or staking node id given is invalid or does not exist.
+ */
 Status.InvalidStakingId = new Status(322);
 
-/* staking not enabled */
+/**
+ * Native staking, while implemented, has not yet enabled by the council.
+ */
 Status.StakingNotEnabled = new Status(323);
 
-/* invalid prng range */
+/**
+ * The range provided in PRNG transaction is negative.
+ */
 Status.InvalidPrngRange = new Status(324);
 
-/* max entities in price regime have been created */
+/**
+ * The maximum number of entities allowed in the current price regime have been created.
+ */
 Status.MaxEntitiesInPriceRegimeHaveBeenCreated = new Status(325);
 
-/* invalid full prefix signature for precompile */
+/**
+ * The full prefix signature for precompile is not valid
+ */
 Status.InvalidFullPrefixSignatureForPrecompile = new Status(326);
 
-/* insufficient balances for storage rent */
+/**
+ * The combined balances of a contract and its auto-renew account (if any) did not cover
+ * the rent charged for net new storage used in a transaction.
+ */
 Status.InsufficientBalancesForStorageRent = new Status(327);
 
-/* max child records exceeded */
+/**
+ * A contract transaction tried to use more than the allowed number of child records, via
+ * either system contract records or internal contract creations.
+ */
 Status.MaxChildRecordsExceeded = new Status(328);
 
-/* insufficient balances for renewal fees */
+/**
+ * The combined balances of a contract and its auto-renew account (if any) or balance of an account did not cover
+ * the auto-renewal fees in a transaction.
+ */
 Status.InsufficientBalancesForRenewalFees = new Status(329);
 
-/* transaction has unknown fields */
+/**
+ * A transaction's protobuf message includes unknown fields; could mean that a client
+ * expects not-yet-released functionality to be available.
+ */
 Status.TransactionHasUnknownFields = new Status(330);
 
-/* account is immutable */
+/**
+ * The account cannot be modified. Account's key is not set
+ */
 Status.AccountIsImmutable = new Status(331);
 
-/* alias already assigned */
+/**
+ * An alias that is assigned to an account or contract cannot be assigned to another account or contract.
+ */
 Status.AliasAlreadyAssigned = new Status(332);
 
-/* invalid metadata key */
+/**
+ * A provided metadata key was invalid. Verification includes, for example, checking the size of Ed25519 and ECDSA(secp256k1) public keys.
+ */
 Status.InvalidMetadataKey = new Status(333);
 
-/* token has no metadata key */
+/**
+ * Metadata key is not set on token
+ */
 Status.TokenHasNoMetadataKey = new Status(334);
 
-/* missing token metadata */
+/**
+ * Token Metadata is not provided
+ */
 Status.MissingTokenMetadata = new Status(335);
 
-/* missing serial numbers */
+/**
+ * NFT serial numbers are missing in the TokenUpdateNftsTransactionBody
+ */
 Status.MissingSerialNumbers = new Status(336);
 
-/* token has no admin key */
+/**
+ * Admin key is not set on token
+ */
 Status.TokenHasNoAdminKey = new Status(337);
 
-/* node deleted */
+/**
+ * The node has been marked as deleted
+ */
 Status.NodeDeleted = new Status(338);
 
-/* invalid node id */
+/**
+ * A node is not found during update and delete node transaction
+ */
 Status.InvalidNodeId = new Status(339);
 
-/* invalid gossip endpoint */
+/**
+ * gossip_endpoint has a fully qualified domain name instead of ip
+ */
 Status.InvalidGossipEndpoint = new Status(340);
 
-/* invalid node account id */
+/**
+ * The node account_id is invalid
+ */
 Status.InvalidNodeAccountId = new Status(341);
 
-/* invalid node description */
+/**
+ * The node description is invalid
+ */
 Status.InvalidNodeDescription = new Status(342);
 
-/* invalid service endpoint */
+/**
+ * service_endpoint is invalid
+ */
 Status.InvalidServiceEndpoint = new Status(343);
 
-/* invalid gossip ca certificate */
+/**
+ * gossip_ca_certificate is invalid
+ */
 Status.InvalidGossipCaCertificate = new Status(344);
 
-/* invalid grpc certificate */
+/**
+ * grpc_certificate_hash is invalid
+ */
 Status.InvalidGrpcCertificate = new Status(345);
 
-/* invalid max auto associations */
+/**
+ * The maximum automatic associations value is not valid.
+ * The most common cause for this error is a value less than `-1`.
+ */
 Status.InvalidMaxAutoAssociations = new Status(346);
 
-/* max nodes created */
+/**
+ * The maximum number of nodes allowed in the address book have been created.
+ */
 Status.MaxNodesCreated = new Status(347);
 
-/* ip fqdn cannot be set for same endpoint */
+/**
+ * In ServiceEndpoint, domain_name and ipAddressV4 are mutually exclusive
+ */
 Status.IpFqdnCannotBeSetForSameEndpoint = new Status(348);
 
-/* gossip endpoint cannot have fqdn */
+/**
+ * Fully qualified domain name is not allowed in gossip_endpoint
+ */
 Status.GossipEndpointCannotHaveFqdn = new Status(349);
 
-/* fqdn size too large */
+/**
+ * In ServiceEndpoint, domain_name size too large
+ */
 Status.FqdnSizeTooLarge = new Status(350);
 
-/* invalid endpoint */
+/**
+ * ServiceEndpoint is invalid
+ */
 Status.InvalidEndpoint = new Status(351);
 
-/* gossip endpoints exceeded limit */
+/**
+ * The number of gossip endpoints exceeds the limit
+ */
 Status.GossipEndpointsExceededLimit = new Status(352);
 
-/* token reference repeated */
+/**
+ * The transaction attempted to use duplicate `TokenReference`.<br/>
+ * This affects `TokenReject` attempting to reject same token reference more than once.
+ */
 Status.TokenReferenceRepeated = new Status(353);
 
-/* invalid owner id */
+/**
+ * The account id specified as the owner in `TokenReject` is invalid or does not exist.
+ */
 Status.InvalidOwnerId = new Status(354);
 
-/* token reference list size limit exceeded */
+/**
+ * The transaction attempted to use more than the allowed number of `TokenReference`.
+ */
 Status.TokenReferenceListSizeLimitExceeded = new Status(355);
 
-/* service endpoints exceeded limit */
+/**
+ * The number of service endpoints exceeds the limit
+ */
 Status.ServiceEndpointsExceededLimit = new Status(356);
 
-/* invalid ipv4 address */
+/*
+ * The IPv4 address is invalid
+ */
 Status.InvalidIpv4Address = new Status(357);
 
-/* empty token reference list */
+/**
+ * The transaction attempted to use empty `TokenReference` list.
+ */
 Status.EmptyTokenReferenceList = new Status(358);
 
-/* update node account not allowed */
+/*
+ * The node account is not allowed to be updated
+ */
 Status.UpdateNodeAccountNotAllowed = new Status(359);
 
-/* token has no metadata or supply key */
+/*
+ * The token has no metadata or supply key
+ */
 Status.TokenHasNoMetadataOrSupplyKey = new Status(360);
 
-/* empty pending airdrop id list */
+/**
+ * The transaction attempted to the use an empty List of `PendingAirdropId`.
+ */
 Status.EmptyPendingAirdropIdList = new Status(361);
 
-/* pending airdrop id repeated */
+/**
+ * The transaction attempted to the same `PendingAirdropId` twice.
+ */
 Status.PendingAirdropIdRepeated = new Status(362);
 
-/* pending airdrop id list too long */
-Status.PendingAirdropIdListTooLong = new Status(363);
+/**
+ * The transaction attempted to use more than the allowed number of `PendingAirdropId`.
+ */
+Status.MaxPendingAirdropIdExceeded = new Status(363);
 
-/* pending nft airdrop already exists */
+/*
+ * A pending airdrop already exists for the specified NFT.
+ */
 Status.PendingNftAirdropAlreadyExists = new Status(364);
 
-/* account has pending airdrops */
+/*
+ * The identified account is sender for one or more pending airdrop(s)
+ * and cannot be deleted.<br/>
+ * Requester should cancel all pending airdrops before resending
+ * this transaction.
+ */
 Status.AccountHasPendingAirdrops = new Status(365);
 
-/* throttled at consensus */
+/**
+ * Consensus throttle did not allow execution of this transaction.<br/>
+ * The transaction should be retried after a modest delay.
+ */
 Status.ThrottledAtConsensus = new Status(366);
 
-/* invalid pending airdrop id */
+/**
+ * The provided pending airdrop id is invalid.<br/>
+ * This pending airdrop MAY already be claimed or cancelled.
+ * <p>
+ * The client SHOULD query a mirror node to determine the current status of
+ * the pending airdrop.
+ */
 Status.InvalidPendingAirdropId = new Status(367);
 
-/* token airdrop with fallback royalty */
+/**
+ * The token to be airdropped has a fallback royalty fee and cannot be
+ * sent or claimed via an airdrop transaction.
+ */
 Status.TokenAirdropWithFallbackRoyalty = new Status(368);
 
-/* invalid token in pending airdrop */
+/**
+ * This airdrop claim is for a pending airdrop with an invalid token.<br/>
+ * The token might be deleted, or the sender may not have enough tokens
+ * to fulfill the offer.
+ * <p>
+ * The client SHOULD query mirror node to determine the status of the pending
+ * airdrop and whether the sender can fulfill the offer.
+ */
 Status.InvalidTokenInPendingAirdrop = new Status(369);
 
-/* schedule expiry is busy */
+/**
+ * A scheduled transaction configured to wait for expiry to execute was given
+ * an expiry time at which there is already too many transactions scheduled to
+ * expire; its creation must be retried with a different expiry.
+ */
 Status.ScheduleExpiryIsBusy = new Status(370);
 
-/* invalid grpc certificate hash */
+/**
+ * The provided gRPC certificate hash is invalid.
+ */
 Status.InvalidGrpcCertificateHash = new Status(371);
 
-/* missing expiry time */
+/**
+ * A scheduled transaction configured to wait for expiry to execute was not
+ * given an explicit expiration time.
+ */
 Status.MissingExpiryTime = new Status(372);
 
-/* no scheduling allowed after scheduled recursion */
+/**
+ * A contract operation attempted to schedule another transaction after it
+ * had already scheduled a recursive contract call.
+ */
 Status.NoSchedulingAllowedAfterScheduledRecursion = new Status(373);
 
-/* recursive scheduling limit reached */
+/**
+ * A contract can schedule recursive calls a finite number of times (this is
+ * approximately four million times with typical network configuration.)
+ */
 Status.RecursiveSchedulingLimitReached = new Status(374);
 
-/* waiting for ledger id */
+/**
+ * The target network is waiting for the ledger ID to be set, which is a
+ * side effect of finishing the network's TSS construction.
+ */
 Status.WaitingForLedgerId = new Status(375);
 
-/* max entries for fee exempt key list exceeded */
+/**
+ * The provided fee exempt key list size exceeded the limit.
+ */
 Status.MaxEntriesForFeeExemptKeyListExceeded = new Status(376);
 
-/* fee exempt key list contains duplicated keys */
+/**
+ * The provided fee exempt key list contains duplicated keys.
+ */
 Status.FeeExemptKeyListContainsDuplicatedKeys = new Status(377);
 
-/* invalid key in fee exempt key list */
+/**
+ * The provided fee exempt key list contains an invalid key.
+ */
 Status.InvalidKeyInFeeExemptKeyList = new Status(378);
 
-/* invalid fee schedule key */
+/**
+ * The provided fee schedule key contains an invalid key.
+ */
 Status.InvalidFeeScheduleKey = new Status(379);
 
-/* fee schedule key cannot be updated */
+/**
+ * If a fee schedule key is not set when we create a topic
+ * we cannot add it on update.
+ */
 Status.FeeScheduleKeyCannotBeUpdated = new Status(380);
 
-/* fee schedule key not set */
+/**
+ * If the topic's custom fees are updated the topic SHOULD have a
+ * fee schedule key
+ */
 Status.FeeScheduleKeyNotSet = new Status(381);
 
-/* max custom fee limit exceeded */
+/**
+ * The fee amount is exceeding the amount that the payer
+ * is willing to pay.
+ */
 Status.MaxCustomFeeLimitExceeded = new Status(382);
 
-/* no valid max custom fee */
+/**
+ * There are no corresponding custom fees.
+ */
 Status.NoValidMaxCustomFee = new Status(383);
 
-/* invalid max custom fees */
+/**
+ * The provided list contains invalid max custom fee.
+ */
 Status.InvalidMaxCustomFees = new Status(384);
 
-/* duplicate denomination in max custom fee list */
+/**
+ * The provided max custom fee list contains fees with
+ * duplicate denominations.
+ */
 Status.DuplicateDenominationInMaxCustomFeeList = new Status(385);
 
-/* duplicate account id in max custom fee list */
+/**
+ * The provided max custom fee list contains fees with
+ * duplicate account id.
+ */
 Status.DuplicateAccountIdInMaxCustomFeeList = new Status(386);
 
-/* max custom fees is not supported */
+/**
+ * Max custom fees list is not supported for this operation.
+ */
 Status.MaxCustomFeesIsNotSupported = new Status(387);
-
