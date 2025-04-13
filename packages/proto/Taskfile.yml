@@ -19,7 +19,7 @@ tasks:
 
     install:submodules:
         vars:
-            scommit_hash: "b44fa0a2a34ea7728421d6525f0b24a8f4858cbe" # v0.59.0-alpha.0
+            scommit_hash: "e47b3817a154761051d067142822ef724274491e" # v0.61.1
         cmds:
             - git submodule update --init --recursive --remote
             - |
@@ -34,13 +34,13 @@ tasks:
     move:protobufs:
         after:
             - "install:submodules"
-        desc: "Move protobufs from src/services/hapi/hedera-protobufs/services to src/proto"
+        desc: "Move protobufs from src/services/hapi/hedera-protobufs-java-api/src/main/proto to src/proto"
         cmds:
             - rm -rf src/proto/services
-            - mv src/services/hapi/hedera-protobufs/services src/proto/
             - rm -rf src/proto/streams
-            - mv src/services/hapi/hedera-protobufs/streams src/proto/
-            - mv src/services/hapi/hedera-protobufs/platform/event/* src/proto/services
+            - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/services src/proto/
+            - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/streams src/proto/
+            - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/event/* src/proto/services/
             - mv src/proto/services/auxiliary/history/* src/proto/services
             - echo "Protobufs moved successfully!"
             - task "delete:submodule"
