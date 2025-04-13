@@ -15,7 +15,7 @@ import {
 } from "../../src/index.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 
-describe.only("BatchTransaction", function () {
+describe("BatchTransaction", function () {
     let env;
 
     beforeEach(async function () {
