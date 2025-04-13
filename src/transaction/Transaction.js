@@ -19,6 +19,7 @@ import List from "./List.js";
 import Timestamp from "../Timestamp.js";
 import * as util from "../util.js";
 import CustomFeeLimit from "./CustomFeeLimit.js";
+import Key from "../Key.js";
 
 /**
  * @typedef {import("bignumber.js").default} BigNumber
@@ -39,6 +40,13 @@ export const DEFAULT_AUTO_RENEW_PERIOD = Long.fromValue(7776000);
 export const DEFAULT_RECORD_THRESHOLD = Hbar.fromTinybars(
     Long.fromString("9223372036854775807"),
 );
+
+/**
+ * Node account ID used for batch transactions
+ * @type {AccountId}
+ */
+// @ts-ignore
+const NODE_ACCOUNT_BATCH_ID = new AccountId(0, 0, 0);
 
 // 120 seconds
 const DEFAULT_TRANSACTION_VALID_DURATION = 120;
@@ -184,6 +192,14 @@ export default class Transaction extends Executable {
          * @type {?boolean}
          */
         this._regenerateTransactionId = null;
+
+        /**
+         * The key used to sign the batch transaction
+         *
+         * @private
+         * @type {Key | null}
+         */
+        this._batchKey = null;
     }
 
     /**
@@ -410,6 +426,19 @@ export default class Transaction extends Executable {
     }
 
     /**
+     * Batchify the transaction
+     *
+     * @param {import("../client/Client.js").default<Channel, *>} client
+     * @param {Key} batchKey
+     * @returns {Promise<this>}
+     */
+    async batchify(client, batchKey) {
+        this._requireNotFrozen();
+        this.setBatchKey(batchKey);
+        return await this.signWithOperator(client);
+    }
+
+    /**
      * This method is called by each `*Transaction._fromProtobuf()` method. It does
      * all the finalization before the user gets hold of a complete `Transaction`
      *
@@ -489,6 +518,9 @@ export default class Transaction extends Executable {
                       CustomFeeLimit._fromProtobuf(fee),
                   )
                 : [];
+        transaction._batchKey =
+            body.batchKey != null ? Key._fromProtobufKey(body?.batchKey) : null;
+
         transaction._transactionMemo = body.memo != null ? body.memo : "";
 
         // Loop over a single row of `signedTransactions` and add all the public
@@ -1182,6 +1214,24 @@ export default class Transaction extends Executable {
     }
 
     /**
+     *
+     * @param {Key} batchKey
+     * @returns {this}
+     */
+    setBatchKey(batchKey) {
+        this._requireNotFrozen();
+        this._batchKey = batchKey;
+        return this;
+    }
+
+    /**
+     * @returns {Key | null | undefined}
+     */
+    get batchKey() {
+        return this._batchKey;
+    }
+
+    /**
      * Build all the signed transactions from the node account IDs
      *
      * @private
@@ -1273,7 +1323,11 @@ export default class Transaction extends Executable {
                 : this._regenerateTransactionId;
 
         // Set the node account IDs via client
-        this._setNodeAccountIds(client);
+        if (this.batchKey) {
+            this._nodeAccountIds.setList([NODE_ACCOUNT_BATCH_ID]);
+        } else {
+            this._setNodeAccountIds(client);
+        }
 
         // Make sure a transaction ID or operator is set.
         this._setTransactionId();
@@ -1872,6 +1926,7 @@ export default class Transaction extends Executable {
                           maxCustomFee._toProtobuf(),
                       )
                     : null,
+            batchKey: this.batchKey?._toProtobufKey(),
         };
     }
 
