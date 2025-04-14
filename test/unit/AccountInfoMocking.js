@@ -691,7 +691,7 @@ describe("AccountInfoMocking", function () {
         });
     });
 
-    describe.only("Node health recovery", function () {
+    describe("Node health recovery", function () {
         beforeEach(async function () {
             const responses = [
                 { response: { nodeTransactionPrecheckCode: 0 } },
