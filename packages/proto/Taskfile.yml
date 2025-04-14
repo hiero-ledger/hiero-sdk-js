@@ -19,14 +19,14 @@ tasks:
 
     install:submodules:
         vars:
-            scommit_hash: "74903c9b99749fb7899642463cca566386f5fdd0" # v0.61.2
+            scommit_hash: "v0.61.2" # v0.61.2
         cmds:
             - git submodule update --init --recursive --remote
             - |
                 (
                 cd src/services &&
                 if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
-                    git fetch --unshallow
+                    git fetch --unshallow --tags
                 fi &&
                 git checkout {{.scommit_hash}}
                 )

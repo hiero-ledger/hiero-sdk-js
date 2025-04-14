@@ -107,7 +107,7 @@ jobs:
 
       - name: Build @hashgraph/sdk
         id: build-sdk
-        run: task build -v
+        run: task build
 
       - name: Install Playwright Dependencies
         id: playwright-deps
