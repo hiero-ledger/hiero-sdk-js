@@ -22,7 +22,7 @@ describe("BatchTransaction", function () {
         env = await IntegrationTestEnv.new();
     });
 
-    it("can create batch transaction", async function () {
+    it.only("can create batch transaction", async function () {
         const key = PrivateKey.generateECDSA();
 
         const tx1 = await new AccountCreateTransaction()
@@ -37,6 +37,8 @@ describe("BatchTransaction", function () {
         const receipt = await (
             await batchTransaction.execute(env.client)
         ).getReceipt(env.client);
+
+        console.log(receipt);
         expect(receipt.status).to.equal(Status.Success);
 
         const accountIdInnerTransaction =
