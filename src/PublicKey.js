@@ -261,6 +261,13 @@ export default class PublicKey extends Key {
     }
 
     /**
+     * @returns {string}
+     */
+    get type() {
+        return this._key._type;
+    }
+
+    /**
      * @param {Long | number} shard
      * @param {Long | number} realm
      * @returns {AccountId}
