@@ -635,10 +635,15 @@ export default class Executable {
                     this._nodeAccountIds.list.length - 1;
 
                 // Check if the request is a transaction receipt or record
-                // request to retry 10 times, because its getReceiptQuery/getRecordQuery
+                // request to retry 10 times, because getReceiptQuery/getRecordQuery
                 // are single node requests
                 if (isTransactionReceiptOrRecordRequest(request)) {
-                    await delayForAttempt(false, attempt, 500, 1000);
+                    await delayForAttempt(
+                        isLocalNode,
+                        attempt,
+                        this._minBackoff,
+                        this._maxBackoff,
+                    );
                     continue;
                 }
 
@@ -833,10 +838,8 @@ function isTransactionReceiptOrRecordRequest(request) {
         return false;
     }
 
-    const requestType = Object.keys(request)[0];
     return (
-        requestType === "transactionGetReceipt" ||
-        requestType === "transactionGetRecord"
+        "transactionGetReceipt" in request || "transactionGetRecord" in request
     );
 }
 

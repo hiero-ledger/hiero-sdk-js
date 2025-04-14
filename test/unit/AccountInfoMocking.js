@@ -747,6 +747,9 @@ describe("AccountInfoMocking", function () {
 
             let error = null;
             try {
+                // Set min backoff to 1 to force faster retries so that the test doesn't take too long
+                client._minBackoff = 1;
+
                 await transaction.getReceipt(client);
             } catch (err) {
                 error = err;
