@@ -729,6 +729,10 @@ export default class Status {
                 return "BATCH_KEY_SET_ON_NON_INNER_TRANSACTION";
             case Status.InvalidBatchKey:
                 return "INVALID_BATCH_KEY";
+            case Status.ScheduleExpiryNotConfigurable:
+                return "SCHEDULE_EXPIRY_NOT_CONFIGURABLE";
+            case Status.CreatingSystemEntities:
+                return "CREATING_SYSTEM_ENTITIES";
 
             default:
                 return `UNKNOWN (${this._code})`;
@@ -1448,7 +1452,10 @@ export default class Status {
                 return Status.BatchKeySetOnNonInnerTransaction;
             case 394:
                 return Status.InvalidBatchKey;
-
+            case 395:
+                return Status.ScheduleExpiryNotConfigurable;
+            case 396:
+                return Status.CreatingSystemEntities;
             default:
                 throw new Error(
                     `(BUG) Status.fromCode() does not handle code: ${code}`,
@@ -3298,3 +3305,13 @@ Status.BatchKeySetOnNonInnerTransaction = new Status(393);
  * The batch key is not valid
  */
 Status.InvalidBatchKey = new Status(394);
+
+/**
+ * The schedule expiry is not configurable
+ */
+Status.ScheduleExpiryNotConfigurable = new Status(395);
+
+/**
+ * Creating system entities
+ */
+Status.CreatingSystemEntities = new Status(396);

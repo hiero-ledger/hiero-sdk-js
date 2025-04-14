@@ -41,7 +41,6 @@ tasks:
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/services src/proto/
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/streams src/proto/
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/event/* src/proto/services/
-            - mv src/proto/services/auxiliary/history/* src/proto/services
             - echo "Protobufs moved successfully!"
             - task "delete:submodule"
 
