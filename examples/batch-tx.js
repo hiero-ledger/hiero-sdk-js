@@ -7,6 +7,8 @@ import {
     AccountCreateTransaction,
     BatchTransaction,
     TransactionReceiptQuery,
+    Logger,
+    LogLevel,
 } from "@hashgraph/sdk";
 
 import dotenv from "dotenv";
@@ -15,9 +17,7 @@ dotenv.config();
 
 async function main() {
     /**
-     *
      *  Step 1: Create Client
-     *
      */
     if (
         process.env.OPERATOR_ID == null ||
@@ -34,18 +34,14 @@ async function main() {
         process.env.OPERATOR_KEY,
     );
 
-    const client = Client.forName(process.env.HEDERA_NETWORK).setOperator(
-        operatorAccId,
-        operatorPrivKey,
-    );
-    //.setLogger(new Logger(LogLevel.Info));
+    const client = Client.forName(process.env.HEDERA_NETWORK)
+        .setOperator(operatorAccId, operatorPrivKey)
+        .setLogger(new Logger(LogLevel.Info));
 
     /**
-     * Step 1:
-     * BatchKey is the public key of the client that executes
-     * a batch transaction
-     */
-
+     * Step 2:
+     * Create three account create transactions with batch keys, but do not execute them.
+     **/
     const privKey1 = PrivateKey.generateECDSA();
     const publicKey1 = privKey1.publicKey;
 
@@ -55,14 +51,19 @@ async function main() {
     const privKey3 = PrivateKey.generateECDSA();
     const publicKey3 = privKey3.publicKey;
 
-    /**
-     * Step 3:
-     * Create three account create transactions with batch keys, but do not execute them.
-     **/
     console.log("Creating three account create transactions...");
 
+    /**
+     * Step 3:
+     * BatchKey is the public key of the client that executes
+     * a batch transaction
+     */
     const batchKey = client.getOperator().publicKey;
 
+    /**
+     * Step 4:
+     * Create three account create transactions with batch keys, but do not execute them.
+     */
     const accountCreateTx1 = await new AccountCreateTransaction()
         .setKeyWithoutAlias(publicKey1)
         .setInitialBalance(new Hbar(1))
@@ -72,7 +73,6 @@ async function main() {
         .setKeyWithoutAlias(publicKey2)
         .setInitialBalance(new Hbar(1))
         .batchify(client, batchKey);
-    //.batchify(client, batchKey);
 
     var accountCreateTx3 = await new AccountCreateTransaction()
         .setKeyWithoutAlias(publicKey3)
@@ -84,7 +84,7 @@ async function main() {
     const batchTx = new BatchTransaction();
 
     /**
-     * Step 4:
+     * Step 5:
      * Execute the batch transaction
      */
     await (
@@ -96,7 +96,7 @@ async function main() {
     ).getReceipt(client);
 
     /**
-     * Step 5:
+     * Step 6:
      * Verify the three account IDs of the newly created accounts using innerTransactionIds.
      */
     console.log(
