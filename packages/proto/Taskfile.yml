@@ -19,7 +19,7 @@ tasks:
 
     install:submodules:
         vars:
-            scommit_hash: "e47b3817a154761051d067142822ef724274491e" # v0.61.1
+            scommit_hash: "74903c9b99749fb7899642463cca566386f5fdd0" # v0.61.2
         cmds:
             - git submodule update --init --recursive --remote
             - |
