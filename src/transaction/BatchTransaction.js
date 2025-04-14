@@ -112,8 +112,6 @@ export default class BatchTransaction extends Transaction {
             return fromProtobuf([], [tx], [], [], [txBody]);
         });
 
-        console.log("tuka li steee");
-
         return Transaction._fromProtobufTransactions(
             new BatchTransaction({
                 transactions: atomicBatchTxs,
