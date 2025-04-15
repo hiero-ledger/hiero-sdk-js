@@ -761,7 +761,7 @@ describe("AccountInfoMocking", function () {
             );
         });
 
-        it("should succeed when node recovery is within custom timeout window", async function () {
+        it("should succeed when node recovers within the custom retry timeout period", async function () {
             // Create and execute a transaction to get a response
             const transaction = await new FileCreateTransaction()
                 .setContents("hello 1")
@@ -773,11 +773,12 @@ describe("AccountInfoMocking", function () {
             )[0]._readmitTime = Date.now() + 100 * 10010;
 
             // Set up a timeout that makes the node healthy again after a delay
+            const randomDelay = Math.floor(Math.random() * 2001) + 1000;
             setTimeout(() => {
                 client._network._network.get(
                     transaction.nodeId.toString(),
                 )[0]._readmitTime = 0;
-            }, 4354);
+            }, randomDelay);
 
             const receipt = await transaction.getReceipt(client);
 
