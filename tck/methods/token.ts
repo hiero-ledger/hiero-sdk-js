@@ -16,6 +16,9 @@ import {
     TokenMintTransaction,
     TokenBurnTransaction,
     TokenWipeTransaction,
+    TokenAirdropTransaction,
+    TokenId,
+    NftId,
 } from "@hashgraph/sdk";
 import Long from "long";
 
@@ -43,6 +46,7 @@ import {
     BurnTokenParams,
     MintTokenParams,
     WipeTokenParams,
+    AirdropTokenParams,
 } from "../params/token";
 
 import {
@@ -513,6 +517,99 @@ export const wipeToken = async (
 ): Promise<TokenBurnResponse> => {
     const transaction = new TokenWipeTransaction();
     configureTokenManagementTransaction(transaction, params, sdk.getClient());
+
+    const txResponse = await transaction.execute(sdk.getClient());
+    const receipt = await txResponse.getReceipt(sdk.getClient());
+
+    return {
+        status: receipt.status.toString(),
+    };
+};
+
+export const airdropToken = async ({
+    tokenTransfers,
+    commonTransactionParams,
+}: AirdropTokenParams): Promise<TokenResponse> => {
+    const transaction = new TokenAirdropTransaction().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+    console.log(tokenTransfers);
+
+    if (tokenTransfers != null) {
+        for (const tokenTransfer of tokenTransfers) {
+            const isApproved = tokenTransfer.approved ?? false;
+
+            // Token airdrop transfer
+            if (tokenTransfer.token != null) {
+                const tokenId = TokenId.fromString(tokenTransfer.token.tokenId);
+                const accountId = AccountId.fromString(
+                    tokenTransfer.token.accountId,
+                );
+                const amount = Long.fromString(tokenTransfer.token.amount);
+
+                if (tokenTransfer.token.decimals != null) {
+                    const decimals = tokenTransfer.token.decimals;
+
+                    isApproved
+                        ? transaction.addApprovedTokenTransferWithDecimals(
+                              tokenId,
+                              accountId,
+                              amount,
+                              decimals,
+                          )
+                        : transaction.addTokenTransfer(
+                              tokenId,
+                              accountId,
+                              amount,
+                          );
+                } else {
+                    isApproved
+                        ? transaction.addApprovedTokenTransfer(
+                              tokenId,
+                              accountId,
+                              amount,
+                          )
+                        : transaction.addTokenTransfer(
+                              tokenId,
+                              accountId,
+                              amount,
+                          );
+                }
+            } else {
+                // NFT airdrop transfer
+                const senderAccountId = AccountId.fromString(
+                    tokenTransfer.nft.senderAccountId,
+                );
+                const receiverAccountId = AccountId.fromString(
+                    tokenTransfer.nft.receiverAccountId,
+                );
+                const nftId = new NftId(
+                    TokenId.fromString(tokenTransfer.nft.tokenId),
+                    Long.fromString(tokenTransfer.nft.serialNumber),
+                );
+
+                isApproved
+                    ? transaction.addApprovedNftTransfer(
+                          nftId,
+                          senderAccountId,
+                          receiverAccountId,
+                      )
+                    : transaction.addNftTransfer(
+                          nftId,
+                          senderAccountId,
+                          receiverAccountId,
+                      );
+            }
+        }
+    }
+
+    if (commonTransactionParams != null) {
+        applyCommonTransactionParams(
+            commonTransactionParams,
+            transaction,
+            sdk.getClient(),
+        );
+    }
 
     const txResponse = await transaction.execute(sdk.getClient());
     const receipt = await txResponse.getReceipt(sdk.getClient());
