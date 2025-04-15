@@ -14,34 +14,34 @@
         />
     </head>
     <body>
-        <img src="builder.png" width="350px" id="build" />
-        <main id="wrapper">
+        <img src="builder.png" width="350px" class="builder" />
+        <main class="wrapper">
             <h1>Hiero UMD Builder</h1>
             <input
                 type="text"
-                id="operator-id"
+                class="operator-id"
                 placeholder="Please enter your operator ID here"
             />
             <input
                 type="text"
-                id="operator-key"
+                class="operator-key"
                 placeholder="Please enter your operator key here"
             />
 
             <input
                 type="text"
-                id="input-account-id"
+                class="input-account-id"
                 placeholder="Please enter an AccountId here"
             />
-            <button id="execute">Execute AccountInfoQuery</button>
-            <div class="json-container" id="json"></div>
-            <img src="bouncing-circles.svg" id="loading" />
-            <div id="notice">
+            <button class="run-action">Execute AccountInfoQuery</button>
+            <div class="json-container" ></div>
+            <img src="bouncing-circles.svg" class="loading" />
+            <div class="notice">
                 You should use an ED25519 key for the operator. The network set
                 is TESTNET.
             </span>
         </main>
-        <span id="copyright">Copyright Hiero 2025</span>
+        <span class="copyright">Copyright Hiero 2025</span>
         <script src="https://unpkg.com/@hashgraph/sdk@2.62.0/dist/umd.js"></script>
         <script src="main.js"></script>
     </body>

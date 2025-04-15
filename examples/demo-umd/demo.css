@@ -1,29 +1,32 @@
 h1 {
-    text-align: center;
     color: #000000;
+    text-align: center;
 }
 
 body {
     background-color: #14213d;
     font-family: "Roboto";
 }
-#wrapper {
-    background-color: #e5e5e5;
-    padding: 25px;
+
+.wrapper {
     width: 600px;
     margin: 0 auto;
+    padding: 25px;
+    background-color: #e5e5e5;
     border-radius: 5px;
 }
-#execute {
-    background-color: #fca311;
-    padding: 10px;
-    color: #000;
-    margin: 0 auto;
+
+.run-action {
     display: block;
+    margin: 0 auto;
+    padding: 10px;
+    background-color: #fca311;
+    color: #000;
     border-radius: 5px;
     transition: all 0.3s ease;
 }
-#execute:hover {
+
+.execute:hover {
     border: 1px solid #000;
     transform: scale(1.05); /* Scale up slightly */
     /* Slightly darker orange */
@@ -31,41 +34,44 @@ body {
 }
 
 .json-container {
+    display: none;
     margin-top: 50px;
+    padding: 15px;
     background: #282c34;
     color: #ffffff;
-    padding: 15px;
     border-radius: 8px;
     overflow-x: auto;
     white-space: pre-wrap;
     font-family: monospace;
-    display: none;
 }
+
 .key {
     color: #9cdcfe;
 }
+
 .string {
     color: #ce9178;
 }
+
 .number {
     color: #b5cea8;
 }
+
 .boolean {
     color: #569cd6;
 }
+
 .null {
     color: #808080;
 }
 
 input {
-    padding: 5px;
     display: block;
-    margin: 0 auto;
-    margin-top: 10px;
     width: 230px;
+    margin: 10px auto;
+    padding: 5px;
     text-align: center;
     border-radius: 5px;
-    margin-bottom: 10px;
     transition: all 0.3s ease;
 }
 
@@ -76,26 +82,26 @@ input:focus {
     cursor: pointer;
 }
 
-#loading {
+.loading {
     display: none;
 }
 
 img {
-    margin: 0 auto;
     display: block;
+    margin: 0 auto;
 }
 
-#notice {
+.notice {
     margin-top: 10px;
-    text-align: center;
     color: #707070;
     font-size: 12px;
+    text-align: center;
     text-decoration: underline italic;
 }
 
-#copyright {
-    margin-top: 5px;
-    text-align: center;
-    color: #fff;
+.copyright {
     display: block;
+    margin-top: 5px;
+    color: #fff;
+    text-align: center;
 }

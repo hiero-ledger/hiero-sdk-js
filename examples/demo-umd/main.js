@@ -1,4 +1,6 @@
-document.getElementById("execute").addEventListener("click", executeTx);
+document
+    .getElementsByClassName("run-action")[0]
+    .addEventListener("click", executeTx);
 
 function syntaxHighlight(json) {
     json = JSON.stringify(json, null, 2);
@@ -12,9 +14,12 @@ function syntaxHighlight(json) {
 
 function executeTx() {
     // get input values
-    const operatorKeyValue = document.getElementById("operator-key").value;
-    const operatorIdValue = document.getElementById("operator-id").value;
-    const accountId = document.getElementById("input-account-id").value;
+    const operatorKeyValue =
+        document.getElementsByClassName("operator-key")[0].value;
+    const operatorIdValue =
+        document.getElementsByClassName("operator-id")[0].value;
+    const accountId =
+        document.getElementsByClassName("input-account-id")[0].value;
 
     // setup client and operator
     const operatorId = sdk.AccountId.fromString(operatorIdValue);
@@ -22,8 +27,9 @@ function executeTx() {
     const client = sdk.Client.forTestnet().setOperator(operatorId, operatorKey);
 
     // start loading until the query is executed
-    document.getElementById("json").style.display = "none";
-    document.getElementById("loading").style.display = "block";
+    console.log(document.getElementsByClassName("json"));
+    document.getElementsByClassName("json-container")[0].style.display = "none";
+    document.getElementsByClassName("loading")[0].style.display = "block";
 
     // execute the query
     new sdk.AccountInfoQuery()
@@ -31,8 +37,11 @@ function executeTx() {
         .execute(client)
         .then((data) => {
             // hide the loading and show the result
-            document.getElementById("json").style.display = "block";
-            document.getElementById("loading").style.display = "none";
-            document.getElementById("json").innerHTML = syntaxHighlight(data);
+            document.getElementsByClassName("json-container")[0].style.display =
+                "block";
+            document.getElementsByClassName("loading")[0].style.display =
+                "none";
+            document.getElementsByClassName("json-container")[0].innerHTML =
+                syntaxHighlight(data);
         });
 }
