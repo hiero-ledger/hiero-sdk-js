@@ -4,7 +4,7 @@ describe("AccountUpdateTransaction", function () {
     describe("deserialization of optional parameters", function () {
         let tx, txBytes, tx2;
 
-        before(function () {
+        beforeAll(function () {
             tx = new AccountUpdateTransaction();
             txBytes = tx.toBytes();
             tx2 = AccountUpdateTransaction.fromBytes(txBytes);

@@ -13,7 +13,7 @@ import IntegrationTestEnv, { Client } from "./client/NodeIntegrationTestEnv.js";
 describe("FileUpdate", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -114,7 +114,7 @@ describe("FileUpdate", function () {
         ).getReceipt(client);
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

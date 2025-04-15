@@ -6,7 +6,7 @@ import {
     ServiceEndpoint,
     Timestamp,
     TransactionId,
-} from "../../src/index.js";
+} from "../../../src/index.js";
 
 describe("NodeUpdateTransaction", function () {
     const IMMUTABLE_ERROR = "transaction is immutable";
@@ -16,6 +16,7 @@ describe("NodeUpdateTransaction", function () {
             AccountId.fromString("0.0.5005"),
             AccountId.fromString("0.0.5006"),
         ];
+
         const IP_AddressV4 = Uint8Array.of(127, 0, 0, 1);
         const VALID_START = new Timestamp(1596210382, 0);
         const NODE_ID = 420;
@@ -167,7 +168,7 @@ describe("NodeUpdateTransaction", function () {
     describe("frozen transaction", function () {
         let tx;
 
-        before(function () {
+        beforeAll(function () {
             const ACCOUNT_ID = AccountId.fromString("0.4.20");
             const VALID_START = new Timestamp(1596210382, 0);
 

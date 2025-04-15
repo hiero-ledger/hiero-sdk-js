@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import { Hbar, TransferTransaction } from "../../src/exports.js";
 import { Wallet, LocalProvider } from "../../src/index.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";

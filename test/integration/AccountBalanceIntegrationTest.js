@@ -10,7 +10,7 @@ describe("AccountBalanceQuery", function () {
     let clientTestnet;
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         clientPreviewNet = Client.forPreviewnet().setTransportSecurity(true);
         clientTestnet = Client.forTestnet().setTransportSecurity(true);
         env = await IntegrationTestEnv.new({ throwaway: true });
@@ -85,7 +85,7 @@ describe("AccountBalanceQuery", function () {
         expect(balances.tokens.get(tokenId.toString()).toInt()).to.be.equal(0);
     });
 
-    after(async function () {
+    afterAll(async function () {
         clientPreviewNet.close();
         clientTestnet.close();
         await env.close();

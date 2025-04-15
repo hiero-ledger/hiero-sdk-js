@@ -14,7 +14,7 @@ import { deleteAccount } from "./utils/Fixtures.js";
 describe("AccountCreate", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -796,7 +796,7 @@ describe("AccountCreate", function () {
         }
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

@@ -12,6 +12,7 @@ import {
     TopicMessageSubmitTransaction,
     TopicUpdateTransaction,
     TransferTransaction,
+    TransactionId,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { createAccount, createFungibleToken } from "./utils/Fixtures.js";
@@ -90,8 +91,9 @@ describe("TopicCreate", function () {
         expect(info.autoRenewPeriod.seconds.toInt()).to.be.eql(7776000);
         expect(info.expirationTime).to.be.not.null;
     });
-    /*    
-    it("should set autorenew account from transaction ID", async function () {
+
+    // eslint-disable-next-line vitest/no-disabled-tests
+    it.skip("should set autorenew account from transaction ID", async function () {
         const accountKey = PrivateKey.generateECDSA();
         const { accountId } = await createAccount(env.client, (transaction) => {
             transaction.setKey(accountKey);
@@ -124,7 +126,7 @@ describe("TopicCreate", function () {
             accountId.toString(),
         );
     });
-    */
+
     describe("HIP-991: Permissionless revenue generating topics", function () {
         it("creates and updates revenue generating topic", async function () {
             const feeExemptKeys = [
@@ -840,7 +842,7 @@ describe("TopicCreate", function () {
         });
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

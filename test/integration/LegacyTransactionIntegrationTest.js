@@ -13,7 +13,7 @@ import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 
 describe("TransactionIntegration Legacy", function () {
     it("should be executable", async function () {
-        this.timeout(120000);
+        120000;
 
         const env = await IntegrationTestEnv.new();
         const operatorId = env.operatorId;
@@ -53,7 +53,7 @@ describe("TransactionIntegration Legacy", function () {
     });
 
     it("signs on demand", async function () {
-        this.timeout(10000);
+        10000;
 
         const env = await IntegrationTestEnv.new();
         env.client.setSignOnDemand(true);
@@ -72,7 +72,7 @@ describe("TransactionIntegration Legacy", function () {
     });
 
     it("signs correctly", async function () {
-        this.timeout(10000);
+        10000;
 
         const env = await IntegrationTestEnv.new();
         const key = PrivateKey.generateED25519();
@@ -103,7 +103,7 @@ describe("TransactionIntegration Legacy", function () {
     });
 
     it("issue-327", async function () {
-        this.timeout(30000);
+        30000;
         const env = await IntegrationTestEnv.new();
         const privateKey1 = PrivateKey.generateED25519();
         const privateKey2 = PrivateKey.generateED25519();

@@ -1,5 +1,9 @@
 import { Wallet, LocalProvider } from "../../src/index.js";
 
+import dotenv from "dotenv";
+
+dotenv.config();
+
 describe("LocalWallet", function () {
     it("can fetch wallet's info", async function () {
         const wallet = new Wallet(

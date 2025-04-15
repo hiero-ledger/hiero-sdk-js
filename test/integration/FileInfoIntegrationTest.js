@@ -9,7 +9,7 @@ import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 describe("FileInfo", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -125,7 +125,7 @@ describe("FileInfo", function () {
         expect(cost.toTinybars().toInt()).to.be.at.least(1);
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

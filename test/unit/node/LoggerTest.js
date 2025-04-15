@@ -1,5 +1,5 @@
-import { Logger, LogLevel, Transaction } from "../../src/exports.js";
-import { Client } from "../../src/index.js";
+import { Logger, LogLevel, Transaction } from "../../../src/exports.js";
+import { Client } from "../../../src/index.js";
 import { tmpdir } from "node:os";
 import fs from "fs";
 import { spy } from "sinon";

@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import {
     TokenAirdropTransaction,
     TokenMintTransaction,
@@ -418,7 +417,7 @@ describe("TokenCancelAirdropIntegrationTest", function () {
         expect(err).to.be.true;
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

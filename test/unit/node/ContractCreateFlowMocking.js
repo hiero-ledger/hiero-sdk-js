@@ -1,12 +1,11 @@
-import { expect } from "chai";
 import {
     ContractCreateFlow,
     Transaction,
     PrivateKey,
-} from "../../src/index.js";
-import Mocker, { TRANSACTION_RECEIPT_SUCCESS_RESPONSE } from "./Mocker.js";
+} from "../../../src/index.js";
+import Mocker, { TRANSACTION_RECEIPT_SUCCESS_RESPONSE } from "../Mocker.js";
 import { proto } from "@hashgraph/proto";
-import { bigContents } from "../integration/contents.js";
+import { bigContents } from "../../integration/contents.js";
 
 describe("ContractCreateFlowMocking", function () {
     let client;

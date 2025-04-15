@@ -16,7 +16,7 @@ const smartContractBytecode =
 describe("ContractCreate", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -192,7 +192,7 @@ describe("ContractCreate", function () {
         }
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

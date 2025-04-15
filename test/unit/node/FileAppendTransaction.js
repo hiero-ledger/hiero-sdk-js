@@ -1,5 +1,3 @@
-import { expect } from "chai";
-
 import {
     FileAppendTransaction,
     AccountId,
@@ -7,7 +5,7 @@ import {
     Hbar,
     TransactionId,
     FileId,
-} from "../../src/index.js";
+} from "../../../src/index.js";
 import Long from "long";
 
 describe("FileAppendTransaction", function () {

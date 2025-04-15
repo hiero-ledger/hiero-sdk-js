@@ -20,7 +20,7 @@ let smartContractBytecode =
 describe("TokenAllowances", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -247,7 +247,7 @@ describe("TokenAllowances", function () {
         expect(allowanceSize.toNumber()).to.equal(100);
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

@@ -201,7 +201,7 @@ describe("CustomFees", function () {
         await env.close();
     });
 
-    // eslint-disable-next-line mocha/no-skipped-tests
+    // eslint-disable-next-line vitest/no-disabled-tests
     it.skip("User cannot transfer a custom fee schedule token to a fee collecting account that is not associated with it", async function () {
         const env = await IntegrationTestEnv.new();
 
@@ -297,7 +297,7 @@ describe("CustomFees", function () {
         await env.close();
     });
 
-    // eslint-disable-next-line mocha/no-skipped-tests
+    // eslint-disable-next-line vitest/no-disabled-tests
     it.skip("User cannot create a token with a custom fractional fee is greater than 1", async function () {
         const env = await IntegrationTestEnv.new();
 
@@ -327,7 +327,7 @@ describe("CustomFees", function () {
         await env.close();
     });
 
-    // eslint-disable-next-line mocha/no-skipped-tests
+    // eslint-disable-next-line vitest/no-disabled-tests
     it.skip("User cannot execute the fee schedule update transaction if there is not fee schedule set already", async function () {
         const env = await IntegrationTestEnv.new();
 
@@ -359,7 +359,7 @@ describe("CustomFees", function () {
         await env.close();
     });
 
-    // eslint-disable-next-line mocha/no-skipped-tests
+    // eslint-disable-next-line vitest/no-disabled-tests
     it.skip("User cannot sign the fee schedule update transaction with any key besides the key schedule key", async function () {
         const env = await IntegrationTestEnv.new();
 
@@ -596,7 +596,7 @@ describe("CustomFees", function () {
     });
 
     // Skipping since the test seems setting an empty custom fee list is no longer an error
-    // eslint-disable-next-line mocha/no-skipped-tests
+    // eslint-disable-next-line vitest/no-disabled-tests
     it.skip("cannot clear custom fees when no custom fees are present", async function () {
         const env = await IntegrationTestEnv.new();
 
@@ -654,7 +654,7 @@ describe("CustomFees", function () {
     });
 
     // Cannot reproduce `CustomFeeChargingExceededMaxRecursionDepth`
-    // eslint-disable-next-line mocha/no-skipped-tests
+    // eslint-disable-next-line vitest/no-disabled-tests
     it.skip("cannot have recursive custom fees", async function () {
         const env = await IntegrationTestEnv.new();
 
@@ -758,7 +758,7 @@ describe("CustomFees", function () {
         await env.close({ token: [tokenId1, tokenId2] });
     });
 
-    // eslint-disable-next-line mocha/no-skipped-tests
+    // eslint-disable-next-line vitest/no-disabled-tests
     it.skip("cannot have more than 20 balance changes in a single transfer", async function () {
         const env = await IntegrationTestEnv.new();
 

@@ -1,12 +1,10 @@
-/* eslint-disable mocha/no-setup-in-describe */
-
 import {
     AccountId,
     Client,
     NftId,
     TokenId,
     TokenRejectFlow,
-} from "../../src/index.js";
+} from "../../../src/index.js";
 
 describe("TokenRejectFlow", function () {
     let tokenIds = [

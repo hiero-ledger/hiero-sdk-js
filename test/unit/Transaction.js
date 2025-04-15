@@ -1,5 +1,3 @@
-/* eslint-disable mocha/no-setup-in-describe */
-
 import {
     AccountCreateTransaction,
     AccountId,
