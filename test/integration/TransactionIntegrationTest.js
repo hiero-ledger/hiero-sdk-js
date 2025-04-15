@@ -12,15 +12,16 @@ import {
     AccountUpdateTransaction,
     KeyList,
     Status,
+    AccountCreateTransaction,
 } from "../../src/exports.js";
 import * as hex from "../../src/encoding/hex.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
-import { expect } from "chai";
+
 import { Client } from "./client/NodeIntegrationTestEnv.js";
 import {
-    createAccount,
     deleteAccount,
     createFungibleToken,
+    createAccount,
 } from "./utils/Fixtures.js";
 
 describe("TransactionIntegration", function () {
@@ -29,22 +30,30 @@ describe("TransactionIntegration", function () {
         const operatorId = env.operatorId;
         expect(operatorId).to.not.be.null;
 
-        const { accountId, newKey: key } = await createAccount(
-            env.client,
-            async (transaction) => {
-                await transaction
-                    .freezeWith(env.client)
-                    .signWithOperator(env.client);
-                const expectedHash = await transaction.getTransactionHash();
-                const record = await transaction.getRecord(env.client);
+        const key = PrivateKey.generateECDSA();
 
-                expect(hex.encode(expectedHash)).to.be.equal(
-                    hex.encode(record.transactionHash),
-                );
+        const accountCreateTx = new AccountCreateTransaction()
+            .setKeyWithoutAlias(key)
+            .setInitialBalance(new Hbar(1));
 
-                expect(accountId).to.not.be.null;
-            },
+        await accountCreateTx
+            .freezeWith(env.client)
+            .signWithOperator(env.client);
+
+        const expectedHash = await accountCreateTx.getTransactionHash();
+
+        const response = await accountCreateTx.execute(env.client);
+
+        const record = await response.getRecord(env.client);
+
+        expect(hex.encode(expectedHash)).to.be.equal(
+            hex.encode(record.transactionHash),
         );
+
+        const receipt = await response.getReceipt(env.client);
+        const accountId = receipt.accountId;
+
+        expect(accountId).to.not.be.null;
 
         await deleteAccount(env.client, key, (transaction) => {
             transaction
@@ -759,7 +768,7 @@ describe("TransactionIntegration", function () {
         let env, user1Key, user2Key, createdAccountId, keyList;
 
         // Setting up the environment and creating a new account with a key list
-        before(async function () {
+        beforeAll(async function () {
             env = await IntegrationTestEnv.new();
 
             user1Key = PrivateKey.generate();
@@ -892,7 +901,7 @@ describe("TransactionIntegration", function () {
         let env, operatorId, operatorKey, client;
 
         // Setting up the environment and creating a new account with a key list
-        before(async function () {
+        beforeAll(async function () {
             env = await IntegrationTestEnv.new();
 
             operatorId = env.operatorId;
@@ -925,7 +934,7 @@ describe("TransactionIntegration", function () {
         });
 
         it(`Creating, Signing, and Submitting a Transaction Using the Client with a Known Address Book.
-          In Addition, Serialize and Deserialize the Signed Transaction `, async function () {
+          In Addition, Serialize and Deserialize the Signed Transaction`, async function () {
             // For simplicity, sending back to the operator
             const recipientAccountId = env.operatorId;
 

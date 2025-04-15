@@ -18,7 +18,7 @@ describe("TokenUpdateNftsTransaction", function () {
         wrongMetadataKey,
         nftCount;
 
-    before(async function () {
+    beforeAll(async function () {
         const env = await IntegrationTestEnv.new();
         client = env.client;
         metadata = new Uint8Array([1]);

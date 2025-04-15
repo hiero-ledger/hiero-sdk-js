@@ -9,7 +9,7 @@ import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 describe("SystemIntegration", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -71,7 +71,7 @@ describe("SystemIntegration", function () {
         expect(errorThrown).to.be.true;
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

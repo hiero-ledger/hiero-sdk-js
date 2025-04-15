@@ -1,5 +1,3 @@
-import { expect } from "chai";
-
 import { ContractId, DelegateContractId, Key } from "../../src/index.js";
 import Long from "long";
 

@@ -1,9 +1,7 @@
-import { expect } from "chai";
-
 import { FreezeTransaction, Timestamp, FreezeType } from "../../src/index.js";
 
 describe("FreezeTransaction", function () {
-    it("create transaction and set ", function () {
+    it("create transaction and set", function () {
         const seconds = Math.round(Date.now() / 1000);
         const validStart = new Timestamp(seconds, 0);
         const freezeType = new FreezeType(1);

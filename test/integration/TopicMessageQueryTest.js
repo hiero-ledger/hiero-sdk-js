@@ -10,7 +10,7 @@ import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 describe("TopicMessageQuery", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new({ throwaway: true });
     });
 
@@ -64,7 +64,7 @@ describe("TopicMessageQuery", function () {
         expect(expectedContents).to.equal(contents);
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

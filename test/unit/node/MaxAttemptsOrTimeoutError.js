@@ -3,8 +3,8 @@ import {
     TransferTransaction,
     Hbar,
     MaxAttemptsOrTimeoutError,
-} from "../../src/index.js";
-import Mocker from "./Mocker.js";
+} from "../../../src/index.js";
+import Mocker from "../Mocker.js";
 
 describe("MaxAttemptsOrTimeoutError", function () {
     let message;

@@ -1,10 +1,10 @@
-import { FileAppendTransaction } from "../../src/index.js";
+import { FileAppendTransaction } from "../../../src/index.js";
 import Mocker, {
     UNAVAILABLE,
     TRANSACTION_RECEIPT_SUCCESS_RESPONSE,
     TRANSACTION_RECEIPT_FAILED_RESPONSE,
-} from "./Mocker.js";
-import { bigContents } from "../integration/contents.js";
+} from "../Mocker.js";
+import { bigContents } from "../../integration/contents.js";
 import { proto } from "@hashgraph/proto";
 
 describe("FileAppendMocking", function () {

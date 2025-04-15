@@ -4,7 +4,7 @@ import IntegrationTestEnv, { Client } from "./client/NodeIntegrationTestEnv.js";
 describe("AccountId", function () {
     let client;
 
-    before(async function () {
+    beforeAll(async function () {
         client = Client.forMainnet();
     });
 
@@ -46,7 +46,7 @@ describe("AccountId", function () {
         }
     });
 
-    after(async function () {
+    afterAll(async function () {
         client.close();
     });
 });

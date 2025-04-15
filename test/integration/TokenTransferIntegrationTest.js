@@ -18,7 +18,7 @@ import {
 describe("TokenTransfer", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -293,7 +293,7 @@ describe("TokenTransfer", function () {
         ).getReceipt(env.client);
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

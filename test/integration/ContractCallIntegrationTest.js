@@ -17,7 +17,7 @@ const smartContractBytecode =
 describe("ContractCallIntegration", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -364,7 +364,7 @@ describe("ContractCallIntegration", function () {
         ).getReceipt(env.client);
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

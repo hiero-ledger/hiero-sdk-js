@@ -1,10 +1,17 @@
-/** @type {import('vite').UserConfig} */
-export default {
-    server: {
-        hmr: false,
+import { defineConfig } from "vitest/config";
+export default defineConfig({
+    test: {
+        watch: false,
+        globals: true,
+        browser: {
+            headless: true,
+            provider: "playwright",
+            enabled: true,
+            instances: [{ browser: "chromium" }],
+        },
+        include: ["test/unit/**/*.js"],
+        exclude: ["test/unit/Mocker.js", "test/unit/node/*"],
     },
-    envDir: "./",
-
     resolve: {
         alias: {
             // redirect src/ to src/browser
@@ -34,4 +41,4 @@ export default {
             "../../src/client/NodeClient.js": "../../src/client/WebClient.js",
         },
     },
-};
+});

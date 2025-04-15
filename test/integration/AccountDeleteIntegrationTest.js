@@ -11,7 +11,7 @@ import { createAccount } from "./utils/Fixtures.js";
 describe("AccountDelete", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -91,7 +91,7 @@ describe("AccountDelete", function () {
         expect(status).to.be.eql(Status.AccountIdDoesNotExist);
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

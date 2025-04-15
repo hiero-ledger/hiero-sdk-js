@@ -9,7 +9,7 @@ import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 describe("TransactionResponse", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new({ throwaway: true });
     });
 
@@ -116,7 +116,7 @@ describe("TransactionResponse", function () {
         expect(receipt.nextExchangeRate).to.not.be.null;
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

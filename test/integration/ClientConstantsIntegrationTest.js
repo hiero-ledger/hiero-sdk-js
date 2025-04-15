@@ -1,4 +1,3 @@
-/* eslint-disable mocha/no-setup-in-describe */
 import {
     MAINNET,
     WEB_TESTNET,
@@ -16,7 +15,7 @@ import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 describe("ClientConstantsIntegrationTest", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 

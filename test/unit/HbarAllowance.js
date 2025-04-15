@@ -1,5 +1,3 @@
-import { expect } from "chai";
-
 import { HbarAllowance, AccountId, Hbar } from "../../src/index.js";
 
 describe("HbarAllowance", function () {

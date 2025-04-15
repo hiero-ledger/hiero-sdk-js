@@ -19,7 +19,7 @@ describe("FileAppend", function () {
     let newContents;
     let operatorKey;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
         newContentsLength = 5000;
         newContents = generateUInt8Array(newContentsLength);
@@ -476,7 +476,7 @@ describe("FileAppend", function () {
         expect(txFromBytes.contents).to.be.deep.equal(newContents);
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });
