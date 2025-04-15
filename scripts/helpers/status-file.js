@@ -1,3 +1,6 @@
+import fs from "fs";
+import path from "path";
+
 import { screamingSnakeToPascalCase } from "../../src/util.js";
 
 /**
@@ -8,19 +11,66 @@ import { screamingSnakeToPascalCase } from "../../src/util.js";
 export function findHighestExistingStatusCode(existingContent) {
     let highestExistingCode = 0;
 
-    // Use regex to find all "new Status(NUM)" declarations
-    const codeRegex = /new Status\((\d+)\)/g;
-    let match;
+    try {
+        // Use regex to find all "new Status(NUM)" declarations
+        const codeRegex = /new Status\((\d+)\)/g;
+        let match;
 
-    while ((match = codeRegex.exec(existingContent)) !== null) {
-        const code = Number(match[1]);
-        if (code > highestExistingCode) {
-            highestExistingCode = code;
+        while ((match = codeRegex.exec(existingContent)) !== null) {
+            const code = Number(match[1]);
+            if (code > highestExistingCode) {
+                highestExistingCode = code;
+            }
         }
+
+        console.log(`Highest existing status code: ${highestExistingCode}`);
+    } catch (error) {
+        console.error(`Error finding highest status code: ${error.message}`);
     }
 
-    console.log(`Highest existing status code: ${highestExistingCode}`);
     return highestExistingCode;
+}
+
+/**
+ * Get the comment for a specific response code from the proto file
+ * @param {string} name - The response code name
+ * @returns {string} The comment associated with the response code
+ */
+function getResponseCodeComment(name) {
+    try {
+        const protoPath = path.join(
+            process.cwd(),
+            "packages/proto/src/proto/services/response_code.proto",
+        );
+        const protoContent = fs.readFileSync(protoPath, "utf8");
+
+        // Find the comment for the status code
+        const pattern = new RegExp(
+            `\\/\\*\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*\\/[\\s]*${name}\\s*=\\s*\\d+`,
+            "m",
+        );
+        const match = protoContent.match(pattern);
+
+        if (match) {
+            // Extract the comment
+            const commentMatch = match[0].match(/\/\*\*([\s\S]*?)\*\//);
+            if (commentMatch) {
+                // Format the comment: Remove * at the beginning of lines and trim
+                let comment = commentMatch[1]
+                    .split("\n")
+                    .map((line) => line.replace(/^\s*\*\s*/, "").trim())
+                    .filter((line) => line.length > 0)
+                    .join(" ");
+
+                return comment;
+            }
+        }
+    } catch (error) {
+        console.warn(`Could not get comment for ${name}: ${error.message}`);
+    }
+
+    // Return a default comment if not found
+    return `${name.toLowerCase().split("_").join(" ")}`;
 }
 
 /**
@@ -30,28 +80,45 @@ export function findHighestExistingStatusCode(existingContent) {
  * @returns {string} Updated file content
  */
 export function updateStatusToStringMethod(existingContent, newStatusCodes) {
-    const toStringStartMarker = "toString() {";
-    const toStringEndMarker = "            default:";
-    const toStringPos = existingContent.indexOf(toStringStartMarker);
+    try {
+        const toStringMethodStartMarker = "toString() {";
+        const toStringMethodEndMarker = "            default:";
 
-    if (toStringPos === -1) return existingContent;
+        // Find the position of the toString() method
+        const toStringMethodPos = existingContent.indexOf(
+            toStringMethodStartMarker,
+        );
+        if (toStringMethodPos === -1) {
+            console.warn("toString() method marker not found in file");
+            return existingContent;
+        }
 
-    const defaultPos = existingContent.indexOf(toStringEndMarker, toStringPos);
+        // Find the position of the default case
+        const defaultPos = existingContent.indexOf(
+            toStringMethodEndMarker,
+            toStringMethodPos,
+        );
+        if (defaultPos === -1) {
+            console.warn("default case marker not found in toString() method");
+            return existingContent;
+        }
 
-    if (defaultPos === -1) return existingContent;
+        let toStringMethodInsert = "";
+        for (const [name, _] of newStatusCodes) {
+            const pascalCase = screamingSnakeToPascalCase(name);
+            toStringMethodInsert += `            case Status.${pascalCase}:\n`;
+            toStringMethodInsert += `                return "${name}";\n`;
+        }
 
-    let toStringInsert = "";
-    for (const [name, _] of newStatusCodes) {
-        const pascalCase = screamingSnakeToPascalCase(name);
-        toStringInsert += `            case Status.${pascalCase}:\n`;
-        toStringInsert += `                return "${name}";\n`;
+        return (
+            existingContent.slice(0, defaultPos) +
+            toStringMethodInsert +
+            existingContent.slice(defaultPos)
+        );
+    } catch (error) {
+        console.error(`Error updating toString method: ${error.message}`);
+        return existingContent;
     }
-
-    return (
-        existingContent.slice(0, defaultPos) +
-        toStringInsert +
-        existingContent.slice(defaultPos)
-    );
 }
 
 /**
@@ -61,28 +128,52 @@ export function updateStatusToStringMethod(existingContent, newStatusCodes) {
  * @returns {string} Updated file content
  */
 export function updateStatusFromCodeMethod(existingContent, newStatusCodes) {
-    const fromCodeStartMarker = "static _fromCode(code) {";
-    const fromCodeEndMarker = "            default:";
-    const fromCodePos = existingContent.indexOf(fromCodeStartMarker);
+    try {
+        const fromCodeMethodStartMarker = "static _fromCode(code) {";
+        const switchStartMarker = "        switch (code) {";
+        const fromCodeMethodEndMarker = "            default:";
 
-    if (fromCodePos === -1) return existingContent;
+        // Find the position of the _fromCode method
+        const fromCodeMethodPos = existingContent.indexOf(
+            fromCodeMethodStartMarker,
+        );
+        if (fromCodeMethodPos === -1) {
+            console.warn("_fromCode method not found in file");
+            return existingContent;
+        }
 
-    const defaultPos = existingContent.indexOf(fromCodeEndMarker, fromCodePos);
+        // Find the position of the switch statement
+        const switchPos = existingContent.indexOf(
+            switchStartMarker,
+            fromCodeMethodPos,
+        );
+        if (switchPos === -1) {
+            console.warn("switch statement not found in file");
+            return existingContent;
+        }
 
-    if (defaultPos === -1) return existingContent;
+        // Find the position of the default case
+        const defaultPos = existingContent.indexOf(
+            fromCodeMethodEndMarker,
+            fromCodeMethodPos,
+        );
 
-    let fromCodeInsert = "";
-    for (const [name, code] of newStatusCodes) {
-        const pascalCase = screamingSnakeToPascalCase(name);
-        fromCodeInsert += `            case ${code}:\n`;
-        fromCodeInsert += `                return Status.${pascalCase};\n`;
+        let fromCodeMethodInsert = "";
+        for (const [name, code] of newStatusCodes) {
+            const pascalCase = screamingSnakeToPascalCase(name);
+            fromCodeMethodInsert += `            case ${code}:\n`;
+            fromCodeMethodInsert += `                return Status.${pascalCase};\n`;
+        }
+
+        return (
+            existingContent.slice(0, defaultPos) +
+            fromCodeMethodInsert +
+            existingContent.slice(defaultPos)
+        );
+    } catch (error) {
+        console.error(`Error updating _fromCode method: ${error.message}`);
+        return existingContent;
     }
-
-    return (
-        existingContent.slice(0, defaultPos) +
-        fromCodeInsert +
-        existingContent.slice(defaultPos)
-    );
 }
 
 /**
@@ -91,13 +182,19 @@ export function updateStatusFromCodeMethod(existingContent, newStatusCodes) {
  * @returns {string} Generated static properties
  */
 export function generateStatusStaticProperties(statusCodes) {
-    let content = "";
-    for (const [name, code] of statusCodes) {
-        const pascalCase = screamingSnakeToPascalCase(name);
-        content += `/* ${name.toLowerCase().split("_").join(" ")} */\n`;
-        content += `Status.${pascalCase} = new Status(${code});\n`;
+    try {
+        let content = "";
+        for (const [name, code] of statusCodes) {
+            const pascalCase = screamingSnakeToPascalCase(name);
+            const comment = getResponseCodeComment(name);
+            content += `\n/**\n * ${comment}\n */\n`;
+            content += `Status.${pascalCase} = new Status(${code});\n`;
+        }
+        return content;
+    } catch (error) {
+        console.error(`Error generating static properties: ${error.message}`);
+        return "";
     }
-    return content;
 }
 
 /**
@@ -106,8 +203,10 @@ export function generateStatusStaticProperties(statusCodes) {
  * @returns {string} The complete Status.js file content
  */
 export function generateCompleteStatusFile(statusCodes) {
-    // Start with the file header and class definition
-    let content = `/**
+    try {
+        // Start with the file header and class definition
+        let content = `// SPDX-License-Identifier: Apache-2.0\n
+/**
  * @namespace proto
  * @typedef {import("@hashgraph/proto").proto.ResponseCodeEnum} HieroProto.proto.ResponseCodeEnum
  */
@@ -132,14 +231,14 @@ export default class Status {
         switch (this) {
 `;
 
-    // Generate toString() cases
-    for (const [name] of Object.entries(statusCodes)) {
-        const pascalCase = screamingSnakeToPascalCase(name);
-        content += `            case Status.${pascalCase}:\n`;
-        content += `                return "${name}";\n`;
-    }
+        // Generate toString() cases
+        for (const [name] of Object.entries(statusCodes)) {
+            const pascalCase = screamingSnakeToPascalCase(name);
+            content += `            case Status.${pascalCase}:\n`;
+            content += `                return "${name}";\n`;
+        }
 
-    content += `            default:
+        content += `            default:
                 return \`UNKNOWN (\${this._code})\`;
         }
     }
@@ -153,14 +252,14 @@ export default class Status {
         switch (code) {
 `;
 
-    // Generate _fromCode() cases
-    for (const [name, code] of Object.entries(statusCodes)) {
-        const pascalCase = screamingSnakeToPascalCase(name);
-        content += `            case ${code}:\n`;
-        content += `                return Status.${pascalCase};\n`;
-    }
+        // Generate _fromCode() cases
+        for (const [name, code] of Object.entries(statusCodes)) {
+            const pascalCase = screamingSnakeToPascalCase(name);
+            content += `            case ${code}:\n`;
+            content += `                return Status.${pascalCase};\n`;
+        }
 
-    content += `            default:
+        content += `            default:
                 throw new Error(
                     \`(BUG) Status.fromCode() does not handle code: \${code}\`,
                 );
@@ -177,12 +276,19 @@ export default class Status {
 
 `;
 
-    // Generate static properties
-    for (const [name, code] of Object.entries(statusCodes)) {
-        const pascalCase = screamingSnakeToPascalCase(name);
-        content += `/* ${name.toLowerCase().split("_").join(" ")} */\n`;
-        content += `Status.${pascalCase} = new Status(${code});\n\n`;
-    }
+        // Generate static properties
+        for (const [name, code] of Object.entries(statusCodes)) {
+            const pascalCase = screamingSnakeToPascalCase(name);
+            const comment = getResponseCodeComment(name);
+            content += `/**\n * ${comment}\n */\n`;
+            content += `Status.${pascalCase} = new Status(${code});\n\n`;
+        }
 
-    return content;
+        return content;
+    } catch (error) {
+        console.error(
+            `Error generating complete Status file: ${error.message}`,
+        );
+        return error;
+    }
 }

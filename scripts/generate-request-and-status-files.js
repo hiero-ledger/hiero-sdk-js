@@ -36,41 +36,41 @@ function generateRequestTypeFile() {
         const highestExistingCode =
             findHighestExistingRequestTypeCode(existingContent);
 
-        // Filter only new functionalities that are higher than the highest existing one
-        const newFunctionalities = Object.entries(functionalities).filter(
+        // Filter only new request types
+        const newRequestTypes = Object.entries(functionalities).filter(
             ([_, code]) => code > highestExistingCode,
         );
 
-        if (newFunctionalities.length === 0) {
+        if (newRequestTypes.length === 0) {
             console.log("No new functionalities to add.");
             return;
         }
 
         console.log(
-            `Found ${newFunctionalities.length} new functionality/functionalities to add.`,
+            `Found ${newRequestTypes.length} new functionality/functionalities to add.`,
         );
 
         // Update the toString method
         let updatedContent = updateRequestTypeToStringMethod(
             existingContent,
-            newFunctionalities,
+            newRequestTypes,
         );
 
         // Update the _fromCode method
         updatedContent = updateRequestTypeFromCodeMethod(
             updatedContent,
-            newFunctionalities,
+            newRequestTypes,
         );
 
         // Append new static properties
         const newProperties =
-            generateRequestTypeStaticProperties(newFunctionalities);
+            generateRequestTypeStaticProperties(newRequestTypes);
         updatedContent += newProperties;
 
         // Write the updated file
         fs.writeFileSync(requestTypePath, updatedContent, "utf8");
         console.log(
-            `Updated RequestType.js with ${newFunctionalities.length} new functionality/functionalities.`,
+            `Updated RequestType.js with ${newRequestTypes.length} new functionality/functionalities.`,
         );
         return;
     }
