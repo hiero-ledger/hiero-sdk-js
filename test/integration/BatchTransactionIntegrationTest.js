@@ -23,6 +23,7 @@ describe("BatchTransaction", function () {
     });
 
     it("can create batch transaction", async function () {
+        this.retries(5);
         const key = PrivateKey.generateECDSA();
 
         const tx1 = await new AccountCreateTransaction()
@@ -50,7 +51,6 @@ describe("BatchTransaction", function () {
         expect(accountIdInnerTransaction.toString()).to.equal(
             accountInfo.accountId.toString(),
         );
-        this.retries(5);
     });
 
     it("can execute a large batch transaction up to maximum request size", async function () {
@@ -75,6 +75,7 @@ describe("BatchTransaction", function () {
     });
 
     it("batch transaction with empty inner transaction's list should throw an error", async function () {
+        this.retries(5);
         const batchTransaction = new BatchTransaction();
 
         try {
@@ -85,10 +86,10 @@ describe("BatchTransaction", function () {
         } catch (error) {
             expect(error.message).to.include(Status.BatchListEmpty.toString());
         }
-        this.retries(5);
     });
 
     it("blacklisted inner transaction should throw an error", async function () {
+        this.retries(5);
         const env = await IntegrationTestEnv.new();
         const batchTransaction = new BatchTransaction();
         const seconds = Math.round(Date.now() / 1000);
@@ -111,10 +112,10 @@ describe("BatchTransaction", function () {
                 Status.BatchTransactionInBlacklist.toString(),
             );
         }
-        this.retries(5);
     });
 
     it("invalid batch key set to inner transaction should throw an error", async function () {
+        this.retries(5);
         const env = await IntegrationTestEnv.new();
         const batchTransaction = new BatchTransaction();
 
@@ -138,10 +139,10 @@ describe("BatchTransaction", function () {
                 Status.InvalidSignature.toString(),
             );
         }
-        this.retries(5);
     });
 
     it("non-batch transaction with batch key should throw an error", async function () {
+        this.retries(5);
         const key = PrivateKey.generateECDSA();
 
         try {
@@ -158,10 +159,10 @@ describe("BatchTransaction", function () {
                 Status.BatchKeySetOnNonInnerTransaction.toString(),
             );
         }
-        this.retries(5);
     });
 
     it("chunked inner transactions should be executed successfully", async function () {
+        this.retries(5);
         const batchTransaction = new BatchTransaction();
 
         const response = await new TopicCreateTransaction()
@@ -185,10 +186,10 @@ describe("BatchTransaction", function () {
         ).getReceipt(env.client);
 
         expect(receipt.status).to.equal(Status.Success);
-        this.retries(5);
     });
 
     it("successful inner transactions should incur fees even though one failed", async function () {
+        this.retries(5);
         const batchTransaction = new BatchTransaction();
 
         const initialBalance = (
@@ -238,7 +239,6 @@ describe("BatchTransaction", function () {
         expect(finalBalance.toTinybars().toNumber()).to.be.lessThan(
             initialBalance.toTinybars().toNumber(),
         );
-        this.retries(5);
     });
 
     after(async function () {
