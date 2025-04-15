@@ -252,6 +252,156 @@ async function main() {
         console.error(error);
     }
 
+    /* Create an account with derived EVM alias from public ECDSA account key
+     *
+     * Reference: [Streamline key and alias specifications for AccountCreateTransaction #2795](https://github.com/hiero-ledger/hiero-sdk-js/issues/2795)
+     */
+    console.log(
+        "---Create an account with derived EVM alias from public ECDSA account key---",
+    );
+
+    try {
+        /**
+         * Step 1
+         *
+         * Create an ECSDA private key and derive the public key
+         */
+        const privateKey = PrivateKey.generateECDSA();
+        console.log(`Private key: ${privateKey.toStringDer()}`);
+
+        const publicKey = privateKey.publicKey;
+        console.log(`Public key: ${publicKey.toStringDer()}`);
+
+        /**
+         *
+         * Step 2
+         *
+         * Use the `AccountCreateTransaction`
+         *   - Populate `setECDSAKeyWithAlias(publicKey)` field with the derived ECDSA public key
+         * Sign the `AccountCreateTransaction` transaction with the generated private key and execute it
+         * Get the account ID of the newly created account
+         */
+
+        const receipt = await (
+            await (
+                await new AccountCreateTransaction()
+                    .setInitialBalance(Hbar.fromTinybars(100))
+                    .setECDSAKeyWithAlias(publicKey)
+                    .freezeWith(client)
+                    .sign(privateKey)
+            ).execute(client)
+        ).getReceipt(client);
+
+        const newAccountId = receipt.accountId.toString();
+        console.log(`Account ID of the newly created account: ${newAccountId}`);
+
+        /**
+         *
+         * Step 3
+         *
+         * Get the `AccountInfo` and examine the created account key and alias
+         */
+        const accountInfo = await new AccountInfoQuery()
+            .setAccountId(newAccountId)
+            .execute(client);
+
+        console.log(
+            `Account's key ${accountInfo.key.toString()} is the same as ${privateKey.publicKey.toStringDer()}`,
+        );
+
+        if (
+            !accountInfo.contractAccountId.startsWith(
+                "000000000000000000000000",
+            )
+        ) {
+            console.log(
+                `Initial EVM address: ${privateKey.publicKey.toEvmAddress()} is the same as ${
+                    accountInfo.contractAccountId
+                }`,
+            );
+        } else {
+            console.log(`The new account doesn't have an EVM alias`);
+        }
+    } catch (error) {
+        console.error(error);
+    }
+
+    /* Create an account with derived EVM alias from public ECDSA alias key
+     *
+     * Reference: [Streamline key and alias specifications for AccountCreateTransaction #2795](https://github.com/hiero-ledger/hiero-sdk-js/issues/2795)
+     */
+
+    console.log(
+        "---Create an account with derived EVM alias from public ECDSA alias key---",
+    );
+
+    try {
+        /**
+         * Step 1
+         *
+         * Create an account key and an derive an ECSDA public alias key
+         */
+        const key = PrivateKey.generateED25519();
+        const aliasKey = PrivateKey.generateECDSA();
+        const publicAliasKey = aliasKey.publicKey;
+
+        console.log(`Public alias key: ${publicAliasKey.toStringDer()}`);
+
+        /**
+         *
+         * Step 2
+         *
+         * Use the `AccountCreateTransaction`
+         *   - Populate `setKeyWithAlias(key, publicKey)` fields with the generated account key and the alias ECDSA public key
+         * Sign the `AccountCreateTransaction` transaction with both keys and execute.
+         * Get the account ID of the newly created account
+         *
+         */
+
+        const receipt = await (
+            await (
+                await (
+                    await new AccountCreateTransaction()
+                        .setInitialBalance(Hbar.fromTinybars(100))
+                        .setKeyWithAlias(key, publicAliasKey)
+                        .freezeWith(client)
+                        .sign(key)
+                ).sign(aliasKey)
+            ).execute(client)
+        ).getReceipt(client);
+
+        const newAccountId = receipt.accountId.toString();
+        console.log(`Account ID of the newly created account: ${newAccountId}`);
+
+        /**
+         *
+         * Step 3
+         *
+         * Get the `AccountInfo` and examine the created account key and alias
+         */
+        const accountInfo = await new AccountInfoQuery()
+            .setAccountId(newAccountId)
+            .execute(client);
+
+        console.log(
+            `Account's key ${accountInfo.key.toString()} is the same as ${key.publicKey.toString()}`,
+        );
+
+        if (
+            !accountInfo.contractAccountId.startsWith(
+                "000000000000000000000000",
+            )
+        ) {
+            console.log(
+                `Initial EVM address: ${accountInfo.contractAccountId} is the same as ${aliasKey.publicKey.toEvmAddress()}`,
+            );
+        } else {
+            console.log(`The new account doesn't have an alias`);
+        }
+    } catch (error) {
+        console.error(error);
+    }
+
     client.close();
 }
 
