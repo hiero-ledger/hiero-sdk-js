@@ -1374,8 +1374,8 @@
     "@ethersproject/bytes" "^5.8.0"
     "@ethersproject/rlp" "^5.8.0"
     "@grpc/grpc-js" "^1.12.6"
-    "@hashgraph/cryptography" "file:../../../../../Library/Caches/Yarn/v6/npm-@hashgraph-sdk-2.62.0-beta.1-ec5f0a70-5cff-43b1-81fe-91d7e75a8f34-1742808604913/node_modules/@hashgraph/sdk/.yalc/@hashgraph/cryptography"
-    "@hashgraph/proto" "file:../../../../../Library/Caches/Yarn/v6/npm-@hashgraph-sdk-2.62.0-beta.1-ec5f0a70-5cff-43b1-81fe-91d7e75a8f34-1742808604913/node_modules/@hashgraph/sdk/.yalc/@hashgraph/proto"
+    "@hashgraph/cryptography" "file:.yalc/@hashgraph/sdk/.yalc/@hashgraph/cryptography"
+    "@hashgraph/proto" "file:.yalc/@hashgraph/sdk/.yalc/@hashgraph/proto"
     bignumber.js "^9.1.1"
     bn.js "^5.1.1"
     crypto-js "^4.2.0"
@@ -3629,9 +3629,9 @@ ignore@^5.2.0:
   integrity sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==
 
 image-size@^1.0.2:
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/image-size/-/image-size-1.2.0.tgz#312af27a2ff4ff58595ad00b9344dd684c910df6"
-  integrity sha512-4S8fwbO6w3GeCVN6OPtA9I5IGKkcDMPcKndtUlpJuCwu7JLjtj7JZpwqLuyY2nrmQT3AWsCJLSKPsc2mPBSl3w==
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/image-size/-/image-size-1.2.1.tgz#ee118aedfe666db1a6ee12bed5821cde3740276d"
+  integrity sha512-rH+46sQJ2dlwfjfhCyNx5thzrv+dtmBIhPHk0zgRUukHzZ/kRueTJXoYYsclBaKcSMBWuGbOFXtioLpzTb5euw==
   dependencies:
     queue "6.0.2"
 

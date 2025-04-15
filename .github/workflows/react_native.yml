@@ -50,7 +50,7 @@ jobs:
           node-version: "20"
 
       - name: Install PNPM
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        uses: step-security/action-setup@1beb3ebc4de86b0e37560725eeef1b11332702a3 # v4.0.1
         with:
           version: 9.15.5
 
@@ -112,7 +112,7 @@ jobs:
 
       # Note: After Step-Security is enabled return to step-security/action-setup version
       - name: Install PNPM
-        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.1.0
+        uses: step-security/action-setup@1beb3ebc4de86b0e37560725eeef1b11332702a3 # v4.0.1
         with:
           version: 9.15.5
 
