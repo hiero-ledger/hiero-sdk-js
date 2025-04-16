@@ -5,11 +5,11 @@ document
 function syntaxHighlight(json) {
     json = JSON.stringify(json, null, 2);
     return json
-        .replace(/("(\w+)": )/g, '<span class="key">$1</span>')
-        .replace(/: "(.*?)"/g, ': <span class="string">"$1"</span>')
-        .replace(/: (\d+)/g, ': <span class="number">$1</span>')
-        .replace(/: (true|false)/g, ': <span class="boolean">$1</span>')
-        .replace(/: null/g, ': <span class="null">null</span>');
+        .replace(/("(\w+)": )/g, '<span class="key-color">$1</span>')
+        .replace(/: "(.*?)"/g, ': <span class="string-color">"$1"</span>')
+        .replace(/: (\d+)/g, ': <span class="number-color">$1</span>')
+        .replace(/: (true|false)/g, ': <span class="boolean-color">$1</span>')
+        .replace(/: null/g, ': <span class="null-color">null</span>');
 }
 
 function executeTx() {
