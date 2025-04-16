@@ -45,23 +45,23 @@ body {
     font-family: monospace;
 }
 
-.key {
+.key-color {
     color: #9cdcfe;
 }
 
-.string {
+.string-color {
     color: #ce9178;
 }
 
-.number {
+.number-color {
     color: #b5cea8;
 }
 
-.boolean {
+.boolean-color {
     color: #569cd6;
 }
 
-.null {
+.null-color {
     color: #808080;
 }
 
@@ -91,7 +91,7 @@ img {
     margin: 0 auto;
 }
 
-.notice {
+.execute-notice {
     margin-top: 10px;
     color: #707070;
     font-size: 12px;
@@ -99,7 +99,7 @@ img {
     text-decoration: underline italic;
 }
 
-.copyright {
+footer {
     display: block;
     margin-top: 5px;
     color: #fff;
