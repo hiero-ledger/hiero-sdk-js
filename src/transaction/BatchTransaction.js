@@ -1,3 +1,4 @@
+import FreezeTransaction from "../system/FreezeTransaction.js";
 import Transaction, { TRANSACTION_REGISTRY } from "./Transaction.js";
 import { proto } from "@hashgraph/proto";
 
@@ -27,11 +28,12 @@ export default class BatchTransaction extends Transaction {
     }
 
     /**
-     * @param {Transaction[]} tx
+     * @param {Transaction[]} txs
      * @returns {BatchTransaction}
      */
-    setInnerTransactions(tx) {
-        this._batchTransactions = tx;
+    setInnerTransactions(txs) {
+        txs.forEach((tx) => this._validateTransaction(tx));
+        this._batchTransactions = txs;
         return this;
     }
 
@@ -40,6 +42,8 @@ export default class BatchTransaction extends Transaction {
      * @returns {BatchTransaction}
      */
     addInnerTransaction(tx) {
+        this._validateTransaction(tx);
+        this._requireNotFrozen();
         this._batchTransactions.push(tx);
         return this;
     }
@@ -156,6 +160,18 @@ export default class BatchTransaction extends Transaction {
      */
     _execute(channel, request) {
         return channel.util.atomicBatch(request);
+    }
+
+    /**
+     * @param {Transaction} tx
+     * @throws {Error} If the transaction is a batch or freeze transaction
+     */
+    _validateTransaction(tx) {
+        if (tx instanceof BatchTransaction || tx instanceof FreezeTransaction) {
+            throw new Error(
+                "Transaction is not allowed to be added to a batch",
+            );
+        }
     }
 }
 
