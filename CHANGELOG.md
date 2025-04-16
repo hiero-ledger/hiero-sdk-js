@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.63.0
+
+### Added
+
+- Added a UMD example demonstrating usage of the SDK in browser environments
+
+- Added `PrivateKey.getRecoveryId(r, s, message)` method to enable recovery ID (v) calculation from raw `ECDSA` signature components.
+This addition allows developers to compute the recovery ID directly, enabling full support for signing and serializing Ethereum transactions (including `EIP-155`) within the SDK. It enhances compatibility with external Ethereum clients and tooling.
+
+- Added an example demonstrating how to sign and recover Ethereum addresses using the Hedera SDK, Ethereum-style signature hashing (`EIP-191`), and the ecrecover contract. 
+
+- Implemented dynamic generation of `RequestType.js` and `Status.js` by parsing protobuf definitions.
+
+### Changed
+
+- Improved reliability of `getReceiptQuery` and `getRecordQuery`, which are single-node requests. These queries now retry up to 10 times with a delay when encountering node-specific issues (e.g., "All nodes are unhealthy") to handle transient network or node health problems more gracefully.
+
+- Extracted `_makePaymentTransaction` function used by both Query and CostQuery for initiating payment transactions.
+The filename begins with an underscore to indicate it is not meant for public use and is placed in the queries folder to clearly indicate its internal scope. 
+
+- Fixed a bug in `TopicUpdateTransaction` related to the handling of `feeExemptKeys` and `customFees` properties when they are unset. Previously, the transaction would include empty arrays for these fields, unintentionally clearing existing values on the topic. This change ensures that unset properties are treated as null, preserving existing topic configurations.
+
+- Updated README.md to reflect support for the UMD package
+
+### Removed
+
+- MyHbarWallet gRPC web proxies
+
+
 ## v2.63.0-beta.1
 
 ### Changed
