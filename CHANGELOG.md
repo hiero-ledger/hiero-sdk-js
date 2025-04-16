@@ -28,7 +28,6 @@ The filename begins with an underscore to indicate it is not meant for public us
 - Fixed a bug in `TopicUpdateTransaction` related to the handling of `feeExemptKeys` and `customFees` properties when they are unset. Previously, the transaction would include empty arrays for these fields, unintentionally clearing existing values on the topic. This change ensures that unset properties are treated as null, preserving existing topic configurations.
 
 - Updated README.md to reflect support for the UMD package
-
 ### Removed
 
 - MyHbarWallet gRPC web proxies
