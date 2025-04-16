@@ -60,7 +60,7 @@
         "@ethersproject/bytes": "^5.8.0",
         "@ethersproject/rlp": "^5.8.0",
         "@grpc/grpc-js": "^1.12.6",
-        "@hashgraph/cryptography": "1.5.0",
+        "@hashgraph/cryptography": "1.6.0",
         "@hashgraph/proto": "2.17.0-beta.1",
         "bignumber.js": "^9.1.1",
         "bn.js": "^5.1.1",
