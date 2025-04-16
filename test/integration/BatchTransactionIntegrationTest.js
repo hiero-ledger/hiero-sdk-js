@@ -1,7 +1,6 @@
 import { expect } from "chai";
 import {
     PrivateKey,
-    AccountId,
     Hbar,
     AccountCreateTransaction,
     BatchTransaction,
@@ -10,238 +9,406 @@ import {
     TopicMessageSubmitTransaction,
     Status,
     FreezeTransaction,
-    Timestamp,
+    TransactionId,
+    TransferTransaction,
+    FileId,
     FreezeType,
+    TransactionReceiptQuery,
+    TopicInfoQuery,
 } from "../../src/index.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 
 describe("BatchTransaction", function () {
-    let env;
-
-    beforeEach(async function () {
-        env = await IntegrationTestEnv.new();
-    });
-
     it("can create batch transaction", async function () {
         this.retries(5);
-        const key = PrivateKey.generateECDSA();
+        const env = await IntegrationTestEnv.new();
 
-        const tx1 = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(key)
-            .setInitialBalance(new Hbar(1))
-            .batchify(env.client, env.operatorKey);
-
-        const batchTransaction = new BatchTransaction().addInnerTransaction(
-            tx1,
-        );
-
-        const receipt = await (
-            await batchTransaction.execute(env.client)
-        ).getReceipt(env.client);
-
-        console.log(receipt);
-        expect(receipt.status).to.equal(Status.Success);
-
-        const accountIdInnerTransaction =
-            batchTransaction.innerTransactionIds[0].accountId;
-
-        const accountInfo = await new AccountInfoQuery()
-            .setAccountId(accountIdInnerTransaction)
-            .execute(env.client);
-        expect(accountIdInnerTransaction.toString()).to.equal(
-            accountInfo.accountId.toString(),
-        );
-    });
-
-    it("can execute a large batch transaction up to maximum request size", async function () {
-        const batchTransaction = new BatchTransaction();
-
-        // 50 is the maximum limit for internal transaction inside a BatchTransaction
-        for (let i = 0; i < 20; i++) {
+        try {
             const key = PrivateKey.generateECDSA();
             const tx = await new AccountCreateTransaction()
                 .setKeyWithoutAlias(key)
                 .setInitialBalance(new Hbar(1))
                 .batchify(env.client, env.operatorKey);
-            batchTransaction.addInnerTransaction(tx);
+
+            const batchTransaction = new BatchTransaction().addInnerTransaction(
+                tx,
+            );
+            await (
+                await batchTransaction.execute(env.client)
+            ).getReceipt(env.client);
+
+            const accountIdInnerTransaction =
+                batchTransaction.innerTransactionIds[0].accountId;
+
+            const accountInfo = await new AccountInfoQuery()
+                .setAccountId(accountIdInnerTransaction)
+                .execute(env.client);
+
+            expect(accountIdInnerTransaction.toString()).to.equal(
+                accountInfo.accountId.toString(),
+            );
+        } finally {
+            await env.close();
         }
+    });
 
-        const receipt = await (
-            await batchTransaction.execute(env.client)
-        ).getReceipt(env.client);
-
-        expect(receipt.status).to.equal(Status.Success);
+    it("can execute from/toBytes", async function () {
         this.retries(5);
+        const env = await IntegrationTestEnv.new();
+
+        try {
+            const key = PrivateKey.generateECDSA();
+            const tx = await new AccountCreateTransaction()
+                .setKeyWithoutAlias(key)
+                .setInitialBalance(new Hbar(1))
+                .batchify(env.client, env.operatorKey);
+
+            const batchTransaction = new BatchTransaction().addInnerTransaction(
+                tx,
+            );
+            const batchTransactionBytes = batchTransaction.toBytes();
+            const batchTransactionFromBytes = BatchTransaction.fromBytes(
+                batchTransactionBytes,
+            );
+            await (
+                await batchTransactionFromBytes.execute(env.client)
+            ).getReceipt(env.client);
+
+            const accountIdInnerTransaction =
+                batchTransaction.innerTransactionIds[0].accountId;
+
+            const accountInfo = await new AccountInfoQuery()
+                .setAccountId(accountIdInnerTransaction)
+                .execute(env.client);
+
+            expect(accountIdInnerTransaction.toString()).to.equal(
+                accountInfo.accountId.toString(),
+            );
+        } finally {
+            await env.close();
+        }
+    });
+
+    it("can execute a large batch transaction up to maximum request size", async function () {
+        this.retries(5);
+        const env = await IntegrationTestEnv.new();
+
+        try {
+            const batchTransaction = new BatchTransaction();
+
+            // 50 is the maximum limit for internal transaction inside a BatchTransaction
+            for (let i = 0; i < 25; i++) {
+                const key = PrivateKey.generateECDSA();
+                const tx = await new AccountCreateTransaction()
+                    .setKeyWithoutAlias(key)
+                    .setInitialBalance(new Hbar(1))
+                    .batchify(env.client, env.operatorKey);
+                batchTransaction.addInnerTransaction(tx);
+            }
+
+            await (
+                await batchTransaction.execute(env.client)
+            ).getReceipt(env.client);
+
+            for (const innerTransactionId of batchTransaction.innerTransactionIds()) {
+                const receipt = await new TransactionReceiptQuery()
+                    .setTransactionId(innerTransactionId)
+                    .execute(env.client);
+                expect(receipt.status).to.equal(Status.Success);
+            }
+        } finally {
+            await env.close();
+        }
     });
 
     it("batch transaction with empty inner transaction's list should throw an error", async function () {
-        this.retries(5);
-        const batchTransaction = new BatchTransaction();
+        const env = await IntegrationTestEnv.new();
 
         try {
             await (
-                await batchTransaction.execute(env.client)
+                await new BatchTransaction().execute(env.client)
             ).getReceipt(env.client);
             expect.fail("Should have thrown an error");
         } catch (error) {
             expect(error.message).to.include(Status.BatchListEmpty.toString());
+        } finally {
+            await env.close();
         }
     });
 
     it("blacklisted inner transaction should throw an error", async function () {
-        this.retries(5);
         const env = await IntegrationTestEnv.new();
-        const batchTransaction = new BatchTransaction();
-        const seconds = Math.round(Date.now() / 1000);
-        const validStart = new Timestamp(seconds, 0);
-
-        const tx1 = await new FreezeTransaction()
-            .setStartTimestamp(validStart)
-            .setFreezeType(new FreezeType(1))
-            .batchify(env.client, env.operatorKey);
 
         try {
-            await (
-                await batchTransaction
-                    .addInnerTransaction(tx1)
-                    .execute(env.client)
-            ).getReceipt(env.client);
-            expect.fail("Should have thrown an error");
-        } catch (error) {
-            expect(error.message).to.include(
-                Status.BatchTransactionInBlacklist.toString(),
-            );
+            const freezeTransaction = await new FreezeTransaction()
+                .setFileId(FileId.fromString("4.5.6"))
+                .setFileHash(Buffer.from("1723904587120938954702349857", "hex"))
+                .setStartTime(new Date())
+                .setFreezeType(FreezeType.FreezeOnly)
+                .batchify(env.client, env.operatorKey);
+
+            try {
+                new BatchTransaction().addInnerTransaction(freezeTransaction);
+                expect.fail("Should have thrown an error");
+            } catch (error) {
+                console.log(error);
+                expect(error.message).to.include(
+                    "Transaction is not allowed to be added to a batch",
+                );
+            }
+
+            const key = PrivateKey.generateECDSA();
+            const tx = await new AccountCreateTransaction()
+                .setKeyWithoutAlias(key)
+                .setInitialBalance(new Hbar(1))
+                .batchify(env.client, env.operatorKey);
+
+            const batchTransaction = await new BatchTransaction()
+                .addInnerTransaction(tx)
+                .batchify(env.client, env.operatorKey);
+
+            try {
+                new BatchTransaction().addInnerTransaction(batchTransaction);
+                expect.fail("Should have thrown an error");
+            } catch (error) {
+                expect(error.message).to.include(
+                    "Transaction is not allowed to be added to a batch",
+                );
+            }
+        } finally {
+            await env.close();
         }
     });
 
     it("invalid batch key set to inner transaction should throw an error", async function () {
         this.retries(5);
         const env = await IntegrationTestEnv.new();
-        const batchTransaction = new BatchTransaction();
-
-        const key = PrivateKey.generateECDSA();
-        const invalidKey = PrivateKey.generateECDSA();
-
-        const tx1 = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(key)
-            .setInitialBalance(new Hbar(1))
-            .batchify(env.client, invalidKey.publicKey);
 
         try {
-            await (
-                await batchTransaction
-                    .addInnerTransaction(tx1)
-                    .execute(env.client)
-            ).getReceipt(env.client);
-            expect.fail("Should have thrown an error");
-        } catch (error) {
-            expect(error.message).to.include(
-                Status.InvalidSignature.toString(),
-            );
-        }
-    });
+            const batchTransaction = new BatchTransaction();
 
-    it("non-batch transaction with batch key should throw an error", async function () {
-        this.retries(5);
-        const key = PrivateKey.generateECDSA();
+            const key = PrivateKey.generateECDSA();
+            const invalidKey = PrivateKey.generateECDSA();
 
-        try {
-            await (
+            const tx = await new AccountCreateTransaction()
+                .setKeyWithoutAlias(key)
+                .setInitialBalance(new Hbar(1))
+                .batchify(env.client, invalidKey.publicKey);
+
+            try {
                 await (
-                    await new AccountCreateTransaction()
-                        .setKeyWithoutAlias(key)
-                        .setNodeAccountIds([AccountId.fromString("0.0.3")])
-                ).execute(env.client)
-            ).getReceipt(env.client);
-        } catch (error) {
-            console.log(error);
-            expect(error.message).to.include(
-                Status.BatchKeySetOnNonInnerTransaction.toString(),
-            );
+                    await batchTransaction
+                        .addInnerTransaction(tx)
+                        .execute(env.client)
+                ).getReceipt(env.client);
+                expect.fail("Should have thrown an error");
+            } catch (error) {
+                expect(error.message).to.include(
+                    Status.InvalidSignature.toString(),
+                );
+            }
+        } finally {
+            await env.close();
         }
     });
 
     it("chunked inner transactions should be executed successfully", async function () {
         this.retries(5);
-        const batchTransaction = new BatchTransaction();
+        const env = await IntegrationTestEnv.new();
 
-        const response = await new TopicCreateTransaction()
-            .setAdminKey(env.operatorKey)
-            .setTopicMemo("[e2e::TopicCreateTransaction]")
-            .execute(env.client);
+        try {
+            const response = await new TopicCreateTransaction()
+                .setAdminKey(env.operatorKey)
+                .setTopicMemo("[e2e::TopicCreateTransaction]")
+                .execute(env.client);
 
-        const topicId = (await response.getReceipt(env.client)).topicId;
+            const topicId = (await response.getReceipt(env.client)).topicId;
 
-        const topicMessageSubmitTransaction =
-            await new TopicMessageSubmitTransaction()
+            const topicMessageSubmitTransaction =
+                await new TopicMessageSubmitTransaction()
+                    .setTopicId(topicId)
+                    .setMaxChunks(1)
+                    .setMessage("Hello, world!")
+                    .batchify(env.client, env.operatorKey);
+
+            await (
+                await new BatchTransaction()
+                    .addInnerTransaction(topicMessageSubmitTransaction)
+                    .execute(env.client)
+            ).getReceipt(env.client);
+
+            const info = await new TopicInfoQuery()
                 .setTopicId(topicId)
-                .setMaxChunks(15)
-                .setMessage("A".repeat(4096)) // Using a large message to test chunking
-                .batchify(env.client, env.operatorKey);
+                .execute(env.client);
 
-        const receipt = await (
-            await batchTransaction
-                .addInnerTransaction(topicMessageSubmitTransaction)
-                .execute(env.client)
-        ).getReceipt(env.client);
+            expect(info.sequenceNumber.toInt()).to.equal(1);
+        } finally {
+            await env.close();
+        }
+    });
 
-        expect(receipt.status).to.equal(Status.Success);
+    it("can execute with different batch keys", async function () {
+        this.retries(5);
+        const env = await IntegrationTestEnv.new();
+
+        try {
+            const batchKey1 = PrivateKey.generateED25519();
+            const batchKey2 = PrivateKey.generateED25519();
+            const batchKey3 = PrivateKey.generateED25519();
+
+            const key1 = PrivateKey.generateECDSA();
+            const response1 = await new AccountCreateTransaction()
+                .setKeyWithoutAlias(key1)
+                .setInitialBalance(new Hbar(1))
+                .execute(env.client);
+            const account1 = (await response1.getReceipt(env.client)).accountId;
+            expect(account1).to.not.be.null;
+
+            const batchedTransfer1 = await new TransferTransaction()
+                .addHbarTransfer(env.operatorId, Hbar.fromTinybars(100))
+                .addHbarTransfer(account1, Hbar.fromTinybars(100).negated())
+                .setTransactionId(TransactionId.generate(account1))
+                .setBatchKey(batchKey1)
+                .freezeWith(env.client)
+                .sign(key1);
+
+            const key2 = PrivateKey.generateECDSA();
+            const response2 = await new AccountCreateTransaction()
+                .setKeyWithoutAlias(key2)
+                .setInitialBalance(new Hbar(1))
+                .execute(env.client);
+            const account2 = (await response2.getReceipt(env.client)).accountId;
+            expect(account2).to.not.be.null;
+
+            const batchedTransfer2 = await new TransferTransaction()
+                .addHbarTransfer(env.operatorId, Hbar.fromTinybars(100))
+                .addHbarTransfer(account2, Hbar.fromTinybars(100).negated())
+                .setTransactionId(TransactionId.generate(account2))
+                .setBatchKey(batchKey2)
+                .freezeWith(env.client)
+                .sign(key2);
+
+            const key3 = PrivateKey.generateECDSA();
+            const response3 = await new AccountCreateTransaction()
+                .setKeyWithoutAlias(key3)
+                .setInitialBalance(new Hbar(1))
+                .execute(env.client);
+            const account3 = (await response3.getReceipt(env.client)).accountId;
+            expect(account3).to.not.be.null;
+
+            const batchedTransfer3 = await new TransferTransaction()
+                .addHbarTransfer(env.operatorId, Hbar.fromTinybars(100))
+                .addHbarTransfer(account3, Hbar.fromTinybars(100).negated())
+                .setTransactionId(TransactionId.generate(account3))
+                .setBatchKey(batchKey3)
+                .freezeWith(env.client)
+                .sign(key3);
+
+            const receipt = await (
+                await (
+                    await (
+                        await (
+                            await new BatchTransaction()
+                                .addInnerTransaction(batchedTransfer1)
+                                .addInnerTransaction(batchedTransfer2)
+                                .addInnerTransaction(batchedTransfer3)
+                                .freezeWith(env.client)
+                                .sign(batchKey1)
+                        ).sign(batchKey2)
+                    ).sign(batchKey3)
+                ).execute(env.client)
+            ).getReceipt(env.client);
+
+            expect(receipt.status).to.equal(Status.Success);
+        } finally {
+            await env.close();
+        }
     });
 
     it("successful inner transactions should incur fees even though one failed", async function () {
         this.retries(5);
-        const batchTransaction = new BatchTransaction();
-
-        const initialBalance = (
-            await new AccountInfoQuery()
-                .setAccountId(env.operatorId)
-                .execute(env.client)
-        ).balance;
-
-        const key = PrivateKey.generateECDSA();
-
-        const tx1 = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(key)
-            .setInitialBalance(new Hbar(1))
-            .batchify(env.client, env.operatorKey);
-
-        const tx2 = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(key)
-            .setInitialBalance(new Hbar(1))
-            .batchify(env.client, env.operatorKey);
-
-        const tx3 = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(key)
-            .setInitialBalance(new Hbar(1))
-            .batchify(env.client, PrivateKey.generateECDSA());
+        const env = await IntegrationTestEnv.new();
 
         try {
-            await (
-                await batchTransaction
-                    .addInnerTransaction(tx1)
-                    .addInnerTransaction(tx2)
-                    .addInnerTransaction(tx3)
+            const initialBalance = (
+                await new AccountInfoQuery()
+                    .setAccountId(env.operatorId)
                     .execute(env.client)
-            ).getReceipt(env.client);
-            expect.fail("Should have thrown an error");
-        } catch (error) {
-            expect(error.message).to.include(
-                Status.InvalidSignature.toString(),
+            ).balance;
+
+            const key1 = PrivateKey.generateECDSA();
+            const tx1 = await new AccountCreateTransaction()
+                .setKeyWithoutAlias(key1)
+                .setInitialBalance(new Hbar(1))
+                .batchify(env.client, env.operatorKey);
+
+            const key2 = PrivateKey.generateECDSA();
+            const tx2 = await new AccountCreateTransaction()
+                .setKeyWithoutAlias(key2)
+                .setInitialBalance(new Hbar(1))
+                .batchify(env.client, env.operatorKey);
+
+            const key3 = PrivateKey.generateECDSA();
+            const tx3 = await new AccountCreateTransaction()
+                .setKeyWithoutAlias(key3)
+                .setReceiverSignatureRequired(true)
+                .setInitialBalance(new Hbar(1))
+                .batchify(env.client, env.operatorKey);
+
+            try {
+                await (
+                    await new BatchTransaction()
+                        .addInnerTransaction(tx1)
+                        .addInnerTransaction(tx2)
+                        .addInnerTransaction(tx3)
+                        .execute(env.client)
+                ).getReceipt(env.client);
+                expect.fail("Should have thrown an error");
+            } catch (error) {
+                expect(error.message).to.include(
+                    Status.InnerTransactionFailed.toString(),
+                );
+            }
+
+            const finalBalance = (
+                await new AccountInfoQuery()
+                    .setAccountId(env.operatorId)
+                    .execute(env.client)
+            ).balance;
+
+            expect(finalBalance.toTinybars().toNumber()).to.be.lessThan(
+                initialBalance.toTinybars().toNumber(),
             );
+        } finally {
+            await env.close();
         }
-
-        const finalBalance = (
-            await new AccountInfoQuery()
-                .setAccountId(env.operatorId)
-                .execute(env.client)
-        ).balance;
-
-        expect(finalBalance.toTinybars().toNumber()).to.be.lessThan(
-            initialBalance.toTinybars().toNumber(),
-        );
     });
 
-    after(async function () {
-        await env.close();
+    it("transaction should fail when batchified but not part of a batch", async function () {
+        const env = await IntegrationTestEnv.new();
+
+        try {
+            const key = PrivateKey.generateED25519();
+            try {
+                await (
+                    await (
+                        await new TopicCreateTransaction()
+                            .setAdminKey(env.operatorKey)
+                            .setTopicMemo("[e2e::TopicCreateTransaction]")
+                            .batchify(env.client, key)
+                    ).execute(env.client)
+                ).getReceipt(env.client);
+                expect.fail("Should have thrown an error");
+            } catch (error) {
+                console.log("proba");
+                console.log(error);
+                console.log("proba");
+                expect(error.message).to.include(
+                    "Cannot execute batchified transaction outside of BatchTransaction",
+                );
+            }
+        } finally {
+            await env.close();
+        }
     });
 });
