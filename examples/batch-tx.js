@@ -1,4 +1,3 @@
-import { setTimeout } from "node:timers/promises";
 import {
     Client,
     PrivateKey,
@@ -6,10 +5,13 @@ import {
     Hbar,
     AccountCreateTransaction,
     BatchTransaction,
-    TransactionReceiptQuery,
     Logger,
     LogLevel,
-} from "@hashgraph/sdk";
+    TransferTransaction,
+    HbarUnit,
+    TransactionId,
+    AccountBalanceQuery,
+} from "../src/index.js";
 
 import dotenv from "dotenv";
 
@@ -36,88 +38,342 @@ async function main() {
 
     const client = Client.forName(process.env.HEDERA_NETWORK)
         .setOperator(operatorAccId, operatorPrivKey)
-        .setLogger(new Logger(LogLevel.Info));
+        .setLogger(new Logger(LogLevel.Silent));
 
+    //await executeBatchWithBatchify(client);
+    await executeBatchWithManualInnerTransactionFreeze(client);
+    client.close();
+}
+
+/**
+ *
+ * @param {Client} client
+ */
+async function executeBatchWithBatchify(client) {
     /**
      * Step 2:
      * Create three account create transactions with batch keys, but do not execute them.
      **/
-    const privKey1 = PrivateKey.generateECDSA();
-    const publicKey1 = privKey1.publicKey;
 
-    const privKey2 = PrivateKey.generateECDSA();
-    const publicKey2 = privKey2.publicKey;
-
-    const privKey3 = PrivateKey.generateECDSA();
-    const publicKey3 = privKey3.publicKey;
-
-    console.log("Creating three account create transactions...");
+    const batchKey1 = PrivateKey.generateECDSA();
+    const batchKey2 = PrivateKey.generateECDSA();
+    const batchKey3 = PrivateKey.generateECDSA();
 
     /**
      * Step 3:
      * BatchKey is the public key of the client that executes
      * a batch transaction
      */
-    const batchKey = client.getOperator().publicKey;
+    const aliceKey = PrivateKey.generateECDSA();
+    const alice = (
+        await (
+            await new AccountCreateTransaction()
+                .setKeyWithoutAlias(aliceKey)
+                .setInitialBalance(new Hbar(2))
+                .execute(client)
+        ).getReceipt(client)
+    ).accountId;
+
+    const aliceClient = Client.forName(process.env.HEDERA_NETWORK)
+        .setOperator(alice, aliceKey)
+        .setLogger(new Logger(LogLevel.Info));
+    const aliceBatchedTransfer = await new TransferTransaction()
+        .addHbarTransfer(alice, Hbar.from(-1, HbarUnit.Hbar))
+        .addHbarTransfer(
+            client.getOperator().accountId,
+            Hbar.from(1, HbarUnit.Hbar),
+        )
+        .batchify(aliceClient, batchKey1);
+
+    console.log("Created first account (Alice): " + alice.toString());
+
+    const bobKey = PrivateKey.generateECDSA();
+    const bob = (
+        await (
+            await new AccountCreateTransaction()
+                .setKeyWithoutAlias(bobKey)
+                .setInitialBalance(new Hbar(2))
+                .execute(client)
+        ).getReceipt(client)
+    ).accountId;
+
+    const bobClient = Client.forName(process.env.HEDERA_NETWORK).setOperator(
+        bob,
+        bobKey,
+    );
+
+    const bobBatchedTransfer = await new TransferTransaction()
+        .addHbarTransfer(bob, Hbar.from(-1, HbarUnit.Hbar))
+        .addHbarTransfer(
+            client.getOperator().accountId,
+            Hbar.from(1, HbarUnit.Hbar),
+        )
+        .batchify(bobClient, batchKey2);
+
+    console.log("Created second account (Bob): " + bob.toString());
+
+    const carolKey = PrivateKey.generateECDSA();
+    const carol = (
+        await (
+            await new AccountCreateTransaction()
+                .setKeyWithoutAlias(carolKey)
+                .setInitialBalance(new Hbar(2))
+                .execute(client)
+        ).getReceipt(client)
+    ).accountId;
+
+    const carolClient = Client.forName(process.env.HEDERA_NETWORK).setOperator(
+        carol,
+        carolKey,
+    );
+    const carolBatchedTransfer = await new TransferTransaction()
+        .addHbarTransfer(carol, Hbar.from(-1, HbarUnit.Hbar))
+        .addHbarTransfer(
+            client.getOperator().accountId,
+            Hbar.from(1, HbarUnit.Hbar),
+        )
+        .batchify(carolClient, batchKey3);
+
+    console.log("Created third account (Carol): " + carol.toString());
+
+    /**
+     * Step 3:
+     * Get the balanace in order to compete after this batch
+     */
+    const aliceBalanceBefore = await new AccountBalanceQuery()
+        .setAccountId(alice)
+        .execute(client);
+    var bobBalanceBefore = await new AccountBalanceQuery()
+        .setAccountId(bob)
+        .execute(client);
+    var carolBalanceBefore = await new AccountBalanceQuery()
+        .setAccountId(carol)
+        .execute(client);
+    var operatorBalanceBefore = await new AccountBalanceQuery()
+        .setAccountId(client.getOperator().accountId)
+        .execute(client);
 
     /**
      * Step 4:
-     * Create three account create transactions with batch keys, but do not execute them.
-     */
-    const accountCreateTx1 = await new AccountCreateTransaction()
-        .setKeyWithoutAlias(publicKey1)
-        .setInitialBalance(new Hbar(1))
-        .batchify(client, batchKey);
-
-    var accountCreateTx2 = await new AccountCreateTransaction()
-        .setKeyWithoutAlias(publicKey2)
-        .setInitialBalance(new Hbar(1))
-        .batchify(client, batchKey);
-
-    var accountCreateTx3 = await new AccountCreateTransaction()
-        .setKeyWithoutAlias(publicKey3)
-        .setInitialBalance(new Hbar(1))
-        .batchify(client, batchKey);
-
-    console.log("Executing batch transaction...");
-
-    const batchTx = new BatchTransaction();
-
-    /**
-     * Step 5:
      * Execute the batch transaction
      */
-    await (
-        await batchTx
-            .addInnerTransaction(accountCreateTx1)
-            .addInnerTransaction(accountCreateTx2)
-            .addInnerTransaction(accountCreateTx3)
-            .execute(client)
-    ).getReceipt(client);
+
+    console.log("Executing batch transaction...");
+    const batch = await (
+        await (
+            await new BatchTransaction()
+                .addInnerTransaction(aliceBatchedTransfer)
+                .addInnerTransaction(bobBatchedTransfer)
+                .addInnerTransaction(carolBatchedTransfer)
+                .freezeWith(client)
+                .sign(batchKey1)
+        ).sign(batchKey2)
+    ).sign(batchKey3);
+
+    const batchId = await (await batch.execute(client)).getReceipt(client);
+
+    console.log(
+        "Batch transaction executed with status: " + batchId.status.toString(),
+    );
+
+    console.log("Verifying the balance after batch transaction...");
+
+    const aliceBalanceAfter = await new AccountBalanceQuery()
+        .setAccountId(alice)
+        .execute(client);
+    const bobBalanceAfter = await new AccountBalanceQuery()
+        .setAccountId(bob)
+        .execute(client);
+    const carolBalanceAfter = await new AccountBalanceQuery()
+        .setAccountId(carol)
+        .execute(client);
+    const operatorBalanceAfter = await new AccountBalanceQuery()
+        .setAccountId(client.getOperator().accountId)
+        .execute(client);
+
+    console.log("Alice balance after: " + aliceBalanceAfter.hbars.toString());
+    console.log("Bob balance after: " + bobBalanceAfter.hbars.toString());
+    console.log("Carol balance after: " + carolBalanceAfter.hbars.toString());
+    console.log(
+        "Operator balance after: " + operatorBalanceAfter.hbars.toString(),
+    );
+
+    console.log(
+        "Alice's original balance: " + aliceBalanceBefore.hbars.toString(),
+    );
+    console.log("Bob's original balance: " + bobBalanceBefore.hbars.toString());
+    console.log(
+        "Carol's original balance: " + carolBalanceBefore.hbars.toString(),
+    );
+    console.log(
+        "Operator's original balance: " +
+            operatorBalanceBefore.hbars.toString(),
+    );
+}
+
+/**
+ *
+ * @param {Client} client
+ */
+async function executeBatchWithManualInnerTransactionFreeze(client) {
+    /**
+     * Step 2:
+     * Create three account create transactions with batch keys, but do not execute them.
+     **/
+
+    const batchKey1 = PrivateKey.generateECDSA();
+    const batchKey2 = PrivateKey.generateECDSA();
+    const batchKey3 = PrivateKey.generateECDSA();
 
     /**
-     * Step 6:
-     * Verify the three account IDs of the newly created accounts using innerTransactionIds.
+     * Step 3:
+     * BatchKey is the public key of the client that executes
+     * a batch transaction
      */
+    const aliceKey = PrivateKey.generateECDSA();
+    const alice = (
+        await (
+            await new AccountCreateTransaction()
+                .setKeyWithoutAlias(aliceKey)
+                .setInitialBalance(new Hbar(2))
+                .execute(client)
+        ).getReceipt(client)
+    ).accountId;
+
+    const aliceBatchedTransfer = await new TransferTransaction()
+        .addHbarTransfer(alice, Hbar.from(-1, HbarUnit.Hbar))
+        .addHbarTransfer(
+            client.getOperator().accountId,
+            Hbar.from(1, HbarUnit.Hbar),
+        )
+        .setBatchKey(batchKey2)
+        .setTransactionId(TransactionId.generate(alice))
+        .freezeWith(client)
+        .sign(aliceKey);
+
+    console.log("Created first account (Alice): " + alice.toString());
+
+    const bobKey = PrivateKey.generateECDSA();
+    const bob = (
+        await (
+            await new AccountCreateTransaction()
+                .setKeyWithoutAlias(bobKey)
+                .setInitialBalance(new Hbar(2))
+                .execute(client)
+        ).getReceipt(client)
+    ).accountId;
+
+    const bobBatchedTransfer = await new TransferTransaction()
+        .addHbarTransfer(bob, Hbar.from(-1, HbarUnit.Hbar))
+        .addHbarTransfer(
+            client.getOperator().accountId,
+            Hbar.from(1, HbarUnit.Hbar),
+        )
+        .setBatchKey(batchKey2)
+        .setTransactionId(TransactionId.generate(bob))
+        .freezeWith(client)
+        .sign(bobKey);
+    console.log("Created second account (Bob): " + bob.toString());
+
+    const carolKey = PrivateKey.generateECDSA();
+    const carol = (
+        await (
+            await new AccountCreateTransaction()
+                .setKeyWithoutAlias(carolKey)
+                .setInitialBalance(new Hbar(2))
+                .execute(client)
+        ).getReceipt(client)
+    ).accountId;
+
+    const carolBatchedTransfer = await new TransferTransaction()
+        .addHbarTransfer(carol, Hbar.from(-1, HbarUnit.Hbar))
+        .addHbarTransfer(
+            client.getOperator().accountId,
+            Hbar.from(1, HbarUnit.Hbar),
+        )
+        .setBatchKey(batchKey3)
+        .setTransactionId(TransactionId.generate(carol))
+        .freezeWith(client)
+        .sign(carolKey);
+
+    console.log("Created third account (Carol): " + carol.toString());
+
+    /**
+     * Step 3:
+     * Get the balanace in order to compete after this batch
+     */
+    const aliceBalanceBefore = await new AccountBalanceQuery()
+        .setAccountId(alice)
+        .execute(client);
+
+    var bobBalanceBefore = await new AccountBalanceQuery()
+        .setAccountId(bob)
+        .execute(client);
+
+    var carolBalanceBefore = await new AccountBalanceQuery()
+        .setAccountId(carol)
+        .execute(client);
+
+    var operatorBalanceBefore = await new AccountBalanceQuery()
+        .setAccountId(client.getOperator().accountId)
+        .execute(client);
+
+    /**
+     * Step 4:
+     * Execute the batch transaction
+     */
+
+    console.log("Executing batch transaction...");
+    const batch = await (
+        await (
+            await new BatchTransaction()
+                .addInnerTransaction(aliceBatchedTransfer)
+                .addInnerTransaction(bobBatchedTransfer)
+                .addInnerTransaction(carolBatchedTransfer)
+                .freezeWith(client)
+                .sign(batchKey1)
+        ).sign(batchKey2)
+    ).sign(batchKey3);
+
+    const batchId = await (await batch.execute(client)).getReceipt(client);
+
     console.log(
-        "Verifying the three account IDs of the newly created accounts...",
+        "Batch transaction executed with status: " + batchId.status.toString(),
     );
-    await setTimeout(5000);
-    const receipt1 = await new TransactionReceiptQuery()
-        .setTransactionId(batchTx.innerTransactionIds[0])
+
+    console.log("Verifying the balance after batch transaction...");
+
+    const aliceBalanceAfter = await new AccountBalanceQuery()
+        .setAccountId(alice)
         .execute(client);
-    const receipt2 = await new TransactionReceiptQuery()
-        .setTransactionId(batchTx.innerTransactionIds[1])
+    const bobBalanceAfter = await new AccountBalanceQuery()
+        .setAccountId(bob)
         .execute(client);
-    const receipt3 = await new TransactionReceiptQuery()
-        .setTransactionId(batchTx.innerTransactionIds[2])
+    const carolBalanceAfter = await new AccountBalanceQuery()
+        .setAccountId(carol)
+        .execute(client);
+    const operatorBalanceAfter = await new AccountBalanceQuery()
+        .setAccountId(client.getOperator().accountId)
         .execute(client);
 
-    console.log("Created accound 1: ", receipt1.accountId.toString());
-    console.log("Created accound 2: ", receipt2.accountId.toString());
-    console.log("Created accound 3: ", receipt3.accountId.toString());
+    console.log("Alice balance after: " + aliceBalanceAfter.hbars.toString());
+    console.log("Bob balance after: " + bobBalanceAfter.hbars.toString());
+    console.log("Carol balance after: " + carolBalanceAfter.hbars.toString());
+    console.log(
+        "Operator balance after: " + operatorBalanceAfter.hbars.toString(),
+    );
 
-    client.close();
+    console.log(
+        "Alice's original balance: " + aliceBalanceBefore.hbars.toString(),
+    );
+    console.log("Bob's original balance: " + bobBalanceBefore.hbars.toString());
+    console.log(
+        "Carol's original balance: " + carolBalanceBefore.hbars.toString(),
+    );
+    console.log(
+        "Operator's original balance: " +
+            operatorBalanceBefore.hbars.toString(),
+    );
 }
 
 void main();
