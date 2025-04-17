@@ -1898,6 +1898,17 @@ export default class Transaction extends Executable {
     }
 
     /**
+     * @override
+     * @returns {boolean}
+     */
+    isBatchedAndNotBatchTransaction() {
+        return (
+            this.batchKey != null &&
+            this._getTransactionDataCase() != "atomicBatch"
+        );
+    }
+
+    /**
      * Make a protobuf transaction body
      *
      * @private
