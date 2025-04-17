@@ -533,7 +533,6 @@ export const airdropToken = async ({
     const transaction = new TokenAirdropTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
-    console.log(tokenTransfers);
 
     if (tokenTransfers != null) {
         for (const tokenTransfer of tokenTransfers) {
