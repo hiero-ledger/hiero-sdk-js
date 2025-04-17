@@ -10,7 +10,7 @@ COPY package.json pnpm-lock.yaml* ./
 RUN npm install -g pnpm
 
 # Override the local SDK dependency with the npm version and add missing dependencies
-RUN pnpm add @hashgraph/sdk@^2.58.0 long@^5.2.3 @hashgraph/proto@^2.16.0-beta.8
+RUN pnpm add @hashgraph/sdk@^2.63.0-beta.1 long@^5.2.3 @hashgraph/proto@^2.17.0-beta.1
 
 # Install dependencies
 RUN pnpm install
