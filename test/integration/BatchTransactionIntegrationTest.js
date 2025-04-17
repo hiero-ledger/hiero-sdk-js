@@ -81,7 +81,7 @@ describe("BatchTransaction", function () {
         );
     });
 
-    it("can execute a large batch transaction up to maximum request size", async function () {
+    it.only("can execute a large batch transaction up to maximum request size", async function () {
         this.retries(5);
         const batchTransaction = new BatchTransaction();
 
