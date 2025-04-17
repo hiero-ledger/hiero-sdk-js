@@ -482,6 +482,15 @@ export default class Executable {
     }
 
     /**
+     * @returns {boolean}
+     * @abstract
+     * @protected
+     */
+    isBatchedAndNotBatchTransaction() {
+        return false;
+    }
+
+    /**
      * Execute the request using a client and an optional request timeout
      *
      * @template {Channel} ChannelT
@@ -494,6 +503,12 @@ export default class Executable {
         // we check if its local node then backoff mechanism should be disabled
         // and we increase the retry attempts
         const isLocalNode = client.network["127.0.0.1:50211"] != null;
+
+        if (this.isBatchedAndNotBatchTransaction()) {
+            throw new Error(
+                "Cannot execute batchified transaction outside of BatchTransaction",
+            );
+        }
 
         // If the logger on the request is not set, use the logger in client
         // (if set, otherwise do not use logger)

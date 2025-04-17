@@ -524,4 +524,13 @@ export default class Query extends QueryBase {
     _responseToBytes(response) {
         return HieroProto.proto.Response.encode(response).finish();
     }
+
+    /**
+     * @protected
+     * @override
+     * @returns {boolean}
+     */
+    isBatchedAndNotBatchTransaction() {
+        return false;
+    }
 }

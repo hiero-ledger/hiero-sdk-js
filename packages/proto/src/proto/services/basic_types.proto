@@ -37,23 +37,8 @@ syntax = "proto3";
 
 package proto;
 
-/*
- * Copyright (C) 2018-2024 Hedera Hashgraph, LLC
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-import "timestamp.proto";
+// SPDX-License-Identifier: Apache-2.0
+import "services/timestamp.proto";
 import "google/protobuf/wrappers.proto";
 
 option java_package = "com.hederahashgraph.api.proto.java";
@@ -1660,6 +1645,21 @@ enum HederaFunctionality {
     StateSignatureTransaction = 100;
 
     /**
+     * Publish a hinTS key to the network.
+     */
+    HintsKeyPublication = 101;
+
+    /**
+     * Vote for a particular preprocessing output of a hinTS construction.
+     */
+    HintsPreprocessingVote = 102;
+
+    /**
+     * Sign a partial signature for the active hinTS construction.
+     */
+    HintsPartialSignature = 103;
+
+    /**
      * Sign a particular history assembly.
      */
     HistoryAssemblySignature = 104;
@@ -1673,6 +1673,16 @@ enum HederaFunctionality {
      * Vote for a particular history proof.
      */
     HistoryProofVote = 106;
+
+    /**
+     * Publish a random CRS to the network.
+     */
+    CrsPublication = 107;
+
+    /**
+     * Submit a batch of transactions to run atomically
+     */
+    AtomicBatch = 108;
 }
 
 /**

@@ -203,6 +203,16 @@ export default class RequestType {
                 return "HistoryProofKeyPublication";
             case RequestType.HistoryProofVote:
                 return "HistoryProofVote";
+            case RequestType.HintsKeyPublication:
+                return "HintsKeyPublication";
+            case RequestType.HintsPreprocessingVote:
+                return "HintsPreprocessingVote";
+            case RequestType.HintsPartialSignature:
+                return "HintsPartialSignature";
+            case RequestType.CrsPublication:
+                return "CrsPublication";
+            case RequestType.AtomicBatch:
+                return "AtomicBatch";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -389,12 +399,22 @@ export default class RequestType {
                 return RequestType.TssEncryptionKey;
             case 100:
                 return RequestType.StateSignatureTransaction;
+            case 101:
+                return RequestType.HintsKeyPublication;
+            case 102:
+                return RequestType.HintsPreprocessingVote;
+            case 103:
+                return RequestType.HintsPartialSignature;
             case 104:
                 return RequestType.HistoryAssemblySignature;
             case 105:
                 return RequestType.HistoryProofKeyPublication;
             case 106:
                 return RequestType.HistoryProofVote;
+            case 107:
+                return RequestType.CrsPublication;
+            case 108:
+                return RequestType.AtomicBatch;
         }
 
         throw new Error(
@@ -845,6 +865,21 @@ RequestType.TssEncryptionKey = new RequestType(99);
 RequestType.StateSignatureTransaction = new RequestType(100);
 
 /**
+ * Publish a hinTS key to the network.
+ */
+RequestType.HintsKeyPublication = new RequestType(101);
+
+/**
+ * Vote for a particular preprocessing output of a hinTS construction.
+ */
+RequestType.HintsPreprocessingVote = new RequestType(102);
+
+/**
+ * Sign a partial signature for the active hinTS construction.
+ */
+RequestType.HintsPartialSignature = new RequestType(103);
+
+/**
  * Sign a particular history assembly.
  */
 RequestType.HistoryAssemblySignature = new RequestType(104);
@@ -858,3 +893,28 @@ RequestType.HistoryProofKeyPublication = new RequestType(105);
  * Vote for a particular history proof.
  */
 RequestType.HistoryProofVote = new RequestType(106);
+
+/**
+ * Sign a particular CRS publication.
+ */
+RequestType.CrsPublication = new RequestType(107);
+
+/**
+ * Sign a particular history assembly.
+ */
+RequestType.HistoryAssemblySignature = new RequestType(104);
+
+/**
+ * Publish a roster history proof key to the network.
+ */
+RequestType.HistoryProofKeyPublication = new RequestType(105);
+
+/**
+ * Vote for a particular history proof.
+ */
+RequestType.HistoryProofVote = new RequestType(106);
+
+/**
+ * Sign a particular atomic batch.
+ */
+RequestType.AtomicBatch = new RequestType(108);
