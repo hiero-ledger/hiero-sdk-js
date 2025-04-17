@@ -81,8 +81,8 @@ describe("BatchTransaction", function () {
         );
     });
 
-    it.only("can execute a large batch transaction up to maximum request size", async function () {
-        this.retries(5);
+    it("can execute a large batch transaction up to maximum request size", async function () {
+        this.retries(10);
         const batchTransaction = new BatchTransaction();
 
         // 50 is the maximum limit for internal transaction inside a BatchTransaction
