@@ -4,6 +4,8 @@ import { expect } from "chai";
 import BigNumber from "bignumber.js";
 import EvmAddress from "../../src/EvmAddress.js";
 import { AccountId, PublicKey, Long, PrivateKey } from "../../src/index.js";
+import { isLongZeroAddress } from "../../src/util.js";
+import * as hex from "../../src/encoding/hex.js";
 
 describe("AccountId", function () {
     it("constructors", function () {
@@ -319,5 +321,117 @@ describe("AccountId", function () {
                 "`AccountId.constructor` with negative numbers did not error",
             );
         }
+    });
+    it("should identify Hiero account IDs with zero shard and realm", function () {
+        // Create a typical Hiero account address with zeros in shard and realm
+        const address = new Uint8Array(20);
+        // Set some non-zero bytes in the account number portion (last 8 bytes)
+        address[12] = 1;
+        address[19] = 255;
+
+        expect(isLongZeroAddress(address)).to.be.true;
+    });
+
+    it("should identify Hiero account IDs with non-zero shard", function () {
+        const address = new Uint8Array(20);
+        // Set non-zero shard (first 4 bytes)
+        address[0] = 1;
+        // Keep realm bytes (4-11) as zeros
+        // Set some non-zero account number
+        address[12] = 1;
+
+        expect(isLongZeroAddress(address)).to.be.true;
+    });
+
+    it("should identify Ethereum addresses", function () {
+        // Test with a typical Ethereum address
+        const ethAddress = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e";
+        const bytes = hex.decode(ethAddress.slice(2)); // Remove '0x' prefix
+
+        expect(isLongZeroAddress(bytes)).to.be.false;
+    });
+
+    it("should identify Hiero account IDs with large realm values", function () {
+        const accountId = new AccountId(1, 50000, 3);
+        const solAddress = accountId.toSolidityAddress();
+        const bytes = hex.decode(solAddress);
+
+        expect(isLongZeroAddress(bytes)).to.be.true;
+    });
+
+    it("should handle edge case with all zero bytes", function () {
+        const address = new Uint8Array(20); // All bytes are 0
+        expect(isLongZeroAddress(address)).to.be.true;
+    });
+    it("should handle long-zero format addresses", function () {
+        // Create an address that represents a Hiero account ID (0.0.5)
+        const accountId = new AccountId(0, 0, 5);
+        const solAddress = accountId.toSolidityAddress();
+
+        // Convert it back using fromEvmAddress
+        const result = AccountId.fromEvmAddress(0, 0, solAddress);
+
+        // Should reconstruct the original account ID
+        expect(result.shard.toNumber()).to.equal(0);
+        expect(result.realm.toNumber()).to.equal(0);
+        expect(result.num.toNumber()).to.equal(5);
+        expect(result.evmAddress).to.be.null;
+    });
+
+    it("should handle native EVM addresses", function () {
+        const evmAddress = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e";
+        const shard = 1;
+        const realm = 2;
+
+        const result = AccountId.fromEvmAddress(shard, realm, evmAddress);
+
+        // For EVM addresses, should store shard/realm and keep the EVM address
+        expect(result.shard.toNumber()).to.equal(shard);
+        expect(result.realm.toNumber()).to.equal(realm);
+        expect(result.num.toNumber()).to.equal(0);
+        expect(result.evmAddress).to.not.be.null;
+        expect(result.evmAddress.toString()).to.equal(
+            evmAddress.slice(2).toLowerCase(),
+        );
+    });
+
+    it("should handle non-zero shard and realm with long-zero format", function () {
+        // Create an address that represents a Hiero account ID (1.2.5)
+        const accountId = new AccountId(1, 2, 5);
+        const solAddress = accountId.toSolidityAddress();
+
+        // Convert it back using fromEvmAddress
+        const result = AccountId.fromEvmAddress(1, 2, solAddress);
+
+        // Should reconstruct the original account ID
+        expect(result.shard.toNumber()).to.equal(1);
+        expect(result.realm.toNumber()).to.equal(2);
+        expect(result.num.toNumber()).to.equal(5);
+        expect(result.evmAddress).to.be.null;
+    });
+
+    it("should accept both string and EvmAddress objects", function () {
+        const evmAddressStr = "0x742d35Cc6634C0532925a3b844Bc454e4438f44e";
+        const evmAddressObj = EvmAddress.fromString(evmAddressStr);
+
+        const result1 = AccountId.fromEvmAddress(1, 2, evmAddressStr);
+        const result2 = AccountId.fromEvmAddress(1, 2, evmAddressObj);
+
+        // Both methods should produce equivalent results
+        expect(result1.toString()).to.equal(result2.toString());
+        expect(result1.evmAddress.toString()).to.equal(
+            result2.evmAddress.toString(),
+        );
+    });
+
+    it("should handle very large account numbers in long-zero format", function () {
+        // Create an address with a large account number
+        const accountId = new AccountId(0, 0, Long.fromString("123456789"));
+        const solAddress = accountId.toSolidityAddress();
+
+        const result = AccountId.fromEvmAddress(0, 0, solAddress);
+
+        expect(result.num.toString()).to.equal("123456789");
+        expect(result.evmAddress).to.be.null;
     });
 });
