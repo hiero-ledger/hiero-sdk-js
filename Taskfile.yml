@@ -159,7 +159,7 @@ tasks:
 
     "test:integration:node":
         cmds:
-            - npx mocha --exit -r @babel/register -r chai/register-expect.js "test/integration/BatchTransactionIntegrationTest.js" --timeout 120000 {{.CLI_ARGS}}
+            - npx mocha --parallel --jobs 4 --exit -r @babel/register -r chai/register-expect.js "test/integration/*.js" --timeout 120000 {{.CLI_ARGS}}
 
     "test:integration:codecov":
         cmds:
