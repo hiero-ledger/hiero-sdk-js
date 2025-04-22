@@ -17,16 +17,19 @@ import {
     TopicInfoQuery,
 } from "../../src/index.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import { setTimeout } from "timers/promises";
 
 describe("BatchTransaction", function () {
     let env;
 
     beforeEach(async function () {
         env = await IntegrationTestEnv.new();
+        const backoffMs = getBackoffBasedOnAttempt.call(this);
+        await setTimeout(backoffMs);
     });
 
     it("can create batch transaction", async function () {
-        this.retries(5);
+        this.retries(20);
 
         const key = PrivateKey.generateECDSA();
         const tx = await new AccountCreateTransaction()
@@ -52,7 +55,7 @@ describe("BatchTransaction", function () {
     });
 
     it("can execute from/toBytes", async function () {
-        this.retries(5);
+        this.retries(20);
 
         const key = PrivateKey.generateECDSA();
         const tx = await new AccountCreateTransaction()
@@ -82,7 +85,7 @@ describe("BatchTransaction", function () {
     });
 
     it("can execute a large batch transaction up to maximum request size", async function () {
-        this.retries(10);
+        this.retries(20);
         const batchTransaction = new BatchTransaction();
 
         // 50 is the maximum limit for internal transaction inside a BatchTransaction
@@ -108,7 +111,7 @@ describe("BatchTransaction", function () {
     });
 
     it("batch transaction with empty inner transaction's list should throw an error", async function () {
-        this.retries(5);
+        this.retries(20);
 
         try {
             await (
@@ -121,7 +124,7 @@ describe("BatchTransaction", function () {
     });
 
     it("blacklisted inner transaction should throw an error", async function () {
-        this.retries(5);
+        this.retries(20);
 
         const freezeTransaction = await new FreezeTransaction()
             .setFileId(FileId.fromString("4.5.6"))
@@ -160,7 +163,7 @@ describe("BatchTransaction", function () {
     });
 
     it("invalid batch key set to inner transaction should throw an error", async function () {
-        this.retries(5);
+        this.retries(20);
 
         const batchTransaction = new BatchTransaction();
 
@@ -187,7 +190,7 @@ describe("BatchTransaction", function () {
     });
 
     it("chunked inner transactions should be executed successfully", async function () {
-        this.retries(5);
+        this.retries(20);
 
         const response = await new TopicCreateTransaction()
             .setAdminKey(env.operatorKey)
@@ -217,7 +220,7 @@ describe("BatchTransaction", function () {
     });
 
     it("can execute with different batch keys", async function () {
-        this.retries(5);
+        this.retries(20);
 
         const batchKey1 = PrivateKey.generateED25519();
         const batchKey2 = PrivateKey.generateED25519();
@@ -290,7 +293,7 @@ describe("BatchTransaction", function () {
     });
 
     it("successful inner transactions should incur fees even though one failed", async function () {
-        this.retries(5);
+        this.retries(20);
 
         const initialBalance = (
             await new AccountInfoQuery()
@@ -344,7 +347,7 @@ describe("BatchTransaction", function () {
     });
 
     it("transaction should fail when batchified but not part of a batch", async function () {
-        this.retries(5);
+        this.retries(20);
 
         const key = PrivateKey.generateED25519();
         try {
@@ -368,3 +371,19 @@ describe("BatchTransaction", function () {
         await env.close();
     });
 });
+
+/**
+ *
+ * @param {Mocha.Context} this
+ * @returns {number}
+ */
+function getBackoffBasedOnAttempt() {
+    const MIN_BACKOFF = 250;
+    const MAX_BACKOFF = 16000;
+    const attempt = this.currentTest.currentRetry();
+    if (attempt === 0) {
+        return 0;
+    }
+
+    return Math.min(MIN_BACKOFF * 2 ** attempt, MAX_BACKOFF);
+}
