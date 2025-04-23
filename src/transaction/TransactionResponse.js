@@ -7,9 +7,11 @@ import TransactionRecordQuery from "./TransactionRecordQuery.js";
 import AccountId from "../account/AccountId.js";
 import TransactionId from "./TransactionId.js";
 import * as hex from "../encoding/hex.js";
+import { wait } from "../util.js";
 
 /**
  * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("./Transaction.js").default} Transaction
  * @typedef {import("./TransactionReceipt.js").default} TransactionReceipt
  * @typedef {import("./TransactionRecord.js").default} TransactionRecord
  * @typedef {import("../Signer.js").Signer} Signer
@@ -38,6 +40,7 @@ export default class TransactionResponse {
      * @param {AccountId} props.nodeId
      * @param {Uint8Array} props.transactionHash
      * @param {TransactionId} props.transactionId
+     * @param {Transaction} [props.transaction]
      */
     constructor(props) {
         /** @readonly */
@@ -48,6 +51,8 @@ export default class TransactionResponse {
 
         /** @readonly */
         this.transactionId = props.transactionId;
+
+        this.transaction = props.transaction;
 
         Object.freeze(this);
     }
@@ -69,7 +74,18 @@ export default class TransactionResponse {
      * @returns {Promise<TransactionReceipt>}
      */
     async getReceipt(client) {
-        const receipt = await this.getReceiptQuery().execute(client);
+        let receipt;
+        try {
+            receipt = await this.getReceiptQuery().execute(client);
+        } catch (err) {
+            if (
+                err instanceof ReceiptStatusError &&
+                err.status === Status.ThrottledAtConsensus
+            ) {
+                return this._retryTransaction(client);
+            }
+            throw err;
+        }
 
         if (
             receipt.status !== Status.Success &&
@@ -168,6 +184,47 @@ export default class TransactionResponse {
             transactionHash: hex.encode(this.transactionHash),
             transactionId: this.transactionId.toString(),
         };
+    }
+
+    /**
+     *
+     * @param {Client} client
+     * @returns {Promise<TransactionReceipt>}
+     */
+    async _retryTransaction(client) {
+        if (!this.transaction) {
+            throw new Error(
+                "If you retry transaction you should have the transaction set",
+            );
+        }
+        const MAX_RETRIES = 5;
+        let BACKOFF = 250; // milliseconds
+
+        for (let i = 0; i < MAX_RETRIES; i++) {
+            if (i > 0) {
+                // Wait with exponential backoff before retrying
+                await wait(BACKOFF);
+                BACKOFF *= 2; // Double the backoff for next retry
+            }
+
+            try {
+                const resp = await this.transaction.execute(client);
+
+                const receipt = await new TransactionReceiptQuery()
+                    .setTransactionId(resp.transactionId)
+                    .setNodeAccountIds([resp.nodeId])
+                    .execute(client);
+
+                if (receipt.status !== Status.ThrottledAtConsensus) {
+                    return receipt;
+                }
+            } catch (err) {
+                // Continue to next retry on error
+                continue;
+            }
+        }
+
+        throw new Error("Transaction retry failed after maximum attempts");
     }
 
     /**

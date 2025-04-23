@@ -1817,6 +1817,7 @@ export default class Transaction extends Executable {
             nodeId,
             transactionHash,
             transactionId,
+            transaction: this,
         });
     }
 
