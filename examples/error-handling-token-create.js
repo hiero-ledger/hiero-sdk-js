@@ -1,7 +1,3 @@
-/**
- * Token Creation Error Handling Example
- */
-
 import {
     AccountId,
     Hbar,
@@ -18,9 +14,14 @@ import dotenv from "dotenv";
 
 import { wait } from "../src/util.js";
 
-// Configure environment variables
 dotenv.config();
 
+/**
+ * @description Token creation with error handling, demonstrating how to handle various error scenarios
+ * when creating tokens on Hedera. This example shows proper error handling techniques including
+ * retry with exponential backoff, handling of specific error types like PrecheckStatusError and
+ * StatusError, and graceful recovery from network issues.
+ */
 async function main() {
     if (
         !process.env.OPERATOR_ID ||
@@ -40,30 +41,27 @@ async function main() {
     client.setOperator(operatorId, operatorKey);
 
     try {
-        // Token creation with error handling
         const tokenName = "Error Handling Token";
         const tokenSymbol = "EHT";
+        let tokenId;
+
+        const txId = TransactionId.generate(operatorId);
+        let transaction = new TokenCreateTransaction()
+            .setTokenName(tokenName)
+            .setTokenSymbol(tokenSymbol)
+            .setDecimals(2)
+            .setInitialSupply(10000)
+            .setTokenType(TokenType.FungibleCommon)
+            .setTransactionId(txId)
+            .setTreasuryAccountId(operatorId)
+            .setMaxTransactionFee(new Hbar(30))
+            .freezeWith(client);
 
         // Implement retry with backoff
-        const maxRetries = 3;
-        let tokenId;
+        const maxRetries = 4;
 
         for (let attempt = 0; attempt <= maxRetries; attempt++) {
             try {
-                // Generate transaction ID for each attempt
-                const txId = TransactionId.generate(operatorId);
-
-                let transaction = new TokenCreateTransaction()
-                    .setTokenName(tokenName)
-                    .setTokenSymbol(tokenSymbol)
-                    .setDecimals(2)
-                    .setInitialSupply(10000)
-                    .setTokenType(TokenType.FungibleCommon)
-                    .setTransactionId(txId)
-                    .setTreasuryAccountId(operatorId)
-                    .setMaxTransactionFee(new Hbar(30))
-                    .freezeWith(client);
-
                 transaction = await transaction.sign(operatorKey);
                 const response = await transaction.execute(client);
                 const receipt = await response.getReceipt(client);
@@ -72,8 +70,10 @@ async function main() {
                 console.log(
                     `Successfully created token: ${tokenId.toString()}`,
                 );
-                break; // Success, exit retry loop
+                break;
             } catch (error) {
+                // Handle precheck errors - these occur before the transaction reaches consensus
+                // and indicate issues with the transaction that would prevent it from being processed
                 if (error instanceof PrecheckStatusError) {
                     console.error(
                         `PrecheckStatusError caught with status: ${error.status.toString()}`,
@@ -81,7 +81,8 @@ async function main() {
                     break;
                 }
 
-                // Handle specific token errors
+                // Check for StatusError and handle specific token error codes (INVALID_TOKEN_SYMBOL,
+                // TOKEN_SYMBOL_TOO_LONG) or retry on Status.Busy with exponential backoff
                 if (error instanceof StatusError) {
                     if (error.status.toString() === "INVALID_TOKEN_SYMBOL") {
                         console.error(
@@ -96,25 +97,25 @@ async function main() {
                         );
                         break;
                     } else if (
-                        error.status.toString() === Status.Busy.toString()
+                        error.status === Status.Busy &&
+                        attempt <= maxRetries
                     ) {
-                        if (attempt < maxRetries) {
-                            const delay = 1000 * Math.pow(2, attempt);
-                            console.warn(
-                                `Node busy, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries + 1})...`,
-                            );
-                            await wait(delay);
-                            continue;
-                        }
+                        const delay = 1000 * Math.pow(2, attempt);
+                        await wait(delay);
+                        console.warn(
+                            `Node busy, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries + 1})...`,
+                        );
+                        continue;
                     }
                 }
 
-                // retry on network errors
+                // Handle network connectivity issues with exponential backoff
+                // This handles temporary network problems that might resolve with a retry
                 if (
                     error instanceof Error &&
                     attempt < maxRetries &&
                     error.message &&
-                    error.message.includes("network")
+                    error.message.includes("Network connectivity issue")
                 ) {
                     const delay = 1000 * Math.pow(2, attempt);
                     console.warn(
@@ -122,7 +123,7 @@ async function main() {
                     );
                     await wait(delay);
                 } else {
-                    // Not retryable or out of retries
+                    // Either the error is not a network issue, or we've exhausted our retry attempts
                     if (error instanceof Error) {
                         console.error(`- Message: ${error.message}`);
                     }
@@ -141,5 +142,4 @@ async function main() {
     }
 }
 
-// Execute the main function
 void main();

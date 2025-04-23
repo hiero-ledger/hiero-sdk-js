@@ -14,6 +14,12 @@ import { wait } from "../src/util.js";
 
 dotenv.config();
 
+/**
+ * @description Account creation with error handling, demonstrating how to handle various error scenarios
+ * when creating accounts on Hedera. This example shows proper error handling techniques including
+ * retry with exponential backoff, handling of specific error types like PrecheckStatusError and
+ * StatusError, and graceful recovery from network issues.
+ */
 async function main() {
     if (
         !process.env.OPERATOR_ID ||
@@ -33,32 +39,26 @@ async function main() {
     client.setOperator(operatorId, operatorKey);
 
     try {
-        console.log("Starting account creation with error handling...");
-
-        // Step 1: Generate a new key pair for the account
         const newKey = PrivateKey.generateED25519();
         console.log(`Generated new public key: ${newKey.publicKey.toString()}`);
-
-        // Step 2: Create the account with retry logic for temporary errors
-        const maxRetries = 5;
-        let attempt = 0;
         let accountId = null;
 
-        while (attempt <= maxRetries) {
-            console.log(
-                `Attempting to create account (attempt ${attempt + 1}/${maxRetries + 1})...`,
-            );
-            let accountCreateTxResponse;
+        let transaction = new AccountCreateTransaction()
+            .setInitialBalance(new Hbar(10))
+            .setKeyWithoutAlias(newKey.publicKey)
+            .freezeWith(client);
 
+        // Implement retry with backoff
+        const maxRetries = 4;
+        for (let attempt = 0; attempt <= maxRetries; attempt++) {
             try {
-                accountCreateTxResponse = await new AccountCreateTransaction()
-                    .setInitialBalance(new Hbar(10))
-                    .setKeyWithoutAlias(newKey.publicKey)
-                    .execute(client);
+                transaction = await transaction.sign(operatorKey);
+                const response = await transaction.execute(client);
+                const receipt = await response.getReceipt(client);
 
-                const receipt =
-                    await accountCreateTxResponse.getReceipt(client);
-
+                // Here we explicitly check the receipt status to ensure everything went well
+                // This step catches any errors that might have occurred during transaction processing
+                // but after the transaction was submitted to the network
                 if (receipt.status === Status.Success) {
                     accountId = receipt.accountId;
                     console.log(
@@ -70,11 +70,13 @@ async function main() {
                     console.error(
                         `Transaction failed with status: ${receipt.status.toString()}`,
                     );
-                    throw new Error(`Transaction failed: ${receipt.status}`);
+                    throw new Error(
+                        `Transaction failed: ${receipt.status.toString()}`,
+                    );
                 }
             } catch (error) {
-                attempt++;
-
+                // Handle precheck errors - these occur before the transaction reaches consensus
+                // and indicate issues with the transaction that would prevent it from being processed
                 if (error instanceof PrecheckStatusError) {
                     console.error(
                         `PrecheckStatusError caught with status: ${error.status.toString()}`,
@@ -84,61 +86,40 @@ async function main() {
 
                 // If the error is a precheck error, retry the transaction after a short delay
                 if (error instanceof StatusError) {
-                    console.error(`Precheck error: ${error.status.toString()}`);
                     if (error.status === Status.Busy && attempt <= maxRetries) {
                         const delay = 1000 * Math.pow(2, attempt);
                         await wait(delay);
-
-                        console.log(`Node busy, retrying in ${delay}ms...`);
-                        continue;
-                    }
-                    throw error;
-                }
-
-                // If the error is a network or connection error, retry the transaction after a short delay
-                if (
-                    error instanceof Error &&
-                    (error.message.includes("network") ||
-                        error.message.includes("connection"))
-                ) {
-                    if (attempt <= maxRetries) {
-                        const delay = 1000 * Math.pow(2, attempt);
-                        await wait(delay);
-
-                        console.log(
-                            `Network error: ${error.message}, retrying in ${delay}ms...`,
+                        console.warn(
+                            `Node busy, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries + 1})...`,
                         );
                         continue;
                     }
                 }
 
-                console.error(`Failed after ${attempt} attempts`);
-                throw error;
+                // Handle network connectivity issues with exponential backoff
+                // This handles temporary network problems that might resolve with a retry
+                if (
+                    error instanceof Error &&
+                    attempt < maxRetries &&
+                    error.message &&
+                    error.message.includes("Network connectivity issue")
+                ) {
+                    const delay = 1000 * Math.pow(2, attempt);
+                    console.warn(
+                        `Network error, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries + 1})...`,
+                    );
+                    await wait(delay);
+                } else {
+                    // Either the error is not a network issue, or we've exhausted our retry attempts
+                    if (error instanceof Error) {
+                        console.error(`- Message: ${error.message}`);
+                    }
+                    if (error instanceof StatusError) {
+                        console.error(`- Status: ${error.status.toString()}`);
+                    }
+                    break;
+                }
             }
-        }
-
-        if (!accountId) {
-            throw new Error("Failed to create account after maximum retries");
-        }
-
-        console.log(
-            "Account creation with retry mechanism completed successfully",
-        );
-    } catch (error) {
-        console.error("\nError occurred during account creation:");
-
-        if (error instanceof Error) {
-            console.error(`- Message: ${error.message}`);
-
-            if ("status" in error && "transactionId" in error) {
-                console.error(`- Status: ${error.status.toString()}`);
-                console.error(
-                    `- Transaction ID: ${error.transactionId.toString()}`,
-                );
-            }
-        } else {
-            console.error(`- Unknown error type: ${typeof error}`);
-            console.error(`- Value: ${String(error)}`);
         }
     } finally {
         client.close();
