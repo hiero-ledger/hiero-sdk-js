@@ -46,6 +46,7 @@ export default class TransactionResponse {
         /** @readonly */
         this.transactionHash = props.transactionHash;
 
+        /** @readonly */
         this.transactionId = props.transactionId;
 
         Object.freeze(this);
@@ -80,6 +81,7 @@ export default class TransactionResponse {
                 transactionId: this.transactionId,
             });
         }
+
         return receipt;
     }
 
@@ -166,20 +168,6 @@ export default class TransactionResponse {
             transactionHash: hex.encode(this.transactionHash),
             transactionId: this.transactionId.toString(),
         };
-    }
-
-    /**
-     *
-     * @param {Client} client
-     * @returns {Promise<TransactionReceipt>}
-     */
-    _retryTransaction(client) {
-        if (!client.operatorAccountId) {
-            throw new Error("Operator account is not set");
-        }
-
-        this.transactionId = TransactionId.generate(client.operatorAccountId);
-        return this.getReceipt(client);
     }
 
     /**
