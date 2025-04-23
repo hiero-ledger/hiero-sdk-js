@@ -55,7 +55,6 @@ import { proto } from "@hashgraph/proto";
  *     .execute(client);
  * </pre>
  */
-
 export default class BatchTransaction extends Transaction {
     /**
      * @param {object} [options]
