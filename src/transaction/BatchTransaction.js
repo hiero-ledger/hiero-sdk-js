@@ -17,6 +17,45 @@ import { proto } from "@hashgraph/proto";
  * @typedef {import("../Key.js").default} Key
  */
 
+/**
+ * @description Execute multiple transactions in a single consensus event. This allows for atomic execution of multiple
+ * transactions, where they either all succeed or all fail together.
+ * <p>
+ * Requirements:
+ * <ul>
+ *     <li>All inner transactions must be frozen before being added to the batch</li>
+ *     <li>All inner transactions must have a batch key set</li>
+ *     <li>All inner transactions must be signed as required for each individual transaction</li>
+ *     <li>The BatchTransaction must be signed by all batch keys of the inner transactions</li>
+ *     <li>Certain transaction types (FreezeTransaction, BatchTransaction) are not allowed in a batch</li>
+ * </ul>
+ * <p>
+ * Important notes:
+ * <ul>
+ *     <li>Fees are assessed for each inner transaction separately</li>
+ *     <li>The maximum number of inner transactions in a batch is limited to 25</li>
+ *     <li>Inner transactions cannot be scheduled transactions</li>
+ * </ul>
+ * <p>
+ * Example usage:
+ * <pre>
+ * var batchKey = PrivateKey.generateED25519();
+ *
+ * // Create and prepare inner transaction
+ * var transaction = new TransferTransaction()
+ *     .addHbarTransfer(sender, amount.negated())
+ *     .addHbarTransfer(receiver, amount)
+ *     .batchify(client, batchKey);
+ *
+ * // Create and execute batch transaction
+ * var response = new BatchTransaction()
+ *     .addInnerTransaction(transaction)
+ *     .freezeWith(client)
+ *     .sign(batchKey)
+ *     .execute(client);
+ * </pre>
+ */
+
 export default class BatchTransaction extends Transaction {
     /**
      * @param {object} [options]
@@ -28,6 +67,17 @@ export default class BatchTransaction extends Transaction {
     }
 
     /**
+     * Set the list of transactions to be executed as part of this BatchTransaction.
+     * <p>
+     * Requirements for each inner transaction:
+     * <ul>
+     *     <li>Must be frozen (use {@link Transaction#freeze()} or {@link Transaction#freezeWith(Client)})</li>
+     *     <li>Must have a batch key set (use {@link Transaction#setBatchKey(Key)}} or {@link Transaction#batchify(Client, Key)})</li>
+     *     <li>Must not be a blacklisted transaction type</li>
+     * </ul>
+     * <p>
+     * Note: This method creates a defensive copy of the provided list.
+     *
      * @param {Transaction[]} txs
      * @returns {BatchTransaction}
      */
@@ -38,6 +88,15 @@ export default class BatchTransaction extends Transaction {
     }
 
     /**
+     * Append a transaction to the list of transactions this BatchTransaction will execute.
+     * <p>
+     * Requirements for the inner transaction:
+     * <ul>
+     *     <li>Must be frozen (use {@link Transaction#freeze()} or {@link Transaction#freezeWith(Client)})</li>
+     *     <li>Must have a batch key set (use {@link Transaction#setBatchKey(Key)}} or {@link Transaction#batchify(Client, Key)})</li>
+     *     <li>Must not be a blacklisted transaction type</li>
+     * </ul>
+     *
      * @param {Transaction} tx
      * @returns {BatchTransaction}
      */
@@ -49,6 +108,11 @@ export default class BatchTransaction extends Transaction {
     }
 
     /**
+     * Get the list of transactions this BatchTransaction is currently configured to execute.
+     * <p>
+     * Note: This returns the actual list of transactions. Modifications to this list will affect
+     * the batch transaction if it is not frozen.
+     *
      * @returns {Transaction[]}
      */
     get innerTransactions() {
@@ -56,6 +120,18 @@ export default class BatchTransaction extends Transaction {
     }
 
     /**
+     * Get the list of transaction IDs of each inner transaction of this BatchTransaction.
+     * <p>
+     * This method is particularly useful after execution to:
+     * <ul>
+     *     <li>Track individual transaction results</li>
+     *     <li>Query receipts for specific inner transactions</li>
+     *     <li>Monitor the status of each transaction in the batch</li>
+     * </ul>
+     * <p>
+     * <b>NOTE:</b> Transaction IDs will only be meaningful after the batch transaction has been
+     * executed or the IDs have been explicitly set on the inner transactions.
+     *
      * @returns {(TransactionId | null)[]}
      */
     get innerTransactionIds() {
@@ -142,6 +218,7 @@ export default class BatchTransaction extends Transaction {
     }
 
     /**
+     * @description Get the log ID for the BatchTransaction.
      * @returns {string}
      */
     _getLogId() {
@@ -163,6 +240,7 @@ export default class BatchTransaction extends Transaction {
     }
 
     /**
+     * @description Validate the transaction
      * @param {Transaction} tx
      * @throws {Error} If the transaction is a batch or freeze transaction
      */
@@ -171,6 +249,14 @@ export default class BatchTransaction extends Transaction {
             throw new Error(
                 "Transaction is not allowed to be added to a batch",
             );
+        }
+        if (!tx.isFrozen()) {
+            throw new Error(
+                "Transaction must be frozen before being added to a batch",
+            );
+        }
+        if (!tx.batchKey) {
+            throw new Error("Transaction must have a batch key");
         }
     }
 }

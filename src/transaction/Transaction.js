@@ -426,7 +426,8 @@ export default class Transaction extends Executable {
     }
 
     /**
-     * Batchify the transaction
+     * @description Batchify method is used to mark a transaction as part of a batch transaction or make it so-called inner transaction.
+     * The Transaction will be frozen and signed by the operator of the client.
      *
      * @param {import("../client/Client.js").default<Channel, *>} client
      * @param {Key} batchKey
@@ -1214,7 +1215,7 @@ export default class Transaction extends Executable {
     }
 
     /**
-     *
+     * @description Set the key that will sign the batch of which this Transaction is a part of.
      * @param {Key} batchKey
      * @returns {this}
      */
@@ -1225,6 +1226,7 @@ export default class Transaction extends Executable {
     }
 
     /**
+     * @description Get the key that will sign the batch of which this Transaction is a part of.
      * @returns {Key | null | undefined}
      */
     get batchKey() {

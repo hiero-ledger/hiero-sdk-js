@@ -5,7 +5,7 @@ import {
     Timestamp,
     TransactionId,
     BatchTransaction,
-    Transaction,
+    TransferTransaction,
 } from "../../src/index.js";
 import { expect } from "chai";
 
@@ -13,10 +13,22 @@ describe("BatchTransaction", function () {
     let batchTransaction;
     let mockTransaction1;
     let mockTransaction2;
+    let transactionId;
 
-    beforeEach(function () {
-        mockTransaction1 = new Transaction();
-        mockTransaction2 = new Transaction();
+    beforeEach(async function () {
+        transactionId = TransactionId.generate(new AccountId(0, 0, 1));
+        const batchKey = PrivateKey.generateECDSA();
+        mockTransaction1 = await new TransferTransaction()
+            .setTransactionId(transactionId)
+            .setBatchKey(batchKey)
+            .freeze()
+            .sign(batchKey);
+
+        mockTransaction2 = await new TransferTransaction()
+            .setTransactionId(transactionId)
+            .setBatchKey(batchKey)
+            .freeze()
+            .sign(batchKey);
         batchTransaction = new BatchTransaction();
     });
 
@@ -58,21 +70,14 @@ describe("BatchTransaction", function () {
 
     describe("getTransactionIds", function () {
         it("should return array of transaction IDs", function () {
-            const mockTransactionId1 = new TransactionId(
-                new AccountId(0, 0, 1),
-            );
-            const mockTransactionId2 = new TransactionId(
-                new AccountId(0, 0, 2),
-            );
-
-            const tx = new Transaction().setTransactionId(mockTransactionId1);
-            const tx2 = new Transaction().setTransactionId(mockTransactionId2);
-
-            batchTransaction.setInnerTransactions([tx, tx2]);
+            batchTransaction.setInnerTransactions([
+                mockTransaction1,
+                mockTransaction1,
+            ]);
 
             const ids = batchTransaction.innerTransactionIds;
 
-            expect(ids).to.deep.equal([mockTransactionId1, mockTransactionId2]);
+            expect(ids).to.deep.equal([transactionId, transactionId]);
         });
     });
 
@@ -89,8 +94,8 @@ describe("BatchTransaction", function () {
             const privKey1 = PrivateKey.generateECDSA();
             const tx1 = await new AccountCreateTransaction()
                 .setKeyWithAlias(privKey1.publicKey, privKey1)
-                .setNodeAccountIds([nodeAccountId])
                 .setTransactionId(transactionId)
+                .setBatchKey(privKey1)
                 .freeze()
                 .sign(privKey1);
 
@@ -99,8 +104,8 @@ describe("BatchTransaction", function () {
             const privKey2 = PrivateKey.generateECDSA();
             const tx2 = await new AccountCreateTransaction()
                 .setKeyWithAlias(privKey2.publicKey, privKey2)
-                .setNodeAccountIds([nodeAccountId])
                 .setTransactionId(transactionId)
+                .setBatchKey(privKey2)
                 .freeze()
                 .sign(privKey1);
 
