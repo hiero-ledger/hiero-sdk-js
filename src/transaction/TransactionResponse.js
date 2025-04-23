@@ -7,6 +7,7 @@ import TransactionRecordQuery from "./TransactionRecordQuery.js";
 import AccountId from "../account/AccountId.js";
 import TransactionId from "./TransactionId.js";
 import * as hex from "../encoding/hex.js";
+import { wait } from "../util.js";
 
 /**
  * @typedef {import("../client/Client.js").default<*, *>} Client
@@ -103,7 +104,7 @@ export default class TransactionResponse {
 
                     if (attempts < MAX_RETRY_ATTEMPTS) {
                         // Wait with exponential backoff before retrying
-                        await this._delay(Math.min(backoffMs, MAX_BACKOFF_MS));
+                        await wait(Math.min(backoffMs, MAX_BACKOFF_MS));
                         // Double the backoff for next attempt
                         backoffMs *= 2;
 
@@ -233,15 +234,5 @@ export default class TransactionResponse {
      */
     toString() {
         return JSON.stringify(this.toJSON());
-    }
-
-    /**
-     * Cross-platform delay function that works in both Node.js and browsers
-     * @param {number} ms - Milliseconds to delay
-     * @returns {Promise<void>}
-     * @private
-     */
-    _delay(ms) {
-        return new Promise((resolve) => setTimeout(resolve, ms));
     }
 }
