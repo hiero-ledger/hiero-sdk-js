@@ -40,7 +40,6 @@ async function main() {
         .setOperator(operatorAccId, operatorPrivKey)
         .setLogger(new Logger(LogLevel.Silent));
 
-    //await executeBatchWithBatchify(client);
     await executeBatchWithManualInnerTransactionFreeze(client);
     client.close();
 }
