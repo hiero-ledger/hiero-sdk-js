@@ -51,28 +51,43 @@ async function main() {
         // Implement retry with backoff
         const maxRetries = 4;
         for (let attempt = 0; attempt <= maxRetries; attempt++) {
+            // Attempt to execute the transaction
+            // This step sends the transaction to the network for processing
+            // Potential errors here could include network connectivity issues,
+            // node unavailability, or client configuration problems
             try {
                 transaction = await transaction.sign(operatorKey);
                 const response = await transaction.execute(client);
-                const receipt = await response.getReceipt(client);
 
                 // Here we explicitly check the receipt status to ensure everything went well
                 // This step catches any errors that might have occurred during transaction processing
                 // but after the transaction was submitted to the network
-                if (receipt.status === Status.Success) {
-                    accountId = receipt.accountId;
-                    console.log(
-                        `Success! Account created with ID: ${accountId.toString()}`,
-                    );
-                    break;
-                } else {
-                    // Receipt errors indicate a problem with the transaction itself so we don't retry
-                    console.error(
-                        `Transaction failed with status: ${receipt.status.toString()}`,
-                    );
-                    throw new Error(
-                        `Transaction failed: ${receipt.status.toString()}`,
-                    );
+                try {
+                    const receipt = await response.getReceipt(client);
+                    if (receipt.status === Status.Success) {
+                        accountId = receipt.accountId;
+                        console.log(
+                            `Success! Account created with ID: ${accountId.toString()}`,
+                        );
+                        break;
+                    } else {
+                        // Receipt errors indicate a problem with the transaction itself so we don't retry
+                        console.error(
+                            `Transaction failed with status: ${receipt.status.toString()}`,
+                        );
+                        throw new Error(
+                            `Transaction failed: ${receipt.status.toString()}`,
+                        );
+                    }
+                } catch (receiptError) {
+                    if (receiptError instanceof StatusError) {
+                        console.error(
+                            `Receipt retrieval failed with status: ${receiptError.status.toString()}`,
+                        );
+                    } else if (receiptError instanceof Error) {
+                        console.error(`Receipt error: ${receiptError.message}`);
+                    }
+                    throw receiptError; // Rethrow to be caught by outer catch block
                 }
             } catch (error) {
                 // Handle precheck errors - these occur before the transaction reaches consensus
