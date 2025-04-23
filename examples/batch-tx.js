@@ -138,7 +138,7 @@ async function executeBatchWithBatchify(client) {
 
     /**
      * Step 3:
-     * Get the balanace in order to compete after this batch
+     * Get the balance in order to compare after this batch
      */
     const aliceBalanceBefore = await new AccountBalanceQuery()
         .setAccountId(alice)
@@ -299,8 +299,8 @@ async function executeBatchWithManualInnerTransactionFreeze(client) {
     console.log("Created third account (Carol): " + carol.toString());
 
     /**
-     * Step 3:
-     * Get the balanace in order to compete after this batch
+     * Step 4:
+     * Get the balance in order to compare after this batch
      */
     const aliceBalanceBefore = await new AccountBalanceQuery()
         .setAccountId(alice)
@@ -319,7 +319,7 @@ async function executeBatchWithManualInnerTransactionFreeze(client) {
         .execute(client);
 
     /**
-     * Step 4:
+     * Step 5:
      * Execute the batch transaction
      */
 
