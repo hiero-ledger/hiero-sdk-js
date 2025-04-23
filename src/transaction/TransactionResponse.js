@@ -7,7 +7,6 @@ import TransactionRecordQuery from "./TransactionRecordQuery.js";
 import AccountId from "../account/AccountId.js";
 import TransactionId from "./TransactionId.js";
 import * as hex from "../encoding/hex.js";
-import { wait } from "../util.js";
 
 /**
  * @typedef {import("../client/Client.js").default<*, *>} Client
@@ -69,65 +68,19 @@ export default class TransactionResponse {
      * @returns {Promise<TransactionReceipt>}
      */
     async getReceipt(client) {
-        const MAX_RETRY_ATTEMPTS = 5;
-        const INITIAL_BACKOFF_MS = 250;
-        const MAX_BACKOFF_MS = 8000;
+        const receipt = await this.getReceiptQuery().execute(client);
 
-        let attempts = 0;
-        let lastError = null;
-        let backoffMs = INITIAL_BACKOFF_MS;
-
-        while (attempts < MAX_RETRY_ATTEMPTS) {
-            try {
-                const receipt = await this.getReceiptQuery().execute(client);
-
-                if (
-                    receipt.status !== Status.Success &&
-                    receipt.status !== Status.FeeScheduleFilePartUploaded
-                ) {
-                    throw new ReceiptStatusError({
-                        transactionReceipt: receipt,
-                        status: receipt.status,
-                        transactionId: this.transactionId,
-                    });
-                }
-
-                return receipt;
-            } catch (error) {
-                // Check if throttled at consensus
-                if (
-                    error instanceof ReceiptStatusError &&
-                    error.status === Status.ThrottledAtConsensus
-                ) {
-                    lastError = error;
-                    attempts++;
-
-                    if (attempts < MAX_RETRY_ATTEMPTS) {
-                        // Wait with exponential backoff before retrying
-                        await wait(Math.min(backoffMs, MAX_BACKOFF_MS));
-                        // Double the backoff for next attempt
-                        backoffMs *= 2;
-
-                        try {
-                            // Retry the transaction
-                            return await this._retryTransaction(client);
-                        } catch (retryError) {
-                            if (retryError instanceof ReceiptStatusError) {
-                                lastError = retryError;
-                            } else {
-                                throw retryError;
-                            }
-                        }
-                    }
-                } else {
-                    // If not throttled, rethrow the error immediately
-                    throw error;
-                }
-            }
+        if (
+            receipt.status !== Status.Success &&
+            receipt.status !== Status.FeeScheduleFilePartUploaded
+        ) {
+            throw new ReceiptStatusError({
+                transactionReceipt: receipt,
+                status: receipt.status,
+                transactionId: this.transactionId,
+            });
         }
-
-        // If exhausted all retries, throw the last error
-        throw lastError;
+        return receipt;
     }
 
     /**
