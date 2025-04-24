@@ -25,6 +25,18 @@ $ yarn add @hashgraph/sdk
 $ pnpm add @hashgraph/sdk
 ```
 
+## Browser Usage
+
+The SDK is also available as a UMD (Universal Module Definition) build, which can be loaded directly in the browser from popular CDNs:
+
+### UNPKG
+
+```html
+<script src="https://unpkg.com/@hashgraph/sdk@2.62.0-beta.3/dist/umd.js"></script>
+```
+
+When using the UMD build in the browser, the SDK will be available as a global variable `sdk`. A minified version is also available at `dist/umd.min.js`.
+
 ## Build
 
 ### Prerequisites

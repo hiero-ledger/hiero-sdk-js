@@ -7,6 +7,7 @@ import {
     FileCreateTransaction,
     TransactionId,
     TransferTransaction,
+    Status,
 } from "../../src/index.js";
 import Mocker, { UNAVAILABLE, INTERNAL, PRIVATE_KEY } from "./Mocker.js";
 import Long from "long";
@@ -687,6 +688,101 @@ describe("AccountInfoMocking", function () {
                 .execute(client);
 
             expect(info.accountId.toString()).to.be.equal("0.0.3");
+        });
+    });
+
+    describe("Node health recovery", function () {
+        beforeEach(async function () {
+            const responses = [
+                { response: { nodeTransactionPrecheckCode: 0 } },
+                {
+                    response: {
+                        transactionGetReceipt: {
+                            header: { nodeTransactionPrecheckCode: 0 },
+                            receipt: { status: 22 },
+                        },
+                    },
+                },
+                { response: ACCOUNT_INFO_QUERY_RESPONSE },
+            ];
+
+            ({ client, servers } = await Mocker.withResponses([responses]));
+        });
+
+        it("should successfully execute receipt query after node becomes healthy with sufficient timeout", async function () {
+            // Create and execute a transaction to get a response
+            const transaction = await new FileCreateTransaction()
+                .setContents("hello 1")
+                .execute(client);
+
+            // Make the node unhealthy
+            client._network._network.get(
+                transaction.nodeId.toString(),
+            )[0]._readmitTime = Date.now() + 100 * 10010;
+
+            // Set up a timeout that makes the node healthy again after a delay
+            setTimeout(() => {
+                client._network._network.get(
+                    transaction.nodeId.toString(),
+                )[0]._readmitTime = 0;
+            }, 2000);
+
+            // Get the receipt - this should retry and eventually succeed
+            // Default timeout should be enough
+            const receipt = await transaction.getReceipt(client);
+
+            expect(receipt.status).to.equal(Status.Success);
+        });
+
+        it("should fail when node recovery takes longer than the custom retry timeout", async function () {
+            // Create and execute a transaction to get a response
+            const transaction = await new FileCreateTransaction()
+                .setContents("hello 1")
+                .execute(client);
+
+            // Make the node unhealthy
+            client._network._network.get(
+                transaction.nodeId.toString(),
+            )[0]._readmitTime = Date.now() + 100 * 10010;
+
+            let error = null;
+            try {
+                // Set min backoff to 1 to force faster retries so that the test doesn't take too long
+                client._minBackoff = 1;
+
+                await transaction.getReceipt(client);
+            } catch (err) {
+                error = err;
+            }
+
+            expect(error).to.not.be.null;
+            expect(error.message).to.equal(
+                "max attempts of 10 was reached for request with last error being: ",
+            );
+        });
+
+        it("should succeed when node recovers within the custom retry timeout period", async function () {
+            // Create and execute a transaction to get a response
+            const transaction = await new FileCreateTransaction()
+                .setContents("hello 1")
+                .execute(client);
+
+            // Make the node unhealthy
+            client._network._network.get(
+                transaction.nodeId.toString(),
+            )[0]._readmitTime = Date.now() + 100 * 10010;
+
+            // Set up a timeout that makes the node healthy again after a delay
+            const randomDelay = Math.floor(Math.random() * 2001) + 1000;
+            setTimeout(() => {
+                client._network._network.get(
+                    transaction.nodeId.toString(),
+                )[0]._readmitTime = 0;
+            }, randomDelay);
+
+            const receipt = await transaction.getReceipt(client);
+
+            expect(receipt.status).to.equal(Status.Success);
         });
     });
 });

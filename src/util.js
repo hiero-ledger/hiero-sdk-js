@@ -463,3 +463,17 @@ export function arrayEqual(array1, array2) {
 export function wait(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+/**
+ * Converts a SCREAMING_SNAKE_CASE string to PascalCase
+ * @param {string} name - The string to convert
+ * @returns {string} The converted PascalCase string
+ */
+export function screamingSnakeToPascalCase(name) {
+    const words = name.toLowerCase().split("_");
+    let result = "";
+    for (let i = 0; i < words.length; i++) {
+        result += words[i].charAt(0).toUpperCase() + words[i].slice(1);
+    }
+    return result;
+}

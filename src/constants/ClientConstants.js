@@ -3,7 +3,6 @@ import AccountId from "../account/AccountId.js";
 
 // MAINNET node proxies are the same for both 'WebClient' and 'NativeClient'
 export const MAINNET = {
-    "https://grpc-web.myhbarwallet.com:443": new AccountId(3),
     "https://node00.swirldslabs.com:443": new AccountId(3),
     "https://node01-00-grpc.swirlds.com:443": new AccountId(4),
     "https://node02.swirldslabs.com:443": new AccountId(5),
@@ -56,11 +55,11 @@ export const WEB_PREVIEWNET = {
 };
 
 export const NATIVE_TESTNET = {
-    "https://grpc-web.testnet.myhbarwallet.com:443": new AccountId(3),
+    "https://testnet-node00-00-grpc.hedera.com:443": new AccountId(3),
 };
 
 export const NATIVE_PREVIEWNET = {
-    "https://grpc-web.previewnet.myhbarwallet.com:443": new AccountId(3),
+    "https://previewnet-node00-00-grpc.hedera.com:443": new AccountId(3),
 };
 
 /**

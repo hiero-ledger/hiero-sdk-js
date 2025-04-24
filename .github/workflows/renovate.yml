@@ -18,7 +18,7 @@ jobs:
     runs-on: hiero-client-sdk-linux-medium
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@c6295a65d1254861815972266d5933fd6e532bdf # v2.11.1
+        uses: step-security/harden-runner@0634a2670c59f64b4a01f0f96f84700a4088b9f0 # v2.12.0
         with:
           egress-policy: audit
 
@@ -28,7 +28,7 @@ jobs:
           submodules: recursive
 
       - name: Self-hosted Renovate
-        uses: renovatebot/github-action@c21017a4a2fc9f42953bcc907e375a5a544557ec # v41.0.18
+        uses: renovatebot/github-action@fdbe2b88946ea8b6fb5785a5267b46677d13a4d2 # v41.0.21
         with:
           configurationFile: .github/renovate.json
           token: ${{ secrets.RENOVATE_TOKEN }}

@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>Hiero JavaScript SDK > Tests</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="Content-Security-Policy" />
+        <link rel="stylesheet" href="demo.css" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,200..800;1,6..72,200..800&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
+        <img src="builder.png" width="350px" class="builder" />
+        <main class="wrapper">
+            <h1>Hiero UMD Builder</h1>
+            <input
+                type="text"
+                class="operator-id"
+                placeholder="Please enter your operator ID here"
+            />
+            <input
+                type="text"
+                class="operator-key"
+                placeholder="Please enter your operator key here"
+            />
+
+            <input
+                type="text"
+                class="input-account-id"
+                placeholder="Please enter an AccountId here"
+            />
+            <button class="run-action">Execute AccountInfoQuery</button>
+            <div class="json-container" ></div>
+            <img src="bouncing-circles.svg" class="loading" />
+            <div class="execute-notice">
+                You should use an ED25519 key for the operator. The network set
+                is TESTNET.
+            </span>
+        </main>
+        <footer>Copyright Hiero 2025</footer>
+        <script src="https://unpkg.com/@hashgraph/sdk@2.62.0/dist/umd.js"></script>
+        <script src="main.js"></script>
+    </body>
+</html>
