@@ -1,15 +1,16 @@
 // SPDX-License-Identifier: Apache-2.0
-
+import { hexlify } from "@ethersproject/bytes";
 import { PrivateKey as PrivateKeyCrypto } from "@hashgraph/cryptography";
+import { proto } from "@hashgraph/proto";
 import Mnemonic from "./Mnemonic.js";
 import PublicKey from "./PublicKey.js";
 import Key from "./Key.js";
 import CACHE from "./Cache.js";
 import SignatureMap from "./transaction/SignatureMap.js";
-
 import AccountId from "./account/AccountId.js";
 import TransactionId from "./transaction/TransactionId.js";
-import { proto } from "@hashgraph/proto";
+
+import { asn1DecodeStringDer } from "./util/ASN1-Decoder.js";
 
 /**
  * @typedef {import("./transaction/Transaction.js").default} Transaction
@@ -99,6 +100,18 @@ export default class PrivateKey extends Key {
      * @returns {PrivateKey}
      */
     static fromBytes(data) {
+        const keyString = hexlify(data);
+        if (PrivateKey.isDerKey(keyString)) {
+            if (PrivateKey.getAlgorithm(keyString) === "ecdsa") {
+                return new PrivateKey(PrivateKeyCrypto.fromBytesECDSA(data));
+            } else {
+                return new PrivateKey(PrivateKeyCrypto.fromBytesED25519(data));
+            }
+        }
+
+        // If the key is not DER, we assume it's a raw private key
+        // this will default to ED25519 as we dont have a way
+        // to determine the type of the key based on the raw bytes
         return new PrivateKey(PrivateKeyCrypto.fromBytes(data));
     }
 
@@ -130,6 +143,12 @@ export default class PrivateKey extends Key {
      * @returns {PrivateKey}
      */
     static fromString(text) {
+        if (PrivateKey.isDerKey(text)) {
+            return this.fromStringDer(text);
+        }
+        // If the key is not DER, we assume it's a raw private key
+        // this will default to ED25519 as we dont have a way
+        // to determine the type of the key based on the raw bytes
         return new PrivateKey(PrivateKeyCrypto.fromString(text));
     }
 
@@ -140,7 +159,11 @@ export default class PrivateKey extends Key {
      * @returns {PrivateKey}
      */
     static fromStringDer(text) {
-        return new PrivateKey(PrivateKeyCrypto.fromString(text));
+        if (PrivateKey.getAlgorithm(text) === "ecdsa") {
+            return this.fromStringECDSA(text);
+        } else {
+            return this.fromStringED25519(text);
+        }
     }
 
     /**
@@ -479,6 +502,47 @@ export default class PrivateKey extends Key {
      */
     getRecoveryId(r, s, message) {
         return this._key.getRecoveryId(r, s, message);
+    }
+
+    /**
+     * @param {string} privateKey
+     * @returns { "ecdsa" | "ed25519"}
+     */
+    static getAlgorithm(privateKey) {
+        const decoded = asn1DecodeStringDer(privateKey);
+        const supportedKeyTypes = ["ecdsa", "ed25519"];
+        const decodedKeyType = decoded.keyTypes[0];
+
+        console.log(decoded.isPublicKey);
+        if (!PrivateKey.isDerKey(privateKey)) {
+            throw new Error("Only der keys are supported");
+        }
+        if (!supportedKeyTypes.includes(decodedKeyType)) {
+            throw new Error("Unsupported key type");
+        }
+        if (decoded.isKeyListHex) {
+            throw new Error("Key list hex is not supported");
+        }
+        if (decoded.isPublicKey) {
+            throw new Error("Public key is not supported");
+        }
+
+        // @ts-ignored
+        return decodedKeyType;
+    }
+
+    /**
+     * @internal
+     * @param {string} key
+     * @returns {boolean}
+     */
+    static isDerKey(key) {
+        const derPrefixes = [
+            "3030020100300706052b8104000a04220420",
+            "30540201010420",
+            "302e020100300506032b657004220420",
+        ];
+        return derPrefixes.some((prefix) => key.startsWith(prefix));
     }
 }
 
