@@ -82,6 +82,8 @@ export default class TransactionResponse {
                 err instanceof ReceiptStatusError &&
                 err.status === Status.ThrottledAtConsensus
             ) {
+                // need to reset the transaction to its initial state before retrying
+                this.transaction?._resetTransaction(client);
                 return this._retryTransaction(client);
             }
             throw err;

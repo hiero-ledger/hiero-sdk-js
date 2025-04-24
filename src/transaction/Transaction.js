@@ -796,6 +796,22 @@ export default class Transaction extends Executable {
     }
 
     /**
+     * Resets the transaction to its initial state
+     * @param {Client} client
+     */
+    _resetTransaction(client) {
+        if (!client.operatorAccountId) {
+            throw new Error("Client must have an operator account ID");
+        }
+
+        const newTxId = TransactionId.generate(client.operatorAccountId);
+        this._transactionIds.clear();
+        this._signedTransactions.clear();
+        this._nodeAccountIds.clear();
+        this._signerPublicKeys.clear();
+        this.setTransactionId(newTxId);
+    }
+    /**
      * @deprecated - Using uint8array and uint8array[] as signaturemap is deprecated,
      * use SignatureMap insted.
      * @overload
