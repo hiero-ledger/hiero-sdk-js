@@ -1,0 +1,107 @@
+h1 {
+    color: #000000;
+    text-align: center;
+}
+
+body {
+    background-color: #14213d;
+    font-family: "Roboto";
+}
+
+.wrapper {
+    width: 600px;
+    margin: 0 auto;
+    padding: 25px;
+    background-color: #e5e5e5;
+    border-radius: 5px;
+}
+
+.run-action {
+    display: block;
+    margin: 0 auto;
+    padding: 10px;
+    background-color: #fca311;
+    color: #000;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.execute:hover {
+    border: 1px solid #000;
+    transform: scale(1.05); /* Scale up slightly */
+    /* Slightly darker orange */
+    cursor: pointer;
+}
+
+.json-container {
+    display: none;
+    margin-top: 50px;
+    padding: 15px;
+    background: #282c34;
+    color: #ffffff;
+    border-radius: 8px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    font-family: monospace;
+}
+
+.key-color {
+    color: #9cdcfe;
+}
+
+.string-color {
+    color: #ce9178;
+}
+
+.number-color {
+    color: #b5cea8;
+}
+
+.boolean-color {
+    color: #569cd6;
+}
+
+.null-color {
+    color: #808080;
+}
+
+input {
+    display: block;
+    width: 230px;
+    margin: 10px auto;
+    padding: 5px;
+    text-align: center;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+input:focus {
+    border: 1px solid #000;
+    transform: scale(1.05); /* Scale up slightly */
+    /* Slightly darker orange */
+    cursor: pointer;
+}
+
+.loading {
+    display: none;
+}
+
+img {
+    display: block;
+    margin: 0 auto;
+}
+
+.execute-notice {
+    margin-top: 10px;
+    color: #707070;
+    font-size: 12px;
+    text-align: center;
+    text-decoration: underline italic;
+}
+
+footer {
+    display: block;
+    margin-top: 5px;
+    color: #fff;
+    text-align: center;
+}

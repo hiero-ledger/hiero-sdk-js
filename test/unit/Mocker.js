@@ -6,6 +6,8 @@ import {
     Wallet,
     LocalProvider,
 } from "../../src/index.js";
+import path from "path";
+import fs from "fs";
 import * as grpc from "@grpc/grpc-js";
 import * as loader from "@grpc/proto-loader";
 import { proto } from "@hashgraph/proto";
@@ -25,116 +27,34 @@ export const PRIVATE_KEY = PrivateKey.fromString(
     "302e020100300506032b657004220420d45e1557156908c967804615af59a000be88c7aa7058bfcbe0f46b16c28f887d",
 );
 
-const PROTOS = [
-    "./packages/proto/src/proto/mirror/consensus_service.proto",
-    "./packages/proto/src/proto/mirror/mirror_network_service.proto",
-    "./packages/proto/src/proto/sdk/transaction_list.proto",
-    "./packages/proto/src/proto/services/basic_types.proto",
-    "./packages/proto/src/proto/services/consensus_create_topic.proto",
-    "./packages/proto/src/proto/services/consensus_delete_topic.proto",
-    "./packages/proto/src/proto/services/consensus_get_topic_info.proto",
-    "./packages/proto/src/proto/services/consensus_service.proto",
-    "./packages/proto/src/proto/services/consensus_submit_message.proto",
-    "./packages/proto/src/proto/services/consensus_topic_info.proto",
-    "./packages/proto/src/proto/services/consensus_update_topic.proto",
-    "./packages/proto/src/proto/services/contract_call.proto",
-    "./packages/proto/src/proto/services/contract_call_local.proto",
-    "./packages/proto/src/proto/services/contract_create.proto",
-    "./packages/proto/src/proto/services/contract_delete.proto",
-    "./packages/proto/src/proto/services/contract_get_bytecode.proto",
-    "./packages/proto/src/proto/services/contract_get_info.proto",
-    "./packages/proto/src/proto/services/contract_get_records.proto",
-    "./packages/proto/src/proto/services/contract_update.proto",
-    "./packages/proto/src/proto/services/crypto_add_live_hash.proto",
-    "./packages/proto/src/proto/services/crypto_adjust_allowance.proto",
-    "./packages/proto/src/proto/services/crypto_approve_allowance.proto",
-    "./packages/proto/src/proto/services/crypto_create.proto",
-    "./packages/proto/src/proto/services/crypto_delete.proto",
-    "./packages/proto/src/proto/services/crypto_delete_live_hash.proto",
-    "./packages/proto/src/proto/services/crypto_get_account_balance.proto",
-    "./packages/proto/src/proto/services/crypto_get_account_records.proto",
-    "./packages/proto/src/proto/services/crypto_get_info.proto",
-    "./packages/proto/src/proto/services/crypto_get_live_hash.proto",
-    "./packages/proto/src/proto/services/crypto_get_stakers.proto",
-    "./packages/proto/src/proto/services/crypto_service.proto",
-    "./packages/proto/src/proto/services/crypto_transfer.proto",
-    "./packages/proto/src/proto/services/crypto_update.proto",
-    "./packages/proto/src/proto/services/custom_fees.proto",
-    "./packages/proto/src/proto/services/duration.proto",
-    "./packages/proto/src/proto/services/exchange_rate.proto",
-    "./packages/proto/src/proto/services/file_append.proto",
-    "./packages/proto/src/proto/services/file_create.proto",
-    "./packages/proto/src/proto/services/file_delete.proto",
-    "./packages/proto/src/proto/services/file_get_contents.proto",
-    "./packages/proto/src/proto/services/file_get_info.proto",
-    "./packages/proto/src/proto/services/file_service.proto",
-    "./packages/proto/src/proto/services/file_update.proto",
-    "./packages/proto/src/proto/services/freeze.proto",
-    "./packages/proto/src/proto/services/freeze_service.proto",
-    "./packages/proto/src/proto/services/freeze_type.proto",
-    "./packages/proto/src/proto/services/history_proof_key_publication.proto",
-    "./packages/proto/src/proto/services/history_proof_signature.proto",
-    "./packages/proto/src/proto/services/history_proof_vote.proto",
-    "./packages/proto/src/proto/services/freeze_type.proto",
-    "./packages/proto/src/proto/services/freeze_type.proto",
-    "./packages/proto/src/proto/services/get_by_key.proto",
-    "./packages/proto/src/proto/services/get_by_solidity_id.proto",
-    "./packages/proto/src/proto/services/network_get_execution_time.proto",
-    "./packages/proto/src/proto/services/network_get_version_info.proto",
-    "./packages/proto/src/proto/services/network_service.proto",
-    "./packages/proto/src/proto/services/query.proto",
-    "./packages/proto/src/proto/services/query_header.proto",
-    "./packages/proto/src/proto/services/response.proto",
-    "./packages/proto/src/proto/services/response_code.proto",
-    "./packages/proto/src/proto/services/response_header.proto",
-    "./packages/proto/src/proto/services/schedulable_transaction_body.proto",
-    "./packages/proto/src/proto/services/schedule_create.proto",
-    "./packages/proto/src/proto/services/schedule_delete.proto",
-    "./packages/proto/src/proto/services/schedule_get_info.proto",
-    "./packages/proto/src/proto/services/schedule_service.proto",
-    "./packages/proto/src/proto/services/schedule_sign.proto",
-    "./packages/proto/src/proto/services/smart_contract_service.proto",
-    "./packages/proto/src/proto/services/system_delete.proto",
-    "./packages/proto/src/proto/services/system_undelete.proto",
-    "./packages/proto/src/proto/services/throttle_definitions.proto",
-    "./packages/proto/src/proto/services/timestamp.proto",
-    "./packages/proto/src/proto/services/token_associate.proto",
-    "./packages/proto/src/proto/services/token_burn.proto",
-    "./packages/proto/src/proto/services/token_create.proto",
-    "./packages/proto/src/proto/services/token_delete.proto",
-    "./packages/proto/src/proto/services/token_dissociate.proto",
-    "./packages/proto/src/proto/services/token_fee_schedule_update.proto",
-    "./packages/proto/src/proto/services/token_freeze_account.proto",
-    "./packages/proto/src/proto/services/token_get_account_nft_infos.proto",
-    "./packages/proto/src/proto/services/token_get_info.proto",
-    "./packages/proto/src/proto/services/token_get_nft_info.proto",
-    "./packages/proto/src/proto/services/token_get_nft_infos.proto",
-    "./packages/proto/src/proto/services/token_grant_kyc.proto",
-    "./packages/proto/src/proto/services/token_mint.proto",
-    "./packages/proto/src/proto/services/token_pause.proto",
-    "./packages/proto/src/proto/services/token_revoke_kyc.proto",
-    "./packages/proto/src/proto/services/token_service.proto",
-    "./packages/proto/src/proto/services/token_unfreeze_account.proto",
-    "./packages/proto/src/proto/services/token_unpause.proto",
-    "./packages/proto/src/proto/services/token_update.proto",
-    "./packages/proto/src/proto/services/token_wipe_account.proto",
-    "./packages/proto/src/proto/services/transaction.proto",
-    "./packages/proto/src/proto/services/transaction_contents.proto",
-    "./packages/proto/src/proto/services/transaction_get_fast_record.proto",
-    "./packages/proto/src/proto/services/transaction_get_receipt.proto",
-    "./packages/proto/src/proto/services/transaction_get_record.proto",
-    "./packages/proto/src/proto/services/transaction_receipt.proto",
-    "./packages/proto/src/proto/services/transaction_record.proto",
-    "./packages/proto/src/proto/services/transaction_response.proto",
-    "./packages/proto/src/proto/services/unchecked_submit.proto",
-    "./packages/proto/src/proto/services/event_consensus_data.proto",
-    "./packages/proto/src/proto/services/event_core.proto",
-    "./packages/proto/src/proto/services/event_descriptor.proto",
-    "./packages/proto/src/proto/services/event_transaction.proto",
-    "./packages/proto/src/proto/services/gossip_event.proto",
-    "./packages/proto/src/proto/services/state_signature_transaction.proto",
-    "./packages/proto/src/proto/services/state/entity/entity_counts.proto",
-];
+/**
+ * Find all proto files in a directory recursively
+ * @param {string} directory - The directory to search in
+ * @returns {string[]} - Array of proto file paths
+ */
+function findProtoFiles(directory) {
+    const protoFiles = [];
+
+    function scanDirectory(dir) {
+        const files = fs.readdirSync(dir);
+
+        for (const file of files) {
+            const filePath = path.join(dir, file);
+            const stat = fs.statSync(filePath);
+
+            if (stat.isDirectory()) {
+                scanDirectory(filePath);
+            } else if (file.endsWith(".proto")) {
+                protoFiles.push(filePath);
+            }
+        }
+    }
+
+    scanDirectory(directory);
+    return protoFiles;
+}
+
+const PROTOS = findProtoFiles("./packages/proto/src/proto");
 
 export const ABORTED = {
     name: "ABORTED",
