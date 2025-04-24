@@ -11,7 +11,7 @@ import {
     HbarUnit,
     TransactionId,
     AccountBalanceQuery,
-} from "../src/index.js";
+} from "@hashgraph/sdk";
 
 import dotenv from "dotenv";
 
