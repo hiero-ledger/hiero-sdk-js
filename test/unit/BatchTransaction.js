@@ -6,6 +6,7 @@ import {
     TransactionId,
     BatchTransaction,
     TransferTransaction,
+    FreezeTransaction,
 } from "../../src/index.js";
 import { expect } from "chai";
 
@@ -78,6 +79,45 @@ describe("BatchTransaction", function () {
             const ids = batchTransaction.innerTransactionIds;
 
             expect(ids).to.deep.equal([transactionId, transactionId]);
+        });
+    });
+
+    describe("validaty of inner transactions", function () {
+        it("should throw an error if the inner transactions are not valid", function () {
+            const invalidTransaction = new TransferTransaction().setBatchKey(
+                PrivateKey.generateECDSA(),
+            );
+
+            expect(() =>
+                batchTransaction.addInnerTransaction(invalidTransaction),
+            ).to.throw(
+                "Transaction must be frozen before being added to a batch",
+            );
+        });
+
+        it("should throw an error if the inner transactions doesnt have batch key", async function () {
+            const invalidTransaction = await new TransferTransaction()
+                .setTransactionId(transactionId)
+                .setNodeAccountIds([new AccountId(0, 0, 1)])
+                .freeze()
+                .sign(PrivateKey.generateECDSA());
+
+            expect(() =>
+                batchTransaction.addInnerTransaction(invalidTransaction),
+            ).to.throw("Transaction must have a batch key");
+        });
+
+        it("should throw an error if transaction is not allowed", async function () {
+            const invalidTransaction = new BatchTransaction();
+
+            expect(() =>
+                batchTransaction.addInnerTransaction(invalidTransaction),
+            ).to.throw("Transaction is not allowed to be added to a batch");
+
+            const invalidTransaction2 = new FreezeTransaction();
+            expect(() =>
+                batchTransaction.addInnerTransaction(invalidTransaction2),
+            ).to.throw("Transaction is not allowed to be added to a batch");
         });
     });
 
