@@ -10,12 +10,7 @@ module.exports = function replaceImport(originalPath, callingFileName, options) 
             !callingFileName.includes("/test/") &&
             path.includes("/src/")
         ) {
-            path = path.replace(".js", ".cjs");
             path = path.replace("src/", "lib/");
-        }
-    } else {
-        if (path.startsWith(".") && path.endsWith(".js")) {
-            path = path.replace(".js", ".cjs");
         }
     }
 

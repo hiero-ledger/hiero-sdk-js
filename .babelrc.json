@@ -1,14 +1,6 @@
 {
     "comments": false,
     "plugins": [
-        "@babel/plugin-transform-modules-commonjs",
-        "@babel/plugin-syntax-dynamic-import",
-        [
-            "babel-plugin-dynamic-import-node",
-            {
-                "noInterop": true
-            }
-        ],
         [
             "module-rewrite",
             { "replaceFunc": "./build/replace-module-paths.cjs" }

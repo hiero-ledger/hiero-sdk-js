@@ -3,9 +3,9 @@
     "version": "2.6.0-exodus.16",
     "description": "Hedera™ Hashgraph SDK",
     "types": "./lib/index.d.ts",
-    "main": "./lib/browser.cjs",
+    "main": "./lib/browser.js",
     "react-native": {
-        "./lib/browser.cjs": "./lib/native.cjs"
+        "./lib/browser.js": "./lib/native.js"
     },
     "license": "Apache-2.0",
     "author": "Launchbadge <contact@launchbadge.com>",
@@ -34,7 +34,7 @@
     ],
     "scripts": {
         "docs": "typedoc --theme minimal --mode modules --excludeNotExported --excludePrivate --excludeProtected --out docs --listInvalidSymbolLinks",
-        "compile:js": "babel src -d lib --out-file-extension .cjs",
+        "compile:js": "babel src -d lib",
         "lint": "run-s lint:*",
         "lint:types": "tsc",
         "lint:dpdm": "dpdm src/index.js --circular true --tree false --warning false",
@@ -60,7 +60,7 @@
         "test:integration:browser:safari": "vite -c vite.config.cjs serve --port 9013 test/ & sleep 10; mocha-webdriver-runner --safari http://localhost:9013/integration.html"
     },
     "dependencies": {
-        "@exodus/hashgraph-cryptography": "^1.0.21-exodus.11",
+        "@exodus/hashgraph-cryptography": "^1.0.21-exodus.13",
         "@exodus/hashgraph-proto": "^2.0.1-beta.2.exodus.11",
         "bignumber.js": "^9.0.1",
         "create-hash": "^1.2.0",
