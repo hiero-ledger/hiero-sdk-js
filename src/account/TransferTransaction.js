@@ -8,7 +8,7 @@ import Long from "long";
 import TokenTransferMap from "./TokenTransferMap.js";
 import HbarTransferMap from "./HbarTransferMap.js";
 import TokenNftTransferMap from "./TokenNftTransferMap.js";
-import * as util from "../util.js";
+import { requireNonNull } from "../util.js";
 import NftId from "../token/NftId.js";
 
 /**
@@ -363,7 +363,7 @@ export default class TransferTransaction extends Transaction {
             senderId = /** @type {AccountId | string} */ (
                 recipientAccountIdOrSenderAccountId
             );
-            util.requireNonNull(recipient);
+            requireNonNull(recipient);
             recipientId = /** @type {AccountId | string} */ (recipient);
         } else {
             throw new Error("unintended type for tokenIdOrNftId");

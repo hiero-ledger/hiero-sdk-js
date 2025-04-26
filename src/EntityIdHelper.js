@@ -1,7 +1,7 @@
 import Long from "long";
 import * as hex from "./encoding/hex.js";
 import BadEntityIdError from "./BadEntityIdError.js";
-import * as util from "./util.js";
+import { safeView, convertToNumber } from "./util.js";
 
 /**
  * @typedef {import("./client/Client.js").default<*, *>} Client
@@ -171,12 +171,12 @@ export function fromSolidityAddress(address) {
  */
 export function toSolidityAddress(address) {
     const buffer = new Uint8Array(20);
-    const view = util.safeView(buffer);
+    const view = safeView(buffer);
     const [shard, realm, num] = address;
 
-    view.setUint32(0, util.convertToNumber(shard));
-    view.setUint32(8, util.convertToNumber(realm));
-    view.setUint32(16, util.convertToNumber(num));
+    view.setUint32(0, convertToNumber(shard));
+    view.setUint32(8, convertToNumber(realm));
+    view.setUint32(16, convertToNumber(num));
 
     return hex.encode(buffer);
 }

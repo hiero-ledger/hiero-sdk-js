@@ -3,7 +3,7 @@ import ContractId from "./ContractId.js";
 import BigNumber from "bignumber.js";
 import * as hex from "../encoding/hex.js";
 import * as utf8 from "../encoding/utf8.js";
-import * as util from "../util.js";
+import { safeView } from "../util.js";
 import Long from "long";
 
 /**
@@ -118,7 +118,7 @@ export default class ContractFunctionResult {
         // Arrays in solidity cannot be longer than 1024:
         // https://solidity.readthedocs.io/en/v0.4.21/introduction-to-smart-contracts.html
         const offset = this.getInt32(index);
-        const len = util.safeView(this.bytes).getInt32(offset + 28);
+        const len = safeView(this.bytes).getInt32(offset + 28);
 
         return this.bytes.subarray(offset + 32, offset + 32 + len);
     }
@@ -159,7 +159,7 @@ export default class ContractFunctionResult {
         // Using DataView instead of Uint32Array because the latter interprets
         // using platform endianness which is little-endian on x86
         const position = (index != null ? index : 0) * 32 + 28;
-        return util.safeView(this.bytes).getInt32(position);
+        return safeView(this.bytes).getInt32(position);
     }
 
     /**
@@ -203,7 +203,7 @@ export default class ContractFunctionResult {
         // Using DataView instead of Uint32Array because the latter interprets
         // using platform endianness which is little-endian on x86
         const position = (index != null ? index : 0) * 32 + 28;
-        return util.safeView(this.bytes).getUint32(position);
+        return safeView(this.bytes).getUint32(position);
     }
 
     /**
