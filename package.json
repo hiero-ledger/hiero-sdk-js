@@ -60,10 +60,10 @@
         "test:integration:browser:safari": "vite -c vite.config.cjs serve --port 9013 test/ & sleep 10; mocha-webdriver-runner --safari http://localhost:9013/integration.html"
     },
     "dependencies": {
+        "@exodus/crypto": "^1.0.0-rc.20",
         "@exodus/hashgraph-cryptography": "^1.0.21-exodus.13",
         "@exodus/hashgraph-proto": "^2.0.1-beta.2.exodus.11",
         "bignumber.js": "^9.0.1",
-        "create-hash": "^1.2.0",
         "long": "^4.0.0"
     },
     "devDependencies": {
