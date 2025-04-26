@@ -36,7 +36,7 @@
         "format": "prettier src test '*.json' 'src/*.js' --write",
         "prepare": "run-s compile lint:types",
         "test": "run-s test:node test:browser:chrome test:browser:firefox",
-        "test:node": "env HEDERA_SDK_TEST='' mocha -r @babel/register -r chai/register-expect 'test/unit/**/*.js'",
+        "test:node": "env HEDERA_SDK_TEST='' mocha -r @babel/register -r ./node_modules/chai/register-expect 'test/unit/**/*.js'",
         "test:browser:chrome": "vite serve --port 9001 test/ & sleep 2; mocha-webdriver-runner --headless-chrome http://localhost:9001/; kill %1",
         "test:browser:firefox": "vite serve --port 9002 test/ & sleep 2; mocha-webdriver-runner --headless-firefox http://localhost:9002/; kill %1",
         "test:browser:safari": "vite serve --port 9003 test/ & sleep 2; mocha-webdriver-runner --safari http://localhost:9003/; kill %1"

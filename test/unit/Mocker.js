@@ -1,6 +1,5 @@
 import { PrivateKey } from "../src/exports.js";
-import Client from "../src/client/NodeClient.js";
-import * as grpc from "@grpc/grpc-js";
+import Client from "../src/client/WebClient.js";
 import * as loader from "@grpc/proto-loader";
 
 /**

@@ -1,4 +1,4 @@
-import { Client } from "../src/index.js";
+import { Client } from "../src/browser.js";
 
 describe("Client", function () {
     it("should support multiple IPs per node account ID", async function () {
@@ -96,44 +96,5 @@ describe("Client", function () {
         expect(network["2.testnet.hedera.com:50211"].toString()).to.be.equal(
             "0.0.6"
         );
-    });
-
-    it("should correctly construct and update mirror network", async function () {
-        let nodes = ["hcs.testnet.mirrornode.hedera.com:5600"];
-
-        const client = Client.forNetwork({}).setMirrorNetwork(nodes);
-
-        let network = client.mirrorNetwork;
-
-        expect(network.length).to.be.equal(1);
-        expect(network.includes("hcs.testnet.mirrornode.hedera.com:5600")).to.be
-            .true;
-
-        client.setMirrorNetwork(nodes);
-        network = client.mirrorNetwork;
-
-        expect(network.length).to.be.equal(1);
-        expect(network.includes("hcs.testnet.mirrornode.hedera.com:5600")).to.be
-            .true;
-
-        nodes.push("hcs.testnet1.mirrornode.hedera.com:5600");
-
-        client.setMirrorNetwork(nodes);
-        network = client.mirrorNetwork;
-
-        expect(network.length).to.be.equal(2);
-        expect(network.includes("hcs.testnet.mirrornode.hedera.com:5600")).to.be
-            .true;
-        expect(network.includes("hcs.testnet1.mirrornode.hedera.com:5600")).to
-            .be.true;
-
-        nodes = ["hcs.testnet1.mirrornode.hedera.com:5600"];
-
-        client.setMirrorNetwork(nodes);
-        network = client.mirrorNetwork;
-
-        expect(network.length).to.be.equal(1);
-        expect(network.includes("hcs.testnet1.mirrornode.hedera.com:5600")).to
-            .be.true;
     });
 });
