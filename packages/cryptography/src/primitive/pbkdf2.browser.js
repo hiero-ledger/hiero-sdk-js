@@ -23,7 +23,7 @@ export async function deriveKey(algorithm, password, salt, iterations, length) {
     const nacl = typeof salt === "string" ? utf8.encode(salt) : salt;
 
     try {
-        const key = await window.crypto.subtle.importKey(
+        const key = await globalThis.crypto.subtle.importKey(
             "raw",
             pass,
             {
@@ -35,7 +35,7 @@ export async function deriveKey(algorithm, password, salt, iterations, length) {
         );
 
         return new Uint8Array(
-            await window.crypto.subtle.deriveBits(
+            await globalThis.crypto.subtle.deriveBits(
                 {
                     name: "PBKDF2",
                     hash: algorithm,

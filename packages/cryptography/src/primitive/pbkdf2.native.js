@@ -1,8 +1,6 @@
 import { HashAlgorithm } from "./hmac.js";
-import * as utf8 from "../encoding/utf8.js";
-import util from "util";
-import crypto from "pbkdf2";
-import "./crypto-types.d.ts";
+import { pbkdf2Async } from "@noble/hashes/pbkdf2";
+import { sha256, sha384, sha512 } from "@noble/hashes/sha2";
 
 /**
  * @param {HashAlgorithm} algorithm
@@ -13,26 +11,13 @@ import "./crypto-types.d.ts";
  * @returns {Promise<Uint8Array>}
  */
 export async function deriveKey(algorithm, password, salt, iterations, length) {
-    const pass0 =
-        typeof password === "string"
-            ? // Valid ASCII is also valid UTF-8 so encoding the password as UTF-8
-              // should be fine if only valid ASCII characters are used in the password
-              utf8.encode(password)
-            : password;
-    const pass = Buffer.from(pass0);
-
-    const nacl0 = typeof salt === "string" ? utf8.encode(salt) : salt;
-    const nacl = Buffer.from(nacl0);
-
-    const pbkdf2 = util.promisify(crypto.pbkdf2);
-
     switch (algorithm) {
         case HashAlgorithm.Sha256:
-            return pbkdf2(pass, nacl, iterations, length, "sha256");
+            return pbkdf2Async(sha256, password, salt, { c: iterations, dkLen: length });
         case HashAlgorithm.Sha384:
-            return pbkdf2(pass, nacl, iterations, length, "sha384");
+            return pbkdf2Async(sha384, password, salt, { c: iterations, dkLen: length });
         case HashAlgorithm.Sha512:
-            return pbkdf2(pass, nacl, iterations, length, "sha512");
+            return pbkdf2Async(sha512, password, salt, { c: iterations, dkLen: length });
         default:
             throw new Error(
                 "(BUG) Non-Exhaustive switch statement for algorithms"

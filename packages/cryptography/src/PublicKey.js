@@ -1,8 +1,9 @@
-import nacl from "tweetnacl";
 import Key from "./Key.js";
 import { arrayEqual, arrayStartsWith } from "./util/array.js";
 import BadKeyError from "./BadKeyError.js";
 import * as hex from "./encoding/hex.js";
+import * as naclSign from './util/nacl-sign.js'
+
 
 /**
  * @typedef {import("./PrivateKey.js").Transaction} Transaction
@@ -76,7 +77,7 @@ export default class PublicKey extends Key {
      * @returns {boolean}
      */
     verify(message, signature) {
-        return nacl.sign.detached.verify(message, signature, this._keyData);
+        return naclSign.detachedVerify(message, signature, this._keyData);
     }
 
     /**
@@ -109,7 +110,7 @@ export default class PublicKey extends Key {
                             sigPair.ed25519
                         );
                         if (
-                            !nacl.sign.detached.verify(
+                            !naclSign.detachedVerify(
                                 bodyBytes,
                                 signature,
                                 this._keyData

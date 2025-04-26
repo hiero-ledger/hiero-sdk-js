@@ -1,5 +1,4 @@
-import crypto from "crypto";
-import * as utf8 from "../encoding/utf8.js";
+import { hmac } from "@exodus/crypto/hmac";
 
 /**
  * @enum {string}
@@ -17,23 +16,13 @@ export const HashAlgorithm = {
  * @returns {Promise<Uint8Array>}
  */
 export function hash(algorithm, secretKey, data) {
-    const key =
-        typeof secretKey === "string" ? utf8.encode(secretKey) : secretKey;
-    const value = typeof data === "string" ? utf8.encode(data) : data;
-
     switch (algorithm) {
         case HashAlgorithm.Sha256:
-            return Promise.resolve(
-                crypto.createHmac("SHA256", key).update(value).digest()
-            );
+            return hmac('sha256', secretKey, data, 'uint8')
         case HashAlgorithm.Sha384:
-            return Promise.resolve(
-                crypto.createHmac("SHA384", key).update(value).digest()
-            );
+            return hmac('sha384', secretKey, data, 'uint8')
         case HashAlgorithm.Sha512:
-            return Promise.resolve(
-                crypto.createHmac("SHA512", key).update(value).digest()
-            );
+            return hmac('sha512', secretKey, data, 'uint8')
         default:
             throw new Error(
                 "(BUG) Non-Exhaustive switch statement for algorithms"

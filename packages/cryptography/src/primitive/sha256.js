@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import { hash } from "@exodus/crypto/hash";
 
 /**
  * @param {Uint8Array} data
@@ -6,6 +6,5 @@ import crypto from "crypto";
  */
 // eslint-disable-next-line @typescript-eslint/require-await
 export async function digest(data) {
-    // fallback to trying node-crypto which could be polyfilled by the browser environment
-    return crypto.createHash("sha256").update(data).digest();
+  return hash('sha256', data, 'uint8')
 }

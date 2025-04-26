@@ -1,4 +1,3 @@
-import nacl from "tweetnacl";
 import PublicKey from "./PublicKey.js";
 import Mnemonic from "./Mnemonic.js";
 import { arrayStartsWith } from "./util/array.js";
@@ -8,6 +7,7 @@ import * as slip10 from "./primitive/slip10.js";
 import Key from "./Key.js";
 import * as random from "./primitive/random.js";
 import * as derive from "./util/derive.js";
+import * as naclSign from './util/nacl-sign.js'
 
 const derPrefix = "302e020100300506032b657004220420";
 const derPrefixBytes = hex.decode(derPrefix);
@@ -78,7 +78,7 @@ export default class PrivateKey extends Key {
         const entropy = random.bytes(64);
 
         return new PrivateKey(
-            nacl.sign.keyPair.fromSeed(entropy.subarray(0, 32)),
+            naclSign.keyPairFromSeed(entropy.subarray(0, 32)),
             entropy.subarray(32)
         );
     }
@@ -94,7 +94,7 @@ export default class PrivateKey extends Key {
         const entropy = await random.bytesAsync(64);
 
         return new PrivateKey(
-            nacl.sign.keyPair.fromSeed(entropy.subarray(0, 32)),
+            naclSign.keyPairFromSeed(entropy.subarray(0, 32)),
             entropy.subarray(32)
         );
     }
@@ -109,7 +109,7 @@ export default class PrivateKey extends Key {
         switch (data.length) {
             case 48:
                 if (arrayStartsWith(data, derPrefixBytes)) {
-                    const keyPair = nacl.sign.keyPair.fromSeed(
+                    const keyPair = naclSign.keyPairFromSeed(
                         data.subarray(16)
                     );
 
@@ -119,12 +119,12 @@ export default class PrivateKey extends Key {
                 break;
 
             case 32:
-                return new PrivateKey(nacl.sign.keyPair.fromSeed(data), null);
+                return new PrivateKey(naclSign.keyPairFromSeed(data), null);
 
             case 64:
                 // priv + pub key
                 return new PrivateKey(
-                    nacl.sign.keyPair.fromSecretKey(data),
+                    naclSign.keyPairFromSecretKey(data),
                     null
                 );
 
@@ -184,7 +184,7 @@ export default class PrivateKey extends Key {
             index
         );
 
-        const keyPair = nacl.sign.keyPair.fromSeed(keyData);
+        const keyPair = naclSign.keyPairFromSeed(keyData);
 
         return new PrivateKey(keyPair, chainCode);
     }
@@ -222,7 +222,7 @@ export default class PrivateKey extends Key {
      * @returns {Uint8Array} - The signature bytes without the message
      */
     sign(bytes) {
-        return nacl.sign.detached(bytes, this._keyPair.secretKey);
+        return naclSign.detached(bytes, this._keyPair.secretKey);
     }
 
     /**

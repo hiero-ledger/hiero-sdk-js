@@ -1,4 +1,3 @@
-import BigNumber from "bignumber.js";
 import * as sha256 from "../primitive/sha256.js";
 
 /**
@@ -93,20 +92,20 @@ export function crc8(data) {
  * @returns {Uint8Array}
  */
 export function convertRadix(nums, fromRadix, toRadix, toLength) {
-    let num = new BigNumber(0);
+    let num = BigInt(0);
 
     for (const element of nums) {
-        num = num.times(fromRadix);
-        num = num.plus(element);
+        num = num * BigInt(fromRadix);
+        num = num + BigInt(element);
     }
 
     const result = new Uint8Array(toLength);
 
     for (let i = toLength - 1; i >= 0; i -= 1) {
-        const tem = num.dividedToIntegerBy(toRadix);
-        const rem = num.modulo(toRadix);
+        const tem = num / BigInt(toRadix);
+        const rem = num % BigInt(toRadix);
         num = tem;
-        result[i] = rem.toNumber();
+        result[i] = Number(rem);
     }
 
     return result;

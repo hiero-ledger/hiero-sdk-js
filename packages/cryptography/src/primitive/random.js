@@ -1,11 +1,12 @@
-import nacl from "tweetnacl";
+import { randomBytes } from "@exodus/crypto/randomBytes";
 
 /**
  * @param {number} count
  * @returns {Uint8Array}
  */
 export function bytes(count) {
-    return nacl.randomBytes(count);
+    const buf = randomBytes(count)
+    return new Uint8Array(buf.buffer, buf.byteOffset, buf.length)
 }
 
 /**
@@ -13,5 +14,5 @@ export function bytes(count) {
  * @returns {Promise<Uint8Array>}
  */
 export function bytesAsync(count) {
-    return Promise.resolve(nacl.randomBytes(count));
+    return Promise.resolve(bytes(count));
 }

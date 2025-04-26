@@ -5,11 +5,11 @@ import legacyWords from "./words/legacy.js";
 import bip39Words from "./words/bip39.js";
 import * as sha256 from "./primitive/sha256.js";
 import * as pbkdf2 from "./primitive/pbkdf2.js";
-import nacl from "tweetnacl";
 import * as hmac from "./primitive/hmac.js";
 import * as slip10 from "./primitive/slip10.js";
 import * as entropy from "./util/entropy.js";
 import * as random from "./primitive/random.js";
+import * as naclSign from './util/nacl-sign.js'
 
 /**
  * Multi-word mnemonic phrase (BIP-39).
@@ -283,7 +283,7 @@ export default class Mnemonic {
             ));
         }
 
-        const keyPair = nacl.sign.keyPair.fromSeed(keyData);
+        const keyPair = naclSign.keyPairFromSeed(keyData);
 
         return new PrivateKey(keyPair, chainCode);
     }
