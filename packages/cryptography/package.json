@@ -2,7 +2,7 @@
     "name": "@exodus/hashgraph-cryptography",
     "version": "1.0.21-exodus.12",
     "description": "Cryptographic utilities and primitives for the Hedera™ Hashgraph SDK",
-    "main": "./lib/index.cjs",
+    "main": "./lib/index.js",
     "types": "./lib/index.d.ts",
     "license": "Apache-2.0",
     "author": "Launchbadge <contact@launchbadge.com>",
@@ -28,7 +28,7 @@
     ],
     "scripts": {
         "docs": "typedoc --theme minimal --mode modules --excludeNotExported --excludePrivate --excludeProtected --out docs --listInvalidSymbolLinks",
-        "compile": "babel src -d lib --out-file-extension .cjs",
+        "compile": "babel src -d lib",
         "lint": "run-s lint:*",
         "lint:types": "tsc",
         "lint:format": "prettier src test '*.json' 'src/*.js' --check",
