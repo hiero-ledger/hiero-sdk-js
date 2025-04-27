@@ -42,7 +42,7 @@ export default class MangedNetwork {
          */
         this._nodes = [];
 
-        /** @type {(address: string, cert?: string) => ChannelT} */
+        /** @type {(address: string) => ChannelT} */
         this._createNetworkChannel = createNetworkChannel;
 
         /** @type {string | null} */
@@ -62,44 +62,6 @@ export default class MangedNetwork {
      */
     isTransportSecurity() {
         return this._transportSecurity;
-    }
-
-    /**
-     * @param {boolean} transportSecurity
-     * @returns {this}
-     */
-    setTransportSecurity(transportSecurity) {
-        if (this._transportSecurity != transportSecurity) {
-            this._network.clear();
-
-            for (let i = 0; i < this._nodes.length; i++) {
-                let node = this._nodes[i];
-                node.close();
-
-                node = /** @type {NetworkNodeT} */ (
-                    transportSecurity
-                        ? node
-                              .toSecure()
-                              .setCert(
-                                  this._ledgerId != null ? this._ledgerId : ""
-                              )
-                        : node.toInsecure()
-                );
-                this._nodes[i] = node;
-
-                const nodes =
-                    this._network.get(node.getKey()) != null
-                        ? /** @type {NetworkNodeT[]} */ (
-                              this._network.get(node.getKey())
-                          )
-                        : [];
-                nodes.push(node);
-                this._network.set(node.getKey(), nodes);
-            }
-        }
-
-        this._transportSecurity = transportSecurity;
-        return this;
     }
 
     /**

@@ -1,6 +1,5 @@
 import ManagedNode from "./ManagedNode.js";
 import { _ledgerIdToNetworkName } from "./NetworkName.js";
-import { PREVIEWNET_CERTS, TESTNET_CERTS, MAINNET_CERTS } from "./NodeCerts.js";
 
 /**
  * @typedef {import("./account/AccountId.js").default} AccountId
@@ -12,7 +11,7 @@ import { PREVIEWNET_CERTS, TESTNET_CERTS, MAINNET_CERTS } from "./NodeCerts.js";
  * @typedef {object} NewNode
  * @property {AccountId} accountId
  * @property {string} address
- * @property {(address: string, cert?: string) => Channel} channelInitFunction
+ * @property {(address: string) => Channel} channelInitFunction
  */
 
 /**
@@ -71,28 +70,6 @@ export default class Node extends ManagedNode {
                 cloneNode: { node: this, address: this._address.toSecure() },
             })
         );
-    }
-
-    /**
-     * @param {string} ledgerId
-     * @returns {this}
-     */
-    setCert(ledgerId) {
-        const networkName = _ledgerIdToNetworkName(ledgerId);
-
-        switch (networkName) {
-            case "previewnet":
-                this._cert = PREVIEWNET_CERTS[this._accountId.toString()];
-                break;
-            case "testnet":
-                this._cert = TESTNET_CERTS[this._accountId.toString()];
-                break;
-            case "mainnet":
-                this._cert = MAINNET_CERTS[this._accountId.toString()];
-                break;
-        }
-
-        return this;
     }
 
     /**

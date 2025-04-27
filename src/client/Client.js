@@ -141,15 +141,6 @@ export default class Client {
     }
 
     /**
-     * @param {boolean} transportSecurity
-     * @returns {this}
-     */
-    setTransportSecurity(transportSecurity) {
-        this._network.setTransportSecurity(transportSecurity);
-        return this;
-    }
-
-    /**
      * Set the account that will, by default, pay for transactions and queries built with this client.
      *
      * @param {AccountId | string} accountId
@@ -260,7 +251,7 @@ export default class Client {
      * Set the maximum payment allowable for queries.
      *
      * @param {Hbar} maxQueryPayment
-     * @returns {Client<ChannelT, MirrorChannelT>}
+     * @returns {Client<ChannelT, *>}
      */
     setMaxQueryPayment(maxQueryPayment) {
         this._maxQueryPayment = maxQueryPayment;

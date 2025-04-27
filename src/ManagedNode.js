@@ -9,7 +9,7 @@ import ManagedNodeAddress from "./ManagedNodeAddress.js";
  * @template {Channel} ChannelT
  * @typedef {object} NewNode
  * @property {string | ManagedNodeAddress} address
- * @property {(address: string, cert?: string) => ChannelT} channelInitFunction
+ * @property {(address: string) => ChannelT} channelInitFunction
  */
 
 /**
@@ -36,13 +36,10 @@ export default class ManagedNode {
                     ? ManagedNodeAddress.fromString(props.newNode.address)
                     : props.newNode.address;
 
-            /** @type {string=} */
-            this._cert = undefined;
-
             /** @type {ChannelT | null} */
             this._channel = null;
 
-            /** @type {(address: string, cert?: string) => ChannelT} */
+            /** @type {(address: string) => ChannelT} */
             this._channelInitFunction = props.newNode.channelInitFunction;
 
             this._currentBackoff = 250;
@@ -56,13 +53,10 @@ export default class ManagedNode {
             /** @type {ManagedNodeAddress} */
             this._address = props.cloneNode.address;
 
-            /** @type {string=} */
-            this._cert = props.cloneNode.node._cert;
-
             /** @type {ChannelT | null} */
             this._channel = props.cloneNode.node._channel;
 
-            /** @type {(address: string, cert?: string) => ChannelT} */
+            /** @type {(address: string) => ChannelT} */
             this._channelInitFunction =
                 props.cloneNode.node._channelInitFunction;
 
@@ -118,15 +112,6 @@ export default class ManagedNode {
     // eslint-disable-next-line jsdoc/require-returns-check
     toSecure() {
         throw new Error("not implemented");
-    }
-
-    /**
-     * @param {string} ledgerId
-     * @returns {this}
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    setCert(ledgerId) {
-        return this;
     }
 
     /**
@@ -192,8 +177,7 @@ export default class ManagedNode {
         }
 
         this._channel = this._channelInitFunction(
-            this.address.toString(),
-            this._cert
+            this.address.toString()
         );
         return this._channel;
     }
