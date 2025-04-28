@@ -84,6 +84,7 @@ async function executeBatchWithBatchify(client) {
             Hbar.from(1, HbarUnit.Hbar),
         )
         .batchify(aliceClient, batchKey1);
+    aliceClient.close();
 
     console.log("Created first account (Alice): " + alice.toString());
 
@@ -109,6 +110,7 @@ async function executeBatchWithBatchify(client) {
             Hbar.from(1, HbarUnit.Hbar),
         )
         .batchify(bobClient, batchKey2);
+    bobClient.close();
 
     console.log("Created second account (Bob): " + bob.toString());
 
@@ -133,6 +135,7 @@ async function executeBatchWithBatchify(client) {
             Hbar.from(1, HbarUnit.Hbar),
         )
         .batchify(carolClient, batchKey3);
+    carolClient.close();
 
     console.log("Created third account (Carol): " + carol.toString());
 
