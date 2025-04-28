@@ -592,6 +592,7 @@ export default class Transaction extends Executable {
      * @returns {Promise<number>}
      */
     get size() {
+        this._requireFrozen();
         return this._makeRequestAsync().then(
             (request) =>
                 HieroProto.proto.Transaction.encode(request).finish().length,
