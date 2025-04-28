@@ -200,6 +200,14 @@ export default class Transaction extends Executable {
          * @type {Key | null}
          */
         this._batchKey = null;
+
+        /**
+         * Whether the transaction is throttled
+         *
+         * @private
+         * @type {boolean}
+         */
+        this._isThrottled = false;
     }
 
     /**
@@ -764,11 +772,10 @@ export default class Transaction extends Executable {
         // Save the current public key so we don't attempt to sign twice
         this._signerPublicKeys.add(publicKeyHex);
 
+        this._publicKeys.push(publicKey);
+        this._transactionSigners.push(transactionSigner);
         // If signing on demand is enabled we will save the public key and signer and return
         if (this._signOnDemand) {
-            this._publicKeys.push(publicKey);
-            this._transactionSigners.push(transactionSigner);
-
             return this;
         }
 
@@ -837,12 +844,12 @@ export default class Transaction extends Executable {
             throw new Error("Client must have an operator account ID");
         }
 
+        this.logger?.info("Resetting transaction id and resigning");
         const newTxId = TransactionId.generate(client.operatorAccountId);
         this._transactionIds.clear();
         this._signedTransactions.clear();
-        this._nodeAccountIds.clear();
-        this._signerPublicKeys.clear();
-        this.setTransactionId(newTxId);
+        this._transactionIds.setList([newTxId]);
+        this._isThrottled = true;
     }
     /**
      * @deprecated - Using uint8array and uint8array[] as signaturemap is deprecated,
@@ -1611,7 +1618,7 @@ export default class Transaction extends Executable {
 
         // If sign on demand is disabled we need to simply build that transaction
         // and return the result, without signing
-        if (!this._signOnDemand) {
+        if (!this._signOnDemand && !this._isThrottled) {
             this._buildTransaction(index);
             return /** @type {HieroProto.proto.ITransaction} */ (
                 this._transactions.get(index)
@@ -1880,6 +1887,7 @@ export default class Transaction extends Executable {
                         nodeId,
                         transactionHash,
                         transactionId,
+                        logger: this._logger,
                     }).toJSON(),
                 )}`,
             );
@@ -1890,6 +1898,7 @@ export default class Transaction extends Executable {
             transactionHash,
             transactionId,
             transaction: this,
+            logger: this._logger,
         });
     }
 
