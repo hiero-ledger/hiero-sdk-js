@@ -17,15 +17,12 @@ import {
     TopicInfoQuery,
 } from "../../src/index.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
-import { setTimeout } from "timers/promises";
 
 describe("BatchTransaction", function () {
     let env;
 
     beforeEach(async function () {
         env = await IntegrationTestEnv.new();
-        const backoffMs = getBackoffBasedOnAttempt.call(this);
-        await setTimeout(backoffMs);
     });
 
     it("can create batch transaction", async function () {
@@ -371,19 +368,3 @@ describe("BatchTransaction", function () {
         await env.close();
     });
 });
-
-/**
- *
- * @param {Mocha.Context} this
- * @returns {number}
- */
-function getBackoffBasedOnAttempt() {
-    const MIN_BACKOFF = 250;
-    const MAX_BACKOFF = 16000;
-    const attempt = this.currentTest.currentRetry();
-    if (attempt === 0) {
-        return 0;
-    }
-
-    return Math.min(MIN_BACKOFF * 2 ** attempt, MAX_BACKOFF);
-}
