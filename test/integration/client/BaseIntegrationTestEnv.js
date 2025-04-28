@@ -3,8 +3,6 @@ import {
     TokenDeleteTransaction,
     AccountId,
     Wallet,
-    Logger,
-    LogLevel,
 } from "../../../src/exports.js";
 import LocalProvider from "../../../src/LocalProvider.js";
 
@@ -99,8 +97,6 @@ export default class BaseIntegrationTestEnv {
             .setNodeMaxBackoff(0)
             .setNodeMinReadmitPeriod(0)
             .setNodeMaxReadmitPeriod(0);
-
-        client.setLogger(new Logger(LogLevel.Info));
 
         const network = {};
         const nodeAccountIds =
