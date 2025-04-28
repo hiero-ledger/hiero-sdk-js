@@ -72,6 +72,11 @@ export default class Executable {
         this._signOnDemand = false;
 
         /**
+         *
+         */
+        this._isThrottled = false;
+
+        /**
          * This is the request's min backoff
          *
          * @internal

@@ -15,6 +15,7 @@ import { wait } from "../util.js";
  * @typedef {import("./TransactionReceipt.js").default} TransactionReceipt
  * @typedef {import("./TransactionRecord.js").default} TransactionRecord
  * @typedef {import("../Signer.js").Signer} Signer
+ * @typedef {import("../logger/Logger.js").default} Logger
  */
 
 /**
@@ -41,6 +42,7 @@ export default class TransactionResponse {
      * @param {Uint8Array} props.transactionHash
      * @param {TransactionId} props.transactionId
      * @param {Transaction} [props.transaction]
+     * @param {Logger | null} [props.logger]
      */
     constructor(props) {
         /** @readonly */
@@ -49,12 +51,11 @@ export default class TransactionResponse {
         /** @readonly */
         this.transactionHash = props.transactionHash;
 
-        /** @readonly */
         this.transactionId = props.transactionId;
 
         this.transaction = props.transaction;
 
-        Object.freeze(this);
+        this.logger = props.logger;
     }
 
     /**
@@ -82,6 +83,7 @@ export default class TransactionResponse {
                 err instanceof ReceiptStatusError &&
                 err.status === Status.ThrottledAtConsensus
             ) {
+                this.logger?.info("Transaction throttled at consensus");
                 // need to reset the transaction to its initial state before retrying
                 return this._retryTransaction(client);
             }
@@ -217,6 +219,18 @@ export default class TransactionResponse {
         let BACKOFF = 250; // milliseconds
 
         for (let i = 0; i < MAX_RETRIES; i++) {
+            this.logger?.trace(`Transaction throttled, retry attempt ${i}`);
+            this.transaction?._resetTransaction(client);
+            if (
+                this.transaction == null ||
+                this.transaction.transactionId == null
+            ) {
+                throw new Error(
+                    "Transaction or Transaction ID is null after reset",
+                );
+            }
+            // need to set the transactionId again in case we are doing getRecord afterwards
+            this.transactionId = this.transaction.transactionId;
             if (i > 0) {
                 // Wait with exponential backoff before retrying
                 await wait(Math.min(BACKOFF, MAX_BACKOFF));
@@ -233,14 +247,30 @@ export default class TransactionResponse {
                     .execute(client);
 
                 if (receipt.status !== Status.ThrottledAtConsensus) {
+                    this.logger?.info(
+                        `Transaction throttle retry succeeded after attempt ${i}`,
+                    );
                     return receipt;
                 }
             } catch (err) {
-                // Continue to next retry on error
-                continue;
+                if (
+                    err instanceof ReceiptStatusError &&
+                    err.status === Status.ThrottledAtConsensus
+                ) {
+                    this.logger?.info("Transaction throttled at consensus");
+                    // Continue to next retry on error
+                    continue;
+                }
+                this.logger?.error(
+                    `An error occurred after throttle retry: ${err instanceof Error ? err.message : String(err)}`,
+                );
+                throw err;
             }
         }
 
+        this.logger?.error(
+            "Transaction throttle retry failed after maximum attempts",
+        );
         throw new Error("Transaction retry failed after maximum attempts");
     }
 

@@ -17,12 +17,15 @@ import {
     TopicInfoQuery,
 } from "../../src/index.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import { setTimeout } from "timers/promises";
 
 describe("BatchTransaction", function () {
     let env;
 
     beforeEach(async function () {
         env = await IntegrationTestEnv.new();
+        const backoffMs = getBackoffBasedOnAttempt.call(this);
+        await setTimeout(backoffMs);
     });
 
     it("can create batch transaction", async function () {
@@ -217,11 +220,16 @@ describe("BatchTransaction", function () {
     });
 
     it("can execute with different batch keys", async function () {
-        this.retries(20);
-
         const batchKey1 = PrivateKey.generateED25519();
         const batchKey2 = PrivateKey.generateED25519();
         const batchKey3 = PrivateKey.generateED25519();
+
+        const resp = await new AccountCreateTransaction()
+            .setKeyWithoutAlias(PrivateKey.generateED25519())
+            .setInitialBalance(new Hbar(1))
+            .execute(env.client);
+        const receiver = (await resp.getReceipt(env.client)).accountId;
+        expect(receiver).to.not.be.null;
 
         const key1 = PrivateKey.generateECDSA();
         const response1 = await new AccountCreateTransaction()
@@ -232,7 +240,7 @@ describe("BatchTransaction", function () {
         expect(account1).to.not.be.null;
 
         const batchedTransfer1 = await new TransferTransaction()
-            .addHbarTransfer(env.operatorId, Hbar.fromTinybars(100))
+            .addHbarTransfer(receiver, Hbar.fromTinybars(100))
             .addHbarTransfer(account1, Hbar.fromTinybars(100).negated())
             .setTransactionId(TransactionId.generate(account1))
             .setBatchKey(batchKey1)
@@ -248,7 +256,7 @@ describe("BatchTransaction", function () {
         expect(account2).to.not.be.null;
 
         const batchedTransfer2 = await new TransferTransaction()
-            .addHbarTransfer(env.operatorId, Hbar.fromTinybars(100))
+            .addHbarTransfer(receiver, Hbar.fromTinybars(100))
             .addHbarTransfer(account2, Hbar.fromTinybars(100).negated())
             .setTransactionId(TransactionId.generate(account2))
             .setBatchKey(batchKey2)
@@ -264,7 +272,7 @@ describe("BatchTransaction", function () {
         expect(account3).to.not.be.null;
 
         const batchedTransfer3 = await new TransferTransaction()
-            .addHbarTransfer(env.operatorId, Hbar.fromTinybars(100))
+            .addHbarTransfer(receiver, Hbar.fromTinybars(100))
             .addHbarTransfer(account3, Hbar.fromTinybars(100).negated())
             .setTransactionId(TransactionId.generate(account3))
             .setBatchKey(batchKey3)
@@ -368,3 +376,19 @@ describe("BatchTransaction", function () {
         await env.close();
     });
 });
+
+/**
+ *
+ * @param {Mocha.Context} this
+ * @returns {number}
+ */
+function getBackoffBasedOnAttempt() {
+    const MIN_BACKOFF = 250;
+    const MAX_BACKOFF = 16000;
+    const attempt = this.currentTest.currentRetry();
+    if (attempt === 0) {
+        return 0;
+    }
+    console.log(`Retrying test after failure, attempt ${attempt + 1}`);
+    return Math.min(MIN_BACKOFF * 2 ** attempt, MAX_BACKOFF);
+}

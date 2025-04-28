@@ -159,11 +159,11 @@ tasks:
 
     "test:integration:node":
         cmds:
-            - npx mocha --exit --parallel --jobs 4 -r @babel/register -r chai/register-expect.js -r test/setup/test.js "test/integration/*.js" --timeout 120000 {{.CLI_ARGS}} --retries 5
+            - npx mocha --exit --parallel -jobs 4 -r @babel/register -r chai/register-expect.js "test/integration/*.js" --timeout 120000 {{.CLI_ARGS}}
 
     "test:integration:codecov":
         cmds:
-            - npx c8 --reporter=lcov --reporter=text-summary ./node_modules/.bin/mocha --exit --parallel --jobs 4 -r @babel/register -r chai/register-expect.js -r test/setup/test.js "test/integration/*.js" --timeout 0000 {{.CLI_ARGS}} --retries 5
+            - npx c8 --reporter=lcov --reporter=text-summary ./node_modules/.bin/mocha --exit --parallel -jobs 4 -r @babel/register -r chai/register-expect.js "test/integration/*.js" --timeout 120000 {{.CLI_ARGS}}
             - npx c8 report
 
     "update:proto":

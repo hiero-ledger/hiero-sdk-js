@@ -3,6 +3,8 @@ import {
     TokenDeleteTransaction,
     AccountId,
     Wallet,
+    Logger,
+    LogLevel,
 } from "../../../src/exports.js";
 import LocalProvider from "../../../src/LocalProvider.js";
 
@@ -98,6 +100,8 @@ export default class BaseIntegrationTestEnv {
             .setNodeMinReadmitPeriod(0)
             .setNodeMaxReadmitPeriod(0);
 
+        client.setLogger(new Logger(LogLevel.Info));
+
         const network = {};
         const nodeAccountIds =
             options.nodeAccountIds != null ? options.nodeAccountIds : 1;
@@ -139,14 +143,6 @@ export default class BaseIntegrationTestEnv {
                 ).getReceipt(this.client);
             }
         }
-
-        // if (!this.throwaway && this.operatorId.toString() !== this.originalOperatorId.toString()) {
-        //     await (await new AccountDeleteTransaction()
-        //         .setAccountId(this.operatorId)
-        //         .setTransferAccountId(this.originalOperatorId)
-        //         .execute(this.client)
-        //     ).getReceipt(this.client);
-        // }
 
         this.client.close();
     }
