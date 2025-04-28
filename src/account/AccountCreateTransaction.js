@@ -589,11 +589,11 @@ export default class AccountCreateTransaction extends Transaction {
             return key.publicKey.toEvmAddress();
         } else if (isPublicECDSAKey) {
             return key.toEvmAddress();
-        } else {
-            throw new Error(
-                "Invalid key for alias derivation provided: expected an ECDSA (secp256k1) PrivateKey or PublicKey.",
-            );
         }
+
+        throw new Error(
+            "Invalid key for alias derivation provided: expected an ECDSA (secp256k1) PrivateKey or PublicKey.",
+        );
     }
 
     /**
