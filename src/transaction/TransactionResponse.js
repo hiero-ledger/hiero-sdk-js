@@ -83,7 +83,6 @@ export default class TransactionResponse {
                 err.status === Status.ThrottledAtConsensus
             ) {
                 // need to reset the transaction to its initial state before retrying
-                this.transaction?._resetTransaction(client);
                 return this._retryTransaction(client);
             }
             throw err;
@@ -214,20 +213,19 @@ export default class TransactionResponse {
         }
 
         const MAX_RETRIES = 5;
+        const MAX_BACKOFF = 16000;
         let BACKOFF = 250; // milliseconds
 
         for (let i = 0; i < MAX_RETRIES; i++) {
             if (i > 0) {
                 // Wait with exponential backoff before retrying
-                await wait(BACKOFF);
+                await wait(Math.min(BACKOFF, MAX_BACKOFF));
                 BACKOFF *= 2; // Double the backoff for next retry
             }
 
             try {
-                const txId = TransactionId.generate(client.operatorAccountId);
-                const resp = await this.transaction
-                    .setTransactionId(txId)
-                    .execute(client);
+                this.transaction._resetTransaction(client);
+                const resp = await this.transaction.execute(client);
 
                 const receipt = await new TransactionReceiptQuery()
                     .setTransactionId(resp.transactionId)
