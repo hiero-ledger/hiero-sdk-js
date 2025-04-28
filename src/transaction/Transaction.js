@@ -200,6 +200,14 @@ export default class Transaction extends Executable {
          * @type {Key | null}
          */
         this._batchKey = null;
+
+        /**
+         * Whether the transaction is throttled
+         *
+         * @private
+         * @type {boolean}
+         */
+        this._isThrottled = false;
     }
 
     /**
