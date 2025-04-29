@@ -107,7 +107,6 @@ export class ASN1Decoder {
         const unusedBits = this.data[this.pos++]; // First byte indicates the number of unused bits
         const value = this.data.slice(this.pos, this.pos + length - 1);
         this.pos += length - 1;
-        this.isPublicKey = true;
         return { unusedBits, pubkey: value };
     }
 
