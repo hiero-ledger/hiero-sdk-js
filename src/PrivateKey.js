@@ -9,8 +9,8 @@ import CACHE from "./Cache.js";
 import SignatureMap from "./transaction/SignatureMap.js";
 import AccountId from "./account/AccountId.js";
 import TransactionId from "./transaction/TransactionId.js";
-
-import { asn1DecodeStringDer } from "./util/ASN1-Decoder.js";
+import { decode } from "./encoding/hex.js";
+import { ASN1Decoder } from "./util/ASN1-Decoder.js";
 
 /**
  * @typedef {import("./transaction/Transaction.js").default} Transaction
@@ -509,22 +509,16 @@ export default class PrivateKey extends Key {
      * @returns { "ecdsa" | "ed25519"}
      */
     static getAlgorithm(privateKey) {
-        const decoded = asn1DecodeStringDer(privateKey);
+        const decoder = new ASN1Decoder(Uint8Array.from(decode(privateKey)));
+        decoder.read();
         const supportedKeyTypes = ["ecdsa", "ed25519"];
-        const decodedKeyType = decoded.keyTypes[0];
+        const decodedKeyType = decoder.getOidKeyTypes()[0];
 
-        console.log(decoded.isPublicKey);
         if (!PrivateKey.isDerKey(privateKey)) {
             throw new Error("Only der keys are supported");
         }
         if (!supportedKeyTypes.includes(decodedKeyType)) {
             throw new Error("Unsupported key type");
-        }
-        if (decoded.isKeyListHex) {
-            throw new Error("Key list hex is not supported");
-        }
-        if (decoded.isPublicKey) {
-            throw new Error("Public key is not supported");
         }
 
         // @ts-ignored
@@ -537,12 +531,14 @@ export default class PrivateKey extends Key {
      * @returns {boolean}
      */
     static isDerKey(key) {
-        const derPrefixes = [
-            "3030020100300706052b8104000a04220420",
-            "30540201010420",
-            "302e020100300506032b657004220420",
-        ];
-        return derPrefixes.some((prefix) => key.startsWith(prefix));
+        try {
+            const data = Uint8Array.from(decode(key));
+            const decoder = new ASN1Decoder(data);
+            decoder.read(); // Attempt to read the ASN.1 structure
+            return true;
+        } catch (error) {
+            return false;
+        }
     }
 }
 
