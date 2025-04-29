@@ -134,6 +134,9 @@ export default class BatchTransaction extends Transaction {
      * @returns {(TransactionId | null)[]}
      */
     get innerTransactionIds() {
+        if (!(this._batchTransactions.length > 0)) {
+            return [];
+        }
         return this._batchTransactions.map((tx) => tx.transactionId);
     }
 
@@ -161,7 +164,6 @@ export default class BatchTransaction extends Transaction {
      * @param {HieroProto.proto.ITransactionBody[]} bodies
      * @returns {BatchTransaction}
      */
-
     static _fromProtobuf(
         transactions,
         signedTransactions,
@@ -172,11 +174,11 @@ export default class BatchTransaction extends Transaction {
         const body = bodies[0];
         const atomicBatchTxBytes = body.atomicBatch?.transactions;
 
-        const atomicBatchSignedBytes = atomicBatchTxBytes?.map((tx) =>
+        const atomicBatchSignedTransactions = atomicBatchTxBytes?.map((tx) =>
             proto.SignedTransaction.decode(tx),
         );
 
-        const atomicBatchTxs = atomicBatchSignedBytes?.map((tx) => {
+        const atomicBatchTxs = atomicBatchSignedTransactions?.map((tx) => {
             const txBody = proto.TransactionBody.decode(tx.bodyBytes);
             const txType = txBody.data;
             if (!txType) {
@@ -187,8 +189,42 @@ export default class BatchTransaction extends Transaction {
             if (!fromProtobuf) {
                 throw new Error("fromProtobuf not found");
             }
+            /* Inner transactions only have one signed transactios therefore
+            the other properties are empty that are needed from the 
+            Transaction._fromProtobufTransactions method
+            */
 
-            return fromProtobuf([], [tx], [], [], [txBody]);
+            /**
+             * @type {proto.ITransaction[]}
+             */
+            const innerTransactions = [];
+            /**
+             * @type {proto.ISignedTransaction[]}
+             */
+            const signedInnerTransactions = [tx];
+            /**
+             * @type {TransactionId[]}
+             */
+            const innerTransactionIds = [];
+
+            /**
+             * Node account IDs is empty for inner transactions
+             * @type {AccountId[]}
+             */
+            const nodeAccountIds = [];
+
+            /**
+             * @type {HieroProto.proto.TransactionBody[]}
+             */
+            const bodies = [txBody];
+
+            return fromProtobuf(
+                innerTransactions,
+                signedInnerTransactions,
+                innerTransactionIds,
+                nodeAccountIds,
+                bodies,
+            );
         });
 
         return Transaction._fromProtobufTransactions(
