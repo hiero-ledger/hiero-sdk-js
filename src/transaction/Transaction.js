@@ -774,7 +774,6 @@ export default class Transaction extends Executable {
 
         this._publicKeys.push(publicKey);
         this._transactionSigners.push(transactionSigner);
-        // If signing on demand is enabled we will save the public key and signer and return
         if (this._signOnDemand) {
             return this;
         }
