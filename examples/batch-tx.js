@@ -59,11 +59,6 @@ async function executeBatchWithBatchify(client) {
     const batchKey2 = PrivateKey.generateECDSA();
     const batchKey3 = PrivateKey.generateECDSA();
 
-    /**
-     * Step 3:
-     * BatchKey is the public key of the client that executes
-     * a batch transaction
-     */
     const aliceKey = PrivateKey.generateECDSA();
     const alice = (
         await (
@@ -73,7 +68,6 @@ async function executeBatchWithBatchify(client) {
                 .execute(client)
         ).getReceipt(client)
     ).accountId;
-
     const aliceClient = Client.forName(process.env.HEDERA_NETWORK)
         .setOperator(alice, aliceKey)
         .setLogger(new Logger(LogLevel.Info));
@@ -85,7 +79,6 @@ async function executeBatchWithBatchify(client) {
         )
         .batchify(aliceClient, batchKey1);
     aliceClient.close();
-
     console.log("Created first account (Alice): " + alice.toString());
 
     const bobKey = PrivateKey.generateECDSA();
@@ -97,12 +90,10 @@ async function executeBatchWithBatchify(client) {
                 .execute(client)
         ).getReceipt(client)
     ).accountId;
-
     const bobClient = Client.forName(process.env.HEDERA_NETWORK).setOperator(
         bob,
         bobKey,
     );
-
     const bobBatchedTransfer = await new TransferTransaction()
         .addHbarTransfer(bob, Hbar.from(-1, HbarUnit.Hbar))
         .addHbarTransfer(
@@ -111,7 +102,6 @@ async function executeBatchWithBatchify(client) {
         )
         .batchify(bobClient, batchKey2);
     bobClient.close();
-
     console.log("Created second account (Bob): " + bob.toString());
 
     const carolKey = PrivateKey.generateECDSA();
@@ -123,7 +113,6 @@ async function executeBatchWithBatchify(client) {
                 .execute(client)
         ).getReceipt(client)
     ).accountId;
-
     const carolClient = Client.forName(process.env.HEDERA_NETWORK).setOperator(
         carol,
         carolKey,
@@ -136,7 +125,6 @@ async function executeBatchWithBatchify(client) {
         )
         .batchify(carolClient, batchKey3);
     carolClient.close();
-
     console.log("Created third account (Carol): " + carol.toString());
 
     /**
@@ -160,7 +148,6 @@ async function executeBatchWithBatchify(client) {
      * Step 4:
      * Execute the batch transaction
      */
-
     console.log("Executing batch transaction...");
     const batch = await (
         await (
@@ -223,16 +210,10 @@ async function executeBatchWithManualInnerTransactionFreeze(client) {
      * Step 2:
      * Create three account create transactions with batch keys, but do not execute them.
      **/
-
     const batchKey1 = PrivateKey.generateECDSA();
     const batchKey2 = PrivateKey.generateECDSA();
     const batchKey3 = PrivateKey.generateECDSA();
 
-    /**
-     * Step 3:
-     * BatchKey is the public key of the client that executes
-     * a batch transaction
-     */
     const aliceKey = PrivateKey.generateECDSA();
     const alice = (
         await (
@@ -242,6 +223,7 @@ async function executeBatchWithManualInnerTransactionFreeze(client) {
                 .execute(client)
         ).getReceipt(client)
     ).accountId;
+    console.log("Created first account (Alice): " + alice.toString());
 
     const aliceBatchedTransfer = await new TransferTransaction()
         .addHbarTransfer(alice, Hbar.from(-1, HbarUnit.Hbar))
@@ -254,8 +236,6 @@ async function executeBatchWithManualInnerTransactionFreeze(client) {
         .freezeWith(client)
         .sign(aliceKey);
 
-    console.log("Created first account (Alice): " + alice.toString());
-
     const bobKey = PrivateKey.generateECDSA();
     const bob = (
         await (
@@ -265,6 +245,7 @@ async function executeBatchWithManualInnerTransactionFreeze(client) {
                 .execute(client)
         ).getReceipt(client)
     ).accountId;
+    console.log("Created second account (Bob): " + bob.toString());
 
     const bobBatchedTransfer = await new TransferTransaction()
         .addHbarTransfer(bob, Hbar.from(-1, HbarUnit.Hbar))
@@ -276,7 +257,6 @@ async function executeBatchWithManualInnerTransactionFreeze(client) {
         .setTransactionId(TransactionId.generate(bob))
         .freezeWith(client)
         .sign(bobKey);
-    console.log("Created second account (Bob): " + bob.toString());
 
     const carolKey = PrivateKey.generateECDSA();
     const carol = (
@@ -287,6 +267,7 @@ async function executeBatchWithManualInnerTransactionFreeze(client) {
                 .execute(client)
         ).getReceipt(client)
     ).accountId;
+    console.log("Created third account (Carol): " + carol.toString());
 
     const carolBatchedTransfer = await new TransferTransaction()
         .addHbarTransfer(carol, Hbar.from(-1, HbarUnit.Hbar))
@@ -299,10 +280,8 @@ async function executeBatchWithManualInnerTransactionFreeze(client) {
         .freezeWith(client)
         .sign(carolKey);
 
-    console.log("Created third account (Carol): " + carol.toString());
-
     /**
-     * Step 4:
+     * Step 3:
      * Get the balance in order to compare after this batch
      */
     const aliceBalanceBefore = await new AccountBalanceQuery()
@@ -322,7 +301,7 @@ async function executeBatchWithManualInnerTransactionFreeze(client) {
         .execute(client);
 
     /**
-     * Step 5:
+     * Step 4:
      * Execute the batch transaction
      */
 
