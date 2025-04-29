@@ -249,7 +249,7 @@ async function executeBatchWithManualInnerTransactionFreeze(client) {
             client.getOperator().accountId,
             Hbar.from(1, HbarUnit.Hbar),
         )
-        .setBatchKey(batchKey2)
+        .setBatchKey(batchKey1)
         .setTransactionId(TransactionId.generate(alice))
         .freezeWith(client)
         .sign(aliceKey);
