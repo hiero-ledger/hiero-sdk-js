@@ -64,6 +64,7 @@ export default class List {
     clear() {
         this.list = [];
         this.index = 0;
+        this.locked = false;
     }
 
     /**

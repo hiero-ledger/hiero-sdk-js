@@ -4,6 +4,8 @@ import {
     CustomRoyaltyFee,
 } from "@hashgraph/sdk";
 
+import { TransferParams } from "./transfer";
+
 export interface CreateTokenParams {
     readonly name?: string;
     readonly symbol?: string;
@@ -112,5 +114,10 @@ export interface WipeTokenParams {
     readonly accountId?: string;
     readonly amount?: string;
     readonly serialNumbers?: string[];
+    readonly commonTransactionParams?: Record<string, any>;
+}
+
+export interface AirdropTokenParams {
+    readonly tokenTransfers: TransferParams[];
     readonly commonTransactionParams?: Record<string, any>;
 }
