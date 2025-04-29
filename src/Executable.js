@@ -637,7 +637,10 @@ export default class Executable {
                 // Check if the request is a transaction receipt or record
                 // request to retry 10 times, because getReceiptQuery/getRecordQuery
                 // are single node requests
-                if (isTransactionReceiptOrRecordRequest(request)) {
+                if (
+                    isTransactionReceiptOrRecordRequest(request) ||
+                    isLocalNode
+                ) {
                     await delayForAttempt(
                         isLocalNode,
                         attempt,
