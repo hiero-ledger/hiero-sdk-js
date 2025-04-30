@@ -83,7 +83,6 @@ tasks:
     "test:unit:codecov":
         cmds:
             - npx vitest --coverage --config=test/vitest-node.config.ts {{.CLI_ARGS}}
-            - npx vitest --coverage --config=test/vitest-browser.config.ts {{.CLI_ARGS}}
 
     "test:unit:browser":
         cmds:

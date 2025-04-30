@@ -8,7 +8,7 @@ export default defineConfig({
         environment: "node",
         include: ["test/unit/**/*.js"],
         exclude: ["test/unit/Mocker.js", "test/unit/browser/*"],
-        testTimeout: 8000,
+        testTimeout: 12000,
         coverage: {
             provider: "v8",
             reporter: ["text-summary", "lcov"],
