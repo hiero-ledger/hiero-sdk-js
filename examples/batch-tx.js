@@ -89,6 +89,7 @@ async function executeBatchWithBatchify(client) {
             Hbar.from(1, HbarUnit.Hbar),
         )
         .batchify(aliceClient, batchKey1);
+    aliceClient.close();
 
     console.log("Created account for Alice: " + aliceClient.toString());
 
