@@ -134,9 +134,10 @@ export default class BatchTransaction extends Transaction {
      * @returns {(TransactionId | null)[]}
      */
     get innerTransactionIds() {
-        if (!(this._batchTransactions.length > 0)) {
+        if (!Array.isArray(this._batchTransactions)) {
             return [];
         }
+
         return this._batchTransactions.map((tx) => tx.transactionId);
     }
 
@@ -145,6 +146,12 @@ export default class BatchTransaction extends Transaction {
      * @returns {proto.AtomicBatchTransactionBody}
      */
     _makeTransactionData() {
+        if (!Array.isArray(this._batchTransactions)) {
+            return {
+                transactions: [],
+            };
+        }
+
         const signedTransactionBytes = this._batchTransactions.map((tx) =>
             proto.SignedTransaction.encode(
                 tx._signedTransactions.get(0),
