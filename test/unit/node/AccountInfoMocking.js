@@ -7,8 +7,8 @@ import {
     TransactionId,
     TransferTransaction,
     Status,
-} from "../../src/index.js";
-import Mocker, { UNAVAILABLE, INTERNAL, PRIVATE_KEY } from "./Mocker.js";
+} from "../../../src/index";
+import Mocker, { UNAVAILABLE, INTERNAL, PRIVATE_KEY } from "../Mocker.js";
 import Long from "long";
 import { proto } from "@hashgraph/proto";
 import * as hex from "../../../src/encoding/hex.js";

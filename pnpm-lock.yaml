@@ -128,6 +128,9 @@ importers:
             "@vitest/browser":
                 specifier: ^3.1.1
                 version: 3.1.2(playwright@1.52.0)(vite@6.1.5(@types/node@22.12.0)(lightningcss@1.27.0)(terser@5.39.0)(yaml@2.7.0))(vitest@3.1.2)
+            "@vitest/coverage-v8":
+                specifier: ^3.1.2
+                version: 3.1.2(@vitest/browser@3.1.2)(vitest@3.1.2)
             babel-plugin-dynamic-import-node:
                 specifier: ^2.3.3
                 version: 2.3.3
@@ -2943,6 +2946,18 @@ packages:
             safaridriver:
                 optional: true
             webdriverio:
+                optional: true
+
+    "@vitest/coverage-v8@3.1.2":
+        resolution:
+            {
+                integrity: sha512-XDdaDOeaTMAMYW7N63AqoK32sYUWbXnTkC6tEbVcu3RlU1bB9of32T+PGf8KZvxqLNqeXhafDFqCkwpf2+dyaQ==,
+            }
+        peerDependencies:
+            "@vitest/browser": 3.1.2
+            vitest: 3.1.2
+        peerDependenciesMeta:
+            "@vitest/browser":
                 optional: true
 
     "@vitest/expect@3.1.2":
@@ -5840,6 +5855,13 @@ packages:
             }
         engines: { node: ">=10" }
 
+    istanbul-lib-source-maps@5.0.6:
+        resolution:
+            {
+                integrity: sha512-yg2d+Em4KizZC5niWhQaIomgf5WlL4vOOjZ5xGCmF8SnPE/mDWWXgvRExdcpCgh9lLRRa1/fSYp2ymmbJ1pI+A==,
+            }
+        engines: { node: ">=10" }
+
     istanbul-reports@3.1.7:
         resolution:
             {
@@ -6348,6 +6370,12 @@ packages:
         resolution:
             {
                 integrity: sha512-sNPKHvyjVf7gyjwS4xGTaW/mCnF8wnjtifKBEhxfZ7E/S8tQ0rssrwGNn6q8JH/ohItJfSQp9mBtQYuTlH5QnA==,
+            }
+
+    magicast@0.3.5:
+        resolution:
+            {
+                integrity: sha512-L0WhttDl+2BOsybvEOLK7fW3UA0OQ0IQ2d6Zl2x/a6vVRs3bAY0ECOSHHeL5jD+SbOpOCUEi0y1DgHEn9Qn1AQ==,
             }
 
     make-dir@2.1.0:
@@ -11317,6 +11345,26 @@ snapshots:
             - utf-8-validate
             - vite
 
+    "@vitest/coverage-v8@3.1.2(@vitest/browser@3.1.2)(vitest@3.1.2)":
+        dependencies:
+            "@ampproject/remapping": 2.3.0
+            "@bcoe/v8-coverage": 1.0.2
+            debug: 4.4.0
+            istanbul-lib-coverage: 3.2.2
+            istanbul-lib-report: 3.0.1
+            istanbul-lib-source-maps: 5.0.6
+            istanbul-reports: 3.1.7
+            magic-string: 0.30.17
+            magicast: 0.3.5
+            std-env: 3.9.0
+            test-exclude: 7.0.1
+            tinyrainbow: 2.0.0
+            vitest: 3.1.2(@types/node@22.12.0)(@vitest/browser@3.1.2)(jsdom@26.1.0)(lightningcss@1.27.0)(terser@5.39.0)(yaml@2.7.0)
+        optionalDependencies:
+            "@vitest/browser": 3.1.2(playwright@1.52.0)(vite@6.1.5(@types/node@22.12.0)(lightningcss@1.27.0)(terser@5.39.0)(yaml@2.7.0))(vitest@3.1.2)
+        transitivePeerDependencies:
+            - supports-color
+
     "@vitest/expect@3.1.2":
         dependencies:
             "@vitest/spy": 3.1.2
@@ -13227,6 +13275,14 @@ snapshots:
         transitivePeerDependencies:
             - supports-color
 
+    istanbul-lib-source-maps@5.0.6:
+        dependencies:
+            "@jridgewell/trace-mapping": 0.3.25
+            debug: 4.4.0
+            istanbul-lib-coverage: 3.2.2
+        transitivePeerDependencies:
+            - supports-color
+
     istanbul-reports@3.1.7:
         dependencies:
             html-escaper: 2.0.2
@@ -13549,6 +13605,12 @@ snapshots:
     magic-string@0.30.17:
         dependencies:
             "@jridgewell/sourcemap-codec": 1.5.0
+
+    magicast@0.3.5:
+        dependencies:
+            "@babel/parser": 7.27.0
+            "@babel/types": 7.27.0
+            source-map-js: 1.2.1
 
     make-dir@2.1.0:
         dependencies:

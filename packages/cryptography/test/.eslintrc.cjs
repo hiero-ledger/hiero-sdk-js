@@ -7,6 +7,11 @@ module.exports = {
         es6: true,
     },
     parser: "@babel/eslint-parser",
+    parserOptions: {
+        requireConfigFile: false,
+        ecmaVersion: 2020,
+        sourceType: "module",
+    },
     extends: ["eslint:recommended"],
     globals: {
         expect: "readonly",

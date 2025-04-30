@@ -11,12 +11,14 @@ export default defineConfig({
         },
         include: ["test/unit/**/*.js"],
         exclude: ["test/unit/keystore.js"],
+        coverage: {
+            provider: "v8",
+            reporter: ["text-summary", "lcov"],
+            reportsDirectory: "./coverage",
+        },
     },
     resolve: {
         alias: {
-            // redirect src/ to src/browser
-            // note that this is NOT needed when consuming this package as the browser field in package.json
-            // will take care of this
             "../../../src/primitive/aes.js":
                 "../../../src/primitive/aes.browser.js",
             "../../../src/encoding/base64.js":

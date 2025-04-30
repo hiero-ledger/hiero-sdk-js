@@ -11,6 +11,11 @@ export default defineConfig({
         },
         include: ["test/unit/**/*.js"],
         exclude: ["test/unit/Mocker.js", "test/unit/node/*"],
+        coverage: {
+            provider: "v8",
+            reporter: ["text-summary", "lcov"],
+            reportsDirectory: "./coverage",
+        },
     },
     resolve: {
         alias: {
