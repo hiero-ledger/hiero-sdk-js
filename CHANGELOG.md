@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - New `batchKey` field in Transaction class that must sign the BatchTransaction
     - New `batchify` method that sets the batch key and marks a transaction as part of a batch transaction (inner transaction). The transaction is signed by the client of the operator and frozen.
 - Extend `setKeyWithAlias` funcs to support PublicKey. [#3051](https://github.com/hiero-ledger/hiero-sdk-js/pull/3051)
--  Enhancing the retry mechanism for the status code `THROTTLED_AT_CONSENSUS` using backoffs retry mechanism.
+-  Enhancing the retry mechanism for the status code `THROTTLED_AT_CONSENSUS` using backoffs retry mechanism. [#3065](https://github.com/hiero-ledger/hiero-sdk-js/pull/3065) [#3076](https://github.com/hiero-ledger/hiero-sdk-js/pull/3076)
 
 ## v2.63.0
 
