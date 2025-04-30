@@ -36,24 +36,7 @@ import { proto } from "@hashgraph/proto";
  *     <li>The maximum number of inner transactions in a batch is limited to 25</li>
  *     <li>Inner transactions cannot be scheduled transactions</li>
  * </ul>
- * <p>
- * Example usage:
- * <pre>
- * var batchKey = PrivateKey.generateED25519();
  *
- * // Create and prepare inner transaction
- * var transaction = new TransferTransaction()
- *     .addHbarTransfer(sender, amount.negated())
- *     .addHbarTransfer(receiver, amount)
- *     .batchify(client, batchKey);
- *
- * // Create and execute batch transaction
- * var response = new BatchTransaction()
- *     .addInnerTransaction(transaction)
- *     .freezeWith(client)
- *     .sign(batchKey)
- *     .execute(client);
- * </pre>
  */
 export default class BatchTransaction extends Transaction {
     /**
