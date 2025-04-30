@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.64.0-beta.1
+
+### Added
+
+- Support for HIP-551 Batch Transaction https://hips.hedera.com/hip/hip-551 It defines a mechanism to execute batch transactions such that a series of transactions (HAPI calls) depending on each other can be rolled into one transaction that passes the ACID test (atomicity, consistency, isolation, and durability). [#3039](https://github.com/hiero-ledger/hiero-sdk-js/pull/3039)
+    - New `BatchTransaction` struct that has a list of `innerTransactions` and `innerTransactionIds`.
+    - New `batchKey` field in Transaction class that must sign the BatchTransaction
+    - New `batchify` method that sets the batch key and marks a transaction as part of a batch transaction (inner transaction). The transaction is signed by the client of the operator and frozen.
+- Extend `setKeyWithAlias` funcs to support PublicKey. [#3051](https://github.com/hiero-ledger/hiero-sdk-js/pull/3051)
+-  Enhancing the retry mechanism for the status code `THROTTLED_AT_CONSENSUS` using backoffs retry mechanism.
+
 ## v2.63.0
 
 ### Added
