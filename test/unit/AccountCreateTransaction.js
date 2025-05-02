@@ -16,9 +16,12 @@ describe("AccountCreateTransaction", function () {
     describe("setECDSAKeyWithAlias", function () {
         /** @type {PrivateKey} */
         let privateEcdsaAccountKey;
+        /** @type {PublicKey} */
+        let publicEcdsaAccountKey;
 
         beforeEach(function () {
             privateEcdsaAccountKey = PrivateKey.generateECDSA();
+            publicEcdsaAccountKey = privateEcdsaAccountKey.publicKey;
         });
 
         it("should throw when transaction is frozen", function () {
@@ -33,16 +36,6 @@ describe("AccountCreateTransaction", function () {
             }).to.throw(Error);
         });
 
-        it("should throw when a non-private ECDSA key is provided", function () {
-            const publicAccountKey = PrivateKey.generateECDSA().publicKey;
-
-            expect(() => {
-                new AccountCreateTransaction().setECDSAKeyWithAlias(
-                    publicAccountKey,
-                );
-            }).to.throw(Error);
-        });
-
         it("should throw when a non-ECDSA private key is provided", function () {
             const privateEd25519AccountKey = PrivateKey.generateED25519();
 
@@ -53,7 +46,18 @@ describe("AccountCreateTransaction", function () {
             }).to.throw(Error);
         });
 
-        it("should set correct account key and derived alias", function () {
+        it("should throw when a non-ECDSA public key is provided", function () {
+            const publicEd25519AccountKey =
+                PrivateKey.generateED25519().publicKey;
+
+            expect(() => {
+                new AccountCreateTransaction().setECDSAKeyWithAlias(
+                    publicEd25519AccountKey,
+                );
+            }).to.throw(Error);
+        });
+
+        it("should set correct account key and derived alias when using private ECDSA key", function () {
             const transaction =
                 new AccountCreateTransaction().setECDSAKeyWithAlias(
                     privateEcdsaAccountKey,
@@ -67,6 +71,21 @@ describe("AccountCreateTransaction", function () {
                 privateEcdsaAccountKey.publicKey.toEvmAddress(),
             );
         });
+
+        it("should set correct account key and derived alias when using public ECDSA key", function () {
+            const transaction =
+                new AccountCreateTransaction().setECDSAKeyWithAlias(
+                    publicEcdsaAccountKey,
+                );
+
+            expect(transaction.key.toString()).to.equal(
+                publicEcdsaAccountKey.toString(),
+            );
+
+            expect(transaction.alias.toString()).to.equal(
+                publicEcdsaAccountKey.toEvmAddress(),
+            );
+        });
     });
 
     describe("setKeyWithAlias", function () {
@@ -76,9 +95,13 @@ describe("AccountCreateTransaction", function () {
         /** @type {PrivateKey} */
         let privateEcdsaAliasKey;
 
+        /** @type {PublicKey} */
+        let publicEcdsaAliasKey;
+
         beforeEach(function () {
             accountKey = PrivateKey.generateECDSA().publicKey;
             privateEcdsaAliasKey = PrivateKey.generateECDSA();
+            publicEcdsaAliasKey = privateEcdsaAliasKey.publicKey;
         });
 
         it("should throw when transaction is frozen", function () {
@@ -93,29 +116,30 @@ describe("AccountCreateTransaction", function () {
             }).to.throw(Error);
         });
 
-        it("should throw when a non-private alias key is provided", function () {
-            const nonPrivateAliasKey = PrivateKey.generateECDSA().publicKey;
+        it("should throw when a non-ECDSA private alias key is provided", function () {
+            const nonEcdsaAliasKey = PrivateKey.generateED25519();
 
             expect(() => {
                 new AccountCreateTransaction().setKeyWithAlias(
                     accountKey,
-                    nonPrivateAliasKey,
+                    nonEcdsaAliasKey,
                 );
             }).to.throw(Error);
         });
 
-        it("when a non-ECDSA private aliasKey is provided should throw", function () {
-            const nonPrivateEcdsaAliasKey = PrivateKey.generateED25519();
+        it("should throw when a non-ECDSA public alias key is provided", function () {
+            const nonEcdsaPublicAliasKey =
+                PrivateKey.generateED25519().publicKey;
 
             expect(() => {
                 new AccountCreateTransaction().setKeyWithAlias(
                     accountKey,
-                    nonPrivateEcdsaAliasKey,
+                    nonEcdsaPublicAliasKey,
                 );
             }).to.throw(Error);
         });
 
-        it("should set correct account key and alias derived from the alias key", function () {
+        it("should set correct account key and alias derived from private ECDSA alias key", function () {
             const transaction = new AccountCreateTransaction().setKeyWithAlias(
                 accountKey,
                 privateEcdsaAliasKey,
@@ -125,6 +149,19 @@ describe("AccountCreateTransaction", function () {
 
             expect(transaction.alias.toString()).to.equal(
                 privateEcdsaAliasKey.publicKey.toEvmAddress(),
+            );
+        });
+
+        it("should set correct account key and alias derived from public ECDSA alias key", function () {
+            const transaction = new AccountCreateTransaction().setKeyWithAlias(
+                accountKey,
+                publicEcdsaAliasKey,
+            );
+
+            expect(transaction.key.toString()).to.equal(accountKey.toString());
+
+            expect(transaction.alias.toString()).to.equal(
+                publicEcdsaAliasKey.toEvmAddress(),
             );
         });
     });

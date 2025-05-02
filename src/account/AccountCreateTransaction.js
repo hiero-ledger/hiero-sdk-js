@@ -13,7 +13,7 @@ import Long from "long";
 import Key from "../Key.js";
 import PrivateKey from "../PrivateKey.js";
 import EvmAddress from "../EvmAddress.js";
-
+import PublicKey from "../PublicKey.js";
 /**
  * @typedef {import("bignumber.js").default} BigNumber
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -277,20 +277,17 @@ export default class AccountCreateTransaction extends Transaction {
     }
 
     /**
-     * Sets an ECDSA private key and a derived alias from this key in the background.
-     * @param {PrivateKey} key - An ECDSA private key used for signing transactions and alias derivation.
+     * Sets an ECDSA key (private or public) and a derived alias from this key in the background.
+     * @param {Key} key - An ECDSA key (private or public) used for signing transactions and alias derivation.
      * @returns {this}
+     * @throws {Error} If the key is not an ECDSA key.
      */
     setECDSAKeyWithAlias(key) {
         this.setKeyWithoutAlias(key);
 
-        if (!(key instanceof PrivateKey) || key.type !== "secp256k1") {
-            throw new Error(
-                "'key' must be an ECDSA private key when 'aliasKey' is not provided.",
-            );
-        }
-        this.setAlias(key.publicKey.toEvmAddress());
+        const alias = this._deriveECDSAKeyAlias(key);
 
+        this.setAlias(alias);
         return this;
     }
 
@@ -298,22 +295,16 @@ export default class AccountCreateTransaction extends Transaction {
      * Sets an account key and an alias derived from a separate ECDSA key.
      * The transaction must be signed by both keys.
      * @param {Key} key - The primary account key used for signing transactions.
-     * @param {PrivateKey} aliasKey - The ECDSA private key used to derive the EVM address.
+     * @param {Key} aliasKey - The ECDSA key (private or public) used to derive the EVM address.
      * @returns {this}
+     * @throws {Error} If the aliasKey is not an ECDSA key.
      */
     setKeyWithAlias(key, aliasKey) {
         this.setKeyWithoutAlias(key);
 
-        if (
-            !(aliasKey instanceof PrivateKey) ||
-            aliasKey.type !== "secp256k1"
-        ) {
-            throw new Error(
-                "'aliasKey' must be an ECDSA private key when provided.",
-            );
-        }
-        this.setAlias(aliasKey.publicKey.toEvmAddress());
+        const alias = this._deriveECDSAKeyAlias(aliasKey);
 
+        this.setAlias(alias);
         return this;
     }
 
@@ -578,6 +569,31 @@ export default class AccountCreateTransaction extends Transaction {
         if (this._proxyAccountId != null) {
             this._proxyAccountId.validateChecksum(client);
         }
+    }
+
+    /**
+     * Derives an EVM alias from an ECDSA key.
+     * @private
+     * @internal
+     * @param {Key} key
+     * @returns {string}
+     * @throws {Error} If the key is not a ECDSA (secp256k1) PrivateKey or PublicKey.
+     */
+    _deriveECDSAKeyAlias(key) {
+        const isPrivateECDSAKey =
+            key instanceof PrivateKey && key.type === "secp256k1";
+        const isPublicECDSAKey =
+            key instanceof PublicKey && key.type === "secp256k1";
+
+        if (isPrivateECDSAKey) {
+            return key.publicKey.toEvmAddress();
+        } else if (isPublicECDSAKey) {
+            return key.toEvmAddress();
+        }
+
+        throw new Error(
+            "Invalid key for alias derivation provided: expected an ECDSA (secp256k1) PrivateKey or PublicKey.",
+        );
     }
 
     /**

@@ -10,8 +10,8 @@ services:
             context: .
         ports:
             - "8544:8544"
-    tck-client:
-        image: ivaylogarnev/tck-client
+    hiero-tck-client:
+        image: ivaylogarnev/hiero-tck-client
         networks:
             - hedera-network-node
             - hedera-mirror-node

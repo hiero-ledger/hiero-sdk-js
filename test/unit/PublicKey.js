@@ -130,4 +130,12 @@ describe("PublicKey", function () {
 
         expect(key.publicKey.verifyTransaction(transaction)).to.be.true;
     });
+
+    it("verify `type` getter works", function () {
+        const key = PrivateKey.generateECDSA();
+        expect(key.publicKey.type).to.be.equal("secp256k1");
+
+        const key2 = PrivateKey.generateED25519();
+        expect(key2.publicKey.type).to.be.equal("ED25519");
+    });
 });
