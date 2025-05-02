@@ -46,10 +46,15 @@ export default class Wallet {
      * @param {Provider=} provider
      */
     constructor(accountId, privateKey, provider) {
-        const key =
-            typeof privateKey === "string"
-                ? PrivateKey.fromStringDer(privateKey)
-                : privateKey;
+        let key;
+        if (typeof privateKey === "string" && PrivateKey.isDerKey(privateKey)) {
+            key = PrivateKey.fromStringDer(privateKey);
+        } else if (typeof privateKey === "string") {
+            // eslint-disable-next-line deprecation/deprecation
+            key = PrivateKey.fromString(privateKey);
+        } else {
+            key = privateKey;
+        }
 
         this.publicKey = key.publicKey;
         /**
