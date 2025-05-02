@@ -10,6 +10,7 @@ export default defineConfig({
         exclude: ["test/unit/Mocker.js", "test/unit/browser/*"],
         testTimeout: 12000,
         coverage: {
+            include: ["src/**/*.js"],
             provider: "v8",
             reporter: ["text-summary", "lcov"],
             reportsDirectory: "./coverage",
