@@ -141,6 +141,9 @@ For detailed information on configuring the SDK, including environment variables
 
 * To start the integration tests follow the next steps:
     - Run the [local node](https://github.com/hiero-ledger/hiero-local-node)
+    - Rename [sample.env](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/.env.sample) in the root directory to .env
+        - Ensure the `OPERATOR_ID` and `OPERATOR_KEY` are fields populated from accounts created by the local node
+        - Update the network to `HEDERA_NETWORK="local-node"`
     - Run `task test:integration:node`
     - Stop the [local node](https://github.com/hiero-ledger/hiero-local-node)
 * To start unit tests follow the next steps:

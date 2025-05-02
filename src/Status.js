@@ -715,6 +715,24 @@ export default class Status {
                 return "DUPLICATE_ACCOUNT_ID_IN_MAX_CUSTOM_FEE_LIST";
             case Status.MaxCustomFeesIsNotSupported:
                 return "MAX_CUSTOM_FEES_IS_NOT_SUPPORTED";
+            case Status.BatchListEmpty:
+                return "BATCH_LIST_EMPTY";
+            case Status.BatchListContainsDuplicates:
+                return "BATCH_LIST_CONTAINS_DUPLICATES";
+            case Status.BatchTransactionInBlacklist:
+                return "BATCH_TRANSACTION_IN_BLACKLIST";
+            case Status.InnerTransactionFailed:
+                return "INNER_TRANSACTION_FAILED";
+            case Status.MissingBatchKey:
+                return "MISSING_BATCH_KEY";
+            case Status.BatchKeySetOnNonInnerTransaction:
+                return "BATCH_KEY_SET_ON_NON_INNER_TRANSACTION";
+            case Status.InvalidBatchKey:
+                return "INVALID_BATCH_KEY";
+            case Status.ScheduleExpiryNotConfigurable:
+                return "SCHEDULE_EXPIRY_NOT_CONFIGURABLE";
+            case Status.CreatingSystemEntities:
+                return "CREATING_SYSTEM_ENTITIES";
 
             default:
                 return `UNKNOWN (${this._code})`;
@@ -1420,6 +1438,24 @@ export default class Status {
                 return Status.DuplicateAccountIdInMaxCustomFeeList;
             case 387:
                 return Status.MaxCustomFeesIsNotSupported;
+            case 388:
+                return Status.BatchListEmpty;
+            case 389:
+                return Status.BatchListContainsDuplicates;
+            case 390:
+                return Status.BatchTransactionInBlacklist;
+            case 391:
+                return Status.InnerTransactionFailed;
+            case 392:
+                return Status.MissingBatchKey;
+            case 393:
+                return Status.BatchKeySetOnNonInnerTransaction;
+            case 394:
+                return Status.InvalidBatchKey;
+            case 395:
+                return Status.ScheduleExpiryNotConfigurable;
+            case 396:
+                return Status.CreatingSystemEntities;
             default:
                 throw new Error(
                     `(BUG) Status.fromCode() does not handle code: ${code}`,
@@ -3233,3 +3269,49 @@ Status.DuplicateAccountIdInMaxCustomFeeList = new Status(386);
  * Max custom fees list is not supported for this operation.
  */
 Status.MaxCustomFeesIsNotSupported = new Status(387);
+
+/**
+ * The list of batch transactions is empty
+ */
+Status.BatchListEmpty = new Status(388);
+
+/**
+ * The list of batch transactions contains duplicated transactions
+ */
+Status.BatchListContainsDuplicates = new Status(389);
+
+/**
+ * The list of batch transactions contains a transaction type that is
+ * in the AtomicBatch blacklist as configured in the network.
+ */
+Status.BatchTransactionInBlacklist = new Status(390);
+
+/**
+ * The inner transaction of a batch transaction failed
+ */
+Status.InnerTransactionFailed = new Status(391);
+
+/**
+ * The inner transaction of a batch transaction is missing a batch key
+ */
+Status.MissingBatchKey = new Status(392);
+
+/**
+ * The batch key is set for a non batch transaction
+ */
+Status.BatchKeySetOnNonInnerTransaction = new Status(393);
+
+/**
+ * The batch key is not valid
+ */
+Status.InvalidBatchKey = new Status(394);
+
+/**
+ * The schedule expiry is not configurable
+ */
+Status.ScheduleExpiryNotConfigurable = new Status(395);
+
+/**
+ * Creating system entities
+ */
+Status.CreatingSystemEntities = new Status(396);

@@ -19,29 +19,28 @@ tasks:
 
     install:submodules:
         vars:
-            scommit_hash: "b44fa0a2a34ea7728421d6525f0b24a8f4858cbe" # v0.59.0-alpha.0
+            stag: "v0.61.2"
         cmds:
             - git submodule update --init --recursive --remote
             - |
                 (
                 cd src/services &&
                 if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
-                    git fetch --unshallow
+                    git fetch --unshallow --tags
                 fi &&
-                git checkout {{.scommit_hash}}
+                git checkout {{.stag}}
                 )
 
     move:protobufs:
         after:
             - "install:submodules"
-        desc: "Move protobufs from src/services/hapi/hedera-protobufs/services to src/proto"
+        desc: "Move protobufs from src/services/hapi/hedera-protobufs-java-api/src/main/proto to src/proto"
         cmds:
             - rm -rf src/proto/services
-            - mv src/services/hapi/hedera-protobufs/services src/proto/
             - rm -rf src/proto/streams
-            - mv src/services/hapi/hedera-protobufs/streams src/proto/
-            - mv src/services/hapi/hedera-protobufs/platform/event/* src/proto/services
-            - mv src/proto/services/auxiliary/history/* src/proto/services
+            - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/services src/proto/
+            - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/streams src/proto/
+            - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/event/* src/proto/services/
             - echo "Protobufs moved successfully!"
             - task "delete:submodule"
 
@@ -61,7 +60,7 @@ tasks:
         deps:
             - install
         cmds:
-            - npx pbjs -r hashgraph -t static-module -w es6 --force-long --no-beautify --no-convert --no-delimited --no-verify -o src/proto.js src/proto/*/**.proto
+            - npx pbjs -r hashgraph -t static-module -w es6 -p=src/proto --force-long --no-beautify --no-convert --no-delimited --no-verify -o src/proto.js src/proto/**/*.proto
             - npx pbts -n hashgraph -o src/proto.d.ts src/proto.js
             - perl -pi -e "s#(?<!api\.)proto\.#hashgraph.proto.#g" src/proto.d.ts
             - task: format

@@ -11,7 +11,7 @@
     },
     "dependencies": {
         "@hashgraph/sdk": "file:.yalc/@hashgraph/sdk",
-        "expo": "~52.0.37",
+        "expo": "~53.0.4",
         "expo-status-bar": "~2.0.1",
         "react": "19.0.0",
         "react-dom": "19.0.0",

@@ -19,6 +19,7 @@ import List from "./List.js";
 import Timestamp from "../Timestamp.js";
 import * as util from "../util.js";
 import CustomFeeLimit from "./CustomFeeLimit.js";
+import Key from "../Key.js";
 
 /**
  * @typedef {import("bignumber.js").default} BigNumber
@@ -39,6 +40,13 @@ export const DEFAULT_AUTO_RENEW_PERIOD = Long.fromValue(7776000);
 export const DEFAULT_RECORD_THRESHOLD = Hbar.fromTinybars(
     Long.fromString("9223372036854775807"),
 );
+
+/**
+ * Node account ID used for batch transactions
+ * @type {AccountId}
+ */
+// @ts-ignore
+const NODE_ACCOUNT_BATCH_ID = new AccountId(0, 0, 0);
 
 // 120 seconds
 const DEFAULT_TRANSACTION_VALID_DURATION = 120;
@@ -184,6 +192,22 @@ export default class Transaction extends Executable {
          * @type {?boolean}
          */
         this._regenerateTransactionId = null;
+
+        /**
+         * The key used to sign the batch transaction
+         *
+         * @private
+         * @type {Key | null}
+         */
+        this._batchKey = null;
+
+        /**
+         * Whether the transaction is throttled
+         *
+         * @private
+         * @type {boolean}
+         */
+        this._isThrottled = false;
     }
 
     /**
@@ -410,6 +434,20 @@ export default class Transaction extends Executable {
     }
 
     /**
+     * @description Batchify method is used to mark a transaction as part of a batch transaction or make it so-called inner transaction.
+     * The Transaction will be frozen and signed by the operator of the client.
+     *
+     * @param {import("../client/Client.js").default<Channel, *>} client
+     * @param {Key} batchKey
+     * @returns {Promise<this>}
+     */
+    async batchify(client, batchKey) {
+        this._requireNotFrozen();
+        this.setBatchKey(batchKey);
+        return await this.signWithOperator(client);
+    }
+
+    /**
      * This method is called by each `*Transaction._fromProtobuf()` method. It does
      * all the finalization before the user gets hold of a complete `Transaction`
      *
@@ -489,6 +527,9 @@ export default class Transaction extends Executable {
                       CustomFeeLimit._fromProtobuf(fee),
                   )
                 : [];
+        transaction._batchKey =
+            body.batchKey != null ? Key._fromProtobufKey(body?.batchKey) : null;
+
         transaction._transactionMemo = body.memo != null ? body.memo : "";
 
         // Loop over a single row of `signedTransactions` and add all the public
@@ -731,11 +772,9 @@ export default class Transaction extends Executable {
         // Save the current public key so we don't attempt to sign twice
         this._signerPublicKeys.add(publicKeyHex);
 
-        // If signing on demand is enabled we will save the public key and signer and return
+        this._publicKeys.push(publicKey);
+        this._transactionSigners.push(transactionSigner);
         if (this._signOnDemand) {
-            this._publicKeys.push(publicKey);
-            this._transactionSigners.push(transactionSigner);
-
             return this;
         }
 
@@ -795,6 +834,22 @@ export default class Transaction extends Executable {
         return this.signWith(operator.publicKey, operator.transactionSigner);
     }
 
+    /**
+     * Resets the transaction to its initial state
+     * @param {Client} client
+     */
+    _resetTransaction(client) {
+        if (!client.operatorAccountId) {
+            throw new Error("Client must have an operator account ID");
+        }
+
+        this.logger?.info("Resetting transaction id and resigning");
+        const newTxId = TransactionId.generate(client.operatorAccountId);
+        this._transactionIds.clear();
+        this._signedTransactions.clear();
+        this._transactionIds.setList([newTxId]);
+        this._isThrottled = true;
+    }
     /**
      * @deprecated - Using uint8array and uint8array[] as signaturemap is deprecated,
      * use SignatureMap insted.
@@ -1182,6 +1237,25 @@ export default class Transaction extends Executable {
     }
 
     /**
+     * @description Set the key that will sign the batch of which this Transaction is a part of.
+     * @param {Key} batchKey
+     * @returns {this}
+     */
+    setBatchKey(batchKey) {
+        this._requireNotFrozen();
+        this._batchKey = batchKey;
+        return this;
+    }
+
+    /**
+     * @description Get the key that will sign the batch of which this Transaction is a part of.
+     * @returns {Key | null | undefined}
+     */
+    get batchKey() {
+        return this._batchKey;
+    }
+
+    /**
      * Build all the signed transactions from the node account IDs
      *
      * @private
@@ -1273,7 +1347,11 @@ export default class Transaction extends Executable {
                 : this._regenerateTransactionId;
 
         // Set the node account IDs via client
-        this._setNodeAccountIds(client);
+        if (this.batchKey) {
+            this._nodeAccountIds.setList([NODE_ACCOUNT_BATCH_ID]);
+        } else {
+            this._setNodeAccountIds(client);
+        }
 
         // Make sure a transaction ID or operator is set.
         this._setTransactionId();
@@ -1539,7 +1617,7 @@ export default class Transaction extends Executable {
 
         // If sign on demand is disabled we need to simply build that transaction
         // and return the result, without signing
-        if (!this._signOnDemand) {
+        if (!this._signOnDemand && !this._isThrottled) {
             this._buildTransaction(index);
             return /** @type {HieroProto.proto.ITransaction} */ (
                 this._transactions.get(index)
@@ -1808,6 +1886,7 @@ export default class Transaction extends Executable {
                         nodeId,
                         transactionHash,
                         transactionId,
+                        logger: this._logger,
                     }).toJSON(),
                 )}`,
             );
@@ -1817,6 +1896,8 @@ export default class Transaction extends Executable {
             nodeId,
             transactionHash,
             transactionId,
+            transaction: this,
+            logger: this._logger,
         });
     }
 
@@ -1841,6 +1922,17 @@ export default class Transaction extends Executable {
             },
             bodyBytes,
         };
+    }
+
+    /**
+     * @override
+     * @returns {boolean}
+     */
+    isBatchedAndNotBatchTransaction() {
+        return (
+            this.batchKey != null &&
+            this._getTransactionDataCase() != "atomicBatch"
+        );
     }
 
     /**
@@ -1872,6 +1964,7 @@ export default class Transaction extends Executable {
                           maxCustomFee._toProtobuf(),
                       )
                     : null,
+            batchKey: this.batchKey?._toProtobufKey(),
         };
     }
 
