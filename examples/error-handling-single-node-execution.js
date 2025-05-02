@@ -17,7 +17,7 @@ import { wait } from "../src/util.js";
 dotenv.config();
 
 /**
- * @description Token creation with error handling, demonstrating how to handle various error scenarios
+ * @description Token creation with error handling when the client is set with one node, demonstrating how to handle various error scenarios
  * when creating tokens on Hedera. This example shows proper error handling techniques including
  * retry with exponential backoff, handling of specific error types like PrecheckStatusError and
  * StatusError, and graceful recovery from network issues.
@@ -111,6 +111,7 @@ async function main() {
 
                 // Handle network connectivity issues with exponential backoff
                 // This handles temporary network problems that might resolve with a retry
+                // Most probably when the client is set with one node
                 if (
                     error instanceof Error &&
                     attempt < maxRetries &&
