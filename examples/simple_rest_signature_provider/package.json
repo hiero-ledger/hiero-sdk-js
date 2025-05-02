@@ -44,7 +44,7 @@
         "prettier": "^3.0.3",
         "typedoc": "^0.25.1",
         "typescript": "^5.7.2",
-        "vite": "~3.2.11"
+        "vite": "~4.5.14"
     },
     "devDependencies": {
         "@eslint/compat": "^1.2.2",
