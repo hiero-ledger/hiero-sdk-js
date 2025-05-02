@@ -159,6 +159,12 @@ export default class PrivateKey extends Key {
      * @returns {PrivateKey}
      */
     static fromStringDer(text) {
+        // previous versions of the library used to accept non-der encoded private keys
+        // here and fallback to PrivateKey.fromString() so we need to keep this behavior
+        if (!PrivateKey.isDerKey(text)) {
+            return PrivateKey.fromString(text);
+        }
+
         if (PrivateKey.getAlgorithm(text) === "ecdsa") {
             return this.fromStringECDSA(text);
         } else {
