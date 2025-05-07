@@ -81,8 +81,8 @@ async function main() {
                     break;
                 }
 
-                // Check for StatusError and handle specific token error codes (INVALID_TOKEN_SYMBOL,
-                // TOKEN_SYMBOL_TOO_LONG) or retry on Status.Busy with exponential backoff
+                // Check for StatusError and handle specific token error codes, For example `INVALID_TOKEN_SYMBOL`,
+                // `TOKEN_SYMBOL_TOO_LONG`. Or retry on Status.Busy with exponential backoff
                 if (error instanceof StatusError) {
                     if (error.status.toString() === "INVALID_TOKEN_SYMBOL") {
                         console.error(
