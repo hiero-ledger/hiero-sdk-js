@@ -6,7 +6,7 @@ import Channel from "./Channel.js";
 import GrpcServicesError from "../grpc/GrpcServiceError.js";
 import GrpcStatus from "../grpc/GrpcStatus.js";
 import { ALL_NETWORK_IPS } from "../constants/ClientConstants.js";
-import packageJSON from "../../package.json" with { type: "json" };
+import { getUserAgent } from "../utils/packageInfo.js";
 
 /** @type {{ [key: string]: Client }} */
 const clientCache = {};
@@ -166,10 +166,7 @@ export default class NodeChannel extends Channel {
                         } else {
                             // Create metadata with user agent
                             const metadata = new Metadata();
-                            metadata.set(
-                                "x-user-agent",
-                                `hiero-sdk-js/${packageJSON.version}`,
-                            );
+                            metadata.set("x-user-agent", getUserAgent());
 
                             this._client?.makeUnaryRequest(
                                 `/proto.${serviceName}/${method.name}`,

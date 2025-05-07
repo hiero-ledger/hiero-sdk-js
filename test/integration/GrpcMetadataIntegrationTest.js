@@ -7,7 +7,7 @@ import {
     Hbar,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
-import packageJSON from "../../package.json" with { type: "json" };
+import { getUserAgent } from "../../src/utils/packageInfo.js";
 
 describe("gRPC Metadata Integration Test", function () {
     let env;
@@ -60,9 +60,7 @@ describe("gRPC Metadata Integration Test", function () {
 
             // Verify the user agent header exists and has correct format
             expect(userAgentValue).to.not.be.undefined;
-            expect(userAgentValue[0]).to.equal(
-                `hiero-sdk-js/${packageJSON.version}`,
-            );
+            expect(userAgentValue[0]).to.equal(getUserAgent());
         } finally {
             GrpcClient.prototype.makeUnaryRequest = originalMakeUnaryRequest;
         }
@@ -120,9 +118,7 @@ describe("gRPC Metadata Integration Test", function () {
             // Verify all metadata entries have the same expected format and value
             for (const call of metadataCalls) {
                 expect(call.key).to.equal("x-user-agent");
-                expect(call.value).to.equal(
-                    `hiero-sdk-js/${packageJSON.version}`,
-                );
+                expect(call.value).to.equal(getUserAgent());
             }
         } finally {
             // Restore original method

@@ -6,7 +6,7 @@ import GrpcStatus from "../grpc/GrpcStatus.js";
 import HttpError from "../http/HttpError.js";
 import HttpStatus from "../http/HttpStatus.js";
 import Channel, { encodeRequest, decodeUnaryResponse } from "./Channel.js";
-import packageJSON from "../../package.json" with { type: "json" };
+import { getUserAgent } from "../utils/packageInfo.js";
 
 export default class WebChannel extends Channel {
     /**
@@ -49,7 +49,7 @@ export default class WebChannel extends Channel {
                         method: "POST",
                         headers: {
                             "content-type": "application/grpc-web+proto",
-                            "x-user-agent": `hiero-sdk-js/${packageJSON.version}`,
+                            "x-user-agent": getUserAgent(),
                             "x-grpc-web": "1",
                         },
                         body: encodeRequest(requestData),

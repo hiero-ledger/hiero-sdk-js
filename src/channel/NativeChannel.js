@@ -4,7 +4,7 @@ import Channel, { encodeRequest, decodeUnaryResponse } from "./Channel.js";
 import * as base64 from "../encoding/base64.native.js";
 import HttpError from "../http/HttpError.js";
 import HttpStatus from "../http/HttpStatus.js";
-import packageJSON from "../../package.json" with { type: "json" };
+import { getUserAgent } from "../utils/packageInfo.js";
 
 export default class NativeChannel extends Channel {
     /**
@@ -51,7 +51,7 @@ export default class NativeChannel extends Channel {
                         method: "POST",
                         headers: {
                             "content-type": "application/grpc-web-text",
-                            "x-user-agent": `hiero-sdk-js/${packageJSON.version}`,
+                            "x-user-agent": getUserAgent(),
                             "x-accept-content-transfer-encoding": "base64",
                             "x-grpc-web": "1",
                         },
