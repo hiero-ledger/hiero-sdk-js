@@ -86,7 +86,7 @@ const nativeAliases = {
 export default [
     {
         input: "src/browser.js",
-        plugins: [alias(browserAliases), json(), terser()],
+        plugins: [alias(browserAliases), terser()],
         output: {
             dir: "lib/",
             format: "esm",
@@ -96,7 +96,7 @@ export default [
     },
     {
         input: "src/native.js",
-        plugins: [terser(), alias(nativeAliases), json()],
+        plugins: [terser(), alias(nativeAliases)],
         output: {
             dir: "lib/",
             format: "esm",
@@ -106,7 +106,7 @@ export default [
     },
     {
         input: "src/index.js",
-        plugins: [json(), terser()],
+        plugins: [terser()],
         output: {
             dir: "lib/",
             format: "esm",
