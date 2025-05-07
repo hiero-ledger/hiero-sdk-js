@@ -1,4 +1,3 @@
-/* eslint-disable mocha/no-setup-in-describe */
 import { setTimeout } from "timers/promises";
 import {
     FileCreateTransaction,
@@ -122,7 +121,7 @@ describe("ContractFunctionParameters", function () {
     let env;
     let newContractId;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
         // Create a file on Hedera and store the bytecode
         const fileCreateTx = new FileCreateTransaction()
@@ -1111,7 +1110,7 @@ describe("ContractFunctionParameters", function () {
         console.log(`fileDelete status: ${fileDeleteResult.status.toString()}`);
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

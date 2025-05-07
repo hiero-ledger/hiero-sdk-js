@@ -12,9 +12,9 @@ This guide will help you set up, start, and test the TCK server using Docker and
 
 Before you begin, make sure you have:
 
-- Node.js → Version 20 or higher
+-   Node.js → Version 20 or higher
 
-- npm → Version 10 or higher
+-   npm → Version 10 or higher
 
 ## 🚀 Start the TCK Server
 
@@ -35,10 +35,10 @@ This section covers setting up and running TCK tests using Docker.
 
 Before you begin, ensure you have the following installed:
 
-- **Node.js**: Version 20 or higher
-- **npm**: Version 10 or higher
-- **Docker**: Latest version
-- **Docker Compose**: Latest version
+-   **Node.js**: Version 20 or higher
+-   **npm**: Version 10 or higher
+-   **Docker**: Latest version
+-   **Docker Compose**: Latest version
 
 ## 🔹 Run a specific test
 
@@ -48,13 +48,13 @@ task run-specific-test TEST=AccountCreate
 
 This will:
 
-- Verifies prerequisites
+-   Verifies prerequisites
 
-- Starts the TCK server
+-   Starts the TCK server
 
-- Launches required containers
+-   Launches required containers
 
-- Run only the `AccountCreate` tests
+-   Run only the `AccountCreate` tests
 
 ## 🔹 Run all tests
 
@@ -66,13 +66,13 @@ task start-all-tests
 
 This will:
 
-- Verifies prerequisites
+-   Verifies prerequisites
 
-- Starts the TCK server
+-   Starts the TCK server
 
-- Launches required containers
+-   Launches required containers
 
-- Run all tests automatically
+-   Run all tests automatically
 
 Sit back and let Docker do the work! 🚀
 
@@ -90,6 +90,29 @@ task run-specific-test \
   # Run specific test
   TEST=AccountCreate
 ```
+
+## TCK (server) Release Process
+
+To release a new version of the TCK (server), follow these steps:
+
+1. **Rename the previous 'latest' Docker image with last tag in the repository**:
+
+    ```sh
+    # This pulls the current 'latest' image, tags it with the specified
+    # version number, and pushes it to DockerHub
+
+    task tag-previous-version VERSION=v*.*.*
+    ```
+
+2. **Build and Push New Docker Image:**
+    ```sh
+    # Builds the Docker image and pushes it with the 'latest' tag
+    task release-js-tck-server
+    ```
+
+> **Docker Image Versioning:** The `latest` tag always points to the most recent version. Previous versions are preserved by tagging them with their specific version numbers in **step 1**.
+
+**Note:** Ensure all tests pass before creating a new release.
 
 ### 🎉 All Done!
 

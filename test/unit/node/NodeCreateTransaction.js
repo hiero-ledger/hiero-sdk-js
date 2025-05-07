@@ -6,7 +6,7 @@ import {
     ServiceEndpoint,
     Timestamp,
     TransactionId,
-} from "../../src/index.js";
+} from "../../../src/index.js";
 
 describe("NodeCreateTransaction", function () {
     // setting these variables outside of the beforeEach function to avoid

@@ -1,5 +1,3 @@
-import { expect } from "chai";
-
 import { TransactionId, AccountId, Timestamp } from "../../src/index.js";
 import Long from "long";
 

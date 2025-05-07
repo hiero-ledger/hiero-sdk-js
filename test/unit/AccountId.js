@@ -1,5 +1,4 @@
 import { proto } from "@hashgraph/proto";
-import { expect } from "chai";
 
 import BigNumber from "bignumber.js";
 import EvmAddress from "../../src/EvmAddress.js";

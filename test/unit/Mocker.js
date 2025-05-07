@@ -347,7 +347,9 @@ class GrpcServers {
         /** @type {string[]} */
         this._nodeAccountIds = [];
 
-        this._index = 0;
+        this._nodeIndex = 0;
+
+        this.GRPC_PORT_OFFSET_MULTIPLIER = 30;
     }
 
     /**
@@ -355,17 +357,33 @@ class GrpcServers {
      * @returns {this}
      */
     addServer(responses) {
-        const address = `0.0.0.0:${50213 + this._index}`;
-        const nodeAccountId = `0.0.${3 + this._index}`;
+        const port = this.getNextGrpcPort();
+        const address = `0.0.0.0:${port}`;
+        const nodeAccountId = `0.0.${3 + this._nodeIndex}`;
         const server = new GrpcServer(PROTOS).addResponses(responses);
 
         this._servers.push(server);
         this._addresses.push(address);
         this._nodeAccountIds.push(nodeAccountId);
 
-        this._index += 1;
+        this._nodeIndex += 1;
 
         return this;
+    }
+
+    /**
+     * @returns {number}
+     */
+    getNextGrpcPortOffset() {
+        const vitestWorkerId = process.env.VITEST_WORKER_ID || 0;
+
+        return (
+            vitestWorkerId * this.GRPC_PORT_OFFSET_MULTIPLIER + this._nodeIndex
+        );
+    }
+
+    getNextGrpcPort() {
+        return 50213 + this.getNextGrpcPortOffset();
     }
 
     /**

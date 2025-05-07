@@ -116,3 +116,37 @@ tasks:
         desc: "Start local node and Docker Compose"
         silent: true
         deps: [start-all-tests]
+
+    tag-previous-version:
+        desc: Tags the current 'latest' Docker images (both regular and AMD64) with a specific version number
+        silent: true
+        vars:
+            VERSION: "{{.VERSION}}"
+        cmds:
+            - echo "Tagging both regular and AMD64 images with version {{.VERSION}}"
+            # Regular image
+            - echo "Processing regular image..."
+            - docker pull ivaylogarnev/js-tck-server:latest
+            - docker tag ivaylogarnev/js-tck-server:latest ivaylogarnev/js-tck-server:{{.VERSION}}
+            - docker push ivaylogarnev/js-tck-server:{{.VERSION}}
+            # AMD64 image
+            - echo "Processing AMD64 image..."
+            - docker pull ivaylogarnev/js-tck-server-amd:latest
+            - docker tag ivaylogarnev/js-tck-server-amd:latest ivaylogarnev/js-tck-server-amd:{{.VERSION}}
+            - docker push ivaylogarnev/js-tck-server-amd:{{.VERSION}}
+        preconditions:
+            - sh: test -n "{{.VERSION}}"
+              msg: "VERSION parameter is required. Usage: task tag-previous-version VERSION=x.y.z"
+
+    release-js-tck-server:
+        desc: Builds and pushes both regular and AMD64 Docker images
+        silent: true
+        cmds:
+            # Regular image
+            - echo "Building and pushing regular Docker image"
+            - docker build -t ivaylogarnev/js-tck-server:latest -f Dockerfile .
+            - docker push ivaylogarnev/js-tck-server:latest
+            # AMD64 image
+            - echo "Building and pushing AMD64 Docker image"
+            - docker build --platform linux/amd64 -t ivaylogarnev/js-tck-server-amd:latest -f Dockerfile .
+            - docker push ivaylogarnev/js-tck-server-amd:latest

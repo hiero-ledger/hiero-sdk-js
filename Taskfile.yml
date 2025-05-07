@@ -142,16 +142,15 @@ tasks:
 
     "test:unit:node":
         cmds:
-            - npx mocha --inline-diffs --exit -r @babel/register -r chai/register-expect.js "test/unit/*.js" --timeout 120000 {{.CLI_ARGS}}
+            - npx vitest --config=test/vitest-node.config.ts {{.CLI_ARGS}}
 
     "test:unit:codecov":
         cmds:
-            - npx c8 --reporter=lcov --reporter=text-summary ./node_modules/.bin/mocha --inline-diffs -r @babel/register -r chai/register-expect.js "test/unit/*.js" --timeout 120000 {{.CLI_ARGS}}
-            - npx c8 report
+            - npx vitest --coverage --config=test/vitest-node.config.ts {{.CLI_ARGS}}
 
     "test:unit:browser":
         cmds:
-            - ./scripts/browser_test.sh
+            - npx vitest --config=test/vitest-browser.config.ts {{.CLI_ARGS}}
 
     "test:integration":
         deps:
@@ -159,13 +158,11 @@ tasks:
 
     "test:integration:node":
         cmds:
-            - npx mocha --exit --parallel -jobs 4 -r @babel/register -r chai/register-expect.js "test/integration/*.js" --timeout 120000 {{.CLI_ARGS}}
+            - npx vitest --config=test/vitest-node-integration.config.ts {{.CLI_ARGS}}
 
     "test:integration:codecov":
         cmds:
-            - npx c8 --reporter=lcov --reporter=text-summary ./node_modules/.bin/mocha --exit --parallel -jobs 4 -r @babel/register -r chai/register-expect.js "test/integration/*.js" --timeout 120000 {{.CLI_ARGS}}
-            - npx c8 report
-
+            - npx vitest --coverage --config=test/vitest-node-integration.config.ts {{.CLI_ARGS}}
     "update:proto":
         deps:
             - "proto:update"

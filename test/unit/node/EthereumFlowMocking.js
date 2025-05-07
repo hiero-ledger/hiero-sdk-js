@@ -1,10 +1,8 @@
-import { expect } from "chai";
-
-import * as hex from "../../src/encoding/hex.js";
+import * as hex from "../../../src/encoding/hex.js";
 import * as rlp from "@ethersproject/rlp";
 import { proto } from "@hashgraph/proto";
-import Mocker from "./Mocker.js";
-import { EthereumFlow, FileId } from "../../src/index.js";
+import Mocker from "../Mocker.js";
+import { EthereumFlow, FileId } from "../../../src/index.js";
 
 const TRANSACTION_RECEIPT_SUCCESS_RESPONSE = {
     transactionGetReceipt: {

@@ -1,5 +1,3 @@
-import { expect } from "chai";
-
 import BigNumber from "bignumber.js";
 import Long from "long";
 import * as EntityIdHelper from "../../src/EntityIdHelper.js";

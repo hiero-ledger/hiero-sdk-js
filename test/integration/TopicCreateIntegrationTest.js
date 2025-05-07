@@ -12,8 +12,8 @@ import {
     TopicInfoQuery,
     TopicMessageSubmitTransaction,
     TopicUpdateTransaction,
-    TransactionId,
     TransferTransaction,
+    TransactionId,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { createAccount, createFungibleToken } from "./utils/Fixtures.js";
@@ -842,7 +842,7 @@ describe("TopicCreate", function () {
         });
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

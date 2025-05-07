@@ -8,7 +8,7 @@ import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 describe("TopicDelete", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -52,7 +52,7 @@ describe("TopicDelete", function () {
         }
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

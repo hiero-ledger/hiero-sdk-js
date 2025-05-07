@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import Duration from "../../src/Duration.js";
 import {
     AccountId,

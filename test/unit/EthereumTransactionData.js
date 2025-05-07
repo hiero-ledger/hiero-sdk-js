@@ -1,5 +1,3 @@
-import { expect } from "chai";
-
 import * as hex from "../../src/encoding/hex.js";
 import { EthereumTransactionData } from "../../src/index.js";
 

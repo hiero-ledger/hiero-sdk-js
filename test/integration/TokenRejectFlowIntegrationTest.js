@@ -167,7 +167,7 @@ describe("TokenRejectIntegrationTest", function () {
         }
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

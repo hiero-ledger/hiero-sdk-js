@@ -1,6 +1,5 @@
-import { expect } from "chai";
-import { TransactionReceiptQuery, Status } from "../../src/index.js";
-import Mocker from "./Mocker.js";
+import { TransactionReceiptQuery, Status } from "../../../src/index.js";
+import Mocker from "../Mocker.js";
 import Long from "long";
 
 const ACCOUNT_ID = {

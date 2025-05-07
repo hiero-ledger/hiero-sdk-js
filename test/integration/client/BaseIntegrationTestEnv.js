@@ -140,14 +140,6 @@ export default class BaseIntegrationTestEnv {
             }
         }
 
-        // if (!this.throwaway && this.operatorId.toString() !== this.originalOperatorId.toString()) {
-        //     await (await new AccountDeleteTransaction()
-        //         .setAccountId(this.operatorId)
-        //         .setTransferAccountId(this.originalOperatorId)
-        //         .execute(this.client)
-        //     ).getReceipt(this.client);
-        // }
-
         this.client.close();
     }
 }

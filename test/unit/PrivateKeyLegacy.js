@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import sinon from "sinon";
 
 import PrivateKey from "../../src/PrivateKey.js";

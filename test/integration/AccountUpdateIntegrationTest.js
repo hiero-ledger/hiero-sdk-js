@@ -14,7 +14,7 @@ import { createAccount, deleteAccount } from "./utils/Fixtures.js";
 describe("AccountUpdate", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -117,7 +117,7 @@ describe("AccountUpdate", function () {
         }
     });
 
-    // eslint-disable-next-line mocha/no-skipped-tests
+    // eslint-disable-next-line vitest/no-disabled-tests
     it.skip("should error with insufficent tx fee when a large expiration time is set", async function () {
         const { accountId, newKey: key1 } = await createAccount(env.client);
 
@@ -222,7 +222,7 @@ describe("AccountUpdate", function () {
         }
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });
