@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
+import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
+import path from "path";
 
 import tls from "tls";
 import { Client, credentials, Metadata } from "@grpc/grpc-js";
@@ -6,7 +9,14 @@ import Channel from "./Channel.js";
 import GrpcServicesError from "../grpc/GrpcServiceError.js";
 import GrpcStatus from "../grpc/GrpcStatus.js";
 import { ALL_NETWORK_IPS } from "../constants/ClientConstants.js";
-import { getUserAgent } from "../utils/packageInfo.js";
+
+// Read package.json version
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+/** @type {{ version: string }} */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const pkg = JSON.parse(
+    readFileSync(path.resolve(__dirname, "../../package.json"), "utf-8"),
+);
 
 /** @type {{ [key: string]: Client }} */
 const clientCache = {};
@@ -166,7 +176,7 @@ export default class NodeChannel extends Channel {
                         } else {
                             // Create metadata with user agent
                             const metadata = new Metadata();
-                            metadata.set("x-user-agent", getUserAgent());
+                            metadata.set("x-user-agent", pkg.version);
 
                             this._client?.makeUnaryRequest(
                                 `/proto.${serviceName}/${method.name}`,

@@ -1,10 +1,20 @@
 // SPDX-License-Identifier: Apache-2.0
+import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
+import path from "path";
 
 import Channel, { encodeRequest, decodeUnaryResponse } from "./Channel.js";
 import * as base64 from "../encoding/base64.native.js";
 import HttpError from "../http/HttpError.js";
 import HttpStatus from "../http/HttpStatus.js";
-import { getUserAgent } from "../utils/packageInfo.js";
+
+// Read package.json version
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+/** @type {{ version: string }} */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const pkg = JSON.parse(
+    readFileSync(path.resolve(__dirname, "../../package.json"), "utf-8"),
+);
 
 export default class NativeChannel extends Channel {
     /**
@@ -51,7 +61,7 @@ export default class NativeChannel extends Channel {
                         method: "POST",
                         headers: {
                             "content-type": "application/grpc-web-text",
-                            "x-user-agent": getUserAgent(),
+                            "x-user-agent": pkg.version,
                             "x-accept-content-transfer-encoding": "base64",
                             "x-grpc-web": "1",
                         },

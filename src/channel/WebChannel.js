@@ -1,4 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
+import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
+import path from "path";
 
 import { ALL_WEB_NETWORK_NODES } from "../constants/ClientConstants.js";
 import GrpcServiceError from "../grpc/GrpcServiceError.js";
@@ -6,7 +9,14 @@ import GrpcStatus from "../grpc/GrpcStatus.js";
 import HttpError from "../http/HttpError.js";
 import HttpStatus from "../http/HttpStatus.js";
 import Channel, { encodeRequest, decodeUnaryResponse } from "./Channel.js";
-import { getUserAgent } from "../utils/packageInfo.js";
+
+// Read package.json version
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+/** @type {{ version: string }} */
+// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+const pkg = JSON.parse(
+    readFileSync(path.resolve(__dirname, "../../package.json"), "utf-8"),
+);
 
 export default class WebChannel extends Channel {
     /**
@@ -49,7 +59,7 @@ export default class WebChannel extends Channel {
                         method: "POST",
                         headers: {
                             "content-type": "application/grpc-web+proto",
-                            "x-user-agent": getUserAgent(),
+                            "x-user-agent": pkg.version,
                             "x-grpc-web": "1",
                         },
                         body: encodeRequest(requestData),
