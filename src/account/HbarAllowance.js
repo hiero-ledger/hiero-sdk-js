@@ -11,7 +11,7 @@ import Hbar from "../Hbar.js";
  */
 
 /**
- * @typedef {import("long")} Long
+ * @typedef {import("long").default} Long
  */
 
 /**

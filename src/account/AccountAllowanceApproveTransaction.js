@@ -30,7 +30,6 @@ import TokenNftAllowance from "./TokenNftAllowance.js";
  * @typedef {import("../client/Client.js").default<*, *>} Client
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  * @typedef {import("bignumber.js").default} BigNumber
- * @typedef {import("../long.js").LongObject} LongObject
  */
 
 /**
@@ -123,7 +122,7 @@ export default class AccountAllowanceApproveTransaction extends Transaction {
     /**
      * @param {AccountId | string} ownerAccountId
      * @param {AccountId | ContractId | string} spenderAccountId
-     * @param {number | string | Long | LongObject | BigNumber | Hbar} amount
+     * @param {number | string | Long | BigNumber | Hbar} amount
      * @returns {AccountAllowanceApproveTransaction}
      */
     approveHbarAllowance(ownerAccountId, spenderAccountId, amount) {
@@ -161,7 +160,7 @@ export default class AccountAllowanceApproveTransaction extends Transaction {
     /**
      * @deprecated - Use `approveHbarAllowance()` instead
      * @param {AccountId | string} spenderAccountId
-     * @param {number | string | Long | LongObject | BigNumber | Hbar} amount
+     * @param {number | string | Long | BigNumber | Hbar} amount
      * @returns {AccountAllowanceApproveTransaction}
      */
     addHbarAllowance(spenderAccountId, amount) {
