@@ -76,8 +76,6 @@ tasks:
             - task: update:addressbooks
             - task: format
             - task: lint
-            - rm -rf lib
-            - rm -rf .yalc
             - node ./scripts/generate-request-and-status-files.js
 
     "build:actual":
