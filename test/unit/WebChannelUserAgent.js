@@ -3,7 +3,7 @@ import { SDK_VERSION } from "../../src/version.js";
 import WebChannel from "../../src/channel/WebChannel.js";
 
 // Mock the client constants
-vi.mock("../../../src/constants/ClientConstants.js", () => ({
+vi.mock("../../src/constants/ClientConstants.js", () => ({
     ALL_WEB_NETWORK_NODES: {
         "https://example.com": {
             toString: () => "example-node",
@@ -39,7 +39,7 @@ describe("WebChannel", () => {
         );
 
         // Replace window fetch with our spy
-        getGlobalObject().fetch = fetchSpy;
+        window.fetch = fetchSpy;
     });
 
     afterEach(() => {
