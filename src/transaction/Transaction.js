@@ -19,6 +19,7 @@ import List from "./List.js";
 import Timestamp from "../Timestamp.js";
 import * as util from "../util.js";
 import CustomFeeLimit from "./CustomFeeLimit.js";
+import SignableNodeTransactionBodyBytes from "./SignableNodeTransactionBodyBytes.js";
 
 /**
  * @typedef {import("bignumber.js").default} BigNumber
@@ -855,7 +856,6 @@ export default class Transaction extends Executable {
             if (signedTransaction.sigMap.sigPair == null) {
                 signedTransaction.sigMap.sigPair = [];
             }
-
             if (signedTransaction.bodyBytes) {
                 const { transactionID, nodeAccountID } =
                     HieroProto.proto.TransactionBody.decode(
@@ -875,6 +875,7 @@ export default class Transaction extends Executable {
                 const nodeSignatures = signatureMap.get(nodeAccountId);
                 const transactionSignatures =
                     nodeSignatures?.get(transactionId);
+                console.log(transactionSignatures);
                 const signature = transactionSignatures?.get(publicKey);
 
                 if (!signature) {
@@ -1179,6 +1180,45 @@ export default class Transaction extends Executable {
         this._nodeAccountIds.setList(
             client._network.getNodeAccountIdsForExecute(),
         );
+    }
+
+    /**
+     * Returns a Map of nodeId => bodyBytes for each node the transaction is intended for.
+     * These are the canonical bytes that must be signed externally (e.g., via HSM).
+     *
+     * @returns {SignableNodeTransactionBodyBytes[]}
+     */
+    get signableNodeBodyBytesList() {
+        this._requireFrozen();
+
+        return this._signedTransactions.list.map((signedTransaction) => {
+            if (!signedTransaction.bodyBytes) {
+                throw new Error("Missing bodyBytes in signed transaction.");
+            }
+
+            const body = HieroProto.proto.TransactionBody.decode(
+                signedTransaction.bodyBytes,
+            );
+
+            if (!body.nodeAccountID) {
+                throw new Error("Missing nodeAccountID in transaction body.");
+            }
+
+            const nodeAccountId = AccountId._fromProtobuf(body.nodeAccountID);
+            if (!body.transactionID) {
+                throw new Error("Missing transactionID in transaction body.");
+            }
+
+            const transactionId = TransactionId._fromProtobuf(
+                body.transactionID,
+            );
+
+            return new SignableNodeTransactionBodyBytes(
+                nodeAccountId,
+                transactionId,
+                signedTransaction.bodyBytes,
+            );
+        });
     }
 
     /**
