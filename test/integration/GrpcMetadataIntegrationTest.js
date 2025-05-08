@@ -1,8 +1,5 @@
 import { Metadata } from "@grpc/grpc-js";
 import { Client as GrpcClient } from "@grpc/grpc-js";
-import { readFileSync } from "fs";
-import { fileURLToPath } from "url";
-import path from "path";
 
 import {
     AccountBalanceQuery,
@@ -10,13 +7,7 @@ import {
     Hbar,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
-
-// Read package.json version
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-/** @type {{ version: string }} */
-const pkg = JSON.parse(
-    readFileSync(path.resolve(__dirname, "../../package.json"), "utf-8"),
-);
+import { SDK_VERSION } from "../../src/version.js";
 
 describe("gRPC Metadata Integration Test", function () {
     let env;
@@ -69,7 +60,7 @@ describe("gRPC Metadata Integration Test", function () {
 
             // Verify the user agent header exists and has correct format
             expect(userAgentValue).to.not.be.undefined;
-            expect(userAgentValue[0]).to.equal(pkg.version);
+            expect(userAgentValue[0]).to.equal(SDK_VERSION);
         } finally {
             GrpcClient.prototype.makeUnaryRequest = originalMakeUnaryRequest;
         }
@@ -127,7 +118,7 @@ describe("gRPC Metadata Integration Test", function () {
             // Verify all metadata entries have the same expected format and value
             for (const call of metadataCalls) {
                 expect(call.key).to.equal("x-user-agent");
-                expect(call.value).to.equal(pkg.version);
+                expect(call.value).to.equal(SDK_VERSION);
             }
         } finally {
             // Restore original method

@@ -1,8 +1,19 @@
+import { readFileSync } from "fs";
+import { fileURLToPath } from "url";
+import path from "path";
+
 import alias from "@rollup/plugin-alias";
 import commonjs from "@rollup/plugin-commonjs";
 import json from "@rollup/plugin-json";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import terser from "@rollup/plugin-terser";
+import replace from "@rollup/plugin-replace";
+
+// Read package.json version
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const pkg = JSON.parse(
+    readFileSync(path.resolve(__dirname, "./package.json"), "utf-8"),
+);
 
 const browserAliases = {
     entries: [
@@ -86,7 +97,15 @@ const nativeAliases = {
 export default [
     {
         input: "src/browser.js",
-        plugins: [alias(browserAliases), terser()],
+        plugins: [
+            alias(browserAliases),
+            json(),
+            replace({
+                preventAssignment: true,
+                __SDK_VERSION__: JSON.stringify(pkg.version),
+            }),
+            terser(),
+        ],
         output: {
             dir: "lib/",
             format: "esm",
@@ -96,7 +115,15 @@ export default [
     },
     {
         input: "src/native.js",
-        plugins: [terser(), alias(nativeAliases)],
+        plugins: [
+            terser(),
+            json(),
+            replace({
+                preventAssignment: true,
+                __SDK_VERSION__: JSON.stringify(pkg.version),
+            }),
+            alias(nativeAliases),
+        ],
         output: {
             dir: "lib/",
             format: "esm",
@@ -106,7 +133,14 @@ export default [
     },
     {
         input: "src/index.js",
-        plugins: [terser()],
+        plugins: [
+            terser(),
+            json(),
+            replace({
+                preventAssignment: true,
+                __SDK_VERSION__: JSON.stringify(pkg.version),
+            }),
+        ],
         output: {
             dir: "lib/",
             format: "esm",
@@ -118,6 +152,11 @@ export default [
         input: "src/browser.js",
         plugins: [
             alias(browserAliases),
+            json(),
+            replace({
+                preventAssignment: true,
+                __SDK_VERSION__: JSON.stringify(pkg.version),
+            }),
             nodeResolve({
                 browser: true,
                 preferBuiltins: false,
@@ -139,6 +178,11 @@ export default [
         input: "src/browser.js",
         plugins: [
             alias(browserAliases),
+            json(),
+            replace({
+                preventAssignment: true,
+                __SDK_VERSION__: JSON.stringify(pkg.version),
+            }),
             nodeResolve({
                 browser: true,
                 preferBuiltins: false,
