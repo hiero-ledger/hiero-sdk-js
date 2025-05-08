@@ -48,7 +48,6 @@ export default class WebChannel extends Channel {
                         method: "POST",
                         headers: {
                             "content-type": "application/grpc-web+proto",
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                             "x-user-agent": SDK_VERSION,
                             "x-grpc-web": "1",
                         },

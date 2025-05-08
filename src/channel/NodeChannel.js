@@ -166,7 +166,6 @@ export default class NodeChannel extends Channel {
                             // Create metadata with user agent
                             const metadata = new Metadata();
 
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                             metadata.set("x-user-agent", SDK_VERSION);
 
                             this._client?.makeUnaryRequest(

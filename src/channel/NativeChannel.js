@@ -50,7 +50,6 @@ export default class NativeChannel extends Channel {
                         method: "POST",
                         headers: {
                             "content-type": "application/grpc-web-text",
-                            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                             "x-user-agent": SDK_VERSION,
                             "x-accept-content-transfer-encoding": "base64",
                             "x-grpc-web": "1",
