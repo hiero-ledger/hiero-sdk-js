@@ -72,15 +72,6 @@ async function main() {
                 );
                 break;
             } catch (error) {
-                // Handle precheck errors - these occur before the transaction reaches consensus
-                // and indicate issues with the transaction that would prevent it from being processed
-                if (error instanceof PrecheckStatusError) {
-                    console.error(
-                        `PrecheckStatusError caught with status: ${error.status.toString()}`,
-                    );
-                    break;
-                }
-
                 // Check for StatusError and handle specific token error codes, For example `INVALID_TOKEN_SYMBOL`,
                 // `TOKEN_SYMBOL_TOO_LONG`. Or retry on Status.Busy with exponential backoff
                 if (error instanceof StatusError) {
@@ -96,16 +87,6 @@ async function main() {
                             `Token symbol ${tokenSymbol} exceeds maximum length`,
                         );
                         break;
-                    } else if (
-                        error.status === Status.Busy &&
-                        attempt <= maxRetries
-                    ) {
-                        const delay = 1000 * Math.pow(2, attempt);
-                        await wait(delay);
-                        console.warn(
-                            `Node busy, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries + 1})...`,
-                        );
-                        continue;
                     }
                 }
 

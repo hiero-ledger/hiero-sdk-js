@@ -6,7 +6,8 @@ import {
     AccountCreateTransaction,
     PrecheckStatusError,
     Status,
-    StatusError,
+    ReceiptStatusError,
+    MaxAttemptsOrTimeoutError,
 } from "@hashgraph/sdk";
 import dotenv from "dotenv";
 
@@ -68,21 +69,20 @@ async function main() {
             throw new Error(`Transaction failed: ${receipt.status.toString()}`);
         }
     } catch (error) {
-        // This step catches any errors that might have occurred during transaction processing
-        // but after the transaction was submitted to the network
-        if (error instanceof StatusError) {
+        if (error instanceof PrecheckStatusError) {
             console.error(
-                `Receipt retrieval failed with status: ${error.status.toString()}`,
+                `Transaction failed on precheck with status: ${error.status.toString()}. User action is needed`,
             );
-        }
-        // Handle precheck errors - these occur before the transaction reaches consensus
-        // and indicate issues with the transaction that would prevent it from being processed
-        else if (error instanceof PrecheckStatusError) {
+        } else if (error instanceof ReceiptStatusError) {
             console.error(
-                `PrecheckStatusError caught with status: ${error.status.toString()}`,
+                `Transaction failed on receipt with status: ${error.status.toString()} . User action is needed`,
+            );
+        } else if (error instanceof MaxAttemptsOrTimeoutError) {
+            console.error(
+                `Transaction reached max attempts. This might be due to degraded network performance. Please increase max attempts using the SDK client.`,
             );
         } else if (error instanceof Error) {
-            console.error(`Error: ${error.message}`);
+            console.error(`Unexpected error occurred.`);
         }
     } finally {
         client.close();
