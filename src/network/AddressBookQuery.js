@@ -6,7 +6,6 @@ import NodeAddressBook from "../address_book/NodeAddressBook.js";
 import * as HieroProto from "@hashgraph/proto";
 import FileId from "../file/FileId.js";
 import { RST_STREAM } from "../Executable.js";
-import CACHE from "../Cache.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -271,5 +270,3 @@ export default class AddressBookQuery extends Query {
             );
     }
 }
-
-CACHE.setAddressBookQueryConstructor(() => new AddressBookQuery());
