@@ -48,9 +48,9 @@ export default class Wallet {
     constructor(accountId, privateKey, provider) {
         /*
         TODO: deprecate on a major version 
-        the follow lines were added because we didnt have
+        the following lines were added because we didnt have
         a way to check the algorithm of a der encoded private key
-        and we needed to keep the old behavior for the transition period.
+        We need to keep the old behavior for the transition period.
         */
         let key;
         if (typeof privateKey === "string" && PrivateKey.isDerKey(privateKey)) {
