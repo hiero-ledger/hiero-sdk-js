@@ -39,7 +39,7 @@ describe("WebChannel", () => {
         );
 
         // Replace window fetch with our spy
-        window.fetch = fetchSpy;
+        getGlobalObject().fetch = fetchSpy;
     });
 
     afterEach(() => {
