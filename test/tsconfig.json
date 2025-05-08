@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "target": "esnext",
+        "module": "esnext",
+        "lib": ["ESNext", "DOM"],
+        "typeRoots": ["../node_modules"],
+        "types": ["vitest/globals"],
+        "allowJs": true,
+        "checkJs": false,
+        "emitDeclarationOnly": true,
+        "declaration": true,
+        "rootDir": ".",
+        "moduleResolution": "node",
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true
+    },
+    "include": ["unit", "integration"]
+}

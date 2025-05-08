@@ -1,5 +1,3 @@
-import { expect } from "chai";
-
 import { Mnemonic, PrivateKey } from "../../src/index.js";
 import * as hex from "../../src/encoding/hex.js";
 
@@ -381,7 +379,6 @@ describe("Ed25519PrivateKey", function () {
     });
 
     it("should produce consistent public key from 24 word mnemonic and fromBytesED25519", async function () {
-        this.timeout(120000);
         for (let i = 0; i < STRESS_TEST_ITERATION_COUNT; i++) {
             const mnemonic = await Mnemonic.generate();
             const privateKeyFromMnemonic =

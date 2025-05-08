@@ -1,5 +1,3 @@
-import { expect } from "chai";
-
 import { TokenNftAllowance, TokenId, AccountId } from "../../src/index.js";
 import Long from "long";
 

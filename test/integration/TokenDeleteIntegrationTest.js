@@ -5,7 +5,7 @@ import { createFungibleToken } from "./utils/Fixtures.js";
 describe("TokenDelete", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -35,7 +35,7 @@ describe("TokenDelete", function () {
         }
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

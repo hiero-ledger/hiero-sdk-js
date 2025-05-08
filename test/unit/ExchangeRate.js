@@ -1,4 +1,3 @@
-import "mocha";
 import { ExchangeRate } from "../../src/index.js";
 
 describe("ExchangeRate", function () {

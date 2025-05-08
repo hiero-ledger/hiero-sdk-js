@@ -1,5 +1,3 @@
-import { expect } from "chai";
-
 import { Mnemonic, PrivateKey } from "../../src/index.js";
 import * as hex from "../../src/encoding/hex.js";
 import * as bip32 from "../../packages/cryptography/src/primitive/bip32.js";

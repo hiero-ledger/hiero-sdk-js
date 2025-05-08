@@ -12,11 +12,11 @@ import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 describe("TopicMessage", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new({ throwaway: true });
     });
 
-    // eslint-disable-next-line mocha/no-skipped-tests
+    // eslint-disable-next-line vitest/no-disabled-tests
     it.skip("should be executable", async function () {
         const operatorKey = env.operatorKey.publicKey;
 
@@ -217,7 +217,7 @@ describe("TopicMessage", function () {
         }
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

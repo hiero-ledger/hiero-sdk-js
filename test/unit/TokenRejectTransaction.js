@@ -1,4 +1,3 @@
-/* eslint-disable mocha/no-setup-in-describe */
 import {
     AccountId,
     NftId,

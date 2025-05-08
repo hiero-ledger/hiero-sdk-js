@@ -1,5 +1,3 @@
-import { expect } from "chai";
-
 import { LedgerId } from "../../src/index.js";
 import * as hex from "../../src/encoding/hex.js";
 

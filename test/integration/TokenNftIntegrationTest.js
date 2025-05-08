@@ -15,7 +15,7 @@ import { createAccount, createNonFungibleToken } from "./utils/Fixtures.js";
 describe("TokenNft", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -648,7 +648,7 @@ describe("TokenNft", function () {
         expect(err).to.be.true;
     });
 
-    after(function () {
+    afterAll(function () {
         env.client.close();
     });
 });

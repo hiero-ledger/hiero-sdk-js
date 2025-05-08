@@ -22,7 +22,7 @@ describe("ScheduleCreate", function () {
     const ONE_DAY_IN_NANOS = 60 * 60 * 24 * 1_000_000_000;
     const ONE_YEAR_IN_NANOS = ONE_DAY_IN_NANOS * 365;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -492,7 +492,7 @@ describe("ScheduleCreate", function () {
         );
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import {
     AccountBalanceQuery,
     TokenAirdropTransaction,
@@ -435,7 +434,7 @@ describe("TokenClaimAirdropIntegrationTest", function () {
         expect(err).to.be.true;
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

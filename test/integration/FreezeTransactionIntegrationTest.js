@@ -11,7 +11,7 @@ import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 describe("FreezeTransaction", function () {
     let client;
 
-    before(async function () {
+    beforeAll(async function () {
         const env = await IntegrationTestEnv.new();
         client = env.client;
     });

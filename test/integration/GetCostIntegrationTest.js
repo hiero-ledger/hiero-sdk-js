@@ -9,7 +9,7 @@ import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 describe("GetCost", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -102,7 +102,7 @@ describe("GetCost", function () {
         }
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

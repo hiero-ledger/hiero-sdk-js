@@ -8,7 +8,6 @@ import {
     TransferTransaction,
     FreezeTransaction,
 } from "../../src/index.js";
-import { expect } from "chai";
 
 describe("BatchTransaction", function () {
     let batchTransaction;

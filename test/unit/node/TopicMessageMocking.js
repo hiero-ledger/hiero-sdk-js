@@ -1,8 +1,7 @@
-import { expect } from "chai";
-import Mocker from "./Mocker.js";
-import * as hex from "../../src/encoding/hex.js";
+import Mocker from "../Mocker.js";
+import * as hex from "../../../src/encoding/hex.js";
 import Long from "long";
-import { TopicMessageQuery } from "../../src/index.js";
+import { TopicMessageQuery } from "../../../src/index.js";
 
 /**
  * @namespace com
@@ -57,6 +56,7 @@ describe("TopicMessageMocking", function () {
         }
 
         expect(finished).to.be.true;
+        client.close();
     });
 
     it("should stop processing messages after unsubscription", async function () {

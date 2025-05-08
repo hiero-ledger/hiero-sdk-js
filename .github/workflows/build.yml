@@ -109,11 +109,6 @@ jobs:
         id: build-sdk
         run: task build
 
-      - name: Install Playwright Dependencies
-        id: playwright-deps
-        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
-        run: sudo npx playwright install-deps
-
       - name: Start the local node
         id: start-local-node
         if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
@@ -143,9 +138,21 @@ jobs:
         if: ${{ steps.build-sdk.conclusion == 'success' && steps.stop-local-node.conclusion == 'success' && !cancelled() && always() }}
         run: ${{ env.CG_EXEC }} task build
 
+      - name: Install Playwright Dependencies
+        id: playwright-deps
+        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
+        run: |
+            sudo npx playwright install-deps
+            npx playwright install
+
+      - name: Browser Unit Test @hashgraph/cryptography
+        working-directory: packages/cryptography
+        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
+        run: ${{ env.CG_EXEC }} task test:unit:browser
+
       - name: Codecov @hashgraph/cryptography
         working-directory: packages/cryptography
-        if: ${{ steps.build-sdk.conclusion == 'success' && steps.stop-local-node.conclusion == 'success' && !cancelled() && always() }}
+        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
         run: ${{ env.CG_EXEC }} task test:unit:codecov
 
       - name: Upload @hashgraph/cryptography coverage to Codecov
@@ -155,12 +162,12 @@ jobs:
           files: ./packages/cryptography/coverage/lcov.info
           fail_ci_if_error: false
 
-      - name: Unit Test @hashgraph/sdk
-        if: ${{ steps.build-sdk.conclusion == 'success' && steps.stop-local-node.conclusion == 'success' && steps.playwright-deps.conclusion == 'success' && !cancelled() && always() }}
-        run: ${{ env.CG_EXEC }} task test:unit
+      - name: Browser Unit Test @hashgraph/sdk
+        if: ${{ steps.build-sdk.conclusion == 'success' && steps.playwright-deps.conclusion == 'success' && !cancelled() && always() }}
+        run: ${{ env.CG_EXEC }} task test:unit:browser
 
       - name: Codecov @hashgraph/sdk
-        if: ${{ steps.build-sdk.conclusion == 'success' && steps.stop-local-node.conclusion == 'success' && !cancelled() && always() }}
+        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
         run: ${{ env.CG_EXEC }} task test:unit:codecov
 
       - name: Upload @hashgraph/sdk coverage to Codecov

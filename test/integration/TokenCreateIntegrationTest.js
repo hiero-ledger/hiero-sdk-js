@@ -12,7 +12,7 @@ import { DEFAULT_AUTO_RENEW_PERIOD } from "../../src/transaction/Transaction.js"
 describe("TokenCreate", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -289,7 +289,7 @@ describe("TokenCreate", function () {
         }
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

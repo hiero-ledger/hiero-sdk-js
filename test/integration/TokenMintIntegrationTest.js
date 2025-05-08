@@ -16,7 +16,7 @@ import {
 describe("TokenMint", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -152,7 +152,7 @@ describe("TokenMint", function () {
         expect(tokenInfo.totalSupply.toString()).to.be.equal(amount.toString());
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

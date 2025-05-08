@@ -1,42 +1,49 @@
-/** @type {import('vite').UserConfig} */
-export default {
-    server: {
-        hmr: false,
-    },
-    envDir: "./",
-    build: {
-        polyfillDynamicImport: false,
-    },
-    optimizeDeps: {
-        force: true,
-        entries: [
-            "./test/unit/encoding/hex.js",
-            "./test/unit/encoding/utf8.js",
-            "./test/unit/encoding/der.js",
-            "./test/unit/encoding/base64.js",
-            "./test/unit/encoding/pkcs.js",
-            "./test/unit/Mnemonic.js",
-            "./test/unit/key.js",
-        ],
+import { defineConfig } from "vitest/config";
+export default defineConfig({
+    test: {
+        watch: false,
+        globals: true,
+        browser: {
+            headless: true,
+            provider: "playwright",
+            enabled: true,
+            instances: [{ browser: "chromium" }],
+        },
+        include: ["test/unit/**/*.js"],
+        exclude: ["test/unit/keystore.js"],
+        coverage: {
+            provider: "v8",
+            include: ["src/**/*.js"],
+            reporter: ["text-summary", "lcov"],
+            reportsDirectory: "./coverage",
+        },
     },
     resolve: {
         alias: {
-            // redirect src/ to src/browser
-            // note that this is NOT needed when consuming this package as the browser field in package.json
-            // will take care of this
-            "../../../src/primitive/aes.js": "../../../src/primitive/aes.browser.js",
-            "../../../src/encoding/base64.js": "../../../src/encoding/base64.browser.js",
-            "../../../src/encoding/hex.js": "../../../src/encoding/hex.browser.js",
-            "../../../src/primitive/hmac.js": "../../../src/primitive/hmac.browser.js",
-            "../../../src/primitive/pbkdf2.js": "../../../src/primitive/pbkdf2.browser.js",
-            "../../../src/primitive/sha256.js": "../../../src/primitive/sha256.browser.js",
-            "../../../src/encoding/utf8.js": "../../../src/encoding/utf8.browser.js",
+            "../../../src/primitive/aes.js":
+                "../../../src/primitive/aes.browser.js",
+            "../../../src/encoding/base64.js":
+                "../../../src/encoding/base64.browser.js",
+            "../../../src/encoding/hex.js":
+                "../../../src/encoding/hex.browser.js",
+            "../../../src/primitive/hmac.js":
+                "../../../src/primitive/hmac.browser.js",
+            "../../../src/primitive/pbkdf2.js":
+                "../../../src/primitive/pbkdf2.browser.js",
+            "../../../src/primitive/sha256.js":
+                "../../../src/primitive/sha256.browser.js",
+            "../../../src/encoding/utf8.js":
+                "../../../src/encoding/utf8.browser.js",
             "../../src/primitive/aes.js": "../../src/primitive/aes.browser.js",
-            "../../src/encoding/base64.js": "../../src/encoding/base64.browser.js",
+            "../../src/encoding/base64.js":
+                "../../src/encoding/base64.browser.js",
             "../../src/encoding/hex.js": "../../src/encoding/hex.browser.js",
-            "../../src/primitive/hmac.js": "../../src/primitive/hmac.browser.js",
-            "../../src/primitive/pbkdf2.js": "../../src/primitive/pbkdf2.browser.js",
-            "../../src/primitive/sha256.js": "../../src/primitive/sha256.browser.js",
+            "../../src/primitive/hmac.js":
+                "../../src/primitive/hmac.browser.js",
+            "../../src/primitive/pbkdf2.js":
+                "../../src/primitive/pbkdf2.browser.js",
+            "../../src/primitive/sha256.js":
+                "../../src/primitive/sha256.browser.js",
             "../../src/encoding/utf8.js": "../../src/encoding/utf8.browser.js",
             "../src/primitive/aes.js": "../src/primitive/aes.browser.js",
             "../src/encoding/base64.js": "../src/encoding/base64.browser.js",
@@ -75,4 +82,4 @@ export default {
             "./utf8.js": "./utf8.browser.js",
         },
     },
-};
+});

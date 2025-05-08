@@ -99,7 +99,7 @@ Then, rebuild the iOS project.
 ⚠️ ✅ Hiero Javascript SDK Version 2.59 and Below
 For projects using SDK version 2.59 and below, Expo SDK Version 49 and below is supported, keep in mind that the SDK uses some functionalities provided from ethers/ethersproject and there is an issue using parts of ethers.js in this environment. A [shims](https://www.npmjs.com/package/@ethersproject/shims) package has to be installed and imported before importing the SDK in your project.
 
--   Useful information: [here](https://github.com/ethers-io/ethers.js/discussions/3652) and [here](https://docs.ethers.org/v5/cookbook/react-native/)
+- Useful information: [here](https://github.com/ethers-io/ethers.js/discussions/3652) and [here](https://docs.ethers.org/v5/cookbook/react-native/)
 
 ```bash
 npm install @ethersproject/shims
@@ -120,7 +120,7 @@ import {
 
 The Hiero JavaScript SDK does not currently support the following:
 
--   React Native Bare
+- React Native Bare
 
 ## Usage
 
@@ -139,15 +139,15 @@ For detailed information on configuring the SDK, including environment variables
 
 ## Start tests
 
-* To start the integration tests follow the next steps:
+- To start the integration tests follow the next steps:
     - Run the [local node](https://github.com/hiero-ledger/hiero-local-node)
     - Rename [sample.env](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/.env.sample) in the root directory to .env
         - Ensure the `OPERATOR_ID` and `OPERATOR_KEY` are fields populated from accounts created by the local node
         - Update the network to `HEDERA_NETWORK="local-node"`
     - Run `task test:integration:node`
     - Stop the [local node](https://github.com/hiero-ledger/hiero-local-node)
-* To start unit tests follow the next steps:
-    - Run `task test:unit` (Note: the local node should not be running)
+- To start unit tests follow the next steps:
+    - Run `task test:unit`
 
 ## Contributing
 

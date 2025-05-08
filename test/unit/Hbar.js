@@ -1,5 +1,3 @@
-import { expect } from "chai";
-
 import { Hbar, HbarUnit } from "../../src/index.js";
 
 describe("Hbar", function () {

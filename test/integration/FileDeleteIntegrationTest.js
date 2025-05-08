@@ -10,7 +10,7 @@ import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 describe("FileDelete", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -67,7 +67,7 @@ describe("FileDelete", function () {
         }
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

@@ -18,7 +18,6 @@ import { createAccount } from "./utils/Fixtures.js";
 import SignatureMap from "../../src/transaction/SignatureMap.js";
 
 import { proto } from "@hashgraph/proto";
-import { expect } from "chai";
 
 dotenv.config();
 
@@ -26,7 +25,7 @@ describe("PrivateKey signTransaction", function () {
     let env, user1Key, user2Key, keyList;
 
     // Setting up the environment and creating a new account with a key list
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
 
         user1Key = PrivateKey.generate();
@@ -68,7 +67,7 @@ describe("PrivateKey signTransaction", function () {
 
     // this skip is temporary before we add SOLO for the CI tests
     // as currently its unable to run the test with multiple nodes
-    // eslint-disable-next-line mocha/no-skipped-tests
+    // eslint-disable-next-line vitest/no-disabled-tests
     it.skip("File Append Transaction Execution with Multiple Nodes", async function () {
         // Create file
         let response = await new FileCreateTransaction()
@@ -179,7 +178,7 @@ describe("PrivateKey signTransaction", function () {
         expect(status.toString()).to.be.equal("SUCCESS");
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

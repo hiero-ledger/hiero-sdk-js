@@ -16,7 +16,7 @@ let smartContractBytecode =
 describe("ContractInfo", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -239,7 +239,7 @@ describe("ContractInfo", function () {
         expect(cost.toTinybars().toInt()).to.be.at.least(1);
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

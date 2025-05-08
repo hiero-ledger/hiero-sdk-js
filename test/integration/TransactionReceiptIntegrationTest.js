@@ -1,4 +1,3 @@
-import { expect } from "chai";
 import {
     AccountId,
     KeyList,
@@ -13,7 +12,7 @@ import { createAccount } from "./utils/Fixtures.js";
 describe("TransactionReceipt", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new({ throwaway: true });
     });
 
@@ -80,7 +79,7 @@ describe("TransactionReceipt", function () {
         }
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

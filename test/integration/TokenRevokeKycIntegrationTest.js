@@ -11,7 +11,7 @@ import { createAccount, createFungibleToken } from "./utils/Fixtures.js";
 describe("TokenRevokeKyc", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -130,7 +130,7 @@ describe("TokenRevokeKyc", function () {
         }
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

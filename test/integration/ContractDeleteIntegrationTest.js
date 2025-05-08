@@ -16,7 +16,7 @@ let smartContractBytecode =
 describe("ContractDelete", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -205,7 +205,7 @@ describe("ContractDelete", function () {
         expect(status).to.be.equal(Status.ModifyingImmutableContract);
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });

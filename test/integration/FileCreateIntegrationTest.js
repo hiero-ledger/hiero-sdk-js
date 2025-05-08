@@ -11,7 +11,7 @@ import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 describe("FileCreate", function () {
     let env;
 
-    before(async function () {
+    beforeAll(async function () {
         env = await IntegrationTestEnv.new();
     });
 
@@ -104,7 +104,7 @@ describe("FileCreate", function () {
         expect(status).to.be.eql(Status.AutorenewDurationNotInRange);
     });
 
-    after(async function () {
+    afterAll(async function () {
         await env.close();
     });
 });
