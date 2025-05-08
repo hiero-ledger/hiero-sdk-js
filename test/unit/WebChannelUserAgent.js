@@ -11,13 +11,21 @@ vi.mock("../../../src/constants/ClientConstants.js", () => ({
     },
 }));
 
+// Get the global object in any environment
+const getGlobalObject = () => {
+    if (typeof window !== "undefined") return window;
+    if (typeof global !== "undefined") return global;
+    if (typeof self !== "undefined") return self;
+    return {};
+};
+
 describe("WebChannel", () => {
     let fetchSpy;
     let originalFetch;
 
     beforeEach(() => {
         // Store original fetch
-        originalFetch = window.fetch;
+        originalFetch = getGlobalObject().fetch;
 
         // Create a spy for fetch
         fetchSpy = vi.fn().mockImplementation(() =>
@@ -31,11 +39,11 @@ describe("WebChannel", () => {
         );
 
         // Replace window fetch with our spy
-        window.fetch = fetchSpy;
+        getGlobalObject().fetch = fetchSpy;
     });
 
     afterEach(() => {
-        window.fetch = originalFetch;
+        getGlobalObject().fetch = originalFetch;
     });
 
     it("includes SDK version in x-user-agent header", async () => {

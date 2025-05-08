@@ -28,6 +28,14 @@ class MockFileReader {
     }
 }
 
+// Get the global object in any environment
+const getGlobalObject = () => {
+    if (typeof window !== "undefined") return window;
+    if (typeof global !== "undefined") return global;
+    if (typeof self !== "undefined") return self;
+    return {};
+};
+
 // Mock for base64 encoding/decoding
 vi.mock("../../src/encoding/base64.native.js", () => ({
     // eslint-disable-next-line no-unused-vars
@@ -43,11 +51,11 @@ describe("NativeChannel", () => {
 
     beforeEach(() => {
         // Store original fetch and FileReader
-        originalFetch = window.fetch;
-        originalFileReader = window.FileReader;
+        originalFetch = getGlobalObject().fetch;
+        originalFileReader = getGlobalObject().FileReader;
 
         // Mock FileReader
-        window.FileReader = MockFileReader;
+        getGlobalObject().FileReader = MockFileReader;
 
         // Create a spy for fetch
         fetchSpy = vi.fn().mockImplementation(() =>
@@ -58,13 +66,13 @@ describe("NativeChannel", () => {
         );
 
         // Replace window fetch with our spy
-        window.fetch = fetchSpy;
+        getGlobalObject().fetch = fetchSpy;
     });
 
     afterEach(() => {
         // Restore original fetch and FileReader
-        window.fetch = originalFetch;
-        window.FileReader = originalFileReader;
+        getGlobalObject().fetch = originalFetch;
+        getGlobalObject().FileReader = originalFileReader;
     });
 
     it("includes SDK version in x-user-agent header", async () => {
