@@ -3,7 +3,11 @@ import {
     TokenId,
     CustomFixedFee,
     PrivateKey,
+    AccountId,
+    TransactionId,
 } from "../../src/index.js";
+import * as HieroProto from "@hashgraph/proto";
+import Long from "long";
 
 describe("TopicCreateTransaction", function () {
     describe("HIP-991: Permissionless revenue generating topics", function () {
@@ -159,6 +163,196 @@ describe("TopicCreateTransaction", function () {
                     .getCustomFees()[0]
                     .denominatingTokenId.toString(),
             ).to.eql(customFixedFeeToBeAdded.denominatingTokenId.toString());
+        });
+    });
+
+    describe("_fromProtobuf", function () {
+        it("should correctly deserialize from protobuf with all fields", function () {
+            // Create admin key
+            const adminKeyPrivate = PrivateKey.generateED25519();
+            const adminKeyPublic = adminKeyPrivate.publicKey;
+
+            // Create submit key
+            const submitKeyPrivate = PrivateKey.generateED25519();
+            const submitKeyPublic = submitKeyPrivate.publicKey;
+
+            // Create fee schedule key
+            const feeScheduleKeyPrivate = PrivateKey.generateED25519();
+            const feeScheduleKeyPublic = feeScheduleKeyPrivate.publicKey;
+
+            // Create fee exempt keys
+            const feeExemptKeyPrivate1 = PrivateKey.generateED25519();
+            const feeExemptKeyPublic1 = feeExemptKeyPrivate1.publicKey;
+            const feeExemptKeyPrivate2 = PrivateKey.generateED25519();
+            const feeExemptKeyPublic2 = feeExemptKeyPrivate2.publicKey;
+
+            // Create autoRenewAccountId
+            const autoRenewAccountId = new AccountId(0, 0, 50000);
+
+            // Create custom fee
+            const customFee = new CustomFixedFee()
+                .setFeeCollectorAccountId(new AccountId(0, 0, 60000))
+                .setAmount(100)
+                .setDenominatingTokenId(new TokenId(0, 0, 70000));
+
+            // Create mock protobuf data
+            const topicMemo = "Test topic memo";
+            const autoRenewPeriod = 7776000; // 90 days in seconds
+
+            // Create transaction body
+            const consensusCreateBody = {
+                adminKey: adminKeyPublic._toProtobufKey(),
+                submitKey: submitKeyPublic._toProtobufKey(),
+                feeScheduleKey: feeScheduleKeyPublic._toProtobufKey(),
+                feeExemptKeyList: [
+                    feeExemptKeyPublic1._toProtobufKey(),
+                    feeExemptKeyPublic2._toProtobufKey(),
+                ],
+                autoRenewAccount: autoRenewAccountId._toProtobuf(),
+                autoRenewPeriod: { seconds: Long.fromNumber(autoRenewPeriod) },
+                memo: topicMemo,
+                customFees: [customFee._toTopicFeeProtobuf()],
+            };
+
+            // Create transaction ID for the transaction
+            const transactionId = TransactionId.generate(
+                new AccountId(0, 0, 40000),
+            );
+
+            const transactionBody = {
+                transactionID: transactionId._toProtobuf(),
+                nodeAccountID: new AccountId(0, 0, 10000)._toProtobuf(),
+                transactionFee: Long.fromNumber(100000000),
+                transactionValidDuration: { seconds: Long.fromNumber(120) },
+                consensusCreateTopic: consensusCreateBody,
+            };
+
+            const bodyBytes =
+                HieroProto.proto.TransactionBody.encode(
+                    transactionBody,
+                ).finish();
+
+            const signedTransaction = {
+                bodyBytes: bodyBytes,
+                sigMap: { sigPair: [] },
+            };
+
+            const transaction = {
+                signedTransactionBytes:
+                    HieroProto.proto.SignedTransaction.encode(
+                        signedTransaction,
+                    ).finish(),
+            };
+
+            // Call _fromProtobuf with the mock data
+            const topicCreateTransaction = TopicCreateTransaction._fromProtobuf(
+                [transaction],
+                [signedTransaction],
+                [transactionId],
+                [new AccountId(0, 0, 10000)],
+                [transactionBody],
+            );
+
+            // Verify transaction properties
+            expect(topicCreateTransaction.getAdminKey().toString()).to.equal(
+                adminKeyPublic.toString(),
+            );
+            expect(topicCreateTransaction.getSubmitKey().toString()).to.equal(
+                submitKeyPublic.toString(),
+            );
+            expect(
+                topicCreateTransaction.getFeeScheduleKey().toString(),
+            ).to.equal(feeScheduleKeyPublic.toString());
+
+            // Verify fee exempt keys
+            expect(topicCreateTransaction.getFeeExemptKeys()).to.have.length(2);
+            expect(
+                topicCreateTransaction.getFeeExemptKeys()[0].toString(),
+            ).to.equal(feeExemptKeyPublic1.toString());
+            expect(
+                topicCreateTransaction.getFeeExemptKeys()[1].toString(),
+            ).to.equal(feeExemptKeyPublic2.toString());
+
+            // Verify account ID and other fields
+            expect(
+                topicCreateTransaction.getAutoRenewAccountId().toString(),
+            ).to.equal(autoRenewAccountId.toString());
+            expect(
+                topicCreateTransaction.getAutoRenewPeriod().seconds.toNumber(),
+            ).to.equal(autoRenewPeriod);
+            expect(topicCreateTransaction.getTopicMemo()).to.equal(topicMemo);
+
+            // Verify custom fees
+            expect(topicCreateTransaction.getCustomFees()).to.have.length(1);
+            expect(
+                topicCreateTransaction.getCustomFees()[0].amount.toString(),
+            ).to.equal("100");
+            expect(
+                topicCreateTransaction
+                    .getCustomFees()[0]
+                    .feeCollectorAccountId.toString(),
+            ).to.equal("0.0.60000");
+            expect(
+                topicCreateTransaction
+                    .getCustomFees()[0]
+                    .denominatingTokenId.toString(),
+            ).to.equal("0.0.70000");
+        });
+
+        it("should correctly deserialize from protobuf with minimal fields", function () {
+            // Create minimal transaction body with only required fields
+            const transactionId = TransactionId.generate(
+                new AccountId(0, 0, 40000),
+            );
+
+            const transactionBody = {
+                transactionID: transactionId._toProtobuf(),
+                nodeAccountID: new AccountId(0, 0, 10000)._toProtobuf(),
+                transactionFee: Long.fromNumber(100000000),
+                transactionValidDuration: { seconds: Long.fromNumber(120) },
+                consensusCreateTopic: {
+                    // Auto renew period is always set with a default value
+                    autoRenewPeriod: { seconds: Long.fromNumber(7776000) },
+                },
+            };
+
+            const bodyBytes =
+                HieroProto.proto.TransactionBody.encode(
+                    transactionBody,
+                ).finish();
+
+            const signedTransaction = {
+                bodyBytes: bodyBytes,
+                sigMap: { sigPair: [] },
+            };
+
+            const transaction = {
+                signedTransactionBytes:
+                    HieroProto.proto.SignedTransaction.encode(
+                        signedTransaction,
+                    ).finish(),
+            };
+
+            // Call _fromProtobuf with the minimal data
+            const topicCreateTransaction = TopicCreateTransaction._fromProtobuf(
+                [transaction],
+                [signedTransaction],
+                [transactionId],
+                [new AccountId(0, 0, 10000)],
+                [transactionBody],
+            );
+
+            // Verify transaction properties
+            expect(topicCreateTransaction.getAdminKey()).to.be.null;
+            expect(topicCreateTransaction.getSubmitKey()).to.be.null;
+            expect(topicCreateTransaction.getFeeScheduleKey()).to.be.null;
+            expect(topicCreateTransaction.getFeeExemptKeys()).to.have.length(0);
+            expect(topicCreateTransaction.getAutoRenewAccountId()).to.be.null;
+            expect(
+                topicCreateTransaction.getAutoRenewPeriod().seconds.toString(),
+            ).to.equal("7776000");
+            expect(topicCreateTransaction.getTopicMemo()).to.be.null;
+            expect(topicCreateTransaction.getCustomFees()).to.have.length(0);
         });
     });
 });

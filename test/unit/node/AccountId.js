@@ -1,8 +1,9 @@
 import { proto } from "@hashgraph/proto";
 
 import BigNumber from "bignumber.js";
-import EvmAddress from "../../src/EvmAddress.js";
-import { AccountId, PublicKey, Long, PrivateKey } from "../../src/index.js";
+import EvmAddress from "../../../src/EvmAddress.js";
+import { AccountId, PublicKey, Long, PrivateKey } from "../../../src/index.js";
+import sinon from "sinon";
 
 describe("AccountId", function () {
     it("constructors", function () {
@@ -318,5 +319,197 @@ describe("AccountId", function () {
                 "`AccountId.constructor` with negative numbers did not error",
             );
         }
+    });
+
+    describe("populateAccountNum", function () {
+        let originalFetch;
+        let originalSetTimeout;
+        let mockClient;
+
+        beforeEach(function () {
+            // Save originals
+            originalFetch = global.fetch;
+            originalSetTimeout = global.setTimeout;
+
+            // Setup client mock
+            mockClient = {
+                mirrorNetwork: ["testnet.mirrornode.com:443"],
+            };
+
+            // Mock setTimeout to execute immediately
+            global.setTimeout = (callback) => {
+                callback();
+                return 0;
+            };
+        });
+
+        afterEach(function () {
+            // Restore originals
+            global.fetch = originalFetch;
+            global.setTimeout = originalSetTimeout;
+        });
+
+        it("should populate the num field from mirror node response", async function () {
+            // Mock fetch response
+            global.fetch = sinon.stub().resolves({
+                json: sinon.stub().resolves({
+                    account: "0.0.12345",
+                }),
+            });
+
+            // Create account ID with an EVM address
+            const evmAddress = EvmAddress.fromString(
+                "123f681646d4a755815f9cb19e1acc8565a0c2ac",
+            );
+            const accountId = new AccountId(0, 0, 0, undefined, evmAddress);
+
+            // Call the method
+            const result = await accountId.populateAccountNum(mockClient);
+
+            // Verify fetch was called with correct URL
+            expect(global.fetch.calledOnce).to.be.true;
+            expect(global.fetch.firstCall.args[0]).to.equal(
+                "https://testnet.mirrornode.com/api/v1/accounts/123f681646d4a755815f9cb19e1acc8565a0c2ac",
+            );
+
+            // Verify num was populated correctly
+            expect(result.num.toString()).to.equal("12345");
+            expect(accountId.num.toString()).to.equal("12345");
+
+            // Verify other fields remained unchanged
+            expect(accountId.shard.toNumber()).to.equal(0);
+            expect(accountId.realm.toNumber()).to.equal(0);
+            expect(accountId.evmAddress).to.equal(evmAddress);
+        });
+
+        it("should throw when evmAddress is null", async function () {
+            // Create account ID without an EVM address
+            const accountId = new AccountId(0, 0, 0);
+
+            // Should throw error because evmAddress is null
+            try {
+                await accountId.populateAccountNum(mockClient);
+                throw new Error("Expected method to throw");
+            } catch (error) {
+                expect(error.message).to.equal(
+                    "field `evmAddress` should not be null",
+                );
+            }
+        });
+
+        it("should handle errors from the mirror node", async function () {
+            // Mock fetch to simulate an error
+            global.fetch = sinon.stub().rejects(new Error("Network error"));
+
+            // Create account ID with an EVM address
+            const evmAddress = EvmAddress.fromString(
+                "123f681646d4a755815f9cb19e1acc8565a0c2ac",
+            );
+            const accountId = new AccountId(0, 0, 0, undefined, evmAddress);
+
+            // Should throw error from fetch
+            try {
+                await accountId.populateAccountNum(mockClient);
+                throw new Error("Expected method to throw");
+            } catch (error) {
+                expect(error.message).to.equal("Network error");
+            }
+        });
+    });
+
+    describe("populateAccountEvmAddress", function () {
+        let originalFetch;
+        let originalSetTimeout;
+        let mockClient;
+
+        beforeEach(function () {
+            // Save originals
+            originalFetch = global.fetch;
+            originalSetTimeout = global.setTimeout;
+
+            // Setup client mock
+            mockClient = {
+                mirrorNetwork: ["testnet.mirrornode.com:443"],
+            };
+
+            // Mock setTimeout to execute immediately
+            global.setTimeout = (callback) => {
+                callback();
+                return 0;
+            };
+        });
+
+        afterEach(function () {
+            // Restore originals
+            global.fetch = originalFetch;
+            global.setTimeout = originalSetTimeout;
+        });
+
+        it("should populate the evmAddress field from mirror node response", async function () {
+            // Mock fetch response
+            global.fetch = sinon.stub().resolves({
+                json: sinon.stub().resolves({
+                    evm_address: "123f681646d4a755815f9cb19e1acc8565a0c2ac",
+                }),
+            });
+
+            // Create account ID with account number
+            const accountId = new AccountId(0, 0, 12345);
+
+            // Call the method
+            const result =
+                await accountId.populateAccountEvmAddress(mockClient);
+
+            // Verify fetch was called with correct URL
+            expect(global.fetch.calledOnce).to.be.true;
+            expect(global.fetch.firstCall.args[0]).to.equal(
+                "https://testnet.mirrornode.com/api/v1/accounts/12345",
+            );
+
+            // Verify evmAddress was populated correctly
+            expect(result.evmAddress.toString()).to.equal(
+                "123f681646d4a755815f9cb19e1acc8565a0c2ac",
+            );
+            expect(accountId.evmAddress.toString()).to.equal(
+                "123f681646d4a755815f9cb19e1acc8565a0c2ac",
+            );
+
+            // Verify other fields remained unchanged
+            expect(accountId.shard.toNumber()).to.equal(0);
+            expect(accountId.realm.toNumber()).to.equal(0);
+            expect(accountId.num.toString()).to.equal("12345");
+        });
+
+        it("should throw when num is null", async function () {
+            // Create a modified account ID with num set to null
+            const accountId = new AccountId(0, 0, 0);
+            accountId.num = null;
+
+            // Should throw error because num is null
+            try {
+                await accountId.populateAccountEvmAddress(mockClient);
+                throw new Error("Expected method to throw");
+            } catch (error) {
+                expect(error.message).to.equal(
+                    "field `num` should not be null",
+                );
+            }
+        });
+
+        it("should handle errors from the mirror node", async function () {
+            // Mock fetch to simulate an error
+            global.fetch = sinon.stub().rejects(new Error("Network error"));
+
+            // Create account ID
+            const accountId = new AccountId(0, 0, 12345);
+
+            // Should throw error from fetch
+            try {
+                await accountId.populateAccountEvmAddress(mockClient);
+                throw new Error("Expected method to throw");
+            } catch (error) {
+                expect(error.message).to.equal("Network error");
+            }
+        });
     });
 });

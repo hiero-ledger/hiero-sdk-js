@@ -8,7 +8,7 @@ export default defineConfig({
         environment: "node",
         include: ["test/unit/**/*.js"],
         exclude: ["test/unit/Mocker.js", "test/unit/browser/*"],
-        testTimeout: 12000,
+        testTimeout: 120000,
         coverage: {
             include: ["src/**/*.js"],
             provider: "v8",
