@@ -247,10 +247,20 @@ describe("PrivateKey", function () {
             expect(key.toBytesDer()).to.deep.equal(derKey);
         });
 
-        it.only("should generate key from der bytes on ed25519", function () {
+        it("should generate key from der bytes on ed25519", function () {
             const derKey = PrivateKey.generateED25519().toBytesDer();
             const key = PrivateKey.fromBytes(derKey);
             expect(key.toBytesDer()).to.deep.equal(derKey);
+        });
+
+        it("should get ecdsa algorithm from der key", function () {
+            const derKey = PrivateKey.generateECDSA().toStringDer();
+            expect(PrivateKey.getAlgorithm(derKey)).to.equal("ecdsa");
+        });
+
+        it("should get ed25519algorithm from der key", function () {
+            const derKey = PrivateKey.generateED25519().toStringDer();
+            expect(PrivateKey.getAlgorithm(derKey)).to.equal("ed25519");
         });
     });
 });
