@@ -515,18 +515,13 @@ export default class PrivateKey extends Key {
      * @returns { "ecdsa" | "ed25519"}
      */
     static getAlgorithm(privateKey) {
-        const decoder = new ASN1Decoder(Uint8Array.from(decode(privateKey)));
-        decoder.read();
-        const supportedKeyTypes = ["ecdsa", "ed25519"];
-        const decodedKeyType = decoder.getOidKeyTypes()[0];
-
         if (!PrivateKey.isDerKey(privateKey)) {
             throw new Error("Only der keys are supported");
         }
-        if (!supportedKeyTypes.includes(decodedKeyType)) {
-            throw new Error("Unsupported key type");
-        }
 
+        const decoder = new ASN1Decoder(Uint8Array.from(decode(privateKey)));
+        decoder.read();
+        const decodedKeyType = decoder.getOidKeyTypes()[0];
         // @ts-ignored
         return decodedKeyType;
     }

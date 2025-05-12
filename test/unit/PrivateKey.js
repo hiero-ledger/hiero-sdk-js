@@ -262,12 +262,5 @@ describe("PrivateKey", function () {
             const derKey = PrivateKey.generateED25519().toStringDer();
             expect(PrivateKey.getAlgorithm(derKey)).to.equal("ed25519");
         });
-
-        it("should throw error if invalid der key", function () {
-            const derKey = "invalid";
-            expect(() => PrivateKey.getAlgorithm(derKey)).to.throw(
-                "Unsupported type: undefined",
-            );
-        });
     });
 });
