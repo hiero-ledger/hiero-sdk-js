@@ -50,7 +50,19 @@ describe("NodeCreateTransaction", function () {
             .setAdminKey(TEST_ADMIN_KEY)
             .setServiceEndpoints(serviceEndpoints)
             .setGossipEndpoints(gossipEndpoints)
-            .setMaxTransactionFee(new Hbar(1));
+            .setMaxTransactionFee(new Hbar(1))
+            .setDeclineReward(false);
+    });
+
+    it("should set decline reward", function () {
+        expect(tx.declineReward).to.equal(false);
+        tx.setDeclineReward(true);
+        expect(tx.declineReward).to.equal(true);
+    });
+
+    it("should not set decline reward if not set explicitly", function () {
+        const tx = new NodeCreateTransaction();
+        expect(tx.declineReward).to.equal(null);
     });
 
     it("should convert from and to bytes", function () {
@@ -73,6 +85,7 @@ describe("NodeCreateTransaction", function () {
         expect(tx.maxTransactionFee.toTinybars().toInt()).to.equal(
             tx2.maxTransactionFee.toTinybars().toInt(),
         );
+        expect(tx.declineReward).to.equal(tx2.declineReward);
         tx.serviceEndpoints.forEach((_, index) => {
             const TX_IPV4_BUFFER = Buffer.from(
                 tx.serviceEndpoints[index]._ipAddressV4,
