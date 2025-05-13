@@ -1,6 +1,6 @@
 {
     "name": "@hashgraph/proto",
-    "version": "2.18.2",
+    "version": "2.18.3",
     "description": "Protobufs for the Hiero SDK",
     "main": "lib/index.js",
     "browser": "src/index.js",
