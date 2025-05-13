@@ -1,5 +1,12 @@
 import { defineConfig } from "vitest/config";
 
+import path from "path";
+import fs from "fs";
+
+const pkg = JSON.parse(
+    fs.readFileSync(path.resolve(__dirname, "../package.json"), "utf-8"),
+);
+
 /** @type {import("vitest").UserConfig} */
 export default defineConfig({
     test: {
@@ -21,5 +28,8 @@ export default defineConfig({
             reporter: ["text-summary", "lcov"],
             reportsDirectory: "./coverage",
         },
+    },
+    define: {
+        __SDK_VERSION__: JSON.stringify(pkg.version),
     },
 });

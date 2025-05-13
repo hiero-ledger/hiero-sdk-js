@@ -44,6 +44,7 @@ export default class NodeCreateTransaction extends Transaction {
      * @param {Uint8Array} [props.gossipCaCertificate]
      * @param {Uint8Array} [props.grpcCertificateHash]
      * @param {Key} [props.adminKey]
+     * @param {boolean} [props.declineReward]
      */
     constructor(props) {
         super();
@@ -105,6 +106,14 @@ export default class NodeCreateTransaction extends Transaction {
          * @description Administrative key controlled by the node operator. It's required.
          */
         this._adminKey = props?.adminKey != null ? props.adminKey : null;
+
+        /**
+         * @private
+         * @type {?boolean}
+         * @description Whether the node declines rewards.
+         */
+        this._declineReward =
+            props?.declineReward != null ? props.declineReward : null;
     }
 
     /**
@@ -161,6 +170,10 @@ export default class NodeCreateTransaction extends Transaction {
                 adminKey:
                     nodeCreate.adminKey != null
                         ? Key._fromProtobufKey(nodeCreate.adminKey)
+                        : undefined,
+                declineReward:
+                    nodeCreate.declineReward != null
+                        ? nodeCreate.declineReward
                         : undefined,
             }),
             transactions,
@@ -368,6 +381,25 @@ export default class NodeCreateTransaction extends Transaction {
     }
 
     /**
+     * @param {boolean} declineReward
+     * @description Set whether the node declines rewards.
+     * @returns {NodeCreateTransaction}
+     */
+    setDeclineReward(declineReward) {
+        this._requireNotFrozen();
+        this._declineReward = declineReward;
+        return this;
+    }
+
+    /**
+     * @description Get whether the node declines rewards.
+     * @returns {?boolean}
+     */
+    get declineReward() {
+        return this._declineReward;
+    }
+
+    /**
      * @override
      * @internal
      * @param {Channel} channel
@@ -421,6 +453,8 @@ export default class NodeCreateTransaction extends Transaction {
                     : null,
             adminKey:
                 this._adminKey != null ? this._adminKey._toProtobufKey() : null,
+            declineReward:
+                this._declineReward != null ? this._declineReward : null,
         };
     }
 

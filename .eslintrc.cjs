@@ -5,6 +5,9 @@ module.exports = {
         es6: true,
         node: true,
     },
+    globals: {
+        __SDK_VERSION__: "readonly",
+    },
     extends: [
         "eslint:recommended",
         "plugin:@typescript-eslint/eslint-recommended",
@@ -14,7 +17,7 @@ module.exports = {
         "plugin:import/errors",
         "plugin:import/typescript",
         "plugin:n/recommended",
-        "plugin:compat/recommended"
+        "plugin:compat/recommended",
     ],
     parser: "@typescript-eslint/parser",
     parserOptions: {
@@ -52,7 +55,7 @@ module.exports = {
         "jsdoc/require-property-description": "off",
         "jsdoc/require-returns-description": "off",
         "jsdoc/require-param-description": "off",
-        "jsdoc/tag-lines": ["error"|"warn", "any",{"startLines":0}],
+        "jsdoc/tag-lines": ["error" | "warn", "any", { startLines: 0 }],
         "jsdoc/check-tag-names": [
             "warn",
             {
@@ -68,6 +71,6 @@ module.exports = {
         "ie11/no-collection-args": "error",
         "ie11/no-for-in-const": "error",
         "ie11/no-loop-func": "warn",
-        "ie11/no-weak-collections": "error"
+        "ie11/no-weak-collections": "error",
     },
 };

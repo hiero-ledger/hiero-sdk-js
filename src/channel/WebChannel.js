@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
-
 import { ALL_WEB_NETWORK_NODES } from "../constants/ClientConstants.js";
 import GrpcServiceError from "../grpc/GrpcServiceError.js";
 import GrpcStatus from "../grpc/GrpcStatus.js";
 import HttpError from "../http/HttpError.js";
 import HttpStatus from "../http/HttpStatus.js";
+import { SDK_VERSION } from "../version.js";
 import Channel, { encodeRequest, decodeUnaryResponse } from "./Channel.js";
 
 export default class WebChannel extends Channel {
@@ -48,7 +48,7 @@ export default class WebChannel extends Channel {
                         method: "POST",
                         headers: {
                             "content-type": "application/grpc-web+proto",
-                            "x-user-agent": "hedera-sdk-js/v2",
+                            "x-user-agent": SDK_VERSION,
                             "x-grpc-web": "1",
                         },
                         body: encodeRequest(requestData),

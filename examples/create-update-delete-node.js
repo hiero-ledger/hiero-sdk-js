@@ -55,7 +55,9 @@ async function main() {
         .setServiceEndpoints(serviceEndpoints)
         .setGossipCaCertificate(gossipCaCertificate)
         .setCertificateHash(certificateHash)
-        .setAdminKey(adminKey);
+        .setAdminKey(adminKey)
+        .setDeclineReward(false);
+
     const createTransactionResponse = await createTransaction.execute(client);
     const createTransactionReceipt =
         await createTransactionResponse.getReceipt(client);
@@ -71,7 +73,8 @@ async function main() {
     console.log("Updating the node...");
     const updateTransaction = new NodeUpdateTransaction()
         .setNodeId(nodeId)
-        .setDescription(newDescription);
+        .setDescription(newDescription)
+        .setDeclineReward(true);
     const updateTrasnactionResponse = await updateTransaction.execute(client);
     const updateTrasnactionReceipt =
         await updateTrasnactionResponse.getReceipt(client);

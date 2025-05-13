@@ -45,6 +45,7 @@ export default class NodeUpdateTransaction extends Transaction {
      * @param {?Uint8Array} [props.gossipCaCertificate]
      * @param {?Uint8Array} [props.grpcCertificateHash]
      * @param {Key} [props.adminKey]
+     * @param {boolean} [props.declineReward]
      */
     constructor(props) {
         super();
@@ -113,6 +114,14 @@ export default class NodeUpdateTransaction extends Transaction {
          * @description Administrative key controlled by the node operator.
          */
         this._adminKey = props?.adminKey != null ? props.adminKey : null;
+
+        /**
+         * @private
+         * @type {?boolean}
+         * @description Whether the node declines rewards.
+         */
+        this._declineReward =
+            props?.declineReward != null ? props.declineReward : null;
     }
 
     /**
@@ -177,6 +186,10 @@ export default class NodeUpdateTransaction extends Transaction {
                 adminKey:
                     nodeUpdate.adminKey != null
                         ? Key._fromProtobufKey(nodeUpdate.adminKey)
+                        : undefined,
+                declineReward:
+                    nodeUpdate.declineReward?.value != null
+                        ? nodeUpdate.declineReward.value
                         : undefined,
             }),
             transactions,
@@ -414,6 +427,25 @@ export default class NodeUpdateTransaction extends Transaction {
     }
 
     /**
+     * @param {boolean} declineReward
+     * @description Set whether the node declines rewards.
+     * @returns {NodeUpdateTransaction}
+     */
+    setDeclineReward(declineReward) {
+        this._requireNotFrozen();
+        this._declineReward = declineReward;
+        return this;
+    }
+
+    /**
+     * @description Get whether the node declines rewards.
+     * @returns {?boolean}
+     */
+    get declineReward() {
+        return this._declineReward;
+    }
+
+    /**
      * @override
      * @internal
      * @param {Channel} channel
@@ -474,6 +506,10 @@ export default class NodeUpdateTransaction extends Transaction {
             adminKey:
                 this._adminKey != null ? this._adminKey._toProtobufKey() : null,
             nodeId: this._nodeId != null ? this._nodeId : null,
+            declineReward:
+                this._declineReward != null
+                    ? { value: this._declineReward }
+                    : null,
         };
     }
 

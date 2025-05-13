@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
-
 import tls from "tls";
-import { Client, credentials } from "@grpc/grpc-js";
+import { Client, credentials, Metadata } from "@grpc/grpc-js";
 import Channel from "./Channel.js";
 import GrpcServicesError from "../grpc/GrpcServiceError.js";
 import GrpcStatus from "../grpc/GrpcStatus.js";
 import { ALL_NETWORK_IPS } from "../constants/ClientConstants.js";
+import { SDK_VERSION } from "../version.js";
 
 /** @type {{ [key: string]: Client }} */
 const clientCache = {};
@@ -163,11 +163,17 @@ export default class NodeChannel extends Channel {
                                 ),
                             );
                         } else {
+                            // Create metadata with user agent
+                            const metadata = new Metadata();
+
+                            metadata.set("x-user-agent", SDK_VERSION);
+
                             this._client?.makeUnaryRequest(
                                 `/proto.${serviceName}/${method.name}`,
                                 (value) => value,
                                 (value) => value,
                                 Buffer.from(requestData),
+                                metadata,
                                 (e, r) => {
                                     callback(e, r);
                                 },
