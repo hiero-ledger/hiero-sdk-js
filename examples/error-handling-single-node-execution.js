@@ -1,8 +1,6 @@
 import {
     AccountId,
     Hbar,
-    PrecheckStatusError,
-    Status,
     TokenCreateTransaction,
     TokenType,
     TransactionId,

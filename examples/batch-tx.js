@@ -55,7 +55,7 @@ async function main() {
 async function executeBatchWithBatchify(client) {
     /**
      * Step 2: Create batch key and prepare transfers for batching
-     **/
+     */
 
     const batchKey1 = PrivateKey.generateECDSA();
 
@@ -160,7 +160,7 @@ async function executeBatchWithManualInnerTransactionFreeze(client) {
      * Step 2:
      * Create three account create transactions
      * and prepare transfers for batching.
-     **/
+     */
     const batchKey1 = PrivateKey.generateECDSA();
     const batchKey2 = PrivateKey.generateECDSA();
     const batchKey3 = PrivateKey.generateECDSA();
