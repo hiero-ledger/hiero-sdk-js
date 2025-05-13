@@ -8,10 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## v2.64.0
 
 ### Added
-- Support for HIP-1064 Batch Transaction https://hips.hedera.com/hip/hip-1064 This HIP proposes a reward mechanism that will incentivize nodes to remain active on the network. [#3099](https://github.com/hiero-ledger/hiero-sdk-js/pull/3099)
+- Support for HIP-1064 Daily Rewards For Active Nodes https://hips.hedera.com/hip/hip-1064 This HIP proposes a reward mechanism that will incentivize nodes to remain active on the network. [#3099](https://github.com/hiero-ledger/hiero-sdk-js/pull/3099)
     - NodeCreateTransaction `declineReward`: whether the node declines rewards
     - NodeCreateTransaction `setDeclineReward`: update whether the node declines reward
-- Added `the x-user-agent` header to all gRPC calls to enable SDK version tracking, following the approach outlined in [#3089](https://github.com/hiero-ledger/hiero-sdk-js/pull/3089)
+- Added the `x-user-agent` header to all gRPC calls to enable SDK version tracking, following the approach outlined in [#3089](https://github.com/hiero-ledger/hiero-sdk-js/pull/3089)
 - Included examples that demonstrate proper error handling in realistic, real-world scenarios, including how to manage network connectivity issues when interacting with a single node. [#3064](https://github.com/hiero-ledger/hiero-sdk-js/pull/3064)
 
 ## v2.64.0-beta.1
