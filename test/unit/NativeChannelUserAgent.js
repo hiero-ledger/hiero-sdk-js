@@ -6,8 +6,20 @@ import NativeChannel from "../../src/channel/NativeChannel.js";
 vi.mock("../../src/constants/ClientConstants.js", () => ({
     ALL_NODES: {
         "https://example.com": {
-            toString: () => "example-node",
+            toString: function () {
+                return "example-node";
+            },
         },
+    },
+}));
+
+// Mock for base64 encoding/decoding
+vi.mock("../../src/encoding/base64.native.js", () => ({
+    encode: function () {
+        return "encoded";
+    },
+    decode: function () {
+        return new Uint8Array([1, 2, 3, 4]);
     },
 }));
 
@@ -35,14 +47,6 @@ const getGlobalObject = () => {
     if (typeof self !== "undefined") return self;
     return {};
 };
-
-// Mock for base64 encoding/decoding
-vi.mock("../../src/encoding/base64.native.js", () => ({
-    // eslint-disable-next-line no-unused-vars
-    encode: (data) => "encoded",
-    // eslint-disable-next-line no-unused-vars
-    decode: (data) => new Uint8Array([1, 2, 3, 4]),
-}));
 
 describe("NativeChannel", () => {
     let fetchSpy;

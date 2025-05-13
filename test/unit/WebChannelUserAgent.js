@@ -6,7 +6,9 @@ import WebChannel from "../../src/channel/WebChannel.js";
 vi.mock("../../src/constants/ClientConstants.js", () => ({
     ALL_WEB_NETWORK_NODES: {
         "https://example.com": {
-            toString: () => "example-node",
+            toString: function () {
+                return "example-node";
+            },
         },
     },
 }));
