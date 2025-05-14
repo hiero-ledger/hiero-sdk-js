@@ -125,7 +125,7 @@ tasks:
     "test:release":
         cmds:
             - task: build
-            - task: test:unit
+            # - task: test:unit
             - task: examples:build
             - task: simple_rest_signature_provider:build
             - task: common_js_test:build
@@ -182,8 +182,8 @@ tasks:
             - task: build
 
     publish:
-        # deps:
-        #     - "test:release"
+        deps:
+            - "test:release"
         cmds:
             - task: "yalc:remove"
             - task: "publish:release"

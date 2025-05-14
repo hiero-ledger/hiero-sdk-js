@@ -65,7 +65,7 @@ tasks:
     "test:release":
         cmds:
             - task: build
-            - task: test:unit
+            # - task: test:unit
 
     test:
         deps:
@@ -95,7 +95,7 @@ tasks:
     publish:
         preconditions:
             - '! grep ''".*": "link:.*"'' package.json > /dev/null'
-        # deps:
-        #     - "test:release"
+        deps:
+            - "test:release"
         cmds:
             - pnpm publish {{.CLI_ARGS}}

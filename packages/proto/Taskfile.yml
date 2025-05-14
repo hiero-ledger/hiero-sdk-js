@@ -120,7 +120,7 @@ tasks:
     publish:
         preconditions:
             - "! grep '\".*\": \"\\(link\\|file\\):.*\"' package.json > /dev/null"
-        # deps:
-        #     - "test:release"
+        deps:
+            - "test:release"
         cmds:
             - pnpm publish {{.CLI_ARGS}}
