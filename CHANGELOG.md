@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v2.64.3
+## v2.64.4
 
 ### Added
 - Support for HIP-1064 Daily Rewards For Active Nodes https://hips.hedera.com/hip/hip-1064 This HIP proposes a reward mechanism that will incentivize nodes to remain active on the network. [#3099](https://github.com/hiero-ledger/hiero-sdk-js/pull/3099)
