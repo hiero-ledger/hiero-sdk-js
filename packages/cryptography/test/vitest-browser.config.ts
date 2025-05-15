@@ -80,6 +80,7 @@ export default defineConfig({
             "./pbkdf2.js": "./pbkdf2.browser.js",
             "./sha256.js": "./sha256.browser.js",
             "./utf8.js": "./utf8.browser.js",
+            buffer: "buffer/",
         },
     },
 });
