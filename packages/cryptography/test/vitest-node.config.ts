@@ -7,7 +7,10 @@ export default defineConfig({
         globals: true,
         environment: "node",
         include: ["test/unit/**/*.js"],
-        exclude: ["test/unit/keystore.js"],
+        exclude: [
+            "test/unit/keystore.js",
+            "test/unit/primitive/aes.browser.js",
+        ],
         testTimeout: 8000,
         coverage: {
             provider: "v8",

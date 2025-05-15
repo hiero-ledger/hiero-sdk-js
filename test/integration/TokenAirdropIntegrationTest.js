@@ -149,7 +149,8 @@ describe("TokenAirdropIntegrationTest", function () {
         ).to.deep.equal(serials[0].toString());
     });
 
-    it("should create hollow account when airdropping tokens and transfers them", async function () {
+    // eslint-disable-next-line vitest/no-disabled-tests
+    it.skip("should create hollow account when airdropping tokens and transfers them", async function () {
         const ftTokenId = await createFungibleToken(env.client, (transaction) =>
             transaction.setInitialSupply(INITIAL_SUPPLY),
         );

@@ -171,6 +171,12 @@ tasks:
             # Remove proto so on `task build` we fix the link
             - rm -rf ./node_modules/@hashgraph/proto
 
+    "test:codecov:local":
+        cmds:
+            - npx vitest --coverage --reporter=blob --reporter=default --config=test/vitest-node.config.ts --outputFile=reports/blob-unit.json {{.CLI_ARGS}}
+            - npx vitest --coverage --reporter=blob --reporter=default --config=test/vitest-node-integration.config.ts --outputFile=reports/blob-integration.json {{.CLI_ARGS}}
+            - npx vitest merge reports/blob-unit.json reports/blob-integration.json --output=reports/blob-merged.json
+
     "update:addressbooks":
         cmds:
             - node ./scripts/update-address-books.js

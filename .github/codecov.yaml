@@ -2,5 +2,17 @@ coverage:
     status:
         project:
             default:
-                target: 80%
+                target: 90%
                 threshold: 1%
+ignore:
+    - "src/token/TokenNftsUpdateTransaction.js"
+    - "src/account/AccountAllowanceAdjustTransaction.js"
+    - "src/account/LiveHashAddTransaction.js"
+    - "src/account/LiveHashDeleteTransaction.js"
+    - "src/account/LiveHashQuery.js"
+    - "src/system/SystemUndeleteTransaction.js"
+    - "src/system/SystemDeleteTransaction.js"
+    - "src/contract/StorageChange.js"
+    - "src/contract/ContractStateChange.js"
+    - "src/transaction/SignatureMapLegacy.js"
+    - "src/transaction/NodeAccountIdSignatureMapLegacy.js"

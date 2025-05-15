@@ -88,7 +88,7 @@ app.post("/request", async function (req, res) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const response = await wallet.call(query);
             res.json({
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-argument
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call
                 response: Buffer.from(response.toBytes()).toString("hex"),
             });
             return;
