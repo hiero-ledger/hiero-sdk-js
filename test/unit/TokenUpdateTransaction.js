@@ -5,7 +5,9 @@ import {
     AccountId,
     Timestamp,
     TokenKeyValidation,
+    TokenId,
 } from "../../src/index.js";
+import Duration from "../../src/Duration.js";
 import Long from "long";
 
 describe("TokenUpdateTransaction", function () {
@@ -172,5 +174,143 @@ describe("TokenUpdateTransaction", function () {
         expect(tx2.feeScheduleKey).to.be.null;
         expect(tx2.pauseKey).to.be.null;
         expect(tx2.metadata).to.be.null;
+    });
+
+    describe("constructor", function () {
+        let adminKey,
+            kycKey,
+            freezeKey,
+            wipeKey,
+            supplyKey,
+            feeScheduleKey,
+            pauseKey,
+            metadataKey;
+        let treasuryAccountId, autoRenewAccountId;
+        let expirationTime;
+        let autoRenewPeriod;
+        let metadata;
+        let tokenId;
+
+        beforeEach(function () {
+            adminKey = PrivateKey.generateED25519().publicKey;
+            kycKey = PrivateKey.generateED25519().publicKey;
+            freezeKey = PrivateKey.generateED25519().publicKey;
+            wipeKey = PrivateKey.generateED25519().publicKey;
+            supplyKey = PrivateKey.generateED25519().publicKey;
+            feeScheduleKey = PrivateKey.generateED25519().publicKey;
+            pauseKey = PrivateKey.generateED25519().publicKey;
+            metadataKey = PrivateKey.generateED25519().publicKey;
+
+            treasuryAccountId = new AccountId(5);
+            autoRenewAccountId = new AccountId(6);
+
+            expirationTime = new Timestamp(500, 600);
+            autoRenewPeriod = new Duration(7000);
+
+            metadata = new Uint8Array([1, 2, 3, 4, 5]);
+
+            tokenId = new TokenId(7);
+        });
+
+        it("should set properties via constructor", function () {
+            const tx = new TokenUpdateTransaction({
+                tokenId: tokenId,
+                tokenName: "test token",
+                tokenSymbol: "TEST",
+                treasuryAccountId: treasuryAccountId,
+                adminKey: adminKey,
+                kycKey: kycKey,
+                freezeKey: freezeKey,
+                wipeKey: wipeKey,
+                supplyKey: supplyKey,
+                autoRenewAccountId: autoRenewAccountId,
+                expirationTime: expirationTime,
+                autoRenewPeriod: autoRenewPeriod,
+                tokenMemo: "token memo",
+                feeScheduleKey: feeScheduleKey,
+                pauseKey: pauseKey,
+                metadataKey: metadataKey,
+                metadata: metadata,
+                keyVerificationMode: TokenKeyValidation.NoValidation,
+            });
+
+            expect(tx.tokenId.toString()).to.equal(tokenId.toString());
+            expect(tx.tokenName).to.equal("test token");
+            expect(tx.tokenSymbol).to.equal("TEST");
+            expect(tx.treasuryAccountId.toString()).to.equal(
+                treasuryAccountId.toString(),
+            );
+            expect(tx.adminKey).to.equal(adminKey);
+            expect(tx.kycKey).to.equal(kycKey);
+            expect(tx.freezeKey).to.equal(freezeKey);
+            expect(tx.wipeKey).to.equal(wipeKey);
+            expect(tx.supplyKey).to.equal(supplyKey);
+            expect(tx.autoRenewAccountId.toString()).to.equal(
+                autoRenewAccountId.toString(),
+            );
+            expect(tx.expirationTime).to.equal(expirationTime);
+            expect(tx.autoRenewPeriod.toString()).to.equal(
+                autoRenewPeriod.toString(),
+            );
+            expect(tx.tokenMemo).to.equal("token memo");
+            expect(tx.feeScheduleKey).to.equal(feeScheduleKey);
+            expect(tx.pauseKey).to.equal(pauseKey);
+            expect(tx.metadataKey).to.equal(metadataKey);
+            expect(tx.metadata).to.equal(metadata);
+            expect(tx.keyVerificationMode).to.equal(
+                TokenKeyValidation.NoValidation,
+            );
+        });
+
+        it("should set tokenId as string in constructor", function () {
+            const tx = new TokenUpdateTransaction({
+                tokenId: "0.0.7",
+            });
+
+            expect(tx.tokenId.toString()).to.equal("0.0.7");
+        });
+
+        it("should set treasuryAccountId as string in constructor", function () {
+            const tx = new TokenUpdateTransaction({
+                treasuryAccountId: "0.0.5",
+            });
+
+            expect(tx.treasuryAccountId.toString()).to.equal("0.0.5");
+        });
+
+        it("should set autoRenewAccountId as string in constructor", function () {
+            const tx = new TokenUpdateTransaction({
+                autoRenewAccountId: "0.0.6",
+            });
+
+            expect(tx.autoRenewAccountId.toString()).to.equal("0.0.6");
+        });
+
+        it("should set expirationTime as Date in constructor", function () {
+            const date = new Date();
+            const tx = new TokenUpdateTransaction({
+                expirationTime: date,
+            });
+
+            expect(tx.expirationTime.toDate().getTime()).to.equal(
+                date.getTime(),
+            );
+        });
+
+        it("should set autoRenewPeriod as number in constructor", function () {
+            const tx = new TokenUpdateTransaction({
+                autoRenewPeriod: 7000,
+            });
+
+            expect(tx.autoRenewPeriod.seconds.toNumber()).to.equal(7000);
+        });
+
+        it("should set autoRenewPeriod as Long in constructor", function () {
+            const tx = new TokenUpdateTransaction({
+                autoRenewPeriod: Long.fromNumber(7000),
+            });
+
+            expect(tx.autoRenewPeriod.seconds.toNumber()).to.equal(7000);
+        });
     });
 });

@@ -638,4 +638,81 @@ describe("Transaction", function () {
             expect(result.size).to.equal(0);
         });
     });
+
+    it("toBytesAsync", async function () {
+        const key = PrivateKey.fromStringDer(
+            "302e020100300506032b657004220420a58d361e61756ee809686255fda09bacb846ea8aa589c67ac39cfbcf82dd511c",
+        );
+        const account = AccountId.fromString("0.0.1004");
+        const validStart = new Timestamp(1451, 590);
+        const transactionId = new TransactionId(account, validStart);
+
+        const hexBytes =
+            "0adb012ad8010a6e0a130a0608ab0b10ce0412070800100018ec0718001206080010001803188084af5f2202087832005a440a2212206e0433faf04e8a674a114ed04d27bd43b0549a2ed69c9709a5a2058922c0cc4830ffffffffffffffff7f38ffffffffffffffff7f40004a050880ceda0388010012660a640a206e0433faf04e8a674a114ed04d27bd43b0549a2ed69c9709a5a2058922c0cc481a406f7b1823defed495205f67504243abd623bef1eb9dc4053b879b5e25fff382814172d0676464a6a5b7adfc7968ae8af236ac91fd751d632c0412b5f77431930d0adb012ad8010a6e0a130a0608ab0b10ce0412070800100018ec0718001206080010001804188084af5f2202087832005a440a2212206e0433faf04e8a674a114ed04d27bd43b0549a2ed69c9709a5a2058922c0cc4830ffffffffffffffff7f38ffffffffffffffff7f40004a050880ceda0388010012660a640a206e0433faf04e8a674a114ed04d27bd43b0549a2ed69c9709a5a2058922c0cc481a408d3fb2b8da90457cc447771361b0e27f784b70664604a5490a135595a69f2bbf2fd725a703174999d25f6f295cd58f116210dffefb94703c34fc8107be0a7908";
+
+        const transaction = await new AccountCreateTransaction()
+            .setKeyWithoutAlias(key)
+            .setNodeAccountIds([new AccountId(3), new AccountId(4)])
+            .setTransactionId(transactionId)
+            .freeze()
+            .sign(key);
+
+        const transactionBytesHex = await transaction
+            .toBytesAsync()
+            .then((bytes) => hex.encode(bytes));
+        expect(transactionBytesHex).to.eql(hexBytes);
+
+        const transactionFromBytes = Transaction.fromBytes(
+            await transaction.toBytesAsync(),
+        );
+        const transactionFromBytesToBytes = hex.encode(
+            await transactionFromBytes.toBytesAsync(),
+        );
+
+        expect(transactionFromBytesToBytes).to.eql(hexBytes);
+    });
+
+    it("getSignaturesAsync", async function () {
+        const key1 = PrivateKey.generateED25519();
+        const key2 = PrivateKey.generateECDSA();
+
+        const transaction = new AccountCreateTransaction()
+            .setNodeAccountIds([new AccountId(6)])
+            .setTransactionId(TransactionId.generate(new AccountId(7)))
+            .freeze();
+
+        await transaction.sign(key1);
+        await transaction.sign(key2);
+
+        const sigMap = await transaction.getSignaturesAsync();
+        expect(sigMap.size).to.be.equal(1);
+
+        for (const [nodeAccountId, nodeSignatures] of sigMap) {
+            const transactionSignatures = nodeSignatures.get(
+                transaction.transactionId,
+            );
+            expect(nodeAccountId.toString()).equals("0.0.6");
+            expect(transactionSignatures.size).to.be.equal(2);
+            expect(transactionSignatures.get(key1.publicKey)).to.not.be.null;
+            expect(transactionSignatures.get(key2.publicKey)).to.not.be.null;
+
+            for (const [publicKey] of transactionSignatures) {
+                expect(publicKey.verifyTransaction(transaction)).to.be.true;
+            }
+        }
+    });
+
+    it("getTransactionHashPerNode", async function () {
+        const transaction = new AccountCreateTransaction()
+            .setKeyWithoutAlias(PrivateKey.generateED25519())
+            .setNodeAccountIds([new AccountId(3), new AccountId(4)])
+            .setTransactionId(TransactionId.generate(new AccountId(7)))
+            .freeze();
+
+        const hashesPerNode = await transaction.getTransactionHashPerNode();
+
+        expect(hashesPerNode.size).to.be.equal(2);
+        expect(hashesPerNode.get(new AccountId(3))).to.be.not.null;
+        expect(hashesPerNode.get(new AccountId(4))).to.be.not.null;
+    });
 });
