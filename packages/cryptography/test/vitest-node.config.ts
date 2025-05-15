@@ -19,9 +19,4 @@ export default defineConfig({
             reportsDirectory: "./coverage",
         },
     },
-    resolve: {
-        alias: {
-            buffer: "buffer/",
-        },
-    },
 });
