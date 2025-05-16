@@ -173,3 +173,33 @@ export const ALL_NETWORK_IPS = {
     "50.18.17.93:": "0.0.9",
     "34.125.23.49:": "0.0.9",
 };
+
+export const MirrorNetwork = {
+    /**
+     * @param {string} name
+     * @returns {string[]}
+     */
+    fromName(name) {
+        switch (name) {
+            case "mainnet":
+                return MirrorNetwork.MAINNET;
+
+            case "testnet":
+                return MirrorNetwork.TESTNET;
+
+            case "previewnet":
+                return MirrorNetwork.PREVIEWNET;
+
+            case "local-node":
+                return MirrorNetwork.LOCAL_NODE;
+
+            default:
+                throw new Error(`unknown network name: ${name}`);
+        }
+    },
+
+    MAINNET: ["mainnet-public.mirrornode.hedera.com:443"],
+    TESTNET: ["testnet.mirrornode.hedera.com:443"],
+    PREVIEWNET: ["previewnet.mirrornode.hedera.com:443"],
+    LOCAL_NODE: ["127.0.0.1:5600"],
+};
