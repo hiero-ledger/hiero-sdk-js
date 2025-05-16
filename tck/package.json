@@ -23,7 +23,7 @@
         "@types/express": "^4.17.21",
         "@types/glob": "^8.1.0",
         "@types/lossless-json": "^1.0.4",
-        "nodemon": "^3.1.4",
+        "nodemon": "^3.1.10",
         "ts-node": "^10.9.2"
     }
 }
