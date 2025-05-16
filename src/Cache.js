@@ -408,26 +408,6 @@ class Cache {
 
         return this._transactionRecordQueryConstructor;
     }
-
-    /**
-     * @param {() => AddressBookQuery} addressBookQueryConstructor
-     */
-    setAddressBookQueryConstructor(addressBookQueryConstructor) {
-        this._addressBookQueryConstructor = addressBookQueryConstructor;
-    }
-
-    /**
-     * @returns {() => AddressBookQuery}
-     */
-    get addressBookQueryConstructor() {
-        if (this._addressBookQueryConstructor == null) {
-            throw new Error(
-                "Cache.addressBookQueryConstructor was used before it was set",
-            );
-        }
-
-        return this._addressBookQueryConstructor;
-    }
 }
 
 /**
