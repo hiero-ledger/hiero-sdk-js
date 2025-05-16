@@ -9,9 +9,9 @@ import PublicKey from "../PublicKey.js";
 import PrivateKey from "../PrivateKey.js";
 import LedgerId from "../LedgerId.js";
 import FileId from "../file/FileId.js";
-import CACHE from "../Cache.js";
 import Logger from "../logger/Logger.js"; // eslint-disable-line
 import { convertToNumber } from "../util.js";
+import AddressBookQuery from "../network/AddressBookQuery.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -742,7 +742,7 @@ export default class Client {
         this._isUpdatingNetwork = true;
 
         try {
-            const addressBook = await CACHE.addressBookQueryConstructor()
+            const addressBook = await new AddressBookQuery()
                 .setFileId(
                     FileId.getAddressBookFileIdFor(this._shard, this._realm),
                 )
