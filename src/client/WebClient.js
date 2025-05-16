@@ -41,6 +41,36 @@ export const Network = {
     PREVIEWNET: WEB_PREVIEWNET,
 };
 
+export const MirrorNetwork = {
+    /**
+     * @param {string} name
+     * @returns {string[]}
+     */
+    fromName(name) {
+        switch (name) {
+            case "mainnet":
+                return MirrorNetwork.MAINNET;
+
+            case "testnet":
+                return MirrorNetwork.TESTNET;
+
+            case "previewnet":
+                return MirrorNetwork.PREVIEWNET;
+
+            case "local-node":
+                return MirrorNetwork.LOCAL_NODE;
+
+            default:
+                throw new Error(`unknown network name: ${name}`);
+        }
+    },
+
+    MAINNET: ["mainnet-public.mirrornode.hedera.com:443"],
+    TESTNET: ["testnet.mirrornode.hedera.com:443"],
+    PREVIEWNET: ["previewnet.mirrornode.hedera.com:443"],
+    LOCAL_NODE: ["127.0.0.1:5600"],
+};
+
 /**
  * Represents a client for interacting with the Hedera network over the web.
  * The `WebClient` class extends the base `Client` class and provides methods
@@ -60,17 +90,20 @@ export default class WebClient extends Client {
                 switch (props.network) {
                     case "mainnet":
                         this.setNetwork(Network.MAINNET);
+                        this.setMirrorNetwork(MirrorNetwork.MAINNET);
                         this.setLedgerId(LedgerId.MAINNET);
                         break;
 
                     case "testnet":
                         this.setNetwork(Network.TESTNET);
                         this.setLedgerId(LedgerId.TESTNET);
+                        this.setMirrorNetwork(MirrorNetwork.TESTNET);
                         break;
 
                     case "previewnet":
                         this.setNetwork(Network.PREVIEWNET);
                         this.setLedgerId(LedgerId.PREVIEWNET);
+                        this.setMirrorNetwork(MirrorNetwork.PREVIEWNET);
                         break;
 
                     default:
