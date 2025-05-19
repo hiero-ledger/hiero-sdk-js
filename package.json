@@ -13,6 +13,7 @@
     },
     "browser": {
         "./lib/index.js": "./lib/browser.js",
+        "./lib/network/AddressBookQuery.js": "./lib/network/AddressBookQueryWeb.js",
         "./lib/encoding/hex.js": "./lib/encoding/hex.browser.js",
         "./lib/encoding/utf8.js": "./lib/encoding/utf8.browser.js",
         "./lib/cryptography/sha384.js": "./lib/cryptography/sha384.browser.js",

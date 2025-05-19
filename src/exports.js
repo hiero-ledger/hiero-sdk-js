@@ -32,7 +32,6 @@ export { default as AccountInfoFlow } from "./account/AccountInfoFlow.js";
 export { default as AccountInfoQuery } from "./account/AccountInfoQuery.js";
 export { default as AccountRecordsQuery } from "./account/AccountRecordsQuery.js";
 export { default as AccountUpdateTransaction } from "./account/AccountUpdateTransaction.js";
-export { default as AddressBookQuery } from "./network/AddressBookQuery.js";
 export { default as AssessedCustomFee } from "./token/AssessedCustomFee.js";
 export { default as BatchTransaction } from "./transaction/BatchTransaction.js";
 export { default as ContractByteCodeQuery } from "./contract/ContractByteCodeQuery.js";
