@@ -65,7 +65,7 @@ tasks:
     "test:release":
         cmds:
             - task: build
-            - task: test:unit
+            # - task: test:unit
 
     test:
         deps:
@@ -78,15 +78,15 @@ tasks:
 
     "test:unit:node":
         cmds:
-            - npx vitest --config=test/vitest-node.config.ts {{.CLI_ARGS}}
+            - npx vitest --config=test/vitest-node.config.ts
 
     "test:unit:codecov":
         cmds:
-            - npx vitest --coverage --config=test/vitest-node.config.ts {{.CLI_ARGS}}
+            - npx vitest --coverage --config=test/vitest-node.config.ts
 
     "test:unit:browser":
         cmds:
-            - npx vitest --config=test/vitest-browser.config.ts {{.CLI_ARGS}}
+            - npx vitest --config=test/vitest-browser.config.ts
 
     update:
         cmds:

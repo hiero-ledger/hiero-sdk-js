@@ -734,6 +734,12 @@ export default class Status {
             case Status.CreatingSystemEntities:
                 return "CREATING_SYSTEM_ENTITIES";
 
+            case Status.ThrottleGroupLcmOverflow:
+                return "THROTTLE_GROUP_LCM_OVERFLOW";
+            case Status.AirdropContainsMultipleSendersForAToken:
+                return "AIRDROP_CONTAINS_MULTIPLE_SENDERS_FOR_A_TOKEN";
+            case Status.GrpcWebProxyNotSupported:
+                return "GRPC_WEB_PROXY_NOT_SUPPORTED";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -1456,6 +1462,12 @@ export default class Status {
                 return Status.ScheduleExpiryNotConfigurable;
             case 396:
                 return Status.CreatingSystemEntities;
+            case 397:
+                return Status.ThrottleGroupLcmOverflow;
+            case 398:
+                return Status.AirdropContainsMultipleSendersForAToken;
+            case 399:
+                return Status.GrpcWebProxyNotSupported;
             default:
                 throw new Error(
                     `(BUG) Status.fromCode() does not handle code: ${code}`,
@@ -3315,3 +3327,18 @@ Status.ScheduleExpiryNotConfigurable = new Status(395);
  * Creating system entities
  */
 Status.CreatingSystemEntities = new Status(396);
+
+/**
+ * The least common multiple of the throttle group's milliOpsPerSec is too large and it's overflowing.
+ */
+Status.ThrottleGroupLcmOverflow = new Status(397);
+
+/**
+ * Token airdrop transactions can not contain multiple senders for a single token.
+ */
+Status.AirdropContainsMultipleSendersForAToken = new Status(398);
+
+/**
+ * The GRPC proxy endpoint is set in the NodeCreate or NodeUpdate transaction, which the network does not support.
+ */
+Status.GrpcWebProxyNotSupported = new Status(399);

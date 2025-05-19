@@ -2,17 +2,14 @@ import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
 import { SDK_VERSION } from "../../src/version.js";
 import WebChannel from "../../src/channel/WebChannel.js";
 
-// Use vi.hoisted to properly hoist the mock factory
-const mockClientConstants = vi.hoisted(() => ({
+// Mock the client constants
+vi.mock("../../src/constants/ClientConstants.js", () => ({
     ALL_WEB_NETWORK_NODES: {
         "https://example.com": {
             toString: () => "example-node",
         },
     },
 }));
-
-// Mock the client constants
-vi.mock("../../src/constants/ClientConstants.js", () => mockClientConstants);
 
 // Get the global object in any environment
 const getGlobalObject = () => {
