@@ -9,6 +9,7 @@ import {
     MAINNET,
     WEB_TESTNET,
     WEB_PREVIEWNET,
+    MirrorNetwork,
 } from "../constants/ClientConstants.js";
 
 /**
@@ -60,17 +61,20 @@ export default class WebClient extends Client {
                 switch (props.network) {
                     case "mainnet":
                         this.setNetwork(Network.MAINNET);
+                        this.setMirrorNetwork(MirrorNetwork.MAINNET);
                         this.setLedgerId(LedgerId.MAINNET);
                         break;
 
                     case "testnet":
                         this.setNetwork(Network.TESTNET);
                         this.setLedgerId(LedgerId.TESTNET);
+                        this.setMirrorNetwork(MirrorNetwork.TESTNET);
                         break;
 
                     case "previewnet":
                         this.setNetwork(Network.PREVIEWNET);
                         this.setLedgerId(LedgerId.PREVIEWNET);
+                        this.setMirrorNetwork(MirrorNetwork.PREVIEWNET);
                         break;
 
                     default:
@@ -113,7 +117,7 @@ export default class WebClient extends Client {
      * @returns {WebClient}
      */
     static forNetwork(network) {
-        return new WebClient({ network, scheduleNetworkUpdate: false });
+        return new WebClient({ network });
     }
 
     /**
@@ -121,7 +125,7 @@ export default class WebClient extends Client {
      * @returns {WebClient}
      */
     static forName(network) {
-        return new WebClient({ network, scheduleNetworkUpdate: false });
+        return new WebClient({ network });
     }
 
     /**
@@ -132,7 +136,6 @@ export default class WebClient extends Client {
     static forMainnet() {
         return new WebClient({
             network: "mainnet",
-            scheduleNetworkUpdate: false,
         });
     }
 
@@ -144,7 +147,6 @@ export default class WebClient extends Client {
     static forTestnet() {
         return new WebClient({
             network: "testnet",
-            scheduleNetworkUpdate: false,
         });
     }
 
@@ -156,7 +158,6 @@ export default class WebClient extends Client {
     static forPreviewnet() {
         return new WebClient({
             network: "previewnet",
-            scheduleNetworkUpdate: false,
         });
     }
 
@@ -212,15 +213,5 @@ export default class WebClient extends Client {
         return () => {
             throw new Error("mirror support is not supported in browsers");
         };
-    }
-
-    /**
-     * @override
-     * @returns {Promise<void>}
-     */
-    updateNetwork() {
-        return Promise.reject(
-            new Error("Update network is not supported in browsers"),
-        );
     }
 }
