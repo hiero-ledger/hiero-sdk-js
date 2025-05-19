@@ -7,12 +7,28 @@ import {
     CustomFixedFee,
     TokenId,
     CustomFeeLimit,
+    PrivateKey,
+    Transaction,
 } from "../../src/index.js";
 
 import * as utf8 from "../../src/encoding/utf8.js";
 import * as util from "../../src/util.js";
 
 describe("TopicMessageSubmitTransaction", function () {
+    let topicId;
+    let message;
+    let transactionId;
+    let nodeId;
+    let privateKey;
+
+    beforeEach(function () {
+        topicId = new TopicId(0, 0, 5005);
+        message = "Hello, Hedera!";
+        transactionId = TransactionId.generate(new AccountId(0, 0, 4444));
+        nodeId = new AccountId(0, 0, 3);
+        privateKey = PrivateKey.generateED25519();
+    });
+
     it("setMessage should throw error when passed no message", function () {
         const topicMessageSubmitTransaction =
             new TopicMessageSubmitTransaction();
@@ -223,6 +239,263 @@ describe("TopicMessageSubmitTransaction", function () {
             expect(
                 topicMessageSubmitTransaction.getCustomFeeLimits()[0],
             ).to.deep.equal(customFeeLimitToBeAdded);
+        });
+    });
+
+    describe("_fromProtobuf", function () {
+        it("should deserialize from protobuf correctly", function () {
+            // Create mock protobuf objects
+            const mockTopicMessageBody = {
+                consensusSubmitMessage: {
+                    topicID: topicId._toProtobuf(),
+                    message: utf8.encode(message),
+                },
+            };
+
+            const mockTransaction = {
+                bodyBytes: Uint8Array.from([0]),
+                sigMap: {
+                    sigPair: [],
+                },
+            };
+
+            const mockSignedTransaction = {
+                bodyBytes: Uint8Array.from([0]),
+                sigMap: {
+                    sigPair: [],
+                },
+            };
+
+            // Execute fromProtobuf
+            const transaction = TopicMessageSubmitTransaction._fromProtobuf(
+                [mockTransaction],
+                [mockSignedTransaction],
+                [transactionId],
+                [nodeId],
+                [mockTopicMessageBody],
+            );
+
+            // Verify the transaction properties
+            expect(transaction).to.be.instanceOf(TopicMessageSubmitTransaction);
+            expect(transaction.topicId.toString()).to.equal(topicId.toString());
+
+            // Compare message content
+            const decodedMessage = utf8.decode(transaction.message);
+            expect(decodedMessage).to.equal(message);
+        });
+
+        it("should handle null values in protobuf", function () {
+            // Create minimal mock protobuf objects
+            const mockTopicMessageBody = {
+                consensusSubmitMessage: {},
+            };
+
+            const mockTransaction = {
+                bodyBytes: Uint8Array.from([0]),
+                sigMap: {
+                    sigPair: [],
+                },
+            };
+
+            const mockSignedTransaction = {
+                bodyBytes: Uint8Array.from([0]),
+                sigMap: {
+                    sigPair: [],
+                },
+            };
+
+            // Execute fromProtobuf
+            const transaction = TopicMessageSubmitTransaction._fromProtobuf(
+                [mockTransaction],
+                [mockSignedTransaction],
+                [transactionId],
+                [nodeId],
+                [mockTopicMessageBody],
+            );
+
+            // Verify the transaction properties
+            expect(transaction).to.be.instanceOf(TopicMessageSubmitTransaction);
+            expect(transaction.topicId).to.be.null;
+            expect(transaction.message).to.be.null;
+        });
+    });
+
+    describe("serialization/deserialization", function () {
+        it("should serialize and deserialize correctly", async function () {
+            // Create a transaction with all properties set
+            const transaction = await new TopicMessageSubmitTransaction()
+                .setTopicId(topicId)
+                .setMessage(message)
+                .setNodeAccountIds([nodeId])
+                .setTransactionId(transactionId)
+                .freeze()
+                .sign(privateKey);
+
+            // Convert to bytes
+            const transactionBytes = transaction.toBytes();
+
+            // Deserialize from bytes
+            const deserialized = Transaction.fromBytes(transactionBytes);
+
+            // Verify the transaction properties
+            expect(deserialized).to.be.instanceOf(
+                TopicMessageSubmitTransaction,
+            );
+
+            const deserializedSubmit =
+                /** @type {TopicMessageSubmitTransaction} */ (deserialized);
+
+            expect(deserializedSubmit.topicId.toString()).to.equal(
+                topicId.toString(),
+            );
+            expect(utf8.decode(deserializedSubmit.message)).to.equal(message);
+        });
+    });
+
+    describe("getters and setters", function () {
+        describe("topicId", function () {
+            it("should get and set topicId", function () {
+                const transaction =
+                    new TopicMessageSubmitTransaction().setTopicId(topicId);
+
+                expect(transaction.topicId.toString()).to.equal(
+                    topicId.toString(),
+                );
+            });
+
+            it("should set topicId from string", function () {
+                const transaction =
+                    new TopicMessageSubmitTransaction().setTopicId(
+                        topicId.toString(),
+                    );
+
+                expect(transaction.topicId.toString()).to.equal(
+                    topicId.toString(),
+                );
+            });
+        });
+
+        describe("message", function () {
+            it("should get and set message", function () {
+                const transaction =
+                    new TopicMessageSubmitTransaction().setMessage(message);
+
+                // Check with deprecated getter
+                expect(utf8.decode(transaction.message)).to.equal(message);
+
+                // Check with recommended getter
+                expect(utf8.decode(transaction.getMessage())).to.equal(message);
+            });
+
+            it("should set message as Uint8Array", function () {
+                const uint8Message = utf8.encode(message);
+                const transaction =
+                    new TopicMessageSubmitTransaction().setMessage(
+                        uint8Message,
+                    );
+
+                expect(transaction.getMessage()).to.deep.equal(uint8Message);
+            });
+        });
+
+        describe("maxChunks", function () {
+            it("should get and set maxChunks", function () {
+                const maxChunks = 10;
+                const transaction =
+                    new TopicMessageSubmitTransaction().setMaxChunks(maxChunks);
+
+                // Check with deprecated getter
+                expect(transaction.maxChunks).to.equal(maxChunks);
+
+                // Check with recommended getter
+                expect(transaction.getMaxChunks()).to.equal(maxChunks);
+            });
+
+            it("should have default maxChunks", function () {
+                const transaction = new TopicMessageSubmitTransaction();
+
+                expect(transaction.getMaxChunks()).to.equal(20); // Default value from class
+            });
+        });
+
+        describe("chunkSize", function () {
+            it("should get and set chunkSize", function () {
+                const chunkSize = 1000;
+                const transaction =
+                    new TopicMessageSubmitTransaction().setChunkSize(chunkSize);
+
+                // Check with deprecated getter
+                expect(transaction.chunkSize).to.equal(chunkSize);
+
+                // Check with recommended getter
+                expect(transaction.getChunkSize()).to.equal(chunkSize);
+            });
+
+            it("should have default chunkSize", function () {
+                const transaction = new TopicMessageSubmitTransaction();
+
+                // Default is set from CHUNK_SIZE constant
+                expect(transaction.getChunkSize()).to.equal(1024);
+            });
+        });
+
+        describe("customFeeLimits", function () {
+            it("should get, set, and add customFeeLimits", function () {
+                const customFeeLimit1 = new CustomFeeLimit({
+                    tokenId: "0.0.7",
+                    value: 10,
+                });
+
+                const customFeeLimit2 = new CustomFeeLimit({
+                    tokenId: "0.0.8",
+                    value: 20,
+                });
+
+                // Test setCustomFeeLimits
+                let transaction =
+                    new TopicMessageSubmitTransaction().setCustomFeeLimits([
+                        customFeeLimit1,
+                    ]);
+
+                expect(transaction.getCustomFeeLimits()).to.have.length(1);
+                expect(transaction.getCustomFeeLimits()[0]).to.equal(
+                    customFeeLimit1,
+                );
+
+                // Test addCustomFeeLimit
+                transaction = new TopicMessageSubmitTransaction()
+                    .addCustomFeeLimit(customFeeLimit1)
+                    .addCustomFeeLimit(customFeeLimit2);
+
+                expect(transaction.getCustomFeeLimits()).to.have.length(2);
+                expect(transaction.getCustomFeeLimits()[0]).to.equal(
+                    customFeeLimit1,
+                );
+                expect(transaction.getCustomFeeLimits()[1]).to.equal(
+                    customFeeLimit2,
+                );
+            });
+        });
+
+        describe("constructor", function () {
+            it("should set values in constructor", function () {
+                const customChunkSize = 2000;
+                const customMaxChunks = 15;
+
+                const transaction = new TopicMessageSubmitTransaction({
+                    topicId,
+                    message,
+                    chunkSize: customChunkSize,
+                    maxChunks: customMaxChunks,
+                });
+
+                expect(transaction.topicId.toString()).to.equal(
+                    topicId.toString(),
+                );
+                expect(utf8.decode(transaction.message)).to.equal(message);
+                expect(transaction.chunkSize).to.equal(customChunkSize);
+                expect(transaction.maxChunks).to.equal(customMaxChunks);
+            });
         });
     });
 });

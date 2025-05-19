@@ -48,7 +48,8 @@ describe("NodeUpdateTransaction", function () {
             .setServiceEndpoints(SERVICE_ENDPOINTS)
             .setCertificateHash(GRPC_CERTIFICATE_HASH)
             .setAdminKey(ADMIN_KEY)
-            .setMaxTransactionFee(new Hbar(1));
+            .setMaxTransactionFee(new Hbar(1))
+            .setDeclineReward(false);
 
         const tx2 = NodeUpdateTransaction.fromBytes(tx.toBytes());
 
@@ -81,6 +82,17 @@ describe("NodeUpdateTransaction", function () {
             tx2.certificateHash.toString(),
         );
         expect(tx.adminKey.toString()).to.equal(tx2.adminKey.toString());
+        expect(tx.declineReward).to.equal(tx2.declineReward);
+    });
+
+    it("should set decline reward", function () {
+        const tx = new NodeUpdateTransaction().setDeclineReward(true);
+        expect(tx.declineReward).to.equal(true);
+    });
+
+    it("should not set decline reward if not set explicitly", function () {
+        const tx = new NodeUpdateTransaction();
+        expect(tx.declineReward).to.equal(null);
     });
 
     it("should change account id", function () {

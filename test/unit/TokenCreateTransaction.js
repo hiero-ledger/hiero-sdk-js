@@ -5,6 +5,8 @@ import {
     TransactionId,
     AccountId,
     Timestamp,
+    TokenType,
+    TokenSupplyType,
 } from "../../src/index.js";
 import Long from "long";
 import { DEFAULT_AUTO_RENEW_PERIOD } from "../../src/transaction/Transaction.js";
@@ -139,5 +141,193 @@ describe("TokenCreateTransaction", function () {
                 seconds: Long.fromNumber(120),
             },
         });
+    });
+
+    it("can be decoded from protobuf", function () {
+        const key1 = PrivateKey.fromStringDer(
+            "302e020100300506032b6570042204205fc37fbd55631722b7ab5ec8e31696f6d3f818a15c5258a1529de7d4a1def6e2",
+        );
+        const key2 = PrivateKey.fromStringDer(
+            "302e020100300506032b657004220420b5e15b70109fe6e11d1d6d06b20d27b494aa05a28a8bc84c627d9be66e179391",
+        );
+        const key3 = PrivateKey.fromStringDer(
+            "302e020100300506032b6570042204202b5dc9915d5b6829592f4562a3d099e7b1bdd48da347e351da8d31cd41653016",
+        );
+        const key4 = PrivateKey.fromStringDer(
+            "302e020100300506032b6570042204205a8571fe4badbc6bd76f03170f5ec4bdc69f2edb93f133477d0ef8f9e17a0f3a",
+        );
+        const key5 = PrivateKey.fromStringDer(
+            "302e020100300506032b65700422042081c36f46db2bc4e7d993a23718a158c9fffa96719d7e72b3823d8bc9b973d596",
+        );
+        const key6 = PrivateKey.fromStringDer(
+            "302e020100300506032b657004220420ff498f69b92ea43a0a8fd6e4a7036e5f8b5f23e527b0443bc309cc4ff5b75303",
+        );
+        const key7 = PrivateKey.fromStringDer(
+            "302e020100300506032b657004220420542b4d4a318a1ae5f91071f34c8d900b1150e83d15fe71d22b8581e1203f99ad",
+        );
+        const key8 = PrivateKey.fromStringDer(
+            "302e020100300506032b6570042204205447805ce906170817e2bd4e26f4ea1fd5bbc38a2532c7f66b7d7a24f60ee9d5",
+        );
+        const metadata = new Uint8Array([1, 2, 3, 4, 5]);
+        const autoRenewAccountId = new AccountId(10);
+        const treasuryAccountId = new AccountId(11);
+
+        const expirationTime = new Timestamp(
+            Math.floor(
+                Date.now() / 1000 + DEFAULT_AUTO_RENEW_PERIOD.toNumber(),
+            ),
+            0,
+        );
+
+        const original = new TokenCreateTransaction()
+            .setMaxTransactionFee(new Hbar(30))
+            .setTransactionId(
+                TransactionId.withValidStart(
+                    new AccountId(1),
+                    new Timestamp(2, 3),
+                ),
+            )
+            .setTokenName("name")
+            .setTokenSymbol("symbol")
+            .setTokenMemo("memo")
+            .setDecimals(7)
+            .setTreasuryAccountId(treasuryAccountId)
+            .setAutoRenewAccountId(autoRenewAccountId)
+            .setExpirationTime(expirationTime)
+            .setAdminKey(key1)
+            .setKycKey(key2)
+            .setFreezeKey(key3)
+            .setPauseKey(key4)
+            .setWipeKey(key5)
+            .setSupplyKey(key6)
+            .setFeeScheduleKey(key7)
+            .setMetadata(metadata)
+            .setMetadataKey(key8)
+            .setNodeAccountIds([new AccountId(4)])
+            .setTransactionMemo("random memo")
+            .freeze();
+
+        const transactions = [original._makeTransactionBody()];
+        const protobufBody = transactions[0];
+        const signedTransactions = [];
+        const transactionIds = [original.transactionId];
+        const nodeIds = [new AccountId(4)];
+        const bodies = [protobufBody];
+
+        const reconstructed = TokenCreateTransaction._fromProtobuf(
+            transactions,
+            signedTransactions,
+            transactionIds,
+            nodeIds,
+            bodies,
+        );
+
+        expect(reconstructed.tokenName).to.equal("name");
+        expect(reconstructed.tokenSymbol).to.equal("symbol");
+        expect(reconstructed.tokenMemo).to.equal("memo");
+        expect(reconstructed.decimals?.toNumber()).to.equal(7);
+        expect(reconstructed.treasuryAccountId?.toString()).to.equal("0.0.11");
+        expect(reconstructed.autoRenewAccountId?.toString()).to.equal("0.0.10");
+        expect(reconstructed.expirationTime?.seconds.toString()).to.equal(
+            expirationTime.seconds.toString(),
+        );
+        expect(reconstructed.adminKey?.toString()).to.equal(
+            key1.publicKey.toString(),
+        );
+        expect(reconstructed.kycKey?.toString()).to.equal(
+            key2.publicKey.toString(),
+        );
+        expect(reconstructed.freezeKey?.toString()).to.equal(
+            key3.publicKey.toString(),
+        );
+        expect(reconstructed.pauseKey?.toString()).to.equal(
+            key4.publicKey.toString(),
+        );
+        expect(reconstructed.wipeKey?.toString()).to.equal(
+            key5.publicKey.toString(),
+        );
+        expect(reconstructed.supplyKey?.toString()).to.equal(
+            key6.publicKey.toString(),
+        );
+        expect(reconstructed.feeScheduleKey?.toString()).to.equal(
+            key7.publicKey.toString(),
+        );
+        expect(reconstructed.metadataKey?.toString()).to.equal(
+            key8.publicKey.toString(),
+        );
+        expect(reconstructed.metadata).to.deep.equal(metadata);
+    });
+
+    it("can be decoded from protobuf with custom fees and additional properties", function () {
+        const key1 = PrivateKey.fromStringDer(
+            "302e020100300506032b6570042204205fc37fbd55631722b7ab5ec8e31696f6d3f818a15c5258a1529de7d4a1def6e2",
+        );
+        const customFees = [
+            // We'll use a mock object for the custom fees since we're only testing serialization/deserialization
+            {
+                _toProtobuf: () => ({
+                    fixedFee: {
+                        amount: Long.fromNumber(10),
+                        denominatingTokenId: { tokenNum: Long.fromNumber(123) },
+                    },
+                }),
+            },
+        ];
+        const metadata = new Uint8Array([1, 2, 3, 4, 5]);
+        const treasuryAccountId = new AccountId(11);
+        const initialSupply = Long.fromNumber(1000);
+        const maxSupply = Long.fromNumber(10000);
+        const freezeDefault = true;
+
+        const original = new TokenCreateTransaction()
+            .setTokenName("name")
+            .setTokenSymbol("symbol")
+            .setDecimals(7)
+            .setInitialSupply(initialSupply)
+            .setMaxSupply(maxSupply)
+            .setTreasuryAccountId(treasuryAccountId)
+            .setAdminKey(key1)
+            .setFreezeDefault(freezeDefault)
+            .setCustomFees(customFees)
+            .setMetadata(metadata)
+            .setTokenType(TokenType.NonFungibleUnique)
+            .setSupplyType(TokenSupplyType.Finite)
+            .setNodeAccountIds([new AccountId(4)])
+            .setTransactionId(TransactionId.generate(new AccountId(1)))
+            .freeze();
+
+        const transactions = [original._makeTransactionBody()];
+        const protobufBody = transactions[0];
+        const signedTransactions = [];
+        const transactionIds = [original.transactionId];
+        const nodeIds = [new AccountId(4)];
+        const bodies = [protobufBody];
+
+        const reconstructed = TokenCreateTransaction._fromProtobuf(
+            transactions,
+            signedTransactions,
+            transactionIds,
+            nodeIds,
+            bodies,
+        );
+
+        expect(reconstructed.tokenName).to.equal("name");
+        expect(reconstructed.tokenSymbol).to.equal("symbol");
+        expect(reconstructed.decimals?.toNumber()).to.equal(7);
+        expect(reconstructed.initialSupply?.toNumber()).to.equal(1000);
+        expect(reconstructed.maxSupply?.toNumber()).to.equal(10000);
+        expect(reconstructed.treasuryAccountId?.toString()).to.equal("0.0.11");
+        expect(reconstructed.adminKey?.toString()).to.equal(
+            key1.publicKey.toString(),
+        );
+        expect(reconstructed.freezeDefault).to.equal(true);
+        expect(reconstructed.metadata).to.deep.equal(metadata);
+        expect(reconstructed.tokenType?.toString()).to.equal(
+            TokenType.NonFungibleUnique.toString(),
+        );
+        expect(reconstructed.supplyType?.toString()).to.equal(
+            TokenSupplyType.Finite.toString(),
+        );
+        expect(reconstructed.customFees.length).to.be.greaterThan(0);
     });
 });

@@ -14,7 +14,6 @@ describe("TokenAirdropCancelTransaction", function () {
         const tx = new TokenCancelAirdropTransaction({
             pendingAirdropIds: [pendingAirdropId],
         });
-        console.log(tx.toBytes());
 
         const tx2 = TokenCancelAirdropTransaction.fromBytes(tx.toBytes());
 
