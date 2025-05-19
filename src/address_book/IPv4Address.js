@@ -91,6 +91,28 @@ export default class IPv4Address {
     }
 
     /**
+     * @internal
+     * @param {string} address - IPv4 address string in format "x.x.x.x"
+     * @returns {IPv4Address}
+     * @throws {Error} If the address string is invalid
+     */
+    static _fromString(address) {
+        const parts = address.split(".");
+        if (parts.length !== 4) {
+            throw new Error("Invalid IPv4 address format");
+        }
+
+        const network = new IPv4AddressPart()
+            .setLeft(parseInt(parts[0], 10))
+            .setRight(parseInt(parts[1], 10));
+        const host = new IPv4AddressPart()
+            .setLeft(parseInt(parts[2], 10))
+            .setRight(parseInt(parts[3], 10));
+
+        return new IPv4Address({ network, host });
+    }
+
+    /**
      * @returns {string}
      */
     toString() {
