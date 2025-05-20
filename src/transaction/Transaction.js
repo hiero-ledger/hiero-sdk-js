@@ -752,6 +752,31 @@ export default class Transaction extends Executable {
     }
 
     /**
+     * Get the body sizes for all chunks in a Chunked transaction.
+     * For transactions with multiple chunks (like large topic message submissions),
+     * this returns an array containing the size of each chunk's transaction body.
+     * The size is calculated by encoding the transaction body to protobuf format.
+     *
+     * @returns {number[]} An array of body sizes, where each element represents
+     * the size in bytes of a chunk's transaction body
+     *
+     */
+    get bodySizeAllChunks() {
+        const bodySizes = [];
+
+        // Store sizes for each chunk
+        for (let i = 0; i < this.getRequiredChunks(); i++) {
+            // Set index directly
+            this._transactionIds.index = i;
+            // Use super.bodySize to access the base class implementation
+            bodySizes.push(this.bodySize);
+        }
+        // Restore to initial index
+        this._transactionIds.index = 0;
+        return bodySizes;
+    }
+
+    /**
      * Sign the transaction with the private key
      * **NOTE**: This is a thin wrapper around `.signWith()`
      *
