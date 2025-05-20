@@ -758,7 +758,7 @@ describe("Transaction", function () {
             expect(size).to.be.greaterThan(1024); // Size should be greater than single chunk
 
             // Create a small content transaction for comparison
-            const smallContent = Buffer.alloc(512).fill("a"); // 512 bytes, smaller than CHUNK_SIZE
+            const smallContent = new Uint8Array(512).fill("a".charCodeAt(0));
             const smallFileAppendTx = new FileAppendTransaction()
                 .setFileId(new FileId(1))
                 .setContents(smallContent)
@@ -797,11 +797,11 @@ describe("Transaction", function () {
 
         it("should return different sizes for transactions with different contents", function () {
             const transaction1 = new FileCreateTransaction().setContents(
-                Buffer.from("a"),
+                new TextEncoder().encode("a"),
             );
 
             const transaction2 = new FileCreateTransaction().setContents(
-                Buffer.from("abcdefghjk"),
+                new TextEncoder().encode("abcdefghjk"),
             );
             expect(transaction1.bodySize).to.not.equal(transaction2.bodySize);
         });
@@ -841,7 +841,9 @@ describe("Transaction", function () {
         it("should return array of body sizes for multi-chunk transaction", function () {
             // Create content larger than chunk size to force multiple chunks
             const CHUNK_SIZE = 1024;
-            const content = Buffer.alloc(CHUNK_SIZE * 3).fill("a"); // Will create 3 chunks
+            const content = new Uint8Array(CHUNK_SIZE * 3).fill(
+                "a".charCodeAt(0),
+            ); // Will create 3 chunks
 
             const fileAppendTx = new FileAppendTransaction()
                 .setFileId(new FileId(1))
@@ -862,7 +864,7 @@ describe("Transaction", function () {
         });
 
         it("should return array of one size for single-chunk transaction", function () {
-            const smallContent = Buffer.alloc(500).fill("a"); // Small enough for one chunk
+            const smallContent = new Uint8Array(500).fill("a".charCodeAt(0));
 
             const fileAppendTx = new FileAppendTransaction()
                 .setFileId(new FileId(1))
