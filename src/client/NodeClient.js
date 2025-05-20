@@ -14,6 +14,7 @@ import * as previewnet from "./addressbooks/previewnet.js";
 import * as hex from "../encoding/hex.js";
 import AddressBookQuery from "../network/AddressBookQuery.js";
 import FileId from "../file/FileId.js";
+import { MirrorNetwork } from "../constants/ClientConstants.js";
 
 const readFileAsync = util.promisify(fs.readFile);
 
@@ -25,36 +26,6 @@ export const Network = {
     LOCAL_NODE: {
         "127.0.0.1:50211": new AccountId(3),
     },
-};
-
-export const MirrorNetwork = {
-    /**
-     * @param {string} name
-     * @returns {string[]}
-     */
-    fromName(name) {
-        switch (name) {
-            case "mainnet":
-                return MirrorNetwork.MAINNET;
-
-            case "testnet":
-                return MirrorNetwork.TESTNET;
-
-            case "previewnet":
-                return MirrorNetwork.PREVIEWNET;
-
-            case "local-node":
-                return MirrorNetwork.LOCAL_NODE;
-
-            default:
-                throw new Error(`unknown network name: ${name}`);
-        }
-    },
-
-    MAINNET: ["mainnet-public.mirrornode.hedera.com:443"],
-    TESTNET: ["testnet.mirrornode.hedera.com:443"],
-    PREVIEWNET: ["previewnet.mirrornode.hedera.com:443"],
-    LOCAL_NODE: ["127.0.0.1:5600"],
 };
 
 /**
