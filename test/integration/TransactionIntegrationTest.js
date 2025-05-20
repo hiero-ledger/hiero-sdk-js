@@ -15,6 +15,7 @@ import {
     AccountCreateTransaction,
     FileAppendTransaction,
     FileContentsQuery,
+    SignatureMap,
 } from "../../src/exports.js";
 import * as hex from "../../src/encoding/hex.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
@@ -1055,11 +1056,9 @@ describe("TransactionIntegration", function () {
     describe("HSM signing of signable transaction body bytes integration tests", function () {
         let env, client, senderId, senderKey, receiverId;
 
-        const bigContents = `
-Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur aliquam augue sem, ut mattis dui laoreet a. Curabitur consequat est euismod, scelerisque metus et, tristique dui. Nulla commodo mauris ut faucibus ultricies. Quisque venenatis nisl nec augue tempus, at efficitur elit eleifend. Duis pharetra felis metus, sed dapibus urna vehicula id. Duis non venenatis turpis, sit amet ornare orci. Donec non interdum quam. Sed finibus nunc et risus finibus, non sagittis lorem cursus. Proin pellentesque tempor aliquam. Sed congue nisl in enim bibendum, condimentum vehicula nisi feugiat.
-
-Suspendisse non sodales arcu. Suspendisse sodales, lorem ac mollis blandit, ipsum neque porttitor nulla, et sodales arcu ante fermentum tellus. Integer sagittis dolor sed augue fringilla accumsan. Cras vitae finibus arcu, sit amet varius dolor. Etiam id finibus dolor, vitae luctus velit. Proin efficitur augue nec pharetra accumsan. Aliquam lobortis nisl diam, vel fermentum purus finibus id. Etiam at finibus orci, et tincidunt turpis. Aliquam imperdiet congue lacus vel facilisis. Phasellus id magna vitae enim dapibus vestibulum vitae quis augue. Morbi eu consequat enim. Maecenas neque nulla, pulvinar sit amet consequat sed, tempor sed magna. Mauris lacinia sem feugiat faucibus aliquet. Etiam congue non turpis at commodo. Nulla facilisi.
-`;
+        const bigContents = Array(1000)
+            .fill("Lorem ipsum dolor sit amet. ")
+            .join("");
 
         /**
          * Signs the provided data using a Hardware Security Module (HSM).
@@ -1158,8 +1157,18 @@ Suspendisse non sodales arcu. Suspendisse sodales, lorem ac mollis blandit, ipsu
             expect(signature).to.be.instanceOf(Uint8Array);
             expect(signature.length).to.be.greaterThan(0);
 
-            // Add the signature to the transaction
-            transferTx.addSignature(senderKey.publicKey, signature);
+            // Add the signature to signature map
+            const signatureMap = new SignatureMap();
+
+            signatureMap.addSignature(
+                nodeAccountId,
+                transferTx.transactionId,
+                senderKey.publicKey,
+                signature,
+            );
+
+            // Add the signature map to the transaction
+            transferTx.addSignature(senderKey.publicKey, signatureMap);
 
             // Execute the transaction
             const response = await transferTx.execute(client);
@@ -1196,46 +1205,53 @@ Suspendisse non sodales arcu. Suspendisse sodales, lorem ac mollis blandit, ipsu
                 .setTransactionId(TransactionId.generate(senderId))
                 .freezeWith(client);
 
-            // Get the signable node body bytes
-            const signableBytesList = fileAppendTx.signableNodeBodyBytesList;
-
-            // Verify we have exactly one signable bytes object
-            expect(signableBytesList).to.be.an("array");
-            expect(signableBytesList.length).to.equal(1);
+            // Get the transaction body bytes for signing
+            const multiNodeSignableBodyBytesList =
+                fileAppendTx.signableNodeBodyBytesList;
 
             // Verify the signable bytes object
-            const signableBytes = signableBytesList[0];
-            expect(signableBytes).to.be.instanceOf(
-                SignableNodeTransactionBodyBytes,
-            );
-            expect(signableBytes.nodeAccountId.toString()).to.equal(
-                nodeAccountId.toString(),
-            );
-            expect(signableBytes.transactionId.accountId.toString()).to.equal(
-                senderId.toString(),
-            );
-            expect(signableBytes.signableTransactionBodyBytes).to.be.instanceOf(
-                Uint8Array,
-            );
+            multiNodeSignableBodyBytesList.forEach((signableBytes) => {
+                expect(signableBytes).to.be.instanceOf(
+                    SignableNodeTransactionBodyBytes,
+                );
+                expect(signableBytes.nodeAccountId.toString()).to.equal(
+                    nodeAccountId.toString(),
+                );
+                expect(
+                    signableBytes.transactionId.accountId.toString(),
+                ).to.equal(senderId.toString());
 
-            // Verify the transaction body can be decoded and contains file append data
-            const body = HieroProto.proto.TransactionBody.decode(
-                signableBytes.signableTransactionBodyBytes,
-            );
-            expect(body).to.have.property("fileAppend");
+                // Verify the transaction body can be decoded and contains file append data
+                const body = HieroProto.proto.TransactionBody.decode(
+                    signableBytes.signableTransactionBodyBytes,
+                );
 
-            // Sign the transaction body bytes using HSM
-            const signature = await hsmSign(
-                senderKey,
-                signableBytes.signableTransactionBodyBytes,
-            );
+                expect(body).to.have.property("fileAppend");
+            });
 
-            // Verify the signature was generated
-            expect(signature).to.be.instanceOf(Uint8Array);
-            expect(signature.length).to.be.greaterThan(0);
+            const signatureMap = new SignatureMap();
 
-            // Add the signature to the transaction
-            fileAppendTx.addSignature(senderKey.publicKey, signature);
+            // Sign the transaction body bytes for each node using HSM and add the signatures to the signature map
+            for (const {
+                nodeAccountId,
+                transactionId,
+                signableTransactionBodyBytes,
+            } of multiNodeSignableBodyBytesList) {
+                const hsmSignature = await hsmSign(
+                    senderKey,
+                    signableTransactionBodyBytes,
+                );
+
+                signatureMap.addSignature(
+                    nodeAccountId,
+                    transactionId,
+                    senderKey.publicKey,
+                    hsmSignature,
+                );
+            }
+
+            // Add the signatures to the transaction
+            fileAppendTx.addSignature(senderKey.publicKey, signatureMap);
 
             // Execute the transaction
             const response = await fileAppendTx.execute(client);

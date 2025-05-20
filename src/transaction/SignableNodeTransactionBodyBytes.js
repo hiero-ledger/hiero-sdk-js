@@ -4,7 +4,10 @@
  */
 
 /**
- * Represents a transaction body that is ready for signing, associated with a specific node account.
+ * Represents a transaction body that is ready for signing, associated with a specific node account and transaction identifier.
+ * @property {AccountId} nodeAccountId - The account ID of the node.
+ * @property {TransactionId} transactionId - The transactionId of the transaction, (when dealing with a chunked transaction, this is the transactionId of the chunk).
+ * @property {Uint8Array} signableTransactionBodyBytes - The transaction body bytes ready for signing.
  */
 export default class SignableNodeTransactionBodyBytes {
     /**
@@ -22,7 +25,8 @@ export default class SignableNodeTransactionBodyBytes {
         this.nodeAccountId = nodeAccountId;
 
         /**
-         * The node account identifier associated with the transaction.
+         * The transactionId identifier.
+         * Note: When dealing with a chunked transaction, this is the transactionId of the chunk.
          * @type {TransactionId}
          */
         this.transactionId = transactionId;

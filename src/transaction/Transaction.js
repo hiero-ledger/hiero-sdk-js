@@ -1311,7 +1311,7 @@ export default class Transaction extends Executable {
     }
 
     /**
-     * Returns a Map of nodeId => bodyBytes for each node the transaction is intended for.
+     * Returns a List of SignableNodeTransactionBodyBytes for each node the transaction is intended for.
      * These are the canonical bytes that must be signed externally (e.g., via HSM).
      *
      * @returns {SignableNodeTransactionBodyBytes[]}
