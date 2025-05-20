@@ -597,7 +597,7 @@ describe("TopicMessageSubmitTransaction", function () {
                 );
             });
 
-            it.only("should handle empty messages", function () {
+            it("should handle empty messages", function () {
                 const transaction = new TopicMessageSubmitTransaction()
                     .setTopicId(topicId)
                     .setTransactionId(transactionId)
