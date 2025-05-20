@@ -741,7 +741,7 @@ describe("Transaction", function () {
         });
 
         it("should return proper sizes for FileAppend transactions when chunked tx", async function () {
-            const content = Buffer.alloc(2048).fill("a"); // 2KB of data, larger than CHUNK_SIZE (1024)
+            const content = new Uint8Array(2048).fill("a".charCodeAt(0)); // 97 is ASCII for 'a'
 
             const fileAppendTx = new FileAppendTransaction()
                 .setFileId(new FileId(1))
