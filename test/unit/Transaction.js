@@ -10,6 +10,8 @@ import {
     Timestamp,
     Transaction,
     TransactionId,
+    TransferTransaction,
+    FileAppendTransaction,
 } from "../../src/index.js";
 import * as hex from "../../src/encoding/hex.js";
 import Client from "../../src/client/NodeClient.js";
@@ -895,38 +897,78 @@ describe("Transaction", function () {
         });
     });
     describe("signableNodeBodyBytesList getter", function () {
-        let transaction, nodeAccountIds, account, txId;
+        it("should throw error when transaction is not frozen", function () {
+            const transaction = new TransferTransaction()
+                .addHbarTransfer(new AccountId(2), new Hbar(-1))
+                .addHbarTransfer(new AccountId(3), new Hbar(1))
+                .setNodeAccountIds([new AccountId(3)])
+                .setTransactionId(TransactionId.generate(new AccountId(2)));
 
-        beforeEach(function () {
-            account = PrivateKey.generateED25519();
-            nodeAccountIds = [new AccountId(3), new AccountId(4)];
-            txId = TransactionId.generate(nodeAccountIds[0]);
-
-            transaction = new AccountCreateTransaction()
-                .setKeyWithoutAlias(account.publicKey)
-                .setNodeAccountIds(nodeAccountIds)
-                .setTransactionId(txId)
-                .freeze();
-        });
-
-        it("should throw error if transaction is not frozen", function () {
-            const unfrozenTransaction = new AccountCreateTransaction()
-                .setKeyWithoutAlias(account.publicKey)
-                .setNodeAccountIds(nodeAccountIds)
-                .setTransactionId(txId);
-
-            expect(
-                () => unfrozenTransaction.signableNodeBodyBytesList,
-            ).to.throw(
+            expect(() => transaction.signableNodeBodyBytesList).to.throw(
                 "transaction must have been frozen before calculating the hash will be stable, try calling `freeze`",
             );
         });
 
-        it("should return list of SignableNodeTransactionBodyBytes", function () {
+        it("should return correct signable bytes for single node transaction", function () {
+            const nodeAccountId = new AccountId(3);
+            const transaction = new TransferTransaction()
+                .addHbarTransfer(new AccountId(2), new Hbar(-1))
+                .addHbarTransfer(new AccountId(3), new Hbar(1))
+                .setNodeAccountIds([nodeAccountId])
+                .setTransactionId(TransactionId.generate(new AccountId(2)))
+                .freeze();
+
             const signableBytesList = transaction.signableNodeBodyBytesList;
 
             expect(signableBytesList).to.be.an("array");
-            expect(signableBytesList.length).to.equal(nodeAccountIds.length);
+            expect(signableBytesList.length).to.equal(1);
+
+            const signableBytes = signableBytesList[0];
+            expect(signableBytes).to.be.instanceOf(
+                SignableNodeTransactionBodyBytes,
+            );
+            expect(signableBytes.nodeAccountId.toString()).to.equal(
+                nodeAccountId.toString(),
+            );
+            expect(signableBytes.transactionId.accountId.toString()).to.equal(
+                "0.0.2",
+            );
+            expect(signableBytes.signableTransactionBodyBytes).to.be.instanceOf(
+                Uint8Array,
+            );
+        });
+
+        it("should return correct transaction body contents", function () {
+            const transaction = new TransferTransaction()
+                .addHbarTransfer(new AccountId(2), new Hbar(-1))
+                .addHbarTransfer(new AccountId(3), new Hbar(1))
+                .setNodeAccountIds([new AccountId(3)])
+                .setTransactionId(TransactionId.generate(new AccountId(2)))
+                .freeze();
+
+            const signableBytesList = transaction.signableNodeBodyBytesList;
+            const body = HieroProto.proto.TransactionBody.decode(
+                signableBytesList[0].signableTransactionBodyBytes,
+            );
+
+            expect(body).to.have.property("cryptoTransfer");
+            expect(body.nodeAccountID).to.not.be.null;
+            expect(body.transactionID).to.not.be.null;
+        });
+
+        it("should return correct signable bytes for multiple nodes", function () {
+            const nodeAccountIds = [new AccountId(3), new AccountId(4)];
+            const transaction = new TransferTransaction()
+                .addHbarTransfer(new AccountId(2), new Hbar(-1))
+                .addHbarTransfer(new AccountId(3), new Hbar(1))
+                .setNodeAccountIds(nodeAccountIds)
+                .setTransactionId(TransactionId.generate(new AccountId(2)))
+                .freeze();
+
+            const signableBytesList = transaction.signableNodeBodyBytesList;
+
+            expect(signableBytesList).to.be.an("array");
+            expect(signableBytesList.length).to.equal(2);
 
             for (let i = 0; i < signableBytesList.length; i++) {
                 const signableBytes = signableBytesList[i];
@@ -936,16 +978,56 @@ describe("Transaction", function () {
                 expect(signableBytes.nodeAccountId.toString()).to.equal(
                     nodeAccountIds[i].toString(),
                 );
-                expect(signableBytes.transactionId.toString()).to.equal(
-                    txId.toString(),
-                );
+                expect(
+                    signableBytes.transactionId.accountId.toString(),
+                ).to.equal("0.0.2");
                 expect(
                     signableBytes.signableTransactionBodyBytes,
                 ).to.be.instanceOf(Uint8Array);
+
+                const body = HieroProto.proto.TransactionBody.decode(
+                    signableBytes.signableTransactionBodyBytes,
+                );
+                expect(body.nodeAccountID).to.not.be.null;
+                expect(body.transactionID).to.not.be.null;
             }
         });
 
+        it("should return correct signable bytes for file append with multiple chunks", function () {
+            // Create test content
+            const bigContents = Array(1000)
+                .fill("Lorem ipsum dolor sit amet. ")
+                .join("");
+
+            const nodeAccountIds = [new AccountId(3), new AccountId(4)];
+            const transaction = new FileAppendTransaction()
+                .setFileId(new AccountId(5))
+                .setContents(bigContents)
+                .setNodeAccountIds(nodeAccountIds)
+                .setTransactionId(TransactionId.generate(new AccountId(2)))
+                .freeze();
+
+            const expectedSignableBytesListLength = Math.ceil(
+                (bigContents.length / transaction.chunkSize) *
+                    nodeAccountIds.length,
+            );
+
+            const signableBytesList = transaction.signableNodeBodyBytesList;
+
+            expect(signableBytesList).to.be.an("array");
+            expect(signableBytesList.length).to.equal(
+                expectedSignableBytesListLength,
+            );
+        });
+
         it("should throw error if bodyBytes is missing in signed transaction", function () {
+            const transaction = new TransferTransaction()
+                .addHbarTransfer(new AccountId(2), new Hbar(-1))
+                .addHbarTransfer(new AccountId(3), new Hbar(1))
+                .setNodeAccountIds([new AccountId(3)])
+                .setTransactionId(TransactionId.generate(new AccountId(2)))
+                .freeze();
+
             transaction._signedTransactions.list[0].bodyBytes = null;
 
             expect(() => transaction.signableNodeBodyBytesList).to.throw(
@@ -954,6 +1036,13 @@ describe("Transaction", function () {
         });
 
         it("should throw error if nodeAccountID is missing in transaction body", function () {
+            const transaction = new TransferTransaction()
+                .addHbarTransfer(new AccountId(2), new Hbar(-1))
+                .addHbarTransfer(new AccountId(3), new Hbar(1))
+                .setNodeAccountIds([new AccountId(3)])
+                .setTransactionId(TransactionId.generate(new AccountId(2)))
+                .freeze();
+
             const body = HieroProto.proto.TransactionBody.decode(
                 transaction._signedTransactions.list[0].bodyBytes,
             );
@@ -967,6 +1056,13 @@ describe("Transaction", function () {
         });
 
         it("should throw error if transactionID is missing in transaction body", function () {
+            const transaction = new TransferTransaction()
+                .addHbarTransfer(new AccountId(2), new Hbar(-1))
+                .addHbarTransfer(new AccountId(3), new Hbar(1))
+                .setNodeAccountIds([new AccountId(3)])
+                .setTransactionId(TransactionId.generate(new AccountId(2)))
+                .freeze();
+
             const body = HieroProto.proto.TransactionBody.decode(
                 transaction._signedTransactions.list[0].bodyBytes,
             );
