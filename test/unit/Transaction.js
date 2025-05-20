@@ -17,6 +17,7 @@ import * as HieroProto from "@hashgraph/proto";
 import Long from "long";
 import BigNumber from "bignumber.js";
 import SignatureMap from "../../src/transaction/SignatureMap.js";
+import SignableNodeTransactionBodyBytes from "../../src/transaction/SignableNodeTransactionBodyBytes.js";
 
 describe("Transaction", function () {
     it("toBytes", async function () {
@@ -891,6 +892,91 @@ describe("Transaction", function () {
 
             expect(Array.isArray(bodySizes)).to.be.true;
             expect(bodySizes).to.have.lengthOf(1); // Should still have one empty chunk
+        });
+    });
+    describe("signableNodeBodyBytesList getter", function () {
+        let transaction, nodeAccountIds, account, txId;
+
+        beforeEach(function () {
+            account = PrivateKey.generateED25519();
+            nodeAccountIds = [new AccountId(3), new AccountId(4)];
+            txId = TransactionId.generate(nodeAccountIds[0]);
+
+            transaction = new AccountCreateTransaction()
+                .setKeyWithoutAlias(account.publicKey)
+                .setNodeAccountIds(nodeAccountIds)
+                .setTransactionId(txId)
+                .freeze();
+        });
+
+        it("should throw error if transaction is not frozen", function () {
+            const unfrozenTransaction = new AccountCreateTransaction()
+                .setKeyWithoutAlias(account.publicKey)
+                .setNodeAccountIds(nodeAccountIds)
+                .setTransactionId(txId);
+
+            expect(
+                () => unfrozenTransaction.signableNodeBodyBytesList,
+            ).to.throw(
+                "transaction must have been frozen before calculating the hash will be stable, try calling `freeze`",
+            );
+        });
+
+        it("should return list of SignableNodeTransactionBodyBytes", function () {
+            const signableBytesList = transaction.signableNodeBodyBytesList;
+
+            expect(signableBytesList).to.be.an("array");
+            expect(signableBytesList.length).to.equal(nodeAccountIds.length);
+
+            for (let i = 0; i < signableBytesList.length; i++) {
+                const signableBytes = signableBytesList[i];
+                expect(signableBytes).to.be.instanceOf(
+                    SignableNodeTransactionBodyBytes,
+                );
+                expect(signableBytes.nodeAccountId.toString()).to.equal(
+                    nodeAccountIds[i].toString(),
+                );
+                expect(signableBytes.transactionId.toString()).to.equal(
+                    txId.toString(),
+                );
+                expect(
+                    signableBytes.signableTransactionBodyBytes,
+                ).to.be.instanceOf(Uint8Array);
+            }
+        });
+
+        it("should throw error if bodyBytes is missing in signed transaction", function () {
+            transaction._signedTransactions.list[0].bodyBytes = null;
+
+            expect(() => transaction.signableNodeBodyBytesList).to.throw(
+                "Missing bodyBytes in signed transaction.",
+            );
+        });
+
+        it("should throw error if nodeAccountID is missing in transaction body", function () {
+            const body = HieroProto.proto.TransactionBody.decode(
+                transaction._signedTransactions.list[0].bodyBytes,
+            );
+            body.nodeAccountID = null;
+            transaction._signedTransactions.list[0].bodyBytes =
+                HieroProto.proto.TransactionBody.encode(body).finish();
+
+            expect(() => transaction.signableNodeBodyBytesList).to.throw(
+                "Missing nodeAccountID in transaction body.",
+            );
+        });
+
+        it("should throw error if transactionID is missing in transaction body", function () {
+            const body = HieroProto.proto.TransactionBody.decode(
+                transaction._signedTransactions.list[0].bodyBytes,
+            );
+            body.transactionID = null;
+            transaction._signedTransactions.list[0].bodyBytes =
+                HieroProto.proto.TransactionBody.encode(body).finish();
+
+            expect(() => transaction.signableNodeBodyBytesList).to.throw(
+                "Missing transactionID in transaction body.",
+            );
         });
     });
 });

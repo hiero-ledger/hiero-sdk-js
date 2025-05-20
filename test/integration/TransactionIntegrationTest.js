@@ -13,9 +13,13 @@ import {
     KeyList,
     Status,
     AccountCreateTransaction,
+    FileAppendTransaction,
+    FileContentsQuery,
 } from "../../src/exports.js";
 import * as hex from "../../src/encoding/hex.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import SignableNodeTransactionBodyBytes from "../../src/transaction/SignableNodeTransactionBodyBytes.js";
+import * as HieroProto from "@hashgraph/proto";
 
 import { Client } from "./client/NodeIntegrationTestEnv.js";
 import {
@@ -1045,6 +1049,207 @@ describe("TransactionIntegration", function () {
             expect(signTransferTxReceipt.status.toString()).to.be.equal(
                 "SUCCESS",
             );
+        });
+    });
+
+    describe("HSM signing of signable transaction body bytes integration tests", function () {
+        let env, client, senderId, senderKey, receiverId;
+
+        const bigContents = `
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur aliquam augue sem, ut mattis dui laoreet a. Curabitur consequat est euismod, scelerisque metus et, tristique dui. Nulla commodo mauris ut faucibus ultricies. Quisque venenatis nisl nec augue tempus, at efficitur elit eleifend. Duis pharetra felis metus, sed dapibus urna vehicula id. Duis non venenatis turpis, sit amet ornare orci. Donec non interdum quam. Sed finibus nunc et risus finibus, non sagittis lorem cursus. Proin pellentesque tempor aliquam. Sed congue nisl in enim bibendum, condimentum vehicula nisi feugiat.
+
+Suspendisse non sodales arcu. Suspendisse sodales, lorem ac mollis blandit, ipsum neque porttitor nulla, et sodales arcu ante fermentum tellus. Integer sagittis dolor sed augue fringilla accumsan. Cras vitae finibus arcu, sit amet varius dolor. Etiam id finibus dolor, vitae luctus velit. Proin efficitur augue nec pharetra accumsan. Aliquam lobortis nisl diam, vel fermentum purus finibus id. Etiam at finibus orci, et tincidunt turpis. Aliquam imperdiet congue lacus vel facilisis. Phasellus id magna vitae enim dapibus vestibulum vitae quis augue. Morbi eu consequat enim. Maecenas neque nulla, pulvinar sit amet consequat sed, tempor sed magna. Mauris lacinia sem feugiat faucibus aliquet. Etiam congue non turpis at commodo. Nulla facilisi.
+`;
+
+        /**
+         * Signs the provided data using a Hardware Security Module (HSM).
+         * This is a placeholder function that should be replaced with actual HSM SDK logic.
+         * @param {PrivateKey} key - Private key for signing
+         * @param {Uint8Array} bodyBytes - The data to be signed
+         * @returns {Promise<Uint8Array>} - The generated signature
+         */
+        function hsmSign(key, bodyBytes) {
+            // This is a placeholder function that resembles the HSM signing process.
+            const signature = key.sign(bodyBytes);
+            return Promise.resolve(signature);
+        }
+
+        beforeAll(async function () {
+            env = await IntegrationTestEnv.new();
+            client = env.client;
+
+            // Create test accounts
+            senderKey = PrivateKey.generateECDSA();
+            const receiverKey = PrivateKey.generateECDSA();
+
+            senderId = (
+                await (
+                    await new AccountCreateTransaction()
+                        .setECDSAKeyWithAlias(senderKey)
+                        .setInitialBalance(new Hbar(10))
+                        .freezeWith(client)
+                        .execute(client)
+                ).getReceipt(client)
+            ).accountId;
+
+            receiverId = (
+                await (
+                    await new AccountCreateTransaction()
+                        .setECDSAKeyWithAlias(receiverKey)
+                        .setInitialBalance(new Hbar(1))
+                        .freezeWith(client)
+                        .execute(client)
+                ).getReceipt(client)
+            ).accountId;
+        });
+
+        afterAll(async function () {
+            await env.close();
+        });
+
+        it("should accept external HSM signature for the transaction body bytes for a single-node transfer transaction", async function () {
+            // Get a single node account ID from the network
+            const nodeAccountId = Object.values(client.network)[0];
+
+            // Create and freeze a transfer transaction
+            const transferTx = new TransferTransaction()
+                .addHbarTransfer(senderId, new Hbar(-1))
+                .addHbarTransfer(receiverId, new Hbar(1))
+                .setNodeAccountIds([nodeAccountId])
+                .setTransactionId(TransactionId.generate(senderId))
+                .freezeWith(client);
+
+            // Get the signable node body bytes
+            const signableBytesList = transferTx.signableNodeBodyBytesList;
+
+            // Verify we have exactly one signable bytes object
+            expect(signableBytesList).to.be.an("array");
+            expect(signableBytesList.length).to.equal(1);
+
+            // Verify the signable bytes object
+            const signableBytes = signableBytesList[0];
+            expect(signableBytes).to.be.instanceOf(
+                SignableNodeTransactionBodyBytes,
+            );
+            expect(signableBytes.nodeAccountId.toString()).to.equal(
+                nodeAccountId.toString(),
+            );
+            expect(signableBytes.transactionId.accountId.toString()).to.equal(
+                senderId.toString(),
+            );
+            expect(signableBytes.signableTransactionBodyBytes).to.be.instanceOf(
+                Uint8Array,
+            );
+
+            // Verify the transaction body can be decoded and contains transfer data
+            const body = HieroProto.proto.TransactionBody.decode(
+                signableBytes.signableTransactionBodyBytes,
+            );
+
+            expect(body).to.have.property("cryptoTransfer");
+
+            // Sign the transaction body bytes using HSM
+            const signature = await hsmSign(
+                senderKey,
+                signableBytes.signableTransactionBodyBytes,
+            );
+
+            // Verify the signature was generated
+            expect(signature).to.be.instanceOf(Uint8Array);
+            expect(signature.length).to.be.greaterThan(0);
+
+            // Add the signature to the transaction
+            transferTx.addSignature(senderKey.publicKey, signature);
+
+            // Execute the transaction
+            const response = await transferTx.execute(client);
+            const receipt = await response.getReceipt(client);
+
+            // Verify the transaction was successful
+            expect(receipt.status.toString()).to.equal("SUCCESS");
+        });
+
+        it("should accept external HSM signature for the transaction body bytes for a single-node file append chunked transaction", async function () {
+            // Get a single node account ID from the network
+            const nodeAccountId = Object.values(client.network)[0];
+
+            // Create a file first
+            const fileId = (
+                await (
+                    await (
+                        await new FileCreateTransaction()
+                            .setKeys([senderKey.publicKey])
+                            .setContents("[e2e::FileCreateTransaction]")
+                            .setMaxTransactionFee(new Hbar(5))
+                            .freezeWith(client)
+                            .sign(senderKey)
+                    ).execute(client)
+                ).getReceipt(client)
+            ).fileId;
+
+            // Create and freeze a file append transaction
+            const fileAppendTx = new FileAppendTransaction()
+                .setFileId(fileId)
+                .setContents(bigContents)
+                .setNodeAccountIds([nodeAccountId])
+                .setMaxTransactionFee(new Hbar(5))
+                .setTransactionId(TransactionId.generate(senderId))
+                .freezeWith(client);
+
+            // Get the signable node body bytes
+            const signableBytesList = fileAppendTx.signableNodeBodyBytesList;
+
+            // Verify we have exactly one signable bytes object
+            expect(signableBytesList).to.be.an("array");
+            expect(signableBytesList.length).to.equal(1);
+
+            // Verify the signable bytes object
+            const signableBytes = signableBytesList[0];
+            expect(signableBytes).to.be.instanceOf(
+                SignableNodeTransactionBodyBytes,
+            );
+            expect(signableBytes.nodeAccountId.toString()).to.equal(
+                nodeAccountId.toString(),
+            );
+            expect(signableBytes.transactionId.accountId.toString()).to.equal(
+                senderId.toString(),
+            );
+            expect(signableBytes.signableTransactionBodyBytes).to.be.instanceOf(
+                Uint8Array,
+            );
+
+            // Verify the transaction body can be decoded and contains file append data
+            const body = HieroProto.proto.TransactionBody.decode(
+                signableBytes.signableTransactionBodyBytes,
+            );
+            expect(body).to.have.property("fileAppend");
+
+            // Sign the transaction body bytes using HSM
+            const signature = await hsmSign(
+                senderKey,
+                signableBytes.signableTransactionBodyBytes,
+            );
+
+            // Verify the signature was generated
+            expect(signature).to.be.instanceOf(Uint8Array);
+            expect(signature.length).to.be.greaterThan(0);
+
+            // Add the signature to the transaction
+            fileAppendTx.addSignature(senderKey.publicKey, signature);
+
+            // Execute the transaction
+            const response = await fileAppendTx.execute(client);
+            const receipt = await response.getReceipt(client);
+
+            // Verify the transaction was successful
+            expect(receipt.status.toString()).to.equal("SUCCESS");
+
+            // Verify the contents were appended
+            const contents = await new FileContentsQuery()
+                .setFileId(fileId)
+                .execute(client);
+
+            expect(contents.length).to.be.greaterThan(0);
         });
     });
 });
