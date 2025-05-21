@@ -20,6 +20,7 @@ Maintainers are assigned the following scopes in this repository:
 | Simi Hunjan         | SimiHunjan             |       |      |            |       | Hashgraph           |
 | Alexander Gadzhalov | agadzhalov             |       |      |            |       | LimeChain           |
 | Ivaylo Garnev       | ivaylogarnev-limechain |       |      |            |       | LimeChain           |
+| Venilin Vasilev     | venilinvasilev         |       |      |            |       | LimeChain           |
 
 ## Emeritus Maintainers
 
