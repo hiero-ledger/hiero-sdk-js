@@ -129,6 +129,7 @@ async function main() {
         /**
          * Example 2: Multi-Node Batched Transaction
          * Note: This is example makes sense only in a multi-node environment (testnet, mainnet, etc).
+         * Node Accounts will be 3 on testnet, 9 on mainnet and 1 on localhost.
          *
          * This example demonstrates how to sign transaction body bytes
          * using an HSM for a multi-node batched transaction.
@@ -150,17 +151,16 @@ async function main() {
 
         console.log(`Created file with ID: ${fileId.toString()}`);
 
-        const allAvailableNodeAccountIds = /** @type {AccountId[]} */ (
-            Object.values(client.network)
-        );
-
         const multiNodeTx = new FileAppendTransaction()
             .setFileId(fileId)
             .setContents(bigContents)
-            .setNodeAccountIds(allAvailableNodeAccountIds)
             .setMaxTransactionFee(new Hbar(5))
             .setTransactionId(TransactionId.generate(senderId))
             .freezeWith(client);
+
+        const allAvailableNodeAccountIds = /** @type {AccountId[]} */ (
+            Object.values(client.network)
+        );
 
         console.log(
             `Signing transaction with HSM for nodes: ${allAvailableNodeAccountIds
