@@ -18,7 +18,7 @@ Maintainers are assigned the following scopes in this repository:
 |-------------------- | ---------------------- | ----- | ---- | ---------- | ----- | ------------------- |
 | Ivaylo Nikolov      | ivaylonikolov7         |       |      |            |       | LimeChain           |
 | Simi Hunjan         | SimiHunjan             |       |      |            |       | Hashgraph           |
-| Alexander Gadzhalov | agadzhalov             |       |      |            |       | LimeChain           |
+| Ivan Ivanov         | 0xivanov               |       |      |            |       | LimeChain           |
 | Ivaylo Garnev       | ivaylogarnev-limechain |       |      |            |       | LimeChain           |
 | Venilin Vasilev     | venilinvasilev         |       |      |            |       | LimeChain           |
 
