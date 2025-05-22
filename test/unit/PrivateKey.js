@@ -262,7 +262,6 @@ describe("PrivateKey", function () {
             const derKey = PrivateKey.generateED25519().toStringDer();
             expect(PrivateKey.getAlgorithm(derKey)).to.equal("ed25519");
         });
-<<<<<<< Updated upstream
 
         it("should throw error if invalid der key", function () {
             const derKey = "invalid";
@@ -270,7 +269,5 @@ describe("PrivateKey", function () {
                 "Only der keys are supported",
             );
         });
-=======
->>>>>>> Stashed changes
     });
 });
