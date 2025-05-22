@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import BigNumber from "bignumber.js";
+import { BigNumber } from "bignumber.js";
 
 /**
  * Represents a unit of HBAR currency measurement in the Hedera network.

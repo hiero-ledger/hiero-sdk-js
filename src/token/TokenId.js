@@ -4,7 +4,7 @@ import * as entity_id from "../EntityIdHelper.js";
 import * as HieroProto from "@hashgraph/proto";
 
 /**
- * @typedef {import("long")} Long
+ * @typedef {import("long").default} Long
  * @typedef {import("../client/Client.js").default<*, *>} Client
  */
 
@@ -13,7 +13,7 @@ import * as HieroProto from "@hashgraph/proto";
  */
 export default class TokenId {
     /**
-     * @param {number | Long | import("../EntityIdHelper").IEntityId} props
+     * @param {number | Long | import("../EntityIdHelper.js").IEntityId} props
      * @param {(number | Long)=} realm
      * @param {(number | Long)=} num
      */

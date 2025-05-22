@@ -23,6 +23,7 @@ import Transaction, {
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  * @typedef {import("../client/Client.js").default<*, *>} Client
  * @typedef {import("../account/AccountId.js").default} AccountId
+ * @typedef {import("long").default} Long
  */
 
 /**
