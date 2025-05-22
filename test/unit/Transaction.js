@@ -8,6 +8,8 @@ import {
     Timestamp,
     Transaction,
     TransactionId,
+    FileAppendTransaction,
+    FileId,
 } from "../../src/index.js";
 import * as hex from "../../src/encoding/hex.js";
 import Client from "../../src/client/NodeClient.js";
@@ -714,5 +716,81 @@ describe("Transaction", function () {
         expect(hashesPerNode.size).to.be.equal(2);
         expect(hashesPerNode.get(new AccountId(3))).to.be.not.null;
         expect(hashesPerNode.get(new AccountId(4))).to.be.not.null;
+    });
+
+    it("fromBytes fails when chunked file append has different contents", function () {
+        const bigContents = Array(1000)
+            .fill("Lorem ipsum dolor sit amet. ")
+            .join("");
+
+        // Create a FileAppendTransaction with the big contents
+        const transaction = new FileAppendTransaction()
+            .setFileId(new FileId(1, 2, 3))
+            .setContents(bigContents)
+            .setNodeAccountIds([new AccountId(3), new AccountId(4)])
+            .setTransactionId(
+                TransactionId.withValidStart(
+                    new AccountId(9),
+                    new Timestamp(10, 11),
+                ),
+            )
+            .freeze();
+
+        // Serialize the transaction
+        const bytes = transaction.toBytes();
+
+        // Decode the transaction list
+        const transactionList = HieroProto.proto.TransactionList.decode(bytes);
+
+        // Modify one of the chunks by changing its contents
+        const firstTransaction = transactionList.transactionList[0];
+        const signedTransaction = HieroProto.proto.SignedTransaction.decode(
+            firstTransaction.signedTransactionBytes,
+        );
+        const body = HieroProto.proto.TransactionBody.decode(
+            signedTransaction.bodyBytes,
+        );
+
+        // Modify the contents by changing the first chunk
+        if (body.fileAppend && body.fileAppend.contents) {
+            // Replace the first chunk with different content
+            body.fileAppend.contents = new TextEncoder().encode(
+                "Modified content that should cause failure",
+            );
+        }
+
+        // Re-encode the modified body
+        const modifiedBodyBytes =
+            HieroProto.proto.TransactionBody.encode(body).finish();
+        const modifiedSignedTransaction =
+            HieroProto.proto.SignedTransaction.encode({
+                bodyBytes: modifiedBodyBytes,
+                sigMap: signedTransaction.sigMap,
+            }).finish();
+
+        // Replace the first transaction with the modified one
+        transactionList.transactionList[0] = {
+            signedTransactionBytes: modifiedSignedTransaction,
+        };
+
+        // Re-encode the entire transaction list
+        const modifiedBytes =
+            HieroProto.proto.TransactionList.encode(transactionList).finish();
+
+        // Attempt to deserialize should throw an error
+        let err = false;
+        try {
+            Transaction.fromBytes(modifiedBytes);
+        } catch (error) {
+            err =
+                error.toString() ===
+                "Error: failed to validate transaction bodies";
+        }
+
+        if (!err) {
+            throw new Error(
+                "transaction successfully built from invalid bytes",
+            );
+        }
     });
 });
