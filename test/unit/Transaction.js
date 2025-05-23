@@ -11,7 +11,6 @@ import {
     Transaction,
     TransactionId,
     TransferTransaction,
-    FileAppendTransaction,
 } from "../../src/index.js";
 import * as hex from "../../src/encoding/hex.js";
 import Client from "../../src/client/NodeClient.js";
