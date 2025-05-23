@@ -216,4 +216,58 @@ describe("PrivateKey", function () {
             expect(txSigPairMaps.length).to.equal(contents.length);
         });
     });
+
+    describe("DER encoded functions", function () {
+        it("should return true if the key is a DER key", function () {
+            const derKey = PrivateKey.generateECDSA().toStringDer();
+            expect(PrivateKey.isDerKey(derKey)).to.be.true;
+        });
+
+        it("should return false if the key is not a DER key", function () {
+            const derKey = PrivateKey.generateECDSA().toStringRaw();
+            expect(PrivateKey.isDerKey(derKey)).to.be.false;
+        });
+
+        it("should generate key from der string on ecdsa", function () {
+            const derKey = PrivateKey.generateECDSA().toStringDer();
+            const key = PrivateKey.fromStringDer(derKey);
+            expect(key.toStringDer()).to.equal(derKey);
+        });
+
+        it("should generate key from der string on ed25519", function () {
+            const derKey = PrivateKey.generateED25519().toStringDer();
+            const key = PrivateKey.fromStringDer(derKey);
+            expect(key.toStringDer()).to.equal(derKey);
+        });
+
+        it("should generate key from der bytes on ecdsa", function () {
+            const derKey = PrivateKey.generateECDSA().toBytesDer();
+            const key = PrivateKey.fromBytes(derKey);
+
+            expect(key.toBytesDer()).to.deep.equal(derKey);
+        });
+
+        it("should generate key from der bytes on ed25519", function () {
+            const derKey = PrivateKey.generateED25519().toBytesDer();
+            const key = PrivateKey.fromBytes(derKey);
+            expect(key.toBytesDer()).to.deep.equal(derKey);
+        });
+
+        it("should get ecdsa algorithm from der key", function () {
+            const derKey = PrivateKey.generateECDSA().toStringDer();
+            expect(PrivateKey.getAlgorithm(derKey)).to.equal("ecdsa");
+        });
+
+        it("should get ed25519algorithm from der key", function () {
+            const derKey = PrivateKey.generateED25519().toStringDer();
+            expect(PrivateKey.getAlgorithm(derKey)).to.equal("ed25519");
+        });
+
+        it("should throw error if invalid der key", function () {
+            const derKey = "invalid";
+            expect(() => PrivateKey.getAlgorithm(derKey)).to.throw(
+                "Only der keys are supported",
+            );
+        });
+    });
 });

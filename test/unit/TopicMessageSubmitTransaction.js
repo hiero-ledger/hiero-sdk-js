@@ -497,5 +497,138 @@ describe("TopicMessageSubmitTransaction", function () {
                 expect(transaction.maxChunks).to.equal(customMaxChunks);
             });
         });
+
+        describe("bodySizeAllChunks", function () {
+            let topicId;
+            let transactionId;
+            let nodeId;
+
+            beforeEach(function () {
+                topicId = new TopicId(0, 0, 5005);
+                transactionId = TransactionId.generate(
+                    new AccountId(0, 0, 4444),
+                );
+                nodeId = new AccountId(0, 0, 3);
+            });
+
+            it("should return an array with a single element for small message", function () {
+                // Create small content that fits in one chunk
+                const smallMessage = "a".repeat(100);
+
+                const transaction = new TopicMessageSubmitTransaction()
+                    .setTopicId(topicId)
+                    .setMessage(smallMessage)
+                    .setTransactionId(transactionId)
+                    .setNodeAccountIds([nodeId])
+                    .freeze();
+
+                const bodySizes = transaction.bodySizeAllChunks;
+
+                expect(Array.isArray(bodySizes)).to.be.true;
+                expect(bodySizes).to.have.lengthOf(1);
+                expect(bodySizes[0]).to.be.a("number").and.be.greaterThan(0);
+            });
+
+            it("should return array with multiple elements for large message", function () {
+                // Create content larger than default chunk size (1024 bytes)
+                const CHUNK_SIZE = 1024;
+                const largeMessage = "a".repeat(CHUNK_SIZE * 3 + 10);
+
+                const transaction = new TopicMessageSubmitTransaction()
+                    .setTopicId(topicId)
+                    .setMessage(largeMessage)
+                    .setChunkSize(CHUNK_SIZE)
+                    .setTransactionId(transactionId)
+                    .setNodeAccountIds([nodeId])
+                    .freeze();
+
+                const bodySizes = transaction.bodySizeAllChunks;
+
+                console.log(bodySizes);
+                expect(Array.isArray(bodySizes)).to.be.true;
+                expect(bodySizes).to.have.lengthOf(4); // 3 full chunks + 1 partial
+                bodySizes.forEach((size) => {
+                    expect(size).to.be.a("number").and.be.greaterThan(0);
+                });
+            });
+
+            it("should maintain the same transaction state after calling", function () {
+                const message = "a".repeat(2000);
+
+                const transaction = new TopicMessageSubmitTransaction()
+                    .setTopicId(topicId)
+                    .setMessage(message)
+                    .setTransactionId(transactionId)
+                    .setNodeAccountIds([nodeId])
+                    .freeze();
+
+                // Store current transaction index
+                const originalIndex = transaction._transactionIds.index;
+
+                // Call the method
+                transaction.bodySizeAllChunks;
+
+                // Verify index was restored
+                expect(transaction._transactionIds.index).to.equal(
+                    originalIndex,
+                );
+            });
+
+            it("should match the number of chunks required for the message", function () {
+                const CHUNK_SIZE = 1024;
+                const message = "a".repeat(CHUNK_SIZE * 2 + 500);
+
+                const transaction = new TopicMessageSubmitTransaction()
+                    .setTopicId(topicId)
+                    .setMessage(message)
+                    .setChunkSize(CHUNK_SIZE)
+                    .setTransactionId(transactionId)
+                    .setNodeAccountIds([nodeId])
+                    .freeze();
+
+                // Calculate expected number of chunks
+                const expectedChunks = Math.ceil(message.length / CHUNK_SIZE);
+
+                const bodySizes = transaction.bodySizeAllChunks;
+
+                expect(bodySizes.length).to.equal(expectedChunks);
+                expect(bodySizes.length).to.equal(
+                    transaction.getRequiredChunks(),
+                );
+            });
+
+            it("should handle empty messages", function () {
+                const transaction = new TopicMessageSubmitTransaction()
+                    .setTopicId(topicId)
+                    .setTransactionId(transactionId)
+                    .setNodeAccountIds([nodeId])
+                    .freeze();
+
+                const bodySizes = transaction.bodySizeAllChunks;
+
+                console.log(bodySizes);
+
+                expect(bodySizes).to.have.lengthOf(1);
+                expect(bodySizes[0]).to.be.a("number").and.be.greaterThan(0);
+            });
+
+            it("should have non-zero sizes for all chunks", function () {
+                const message = "a".repeat(3000);
+
+                const transaction = new TopicMessageSubmitTransaction()
+                    .setTopicId(topicId)
+                    .setMessage(message)
+                    .setTransactionId(transactionId)
+                    .setNodeAccountIds([nodeId])
+                    .freeze();
+
+                const bodySizes = transaction.bodySizeAllChunks;
+
+                // All sizes should be positive numbers
+                bodySizes.forEach((size) => {
+                    expect(size).to.be.greaterThan(0);
+                });
+            });
+        });
     });
 });

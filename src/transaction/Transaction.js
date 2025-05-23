@@ -20,6 +20,7 @@ import Timestamp from "../Timestamp.js";
 import * as util from "../util.js";
 import CustomFeeLimit from "./CustomFeeLimit.js";
 import Key from "../Key.js";
+import SignableNodeTransactionBodyBytes from "./SignableNodeTransactionBodyBytes.js";
 
 /**
  * @typedef {import("bignumber.js").default} BigNumber
@@ -585,6 +586,35 @@ export default class Transaction extends Executable {
     }
 
     /**
+     *  Protobuf encoding has specific rules about how data is serialized
+     *  Different fields take different amounts of space depending on their values
+     *  The actual wire format size can only be determined after encoding
+     *
+     * @returns {Promise<number>}
+     */
+    get size() {
+        this._requireFrozen();
+        return this._makeRequestAsync().then(
+            (request) =>
+                HieroProto.proto.Transaction.encode(request).finish().length,
+        );
+    }
+
+    /**
+     * Get the transaction body size
+     * Protobuf encoding has specific rules about how data is serialized
+     * Different fields take different amounts of space depending on their values
+     * The actual wire format size can only be determined after encoding
+     *
+     * @returns {number}
+     */
+    get bodySize() {
+        const body = this._makeTransactionBody(AccountId.fromString("0.0.0"));
+
+        return HieroProto.proto.TransactionBody.encode(body).finish().length;
+    }
+
+    /**
      * Sets the duration (in seconds) that this transaction is valid for.
      *
      * This is defaulted to 120 seconds (from the time its executed).
@@ -720,6 +750,31 @@ export default class Transaction extends Executable {
      */
     getRequiredChunks() {
         return 1;
+    }
+
+    /**
+     * Get the body sizes for all chunks in a Chunked transaction.
+     * For transactions with multiple chunks (like large topic message submissions),
+     * this returns an array containing the size of each chunk's transaction body.
+     * The size is calculated by encoding the transaction body to protobuf format.
+     *
+     * @returns {number[]} An array of body sizes, where each element represents
+     * the size in bytes of a chunk's transaction body
+     *
+     */
+    get bodySizeAllChunks() {
+        const bodySizes = [];
+
+        // Store sizes for each chunk
+        for (let i = 0; i < this.getRequiredChunks(); i++) {
+            // Set index directly
+            this._transactionIds.index = i;
+            // Use super.bodySize to access the base class implementation
+            bodySizes.push(this.bodySize);
+        }
+        // Restore to initial index
+        this._transactionIds.index = 0;
+        return bodySizes;
     }
 
     /**
@@ -1253,6 +1308,45 @@ export default class Transaction extends Executable {
      */
     get batchKey() {
         return this._batchKey;
+    }
+
+    /**
+     * Returns a List of SignableNodeTransactionBodyBytes for each node the transaction is intended for.
+     * These are the canonical bytes that must be signed externally (e.g., via HSM).
+     *
+     * @returns {SignableNodeTransactionBodyBytes[]}
+     */
+    get signableNodeBodyBytesList() {
+        this._requireFrozen();
+
+        return this._signedTransactions.list.map((signedTransaction) => {
+            if (!signedTransaction.bodyBytes) {
+                throw new Error("Missing bodyBytes in signed transaction.");
+            }
+
+            const body = HieroProto.proto.TransactionBody.decode(
+                signedTransaction.bodyBytes,
+            );
+
+            if (!body.nodeAccountID) {
+                throw new Error("Missing nodeAccountID in transaction body.");
+            }
+
+            const nodeAccountId = AccountId._fromProtobuf(body.nodeAccountID);
+            if (!body.transactionID) {
+                throw new Error("Missing transactionID in transaction body.");
+            }
+
+            const transactionId = TransactionId._fromProtobuf(
+                body.transactionID,
+            );
+
+            return new SignableNodeTransactionBodyBytes(
+                nodeAccountId,
+                transactionId,
+                signedTransaction.bodyBytes,
+            );
+        });
     }
 
     /**
