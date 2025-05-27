@@ -20,6 +20,7 @@ import Timestamp from "../Timestamp.js";
 import * as util from "../util.js";
 import CustomFeeLimit from "./CustomFeeLimit.js";
 import Key from "../Key.js";
+import SignableNodeTransactionBodyBytes from "./SignableNodeTransactionBodyBytes.js";
 
 /**
  * @typedef {import("bignumber.js").default} BigNumber
@@ -1307,6 +1308,45 @@ export default class Transaction extends Executable {
      */
     get batchKey() {
         return this._batchKey;
+    }
+
+    /**
+     * Returns a List of SignableNodeTransactionBodyBytes for each node the transaction is intended for.
+     * These are the canonical bytes that must be signed externally (e.g., via HSM).
+     *
+     * @returns {SignableNodeTransactionBodyBytes[]}
+     */
+    get signableNodeBodyBytesList() {
+        this._requireFrozen();
+
+        return this._signedTransactions.list.map((signedTransaction) => {
+            if (!signedTransaction.bodyBytes) {
+                throw new Error("Missing bodyBytes in signed transaction.");
+            }
+
+            const body = HieroProto.proto.TransactionBody.decode(
+                signedTransaction.bodyBytes,
+            );
+
+            if (!body.nodeAccountID) {
+                throw new Error("Missing nodeAccountID in transaction body.");
+            }
+
+            const nodeAccountId = AccountId._fromProtobuf(body.nodeAccountID);
+            if (!body.transactionID) {
+                throw new Error("Missing transactionID in transaction body.");
+            }
+
+            const transactionId = TransactionId._fromProtobuf(
+                body.transactionID,
+            );
+
+            return new SignableNodeTransactionBodyBytes(
+                nodeAccountId,
+                transactionId,
+                signedTransaction.bodyBytes,
+            );
+        });
     }
 
     /**
