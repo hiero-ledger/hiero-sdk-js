@@ -121,8 +121,6 @@ export interface AirdropTokenParams {
     readonly tokenTransfers: TransferParams[];
     readonly commonTransactionParams?: Record<string, any>;
 }
-<<<<<<< Updated upstream
-=======
 
 export interface AirdropClaimTokenParams {
     readonly senderAccountId?: string;
@@ -138,4 +136,3 @@ export interface AirdropCancelTokenParams {
     readonly tokenId?: string;
     readonly commonTransactionParams?: Record<string, any>;
 }
->>>>>>> Stashed changes

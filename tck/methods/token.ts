@@ -19,12 +19,9 @@ import {
     TokenAirdropTransaction,
     TokenId,
     NftId,
-<<<<<<< Updated upstream
-=======
     TokenClaimAirdropTransaction,
     PendingAirdropId,
     TokenCancelAirdropTransaction,
->>>>>>> Stashed changes
 } from "@hashgraph/sdk";
 import Long from "long";
 
@@ -53,11 +50,8 @@ import {
     MintTokenParams,
     WipeTokenParams,
     AirdropTokenParams,
-<<<<<<< Updated upstream
-=======
     AirdropClaimTokenParams,
     AirdropCancelTokenParams,
->>>>>>> Stashed changes
 } from "../params/token";
 
 import {
@@ -628,8 +622,6 @@ export const airdropToken = async ({
         status: receipt.status.toString(),
     };
 };
-<<<<<<< Updated upstream
-=======
 
 export const claimToken = async ({
     senderAccountId,
@@ -721,4 +713,3 @@ export const cancelAirdrop = async ({
         status: receipt.status.toString(),
     };
 };
->>>>>>> Stashed changes
