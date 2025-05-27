@@ -19,6 +19,12 @@ import {
     TokenAirdropTransaction,
     TokenId,
     NftId,
+<<<<<<< Updated upstream
+=======
+    TokenClaimAirdropTransaction,
+    PendingAirdropId,
+    TokenCancelAirdropTransaction,
+>>>>>>> Stashed changes
 } from "@hashgraph/sdk";
 import Long from "long";
 
@@ -47,6 +53,11 @@ import {
     MintTokenParams,
     WipeTokenParams,
     AirdropTokenParams,
+<<<<<<< Updated upstream
+=======
+    AirdropClaimTokenParams,
+    AirdropCancelTokenParams,
+>>>>>>> Stashed changes
 } from "../params/token";
 
 import {
@@ -617,3 +628,97 @@ export const airdropToken = async ({
         status: receipt.status.toString(),
     };
 };
+<<<<<<< Updated upstream
+=======
+
+export const claimToken = async ({
+    senderAccountId,
+    receiverAccountId,
+    tokenId,
+    serialNumbers,
+    commonTransactionParams,
+}: AirdropClaimTokenParams): Promise<TokenResponse> => {
+    const transaction = new TokenClaimAirdropTransaction().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+
+    // NFT token claiming
+    if (serialNumbers && serialNumbers.length) {
+        for (const serialNumber of serialNumbers) {
+            transaction.addPendingAirdropId(
+                new PendingAirdropId({
+                    senderId: AccountId.fromString(senderAccountId),
+                    receiverId: AccountId.fromString(receiverAccountId),
+                    nftId: new NftId(
+                        TokenId.fromString(tokenId),
+                        Long.fromString(serialNumber.toString()),
+                    ),
+                }),
+            );
+        }
+    } else {
+        // Fungible token claiming
+        transaction.addPendingAirdropId(
+            new PendingAirdropId({
+                senderId: AccountId.fromString(senderAccountId),
+                receiverId: AccountId.fromString(receiverAccountId),
+                tokenId: TokenId.fromString(tokenId),
+            }),
+        );
+    }
+
+    if (commonTransactionParams != null) {
+        applyCommonTransactionParams(
+            commonTransactionParams,
+            transaction,
+            sdk.getClient(),
+        );
+    }
+
+    const txResponse = await transaction.execute(sdk.getClient());
+    const receipt = await txResponse.getReceipt(sdk.getClient());
+
+    return {
+        status: receipt.status.toString(),
+    };
+};
+
+export const cancelAirdrop = async ({
+    senderAccountId,
+    receiverAccountId,
+    tokenId,
+    commonTransactionParams,
+}: AirdropCancelTokenParams): Promise<TokenResponse> => {
+    const transaction = new TokenCancelAirdropTransaction().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+
+    // Create PendingAirdropId with raw values to allow invalid IDs
+    const pendingAirdropId = new PendingAirdropId({
+        senderId: senderAccountId
+            ? AccountId.fromString(senderAccountId)
+            : undefined,
+        receiverId: receiverAccountId
+            ? AccountId.fromString(receiverAccountId)
+            : undefined,
+        tokenId: tokenId ? TokenId.fromString(tokenId) : undefined,
+    });
+
+    transaction.addPendingAirdropId(pendingAirdropId);
+
+    if (commonTransactionParams != null) {
+        applyCommonTransactionParams(
+            commonTransactionParams,
+            transaction,
+            sdk.getClient(),
+        );
+    }
+
+    const txResponse = await transaction.execute(sdk.getClient());
+    const receipt = await txResponse.getReceipt(sdk.getClient());
+
+    return {
+        status: receipt.status.toString(),
+    };
+};
+>>>>>>> Stashed changes
