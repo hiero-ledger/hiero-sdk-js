@@ -19,6 +19,8 @@ import {
     TokenAirdropTransaction,
     TokenId,
     NftId,
+    TokenClaimAirdropTransaction,
+    PendingAirdropId,
 } from "@hashgraph/sdk";
 import Long from "long";
 
@@ -47,6 +49,7 @@ import {
     MintTokenParams,
     WipeTokenParams,
     AirdropTokenParams,
+    AirdropClaimTokenParams,
 } from "../params/token";
 
 import {
@@ -54,6 +57,7 @@ import {
     TokenBurnResponse,
     TokenMintResponse,
 } from "../response/token";
+import AirdropPendingTransaction from "../../lib/token/AirdropPendingTransaction";
 
 export const createToken = async ({
     name,
@@ -600,6 +604,58 @@ export const airdropToken = async ({
                       );
             }
         }
+    }
+
+    if (commonTransactionParams != null) {
+        applyCommonTransactionParams(
+            commonTransactionParams,
+            transaction,
+            sdk.getClient(),
+        );
+    }
+
+    const txResponse = await transaction.execute(sdk.getClient());
+    const receipt = await txResponse.getReceipt(sdk.getClient());
+
+    return {
+        status: receipt.status.toString(),
+    };
+};
+
+export const claimToken = async ({
+    senderAccountId,
+    receiverAccountId,
+    tokenId,
+    serialNumbers,
+    commonTransactionParams,
+}: AirdropClaimTokenParams): Promise<TokenResponse> => {
+    const transaction = new TokenClaimAirdropTransaction().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+
+    // NFT token claiming
+    if (serialNumbers && serialNumbers.length) {
+        for (const serialNumber of serialNumbers) {
+            transaction.addPendingAirdropId(
+                new PendingAirdropId({
+                    senderId: AccountId.fromString(senderAccountId),
+                    receiverId: AccountId.fromString(receiverAccountId),
+                    nftId: new NftId(
+                        TokenId.fromString(tokenId),
+                        Long.fromString(serialNumber.toString()),
+                    ),
+                }),
+            );
+        }
+    } else {
+        // Fungible token claiming
+        transaction.addPendingAirdropId(
+            new PendingAirdropId({
+                senderId: AccountId.fromString(senderAccountId),
+                receiverId: AccountId.fromString(receiverAccountId),
+                tokenId: TokenId.fromString(tokenId),
+            }),
+        );
     }
 
     if (commonTransactionParams != null) {
