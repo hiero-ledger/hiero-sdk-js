@@ -73,8 +73,6 @@ tasks:
     "build:prep":
         cmds:
             - task: install
-            - task: update:addressbooks
-            - task: format
             - task: lint
             - node ./scripts/generate-request-and-status-files.js
 
@@ -102,7 +100,6 @@ tasks:
         deps:
             - "lint:types"
             - "lint:dpdm"
-            - "lint:format"
             - "lint:js"
 
     "lint:types":
@@ -113,11 +110,6 @@ tasks:
         cmds:
             # It's really annoying seeing [X/X] Analyze done. If a circular dep is found remove `2>&1`
             - npx dpdm src/index.js --circular true --tree false --warning false
-
-    "lint:format":
-        cmds:
-            - npx prettier src "test/unit/*.js" "test/integration/*.js" "*.json" "src/*.js" --check > /dev/null
-
     "lint:js":
         cmds:
             - npx eslint --fix "src/**/*.js" "test/integration/**/*.js" "test/unit/**/*.js"
