@@ -26,7 +26,7 @@ describe("MirrorNodeContractCallQuery", function () {
         const { contractId } = await (
             await new ContractCreateTransaction()
                 .setBytecodeFileId(fileId)
-                .setGas(200000)
+                .setGas(300_000)
                 .execute(env.client)
         ).getReceipt(env.client);
 

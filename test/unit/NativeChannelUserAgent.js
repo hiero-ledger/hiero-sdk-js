@@ -11,7 +11,6 @@ vi.mock("../../src/constants/ClientConstants.js", () => ({
     },
 }));
 
-
 // Mock FileReader for the native environment
 class MockFileReader {
     constructor() {

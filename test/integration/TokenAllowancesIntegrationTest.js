@@ -154,7 +154,7 @@ describe("TokenAllowances", function () {
             .setAdminKey(env.operatorKey)
             .setBytecodeFileId(bytecodeFileId)
             //Set the gas to instantiate the contract
-            .setGas(100000)
+            .setGas(350_000)
             //Provide the constructor parameters for the contract
             .setConstructorParameters();
 

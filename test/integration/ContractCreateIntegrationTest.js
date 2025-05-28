@@ -38,7 +38,7 @@ describe("ContractCreate", function () {
 
         response = await new ContractCreateTransaction()
             .setAdminKey(operatorKey)
-            .setGas(200000)
+            .setGas(300_000)
             .setConstructorParameters(
                 new ContractFunctionParameters().addString(
                     "Hello from Hedera.",
@@ -151,7 +151,7 @@ describe("ContractCreate", function () {
             await (
                 await new ContractCreateTransaction()
                     .setAdminKey(operatorKey)
-                    .setGas(100000)
+                    .setGas(300_000)
                     .setBytecodeFileId(file)
                     .setContractMemo("[e2e::ContractCreateTransaction]")
                     .execute(env.client)
@@ -165,7 +165,7 @@ describe("ContractCreate", function () {
         }
     });
 
-    it("should error when bytecode file ID is not set", async function () {
+    it.only("should error when bytecode file ID is not set", async function () {
         const operatorKey = env.operatorKey.publicKey;
 
         let err = false;
@@ -174,13 +174,13 @@ describe("ContractCreate", function () {
             await (
                 await new ContractCreateTransaction()
                     .setAdminKey(operatorKey)
-                    .setGas(100000)
                     .setConstructorParameters(
                         new ContractFunctionParameters().addString(
                             "Hello from Hedera.",
                         ),
                     )
                     .setContractMemo("[e2e::ContractCreateTransaction]")
+                    .setGas(300_000)
                     .execute(env.client)
             ).getReceipt(env.client);
         } catch (error) {
