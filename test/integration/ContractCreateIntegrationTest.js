@@ -165,7 +165,7 @@ describe("ContractCreate", function () {
         }
     });
 
-    it.only("should error when bytecode file ID is not set", async function () {
+    it("should error when bytecode file ID is not set", async function () {
         const operatorKey = env.operatorKey.publicKey;
 
         let err = false;
