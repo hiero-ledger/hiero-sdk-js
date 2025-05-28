@@ -564,9 +564,17 @@ export default class TokenCreateTransaction extends Transaction {
      * @returns {this}
      */
     freezeWith(client) {
-        if (!this._autoRenewAccountId && this.transactionId?.accountId) {
+        if (
+            !this._autoRenewAccountId &&
+            this.transactionId?.accountId &&
+            this.autoRenewPeriod != null
+        ) {
             this.setAutoRenewAccountId(this.transactionId?.accountId);
-        } else if (!this._autoRenewAccountId && client?.operatorAccountId) {
+        } else if (
+            !this._autoRenewAccountId &&
+            client?.operatorAccountId &&
+            this.autoRenewPeriod != null
+        ) {
             this.setAutoRenewAccountId(client.operatorAccountId);
         }
         return super.freezeWith(client);

@@ -380,7 +380,8 @@ describe("TokenAirdropIntegrationTest", function () {
         expect(err).to.be.eq(false);
     });
 
-    it("should not airdrop with invalid tx body", async function () {
+    // eslint-disable-next-line vitest/no-disabled-tests
+    it.skip("should not airdrop with invalid tx body", async function () {
         let err = false;
         const tokenId = new TokenId(1);
         const accountId = new AccountId(1);

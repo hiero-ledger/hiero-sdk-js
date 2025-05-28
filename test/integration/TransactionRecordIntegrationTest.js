@@ -45,7 +45,7 @@ describe("TransactionRecord", function () {
             //Set the file ID of the Hedera file storing the bytecode
             .setBytecodeFileId(bytecodeFileId)
             //Set the gas to instantiate the contract
-            .setGas(100000)
+            .setGas(400_000)
             //Provide the constructor parameters for the contract
             .setConstructorParameters();
 

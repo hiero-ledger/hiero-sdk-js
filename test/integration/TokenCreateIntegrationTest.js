@@ -193,10 +193,8 @@ describe("TokenCreate", function () {
             .setTokenId(tokenId)
             .execute(env.client);
 
-        expect(info.autoRenewAccountId.toString()).to.be.eql(
-            operatorId.toString(),
-        );
-        expect(info.autoRenewPeriod.seconds.toInt()).to.equal(0);
+        expect(info.autoRenewAccountId).to.be.eql(null);
+        expect(info.autoRenewPeriod).to.equal(null);
         expect(info.expirationTime.seconds.toInt()).to.equal(
             expirationTime.seconds.toInt(),
         );

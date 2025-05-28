@@ -40,7 +40,7 @@ describe("ContractCallIntegration", function () {
         receipt = await (
             await new ContractCreateTransaction()
                 .setAdminKey(operatorKey)
-                .setGas(200000)
+                .setGas(300_000)
                 .setConstructorParameters(
                     new ContractFunctionParameters().addString(
                         "Hello from Hedera.",
@@ -124,7 +124,7 @@ describe("ContractCallIntegration", function () {
         receipt = await (
             await new ContractCreateTransaction()
                 .setAdminKey(operatorKey)
-                .setGas(200000)
+                .setGas(300_000)
                 .setConstructorParameters(
                     new ContractFunctionParameters().addString(
                         "Hello from Hedera.",
@@ -191,7 +191,7 @@ describe("ContractCallIntegration", function () {
         receipt = await (
             await new ContractCreateTransaction()
                 .setAdminKey(operatorKey)
-                .setGas(200000)
+                .setGas(300_000)
                 .setConstructorParameters(
                     new ContractFunctionParameters().addString(
                         "Hello from Hedera.",
@@ -257,7 +257,7 @@ describe("ContractCallIntegration", function () {
         receipt = await (
             await new ContractCreateTransaction()
                 .setAdminKey(operatorKey)
-                .setGas(200000)
+                .setGas(300_000)
                 .setConstructorParameters(
                     new ContractFunctionParameters().addString(
                         "Hello from Hedera.",
@@ -324,7 +324,7 @@ describe("ContractCallIntegration", function () {
         receipt = await (
             await new ContractCreateTransaction()
                 .setAdminKey(operatorKey)
-                .setGas(200000)
+                .setGas(300_000)
                 .setConstructorParameters(
                     new ContractFunctionParameters().addString(
                         "Hello from Hedera.",
