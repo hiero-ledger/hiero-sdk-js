@@ -34,10 +34,12 @@ import { convertToNumber } from "../util.js";
 
 /**
  * @typedef {object} ClientConfiguration
- * @property {{[key: string]: (string | AccountId)} | string} network
+ * @property {{[key: string]: (string | AccountId)} | string} [network]
  * @property {string[] | string} [mirrorNetwork]
  * @property {Operator} [operator]
  * @property {boolean} [scheduleNetworkUpdate]
+ * @property {number} [shard]
+ * @property {number} [realm]
  */
 
 /**
@@ -139,8 +141,22 @@ export default class Client {
         /** @private */
         this._isShutdown = false;
 
+        /** @private */
+        this._shard = 0;
+
+        /** @private */
+        this._realm = 0;
+
         if (props != null && props.scheduleNetworkUpdate !== false) {
             this._scheduleNetworkUpdate();
+        }
+
+        if (props != null && props.shard != null) {
+            this._shard = props.shard;
+        }
+
+        if (props != null && props.realm != null) {
+            this._realm = props.realm;
         }
 
         /** @internal */
@@ -715,7 +731,9 @@ export default class Client {
 
         try {
             const addressBook = await CACHE.addressBookQueryConstructor()
-                .setFileId(FileId.ADDRESS_BOOK)
+                .setFileId(
+                    FileId.getAddressBookFileIdFor(this._realm, this._shard),
+                )
                 .execute(this);
             this.setNetworkFromAddressBook(addressBook);
         } catch (error) {
