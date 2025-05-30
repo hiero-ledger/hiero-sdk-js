@@ -34,6 +34,8 @@ async function main() {
     const newDescription = "This is new a description of the node.";
     const ipAddressV4 = Uint8Array.of(127, 0, 0, 1);
     const port = 50211;
+    const grpcProxyIpAddressV4 = Uint8Array.of(127, 0, 0, 1);
+    const grpcProxyPort = 443;
     const gossipEndpoint = new ServiceEndpoint()
         .setIpAddressV4(ipAddressV4)
         .setPort(port);
@@ -44,6 +46,9 @@ async function main() {
     const serviceEndpoints = [serviceEndpoint];
     const gossipCaCertificate = new Uint8Array();
     const certificateHash = new Uint8Array();
+    const grpcProxyEndpoint = new ServiceEndpoint()
+        .setIpAddressV4(grpcProxyIpAddressV4)
+        .setPort(grpcProxyPort);
     const adminKey = PrivateKey.generate();
 
     // 1. Create a new node
@@ -56,7 +61,8 @@ async function main() {
         .setGossipCaCertificate(gossipCaCertificate)
         .setCertificateHash(certificateHash)
         .setAdminKey(adminKey)
-        .setDeclineReward(false);
+        .setDeclineReward(false)
+        .setGrpcProxyEndpoint(grpcProxyEndpoint);
 
     const createTransactionResponse = await createTransaction.execute(client);
     const createTransactionReceipt =
