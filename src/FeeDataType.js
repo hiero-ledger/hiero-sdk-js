@@ -37,6 +37,8 @@ export default class FeeDataType {
                 return "SCHEDULE_CREATE_CONTRACT_CALL";
             case FeeDataType.TopicCreateWithCustomFees:
                 return "TOPIC_CREATE_WITH_CUSTOM_FEES";
+            case FeeDataType.SubmitMessageWithCustomFees:
+                return "SUBMIT_MESSAGE_WITH_CUSTOM_FEES";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -63,6 +65,8 @@ export default class FeeDataType {
                 return FeeDataType.ScheduleCreateContractCall;
             case 6:
                 return FeeDataType.TopicCreateWithCustomFees;
+            case 7:
+                return FeeDataType.SubmitMessageWithCustomFees;
         }
 
         throw new Error(
@@ -113,3 +117,9 @@ FeeDataType.ScheduleCreateContractCall = new FeeDataType(5);
  * with custom fees.
  */
 FeeDataType.TopicCreateWithCustomFees = new FeeDataType(6);
+
+/**
+ * The resource cost for the transaction type includes a ConsensusSubmitMessage
+ * for a topic with custom fees.
+ */
+FeeDataType.SubmitMessageWithCustomFees = new FeeDataType(7);
