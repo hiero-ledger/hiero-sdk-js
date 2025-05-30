@@ -44,6 +44,7 @@ export default class NodeUpdateTransaction extends Transaction {
      * @param {?Array<ServiceEndpoint>} [props.serviceEndpoints]
      * @param {?Uint8Array} [props.gossipCaCertificate]
      * @param {?Uint8Array} [props.grpcCertificateHash]
+     * @param {ServiceEndpoint} [props.grpcProxyEndpoint]
      * @param {Key} [props.adminKey]
      * @param {boolean} [props.declineReward]
      */
@@ -107,6 +108,14 @@ export default class NodeUpdateTransaction extends Transaction {
             props?.grpcCertificateHash != null
                 ? props.grpcCertificateHash
                 : null;
+
+        /**
+         * @private
+         * @type {?ServiceEndpoint}
+         * @description Proxy endpoint for gRPC web calls.
+         */
+        this._grpcProxyEndpoint =
+            props?.grpcProxyEndpoint != null ? props.grpcProxyEndpoint : null;
 
         /**
          * @private
@@ -182,6 +191,12 @@ export default class NodeUpdateTransaction extends Transaction {
                         ? Object.hasOwn(nodeUpdate.grpcCertificateHash, "value")
                             ? nodeUpdate.grpcCertificateHash.value
                             : undefined
+                        : undefined,
+                grpcProxyEndpoint:
+                    nodeUpdate.grpcProxyEndpoint != null
+                        ? ServiceEndpoint._fromProtobuf(
+                              nodeUpdate.grpcProxyEndpoint,
+                          )
                         : undefined,
                 adminKey:
                     nodeUpdate.adminKey != null
@@ -407,6 +422,25 @@ export default class NodeUpdateTransaction extends Transaction {
     }
 
     /**
+     * @param {ServiceEndpoint} endpoint
+     * @description Set proxy endpoint for gRPC web calls.
+     * @returns {NodeUpdateTransaction}
+     */
+    setGrpcProxyEndpoint(endpoint) {
+        this._requireNotFrozen();
+        this._grpcProxyEndpoint = endpoint;
+        return this;
+    }
+
+    /**
+     * @description Get proxy endpoint for gRPC web calls.
+     * @returns {?ServiceEndpoint}
+     */
+    get grpcProxyEndpoint() {
+        return this._grpcProxyEndpoint;
+    }
+
+    /**
      * @param {Key} adminKey
      * @description Set administrative key controlled by the node operator.
      * @returns {NodeUpdateTransaction}
@@ -502,6 +536,10 @@ export default class NodeUpdateTransaction extends Transaction {
                     ? {
                           value: this._grpcCertificateHash,
                       }
+                    : null,
+            grpcProxyEndpoint:
+                this._grpcProxyEndpoint != null
+                    ? this._grpcProxyEndpoint._toProtobuf()
                     : null,
             adminKey:
                 this._adminKey != null ? this._adminKey._toProtobufKey() : null,
