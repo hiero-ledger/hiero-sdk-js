@@ -633,15 +633,16 @@ export const cancelAirdrop = async ({
     );
 
     // Create PendingAirdropId with raw values to allow invalid IDs
-    const pendingAirdropId = new PendingAirdropId({
-        senderId: senderAccountId
-            ? AccountId.fromString(senderAccountId)
-            : undefined,
-        receiverId: receiverAccountId
-            ? AccountId.fromString(receiverAccountId)
-            : undefined,
-        tokenId: tokenId ? TokenId.fromString(tokenId) : undefined,
-    });
+    let pendingAirdropId: PendingAirdropId;
+    try {
+        pendingAirdropId = new PendingAirdropId({
+            senderId: AccountId.fromString(senderAccountId),
+            receiverId: AccountId.fromString(receiverAccountId),
+            tokenId: TokenId.fromString(tokenId),
+        });
+    } catch (error) {
+        throw new Error("Invalid pending airdrop ID");
+    }
 
     transaction.addPendingAirdropId(pendingAirdropId);
 
