@@ -1,7 +1,5 @@
 import { HashAlgorithm } from "./hmac.js";
-import * as utf8 from "../encoding/utf8.js";
-import util from "util";
-import crypto from "crypto";
+import { pbkdf2 } from "@exodus/crypto/pbkdf2";
 
 /**
  * @param {HashAlgorithm} algorithm
@@ -12,24 +10,13 @@ import crypto from "crypto";
  * @returns {Promise<Uint8Array>}
  */
 export async function deriveKey(algorithm, password, salt, iterations, length) {
-    const pass =
-        typeof password === "string"
-            ? // Valid ASCII is also valid UTF-8 so encoding the password as UTF-8
-              // should be fine if only valid ASCII characters are used in the password
-              utf8.encode(password)
-            : password;
-
-    const nacl = typeof salt === "string" ? utf8.encode(salt) : salt;
-
-    const pbkdf2 = util.promisify(crypto.pbkdf2);
-
     switch (algorithm) {
         case HashAlgorithm.Sha256:
-            return pbkdf2(pass, nacl, iterations, length, "sha256");
+            return pbkdf2('sha256', password, salt, { iterations, dkLen: length }, 'uint8')
         case HashAlgorithm.Sha384:
-            return pbkdf2(pass, nacl, iterations, length, "sha384");
+            return pbkdf2('sha384', password, salt, { iterations, dkLen: length }, 'uint8')
         case HashAlgorithm.Sha512:
-            return pbkdf2(pass, nacl, iterations, length, "sha512");
+            return pbkdf2('sha512', password, salt, { iterations, dkLen: length }, 'uint8')
         default:
             throw new Error(
                 "(BUG) Non-Exhaustive switch statement for algorithms"

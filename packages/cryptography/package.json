@@ -42,8 +42,7 @@
         "test:browser:safari": "vite serve --port 9003 test/ & sleep 2; mocha-webdriver-runner --safari http://localhost:9003/; kill %1"
     },
     "dependencies": {
-        "@exodus/crypto": "^1.0.0-rc.20",
-        "@noble/hashes": "^1.3.3"
+        "@exodus/crypto": "^1.0.0-rc.26"
     },
     "devDependencies": {
         "@babel/cli": "^7.14.5",
