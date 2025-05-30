@@ -121,3 +121,10 @@ export interface AirdropTokenParams {
     readonly tokenTransfers: TransferParams[];
     readonly commonTransactionParams?: Record<string, any>;
 }
+
+export interface AirdropCancelTokenParams {
+    readonly senderAccountId?: string;
+    readonly receiverAccountId?: string;
+    readonly tokenId?: string;
+    readonly commonTransactionParams?: Record<string, any>;
+}

@@ -19,6 +19,9 @@ import {
     TokenAirdropTransaction,
     TokenId,
     NftId,
+    TokenClaimAirdropTransaction,
+    PendingAirdropId,
+    TokenCancelAirdropTransaction,
 } from "@hashgraph/sdk";
 import Long from "long";
 
@@ -47,6 +50,7 @@ import {
     MintTokenParams,
     WipeTokenParams,
     AirdropTokenParams,
+    AirdropCancelTokenParams,
 } from "../params/token";
 
 import {
@@ -601,6 +605,46 @@ export const airdropToken = async ({
             }
         }
     }
+
+    if (commonTransactionParams != null) {
+        applyCommonTransactionParams(
+            commonTransactionParams,
+            transaction,
+            sdk.getClient(),
+        );
+    }
+
+    const txResponse = await transaction.execute(sdk.getClient());
+    const receipt = await txResponse.getReceipt(sdk.getClient());
+
+    return {
+        status: receipt.status.toString(),
+    };
+};
+
+export const cancelAirdrop = async ({
+    senderAccountId,
+    receiverAccountId,
+    tokenId,
+    commonTransactionParams,
+}: AirdropCancelTokenParams): Promise<TokenResponse> => {
+    const transaction = new TokenCancelAirdropTransaction().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+
+    // Create PendingAirdropId with raw values to allow invalid IDs
+    let pendingAirdropId: PendingAirdropId;
+    try {
+        pendingAirdropId = new PendingAirdropId({
+            senderId: AccountId.fromString(senderAccountId),
+            receiverId: AccountId.fromString(receiverAccountId),
+            tokenId: TokenId.fromString(tokenId),
+        });
+    } catch (error) {
+        throw new Error("Invalid pending airdrop ID");
+    }
+
+    transaction.addPendingAirdropId(pendingAirdropId);
 
     if (commonTransactionParams != null) {
         applyCommonTransactionParams(
