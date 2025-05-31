@@ -1,5 +1,4 @@
-import * as pbkdf2 from "../primitive/pbkdf2.js";
-import * as hmac from "../primitive/hmac.js";
+import { pbkdf2 } from "@exodus/crypto/pbkdf2";
 
 /**
  * @param {Uint8Array} seed
@@ -25,11 +24,5 @@ export function legacy(seed, index) {
     }
 
     const salt = Uint8Array.from([0xff]);
-    return pbkdf2.deriveKey(
-        hmac.HashAlgorithm.Sha512,
-        password,
-        salt,
-        2048,
-        32
-    );
+    return pbkdf2('sha512', password, salt, { iterations: 2048, dkLen: 32 }, 'uint8');
 }

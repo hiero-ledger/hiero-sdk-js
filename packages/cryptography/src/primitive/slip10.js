@@ -1,4 +1,4 @@
-import * as hmac from "../primitive/hmac.js";
+import { hmac } from "@exodus/crypto/hmac";
 
 /**
  * @param {Uint8Array} parentKey
@@ -21,7 +21,6 @@ export async function derive(parentKey, chainCode, index) {
     // set the index to hardened
     input[33] |= 128;
 
-    const digest = await hmac.hash(hmac.HashAlgorithm.Sha512, chainCode, input);
-
+    const digest = await hmac('sha512', chainCode, input, 'uint8');
     return { keyData: digest.subarray(0, 32), chainCode: digest.subarray(32) };
 }

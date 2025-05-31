@@ -1,4 +1,4 @@
-import * as sha256 from "../primitive/sha256.js";
+import { hash } from "@exodus/crypto/hash";
 
 /**
  * @param {string[]} words
@@ -55,8 +55,8 @@ export async function legacy2(words, wordlist) {
     }
 
     // Checksum validation
-    const hash = await sha256.digest(entropy);
-    const hashBits = bytesToBits(hash);
+    const bytes = await hash('sha256', entropy, 'uint8');
+    const hashBits = bytesToBits(bytes);
 
     for (let i = 0; i < checksumBitsLen; i += 1) {
         if (concatBits[entropyBitsLen + i] !== hashBits[i]) {

@@ -1,11 +1,11 @@
+import { hash } from "@exodus/crypto/hash";
+import { hmac } from "@exodus/crypto/hmac";
+import { pbkdf2 } from "@exodus/crypto/pbkdf2";
 import PrivateKey from "./PrivateKey.js";
 import BadMnemonicError from "./BadMnemonicError.js";
 import BadMnemonicReason from "./BadMnemonicReason.js";
 import legacyWords from "./words/legacy.js";
 import bip39Words from "./words/bip39.js";
-import * as sha256 from "./primitive/sha256.js";
-import * as pbkdf2 from "./primitive/pbkdf2.js";
-import * as hmac from "./primitive/hmac.js";
 import * as slip10 from "./primitive/slip10.js";
 import * as entropy from "./util/entropy.js";
 import * as random from "./primitive/random.js";
@@ -258,19 +258,8 @@ export default class Mnemonic {
         const input = this.words.join(" ");
         const salt = `mnemonic${passphrase}`;
 
-        const seed = await pbkdf2.deriveKey(
-            hmac.HashAlgorithm.Sha512,
-            input,
-            salt,
-            2048,
-            64
-        );
-
-        const digest = await hmac.hash(
-            hmac.HashAlgorithm.Sha512,
-            "ed25519 seed",
-            seed
-        );
+        const seed = await pbkdf2('sha512', input, salt, { iterations: 2048, dkLen: 64 }, 'uint8');
+        const digest = await hmac('sha512', "ed25519 seed", seed, 'uint8');
 
         let keyData = digest.subarray(0, 32);
         let chainCode = digest.subarray(32);
@@ -333,7 +322,8 @@ function bytesToBinary(bytes) {
 async function deriveChecksumBits(entropyBuffer) {
     const ENT = entropyBuffer.length * 8;
     const CS = ENT / 32;
-    const hash = await sha256.digest(entropyBuffer);
 
-    return bytesToBinary(Array.from(hash)).slice(0, CS);
+    const bytes = Array.from(await hash('sha256', entropyBuffer, 'uint8'));
+
+    return bytesToBinary(bytes).slice(0, CS);
 }
