@@ -43,7 +43,7 @@ export default class NodeCreateTransaction extends Transaction {
      * @param {?Array<ServiceEndpoint>} [props.serviceEndpoints]
      * @param {Uint8Array} [props.gossipCaCertificate]
      * @param {Uint8Array} [props.grpcCertificateHash]
-     * @param {?ServiceEndpoint} [props.grpcProxyEndpoint]
+     * @param {ServiceEndpoint} [props.grpcProxyEndpoint]
      * @param {Key} [props.adminKey]
      * @param {boolean} [props.declineReward]
      */
