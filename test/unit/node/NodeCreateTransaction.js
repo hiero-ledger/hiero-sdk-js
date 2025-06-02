@@ -55,7 +55,7 @@ describe("NodeCreateTransaction", function () {
             .setGossipEndpoints(gossipEndpoints)
             .setMaxTransactionFee(new Hbar(1))
             .setDeclineReward(false)
-            .setGrpcProxyEndpoint(grpcProxyEndpoint);
+            .setGrpcWebProxyEndpoint(grpcProxyEndpoint);
     });
 
     it("should set decline reward", function () {
@@ -106,9 +106,9 @@ describe("NodeCreateTransaction", function () {
         });
 
         const TX_PROXY_IPV4_BUFFER = Buffer.from(
-            tx.grpcProxyEndpoint._ipAddressV4,
+            tx.grpcWebProxyEndpoint._ipAddressV4,
         );
-        const TX2_PROXY_IPV4_BUFFER = tx2.grpcProxyEndpoint._ipAddressV4;
+        const TX2_PROXY_IPV4_BUFFER = tx2.grpcWebProxyEndpoint._ipAddressV4;
         expect(TX_PROXY_IPV4_BUFFER).to.deep.equal(TX2_PROXY_IPV4_BUFFER);
     });
 
@@ -262,21 +262,21 @@ describe("NodeCreateTransaction", function () {
         const newGrpcProxyEndpoint = new ServiceEndpoint().setIpAddressV4(
             NEW_IP_AddressV4,
         );
-        tx.setGrpcProxyEndpoint(newGrpcProxyEndpoint);
-        expect(tx.grpcProxyEndpoint.toString()).to.equal(
+        tx.setGrpcWebProxyEndpoint(newGrpcProxyEndpoint);
+        expect(tx.grpcWebProxyEndpoint.toString()).to.equal(
             newGrpcProxyEndpoint.toString(),
         );
     });
 
     it("should not change grpc proxy endpoint if frozen", function () {
         const NEW_IP_AddressV4 = Uint8Array.of(127, 0, 0, 2);
-        const newGrpcProxyEndpoint = new ServiceEndpoint().setIpAddressV4(
+        const newGrpcWebProxyEndpoint = new ServiceEndpoint().setIpAddressV4(
             NEW_IP_AddressV4,
         );
         tx.freeze();
         let err = false;
         try {
-            tx.setGrpcProxyEndpoint(newGrpcProxyEndpoint);
+            tx.setGrpcWebProxyEndpoint(newGrpcWebProxyEndpoint);
         } catch (error) {
             err = error.toString().includes(IMMUTABLE_ERROR);
         }
@@ -286,6 +286,6 @@ describe("NodeCreateTransaction", function () {
 
     it("should not set grpc proxy endpoint if not set explicitly", function () {
         const tx = new NodeCreateTransaction();
-        expect(tx.grpcProxyEndpoint).to.equal(null);
+        expect(tx.grpcWebProxyEndpoint).to.equal(null);
     });
 });

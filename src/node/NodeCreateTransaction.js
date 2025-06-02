@@ -43,7 +43,7 @@ export default class NodeCreateTransaction extends Transaction {
      * @param {?Array<ServiceEndpoint>} [props.serviceEndpoints]
      * @param {Uint8Array} [props.gossipCaCertificate]
      * @param {Uint8Array} [props.grpcCertificateHash]
-     * @param {ServiceEndpoint} [props.grpcProxyEndpoint]
+     * @param {ServiceEndpoint} [props.grpcWebProxyEndpoint]
      * @param {Key} [props.adminKey]
      * @param {boolean} [props.declineReward]
      */
@@ -106,8 +106,7 @@ export default class NodeCreateTransaction extends Transaction {
          * @type {?ServiceEndpoint}
          * @description Proxy endpoint for gRPC web calls.
          */
-        this._grpcProxyEndpoint =
-            props?.grpcProxyEndpoint != null ? props.grpcProxyEndpoint : null;
+        this._grpcWebProxyEndpoint = props?.grpcWebProxyEndpoint || null;
 
         /**
          * @private
@@ -184,7 +183,7 @@ export default class NodeCreateTransaction extends Transaction {
                     nodeCreate.declineReward != null
                         ? nodeCreate.declineReward
                         : undefined,
-                grpcProxyEndpoint:
+                grpcWebProxyEndpoint:
                     nodeCreate.grpcProxyEndpoint != null
                         ? ServiceEndpoint._fromProtobuf(
                               nodeCreate.grpcProxyEndpoint,
@@ -380,9 +379,9 @@ export default class NodeCreateTransaction extends Transaction {
      * @description Set proxy endpoint for gRPC web calls.
      * @returns {NodeCreateTransaction}
      */
-    setGrpcProxyEndpoint(endpoint) {
+    setGrpcWebProxyEndpoint(endpoint) {
         this._requireNotFrozen();
-        this._grpcProxyEndpoint = endpoint;
+        this._grpcWebProxyEndpoint = endpoint;
         return this;
     }
 
@@ -390,8 +389,8 @@ export default class NodeCreateTransaction extends Transaction {
      * @description Get proxy endpoint for gRPC web calls.
      * @returns {?ServiceEndpoint}
      */
-    get grpcProxyEndpoint() {
-        return this._grpcProxyEndpoint;
+    get grpcWebProxyEndpoint() {
+        return this._grpcWebProxyEndpoint;
     }
 
     /**
@@ -490,8 +489,8 @@ export default class NodeCreateTransaction extends Transaction {
             declineReward:
                 this._declineReward != null ? this._declineReward : null,
             grpcProxyEndpoint:
-                this._grpcProxyEndpoint != null
-                    ? this._grpcProxyEndpoint._toProtobuf()
+                this._grpcWebProxyEndpoint != null
+                    ? this._grpcWebProxyEndpoint._toProtobuf()
                     : null,
         };
     }

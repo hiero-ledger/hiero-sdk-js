@@ -28,7 +28,7 @@ describe("NodeUpdateTransaction", function () {
 
         const GOSSIP_CA_CERTIFICATE = Buffer.from("gossipCaCertificate");
         const GRPC_CERTIFICATE_HASH = Buffer.from("grpcCertificateHash");
-        const GRPC_PROXY_ENDPOINT = new ServiceEndpoint().setIpAddressV4(
+        const GRPC_WEB_PROXY_ENDPOINT = new ServiceEndpoint().setIpAddressV4(
             IP_AddressV4,
         );
         const GOSSIP_ENDPOINTS = [
@@ -53,7 +53,7 @@ describe("NodeUpdateTransaction", function () {
             .setAdminKey(ADMIN_KEY)
             .setMaxTransactionFee(new Hbar(1))
             .setDeclineReward(false)
-            .setGrpcProxyEndpoint(GRPC_PROXY_ENDPOINT);
+            .setGrpcWebProxyEndpoint(GRPC_WEB_PROXY_ENDPOINT);
 
         const tx2 = NodeUpdateTransaction.fromBytes(tx.toBytes());
 
@@ -87,8 +87,8 @@ describe("NodeUpdateTransaction", function () {
         );
         expect(tx.adminKey.toString()).to.equal(tx2.adminKey.toString());
         expect(tx.declineReward).to.equal(tx2.declineReward);
-        expect(tx.grpcProxyEndpoint.toString()).to.equal(
-            tx2.grpcProxyEndpoint.toString(),
+        expect(tx.grpcWebProxyEndpoint.toString()).to.equal(
+            tx2.grpcWebProxyEndpoint.toString(),
         );
     });
 
@@ -171,17 +171,17 @@ describe("NodeUpdateTransaction", function () {
         const newGrpcProxyEndpoint = new ServiceEndpoint().setIpAddressV4(
             NEW_IP_AddressV4,
         );
-        const tx = new NodeUpdateTransaction().setGrpcProxyEndpoint(
+        const tx = new NodeUpdateTransaction().setGrpcWebProxyEndpoint(
             newGrpcProxyEndpoint,
         );
-        expect(tx.grpcProxyEndpoint.toString()).to.equal(
+        expect(tx.grpcWebProxyEndpoint.toString()).to.equal(
             newGrpcProxyEndpoint.toString(),
         );
     });
 
     it("should not set grpc proxy endpoint if not set explicitly", function () {
         const tx = new NodeUpdateTransaction();
-        expect(tx.grpcProxyEndpoint).to.equal(null);
+        expect(tx.grpcWebProxyEndpoint).to.equal(null);
     });
 
     it("should change admin key", function () {
@@ -319,11 +319,10 @@ describe("NodeUpdateTransaction", function () {
         it("should not change grpc proxy endpoint", function () {
             let err = false;
             const NEW_IP_AddressV4 = Uint8Array.of(127, 0, 0, 2);
-            const newGrpcProxyEndpoint = new ServiceEndpoint().setIpAddressV4(
-                NEW_IP_AddressV4,
-            );
+            const newGrpcWebProxyEndpoint =
+                new ServiceEndpoint().setIpAddressV4(NEW_IP_AddressV4);
             try {
-                tx.setGrpcProxyEndpoint(newGrpcProxyEndpoint);
+                tx.setGrpcWebProxyEndpoint(newGrpcWebProxyEndpoint);
             } catch (error) {
                 err = error.toString().includes(IMMUTABLE_ERROR);
             }
@@ -354,8 +353,8 @@ describe("NodeUpdateTransaction", function () {
             const tx = new NodeUpdateTransaction();
             const tx2 = NodeUpdateTransaction.fromBytes(tx.toBytes());
 
-            expect(tx.grpcProxyEndpoint).to.be.null;
-            expect(tx2.grpcProxyEndpoint).to.be.null;
+            expect(tx.grpcWebProxyEndpoint).to.be.null;
+            expect(tx2.grpcWebProxyEndpoint).to.be.null;
         });
     });
 });

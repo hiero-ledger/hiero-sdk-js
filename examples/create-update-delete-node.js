@@ -46,7 +46,7 @@ async function main() {
     const serviceEndpoints = [serviceEndpoint];
     const gossipCaCertificate = new Uint8Array();
     const certificateHash = new Uint8Array();
-    const grpcProxyEndpoint = new ServiceEndpoint()
+    const grpcWebProxyEndpoint = new ServiceEndpoint()
         .setIpAddressV4(grpcProxyIpAddressV4)
         .setPort(grpcProxyPort);
     const adminKey = PrivateKey.generate();
@@ -62,7 +62,7 @@ async function main() {
         .setCertificateHash(certificateHash)
         .setAdminKey(adminKey)
         .setDeclineReward(false)
-        .setGrpcProxyEndpoint(grpcProxyEndpoint);
+        .setGrpcWebProxyEndpoint(grpcWebProxyEndpoint);
 
     const createTransactionResponse = await createTransaction.execute(client);
     const createTransactionReceipt =
