@@ -47,7 +47,6 @@ describe.skip("NodeCreateTransaction", function () {
 
         // Generate admin key
         const adminKey = PrivateKey.generateED25519();
-        console.log("maika ti v ustata");
         // Create the node
 
         await (
