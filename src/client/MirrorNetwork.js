@@ -82,10 +82,6 @@ export default class MirrorNetwork extends ManagedNetwork {
      * @returns {MirrorNode}
      */
     getNextMirrorNode() {
-        if (this._createNetworkChannel == null) {
-            throw new Error("mirror network not supported on browser");
-        }
-
         return this._getNumberOfMostHealthyNodes(1)[0];
     }
 }
