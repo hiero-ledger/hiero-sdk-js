@@ -12,8 +12,6 @@ import * as mainnet from "./addressbooks/mainnet.js";
 import * as testnet from "./addressbooks/testnet.js";
 import * as previewnet from "./addressbooks/previewnet.js";
 import * as hex from "../encoding/hex.js";
-import AddressBookQuery from "../network/AddressBookQuery.js";
-import FileId from "../file/FileId.js";
 
 const readFileAsync = util.promisify(fs.readFile);
 
@@ -136,7 +134,7 @@ export default class NodeClient extends Client {
      * tried.
      *
      * @param {{[key: string]: (string | AccountId)}} network
-     * @param {ClientConfiguration} [props]
+     * @param {Omit<ClientConfiguration, 'network'>} [props]
      * @returns {NodeClient}
      */
     static forNetwork(network, props) {
@@ -145,8 +143,7 @@ export default class NodeClient extends Client {
 
     /**
      * @param {string} network
-     * @param {object} [props]
-     * @param {boolean} [props.scheduleNetworkUpdate]
+     * @param {Omit<ClientConfiguration, 'network'>} [props]
      * @returns {NodeClient}
      */
     static forName(network, props = {}) {
@@ -156,8 +153,7 @@ export default class NodeClient extends Client {
     /**
      * Construct a Hedera client pre-configured for Mainnet access.
      *
-     * @param {object} [props]
-     * @param {boolean} [props.scheduleNetworkUpdate]
+     * @param {Omit<ClientConfiguration, 'network'>} [props]
      * @returns {NodeClient}
      */
     static forMainnet(props = {}) {
@@ -167,8 +163,7 @@ export default class NodeClient extends Client {
     /**
      * Construct a Hedera client pre-configured for Testnet access.
      *
-     * @param {object} [props]
-     * @param {boolean} [props.scheduleNetworkUpdate]
+     * @param {Omit<ClientConfiguration, 'network'>} [props]
      * @returns {NodeClient}
      */
     static forTestnet(props = {}) {
@@ -176,20 +171,47 @@ export default class NodeClient extends Client {
     }
 
     /**
-     * @param {string[] | string} mirrorNetwork
-     * @returns {Promise<NodeClient>}
+     * Creates a NodeClient instance configured for a mirror network.     *
+     * @overload
+     * @param {string[] | string} mirrorNetwork - The mirror network address or addresses.
+     * @param {ClientConfiguration} props - Configuration properties for the client.
+     * @returns {Promise<NodeClient>} A configured NodeClient instance.
      */
-    static async forMirrorNetwork(mirrorNetwork) {
-        const client = new NodeClient();
 
-        client.setMirrorNetwork(mirrorNetwork).setNetworkUpdatePeriod(10000);
+    /**
+     * @deprecated
+     * @overload
+     * @param {string[] | string} mirrorNetwork - The mirror network address or addresses.
+     * @param {number} realm - The realm number for the address book query.
+     * @param {number} shard - The shard number for the address book query.
+     * @returns {Promise<NodeClient>} A configured NodeClient instance.
+     */
 
-        // Execute an address book query to get the network nodes
-        const addressBook = await new AddressBookQuery()
-            .setFileId(FileId.ADDRESS_BOOK)
-            .execute(client);
+    /**
+     * @param {string[] | string} mirrorNetwork - The mirror network address or addresses.
+     * @param {number | ClientConfiguration} realmOrProps - The realm number for the address book query.
+     * @param {number} shard - The shard number for the address book query.
+     * @returns {Promise<NodeClient>} A configured NodeClient instance.
+     */
+    static async forMirrorNetwork(mirrorNetwork, realmOrProps, shard = 0) {
+        /**@type {NodeClient} */
+        let client;
 
-        client.setNetworkFromAddressBook(addressBook);
+        if (typeof realmOrProps === "object" && realmOrProps !== null) {
+            const props = /** @type {ClientConfiguration} */ (realmOrProps);
+            client = new NodeClient({
+                mirrorNetwork,
+                ...props,
+            });
+        } else {
+            client = new NodeClient({
+                mirrorNetwork,
+                realm: realmOrProps,
+                shard,
+            });
+        }
+
+        await client.updateNetwork();
 
         return client;
     }
@@ -197,8 +219,7 @@ export default class NodeClient extends Client {
     /**
      * Construct a Hedera client pre-configured for Previewnet access.
      *
-     * @param {object} [props]
-     * @param {boolean} [props.scheduleNetworkUpdate]
+     * @param {Omit<ClientConfiguration, 'network'>} [props]
      * @returns {NodeClient}
      */
     static forPreviewnet(props = {}) {
@@ -208,12 +229,15 @@ export default class NodeClient extends Client {
     /**
      * Construct a Hedera client pre-configured for local-node access.
      *
-     * @param {object} [props]
-     * @param {boolean} [props.scheduleNetworkUpdate]
+     * @param {Omit<ClientConfiguration, 'network'>} [props]
      * @returns {NodeClient}
      */
     static forLocalNode(props = { scheduleNetworkUpdate: false }) {
-        return new NodeClient({ network: "local-node", ...props });
+        return new NodeClient({
+            network: "local-node",
+            scheduleNetworkUpdate: false,
+            ...props,
+        });
     }
 
     /**
