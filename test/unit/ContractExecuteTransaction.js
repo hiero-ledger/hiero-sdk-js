@@ -7,6 +7,7 @@ import {
     PrivateKey,
     ContractFunctionParameters,
     Transaction,
+    HbarUnit,
 } from "../../src/index.js";
 import Long from "long";
 
@@ -136,6 +137,27 @@ describe("ContractExecuteTransaction", function () {
 
             expect(transaction.payableAmount.toString()).to.equal(
                 Hbar.from(amount).toString(),
+            );
+        });
+
+        it("should set payable amount from number with unit", function () {
+            const amount = 10;
+            let transaction = new ContractExecuteTransaction().setPayableAmount(
+                amount,
+                HbarUnit.Tinybar,
+            );
+
+            expect(transaction.payableAmount.toString()).to.equal(
+                Hbar.from(amount, HbarUnit.Tinybar).toString(),
+            );
+
+            transaction = new ContractExecuteTransaction().setPayableAmount(
+                amount,
+                HbarUnit.Megabar,
+            );
+
+            expect(transaction.payableAmount.toString()).to.equal(
+                Hbar.from(amount, HbarUnit.Megabar).toString(),
             );
         });
 

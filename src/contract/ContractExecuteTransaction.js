@@ -205,10 +205,10 @@ export default class ContractExecuteTransaction extends Transaction {
      * Sets the number of hbars to be sent with this function call.
      *
      * @param {number | string | Long | BigNumber | Hbar} amount
-     * @param unit
+     * @param {HbarUnit} unit
      * @returns {ContractExecuteTransaction}
      */
-    setPayableAmount(amount, unit = HbarUnit.Tinybar) {
+    setPayableAmount(amount, unit = HbarUnit.Hbar) {
         this._requireNotFrozen();
         this._amount =
             amount instanceof Hbar ? amount : Hbar.from(amount, unit);
