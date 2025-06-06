@@ -68,17 +68,16 @@ tasks:
     build:
         cmds:
             - task: build:prep
-            - task: build:actual
+            - task: build:compile
 
     "build:prep":
         cmds:
             - task: install
-            - task: update:addressbooks
             - task: format
             - task: lint
             - node ./scripts/generate-request-and-status-files.js
 
-    "build:actual":
+    "build:compile":
         cmds:
             - npx babel src -d lib --out-file-extension .cjs > /dev/null
             - npx rollup -c > /dev/null
@@ -125,7 +124,7 @@ tasks:
     "test:release":
         cmds:
             - task: build
-            # - task: test:unit
+            - task: test:unit
             - task: examples:build
             - task: simple_rest_signature_provider:build
             - task: common_js_test:build
@@ -183,7 +182,7 @@ tasks:
 
     publish:
         deps:
-            - "test:release"
+            - "build"
         cmds:
             - task: "yalc:remove"
             - task: "publish:release"
