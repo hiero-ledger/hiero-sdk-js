@@ -19,6 +19,9 @@ import {
     TokenAirdropTransaction,
     TokenId,
     NftId,
+    TokenClaimAirdropTransaction,
+    PendingAirdropId,
+    TokenCancelAirdropTransaction,
 } from "@hashgraph/sdk";
 import Long from "long";
 
@@ -47,6 +50,7 @@ import {
     MintTokenParams,
     WipeTokenParams,
     AirdropTokenParams,
+    AirdropCancelTokenParams,
 } from "../params/token";
 
 import {
@@ -600,6 +604,58 @@ export const airdropToken = async ({
                       );
             }
         }
+    }
+
+    if (commonTransactionParams != null) {
+        applyCommonTransactionParams(
+            commonTransactionParams,
+            transaction,
+            sdk.getClient(),
+        );
+    }
+
+    const txResponse = await transaction.execute(sdk.getClient());
+    const receipt = await txResponse.getReceipt(sdk.getClient());
+
+    return {
+        status: receipt.status.toString(),
+    };
+};
+
+export const cancelAirdrop = async ({
+    senderAccountId,
+    receiverAccountId,
+    tokenId,
+    serialNumbers,
+    commonTransactionParams,
+}: AirdropCancelTokenParams): Promise<TokenResponse> => {
+    const transaction = new TokenCancelAirdropTransaction().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+
+    // NFT token canceling
+    if (serialNumbers && serialNumbers.length) {
+        for (const serialNumber of serialNumbers) {
+            transaction.addPendingAirdropId(
+                new PendingAirdropId({
+                    senderId: AccountId.fromString(senderAccountId),
+                    receiverId: AccountId.fromString(receiverAccountId),
+                    nftId: new NftId(
+                        TokenId.fromString(tokenId),
+                        Long.fromString(serialNumber.toString()),
+                    ),
+                }),
+            );
+        }
+    } else {
+        // Fungible token canceling
+        transaction.addPendingAirdropId(
+            new PendingAirdropId({
+                senderId: AccountId.fromString(senderAccountId),
+                receiverId: AccountId.fromString(receiverAccountId),
+                tokenId: TokenId.fromString(tokenId),
+            }),
+        );
     }
 
     if (commonTransactionParams != null) {
