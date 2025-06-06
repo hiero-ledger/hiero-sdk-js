@@ -626,25 +626,37 @@ export const cancelAirdrop = async ({
     senderAccountId,
     receiverAccountId,
     tokenId,
+    serialNumbers,
     commonTransactionParams,
 }: AirdropCancelTokenParams): Promise<TokenResponse> => {
     const transaction = new TokenCancelAirdropTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
 
-    // Create PendingAirdropId with raw values to allow invalid IDs
-    let pendingAirdropId: PendingAirdropId;
-    try {
-        pendingAirdropId = new PendingAirdropId({
-            senderId: AccountId.fromString(senderAccountId),
-            receiverId: AccountId.fromString(receiverAccountId),
-            tokenId: TokenId.fromString(tokenId),
-        });
-    } catch (error) {
-        throw new Error("Invalid pending airdrop ID");
+    // NFT token canceling
+    if (serialNumbers && serialNumbers.length) {
+        for (const serialNumber of serialNumbers) {
+            transaction.addPendingAirdropId(
+                new PendingAirdropId({
+                    senderId: AccountId.fromString(senderAccountId),
+                    receiverId: AccountId.fromString(receiverAccountId),
+                    nftId: new NftId(
+                        TokenId.fromString(tokenId),
+                        Long.fromString(serialNumber.toString()),
+                    ),
+                }),
+            );
+        }
+    } else {
+        // Fungible token canceling
+        transaction.addPendingAirdropId(
+            new PendingAirdropId({
+                senderId: AccountId.fromString(senderAccountId),
+                receiverId: AccountId.fromString(receiverAccountId),
+                tokenId: TokenId.fromString(tokenId),
+            }),
+        );
     }
-
-    transaction.addPendingAirdropId(pendingAirdropId);
 
     if (commonTransactionParams != null) {
         applyCommonTransactionParams(
