@@ -60,6 +60,10 @@ tasks:
         deps:
             - install
         cmds:
+            - task "build:standalone"
+
+    build:standalone:
+        cmds:
             - npx pbjs -r hashgraph -t static-module -w es6 -p=src/proto --force-long --no-beautify --no-convert --no-delimited --no-verify -o src/proto.js src/proto/**/*.proto
             - npx pbts -n hashgraph -o src/proto.d.ts src/proto.js
             - perl -pi -e "s#(?<!api\.)proto\.#hashgraph.proto.#g" src/proto.d.ts
@@ -67,7 +71,7 @@ tasks:
             - task: lint
             - npx babel src -d lib
             - npx copyfiles -u 1 src/index.d.ts src/proto.d.ts lib/ > /dev/null
-            # This is necessary to correctly run browser tests with an unpublished proto package
+              # This is necessary to correctly run browser tests with an unpublished proto package
             - npx yalc publish > /dev/null
 
     clean:
@@ -101,21 +105,25 @@ tasks:
             - build
 
     update:
-        dir: src/services
         vars:
             latest_tag:
-                sh: git -c versionsort.suffix=-alpha
-                    -c versionsort.suffix=-beta
-                    -c versionsort.suffix=-rc
-                    tag -l --sort=version:refname|tail -1
+                sh: git ls-remote --tags https://github.com/hiero-ledger/hiero-consensus-node.git | awk '{print $2}' | grep -E 'refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1 | sed 's#refs/tags/##'
             proto: "{{.proto | default .latest_tag}}"
         cmds:
             - echo "Protobuf version set to {{.proto}}"
-            - git fetch origin
-            - git checkout {{.proto}}
-            - git show-ref --verify -q refs/heads/{{.proto}} && git pull origin || exit 0
-            - task: build
-            - echo "Sucessfully updated protobufs to {{.proto}}"
+            - git submodule update --init --recursive --remote
+            - |
+                (
+                cd src/services &&
+                if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
+                    git fetch --unshallow --tags
+                fi &&
+                git checkout {{.stag}}
+                )
+            - task "move:protobufs"
+            - pnpm i > /dev/null
+            - task "build:standalone"
+            - echo "Successfully updated protobufs to {{.proto}}"
 
     publish:
         preconditions:
