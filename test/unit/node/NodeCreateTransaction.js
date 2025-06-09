@@ -33,6 +33,9 @@ describe("NodeCreateTransaction", function () {
         gossipCaCertificate = Buffer.from("gossipCaCertificate");
         gossipEndpoints = [new ServiceEndpoint().setIpAddressV4(IP_AddressV4)];
         serviceEndpoints = [new ServiceEndpoint().setIpAddressV4(IP_AddressV4)];
+        const grpcProxyEndpoint = new ServiceEndpoint().setIpAddressV4(
+            IP_AddressV4,
+        );
 
         const TEST_ADMIN_KEY = PrivateKey.fromStringED25519(
             "302e020100300506032b65700422042062c4b69e9f45a554e5424fb5a6fe5e6ac1f19ead31dc7718c2d980fd1f998d4b",
@@ -51,7 +54,8 @@ describe("NodeCreateTransaction", function () {
             .setServiceEndpoints(serviceEndpoints)
             .setGossipEndpoints(gossipEndpoints)
             .setMaxTransactionFee(new Hbar(1))
-            .setDeclineReward(false);
+            .setDeclineReward(false)
+            .setGrpcWebProxyEndpoint(grpcProxyEndpoint);
     });
 
     it("should set decline reward", function () {
@@ -100,6 +104,12 @@ describe("NodeCreateTransaction", function () {
             const TX2_IPV4_BUFFER = tx2.gossipEndpoints[index]._ipAddressV4;
             expect(TX_IPV4_BUFFER).to.deep.equal(TX2_IPV4_BUFFER);
         });
+
+        const TX_PROXY_IPV4_BUFFER = Buffer.from(
+            tx.grpcWebProxyEndpoint._ipAddressV4,
+        );
+        const TX2_PROXY_IPV4_BUFFER = tx2.grpcWebProxyEndpoint._ipAddressV4;
+        expect(TX_PROXY_IPV4_BUFFER).to.deep.equal(TX2_PROXY_IPV4_BUFFER);
     });
 
     it("should change account id", function () {
@@ -245,5 +255,37 @@ describe("NodeCreateTransaction", function () {
         }
 
         expect(err).to.be.true;
+    });
+
+    it("should change grpc proxy endpoint", function () {
+        const NEW_IP_AddressV4 = Uint8Array.of(127, 0, 0, 2);
+        const newGrpcProxyEndpoint = new ServiceEndpoint().setIpAddressV4(
+            NEW_IP_AddressV4,
+        );
+        tx.setGrpcWebProxyEndpoint(newGrpcProxyEndpoint);
+        expect(tx.grpcWebProxyEndpoint.toString()).to.equal(
+            newGrpcProxyEndpoint.toString(),
+        );
+    });
+
+    it("should not change grpc proxy endpoint if frozen", function () {
+        const NEW_IP_AddressV4 = Uint8Array.of(127, 0, 0, 2);
+        const newGrpcWebProxyEndpoint = new ServiceEndpoint().setIpAddressV4(
+            NEW_IP_AddressV4,
+        );
+        tx.freeze();
+        let err = false;
+        try {
+            tx.setGrpcWebProxyEndpoint(newGrpcWebProxyEndpoint);
+        } catch (error) {
+            err = error.toString().includes(IMMUTABLE_ERROR);
+        }
+
+        expect(err).to.be.true;
+    });
+
+    it("should not set grpc proxy endpoint if not set explicitly", function () {
+        const tx = new NodeCreateTransaction();
+        expect(tx.grpcWebProxyEndpoint).to.equal(null);
     });
 });

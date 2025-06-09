@@ -49,7 +49,7 @@ export default class Hbar {
     }
 
     /**
-     * @param {number | Long | BigNumber} amount
+     * @param {number | Long | string | BigNumber} amount
      * @param {HbarUnit} unit
      * @returns {Hbar}
      */

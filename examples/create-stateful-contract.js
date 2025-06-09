@@ -70,7 +70,7 @@ async function main() {
                 ),
             )
             // Set gas to create the contract
-            .setGas(150000)
+            .setGas(300000)
             // The contract bytecode must be set to the file ID containing the contract bytecode
             .setBytecodeFileId(fileId)
             // Set the admin key on the contract in case the contract should be deleted or

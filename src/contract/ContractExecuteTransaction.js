@@ -7,6 +7,7 @@ import Transaction, {
 import ContractId from "./ContractId.js";
 import ContractFunctionParameters from "./ContractFunctionParameters.js";
 import Long from "long";
+import HbarUnit from "../HbarUnit.js";
 
 /**
  * @namespace proto
@@ -204,11 +205,13 @@ export default class ContractExecuteTransaction extends Transaction {
      * Sets the number of hbars to be sent with this function call.
      *
      * @param {number | string | Long | BigNumber | Hbar} amount
+     * @param {HbarUnit} unit
      * @returns {ContractExecuteTransaction}
      */
-    setPayableAmount(amount) {
+    setPayableAmount(amount, unit = HbarUnit.Hbar) {
         this._requireNotFrozen();
-        this._amount = amount instanceof Hbar ? amount : new Hbar(amount);
+        this._amount =
+            amount instanceof Hbar ? amount : Hbar.from(amount, unit);
 
         return this;
     }

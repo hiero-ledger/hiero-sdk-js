@@ -35,25 +35,25 @@ describe("TokenInfo", function () {
             totalSupply: Long.fromNumber(1000000),
             treasuryAccountId: treasuryId,
             adminKey: PrivateKey.fromStringDer(
-                "302a300506032b65700321008a307a33fddd469a097c4a1b392149206c854d6f3348a80d9b364d8a1c9b3b72",
+                "302e0201010420a6170a6aa6389a5bd3a3a8f9375f57bd91aa7f7d8b8b46ce0b702e000a21a5fea00706052b8104000a",
             ),
             kycKey: PrivateKey.fromStringDer(
-                "302a300506032b65700321009d61d0b816743dd8540d3be1250607714a5a9be3ec428e09fee218204d598849",
+                "302e0201010420a6170a6aa6389a5bd3a3a8f9375f57bd91aa7f7d8b8b46ce0b702e000a21a5fea00706052b8104000a",
             ),
             freezeKey: PrivateKey.fromStringDer(
-                "302a300506032b6570032100e613d28cd56db4ef8f2bb34f2e4b23dbf25c059c7f4b0dbff8e0c384195186f3",
+                "302e0201010420a6170a6aa6389a5bd3a3a8f9375f57bd91aa7f7d8b8b46ce0b702e000a21a5fea00706052b8104000a",
             ),
             pauseKey: PrivateKey.fromStringDer(
-                "302a300506032b6570032100120763d691118ef319da0d97a5df27c671a1f8068d30d452cd7d9dbcee7ebc0fe",
+                "302e0201010420a6170a6aa6389a5bd3a3a8f9375f57bd91aa7f7d8b8b46ce0b702e000a21a5fea00706052b8104000a",
             ),
             wipeKey: PrivateKey.fromStringDer(
-                "302a300506032b6570032100bf79bc0e2e469695ba4b18a35a8e67c8d691c746d93e2e31b8ab03a7cdabb617",
+                "302e0201010420a6170a6aa6389a5bd3a3a8f9375f57bd91aa7f7d8b8b46ce0b702e000a21a5fea00706052b8104000a",
             ),
             supplyKey: PrivateKey.fromStringDer(
-                "302a300506032b6570032100ec0151b38dacf4d3d8a9665fca4ac78f9a56a1d0c73551c433ea344e56a246b3",
+                "302e0201010420a6170a6aa6389a5bd3a3a8f9375f57bd91aa7f7d8b8b46ce0b702e000a21a5fea00706052b8104000a",
             ),
             feeScheduleKey: PrivateKey.fromStringDer(
-                "302a300506032b65700321002b7345f544ce72cae9f5602c28ee5a9fb2f4dce65bf089c20d6cc0802be5b25a",
+                "302e0201010420a6170a6aa6389a5bd3a3a8f9375f57bd91aa7f7d8b8b46ce0b702e000a21a5fea00706052b8104000a",
             ),
             defaultFreezeStatus: false,
             defaultKycStatus: true,
@@ -75,7 +75,7 @@ describe("TokenInfo", function () {
             maxSupply: Long.fromNumber(2000000),
             ledgerId: LedgerId.fromString("mainnet"),
             metadataKey: PrivateKey.fromStringDer(
-                "302a300506032b65700321003eae1f4596369b40ed7736644e3a453a68c33e5eac99949aa3d11693ed97b97b",
+                "302e0201010420a6170a6aa6389a5bd3a3a8f9375f57bd91aa7f7d8b8b46ce0b702e000a21a5fea00706052b8104000a",
             ),
             metadata: new Uint8Array([1, 2, 3, 4]),
         });

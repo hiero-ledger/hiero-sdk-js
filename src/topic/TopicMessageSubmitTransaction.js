@@ -273,6 +273,19 @@ export default class TopicMessageSubmitTransaction extends Transaction {
     }
 
     /**
+     * @override
+     * @returns {number}
+     */
+    getRequiredChunks() {
+        if (this._message == null) {
+            return 1;
+        }
+
+        const result = Math.ceil(this._message.length / this._chunkSize);
+        return result;
+    }
+
+    /**
      * Freeze this transaction from further modification to prepare for
      * signing or serialization.
      *

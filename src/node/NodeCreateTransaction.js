@@ -43,6 +43,7 @@ export default class NodeCreateTransaction extends Transaction {
      * @param {?Array<ServiceEndpoint>} [props.serviceEndpoints]
      * @param {Uint8Array} [props.gossipCaCertificate]
      * @param {Uint8Array} [props.grpcCertificateHash]
+     * @param {ServiceEndpoint} [props.grpcWebProxyEndpoint]
      * @param {Key} [props.adminKey]
      * @param {boolean} [props.declineReward]
      */
@@ -99,6 +100,13 @@ export default class NodeCreateTransaction extends Transaction {
             props?.grpcCertificateHash != null
                 ? props.grpcCertificateHash
                 : null;
+
+        /**
+         * @private
+         * @type {?ServiceEndpoint}
+         * @description Proxy endpoint for gRPC web calls.
+         */
+        this._grpcWebProxyEndpoint = props?.grpcWebProxyEndpoint || null;
 
         /**
          * @private
@@ -174,6 +182,12 @@ export default class NodeCreateTransaction extends Transaction {
                 declineReward:
                     nodeCreate.declineReward != null
                         ? nodeCreate.declineReward
+                        : undefined,
+                grpcWebProxyEndpoint:
+                    nodeCreate.grpcProxyEndpoint != null
+                        ? ServiceEndpoint._fromProtobuf(
+                              nodeCreate.grpcProxyEndpoint,
+                          )
                         : undefined,
             }),
             transactions,
@@ -361,6 +375,25 @@ export default class NodeCreateTransaction extends Transaction {
     }
 
     /**
+     * @param {ServiceEndpoint} endpoint
+     * @description Set proxy endpoint for gRPC web calls.
+     * @returns {NodeCreateTransaction}
+     */
+    setGrpcWebProxyEndpoint(endpoint) {
+        this._requireNotFrozen();
+        this._grpcWebProxyEndpoint = endpoint;
+        return this;
+    }
+
+    /**
+     * @description Get proxy endpoint for gRPC web calls.
+     * @returns {?ServiceEndpoint}
+     */
+    get grpcWebProxyEndpoint() {
+        return this._grpcWebProxyEndpoint;
+    }
+
+    /**
      * @param {Key} adminKey
      * @description Set administrative key controlled by the node operator.
      * @returns {NodeCreateTransaction}
@@ -455,6 +488,10 @@ export default class NodeCreateTransaction extends Transaction {
                 this._adminKey != null ? this._adminKey._toProtobufKey() : null,
             declineReward:
                 this._declineReward != null ? this._declineReward : null,
+            grpcProxyEndpoint:
+                this._grpcWebProxyEndpoint != null
+                    ? this._grpcWebProxyEndpoint._toProtobuf()
+                    : null,
         };
     }
 

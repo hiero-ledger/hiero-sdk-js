@@ -152,7 +152,7 @@ describe("ContractFunctionParameters", function () {
             //Set the file ID of the Hedera file storing the bytecode
             .setBytecodeFileId(bytecodeFileId)
             //Set the gas to instantiate the contract
-            .setGas(500000)
+            .setGas(5_500_000)
             //Provide the constructor parameters for the contract
             .setConstructorParameters();
 
@@ -161,7 +161,6 @@ describe("ContractFunctionParameters", function () {
 
         //Get the receipt of the file create transaction
         const contractReceipt = await contractResponse.getReceipt(env.client);
-
         await setTimeout(2500);
 
         //Get the smart contract ID
@@ -1067,7 +1066,7 @@ describe("ContractFunctionParameters", function () {
 
         const contractCreate = await new ContractCreateTransaction()
             .setAdminKey(env.operatorKey)
-            .setGas(100000)
+            .setGas(300_000)
             .setBytecodeFileId(fileId)
             .setContractMemo("[e2e::ContractADeploysContractBInConstructor]")
             .execute(env.client);

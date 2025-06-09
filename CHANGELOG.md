@@ -5,48 +5,84 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.66.0-beta.1
+
+### Added
+
+-   New APIs in `NodeCreateTransaction` and `NodeUpdateTransaction` to support setting a `grpcWebProxyEndpoint`, enabling web proxy access for gRPC from non-gRPC clients:
+
+    -   `setGrpcWebProxyEndpoint(Endpoint)`
+    -   getter `grpcWebProxyEndpoint()`
+
+    This addition enhances node configuration flexibility for diverse client environments. [#3138](https://github.com/hiero-ledger/hiero-sdk-js/pull/3138)
+
+## v2.65.1
+
+### Added
+
+-   Support for external transaction signing via HSM:
+    -   Introduced `SignableNodeTransactionBodyBytes` to encapsulate `nodeAccountId`, `transactionId`, and canonical `bodyBytes`.
+    -   Added `Transaction.signableNodeBodyBytesList()` API to return node-specific, signable transaction bytes for HSM workflows, enabling secure external signing and signature injection.
+    -   Improves usability in enterprise and regulated environments. [#3119](https://github.com/hiero-ledger/hiero-sdk-js/pull/3119)
+-   Test coverage for HSM-based signing added to the JavaScript SDK, including usage examples. [#3119](https://github.com/hiero-ledger/hiero-sdk-js/pull/3119)
+-   Added a library to determine key type and updated relevant files to use the correct key type determination logic. [#3068](https://github.com/hiero-ledger/hiero-sdk-js/pull/3068)
+-   Introduced transaction size getter for normal and chunked transactions. [#2961](https://github.com/hiero-ledger/hiero-sdk-js/pull/2961)
+
+### Fixed
+
+-   Regressions in `ContractCreateTransaction` and `TokenCreateTransaction` resolved. [#3125](https://github.com/hiero-ledger/hiero-sdk-js/pull/3125)
+
+### Removed
+
+-   Skipped batch transaction integration tests due to regressions. [#3125](https://github.com/hiero-ledger/hiero-sdk-js/pull/3125)
+
+### Documentation
+
+-   Added usage instructions in an example for HSM-based signing in SDK. [#3119](https://github.com/hiero-ledger/hiero-sdk-js/pull/3119)
+-   Local command introduced for checking code coverage without relying on remote results. [#3116](https://github.com/hiero-ledger/hiero-sdk-js/pull/3116)
+
 ## v2.64.5
 
 ### Added
-- Support for HIP-1064 Daily Rewards For Active Nodes https://hips.hedera.com/hip/hip-1064 This HIP proposes a reward mechanism that will incentivize nodes to remain active on the network. [#3099](https://github.com/hiero-ledger/hiero-sdk-js/pull/3099)
-    - NodeCreateTransaction `declineReward`: whether the node declines rewards
-    - NodeCreateTransaction `setDeclineReward`: update whether the node declines reward
-- Added the `x-user-agent` header to all gRPC calls to enable SDK version tracking, following the approach outlined in [#3089](https://github.com/hiero-ledger/hiero-sdk-js/pull/3089)
-- Included examples that demonstrate proper error handling in realistic, real-world scenarios, including how to manage network connectivity issues when interacting with a single node. [#3064](https://github.com/hiero-ledger/hiero-sdk-js/pull/3064)
+
+-   Support for HIP-1064 Daily Rewards For Active Nodes https://hips.hedera.com/hip/hip-1064 This HIP proposes a reward mechanism that will incentivize nodes to remain active on the network. [#3099](https://github.com/hiero-ledger/hiero-sdk-js/pull/3099)
+    -   NodeCreateTransaction `declineReward`: whether the node declines rewards
+    -   NodeCreateTransaction `setDeclineReward`: update whether the node declines reward
+-   Added the `x-user-agent` header to all gRPC calls to enable SDK version tracking, following the approach outlined in [#3089](https://github.com/hiero-ledger/hiero-sdk-js/pull/3089)
+-   Included examples that demonstrate proper error handling in realistic, real-world scenarios, including how to manage network connectivity issues when interacting with a single node. [#3064](https://github.com/hiero-ledger/hiero-sdk-js/pull/3064)
 
 ## v2.64.0-beta.1
 
 ### Added
 
-- Support for HIP-551 Batch Transaction https://hips.hedera.com/hip/hip-551 It defines a mechanism to execute batch transactions such that a series of transactions (HAPI calls) depending on each other can be rolled into one transaction that passes the ACID test (atomicity, consistency, isolation, and durability). [#3039](https://github.com/hiero-ledger/hiero-sdk-js/pull/3039)
-    - New `BatchTransaction` struct that has a list of `innerTransactions` and `innerTransactionIds`.
-    - New `batchKey` field in Transaction class that must sign the BatchTransaction
-    - New `batchify` method that sets the batch key and marks a transaction as part of a batch transaction (inner transaction). The transaction is signed by the client of the operator and frozen.
-- Extend `setKeyWithAlias` funcs to support PublicKey. [#3051](https://github.com/hiero-ledger/hiero-sdk-js/pull/3051)
--  Enhancing the retry mechanism for the status code `THROTTLED_AT_CONSENSUS` using backoffs retry mechanism. [#3065](https://github.com/hiero-ledger/hiero-sdk-js/pull/3065) [#3076](https://github.com/hiero-ledger/hiero-sdk-js/pull/3076)
+-   Support for HIP-551 Batch Transaction https://hips.hedera.com/hip/hip-551 It defines a mechanism to execute batch transactions such that a series of transactions (HAPI calls) depending on each other can be rolled into one transaction that passes the ACID test (atomicity, consistency, isolation, and durability). [#3039](https://github.com/hiero-ledger/hiero-sdk-js/pull/3039)
+    -   New `BatchTransaction` struct that has a list of `innerTransactions` and `innerTransactionIds`.
+    -   New `batchKey` field in Transaction class that must sign the BatchTransaction
+    -   New `batchify` method that sets the batch key and marks a transaction as part of a batch transaction (inner transaction). The transaction is signed by the client of the operator and frozen.
+-   Extend `setKeyWithAlias` funcs to support PublicKey. [#3051](https://github.com/hiero-ledger/hiero-sdk-js/pull/3051)
+-   Enhancing the retry mechanism for the status code `THROTTLED_AT_CONSENSUS` using backoffs retry mechanism. [#3065](https://github.com/hiero-ledger/hiero-sdk-js/pull/3065) [#3076](https://github.com/hiero-ledger/hiero-sdk-js/pull/3076)
 
 ## v2.63.0
 
 ### Added
 
-- Added a UMD example demonstrating usage of the SDK in browser environments [#3028](https://github.com/hiero-ledger/hiero-sdk-js/pull/3028)
-- Added `PrivateKey.getRecoveryId(r, s, message)` method to enable recovery ID (v) calculation from raw `ECDSA` signature components.  
-This addition allows developers to compute the recovery ID directly, enabling full support for signing and serializing Ethereum transactions (including `EIP-155`) within the SDK. It enhances compatibility with external Ethereum clients and tooling. [#3021](https://github.com/hiero-ledger/hiero-sdk-js/pull/3021)
-- Added an example demonstrating how to sign and recover Ethereum addresses using the Hedera SDK, Ethereum-style signature hashing (`EIP-191`), and the ecrecover contract. [#3029](https://github.com/hiero-ledger/hiero-sdk-js/pull/3029)
-- Implemented dynamic generation of `RequestType.js` and `Status.js` by parsing protobuf definitions. [#3018](https://github.com/hiero-ledger/hiero-sdk-js/pull/3018)
+-   Added a UMD example demonstrating usage of the SDK in browser environments [#3028](https://github.com/hiero-ledger/hiero-sdk-js/pull/3028)
+-   Added `PrivateKey.getRecoveryId(r, s, message)` method to enable recovery ID (v) calculation from raw `ECDSA` signature components.  
+    This addition allows developers to compute the recovery ID directly, enabling full support for signing and serializing Ethereum transactions (including `EIP-155`) within the SDK. It enhances compatibility with external Ethereum clients and tooling. [#3021](https://github.com/hiero-ledger/hiero-sdk-js/pull/3021)
+-   Added an example demonstrating how to sign and recover Ethereum addresses using the Hedera SDK, Ethereum-style signature hashing (`EIP-191`), and the ecrecover contract. [#3029](https://github.com/hiero-ledger/hiero-sdk-js/pull/3029)
+-   Implemented dynamic generation of `RequestType.js` and `Status.js` by parsing protobuf definitions. [#3018](https://github.com/hiero-ledger/hiero-sdk-js/pull/3018)
 
 ### Changed
 
-- Improved reliability of `getReceiptQuery` and `getRecordQuery`, which are single-node requests. These queries now retry up to 10 times with a delay when encountering node-specific issues (e.g., "All nodes are unhealthy") to handle transient network or node health problems more gracefully. [#3038](https://github.com/hiero-ledger/hiero-sdk-js/pull/3038)
-- Extracted `_makePaymentTransaction` function used by both Query and CostQuery for initiating payment transactions.
-The filename begins with an underscore to indicate it is not meant for public use and is placed in the queries folder to clearly indicate its internal scope.  [#3017](https://github.com/hiero-ledger/hiero-sdk-js/pull/3017)
-- Fixed a bug in `TopicUpdateTransaction` related to the handling of `feeExemptKeys` and `customFees` properties when they are unset. Previously, the transaction would include empty arrays for these fields, unintentionally clearing existing values on the topic. This change ensures that unset properties are treated as null, preserving existing topic configurations.[#3031](https://github.com/hiero-ledger/hiero-sdk-js/pull/3031)
-- Updated README.md to reflect support for the UMD package [#3028](https://github.com/hiero-ledger/hiero-sdk-js/pull/3028)
+-   Improved reliability of `getReceiptQuery` and `getRecordQuery`, which are single-node requests. These queries now retry up to 10 times with a delay when encountering node-specific issues (e.g., "All nodes are unhealthy") to handle transient network or node health problems more gracefully. [#3038](https://github.com/hiero-ledger/hiero-sdk-js/pull/3038)
+-   Extracted `_makePaymentTransaction` function used by both Query and CostQuery for initiating payment transactions.
+    The filename begins with an underscore to indicate it is not meant for public use and is placed in the queries folder to clearly indicate its internal scope. [#3017](https://github.com/hiero-ledger/hiero-sdk-js/pull/3017)
+-   Fixed a bug in `TopicUpdateTransaction` related to the handling of `feeExemptKeys` and `customFees` properties when they are unset. Previously, the transaction would include empty arrays for these fields, unintentionally clearing existing values on the topic. This change ensures that unset properties are treated as null, preserving existing topic configurations.[#3031](https://github.com/hiero-ledger/hiero-sdk-js/pull/3031)
+-   Updated README.md to reflect support for the UMD package [#3028](https://github.com/hiero-ledger/hiero-sdk-js/pull/3028)
 
 ### Removed
 
-- MyHbarWallet gRPC web proxies [#3053](https://github.com/hiero-ledger/hiero-sdk-js/pull/3053)
-
+-   MyHbarWallet gRPC web proxies [#3053](https://github.com/hiero-ledger/hiero-sdk-js/pull/3053)
 
 ## v2.63.0-beta.1
 

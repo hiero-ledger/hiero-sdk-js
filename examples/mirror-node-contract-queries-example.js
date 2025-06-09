@@ -39,7 +39,7 @@ async function main() {
     const { contractId } = await (
         await new ContractCreateTransaction()
             .setBytecodeFileId(fileId)
-            .setGas(200000)
+            .setGas(300000)
             .execute(client)
     ).getReceipt(client);
 
