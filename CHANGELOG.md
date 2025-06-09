@@ -13,8 +13,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 ### Fixed
--  Improved build process efficiency by removing redundant `addressbook` updates during build commands, refactoring Taskfiles for better organization, and fixing the task update command in the proto package [#3109](https://github.com/hiero-ledger/hiero-sdk-js/pull/3109)
-
 - Prevented unintended removal of transaction type registrations by disabling tree shaking for modules with critical side effects, ensuring proper runtime functionality. [#3149](https://github.com/hiero-ledger/hiero-sdk-js/pull/3149)
 
 
