@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.66.0
+
+### Added
+
+-  Extended `setPayableAmount` function in ContractExecuteTransaction, by allowing the user to pass a HbarUnit as optional second parameter. [#3129](https://github.com/hiero-ledger/hiero-sdk-js/pull/3129)
+
+
+### Fixed
+-  Improved build process efficiency by removing redundant `addressbook` updates during build commands, refactoring Taskfiles for better organization, and fixing the task update command in the proto package [#3109](https://github.com/hiero-ledger/hiero-sdk-js/pull/3109)
+
+- Prevented unintended removal of transaction type registrations by disabling tree shaking for modules with critical side effects, ensuring proper runtime functionality. [#3149](https://github.com/hiero-ledger/hiero-sdk-js/pull/3149)
+
+
 ## v2.66.0-beta.1
 
 ### Added
