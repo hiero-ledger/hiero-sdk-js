@@ -129,3 +129,11 @@ export interface AirdropClaimTokenParams {
     readonly serialNumbers?: string[];
     readonly commonTransactionParams?: Record<string, any>;
 }
+
+export interface RejectTokenParams {
+    readonly ownerId?: string;
+    readonly tokenIds?: string[];
+    readonly nftIds?: string[];
+    readonly serialNumbers?: string[];
+    readonly commonTransactionParams?: Record<string, any>;
+}

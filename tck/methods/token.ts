@@ -21,6 +21,7 @@ import {
     NftId,
     TokenClaimAirdropTransaction,
     PendingAirdropId,
+    TokenRejectTransaction,
 } from "@hashgraph/sdk";
 import Long from "long";
 
@@ -50,6 +51,7 @@ import {
     WipeTokenParams,
     AirdropTokenParams,
     AirdropClaimTokenParams,
+    RejectTokenParams,
 } from "../params/token";
 
 import {
@@ -656,6 +658,57 @@ export const claimToken = async ({
                 tokenId: TokenId.fromString(tokenId),
             }),
         );
+    }
+
+    if (commonTransactionParams != null) {
+        applyCommonTransactionParams(
+            commonTransactionParams,
+            transaction,
+            sdk.getClient(),
+        );
+    }
+
+    const txResponse = await transaction.execute(sdk.getClient());
+    const receipt = await txResponse.getReceipt(sdk.getClient());
+
+    return {
+        status: receipt.status.toString(),
+    };
+};
+
+export const rejectToken = async ({
+    ownerId,
+    tokenIds = [],
+    nftIds = [],
+    serialNumbers,
+    commonTransactionParams,
+}: RejectTokenParams): Promise<TokenResponse> => {
+    const transaction = new TokenRejectTransaction().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+
+    if (ownerId != null) {
+        transaction.setOwnerId(AccountId.fromString(ownerId));
+    }
+
+    if (tokenIds.length > 0) {
+        for (const tokenId of tokenIds) {
+            transaction.addTokenId(TokenId.fromString(tokenId));
+        }
+    }
+
+    // NFT token rejecting
+    if (nftIds.length > 0) {
+        for (const nftId of nftIds) {
+            for (const serialNumber of serialNumbers) {
+                transaction.addNftId(
+                    new NftId(
+                        TokenId.fromString(nftId),
+                        Long.fromString(serialNumber),
+                    ),
+                );
+            }
+        }
     }
 
     if (commonTransactionParams != null) {
