@@ -38,7 +38,7 @@
         "sdk",
         "transactions"
     ],
-    "sideEffects": false,
+    "sideEffects": true,
     "files": [
         "lib/",
         "src/",
