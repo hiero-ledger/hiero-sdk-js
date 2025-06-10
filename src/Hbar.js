@@ -1,14 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import BigNumber from "bignumber.js";
+import { BigNumber } from "bignumber.js";
 import { valueToLong } from "./long.js";
 import HbarUnit from "./HbarUnit.js";
 
 import Long from "long";
-
-/**
- * @typedef {import("./long.js").LongObject} LongObject
- */
 
 /**
  * Represents a quantity of hbar (ℏ), the native currency of the Hedera network.
@@ -16,7 +12,7 @@ import Long from "long";
  */
 export default class Hbar {
     /**
-     * @param {number | string | Long | LongObject | BigNumber} amount
+     * @param {number | string | Long | BigNumber} amount
      * @param {HbarUnit=} unit
      */
     constructor(amount, unit = HbarUnit.Hbar) {

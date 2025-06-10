@@ -14,7 +14,6 @@ import NftId from "../token/NftId.js";
 import AbstractTokenTransferTransaction from "../token/AbstractTokenTransferTransaction.js";
 
 /**
- * @typedef {import("../long.js").LongObject} LongObject
  * @typedef {import("bignumber.js").default} BigNumber
  */
 
@@ -167,7 +166,7 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
     /**
      * @internal
      * @param {AccountId | string} accountId
-     * @param {number | string | Long | LongObject | BigNumber | Hbar} amount
+     * @param {number | string | Long | BigNumber | Hbar} amount
      * @param {boolean} isApproved
      * @returns {TransferTransaction}
      */
@@ -203,7 +202,7 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
     /**
      * @internal
      * @param {AccountId | string} accountId
-     * @param {number | string | Long | LongObject | BigNumber | Hbar} amount
+     * @param {number | string | Long  | BigNumber | Hbar} amount
      * @returns {TransferTransaction}
      */
     addHbarTransfer(accountId, amount) {
@@ -213,7 +212,7 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
     /**
      * @internal
      * @param {AccountId | string} accountId
-     * @param {number | string | Long | LongObject | BigNumber | Hbar} amount
+     * @param {number | string | Long | BigNumber | Hbar} amount
      * @returns {TransferTransaction}
      */
     addApprovedHbarTransfer(accountId, amount) {

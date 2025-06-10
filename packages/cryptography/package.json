@@ -3,7 +3,6 @@
     "version": "1.8.0",
     "description": "Cryptographic utilities and primitives for the Hiero SDK",
     "main": "./lib/index.cjs",
-    "types": "./lib/index.d.ts",
     "module": "./src/index.js",
     "react-native": {
         "./lib/index.cjs": "./src/index.native.js",
@@ -29,7 +28,8 @@
         "./package.json": "./package.json",
         ".": {
             "import": "./src/index.js",
-            "require": "./lib/index.cjs"
+            "require": "./lib/index.cjs",
+            "types": "./lib/index.d.ts"
         }
     },
     "license": "Apache-2.0",
