@@ -130,7 +130,6 @@ export default class Client {
         this._requestTimeout = null;
 
         /**
-         * @private
          * @type {boolean}
          */
         this._isUpdatingNetwork = false;

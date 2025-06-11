@@ -9,6 +9,8 @@ import {
     WEB_PREVIEWNET,
     MirrorNetwork,
 } from "../constants/ClientConstants.js";
+import AddressBookQuery from "../network/AddressBookQueryWeb.js";
+import FileId from "../file/FileId.js";
 
 /**
  * @typedef {import("./Client.js").ClientConfiguration} ClientConfiguration
@@ -172,6 +174,40 @@ export default class WebClient extends Client {
     }
 
     /**
+     * Construct a client configured to use mirror nodes.
+     * This will query the address book to get the network nodes.
+     *
+     * @param {string[] | string} mirrorNetwork
+     * @returns {Promise<WebClient>}
+     */
+    static async forMirrorNetwork(mirrorNetwork) {
+        const client = new WebClient();
+
+        client.setMirrorNetwork(mirrorNetwork).setNetworkUpdatePeriod(10000);
+
+        // Execute an address book query to get the network nodes
+        const addressBook = await new AddressBookQuery()
+            .setFileId(FileId.ADDRESS_BOOK)
+            .execute(client);
+
+        /** @type {Record<string, AccountId>} */
+        const network = {};
+
+        for (const nodeAddress of addressBook.nodeAddresses) {
+            for (const endpoint of nodeAddress.addresses) {
+                if (nodeAddress.accountId != null) {
+                    console.log({ endpoint });
+                    network[endpoint.toString()] = nodeAddress.accountId;
+                }
+            }
+        }
+
+        client.setNetwork(network);
+
+        return client;
+    }
+
+    /**
      * @param {{[key: string]: (string | AccountId)} | string} network
      * @returns {void}
      */
@@ -205,6 +241,46 @@ export default class WebClient extends Client {
         }
 
         return this;
+    }
+
+    /**
+     * @override
+     * @returns {Promise<void>}
+     */
+    async updateNetwork() {
+        if (this._isUpdatingNetwork) {
+            return;
+        }
+
+        this._isUpdatingNetwork = true;
+
+        try {
+            // Execute an address book query to get the network nodes
+            const addressBook = await new AddressBookQuery()
+                .setFileId(FileId.ADDRESS_BOOK)
+                .execute(this);
+
+            /** @type {Record<string, AccountId>} */
+            const network = {};
+
+            for (const nodeAddress of addressBook.nodeAddresses) {
+                for (const endpoint of nodeAddress.addresses) {
+                    if (nodeAddress.accountId != null) {
+                        network[endpoint.toString()] = nodeAddress.accountId;
+                    }
+                }
+            }
+
+            this.setNetwork(network);
+        } catch (/** @type {unknown} */ error) {
+            if (this._logger) {
+                const errorMessage =
+                    error instanceof Error ? error.message : String(error);
+                this._logger.trace(
+                    `failed to update client address book: ${errorMessage}`,
+                );
+            }
+        }
     }
 
     /**
