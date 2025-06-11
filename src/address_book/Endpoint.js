@@ -98,6 +98,20 @@ export default class EndPoint {
     }
 
     /**
+     * @param {EndPointJson} json
+     * @returns {EndPoint}
+     */
+    static fromJSON(json) {
+        return new EndPoint({
+            address:
+                json.address != null
+                    ? IPv4Address._fromString(json.address)
+                    : undefined,
+            port: json.port != null ? parseInt(json.port, 10) : undefined,
+        });
+    }
+
+    /**
      * @returns {string}
      */
     toString() {
