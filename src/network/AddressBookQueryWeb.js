@@ -1,16 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
-// @ts-nocheck
 
 import Query from "../query/Query.js";
 import NodeAddressBook from "../address_book/NodeAddressBook.js";
 import FileId from "../file/FileId.js";
 import { RST_STREAM } from "../Executable.js";
-import AccountId from "../account/AccountId.js";
 import NodeAddress from "../address_book/NodeAddress.js";
-import Long from "long";
-import EndPoint from "../address_book/Endpoint.js";
-import * as hex from "../encoding/hex.js";
-import IPv4Address from "../address_book/IPv4Address.js";
+
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
@@ -23,13 +18,21 @@ import IPv4Address from "../address_book/IPv4Address.js";
  */
 
 /**
- * @typedef {object} MirrorNodeResponse
+ * @typedef {object} EndpointWebResponse
+ * @property {string} domain_name
+ * @property {string} ip_address_v4
+ * @property {number} port
+ */
+
+/**
+ * @typedef {object} AddressBookQueryWebResponse
  * @property {Array<{
  *   admin_key: {
  *     key: string,
  *     _type: string,
  *   },
  *   decline_reward: boolean,
+ *   grpc_proxy_endpoint: EndpointWebResponse,
  *   file_id: string,
  *   memo: string,
  *   public_key: string,
@@ -37,11 +40,7 @@ import IPv4Address from "../address_book/IPv4Address.js";
  *   node_account_id: string,
  *   node_cert_hash: string,
  *   address: string,
- *   service_endpoints: {
- *     domain_name: string,
- *     ip_address_v4: string,
- *     port: number
- *   }[],
+ *   service_endpoints: EndpointWebResponse[],
  *   description: string,
  *   stake: number
  * }>} nodes
@@ -217,12 +216,15 @@ export default class AddressBookQueryWeb extends Query {
      * @param {(error: Error) => void} reject
      * @param {number=} requestTimeout
      */
-    // eslint-disable-next-line @typescript-eslint/require-await
     async _makeFetchRequest(client, resolve, reject, requestTimeout) {
-        const baseUrl = `https://${client._mirrorNetwork.getNextMirrorNode()._address._address}`;
+        const { port, address } =
+            client._mirrorNetwork.getNextMirrorNode().address;
 
-        console.log("baseUrl");
-        console.log(baseUrl);
+        let baseUrl = `${address}`;
+
+        if (port) {
+            baseUrl = `${baseUrl}:${port}`;
+        }
 
         const url = new URL(`${baseUrl}/api/v1/network/nodes`);
         if (this._fileId != null) {
@@ -249,40 +251,39 @@ export default class AddressBookQueryWeb extends Query {
             }
 
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const data = /** @type {MirrorNodeResponse} */ (
+            const data = /** @type {AddressBookQueryWebResponse} */ (
                 await response.json()
             );
 
             const nodes = data.nodes || [];
 
-            this._addresses = nodes.map((node) => {
-                const accountId = AccountId.fromString(node.node_account_id);
-                const certHash = hex.decode(node.node_cert_hash);
-                return new NodeAddress({
-                    nodeId: Long.fromNumber(node.node_id),
-                    accountId,
-                    addresses: node.service_endpoints.map(
-                        (endpoint) =>
-                            new EndPoint({
-                                address: IPv4Address._fromString(
-                                    endpoint.ip_address_v4,
-                                ),
-                                port: endpoint.port,
-                            }),
-                    ),
-                    certHash,
-                    address: node.address,
-                    publicKey: node.public_key.startsWith("0x")
-                        ? node.public_key.substring(2)
-                        : node.public_key,
+            this._addresses = nodes.map((node) =>
+                NodeAddress.fromJSON({
+                    nodeId: node.node_id.toString(),
+                    accountId: node.node_account_id,
+                    addresses:
+                        node.grpc_proxy_endpoint != null
+                            ? [
+                                  {
+                                      address:
+                                          node.grpc_proxy_endpoint
+                                              .ip_address_v4 ||
+                                          node.grpc_proxy_endpoint.domain_name,
+                                      port: node.grpc_proxy_endpoint.port.toString(),
+                                  },
+                              ]
+                            : [],
+                    certHash: node.node_cert_hash,
+                    publicKey: node.public_key,
                     description: node.description,
-                    stake: Long.fromNumber(node.stake),
-                });
-            });
+                    stake: node.stake.toString(),
+                }),
+            );
 
             const addressBook = new NodeAddressBook({
                 nodeAddresses: this._addresses,
             });
+
             resolve(addressBook);
         } catch (error) {
             console.error("Error in _makeFetchRequest:", error);
