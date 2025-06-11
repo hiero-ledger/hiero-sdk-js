@@ -39,11 +39,14 @@ export default class WebChannel extends Channel {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         return async (method, requestData, callback) => {
             try {
+                const address = this._address.includes("http")
+                    ? this._address
+                    : `http://${this._address}`;
                 // this will be executed in a browser environment so eslint is
                 // disabled for the fetch call
                 //eslint-disable-next-line n/no-unsupported-features/node-builtins
                 const response = await fetch(
-                    `${this._address}/proto.${serviceName}/${method.name}`,
+                    `${address}/proto.${serviceName}/${method.name}`,
                     {
                         method: "POST",
                         headers: {
