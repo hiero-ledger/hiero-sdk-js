@@ -3,6 +3,7 @@
 import AccountId from "../account/AccountId.js";
 import Endpoint from "./Endpoint.js";
 import * as utf8 from "../encoding/utf8.js";
+import Long from "long";
 
 /**
  * @namespace proto
@@ -11,7 +12,6 @@ import * as utf8 from "../encoding/utf8.js";
 
 /**
  * @typedef {import("./Endpoint.js").EndPointJson} EndpointJson
- * @typedef {import("long")} Long
  */
 
 /**
@@ -266,6 +266,31 @@ export default class NodeAddress {
             description: this._description,
             stake: this._stake,
         };
+    }
+
+    /**
+     * @param {NodeAddressJson} json
+     * @returns {NodeAddress}
+     */
+    static fromJSON(json) {
+        return new NodeAddress({
+            publicKey: json.publicKey ?? undefined,
+            nodeId:
+                json.nodeId != null ? Long.fromString(json.nodeId) : undefined,
+            accountId: json.accountId
+                ? AccountId.fromString(json.accountId)
+                : undefined,
+            certHash:
+                json.certHash != null ? utf8.encode(json.certHash) : undefined,
+            addresses:
+                json.addresses != null
+                    ? json.addresses.map((address) =>
+                          Endpoint.fromJSON(address),
+                      )
+                    : undefined,
+            description: json.description ?? undefined,
+            stake: json.stake != null ? Long.fromString(json.stake) : undefined,
+        });
     }
 
     /**
