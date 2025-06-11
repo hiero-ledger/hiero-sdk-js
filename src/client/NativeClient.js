@@ -13,6 +13,9 @@ import {
 
 /**
  * @typedef {import("./Client.js").ClientConfiguration} ClientConfiguration
+ * @typedef {import("./Client.js").BaseClientConfiguration} BaseClientConfiguration
+ * @typedef {import("./Client.js").MirrorNetworkConfiguration} MirrorNetworkConfiguration
+ * @typedef {import("./Client.js").NetworkConfiguration} NetworkConfiguration
  */
 export const Network = {
     /**
@@ -104,29 +107,41 @@ export default class NativeClient extends Client {
      * chose nodes to send transactions to. For one transaction, at most 1/3 of the nodes will be
      * tried.
      *
-     * @param {{[key: string]: (string | AccountId)} | string} network
+     * @param {NetworkConfiguration} network
+     * @param {BaseClientConfiguration} [props]
      * @returns {NativeClient}
      */
-    static forNetwork(network) {
-        return new NativeClient({ network, scheduleNetworkUpdate: false });
+    static forNetwork(network, props) {
+        return new NativeClient({
+            network,
+            ...props,
+            scheduleNetworkUpdate: false,
+        });
     }
 
     /**
      * @param {string} network
+     * @param {BaseClientConfiguration} [props]
      * @returns {NativeClient}
      */
-    static forName(network) {
-        return new NativeClient({ network, scheduleNetworkUpdate: false });
+    static forName(network, props) {
+        return new NativeClient({
+            network,
+            ...props,
+            scheduleNetworkUpdate: false,
+        });
     }
 
     /**
      * Construct a Hedera client pre-configured for Mainnet access.
      *
+     * @param {BaseClientConfiguration} [props]
      * @returns {NativeClient}
      */
-    static forMainnet() {
+    static forMainnet(props) {
         return new NativeClient({
             network: "mainnet",
+            ...props,
             scheduleNetworkUpdate: false,
         });
     }
@@ -134,11 +149,13 @@ export default class NativeClient extends Client {
     /**
      * Construct a Hedera client pre-configured for Testnet access.
      *
+     * @param {BaseClientConfiguration} [props]
      * @returns {NativeClient}
      */
-    static forTestnet() {
+    static forTestnet(props) {
         return new NativeClient({
             network: "testnet",
+            ...props,
             scheduleNetworkUpdate: false,
         });
     }
@@ -146,17 +163,19 @@ export default class NativeClient extends Client {
     /**
      * Construct a Hedera client pre-configured for Previewnet access.
      *
+     * @param {BaseClientConfiguration} [props]
      * @returns {NativeClient}
      */
-    static forPreviewnet() {
+    static forPreviewnet(props) {
         return new NativeClient({
             network: "previewnet",
+            ...props,
             scheduleNetworkUpdate: false,
         });
     }
 
     /**
-     * @param {{[key: string]: (string | AccountId)} | string} network
+     * @param {NetworkConfiguration} network
      * @returns {void}
      */
     setNetwork(network) {
@@ -177,7 +196,7 @@ export default class NativeClient extends Client {
     }
 
     /**
-     * @param {string[] | string} mirrorNetwork
+     * @param {MirrorNetworkConfiguration} mirrorNetwork
      * @returns {void}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

@@ -2,8 +2,6 @@
 
 import Client from "./Client.js";
 import WebChannel from "../channel/WebChannel.js";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import AccountId from "../account/AccountId.js";
 import LedgerId from "../LedgerId.js";
 import {
     MAINNET,
@@ -13,12 +11,15 @@ import {
 
 /**
  * @typedef {import("./Client.js").ClientConfiguration} ClientConfiguration
+ * @typedef {import("./Client.js").BaseClientConfiguration} BaseClientConfiguration
+ * @typedef {import("./Client.js").MirrorNetworkConfiguration} MirrorNetworkConfiguration
+ * @typedef {import("./Client.js").NetworkConfiguration} NetworkConfiguration
  */
 
 export const Network = {
     /**
      * @param {string} name
-     * @returns {{[key: string]: (string | AccountId)}}
+     * @returns {NetworkConfiguration}
      */
     fromName(name) {
         switch (name) {
@@ -109,29 +110,41 @@ export default class WebClient extends Client {
      * chose nodes to send transactions to. For one transaction, at most 1/3 of the nodes will be
      * tried.
      *
-     * @param {{[key: string]: (string | AccountId)} | string} network
+     * @param {NetworkConfiguration} network
+     * @param {BaseClientConfiguration} [props]
      * @returns {WebClient}
      */
-    static forNetwork(network) {
-        return new WebClient({ network, scheduleNetworkUpdate: false });
+    static forNetwork(network, props) {
+        return new WebClient({
+            network,
+            ...props,
+            scheduleNetworkUpdate: false,
+        });
     }
 
     /**
      * @param {string} network
+     * @param {BaseClientConfiguration} [props]
      * @returns {WebClient}
      */
-    static forName(network) {
-        return new WebClient({ network, scheduleNetworkUpdate: false });
+    static forName(network, props) {
+        return new WebClient({
+            network,
+            ...props,
+            scheduleNetworkUpdate: false,
+        });
     }
 
     /**
      * Construct a Hedera client pre-configured for Mainnet access.
      *
+     * @param {BaseClientConfiguration} [props]
      * @returns {WebClient}
      */
-    static forMainnet() {
+    static forMainnet(props) {
         return new WebClient({
             network: "mainnet",
+            ...props,
             scheduleNetworkUpdate: false,
         });
     }
@@ -139,11 +152,13 @@ export default class WebClient extends Client {
     /**
      * Construct a Hedera client pre-configured for Testnet access.
      *
+     * @param {BaseClientConfiguration} [props]
      * @returns {WebClient}
      */
-    static forTestnet() {
+    static forTestnet(props) {
         return new WebClient({
             network: "testnet",
+            ...props,
             scheduleNetworkUpdate: false,
         });
     }
@@ -151,17 +166,19 @@ export default class WebClient extends Client {
     /**
      * Construct a Hedera client pre-configured for Previewnet access.
      *
+     * @param {BaseClientConfiguration} [props]
      * @returns {WebClient}
      */
-    static forPreviewnet() {
+    static forPreviewnet(props) {
         return new WebClient({
             network: "previewnet",
+            ...props,
             scheduleNetworkUpdate: false,
         });
     }
 
     /**
-     * @param {{[key: string]: (string | AccountId)} | string} network
+     * @param {NetworkConfiguration} network
      * @returns {void}
      */
     setNetwork(network) {
