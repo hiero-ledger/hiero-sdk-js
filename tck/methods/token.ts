@@ -677,39 +677,48 @@ export const claimToken = async ({
 };
 
 export const cancelAirdrop = async ({
-    senderAccountId,
-    receiverAccountId,
-    tokenId,
-    serialNumbers,
+    pendingAirdrops,
     commonTransactionParams,
 }: AirdropCancelTokenParams): Promise<TokenResponse> => {
     const transaction = new TokenCancelAirdropTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
 
-    // NFT token canceling
-    if (serialNumbers && serialNumbers.length) {
-        for (const serialNumber of serialNumbers) {
+    for (const pendingAirdrop of pendingAirdrops) {
+        if (
+            pendingAirdrop.serialNumbers &&
+            pendingAirdrop.serialNumbers.length
+        ) {
+            for (const serialNumber of pendingAirdrop.serialNumbers) {
+                transaction.addPendingAirdropId(
+                    new PendingAirdropId({
+                        senderId: AccountId.fromString(
+                            pendingAirdrop.senderAccountId,
+                        ),
+                        receiverId: AccountId.fromString(
+                            pendingAirdrop.receiverAccountId,
+                        ),
+                        nftId: new NftId(
+                            TokenId.fromString(pendingAirdrop.tokenId),
+                            Long.fromString(serialNumber.toString()),
+                        ),
+                    }),
+                );
+            }
+        } else {
+            // Fungible token canceling
             transaction.addPendingAirdropId(
                 new PendingAirdropId({
-                    senderId: AccountId.fromString(senderAccountId),
-                    receiverId: AccountId.fromString(receiverAccountId),
-                    nftId: new NftId(
-                        TokenId.fromString(tokenId),
-                        Long.fromString(serialNumber.toString()),
+                    senderId: AccountId.fromString(
+                        pendingAirdrop.senderAccountId,
                     ),
+                    receiverId: AccountId.fromString(
+                        pendingAirdrop.receiverAccountId,
+                    ),
+                    tokenId: TokenId.fromString(pendingAirdrop.tokenId),
                 }),
             );
         }
-    } else {
-        // Fungible token canceling
-        transaction.addPendingAirdropId(
-            new PendingAirdropId({
-                senderId: AccountId.fromString(senderAccountId),
-                receiverId: AccountId.fromString(receiverAccountId),
-                tokenId: TokenId.fromString(tokenId),
-            }),
-        );
     }
 
     if (commonTransactionParams != null) {

@@ -122,11 +122,15 @@ export interface AirdropTokenParams {
     readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface AirdropCancelTokenParams {
+interface PendingAirdrop {
     readonly senderAccountId?: string;
     readonly receiverAccountId?: string;
     readonly tokenId?: string;
     readonly serialNumbers?: string[];
+}
+
+export interface AirdropCancelTokenParams {
+    readonly pendingAirdrops: PendingAirdrop[];
     readonly commonTransactionParams?: Record<string, any>;
 }
 
