@@ -183,26 +183,9 @@ export default class WebClient extends Client {
     static async forMirrorNetwork(mirrorNetwork) {
         const client = new WebClient();
 
-        client.setMirrorNetwork(mirrorNetwork).setNetworkUpdatePeriod(10000);
+        client.setMirrorNetwork(mirrorNetwork).setNetworkUpdatePeriod(10_000);
 
-        // Execute an address book query to get the network nodes
-        const addressBook = await new AddressBookQuery()
-            .setFileId(FileId.ADDRESS_BOOK)
-            .execute(client);
-
-        /** @type {Record<string, AccountId>} */
-        const network = {};
-
-        for (const nodeAddress of addressBook.nodeAddresses) {
-            for (const endpoint of nodeAddress.addresses) {
-                if (nodeAddress.accountId != null) {
-                    console.log({ endpoint });
-                    network[endpoint.toString()] = nodeAddress.accountId;
-                }
-            }
-        }
-
-        client.setNetwork(network);
+        await client.updateNetwork();
 
         return client;
     }
@@ -255,7 +238,6 @@ export default class WebClient extends Client {
         this._isUpdatingNetwork = true;
 
         try {
-            // Execute an address book query to get the network nodes
             const addressBook = await new AddressBookQuery()
                 .setFileId(FileId.ADDRESS_BOOK)
                 .execute(this);
@@ -280,6 +262,8 @@ export default class WebClient extends Client {
                     `failed to update client address book: ${errorMessage}`,
                 );
             }
+        } finally {
+            this._isUpdatingNetwork = false;
         }
     }
 
