@@ -119,7 +119,7 @@ export default class WebClient extends Client {
      * @returns {WebClient}
      */
     static forNetwork(network) {
-        return new WebClient({ network });
+        return new WebClient({ network, scheduleNetworkUpdate: false });
     }
 
     /**
@@ -127,7 +127,7 @@ export default class WebClient extends Client {
      * @returns {WebClient}
      */
     static forName(network) {
-        return new WebClient({ network });
+        return new WebClient({ network, scheduleNetworkUpdate: false });
     }
 
     /**
@@ -138,6 +138,7 @@ export default class WebClient extends Client {
     static forMainnet() {
         return new WebClient({
             network: "mainnet",
+            scheduleNetworkUpdate: false,
         });
     }
 
@@ -149,6 +150,7 @@ export default class WebClient extends Client {
     static forTestnet() {
         return new WebClient({
             network: "testnet",
+            scheduleNetworkUpdate: false,
         });
     }
 
@@ -160,6 +162,7 @@ export default class WebClient extends Client {
     static forPreviewnet() {
         return new WebClient({
             network: "previewnet",
+            scheduleNetworkUpdate: false,
         });
     }
 
@@ -171,9 +174,9 @@ export default class WebClient extends Client {
      * @returns {Promise<WebClient>}
      */
     static async forMirrorNetwork(mirrorNetwork) {
-        const client = new WebClient();
+        const client = new WebClient({ scheduleNetworkUpdate: false });
 
-        client.setMirrorNetwork(mirrorNetwork).setNetworkUpdatePeriod(10_000);
+        client.setMirrorNetwork(mirrorNetwork);
 
         await client.updateNetwork();
 
@@ -205,10 +208,24 @@ export default class WebClient extends Client {
      * @param {string[] | string} mirrorNetwork
      * @returns {this}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setMirrorNetwork(mirrorNetwork) {
         if (typeof mirrorNetwork === "string") {
-            this._mirrorNetwork.setNetwork([]);
+            switch (mirrorNetwork) {
+                case "local-node":
+                    this._mirrorNetwork.setNetwork(MirrorNetwork.LOCAL_NODE);
+                    break;
+                case "previewnet":
+                    this._mirrorNetwork.setNetwork(MirrorNetwork.PREVIEWNET);
+                    break;
+                case "testnet":
+                    this._mirrorNetwork.setNetwork(MirrorNetwork.TESTNET);
+                    break;
+                case "mainnet":
+                    this._mirrorNetwork.setNetwork(MirrorNetwork.MAINNET);
+                    break;
+                default:
+                    this._mirrorNetwork.setNetwork([mirrorNetwork]);
+            }
         } else {
             this._mirrorNetwork.setNetwork(mirrorNetwork);
         }
@@ -242,8 +259,11 @@ export default class WebClient extends Client {
                     }
                 }
             }
+            const hasGrpcWebProxyEndpoints = Object.keys(network).length > 0;
 
-            this.setNetwork(network);
+            if (hasGrpcWebProxyEndpoints) {
+                this.setNetwork(network);
+            }
         } catch (/** @type {unknown} */ error) {
             if (this._logger) {
                 const errorMessage =

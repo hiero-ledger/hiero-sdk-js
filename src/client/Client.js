@@ -34,7 +34,7 @@ import AddressBookQuery from "../network/AddressBookQuery.js";
 
 /**
  * @typedef {object} ClientConfiguration
- * @property {{[key: string]: (string | AccountId)} | string} network
+ * @property {{[key: string]: (string | AccountId)} | string} [network]
  * @property {string[] | string} [mirrorNetwork]
  * @property {Operator} [operator]
  * @property {boolean} [scheduleNetworkUpdate]
