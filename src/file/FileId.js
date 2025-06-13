@@ -31,6 +31,33 @@ export default class FileId {
     }
 
     /**
+     * @param {number} shard
+     * @param {number} realm
+     * @returns {FileId}
+     */
+    static getAddressBookFileIdFor(shard = 0, realm = 0) {
+        return new FileId({ num: 102, shard, realm });
+    }
+
+    /**
+     * @param {number} shard
+     * @param {number} realm
+     * @returns {FileId}
+     */
+    static getFeeScheduleFileIdFor(shard = 0, realm = 0) {
+        return new FileId({ num: 111, shard, realm });
+    }
+
+    /**
+     * @param {number} shard
+     * @param {number} realm
+     * @returns {FileId}
+     */
+    static getExchangeRatesFileIdFor(shard = 0, realm = 0) {
+        return new FileId({ num: 112, shard, realm });
+    }
+
+    /**
      * @param {string} text
      * @returns {FileId}
      */
@@ -163,18 +190,3 @@ export default class FileId {
         );
     }
 }
-
-/**
- * The public node address book for the current network.
- */
-FileId.ADDRESS_BOOK = new FileId(102);
-
-/**
- * The current fee schedule for the network.
- */
-FileId.FEE_SCHEDULE = new FileId(111);
-
-/**
- * The current exchange rate of HBAR to USD.
- */
-FileId.EXCHANGE_RATES = new FileId(112);

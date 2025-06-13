@@ -33,11 +33,26 @@ import { convertToNumber } from "../util.js";
  */
 
 /**
- * @typedef {object} ClientConfiguration
- * @property {{[key: string]: (string | AccountId)} | string} network
- * @property {string[] | string} [mirrorNetwork]
+ * @typedef {object} BaseClientConfiguration
  * @property {Operator} [operator]
  * @property {boolean} [scheduleNetworkUpdate]
+ * @property {number} [shard]
+ * @property {number} [realm]
+ */
+
+/**
+ * @typedef { {[key: string]: (string | AccountId)} | string} NetworkConfiguration
+ */
+
+/**
+ * @typedef {string[] | string}  MirrorNetworkConfiguration
+ */
+
+/**
+ * @typedef {BaseClientConfiguration & {
+ *   network?: NetworkConfiguration
+ *   mirrorNetwork?: MirrorNetworkConfiguration
+ * }} ClientConfiguration
  */
 
 /**
@@ -139,8 +154,22 @@ export default class Client {
         /** @private */
         this._isShutdown = false;
 
+        /** @private */
+        this._shard = 0;
+
+        /** @private */
+        this._realm = 0;
+
         if (props != null && props.scheduleNetworkUpdate !== false) {
             this._scheduleNetworkUpdate();
+        }
+
+        if (props != null && props.shard != null) {
+            this._shard = props.shard;
+        }
+
+        if (props != null && props.realm != null) {
+            this._realm = props.realm;
         }
 
         /** @internal */
@@ -199,7 +228,7 @@ export default class Client {
     }
 
     /**
-     * @param {{[key: string]: (string | AccountId)} | string} network
+     * @param {NetworkConfiguration} network
      * @returns {void}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -715,7 +744,9 @@ export default class Client {
 
         try {
             const addressBook = await CACHE.addressBookQueryConstructor()
-                .setFileId(FileId.ADDRESS_BOOK)
+                .setFileId(
+                    FileId.getAddressBookFileIdFor(this._shard, this._realm),
+                )
                 .execute(this);
             this.setNetworkFromAddressBook(addressBook);
         } catch (error) {

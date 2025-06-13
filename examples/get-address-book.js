@@ -20,7 +20,7 @@ async function main() {
     }
 
     const addressBook = await new AddressBookQuery()
-        .setFileId(FileId.ADDRESS_BOOK)
+        .setFileId(FileId.getAddressBookFileIdFor(0, 0))
         .execute(client);
 
     console.log(JSON.stringify(addressBook.toJSON(), null, 2));
