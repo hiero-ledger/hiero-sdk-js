@@ -745,7 +745,7 @@ export default class Client {
         try {
             const addressBook = await CACHE.addressBookQueryConstructor()
                 .setFileId(
-                    FileId.getAddressBookFileIdFor(this._realm, this._shard),
+                    FileId.getAddressBookFileIdFor(this._shard, this._realm),
                 )
                 .execute(this);
             this.setNetworkFromAddressBook(addressBook);

@@ -182,8 +182,8 @@ export default class NodeClient extends Client {
         const client = new NodeClient({
             mirrorNetwork,
             ...props,
-            realm: props?.realm ?? 0,
             shard: props?.shard ?? 0,
+            realm: props?.realm ?? 0,
         }).setNetworkUpdatePeriod(10_000);
 
         await client.updateNetwork();

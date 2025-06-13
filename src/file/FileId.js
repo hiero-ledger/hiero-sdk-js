@@ -31,30 +31,30 @@ export default class FileId {
     }
 
     /**
-     * @param {number} realm
      * @param {number} shard
+     * @param {number} realm
      * @returns {FileId}
      */
-    static getAddressBookFileIdFor(realm = 0, shard = 0) {
-        return new FileId({ num: 102, realm, shard });
+    static getAddressBookFileIdFor(shard = 0, realm = 0) {
+        return new FileId({ num: 102, shard, realm });
     }
 
     /**
-     * @param {number} realm
      * @param {number} shard
+     * @param {number} realm
      * @returns {FileId}
      */
-    static getFeeScheduleFileIdFor(realm = 0, shard = 0) {
-        return new FileId({ num: 111, realm, shard });
+    static getFeeScheduleFileIdFor(shard = 0, realm = 0) {
+        return new FileId({ num: 111, shard, realm });
     }
 
     /**
-     * @param {number} realm
      * @param {number} shard
+     * @param {number} realm
      * @returns {FileId}
      */
-    static getExchangeRatesFileIdFor(realm = 0, shard = 0) {
-        return new FileId({ num: 112, realm, shard });
+    static getExchangeRatesFileIdFor(shard = 0, realm = 0) {
+        return new FileId({ num: 112, shard, realm });
     }
 
     /**
