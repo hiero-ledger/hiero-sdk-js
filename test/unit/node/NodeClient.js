@@ -237,4 +237,134 @@ describe("Client", function () {
             await client.close();
         });
     });
+
+    describe("shard and realm configuration", function () {
+        it("should set default shard and realm to 0", function () {
+            const client = new NodeClient({ scheduleNetworkUpdate: false });
+            expect(client._shard).to.equal(0);
+            expect(client._realm).to.equal(0);
+        });
+
+        it("should set custom shard and realm values", function () {
+            const client = new NodeClient({
+                shard: 1,
+                realm: 2,
+                scheduleNetworkUpdate: false,
+            });
+            expect(client._shard).to.equal(1);
+            expect(client._realm).to.equal(2);
+        });
+    });
+
+    describe("factory methods shard and realm behavior", function () {
+        describe("forNetwork", function () {
+            it("should set default shard and realm to 0 when not specified", function () {
+                const client = NodeClient.forNetwork(
+                    {},
+                    { scheduleNetworkUpdate: false },
+                );
+                expect(client._shard).to.equal(0);
+                expect(client._realm).to.equal(0);
+            });
+
+            it("should set custom shard and realm values", function () {
+                const client = NodeClient.forNetwork(
+                    { "0.testnet.hedera.com:50211": "0.0.3" },
+                    { shard: 1, realm: 2, scheduleNetworkUpdate: false },
+                );
+                expect(client._shard).to.equal(1);
+                expect(client._realm).to.equal(2);
+            });
+
+            it("should set shard and realm when using network name", function () {
+                const client = NodeClient.forNetwork("testnet", {
+                    shard: 3,
+                    realm: 4,
+                    scheduleNetworkUpdate: false,
+                });
+                expect(client._shard).to.equal(3);
+                expect(client._realm).to.equal(4);
+            });
+        });
+
+        describe("forName", function () {
+            it("should set default shard and realm to 0 when not specified", function () {
+                const client = NodeClient.forName("testnet", {
+                    scheduleNetworkUpdate: false,
+                });
+                expect(client._shard).to.equal(0);
+                expect(client._realm).to.equal(0);
+            });
+
+            it("should set custom shard and realm values", function () {
+                const client = NodeClient.forName("testnet", {
+                    shard: 5,
+                    realm: 6,
+                    scheduleNetworkUpdate: false,
+                });
+                expect(client._shard).to.equal(5);
+                expect(client._realm).to.equal(6);
+            });
+        });
+
+        describe("forMainnet", function () {
+            it("should set default shard and realm to 0 when not specified", function () {
+                const client = NodeClient.forMainnet({
+                    scheduleNetworkUpdate: false,
+                });
+                expect(client._shard).to.equal(0);
+                expect(client._realm).to.equal(0);
+            });
+
+            it("should set custom shard and realm values", function () {
+                const client = NodeClient.forMainnet({
+                    shard: 13,
+                    realm: 14,
+                    scheduleNetworkUpdate: false,
+                });
+                expect(client._shard).to.equal(13);
+                expect(client._realm).to.equal(14);
+            });
+        });
+
+        describe("forTestnet", function () {
+            it("should set default shard and realm to 0 when not specified", function () {
+                const client = NodeClient.forTestnet({
+                    scheduleNetworkUpdate: false,
+                });
+                expect(client._shard).to.equal(0);
+                expect(client._realm).to.equal(0);
+            });
+
+            it("should set custom shard and realm values", function () {
+                const client = NodeClient.forTestnet({
+                    shard: 15,
+                    realm: 16,
+                    scheduleNetworkUpdate: false,
+                });
+                expect(client._shard).to.equal(15);
+                expect(client._realm).to.equal(16);
+            });
+        });
+
+        describe("forPreviewnet", function () {
+            it("should set default shard and realm to 0 when not specified", function () {
+                const client = NodeClient.forPreviewnet({
+                    scheduleNetworkUpdate: false,
+                });
+                expect(client._shard).to.equal(0);
+                expect(client._realm).to.equal(0);
+            });
+
+            it("should set custom shard and realm values", function () {
+                const client = NodeClient.forPreviewnet({
+                    shard: 17,
+                    realm: 18,
+                    scheduleNetworkUpdate: false,
+                });
+                expect(client._shard).to.equal(17);
+                expect(client._realm).to.equal(18);
+            });
+        });
+    });
 });

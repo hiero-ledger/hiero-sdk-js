@@ -166,6 +166,41 @@ describe("ClientIntegration", function () {
         expect(env.client.defaultMaxQueryPayment).to.be.equal(value);
     });
 
+    describe("forMirrorNetwork with local node", function () {
+        let client;
+
+        it("should set default shard and realm to 0 when not specified", async function () {
+            client = await Client.forMirrorNetwork(["127.0.0.1:5600"]);
+            expect(client._shard).to.equal(0);
+            expect(client._realm).to.equal(0);
+        });
+
+        it("should set custom shard and realm values", async function () {
+            client = await Client.forMirrorNetwork(["127.0.0.1:5600"], {
+                shard: 19,
+                realm: 20,
+            });
+            expect(client._shard).to.equal(19);
+            expect(client._realm).to.equal(20);
+        });
+
+        it("should maintain shard and realm after network update", async function () {
+            client = await Client.forMirrorNetwork(["127.0.0.1:5600"], {
+                shard: 21,
+                realm: 22,
+            });
+            await client.updateNetwork();
+            expect(client._shard).to.equal(21);
+            expect(client._realm).to.equal(22);
+        });
+
+        afterEach(async function () {
+            if (client) {
+                await client.close();
+            }
+        });
+    });
+
     afterAll(async function () {
         await env.close();
         clientTestnet.close();
