@@ -129,7 +129,7 @@ export default class WebClient extends Client {
      * @returns {WebClient}
      */
     static forNetwork(network) {
-        return new WebClient({ network, scheduleNetworkUpdate: false });
+        return new WebClient({ network });
     }
 
     /**
@@ -137,7 +137,7 @@ export default class WebClient extends Client {
      * @returns {WebClient}
      */
     static forName(network) {
-        return new WebClient({ network, scheduleNetworkUpdate: false });
+        return new WebClient({ network });
     }
 
     /**
@@ -148,7 +148,6 @@ export default class WebClient extends Client {
     static forMainnet() {
         return new WebClient({
             network: "mainnet",
-            scheduleNetworkUpdate: false,
         });
     }
 
@@ -160,7 +159,6 @@ export default class WebClient extends Client {
     static forTestnet() {
         return new WebClient({
             network: "testnet",
-            scheduleNetworkUpdate: false,
         });
     }
 
@@ -172,7 +170,6 @@ export default class WebClient extends Client {
     static forPreviewnet() {
         return new WebClient({
             network: "previewnet",
-            scheduleNetworkUpdate: false,
         });
     }
 
@@ -184,7 +181,7 @@ export default class WebClient extends Client {
      * @returns {Promise<WebClient>}
      */
     static async forMirrorNetwork(mirrorNetwork) {
-        const client = new WebClient({ scheduleNetworkUpdate: false });
+        const client = new WebClient();
 
         client.setMirrorNetwork(mirrorNetwork);
 
