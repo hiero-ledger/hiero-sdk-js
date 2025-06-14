@@ -27,11 +27,11 @@ importers:
         specifier: ^1.12.6
         version: 1.12.6
       '@hashgraph/cryptography':
-        specifier: 1.7.4
-        version: 1.7.4(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))
+        specifier: 1.8.0
+        version: 1.8.0(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))
       '@hashgraph/proto':
-        specifier: 2.18.5
-        version: 2.18.5
+        specifier: 2.19.0
+        version: 2.19.0
       bignumber.js:
         specifier: ^9.1.1
         version: 9.1.2
@@ -1496,8 +1496,8 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
-  '@hashgraph/cryptography@1.7.4':
-    resolution: {integrity: sha512-aYPfukqLCOoEzmilTrOSDWoJjZnzfcc84tKqrBqFbiduZLIoT+TY4Y3AA1Vdsun9dlWmRnOx8L4qIzPVlKPQhw==}
+  '@hashgraph/cryptography@1.8.0':
+    resolution: {integrity: sha512-tkBbGd8zU2dNCwlxCX47cS+VhRosh8mEbFfjvjzjcuW2KxdVsdV6GshyVtXeFxHMijo5kAcxd2CoubhCreNdaQ==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
       expo-crypto: '*'
@@ -1505,8 +1505,8 @@ packages:
       expo-crypto:
         optional: true
 
-  '@hashgraph/proto@2.18.5':
-    resolution: {integrity: sha512-LifEGGhvkqF49PYVP0xkcnCh8fP43q/+JkGPdZkwKglw1wFAJkPHZtQmGZSjmDpl2gbJiRyzvzJ1Q9MJ1VBA4Q==}
+  '@hashgraph/proto@2.19.0':
+    resolution: {integrity: sha512-ghlkyPb8JJx9ACGVna84vOtMqQkisBZ+EGeQe+FT+ci7qlhdf/ecRGvMw/uanSE5yviOFBqJeH0c2SzVIqpydQ==}
     engines: {node: '>=10.0.0'}
 
   '@humanwhocodes/config-array@0.13.0':
@@ -7380,7 +7380,7 @@ snapshots:
       protobufjs: 7.2.5
       yargs: 17.7.2
 
-  '@hashgraph/cryptography@1.7.4(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))':
+  '@hashgraph/cryptography@1.8.0(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))':
     dependencies:
       '@noble/curves': 1.8.2
       asn1js: 3.0.6
@@ -7397,7 +7397,7 @@ snapshots:
     transitivePeerDependencies:
       - react-native
 
-  '@hashgraph/proto@2.18.5':
+  '@hashgraph/proto@2.19.0':
     dependencies:
       long: 5.3.1
       protobufjs: 7.2.5
