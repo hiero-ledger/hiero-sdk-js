@@ -36,7 +36,7 @@
     ],
     "dependencies": {
         "long": "^5.2.3",
-        "protobufjs": "7.2.5"
+        "protobufjs": "7.5.2"
     },
     "devDependencies": {
         "@babel/cli": "^7.23.4",
