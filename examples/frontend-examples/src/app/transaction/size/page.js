@@ -6,9 +6,9 @@ import {
     AccountCreateTransaction,
     WebClient,
     PrivateKey,
-    Key,
     PublicKey,
     Hbar,
+    AccountId,
 } from "@hashgraph/sdk";
 
 const Home = () => {
@@ -16,12 +16,9 @@ const Home = () => {
     const [key, setKey] = useState("");
     const [transactionSize, setTransactionSize] = useState(0);
 
-    const DUMMY_ACCOUNT_ID = "0.0.10022";
-    const DUMMY_PRIVATE_KEY =
-        "0xa608e2130a0a3cb34f86e757303c862bee353d9ab77ba4387ec084f881d420d4";
     const client = WebClient.forTestnet().setOperator(
-        DUMMY_ACCOUNT_ID,
-        PrivateKey.fromStringED25519(DUMMY_PRIVATE_KEY),
+        AccountId.fromString(process.env.NEXT_PUBLIC_OPERATOR_ID),
+        PrivateKey.fromStringED25519(process.env.NEXT_PUBLIC_OPERATOR_KEY),
     );
 
     return (
