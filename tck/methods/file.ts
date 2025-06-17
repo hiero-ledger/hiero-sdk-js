@@ -10,7 +10,7 @@ export const createFile = async ({
     keys,
     contents,
     expirationTime,
-    fileMemo,
+    memo,
     commonTransactionParams,
 }: any): Promise<FileResponse> => {
     const transaction = new FileCreateTransaction().setGrpcDeadline(
@@ -18,9 +18,7 @@ export const createFile = async ({
     );
 
     if (keys.length > 0) {
-        transaction.setKeys(
-            keys.map((key: string) => PrivateKey.fromStringECDSA(key)),
-        );
+        transaction.setKeys(keys.map((key: string) => getKeyFromString(key)));
     }
 
     if (contents != null) {
@@ -31,8 +29,8 @@ export const createFile = async ({
         transaction.setExpirationTime(expirationTime);
     }
 
-    if (fileMemo != null) {
-        transaction.setFileMemo(fileMemo);
+    if (memo != null) {
+        transaction.setFileMemo(memo);
     }
 
     if (commonTransactionParams != null) {
@@ -45,8 +43,6 @@ export const createFile = async ({
 
     const response = await transaction.execute(sdk.getClient());
     const receipt = await response.getReceipt(sdk.getClient());
-
-    console.log("receipt", receipt.fileId.toString());
 
     return {
         fileId: receipt.fileId.toString(),

@@ -59,7 +59,6 @@ import {
     TokenBurnResponse,
     TokenMintResponse,
 } from "../response/token";
-import AirdropPendingTransaction from "../../lib/token/AirdropPendingTransaction";
 
 export const createToken = async ({
     name,
