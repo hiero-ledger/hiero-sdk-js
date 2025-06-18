@@ -237,4 +237,94 @@ describe("Client", function () {
             await client.close();
         });
     });
+
+    describe("shard and realm configuration", function () {
+        it("should set default shard and realm to 0", function () {
+            const client = new NodeClient({ scheduleNetworkUpdate: false });
+            expect(client._shard).to.equal(0);
+            expect(client._realm).to.equal(0);
+        });
+
+        it("should set custom shard and realm values", function () {
+            const client = new NodeClient({
+                shard: 1,
+                realm: 2,
+                scheduleNetworkUpdate: false,
+            });
+            expect(client._shard).to.equal(1);
+            expect(client._realm).to.equal(2);
+        });
+    });
+
+    describe("factory methods shard and realm behavior", function () {
+        describe("forNetwork", function () {
+            it("should set custom shard and realm values", function () {
+                const client = NodeClient.forNetwork(
+                    { "0.testnet.hedera.com:50211": "0.0.3" },
+                    { scheduleNetworkUpdate: false },
+                );
+                expect(client._shard).to.equal(0);
+                expect(client._realm).to.equal(0);
+            });
+
+            it("should create client with nodes in same shard and realm", function () {
+                const nodes = {
+                    "0.testnet.hedera.com:50211": new AccountId(1, 2, 3),
+                    "34.94.106.61:50211": new AccountId(1, 2, 3),
+                    "50.18.132.211:50211": new AccountId(1, 2, 3),
+                };
+
+                const client = NodeClient.forNetwork(nodes, {
+                    scheduleNetworkUpdate: false,
+                });
+                expect(client).to.be.instanceOf(NodeClient);
+                expect(client._shard).to.equal(1);
+                expect(client._realm).to.equal(2);
+            });
+
+            it("should throw error when nodes are in different shards", function () {
+                const nodes = {
+                    "0.testnet.hedera.com:50211": new AccountId(1, 2, 3),
+                    "34.94.106.61:50211": new AccountId(2, 2, 4),
+                };
+
+                expect(() =>
+                    NodeClient.forNetwork(nodes, {
+                        scheduleNetworkUpdate: false,
+                    }),
+                ).to.throw("All nodes must be within the same shard and realm");
+            });
+
+            it("should throw error when nodes are in different realms", function () {
+                const nodes = {
+                    "0.testnet.hedera.com:50211": new AccountId(1, 2, 0),
+                    "34.94.106.61:50211": new AccountId(1, 3, 1),
+                };
+
+                expect(() =>
+                    NodeClient.forNetwork(nodes, {
+                        scheduleNetworkUpdate: false,
+                    }),
+                ).to.throw("All nodes must be within the same shard and realm");
+            });
+
+            it("should use network node shard and realm values over explicitly provided values", function () {
+                const nodes = {
+                    "0.testnet.hedera.com:50211": new AccountId(1, 2, 3),
+                    "34.94.106.61:50211": new AccountId(1, 2, 4),
+                };
+
+                const client = NodeClient.forNetwork(nodes, {
+                    shard: 5,
+                    realm: 6,
+                    scheduleNetworkUpdate: false,
+                });
+
+                // Should use shard=1 and realm=2 from the network nodes
+                // instead of the explicitly provided shard=5 and realm=6
+                expect(client._shard).to.equal(1);
+                expect(client._realm).to.equal(2);
+            });
+        });
+    });
 });
