@@ -34,10 +34,12 @@ import { convertToNumber } from "../util.js";
 
 /**
  * @typedef {object} ClientConfiguration
- * @property {{[key: string]: (string | AccountId)} | string} network
+ * @property {{[key: string]: (string | AccountId)} | string} [network]
  * @property {string[] | string} [mirrorNetwork]
  * @property {Operator} [operator]
  * @property {boolean} [scheduleNetworkUpdate]
+ * @property {number} [shard]
+ * @property {number} [realm]
  */
 
 /**
@@ -139,8 +141,20 @@ export default class Client {
         /** @private */
         this._isShutdown = false;
 
+        this._shard = 0;
+
+        this._realm = 0;
+
         if (props != null && props.scheduleNetworkUpdate !== false) {
             this._scheduleNetworkUpdate();
+        }
+
+        if (props != null && props.shard != null) {
+            this._shard = props.shard;
+        }
+
+        if (props != null && props.realm != null) {
+            this._realm = props.realm;
         }
 
         /** @internal */
@@ -715,7 +729,9 @@ export default class Client {
 
         try {
             const addressBook = await CACHE.addressBookQueryConstructor()
-                .setFileId(FileId.ADDRESS_BOOK)
+                .setFileId(
+                    FileId.getAddressBookFileIdFor(this._shard, this._realm),
+                )
                 .execute(this);
             this.setNetworkFromAddressBook(addressBook);
         } catch (error) {
@@ -779,5 +795,49 @@ export default class Client {
      */
     get isClientShutDown() {
         return this._isShutdown;
+    }
+
+    /**
+     * Validates that all nodes in a network are in the same shard and realm.
+     *
+     * @param {{[key: string]: (string | AccountId)}} network
+     */
+    static validateNetworkConsistency(network) {
+        let shard = undefined;
+        let realm = undefined;
+
+        for (const accountId of Object.values(network)) {
+            const accountIdStr = accountId.toString();
+            const [nodeShard, nodeRealm] = accountIdStr.split(".").map(Number);
+
+            if (shard === undefined && realm === undefined) {
+                shard = nodeShard;
+                realm = nodeRealm;
+            } else if (shard !== nodeShard || realm !== nodeRealm) {
+                throw new Error(
+                    `All nodes must be within the same shard and realm. Found nodes in shard ${String(shard)}.${String(realm)} and ${String(nodeShard)}.${String(nodeRealm)}`,
+                );
+            }
+        }
+    }
+
+    /**
+     * Extracts shard and realm values from a network configuration.
+     * Note: This method assumes the network is consistent (all nodes in same shard/realm).
+     * Use validateNetworkConsistency() first to ensure this.
+     *
+     * @param {{[key: string]: (string | AccountId)}} network
+     * @returns {{shard: number, realm: number}}
+     */
+    static extractShardRealm(network) {
+        const entries = Object.entries(network);
+        if (entries.length === 0) {
+            return { shard: 0, realm: 0 };
+        }
+
+        const accountIdStr = entries[0][1].toString();
+        const [shard, realm] = accountIdStr.split(".").map(Number);
+
+        return { shard, realm };
     }
 }

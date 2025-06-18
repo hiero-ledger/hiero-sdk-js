@@ -2,8 +2,6 @@
 
 import Client from "./Client.js";
 import WebChannel from "../channel/WebChannel.js";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import AccountId from "../account/AccountId.js";
 import LedgerId from "../LedgerId.js";
 import {
     MAINNET,
@@ -13,6 +11,7 @@ import {
 
 /**
  * @typedef {import("./Client.js").ClientConfiguration} ClientConfiguration
+ * @typedef {import("../account/AccountId.js").default} AccountId
  */
 
 export const Network = {
@@ -80,6 +79,17 @@ export default class WebClient extends Client {
                         );
                 }
             } else if (props.network != null) {
+                Client.validateNetworkConsistency(props.network);
+
+                const { shard, realm } = Client.extractShardRealm(
+                    props.network,
+                );
+
+                // Shard and realm are inferred from the network, so we need to set them here
+                // to ensure that the client is properly configured.
+                this._shard = shard;
+                this._realm = realm;
+
                 this.setNetwork(props.network);
             }
         }
@@ -113,7 +123,10 @@ export default class WebClient extends Client {
      * @returns {WebClient}
      */
     static forNetwork(network) {
-        return new WebClient({ network, scheduleNetworkUpdate: false });
+        return new WebClient({
+            network,
+            scheduleNetworkUpdate: false,
+        });
     }
 
     /**
@@ -121,7 +134,10 @@ export default class WebClient extends Client {
      * @returns {WebClient}
      */
     static forName(network) {
-        return new WebClient({ network, scheduleNetworkUpdate: false });
+        return new WebClient({
+            network,
+            scheduleNetworkUpdate: false,
+        });
     }
 
     /**

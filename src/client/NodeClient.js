@@ -12,8 +12,6 @@ import * as mainnet from "./addressbooks/mainnet.js";
 import * as testnet from "./addressbooks/testnet.js";
 import * as previewnet from "./addressbooks/previewnet.js";
 import * as hex from "../encoding/hex.js";
-import AddressBookQuery from "../network/AddressBookQuery.js";
-import FileId from "../file/FileId.js";
 
 const readFileAsync = util.promisify(fs.readFile);
 
@@ -76,6 +74,17 @@ export default class NodeClient extends Client {
             if (typeof props.network === "string") {
                 this._setNetworkFromName(props.network);
             } else if (props.network != null) {
+                Client.validateNetworkConsistency(props.network);
+
+                const { shard, realm } = Client.extractShardRealm(
+                    props.network,
+                );
+
+                // Shard and realm are inferred from the network, so we need to set them here
+                // to ensure that the client is properly configured.
+                this._shard = shard;
+                this._realm = realm;
+
                 this.setNetwork(props.network);
             }
 
@@ -140,7 +149,10 @@ export default class NodeClient extends Client {
      * @returns {NodeClient}
      */
     static forNetwork(network, props) {
-        return new NodeClient({ network, ...props });
+        return new NodeClient({
+            network,
+            ...props,
+        });
     }
 
     /**
@@ -177,19 +189,18 @@ export default class NodeClient extends Client {
 
     /**
      * @param {string[] | string} mirrorNetwork
+     * @param {number} [shard]
+     * @param {number} [realm]
      * @returns {Promise<NodeClient>}
      */
-    static async forMirrorNetwork(mirrorNetwork) {
-        const client = new NodeClient();
+    static async forMirrorNetwork(mirrorNetwork, shard, realm) {
+        const client = new NodeClient({
+            mirrorNetwork,
+            shard,
+            realm,
+        }).setNetworkUpdatePeriod(10_000);
 
-        client.setMirrorNetwork(mirrorNetwork).setNetworkUpdatePeriod(10000);
-
-        // Execute an address book query to get the network nodes
-        const addressBook = await new AddressBookQuery()
-            .setFileId(FileId.ADDRESS_BOOK)
-            .execute(client);
-
-        client.setNetworkFromAddressBook(addressBook);
+        await client.updateNetwork();
 
         return client;
     }
@@ -213,7 +224,10 @@ export default class NodeClient extends Client {
      * @returns {NodeClient}
      */
     static forLocalNode(props = { scheduleNetworkUpdate: false }) {
-        return new NodeClient({ network: "local-node", ...props });
+        return new NodeClient({
+            network: "local-node",
+            ...props,
+        });
     }
 
     /**
