@@ -126,7 +126,7 @@ export default class EthereumFlow {
     }
 
     /**
-     * The maximum amount, in tinybars, that the payer of the hedera transaction
+     * The maximum amount, in hbars, that the payer of the hedera transaction
      * is willing to pay to complete the transaction.
      *
      * Ordinarily the account with the ECDSA alias corresponding to the public
