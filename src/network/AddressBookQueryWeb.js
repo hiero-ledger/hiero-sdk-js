@@ -5,6 +5,11 @@ import NodeAddressBook from "../address_book/NodeAddressBook.js";
 import FileId from "../file/FileId.js";
 import { RST_STREAM } from "../Executable.js";
 import NodeAddress from "../address_book/NodeAddress.js";
+import {
+    MAINNET,
+    WEB_TESTNET,
+    WEB_PREVIEWNET,
+} from "../constants/ClientConstants.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -261,18 +266,10 @@ export default class AddressBookQueryWeb extends Query {
                 NodeAddress.fromJSON({
                     nodeId: node.node_id.toString(),
                     accountId: node.node_account_id,
-                    addresses:
-                        node.grpc_proxy_endpoint != null
-                            ? [
-                                  {
-                                      address:
-                                          node.grpc_proxy_endpoint
-                                              .ip_address_v4 ||
-                                          node.grpc_proxy_endpoint.domain_name,
-                                      port: node.grpc_proxy_endpoint.port.toString(),
-                                  },
-                              ]
-                            : [],
+                    addresses: this._handleAddressesFromGrpcProxyEndpoint(
+                        node,
+                        client,
+                    ),
                     certHash: node.node_cert_hash,
                     publicKey: node.public_key,
                     description: node.description,
@@ -337,5 +334,48 @@ export default class AddressBookQueryWeb extends Query {
                 reject(new Error("failed to query address book"));
             }
         }
+    }
+
+    /**
+     * Handles the grpc_proxy_endpoint fallback logic for a node.
+     * @param {AddressBookQueryWebResponse['nodes'][number]} node - The node object from the mirror node response.
+     * @param {Client<Channel>} client - The client instance.
+     * @returns {Array<{address: string, port: string}>}
+     */
+    _handleAddressesFromGrpcProxyEndpoint(node, client) {
+        const grpcProxyEndpoint = node.grpc_proxy_endpoint;
+
+        if (grpcProxyEndpoint.domain_name && grpcProxyEndpoint.port) {
+            return [
+                {
+                    address: grpcProxyEndpoint.domain_name,
+                    port: grpcProxyEndpoint.port.toString(),
+                },
+            ];
+        }
+
+        let networkConstant;
+        const ledgerId = client._network.ledgerId;
+
+        if (ledgerId && ledgerId.isMainnet()) {
+            networkConstant = MAINNET;
+        } else if (ledgerId && ledgerId.isTestnet()) {
+            networkConstant = WEB_TESTNET;
+        } else if (ledgerId && ledgerId.isPreviewnet()) {
+            networkConstant = WEB_PREVIEWNET;
+        } else {
+            return [];
+        }
+
+        const nodeAccountId = node.node_account_id;
+
+        for (const [address, accountIdObj] of Object.entries(networkConstant)) {
+            if (accountIdObj.toString() === nodeAccountId) {
+                const [domain, port] = address.split(":");
+
+                return [{ address: domain, port: port }];
+            }
+        }
+        return [];
     }
 }
