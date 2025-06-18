@@ -9,9 +9,9 @@ import PublicKey from "../PublicKey.js";
 import PrivateKey from "../PrivateKey.js";
 import LedgerId from "../LedgerId.js";
 import FileId from "../file/FileId.js";
-import CACHE from "../Cache.js";
 import Logger from "../logger/Logger.js"; // eslint-disable-line
 import { convertToNumber } from "../util.js";
+import AddressBookQuery from "../network/AddressBookQuery.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -34,7 +34,7 @@ import { convertToNumber } from "../util.js";
 
 /**
  * @typedef {object} ClientConfiguration
- * @property {{[key: string]: (string | AccountId)} | string} network
+ * @property {{[key: string]: (string | AccountId)} | string} [network]
  * @property {string[] | string} [mirrorNetwork]
  * @property {Operator} [operator]
  * @property {boolean} [scheduleNetworkUpdate]
@@ -128,7 +128,6 @@ export default class Client {
         this._requestTimeout = null;
 
         /**
-         * @private
          * @type {boolean}
          */
         this._isUpdatingNetwork = false;
@@ -714,7 +713,7 @@ export default class Client {
         this._isUpdatingNetwork = true;
 
         try {
-            const addressBook = await CACHE.addressBookQueryConstructor()
+            const addressBook = await new AddressBookQuery()
                 .setFileId(FileId.ADDRESS_BOOK)
                 .execute(this);
             this.setNetworkFromAddressBook(addressBook);

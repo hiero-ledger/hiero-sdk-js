@@ -1,4 +1,5 @@
 import MirrorNodeContractQuery from "./MirrorNodeContractQuery.js";
+import * as hex from "../encoding/hex.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -22,7 +23,7 @@ export default class MirrorNodeContractCallQuery extends MirrorNodeContractQuery
         }
 
         return {
-            data: Buffer.from(this.callData).toString("hex"),
+            data: hex.encode(this.callData),
             from: this.senderEvmAddress,
             to: this.contractEvmAddress,
             estimate: false,

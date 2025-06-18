@@ -1,5 +1,5 @@
 import MirrorNodeContractQuery from "./MirrorNodeContractQuery.js";
-
+import * as hex from "../encoding/hex.js";
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../client/Client.js").default<*, *>} Client
@@ -12,7 +12,7 @@ import MirrorNodeContractQuery from "./MirrorNodeContractQuery.js";
  * to execute the same call on the main network. It's useful for determining the appropriate
  * gas limit before submitting an actual transaction.
  */
-export default class MirrorNodeContractCallQuery extends MirrorNodeContractQuery {
+export default class MirrorNodeContractEstimateQuery extends MirrorNodeContractQuery {
     /**
      * @returns {object}
      */
@@ -22,7 +22,7 @@ export default class MirrorNodeContractCallQuery extends MirrorNodeContractQuery
         }
 
         return {
-            data: Buffer.from(this.callData).toString("hex"),
+            data: hex.encode(this.callData),
             from: this.senderEvmAddress,
             to: this.contractEvmAddress,
             estimate: true,
