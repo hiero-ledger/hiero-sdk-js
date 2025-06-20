@@ -74,9 +74,9 @@ export default class NodeClient extends Client {
             if (typeof props.network === "string") {
                 this._setNetworkFromName(props.network);
             } else if (props.network != null) {
-                Client.validateNetworkConsistency(props.network);
+                Client._validateNetworkConsistency(props.network);
 
-                const { shard, realm } = Client.extractShardRealm(
+                const { shard, realm } = Client._extractShardRealm(
                     props.network,
                 );
 

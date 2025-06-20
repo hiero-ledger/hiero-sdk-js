@@ -75,9 +75,9 @@ export default class NativeClient extends Client {
                         );
                 }
             } else if (props.network != null) {
-                Client.validateNetworkConsistency(props.network);
+                Client._validateNetworkConsistency(props.network);
 
-                const { shard, realm } = Client.extractShardRealm(
+                const { shard, realm } = Client._extractShardRealm(
                     props.network,
                 );
 
