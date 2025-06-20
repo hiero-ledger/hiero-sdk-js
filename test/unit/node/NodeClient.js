@@ -292,7 +292,9 @@ describe("Client", function () {
                     NodeClient.forNetwork(nodes, {
                         scheduleNetworkUpdate: false,
                     }),
-                ).to.throw("All nodes must be within the same shard and realm");
+                ).to.throw(
+                    "Network is not valid, all nodes must be in the same shard and realm",
+                );
             });
 
             it("should throw error when nodes are in different realms", function () {
@@ -305,7 +307,9 @@ describe("Client", function () {
                     NodeClient.forNetwork(nodes, {
                         scheduleNetworkUpdate: false,
                     }),
-                ).to.throw("All nodes must be within the same shard and realm");
+                ).to.throw(
+                    "Network is not valid, all nodes must be in the same shard and realm",
+                );
             });
 
             it("should use network node shard and realm values over explicitly provided values", function () {

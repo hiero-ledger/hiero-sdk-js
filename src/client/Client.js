@@ -802,7 +802,7 @@ export default class Client {
      *
      * @param {{[key: string]: (string | AccountId)}} network
      */
-    static validateNetworkConsistency(network) {
+    static _validateNetworkConsistency(network) {
         let shard = undefined;
         let realm = undefined;
 
@@ -815,7 +815,7 @@ export default class Client {
                 realm = nodeRealm;
             } else if (shard !== nodeShard || realm !== nodeRealm) {
                 throw new Error(
-                    `All nodes must be within the same shard and realm. Found nodes in shard ${String(shard)}.${String(realm)} and ${String(nodeShard)}.${String(nodeRealm)}`,
+                    "Network is not valid, all nodes must be in the same shard and realm",
                 );
             }
         }
@@ -829,7 +829,7 @@ export default class Client {
      * @param {{[key: string]: (string | AccountId)}} network
      * @returns {{shard: number, realm: number}}
      */
-    static extractShardRealm(network) {
+    static _extractShardRealm(network) {
         const entries = Object.entries(network);
         if (entries.length === 0) {
             return { shard: 0, realm: 0 };
