@@ -679,8 +679,7 @@ export const claimToken = async ({
 
 export const rejectToken = async ({
     ownerId,
-    tokenIds = [],
-    nftIds = [],
+    tokenIds,
     serialNumbers,
     commonTransactionParams,
 }: RejectTokenParams): Promise<TokenResponse> => {
@@ -692,19 +691,19 @@ export const rejectToken = async ({
         transaction.setOwnerId(AccountId.fromString(ownerId));
     }
 
-    if (tokenIds.length > 0) {
+    if (tokenIds.length > 0 && !serialNumbers) {
         for (const tokenId of tokenIds) {
             transaction.addTokenId(TokenId.fromString(tokenId));
         }
     }
 
     // NFT token rejecting
-    if (nftIds.length > 0) {
-        for (const nftId of nftIds) {
+    if (serialNumbers) {
+        for (const tokenId of tokenIds) {
             for (const serialNumber of serialNumbers) {
                 transaction.addNftId(
                     new NftId(
-                        TokenId.fromString(nftId),
+                        TokenId.fromString(tokenId),
                         Long.fromString(serialNumber),
                     ),
                 );
