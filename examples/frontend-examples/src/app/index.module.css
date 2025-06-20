@@ -1,0 +1,258 @@
+/* ROOT: the frosted container */
+.Root {
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    padding: 0.5rem 1rem;
+    max-width: fit-content;
+    margin: 2rem auto;
+}
+
+/* TRIGGER BUTTON: frosted when active/hovered */
+.Trigger {
+    box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    height: 2.5rem;
+    padding: 0 0.875rem;
+    border: none;
+    border-radius: 0.5rem;
+
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 500;
+    background-color: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(12px);
+    transition: background-color 0.2s;
+
+    @media (max-width: 500px) {
+        font-size: 0.925rem;
+        padding: 0 0.5rem;
+    }
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+    }
+
+    &[data-popup-open] {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    &:focus-visible {
+        outline: 2px solid #3b82f6; /* Tailwind's blue-500 */
+        outline-offset: 2px;
+    }
+}
+
+/* ICON: still rotates */
+.Icon {
+    transition: transform 0.2s ease;
+
+    &[data-popup-open] {
+        transform: rotate(180deg);
+    }
+}
+
+/* POPUP POSITIONER: unchanged transition */
+.Positioner {
+    --easing: cubic-bezier(0.22, 1, 0.36, 0.1);
+    --duration: 0.35s;
+    transition-property: top, left, right, bottom;
+    transition-duration: var(--duration);
+    transition-timing-function: var(--easing);
+    width: var(--positioner-width);
+    height: var(--positioner-height);
+    max-width: var(--available-width);
+}
+
+.Positioner::before {
+    content: "";
+    position: absolute;
+}
+
+.Positioner[data-side="top"]::before {
+    left: 0;
+    right: 0;
+    bottom: -10px;
+    height: 10px;
+}
+.Positioner[data-side="bottom"]::before {
+    left: 0;
+    right: 0;
+    top: -10px;
+    height: 10px;
+}
+.Positioner[data-side="left"]::before {
+    top: 0;
+    bottom: 0;
+    right: -10px;
+    width: 10px;
+}
+.Positioner[data-side="right"]::before {
+    top: 0;
+    bottom: 0;
+    left: -10px;
+    width: 10px;
+}
+
+.Positioner[data-instant] {
+    transition: none;
+}
+
+/* POPUP: the main glass surface */
+.Popup {
+    position: relative;
+    border-radius: 0.75rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    transform-origin: var(--transform-origin);
+    transition:
+        opacity var(--duration) var(--easing),
+        transform var(--duration) var(--easing);
+    width: 100%;
+    height: var(--popup-height);
+
+    @media (min-width: 500px) {
+        width: var(--popup-width);
+    }
+
+    &[data-starting-style],
+    &[data-ending-style] {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    &[data-ending-style] {
+        transition-timing-function: ease;
+        transition-duration: 0.15s;
+    }
+}
+
+/* CONTENT: glass content area */
+.Content {
+    transition:
+        opacity calc(var(--duration) * 0.5) ease,
+        transform var(--duration) var(--easing);
+    padding: 1.5rem;
+    height: 100%;
+
+    @media (min-width: 500px) {
+        width: max-content;
+        min-width: 400px;
+    }
+
+    &[data-starting-style],
+    &[data-ending-style] {
+        opacity: 0;
+    }
+
+    &[data-starting-style][data-activation-direction="left"] {
+        transform: translateX(-50%);
+    }
+
+    &[data-starting-style][data-activation-direction="right"] {
+        transform: translateX(50%);
+    }
+
+    &[data-ending-style][data-activation-direction="left"] {
+        transform: translateX(50%);
+    }
+
+    &[data-ending-style][data-activation-direction="right"] {
+        transform: translateX(-50%);
+    }
+}
+
+/* MISC: lists, links */
+.List {
+    display: flex;
+    position: relative;
+}
+
+.Viewport {
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+}
+
+.GridLinkList {
+    list-style: none;
+}
+
+.FlexLinkList {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    max-width: 400px;
+}
+
+.LinkCard {
+    display: block;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    text-decoration: none;
+    transition: background-color 0.2s;
+
+    @media (hover: hover) {
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+    }
+
+    &:focus-visible {
+        outline: 2px solid #3b82f6;
+        outline-offset: 2px;
+    }
+}
+
+.LinkTitle {
+    margin: 0 0 4px;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.LinkDescription {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.Arrow {
+    display: flex;
+    transition: left var(--duration) var(--easing);
+}
+
+.Arrow[data-side="top"] {
+    bottom: -8px;
+    rotate: 180deg;
+}
+.Arrow[data-side="bottom"] {
+    top: -8px;
+    rotate: 0deg;
+}
+.Arrow[data-side="left"] {
+    right: -13px;
+    rotate: 90deg;
+}
+.Arrow[data-side="right"] {
+    left: -13px;
+    rotate: -90deg;
+}
+
+.ArrowFill {
+    fill: rgba(255, 255, 255, 0.05);
+}
+
+.ArrowOuterStroke,
+.ArrowInnerStroke {
+    fill: rgba(255, 255, 255, 0.15);
+}
