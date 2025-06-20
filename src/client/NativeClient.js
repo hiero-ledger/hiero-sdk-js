@@ -75,6 +75,17 @@ export default class NativeClient extends Client {
                         );
                 }
             } else if (props.network != null) {
+                Client._validateNetworkConsistency(props.network);
+
+                const { shard, realm } = Client._extractShardRealm(
+                    props.network,
+                );
+
+                // Shard and realm are inferred from the network, so we need to set them here
+                // to ensure that the client is properly configured.
+                this._shard = shard;
+                this._realm = realm;
+
                 this.setNetwork(props.network);
             }
         }
@@ -108,7 +119,10 @@ export default class NativeClient extends Client {
      * @returns {NativeClient}
      */
     static forNetwork(network) {
-        return new NativeClient({ network, scheduleNetworkUpdate: false });
+        return new NativeClient({
+            network,
+            scheduleNetworkUpdate: false,
+        });
     }
 
     /**

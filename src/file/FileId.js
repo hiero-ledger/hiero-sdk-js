@@ -31,6 +31,33 @@ export default class FileId {
     }
 
     /**
+     * @param {number} shard
+     * @param {number} realm
+     * @returns {FileId}
+     */
+    static getAddressBookFileIdFor(shard = 0, realm = 0) {
+        return new FileId({ num: 102, shard, realm });
+    }
+
+    /**
+     * @param {number} shard
+     * @param {number} realm
+     * @returns {FileId}
+     */
+    static getFeeScheduleFileIdFor(shard = 0, realm = 0) {
+        return new FileId({ num: 111, shard, realm });
+    }
+
+    /**
+     * @param {number} shard
+     * @param {number} realm
+     * @returns {FileId}
+     */
+    static getExchangeRatesFileIdFor(shard = 0, realm = 0) {
+        return new FileId({ num: 112, shard, realm });
+    }
+
+    /**
      * @param {string} text
      * @returns {FileId}
      */
