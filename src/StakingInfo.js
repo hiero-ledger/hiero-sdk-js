@@ -6,7 +6,7 @@ import Timestamp from "./Timestamp.js";
 import * as HieroProto from "@hashgraph/proto";
 
 /**
- * @typedef {import("long")} Long
+ * @typedef {import("long").default} Long
  */
 
 /**

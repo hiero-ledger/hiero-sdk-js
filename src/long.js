@@ -1,14 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import BigNumber from "bignumber.js";
+import { BigNumber } from "bignumber.js";
 
 /**
- * @typedef {{low: number, high: number, unsigned: boolean}} LongObject
- * @typedef {import("long")} Long
+ * @typedef {import("long").default} Long
  */
 
 /**
- * @param {Long | number | string | LongObject | BigNumber} value
+ * @param {Long | number | string | BigNumber} value
  * @returns {BigNumber}
  */
 export function valueToLong(value) {

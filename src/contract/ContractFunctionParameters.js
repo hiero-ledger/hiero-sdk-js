@@ -7,7 +7,7 @@ import ContractFunctionSelector, {
 import * as utf8 from "../encoding/utf8.js";
 import * as hex from "../encoding/hex.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import BigNumber from "bignumber.js";
+import { BigNumber } from "bignumber.js";
 import * as util from "../util.js";
 import { defaultAbiCoder } from "@ethersproject/abi";
 import { arrayify } from "@ethersproject/bytes";

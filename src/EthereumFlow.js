@@ -28,7 +28,7 @@ import * as hex from "./encoding/hex.js";
  * @typedef {import("./Timestamp.js").default} Timestamp
  * @typedef {import("./transaction/TransactionId.js").default} TransactionId
  * @typedef {import("./transaction/TransactionResponse.js").default} TransactionResponse
- * @typedef {import("long")} Long
+ * @typedef {import("long").default} Long
  */
 
 /**

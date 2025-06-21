@@ -26,6 +26,7 @@ import TokenKeyValidation from "./TokenKeyValidation.js";
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../client/Client.js").default<*, *>} Client
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
+ * @typedef {import("long").default} Long
  */
 
 /**

@@ -11,7 +11,6 @@ import ObjectMap from "../ObjectMap.js";
  */
 
 /**
- * @typedef {import("../long.js").LongObject} LongObject
  * @typedef {import("bignumber.js").default} BigNumber
  */
 

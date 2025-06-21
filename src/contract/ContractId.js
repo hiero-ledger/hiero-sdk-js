@@ -18,7 +18,7 @@ import { isLongZeroAddress } from "../util.js";
  */
 export default class ContractId extends Key {
     /**
-     * @param {number | Long | import("../EntityIdHelper").IEntityId} props
+     * @param {number | Long | import("../EntityIdHelper.js").IEntityId} props
      * @param {(number | Long)=} realm
      * @param {(number | Long)=} num
      * @param {Uint8Array=} evmAddress

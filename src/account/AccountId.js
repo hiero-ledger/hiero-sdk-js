@@ -19,7 +19,7 @@ import { isLongZeroAddress } from "../util.js";
  */
 export default class AccountId {
     /**
-     * @param {number | Long | import("../EntityIdHelper").IEntityId} props
+     * @param {number | Long | import("../EntityIdHelper.js").IEntityId} props
      * @param {(number | Long)=} realm
      * @param {(number | Long)=} num
      * @param {(PublicKey)=} aliasKey

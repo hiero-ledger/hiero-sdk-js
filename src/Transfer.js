@@ -18,7 +18,7 @@ import Hbar from "./Hbar.js";
 
 /**
  * @typedef {import("bignumber.js").default} BigNumber
- * @typedef {import("long")} Long
+ * @typedef {import("long").default} Long
  */
 
 /**

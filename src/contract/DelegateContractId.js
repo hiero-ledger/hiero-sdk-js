@@ -11,7 +11,7 @@ import * as hex from "../encoding/hex.js";
  */
 
 /**
- * @typedef {import("long")} Long
+ * @typedef {import("long").default} Long
  * @typedef {import("../client/Client.js").default<*, *>} Client
  */
 
@@ -21,7 +21,7 @@ import * as hex from "../encoding/hex.js";
  */
 export default class DelegateContractId extends ContractId {
     /**
-     * @param {number | Long | import("../EntityIdHelper").IEntityId} props
+     * @param {number | Long | import("../EntityIdHelper.js").IEntityId} props
      * @param {(number | Long)=} realm
      * @param {(number | Long)=} num
      * @param {Uint8Array=} evmAddress

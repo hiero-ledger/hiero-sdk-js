@@ -28,7 +28,6 @@ import * as util from "../util.js";
  * @typedef {import("../client/Client.js").default<*, *>} Client
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  * @typedef {import("bignumber.js").default} BigNumber
- * @typedef {import("../long.js").LongObject} LongObject
  */
 
 /**
@@ -77,7 +76,7 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
     /**
      * @deprecated
      * @param {AccountId | string} spenderAccountId
-     * @param {number | string | Long | LongObject | BigNumber | Hbar} amount
+     * @param {number | string | Long | BigNumber | Hbar} amount
      * @returns {AccountAllowanceAdjustTransaction}
      */
     addHbarAllowance(spenderAccountId, amount) {
@@ -131,7 +130,7 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
      * @deprecated
      * @param {AccountId | string} ownerAccountId
      * @param {AccountId | string} spenderAccountId
-     * @param {number | string | Long | LongObject | BigNumber | Hbar} amount
+     * @param {number | string | Long | BigNumber | Hbar} amount
      * @returns {AccountAllowanceAdjustTransaction}
      */
     grantHbarAllowance(ownerAccountId, spenderAccountId, amount) {
@@ -147,7 +146,7 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
      * @deprecated
      * @param {AccountId | string} ownerAccountId
      * @param {AccountId | string} spenderAccountId
-     * @param {number | string | Long | LongObject | BigNumber | Hbar} amount
+     * @param {number | string | Long  | BigNumber | Hbar} amount
      * @returns {AccountAllowanceAdjustTransaction}
      */
     revokeHbarAllowance(ownerAccountId, spenderAccountId, amount) {

@@ -13,11 +13,11 @@ export default class BadKeyError extends Error {
         );
 
         this.name = "BadKeyError";
-
+        this.stack = "";
         if (messageOrCause instanceof Error) {
             /** @type {Error=} */
             this.cause = messageOrCause;
-            this.stack = messageOrCause.stack;
+            this.stack = messageOrCause.stack || this.stack || "";
         }
     }
 }

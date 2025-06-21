@@ -29,6 +29,7 @@ const SERVICE_ENDPOINTS_MAX_LENGTH = 8;
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("long").default} Long
  */
 
 /**

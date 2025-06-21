@@ -25,7 +25,6 @@ import TokenNftAllowance from "./TokenNftAllowance.js";
  * @typedef {import("../client/Client.js").default<*, *>} Client
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  * @typedef {import("bignumber.js").default} BigNumber
- * @typedef {import("../long.js").LongObject} LongObject
  */
 
 /**

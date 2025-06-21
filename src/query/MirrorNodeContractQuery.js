@@ -1,10 +1,10 @@
 import ContractFunctionParameters from "../contract/ContractFunctionParameters.js";
 
 /**
- * @typedef {import("../contract/ContractId").default} ContractId
- * @typedef {import("../account/AccountId").default} AccountId
+ * @typedef {import("../contract/ContractId.js").default} ContractId
+ * @typedef {import("../account/AccountId.js").default} AccountId
  * @typedef {import("../client/Client.js").default<*, *>} Client
- *
+ * @typedef {import("long").default} Long
  */
 
 /**
