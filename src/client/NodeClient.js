@@ -194,11 +194,13 @@ export default class NodeClient extends Client {
      * @returns {Promise<NodeClient>}
      */
     static async forMirrorNetwork(mirrorNetwork, shard, realm) {
+        const INITIAL_UPDATE_PERIOD = 10_000;
+
         const client = new NodeClient({
             mirrorNetwork,
             shard,
             realm,
-        }).setNetworkUpdatePeriod(10_000);
+        }).setNetworkUpdatePeriod(INITIAL_UPDATE_PERIOD);
 
         await client.updateNetwork();
 

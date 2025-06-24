@@ -803,21 +803,34 @@ export default class Client {
      * @param {{[key: string]: (string | AccountId)}} network
      */
     static _validateNetworkConsistency(network) {
-        let shard = undefined;
-        let realm = undefined;
+        if (Object.keys(network).length === 0) {
+            return;
+        }
 
-        for (const accountId of Object.values(network)) {
+        const [, nodeAccountId] = Object.entries(network)[0];
+
+        const accountIdStr = nodeAccountId.toString();
+
+        const [firstNodeShard, firstNodeRealm] = accountIdStr
+            .split(".")
+            .map(Number);
+
+        const isNetworkValid = Object.values(network).every((accountId) => {
             const accountIdStr = accountId.toString();
-            const [nodeShard, nodeRealm] = accountIdStr.split(".").map(Number);
 
-            if (shard === undefined && realm === undefined) {
-                shard = nodeShard;
-                realm = nodeRealm;
-            } else if (shard !== nodeShard || realm !== nodeRealm) {
-                throw new Error(
-                    "Network is not valid, all nodes must be in the same shard and realm",
-                );
-            }
+            const [currentShard, currentRealm] = accountIdStr
+                .split(".")
+                .map(Number);
+            return (
+                currentShard === firstNodeShard &&
+                currentRealm === firstNodeRealm
+            );
+        });
+
+        if (!isNetworkValid) {
+            throw new Error(
+                "Network is not valid, all nodes must be in the same shard and realm",
+            );
         }
     }
 
@@ -835,7 +848,9 @@ export default class Client {
             return { shard: 0, realm: 0 };
         }
 
-        const accountIdStr = entries[0][1].toString();
+        const [, firstNodeAccountId] = entries[0];
+
+        const accountIdStr = firstNodeAccountId.toString();
         const [shard, realm] = accountIdStr.split(".").map(Number);
 
         return { shard, realm };
