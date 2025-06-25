@@ -239,6 +239,20 @@ export default class Client {
     }
 
     /**
+     * @returns {number}
+     */
+    get shard() {
+        return this._shard;
+    }
+
+    /**
+     * @returns {number}
+     */
+    get realm() {
+        return this._realm;
+    }
+
+    /**
      * @param {string[] | string} mirrorNetwork
      * @returns {void}
      */
