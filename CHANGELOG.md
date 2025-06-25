@@ -9,7 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-
 - `ClientConfiguration` type updated: The `Client` constructor now accepts `shard` and `realm` parameters directly.
 - `Client.forMirrorNetwork` now supports two additional arguments: `shard` and `realm`.
 - When a custom network is provided in the `Client` constructor, the `shard` and `realm` values are now automatically inferred from the specified network.
