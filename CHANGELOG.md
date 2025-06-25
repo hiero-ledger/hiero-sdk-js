@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v2.67.0
 
+### Added
+
+- Getter for `shard` set in the client
+- Getter for `realm` set in the client
+[#3133](https://github.com/hiero-ledger/hiero-sdk-js/pull/3133)
+
 ### Changed
 
 - `ClientConfiguration` type updated: The `Client` constructor now accepts `shard` and `realm` parameters directly.
