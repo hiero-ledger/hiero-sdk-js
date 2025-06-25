@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.67.0
+
+### Changed
+
+
+- `ClientConfiguration` type updated: The `Client` constructor now accepts `shard` and `realm` parameters directly.
+- `Client.forMirrorNetwork` now supports two additional arguments: `shard` and `realm`.
+- When a custom network is provided in the `Client` constructor, the `shard` and `realm` values are now automatically inferred from the specified network.
+- An error is now thrown if the nodes defined in a custom network are not all in the same `shard` and `realm`, enforcing consistency and preventing misconfiguration.
+
 ## v2.66.0
 
 ### Added
