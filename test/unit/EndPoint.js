@@ -226,7 +226,7 @@ describe("EndPoint", function () {
             };
 
             const endpoint = EndPoint.fromJSON(json);
-            expect(endpoint.address).toBeInstanceOf(IPv4Address);
+            expect(endpoint.address).toBe("192.168.1.1");
             expect(endpoint.port).toBe(8080);
         });
 
@@ -266,7 +266,7 @@ describe("EndPoint", function () {
             };
 
             const endpoint = EndPoint.fromJSON(json);
-            expect(endpoint.address).toBeInstanceOf(IPv4Address);
+            expect(endpoint.address).toBe("192.168.1.1");
             expect(endpoint.port).toBeNull();
         });
 
