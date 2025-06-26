@@ -16,12 +16,12 @@ import IPv4Address from "./IPv4Address.js";
 export default class EndPoint {
     /**
      * @param {object} props
-     * @param {IPv4Address} [props.address]
+     * @param {IPv4Address | string} [props.address]
      * @param {number} [props.port]
      */
     constructor(props = {}) {
         /**
-         * @type {IPv4Address | null}
+         * @type {IPv4Address | string | null}
          */
         this._address = null;
 
@@ -40,14 +40,14 @@ export default class EndPoint {
     }
 
     /**
-     * @returns {?IPv4Address}
+     * @returns {?IPv4Address | string}
      */
     get address() {
-        return this.address;
+        return this._address;
     }
 
     /**
-     * @param {IPv4Address} address
+     * @param {IPv4Address | string} address
      * @returns {this}
      */
     setAddress(address) {
@@ -77,11 +77,16 @@ export default class EndPoint {
      * @returns {EndPoint}
      */
     static _fromProtobuf(endpoint) {
+        let address;
+
+        if (endpoint.domainName) {
+            address = endpoint.domainName;
+        } else if (endpoint.ipAddressV4) {
+            address = IPv4Address._fromProtobuf(endpoint.ipAddressV4);
+        }
+
         return new EndPoint({
-            address:
-                endpoint.ipAddressV4 != null
-                    ? IPv4Address._fromProtobuf(endpoint.ipAddressV4)
-                    : undefined,
+            address: address,
             port: endpoint.port != null ? endpoint.port : undefined,
         });
     }
@@ -90,9 +95,16 @@ export default class EndPoint {
      * @returns {HieroProto.proto.IServiceEndpoint}
      */
     _toProtobuf() {
+        if (typeof this._address !== "string") {
+            return {
+                ipAddressV4:
+                    this._address != null ? this._address._toProtobuf() : null,
+                port: this._port,
+            };
+        }
+
         return {
-            ipAddressV4:
-                this._address != null ? this._address._toProtobuf() : null,
+            domainName: this._address,
             port: this._port,
         };
     }
@@ -103,10 +115,7 @@ export default class EndPoint {
      */
     static fromJSON(json) {
         return new EndPoint({
-            address:
-                json.address != null
-                    ? IPv4Address._fromString(json.address)
-                    : undefined,
+            address: json.address || undefined,
             port: json.port != null ? parseInt(json.port, 10) : undefined,
         });
     }
