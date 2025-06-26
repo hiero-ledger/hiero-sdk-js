@@ -225,20 +225,20 @@ export default class AddressBookQueryWeb extends Query {
         const { port, address } =
             client._mirrorNetwork.getNextMirrorNode().address;
 
-        let baseUrl = `${address}`;
+        let baseUrl = `${address.includes("127.0.0.1") || address.includes("localhost") ? "http" : "https"}://${address}`;
 
         if (port) {
             baseUrl = `${baseUrl}:${port}`;
         }
 
         const url = new URL(`${baseUrl}/api/v1/network/nodes`);
+
         if (this._fileId != null) {
             url.searchParams.append("file.id", this._fileId.toString());
         }
         if (this._limit != null) {
             url.searchParams.append("limit", this._limit.toString());
         }
-
         try {
             // eslint-disable-next-line n/no-unsupported-features/node-builtins
             const response = await fetch(url.toString(), {
@@ -345,7 +345,11 @@ export default class AddressBookQueryWeb extends Query {
     _handleAddressesFromGrpcProxyEndpoint(node, client) {
         const grpcProxyEndpoint = node.grpc_proxy_endpoint;
 
-        if (grpcProxyEndpoint.domain_name && grpcProxyEndpoint.port) {
+        if (
+            grpcProxyEndpoint &&
+            grpcProxyEndpoint.domain_name &&
+            grpcProxyEndpoint.port
+        ) {
             return [
                 {
                     address: grpcProxyEndpoint.domain_name,
@@ -371,11 +375,17 @@ export default class AddressBookQueryWeb extends Query {
 
         for (const [address, accountIdObj] of Object.entries(networkConstant)) {
             if (accountIdObj.toString() === nodeAccountId) {
-                const [domain, port] = address.split(":");
+                const [domain_name, port] = address.split(":");
 
-                return [{ address: domain, port: port }];
+                return [
+                    {
+                        address: domain_name,
+                        port,
+                    },
+                ];
             }
         }
+
         return [];
     }
 }
