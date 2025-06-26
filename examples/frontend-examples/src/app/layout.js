@@ -85,6 +85,47 @@ export default function RootLayout({ children }) {
                                     </ul>
                                 </NavigationMenu.Content>
                             </NavigationMenu.Item>
+                            <NavigationMenu.Item>
+                                <NavigationMenu.Trigger
+                                    className={styles.Trigger}
+                                >
+                                    Topic
+                                    <NavigationMenu.Icon
+                                        className={styles.Icon}
+                                    >
+                                        <ChevronDownIcon />
+                                    </NavigationMenu.Icon>
+                                </NavigationMenu.Trigger>
+                                <NavigationMenu.Content
+                                    className={styles.Content}
+                                >
+                                    <ul className={styles.GridLinkList}>
+                                        {topicLinks.map((item) => (
+                                            <li key={item.href}>
+                                                <Link
+                                                    className={styles.LinkCard}
+                                                    href={item.href}
+                                                >
+                                                    <h3
+                                                        className={
+                                                            styles.LinkTitle
+                                                        }
+                                                    >
+                                                        {item.title}
+                                                    </h3>
+                                                    <p
+                                                        className={
+                                                            styles.LinkDescription
+                                                        }
+                                                    >
+                                                        {item.description}
+                                                    </p>
+                                                </Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </NavigationMenu.Content>
+                            </NavigationMenu.Item>
                         </NavigationMenu.List>
                         <NavigationMenu.Portal>
                             <NavigationMenu.Positioner
@@ -166,5 +207,13 @@ const overviewLinks = [
         href: "/transaction/size",
         title: "Transaction Size",
         description: "Get transaction size",
+    },
+];
+
+const topicLinks = [
+    {
+        href: "/topic/message-query",
+        title: "Message Query",
+        description: "Query messages from a topic",
     },
 ];
