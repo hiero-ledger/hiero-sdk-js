@@ -253,12 +253,13 @@ export default class WebClient extends Client {
 
         try {
             const addressBook = await new AddressBookQuery()
-                .setFileId(FileId.ADDRESS_BOOK)
+                .setFileId(
+                    FileId.getAddressBookFileIdFor(this.shard, this.realm),
+                )
                 .execute(this);
 
             /** @type {Record<string, AccountId>} */
             const network = {};
-
             for (const nodeAddress of addressBook.nodeAddresses) {
                 for (const endpoint of nodeAddress.addresses) {
                     if (nodeAddress.accountId != null) {
@@ -266,11 +267,8 @@ export default class WebClient extends Client {
                     }
                 }
             }
-            const hasGrpcWebProxyEndpoints = Object.keys(network).length > 0;
 
-            if (hasGrpcWebProxyEndpoints) {
-                this.setNetwork(network);
-            }
+            this.setNetwork(network);
         } catch (/** @type {unknown} */ error) {
             if (this._logger) {
                 const errorMessage =
