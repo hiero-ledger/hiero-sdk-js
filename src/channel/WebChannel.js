@@ -86,7 +86,7 @@ export default class WebChannel extends Channel {
                 const err = new GrpcServiceError(
                     // retry on grpc web errors
                     GrpcStatus._fromValue(18),
-                    ALL_WEB_NETWORK_NODES[this._address].toString(),
+                    ALL_WEB_NETWORK_NODES?.[this._address].toString(),
                 );
                 callback(err, null);
             }
