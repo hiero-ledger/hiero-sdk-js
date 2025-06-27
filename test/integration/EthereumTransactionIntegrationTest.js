@@ -238,7 +238,7 @@ describe("EthereumTransactionIntegrationTest", function () {
         }
 
         const type = "02";
-        const chainId = hex.decode("012a");
+        const chainId = hex.decode("012a"); // change to 0128 for testnet
         const nonce = new Uint8Array();
         const maxPriorityGas = hex.decode("00");
         const maxGas = hex.decode("d1385c7bf0");
