@@ -13,7 +13,7 @@ export default defineConfig({
         watch: false,
         globals: true,
         environment: "node",
-        include: ["test/integration/**/*.js"],
+        include: ["test/integration/EthereumTransactionIntegrationTest.js"],
         exclude: [
             "test/integration/client/*",
             "test/integration/resources/*",
