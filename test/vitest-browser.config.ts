@@ -4,6 +4,7 @@ export default defineConfig({
         watch: false,
         globals: true,
         browser: {
+            screenshotFailures: false,
             headless: true,
             provider: "playwright",
             enabled: true,
