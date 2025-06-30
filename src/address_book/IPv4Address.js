@@ -103,11 +103,11 @@ export default class IPv4Address {
         }
 
         const network = new IPv4AddressPart()
-            .setLeft(parseInt(parts[0], 10))
-            .setRight(parseInt(parts[1], 10));
+            .setLeft(Number(parts[0]))
+            .setRight(Number(parts[1]));
         const host = new IPv4AddressPart()
-            .setLeft(parseInt(parts[2], 10))
-            .setRight(parseInt(parts[3], 10));
+            .setLeft(Number(parts[2]))
+            .setRight(Number(parts[3]));
 
         return new IPv4Address({ network, host });
     }
