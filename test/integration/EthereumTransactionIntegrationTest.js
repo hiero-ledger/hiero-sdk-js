@@ -12,6 +12,7 @@ import {
     ContractId,
     Status,
     TransactionRecord,
+    MirrorNodeContractEstimateQuery,
 } from "../../src/exports.js";
 import {
     SMART_CONTRACT_BYTECODE,
@@ -195,60 +196,70 @@ describe("EthereumTransactionIntegrationTest", function () {
         ).to.be.equal(1);
     });
 
-    it.only("Jumbo transaction", async function () {
-        try {
-            const fileResponse = await (
-                await (
-                    await new FileCreateTransaction()
-                        .setKeys([wallet.getAccountKey()])
-                        .setContents(SMART_CONTRACT_BYTECODE_JUMBO)
-                        .setMaxTransactionFee(new Hbar(2))
-                        .freezeWithSigner(wallet)
-                ).signWithSigner(wallet)
-            ).executeWithSigner(wallet);
-            expect(fileResponse).to.be.instanceof(TransactionResponse);
+    it("Jumbo transaction", async function () {
+        const fileResponse = await (
+            await (
+                await new FileCreateTransaction()
+                    .setKeys([wallet.getAccountKey()])
+                    .setContents(SMART_CONTRACT_BYTECODE_JUMBO)
+                    .setMaxTransactionFee(new Hbar(2))
+                    .freezeWithSigner(wallet)
+            ).signWithSigner(wallet)
+        ).executeWithSigner(wallet);
+        expect(fileResponse).to.be.instanceof(TransactionResponse);
 
-            const fileReceipt = await fileResponse.getReceiptWithSigner(wallet);
-            expect(fileReceipt).to.be.instanceof(TransactionReceipt);
-            expect(fileReceipt.status).to.be.equal(Status.Success);
-            const fileId = fileReceipt.fileId;
-            expect(fileId).to.be.instanceof(FileId);
+        const fileReceipt = await fileResponse.getReceiptWithSigner(wallet);
+        expect(fileReceipt).to.be.instanceof(TransactionReceipt);
+        expect(fileReceipt.status).to.be.equal(Status.Success);
+        const fileId = fileReceipt.fileId;
+        expect(fileId).to.be.instanceof(FileId);
 
-            const contractResponse = await (
-                await (
-                    await new ContractCreateTransaction()
-                        .setAdminKey(operatorKey)
-                        .setGas(300_000)
-                        .setBytecodeFileId(fileId)
-                        .setContractMemo("[e2e::ContractCreateTransaction]")
-                        .freezeWithSigner(wallet)
-                ).signWithSigner(wallet)
-            ).executeWithSigner(wallet);
+        const contractResponse = await (
+            await (
+                await new ContractCreateTransaction()
+                    .setAdminKey(operatorKey)
+                    .setGas(300_000)
+                    .setBytecodeFileId(fileId)
+                    .setContractMemo("[e2e::ContractCreateTransaction]")
+                    .freezeWithSigner(wallet)
+            ).signWithSigner(wallet)
+        ).executeWithSigner(wallet);
 
-            expect(contractResponse).to.be.instanceof(TransactionResponse);
-            const contractReceipt =
-                await contractResponse.getReceiptWithSigner(wallet);
-            expect(contractReceipt).to.be.instanceof(TransactionReceipt);
-            expect(contractReceipt.status).to.be.equal(Status.Success);
-            const contractId = contractReceipt.contractId;
-            expect(contractId).to.be.instanceof(ContractId);
-            contractAddress = contractId.toSolidityAddress();
-        } catch (error) {
-            console.error(error);
-        }
+        expect(contractResponse).to.be.instanceof(TransactionResponse);
+        const contractReceipt =
+            await contractResponse.getReceiptWithSigner(wallet);
+        expect(contractReceipt).to.be.instanceof(TransactionReceipt);
+        expect(contractReceipt.status).to.be.equal(Status.Success);
+        const contractId = contractReceipt.contractId;
+        expect(contractId).to.be.instanceof(ContractId);
+        contractAddress = contractId.toSolidityAddress();
 
-        const type = "02";
+        const contractEstime = await new MirrorNodeContractEstimateQuery()
+            .setFunction(
+                "test",
+                new ContractFunctionParameters().addBytes(
+                    new Uint8Array(1024 * 127).fill(1),
+                ),
+            )
+            .setContractId(contractId)
+            .execute(env.client);
+
+        const type = "02"; // 02 e tip eip1i
         const chainId = hex.decode("012a"); // change to 0128 for testnet
         const nonce = new Uint8Array();
         const maxPriorityGas = hex.decode("00");
         const maxGas = hex.decode("d1385c7bf0");
-        const gasLimit = hex.decode("3567E0");
+        const gasLimit = hex.decode(contractEstime.toString(16));
         const value = new Uint8Array();
         const to = hex.decode(contractAddress);
-        const largeData = new Uint8Array(1024 * 10);
+        // THIS IS THE MAXIMUM CALL DATA ITS POSSIBLE TO SEND TO THE CONTRACT
+        // without the transaction being rejected by the network
+        // for being oversize
+        const MAXIMUM_CALL_DATA = 1024 * 127 + 928;
+        const largeData = new Uint8Array(MAXIMUM_CALL_DATA).fill(1);
         const callData = new ContractFunctionParameters()
             .addBytes(largeData)
-            ._build("consumeLargeCalldata");
+            ._build("test");
         const accessList = [];
 
         const encoded = rlp
@@ -272,8 +283,8 @@ describe("EthereumTransactionIntegrationTest", function () {
         const accountAlias = privateKey.publicKey.toEvmAddress();
 
         const transfer = await new TransferTransaction()
-            .addHbarTransfer(operatorId, new Hbar(10).negated())
-            .addHbarTransfer(accountAlias, new Hbar(10))
+            .addHbarTransfer(operatorId, new Hbar(1000).negated())
+            .addHbarTransfer(accountAlias, new Hbar(1000))
             .setMaxTransactionFee(new Hbar(1))
             .freezeWithSigner(wallet);
 
