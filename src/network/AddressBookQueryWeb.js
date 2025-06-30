@@ -128,12 +128,6 @@ export default class AddressBookQueryWeb extends Query {
 
         /** @type {NodeAddress[]} */
         this._addresses = [];
-
-        /**
-         * @private
-         * @type {number}
-         */
-        this._attempt = 0;
     }
 
     /**
@@ -239,101 +233,95 @@ export default class AddressBookQueryWeb extends Query {
         if (this._limit != null) {
             url.searchParams.append("limit", this._limit.toString());
         }
-        try {
-            // eslint-disable-next-line n/no-unsupported-features/node-builtins
-            const response = await fetch(url.toString(), {
-                method: "GET",
-                headers: {
-                    Accept: "application/json",
-                },
-                signal: requestTimeout
-                    ? AbortSignal.timeout(requestTimeout)
-                    : undefined,
-            });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
+        for (let attempt = 0; attempt <= this._maxAttempts; attempt++) {
+            try {
+                // eslint-disable-next-line n/no-unsupported-features/node-builtins
+                const response = await fetch(url.toString(), {
+                    method: "GET",
+                    headers: {
+                        Accept: "application/json",
+                    },
+                    signal: requestTimeout
+                        ? AbortSignal.timeout(requestTimeout)
+                        : undefined,
+                });
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const data = /** @type {AddressBookQueryWebResponse} */ (
-                await response.json()
-            );
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
-            const nodes = data.nodes || [];
-
-            this._addresses = nodes.map((node) =>
-                NodeAddress.fromJSON({
-                    nodeId: node.node_id.toString(),
-                    accountId: node.node_account_id,
-                    addresses: this._handleAddressesFromGrpcProxyEndpoint(
-                        node,
-                        client,
-                    ),
-                    certHash: node.node_cert_hash,
-                    publicKey: node.public_key,
-                    description: node.description,
-                    stake: node.stake.toString(),
-                }),
-            );
-
-            const addressBook = new NodeAddressBook({
-                nodeAddresses: this._addresses,
-            });
-
-            resolve(addressBook);
-        } catch (error) {
-            console.error("Error in _makeFetchRequest:", error);
-            const message =
-                error instanceof Error ? error.message : String(error);
-            if (
-                this._attempt < this._maxAttempts &&
-                !client.isClientShutDown &&
-                this._retryHandler(
-                    /** @type {MirrorError | Error | null} */ (error),
-                )
-            ) {
-                const delay = Math.min(
-                    250 * 2 ** this._attempt,
-                    this._maxBackoff,
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                const data = /** @type {AddressBookQueryWebResponse} */ (
+                    await response.json()
                 );
-                if (this._attempt >= this._maxAttempts) {
-                    console.warn(
-                        `Error getting nodes from mirror for file ${
-                            this._fileId != null
-                                ? this._fileId.toString()
-                                : "UNKNOWN"
-                        } during attempt ${
-                            this._attempt
-                        }. Waiting ${delay} ms before next attempt: ${message}`,
+
+                const nodes = data.nodes || [];
+
+                this._addresses = nodes.map((node) =>
+                    NodeAddress.fromJSON({
+                        nodeId: node.node_id.toString(),
+                        accountId: node.node_account_id,
+                        addresses: this._handleAddressesFromGrpcProxyEndpoint(
+                            node,
+                            client,
+                        ),
+                        certHash: node.node_cert_hash,
+                        publicKey: node.public_key,
+                        description: node.description,
+                        stake: node.stake.toString(),
+                    }),
+                );
+
+                const addressBook = new NodeAddressBook({
+                    nodeAddresses: this._addresses,
+                });
+
+                resolve(addressBook);
+                return;
+            } catch (error) {
+                console.error("Error in _makeFetchRequest:", error);
+                const message =
+                    error instanceof Error ? error.message : String(error);
+
+                // Check if we should retry
+                if (
+                    attempt < this._maxAttempts &&
+                    !client.isClientShutDown &&
+                    this._retryHandler(
+                        /** @type {MirrorError | Error | null} */ (error),
+                    )
+                ) {
+                    const delay = Math.min(
+                        250 * 2 ** attempt,
+                        this._maxBackoff,
                     );
-                }
-                if (this._logger) {
-                    this._logger.debug(
-                        `Error getting nodes from mirror for file ${
-                            this._fileId != null
-                                ? this._fileId.toString()
-                                : "UNKNOWN"
-                        } during attempt ${
-                            this._attempt
-                        }. Waiting ${delay} ms before next attempt: ${message}`,
-                    );
+
+                    if (this._logger) {
+                        this._logger.debug(
+                            `Error getting nodes from mirror for file ${
+                                this._fileId != null
+                                    ? this._fileId.toString()
+                                    : "UNKNOWN"
+                            } during attempt ${
+                                attempt + 1
+                            }. Waiting ${delay} ms before next attempt: ${message}`,
+                        );
+                    }
+
+                    // Wait before next attempt
+                    await new Promise((resolve) => setTimeout(resolve, delay));
+                    continue;
                 }
 
-                this._attempt += 1;
-
-                setTimeout(() => {
-                    void this._makeFetchRequest(
-                        client,
-                        resolve,
-                        reject,
-                        requestTimeout,
-                    );
-                }, delay);
-            } else {
+                // If we shouldn't retry or have exhausted attempts, reject
                 reject(new Error("failed to query address book"));
+                return;
             }
         }
+
+        // This should never be reached, but just in case
+        reject(new Error("failed to query address book"));
     }
 
     /**
