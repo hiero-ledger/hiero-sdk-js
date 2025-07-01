@@ -121,7 +121,7 @@
         "playwright": "^1.51.1",
         "prettier": "^3.0.3",
         "rollup": "^4.34.8",
-        "sinon": "^20.0.0",
+        "sinon": "^21.0.0",
         "typedoc": "^0.28.1",
         "typescript": "^5.7.2",
         "vite": "^6.1.6",
