@@ -3,6 +3,8 @@
 import * as entity_id from "../EntityIdHelper.js";
 import * as HieroProto from "@hashgraph/proto";
 import Long from "long";
+import EvmAddress from "../EvmAddress.js";
+import * as util from "../util.js";
 
 /**
  * @typedef {import("../client/Client.js").default<*, *>} Client
@@ -122,6 +124,7 @@ export default class FileId {
 
     /**
      * @param {string} address
+     * @deprecated - Use `fromEvmAddress` instead
      * @returns {FileId}
      */
     static fromSolidityAddress(address) {
@@ -130,10 +133,42 @@ export default class FileId {
     }
 
     /**
+     * @param {number} shard
+     * @param {number} realm
+     * @param {string} address
+     * @returns {FileId}
+     */
+    static fromEvmAddress(shard, realm, address) {
+        const addressBytes = EvmAddress.fromString(address).toBytes();
+        const isLongZero = util.isLongZeroAddress(addressBytes);
+
+        if (!isLongZero) {
+            throw new Error(
+                "FileId.fromEvmAddress does not support non-long-zero addresses",
+            );
+        }
+
+        const [shardLong, realmLong, fileLong] = entity_id.fromEvmAddress(
+            shard,
+            realm,
+            address,
+        );
+        return new FileId(shardLong, realmLong, fileLong);
+    }
+
+    /**
+     * @deprecated - Use `toEvmAddress` instead
      * @returns {string} solidity address
      */
     toSolidityAddress() {
         return entity_id.toSolidityAddress([this.shard, this.realm, this.num]);
+    }
+
+    /**
+     * @returns {string}
+     */
+    toEvmAddress() {
+        return entity_id.toEvmAddress(null, this.num);
     }
 
     /**
