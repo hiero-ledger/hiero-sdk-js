@@ -512,4 +512,126 @@ describe("AccountId", function () {
             }
         });
     });
+
+    // New tests for EVM address requirements
+    describe("fromEvmAddress()", function () {
+        it("should correctly handle fromEvmAddress with non-zero shard/realm and long-zero address", function () {
+            // Given a call to fromEvmAddress(1, 1, longZeroAddress)
+            const longZeroAddress = "00000000000000000000000000000000000004d2"; // 1234 in hex
+
+            // When the EVM address contains only the entity number
+            const accountId = AccountId.fromEvmAddress(1, 1, longZeroAddress);
+
+            // Then the resulting entity ID is correctly returned
+            expect(accountId.toString()).to.equal("1.1.1234");
+            expect(accountId.shard.toNumber()).to.equal(1);
+            expect(accountId.realm.toNumber()).to.equal(1);
+            expect(accountId.num.toNumber()).to.equal(1234);
+        });
+
+        it("should correctly handle fromEvmAddress(0, 0, non-long-zero evm address)", function () {
+            // Given a call to fromEvmAddress(0, 0, evmAddress)
+            const nonLongZeroAddress =
+                "742d35cc6634c0532925a3b844bc454e4438f44e";
+
+            // When the EVM address is non long zero evm address
+            const accountId = AccountId.fromEvmAddress(
+                0,
+                0,
+                nonLongZeroAddress,
+            );
+
+            // Then the resulting entity ID is correctly returned
+            expect(accountId.toString()).to.equal(
+                "0.0.742d35cc6634c0532925a3b844bc454e4438f44e",
+            );
+            expect(accountId.shard.toNumber()).to.equal(0);
+            expect(accountId.realm.toNumber()).to.equal(0);
+            expect(accountId.num.toNumber()).to.equal(0);
+            expect(accountId.evmAddress).to.not.be.null;
+        });
+
+        it("should respect non-zero shard and realm values in fromEvmAddress", function () {
+            // Given a call to fromEvmAddress(shard, realm, evmAddress) with non-zero values
+            const evmAddress = "742d35cc6634c0532925a3b844bc454e4438f44e";
+
+            // When non-zero shard and realm values are passed
+            const accountId = AccountId.fromEvmAddress(5, 10, evmAddress);
+
+            // Then the method must respect those values
+            expect(accountId.toString()).to.equal(
+                "5.10.742d35cc6634c0532925a3b844bc454e4438f44e",
+            );
+            expect(accountId.shard.toNumber()).to.equal(5);
+            expect(accountId.realm.toNumber()).to.equal(10);
+        });
+
+        it("should handle fromEvmAddress with long-zero address and non-zero shard/realm", function () {
+            // Test that fromEvmAddress correctly extracts the num from long-zero address
+            const longZeroAddress = "00000000000000000000000000000000000004d2"; // 1234
+            const accountId = AccountId.fromEvmAddress(3, 7, longZeroAddress);
+
+            expect(accountId.shard.toNumber()).to.equal(3);
+            expect(accountId.realm.toNumber()).to.equal(7);
+            expect(accountId.num.toNumber()).to.equal(1234);
+            expect(accountId.evmAddress).to.be.null; // Should be null for long-zero addresses
+        });
+
+        it("should handle fromEvmAddress with non-long-zero address and non-zero shard/realm", function () {
+            // Test that fromEvmAddress correctly handles non-long-zero addresses
+            const nonLongZeroAddress =
+                "742d35cc6634c0532925a3b844bc454e4438f44e";
+            const accountId = AccountId.fromEvmAddress(
+                3,
+                7,
+                nonLongZeroAddress,
+            );
+
+            expect(accountId.shard.toNumber()).to.equal(3);
+            expect(accountId.realm.toNumber()).to.equal(7);
+            expect(accountId.num.toNumber()).to.equal(0); // Should be 0 for non-long-zero addresses
+            expect(accountId.evmAddress).to.not.be.null; // Should have the EVM address
+        });
+    });
+
+    describe("toEvmAddress()", function () {
+        it("should encode only entity number for non-zero shard/realm when no EVM address", function () {
+            // Given an entity ID with non-zero shard and realm
+            const accountId = new AccountId(1, 2, 1234);
+
+            // When toEvmAddress() is called
+            const evmAddress = accountId.toEvmAddress();
+
+            // Then the resulting EVM address encodes only the entity number
+            // Should be a long-zero address with only the num in the last 8 bytes
+            expect(evmAddress).to.equal(
+                "00000000000000000000000000000000000004d2",
+            );
+        });
+
+        it("should maintain backward compatibility for shard=0, realm=0", function () {
+            // Given an entity ID with shard and realm both set to 0
+            const accountId = new AccountId(0, 0, 1234);
+
+            // When toEvmAddress() is called
+            const evmAddress = accountId.toEvmAddress();
+
+            // Then the resulting EVM address should be unchanged (backward compatibility)
+            expect(evmAddress).to.equal(
+                "00000000000000000000000000000000000004d2",
+            );
+        });
+
+        it("should return EVM address for entity ID with non-zero shard/realm and EVM address", function () {
+            // Given an entity ID with non-zero shard and realm with an evm address
+            const evmAddress = "742d35cc6634c0532925a3b844bc454e4438f44e";
+            const accountId = AccountId.fromEvmAddress(1, 2, evmAddress);
+
+            // When toEvmAddress() is called
+            const result = accountId.toEvmAddress();
+
+            // Then the resulting EVM address is the evm address
+            expect(result).to.equal(evmAddress);
+        });
+    });
 });
