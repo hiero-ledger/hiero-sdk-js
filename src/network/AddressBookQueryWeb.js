@@ -81,6 +81,7 @@ export default class AddressBookQueryWeb extends Query {
 
         /**
          * @private
+         * Page limit for the query
          * @type {?number}
          */
         this._limit = null;
@@ -151,6 +152,7 @@ export default class AddressBookQueryWeb extends Query {
     }
 
     /**
+     * Page limit for the query
      * @returns {?number}
      */
     get limit() {
@@ -158,6 +160,7 @@ export default class AddressBookQueryWeb extends Query {
     }
 
     /**
+     * Set the page limit for the query
      * @param {number} limit
      * @returns {AddressBookQueryWeb}
      */
@@ -315,7 +318,11 @@ export default class AddressBookQueryWeb extends Query {
                 }
 
                 // If we shouldn't retry or have exhausted attempts, reject
-                reject(new Error("failed to query address book"));
+                const maxAttemptsReached = attempt >= this._maxAttempts;
+                const errorMessage = maxAttemptsReached
+                    ? `Failed to query address book after ${this._maxAttempts + 1} attempts. Last error: ${message}`
+                    : `Failed to query address book: ${message}`;
+                reject(new Error(errorMessage));
                 return;
             }
         }
