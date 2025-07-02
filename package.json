@@ -22,7 +22,7 @@
         "./package.json": "./package.json",
         ".": {
             "types": "./lib/index.d.ts",
-            "import": "./lib/browser.js",
+            "import": "./lib/index.js",
             "require": "./lib/index.cjs"
         }
     },
