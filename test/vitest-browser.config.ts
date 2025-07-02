@@ -13,7 +13,7 @@ export default defineConfig({
         include: ["test/unit/**/*.js"],
         exclude: ["test/unit/Mocker.js", "test/unit/node/*"],
         retry: 1,
-        maxWorkers: 8,
+        maxWorkers: 4,
         fileParallelism: true,
         isolate: true,
         coverage: {
