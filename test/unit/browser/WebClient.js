@@ -1556,5 +1556,160 @@ describe("WebClient", function () {
             expect(initialEntries).not.toEqual(updatedEntries);
             expect(updatedEntries.size).toBe(0);
         });
+
+        it("should include only nodes with valid grpc_proxy_endpoint when mirror response has mixed null and valid endpoints", async function () {
+            const initialCustomNetwork = {
+                "custom-node-1.example.com:443": new AccountId(1, 1, 3),
+                "custom-node-2.example.com:443": new AccountId(1, 1, 4),
+            };
+
+            const client = Client.forNetwork(initialCustomNetwork);
+
+            client.setMirrorNetwork(["custom-mirror.example.com:5551"]);
+
+            const initialNetwork = { ...client.network };
+
+            const customMirrorResponse = {
+                nodes: [
+                    {
+                        admin_key: {
+                            key: "sample-key-5",
+                            _type: "ED25519",
+                        },
+                        decline_reward: false,
+                        grpc_proxy_endpoint: null, // Null grpc_proxy_endpoint
+                        file_id: "file-id-5",
+                        memo: "New Node 5",
+                        public_key: "public-key-5",
+                        node_id: 5,
+                        node_account_id: "1.1.5",
+                        node_cert_hash: "cert-hash-5",
+                        address: "127.0.0.1",
+                        service_endpoints: [],
+                        description: "New Node 5",
+                        stake: 0,
+                    },
+                    {
+                        admin_key: {
+                            key: "sample-key-6",
+                            _type: "ED25519",
+                        },
+                        decline_reward: false,
+                        grpc_proxy_endpoint: {
+                            domain_name: "valid-node-1.example.com",
+                            port: "443",
+                        },
+                        file_id: "file-id-6",
+                        memo: "New Node 6",
+                        public_key: "public-key-6",
+                        node_id: 6,
+                        node_account_id: "1.1.6",
+                        node_cert_hash: "cert-hash-6",
+                        address: "127.0.0.1",
+                        service_endpoints: [],
+                        description: "New Node 6",
+                        stake: 0,
+                    },
+                    {
+                        admin_key: {
+                            key: "sample-key-7",
+                            _type: "ED25519",
+                        },
+                        decline_reward: false,
+                        grpc_proxy_endpoint: {
+                            domain_name: "valid-node-2.example.com",
+                            port: "443",
+                        },
+                        file_id: "file-id-7",
+                        memo: "New Node 7",
+                        public_key: "public-key-7",
+                        node_id: 7,
+                        node_account_id: "1.1.7",
+                        node_cert_hash: "cert-hash-7",
+                        address: "127.0.0.1",
+                        service_endpoints: [],
+                        description: "New Node 7",
+                        stake: 0,
+                    },
+                    {
+                        admin_key: {
+                            key: "sample-key-8",
+                            _type: "ED25519",
+                        },
+                        decline_reward: false,
+                        grpc_proxy_endpoint: null, // Another null grpc_proxy_endpoint
+                        file_id: "file-id-8",
+                        memo: "New Node 8",
+                        public_key: "public-key-8",
+                        node_id: 8,
+                        node_account_id: "1.1.8",
+                        node_cert_hash: "cert-hash-8",
+                        address: "127.0.0.1",
+                        service_endpoints: [],
+                        description: "New Node 8",
+                        stake: 0,
+                    },
+                ],
+            };
+
+            server.use(
+                http.get(
+                    "https://custom-mirror.example.com:5551/api/v1/network/nodes",
+                    ({ request }) => {
+                        const url = new URL(request.url);
+                        const fileId = url.searchParams.get("file.id");
+
+                        if (
+                            fileId ===
+                            FileId.getAddressBookFileIdFor(
+                                client.shard,
+                                client.realm,
+                            ).toString()
+                        ) {
+                            return HttpResponse.json(customMirrorResponse);
+                        }
+
+                        return HttpResponse.json({ nodes: [] });
+                    },
+                ),
+            );
+
+            await client.updateNetwork();
+
+            const updatedNetwork = client.network;
+
+            const initialEntries = createNetworkAddressNodeSet(initialNetwork);
+            const updatedEntries = createNetworkAddressNodeSet(updatedNetwork);
+
+            // Networks should be different since we got new nodes from the mirror
+            expect(initialEntries).not.toEqual(updatedEntries);
+
+            // Should have only the nodes with valid grpc_proxy_endpoint
+            expect(updatedEntries).toContain(
+                "valid-node-1.example.com:443:1.1.6",
+            );
+            expect(updatedEntries).toContain(
+                "valid-node-2.example.com:443:1.1.7",
+            );
+
+            // Should not have nodes with null grpc_proxy_endpoint
+            expect(updatedEntries).not.toContain(
+                "1.1.5", // Node 5 has null grpc_proxy_endpoint
+            );
+            expect(updatedEntries).not.toContain(
+                "1.1.8", // Node 8 has null grpc_proxy_endpoint
+            );
+
+            // Should not have the original nodes
+            expect(updatedEntries).not.toContain(
+                "custom-node-1.example.com:443:1.1.3",
+            );
+            expect(updatedEntries).not.toContain(
+                "custom-node-2.example.com:443:1.1.4",
+            );
+
+            // Should have exactly 2 nodes (only the valid ones)
+            expect(updatedEntries.size).toBe(2);
+        });
     });
 });
