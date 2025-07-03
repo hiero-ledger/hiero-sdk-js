@@ -167,4 +167,9 @@ const overviewLinks = [
         title: "Transaction Size",
         description: "Get transaction size",
     },
+    {
+        href: "/transaction/jumbo",
+        title: "Jumbo Tx",
+        description: "Execute a large transaction.",
+    },
 ];

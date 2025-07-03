@@ -98,7 +98,7 @@ describe("EthereumFlowMocking", function () {
 
     it("extracts the calldata if it's too large", async function () {
         const decoded = rlp.decode(bytes);
-        const longCallData = "0x" + "00".repeat(5121);
+        const longCallData = "0x" + "00".repeat(133121);
         decoded[5] = longCallData;
         const encoded = hex.decode(rlp.encode(decoded));
         decoded[5] = "0x";
@@ -158,10 +158,9 @@ describe("EthereumFlowMocking", function () {
                 // Yes, you need 4 receipt responses here. One happens in
                 // `FileAppendTransaction.executeAll()` in a loop, and the next
                 // is for `TransactionResponse.getReceipt()`
-                { response: TRANSACTION_RECEIPT_SUCCESS_RESPONSE },
-                { response: TRANSACTION_RECEIPT_SUCCESS_RESPONSE },
-                { response: TRANSACTION_RECEIPT_SUCCESS_RESPONSE },
-                { response: TRANSACTION_RECEIPT_SUCCESS_RESPONSE },
+                ...Array(130).fill({
+                    response: TRANSACTION_RECEIPT_SUCCESS_RESPONSE,
+                }),
                 {
                     call: (request) => {
                         const transactionBody = proto.TransactionBody.decode(
@@ -189,7 +188,10 @@ describe("EthereumFlowMocking", function () {
         ]));
 
         await (
-            await new EthereumFlow().setEthereumData(encoded).execute(client)
+            await new EthereumFlow()
+                .setEthereumData(encoded)
+                .setMaxChunks(131)
+                .execute(client)
         ).getReceipt(client);
     });
 
@@ -346,7 +348,7 @@ describe("EthereumFlowMocking", function () {
 
     it("extracts the calldata if it's too large and deploy it by the right amount of chunks", async function () {
         const decoded = rlp.decode(bytes);
-        const longCallData = "0x" + "00".repeat(7000);
+        const longCallData = "0x" + "00".repeat(133121);
         decoded[5] = longCallData;
         const encoded = hex.decode(rlp.encode(decoded));
         decoded[5] = "0x";
@@ -363,6 +365,7 @@ describe("EthereumFlowMocking", function () {
                         );
 
                         const fileCreate = transactionBody.fileCreate;
+
                         expect(
                             `0x${fileCreate.contents.toString()}`,
                         ).to.deep.equal(
@@ -450,13 +453,9 @@ describe("EthereumFlowMocking", function () {
                 // Yes, you need 4 receipt responses here. One happens in
                 // `FileAppendTransaction.executeAll()` in a loop, and the next
                 // is for `TransactionResponse.getReceipt()`
-                { response: TRANSACTION_RECEIPT_SUCCESS_RESPONSE },
-                { response: TRANSACTION_RECEIPT_SUCCESS_RESPONSE },
-                { response: TRANSACTION_RECEIPT_SUCCESS_RESPONSE },
-                { response: TRANSACTION_RECEIPT_SUCCESS_RESPONSE },
-                { response: TRANSACTION_RECEIPT_SUCCESS_RESPONSE },
-                { response: TRANSACTION_RECEIPT_SUCCESS_RESPONSE },
-                { response: TRANSACTION_RECEIPT_SUCCESS_RESPONSE },
+                ...Array(130).fill({
+                    response: TRANSACTION_RECEIPT_SUCCESS_RESPONSE,
+                }),
                 {
                     call: (request) => {
                         const transactionBody = proto.TransactionBody.decode(
@@ -486,7 +485,7 @@ describe("EthereumFlowMocking", function () {
         await (
             await new EthereumFlow()
                 .setEthereumData(encoded)
-                .setMaxChunks(3)
+                .setMaxChunks(131)
                 .execute(client)
         ).getReceipt(client);
     });
