@@ -85,6 +85,40 @@ export default function RootLayout({ children }) {
                                     </ul>
                                 </NavigationMenu.Content>
                             </NavigationMenu.Item>
+                            <NavigationMenu.Item>
+                                <NavigationMenu.Trigger
+                                    className={styles.Trigger}
+                                >
+                                    Client
+                                    <NavigationMenu.Icon
+                                        className={styles.Icon}
+                                    >
+                                        <ChevronDownIcon />
+                                    </NavigationMenu.Icon>
+                                </NavigationMenu.Trigger>
+                                <NavigationMenu.Content
+                                    className={styles.Content}
+                                >
+                                    <ul className={styles.GridLinkList}>
+                                        {clientLinks.map((item) => (
+                                            <li key={item.href}>
+                                                <Link
+                                                    className={styles.LinkCard}
+                                                    href={item.href}
+                                                >
+                                                    <h3
+                                                        className={
+                                                            styles.LinkTitle
+                                                        }
+                                                    >
+                                                        {item.title}
+                                                    </h3>
+                                                </Link>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </NavigationMenu.Content>
+                            </NavigationMenu.Item>
                         </NavigationMenu.List>
                         <NavigationMenu.Portal>
                             <NavigationMenu.Positioner
@@ -166,5 +200,13 @@ const overviewLinks = [
         href: "/transaction/size",
         title: "Transaction Size",
         description: "Get transaction size",
+    },
+];
+
+const clientLinks = [
+    {
+        href: "/client/grpc-web-proxy",
+        title: "Dynamic GRPC Web Proxy",
+        description: "GRPC Web Proxy with dynamic network update",
     },
 ];
