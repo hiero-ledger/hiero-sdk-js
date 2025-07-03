@@ -33,6 +33,7 @@ import * as hex from "./encoding/hex.js";
 
 /**
  * Create a new Hedera™ transaction wrapped ethereum transaction.
+ * @deprecated - The implementation of Jumbo Transactions made this flow obsolete.
  */
 export default class EthereumFlow {
     /**
