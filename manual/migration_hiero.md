@@ -6,7 +6,7 @@ This document provides a comprehensive guide for migrating from the `@hashgraph/
 
 ## What's Changing
 
-The package name is being updated from `@hashgraph/sdk` to `@hiero/sdk` to reflect the new organization ownership. The functionality, API, and features remain exactly the same - only the package name and import statements need to be updated.
+The package name is being updated from `@hashgraph/sdk` to `@hiero/sdk` to reflect the new organization ownership. The functionality, API, features and codebase remain exactly the same - only the package name and import statements need to be updated.
 
 ## Migration Steps
 
