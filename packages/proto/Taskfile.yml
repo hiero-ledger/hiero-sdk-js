@@ -19,7 +19,7 @@ tasks:
 
     install:submodules:
         vars:
-            stag: "v0.62.3"
+            stag: "v0.63.7"
         cmds:
             - git submodule update --init --recursive --remote
             - |

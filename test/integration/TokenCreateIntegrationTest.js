@@ -1,10 +1,13 @@
 import {
+    Hbar,
     PrivateKey,
     Status,
     Timestamp,
     TokenCreateTransaction,
     TokenDeleteTransaction,
     TokenInfoQuery,
+    TokenSupplyType,
+    TokenType,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { DEFAULT_AUTO_RENEW_PERIOD } from "../../src/transaction/Transaction.js";
@@ -285,6 +288,30 @@ describe("TokenCreate", function () {
         if (!err) {
             throw new Error("token creation did not error");
         }
+    });
+
+    it("should create a token when autoRenewPeriod is null", async function () {
+        let tokenTransaction = new TokenCreateTransaction()
+            .setTokenName("TEST")
+            .setTokenSymbol("TEST")
+            .setTokenType(TokenType.FungibleCommon)
+            .setSupplyType(TokenSupplyType.Infinite)
+            .setAutoRenewAccountId(env.operatorId)
+            .setInitialSupply(1)
+            .setMaxTransactionFee(new Hbar(100))
+            .setTreasuryAccountId(env.operatorId)
+            .setExpirationTime(
+                new Timestamp(
+                    Math.floor(Date.now() / 1000 + 90 * 24 * 60 * 60),
+                    0,
+                ),
+            )
+            .setDecimals(0);
+
+        let tx = await tokenTransaction.execute(env.client);
+        let receipt = await tx.getReceipt(env.client);
+
+        expect(receipt.status.toString()).to.eql(Status.Success.toString());
     });
 
     afterAll(async function () {
