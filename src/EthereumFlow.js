@@ -181,9 +181,9 @@ export default class EthereumFlow {
             ethereumTransaction
                 .setEthereumData(ethereumTransactionDataBytes)
                 .setCallDataFileId(this._callDataFileId);
-            // in the consensus node config file, the maximum size of the call data file is 133120 bytes
-            // so we need to check if the call data is less than or equal to 133120 bytes
-        } else if (ethereumTransactionDataBytes.length <= 133120) {
+            // in the consensus node config file, the maximum size of the call data file is 128000 bytes
+            // so we need to check if the call data is less than or equal to 128000 bytes
+        } else if (ethereumTransactionDataBytes.length <= 128000) {
             ethereumTransaction.setEthereumData(ethereumTransactionDataBytes);
         } else {
             const fileId = await createFile(
