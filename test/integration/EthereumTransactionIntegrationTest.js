@@ -244,7 +244,7 @@ describe("EthereumTransactionIntegrationTest", function () {
             .setContractId(contractId)
             .execute(env.client);
 
-        const type = "02"; // 02 e tip eip1i
+        const type = "02";
         const chainId = hex.decode("012a"); // change to 0128 for testnet
         const nonce = new Uint8Array();
         const maxPriorityGas = hex.decode("00");
