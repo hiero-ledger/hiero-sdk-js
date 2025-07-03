@@ -20,9 +20,6 @@ import * as hex from "../../src/encoding/hex.js";
 import { setTimeout } from "timers/promises";
 
 /**
- * @summary E2E-HIP-844
- * @url https://hips.hedera.com/hip/hip-844
- *
  * @description
  * Integration test for EthereumFlow class.
  * Note: EthereumFlow is deprecated in favor of EthereumTransaction.
