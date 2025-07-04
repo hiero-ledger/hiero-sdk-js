@@ -88,8 +88,8 @@ jobs:
       - name: "Create env file"
         run: |
           touch .env
-          echo OPERATOR_KEY="0xa608e2130a0a3cb34f86e757303c862bee353d9ab77ba4387ec084f881d420d4" >> .env
-          echo OPERATOR_ID="0.0.1022" >> .env
+          echo OPERATOR_KEY="302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137" >> .env
+          echo OPERATOR_ID="0.0.2" >> .env
           echo HEDERA_NETWORK="local-node" >> .env
           cat .env
 
@@ -109,13 +109,12 @@ jobs:
         id: build-sdk
         run: task build
 
-      - name: Start the local node
-        id: start-local-node
-        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
-        run: |
-          ${{ env.CG_EXEC }} npx @hashgraph/hedera-local start -d -—network local --balance=100000 --network-tag=0.62.3
-          # Wait for the network to fully start
-          sleep 30
+      - name: Prepare Hiero Solo
+        id: solo
+        uses: hiero-ledger/hiero-solo-action@71219540ac7f578e6ea4fc3c17575c0295e56163 # v0.7
+        with:
+          installMirrorNode: true
+          hieroVersion: v0.62.3
 
       - name: Run Hedera SDK Integration Tests
         if: ${{ steps.build-sdk.conclusion == 'success' && steps.start-local-node.conclusion == 'success' && !cancelled() && always() }}
@@ -127,11 +126,6 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/lcov.info
           fail_ci_if_error: false
-
-      - name: Stop the local node
-        id: stop-local-node
-        if: ${{ steps.start-local-node.conclusion == 'success' && !cancelled() && always() }}
-        run: ${{ env.CG_EXEC }} npx @hashgraph/hedera-local stop
 
       - name: Build @hashgraph/cryptography
         working-directory: packages/cryptography
@@ -213,21 +207,17 @@ jobs:
         id: build-sdk
         run: task build
 
-      - name: Start the local node
-        id: start-local-node
-        if: ${{ !cancelled() && always() }}
-        run: |
-          ${{ env.CG_EXEC }} npx @hashgraph/hedera-local start -d -—network local --balance=100000 --network-tag=0.62.3
-          sleep 30
+      - name: Prepare Hiero Solo
+        id: solo
+        uses: hiero-ledger/hiero-solo-action@71219540ac7f578e6ea4fc3c17575c0295e56163 # v0.7
+        with:
+          installMirrorNode: true
+          hieroVersion: v0.62.3
 
       - name: Install dependencies
         run: |
           cd examples
           pnpm i
 
-      - name: Run all еxamples
+      - name: Run all examples
         run: task run:examples
-      - name: Stop the local node
-        id: stop-local-node
-        if: ${{ steps.start-local-node.conclusion == 'success' && !cancelled() && always() }}
-        run: ${{ env.CG_EXEC }} npx @hashgraph/hedera-local stop
