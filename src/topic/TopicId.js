@@ -2,6 +2,8 @@
 
 import * as entity_id from "../EntityIdHelper.js";
 import * as HieroProto from "@hashgraph/proto";
+import EvmAddress from "../EvmAddress.js";
+import * as util from "../util.js";
 
 /**
  * @typedef {import("long")} Long
@@ -95,6 +97,7 @@ export default class TopicId {
 
     /**
      * @param {string} address
+     * @deprecated - Use `fromEvmAddress` instead
      * @returns {TopicId}
      */
     static fromSolidityAddress(address) {
@@ -103,10 +106,42 @@ export default class TopicId {
     }
 
     /**
+     * @param {number} shard
+     * @param {number} realm
+     * @param {string} address
+     * @returns {TopicId}
+     */
+    static fromEvmAddress(shard, realm, address) {
+        const addressBytes = EvmAddress.fromString(address).toBytes();
+        const isLongZero = util.isLongZeroAddress(addressBytes);
+
+        if (!isLongZero) {
+            throw new Error(
+                "TopicId.fromEvmAddress does not support non-long-zero addresses",
+            );
+        }
+
+        const [shardLong, realmLong, topicLong] = entity_id.fromEvmAddress(
+            shard,
+            realm,
+            address,
+        );
+        return new TopicId(shardLong, realmLong, topicLong);
+    }
+
+    /**
+     * @deprecated - Use `toEvmAddress` instead
      * @returns {string}
      */
     toSolidityAddress() {
         return entity_id.toSolidityAddress([this.shard, this.realm, this.num]);
+    }
+
+    /**
+     * @returns {string}
+     */
+    toEvmAddress() {
+        return entity_id.toEvmAddress(null, this.num);
     }
 
     /**

@@ -8,6 +8,7 @@ import * as hex from "../encoding/hex.js";
 import { arrayEqual } from "../array.js";
 import Long from "long";
 import { isLongZeroAddress } from "../util.js";
+import EvmAddress from "../EvmAddress.js";
 
 /**
  * @typedef {import("../client/Client.js").default<*, *>} Client
@@ -51,11 +52,15 @@ export default class ContractId extends Key {
      * @returns {ContractId}
      */
     static fromEvmAddress(shard, realm, evmAddress) {
-        if (isLongZeroAddress(hex.decode(evmAddress))) {
-            return new ContractId(...entity_id.fromSolidityAddress(evmAddress));
-        } else {
-            return new ContractId(shard, realm, 0, hex.decode(evmAddress));
-        }
+        const evmAddressObj = EvmAddress.fromString(evmAddress);
+
+        const [shardLong, realmLong, num, address] = entity_id.fromEvmAddress(
+            shard,
+            realm,
+            evmAddressObj.toString(),
+        );
+
+        return new ContractId(shardLong, realmLong, num, address?.toBytes());
     }
 
     /**
@@ -182,6 +187,7 @@ export default class ContractId extends Key {
     }
 
     /**
+     * @deprecated - Use `toEvmAddress` instead
      * @returns {string}
      */
     toSolidityAddress() {
@@ -196,6 +202,12 @@ export default class ContractId extends Key {
         }
     }
 
+    /**
+     * @returns {string}
+     */
+    toEvmAddress() {
+        return entity_id.toEvmAddress(this.evmAddress, this.num);
+    }
     /**
      * @internal
      * @returns {HieroProto.proto.IContractID}

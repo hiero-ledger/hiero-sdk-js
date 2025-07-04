@@ -117,6 +117,94 @@ describe("hex", function () {
         });
     });
 
+    describe("isHexString", function () {
+        it("should return true for valid hex strings without 0x prefix", function () {
+            expect(hex.isHexString("010203")).to.be.true;
+            expect(hex.isHexString("abcdef")).to.be.true;
+            expect(hex.isHexString("ABCDEF")).to.be.true;
+            expect(hex.isHexString("1234567890abcdef")).to.be.true;
+        });
+
+        it("should return true for valid hex strings with 0x prefix", function () {
+            expect(hex.isHexString("0x010203")).to.be.true;
+            expect(hex.isHexString("0xabcdef")).to.be.true;
+            expect(hex.isHexString("0xABCDEF")).to.be.true;
+            expect(hex.isHexString("0x1234567890abcdef")).to.be.true;
+        });
+
+        it("should return true for hex strings with mixed case", function () {
+            expect(hex.isHexString("0aBcDeF0")).to.be.true;
+            expect(hex.isHexString("0x0aBcDeF0")).to.be.true;
+            expect(hex.isHexString("aBcDeF123456")).to.be.true;
+        });
+
+        it("should return true for hex strings with all zeros", function () {
+            expect(hex.isHexString("000000")).to.be.true;
+            expect(hex.isHexString("0x000000")).to.be.true;
+        });
+
+        it("should return true for single byte hex strings", function () {
+            expect(hex.isHexString("00")).to.be.true;
+            expect(hex.isHexString("0x00")).to.be.true;
+            expect(hex.isHexString("ff")).to.be.true;
+            expect(hex.isHexString("0xff")).to.be.true;
+        });
+
+        it("should return false for non-string inputs", function () {
+            expect(hex.isHexString(null)).to.be.false;
+            expect(hex.isHexString(undefined)).to.be.false;
+            expect(hex.isHexString(123)).to.be.false;
+            expect(hex.isHexString({})).to.be.false;
+            expect(hex.isHexString([])).to.be.false;
+            expect(hex.isHexString(true)).to.be.false;
+        });
+
+        it("should return false for empty strings", function () {
+            expect(hex.isHexString("")).to.be.false;
+        });
+
+        it("should return false for strings with only 0x prefix", function () {
+            expect(hex.isHexString("0x")).to.be.false;
+        });
+
+        it("should return false for strings with odd length (after removing 0x)", function () {
+            expect(hex.isHexString("0")).to.be.false;
+            expect(hex.isHexString("123")).to.be.false;
+            expect(hex.isHexString("0x123")).to.be.false;
+            expect(hex.isHexString("abcdef1")).to.be.false;
+        });
+
+        it("should return false for strings with invalid hex characters", function () {
+            expect(hex.isHexString("0g")).to.be.false;
+            expect(hex.isHexString("0x0g")).to.be.false;
+            expect(hex.isHexString("abcdefgh")).to.be.false;
+            expect(hex.isHexString("0xabcdefgh")).to.be.false;
+            expect(hex.isHexString("12 34")).to.be.false;
+            expect(hex.isHexString("12-34")).to.be.false;
+            expect(hex.isHexString("12_34")).to.be.false;
+        });
+
+        it("should return false for strings with spaces", function () {
+            expect(hex.isHexString("01 02 03")).to.be.false;
+            expect(hex.isHexString("0x01 02 03")).to.be.false;
+            expect(hex.isHexString(" 010203")).to.be.false;
+            expect(hex.isHexString("010203 ")).to.be.false;
+        });
+
+        it("should return false for strings with special characters", function () {
+            expect(hex.isHexString("01@02")).to.be.false;
+            expect(hex.isHexString("01#02")).to.be.false;
+            expect(hex.isHexString("01$02")).to.be.false;
+            expect(hex.isHexString("01%02")).to.be.false;
+        });
+
+        it("should return false for strings that start with 0x but have invalid content", function () {
+            expect(hex.isHexString("0x0g")).to.be.false;
+            expect(hex.isHexString("0xabcdefgh")).to.be.false;
+            expect(hex.isHexString("0x12 34")).to.be.false;
+        });
+    });
+
     describe("encode/decode roundtrip", function () {
         it("should roundtrip simple values", function () {
             const original = new Uint8Array([0x01, 0x02, 0x03]);

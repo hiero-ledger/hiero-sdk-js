@@ -299,6 +299,33 @@ export function decode(text) {
 }
 
 /**
+ * Check if a string is a valid hexadecimal string
+ * @param {string} text - The string to check
+ * @returns {boolean} - True if the string is a valid hex string, false otherwise
+ */
+export function isHexString(text) {
+    if (typeof text !== "string") {
+        return false;
+    }
+
+    const str = text.startsWith("0x") ? text.substring(2) : text;
+
+    // Check if the string is empty after removing 0x prefix
+    if (str.length === 0) {
+        return false;
+    }
+
+    // Check if the string has even length (hex pairs)
+    if (str.length % 2 !== 0) {
+        return false;
+    }
+
+    // Check if all characters are valid hex digits
+    const hexRegex = /^[0-9a-fA-F]+$/;
+    return hexRegex.test(str);
+}
+
+/**
  * @param {Uint8Array} data
  * @returns {string}
  */

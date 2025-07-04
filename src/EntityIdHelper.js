@@ -8,6 +8,7 @@ import base32 from "./base32.js";
 import * as HieroProto from "@hashgraph/proto";
 import PublicKey from "./PublicKey.js";
 import { arrayify } from "@ethersproject/bytes";
+import EvmAddress from "./EvmAddress.js";
 
 /**
  * @typedef {import("./client/Client.js").default<*, *>} Client
@@ -225,6 +226,45 @@ export function fromSolidityAddress(address) {
 }
 
 /**
+ * Return the shard, realm, and num from a evm address.
+ *
+ * @param {Long | number} shard
+ * @param {Long | number} realm
+ * @param {string} address
+ * @returns {[Long, Long, Long, EvmAddress | null]}
+ */
+export function fromEvmAddress(shard, realm, address) {
+    if (!hex.isHexString(address)) {
+        throw new Error(`Invalid EVM address hex string: ${address}`);
+    }
+
+    const addr = address.startsWith("0x")
+        ? hex.decode(address.slice(2))
+        : hex.decode(address);
+
+    if (addr.length !== 20) {
+        throw new Error(`Invalid hex encoded evm address length:
+                expected length 20, got length ${address.length}`);
+    }
+
+    let num = Long.ZERO;
+
+    if (util.isLongZeroAddress(addr)) {
+        num = Long.fromBytesBE(Array.from(addr.slice(12, 20)));
+    }
+
+    let shardLong = shard instanceof Long ? shard : Long.fromNumber(shard);
+    let realmLong = realm instanceof Long ? realm : Long.fromNumber(realm);
+
+    return [
+        shardLong,
+        realmLong,
+        num,
+        num.isZero() ? EvmAddress.fromBytes(addr) : null,
+    ];
+}
+
+/**
  * Convert shard, realm, and num into a solidity address.
  *
  * See `fromSolidityAddress()` for more documentation.
@@ -240,6 +280,26 @@ export function toSolidityAddress(address) {
     view.setUint32(0, util.convertToNumber(shard));
     view.setUint32(8, util.convertToNumber(realm));
     view.setUint32(16, util.convertToNumber(num));
+
+    return hex.encode(buffer);
+}
+
+/**
+ * Convert account num into a evm address.
+ *
+ * @param {Uint8Array<ArrayBufferLike> | null} evmAddress
+ * @param {Long} accountNum
+ * @returns {string}
+ */
+export function toEvmAddress(evmAddress, accountNum) {
+    if (evmAddress) {
+        return hex.encode(evmAddress);
+    }
+
+    const buffer = new Uint8Array(20);
+    const view = util.safeView(buffer);
+
+    view.setUint32(16, util.convertToNumber(accountNum));
 
     return hex.encode(buffer);
 }

@@ -2,7 +2,6 @@
 
 import CACHE from "../Cache.js";
 import ContractId from "./ContractId.js";
-import * as hex from "../encoding/hex.js";
 
 /**
  * @namespace {proto}
@@ -28,16 +27,6 @@ export default class DelegateContractId extends ContractId {
      */
     constructor(props, realm, num, evmAddress) {
         super(props, realm, num, evmAddress);
-    }
-
-    /**
-     * @param {Long | number} shard
-     * @param {Long | number} realm
-     * @param {string} evmAddress
-     * @returns {ContractId}
-     */
-    static fromEvmAddress(shard, realm, evmAddress) {
-        return new DelegateContractId(shard, realm, 0, hex.decode(evmAddress));
     }
 
     /**
@@ -67,6 +56,7 @@ export default class DelegateContractId extends ContractId {
 
     /**
      * @param {string} address
+     * @deprecated - Use `fromEvmAddress` instead
      * @returns {DelegateContractId}
      */
     static fromSolidityAddress(address) {

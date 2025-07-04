@@ -96,13 +96,19 @@ export default class AccountId {
                 ? EvmAddress.fromString(evmAddress)
                 : evmAddress;
 
-        if (isLongZeroAddress(evmAddressObj.toBytes())) {
-            return new AccountId(
-                ...entity_id.fromSolidityAddress(evmAddressObj.toString()),
-            );
-        } else {
-            return new AccountId(shard, realm, 0, undefined, evmAddressObj);
-        }
+        const [shardLong, realmLong, num, address] = entity_id.fromEvmAddress(
+            shard,
+            realm,
+            evmAddressObj.toString(),
+        );
+
+        return new AccountId(
+            shardLong,
+            realmLong,
+            num,
+            undefined,
+            address || undefined,
+        );
     }
 
     /**
@@ -279,6 +285,7 @@ export default class AccountId {
 
     /**
      * @description Statically compute the EVM address. Use only with non-native EVM accounts.
+     * @deprecated - Use `toEvmAddress` instead
      * If the account is EVM-native, the EVM address depends on the public key and is not directly related to the account ID.
      * @returns {string}
      */
@@ -297,6 +304,16 @@ export default class AccountId {
                 this.num,
             ]);
         }
+    }
+
+    /**
+     * @returns {string}
+     */
+    toEvmAddress() {
+        return entity_id.toEvmAddress(
+            this.evmAddress?.toBytes() ?? null,
+            this.num,
+        );
     }
 
     //TODO remove the comments after we get to HIP-631
