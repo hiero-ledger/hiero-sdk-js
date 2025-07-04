@@ -344,22 +344,46 @@ jobs:
 
       - name: Publish Proto Release
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_HG_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
+          NPM_HL_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
         working-directory: packages/proto
         if: ${{ needs.validate-release.outputs.proto-publish-required == 'true' && !cancelled() && !failure() }}
-        run: task -v publish -- ${{ steps.proto-publish.outputs.args }}
+        run: |
+          export NPM_TOKEN="${NPM_HG_TOKEN}"
+          task -v publish -- ${{ steps.proto-publish.outputs.args }}
+          cp package.json tmp.package.json
+          jq '.name |= sub("@hashgraph";"@hiero-ledger")' tmp.package.json > package.json
+          export NPM_TOKEN="${NPM_HL_TOKEN}"
+          task -v publish -- ${{ steps.proto-publish.outputs.args }}
+          mv tmp.package.json package.json
 
       - name: Publish Cryptography Release
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_HG_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
+          NPM_HL_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
         working-directory: packages/cryptography
         if: ${{ needs.validate-release.outputs.crypto-publish-required == 'true' && !cancelled() && !failure() }}
-        run: task -v publish -- ${{ steps.crypto-publish.outputs.args }}
+        run: |
+          export NPM_TOKEN="${NPM_HG_TOKEN}"
+          task -v publish -- ${{ steps.crypto-publish.outputs.args }}
+          cp package.json tmp.package.json
+          jq '.name |= sub("@hashgraph";"@hiero-ledger")' tmp.package.json > package.json
+          export NPM_TOKEN="${NPM_HL_TOKEN}"
+          task -v publish -- ${{ steps.crypto-publish.outputs.args }}
+          mv tmp.package.json package.json
 
       - name: Publish SDK Release
         env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: task -v publish -- ${{ steps.sdk-publish.outputs.args }}
+          NPM_HG_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
+          NPM_HL_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
+        run: |
+          export NPM_TOKEN="${NPM_HG_TOKEN}"
+          task -v publish -- ${{ steps.sdk-publish.outputs.args }}
+          cp package.json tmp.package.json
+          jq '.name |= sub("@hashgraph";"@hiero-ledger")' tmp.package.json > package.json
+          export NPM_TOKEN="${NPM_HL_TOKEN}"
+          task -v publish -- ${{ steps.sdk-publish.outputs.args }}
+          mv tmp.package.json package.json
 
       - name: Generate Github Release
         uses: ncipollo/release-action@440c8c1cb0ed28b9f43e4d1d670870f059653174 # v1.16.0
