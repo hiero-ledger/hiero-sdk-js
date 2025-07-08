@@ -228,9 +228,9 @@ describe("TokenAllowances", function () {
             .setFunction(
                 "getAllowance",
                 new ContractFunctionParameters()
-                    .addAddress(tokenId.toSolidityAddress())
-                    .addAddress(env.operatorId.toSolidityAddress())
-                    .addAddress(contractId.toSolidityAddress()),
+                    .addAddress(tokenId.toEvmAddress())
+                    .addAddress(env.operatorId.toEvmAddress())
+                    .addAddress(contractId.toEvmAddress()),
             );
 
         const checkAllowanceTx = await checkAllowance.execute(env.client);

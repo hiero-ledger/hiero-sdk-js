@@ -72,8 +72,8 @@ async function main() {
         const contractHelper = await ContractHelper.init(
             contractBytecode,
             new hashgraph.ContractFunctionParameters()
-                .addAddress(wallet.getAccountId().toSolidityAddress())
-                .addAddress(aliceAccountId.toSolidityAddress()),
+                .addAddress(wallet.getAccountId().toEvmAddress())
+                .addAddress(aliceAccountId.toEvmAddress()),
             wallet,
         );
 

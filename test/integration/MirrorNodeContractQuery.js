@@ -137,7 +137,7 @@ describe("MirrorNodeContractQuery", function () {
 
         const { accountId } = await createAccount(env.client);
 
-        const newOwnerSolidityAddress = accountId.toSolidityAddress();
+        const newOwnerEvmAddress = accountId.toEvmAddress();
 
         await setTimeout(3000);
 
@@ -145,9 +145,7 @@ describe("MirrorNodeContractQuery", function () {
             .setContractId(contractId)
             .setFunction(
                 "addOwnerAndTransfer",
-                new ContractFunctionParameters().addAddress(
-                    newOwnerSolidityAddress,
-                ),
+                new ContractFunctionParameters().addAddress(newOwnerEvmAddress),
             )
             .setSenderEvmAddress(owner)
             .execute(env.client);
@@ -156,9 +154,7 @@ describe("MirrorNodeContractQuery", function () {
             .setContractId(contractId)
             .setFunction(
                 "addOwnerAndTransfer",
-                new ContractFunctionParameters().addAddress(
-                    newOwnerSolidityAddress,
-                ),
+                new ContractFunctionParameters().addAddress(newOwnerEvmAddress),
             )
             .setGas(gas)
             .setPayableAmount(new Hbar(1))

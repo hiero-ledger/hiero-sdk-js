@@ -63,8 +63,8 @@ async function main() {
         const contractHelper = await ContractHelper.init(
             contractBytecode,
             new hashgraph.ContractFunctionParameters()
-                .addAddress(wallet.getAccountId().toSolidityAddress())
-                .addAddress(aliceAccountId.toSolidityAddress()),
+                .addAddress(wallet.getAccountId().toEvmAddress())
+                .addAddress(aliceAccountId.toEvmAddress()),
             wallet,
         );
 
@@ -107,7 +107,7 @@ async function main() {
             let accountUpdateOpratorTransaction =
                 await new hashgraph.TokenUpdateTransaction()
                     .setTokenId(
-                        hashgraph.TokenId.fromSolidityAddress(tokenAddress),
+                        hashgraph.TokenId.fromEvmAddress(0, 0, tokenAddress),
                     )
                     .setAdminKey(
                         new hashgraph.KeyList(
