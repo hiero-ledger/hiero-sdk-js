@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+
+## v2.68.0
+
+### Added
+- `<EntityId>.toEvmAddress()` for `AccountId`, `ContractId`, `ContractDelegateId`, `TopicId`, `TokenId`, `FileId`. [#3200](https://github.com/hiero-ledger/hiero-sdk-js/pull/3200)
+
+### Changed
+- `<EntityId>.fromEvmAddress(shard, realm, evmAddress)` for `AccountId`, `ContractId`, and `ContractDelegateId`:
+  - Shard and realm must now be explicitly provided and are **not encoded** in the EVM address.
+  [#3200](https://github.com/hiero-ledger/hiero-sdk-js/pull/3200)
+
+### Deprecated
+- Replaced `fromSolidityAddress()` with `fromEvmAddress()`
+- Replaced `toSolidityAddress()` with `toEvmAddress()` [#3200](https://github.com/hiero-ledger/hiero-sdk-js/pull/3200)
+- EthereumFlow, with the introduction of jumbo transactions, it should always be less cost and more efficient to use EthereumTransaction instead [#3187](https://github.com/hiero-ledger/hiero-sdk-js/pull/3187)
+
+### Documentation
+- Migration guide to `@hiero/sdk` v3:
+  - Step-by-step instructions, automated scripts, supported file types, and issue template. [#3207](https://github.com/hiero-ledger/hiero-sdk-js/pull/3207)
+
+
+
 ## v2.67.0
 
 ### Added
