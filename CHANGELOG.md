@@ -5,7 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.69.0-beta.1
 
+### Added
+- `WebClient.forMirrorNetwork()` factory method now works and correctly initializes and updates the address book during initialization.
+- `WebClient` now supports scheduled network updates via the `scheduleNetworkUpdate: true` option, and manual updates using the `updateNetwork()` method.
+- `AddressBookQuery` is now supported in browser environments.
+- `MirrorNodeContractCallQuery` is now supported in browser environments.
+- `MirrorNodeContractЕstimateQuery` is now supported in browser environments. [#3092](https://github.com/hiero-ledger/hiero-sdk-js/pull/3092)
+- For `Mainnet`, `Testnet`, and `Previewnet`, a fallback mechanism is in place: if the mirror node returns null or missing `grpc_proxy_endpoint` values, the SDK will retain and use the hardcoded list of gRPC web proxy endpoints.
 
 ## v2.68.0
 
