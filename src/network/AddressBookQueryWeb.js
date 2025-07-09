@@ -80,8 +80,8 @@ export default class AddressBookQueryWeb extends Query {
         }
 
         /**
-         * @private
          * Page limit for the query
+         * @private
          * @type {?number}
          */
         this._limit = null;
@@ -261,6 +261,7 @@ export default class AddressBookQueryWeb extends Query {
 
                 const nodes = data.nodes || [];
 
+                // eslint-disable-next-line ie11/no-loop-func
                 this._addresses = nodes.map((node) =>
                     NodeAddress.fromJSON({
                         nodeId: node.node_id.toString(),
@@ -313,6 +314,7 @@ export default class AddressBookQueryWeb extends Query {
                     }
 
                     // Wait before next attempt
+                    // eslint-disable-next-line ie11/no-loop-func
                     await new Promise((resolve) => setTimeout(resolve, delay));
                     continue;
                 }
