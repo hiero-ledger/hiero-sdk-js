@@ -60,6 +60,7 @@ export { default as EthereumTransactionDataLegacy } from "./EthereumTransactionD
 export { default as EthereumTransactionDataEip1559 } from "./EthereumTransactionDataEip1559.js";
 export { default as EthereumTransactionDataEip2930 } from "./EthereumTransactionDataEip2930.js";
 export { default as EthereumTransactionData } from "./EthereumTransactionData.js";
+// eslint-disable-next-line deprecation/deprecation
 export { default as EthereumFlow } from "./EthereumFlow.js";
 export { default as EvmAddress } from "./EvmAddress.js";
 export { default as ExchangeRate } from "./ExchangeRate.js";

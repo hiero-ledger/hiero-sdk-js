@@ -305,15 +305,19 @@ export function toSolidityAddress(address) {
 }
 
 /**
- * Convert EVM address bytes to hex string or account num to long-zero EVM address.
- *
  * @overload
  * @param {Uint8Array} evmAddressBytes - EVM address bytes to convert to hex
- * @returns {string} Hex string representation of the EVM address
- *
+ * @returns {string}
+ */
+
+/**
  * @overload
  * @param {Long} accountNum - Account number to convert to long-zero EVM address
- * @returns {string} Long-zero EVM address as hex string
+ * @returns {string}
+ */
+
+/**
+ * Convert EVM address bytes to hex string or account num to long-zero EVM address.
  *
  * @param {Uint8Array | Long} evmAddressBytesOrAccountNum
  * @returns {string}
