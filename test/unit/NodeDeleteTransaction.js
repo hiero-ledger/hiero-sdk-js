@@ -48,4 +48,58 @@ describe("NodeDeleteTransaction", function () {
         tx.setNodeId(421);
         expect(tx.nodeId).to.equal(421);
     });
+
+    describe("nodeId validation", function () {
+        const VALID_START = new Timestamp(1596210382, 0);
+        const ACCOUNT_ID = AccountId.fromString("0.6.9");
+        it("should freeze successfully when nodeId is set", function () {
+            const transaction = new NodeDeleteTransaction()
+                .setNodeAccountIds([AccountId.fromString("0.0.3")])
+                .setTransactionId(
+                    TransactionId.withValidStart(ACCOUNT_ID, VALID_START),
+                )
+                .setNodeId(420);
+
+            expect(() => transaction.freeze()).to.not.throw();
+        });
+
+        it("should throw error when freezing without setting nodeId", function () {
+            const transaction = new NodeDeleteTransaction()
+                .setNodeAccountIds([AccountId.fromString("0.0.3")])
+                .setTransactionId(
+                    TransactionId.withValidStart(ACCOUNT_ID, VALID_START),
+                );
+            // Note: nodeId is not set
+
+            expect(() => transaction.freeze()).to.throw(
+                "NodeDeleteTransaction: 'nodeId' must be explicitly set before calling freeze().",
+            );
+        });
+
+        it("should throw error when freezing with null nodeId", function () {
+            const transaction = new NodeDeleteTransaction()
+                .setNodeAccountIds([AccountId.fromString("0.0.3")])
+                .setTransactionId(
+                    TransactionId.withValidStart(ACCOUNT_ID, VALID_START),
+                )
+                .setNodeId(null);
+
+            expect(() => transaction.freeze()).to.throw(
+                "NodeDeleteTransaction: 'nodeId' must be explicitly set before calling freeze().",
+            );
+        });
+
+        it("should throw error when freezing with undefined nodeId", function () {
+            const transaction = new NodeDeleteTransaction()
+                .setNodeAccountIds([AccountId.fromString("0.0.3")])
+                .setTransactionId(
+                    TransactionId.withValidStart(ACCOUNT_ID, VALID_START),
+                )
+                .setNodeId(undefined);
+
+            expect(() => transaction.freeze()).to.throw(
+                "NodeDeleteTransaction: 'nodeId' must be explicitly set before calling freeze().",
+            );
+        });
+    });
 });

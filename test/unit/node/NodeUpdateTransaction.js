@@ -6,6 +6,7 @@ import {
     ServiceEndpoint,
     Timestamp,
     TransactionId,
+    Long,
 } from "../../../src/index.js";
 
 describe("NodeUpdateTransaction", function () {
@@ -210,6 +211,7 @@ describe("NodeUpdateTransaction", function () {
             const VALID_START = new Timestamp(1596210382, 0);
 
             tx = new NodeUpdateTransaction()
+                .setNodeId(Long.fromNumber(1))
                 .setNodeAccountIds([AccountId.fromString("0.0.3")])
                 .setTransactionId(
                     TransactionId.withValidStart(ACCOUNT_ID, VALID_START),
@@ -355,6 +357,63 @@ describe("NodeUpdateTransaction", function () {
 
             expect(tx.grpcWebProxyEndpoint).to.be.null;
             expect(tx2.grpcWebProxyEndpoint).to.be.null;
+        });
+    });
+
+    describe("nodeId validation", function () {
+        const VALID_START = new Timestamp(1596210382, 0);
+        const ACCOUNT_ID = AccountId.fromString("0.6.9");
+        it("should freeze successfully when nodeId is set", function () {
+            const transaction = new NodeUpdateTransaction()
+                .setNodeAccountIds([AccountId.fromString("0.0.3")])
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        AccountId.fromString("0.0.5006"),
+                        VALID_START,
+                    ),
+                )
+                .setNodeId(420);
+
+            expect(() => transaction.freeze()).to.not.throw();
+        });
+
+        it("should throw error when freezing without setting nodeId", function () {
+            const transaction = new NodeUpdateTransaction()
+                .setNodeAccountIds([AccountId.fromString("0.0.3")])
+                .setTransactionId(
+                    TransactionId.withValidStart(ACCOUNT_ID, VALID_START),
+                );
+            // Note: nodeId is not set
+
+            expect(() => transaction.freeze()).to.throw(
+                "NodeUpdateTransaction: 'nodeId' must be explicitly set before calling freeze().",
+            );
+        });
+
+        it("should throw error when freezing with null nodeId", function () {
+            const transaction = new NodeUpdateTransaction()
+                .setNodeAccountIds([AccountId.fromString("0.0.3")])
+                .setTransactionId(
+                    TransactionId.withValidStart(ACCOUNT_ID, VALID_START),
+                )
+                .setNodeId(null);
+
+            expect(() => transaction.freeze()).to.throw(
+                "NodeUpdateTransaction: 'nodeId' must be explicitly set before calling freeze().",
+            );
+        });
+
+        it("should throw error when freezing with undefined nodeId", function () {
+            const transaction = new NodeUpdateTransaction()
+                .setNodeAccountIds([AccountId.fromString("0.0.3")])
+                .setTransactionId(
+                    TransactionId.withValidStart(ACCOUNT_ID, VALID_START),
+                )
+                .setNodeId(undefined);
+
+            expect(() => transaction.freeze()).to.throw(
+                "NodeUpdateTransaction: 'nodeId' must be explicitly set before calling freeze().",
+            );
         });
     });
 });

@@ -480,6 +480,21 @@ export default class NodeUpdateTransaction extends Transaction {
 
     /**
      * @override
+     * @param {?import("../client/Client.js").default<Channel, *>} client
+     * @returns {this}
+     */
+    freezeWith(client) {
+        if (this.nodeId == null) {
+            throw new Error(
+                "NodeUpdateTransaction: 'nodeId' must be explicitly set before calling freeze().",
+            );
+        }
+
+        return super.freezeWith(client);
+    }
+
+    /**
+     * @override
      * @internal
      * @param {Channel} channel
      * @param {ITransaction} request
