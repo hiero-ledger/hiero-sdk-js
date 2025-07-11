@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import * as entity_id from "../EntityIdHelper.js";
+import * as EntityIdHelper from "../EntityIdHelper.js";
 import Key from "../Key.js";
 import * as HieroProto from "@hashgraph/proto";
 import CACHE from "../Cache.js";
@@ -8,6 +8,7 @@ import * as hex from "../encoding/hex.js";
 import { arrayEqual } from "../array.js";
 import Long from "long";
 import { isLongZeroAddress } from "../util.js";
+import EvmAddress from "../EvmAddress.js";
 
 /**
  * @typedef {import("../client/Client.js").default<*, *>} Client
@@ -26,7 +27,7 @@ export default class ContractId extends Key {
     constructor(props, realm, num, evmAddress) {
         super();
 
-        const result = entity_id.constructor(props, realm, num);
+        const result = EntityIdHelper.constructor(props, realm, num);
 
         this.shard = result.shard;
         this.realm = result.realm;
@@ -51,11 +52,16 @@ export default class ContractId extends Key {
      * @returns {ContractId}
      */
     static fromEvmAddress(shard, realm, evmAddress) {
-        if (isLongZeroAddress(hex.decode(evmAddress))) {
-            return new ContractId(...entity_id.fromSolidityAddress(evmAddress));
-        } else {
-            return new ContractId(shard, realm, 0, hex.decode(evmAddress));
-        }
+        const evmAddressObj = EvmAddress.fromString(evmAddress);
+
+        const [shardLong, realmLong, num, address] =
+            EntityIdHelper.fromEvmAddress(
+                shard,
+                realm,
+                evmAddressObj.toString(),
+            );
+
+        return new ContractId(shardLong, realmLong, num, address?.toBytes());
     }
 
     /**
@@ -63,7 +69,7 @@ export default class ContractId extends Key {
      * @returns {ContractId}
      */
     static fromString(text) {
-        const result = entity_id.fromStringSplitter(text);
+        const result = EntityIdHelper.fromStringSplitter(text);
 
         if (Number.isNaN(result.shard) || Number.isNaN(result.realm)) {
             throw new Error("invalid format for entity ID");
@@ -148,7 +154,7 @@ export default class ContractId extends Key {
      * @param {Client} client
      */
     validateChecksum(client) {
-        entity_id.validateChecksum(
+        EntityIdHelper.validateChecksum(
             this.shard,
             this.realm,
             this.num,
@@ -175,20 +181,23 @@ export default class ContractId extends Key {
     static fromSolidityAddress(address) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         if (isLongZeroAddress(hex.decode(address))) {
-            return new ContractId(...entity_id.fromSolidityAddress(address));
+            return new ContractId(
+                ...EntityIdHelper.fromSolidityAddress(address),
+            );
         } else {
             return this.fromEvmAddress(0, 0, address);
         }
     }
 
     /**
+     * @deprecated - Use `toEvmAddress` instead
      * @returns {string}
      */
     toSolidityAddress() {
         if (this.evmAddress != null) {
             return hex.encode(this.evmAddress);
         } else {
-            return entity_id.toSolidityAddress([
+            return EntityIdHelper.toSolidityAddress([
                 this.shard,
                 this.realm,
                 this.num,
@@ -196,6 +205,16 @@ export default class ContractId extends Key {
         }
     }
 
+    /**
+     * @returns {string} EVM-compatible address representation of the entity
+     */
+    toEvmAddress() {
+        if (this.evmAddress != null) {
+            return EntityIdHelper.toEvmAddress(this.evmAddress);
+        }
+
+        return EntityIdHelper.toEvmAddress(this.num);
+    }
     /**
      * @internal
      * @returns {HieroProto.proto.IContractID}
@@ -227,7 +246,7 @@ export default class ContractId extends Key {
      * @returns {string}
      */
     toStringWithChecksum(client) {
-        return entity_id.toStringWithChecksum(this.toString(), client);
+        return EntityIdHelper.toStringWithChecksum(this.toString(), client);
     }
 
     /**
@@ -252,7 +271,7 @@ export default class ContractId extends Key {
      * @returns {number}
      */
     compare(other) {
-        return entity_id.compare(
+        return EntityIdHelper.compare(
             [this.shard, this.realm, this.num],
             [other.shard, other.realm, other.num],
         );

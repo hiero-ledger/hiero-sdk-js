@@ -70,6 +70,14 @@ const browserAliases = {
             find: "../../src/client/NodeClient.js",
             replacement: "../../src/client/WebClient.js",
         },
+        {
+            find: "../../src/network/AddressBookQuery.js",
+            replacement: "../../src/network/AddressBookQueryWeb.js",
+        },
+        {
+            find: "../network/AddressBookQuery.js",
+            replacement: "../network/AddressBookQueryWeb.js",
+        },
         // Add the index.js redirects
         { find: "../../src/index.js", replacement: "../../src/browser.js" },
         { find: "../src/index.js", replacement: "../src/browser.js" },

@@ -39,11 +39,19 @@ export default class WebChannel extends Channel {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         return async (method, requestData, callback) => {
             try {
+                const shouldUseHttps = !(
+                    this._address.includes("localhost") ||
+                    this._address.includes("127.0.0.1")
+                );
+
+                const address = shouldUseHttps
+                    ? `https://${this._address}`
+                    : `http://${this._address}`;
                 // this will be executed in a browser environment so eslint is
                 // disabled for the fetch call
                 //eslint-disable-next-line n/no-unsupported-features/node-builtins
                 const response = await fetch(
-                    `${this._address}/proto.${serviceName}/${method.name}`,
+                    `${address}/proto.${serviceName}/${method.name}`,
                     {
                         method: "POST",
                         headers: {
@@ -69,7 +77,7 @@ export default class WebChannel extends Channel {
                 if (grpcStatus != null && grpcMessage != null) {
                     const error = new GrpcServiceError(
                         GrpcStatus._fromValue(parseInt(grpcStatus)),
-                        ALL_WEB_NETWORK_NODES[this._address].toString(),
+                        ALL_WEB_NETWORK_NODES?.[this._address]?.toString(),
                     );
                     error.message = grpcMessage;
                     callback(error, null);
@@ -83,7 +91,7 @@ export default class WebChannel extends Channel {
                 const err = new GrpcServiceError(
                     // retry on grpc web errors
                     GrpcStatus._fromValue(18),
-                    ALL_WEB_NETWORK_NODES[this._address].toString(),
+                    ALL_WEB_NETWORK_NODES?.[this._address]?.toString(),
                 );
                 callback(err, null);
             }

@@ -20,7 +20,7 @@ function main() {
     const hederaFormat = AccountId.fromString("0.0.10");
     console.log(`Account ID: ${hederaFormat.toString()}`);
     console.log(
-        `Account 0.0.10 corresponding Long-Zero address: ${hederaFormat.toSolidityAddress()}`,
+        `Account 0.0.10 corresponding Long-Zero address: ${hederaFormat.toEvmAddress()}`,
     );
 
     /*

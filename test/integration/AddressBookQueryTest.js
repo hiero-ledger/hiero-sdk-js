@@ -1,4 +1,4 @@
-import { AddressBookQuery } from "../../src/exports.js";
+import { AddressBookQuery } from "../../src/index.js";
 import { Client } from "./client/NodeIntegrationTestEnv.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 

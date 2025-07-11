@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import Long from "long";
-import * as entity_id from "../EntityIdHelper.js";
+import * as EntityIdHelper from "../EntityIdHelper.js";
 import * as HieroProto from "@hashgraph/proto";
 import Key from "../Key.js";
 import PublicKey from "../PublicKey.js";
@@ -26,7 +26,7 @@ export default class AccountId {
      * @param {(EvmAddress)=} evmAddress
      */
     constructor(props, realm, num, aliasKey, evmAddress) {
-        const result = entity_id.constructor(props, realm, num);
+        const result = EntityIdHelper.constructor(props, realm, num);
 
         this.shard = result.shard;
         this.realm = result.realm;
@@ -59,7 +59,7 @@ export default class AccountId {
         if ((text.startsWith("0x") && text.length == 42) || text.length == 40) {
             evmAddress = EvmAddress.fromString(text);
         } else {
-            const result = entity_id.fromStringSplitter(text);
+            const result = EntityIdHelper.fromStringSplitter(text);
 
             if (Number.isNaN(result.shard) || Number.isNaN(result.realm)) {
                 throw new Error("invalid format for entity ID");
@@ -96,13 +96,20 @@ export default class AccountId {
                 ? EvmAddress.fromString(evmAddress)
                 : evmAddress;
 
-        if (isLongZeroAddress(evmAddressObj.toBytes())) {
-            return new AccountId(
-                ...entity_id.fromSolidityAddress(evmAddressObj.toString()),
+        const [shardLong, realmLong, num, address] =
+            EntityIdHelper.fromEvmAddress(
+                shard,
+                realm,
+                evmAddressObj.toString(),
             );
-        } else {
-            return new AccountId(shard, realm, 0, undefined, evmAddressObj);
-        }
+
+        return new AccountId(
+            shardLong,
+            realmLong,
+            num,
+            undefined,
+            address || undefined,
+        );
     }
 
     /**
@@ -244,7 +251,7 @@ export default class AccountId {
             );
         }
 
-        entity_id.validateChecksum(
+        EntityIdHelper.validateChecksum(
             this.shard,
             this.realm,
             this.num,
@@ -271,7 +278,9 @@ export default class AccountId {
     static fromSolidityAddress(address) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         if (isLongZeroAddress(hex.decode(address))) {
-            return new AccountId(...entity_id.fromSolidityAddress(address));
+            return new AccountId(
+                ...EntityIdHelper.fromSolidityAddress(address),
+            );
         } else {
             return this.fromEvmAddress(0, 0, address);
         }
@@ -279,6 +288,7 @@ export default class AccountId {
 
     /**
      * @description Statically compute the EVM address. Use only with non-native EVM accounts.
+     * @deprecated - Use `toEvmAddress` instead
      * If the account is EVM-native, the EVM address depends on the public key and is not directly related to the account ID.
      * @returns {string}
      */
@@ -291,12 +301,23 @@ export default class AccountId {
         ) {
             return this.aliasKey.toEvmAddress();
         } else {
-            return entity_id.toSolidityAddress([
+            return EntityIdHelper.toSolidityAddress([
                 this.shard,
                 this.realm,
                 this.num,
             ]);
         }
+    }
+
+    /**
+     * @returns {string} EVM-compatible address representation of the entity
+     */
+    toEvmAddress() {
+        if (this.evmAddress != null) {
+            return EntityIdHelper.toEvmAddress(this.evmAddress.toBytes());
+        }
+
+        return EntityIdHelper.toEvmAddress(this.num);
     }
 
     //TODO remove the comments after we get to HIP-631
@@ -371,7 +392,7 @@ export default class AccountId {
             );
         }
 
-        return entity_id.toStringWithChecksum(this.toString(), client);
+        return EntityIdHelper.toStringWithChecksum(this.toString(), client);
     }
 
     /**

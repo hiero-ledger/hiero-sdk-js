@@ -138,7 +138,7 @@ export default class AccountAllowanceApproveTransaction extends Transaction {
                           ? AccountId.fromEvmAddress(
                                 spenderAccountId.shard,
                                 spenderAccountId.realm,
-                                spenderAccountId.toSolidityAddress(),
+                                spenderAccountId.toEvmAddress(),
                             )
                           : spenderAccountId,
                 ownerAccountId:
@@ -148,7 +148,7 @@ export default class AccountAllowanceApproveTransaction extends Transaction {
                           ? AccountId.fromEvmAddress(
                                 ownerAccountId.shard,
                                 ownerAccountId.realm,
-                                ownerAccountId.toSolidityAddress(),
+                                ownerAccountId.toEvmAddress(),
                             )
                           : ownerAccountId,
                 amount: amount instanceof Hbar ? amount : new Hbar(amount),
@@ -211,7 +211,7 @@ export default class AccountAllowanceApproveTransaction extends Transaction {
                           ? AccountId.fromEvmAddress(
                                 spenderAccountId.shard,
                                 spenderAccountId.realm,
-                                spenderAccountId.toSolidityAddress(),
+                                spenderAccountId.toEvmAddress(),
                             )
                           : spenderAccountId,
                 ownerAccountId:
@@ -221,7 +221,7 @@ export default class AccountAllowanceApproveTransaction extends Transaction {
                           ? AccountId.fromEvmAddress(
                                 ownerAccountId.shard,
                                 ownerAccountId.realm,
-                                ownerAccountId.toSolidityAddress(),
+                                ownerAccountId.toEvmAddress(),
                             )
                           : ownerAccountId,
                 amount:
@@ -310,7 +310,7 @@ export default class AccountAllowanceApproveTransaction extends Transaction {
                   ? AccountId.fromEvmAddress(
                         spenderAccountId.shard,
                         spenderAccountId.realm,
-                        spenderAccountId.toSolidityAddress(),
+                        spenderAccountId.toEvmAddress(),
                     )
                   : spenderAccountId;
         let found = false;
@@ -341,7 +341,7 @@ export default class AccountAllowanceApproveTransaction extends Transaction {
                               ? AccountId.fromEvmAddress(
                                     ownerAccountId.shard,
                                     ownerAccountId.realm,
-                                    ownerAccountId.toSolidityAddress(),
+                                    ownerAccountId.toEvmAddress(),
                                 )
                               : ownerAccountId,
                     serialNumbers: [id.serial],
@@ -421,7 +421,7 @@ export default class AccountAllowanceApproveTransaction extends Transaction {
                           ? AccountId.fromEvmAddress(
                                 spenderAccountId.shard,
                                 spenderAccountId.realm,
-                                spenderAccountId.toSolidityAddress(),
+                                spenderAccountId.toEvmAddress(),
                             )
                           : spenderAccountId,
                 ownerAccountId:
@@ -431,7 +431,7 @@ export default class AccountAllowanceApproveTransaction extends Transaction {
                           ? AccountId.fromEvmAddress(
                                 ownerAccountId.shard,
                                 ownerAccountId.realm,
-                                ownerAccountId.toSolidityAddress(),
+                                ownerAccountId.toEvmAddress(),
                             )
                           : ownerAccountId,
                 serialNumbers: null,

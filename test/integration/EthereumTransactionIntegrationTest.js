@@ -85,7 +85,7 @@ describe("EthereumTransactionIntegrationTest", function () {
             expect(contractReceipt.status).to.be.equal(Status.Success);
             const contractId = contractReceipt.contractId;
             expect(contractId).to.be.instanceof(ContractId);
-            contractAddress = contractId.toSolidityAddress();
+            contractAddress = contractId.toEvmAddress();
         } catch (error) {
             console.error(error);
         }

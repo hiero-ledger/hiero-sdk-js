@@ -8,6 +8,7 @@ import base32 from "./base32.js";
 import * as HieroProto from "@hashgraph/proto";
 import PublicKey from "./PublicKey.js";
 import { arrayify } from "@ethersproject/bytes";
+import EvmAddress from "./EvmAddress.js";
 
 /**
  * @typedef {import("./client/Client.js").default<*, *>} Client
@@ -54,6 +55,21 @@ const regex =
  *  - can optionally provide checksum for any of the above
  */
 const ENTITY_ID_REGEX = /^(\d+)(?:\.(\d+)\.([a-fA-F0-9]+))?(?:-([a-z]{5}))?$/;
+
+/**
+ * @description The length of an EVM address in bytes.
+ */
+const EVM_ADDRESS_LENGTH = 20;
+
+/**
+ * @description The length of the long-zero prefix in bytes.
+ */
+const LONG_ZERO_PREFIX_LENGTH = 12;
+
+/**
+ * @description The offset of the entity number in the EVM address.
+ */
+const ENTITY_NUM_OFFSET = 16;
 
 /**
  * This method is called by most entity ID constructors. It's purpose is to
@@ -212,7 +228,7 @@ export function fromSolidityAddress(address) {
         ? hex.decode(address.slice(2))
         : hex.decode(address);
 
-    if (addr.length !== 20) {
+    if (addr.length !== EVM_ADDRESS_LENGTH) {
         throw new Error(`Invalid hex encoded solidity address length:
                 expected length 40, got length ${address.length}`);
     }
@@ -222,6 +238,50 @@ export function fromSolidityAddress(address) {
     const num = Long.fromBytesBE(Array.from(addr.slice(12, 20)));
 
     return [shard, realm, num];
+}
+
+/**
+ * Parse an EVM address and return shard, realm, entity num, and optional EVM address.
+ *
+ * For long zero addresses (first 12 bytes are zeros): returns [shard, realm, entityNum, null]
+ * For regular EVM addresses: returns [shard, realm, 0, EvmAddress]
+ *
+ * @param {Long | number} shard - The shard number to use
+ * @param {Long | number} realm - The realm number to use
+ * @param {string} address - The EVM address to parse (with or without 0x prefix)
+ * @returns {[Long, Long, Long, EvmAddress | null]} - [shard, realm, entityNum, evmAddressOrNull]
+ */
+export function fromEvmAddress(shard, realm, address) {
+    if (!hex.isHexString(address)) {
+        throw new Error(`Invalid EVM address hex string: ${address}`);
+    }
+
+    const addr = address.startsWith("0x")
+        ? hex.decode(address.slice(2))
+        : hex.decode(address);
+
+    if (addr.length !== EVM_ADDRESS_LENGTH) {
+        throw new Error(`Invalid hex encoded evm address length:
+                expected length ${EVM_ADDRESS_LENGTH}, got length ${address.length}`);
+    }
+
+    let num = Long.ZERO;
+
+    if (util.isLongZeroAddress(addr)) {
+        num = Long.fromBytesBE(
+            Array.from(addr.slice(LONG_ZERO_PREFIX_LENGTH, EVM_ADDRESS_LENGTH)),
+        );
+    }
+
+    let shardLong = shard instanceof Long ? shard : Long.fromNumber(shard);
+    let realmLong = realm instanceof Long ? realm : Long.fromNumber(realm);
+
+    return [
+        shardLong,
+        realmLong,
+        num,
+        num.isZero() ? EvmAddress.fromBytes(addr) : null,
+    ];
 }
 
 /**
@@ -240,6 +300,38 @@ export function toSolidityAddress(address) {
     view.setUint32(0, util.convertToNumber(shard));
     view.setUint32(8, util.convertToNumber(realm));
     view.setUint32(16, util.convertToNumber(num));
+
+    return hex.encode(buffer);
+}
+
+/**
+ * @overload
+ * @param {Uint8Array} evmAddressBytes - EVM address bytes to convert to hex
+ * @returns {string}
+ */
+
+/**
+ * @overload
+ * @param {Long} accountNum - Account number to convert to long-zero EVM address
+ * @returns {string}
+ */
+
+/**
+ * Convert EVM address bytes to hex string or account num to long-zero EVM address.
+ *
+ * @param {Uint8Array | Long} evmAddressBytesOrAccountNum
+ * @returns {string}
+ */
+export function toEvmAddress(evmAddressBytesOrAccountNum) {
+    if (evmAddressBytesOrAccountNum instanceof Uint8Array) {
+        return hex.encode(evmAddressBytesOrAccountNum);
+    }
+
+    const accountNum = evmAddressBytesOrAccountNum;
+    const buffer = new Uint8Array(EVM_ADDRESS_LENGTH);
+    const view = util.safeView(buffer);
+
+    view.setUint32(ENTITY_NUM_OFFSET, util.convertToNumber(accountNum));
 
     return hex.encode(buffer);
 }
