@@ -54,8 +54,6 @@ export const updateFile = async ({
     const receipt = await response.getReceipt(sdk.getClient());
 
     return {
-        //TODO Maybe we don`t need this
-        // fileId: receipt.fileId.toString(),
         status: receipt.status.toString(),
     };
 };
