@@ -107,7 +107,7 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
                           ? AccountId.fromEvmAddress(
                                 spenderAccountId.shard,
                                 spenderAccountId.realm,
-                                spenderAccountId.toSolidityAddress(),
+                                spenderAccountId.toEvmAddress(),
                             )
                           : spenderAccountId,
                 ownerAccountId:
@@ -117,7 +117,7 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
                           ? AccountId.fromEvmAddress(
                                 ownerAccountId.shard,
                                 ownerAccountId.realm,
-                                ownerAccountId.toSolidityAddress(),
+                                ownerAccountId.toEvmAddress(),
                             )
                           : ownerAccountId,
                 amount: amount,
@@ -205,7 +205,7 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
                           ? AccountId.fromEvmAddress(
                                 spenderAccountId.shard,
                                 spenderAccountId.realm,
-                                spenderAccountId.toSolidityAddress(),
+                                spenderAccountId.toEvmAddress(),
                             )
                           : spenderAccountId,
                 ownerAccountId:
@@ -215,7 +215,7 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
                           ? AccountId.fromEvmAddress(
                                 ownerAccountId.shard,
                                 ownerAccountId.realm,
-                                ownerAccountId.toSolidityAddress(),
+                                ownerAccountId.toEvmAddress(),
                             )
                           : ownerAccountId,
                 amount:
@@ -289,7 +289,7 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
                   ? AccountId.fromEvmAddress(
                         spenderAccountId.shard,
                         spenderAccountId.realm,
-                        spenderAccountId.toSolidityAddress(),
+                        spenderAccountId.toEvmAddress(),
                     )
                   : spenderAccountId;
         const owner =
@@ -299,7 +299,7 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
                   ? AccountId.fromEvmAddress(
                         ownerAccountId.shard,
                         ownerAccountId.realm,
-                        ownerAccountId.toSolidityAddress(),
+                        ownerAccountId.toEvmAddress(),
                     )
                   : ownerAccountId;
         let found = false;
@@ -455,7 +455,7 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
                               ? AccountId.fromEvmAddress(
                                     ownerAccountId.shard,
                                     ownerAccountId.realm,
-                                    ownerAccountId.toSolidityAddress(),
+                                    ownerAccountId.toEvmAddress(),
                                 )
                               : ownerAccountId
                         : null,
@@ -466,7 +466,7 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
                           ? AccountId.fromEvmAddress(
                                 spenderAccountId.shard,
                                 spenderAccountId.realm,
-                                spenderAccountId.toSolidityAddress(),
+                                spenderAccountId.toEvmAddress(),
                             )
                           : spenderAccountId,
                 serialNumbers: null,

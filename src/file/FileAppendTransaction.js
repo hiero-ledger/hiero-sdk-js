@@ -288,6 +288,9 @@ export default class FileAppendTransaction extends Transaction {
      * @returns {this}
      */
     setMaxChunks(maxChunks) {
+        if (maxChunks <= 0) {
+            throw new Error("Max chunks must be greater than 0");
+        }
         this._requireNotFrozen();
         this._maxChunks = maxChunks;
         return this;
@@ -305,6 +308,9 @@ export default class FileAppendTransaction extends Transaction {
      * @returns {this}
      */
     setChunkSize(chunkSize) {
+        if (chunkSize <= 0) {
+            throw new Error("Chunk size must be greater than 0");
+        }
         this._chunkSize = chunkSize;
         return this;
     }

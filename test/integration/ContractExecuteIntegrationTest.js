@@ -373,7 +373,7 @@ describe("ContractExecute", function () {
 
         const { accountId } = await createAccount(env.client);
 
-        const newOwnerSolidityAddress = accountId.toSolidityAddress();
+        const newOwnerEvmAddress = accountId.toEvmAddress();
 
         const contractId = (
             await (
@@ -388,9 +388,7 @@ describe("ContractExecute", function () {
             .setContractId(contractId)
             .setFunction(
                 "addOwnerAndTransfer",
-                new ContractFunctionParameters().addAddress(
-                    newOwnerSolidityAddress,
-                ),
+                new ContractFunctionParameters().addAddress(newOwnerEvmAddress),
             )
             .setGas(60_000)
             .setPayableAmount(new Hbar(100), HbarUnit.Kilobar)

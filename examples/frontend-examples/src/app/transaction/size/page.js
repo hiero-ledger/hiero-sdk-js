@@ -18,7 +18,7 @@ const Home = () => {
 
     const client = WebClient.forTestnet().setOperator(
         AccountId.fromString(process.env.NEXT_PUBLIC_OPERATOR_ID),
-        PrivateKey.fromStringED25519(process.env.NEXT_PUBLIC_OPERATOR_KEY),
+        PrivateKey.fromStringDer(process.env.NEXT_PUBLIC_OPERATOR_KEY),
     );
 
     return (

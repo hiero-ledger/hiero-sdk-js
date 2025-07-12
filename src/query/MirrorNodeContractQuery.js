@@ -150,7 +150,7 @@ export default class MirrorNodeContractQuery {
      * @returns {string}
      */
     get contractEvmAddress() {
-        const solidityAddress = this._contractId?.toSolidityAddress();
+        const solidityAddress = this._contractId?.toEvmAddress();
         if (solidityAddress == null) {
             throw new Error("Contract ID is not set");
         }
@@ -251,7 +251,7 @@ export default class MirrorNodeContractQuery {
 
     _fillEvmAddress() {
         if (this.senderEvmAddress == null && this.sender != null) {
-            this._senderEvmAddress = this.sender.toSolidityAddress();
+            this._senderEvmAddress = this.sender.toEvmAddress();
         }
     }
     // eslint-disable-next-line jsdoc/require-returns-check
