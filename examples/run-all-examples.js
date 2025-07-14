@@ -17,6 +17,7 @@ const excludedJSFile = [
     "consensus-pub-sub.js",
     "create-update-delete-node.js",
     "batch-tx.js",
+    "long-term-schedule-transaction.js",
 ];
 const cmd = process.env.NODE_COMMAND;
 
