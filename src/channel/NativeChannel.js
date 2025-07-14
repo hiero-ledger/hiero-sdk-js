@@ -3,7 +3,7 @@ import Channel, { encodeRequest, decodeUnaryResponse } from "./Channel.js";
 import * as base64 from "../encoding/base64.native.js";
 import HttpError from "../http/HttpError.js";
 import HttpStatus from "../http/HttpStatus.js";
-import { SDK_VERSION } from "../version.js";
+import { SDK_NAME, SDK_VERSION } from "../version.js";
 
 export default class NativeChannel extends Channel {
     /**
@@ -50,7 +50,7 @@ export default class NativeChannel extends Channel {
                         method: "POST",
                         headers: {
                             "content-type": "application/grpc-web-text",
-                            "x-user-agent": SDK_VERSION,
+                            "x-user-agent": `${SDK_NAME}/${SDK_VERSION}`,
                             "x-accept-content-transfer-encoding": "base64",
                             "x-grpc-web": "1",
                         },

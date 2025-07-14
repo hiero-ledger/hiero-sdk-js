@@ -116,7 +116,6 @@ export const appendFile = async ({
     contents,
     maxChunks,
     chunkSize,
-    chunkInterval,
     commonTransactionParams,
 }: FileAppendParams): Promise<FileResponse> => {
     const transaction = new FileAppendTransaction().setGrpcDeadline(
