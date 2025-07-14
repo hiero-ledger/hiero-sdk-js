@@ -1,5 +1,5 @@
 import { beforeEach, afterEach, describe, it, expect, vi } from "vitest";
-import { SDK_VERSION } from "../../src/version.js";
+import { SDK_NAME, SDK_VERSION } from "../../src/version.js";
 import NativeChannel from "../../src/channel/NativeChannel.js";
 
 // Mock the client constants if needed
@@ -101,6 +101,6 @@ describe("NativeChannel", () => {
         const headers = fetchSpy.mock.calls[0][1].headers;
 
         // Verify the SDK version header
-        expect(headers["x-user-agent"]).toBe(SDK_VERSION);
+        expect(headers["x-user-agent"]).toBe(`${SDK_NAME}/${SDK_VERSION}`);
     });
 });
