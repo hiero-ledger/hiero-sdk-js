@@ -32,7 +32,6 @@ export { default as AccountInfoFlow } from "./account/AccountInfoFlow.js";
 export { default as AccountInfoQuery } from "./account/AccountInfoQuery.js";
 export { default as AccountRecordsQuery } from "./account/AccountRecordsQuery.js";
 export { default as AccountUpdateTransaction } from "./account/AccountUpdateTransaction.js";
-export { default as AddressBookQuery } from "./network/AddressBookQuery.js";
 export { default as AssessedCustomFee } from "./token/AssessedCustomFee.js";
 export { default as BatchTransaction } from "./transaction/BatchTransaction.js";
 export { default as ContractByteCodeQuery } from "./contract/ContractByteCodeQuery.js";
@@ -60,6 +59,7 @@ export { default as EthereumTransactionDataLegacy } from "./EthereumTransactionD
 export { default as EthereumTransactionDataEip1559 } from "./EthereumTransactionDataEip1559.js";
 export { default as EthereumTransactionDataEip2930 } from "./EthereumTransactionDataEip2930.js";
 export { default as EthereumTransactionData } from "./EthereumTransactionData.js";
+// eslint-disable-next-line deprecation/deprecation
 export { default as EthereumFlow } from "./EthereumFlow.js";
 export { default as EvmAddress } from "./EvmAddress.js";
 export { default as ExchangeRate } from "./ExchangeRate.js";

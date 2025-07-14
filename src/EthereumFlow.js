@@ -33,6 +33,7 @@ import * as hex from "./encoding/hex.js";
 
 /**
  * Create a new Hedera™ transaction wrapped ethereum transaction.
+ * @deprecated - use EthereumTransaction instead. With the introduction of jumbo transactions, it should always be less cost and more efficient to use EthereumTransaction instead.
  */
 export default class EthereumFlow {
     /**
@@ -126,7 +127,7 @@ export default class EthereumFlow {
     }
 
     /**
-     * The maximum amount, in tinybars, that the payer of the hedera transaction
+     * The maximum amount, in hbars, that the payer of the hedera transaction
      * is willing to pay to complete the transaction.
      *
      * Ordinarily the account with the ECDSA alias corresponding to the public
@@ -180,7 +181,9 @@ export default class EthereumFlow {
             ethereumTransaction
                 .setEthereumData(ethereumTransactionDataBytes)
                 .setCallDataFileId(this._callDataFileId);
-        } else if (ethereumTransactionDataBytes.length <= 5120) {
+            // in the consensus node config file, the maximum size of the call data file is 128000 bytes
+            // so we need to check if the call data is less than or equal to 128000 bytes
+        } else if (ethereumTransactionDataBytes.length <= 128000) {
             ethereumTransaction.setEthereumData(ethereumTransactionDataBytes);
         } else {
             const fileId = await createFile(

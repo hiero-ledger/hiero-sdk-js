@@ -5,7 +5,7 @@ import Channel from "./Channel.js";
 import GrpcServicesError from "../grpc/GrpcServiceError.js";
 import GrpcStatus from "../grpc/GrpcStatus.js";
 import { ALL_NETWORK_IPS } from "../constants/ClientConstants.js";
-import { SDK_VERSION } from "../version.js";
+import { SDK_NAME, SDK_VERSION } from "../version.js";
 
 /** @type {{ [key: string]: Client }} */
 const clientCache = {};
@@ -166,7 +166,10 @@ export default class NodeChannel extends Channel {
                             // Create metadata with user agent
                             const metadata = new Metadata();
 
-                            metadata.set("x-user-agent", SDK_VERSION);
+                            metadata.set(
+                                "x-user-agent",
+                                `${SDK_NAME}/${SDK_VERSION}`,
+                            );
 
                             this._client?.makeUnaryRequest(
                                 `/proto.${serviceName}/${method.name}`,

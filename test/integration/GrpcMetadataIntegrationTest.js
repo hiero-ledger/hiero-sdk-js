@@ -7,7 +7,7 @@ import {
     Hbar,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
-import { SDK_VERSION } from "../../src/version.js";
+import { SDK_NAME, SDK_VERSION } from "../../src/version.js";
 
 describe("gRPC Metadata Integration Test", function () {
     let env;
@@ -60,7 +60,7 @@ describe("gRPC Metadata Integration Test", function () {
 
             // Verify the user agent header exists and has correct format
             expect(userAgentValue).to.not.be.undefined;
-            expect(userAgentValue[0]).to.equal(SDK_VERSION);
+            expect(userAgentValue[0]).to.equal(`${SDK_NAME}/${SDK_VERSION}`);
         } finally {
             GrpcClient.prototype.makeUnaryRequest = originalMakeUnaryRequest;
         }
@@ -118,7 +118,7 @@ describe("gRPC Metadata Integration Test", function () {
             // Verify all metadata entries have the same expected format and value
             for (const call of metadataCalls) {
                 expect(call.key).to.equal("x-user-agent");
-                expect(call.value).to.equal(SDK_VERSION);
+                expect(call.value).to.equal(`${SDK_NAME}/${SDK_VERSION}`);
             }
         } finally {
             // Restore original method

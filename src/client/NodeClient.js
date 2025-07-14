@@ -12,8 +12,7 @@ import * as mainnet from "./addressbooks/mainnet.js";
 import * as testnet from "./addressbooks/testnet.js";
 import * as previewnet from "./addressbooks/previewnet.js";
 import * as hex from "../encoding/hex.js";
-import AddressBookQuery from "../network/AddressBookQuery.js";
-import FileId from "../file/FileId.js";
+import { MirrorNetwork } from "../constants/ClientConstants.js";
 
 const readFileAsync = util.promisify(fs.readFile);
 
@@ -25,36 +24,6 @@ export const Network = {
     LOCAL_NODE: {
         "127.0.0.1:50211": new AccountId(3),
     },
-};
-
-export const MirrorNetwork = {
-    /**
-     * @param {string} name
-     * @returns {string[]}
-     */
-    fromName(name) {
-        switch (name) {
-            case "mainnet":
-                return MirrorNetwork.MAINNET;
-
-            case "testnet":
-                return MirrorNetwork.TESTNET;
-
-            case "previewnet":
-                return MirrorNetwork.PREVIEWNET;
-
-            case "local-node":
-                return MirrorNetwork.LOCAL_NODE;
-
-            default:
-                throw new Error(`unknown network name: ${name}`);
-        }
-    },
-
-    MAINNET: ["mainnet-public.mirrornode.hedera.com:443"],
-    TESTNET: ["testnet.mirrornode.hedera.com:443"],
-    PREVIEWNET: ["previewnet.mirrornode.hedera.com:443"],
-    LOCAL_NODE: ["127.0.0.1:5600"],
 };
 
 /**
@@ -76,6 +45,17 @@ export default class NodeClient extends Client {
             if (typeof props.network === "string") {
                 this._setNetworkFromName(props.network);
             } else if (props.network != null) {
+                Client._validateNetworkConsistency(props.network);
+
+                const { shard, realm } = Client._extractShardRealm(
+                    props.network,
+                );
+
+                // Shard and realm are inferred from the network, so we need to set them here
+                // to ensure that the client is properly configured.
+                this._shard = shard;
+                this._realm = realm;
+
                 this.setNetwork(props.network);
             }
 
@@ -140,7 +120,10 @@ export default class NodeClient extends Client {
      * @returns {NodeClient}
      */
     static forNetwork(network, props) {
-        return new NodeClient({ network, ...props });
+        return new NodeClient({
+            network,
+            ...props,
+        });
     }
 
     /**
@@ -177,19 +160,20 @@ export default class NodeClient extends Client {
 
     /**
      * @param {string[] | string} mirrorNetwork
+     * @param {number} [shard]
+     * @param {number} [realm]
      * @returns {Promise<NodeClient>}
      */
-    static async forMirrorNetwork(mirrorNetwork) {
-        const client = new NodeClient();
+    static async forMirrorNetwork(mirrorNetwork, shard, realm) {
+        const INITIAL_UPDATE_PERIOD = 10_000;
 
-        client.setMirrorNetwork(mirrorNetwork).setNetworkUpdatePeriod(10000);
+        const client = new NodeClient({
+            mirrorNetwork,
+            shard,
+            realm,
+        }).setNetworkUpdatePeriod(INITIAL_UPDATE_PERIOD);
 
-        // Execute an address book query to get the network nodes
-        const addressBook = await new AddressBookQuery()
-            .setFileId(FileId.ADDRESS_BOOK)
-            .execute(client);
-
-        client.setNetworkFromAddressBook(addressBook);
+        await client.updateNetwork();
 
         return client;
     }
@@ -213,7 +197,10 @@ export default class NodeClient extends Client {
      * @returns {NodeClient}
      */
     static forLocalNode(props = { scheduleNetworkUpdate: false }) {
-        return new NodeClient({ network: "local-node", ...props });
+        return new NodeClient({
+            network: "local-node",
+            ...props,
+        });
     }
 
     /**

@@ -9,9 +9,9 @@ import PublicKey from "../PublicKey.js";
 import PrivateKey from "../PrivateKey.js";
 import LedgerId from "../LedgerId.js";
 import FileId from "../file/FileId.js";
-import CACHE from "../Cache.js";
 import Logger from "../logger/Logger.js"; // eslint-disable-line
 import { convertToNumber } from "../util.js";
+import AddressBookQuery from "../network/AddressBookQuery.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -34,10 +34,12 @@ import { convertToNumber } from "../util.js";
 
 /**
  * @typedef {object} ClientConfiguration
- * @property {{[key: string]: (string | AccountId)} | string} network
+ * @property {{[key: string]: (string | AccountId)} | string} [network]
  * @property {string[] | string} [mirrorNetwork]
  * @property {Operator} [operator]
  * @property {boolean} [scheduleNetworkUpdate]
+ * @property {number} [shard]
+ * @property {number} [realm]
  */
 
 /**
@@ -128,7 +130,6 @@ export default class Client {
         this._requestTimeout = null;
 
         /**
-         * @private
          * @type {boolean}
          */
         this._isUpdatingNetwork = false;
@@ -139,8 +140,20 @@ export default class Client {
         /** @private */
         this._isShutdown = false;
 
+        this._shard = 0;
+
+        this._realm = 0;
+
         if (props != null && props.scheduleNetworkUpdate !== false) {
             this._scheduleNetworkUpdate();
+        }
+
+        if (props != null && props.shard != null) {
+            this._shard = props.shard;
+        }
+
+        if (props != null && props.realm != null) {
+            this._realm = props.realm;
         }
 
         /** @internal */
@@ -222,6 +235,20 @@ export default class Client {
      */
     get network() {
         return this._network.network;
+    }
+
+    /**
+     * @returns {number}
+     */
+    get shard() {
+        return this._shard;
+    }
+
+    /**
+     * @returns {number}
+     */
+    get realm() {
+        return this._realm;
     }
 
     /**
@@ -714,8 +741,10 @@ export default class Client {
         this._isUpdatingNetwork = true;
 
         try {
-            const addressBook = await CACHE.addressBookQueryConstructor()
-                .setFileId(FileId.ADDRESS_BOOK)
+            const addressBook = await new AddressBookQuery()
+                .setFileId(
+                    FileId.getAddressBookFileIdFor(this._shard, this._realm),
+                )
                 .execute(this);
             this.setNetworkFromAddressBook(addressBook);
         } catch (error) {
@@ -779,5 +808,64 @@ export default class Client {
      */
     get isClientShutDown() {
         return this._isShutdown;
+    }
+
+    /**
+     * Validates that all nodes in a network are in the same shard and realm.
+     *
+     * @param {{[key: string]: (string | AccountId)}} network
+     */
+    static _validateNetworkConsistency(network) {
+        if (Object.keys(network).length === 0) {
+            return;
+        }
+
+        const [, nodeAccountId] = Object.entries(network)[0];
+
+        const accountIdStr = nodeAccountId.toString();
+
+        const [firstNodeShard, firstNodeRealm] = accountIdStr
+            .split(".")
+            .map(Number);
+
+        const isNetworkValid = Object.values(network).every((accountId) => {
+            const accountIdStr = accountId.toString();
+
+            const [currentShard, currentRealm] = accountIdStr
+                .split(".")
+                .map(Number);
+            return (
+                currentShard === firstNodeShard &&
+                currentRealm === firstNodeRealm
+            );
+        });
+
+        if (!isNetworkValid) {
+            throw new Error(
+                "Network is not valid, all nodes must be in the same shard and realm",
+            );
+        }
+    }
+
+    /**
+     * Extracts shard and realm values from a network configuration.
+     * Note: This method assumes the network is consistent (all nodes in same shard/realm).
+     * Use validateNetworkConsistency() first to ensure this.
+     *
+     * @param {{[key: string]: (string | AccountId)}} network
+     * @returns {{shard: number, realm: number}}
+     */
+    static _extractShardRealm(network) {
+        const entries = Object.entries(network);
+        if (entries.length === 0) {
+            return { shard: 0, realm: 0 };
+        }
+
+        const [, firstNodeAccountId] = entries[0];
+
+        const accountIdStr = firstNodeAccountId.toString();
+        const [shard, realm] = accountIdStr.split(".").map(Number);
+
+        return { shard, realm };
     }
 }

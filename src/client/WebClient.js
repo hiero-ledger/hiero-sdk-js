@@ -2,17 +2,19 @@
 
 import Client from "./Client.js";
 import WebChannel from "../channel/WebChannel.js";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import AccountId from "../account/AccountId.js";
 import LedgerId from "../LedgerId.js";
 import {
     MAINNET,
     WEB_TESTNET,
     WEB_PREVIEWNET,
+    MirrorNetwork,
 } from "../constants/ClientConstants.js";
+import AddressBookQuery from "../network/AddressBookQueryWeb.js";
+import FileId from "../file/FileId.js";
 
 /**
  * @typedef {import("./Client.js").ClientConfiguration} ClientConfiguration
+ * @typedef {import("../account/AccountId.js").default} AccountId
  */
 
 export const Network = {
@@ -60,17 +62,20 @@ export default class WebClient extends Client {
                 switch (props.network) {
                     case "mainnet":
                         this.setNetwork(Network.MAINNET);
+                        this.setMirrorNetwork(MirrorNetwork.MAINNET);
                         this.setLedgerId(LedgerId.MAINNET);
                         break;
 
                     case "testnet":
                         this.setNetwork(Network.TESTNET);
                         this.setLedgerId(LedgerId.TESTNET);
+                        this.setMirrorNetwork(MirrorNetwork.TESTNET);
                         break;
 
                     case "previewnet":
                         this.setNetwork(Network.PREVIEWNET);
                         this.setLedgerId(LedgerId.PREVIEWNET);
+                        this.setMirrorNetwork(MirrorNetwork.PREVIEWNET);
                         break;
 
                     default:
@@ -80,6 +85,17 @@ export default class WebClient extends Client {
                         );
                 }
             } else if (props.network != null) {
+                Client._validateNetworkConsistency(props.network);
+
+                const { shard, realm } = Client._extractShardRealm(
+                    props.network,
+                );
+
+                // Shard and realm are inferred from the network, so we need to set them here
+                // to ensure that the client is properly configured.
+                this._shard = shard;
+                this._realm = realm;
+
                 this.setNetwork(props.network);
             }
         }
@@ -113,7 +129,7 @@ export default class WebClient extends Client {
      * @returns {WebClient}
      */
     static forNetwork(network) {
-        return new WebClient({ network, scheduleNetworkUpdate: false });
+        return new WebClient({ network });
     }
 
     /**
@@ -121,7 +137,7 @@ export default class WebClient extends Client {
      * @returns {WebClient}
      */
     static forName(network) {
-        return new WebClient({ network, scheduleNetworkUpdate: false });
+        return new WebClient({ network });
     }
 
     /**
@@ -132,7 +148,6 @@ export default class WebClient extends Client {
     static forMainnet() {
         return new WebClient({
             network: "mainnet",
-            scheduleNetworkUpdate: false,
         });
     }
 
@@ -144,7 +159,6 @@ export default class WebClient extends Client {
     static forTestnet() {
         return new WebClient({
             network: "testnet",
-            scheduleNetworkUpdate: false,
         });
     }
 
@@ -156,8 +170,24 @@ export default class WebClient extends Client {
     static forPreviewnet() {
         return new WebClient({
             network: "previewnet",
-            scheduleNetworkUpdate: false,
         });
+    }
+
+    /**
+     * Construct a client configured to use mirror nodes.
+     * This will query the address book to get the network nodes.
+     *
+     * @param {string[] | string} mirrorNetwork
+     * @returns {Promise<WebClient>}
+     */
+    static async forMirrorNetwork(mirrorNetwork) {
+        const client = new WebClient();
+
+        client.setMirrorNetwork(mirrorNetwork);
+
+        await client.updateNetwork();
+
+        return client;
     }
 
     /**
@@ -185,15 +215,71 @@ export default class WebClient extends Client {
      * @param {string[] | string} mirrorNetwork
      * @returns {this}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setMirrorNetwork(mirrorNetwork) {
         if (typeof mirrorNetwork === "string") {
-            this._mirrorNetwork.setNetwork([]);
+            switch (mirrorNetwork) {
+                case "local-node":
+                    this._mirrorNetwork.setNetwork(MirrorNetwork.LOCAL_NODE);
+                    break;
+                case "previewnet":
+                    this._mirrorNetwork.setNetwork(MirrorNetwork.PREVIEWNET);
+                    break;
+                case "testnet":
+                    this._mirrorNetwork.setNetwork(MirrorNetwork.TESTNET);
+                    break;
+                case "mainnet":
+                    this._mirrorNetwork.setNetwork(MirrorNetwork.MAINNET);
+                    break;
+                default:
+                    this._mirrorNetwork.setNetwork([mirrorNetwork]);
+            }
         } else {
             this._mirrorNetwork.setNetwork(mirrorNetwork);
         }
 
         return this;
+    }
+
+    /**
+     * @override
+     * @returns {Promise<void>}
+     */
+    async updateNetwork() {
+        if (this._isUpdatingNetwork) {
+            return;
+        }
+
+        this._isUpdatingNetwork = true;
+
+        try {
+            const addressBook = await new AddressBookQuery()
+                .setFileId(
+                    FileId.getAddressBookFileIdFor(this.shard, this.realm),
+                )
+                .execute(this);
+
+            /** @type {Record<string, AccountId>} */
+            const network = {};
+            for (const nodeAddress of addressBook.nodeAddresses) {
+                for (const endpoint of nodeAddress.addresses) {
+                    if (nodeAddress.accountId != null) {
+                        network[endpoint.toString()] = nodeAddress.accountId;
+                    }
+                }
+            }
+
+            this.setNetwork(network);
+        } catch (/** @type {unknown} */ error) {
+            if (this._logger) {
+                const errorMessage =
+                    error instanceof Error ? error.message : String(error);
+                this._logger.trace(
+                    `failed to update client address book: ${errorMessage}`,
+                );
+            }
+        } finally {
+            this._isUpdatingNetwork = false;
+        }
     }
 
     /**
@@ -212,15 +298,5 @@ export default class WebClient extends Client {
         return () => {
             throw new Error("mirror support is not supported in browsers");
         };
-    }
-
-    /**
-     * @override
-     * @returns {Promise<void>}
-     */
-    updateNetwork() {
-        return Promise.reject(
-            new Error("Update network is not supported in browsers"),
-        );
     }
 }

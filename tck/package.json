@@ -14,7 +14,7 @@
         "@hashgraph/sdk": "file:..",
         "body-parser": "^1.20.2",
         "express": "^4.19.2",
-        "glob": "^8.0.3",
+        "glob": "^11.0.3",
         "json-rpc-2.0": "^1.7.0",
         "lossless-json": "^1.0.5"
     },
