@@ -11,6 +11,11 @@ on:
         type: boolean
         required: false
         default: false
+      dual-publish-enabled:
+        description: "Dual Publish Enabled"
+        type: boolean
+        required: false
+        default: false
   push:
     tags:
       - "v*.*.*"
@@ -340,43 +345,55 @@ jobs:
           # Add the registry authentication stanza with variable substitution to the .npmrc configuration file.
           echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >>".npmrc"
 
-      - name: Publish Proto Release
+      - name: Publish Proto Release (@hashgraph/proto)
+        if: ${{ needs.validate-release.outputs.proto-publish-required == 'true' }}
         env:
-          NPM_HG_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
-          NPM_HL_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
+        run: |
+          task -v publish -- ${{ steps.proto-publish.outputs.args }}
         working-directory: packages/proto
-        if: ${{ needs.validate-release.outputs.proto-publish-required == 'true' && !cancelled() && !failure() }}
-        run: |
-          export NPM_TOKEN="${NPM_HG_TOKEN}"
-          task -v publish -- ${{ steps.proto-publish.outputs.args }}
-          cp package.json tmp.package.json
-          jq '.name |= sub("@hashgraph";"@hiero-ledger")' tmp.package.json > package.json
-          export NPM_TOKEN="${NPM_HL_TOKEN}"
-          task -v publish -- ${{ steps.proto-publish.outputs.args }}
-          mv tmp.package.json package.json
 
-      - name: Publish Cryptography Release
+      - name: Publish Cryptography Release (@hashgraph/cryptography)
+        if: ${{ needs.validate-release.outputs.crypto-publish-required == 'true' }}
         env:
-          NPM_HG_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
-          NPM_HL_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
+        run: |
+          task -v publish -- ${{ steps.crypto-publish.outputs.args }}
         working-directory: packages/cryptography
-        if: ${{ needs.validate-release.outputs.crypto-publish-required == 'true' && !cancelled() && !failure() }}
+
+      - name: Publish SDK Release (@hashgraph/sdk)
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
         run: |
-          export NPM_TOKEN="${NPM_HG_TOKEN}"
-          task -v publish -- ${{ steps.crypto-publish.outputs.args }}
+          task -v publish -- ${{ steps.sdk-publish.outputs.args }}
+
+      - name: Publish Proto Release (@hiero-ledger/proto)
+        if: ${{ inputs.dual-publish-enabled == true && needs.validate-release.outputs.proto-publish-required == 'true' }}
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
+        run: |
           cp package.json tmp.package.json
           jq '.name |= sub("@hashgraph";"@hiero-ledger")' tmp.package.json > package.json
           export NPM_TOKEN="${NPM_HL_TOKEN}"
-          task -v publish -- ${{ steps.crypto-publish.outputs.args }}
+          task -v publish -- ${{ steps.proto-publish.outputs.args }}
           mv tmp.package.json package.json
 
-      - name: Publish SDK Release
+      - name: Publish SDK Release (@hiero-ledger/cryptography)
+        if: ${{ inputs.dual-publish-enabled == true && needs.validate-release.outputs.crypto-publish-required == 'true' }}
         env:
-          NPM_HG_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
-          NPM_HL_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
         run: |
-          export NPM_TOKEN="${NPM_HG_TOKEN}"
+          cp package.json tmp.package.json
+          jq '.name |= sub("@hashgraph";"@hiero-ledger")' tmp.package.json > package.json
+          export NPM_TOKEN="${NPM_HL_TOKEN}"
           task -v publish -- ${{ steps.sdk-publish.outputs.args }}
+          mv tmp.package.json package.json
+
+      - name: Publish SDK Release (@hiero-ledger/sdk)
+        if: ${{ inputs.dual-publish-enabled == true }}
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
+        run: |
           cp package.json tmp.package.json
           jq '.name |= sub("@hashgraph";"@hiero-ledger")' tmp.package.json > package.json
           export NPM_TOKEN="${NPM_HL_TOKEN}"
