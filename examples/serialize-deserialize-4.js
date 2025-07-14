@@ -7,12 +7,42 @@ import {
     Logger,
     LogLevel,
     Transaction,
+    AccountCreateTransaction,
 } from "@hashgraph/sdk";
 import dotenv from "dotenv";
 
 /**
- * @description Serialize and deserialize so-called incomplete transaction, set node account ids and execute it
+ * @description Serialize and deserialize the so-called signed transaction, and execute it
  */
+
+/**
+ * Helper function to create an account
+ * @param {Client} client - The Hedera client
+ * @param {string} name - Name for logging purposes
+ * @param {Hbar} initialBalance - Initial balance for the account
+ * @returns {Promise<{accountId: AccountId, privateKey: PrivateKey}>}
+ */
+async function createAccount(client, name, initialBalance = new Hbar(10)) {
+    const privateKey = PrivateKey.generate();
+    const publicKey = privateKey.publicKey;
+
+    console.log(`Creating ${name} account...`);
+    console.log(`${name} private key = ${privateKey.toString()}`);
+    console.log(`${name} public key = ${publicKey.toString()}`);
+
+    const transaction = new AccountCreateTransaction()
+        .setInitialBalance(initialBalance)
+        .setKeyWithoutAlias(publicKey)
+        .freezeWith(client);
+
+    const response = await transaction.execute(client);
+    const receipt = await response.getReceipt(client);
+    const accountId = receipt.accountId;
+
+    console.log(`${name} account ID = ${accountId.toString()}\n`);
+
+    return { accountId, privateKey };
+}
 
 async function main() {
     // Ensure required environment variables are available
@@ -20,8 +50,6 @@ async function main() {
     if (
         !process.env.OPERATOR_KEY ||
         !process.env.OPERATOR_ID ||
-        !process.env.ALICE_KEY ||
-        !process.env.ALICE_ID ||
         !process.env.HEDERA_NETWORK
     ) {
         throw new Error("Please set required keys in .env file.");
@@ -32,8 +60,6 @@ async function main() {
     // Configure client using environment variables
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
     const operatorKey = PrivateKey.fromStringED25519(process.env.OPERATOR_KEY);
-    const aliceId = AccountId.fromString(process.env.ALICE_ID);
-    const aliceKey = PrivateKey.fromStringED25519(process.env.ALICE_KEY);
 
     const client = Client.forName(network).setOperator(operatorId, operatorKey);
 
@@ -42,10 +68,15 @@ async function main() {
     client.setLogger(infoLogger);
 
     try {
-        // 1. Create transaction
+        // Create Alice account instead of using environment variable
+        const { accountId: aliceId, privateKey: aliceKey } =
+            await createAccount(client, "Alice", new Hbar(20));
+
+        // 1. Create transaction and freeze it
         const transaction = new TransferTransaction()
             .addHbarTransfer(operatorId, new Hbar(-1))
-            .addHbarTransfer(aliceId, new Hbar(1));
+            .addHbarTransfer(aliceId, new Hbar(1))
+            .freezeWith(client);
 
         // 2. Serialize transaction into bytes
         const transactionBytes = transaction.toBytes();

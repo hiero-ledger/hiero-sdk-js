@@ -25,6 +25,7 @@ import {
     TokenUpdateTransaction,
     TokenWipeTransaction,
     TransferTransaction,
+    AccountCreateTransaction,
 } from "@hashgraph/sdk";
 
 /**
@@ -39,12 +40,6 @@ dotenv.config();
 // Configure accounts and client, and generate needed keys
 const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
 const operatorKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
-const treasuryId = AccountId.fromString(process.env.TREASURY_ID);
-const treasuryKey = PrivateKey.fromStringDer(process.env.TREASURY_KEY);
-const aliceId = AccountId.fromString(process.env.ALICE_ID);
-const aliceKey = PrivateKey.fromStringDer(process.env.ALICE_KEY);
-const bobId = AccountId.fromString(process.env.BOB_ID);
-const bobKey = PrivateKey.fromStringDer(process.env.BOB_KEY);
 const nodes = {
     "127.0.0.1:50211": new AccountId(3),
 };
@@ -59,7 +54,47 @@ const pauseKey = PrivateKey.generate();
 const freezeKey = PrivateKey.generate();
 const wipeKey = PrivateKey.generate();
 
+/**
+ * Helper function to create an account
+ * @param {string} name - Name for logging purposes
+ * @param {Hbar} initialBalance - Initial balance for the account
+ * @returns {Promise<{accountId: AccountId, privateKey: PrivateKey}>}
+ */
+async function createAccount(name, initialBalance = new Hbar(10)) {
+    const privateKey = PrivateKey.generate();
+    const publicKey = privateKey.publicKey;
+
+    console.log(`Creating ${name} account...`);
+    console.log(`${name} private key = ${privateKey.toString()}`);
+    console.log(`${name} public key = ${publicKey.toString()}`);
+
+    const transaction = new AccountCreateTransaction()
+        .setInitialBalance(initialBalance)
+        .setKeyWithoutAlias(publicKey)
+        .freezeWith(client);
+
+    const response = await transaction.execute(client);
+    const receipt = await response.getReceipt(client);
+    const accountId = receipt.accountId;
+
+    console.log(`${name} account ID = ${accountId.toString()}\n`);
+
+    return { accountId, privateKey };
+}
+
 async function main() {
+    // Create accounts instead of using environment variables
+    const { accountId: treasuryId, privateKey: treasuryKey } =
+        await createAccount("Treasury", new Hbar(50));
+    const { accountId: aliceId, privateKey: aliceKey } = await createAccount(
+        "Alice",
+        new Hbar(20),
+    );
+    const { accountId: bobId, privateKey: bobKey } = await createAccount(
+        "Bob",
+        new Hbar(20),
+    );
+
     // DEFINE CUSTOM FEE SCHEDULE
     let nftCustomFee = new CustomRoyaltyFee()
         .setNumerator(5)
