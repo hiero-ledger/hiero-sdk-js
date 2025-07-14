@@ -54,46 +54,57 @@ const pauseKey = PrivateKey.generate();
 const freezeKey = PrivateKey.generate();
 const wipeKey = PrivateKey.generate();
 
-/**
- * Helper function to create an account
- * @param {string} name - Name for logging purposes
- * @param {Hbar} initialBalance - Initial balance for the account
- * @returns {Promise<{accountId: AccountId, privateKey: PrivateKey}>}
- */
-async function createAccount(name, initialBalance = new Hbar(10)) {
-    const privateKey = PrivateKey.generate();
-    const publicKey = privateKey.publicKey;
+async function main() {
+    // Create Treasury account
+    console.log("Creating Treasury account...");
+    const treasuryKey = PrivateKey.generate();
+    const treasuryPublicKey = treasuryKey.publicKey;
+    console.log(`Treasury private key = ${treasuryKey.toString()}`);
+    console.log(`Treasury public key = ${treasuryPublicKey.toString()}`);
 
-    console.log(`Creating ${name} account...`);
-    console.log(`${name} private key = ${privateKey.toString()}`);
-    console.log(`${name} public key = ${publicKey.toString()}`);
-
-    const transaction = new AccountCreateTransaction()
-        .setInitialBalance(initialBalance)
-        .setKeyWithoutAlias(publicKey)
+    const treasuryTransaction = new AccountCreateTransaction()
+        .setInitialBalance(new Hbar(50))
+        .setKeyWithoutAlias(treasuryKey)
         .freezeWith(client);
 
-    const response = await transaction.execute(client);
-    const receipt = await response.getReceipt(client);
-    const accountId = receipt.accountId;
+    const treasuryResponse = await treasuryTransaction.execute(client);
+    const treasuryReceipt = await treasuryResponse.getReceipt(client);
+    const treasuryId = treasuryReceipt.accountId;
+    console.log(`Treasury account ID = ${treasuryId.toString()}\n`);
 
-    console.log(`${name} account ID = ${accountId.toString()}\n`);
+    // Create Alice account
+    console.log("Creating Alice account...");
+    const aliceKey = PrivateKey.generate();
+    const alicePublicKey = aliceKey.publicKey;
+    console.log(`Alice private key = ${aliceKey.toString()}`);
+    console.log(`Alice public key = ${alicePublicKey.toString()}`);
 
-    return { accountId, privateKey };
-}
+    const aliceTransaction = new AccountCreateTransaction()
+        .setInitialBalance(new Hbar(20))
+        .setKeyWithoutAlias(aliceKey)
+        .freezeWith(client);
 
-async function main() {
-    // Create accounts instead of using environment variables
-    const { accountId: treasuryId, privateKey: treasuryKey } =
-        await createAccount("Treasury", new Hbar(50));
-    const { accountId: aliceId, privateKey: aliceKey } = await createAccount(
-        "Alice",
-        new Hbar(20),
-    );
-    const { accountId: bobId, privateKey: bobKey } = await createAccount(
-        "Bob",
-        new Hbar(20),
-    );
+    const aliceResponse = await aliceTransaction.execute(client);
+    const aliceReceipt = await aliceResponse.getReceipt(client);
+    const aliceId = aliceReceipt.accountId;
+    console.log(`Alice account ID = ${aliceId.toString()}\n`);
+
+    // Create Bob account
+    console.log("Creating Bob account...");
+    const bobKey = PrivateKey.generate();
+    const bobPublicKey = bobKey.publicKey;
+    console.log(`Bob private key = ${bobKey.toString()}`);
+    console.log(`Bob public key = ${bobPublicKey.toString()}`);
+
+    const bobTransaction = new AccountCreateTransaction()
+        .setInitialBalance(new Hbar(20))
+        .setKeyWithoutAlias(bobKey)
+        .freezeWith(client);
+
+    const bobResponse = await bobTransaction.execute(client);
+    const bobReceipt = await bobResponse.getReceipt(client);
+    const bobId = bobReceipt.accountId;
+    console.log(`Bob account ID = ${bobId.toString()}\n`);
 
     // DEFINE CUSTOM FEE SCHEDULE
     let nftCustomFee = new CustomRoyaltyFee()

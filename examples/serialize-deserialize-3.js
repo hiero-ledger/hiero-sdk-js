@@ -15,35 +15,6 @@ import dotenv from "dotenv";
  * @description Serialize and deserialize the so-called signed transaction, and execute it
  */
 
-/**
- * Helper function to create an account
- * @param {Client} client - The Hedera client
- * @param {string} name - Name for logging purposes
- * @param {Hbar} initialBalance - Initial balance for the account
- * @returns {Promise<{accountId: AccountId, privateKey: PrivateKey}>}
- */
-async function createAccount(client, name, initialBalance = new Hbar(10)) {
-    const privateKey = PrivateKey.generate();
-    const publicKey = privateKey.publicKey;
-
-    console.log(`Creating ${name} account...`);
-    console.log(`${name} private key = ${privateKey.toString()}`);
-    console.log(`${name} public key = ${publicKey.toString()}`);
-
-    const transaction = new AccountCreateTransaction()
-        .setInitialBalance(initialBalance)
-        .setKeyWithoutAlias(publicKey)
-        .freezeWith(client);
-
-    const response = await transaction.execute(client);
-    const receipt = await response.getReceipt(client);
-    const accountId = receipt.accountId;
-
-    console.log(`${name} account ID = ${accountId.toString()}\n`);
-
-    return { accountId, privateKey };
-}
-
 async function main() {
     // Ensure required environment variables are available
     dotenv.config();
@@ -68,9 +39,22 @@ async function main() {
     client.setLogger(infoLogger);
 
     try {
-        // Create Alice account instead of using environment variable
-        const { accountId: aliceId, privateKey: aliceKey } =
-            await createAccount(client, "Alice", new Hbar(20));
+        // Create Alice account
+        console.log("Creating Alice account...");
+        const aliceKey = PrivateKey.generate();
+        const alicePublicKey = aliceKey.publicKey;
+        console.log(`Alice private key = ${aliceKey.toString()}`);
+        console.log(`Alice public key = ${alicePublicKey.toString()}`);
+
+        const aliceTransaction = new AccountCreateTransaction()
+            .setInitialBalance(new Hbar(20))
+            .setKeyWithoutAlias(aliceKey)
+            .freezeWith(client);
+
+        const aliceResponse = await aliceTransaction.execute(client);
+        const aliceReceipt = await aliceResponse.getReceipt(client);
+        const aliceId = aliceReceipt.accountId;
+        console.log(`Alice account ID = ${aliceId.toString()}\n`);
 
         // 1. Create transaction and freeze it
         const transaction = new TransferTransaction()
