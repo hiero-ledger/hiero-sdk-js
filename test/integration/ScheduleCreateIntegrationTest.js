@@ -16,7 +16,11 @@ import {
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { createAccount } from "./utils/Fixtures.js";
 
-describe("ScheduleCreate", function () {
+/**
+ * Skipped because Solo does not support schedule transactions
+ */
+// eslint-disable-next-line vitest/no-disabled-tests
+describe.skip("ScheduleCreate", function () {
     let env;
 
     const ONE_DAY_IN_NANOS = 60 * 60 * 24 * 1_000_000_000;
