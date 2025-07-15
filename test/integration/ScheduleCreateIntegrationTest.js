@@ -1,4 +1,3 @@
-/* eslint-disable vitest/no-disabled-tests */
 import { setTimeout } from "timers/promises";
 import {
     Hbar,
@@ -165,10 +164,7 @@ describe("ScheduleCreate", function () {
         expect(sch2.scheduleCreate.scheduledTransactionBody).not.to.be.null;
     });
 
-    /**
-     * Skipped because Solo does not support schedule transactions
-     */
-    it.skip("should not schedule 1 year into the future", async function () {
+    it("should not schedule 1 year into the future", async function () {
         const operatorId = env.operatorId;
 
         const { accountId: receiverId } = await createAccount(env.client);
@@ -439,7 +435,11 @@ describe("ScheduleCreate", function () {
         expect(info.executed).to.not.be.null;
     });
 
-    it("should execute with short expiration time", async function () {
+    /**
+     * Skipped because Solo doesn't handle short expiration times correctly
+     * https://github.com/hiero-ledger/solo/issues/2206#issuecomment-3032044331
+     */
+    it.skip("should execute with short expiration time", async function () {
         const hasJitter = false;
         const SHORT_EXPIRATION_TIME = 10_000;
 
@@ -491,7 +491,7 @@ describe("ScheduleCreate", function () {
             .setAccountId(accountId)
             .execute(env.client);
 
-        expect(balanceAfter.hbars.toTinybars().toNumber()).to.be.lte(
+        expect(balanceAfter.hbars.toTinybars().toNumber()).to.be.lt(
             balanceBefore.hbars.toTinybars().toNumber(),
         );
     });
