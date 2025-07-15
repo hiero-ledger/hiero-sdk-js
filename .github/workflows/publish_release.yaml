@@ -312,9 +312,11 @@ jobs:
       - name: Calculate Proto Subpackage Publish Arguments
         id: proto-publish
         if: ${{ needs.validate-release.outputs.proto-publish-required == 'true' && !cancelled() && !failure() }}
+        env:
+          DRY_RUN_ENABLED: ${{ inputs.dry-run-enabled || 'false'}}
         run: |
           PUBLISH_ARGS="--access public --no-git-checks"
-          [[ "${{ inputs.dry-run-enabled }}" == "true" ]] && PUBLISH_ARGS="${PUBLISH_ARGS} --dry-run"
+          [[ "${DRY_RUN_ENABLED}" == "true" ]] && PUBLISH_ARGS="${PUBLISH_ARGS} --dry-run"
           [[ "${{ needs.validate-release.outputs.proto-prerelease }}" == "true" ]] && PUBLISH_ARGS="${PUBLISH_ARGS} --tag ${{ needs.validate-release.outputs.proto-type }}"
 
           echo "args=${PUBLISH_ARGS}" >> "${GITHUB_OUTPUT}"
@@ -327,7 +329,7 @@ jobs:
         id: crypto-publish
         if: ${{ needs.validate-release.outputs.crypto-publish-required == 'true' && !cancelled() && !failure() }}
         env:
-          DRY_RUN_ENABLED: ${{ inputs.dry-run-enabled }}
+          DRY_RUN_ENABLED: ${{ inputs.dry-run-enabled || 'false' }}
         run: |
           PUBLISH_ARGS="--access public --no-git-checks"
           [[ "${DRY_RUN_ENABLED}" == "true" ]] && PUBLISH_ARGS="${PUBLISH_ARGS} --dry-run"
@@ -342,7 +344,7 @@ jobs:
       - name: Calculate SDK Publish Arguments
         id: sdk-publish
         env:
-          DRY_RUN_ENABLED: ${{ inputs.dry-run-enabled }}
+          DRY_RUN_ENABLED: ${{ inputs.dry-run-enabled || 'false' }}
         run: |
           PUBLISH_ARGS="--access public --no-git-checks"
           [[ "${DRY_RUN_ENABLED}" == "true" ]] && PUBLISH_ARGS="${PUBLISH_ARGS} --dry-run"
@@ -415,7 +417,7 @@ jobs:
 
       - name: Generate Github Release
         uses: ncipollo/release-action@440c8c1cb0ed28b9f43e4d1d670870f059653174 # v1.16.0
-        if: ${{ inputs.dry-run-enabled != 'true' && !cancelled() && !failure() }}
+        if: ${{ inputs.dry-run-enabled != 'true' }}
         with:
           tag: ${{ needs.validate-release.outputs.tag }}
           prerelease: ${{ needs.validate-release.outputs.prerelease == 'true' }}
