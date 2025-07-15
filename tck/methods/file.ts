@@ -2,12 +2,17 @@ import {
     FileCreateTransaction,
     FileAppendTransaction,
     FileUpdateTransaction,
+    FileDeleteTransaction,
     Timestamp,
 } from "@hashgraph/sdk";
 import Long from "long";
 
 import { applyCommonTransactionParams } from "../params/common-tx-params";
-import { FileCreateParams, FileAppendParams } from "../params/file";
+import {
+    FileCreateParams,
+    FileAppendParams,
+    FileDeleteParams,
+} from "../params/file";
 
 import { sdk } from "../sdk_data";
 import { FileResponse } from "../response/file";
@@ -136,6 +141,34 @@ export const appendFile = async ({
 
     if (chunkSize != null) {
         transaction.setChunkSize(chunkSize);
+    }
+
+    if (commonTransactionParams != null) {
+        applyCommonTransactionParams(
+            commonTransactionParams,
+            transaction,
+            sdk.getClient(),
+        );
+    }
+
+    const response = await transaction.execute(sdk.getClient());
+    const receipt = await response.getReceipt(sdk.getClient());
+
+    return {
+        status: receipt.status.toString(),
+    };
+};
+
+export const deleteFile = async ({
+    fileId,
+    commonTransactionParams,
+}: FileDeleteParams): Promise<FileResponse> => {
+    const transaction = new FileDeleteTransaction().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+
+    if (fileId != null) {
+        transaction.setFileId(fileId);
     }
 
     if (commonTransactionParams != null) {

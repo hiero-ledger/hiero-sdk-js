@@ -25,6 +25,7 @@ import {
     TokenUpdateTransaction,
     TokenWipeTransaction,
     TransferTransaction,
+    AccountCreateTransaction,
 } from "@hashgraph/sdk";
 
 /**
@@ -39,12 +40,6 @@ dotenv.config();
 // Configure accounts and client, and generate needed keys
 const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
 const operatorKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
-const treasuryId = AccountId.fromString(process.env.TREASURY_ID);
-const treasuryKey = PrivateKey.fromStringDer(process.env.TREASURY_KEY);
-const aliceId = AccountId.fromString(process.env.ALICE_ID);
-const aliceKey = PrivateKey.fromStringDer(process.env.ALICE_KEY);
-const bobId = AccountId.fromString(process.env.BOB_ID);
-const bobKey = PrivateKey.fromStringDer(process.env.BOB_KEY);
 const nodes = {
     "127.0.0.1:50211": new AccountId(3),
 };
@@ -60,6 +55,57 @@ const freezeKey = PrivateKey.generate();
 const wipeKey = PrivateKey.generate();
 
 async function main() {
+    // Create Treasury account
+    console.log("Creating Treasury account...");
+    const treasuryKey = PrivateKey.generate();
+    const treasuryPublicKey = treasuryKey.publicKey;
+    console.log(`Treasury private key = ${treasuryKey.toString()}`);
+    console.log(`Treasury public key = ${treasuryPublicKey.toString()}`);
+
+    const treasuryTransaction = new AccountCreateTransaction()
+        .setInitialBalance(new Hbar(50))
+        .setKeyWithoutAlias(treasuryKey)
+        .freezeWith(client);
+
+    const treasuryResponse = await treasuryTransaction.execute(client);
+    const treasuryReceipt = await treasuryResponse.getReceipt(client);
+    const treasuryId = treasuryReceipt.accountId;
+    console.log(`Treasury account ID = ${treasuryId.toString()}\n`);
+
+    // Create Alice account
+    console.log("Creating Alice account...");
+    const aliceKey = PrivateKey.generate();
+    const alicePublicKey = aliceKey.publicKey;
+    console.log(`Alice private key = ${aliceKey.toString()}`);
+    console.log(`Alice public key = ${alicePublicKey.toString()}`);
+
+    const aliceTransaction = new AccountCreateTransaction()
+        .setInitialBalance(new Hbar(20))
+        .setKeyWithoutAlias(aliceKey)
+        .freezeWith(client);
+
+    const aliceResponse = await aliceTransaction.execute(client);
+    const aliceReceipt = await aliceResponse.getReceipt(client);
+    const aliceId = aliceReceipt.accountId;
+    console.log(`Alice account ID = ${aliceId.toString()}\n`);
+
+    // Create Bob account
+    console.log("Creating Bob account...");
+    const bobKey = PrivateKey.generate();
+    const bobPublicKey = bobKey.publicKey;
+    console.log(`Bob private key = ${bobKey.toString()}`);
+    console.log(`Bob public key = ${bobPublicKey.toString()}`);
+
+    const bobTransaction = new AccountCreateTransaction()
+        .setInitialBalance(new Hbar(20))
+        .setKeyWithoutAlias(bobKey)
+        .freezeWith(client);
+
+    const bobResponse = await bobTransaction.execute(client);
+    const bobReceipt = await bobResponse.getReceipt(client);
+    const bobId = bobReceipt.accountId;
+    console.log(`Bob account ID = ${bobId.toString()}\n`);
+
     // DEFINE CUSTOM FEE SCHEDULE
     let nftCustomFee = new CustomRoyaltyFee()
         .setNumerator(5)

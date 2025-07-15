@@ -85,14 +85,6 @@ jobs:
         with:
           version: 3.35.1
 
-      - name: "Create env file"
-        run: |
-          touch .env
-          echo OPERATOR_KEY="0xa608e2130a0a3cb34f86e757303c862bee353d9ab77ba4387ec084f881d420d4" >> .env
-          echo OPERATOR_ID="0.0.1022" >> .env
-          echo HEDERA_NETWORK="local-node" >> .env
-          cat .env
-
       # Note: After Step-Security is enabled return to step-security/action-setup version
       - name: Install PNPM
         uses: step-security/action-setup@598c7206e1c7d361165e303487aa7772566a8e05 # v4.1.0
@@ -109,16 +101,21 @@ jobs:
         id: build-sdk
         run: task build
 
-      - name: Start the local node
-        id: start-local-node
-        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
+      - name: Prepare Hiero Solo
+        id: solo
+        uses: hiero-ledger/hiero-solo-action@a39acf8cfbaa2feb195a86530d0ab643a45aa541 # v0.10
+        with:
+          installMirrorNode: true
+          hieroVersion: v0.63.7
+
+      - name: Set Operator Account
         run: |
-          ${{ env.CG_EXEC }} npx @hashgraph/hedera-local start -d -—network local --balance=100000 --network-tag=0.63.7
-          # Wait for the network to fully start
-          sleep 30
+          echo "OPERATOR_KEY=${{ steps.solo.outputs.ed25519PrivateKey }}" >> $GITHUB_ENV
+          echo "OPERATOR_ID=${{ steps.solo.outputs.ed25519AccountId }}" >> $GITHUB_ENV
+          echo "HEDERA_NETWORK=local-node" >> $GITHUB_ENV
 
       - name: Run Hedera SDK Integration Tests
-        if: ${{ steps.build-sdk.conclusion == 'success' && steps.start-local-node.conclusion == 'success' && !cancelled() && always() }}
+        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
         run: ${{ env.CG_EXEC }} task test:integration:codecov
 
       - name: Upload coverage to Codecov
@@ -127,11 +124,6 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/lcov.info
           fail_ci_if_error: false
-
-      - name: Stop the local node
-        id: stop-local-node
-        if: ${{ steps.start-local-node.conclusion == 'success' && !cancelled() && always() }}
-        run: ${{ env.CG_EXEC }} npx @hashgraph/hedera-local stop
 
       - name: Build @hashgraph/cryptography
         working-directory: packages/cryptography
@@ -213,21 +205,23 @@ jobs:
         id: build-sdk
         run: task build
 
-      - name: Start the local node
-        id: start-local-node
-        if: ${{ !cancelled() && always() }}
+      - name: Prepare Hiero Solo
+        id: solo
+        uses: hiero-ledger/hiero-solo-action@a39acf8cfbaa2feb195a86530d0ab643a45aa541 # v0.10
+        with:
+          installMirrorNode: true
+          hieroVersion: v0.63.7
+
+      - name: Set Operator Account
         run: |
-          ${{ env.CG_EXEC }} npx @hashgraph/hedera-local start -d -—network local --balance=100000 --network-tag=0.63.7
-          sleep 30
+          echo "OPERATOR_KEY=${{ steps.solo.outputs.ed25519PrivateKey }}" >> $GITHUB_ENV
+          echo "OPERATOR_ID=${{ steps.solo.outputs.ed25519AccountId }}" >> $GITHUB_ENV
+          echo "HEDERA_NETWORK=local-node" >> $GITHUB_ENV
 
       - name: Install dependencies
         run: |
           cd examples
           pnpm i
 
-      - name: Run all еxamples
+      - name: Run all examples
         run: task run:examples
-      - name: Stop the local node
-        id: stop-local-node
-        if: ${{ steps.start-local-node.conclusion == 'success' && !cancelled() && always() }}
-        run: ${{ env.CG_EXEC }} npx @hashgraph/hedera-local stop

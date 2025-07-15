@@ -7,11 +7,12 @@ import {
     Logger,
     LogLevel,
     Transaction,
+    AccountCreateTransaction,
 } from "@hashgraph/sdk";
 import dotenv from "dotenv";
 
 /**
- * @description Serialize and deserialize so-called incomplete transaction, update and execute it
+ * @description Serialize and deserialize the so-called signed transaction, and execute it
  */
 
 async function main() {
@@ -20,8 +21,6 @@ async function main() {
     if (
         !process.env.OPERATOR_KEY ||
         !process.env.OPERATOR_ID ||
-        !process.env.ALICE_KEY ||
-        !process.env.ALICE_ID ||
         !process.env.HEDERA_NETWORK
     ) {
         throw new Error("Please set required keys in .env file.");
@@ -32,8 +31,6 @@ async function main() {
     // Configure client using environment variables
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
     const operatorKey = PrivateKey.fromStringED25519(process.env.OPERATOR_KEY);
-    const aliceId = AccountId.fromString(process.env.ALICE_ID);
-    const aliceKey = PrivateKey.fromStringED25519(process.env.ALICE_KEY);
 
     const client = Client.forName(network).setOperator(operatorId, operatorKey);
 
@@ -42,11 +39,28 @@ async function main() {
     client.setLogger(infoLogger);
 
     try {
-        // 1. Create transaction
-        const transaction = new TransferTransaction().addHbarTransfer(
-            operatorId,
-            new Hbar(1).negated(),
-        );
+        // Create Alice account
+        console.log("Creating Alice account...");
+        const aliceKey = PrivateKey.generate();
+        const alicePublicKey = aliceKey.publicKey;
+        console.log(`Alice private key = ${aliceKey.toString()}`);
+        console.log(`Alice public key = ${alicePublicKey.toString()}`);
+
+        const aliceTransaction = new AccountCreateTransaction()
+            .setInitialBalance(new Hbar(20))
+            .setKeyWithoutAlias(aliceKey)
+            .freezeWith(client);
+
+        const aliceResponse = await aliceTransaction.execute(client);
+        const aliceReceipt = await aliceResponse.getReceipt(client);
+        const aliceId = aliceReceipt.accountId;
+        console.log(`Alice account ID = ${aliceId.toString()}\n`);
+
+        // 1. Create transaction and freeze it
+        const transaction = new TransferTransaction()
+            .addHbarTransfer(operatorId, new Hbar(-1))
+            .addHbarTransfer(aliceId, new Hbar(1))
+            .freezeWith(client);
 
         // 2. Serialize transaction into bytes
         const transactionBytes = transaction.toBytes();

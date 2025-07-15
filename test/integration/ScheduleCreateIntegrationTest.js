@@ -435,7 +435,12 @@ describe("ScheduleCreate", function () {
         expect(info.executed).to.not.be.null;
     });
 
-    it("should execute with short expiration time", async function () {
+    /**
+     * Skipped because Solo doesn't handle short expiration times correctly
+     * https://github.com/hiero-ledger/solo/issues/2206#issuecomment-3032044331
+     */
+    // eslint-disable-next-line vitest/no-disabled-tests
+    it.skip("should execute with short expiration time", async function () {
         const hasJitter = false;
         const SHORT_EXPIRATION_TIME = 10_000;
 
@@ -487,7 +492,7 @@ describe("ScheduleCreate", function () {
             .setAccountId(accountId)
             .execute(env.client);
 
-        expect(balanceAfter.hbars.toTinybars().toNumber()).to.be.lte(
+        expect(balanceAfter.hbars.toTinybars().toNumber()).to.be.lt(
             balanceBefore.hbars.toTinybars().toNumber(),
         );
     });

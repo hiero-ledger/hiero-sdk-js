@@ -22,3 +22,8 @@ export interface FileAppendParams {
     readonly chunkSize: number;
     readonly commonTransactionParams?: Record<string, any>;
 }
+
+export interface FileDeleteParams {
+    readonly fileId: string;
+    readonly commonTransactionParams?: Record<string, any>;
+}
