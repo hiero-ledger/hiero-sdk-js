@@ -1,3 +1,4 @@
+/* eslint-disable vitest/no-disabled-tests */
 import { setTimeout } from "timers/promises";
 import {
     Hbar,
@@ -16,11 +17,7 @@ import {
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { createAccount } from "./utils/Fixtures.js";
 
-/**
- * Skipped because Solo does not support schedule transactions
- */
-// eslint-disable-next-line vitest/no-disabled-tests
-describe.skip("ScheduleCreate", function () {
+describe("ScheduleCreate", function () {
     let env;
 
     const ONE_DAY_IN_NANOS = 60 * 60 * 24 * 1_000_000_000;
@@ -168,7 +165,10 @@ describe.skip("ScheduleCreate", function () {
         expect(sch2.scheduleCreate.scheduledTransactionBody).not.to.be.null;
     });
 
-    it("should not schedule 1 year into the future", async function () {
+    /**
+     * Skipped because Solo does not support schedule transactions
+     */
+    it.skip("should not schedule 1 year into the future", async function () {
         const operatorId = env.operatorId;
 
         const { accountId: receiverId } = await createAccount(env.client);
