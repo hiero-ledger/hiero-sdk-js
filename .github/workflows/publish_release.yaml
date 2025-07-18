@@ -427,9 +427,6 @@ jobs:
         run: |
           task -v publish -- ${{ steps.sdk-publish.outputs.args }}
 
-      ## Update the code
-      ## Run safety checks against the updated code
-      ## Publish the @hiero-ledger/<module>s
       - name: Update Files for Dual Publish
         if: ${{ env.DUAL_PUBLISH_ENABLED == 'true' }}
         run: |
