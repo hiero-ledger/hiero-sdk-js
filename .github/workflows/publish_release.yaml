@@ -32,7 +32,9 @@ jobs:
   validate-release:
     name: Validate Release
     runs-on: hiero-client-sdk-linux-medium
-
+    env:
+      # Set the default to 'true' when the dual-publishing period is active
+      DUAL_PUBLISH_ENABLED: ${{ inputs.dual-publish-enabled || 'false' }}
     outputs:
       # Project tag
       tag: ${{ steps.tag.outputs.name }}
@@ -41,18 +43,22 @@ jobs:
       sdk-version: ${{ steps.tag.outputs.version }}
       sdk-prerelease: ${{ steps.tag.outputs.prerelease }}
       sdk-type: ${{ steps.tag.outputs.type }}
+      hashgraph-sdk-publish-required: ${{ steps.sdk-required.outputs.publish-required }}
+      hiero-sdk-publish-required: ${{ steps.hiero-sdk-required.outputs.publish-required }}
 
       # proto sub-package
       proto-version: ${{ steps.npm-package.outputs.proto-version }}
       proto-prerelease: ${{ steps.proto-package.outputs.prerelease }}
       proto-type: ${{ steps.proto-package.outputs.type }}
-      proto-publish-required: ${{ steps.proto-required.outputs.publish-required }}
+      hashgraph-proto-publish-required: ${{ steps.proto-required.outputs.publish-required }}
+      hiero-proto-publish-required: ${{ steps.hiero-proto-required.outputs.publish-required }}
 
       # crypto sub-package
       crypto-version: ${{ steps.npm-package.outputs.crypto-version }}
       crypto-prerelease: ${{ steps.crypto-package.output.prerelease }}
       crypto-type: ${{ steps.crypto-package.output.type }}
-      crypto-publish-required: ${{ steps.crypto-required.outputs.publish-required }}
+      hashgraph-crypto-publish-required: ${{ steps.crypto-required.outputs.publish-required }}
+      hiero-crypto-publish-required: ${{ steps.hiero-crypto-required.outputs.publish-required }}
 
     steps:
       - name: Harden Runner
@@ -105,11 +111,54 @@ jobs:
 
           echo "publish-required=${PUBLISH_REQUIRED}" >>"${GITHUB_OUTPUT}"
 
+      - name: Hiero Proto Subpackage Publish Required
+        id: hiero-proto-required
+        if: ${{ env.DUAL_PUBLISH_ENABLED == 'true' }}
+        run: |
+          PUBLISH_REQUIRED="false"
+          if ! curl -sSLf "https://registry.npmjs.org/@hiero-ledger/proto/${{ steps.npm-package.outputs.proto-version }}" >/dev/null 2>&1; then
+            PUBLISH_REQUIRED="true"
+          fi
+
+          echo "publish-required=${PUBLISH_REQUIRED}" >>"${GITHUB_OUTPUT}"
+
       - name: Crypto Subpackage Publish Required
         id: crypto-required
         run: |
           PUBLISH_REQUIRED="false"
           if ! curl -sSLf "https://registry.npmjs.org/@hashgraph/cryptography/${{ steps.npm-package.outputs.crypto-version }}" >/dev/null 2>&1; then
+            PUBLISH_REQUIRED="true"
+          fi
+
+          echo "publish-required=${PUBLISH_REQUIRED}" >>"${GITHUB_OUTPUT}"
+
+      - name: Hiero Crypto Subpackage Publish Required
+        id: hiero-crypto-required
+        if: ${{ env.DUAL_PUBLISH_ENABLED == 'true' }}
+        run: |
+          PUBLISH_REQUIRED="false"
+          if ! curl -sSLf "https://registry.npmjs.org/@hiero-ledger/cryptography/${{ steps.npm-package.outputs.crypto-version }}" >/dev/null 2>&1; then
+            PUBLISH_REQUIRED="true"
+          fi
+
+          echo "publish-required=${PUBLISH_REQUIRED}" >>"${GITHUB_OUTPUT}"
+
+      - name: SDK Publish Required
+        id: sdk-required
+        run: |
+          PUBLISH_REQUIRED="false"
+          if ! curl -sSLf "https://registry.npmjs.org/@hashgraph/sdk/${{ steps.npm-package.outputs.sdk-version }}" >/dev/null 2>&1; then
+            PUBLISH_REQUIRED="true"
+          fi
+
+          echo "publish-required=${PUBLISH_REQUIRED}" >>"${GITHUB_OUTPUT}"
+
+      - name: Hiero SDK Publish Required
+        id: hiero-sdk-required
+        if: ${{ env.DUAL_PUBLISH_ENABLED == 'true' }}
+        run: |
+          PUBLISH_REQUIRED="false"
+          if ! curl -sSLf "https://registry.npmjs.org/@hiero-ledger/sdk/${{ steps.npm-package.outputs.sdk-version }}" >/dev/null 2>&1; then
             PUBLISH_REQUIRED="true"
           fi
 
@@ -250,7 +299,6 @@ jobs:
         with:
           version: 3.35.1
 
-      # Note: After Step-Security is enabled return to step-security/action-setup version
       - name: Install PNPM
         uses: step-security/action-setup@598c7206e1c7d361165e303487aa7772566a8e05 # v4.1.0
         with:
@@ -271,6 +319,7 @@ jobs:
     env:
       # Set the default to 'true' when the dual-publishing period is active
       DUAL_PUBLISH_ENABLED: ${{ inputs.dual-publish-enabled || 'false' }}
+      DRY_RUN_ENABLED: ${{ inputs.dry-run-enabled || 'false'}}
     needs:
       - validate-release
       - run-safety-checks
@@ -291,7 +340,6 @@ jobs:
         with:
           version: 3.35.1
 
-      # Note: After Step-Security is enabled return to step-security/action-setup version
       - name: Install PNPM
         uses: step-security/action-setup@598c7206e1c7d361165e303487aa7772566a8e05 # v4.1.0
         with:
@@ -311,9 +359,9 @@ jobs:
 
       - name: Calculate Proto Subpackage Publish Arguments
         id: proto-publish
-        if: ${{ needs.validate-release.outputs.proto-publish-required == 'true' && !cancelled() && !failure() }}
-        env:
-          DRY_RUN_ENABLED: ${{ inputs.dry-run-enabled || 'false'}}
+        if: ${{ (needs.validate-release.outputs.hashgraph-proto-publish-required == 'true' ||
+          needs.validate-release.outputs.hiero-proto-publish-required == 'true') && 
+          !cancelled() && !failure() }}
         run: |
           PUBLISH_ARGS="--access public --no-git-checks"
           [[ "${DRY_RUN_ENABLED}" == "true" ]] && PUBLISH_ARGS="${PUBLISH_ARGS} --dry-run"
@@ -327,9 +375,9 @@ jobs:
 
       - name: Calculate Crypto Subpackage Publish Arguments
         id: crypto-publish
-        if: ${{ needs.validate-release.outputs.crypto-publish-required == 'true' && !cancelled() && !failure() }}
-        env:
-          DRY_RUN_ENABLED: ${{ inputs.dry-run-enabled || 'false' }}
+        if: ${{ (needs.validate-release.outputs.hashgraph-crypto-publish-required == 'true' ||
+          needs.validate-release.outputs.hiero-crypto-publish-required) &&
+          !cancelled() && !failure() }}
         run: |
           PUBLISH_ARGS="--access public --no-git-checks"
           [[ "${DRY_RUN_ENABLED}" == "true" ]] && PUBLISH_ARGS="${PUBLISH_ARGS} --dry-run"
@@ -343,8 +391,9 @@ jobs:
 
       - name: Calculate SDK Publish Arguments
         id: sdk-publish
-        env:
-          DRY_RUN_ENABLED: ${{ inputs.dry-run-enabled || 'false' }}
+        if: ${{ (needs.validate-release.outputs.hashgraph-sdk-publish-required == 'true' ||
+          needs.validate-release.outputs.hiero-sdk-publish-required == 'true') &&
+          !cancelled() && !failure() }}
         run: |
           PUBLISH_ARGS="--access public --no-git-checks"
           [[ "${DRY_RUN_ENABLED}" == "true" ]] && PUBLISH_ARGS="${PUBLISH_ARGS} --dry-run"
@@ -356,7 +405,7 @@ jobs:
           echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >>".npmrc"
 
       - name: Publish Proto Release (@hashgraph/proto)
-        if: ${{ needs.validate-release.outputs.proto-publish-required == 'true' }}
+        if: ${{ needs.validate-release.outputs.hashgraph-proto-publish-required == 'true' }}
         env:
           NPM_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
         run: |
@@ -364,7 +413,7 @@ jobs:
         working-directory: packages/proto
 
       - name: Publish Cryptography Release (@hashgraph/cryptography)
-        if: ${{ needs.validate-release.outputs.crypto-publish-required == 'true' }}
+        if: ${{ needs.validate-release.outputs.hashgraph-crypto-publish-required == 'true' }}
         env:
           NPM_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
         run: |
@@ -372,52 +421,69 @@ jobs:
         working-directory: packages/cryptography
 
       - name: Publish SDK Release (@hashgraph/sdk)
+        if: ${{ needs.validate-release.outputs.hashgraph-sdk-publish-required == 'true' }}
         env:
           NPM_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
         run: |
           task -v publish -- ${{ steps.sdk-publish.outputs.args }}
 
+      ## Update the code
+      ## Run safety checks against the updated code
+      ## Publish the @hiero-ledger/<module>s
+      - name: Update Files for Dual Publish
+        if: ${{ env.DUAL_PUBLISH_ENABLED == 'true' }}
+        run: |
+          echo "::group::Update package.json files for dual publish"
+          files=("package.json" "packages/proto/package.json" "packages/cryptography/package.json")
+          for file in "${files[@]}"; do
+            if [[ -f "$file" ]]; then
+              cp "$file" "$file.tmp"
+              jq '.name |= sub("@hashgraph";"@hiero-ledger")' "$file.tmp" > "$file"
+            else
+              echo "::warning::File $file does not exist, skipping update."
+            fi
+          done
+          
+          find . -type f -name "*.js" -exec sed -i "s/\b@hashgraph\/proto\b/@hiero-ledger\/proto/g" {} +
+          find . -type f -name "*.js" -exec sed -i "s/\b@hashgraph\/cryptography\b/@hiero-ledger\/cryptography/g" {} +
+          find . -type f -name "*.js" -exec sed -i "s/\b@hashgraph\/sdk\b/@hiero-ledger\/sdk/g" {} +
+          echo "::endgroup::"
+
+      - name: Run safety checks
+        run: task -v build
+
       - name: Publish Proto Release (@hiero-ledger/proto)
-        if: ${{ needs.validate-release.outputs.proto-publish-required == 'true' }}
+        if: ${{ needs.validate-release.outputs.hiero-proto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED }}
         env:
           NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
         run: |
-          if [[ "${DUAL_PUBLISH_ENABLED}" == "true" ]]; then
-            cp package.json tmp.package.json
-            jq '.name |= sub("@hashgraph";"@hiero-ledger")' tmp.package.json > package.json
-            export NPM_TOKEN="${NPM_HL_TOKEN}"
             task -v publish -- ${{ steps.proto-publish.outputs.args }}
-            mv tmp.package.json package.json
-          fi
 
       - name: Publish SDK Release (@hiero-ledger/cryptography)
-        if: ${{ needs.validate-release.outputs.crypto-publish-required == 'true' }}
+        if: ${{ needs.validate-release.outputs.hiero-crypto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED }}
         env:
           NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
         run: |
-          if [[ "${DUAL_PUBLISH_ENABLED}" == "true" ]]; then
-            cp package.json tmp.package.json
-            jq '.name |= sub("@hashgraph";"@hiero-ledger")' tmp.package.json > package.json
-            export NPM_TOKEN="${NPM_HL_TOKEN}"
-            task -v publish -- ${{ steps.sdk-publish.outputs.args }}
-            mv tmp.package.json package.json
-          fi
+          task -v publish -- ${{ steps.sdk-publish.outputs.args }}
 
       - name: Publish SDK Release (@hiero-ledger/sdk)
+        if: ${{ needs.validate-release.outputs.hiero-sdk-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED }}
         env:
           NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
         run: |
-          if [[ "${DUAL_PUBLISH_ENABLED}" == "true" ]]; then
-            cp package.json tmp.package.json
-            jq '.name |= sub("@hashgraph";"@hiero-ledger")' tmp.package.json > package.json
-            export NPM_TOKEN="${NPM_HL_TOKEN}"
-            task -v publish -- ${{ steps.sdk-publish.outputs.args }}
-            mv tmp.package.json package.json
-          fi
+          task -v publish -- ${{ steps.sdk-publish.outputs.args }}
+
+      - name: Reset workspace
+        if: ${{ env.DUAL_PUBLISH_ENABLED == 'true' }}
+        run: |
+          echo "::group::Reset workspace"
+          git reset --hard
+          git clean -fdx
+          echo "::endgroup::"
 
       - name: Generate Github Release
         uses: ncipollo/release-action@440c8c1cb0ed28b9f43e4d1d670870f059653174 # v1.16.0
-        if: ${{ inputs.dry-run-enabled != 'true' }}
+        if: ${{ env.DRY_RUN_ENABLED == 'true' }}
         with:
           tag: ${{ needs.validate-release.outputs.tag }}
           prerelease: ${{ needs.validate-release.outputs.prerelease == 'true' }}
