@@ -453,21 +453,21 @@ jobs:
         run: task -v build
 
       - name: Publish Proto Release (@hiero-ledger/proto)
-        if: ${{ needs.validate-release.outputs.hiero-proto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED }}
+        if: ${{ needs.validate-release.outputs.hiero-proto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
         env:
           NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
         run: |
             task -v publish -- ${{ steps.proto-publish.outputs.args }}
 
       - name: Publish SDK Release (@hiero-ledger/cryptography)
-        if: ${{ needs.validate-release.outputs.hiero-crypto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED }}
+        if: ${{ needs.validate-release.outputs.hiero-crypto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
         env:
           NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
         run: |
           task -v publish -- ${{ steps.sdk-publish.outputs.args }}
 
       - name: Publish SDK Release (@hiero-ledger/sdk)
-        if: ${{ needs.validate-release.outputs.hiero-sdk-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED }}
+        if: ${{ needs.validate-release.outputs.hiero-sdk-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
         env:
           NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
         run: |
@@ -483,7 +483,7 @@ jobs:
 
       - name: Generate Github Release
         uses: ncipollo/release-action@440c8c1cb0ed28b9f43e4d1d670870f059653174 # v1.16.0
-        if: ${{ env.DRY_RUN_ENABLED == 'true' }}
+        if: ${{ env.DRY_RUN_ENABLED != 'true' }}
         with:
           tag: ${{ needs.validate-release.outputs.tag }}
           prerelease: ${{ needs.validate-release.outputs.prerelease == 'true' }}
