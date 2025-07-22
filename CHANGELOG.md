@@ -8,10 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## v2.69.0
 
 ### Added
-- Added validation to NodeUpdateTransaction and NodeDeleteTransaction ensuring that nodeId is explicitly set before execution. This prevents accidental updates to node 0.0.3 due to protobuf's default uint64 = 0 behavior.
+- Added validation to NodeUpdateTransaction and NodeDeleteTransaction ensuring that nodeId is explicitly set before execution. This prevents accidental updates to node 0.0.3 due to protobuf's default uint64 = 0 behavior. [3228](https://github.com/hiero-ledger/hiero-sdk-js/pull/3228)
 
 ### Fixed
-- Fixed formatting of the X-User-Agent header in the JavaScript SDK to ensure correct identification by the Consensus Node. The header now uses the format: X-User-Agent: hiero-sdk-js/<version> (e.g., hiero-sdk-js/1.2.3), preventing misclassification as unknown/unspecified usage.
+- Fixed formatting of the X-User-Agent header in the JavaScript SDK to ensure correct identification by the Consensus Node. The header now uses the format: X-User-Agent: hiero-sdk-js/<version> (e.g., hiero-sdk-js/1.2.3), preventing misclassification as unknown/unspecified usage. [3216](https://github.com/hiero-ledger/hiero-sdk-js/pull/3216)
 
 ## v2.69.0-beta.1
 
