@@ -453,26 +453,6 @@ export default class TopicCreateTransaction extends Transaction {
         }
     }
 
-    /*
-     * Temporarily disabled due to issues with consensus node version 0.60.
-     * This will be reintroduced once all networks (previewnet, testnet, mainnet)
-     * are on version 0.60.
-     *
-     * @override
-     * @param {?import("../client/Client.js").default<Channel, *>} client
-     * @returns {this}
-     */
-    /*
-    freezeWith(client) {
-        if (!this._autoRenewAccountId && this.transactionId?.accountId) {
-            this.setAutoRenewAccountId(this.transactionId?.accountId);
-        } else if (!this._autoRenewAccountId && client?.operatorAccountId) {
-            this.setAutoRenewAccountId(client.operatorAccountId);
-        }
-        return super.freezeWith(client);
-    }
-    */
-
     /**
      * @override
      * @param {?import("../client/Client.js").default<Channel, *>} client

@@ -7,6 +7,8 @@ import {
     TopicUpdateTransaction,
     TopicMessageSubmitTransaction,
     Status,
+    KeyList,
+    AccountId,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { createFungibleToken } from "./utils/Fixtures.js";
@@ -154,50 +156,57 @@ describe("TopicUpdate", function () {
         });
     });
 
-    describe("1139", function () {
+    describe("HIP-1139: Immutable Topics", function () {
         it("should prevent message submission when Submit Key is updated to dead key", async function () {
             // Create a private topic with both Admin and Submit Keys
             const adminKey = PrivateKey.generateECDSA();
             const submitKey = PrivateKey.generateECDSA();
 
-            const response = await new TopicCreateTransaction()
+            const response = new TopicCreateTransaction()
                 .setAdminKey(adminKey.publicKey)
                 .setSubmitKey(submitKey.publicKey)
-                .execute(env.client);
+                .freezeWith(env.client);
 
-            const topicId = (await response.getReceipt(env.client)).topicId;
+            await response.sign(adminKey);
+            await response.sign(submitKey);
+            const receipt = await response.execute(env.client);
+
+            const topicId = (await receipt.getReceipt(env.client)).topicId;
 
             // Verify initial message submission works
             await (
-                await new TopicMessageSubmitTransaction()
-                    .setTopicId(topicId)
-                    .setMessage("Test message before dead key")
-                    .freezeWith(env.client)
-                    .sign(submitKey)
-                    .execute(env.client)
+                await (
+                    await new TopicMessageSubmitTransaction()
+                        .setTopicId(topicId)
+                        .setMessage("Test message before dead key")
+                        .freezeWith(env.client)
+                        .sign(submitKey)
+                ).execute(env.client)
             ).getReceipt(env.client);
 
             // Update Submit Key to dead key using valid Admin Key signature
             const deadKey = PublicKey.fromBytes(new Uint8Array(32));
             await (
-                await new TopicUpdateTransaction()
-                    .setTopicId(topicId)
-                    .setSubmitKey(deadKey)
-                    .freezeWith(env.client)
-                    .sign(adminKey)
-                    .execute(env.client)
+                await (
+                    await new TopicUpdateTransaction()
+                        .setTopicId(topicId)
+                        .setSubmitKey(deadKey)
+                        .freezeWith(env.client)
+                        .sign(adminKey)
+                ).execute(env.client)
             ).getReceipt(env.client);
 
             // Verify that no further messages can be submitted
             let messageSubmissionFailed = false;
             try {
                 await (
-                    await new TopicMessageSubmitTransaction()
-                        .setTopicId(topicId)
-                        .setMessage("Test message after dead key")
-                        .freezeWith(env.client)
-                        .sign(submitKey)
-                        .execute(env.client)
+                    await (
+                        await new TopicMessageSubmitTransaction()
+                            .setTopicId(topicId)
+                            .setMessage("Test message after dead key")
+                            .freezeWith(env.client)
+                            .sign(submitKey)
+                    ).execute(env.client)
                 ).getReceipt(env.client);
             } catch (error) {
                 messageSubmissionFailed =
@@ -210,49 +219,57 @@ describe("TopicUpdate", function () {
             expect(messageSubmissionFailed).to.be.true;
         });
 
-        it("should allow message submission but prevent admin updates when Admin Key is updated to dead key", async function () {
+        it("should allow message submission but prevent admin updates when Admin Key is updated to empty key list", async function () {
             // Create a private topic with both Admin and Submit Keys
             const adminKey = PrivateKey.generateECDSA();
             const submitKey = PrivateKey.generateECDSA();
 
-            const response = await new TopicCreateTransaction()
+            const response = new TopicCreateTransaction()
                 .setAdminKey(adminKey.publicKey)
                 .setSubmitKey(submitKey.publicKey)
-                .execute(env.client);
+                .freezeWith(env.client);
 
-            const topicId = (await response.getReceipt(env.client)).topicId;
+            await response.sign(adminKey);
+            await response.sign(submitKey);
+            const receipt = await response.execute(env.client);
+
+            const topicId = (await receipt.getReceipt(env.client)).topicId;
 
             // Update Admin Key to dead key using valid Admin Key signature
-            const deadKey = PublicKey.fromBytes(new Uint8Array(32));
             await (
-                await new TopicUpdateTransaction()
-                    .setTopicId(topicId)
-                    .setAdminKey(deadKey)
-                    .freezeWith(env.client)
-                    .sign(adminKey)
-                    .execute(env.client)
+                await (
+                    await new TopicUpdateTransaction()
+                        .setTopicId(topicId)
+                        .setAdminKey(new KeyList())
+                        .setAutoRenewAccountId(AccountId.fromString("0.0.0"))
+                        .freezeWith(env.client)
+                        .sign(adminKey)
+                ).execute(env.client)
             ).getReceipt(env.client);
+            console.log("vanko");
 
             // Verify messages can still be submitted with the submit key
             await (
-                await new TopicMessageSubmitTransaction()
-                    .setTopicId(topicId)
-                    .setMessage("Message after admin key dead")
-                    .freezeWith(env.client)
-                    .sign(submitKey)
-                    .execute(env.client)
+                await (
+                    await new TopicMessageSubmitTransaction()
+                        .setTopicId(topicId)
+                        .setMessage("Message after admin key dead")
+                        .freezeWith(env.client)
+                        .sign(submitKey)
+                ).execute(env.client)
             ).getReceipt(env.client);
 
             // Verify that no further administrative updates can be made
             let adminUpdateFailed = false;
             try {
                 await (
-                    await new TopicUpdateTransaction()
-                        .setTopicId(topicId)
-                        .setTopicMemo("Cannot update memo")
-                        .freezeWith(env.client)
-                        .sign(adminKey)
-                        .execute(env.client)
+                    await (
+                        await new TopicUpdateTransaction()
+                            .setTopicId(topicId)
+                            .setTopicMemo("Cannot update memo")
+                            .freezeWith(env.client)
+                            .sign(adminKey)
+                    ).execute(env.client)
                 ).getReceipt(env.client);
             } catch (error) {
                 adminUpdateFailed =
@@ -270,35 +287,42 @@ describe("TopicUpdate", function () {
             const adminKey = PrivateKey.generateECDSA();
             const submitKey = PrivateKey.generateECDSA();
 
-            const response = await new TopicCreateTransaction()
+            const response = new TopicCreateTransaction()
                 .setAdminKey(adminKey.publicKey)
                 .setSubmitKey(submitKey.publicKey)
-                .execute(env.client);
+                .freezeWith(env.client);
 
-            const topicId = (await response.getReceipt(env.client)).topicId;
+            await response.sign(adminKey);
+            await response.sign(submitKey);
+            const receipt = await response.execute(env.client);
+
+            const topicId = (await receipt.getReceipt(env.client)).topicId;
 
             // Update both Submit Key and Admin Key to dead keys with valid Admin Key signature
             const deadKey = PublicKey.fromBytes(new Uint8Array(32));
             await (
-                await new TopicUpdateTransaction()
-                    .setTopicId(topicId)
-                    .setSubmitKey(deadKey)
-                    .setAdminKey(deadKey)
-                    .freezeWith(env.client)
-                    .sign(adminKey)
-                    .execute(env.client)
+                await (
+                    await new TopicUpdateTransaction()
+                        .setTopicId(topicId)
+                        .setSubmitKey(deadKey)
+                        .setAdminKey(new KeyList())
+                        .setAutoRenewAccountId(AccountId.fromString("0.0.0"))
+                        .freezeWith(env.client)
+                        .sign(adminKey)
+                ).execute(env.client)
             ).getReceipt(env.client);
 
             // Verify that message submission fails
             let messageSubmissionFailed = false;
             try {
                 await (
-                    await new TopicMessageSubmitTransaction()
-                        .setTopicId(topicId)
-                        .setMessage("Message should fail")
-                        .freezeWith(env.client)
-                        .sign(submitKey)
-                        .execute(env.client)
+                    await (
+                        await new TopicMessageSubmitTransaction()
+                            .setTopicId(topicId)
+                            .setMessage("Message should fail")
+                            .freezeWith(env.client)
+                            .sign(submitKey)
+                    ).execute(env.client)
                 ).getReceipt(env.client);
             } catch (error) {
                 messageSubmissionFailed =
@@ -312,12 +336,13 @@ describe("TopicUpdate", function () {
             let adminUpdateFailed = false;
             try {
                 await (
-                    await new TopicUpdateTransaction()
-                        .setTopicId(topicId)
-                        .setTopicMemo("Should fail")
-                        .freezeWith(env.client)
-                        .sign(adminKey)
-                        .execute(env.client)
+                    await (
+                        await new TopicUpdateTransaction()
+                            .setTopicId(topicId)
+                            .setTopicMemo("Should fail")
+                            .freezeWith(env.client)
+                            .sign(adminKey)
+                    ).execute(env.client)
                 ).getReceipt(env.client);
             } catch (error) {
                 adminUpdateFailed =
@@ -335,43 +360,49 @@ describe("TopicUpdate", function () {
             // Create a private topic with only Submit Key (no Admin Key)
             const submitKey = PrivateKey.generateECDSA();
 
-            const response = await new TopicCreateTransaction()
+            const response = new TopicCreateTransaction()
                 .setSubmitKey(submitKey.publicKey)
-                .execute(env.client);
+                .freezeWith(env.client);
 
-            const topicId = (await response.getReceipt(env.client)).topicId;
+            await response.sign(submitKey);
+            const receipt = await response.execute(env.client);
+
+            const topicId = (await receipt.getReceipt(env.client)).topicId;
 
             // Verify initial message submission works
             await (
-                await new TopicMessageSubmitTransaction()
-                    .setTopicId(topicId)
-                    .setMessage("Test message before dead key")
-                    .freezeWith(env.client)
-                    .sign(submitKey)
-                    .execute(env.client)
+                await (
+                    await new TopicMessageSubmitTransaction()
+                        .setTopicId(topicId)
+                        .setMessage("Test message before dead key")
+                        .freezeWith(env.client)
+                        .sign(submitKey)
+                ).execute(env.client)
             ).getReceipt(env.client);
 
             // Update Submit Key to dead key with valid Submit Key signature
             const deadKey = PublicKey.fromBytes(new Uint8Array(32));
             await (
-                await new TopicUpdateTransaction()
-                    .setTopicId(topicId)
-                    .setSubmitKey(deadKey)
-                    .freezeWith(env.client)
-                    .sign(submitKey)
-                    .execute(env.client)
+                await (
+                    await new TopicUpdateTransaction()
+                        .setTopicId(topicId)
+                        .setSubmitKey(deadKey)
+                        .freezeWith(env.client)
+                        .sign(submitKey)
+                ).execute(env.client)
             ).getReceipt(env.client);
 
             // Verify that no more messages can be submitted
             let messageSubmissionFailed = false;
             try {
                 await (
-                    await new TopicMessageSubmitTransaction()
-                        .setTopicId(topicId)
-                        .setMessage("Message should fail")
-                        .freezeWith(env.client)
-                        .sign(submitKey)
-                        .execute(env.client)
+                    await (
+                        await new TopicMessageSubmitTransaction()
+                            .setTopicId(topicId)
+                            .setMessage("Message should fail")
+                            .freezeWith(env.client)
+                            .sign(submitKey)
+                    ).execute(env.client)
                 ).getReceipt(env.client);
             } catch (error) {
                 messageSubmissionFailed =
@@ -384,53 +415,60 @@ describe("TopicUpdate", function () {
             expect(messageSubmissionFailed).to.be.true;
         });
 
-        it("should make public topic administratively immutable when Admin Key is updated to dead key", async function () {
+        it("should make public topic administratively immutable when Admin Key is updated to empty key list", async function () {
             // Create a public topic with Admin Key but no Submit Key
             const adminKey = PrivateKey.generateECDSA();
 
-            const response = await new TopicCreateTransaction()
+            const response = new TopicCreateTransaction()
                 .setAdminKey(adminKey.publicKey)
-                .execute(env.client);
+                .freezeWith(env.client);
 
-            const topicId = (await response.getReceipt(env.client)).topicId;
+            await response.sign(adminKey);
+            const receipt = await response.execute(env.client);
+
+            const topicId = (await receipt.getReceipt(env.client)).topicId;
 
             // Verify initial message submission works (no submit key required)
             await (
-                await new TopicMessageSubmitTransaction()
-                    .setTopicId(topicId)
-                    .setMessage("Public message before dead admin key")
-                    .execute(env.client)
+                await (
+                    await new TopicMessageSubmitTransaction()
+                        .setTopicId(topicId)
+                        .setMessage("Public message before dead admin key")
+                ).execute(env.client)
             ).getReceipt(env.client);
 
             // Update Admin Key to dead key with valid Admin Key signature
-            const deadKey = PublicKey.fromBytes(new Uint8Array(32));
             await (
-                await new TopicUpdateTransaction()
-                    .setTopicId(topicId)
-                    .setAdminKey(deadKey)
-                    .freezeWith(env.client)
-                    .sign(adminKey)
-                    .execute(env.client)
+                await (
+                    await new TopicUpdateTransaction()
+                        .setTopicId(topicId)
+                        .setAdminKey(new KeyList())
+                        .setAutoRenewAccountId(AccountId.fromString("0.0.0"))
+                        .freezeWith(env.client)
+                        .sign(adminKey)
+                ).execute(env.client)
             ).getReceipt(env.client);
 
             // Verify message submission still works (topic remains public)
             await (
-                await new TopicMessageSubmitTransaction()
-                    .setTopicId(topicId)
-                    .setMessage("Public message after dead admin key")
-                    .execute(env.client)
+                await (
+                    await new TopicMessageSubmitTransaction()
+                        .setTopicId(topicId)
+                        .setMessage("Public message after dead admin key")
+                ).execute(env.client)
             ).getReceipt(env.client);
 
             // Verify that administrative updates fail
             let adminUpdateFailed = false;
             try {
                 await (
-                    await new TopicUpdateTransaction()
-                        .setTopicId(topicId)
-                        .setTopicMemo("Should fail")
-                        .freezeWith(env.client)
-                        .sign(adminKey)
-                        .execute(env.client)
+                    await (
+                        await new TopicUpdateTransaction()
+                            .setTopicId(topicId)
+                            .setTopicMemo("Should fail")
+                            .freezeWith(env.client)
+                            .sign(adminKey)
+                    ).execute(env.client)
                 ).getReceipt(env.client);
             } catch (error) {
                 adminUpdateFailed =
@@ -448,24 +486,28 @@ describe("TopicUpdate", function () {
             const adminKey = PrivateKey.generateECDSA();
             const deadKey = PublicKey.fromBytes(new Uint8Array(32));
 
-            const response = await new TopicCreateTransaction()
+            const response = new TopicCreateTransaction()
                 .setAdminKey(adminKey.publicKey)
                 .setSubmitKey(deadKey)
-                .execute(env.client);
+                .freezeWith(env.client);
 
-            const topicId = (await response.getReceipt(env.client)).topicId;
+            await response.sign(adminKey);
+            const receipt = await response.execute(env.client);
+
+            const topicId = (await receipt.getReceipt(env.client)).topicId;
 
             // Attempt message submission with any key should fail
             const someKey = PrivateKey.generateECDSA();
             let messageSubmissionFailed = false;
             try {
                 await (
-                    await new TopicMessageSubmitTransaction()
-                        .setTopicId(topicId)
-                        .setMessage("Should fail")
-                        .freezeWith(env.client)
-                        .sign(someKey)
-                        .execute(env.client)
+                    await (
+                        await new TopicMessageSubmitTransaction()
+                            .setTopicId(topicId)
+                            .setMessage("Should fail")
+                            .freezeWith(env.client)
+                            .sign(someKey)
+                    ).execute(env.client)
                 ).getReceipt(env.client);
             } catch (error) {
                 messageSubmissionFailed =
@@ -482,11 +524,14 @@ describe("TopicUpdate", function () {
             // Create a topic with Submit Key
             const submitKey = PrivateKey.generateECDSA();
 
-            const response = await new TopicCreateTransaction()
+            const response = new TopicCreateTransaction()
                 .setSubmitKey(submitKey.publicKey)
-                .execute(env.client);
+                .freezeWith(env.client);
 
-            const topicId = (await response.getReceipt(env.client)).topicId;
+            await response.sign(submitKey);
+            const receipt = await response.execute(env.client);
+
+            const topicId = (await receipt.getReceipt(env.client)).topicId;
 
             // Attempt to update Submit Key without proper signature
             const deadKey = PublicKey.fromBytes(new Uint8Array(32));
@@ -495,12 +540,13 @@ describe("TopicUpdate", function () {
             let updateFailed = false;
             try {
                 await (
-                    await new TopicUpdateTransaction()
-                        .setTopicId(topicId)
-                        .setSubmitKey(deadKey)
-                        .freezeWith(env.client)
-                        .sign(unauthorizedKey)
-                        .execute(env.client)
+                    await (
+                        await new TopicUpdateTransaction()
+                            .setTopicId(topicId)
+                            .setSubmitKey(deadKey)
+                            .freezeWith(env.client)
+                            .sign(unauthorizedKey)
+                    ).execute(env.client)
                 ).getReceipt(env.client);
             } catch (error) {
                 updateFailed =
@@ -517,11 +563,14 @@ describe("TopicUpdate", function () {
             // Create a topic with Admin Key
             const adminKey = PrivateKey.generateECDSA();
 
-            const response = await new TopicCreateTransaction()
+            const response = new TopicCreateTransaction()
                 .setAdminKey(adminKey.publicKey)
-                .execute(env.client);
+                .freezeWith(env.client);
 
-            const topicId = (await response.getReceipt(env.client)).topicId;
+            await response.sign(adminKey);
+            const receipt = await response.execute(env.client);
+
+            const topicId = (await receipt.getReceipt(env.client)).topicId;
 
             // Attempt to update Admin Key without proper signature
             const deadKey = PublicKey.fromBytes(new Uint8Array(32));
@@ -530,12 +579,16 @@ describe("TopicUpdate", function () {
             let updateFailed = false;
             try {
                 await (
-                    await new TopicUpdateTransaction()
-                        .setTopicId(topicId)
-                        .setAdminKey(deadKey)
-                        .freezeWith(env.client)
-                        .sign(unauthorizedKey)
-                        .execute(env.client)
+                    await (
+                        await new TopicUpdateTransaction()
+                            .setTopicId(topicId)
+                            .setAdminKey(deadKey)
+                            .setAutoRenewAccountId(
+                                AccountId.fromString("0.0.0"),
+                            )
+                            .freezeWith(env.client)
+                            .sign(unauthorizedKey)
+                    ).execute(env.client)
                 ).getReceipt(env.client);
             } catch (error) {
                 updateFailed =
@@ -553,22 +606,27 @@ describe("TopicUpdate", function () {
             const adminKey = PrivateKey.generateECDSA();
             const submitKey = PrivateKey.generateECDSA();
 
-            const response = await new TopicCreateTransaction()
+            const response = new TopicCreateTransaction()
                 .setAdminKey(adminKey.publicKey)
                 .setSubmitKey(submitKey.publicKey)
-                .execute(env.client);
+                .freezeWith(env.client);
 
-            const topicId = (await response.getReceipt(env.client)).topicId;
+            await response.sign(adminKey);
+            await response.sign(submitKey);
+            const receipt = await response.execute(env.client);
+
+            const topicId = (await receipt.getReceipt(env.client)).topicId;
 
             // Update Submit Key to dead key using Admin Key signature (should succeed)
             const deadKey = PublicKey.fromBytes(new Uint8Array(32));
             await (
-                await new TopicUpdateTransaction()
-                    .setTopicId(topicId)
-                    .setSubmitKey(deadKey)
-                    .freezeWith(env.client)
-                    .sign(adminKey)
-                    .execute(env.client)
+                await (
+                    await new TopicUpdateTransaction()
+                        .setTopicId(topicId)
+                        .setSubmitKey(deadKey)
+                        .freezeWith(env.client)
+                        .sign(adminKey)
+                ).execute(env.client)
             ).getReceipt(env.client);
 
             // Verify the update was successful by checking topic info
@@ -584,32 +642,37 @@ describe("TopicUpdate", function () {
             const adminKey = PrivateKey.generateECDSA();
             const deadKey = PublicKey.fromBytes(new Uint8Array(32));
 
-            const response = await new TopicCreateTransaction()
+            const response = new TopicCreateTransaction()
                 .setAdminKey(adminKey.publicKey)
                 .setSubmitKey(deadKey)
-                .execute(env.client);
+                .freezeWith(env.client);
 
-            const topicId = (await response.getReceipt(env.client)).topicId;
+            await response.sign(adminKey);
+            const receipt = await response.execute(env.client);
+
+            const topicId = (await receipt.getReceipt(env.client)).topicId;
 
             // Update Submit Key from dead key to valid key using Admin Key signature
             const newSubmitKey = PrivateKey.generateECDSA();
             await (
-                await new TopicUpdateTransaction()
-                    .setTopicId(topicId)
-                    .setSubmitKey(newSubmitKey.publicKey)
-                    .freezeWith(env.client)
-                    .sign(adminKey)
-                    .execute(env.client)
+                await (
+                    await new TopicUpdateTransaction()
+                        .setTopicId(topicId)
+                        .setSubmitKey(newSubmitKey.publicKey)
+                        .freezeWith(env.client)
+                        .sign(adminKey)
+                ).execute(env.client)
             ).getReceipt(env.client);
 
             // Verify the update was successful by submitting a message
             await (
-                await new TopicMessageSubmitTransaction()
-                    .setTopicId(topicId)
-                    .setMessage("Message with restored submit key")
-                    .freezeWith(env.client)
-                    .sign(newSubmitKey)
-                    .execute(env.client)
+                await (
+                    await new TopicMessageSubmitTransaction()
+                        .setTopicId(topicId)
+                        .setMessage("Message with restored submit key")
+                        .freezeWith(env.client)
+                        .sign(newSubmitKey)
+                ).execute(env.client)
             ).getReceipt(env.client);
 
             // Verify topic info shows the new key
