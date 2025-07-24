@@ -19,7 +19,7 @@ tasks:
 
     install:submodules:
         vars:
-            stag: "v0.63.7"
+            commit: "7ca2f4e457a68fbc092edd17552bc5db7e032f6d" # v0.65.0
         cmds:
             - git submodule update --init --recursive --remote
             - |
@@ -28,7 +28,7 @@ tasks:
                 if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
                     git fetch --unshallow --tags
                 fi &&
-                git checkout {{.stag}}
+                git checkout {{.commit}}
                 )
 
     move:protobufs:
