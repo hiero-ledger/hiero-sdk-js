@@ -2089,6 +2089,12 @@ export default class Transaction extends Executable {
                 this._maxTransactionFee == null
                     ? this._defaultMaxTransactionFee.toTinybars()
                     : this._maxTransactionFee.toTinybars(),
+            maxCustomFees:
+                this._customFeeLimits != null
+                    ? this._customFeeLimits.map((maxCustomFee) =>
+                          maxCustomFee._toProtobuf(),
+                      )
+                    : null,
             [this._getTransactionDataCase()]: this._makeTransactionData(),
         };
     }
