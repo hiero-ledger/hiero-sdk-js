@@ -16,47 +16,42 @@ dotenv.config();
 /**
  * @param {EventEmitter} dataEmitter
  * @param {string} topicId
- * @returns {Promise<void>}
  */
-async function pollUntilReady(dataEmitter, topicId) {
+function pollUntilReady(dataEmitter, topicId) {
     let lastMessagesLength = 0;
 
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
-        const BASE_URL = "http://127.0.0.1:5551";
-        const res = await fetch(
-            `${BASE_URL}/api/v1/topics/${topicId}/messages?limit=1`,
-        );
+    setInterval(() => {
+        // Wrap the async logic in an immediately invoked async function
+        // because eslint doesn't like async functions in setInterval
+        (async () => {
+            const BASE_URL = "http://127.0.0.1:5551";
+            const res = await fetch(
+                `${BASE_URL}/api/v1/topics/${topicId}/messages?limit=1`,
+            );
 
-        /**
-         * data.messages is an array of objects with a message property
-         * @type {{messages: { message: string }[]}}
-         */
-        const data = await res.json();
+            /**
+             * data.messages is an array of objects with a message property
+             * @type {{messages: { message: string }[]}}
+             */
+            const data = await res.json();
 
-        // Check if we have new messages (array length changed)
-        const currentMessagesLength = data.messages ? data.messages.length : 0;
+            // Check if we have new messages (array length changed)
+            const currentMessagesLength = data.messages
+                ? data.messages.length
+                : 0;
 
-        if (currentMessagesLength > lastMessagesLength) {
-            // Get the latest message(s) - they are raw base64 encoded strings
-            const newMessages = data.messages.slice(lastMessagesLength)[0];
-            const decodedMessage = Buffer.from(
-                newMessages.message,
-                "base64",
-            ).toString("utf-8");
-            dataEmitter.emit("newMessages", decodedMessage);
-            lastMessagesLength = currentMessagesLength;
-        }
-        await sleep(1000);
-    }
-}
-
-/**
- * @param {number} ms
- * @returns {Promise<void>}
- */
-function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+            if (currentMessagesLength > lastMessagesLength) {
+                // Get the latest message(s) - they are raw base64 encoded strings
+                const newMessages = data.messages.slice(lastMessagesLength)[0];
+                const decodedMessage = Buffer.from(
+                    newMessages.message,
+                    "base64",
+                ).toString("utf-8");
+                dataEmitter.emit("newMessages", decodedMessage);
+                lastMessagesLength = currentMessagesLength;
+            }
+        })().catch(console.error); // Handle any errors from the async function
+    }, 1000);
 }
 
 async function main() {
@@ -94,7 +89,7 @@ async function main() {
     ).getReceipt(client);
 
     // poll for data
-    await pollUntilReady(dataEmitter, topicId.toString());
+    pollUntilReady(dataEmitter, topicId.toString());
 }
 
 main().catch(console.error);
