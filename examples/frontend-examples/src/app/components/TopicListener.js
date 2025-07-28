@@ -147,8 +147,7 @@ export default TopicListener;
 async function pollMirrorNode(dataEmitter, topicId) {
     let lastMessagesLength = 0;
 
-    // eslint-disable-next-line no-constant-condition
-    while (true) {
+    const pollingSetInterval = setInterval(async () => {
         const BASE_URL = "https://testnet.mirrornode.hedera.com";
         const res = await fetch(
             `${BASE_URL}/api/v1/topics/${topicId}/messages`,
@@ -176,8 +175,7 @@ async function pollMirrorNode(dataEmitter, topicId) {
             dataEmitter.emit("newMessages", decodedMessage);
             lastMessagesLength = currentMessagesLength;
         }
-        await sleep(1000);
-    }
+    }, 1000);
 }
 
 /**
