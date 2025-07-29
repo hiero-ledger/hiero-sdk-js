@@ -5,7 +5,6 @@ import AccountId from "../account/AccountId.js";
 export const MAINNET = {
     "node00.swirldslabs.com:443": new AccountId(3),
     "node01-00-grpc.swirlds.com:443": new AccountId(4),
-    "node02.swirldslabs.com:443": new AccountId(5),
     "node03.swirldslabs.com:443": new AccountId(6),
     "node04.swirldslabs.com:443": new AccountId(7),
     "node05.swirldslabs.com:443": new AccountId(8),
