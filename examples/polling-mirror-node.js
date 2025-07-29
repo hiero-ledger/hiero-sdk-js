@@ -19,6 +19,7 @@ dotenv.config();
  */
 function pollUntilReady(dataEmitter, topicId) {
     let lastMessagesLength = 0;
+    const POLLING_INTERVAL = 1000;
 
     setInterval(() => {
         // Wrap the async logic in an immediately invoked async function
@@ -51,7 +52,7 @@ function pollUntilReady(dataEmitter, topicId) {
                 lastMessagesLength = currentMessagesLength;
             }
         })().catch(console.error); // Handle any errors from the async function
-    }, 1000);
+    }, POLLING_INTERVAL);
 }
 
 async function main() {
