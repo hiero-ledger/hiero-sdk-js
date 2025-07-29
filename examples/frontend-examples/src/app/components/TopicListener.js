@@ -10,7 +10,7 @@ const TopicListener = ({ topicId }) => {
     useEffect(() => {
         if (topicId) {
             setIsConnected(true);
-            pollMirrorNode(dataEmitter, topicId);
+            pollMirrorNode(dataEmitter, topicId, null);
         } else {
             setIsConnected(false);
         }
@@ -142,13 +142,14 @@ export default TopicListener;
 /**
  * @param {EventEmitter} dataEmitter
  * @param {string} topicId
+ * @param {React.RefObject<NodeJS.Timeout | null>} pollingInterval
  * @returns {Promise<void>}
  */
-async function pollMirrorNode(dataEmitter, topicId) {
+async function pollMirrorNode(dataEmitter, topicId, pollingInterval) {
     let lastMessagesLength = 0;
     const POLLING_INTERVAL = 1000;
 
-    setInterval(async () => {
+    pollingInterval.current = setInterval(async () => {
         const BASE_URL = "https://testnet.mirrornode.hedera.com";
         const res = await fetch(
             `${BASE_URL}/api/v1/topics/${topicId}/messages`,
@@ -162,9 +163,6 @@ async function pollMirrorNode(dataEmitter, topicId) {
 
         // Check if we have new messages (array length changed)
         const currentMessagesLength = data.messages ? data.messages.length : 0;
-
-        console.log("currentMessagesLength", currentMessagesLength);
-        console.log("lastMessagesLength", lastMessagesLength);
 
         if (currentMessagesLength > lastMessagesLength) {
             // Get the latest message(s) - they are raw base64 encoded strings
