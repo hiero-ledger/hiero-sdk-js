@@ -6,14 +6,22 @@ const TopicListener = ({ topicId }) => {
     const [isConnected, setIsConnected] = useState(false);
     const [lastUpdate, setLastUpdate] = useState(null);
     const dataEmitter = new EventEmitter();
+    const pollingIntervalRef = useRef(null);
 
     useEffect(() => {
         if (topicId) {
             setIsConnected(true);
-            pollMirrorNode(dataEmitter, topicId, null);
+            pollMirrorNode(dataEmitter, topicId, pollingIntervalRef);
         } else {
             setIsConnected(false);
         }
+
+        return () => {
+            if (pollingIntervalRef.current) {
+                clearInterval(pollingIntervalRef.current);
+                pollingIntervalRef.current = null;
+            }
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [topicId]);
 
@@ -142,14 +150,15 @@ export default TopicListener;
 /**
  * @param {EventEmitter} dataEmitter
  * @param {string} topicId
- * @param {React.RefObject<NodeJS.Timeout | null>} pollingInterval
+ * @param {React.RefObject<NodeJS.Timeout | null>} pollingIntervaRef - A React ref that holds the interval ID, allowing the caller to clearInterval()
+ * when the component unmounts or page changes to prevent indefinite polling
  * @returns {Promise<void>}
  */
-async function pollMirrorNode(dataEmitter, topicId, pollingInterval) {
+async function pollMirrorNode(dataEmitter, topicId, pollingIntervaRef) {
     let lastMessagesLength = 0;
     const POLLING_INTERVAL = 1000;
 
-    pollingInterval.current = setInterval(async () => {
+    pollingIntervaRef.current = setInterval(async () => {
         const BASE_URL = "https://testnet.mirrornode.hedera.com";
         const res = await fetch(
             `${BASE_URL}/api/v1/topics/${topicId}/messages`,
