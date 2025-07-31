@@ -444,7 +444,7 @@ export default class TopicUpdateTransaction extends Transaction {
      */
     clearFeeExemptKeys() {
         this._requireNotFrozen();
-        this._feeExemptKeys = null;
+        this._feeExemptKeys = [];
 
         return this;
     }
@@ -548,7 +548,7 @@ export default class TopicUpdateTransaction extends Transaction {
      */
     clearCustomFees() {
         this._requireNotFrozen();
-        this._customFees = null;
+        this._customFees = [];
 
         return this;
     }
