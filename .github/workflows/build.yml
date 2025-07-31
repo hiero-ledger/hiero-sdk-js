@@ -101,7 +101,7 @@ jobs:
 
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@a39acf8cfbaa2feb195a86530d0ab643a45aa541 # v0.10
+        uses: hiero-ledger/hiero-solo-action@10ec96a107b8d2f5cd26b3e7ab47e65407b5c462 # v0.10
         with:
           installMirrorNode: true
           hieroVersion: v0.63.7
@@ -205,7 +205,7 @@ jobs:
 
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@a39acf8cfbaa2feb195a86530d0ab643a45aa541 # v0.10
+        uses: hiero-ledger/hiero-solo-action@10ec96a107b8d2f5cd26b3e7ab47e65407b5c462 # v0.10
         with:
           installMirrorNode: true
           hieroVersion: v0.63.7
