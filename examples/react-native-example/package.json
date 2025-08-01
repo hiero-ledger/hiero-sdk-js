@@ -10,7 +10,7 @@
         "eject": "expo eject"
     },
     "dependencies": {
-        "@hashgraph/sdk": "file:.yalc/@hashgraph/sdk",
+        "@hashgraph/sdk": "2.68.0",
         "expo": "~53.0.4",
         "expo-status-bar": "~2.0.1",
         "react": "19.0.0",
