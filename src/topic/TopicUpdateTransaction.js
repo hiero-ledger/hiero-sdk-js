@@ -439,12 +439,12 @@ export default class TopicUpdateTransaction extends Transaction {
     }
 
     /**
-     * Clears all keys that will be exempt from paying fees.
+     * Clears all keys that will be exempt from paying fees, effectively removing them from the network state.
      * @returns {this}
      */
     clearFeeExemptKeys() {
         this._requireNotFrozen();
-        this._feeExemptKeys = null;
+        this._feeExemptKeys = [];
 
         return this;
     }
@@ -542,13 +542,13 @@ export default class TopicUpdateTransaction extends Transaction {
     }
 
     /**
-     * Clears fixed fees.
+     * Clears fixed fees, effectively removing them from the network state.
      *
      * @returns {this}
      */
     clearCustomFees() {
         this._requireNotFrozen();
-        this._customFees = null;
+        this._customFees = [];
 
         return this;
     }

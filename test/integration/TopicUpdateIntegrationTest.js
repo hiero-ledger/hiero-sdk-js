@@ -90,8 +90,8 @@ describe("TopicUpdate", function () {
             // Update the topic and explicitly set fee exempt keys and custom fees to empty lists
             const updateResponse = await new TopicUpdateTransaction()
                 .setTopicId(topicId)
-                .setFeeExemptKeys([])
-                .setCustomFees([])
+                .clearCustomFees()
+                .clearFeeExemptKeys()
                 .execute(env.client);
 
             await updateResponse.getReceipt(env.client);
