@@ -38,10 +38,6 @@ describe("NodeUpdateTransaction", function () {
         // The account of the new node
         const nodeAccount = AccountId.fromString(NODE_ACCOUNT_ID);
 
-        // Generate admin key
-        const nodeAdminKey = PrivateKey.generateED25519();
-        // Create the node
-
         // Update the node
         const updatedGrpcEndpoint = new ServiceEndpoint()
             .setDomainName(TEST_DOMAIN_NAME)
@@ -55,7 +51,6 @@ describe("NodeUpdateTransaction", function () {
                     .setDeclineReward(false)
                     .setGrpcWebProxyEndpoint(updatedGrpcEndpoint)
                     .freezeWith(env.client)
-                    .sign(nodeAdminKey)
             ).execute(env.client)
         ).getReceipt(env.client);
 
@@ -76,7 +71,6 @@ describe("NodeUpdateTransaction", function () {
                     .setDeclineReward(false)
                     .clearGrpcWebProxyEndpoint()
                     .freezeWith(env.client)
-                    .sign(nodeAdminKey)
             ).execute(env.client)
         ).getReceipt(env.client);
 
