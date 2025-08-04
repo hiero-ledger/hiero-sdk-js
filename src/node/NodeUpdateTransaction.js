@@ -479,6 +479,15 @@ export default class NodeUpdateTransaction extends Transaction {
     }
 
     /**
+     * @description Clear proxy endpoint for gRPC web calls.
+     * @returns {NodeUpdateTransaction}
+     */
+    clearGrpcWebProxyEndpoint() {
+        this._grpcWebProxyEndpoint = new ServiceEndpoint();
+        return this;
+    }
+
+    /**
      * @override
      * @param {?import("../client/Client.js").default<Channel, *>} client
      * @returns {this}
