@@ -20,7 +20,6 @@ describe("NodeUpdateTransaction", function () {
         const OPERATOR_ACCOUNT_ID = "0.0.2";
         const OPERATOR_PRIVATE_KEY =
             "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137";
-        const NODE_ACCOUNT_ID = "0.0.3";
         const MIRROR_NODE_API_BASE_URL =
             "http://localhost:5551/api/v1/network/nodes";
         const API_RESPONSE_DELAY_MS = 2500;
@@ -35,9 +34,6 @@ describe("NodeUpdateTransaction", function () {
 
         env.client.setOperator(operatorAccount, operatorPrivateKey);
 
-        // The account of the new node
-        const nodeAccount = AccountId.fromString(NODE_ACCOUNT_ID);
-
         // Update the node
         const updatedGrpcEndpoint = new ServiceEndpoint()
             .setDomainName(TEST_DOMAIN_NAME)
@@ -47,7 +43,6 @@ describe("NodeUpdateTransaction", function () {
             await (
                 await new NodeUpdateTransaction()
                     .setNodeId(0)
-                    .setAccountId(nodeAccount)
                     .setDeclineReward(false)
                     .setGrpcWebProxyEndpoint(updatedGrpcEndpoint)
                     .freezeWith(env.client)
@@ -67,7 +62,6 @@ describe("NodeUpdateTransaction", function () {
             await (
                 await new NodeUpdateTransaction()
                     .setNodeId(0)
-                    .setAccountId(nodeAccount)
                     .setDeclineReward(false)
                     .clearGrpcWebProxyEndpoint()
                     .freezeWith(env.client)
