@@ -166,6 +166,79 @@ describe("ClientIntegration", function () {
         expect(env.client.defaultMaxQueryPayment).to.be.equal(value);
     });
 
+    describe("Async factory methods integration tests", function () {
+        it("should create mainnet client with network update using forMainnetAsync", async function () {
+            const client = await Client.forMainnetAsync();
+
+            expect(client).to.be.instanceOf(Client);
+            expect(client.network).to.not.be.empty;
+            expect(client.ledgerId).to.equal(LedgerId.MAINNET);
+
+            await client.close();
+        });
+
+        it("should create testnet client with network update using forTestnetAsync", async function () {
+            const client = await Client.forTestnetAsync();
+
+            expect(client).to.be.instanceOf(Client);
+            expect(client.network).to.not.be.empty;
+            expect(client.ledgerId).to.equal(LedgerId.TESTNET);
+
+            await client.close();
+        });
+
+        it("should create previewnet client with network update using forPreviewnetAsync", async function () {
+            const client = await Client.forPreviewnetAsync();
+
+            expect(client).to.be.instanceOf(Client);
+            expect(client.network).to.not.be.empty;
+            expect(client.ledgerId).to.equal(LedgerId.PREVIEWNET);
+
+            await client.close();
+        });
+
+        it("should create client for mainnet by name with network update", async function () {
+            const client = await Client.forNameAsync("mainnet");
+
+            expect(client).to.be.instanceOf(Client);
+            expect(client.network).to.not.be.empty;
+            expect(client.ledgerId).to.equal(LedgerId.MAINNET);
+
+            await client.close();
+        });
+
+        it("should create client for testnet by name with network update", async function () {
+            const client = await Client.forNameAsync("testnet");
+
+            expect(client).to.be.instanceOf(Client);
+            expect(client.network).to.not.be.empty;
+            expect(client.ledgerId).to.equal(LedgerId.TESTNET);
+
+            await client.close();
+        });
+
+        it("should create client for previewnet by name with network update", async function () {
+            const client = await Client.forNameAsync("previewnet");
+
+            expect(client).to.be.instanceOf(Client);
+            expect(client.network).to.not.be.empty;
+            expect(client.ledgerId).to.equal(LedgerId.PREVIEWNET);
+
+            await client.close();
+        });
+
+        it("should throw error for unknown network name", async function () {
+            try {
+                await Client.forNameAsync("unknown-network");
+                expect.fail("Should have thrown an error");
+            } catch (error) {
+                expect(error.message).to.include(
+                    "unknown network: unknown-network",
+                );
+            }
+        });
+    });
+
     afterAll(async function () {
         await env.close();
         clientTestnet.close();
