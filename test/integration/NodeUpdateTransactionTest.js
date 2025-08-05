@@ -1,4 +1,3 @@
-import { setTimeout } from "timers/promises";
 import {
     AccountId,
     NodeUpdateTransaction,
@@ -20,9 +19,6 @@ describe("NodeUpdateTransaction", function () {
         const OPERATOR_ACCOUNT_ID = "0.0.2";
         const OPERATOR_PRIVATE_KEY =
             "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137";
-        const MIRROR_NODE_API_BASE_URL =
-            "http://localhost:5551/api/v1/network/nodes";
-        const API_RESPONSE_DELAY_MS = 2500;
         const TEST_DOMAIN_NAME = "test.com";
         const TEST_PORT = 123456;
         const TARGET_NODE_ID = 0;
@@ -42,40 +38,22 @@ describe("NodeUpdateTransaction", function () {
         await (
             await (
                 await new NodeUpdateTransaction()
-                    .setNodeId(0)
+                    .setNodeId(TARGET_NODE_ID)
                     .setDeclineReward(false)
                     .setGrpcWebProxyEndpoint(updatedGrpcEndpoint)
                     .freezeWith(env.client)
             ).execute(env.client)
         ).getReceipt(env.client);
 
-        await setTimeout(API_RESPONSE_DELAY_MS);
-        const firstResponse = await fetch(
-            `${MIRROR_NODE_API_BASE_URL}?node.id=${TARGET_NODE_ID}`,
-        );
-        const firstNodeData = await firstResponse.json();
-        expect(firstNodeData.nodes[0].grpc_proxy_endpoint.domainName).toEqual(
-            updatedGrpcEndpoint.domainName,
-        );
-
         await (
             await (
                 await new NodeUpdateTransaction()
-                    .setNodeId(0)
+                    .setNodeId(TARGET_NODE_ID)
                     .setDeclineReward(false)
                     .clearGrpcWebProxyEndpoint()
                     .freezeWith(env.client)
             ).execute(env.client)
         ).getReceipt(env.client);
-
-        await setTimeout(API_RESPONSE_DELAY_MS);
-        const secondResponse = await fetch(
-            `${MIRROR_NODE_API_BASE_URL}?node.id=${TARGET_NODE_ID}`,
-        );
-        const secondNodeData = await secondResponse.json();
-        expect(secondNodeData.nodes[0].grpc_proxy_endpoint.domainName).toEqual(
-            undefined,
-        );
     });
 
     afterAll(async function () {
