@@ -1,6 +1,6 @@
 {
     "name": "@hashgraph/cryptography",
-    "version": "1.9.0",
+    "version": "1.10.0",
     "description": "Cryptographic utilities and primitives for the Hiero SDK",
     "main": "./lib/index.cjs",
     "types": "./lib/index.d.ts",
