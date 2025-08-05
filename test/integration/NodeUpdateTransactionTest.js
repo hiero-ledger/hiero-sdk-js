@@ -66,7 +66,7 @@ describe("NodeUpdateTransaction", function () {
         await (
             await (
                 await new NodeUpdateTransaction()
-                    .setNodeId(new AccountId(3))
+                    .setNodeId(0)
                     .setAccountId(nodeAccount)
                     .setDeclineReward(false)
                     .clearGrpcWebProxyEndpoint()
