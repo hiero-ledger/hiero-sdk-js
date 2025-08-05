@@ -1,6 +1,6 @@
 import { http, HttpResponse } from "msw";
 import { setupWorker } from "msw/browser";
-import { Client, FileId, AccountId } from "../../../src/browser.js";
+import { Client, FileId, AccountId, LedgerId } from "../../../src/browser.js";
 import {
     MAINNET,
     WEB_TESTNET,
@@ -1710,6 +1710,87 @@ describe("WebClient", function () {
 
             // Should have exactly 2 nodes (only the valid ones)
             expect(updatedEntries.size).toBe(2);
+        });
+    });
+
+    describe("Async factory methods", function () {
+        it("should create mainnet client with network update", async function () {
+            const client = await Client.forMainnetAsync();
+
+            expect(client).to.be.instanceOf(Client);
+            expect(client.network).to.not.be.empty;
+            expect(client.ledgerId).to.equal(LedgerId.MAINNET);
+        });
+
+        it("should create testnet client with network update", async function () {
+            const client = await Client.forTestnetAsync();
+
+            expect(client).to.be.instanceOf(Client);
+            expect(client.network).to.not.be.empty;
+            expect(client.ledgerId).to.equal(LedgerId.TESTNET);
+        });
+
+        it("should create previewnet client with network update", async function () {
+            const client = await Client.forPreviewnetAsync();
+
+            expect(client).to.be.instanceOf(Client);
+            expect(client.network).to.not.be.empty;
+            expect(client.ledgerId).to.equal(LedgerId.PREVIEWNET);
+        });
+
+        it("should create client for mainnet by name with network update", async function () {
+            const client = await Client.forNameAsync("mainnet");
+
+            expect(client).to.be.instanceOf(Client);
+            expect(client.network).to.not.be.empty;
+            expect(client.ledgerId).to.equal(LedgerId.MAINNET);
+        });
+
+        it("should create client for testnet by name with network update", async function () {
+            const client = await Client.forNameAsync("testnet");
+
+            expect(client).to.be.instanceOf(Client);
+            expect(client.network).to.not.be.empty;
+            expect(client.ledgerId).to.equal(LedgerId.TESTNET);
+        });
+
+        it("should create client for previewnet by name with network update", async function () {
+            const client = await Client.forNameAsync("previewnet");
+
+            expect(client).to.be.instanceOf(Client);
+            expect(client.network).to.not.be.empty;
+            expect(client.ledgerId).to.equal(LedgerId.PREVIEWNET);
+        });
+
+        it("should update network when using async methods", async function () {
+            // Mock the mirror node response for mainnet
+            server.use(
+                http.get(
+                    "https://mainnet-public.mirrornode.hedera.com/api/v1/network/nodes",
+                    ({ request }) => {
+                        const url = new URL(request.url);
+                        const fileId = url.searchParams.get("file.id");
+
+                        if (fileId === FileId.ADDRESS_BOOK.toString()) {
+                            return HttpResponse.json(
+                                generateAddressBookResponse(MAINNET),
+                            );
+                        }
+
+                        return HttpResponse.json({ nodes: [] });
+                    },
+                ),
+            );
+
+            const client = await Client.forMainnetAsync();
+
+            expect(client).to.be.instanceOf(Client);
+            expect(client.network).to.not.be.empty;
+
+            // Verify that the network was updated (should match the mock response)
+            const networkEntries = createNetworkAddressNodeSet(client.network);
+            const mainnetEntries = createNetworkAddressNodeSet(MAINNET);
+            expect(networkEntries).to.deep.equal(mainnetEntries);
         });
     });
 });

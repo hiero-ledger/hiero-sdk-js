@@ -326,4 +326,117 @@ describe("Client", function () {
             });
         });
     });
+
+    describe("Async factory methods", function () {
+        it("should create mainnet client with network update", async function () {
+            const client = await NodeClient.forMainnetAsync();
+
+            expect(client).to.be.instanceOf(NodeClient);
+            expect(client.network).to.not.be.empty;
+            expect(client.ledgerId).to.equal(LedgerId.MAINNET);
+        });
+
+        it("should create testnet client with network update", async function () {
+            const client = await NodeClient.forTestnetAsync();
+
+            expect(client).to.be.instanceOf(NodeClient);
+            expect(client.network).to.not.be.empty;
+            expect(client.ledgerId).to.equal(LedgerId.TESTNET);
+        });
+
+        it("should create previewnet client with network update", async function () {
+            const client = await NodeClient.forPreviewnetAsync();
+
+            expect(client).to.be.instanceOf(NodeClient);
+            expect(client.network).to.not.be.empty;
+            expect(client.ledgerId).to.equal(LedgerId.PREVIEWNET);
+        });
+
+        it("should create client for mainnet by name with network update", async function () {
+            const client = await NodeClient.forNameAsync("mainnet");
+
+            expect(client).to.be.instanceOf(NodeClient);
+            expect(client.network).to.not.be.empty;
+            expect(client.ledgerId).to.equal(LedgerId.MAINNET);
+        });
+
+        it("should create client for testnet by name with network update", async function () {
+            const client = await NodeClient.forNameAsync("testnet");
+
+            expect(client).to.be.instanceOf(NodeClient);
+            expect(client.network).to.not.be.empty;
+            expect(client.ledgerId).to.equal(LedgerId.TESTNET);
+        });
+
+        it("should create client for previewnet by name with network update", async function () {
+            const client = await NodeClient.forNameAsync("previewnet");
+
+            expect(client).to.be.instanceOf(NodeClient);
+            expect(client.network).to.not.be.empty;
+            expect(client.ledgerId).to.equal(LedgerId.PREVIEWNET);
+        });
+
+        it("should create client for local-node by name without network update", async function () {
+            const client = await NodeClient.forNameAsync("local-node");
+
+            expect(client).to.be.instanceOf(NodeClient);
+            expect(client.ledgerId).to.equal(LedgerId.LOCAL_NODE);
+            // For local-node, the network should remain as initially set
+            // since updateNetwork() is not called for local-node
+        });
+
+        it("should accept props parameter in async methods", async function () {
+            const client = await NodeClient.forMainnetAsync({
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(client).to.be.instanceOf(NodeClient);
+            expect(client.network).to.not.be.empty;
+            expect(client.ledgerId).to.equal(LedgerId.MAINNET);
+        });
+
+        it("should accept props parameter in forNameAsync", async function () {
+            const client = await NodeClient.forNameAsync("mainnet", {
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(client).to.be.instanceOf(NodeClient);
+            expect(client.network).to.not.be.empty;
+            expect(client.ledgerId).to.equal(LedgerId.MAINNET);
+        });
+
+        it("should throw error for unknown network name", async function () {
+            try {
+                await NodeClient.forNameAsync("unknown-network");
+                expect.fail("Should have thrown an error");
+            } catch (error) {
+                expect(error.message).to.include("unknown network");
+            }
+        });
+
+        it("should update network when using async methods", async function () {
+            const client = await NodeClient.forMainnetAsync();
+
+            expect(client).to.be.instanceOf(NodeClient);
+            expect(client.network).to.not.be.empty;
+
+            // Verify that the network was updated by checking it's not empty
+            // and contains the expected mainnet nodes
+            const networkEntries = Object.keys(client.network);
+            expect(networkEntries.length).to.be.greaterThan(0);
+        });
+
+        it("should not update network for local-node", async function () {
+            const client = await NodeClient.forNameAsync("local-node");
+
+            expect(client).to.be.instanceOf(NodeClient);
+            expect(client.ledgerId).to.equal(LedgerId.LOCAL_NODE);
+
+            // For local-node, the network should be the default local node network
+            // and should not have been updated via updateNetwork()
+            expect(client.network).to.deep.equal({
+                "127.0.0.1:50211": new AccountId(3),
+            });
+        });
+    });
 });

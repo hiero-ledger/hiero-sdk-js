@@ -174,6 +174,56 @@ export default class WebClient extends Client {
     }
 
     /**
+     * Construct a Hedera client pre-configured for Mainnet access with network update.
+     *
+     * @returns {Promise<WebClient>}
+     */
+    static async forMainnetAsync() {
+        return new WebClient({
+            network: "mainnet",
+        }).updateNetwork();
+    }
+
+    /**
+     * Construct a Hedera client pre-configured for Testnet access with network update.
+     *
+     * @returns {Promise<WebClient>}
+     */
+    static async forTestnetAsync() {
+        return new WebClient({
+            network: "testnet",
+        }).updateNetwork();
+    }
+
+    /**
+     * Construct a Hedera client pre-configured for Previewnet access with network update.
+     *
+     * @returns {Promise<WebClient>}
+     */
+    static async forPreviewnetAsync() {
+        return new WebClient({
+            network: "previewnet",
+        }).updateNetwork();
+    }
+
+    /**
+     * Construct a client for a specific network with optional network update.
+     * Updates network only if the network is not "local-node".
+     *
+     * @param {string} network
+     * @returns {Promise<WebClient>}
+     */
+    static async forNameAsync(network) {
+        const client = new WebClient({ network });
+
+        if (network !== "local-node") {
+            await client.updateNetwork();
+        }
+
+        return client;
+    }
+
+    /**
      * Construct a client configured to use mirror nodes.
      * This will query the address book to get the network nodes.
      *
