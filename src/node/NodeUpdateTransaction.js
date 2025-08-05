@@ -482,7 +482,7 @@ export default class NodeUpdateTransaction extends Transaction {
      * @description Deletes the gRPC proxy endpoint and sets it to null in the mirror node, effectively removing it from the network state.
      * @returns {NodeUpdateTransaction}
      */
-    clearGrpcWebProxyEndpoint() {
+    deleteGrpcWebProxyEndpoint() {
         this._grpcWebProxyEndpoint = new ServiceEndpoint();
         return this;
     }

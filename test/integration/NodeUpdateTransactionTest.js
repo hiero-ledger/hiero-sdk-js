@@ -50,7 +50,7 @@ describe("NodeUpdateTransaction", function () {
                 await new NodeUpdateTransaction()
                     .setNodeId(TARGET_NODE_ID)
                     .setDeclineReward(false)
-                    .clearGrpcWebProxyEndpoint()
+                    .deleteGrpcWebProxyEndpoint()
                     .freezeWith(env.client)
             ).execute(env.client)
         ).getReceipt(env.client);
