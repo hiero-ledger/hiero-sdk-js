@@ -104,7 +104,7 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@a39acf8cfbaa2feb195a86530d0ab643a45aa541 # v0.10
         with:
           installMirrorNode: true
-          hieroVersion: v0.64.1
+          hieroVersion: v0.64.2-rc1
 
       - name: Set Operator Account
         run: |
