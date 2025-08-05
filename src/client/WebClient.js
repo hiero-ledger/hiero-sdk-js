@@ -181,9 +181,7 @@ export default class WebClient extends Client {
      * @returns {Promise<WebClient>}
      */
     static async forMirrorNetwork(mirrorNetwork) {
-        const client = new WebClient();
-
-        client.setMirrorNetwork(mirrorNetwork);
+        const client = new WebClient({ mirrorNetwork: mirrorNetwork });
 
         await client.updateNetwork();
 
