@@ -6,14 +6,14 @@ on:
         description: "Existing Tag to Publish (eg: v3.7.0)"
         type: string
         required: true
-      dry-run-enabled:
-        description: "Dry Run Enabled"
-        type: boolean
-        required: false
-        default: false
       dual-publish-enabled:
         # Set default to true when the dual-publishing period is active
         description: "Dual Publish Enabled"
+        type: boolean
+        required: false
+        default: true
+      dry-run-enabled:
+        description: "Dry Run Enabled"
         type: boolean
         required: false
         default: false
@@ -34,7 +34,7 @@ jobs:
     runs-on: hiero-client-sdk-linux-medium
     env:
       # Set the default to 'true' when the dual-publishing period is active
-      DUAL_PUBLISH_ENABLED: ${{ inputs.dual-publish-enabled || 'false' }}
+      DUAL_PUBLISH_ENABLED: ${{ inputs.dual-publish-enabled == 'true' || github.event_name == 'push' }}
     outputs:
       # Project tag
       tag: ${{ steps.tag.outputs.name }}
@@ -318,7 +318,7 @@ jobs:
     runs-on: hiero-client-sdk-linux-large
     env:
       # Set the default to 'true' when the dual-publishing period is active
-      DUAL_PUBLISH_ENABLED: ${{ inputs.dual-publish-enabled || 'false' }}
+      DUAL_PUBLISH_ENABLED: ${{ inputs.dual-publish-enabled == 'true' || github.event_name == 'push' }}
       DRY_RUN_ENABLED: ${{ inputs.dry-run-enabled || 'false'}}
     needs:
       - validate-release
