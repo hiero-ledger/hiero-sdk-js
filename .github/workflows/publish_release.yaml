@@ -34,7 +34,7 @@ jobs:
     runs-on: hiero-client-sdk-linux-medium
     env:
       # Set the default to 'true' when the dual-publishing period is active
-      DUAL_PUBLISH_ENABLED: ${{ inputs.dual-publish-enabled == 'true' || github.event_name == 'push' }}
+      DUAL_PUBLISH_ENABLED: ${{ inputs.dual-publish-enabled || github.event_name == 'push' }}
     outputs:
       # Project tag
       tag: ${{ steps.tag.outputs.name }}
@@ -163,6 +163,18 @@ jobs:
           fi
 
           echo "publish-required=${PUBLISH_REQUIRED}" >>"${GITHUB_OUTPUT}"
+
+      - name: Package Version Summary
+        run: |
+          echo "## Package Version Summary" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| Package | Version | Publish Required |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "|---------|---------|------------------|" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| @hashgraph/sdk | ${{ steps.npm-package.outputs.sdk-version }} | ${{ steps.sdk-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| @hiero-ledger/sdk | ${{ steps.npm-package.outputs.sdk-version }} | ${{ steps.hiero-sdk-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| @hashgraph/proto | ${{ steps.npm-package.outputs.proto-version }} | ${{ steps.proto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| @hiero-ledger/proto | ${{ steps.npm-package.outputs.proto-version }} | ${{ steps.hiero-proto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| @hashgraph/cryptography | ${{ steps.npm-package.outputs.crypto-version }} | ${{ steps.crypto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| @hiero-ledger/cryptography | ${{ steps.npm-package.outputs.crypto-version }} | ${{ steps.hiero-crypto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Extract SDK Tag Information
         id: tag
@@ -318,7 +330,7 @@ jobs:
     runs-on: hiero-client-sdk-linux-large
     env:
       # Set the default to 'true' when the dual-publishing period is active
-      DUAL_PUBLISH_ENABLED: ${{ inputs.dual-publish-enabled == 'true' || github.event_name == 'push' }}
+      DUAL_PUBLISH_ENABLED: ${{ inputs.dual-publish-enabled || github.event_name == 'push' }}
       DRY_RUN_ENABLED: ${{ inputs.dry-run-enabled || 'false'}}
     needs:
       - validate-release
