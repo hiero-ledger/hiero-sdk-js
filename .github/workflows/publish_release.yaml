@@ -164,9 +164,9 @@ jobs:
 
           echo "publish-required=${PUBLISH_REQUIRED}" >>"${GITHUB_OUTPUT}"
 
-      - name: Publish Required Summary
+      - name: Package Version Summary
         run: |
-          echo "## Publish Required Summary" >> "${GITHUB_STEP_SUMMARY}"
+          echo "## Package Version Summary" >> "${GITHUB_STEP_SUMMARY}"
           echo "| Package | Version | Publish Required |" >> "${GITHUB_STEP_SUMMARY}"
           echo "|---------|---------|------------------|" >> "${GITHUB_STEP_SUMMARY}"
           echo "| @hashgraph/sdk | ${{ steps.npm-package.outputs.sdk-version }} | ${{ steps.sdk-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
