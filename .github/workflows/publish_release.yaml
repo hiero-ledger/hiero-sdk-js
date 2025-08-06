@@ -164,6 +164,18 @@ jobs:
 
           echo "publish-required=${PUBLISH_REQUIRED}" >>"${GITHUB_OUTPUT}"
 
+      - name: Publish Required Summary
+        run: |
+          echo "## Publish Required Summary" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| Package | Version | Publish Required |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "|---------|---------|------------------|" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| @hashgraph/sdk | ${{ steps.npm-package.outputs.sdk-version }} | ${{ steps.sdk-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| @hiero-ledger/sdk | ${{ steps.npm-package.outputs.sdk-version }} | ${{ steps.hiero-sdk-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| @hashgraph/proto | ${{ steps.npm-package.outputs.proto-version }} | ${{ steps.proto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| @hiero-ledger/proto | ${{ steps.npm-package.outputs.proto-version }} | ${{ steps.hiero-proto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| @hashgraph/cryptography | ${{ steps.npm-package.outputs.crypto-version }} | ${{ steps.crypto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| @hiero-ledger/cryptography | ${{ steps.npm-package.outputs.crypto-version }} | ${{ steps.hiero-crypto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
+
       - name: Extract SDK Tag Information
         id: tag
         run: |
