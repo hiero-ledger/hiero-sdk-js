@@ -264,7 +264,7 @@ export default class AddressBookQueryWeb extends Query {
                 // eslint-disable-next-line ie11/no-loop-func
                 this._addresses = nodes.map((node) =>
                     NodeAddress.fromJSON({
-                        nodeId: node.node_id.toString(),
+                        nodeId: node.node_id?.toString(),
                         accountId: node.node_account_id,
                         addresses: this._handleAddressesFromGrpcProxyEndpoint(
                             node,
@@ -273,7 +273,7 @@ export default class AddressBookQueryWeb extends Query {
                         certHash: node.node_cert_hash,
                         publicKey: node.public_key,
                         description: node.description,
-                        stake: node.stake.toString(),
+                        stake: node.stake?.toString(),
                     }),
                 );
 
