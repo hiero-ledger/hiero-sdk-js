@@ -7,7 +7,7 @@ on:
 
 permissions:
     contents: read
-    
+
 jobs:
     reminder:
         runs-on: ubuntu-latest
@@ -26,5 +26,3 @@ jobs:
               run: pnpm install
             - name: Run Broken Links Check
               run: node broken-links-check.js
-
-ASD
