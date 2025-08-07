@@ -1,15 +1,15 @@
 name: Broken Links Check
 
 on:
-  # schedule:
-  # - cron: "* * * * *"
-  workflow_dispatch:
+  schedule:
+    - cron: "0 0 */2 * *"
 
 permissions:
   contents: read
 
 jobs:
-  reminder:
+  check-broken-links:
+    name: Check Broken Links
     runs-on: hiero-client-sdk-linux-medium
     steps:
       - name: Harden Runner
