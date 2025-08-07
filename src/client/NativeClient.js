@@ -248,8 +248,11 @@ export default class NativeClient extends Client {
         } finally {
             this._isUpdatingNetwork = false;
         }
+<<<<<<< HEAD
 
         return this;
+=======
+>>>>>>> 17648381 (feat(client): implement hip-1046 in native environment)
     }
 
     /**
