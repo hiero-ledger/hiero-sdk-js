@@ -8,7 +8,6 @@ import LedgerId from "../LedgerId.js";
 import { MirrorNetwork, WebNetwork } from "../constants/ClientConstants.js";
 import AddressBookQuery from "../network/AddressBookQueryWeb.js";
 import FileId from "../file/FileId.js";
-import WebClient from "./WebClient.js";
 
 /**
  * @typedef {import("./Client.js").ClientConfiguration} ClientConfiguration
