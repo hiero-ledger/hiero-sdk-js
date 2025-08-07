@@ -34,4 +34,7 @@ jobs:
         run: pnpm add @octokit/rest axios dotenv path
 
       - name: Run Broken Links Check
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node scripts/broken-links-check.js
+
