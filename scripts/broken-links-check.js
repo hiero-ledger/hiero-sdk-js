@@ -129,5 +129,12 @@ async function checkLink(url) {
         await checkLink(link);
     }
 
-    console.log(`\n✅ Done. ${brokenLinks.length} broken links found.`);
+
+    if (brokenLinks.length > 0) {
+        console.log("\n❌ Broken links found:");
+        for (const link of brokenLinks) {
+            console.log(`- ${link.url} (${link.status})`);
+        }
+        process.exit(1);
+    }
 })();
