@@ -1,7 +1,7 @@
-require("dotenv").config();
-const axios = require("axios");
-const { Octokit } = require("@octokit/rest");
-const path = require("path");
+import "dotenv/config";
+import axios from "axios";
+import { Octokit } from "@octokit/rest";
+import { posix } from "path";
 
 const REPO_OWNER = "hiero-ledger";
 const REPO_NAME = "hiero-sdk-js";
@@ -66,10 +66,8 @@ function extractLinks(markdown) {
 
 // Resolve relative links to GitHub blob URL
 function resolveRelativeLink(repoPath, relLink) {
-    const baseDir = path.posix.dirname(repoPath);
-    const normalizedPath = path.posix.normalize(
-        path.posix.join(baseDir, relLink),
-    );
+    const baseDir = posix.dirname(repoPath);
+    const normalizedPath = posix.normalize(posix.join(baseDir, relLink));
     return `https://github.com/${REPO_OWNER}/${REPO_NAME}/blob/${BRANCH}/${normalizedPath}`;
 }
 
