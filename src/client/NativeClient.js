@@ -8,6 +8,7 @@ import LedgerId from "../LedgerId.js";
 import { MirrorNetwork, WebNetwork } from "../constants/ClientConstants.js";
 import AddressBookQuery from "../network/AddressBookQueryWeb.js";
 import FileId from "../file/FileId.js";
+import WebClient from "./WebClient.js";
 
 /**
  * @typedef {import("./Client.js").ClientConfiguration} ClientConfiguration
@@ -142,6 +143,56 @@ export default class NativeClient extends Client {
     }
 
     /**
+     * Construct a Hedera client pre-configured for Mainnet access with network update.
+     *
+     * @returns {Promise<NativeClient>}
+     */
+    static async forMainnetAsync() {
+        return new NativeClient({
+            network: "mainnet",
+        }).updateNetwork();
+    }
+
+    /**
+     * Construct a Hedera client pre-configured for Testnet access with network update.
+     *
+     * @returns {Promise<NativeClient>}
+     */
+    static async forTestnetAsync() {
+        return new NativeClient({
+            network: "testnet",
+        }).updateNetwork();
+    }
+
+    /**
+     * Construct a Hedera client pre-configured for Previewnet access with network update.
+     *
+     * @returns {Promise<NativeClient>}
+     */
+    static async forPreviewnetAsync() {
+        return new NativeClient({
+            network: "previewnet",
+        }).updateNetwork();
+    }
+
+    /**
+     * Construct a client for a specific network with optional network update.
+     * Updates network only if the network is not "local-node".
+     *
+     * @param {string} network
+     * @returns {Promise<NativeClient>}
+     */
+    static async forNameAsync(network) {
+        const client = new NativeClient({ network });
+
+        if (network !== "local-node") {
+            await client.updateNetwork();
+        }
+
+        return client;
+    }
+
+    /**
      * Construct a client configured to use mirror nodes.
      * This will query the address book to get the network nodes.
      *
@@ -149,9 +200,9 @@ export default class NativeClient extends Client {
      * @returns {Promise<NativeClient>}
      */
     static async forMirrorNetwork(mirrorNetwork) {
-        const client = new NativeClient();
-
-        client.setMirrorNetwork(mirrorNetwork);
+        const client = new NativeClient({
+            mirrorNetwork,
+        });
 
         await client.updateNetwork();
 
@@ -210,11 +261,11 @@ export default class NativeClient extends Client {
 
     /**
      * @override
-     * @returns {Promise<void>}
+     * @returns {Promise<this>}
      */
     async updateNetwork() {
         if (this._isUpdatingNetwork) {
-            return;
+            return this;
         }
 
         this._isUpdatingNetwork = true;
@@ -248,6 +299,8 @@ export default class NativeClient extends Client {
         } finally {
             this._isUpdatingNetwork = false;
         }
+
+        return this;
     }
 
     /**
