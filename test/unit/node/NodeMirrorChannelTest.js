@@ -1,3 +1,4 @@
+import { vi } from "vitest";
 import NodeMirrorChannel from "../../../src/channel/NodeMirrorChannel.js";
 
 describe("NodeMirrorChannel", function () {
