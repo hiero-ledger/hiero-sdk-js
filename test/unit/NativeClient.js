@@ -1,5 +1,6 @@
 import { AccountId, LedgerId } from "../../src/index.js";
-import NativeClient, { Network } from "../../src/client/NativeClient.js";
+import NativeClient from "../../src/client/NativeClient.js";
+import { WebNetwork } from "../../src/constants/ClientConstants.js";
 
 describe("NativeClient", function () {
     describe("constructor", function () {
@@ -121,18 +122,18 @@ describe("NativeClient", function () {
         it("should return correct network from name", function () {
             // Check network objects by examining properties instead of deep equality
             expect(
-                Object.keys(Network.fromName("mainnet")),
+                Object.keys(WebNetwork.fromName("mainnet")),
             ).to.have.length.above(0);
             expect(
-                Object.keys(Network.fromName("testnet")),
+                Object.keys(WebNetwork.fromName("testnet")),
             ).to.have.length.above(0);
             expect(
-                Object.keys(Network.fromName("previewnet")),
+                Object.keys(WebNetwork.fromName("previewnet")),
             ).to.have.length.above(0);
         });
 
         it("should throw error for unknown network name", function () {
-            expect(() => Network.fromName("invalid")).to.throw(
+            expect(() => WebNetwork.fromName("invalid")).to.throw(
                 "unknown network name: invalid",
             );
         });
