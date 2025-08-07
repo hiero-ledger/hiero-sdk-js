@@ -1,9 +1,13 @@
 name: Broken Links Check
+
+on:
+    # schedule:
+    # - cron: "* * * * *"
+    workflow_dispatch:
+
 permissions:
     contents: read
-on:
-    schedule:
-        - cron: "* * * * *"
+    
 jobs:
     reminder:
         runs-on: ubuntu-latest
@@ -21,4 +25,6 @@ jobs:
             - name: Install Dependencies
               run: pnpm install
             - name: Run Broken Links Check
-              run: scripts/broken-links.sh
+              run: node broken-links-check.js
+
+ASD
