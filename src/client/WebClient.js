@@ -3,12 +3,7 @@
 import Client from "./Client.js";
 import WebChannel from "../channel/WebChannel.js";
 import LedgerId from "../LedgerId.js";
-import {
-    MAINNET,
-    WEB_TESTNET,
-    WEB_PREVIEWNET,
-    MirrorNetwork,
-} from "../constants/ClientConstants.js";
+import { WebNetwork, MirrorNetwork } from "../constants/ClientConstants.js";
 import AddressBookQuery from "../network/AddressBookQueryWeb.js";
 import FileId from "../file/FileId.js";
 
@@ -16,32 +11,6 @@ import FileId from "../file/FileId.js";
  * @typedef {import("./Client.js").ClientConfiguration} ClientConfiguration
  * @typedef {import("../account/AccountId.js").default} AccountId
  */
-
-export const Network = {
-    /**
-     * @param {string} name
-     * @returns {{[key: string]: (string | AccountId)}}
-     */
-    fromName(name) {
-        switch (name) {
-            case "mainnet":
-                return Network.MAINNET;
-
-            case "testnet":
-                return Network.TESTNET;
-
-            case "previewnet":
-                return Network.PREVIEWNET;
-
-            default:
-                throw new Error(`unknown network name: ${name}`);
-        }
-    },
-
-    MAINNET: MAINNET,
-    TESTNET: WEB_TESTNET,
-    PREVIEWNET: WEB_PREVIEWNET,
-};
 
 /**
  * Represents a client for interacting with the Hedera network over the web.
@@ -61,19 +30,19 @@ export default class WebClient extends Client {
             if (typeof props.network === "string") {
                 switch (props.network) {
                     case "mainnet":
-                        this.setNetwork(Network.MAINNET);
-                        this.setMirrorNetwork(MirrorNetwork.MAINNET);
+                        this.setNetwork(WebNetwork.MAINNET);
                         this.setLedgerId(LedgerId.MAINNET);
+                        this.setMirrorNetwork(MirrorNetwork.MAINNET);
                         break;
 
                     case "testnet":
-                        this.setNetwork(Network.TESTNET);
+                        this.setNetwork(WebNetwork.TESTNET);
                         this.setLedgerId(LedgerId.TESTNET);
                         this.setMirrorNetwork(MirrorNetwork.TESTNET);
                         break;
 
                     case "previewnet":
-                        this.setNetwork(Network.PREVIEWNET);
+                        this.setNetwork(WebNetwork.PREVIEWNET);
                         this.setLedgerId(LedgerId.PREVIEWNET);
                         this.setMirrorNetwork(MirrorNetwork.PREVIEWNET);
                         break;
@@ -198,13 +167,13 @@ export default class WebClient extends Client {
         if (typeof network === "string") {
             switch (network) {
                 case "previewnet":
-                    this._network.setNetwork(Network.PREVIEWNET);
+                    this._network.setNetwork(WebNetwork.PREVIEWNET);
                     break;
                 case "testnet":
-                    this._network.setNetwork(Network.TESTNET);
+                    this._network.setNetwork(WebNetwork.TESTNET);
                     break;
                 case "mainnet":
-                    this._network.setNetwork(Network.MAINNET);
+                    this._network.setNetwork(WebNetwork.MAINNET);
             }
         } else {
             this._network.setNetwork(network);

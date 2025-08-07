@@ -41,11 +41,19 @@ export default class NativeChannel extends Channel {
                     new Uint8Array(encodeRequest(requestData)),
                 );
 
+                const shouldUseHttps = !(
+                    this._address.includes("localhost") ||
+                    this._address.includes("127.0.0.1")
+                );
+
+                const address = shouldUseHttps
+                    ? `https://${this._address}`
+                    : `http://${this._address}`;
                 // this will be executed in react native environment sho
                 // fetch should be available
                 //eslint-disable-next-line n/no-unsupported-features/node-builtins
                 const response = await fetch(
-                    `${this._address}/proto.${serviceName}/${method.name}`,
+                    `${address}/proto.${serviceName}/${method.name}`,
                     {
                         method: "POST",
                         headers: {
