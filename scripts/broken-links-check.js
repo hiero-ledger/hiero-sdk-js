@@ -2,6 +2,9 @@ import "dotenv/config";
 import axios from "axios";
 import { Octokit } from "@octokit/rest";
 import { posix } from "path";
+import axiosRetry from "axios-retry";
+
+axiosRetry(axios, { retries: 3, retryDelay: axiosRetry.exponentialDelay });
 
 const REPO_OWNER = "hiero-ledger";
 const REPO_NAME = "hiero-sdk-js";
@@ -24,6 +27,8 @@ const STATUS_DESCRIPTIONS = {
     503: "Service Unavailable",
     504: "Gateway Timeout",
 };
+
+const excludedLinks = ["http://localhost:3000"];
 
 // Get all .md files in the repo recursively
 async function getMarkdownFiles(path = "") {
@@ -80,7 +85,10 @@ async function checkLink(url) {
         });
         if (res.status >= 400) {
             const reason = STATUS_DESCRIPTIONS[res.status] || "Unknown Error";
-            brokenLinks.push({ url, status: res.status, reason });
+
+            if (!excludedLinks.includes(url)) {
+                brokenLinks.push({ url, status: res.status, reason });
+            }
         }
     } catch (err) {
         brokenLinks.push({
@@ -105,30 +113,13 @@ async function checkLink(url) {
         process.exit(1);
     }
 
-    const allLinks = new Set();
-
-    for (const { download_url, repo_path } of mdFiles) {
-        try {
-            const res = await axios.get(download_url, { timeout: 15000 });
-            const links = extractLinks(res.data);
-            for (const link of links) {
-                if (link.startsWith("http")) {
-                    allLinks.add(link);
-                } else if (!link.startsWith("#")) {
-                    allLinks.add(resolveRelativeLink(repo_path, link));
-                }
-            }
-        } catch (err) {
-            console.error(`[FAILED TO LOAD MD] ${download_url}`);
-        }
-    }
+    const allLinks = await getMarkdownLinks(mdFiles);
 
     console.log(`\n🔗 Found ${allLinks.size} unique links. Checking...\n`);
 
     for (const link of allLinks) {
         await checkLink(link);
     }
-
 
     if (brokenLinks.length > 0) {
         console.log("\n❌ Broken links found:");
@@ -138,3 +129,25 @@ async function checkLink(url) {
         process.exit(1);
     }
 })();
+
+async function getMarkdownLinks(mdFiles) {
+    const result = new Set();
+
+    for (const { download_url, repo_path } of mdFiles) {
+        try {
+            const res = await axios.get(download_url, { timeout: 15000 });
+            const links = extractLinks(res.data);
+            for (const link of links) {
+                if (link.startsWith("http")) {
+                    result.add(link);
+                } else if (!link.startsWith("#")) {
+                    result.add(resolveRelativeLink(repo_path, link));
+                }
+            }
+        } catch (err) {
+            console.error(`[FAILED TO LOAD MD] ${download_url}`);
+        }
+    }
+
+    return result;
+}
