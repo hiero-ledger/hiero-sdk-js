@@ -1,4 +1,6 @@
 name: Broken Links Check
+permissions:
+    contents: read
 on:
     schedule:
         - cron: "* * * * *"
