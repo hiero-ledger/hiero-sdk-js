@@ -99,6 +99,14 @@ const nativeAliases = {
             find: "../src/cryptography/sha384.js",
             replacement: "../src/cryptography/sha384.native.js",
         },
+        {
+            find: "../../src/network/AddressBookQuery.js",
+            replacement: "../../src/network/AddressBookQueryWeb.js",
+        },
+        {
+            find: "../network/AddressBookQuery.js",
+            replacement: "../network/AddressBookQueryWeb.js",
+        },
     ],
 };
 
