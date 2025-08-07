@@ -65,7 +65,7 @@ describe("NodeMirrorChannel", function () {
      * - All other status codes are ignored (no callback is triggered)
      * - The error() callback is only triggered by 'error' events, not 'status' events
      */
-    it("should NOT trigger error callback for non-zero status codes", function (done) {
+    it("should NOT trigger error callback for non-zero status codes", async function () {
         let errorCallbackTriggered = false;
         let endCallbackTriggered = false;
 
@@ -89,82 +89,65 @@ describe("NodeMirrorChannel", function () {
 
         channel._client.makeServerStreamRequest = vi.fn(() => mockStream);
 
-        // Set up the server stream request with test callbacks
-        channel.makeServerStreamRequest(
-            "ConsensusService",
-            "subscribeTopic",
-            new Uint8Array([1, 2, 3]),
-            () => {}, // data callback
-            () => {
-                errorCallbackTriggered = true;
-            }, // error callback
-            () => {
-                endCallbackTriggered = true;
-            }, // end callback
-        );
+        try {
+            // Set up the server stream request with test callbacks
+            channel.makeServerStreamRequest(
+                "ConsensusService",
+                "subscribeTopic",
+                new Uint8Array([1, 2, 3]),
+                () => {}, // data callback
+                () => {
+                    errorCallbackTriggered = true;
+                }, // error callback
+                () => {
+                    endCallbackTriggered = true;
+                }, // end callback
+            );
 
-        // Give the setup time to complete
-        setTimeout(() => {
-            try {
-                // Verify that the status and error handlers were registered
-                expect(statusHandler).to.not.be.null;
-                expect(errorHandler).to.not.be.null;
+            // Give the setup time to complete
+            await new Promise((resolve) => setTimeout(resolve, 10));
 
-                // Test various non-zero status codes
-                // These should NOT trigger the error callback
-                statusHandler({ code: 1, details: "CANCELLED" });
-                statusHandler({ code: 2, details: "UNKNOWN" });
-                statusHandler({ code: 3, details: "INVALID_ARGUMENT" });
-                statusHandler({ code: 4, details: "DEADLINE_EXCEEDED" });
-                statusHandler({ code: 5, details: "NOT_FOUND" });
-                statusHandler({ code: 13, details: "INTERNAL" });
-                statusHandler({ code: 14, details: "UNAVAILABLE" });
+            // Verify that the status and error handlers were registered
+            expect(statusHandler).to.not.be.null;
+            expect(errorHandler).to.not.be.null;
 
-                // Allow time for any potential callbacks
-                setTimeout(() => {
-                    try {
-                        // KEY ASSERTION: Non-zero status codes should NOT trigger error callback
-                        expect(errorCallbackTriggered).to.be.false;
+            // Test various non-zero status codes
+            // These should NOT trigger the error callback
+            statusHandler({ code: 1, details: "CANCELLED" });
+            statusHandler({ code: 2, details: "UNKNOWN" });
+            statusHandler({ code: 3, details: "INVALID_ARGUMENT" });
+            statusHandler({ code: 4, details: "DEADLINE_EXCEEDED" });
+            statusHandler({ code: 5, details: "NOT_FOUND" });
+            statusHandler({ code: 13, details: "INTERNAL" });
+            statusHandler({ code: 14, details: "UNAVAILABLE" });
 
-                        // Also verify end callback was not triggered for non-zero codes
-                        expect(endCallbackTriggered).to.be.false;
+            // Allow time for any potential callbacks
+            await new Promise((resolve) => setTimeout(resolve, 10));
 
-                        // Now test that status code 0 DOES trigger end callback
-                        statusHandler({ code: 0, details: "OK" });
+            // KEY ASSERTION: Non-zero status codes should NOT trigger error callback
+            expect(errorCallbackTriggered).to.be.false;
 
-                        setTimeout(() => {
-                            try {
-                                // Status code 0 should trigger end callback
-                                expect(endCallbackTriggered).to.be.true;
+            // Also verify end callback was not triggered for non-zero codes
+            expect(endCallbackTriggered).to.be.false;
 
-                                // Error callback should still not be triggered
-                                expect(errorCallbackTriggered).to.be.false;
+            // Now test that status code 0 DOES trigger end callback
+            statusHandler({ code: 0, details: "OK" });
 
-                                // Restore and complete
-                                channel._client.makeServerStreamRequest =
-                                    originalMakeServerStreamRequest;
-                                done();
-                            } catch (error) {
-                                channel._client.makeServerStreamRequest =
-                                    originalMakeServerStreamRequest;
-                                done(error);
-                            }
-                        }, 10);
-                    } catch (error) {
-                        channel._client.makeServerStreamRequest =
-                            originalMakeServerStreamRequest;
-                        done(error);
-                    }
-                }, 10);
-            } catch (error) {
-                channel._client.makeServerStreamRequest =
-                    originalMakeServerStreamRequest;
-                done(error);
-            }
-        }, 10);
+            await new Promise((resolve) => setTimeout(resolve, 10));
+
+            // Status code 0 should trigger end callback
+            expect(endCallbackTriggered).to.be.true;
+
+            // Error callback should still not be triggered
+            expect(errorCallbackTriggered).to.be.false;
+        } finally {
+            // Restore the original function
+            channel._client.makeServerStreamRequest =
+                originalMakeServerStreamRequest;
+        }
     });
 
-    it("should trigger error callback for actual error events (not status events)", function (done) {
+    it("should trigger error callback for actual error events (not status events)", async function () {
         let errorCallbackTriggered = false;
         let capturedError = null;
 
@@ -185,54 +168,43 @@ describe("NodeMirrorChannel", function () {
 
         channel._client.makeServerStreamRequest = vi.fn(() => mockStream);
 
-        // Set up the server stream request
-        channel.makeServerStreamRequest(
-            "ConsensusService",
-            "subscribeTopic",
-            new Uint8Array([1, 2, 3]),
-            () => {}, // data callback
-            (error) => {
-                // error callback
-                errorCallbackTriggered = true;
-                capturedError = error;
-            },
-            () => {}, // end callback
-        );
+        try {
+            // Set up the server stream request
+            channel.makeServerStreamRequest(
+                "ConsensusService",
+                "subscribeTopic",
+                new Uint8Array([1, 2, 3]),
+                () => {}, // data callback
+                (error) => {
+                    // error callback
+                    errorCallbackTriggered = true;
+                    capturedError = error;
+                },
+                () => {}, // end callback
+            );
 
-        setTimeout(() => {
-            try {
-                expect(errorHandler).to.not.be.null;
+            await new Promise(resolve => setTimeout(resolve, 10));
 
-                // Trigger an actual error event
-                const testError = new Error("Test gRPC connection error");
-                testError.code = 14; // UNAVAILABLE
-                errorHandler(testError);
+            expect(errorHandler).to.not.be.null;
 
-                setTimeout(() => {
-                    try {
-                        // Error events SHOULD trigger the error callback
-                        expect(errorCallbackTriggered).to.be.true;
-                        expect(capturedError).to.be.equal(testError);
-                        expect(capturedError.message).to.include(
-                            "Test gRPC connection error",
-                        );
+            // Trigger an actual error event
+            const testError = new Error("Test gRPC connection error");
+            testError.code = 14; // UNAVAILABLE
+            errorHandler(testError);
 
-                        // Restore and complete
-                        channel._client.makeServerStreamRequest =
-                            originalMakeServerStreamRequest;
-                        done();
-                    } catch (error) {
-                        channel._client.makeServerStreamRequest =
-                            originalMakeServerStreamRequest;
-                        done(error);
-                    }
-                }, 10);
-            } catch (error) {
-                channel._client.makeServerStreamRequest =
-                    originalMakeServerStreamRequest;
-                done(error);
-            }
-        }, 10);
+            await new Promise(resolve => setTimeout(resolve, 10));
+
+            // Error events SHOULD trigger the error callback
+            expect(errorCallbackTriggered).to.be.true;
+            expect(capturedError).to.be.equal(testError);
+            expect(capturedError.message).to.include(
+                "Test gRPC connection error",
+            );
+
+        } finally {
+            // Restore the original function
+            channel._client.makeServerStreamRequest = originalMakeServerStreamRequest;
+        }
     });
 
     it("should construct correct gRPC service path", function () {
