@@ -1,7 +1,7 @@
 name: Broken Links Check
 on:
     schedule:
-        - cron: "0 0 */2 * *"
+        - cron: "* * * * *"
 jobs:
     reminder:
         runs-on: ubuntu-latest
