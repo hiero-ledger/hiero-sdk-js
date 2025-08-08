@@ -16,7 +16,7 @@
 
 ## Install
 
-**NOTE**: v1 of the SDK is deprecated and support will be discontinued after October 2021. Please install the latest version 2.x or migrate from v1 to the latest 2.x version. You can reference the [migration documentation](/MIGRATING_V1.md).
+**NOTE**: v1 of the SDK is deprecated and support will be discontinued after October 2021. Please install the latest version 2.x or migrate from v1 to the latest 2.x version. You can reference the [migration documentation](./manual//MIGRATING_V1.md).
 
 ```
 # with NPM
@@ -103,7 +103,7 @@ Then, rebuild the iOS project.
 ⚠️ ✅ Hiero Javascript SDK Version 2.59 and Below
 For projects using SDK version 2.59 and below, Expo SDK Version 49 and below is supported, keep in mind that the SDK uses some functionalities provided from ethers/ethersproject and there is an issue using parts of ethers.js in this environment. A [shims](https://www.npmjs.com/package/@ethersproject/shims) package has to be installed and imported before importing the SDK in your project.
 
-- Useful information: [here](https://github.com/ethers-io/ethers.js/discussions/3652) and [here](https://docs.ethers.org/v5/cookbook/react-native/)
+-   Useful information: [here](https://github.com/ethers-io/ethers.js/discussions/3652) and [here](https://docs.ethers.org/v5/cookbook/react-native/)
 
 ```bash
 npm install @ethersproject/shims
@@ -124,7 +124,7 @@ import {
 
 The Hiero JavaScript SDK does not currently support the following:
 
-- React Native Bare
+-   React Native Bare
 
 ## Usage
 
@@ -139,7 +139,7 @@ Every example can be executed using the following command from the root director
 
 ## Configuration
 
-For detailed information on configuring the SDK, including environment variables and client settings, please refer to the [CONFIGURATION.md](CONFIGURATION.md) file.
+For detailed information on configuring the SDK, including environment variables and client settings, please refer to the [CONFIGURATION.md](./manual/CONFIGURATION.md) file.
 
 ## Start tests
 
