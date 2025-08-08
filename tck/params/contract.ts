@@ -2,10 +2,10 @@ export interface CreateContractParams {
     readonly adminKey?: string;
     readonly gas?: string;
     readonly initialBalance?: string;
-    readonly bytecode?: string;
+    readonly initcode?: string;
     readonly bytecodeFileId?: string;
     readonly stakedId?: string;
-    readonly declineReward?: boolean;
+    readonly declineStakingReward?: boolean;
     readonly autoRenewAccountId?: string;
     readonly autoRenewPeriod?: string;
     readonly automaticTokenAssociations?: boolean;

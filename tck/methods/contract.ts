@@ -16,10 +16,10 @@ export const createContract = async ({
     autoRenewAccountId,
     initialBalance,
     bytecodeFileId,
-    bytecode,
+    initcode,
     stakedId,
     gas,
-    declineReward,
+    declineStakingReward,
     memo,
     commonTransactionParams,
 }: CreateContractParams): Promise<ContractResponse> => {
@@ -28,6 +28,7 @@ export const createContract = async ({
     );
 
     if (adminKey != null) {
+        console.log("adminKey", adminKey);
         transaction.setAdminKey(getKeyFromString(adminKey));
     }
 
@@ -47,17 +48,21 @@ export const createContract = async ({
         transaction.setInitialBalance(Long.fromString(initialBalance));
     }
 
-    if (bytecode != null) {
-        const bytecodeBuffer = decode(bytecode);
-        transaction.setBytecode(bytecodeBuffer);
+    if (initcode != null) {
+        const initCodeBuffer = decode(initcode);
+        transaction.setBytecode(initCodeBuffer);
+    }
+
+    if (bytecodeFileId != null) {
+        transaction.setBytecodeFileId(bytecodeFileId);
     }
 
     if (stakedId != null) {
         transaction.setStakedAccountId(stakedId);
     }
 
-    if (declineReward != null) {
-        transaction.setDeclineStakingReward(declineReward);
+    if (declineStakingReward != null) {
+        transaction.setDeclineStakingReward(declineStakingReward);
     }
 
     if (memo != null) {
@@ -71,6 +76,7 @@ export const createContract = async ({
             sdk.getClient(),
         );
     }
+
     const response = await transaction.execute(sdk.getClient());
     const receipt = await response.getReceipt(sdk.getClient());
 
