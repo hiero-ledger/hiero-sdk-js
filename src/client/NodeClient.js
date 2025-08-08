@@ -165,13 +165,11 @@ export default class NodeClient extends Client {
      * @returns {Promise<NodeClient>}
      */
     static async forMirrorNetwork(mirrorNetwork, shard, realm) {
-        const INITIAL_UPDATE_PERIOD = 10_000;
-
         const client = new NodeClient({
             mirrorNetwork,
             shard,
             realm,
-        }).setNetworkUpdatePeriod(INITIAL_UPDATE_PERIOD);
+        });
 
         await client.updateNetwork();
 
@@ -201,6 +199,61 @@ export default class NodeClient extends Client {
             network: "local-node",
             ...props,
         });
+    }
+
+    /**
+     * Construct a Hedera client pre-configured for Mainnet access with network update.
+     *
+     * @param {object} [props]
+     * @param {boolean} [props.scheduleNetworkUpdate]
+     * @returns {Promise<NodeClient>}
+     */
+    static async forMainnetAsync(props = {}) {
+        return new NodeClient({ network: "mainnet", ...props }).updateNetwork();
+    }
+
+    /**
+     * Construct a Hedera client pre-configured for Testnet access with network update.
+     *
+     * @param {object} [props]
+     * @param {boolean} [props.scheduleNetworkUpdate]
+     * @returns {Promise<NodeClient>}
+     */
+    static async forTestnetAsync(props = {}) {
+        return new NodeClient({ network: "testnet", ...props }).updateNetwork();
+    }
+
+    /**
+     * Construct a Hedera client pre-configured for Previewnet access with network update.
+     *
+     * @param {object} [props]
+     * @param {boolean} [props.scheduleNetworkUpdate]
+     * @returns {Promise<NodeClient>}
+     */
+    static async forPreviewnetAsync(props = {}) {
+        return new NodeClient({
+            network: "previewnet",
+            ...props,
+        }).updateNetwork();
+    }
+
+    /**
+     * Construct a client for a specific network with optional network update.
+     * Updates network only if the network is not "local-node".
+     *
+     * @param {string} network
+     * @param {object} [props]
+     * @param {boolean} [props.scheduleNetworkUpdate]
+     * @returns {Promise<NodeClient>}
+     */
+    static async forNameAsync(network, props = {}) {
+        const client = new NodeClient({ network, ...props });
+
+        if (network !== "local-node") {
+            await client.updateNetwork();
+        }
+
+        return client;
     }
 
     /**

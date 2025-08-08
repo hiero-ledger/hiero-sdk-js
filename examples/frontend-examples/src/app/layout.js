@@ -262,6 +262,12 @@ const clientLinks = [
         title: "Dynamic GRPC Web Proxy",
         description: "GRPC Web Proxy with dynamic network update",
     },
+    {
+        href: "/client/async-client",
+        title: "Async Client",
+        description:
+            "Client initialized with latest network state and dynamic updates",
+    },
 ];
 
 const topicLinks = [
