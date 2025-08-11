@@ -140,7 +140,7 @@ describe("NodeMirrorChannel", function () {
                 () => {}, // end callback
             );
 
-            setTimeout(10);
+            await setTimeout(10);
 
             expect(errorHandler).to.not.be.null;
 
