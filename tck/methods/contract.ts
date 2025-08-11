@@ -51,12 +51,8 @@ export const createContract = async ({
         transaction.setInitialBalance(Hbar.fromTinybars(initialBalance));
     }
 
-    //check for decode method that where if the hex is wrong to throw an error
     if (initcode != null) {
         const initCodeBuffer = decode(initcode);
-        if (initCodeBuffer.length === 0) {
-            throw new Error("Init code is empty");
-        }
         transaction.setBytecode(initCodeBuffer);
     }
 
