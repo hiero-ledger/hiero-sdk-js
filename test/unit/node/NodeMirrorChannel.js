@@ -62,7 +62,7 @@ describe("NodeMirrorChannel", function () {
             );
 
             // Give the setup time to complete
-            await setTimeout(resolve, 10);
+            await setTimeout(10);
 
             // Verify that the status and error handlers were registered
             expect(statusHandler).to.not.be.null;
@@ -140,7 +140,7 @@ describe("NodeMirrorChannel", function () {
                 () => {}, // end callback
             );
 
-            setTimeout(resolve, 10);
+            setTimeout(10);
 
             expect(errorHandler).to.not.be.null;
 
@@ -149,7 +149,7 @@ describe("NodeMirrorChannel", function () {
             testError.code = 14; // UNAVAILABLE
             errorHandler(testError);
 
-            await setTimeout(resolve, 10);
+            await setTimeout(10);
 
             // Error events SHOULD trigger the error callback
             expect(errorCallbackTriggered).to.be.true;
