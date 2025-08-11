@@ -87,7 +87,7 @@ describe("NodeMirrorChannel", function () {
             expect(endCallbackTriggered).to.be.false;
 
             // Now test that status code 0 DOES trigger end callback
-            statusHandler({ code: 0, details: "OK" });
+            statusHandler({ code: 0, details: GrpcStatus._fromValue(0) });
 
             await new Promise((resolve) => setTimeout(resolve, 10));
 
