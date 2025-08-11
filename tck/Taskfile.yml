@@ -7,8 +7,8 @@ tasks:
         cmds:
             - echo "Checking Node.js version..."
             - |
-                if ! command -v node &> /dev/null || [ "$(node -v | cut -d'.' -f1)" -lt "v20" ]; then
-                  echo "Node.js v20 or higher is required. Please install it."
+                if ! command -v node &> /dev/null || [ "$(node -v | cut -d'.' -f1)" -lt "v22" ]; then
+                  echo "Node.js v22 or higher is required. Please install it."
                   exit 1
                 fi
 
