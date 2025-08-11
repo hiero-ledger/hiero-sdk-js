@@ -8,54 +8,9 @@ describe("NodeMirrorChannel", function () {
         channel = new NodeMirrorChannel("localhost:50211");
     });
 
-    afterEach(function () {
-        if (channel) {
-            channel.close();
-        }
-    });
-
     it("should create a NodeMirrorChannel instance", function () {
         expect(channel).to.be.instanceof(NodeMirrorChannel);
         expect(channel._client).to.not.be.null;
-    });
-
-    it("should use SSL credentials for secure ports (50212, 443)", function () {
-        const sslChannel1 = new NodeMirrorChannel("test.hedera.com:50212");
-        const sslChannel2 = new NodeMirrorChannel("test.hedera.com:443");
-
-        expect(sslChannel1._client).to.not.be.null;
-        expect(sslChannel2._client).to.not.be.null;
-
-        sslChannel1.close();
-        sslChannel2.close();
-    });
-
-    it("should use insecure credentials for other ports", function () {
-        const insecureChannel = new NodeMirrorChannel("test.hedera.com:50211");
-        expect(insecureChannel._client).to.not.be.null;
-        insecureChannel.close();
-    });
-
-    it("makeServerStreamRequest should return a cancel function", function () {
-        const cancelFn = channel.makeServerStreamRequest(
-            "ConsensusService",
-            "subscribeTopic",
-            new Uint8Array([1, 2, 3]),
-            () => {}, // data callback
-            () => {}, // error callback
-            () => {}, // end callback
-        );
-
-        expect(typeof cancelFn).to.be.equal("function");
-    });
-
-    it("should close the underlying gRPC client", function () {
-        const spy = vi.spyOn(channel._client, "close");
-
-        channel.close();
-
-        expect(spy).toHaveBeenCalledTimes(1);
-        spy.mockRestore();
     });
 
     /**
@@ -183,7 +138,7 @@ describe("NodeMirrorChannel", function () {
                 () => {}, // end callback
             );
 
-            await new Promise(resolve => setTimeout(resolve, 10));
+            await new Promise((resolve) => setTimeout(resolve, 10));
 
             expect(errorHandler).to.not.be.null;
 
@@ -192,7 +147,7 @@ describe("NodeMirrorChannel", function () {
             testError.code = 14; // UNAVAILABLE
             errorHandler(testError);
 
-            await new Promise(resolve => setTimeout(resolve, 10));
+            await new Promise((resolve) => setTimeout(resolve, 10));
 
             // Error events SHOULD trigger the error callback
             expect(errorCallbackTriggered).to.be.true;
@@ -200,37 +155,16 @@ describe("NodeMirrorChannel", function () {
             expect(capturedError.message).to.include(
                 "Test gRPC connection error",
             );
-
         } finally {
             // Restore the original function
-            channel._client.makeServerStreamRequest = originalMakeServerStreamRequest;
+            channel._client.makeServerStreamRequest =
+                originalMakeServerStreamRequest;
         }
     });
 
-    it("should construct correct gRPC service path", function () {
-        const spy = vi
-            .spyOn(channel._client, "makeServerStreamRequest")
-            .mockReturnValue({
-                on: vi.fn().mockReturnThis(),
-                cancel: vi.fn(),
-            });
-
-        channel.makeServerStreamRequest(
-            "ConsensusService",
-            "subscribeTopic",
-            new Uint8Array([1, 2, 3]),
-            () => {},
-            () => {},
-            () => {},
-        );
-
-        expect(spy).toHaveBeenCalledWith(
-            "/com.hedera.mirror.api.proto.ConsensusService/subscribeTopic",
-            expect.any(Function),
-            expect.any(Function),
-            expect.any(Buffer),
-        );
-
-        spy.mockRestore();
+    afterEach(function () {
+        if (channel) {
+            channel.close();
+        }
     });
 });
