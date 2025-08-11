@@ -525,6 +525,7 @@ export default class ContractCreateTransaction extends Transaction {
             typeof stakedAccountId === "string"
                 ? AccountId.fromString(stakedAccountId)
                 : stakedAccountId;
+        this._stakedNodeId = null;
 
         return this;
     }
@@ -543,7 +544,7 @@ export default class ContractCreateTransaction extends Transaction {
     setStakedNodeId(stakedNodeId) {
         this._requireNotFrozen();
         this._stakedNodeId = Long.fromValue(stakedNodeId);
-
+        this._stakedAccountId = null;
         return this;
     }
 
