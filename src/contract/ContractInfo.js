@@ -39,6 +39,7 @@ export default class ContractInfo {
      * @param {TokenRelationshipMap} props.tokenRelationships
      * @param {LedgerId|null} props.ledgerId
      * @param {?StakingInfo} props.stakingInfo
+     * @param {Long} props.maxAutomaticTokenAssociations
      */
     constructor(props) {
         /**
@@ -138,6 +139,13 @@ export default class ContractInfo {
         this.tokenRelationships = props.tokenRelationships;
 
         /**
+         * The maximum number of automatic token associations allowed for this contract.
+         * @readonly
+         */
+        this.maxAutomaticTokenAssociations =
+            props.maxAutomaticTokenAssociations;
+
+        /**
          * The ledger ID the response was returned from; please see <a href="https://github.com/hashgraph/hedera-improvement-proposal/blob/master/HIP/hip-198.md">HIP-198</a> for the network-specific IDs.
          */
         this.ledgerId = props.ledgerId;
@@ -204,6 +212,12 @@ export default class ContractInfo {
                 info.stakingInfo != null
                     ? StakingInfo._fromProtobuf(info.stakingInfo)
                     : null,
+            maxAutomaticTokenAssociations:
+                info.maxAutomaticTokenAssociations != null
+                    ? Long.isLong(info.maxAutomaticTokenAssociations)
+                        ? info.maxAutomaticTokenAssociations
+                        : Long.fromValue(info.maxAutomaticTokenAssociations)
+                    : Long.ZERO,
         });
     }
 
@@ -240,6 +254,8 @@ export default class ContractInfo {
                 this.stakingInfo != null
                     ? this.stakingInfo._toProtobuf()
                     : null,
+            maxAutomaticTokenAssociations:
+                this.maxAutomaticTokenAssociations.toNumber(),
         };
     }
 
