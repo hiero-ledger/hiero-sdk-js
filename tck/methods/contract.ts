@@ -1,4 +1,4 @@
-import { ContractCreateTransaction, FileId } from "@hashgraph/sdk";
+import { ContractCreateTransaction, FileId, Hbar } from "@hashgraph/sdk";
 
 import { CreateContractParams } from "../params/contract";
 import { ContractResponse } from "../response/contract";
@@ -17,10 +17,13 @@ export const createContract = async ({
     initialBalance,
     bytecodeFileId,
     initcode,
-    stakedId,
+    stakedAccountId,
+    stakedNodeId,
     gas,
     declineStakingReward,
     memo,
+    maxAutomaticTokenAssociations,
+    constructorParameters,
     commonTransactionParams,
 }: CreateContractParams): Promise<ContractResponse> => {
     const transaction = new ContractCreateTransaction().setGrpcDeadline(
@@ -45,11 +48,15 @@ export const createContract = async ({
     }
 
     if (initialBalance != null) {
-        transaction.setInitialBalance(Long.fromString(initialBalance));
+        transaction.setInitialBalance(Hbar.fromTinybars(initialBalance));
     }
 
+    //check for decode method that where if the hex is wrong to throw an error
     if (initcode != null) {
         const initCodeBuffer = decode(initcode);
+        if (initCodeBuffer.length === 0) {
+            throw new Error("Init code is empty");
+        }
         transaction.setBytecode(initCodeBuffer);
     }
 
@@ -57,8 +64,12 @@ export const createContract = async ({
         transaction.setBytecodeFileId(bytecodeFileId);
     }
 
-    if (stakedId != null) {
-        transaction.setStakedAccountId(stakedId);
+    if (stakedAccountId != null) {
+        transaction.setStakedAccountId(stakedAccountId);
+    }
+
+    if (stakedNodeId != null) {
+        transaction.setStakedNodeId(Long.fromString(stakedNodeId));
     }
 
     if (declineStakingReward != null) {
@@ -67,6 +78,20 @@ export const createContract = async ({
 
     if (memo != null) {
         transaction.setContractMemo(memo);
+    }
+
+    if (maxAutomaticTokenAssociations != null) {
+        transaction.setMaxAutomaticTokenAssociations(
+            maxAutomaticTokenAssociations,
+        );
+    }
+
+    if (constructorParameters != null) {
+        const constructorParams = decode(constructorParameters);
+        if (constructorParams.length === 0) {
+            throw new Error("Constructor parameters are empty");
+        }
+        transaction.setConstructorParameters(constructorParams);
     }
 
     if (commonTransactionParams != null) {

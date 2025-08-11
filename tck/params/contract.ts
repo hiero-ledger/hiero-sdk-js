@@ -4,12 +4,14 @@ export interface CreateContractParams {
     readonly initialBalance?: string;
     readonly initcode?: string;
     readonly bytecodeFileId?: string;
-    readonly stakedId?: string;
+    readonly stakedAccountId?: string;
+    readonly stakedNodeId?: string;
     readonly declineStakingReward?: boolean;
     readonly autoRenewAccountId?: string;
     readonly autoRenewPeriod?: string;
     readonly automaticTokenAssociations?: boolean;
     readonly constructorParameters?: string;
     readonly memo?: string;
+    readonly maxAutomaticTokenAssociations?: number;
     readonly commonTransactionParams?: Record<string, any>;
 }
