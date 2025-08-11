@@ -1,6 +1,7 @@
 import { vi } from "vitest";
 import NodeMirrorChannel from "../../../src/channel/NodeMirrorChannel.js";
 import GrpcStatus from "../../../src/grpc/GrpcStatus.js";
+import { setTimeout } from "node:timers/promises";
 
 describe("NodeMirrorChannel", function () {
     let channel;
@@ -61,7 +62,7 @@ describe("NodeMirrorChannel", function () {
             );
 
             // Give the setup time to complete
-            await new Promise((resolve) => setTimeout(resolve, 10));
+            await setTimeout(resolve, 10);
 
             // Verify that the status and error handlers were registered
             expect(statusHandler).to.not.be.null;
@@ -78,7 +79,7 @@ describe("NodeMirrorChannel", function () {
             statusHandler({ code: 14, details: GrpcStatus._fromValue(14) });
 
             // Allow time for any potential callbacks
-            await new Promise((resolve) => setTimeout(resolve, 10));
+            await setTimeout(10);
 
             // KEY ASSERTION: Non-zero status codes should NOT trigger error callback
             expect(errorCallbackTriggered).to.be.false;
@@ -89,7 +90,7 @@ describe("NodeMirrorChannel", function () {
             // Now test that status code 0 DOES trigger end callback
             statusHandler({ code: 0, details: GrpcStatus._fromValue(0) });
 
-            await new Promise((resolve) => setTimeout(resolve, 10));
+            await setTimeout(10);
 
             // Status code 0 should trigger end callback
             expect(endCallbackTriggered).to.be.true;
@@ -139,7 +140,7 @@ describe("NodeMirrorChannel", function () {
                 () => {}, // end callback
             );
 
-            await new Promise((resolve) => setTimeout(resolve, 10));
+            setTimeout(resolve, 10);
 
             expect(errorHandler).to.not.be.null;
 
@@ -148,7 +149,7 @@ describe("NodeMirrorChannel", function () {
             testError.code = 14; // UNAVAILABLE
             errorHandler(testError);
 
-            await new Promise((resolve) => setTimeout(resolve, 10));
+            await setTimeout(resolve, 10);
 
             // Error events SHOULD trigger the error callback
             expect(errorCallbackTriggered).to.be.true;
