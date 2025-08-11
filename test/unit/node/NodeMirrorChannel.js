@@ -1,5 +1,6 @@
 import { vi } from "vitest";
 import NodeMirrorChannel from "../../../src/channel/NodeMirrorChannel.js";
+import GrpcStatus from "../../../src/grpc/GrpcStatus.js";
 
 describe("NodeMirrorChannel", function () {
     let channel;
@@ -68,13 +69,13 @@ describe("NodeMirrorChannel", function () {
 
             // Test various non-zero status codes
             // These should NOT trigger the error callback
-            statusHandler({ code: 1, details: "CANCELLED" });
-            statusHandler({ code: 2, details: "UNKNOWN" });
-            statusHandler({ code: 3, details: "INVALID_ARGUMENT" });
-            statusHandler({ code: 4, details: "DEADLINE_EXCEEDED" });
-            statusHandler({ code: 5, details: "NOT_FOUND" });
-            statusHandler({ code: 13, details: "INTERNAL" });
-            statusHandler({ code: 14, details: "UNAVAILABLE" });
+            statusHandler({ code: 1, details: GrpcStatus._fromValue(1) });
+            statusHandler({ code: 2, details: GrpcStatus._fromValue(2) });
+            statusHandler({ code: 3, details: GrpcStatus._fromValue(3) });
+            statusHandler({ code: 4, details: GrpcStatus._fromValue(4) });
+            statusHandler({ code: 5, details: GrpcStatus._fromValue(5) });
+            statusHandler({ code: 13, details: GrpcStatus._fromValue(13) });
+            statusHandler({ code: 14, details: GrpcStatus._fromValue(14) });
 
             // Allow time for any potential callbacks
             await new Promise((resolve) => setTimeout(resolve, 10));
