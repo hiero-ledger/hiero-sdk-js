@@ -210,11 +210,11 @@ export default class NativeClient extends Client {
 
     /**
      * @override
-     * @returns {Promise<void>}
+     * @returns {Promise<this>}
      */
     async updateNetwork() {
         if (this._isUpdatingNetwork) {
-            return;
+            return this;
         }
 
         this._isUpdatingNetwork = true;
@@ -248,6 +248,8 @@ export default class NativeClient extends Client {
         } finally {
             this._isUpdatingNetwork = false;
         }
+
+        return this;
     }
 
     /**
