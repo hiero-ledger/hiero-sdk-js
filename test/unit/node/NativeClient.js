@@ -1,15 +1,15 @@
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import { AccountId, LedgerId, FileId } from "../../src/index.js";
-import NativeClient from "../../src/client/NativeClient.js";
-import { WebNetwork } from "../../src/constants/ClientConstants.js";
+import { AccountId, LedgerId, FileId } from "../../../src/index.js";
+import NativeClient from "../../../src/client/NativeClient.js";
+import { WebNetwork } from "../../../src/constants/ClientConstants.js";
 import {
     MAINNET,
     WEB_TESTNET,
     WEB_PREVIEWNET,
-} from "../../src/constants/ClientConstants.js";
+} from "../../../src/constants/ClientConstants.js";
 /**
- * @typedef {import("../../src/network/AddressBookQueryWeb.js").AddressBookQueryWebResponse} AddressBookQueryWebResponse
+ * @typedef {import("../../../src/network/AddressBookQueryWeb.js").AddressBookQueryWebResponse} AddressBookQueryWebResponse
  */
 
 /**
