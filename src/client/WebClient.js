@@ -4,6 +4,7 @@ import Client from "./Client.js";
 import WebChannel from "../channel/WebChannel.js";
 import LedgerId from "../LedgerId.js";
 import { WebNetwork, MirrorNetwork } from "../constants/ClientConstants.js";
+
 import AddressBookQuery from "../network/AddressBookQueryWeb.js";
 import FileId from "../file/FileId.js";
 
@@ -45,6 +46,12 @@ export default class WebClient extends Client {
                         this.setNetwork(WebNetwork.PREVIEWNET);
                         this.setLedgerId(LedgerId.PREVIEWNET);
                         this.setMirrorNetwork(MirrorNetwork.PREVIEWNET);
+                        break;
+
+                    case "local-node":
+                        this.setNetwork(WebNetwork.LOCAL_NODE);
+                        this.setLedgerId(LedgerId.LOCAL_NODE);
+                        this.setMirrorNetwork(MirrorNetwork.LOCAL_NODE);
                         break;
 
                     default:
@@ -143,6 +150,20 @@ export default class WebClient extends Client {
     }
 
     /**
+     * Construct a Hedera client pre-configured for local-node access.
+     *
+     * @param {object} [props]
+     * @param {boolean} [props.scheduleNetworkUpdate]
+     * @returns {WebClient}
+     */
+    static forLocalNode(props = { scheduleNetworkUpdate: false }) {
+        return new WebClient({
+            network: "local-node",
+            ...props,
+        });
+    }
+
+    /**
      * Construct a Hedera client pre-configured for Mainnet access with network update.
      *
      * @returns {Promise<WebClient>}
@@ -222,6 +243,10 @@ export default class WebClient extends Client {
                     break;
                 case "mainnet":
                     this._network.setNetwork(WebNetwork.MAINNET);
+                    break;
+                case "local-node":
+                    this._network.setNetwork(WebNetwork.LOCAL_NODE);
+                    break;
             }
         } else {
             this._network.setNetwork(network);

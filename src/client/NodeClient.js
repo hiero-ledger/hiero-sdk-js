@@ -6,25 +6,22 @@ import Client from "./Client.js";
 import NodeChannel from "../channel/NodeChannel.js";
 import NodeMirrorChannel from "../channel/NodeMirrorChannel.js";
 import LedgerId from "../LedgerId.js";
-import AccountId from "../account/AccountId.js";
 import NodeAddressBook from "../address_book/NodeAddressBook.js";
 import * as mainnet from "./addressbooks/mainnet.js";
 import * as testnet from "./addressbooks/testnet.js";
 import * as previewnet from "./addressbooks/previewnet.js";
 import * as hex from "../encoding/hex.js";
-import { MirrorNetwork } from "../constants/ClientConstants.js";
+import {
+    LocalNodeNetwork,
+    MirrorNetwork,
+} from "../constants/ClientConstants.js";
 
 const readFileAsync = util.promisify(fs.readFile);
 
 /**
  * @typedef {import("./Client.js").ClientConfiguration} ClientConfiguration
+ * @typedef {import("../account/AccountId.js").default} AccountId
  */
-
-export const Network = {
-    LOCAL_NODE: {
-        "127.0.0.1:50211": new AccountId(3),
-    },
-};
 
 /**
  * @augments {Client<NodeChannel, NodeMirrorChannel>}
@@ -313,7 +310,7 @@ export default class NodeClient extends Client {
                 break;
 
             case "local-node":
-                this.setNetwork(Network.LOCAL_NODE);
+                this.setNetwork(LocalNodeNetwork);
                 this.setMirrorNetwork(MirrorNetwork.LOCAL_NODE);
                 this.setLedgerId(LedgerId.LOCAL_NODE);
                 break;
