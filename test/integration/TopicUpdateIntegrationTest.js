@@ -684,6 +684,186 @@ describe("TopicUpdate", function () {
                 newSubmitKey.publicKey.toString(),
             );
         });
+
+        it("should allow message submission without signature when Submit Key is updated to empty key list", async function () {
+            // Create a private topic with both Admin and Submit Keys
+            const adminKey = PrivateKey.generateECDSA();
+            const submitKey = PrivateKey.generateECDSA();
+
+            const response = new TopicCreateTransaction()
+                .setAdminKey(adminKey.publicKey)
+                .setSubmitKey(submitKey.publicKey)
+                .freezeWith(env.client);
+
+            await response.sign(adminKey);
+            await response.sign(submitKey);
+            const receipt = await response.execute(env.client);
+
+            const topicId = (await receipt.getReceipt(env.client)).topicId;
+
+            // Verify initial message submission works with submit key
+            await (
+                await (
+                    await new TopicMessageSubmitTransaction()
+                        .setTopicId(topicId)
+                        .setMessage("Test message before empty key list")
+                        .freezeWith(env.client)
+                        .sign(submitKey)
+                ).execute(env.client)
+            ).getReceipt(env.client);
+
+            // Update Submit Key to empty key list using valid Admin Key signature
+            await (
+                await (
+                    await new TopicUpdateTransaction()
+                        .setTopicId(topicId)
+                        .setSubmitKey(new KeyList())
+                        .freezeWith(env.client)
+                        .sign(adminKey)
+                ).execute(env.client)
+            ).getReceipt(env.client);
+
+            // Verify that messages can be submitted without any signature (public topic behavior)
+            await (
+                await (
+                    await new TopicMessageSubmitTransaction()
+                        .setTopicId(topicId)
+                        .setMessage("Test message after empty key list")
+                ).execute(env.client)
+            ).getReceipt(env.client);
+
+            // Verify topic info shows empty submit key
+            const info = await new TopicInfoQuery()
+                .setTopicId(topicId)
+                .execute(env.client);
+
+            expect(info.submitKey).to.be.null;
+        });
+
+        it("should allow message submission without signature when Submit Key is updated to empty key list with only Submit Key", async function () {
+            // Create a private topic with only Submit Key (no Admin Key)
+            const submitKey = PrivateKey.generateECDSA();
+
+            const response = new TopicCreateTransaction()
+                .setSubmitKey(submitKey.publicKey)
+                .freezeWith(env.client);
+
+            await response.sign(submitKey);
+            const receipt = await response.execute(env.client);
+
+            const topicId = (await receipt.getReceipt(env.client)).topicId;
+
+            // Verify initial message submission works with submit key
+            await (
+                await (
+                    await new TopicMessageSubmitTransaction()
+                        .setTopicId(topicId)
+                        .setMessage("Test message before empty key list")
+                        .freezeWith(env.client)
+                        .sign(submitKey)
+                ).execute(env.client)
+            ).getReceipt(env.client);
+
+            // Update Submit Key to empty key list using valid Submit Key signature
+            await (
+                await (
+                    await new TopicUpdateTransaction()
+                        .setTopicId(topicId)
+                        .setSubmitKey(new KeyList())
+                        .freezeWith(env.client)
+                        .sign(submitKey)
+                ).execute(env.client)
+            ).getReceipt(env.client);
+
+            // Verify that messages can be submitted without any signature (public topic behavior)
+            await (
+                await (
+                    await new TopicMessageSubmitTransaction()
+                        .setTopicId(topicId)
+                        .setMessage("Test message after empty key list")
+                ).execute(env.client)
+            ).getReceipt(env.client);
+
+            // Verify topic info shows empty submit key
+            const info = await new TopicInfoQuery()
+                .setTopicId(topicId)
+                .execute(env.client);
+
+            expect(info.submitKey).to.be.null;
+        });
+
+        it("should properly handle Admin Key updated to empty key list maintaining message submission capability", async function () {
+            // Create a private topic with both Admin and Submit Keys
+            const adminKey = PrivateKey.generateECDSA();
+            const submitKey = PrivateKey.generateECDSA();
+
+            const response = new TopicCreateTransaction()
+                .setAdminKey(adminKey.publicKey)
+                .setSubmitKey(submitKey.publicKey)
+                .freezeWith(env.client);
+
+            await response.sign(adminKey);
+            await response.sign(submitKey);
+            const receipt = await response.execute(env.client);
+
+            const topicId = (await receipt.getReceipt(env.client)).topicId;
+
+            // Update Admin Key to empty key list using valid Admin Key signature
+            await (
+                await (
+                    await new TopicUpdateTransaction()
+                        .setTopicId(topicId)
+                        .setAdminKey(new KeyList())
+                        .setAutoRenewAccountId(AccountId.fromString("0.0.0"))
+                        .freezeWith(env.client)
+                        .sign(adminKey)
+                ).execute(env.client)
+            ).getReceipt(env.client);
+
+            // Verify messages can still be submitted with the submit key
+            await (
+                await (
+                    await new TopicMessageSubmitTransaction()
+                        .setTopicId(topicId)
+                        .setMessage("Message after admin key made empty")
+                        .freezeWith(env.client)
+                        .sign(submitKey)
+                ).execute(env.client)
+            ).getReceipt(env.client);
+
+            // Verify that no further administrative updates can be made
+            let adminUpdateFailed = false;
+            try {
+                await (
+                    await (
+                        await new TopicUpdateTransaction()
+                            .setTopicId(topicId)
+                            .setTopicMemo("Cannot update memo")
+                            .freezeWith(env.client)
+                            .sign(adminKey)
+                    ).execute(env.client)
+                ).getReceipt(env.client);
+            } catch (error) {
+                adminUpdateFailed =
+                    error
+                        .toString()
+                        .includes(Status.InvalidSignature.toString()) ||
+                    error.toString().includes(Status.Unauthorized.toString());
+            }
+
+            expect(adminUpdateFailed).to.be.true;
+
+            // Verify topic info shows empty admin key but valid submit key
+            const info = await new TopicInfoQuery()
+                .setTopicId(topicId)
+                .execute(env.client);
+
+            expect(info.adminKey).to.be.null;
+            expect(info.submitKey).to.not.be.null;
+            expect(info.submitKey.toString()).to.equal(
+                submitKey.publicKey.toString(),
+            );
+        });
     });
 
     afterEach(async function () {
