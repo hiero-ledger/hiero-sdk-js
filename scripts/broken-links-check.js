@@ -28,7 +28,10 @@ const STATUS_DESCRIPTIONS = {
     504: "Gateway Timeout",
 };
 
-const excludedLinks = ["http://localhost:3000"];
+const excludedLinks = [
+    "http://localhost:3000",
+    "https://img.shields.io/ossf-scorecard/github.com/hiero-ledger/hiero-sdk-js?label=openssf+scorecard&style=flat",
+];
 
 // Get all .md files in the repo recursively
 async function getMarkdownFiles(path = "") {
