@@ -53,14 +53,6 @@ export const WEB_PREVIEWNET = {
     "previewnet-node06-00-grpc.hedera.com:443": new AccountId(9),
 };
 
-export const NATIVE_TESTNET = {
-    "testnet-node00-00-grpc.hedera.com:443": new AccountId(3),
-};
-
-export const NATIVE_PREVIEWNET = {
-    "previewnet-node00-00-grpc.hedera.com:443": new AccountId(3),
-};
-
 /**
  * @type {Record<string, AccountId>}
  */
@@ -201,4 +193,30 @@ export const MirrorNetwork = {
     TESTNET: ["testnet.mirrornode.hedera.com:443"],
     PREVIEWNET: ["previewnet.mirrornode.hedera.com:443"],
     LOCAL_NODE: ["127.0.0.1:5600"],
+};
+
+export const WebNetwork = {
+    /**
+     * @param {string} name
+     * @returns {{[key: string]: (string | AccountId)}}
+     */
+    fromName(name) {
+        switch (name) {
+            case "mainnet":
+                return WebNetwork.MAINNET;
+
+            case "testnet":
+                return WebNetwork.TESTNET;
+
+            case "previewnet":
+                return WebNetwork.PREVIEWNET;
+
+            default:
+                throw new Error(`unknown network name: ${name}`);
+        }
+    },
+
+    MAINNET: MAINNET,
+    TESTNET: WEB_TESTNET,
+    PREVIEWNET: WEB_PREVIEWNET,
 };

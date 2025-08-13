@@ -5,40 +5,13 @@ import NativeChannel from "../channel/NativeChannel.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import AccountId from "../account/AccountId.js";
 import LedgerId from "../LedgerId.js";
-import {
-    MAINNET,
-    NATIVE_TESTNET,
-    NATIVE_PREVIEWNET,
-} from "../constants/ClientConstants.js";
+import { MirrorNetwork, WebNetwork } from "../constants/ClientConstants.js";
+import AddressBookQuery from "../network/AddressBookQueryWeb.js";
+import FileId from "../file/FileId.js";
 
 /**
  * @typedef {import("./Client.js").ClientConfiguration} ClientConfiguration
  */
-export const Network = {
-    /**
-     * @param {string} name
-     * @returns {{[key: string]: (string | AccountId)}}
-     */
-    fromName(name) {
-        switch (name) {
-            case "mainnet":
-                return Network.MAINNET;
-
-            case "testnet":
-                return Network.TESTNET;
-
-            case "previewnet":
-                return Network.PREVIEWNET;
-
-            default:
-                throw new Error(`unknown network name: ${name}`);
-        }
-    },
-
-    MAINNET: MAINNET,
-    TESTNET: NATIVE_TESTNET,
-    PREVIEWNET: NATIVE_PREVIEWNET,
-};
 
 /**
  * @augments {Client<NativeChannel, *>}
@@ -54,18 +27,21 @@ export default class NativeClient extends Client {
             if (typeof props.network === "string") {
                 switch (props.network) {
                     case "mainnet":
-                        this.setNetwork(Network.MAINNET);
+                        this.setNetwork(WebNetwork.MAINNET);
                         this.setLedgerId(LedgerId.MAINNET);
+                        this.setMirrorNetwork(MirrorNetwork.MAINNET);
                         break;
 
                     case "testnet":
-                        this.setNetwork(Network.TESTNET);
+                        this.setNetwork(WebNetwork.TESTNET);
                         this.setLedgerId(LedgerId.TESTNET);
+                        this.setMirrorNetwork(MirrorNetwork.TESTNET);
                         break;
 
                     case "previewnet":
-                        this.setNetwork(Network.PREVIEWNET);
+                        this.setNetwork(WebNetwork.PREVIEWNET);
                         this.setLedgerId(LedgerId.PREVIEWNET);
+                        this.setMirrorNetwork(MirrorNetwork.PREVIEWNET);
                         break;
 
                     default:
@@ -121,7 +97,6 @@ export default class NativeClient extends Client {
     static forNetwork(network) {
         return new NativeClient({
             network,
-            scheduleNetworkUpdate: false,
         });
     }
 
@@ -130,7 +105,7 @@ export default class NativeClient extends Client {
      * @returns {NativeClient}
      */
     static forName(network) {
-        return new NativeClient({ network, scheduleNetworkUpdate: false });
+        return new NativeClient({ network });
     }
 
     /**
@@ -141,7 +116,6 @@ export default class NativeClient extends Client {
     static forMainnet() {
         return new NativeClient({
             network: "mainnet",
-            scheduleNetworkUpdate: false,
         });
     }
 
@@ -153,7 +127,6 @@ export default class NativeClient extends Client {
     static forTestnet() {
         return new NativeClient({
             network: "testnet",
-            scheduleNetworkUpdate: false,
         });
     }
 
@@ -165,8 +138,24 @@ export default class NativeClient extends Client {
     static forPreviewnet() {
         return new NativeClient({
             network: "previewnet",
-            scheduleNetworkUpdate: false,
         });
+    }
+
+    /**
+     * Construct a client configured to use mirror nodes.
+     * This will query the address book to get the network nodes.
+     *
+     * @param {string[] | string} mirrorNetwork
+     * @returns {Promise<NativeClient>}
+     */
+    static async forMirrorNetwork(mirrorNetwork) {
+        const client = new NativeClient();
+
+        client.setMirrorNetwork(mirrorNetwork);
+
+        await client.updateNetwork();
+
+        return client;
     }
 
     /**
@@ -177,13 +166,13 @@ export default class NativeClient extends Client {
         if (typeof network === "string") {
             switch (network) {
                 case "previewnet":
-                    this._network.setNetwork(Network.PREVIEWNET);
+                    this._network.setNetwork(WebNetwork.PREVIEWNET);
                     break;
                 case "testnet":
-                    this._network.setNetwork(Network.TESTNET);
+                    this._network.setNetwork(WebNetwork.TESTNET);
                     break;
                 case "mainnet":
-                    this._network.setNetwork(Network.MAINNET);
+                    this._network.setNetwork(WebNetwork.MAINNET);
             }
         } else {
             this._network.setNetwork(network);
@@ -192,11 +181,75 @@ export default class NativeClient extends Client {
 
     /**
      * @param {string[] | string} mirrorNetwork
-     * @returns {void}
+     * @returns {this}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setMirrorNetwork(mirrorNetwork) {
-        // Do nothing as this is not currently supported
+        if (typeof mirrorNetwork === "string") {
+            switch (mirrorNetwork) {
+                case "local-node":
+                    this._mirrorNetwork.setNetwork(MirrorNetwork.LOCAL_NODE);
+                    break;
+                case "previewnet":
+                    this._mirrorNetwork.setNetwork(MirrorNetwork.PREVIEWNET);
+                    break;
+                case "testnet":
+                    this._mirrorNetwork.setNetwork(MirrorNetwork.TESTNET);
+                    break;
+                case "mainnet":
+                    this._mirrorNetwork.setNetwork(MirrorNetwork.MAINNET);
+                    break;
+                default:
+                    this._mirrorNetwork.setNetwork([mirrorNetwork]);
+            }
+        } else {
+            this._mirrorNetwork.setNetwork(mirrorNetwork);
+        }
+
+        return this;
+    }
+
+    /**
+     * @override
+     * @returns {Promise<this>}
+     */
+    async updateNetwork() {
+        if (this._isUpdatingNetwork) {
+            return this;
+        }
+
+        this._isUpdatingNetwork = true;
+
+        try {
+            const addressBook = await new AddressBookQuery()
+                .setFileId(
+                    FileId.getAddressBookFileIdFor(this.shard, this.realm),
+                )
+                .execute(this);
+
+            /** @type {Record<string, AccountId>} */
+            const network = {};
+            for (const nodeAddress of addressBook.nodeAddresses) {
+                for (const endpoint of nodeAddress.addresses) {
+                    if (nodeAddress.accountId != null) {
+                        network[endpoint.toString()] = nodeAddress.accountId;
+                    }
+                }
+            }
+
+            this.setNetwork(network);
+        } catch (/** @type {unknown} */ error) {
+            if (this._logger) {
+                const errorMessage =
+                    error instanceof Error ? error.message : String(error);
+                this._logger.trace(
+                    `failed to update client address book: ${errorMessage}`,
+                );
+            }
+        } finally {
+            this._isUpdatingNetwork = false;
+        }
+
+        return this;
     }
 
     /**
@@ -208,11 +261,12 @@ export default class NativeClient extends Client {
     }
 
     /**
-     * @abstract
+     * @override
      * @returns {(address: string) => *}
      */
     _createMirrorNetworkChannel() {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        return (address) => null;
+        return () => {
+            throw new Error("mirror support is not supported in native");
+        };
     }
 }
