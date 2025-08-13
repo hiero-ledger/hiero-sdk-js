@@ -731,11 +731,11 @@ export default class Client {
 
     /**
      * Update the network address book.
-     * @returns {Promise<void>}
+     * @returns {Promise<this>}
      */
     async updateNetwork() {
         if (this._isUpdatingNetwork) {
-            return;
+            return this;
         }
 
         this._isUpdatingNetwork = true;
@@ -758,6 +758,8 @@ export default class Client {
         } finally {
             this._isUpdatingNetwork = false;
         }
+
+        return this;
     }
 
     /**

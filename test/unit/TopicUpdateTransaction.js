@@ -94,7 +94,7 @@ describe("TopicUpdateTransaction", function () {
 
             topicUpdateTransaction.clearFeeExemptKeys();
 
-            expect(topicUpdateTransaction.getFeeExemptKeys()).to.be.null;
+            expect(topicUpdateTransaction.getFeeExemptKeys().length).to.eql(0);
         });
 
         it("should set topic custom fees", function () {
@@ -208,7 +208,7 @@ describe("TopicUpdateTransaction", function () {
 
             topicUpdateTransaction.clearCustomFees();
 
-            expect(topicUpdateTransaction.getCustomFees()).to.be.null;
+            expect(topicUpdateTransaction.getCustomFees().length).to.eql(0);
         });
 
         it("should not include feeExemptKeyList in transaction data when feeExemptKeys is null", function () {

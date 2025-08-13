@@ -1,12 +1,12 @@
-# Migration Guide: @hashgraph/sdk to @hiero/sdk
+# Migration Guide: @hashgraph/sdk to @hiero-ledger/sdk
 
 ## Overview
 
-This document provides a comprehensive guide for migrating from the `@hashgraph/sdk` package to the new `@hiero/sdk` package. The package has been transferred from the Hashgraph organization to the Hiero organization, and this migration reflects the updated namespace.
+This document provides a comprehensive guide for migrating from the `@hashgraph/sdk` package to the new `@hiero-ledger/sdk` package. The package has been transferred from the Hashgraph organization to the Hiero organization, and this migration reflects the updated namespace.
 
 ## What's Changing
 
-The package name is being updated from `@hashgraph/sdk` to `@hiero/sdk` to reflect the new organization ownership. The functionality, API, features and codebase remain exactly the same - only the package name and import statements need to be updated.
+The package name is being updated from `@hashgraph/sdk` to `@hiero-ledger/sdk` to reflect the new organization ownership. The functionality, API, features and codebase remain exactly the same - only the package name and import statements need to be updated.
 
 ## Migration Steps
 
@@ -27,13 +27,13 @@ pnpm add @hashgraph/sdk
 **After:**
 ```bash
 # NPM
-npm install --save @hiero/sdk
+npm install --save @hiero-ledger/sdk
 
 # Yarn
-yarn add @hiero/sdk
+yarn add @hiero-ledger/sdk
 
 # PNPM
-pnpm add @hiero/sdk
+pnpm add @hiero-ledger/sdk
 ```
 
 ### 2. Update Import Statements
@@ -55,7 +55,7 @@ import {
     AccountId,
     PrivateKey,
     AccountBalanceQuery
-} from "@hiero/sdk";
+} from "@hiero-ledger/sdk";
 ```
 
 ### 3. Update CommonJS Require Statements
@@ -67,7 +67,7 @@ const { Client, AccountBalanceQuery } = require("@hashgraph/sdk");
 
 **After:**
 ```javascript
-const { Client, AccountBalanceQuery } = require("@hiero/sdk");
+const { Client, AccountBalanceQuery } = require("@hiero-ledger/sdk");
 ```
 
 ### 4. Update Browser CDN References
@@ -79,7 +79,7 @@ const { Client, AccountBalanceQuery } = require("@hiero/sdk");
 
 **After:**
 ```html
-<script src="https://unpkg.com/@hiero/sdk@2.67.0/dist/umd.js"></script>
+<script src="https://unpkg.com/@hiero-ledger/sdk@2.67.0/dist/umd.js"></script>
 ```
 
 ### 5. Update Package.json Dependencies
@@ -97,7 +97,7 @@ const { Client, AccountBalanceQuery } = require("@hiero/sdk");
 ```json
 {
   "dependencies": {
-    "@hiero/sdk": "^2.67.0"
+    "@hiero-ledger/sdk": "^2.67.0"
   }
 }
 ```
@@ -111,7 +111,7 @@ import type { TokenInfo } from "@hashgraph/sdk";
 
 **After:**
 ```typescript
-import type { TokenInfo } from "@hiero/sdk";
+import type { TokenInfo } from "@hiero-ledger/sdk";
 ```
 
 ## Files That Need Updates
@@ -162,16 +162,16 @@ find . -name "*.md" | xargs sed -i 's/@hashgraph\/sdk/@hiero\/sdk/g'
 ### For Windows (PowerShell):
 ```powershell
 # Update import statements in JavaScript/TypeScript files
-Get-ChildItem -Recurse -Include "*.js","*.ts","*.jsx","*.tsx" | ForEach-Object { (Get-Content $_.FullName) -replace '@hashgraph/sdk', '@hiero/sdk' | Set-Content $_.FullName }
+Get-ChildItem -Recurse -Include "*.js","*.ts","*.jsx","*.tsx" | ForEach-Object { (Get-Content $_.FullName) -replace '@hashgraph/sdk', '@hiero-ledger/sdk' | Set-Content $_.FullName }
 
 # Update package.json files
-Get-ChildItem -Recurse -Include "package.json" | ForEach-Object { (Get-Content $_.FullName) -replace '"@hashgraph/sdk"', '"@hiero/sdk"' | Set-Content $_.FullName }
+Get-ChildItem -Recurse -Include "package.json" | ForEach-Object { (Get-Content $_.FullName) -replace '"@hashgraph/sdk"', '"@hiero-ledger/sdk"' | Set-Content $_.FullName }
 
 # Update HTML files
-Get-ChildItem -Recurse -Include "*.html" | ForEach-Object { (Get-Content $_.FullName) -replace '@hashgraph/sdk', '@hiero/sdk' | Set-Content $_.FullName }
+Get-ChildItem -Recurse -Include "*.html" | ForEach-Object { (Get-Content $_.FullName) -replace '@hashgraph/sdk', '@hiero-ledger/sdk' | Set-Content $_.FullName }
 
 # Update markdown files
-Get-ChildItem -Recurse -Include "*.md" | ForEach-Object { (Get-Content $_.FullName) -replace '@hashgraph/sdk', '@hiero/sdk' | Set-Content $_.FullName }
+Get-ChildItem -Recurse -Include "*.md" | ForEach-Object { (Get-Content $_.FullName) -replace '@hashgraph/sdk', '@hiero-ledger/sdk' | Set-Content $_.FullName }
 ```
 
 ### 3. Test Your Application
@@ -195,7 +195,7 @@ If you have CI/CD pipelines that reference the old package name, update them acc
 
 ## Version Compatibility
 
-The new `@hiero/sdk` package maintains full compatibility with the previous `@hashgraph/sdk` versions. You can directly replace the package name without any code changes beyond the import statements.
+The new `@hiero-ledger/sdk` package maintains full compatibility with the previous `@hashgraph/sdk` versions. You can directly replace the package name without any code changes beyond the import statements.
 
 ## Support
 
@@ -209,7 +209,7 @@ For additional support, create an issue in the [Hiero SDK repository](https://gi
 
 ## Timeline
 
-- **Effective Date**: The new `@hiero/sdk` package is available immediately
+- **Effective Date**: The new `@hiero-ledger/sdk` package is available immediately
 - **Deprecation**: The `@hashgraph/sdk` package will continue to work but will eventually be deprecated
 - **Recommendation**: Migrate as soon as possible to ensure you're using the officially supported package
 

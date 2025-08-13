@@ -29,7 +29,7 @@ jobs:
     runs-on: hiero-client-sdk-linux-medium
     strategy:
       matrix:
-        node: [ "20", "22" ]
+        node: [ "22", "24" ]
 
     steps:
       - name: Harden Runner
@@ -38,7 +38,7 @@ jobs:
           egress-policy: audit
 
       - name: Checkout Code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           submodules: true
 
@@ -66,7 +66,7 @@ jobs:
     runs-on: hiero-client-sdk-linux-large
     strategy:
       matrix:
-        node: [ "20" ]
+        node: [ "22" ]
 
     steps:
       -  name: Harden Runner
@@ -75,7 +75,7 @@ jobs:
            egress-policy: audit
 
       - name: Checkout Code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           submodules: recursive
 
@@ -104,7 +104,7 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@a39acf8cfbaa2feb195a86530d0ab643a45aa541 # v0.10
         with:
           installMirrorNode: true
-          hieroVersion: v0.63.7
+          hieroVersion: v0.64.2-rc1
 
       - name: Set Operator Account
         run: |
@@ -171,7 +171,7 @@ jobs:
     runs-on: hiero-client-sdk-linux-medium
     strategy:
       matrix:
-        node: [ "20" ]
+        node: [ "22" ]
     steps:
       -  name: Harden Runner
          uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
@@ -179,7 +179,7 @@ jobs:
           egress-policy: audit
 
       - name: Checkout Code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           submodules: recursive
 
@@ -208,7 +208,7 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@a39acf8cfbaa2feb195a86530d0ab643a45aa541 # v0.10
         with:
           installMirrorNode: true
-          hieroVersion: v0.63.7
+          hieroVersion: v0.64.2-rc1
 
       - name: Set Operator Account
         run: |

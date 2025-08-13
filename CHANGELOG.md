@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.71.0-beta.0
+
+### Added
+
+- Added `maxAutomaticTokenAssociations` property with integration test [#3289](https://github.com/hiero-ledger/hiero-sdk-js/pull/3289)
+
+## v2.70.0
+
+> ⚠️ **Important Notice**  
+> Starting from this version (`v2.70.0`), we will be releasing all packages under both the `@hiero-ledger` and `@hashgraph` namespaces for a transitional period.  
+> Eventually, `@hashgraph/*` packages will be **deprecated** and all development will continue solely under the `@hiero-ledger/*` scope.  
+>  
+> No breaking changes are introduced in this release from a user perspective.  
+>  
+> To support this transition, a detailed [migration guide is available here](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/manual/migration_hiero.md).  
+> Please begin migrating to `@hiero-ledger` packages at your earliest convenience.
+
+---
+
+### Added
+- `deleteGrpcWebProxyEndpoint` method in `NodeUpdateTransaction` to support the removal of web proxy. [#3268](https://github.com/hiero-ledger/hiero-sdk-js/pull/3268)
+
+### Fixed
+- Aligned `clear` methods for array properties in `TopicUpdateTransaction` with other SDKs, ensuring they correctly remove the arrays from network state. [#3265](https://github.com/hiero-ledger/hiero-sdk-js/pull/3265)
+
+### Removed
+- Removed the gRPC proxy endpoint for node with account ID `0.0.5`, as it was taken out of the address book by a council member. [#3256](https://github.com/hiero-ledger/hiero-sdk-js/pull/3256)
+
 ## v2.69.0
 
 ### Added

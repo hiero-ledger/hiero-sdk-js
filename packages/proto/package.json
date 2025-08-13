@@ -1,6 +1,6 @@
 {
     "name": "@hashgraph/proto",
-    "version": "2.20.0",
+    "version": "2.21.0",
     "description": "Protobufs for the Hiero SDK",
     "main": "lib/index.js",
     "browser": "src/index.js",
@@ -57,7 +57,7 @@
         "eslint-plugin-deprecation": "^2.0.0",
         "eslint-plugin-ie11": "^1.0.0",
         "eslint-plugin-import": "^2.28.1",
-        "eslint-plugin-jsdoc": "^51.3.1",
+        "eslint-plugin-jsdoc": "^52.0.2",
         "eslint-plugin-n": "^17.15.1",
         "estraverse": "^5.3.0",
         "jsdoc": "^4.0.0",
@@ -65,7 +65,7 @@
         "prettier": "^3.0.3",
         "replace-in-file": "^8.3.0",
         "semver": "^7.3.8",
-        "tmp": "^0.2.1",
+        "tmp": "^0.2.4",
         "typescript": "^5.7.2",
         "protobufjs-cli": "^1.0.2"
     },

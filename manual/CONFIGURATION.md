@@ -89,13 +89,13 @@ Certain examples simulate different actors in the network, such as Alice, Bob, o
 
 ### React Native Example
 
-Path: [examples/react-native-example](/examples/react-native-example)
+Path: [examples/react-native-example](../examples/react-native-example)
 
 This example uses `fromString`, which internally will try to execute the example with `fromStringED25519`.
 
 ### Simple REST Signature Provider
 
-Path: [examples/simple_rest_signature_provider](/examples/simple_rest_signature_provider)
+Path: [examples/simple_rest_signature_provider](../examples/simple_rest_signature_provider)
 
 This example behaves the same way as the React Native example.
 

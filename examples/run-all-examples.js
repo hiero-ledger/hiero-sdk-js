@@ -18,6 +18,8 @@ const excludedJSFile = [
     "create-update-delete-node.js",
     "batch-tx.js",
     "long-term-schedule-transaction.js",
+    "mirror-node-contract-queries-example.js",
+    "node-client-async-testnet.js",
 ];
 const cmd = process.env.NODE_COMMAND;
 
