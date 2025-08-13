@@ -24,7 +24,7 @@ jobs:
     runs-on: hiero-client-sdk-linux-large
     strategy:
       matrix:
-        node: [ "20", "22" ]
+        node: [ "22", "24" ]
 
     steps:
       - name: Harden Runner
