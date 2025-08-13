@@ -1850,4 +1850,220 @@ describe("NativeClient", function () {
             expect(updatedEntries.size).toBe(2);
         });
     });
+
+    describe("Async factory methods", function () {
+        describe("forMainnetAsync", function () {
+            it("should create mainnet client with network update", async function () {
+                // Mock the mirror node response for mainnet
+                server.use(
+                    http.get(
+                        "https://mainnet-public.mirrornode.hedera.com/api/v1/network/nodes",
+                        ({ request }) => {
+                            const url = new URL(request.url);
+                            const fileId = url.searchParams.get("file.id");
+
+                            if (fileId === FileId.ADDRESS_BOOK.toString()) {
+                                return HttpResponse.json(
+                                    generateAddressBookResponse(MAINNET),
+                                );
+                            }
+
+                            return HttpResponse.json({ nodes: [] });
+                        },
+                    ),
+                );
+
+                const client = await NativeClient.forMainnetAsync();
+
+                expect(client).to.be.instanceOf(NativeClient);
+                expect(client.network).to.not.be.empty;
+                expect(client.ledgerId).to.equal(LedgerId.MAINNET);
+
+                // Verify that the network was updated (should match the mock response)
+                const networkEntries = createNetworkAddressNodeSet(
+                    client.network,
+                );
+                const mainnetEntries = createNetworkAddressNodeSet(MAINNET);
+                expect(networkEntries).to.deep.equal(mainnetEntries);
+            });
+        });
+
+        describe("forTestnetAsync", function () {
+            it("should create testnet client with newest addressbook", async function () {
+                // Mock the mirror node response for testnet
+                server.use(
+                    http.get(
+                        "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
+                        ({ request }) => {
+                            const url = new URL(request.url);
+                            const fileId = url.searchParams.get("file.id");
+
+                            if (fileId === FileId.ADDRESS_BOOK.toString()) {
+                                return HttpResponse.json(
+                                    generateAddressBookResponse(WEB_TESTNET),
+                                );
+                            }
+
+                            return HttpResponse.json({ nodes: [] });
+                        },
+                    ),
+                );
+
+                const client = await NativeClient.forTestnetAsync();
+
+                expect(client).to.be.instanceOf(NativeClient);
+                expect(client.network).to.not.be.empty;
+                expect(client.ledgerId).to.equal(LedgerId.TESTNET);
+
+                // Verify that the network was updated (should match the mock response)
+                const networkEntries = createNetworkAddressNodeSet(
+                    client.network,
+                );
+                const testnetEntries = createNetworkAddressNodeSet(WEB_TESTNET);
+                expect(networkEntries).to.deep.equal(testnetEntries);
+            });
+        });
+
+        describe("forPreviewnetAsync", function () {
+            it("should create previewnet client with newest addressbook", async function () {
+                // Mock the mirror node response for previewnet
+                server.use(
+                    http.get(
+                        "https://previewnet.mirrornode.hedera.com/api/v1/network/nodes",
+                        ({ request }) => {
+                            const url = new URL(request.url);
+                            const fileId = url.searchParams.get("file.id");
+
+                            if (fileId === FileId.ADDRESS_BOOK.toString()) {
+                                return HttpResponse.json(
+                                    generateAddressBookResponse(WEB_PREVIEWNET),
+                                );
+                            }
+
+                            return HttpResponse.json({ nodes: [] });
+                        },
+                    ),
+                );
+
+                const client = await NativeClient.forPreviewnetAsync();
+
+                expect(client).to.be.instanceOf(NativeClient);
+                expect(client.network).to.not.be.empty;
+                expect(client.ledgerId).to.equal(LedgerId.PREVIEWNET);
+
+                // Verify that the network was updated (should match the mock response)
+                const networkEntries = createNetworkAddressNodeSet(
+                    client.network,
+                );
+                const previewnetEntries =
+                    createNetworkAddressNodeSet(WEB_PREVIEWNET);
+                expect(networkEntries).to.deep.equal(previewnetEntries);
+            });
+        });
+
+        describe("forNameAsync", function () {
+            it("should create mainnet client by name with newest addressbook", async function () {
+                // Mock the mirror node response for mainnet
+                server.use(
+                    http.get(
+                        "https://mainnet-public.mirrornode.hedera.com/api/v1/network/nodes",
+                        ({ request }) => {
+                            const url = new URL(request.url);
+                            const fileId = url.searchParams.get("file.id");
+
+                            if (fileId === FileId.ADDRESS_BOOK.toString()) {
+                                return HttpResponse.json(
+                                    generateAddressBookResponse(MAINNET),
+                                );
+                            }
+
+                            return HttpResponse.json({ nodes: [] });
+                        },
+                    ),
+                );
+
+                const client = await NativeClient.forNameAsync("mainnet");
+
+                expect(client).to.be.instanceOf(NativeClient);
+                expect(client.network).to.not.be.empty;
+                expect(client.ledgerId).to.equal(LedgerId.MAINNET);
+
+                // Verify that the network was updated (should match the mock response)
+                const networkEntries = createNetworkAddressNodeSet(
+                    client.network,
+                );
+                const mainnetEntries = createNetworkAddressNodeSet(MAINNET);
+                expect(networkEntries).to.deep.equal(mainnetEntries);
+            });
+
+            it("should create testnet client by name with newest addressbook", async function () {
+                // Mock the mirror node response for testnet
+                server.use(
+                    http.get(
+                        "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
+                        ({ request }) => {
+                            const url = new URL(request.url);
+                            const fileId = url.searchParams.get("file.id");
+
+                            if (fileId === FileId.ADDRESS_BOOK.toString()) {
+                                return HttpResponse.json(
+                                    generateAddressBookResponse(WEB_TESTNET),
+                                );
+                            }
+
+                            return HttpResponse.json({ nodes: [] });
+                        },
+                    ),
+                );
+
+                const client = await NativeClient.forNameAsync("testnet");
+
+                expect(client).to.be.instanceOf(NativeClient);
+                expect(client.network).to.not.be.empty;
+                expect(client.ledgerId).to.equal(LedgerId.TESTNET);
+
+                // Verify that the network was updated (should match the mock response)
+                const networkEntries = createNetworkAddressNodeSet(
+                    client.network,
+                );
+                const testnetEntries = createNetworkAddressNodeSet(WEB_TESTNET);
+                expect(networkEntries).to.deep.equal(testnetEntries);
+            });
+
+            it("should create previewnet client by name with newest addressbook", async function () {
+                // Mock the mirror node response for previewnet
+                server.use(
+                    http.get(
+                        "https://previewnet.mirrornode.hedera.com/api/v1/network/nodes",
+                        ({ request }) => {
+                            const url = new URL(request.url);
+                            const fileId = url.searchParams.get("file.id");
+
+                            if (fileId === FileId.ADDRESS_BOOK.toString()) {
+                                return HttpResponse.json(
+                                    generateAddressBookResponse(WEB_PREVIEWNET),
+                                );
+                            }
+
+                            return HttpResponse.json({ nodes: [] });
+                        },
+                    ),
+                );
+
+                const client = await NativeClient.forNameAsync("previewnet");
+
+                expect(client).to.be.instanceOf(NativeClient);
+                expect(client.network).to.not.be.empty;
+                expect(client.ledgerId).to.equal(LedgerId.PREVIEWNET);
+
+                // Verify that the network was updated (should match the mock response)
+                const networkEntries = createNetworkAddressNodeSet(
+                    client.network,
+                );
+                const previewnetEntries =
+                    createNetworkAddressNodeSet(WEB_PREVIEWNET);
+                expect(networkEntries).to.deep.equal(previewnetEntries);
+            });
+        });
+    });
 });
