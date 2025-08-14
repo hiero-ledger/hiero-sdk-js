@@ -15,3 +15,17 @@ export interface CreateContractParams {
     readonly maxAutomaticTokenAssociations?: number;
     readonly commonTransactionParams?: Record<string, any>;
 }
+
+export interface UpdateContractParams {
+    readonly contractId: string;
+    readonly adminKey?: string;
+    readonly stakedAccountId?: string;
+    readonly stakedNodeId?: string;
+    readonly declineStakingReward?: boolean;
+    readonly autoRenewAccountId?: string;
+    readonly autoRenewPeriod?: string;
+    readonly memo?: string;
+    readonly maxAutomaticTokenAssociations?: number;
+    readonly expirationTime?: string;
+    readonly commonTransactionParams?: Record<string, any>;
+}
