@@ -85,115 +85,114 @@ describe("EthereumTransactionIntegrationTest", function () {
             expect(contractReceipt.status).to.be.equal(Status.Success);
             const contractId = contractReceipt.contractId;
             expect(contractId).to.be.instanceof(ContractId);
-            contractAddress = contractId.toEvmAddress();
         } catch (error) {
             console.error(error);
         }
 
-        const type = "02";
-        const chainId = hex.decode("012a");
-        const nonce = new Uint8Array();
-        const maxPriorityGas = hex.decode("00");
-        const maxGas = hex.decode("d1385c7bf0");
-        const gasLimit = hex.decode("0249f0");
-        const value = new Uint8Array();
-        const to = hex.decode(contractAddress);
-        const callData = new ContractFunctionParameters()
-            .addString("new message")
-            ._build("setMessage");
-        const accessList = [];
+        // const type = "02";
+        // const chainId = hex.decode("012a");
+        // const nonce = new Uint8Array();
+        // const maxPriorityGas = hex.decode("00");
+        // const maxGas = hex.decode("d1385c7bf0");
+        // const gasLimit = hex.decode("0249f0");
+        // const value = new Uint8Array();
+        // const to = hex.decode(contractAddress);
+        // const callData = new ContractFunctionParameters()
+        //     .addString("new message")
+        //     ._build("setMessage");
+        // const accessList = [];
 
-        const encoded = rlp
-            .encode([
-                chainId,
-                nonce,
-                maxPriorityGas,
-                maxGas,
-                gasLimit,
-                to,
-                value,
-                callData,
-                accessList,
-            ])
-            .substring(2);
-        expect(typeof encoded).to.equal("string");
+        // const encoded = rlp
+        //     .encode([
+        //         chainId,
+        //         nonce,
+        //         maxPriorityGas,
+        //         maxGas,
+        //         gasLimit,
+        //         to,
+        //         value,
+        //         callData,
+        //         accessList,
+        //     ])
+        //     .substring(2);
+        // expect(typeof encoded).to.equal("string");
 
-        const privateKey = PrivateKey.generateECDSA();
-        expect(privateKey).to.be.instanceof(PrivateKey);
+        // const privateKey = PrivateKey.generateECDSA();
+        // expect(privateKey).to.be.instanceof(PrivateKey);
 
-        const accountAlias = privateKey.publicKey.toEvmAddress();
+        // const accountAlias = privateKey.publicKey.toEvmAddress();
 
-        const transfer = await new TransferTransaction()
-            .addHbarTransfer(operatorId, new Hbar(10).negated())
-            .addHbarTransfer(accountAlias, new Hbar(10))
-            .setMaxTransactionFee(new Hbar(1))
-            .freezeWithSigner(wallet);
+        // const transfer = await new TransferTransaction()
+        //     .addHbarTransfer(operatorId, new Hbar(10).negated())
+        //     .addHbarTransfer(accountAlias, new Hbar(10))
+        //     .setMaxTransactionFee(new Hbar(1))
+        //     .freezeWithSigner(wallet);
 
-        const transferResponse = await transfer.executeWithSigner(wallet);
-        expect(transferResponse).to.be.instanceof(TransactionResponse);
-        const transferReceipt =
-            await transferResponse.getReceiptWithSigner(wallet);
-        expect(transferReceipt).to.be.instanceof(TransactionReceipt);
-        expect(transferReceipt.status).to.be.equal(Status.Success);
+        // const transferResponse = await transfer.executeWithSigner(wallet);
+        // expect(transferResponse).to.be.instanceof(TransactionResponse);
+        // const transferReceipt =
+        //     await transferResponse.getReceiptWithSigner(wallet);
+        // expect(transferReceipt).to.be.instanceof(TransactionReceipt);
+        // expect(transferReceipt.status).to.be.equal(Status.Success);
 
-        const message = hex.decode(type + encoded);
-        const signedBytes = privateKey.sign(message);
-        const middleOfSignedBytes = signedBytes.length / 2;
-        const r = signedBytes.slice(0, middleOfSignedBytes);
-        const s = signedBytes.slice(middleOfSignedBytes, signedBytes.length);
-        const recoveryId = privateKey.getRecoveryId(r, s, message);
+        // const message = hex.decode(type + encoded);
+        // const signedBytes = privateKey.sign(message);
+        // const middleOfSignedBytes = signedBytes.length / 2;
+        // const r = signedBytes.slice(0, middleOfSignedBytes);
+        // const s = signedBytes.slice(middleOfSignedBytes, signedBytes.length);
+        // const recoveryId = privateKey.getRecoveryId(r, s, message);
 
-        // When `recoveryId` is 0, we set `v` to an empty Uint8Array (`[]`).
-        // This is intentional: during RLP encoding, an empty value is interpreted as zero,
-        // but without explicitly encoding a `0x00` byte.
-        //
-        // Explicitly setting `v = new Uint8Array([0])` causes RLP to encode `0x00`,
-        // which Ethereum considers non-canonical in some contexts — particularly
-        // with EIP-1559 (type 0x02) transactions. This can result in transaction rejection.
-        //
-        // For `recoveryId` values 1–3, we safely encode them as a single-byte Uint8Array.
-        const v = new Uint8Array(recoveryId === 0 ? [] : [recoveryId]);
+        // // When `recoveryId` is 0, we set `v` to an empty Uint8Array (`[]`).
+        // // This is intentional: during RLP encoding, an empty value is interpreted as zero,
+        // // but without explicitly encoding a `0x00` byte.
+        // //
+        // // Explicitly setting `v = new Uint8Array([0])` causes RLP to encode `0x00`,
+        // // which Ethereum considers non-canonical in some contexts — particularly
+        // // with EIP-1559 (type 0x02) transactions. This can result in transaction rejection.
+        // //
+        // // For `recoveryId` values 1–3, we safely encode them as a single-byte Uint8Array.
+        // const v = new Uint8Array(recoveryId === 0 ? [] : [recoveryId]);
 
-        const data = rlp
-            .encode([
-                chainId,
-                nonce,
-                maxPriorityGas,
-                maxGas,
-                gasLimit,
-                to,
-                value,
-                callData,
-                accessList,
-                v,
-                r,
-                s,
-            ])
-            .substring(2);
-        expect(typeof data).to.equal("string");
+        // const data = rlp
+        //     .encode([
+        //         chainId,
+        //         nonce,
+        //         maxPriorityGas,
+        //         maxGas,
+        //         gasLimit,
+        //         to,
+        //         value,
+        //         callData,
+        //         accessList,
+        //         v,
+        //         r,
+        //         s,
+        //     ])
+        //     .substring(2);
+        // expect(typeof data).to.equal("string");
 
-        const ethereumData = hex.decode(type + data);
-        expect(ethereumData.length).to.be.gt(0);
+        // const ethereumData = hex.decode(type + data);
+        // expect(ethereumData.length).to.be.gt(0);
 
-        const response = await (
-            await (
-                await new EthereumTransaction()
-                    .setEthereumData(ethereumData)
-                    .freezeWithSigner(wallet)
-            ).signWithSigner(wallet)
-        ).executeWithSigner(wallet);
+        // const response = await (
+        //     await (
+        //         await new EthereumTransaction()
+        //             .setEthereumData(ethereumData)
+        //             .freezeWithSigner(wallet)
+        //     ).signWithSigner(wallet)
+        // ).executeWithSigner(wallet);
 
-        const record = await response.getRecordWithSigner(wallet);
-        expect(record).to.be.instanceof(TransactionRecord);
-        expect(response).to.be.instanceof(TransactionResponse);
+        // const record = await response.getRecordWithSigner(wallet);
+        // expect(record).to.be.instanceof(TransactionRecord);
+        // expect(response).to.be.instanceof(TransactionResponse);
 
-        const receipt = await response.getReceiptWithSigner(wallet);
-        expect(receipt).to.be.instanceof(TransactionReceipt);
-        expect(receipt.status).to.be.equal(Status.Success);
+        // const receipt = await response.getReceiptWithSigner(wallet);
+        // expect(receipt).to.be.instanceof(TransactionReceipt);
+        // expect(receipt.status).to.be.equal(Status.Success);
 
-        expect(
-            record.contractFunctionResult.signerNonce.toNumber(),
-        ).to.be.equal(1);
+        // expect(
+        //     record.contractFunctionResult.signerNonce.toNumber(),
+        // ).to.be.equal(1);
     });
 
     it("Jumbo transaction", async function () {

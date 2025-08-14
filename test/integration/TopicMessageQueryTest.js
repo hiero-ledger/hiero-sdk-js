@@ -1,4 +1,6 @@
-import { setTimeout } from "timers/promises";
+// Cross-environment sleep function
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 import {
     TopicMessageQuery,
     TopicCreateTransaction,
@@ -31,19 +33,17 @@ describe("TopicMessageQuery", function () {
         let finished = false;
 
         // wait for mirror node to receive the new topic
-        await setTimeout(5000);
+        await sleep(5000);
         new TopicMessageQuery()
             .setTopicId(topicId)
             .setLimit(1)
             // eslint-disable-next-line no-unused-vars
             .subscribe(env.client, (topic, _) => {
                 finished = true;
-                expectedContents = Buffer.from(topic.contents).toString(
-                    "utf-8",
-                );
+                expectedContents = new TextDecoder().decode(topic.contents);
             });
 
-        await setTimeout(2000);
+        await sleep(2000);
         await (
             await new TopicMessageSubmitTransaction()
                 .setTopicId(topicId)
@@ -56,7 +56,7 @@ describe("TopicMessageQuery", function () {
             .execute(env.client);
 
         //NOSONAR
-        await setTimeout(5000);
+        await sleep(5000);
 
         if (!finished) {
             throw new Error("Did not receive message from query");

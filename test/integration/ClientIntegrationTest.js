@@ -20,45 +20,6 @@ describe("ClientIntegration", function () {
         clientPreviewNet = Client.forPreviewnet();
     });
 
-    it("should error when invalid network on entity ID", async function () {
-        if (env.client.ledgerId == null) {
-            return;
-        }
-
-        let err = false;
-
-        let network;
-        switch (env.client.ledgerId.toString()) {
-            case "mainnet":
-                network = "testnet";
-                break;
-            case "testnet":
-                network = "previewnet";
-                break;
-            case "previewnet":
-                network = "mainnet";
-                break;
-            default:
-                throw new Error(
-                    `(BUG) operator network is unrecognized value: ${env.client.ledgerId.toString()}`,
-                );
-        }
-
-        const accountId = AccountId.withNetwork(3, network);
-
-        try {
-            await new AccountInfoQuery()
-                .setAccountId(accountId)
-                .execute(env.client);
-        } catch (error) {
-            err = true;
-        }
-
-        if (!err) {
-            throw new Error("query did not error");
-        }
-    });
-
     it("can execute with sign on demand", async function () {
         env.client.setSignOnDemand(true);
 

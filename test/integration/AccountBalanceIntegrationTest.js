@@ -58,6 +58,7 @@ describe("AccountBalanceQuery", function () {
     });
 
     it("an account that does not exist should return an error", async function () {
+        console.log({ env });
         let err = false;
 
         try {

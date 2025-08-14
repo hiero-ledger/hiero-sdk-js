@@ -1,4 +1,6 @@
-import { setTimeout } from "timers/promises";
+// Cross-environment sleep function
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 import {
     MirrorNodeContractCallQuery,
     ContractCreateTransaction,
@@ -35,7 +37,7 @@ describe.skip("MirrorNodeContractCallQuery", function () {
         ).getReceipt(env.client);
 
         // wait 5 seconds for MN to update
-        await setTimeout(10000);
+        await sleep(10000);
 
         const result = await new MirrorNodeContractCallQuery()
             .setContractId(contractId)

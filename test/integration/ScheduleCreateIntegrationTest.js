@@ -1,4 +1,6 @@
-import { setTimeout } from "timers/promises";
+// Cross-environment sleep function
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 import {
     Hbar,
     KeyList,
@@ -486,7 +488,7 @@ describe("ScheduleCreate", function () {
             .setAccountId(accountId)
             .execute(env.client);
 
-        await setTimeout(SHORT_EXPIRATION_TIME);
+        await sleep(SHORT_EXPIRATION_TIME);
 
         const balanceAfter = await new AccountBalanceQuery()
             .setAccountId(accountId)

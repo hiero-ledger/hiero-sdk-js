@@ -1,4 +1,6 @@
-import { setTimeout } from "timers/promises";
+// Cross-environment sleep function
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 import {
     FileCreateTransaction,
     ContractCreateTransaction,
@@ -161,7 +163,7 @@ describe("ContractFunctionParameters", function () {
 
         //Get the receipt of the file create transaction
         const contractReceipt = await contractResponse.getReceipt(env.client);
-        await setTimeout(2500);
+        await sleep(2500);
 
         //Get the smart contract ID
         newContractId = contractReceipt.contractId;

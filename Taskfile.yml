@@ -159,6 +159,10 @@ tasks:
         cmds:
             - npx vitest --config=test/vitest-node-integration.config.ts
 
+    "test:integration:browser":
+        cmds:
+            - npx vitest --config=test/vitest-browser-integration.config.ts
+
     "test:integration:codecov":
         cmds:
             - npx vitest --coverage --config=test/vitest-node-integration.config.ts

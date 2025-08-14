@@ -32,8 +32,8 @@ export default class WebClient extends Client {
                 switch (props.network) {
                     case "mainnet":
                         this.setNetwork(WebNetwork.MAINNET);
-                        this.setLedgerId(LedgerId.MAINNET);
                         this.setMirrorNetwork(MirrorNetwork.MAINNET);
+                        this.setLedgerId(LedgerId.MAINNET);
                         break;
 
                     case "testnet":
