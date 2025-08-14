@@ -377,6 +377,9 @@ export default class ContractCreateTransaction extends Transaction {
     setGas(gas) {
         this._requireNotFrozen();
         this._gas = gas instanceof Long ? gas : Long.fromValue(gas);
+        if (this._gas.lessThan(0)) {
+            throw new Error("Gas must be greater than 0");
+        }
 
         return this;
     }

@@ -84,9 +84,6 @@ export const createContract = async ({
 
     if (constructorParameters != null) {
         const constructorParams = decode(constructorParameters);
-        if (constructorParams.length === 0) {
-            throw new Error("Constructor parameters are empty");
-        }
         transaction.setConstructorParameters(constructorParams);
     }
 
