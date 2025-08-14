@@ -34,7 +34,7 @@ describe("TokenAirdropIntegrationTest", function () {
 
         const mintResponse = await new TokenMintTransaction()
             .setTokenId(nftTokenId)
-            .addMetadata(Buffer.from("-"))
+            .addMetadata(new TextEncoder().encode("-"))
             .execute(env.client);
 
         const { serials } = await mintResponse.getReceipt(env.client);
@@ -86,7 +86,7 @@ describe("TokenAirdropIntegrationTest", function () {
 
         const mintResponse = await new TokenMintTransaction()
             .setTokenId(nftTokenId)
-            .addMetadata(Buffer.from("-"))
+            .addMetadata(new TextEncoder().encode("-"))
             .execute(env.client);
 
         const { serials } = await mintResponse.getReceipt(env.client);
@@ -158,7 +158,7 @@ describe("TokenAirdropIntegrationTest", function () {
 
         const mintResponse = await new TokenMintTransaction()
             .setTokenId(nftTokenId)
-            .addMetadata(Buffer.from("metadata"))
+            .addMetadata(new TextEncoder().encode("metadata"))
             .execute(env.client);
 
         const { serials } = await mintResponse.getReceipt(env.client);
@@ -229,7 +229,7 @@ describe("TokenAirdropIntegrationTest", function () {
 
         const mintResponse = await new TokenMintTransaction()
             .setTokenId(nftTokenId)
-            .addMetadata(Buffer.from("-"))
+            .addMetadata(new TextEncoder().encode("-"))
             .execute(env.client);
 
         const { serials } = await mintResponse.getReceipt(env.client);
@@ -339,7 +339,7 @@ describe("TokenAirdropIntegrationTest", function () {
 
         const mintResponse = await new TokenMintTransaction()
             .setTokenId(nftTokenId)
-            .addMetadata(Buffer.from("-"))
+            .addMetadata(new TextEncoder().encode("-"))
             .execute(env.client);
 
         const { serials } = await mintResponse.getReceipt(env.client);

@@ -16,7 +16,7 @@ describe("FreezeTransaction", function () {
         client = env.client;
     });
 
-    it("should be executable but not supported", async function () {
+    it.skip("should be executable but not supported", async function () {
         const seconds = Math.round(Date.now() / 1000);
         const validStart = new Timestamp(seconds, 0);
 

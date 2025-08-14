@@ -34,7 +34,7 @@ describe("TokenCancelAirdropIntegrationTest", function () {
         const { serials } = await (
             await new TokenMintTransaction()
                 .setTokenId(nftId)
-                .addMetadata(Buffer.from("-"))
+                .addMetadata(new TextEncoder().encode("-"))
                 .execute(env.client)
         ).getReceipt(env.client);
 
@@ -74,7 +74,7 @@ describe("TokenCancelAirdropIntegrationTest", function () {
         const { serials } = await (
             await new TokenMintTransaction()
                 .setTokenId(nftId)
-                .addMetadata(Buffer.from("-"))
+                .addMetadata(new TextEncoder().encode("-"))
                 .execute(env.client)
         ).getReceipt(env.client);
 
@@ -201,14 +201,14 @@ describe("TokenCancelAirdropIntegrationTest", function () {
 
         // mint nfts
         const tokenMintResponse = await new TokenMintTransaction()
-            .addMetadata(Buffer.from("-"))
+            .addMetadata(new TextEncoder().encode("-"))
             .setTokenId(nftId)
             .execute(env.client);
 
         const { serials } = await tokenMintResponse.getReceipt(env.client);
 
         const tokenMintResponse2 = await new TokenMintTransaction()
-            .addMetadata(Buffer.from("-"))
+            .addMetadata(new TextEncoder().encode("-"))
             .setTokenId(nftId)
             .execute(env.client);
 
@@ -260,13 +260,13 @@ describe("TokenCancelAirdropIntegrationTest", function () {
 
         // mint nfts
         const tokenMintResponse = await new TokenMintTransaction()
-            .addMetadata(Buffer.from("-"))
+            .addMetadata(new TextEncoder().encode("-"))
             .setTokenId(nftId)
             .execute(env.client);
         const { serials } = await tokenMintResponse.getReceipt(env.client);
 
         const tokenMintResponse2 = await new TokenMintTransaction()
-            .addMetadata(Buffer.from("-"))
+            .addMetadata(new TextEncoder().encode("-"))
             .setTokenId(nftId)
             .execute(env.client);
 
@@ -348,7 +348,7 @@ describe("TokenCancelAirdropIntegrationTest", function () {
         const { serials } = await (
             await new TokenMintTransaction()
                 .setTokenId(nftId)
-                .addMetadata(Buffer.from("-"))
+                .addMetadata(new TextEncoder().encode("-"))
                 .execute(env.client)
         ).getReceipt(env.client);
 
