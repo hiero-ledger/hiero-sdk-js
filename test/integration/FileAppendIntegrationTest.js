@@ -215,7 +215,7 @@ describe("FileAppend", function () {
     it("should keep content after deserialization", async function () {
         let response = await new FileCreateTransaction()
             .setKeys([operatorKey])
-            .setContents(Buffer.from(""))
+            .setContents(new Uint8Array(0))
             .execute(env.client);
 
         let { fileId } = await response.getReceipt(env.client);
@@ -244,7 +244,7 @@ describe("FileAppend", function () {
 
         let response = await new FileCreateTransaction()
             .setKeys([operatorKey])
-            .setContents(Buffer.from(""))
+            .setContents(new Uint8Array(0))
             .execute(env.client);
 
         let { fileId } = await response.getReceipt(env.client);
@@ -270,7 +270,7 @@ describe("FileAppend", function () {
 
         let response = await new FileCreateTransaction()
             .setKeys([operatorKey])
-            .setContents(Buffer.from(""))
+            .setContents(new Uint8Array(0))
             .execute(env.client);
 
         let { fileId } = await response.getReceipt(env.client);
@@ -299,14 +299,14 @@ describe("FileAppend", function () {
 
         let response = await new FileCreateTransaction()
             .setKeys([operatorKey])
-            .setContents(Buffer.from(""))
+            .setContents(new Uint8Array(0))
             .execute(env.client);
 
         let { fileId } = await response.getReceipt(env.client);
 
         const txBytes = new FileAppendTransaction()
             .setFileId(fileId)
-            .setContents(Buffer.from("test"))
+            .setContents(new TextEncoder().encode("test"))
             .toBytes();
 
         const fromBytesTx = FileAppendTransaction.fromBytes(txBytes).freezeWith(
@@ -331,7 +331,7 @@ describe("FileAppend", function () {
 
         let response = await new FileCreateTransaction()
             .setKeys([operatorKey])
-            .setContents(Buffer.from(""))
+            .setContents(new Uint8Array(0))
             .execute(env.client);
 
         let { fileId } = await response.getReceipt(env.client);
@@ -386,7 +386,7 @@ describe("FileAppend", function () {
 
         let response = await new FileCreateTransaction()
             .setKeys([operatorKey])
-            .setContents(Buffer.from(""))
+            .setContents(new Uint8Array(0))
             .execute(env.client);
 
         let { fileId } = await response.getReceipt(env.client);
@@ -422,7 +422,7 @@ describe("FileAppend", function () {
 
         let response = await new FileCreateTransaction()
             .setKeys([operatorKey])
-            .setContents(Buffer.from(""))
+            .setContents(new Uint8Array(0))
             .execute(env.client);
 
         let { fileId } = await response.getReceipt(env.client);

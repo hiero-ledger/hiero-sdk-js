@@ -1,4 +1,5 @@
-import Client from "../../src/client/WebClient.js";
+import Wallet from "../../../src/Wallet.js";
+import Client from "../../../src/client/WebClient.js";
 import BaseIntegrationTestEnv from "./BaseIntegrationTestEnv.js";
 
 export { Client };
@@ -6,7 +7,6 @@ export { Client };
 export function skipTestDueToNodeJsVersion() {
     return true;
 }
-
 export default class IntegrationTestEnv extends BaseIntegrationTestEnv {
     /**
      * @param {object} [options]
@@ -17,11 +17,14 @@ export default class IntegrationTestEnv extends BaseIntegrationTestEnv {
     static async new(options = {}) {
         return BaseIntegrationTestEnv.new({
             client: Client,
+            wallet: Wallet,
             env: {
-                OPERATOR_ID: "0.0.8920",
+                OPERATOR_ID: import.meta.env.VITE_OPERATOR_ID || "0.0.2",
                 OPERATOR_KEY:
-                    "07f9f9c355d32c5c93a50024b596ed3ccc39954ba1963c68ac21cb7802fd5f83",
-                HEDERA_NETWORK: "testnet",
+                    import.meta.env.VITE_OPERATOR_KEY ||
+                    "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137",
+                HEDERA_NETWORK:
+                    import.meta.env.VITE_HEDERA_NETWORK || "local-node",
             },
             nodeAccountIds: options.nodeAccountIds,
             balance: options.balance,
