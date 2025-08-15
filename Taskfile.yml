@@ -154,6 +154,7 @@ tasks:
     "test:integration":
         deps:
             - "test:integration:node"
+            - "test:integration:browser"
 
     "test:integration:node":
         cmds:
@@ -166,6 +167,7 @@ tasks:
     "test:integration:codecov":
         cmds:
             - npx vitest --coverage --config=test/vitest-node-integration.config.ts
+            - npx vitest --coverage --config=test/vitest-browser-integration.config.ts
     "update:proto":
         deps:
             - "proto:update"
