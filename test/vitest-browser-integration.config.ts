@@ -45,6 +45,15 @@ export default defineConfig({
     },
     define: {
         __SDK_VERSION__: JSON.stringify(pkg.version),
+        "import.meta.env.VITE_OPERATOR_ID": JSON.stringify(
+            process.env.OPERATOR_ID,
+        ),
+        "import.meta.env.VITE_OPERATOR_KEY": JSON.stringify(
+            process.env.OPERATOR_KEY,
+        ),
+        "import.meta.env.VITE_HEDERA_NETWORK": JSON.stringify(
+            process.env.HEDERA_NETWORK,
+        ),
     },
     resolve: {
         alias: {
