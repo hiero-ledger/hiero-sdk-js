@@ -99,6 +99,13 @@ jobs:
         id: build-sdk
         run: task build
 
+      - name: Install Playwright Dependencies
+        id: playwright-deps
+        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
+        run: |
+            sudo npx playwright install-deps
+            npx playwright install
+
       - name: Prepare Hiero Solo
         id: solo
         uses: hiero-ledger/hiero-solo-action@a39acf8cfbaa2feb195a86530d0ab643a45aa541 # v0.10
@@ -129,12 +136,6 @@ jobs:
         if: ${{ steps.build-sdk.conclusion == 'success' && steps.stop-local-node.conclusion == 'success' && !cancelled() && always() }}
         run: ${{ env.CG_EXEC }} task build
 
-      - name: Install Playwright Dependencies
-        id: playwright-deps
-        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
-        run: |
-            sudo npx playwright install-deps
-            npx playwright install
 
       - name: Browser Unit Test @hashgraph/cryptography
         working-directory: packages/cryptography
