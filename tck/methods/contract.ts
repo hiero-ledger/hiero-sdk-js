@@ -1,12 +1,17 @@
 import {
     ContractCreateTransaction,
+    ContractDeleteTransaction,
     ContractUpdateTransaction,
     FileId,
     Hbar,
     Timestamp,
 } from "@hashgraph/sdk";
 
-import { CreateContractParams, UpdateContractParams } from "../params/contract";
+import {
+    CreateContractParams,
+    DeleteContractParams,
+    UpdateContractParams,
+} from "../params/contract";
 import { ContractResponse } from "../response/contract";
 
 import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";
@@ -168,6 +173,44 @@ export const updateContract = async ({
         transaction.setExpirationTime(
             new Timestamp(Long.fromString(expirationTime), 0),
         );
+    }
+
+    if (commonTransactionParams != null) {
+        applyCommonTransactionParams(
+            commonTransactionParams,
+            transaction,
+            sdk.getClient(),
+        );
+    }
+
+    const response = await transaction.execute(sdk.getClient());
+    const receipt = await response.getReceipt(sdk.getClient());
+
+    return {
+        status: receipt.status.toString(),
+    };
+};
+
+export const deleteContract = async ({
+    contractId,
+    transferAccountId,
+    transferContractId,
+    commonTransactionParams,
+}: DeleteContractParams): Promise<ContractResponse> => {
+    const transaction = new ContractDeleteTransaction().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+
+    if (contractId != null) {
+        transaction.setContractId(contractId);
+    }
+
+    if (transferAccountId != null) {
+        transaction.setTransferAccountId(transferAccountId);
+    }
+
+    if (transferContractId != null) {
+        transaction.setTransferContractId(transferContractId);
     }
 
     if (commonTransactionParams != null) {

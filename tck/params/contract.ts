@@ -29,3 +29,10 @@ export interface UpdateContractParams {
     readonly expirationTime?: string;
     readonly commonTransactionParams?: Record<string, any>;
 }
+
+export interface DeleteContractParams {
+    readonly contractId: string;
+    readonly transferAccountId?: string;
+    readonly transferContractId?: string;
+    readonly commonTransactionParams?: Record<string, any>;
+}
