@@ -10,6 +10,7 @@ import Duration from "../Duration.js";
 import Timestamp from "../Timestamp.js";
 import Key from "../Key.js";
 import Long from "long";
+import * as Proto from "@hashgraph/proto";
 
 /**
  * @namespace proto
@@ -642,7 +643,9 @@ export default class ContractUpdateTransaction extends Transaction {
                     : null,
             autoRenewAccountId:
                 this._autoRenewAccountId != null
-                    ? this._autoRenewAccountId._toProtobuf()
+                    ? this._autoRenewAccountId.toString() == "0.0.0"
+                        ? Proto.proto.AccountID.create()
+                        : this._autoRenewAccountId._toProtobuf()
                     : null,
         };
     }
