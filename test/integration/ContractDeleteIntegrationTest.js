@@ -124,19 +124,17 @@ describe("ContractDelete", function () {
         expect(receipt.contractId != null ? receipt.contractId.num > 0 : false)
             .to.be.true;
 
-        let err = false;
+        let status = false;
 
         try {
             await (
                 await new ContractDeleteTransaction().execute(env.client)
             ).getReceipt(env.client);
         } catch (error) {
-            err = error.toString().includes(Status.InvalidContractId);
+            status = error.status;
         }
 
-        if (!err) {
-            throw new Error("contact deletion did not error");
-        }
+        expect(status).to.be.equal(Status.InvalidContractId);
     });
 
     it("should create contract without admin key which can NOT be deleted", async function () {
@@ -261,7 +259,7 @@ describe("ContractDelete", function () {
             "[e2e::ContractCreateTransaction]",
         );
 
-        let err = false;
+        let status = false;
 
         try {
             await (
@@ -272,18 +270,12 @@ describe("ContractDelete", function () {
                     .execute(env.client)
             ).getReceipt(env.client);
         } catch (error) {
-            err = error.status
-                .toString()
-                .includes(Status.PermanentRemovalRequiresSystemInitiation);
-
-            expect(error.status).to.be.equal(
-                Status.PermanentRemovalRequiresSystemInitiation,
-            );
+            status = error.status;
         }
 
-        if (!err) {
-            throw new Error("contact deletion did not error");
-        }
+        expect(status).to.be.equal(
+            Status.PermanentRemovalRequiresSystemInitiation,
+        );
     });
 
     afterAll(async function () {
