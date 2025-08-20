@@ -205,12 +205,13 @@ export const deleteContract = async ({
         transaction.setContractId(contractId);
     }
 
-    if (transferAccountId != null) {
-        transaction.setTransferAccountId(transferAccountId);
-    }
-
+    //depend on how I order transferContractId and transferAccountId the last will stay if both are called
     if (transferContractId != null) {
         transaction.setTransferContractId(transferContractId);
+    }
+
+    if (transferAccountId != null) {
+        transaction.setTransferAccountId(transferAccountId);
     }
 
     if (commonTransactionParams != null) {
