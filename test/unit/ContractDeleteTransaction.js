@@ -71,6 +71,7 @@ describe("ContractDeleteTransaction", function () {
             expect(transaction.transferContractId.toString()).to.equal(
                 transferContractId.toString(),
             );
+            expect(transaction.permanentRemoval).to.be.false;
         });
 
         it("should deserialize from protobuf with only contractId", function () {

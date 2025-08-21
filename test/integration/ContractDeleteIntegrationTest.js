@@ -79,6 +79,7 @@ describe("ContractDelete", function () {
             await new ContractDeleteTransaction()
                 .setContractId(contract)
                 .setTransferAccountId(env.client.operatorAccountId)
+                .setPermanentRemoval(false)
                 .execute(env.client)
         ).getReceipt(env.client);
 
@@ -123,19 +124,17 @@ describe("ContractDelete", function () {
         expect(receipt.contractId != null ? receipt.contractId.num > 0 : false)
             .to.be.true;
 
-        let err = false;
+        let status = false;
 
         try {
             await (
                 await new ContractDeleteTransaction().execute(env.client)
             ).getReceipt(env.client);
         } catch (error) {
-            err = error.toString().includes(Status.InvalidContractId);
+            status = error.status;
         }
 
-        if (!err) {
-            throw new Error("contact deletion did not error");
-        }
+        expect(status).to.be.equal(Status.InvalidContractId);
     });
 
     it("should create contract without admin key which can NOT be deleted", async function () {
@@ -203,6 +202,80 @@ describe("ContractDelete", function () {
         }
 
         expect(status).to.be.equal(Status.ModifyingImmutableContract);
+    });
+
+    it("should error when permanentRemoval is true", async function () {
+        const operatorKey = env.operatorKey.publicKey;
+
+        let response = await new FileCreateTransaction()
+            .setKeys([operatorKey])
+            .setContents(smartContractBytecode)
+            .execute(env.client);
+
+        let receipt = await response.getReceipt(env.client);
+
+        expect(receipt.fileId).to.not.be.null;
+        expect(receipt.fileId != null ? receipt.fileId.num > 0 : false).to.be
+            .true;
+
+        const file = receipt.fileId;
+
+        response = await new ContractCreateTransaction()
+            .setAdminKey(operatorKey)
+            .setGas(300_000)
+            .setConstructorParameters(
+                new ContractFunctionParameters().addString(
+                    "Hello from Hedera.",
+                ),
+            )
+            .setBytecodeFileId(file)
+            .setContractMemo("[e2e::ContractCreateTransaction]")
+            .execute(env.client);
+
+        receipt = await response.getReceipt(env.client);
+
+        expect(receipt.contractId).to.not.be.null;
+        expect(receipt.contractId != null ? receipt.contractId.num > 0 : false)
+            .to.be.true;
+
+        let contract = receipt.contractId;
+
+        let info = await new ContractInfoQuery()
+            .setContractId(contract)
+            .setQueryPayment(new Hbar(1))
+            .execute(env.client);
+
+        expect(info.contractId.toString()).to.be.equal(contract.toString());
+        expect(info.accountId).to.be.not.null;
+        expect(
+            info.contractId != null ? info.contractId.toString() : "",
+        ).to.be.equal(contract.toString());
+        expect(info.adminKey).to.be.not.null;
+        expect(
+            info.adminKey != null ? info.adminKey.toString() : "",
+        ).to.be.equal(operatorKey.toString());
+        expect(info.storage.toInt()).to.be.equal(128);
+        expect(info.contractMemo).to.be.equal(
+            "[e2e::ContractCreateTransaction]",
+        );
+
+        let status = false;
+
+        try {
+            await (
+                await new ContractDeleteTransaction()
+                    .setContractId(contract)
+                    .setTransferAccountId(env.client.operatorAccountId)
+                    .setPermanentRemoval(true)
+                    .execute(env.client)
+            ).getReceipt(env.client);
+        } catch (error) {
+            status = error.status;
+        }
+
+        expect(status).to.be.equal(
+            Status.PermanentRemovalRequiresSystemInitiation,
+        );
     });
 
     afterAll(async function () {
