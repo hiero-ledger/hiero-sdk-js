@@ -14,6 +14,26 @@ export function encode(data) {
  */
 export function decode(text) {
     const str = text.startsWith("0x") ? text.substring(2) : text;
+
+    if (str.length % 2 !== 0) {
+        throw new Error(
+            "Invalid hex string: Must have an even number of characters.",
+        );
+    }
+
+    if (/[^0-9a-fA-F]/.test(str)) {
+        throw new Error(
+            "Invalid hex string: Contains non-hexadecimal characters.",
+        );
+    }
+
+    const bytes = new Uint8Array(str.length / 2);
+
+    for (let i = 0; i < str.length; i += 2) {
+        const byte = parseInt(str.substring(i, i + 2), 16);
+        bytes[i / 2] = byte;
+    }
+
     return Buffer.from(str, "hex");
 }
 

@@ -65,9 +65,7 @@ describe("ContractDeleteTransaction", function () {
             expect(transaction.contractId.toString()).to.equal(
                 contractId.toString(),
             );
-            expect(transaction.transferAccountId.toString()).to.equal(
-                transferAccountId.toString(),
-            );
+            expect(transaction.transferAccountId).to.be.null;
             expect(transaction.transferContractId.toString()).to.equal(
                 transferContractId.toString(),
             );
@@ -404,9 +402,7 @@ describe("ContractDeleteTransaction", function () {
             expect(deserializedDelete.contractId.toString()).to.equal(
                 contractId.toString(),
             );
-            expect(deserializedDelete.transferAccountId.toString()).to.equal(
-                transferAccountId.toString(),
-            );
+            expect(deserializedDelete.transferAccountId).to.be.null;
             expect(deserializedDelete.transferContractId.toString()).to.equal(
                 transferContractId.toString(),
             );

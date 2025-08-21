@@ -200,6 +200,7 @@ export default class ContractDeleteTransaction extends Transaction {
             transferContractId instanceof ContractId
                 ? transferContractId
                 : ContractId.fromString(transferContractId);
+        this._transferAccountId = null;
 
         return this;
     }
@@ -223,6 +224,7 @@ export default class ContractDeleteTransaction extends Transaction {
             transferAccountId instanceof AccountId
                 ? transferAccountId
                 : AccountId.fromString(transferAccountId);
+        this._transferContractId = null;
 
         return this;
     }

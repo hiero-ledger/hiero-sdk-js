@@ -31,7 +31,7 @@ export const createFile = async ({
         DEFAULT_GRPC_DEADLINE,
     );
 
-    if (keys.length > 0) {
+    if (keys?.length && keys.length > 0) {
         transaction.setKeys(keys.map((key: string) => getKeyFromString(key)));
     }
 
