@@ -377,7 +377,9 @@ export default class ContractCreateTransaction extends Transaction {
     setGas(gas) {
         this._requireNotFrozen();
         this._gas = gas instanceof Long ? gas : Long.fromValue(gas);
-
+        if (this._gas.lessThan(0)) {
+            throw new Error("Gas cannot be negative number");
+        }
         return this;
     }
 
@@ -525,7 +527,7 @@ export default class ContractCreateTransaction extends Transaction {
             typeof stakedAccountId === "string"
                 ? AccountId.fromString(stakedAccountId)
                 : stakedAccountId;
-
+        this._stakedNodeId = null;
         return this;
     }
 
@@ -543,7 +545,7 @@ export default class ContractCreateTransaction extends Transaction {
     setStakedNodeId(stakedNodeId) {
         this._requireNotFrozen();
         this._stakedNodeId = Long.fromValue(stakedNodeId);
-
+        this._stakedAccountId = null;
         return this;
     }
 
