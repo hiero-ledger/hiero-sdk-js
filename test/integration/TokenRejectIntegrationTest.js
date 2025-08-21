@@ -408,7 +408,7 @@ describe("TokenRejectIntegrationTest", function () {
             await (
                 await new TokenMintTransaction()
                     .setTokenId(tokenId)
-                    .setMetadata(Buffer.from("-"))
+                    .setMetadata(new TextEncoder().encode("-"))
                     .execute(env.client)
             ).getReceipt(env.client);
         });
@@ -421,7 +421,7 @@ describe("TokenRejectIntegrationTest", function () {
             await (
                 await new TokenMintTransaction()
                     .setTokenId(tokenId2)
-                    .setMetadata(Buffer.from("-"))
+                    .setMetadata(new TextEncoder().encode("-"))
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -820,7 +820,7 @@ describe("TokenRejectIntegrationTest", function () {
             await (
                 await new TokenMintTransaction()
                     .setTokenId(nftId)
-                    .setMetadata(Buffer.from("-"))
+                    .setMetadata(new TextEncoder().encode("-"))
                     .execute(env.client)
             ).getReceipt(env.client);
 

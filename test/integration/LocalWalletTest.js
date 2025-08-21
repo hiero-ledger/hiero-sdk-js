@@ -1,14 +1,13 @@
 import { Wallet, LocalProvider } from "../../src/index.js";
 
-import dotenv from "dotenv";
-
-dotenv.config();
+import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 
 describe("LocalWallet", function () {
     it("can fetch wallet's info", async function () {
+        const env = await IntegrationTestEnv.new();
         const wallet = new Wallet(
-            process.env.OPERATOR_ID,
-            process.env.OPERATOR_KEY,
+            env.operatorId,
+            env.operatorKey,
             new LocalProvider(),
         );
 
