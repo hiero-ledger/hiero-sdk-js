@@ -10,7 +10,7 @@ import Duration from "../Duration.js";
 import Timestamp from "../Timestamp.js";
 import Key from "../Key.js";
 import Long from "long";
-import * as HieroProto from "@hashgraph/proto";
+import * as Proto from "@hashgraph/proto";
 
 /**
  * @namespace proto
@@ -644,7 +644,7 @@ export default class ContractUpdateTransaction extends Transaction {
             autoRenewAccountId:
                 this._autoRenewAccountId != null
                     ? this._autoRenewAccountId.toString() == "0.0.0"
-                        ? HieroProto.proto.AccountID.create()
+                        ? Proto.proto.AccountID.create()
                         : this._autoRenewAccountId._toProtobuf()
                     : null,
         };
