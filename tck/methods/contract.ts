@@ -195,6 +195,7 @@ export const deleteContract = async ({
     contractId,
     transferAccountId,
     transferContractId,
+    permanentRemoval,
     commonTransactionParams,
 }: DeleteContractParams): Promise<ContractResponse> => {
     const transaction = new ContractDeleteTransaction().setGrpcDeadline(
@@ -212,6 +213,10 @@ export const deleteContract = async ({
 
     if (transferAccountId != null) {
         transaction.setTransferAccountId(transferAccountId);
+    }
+
+    if (permanentRemoval != null) {
+        transaction.setPermanentRemoval(permanentRemoval);
     }
 
     if (commonTransactionParams != null) {

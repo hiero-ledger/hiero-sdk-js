@@ -34,5 +34,6 @@ export interface DeleteContractParams {
     readonly contractId: string;
     readonly transferAccountId?: string;
     readonly transferContractId?: string;
+    readonly permanentRemoval?: boolean;
     readonly commonTransactionParams?: Record<string, any>;
 }
