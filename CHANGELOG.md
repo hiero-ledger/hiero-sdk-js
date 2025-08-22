@@ -5,6 +5,75 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## v2.71.0
+
+### Added
+- Async client initialization support for `WebClient` to allow fetching the latest address book during setup:
+  - `WebClient.forMainnetAsync()`
+  - `WebClient.forTestnetAsync()`
+  - `WebClient.forPreviewnetAsync()`
+  - `WebClient.forNameAsync(name)` [#3274](https://github.com/hiero-ledger/hiero-sdk-js/pull/3274)
+  
+  These methods default to performing an address book update unless `scheduleNetworkUpdate` is explicitly set to `false`, improving client reliability.
+- Async client initialization for `NativeClient` (intended for **React Native / Expo users**), allowing automatic address book updates at instantiation time. [#3285](https://github.com/hiero-ledger/hiero-sdk-js/pull/3285)
+  - `NativeClient.forMainnetAsync()`
+  - `NativeClient.forTestnetAsync()`
+  - `NativeClient.forPreviewnetAsync()`
+  - `NativeClient.forNameAsync(networkName)`
+
+  These methods fetch the latest address book unless `scheduleNetworkUpdate` is explicitly set to `false`.
+- Support for HIP-1046 ([HIP Link](https://hips.hedera.com/hip/hip-1046)): Enabled in native environments to expand protocol capabilities. [#3283](https://github.com/hiero-ledger/hiero-sdk-js/pull/3283)
+- Implemented `permanentRemoval` in `ContractDeleteTransaction`, enabling permanent contract deletion behavior. [#3304](https://github.com/hiero-ledger/hiero-sdk-js/pull/3304)
+- Added ability to remove auto-renew account in `ContractUpdateTransaction` by setting it to `0.0.0`.
+- Added validation in `ContractCreateTransaction` to reject gas values less than 0.
+- Added validations in `hex.js` to reject invalid hex string decoding. [#3299](https://github.com/hiero-ledger/hiero-sdk-js/pull/3299)
+
+### Changed
+- Native clients (React Native / Expo) now attempt to retrieve node addresses from mirror nodes before falling back to hardcoded values in Web environments. [#3283](https://github.com/hiero-ledger/hiero-sdk-js/pull/3283)
+- Made `setStakedAccountId` and `setStakedNodeId` explicitly mutually exclusive. Setting one clears the other.
+- Made `setTransferAccountId` and `setTransferContractId` explicitly mutually exclusive. Setting one clears the other. [#3299](https://github.com/hiero-ledger/hiero-sdk-js/pull/3299)
+
+
+### Fixed
+- Fixed a bug where an error status triggered the error callback twice. [#3280](https://github.com/hiero-ledger/hiero-sdk-js/pull/3280)
+
+## v2.71.0-beta.0
+
+### Added
+
+- Added `maxAutomaticTokenAssociations` property with integration test [#3289](https://github.com/hiero-ledger/hiero-sdk-js/pull/3289)
+
+## v2.70.0
+
+> ⚠️ **Important Notice**  
+> Starting from this version (`v2.70.0`), we will be releasing all packages under both the `@hiero-ledger` and `@hashgraph` namespaces for a transitional period.  
+> Eventually, `@hashgraph/*` packages will be **deprecated** and all development will continue solely under the `@hiero-ledger/*` scope.  
+>  
+> No breaking changes are introduced in this release from a user perspective.  
+>  
+> To support this transition, a detailed [migration guide is available here](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/manual/migration_hiero.md).  
+> Please begin migrating to `@hiero-ledger` packages at your earliest convenience.
+
+---
+
+### Added
+- `deleteGrpcWebProxyEndpoint` method in `NodeUpdateTransaction` to support the removal of web proxy. [#3268](https://github.com/hiero-ledger/hiero-sdk-js/pull/3268)
+
+### Fixed
+- Aligned `clear` methods for array properties in `TopicUpdateTransaction` with other SDKs, ensuring they correctly remove the arrays from network state. [#3265](https://github.com/hiero-ledger/hiero-sdk-js/pull/3265)
+
+### Removed
+- Removed the gRPC proxy endpoint for node with account ID `0.0.5`, as it was taken out of the address book by a council member. [#3256](https://github.com/hiero-ledger/hiero-sdk-js/pull/3256)
+
+## v2.69.0
+
+### Added
+- Added validation to NodeUpdateTransaction and NodeDeleteTransaction ensuring that nodeId is explicitly set before execution. This prevents accidental updates to node 0.0.3 due to protobuf's default uint64 = 0 behavior. [3228](https://github.com/hiero-ledger/hiero-sdk-js/pull/3228)
+
+### Fixed
+- Fixed formatting of the X-User-Agent header in the JavaScript SDK to ensure correct identification by the Consensus Node. The header now uses the format: X-User-Agent: hiero-sdk-js/<version> (e.g., hiero-sdk-js/1.2.3), preventing misclassification as unknown/unspecified usage. [3216](https://github.com/hiero-ledger/hiero-sdk-js/pull/3216)
+
 ## v2.69.0-beta.1
 
 ### Added

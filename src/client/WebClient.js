@@ -3,12 +3,7 @@
 import Client from "./Client.js";
 import WebChannel from "../channel/WebChannel.js";
 import LedgerId from "../LedgerId.js";
-import {
-    MAINNET,
-    WEB_TESTNET,
-    WEB_PREVIEWNET,
-    MirrorNetwork,
-} from "../constants/ClientConstants.js";
+import { WebNetwork, MirrorNetwork } from "../constants/ClientConstants.js";
 import AddressBookQuery from "../network/AddressBookQueryWeb.js";
 import FileId from "../file/FileId.js";
 
@@ -16,32 +11,6 @@ import FileId from "../file/FileId.js";
  * @typedef {import("./Client.js").ClientConfiguration} ClientConfiguration
  * @typedef {import("../account/AccountId.js").default} AccountId
  */
-
-export const Network = {
-    /**
-     * @param {string} name
-     * @returns {{[key: string]: (string | AccountId)}}
-     */
-    fromName(name) {
-        switch (name) {
-            case "mainnet":
-                return Network.MAINNET;
-
-            case "testnet":
-                return Network.TESTNET;
-
-            case "previewnet":
-                return Network.PREVIEWNET;
-
-            default:
-                throw new Error(`unknown network name: ${name}`);
-        }
-    },
-
-    MAINNET: MAINNET,
-    TESTNET: WEB_TESTNET,
-    PREVIEWNET: WEB_PREVIEWNET,
-};
 
 /**
  * Represents a client for interacting with the Hedera network over the web.
@@ -61,19 +30,19 @@ export default class WebClient extends Client {
             if (typeof props.network === "string") {
                 switch (props.network) {
                     case "mainnet":
-                        this.setNetwork(Network.MAINNET);
-                        this.setMirrorNetwork(MirrorNetwork.MAINNET);
+                        this.setNetwork(WebNetwork.MAINNET);
                         this.setLedgerId(LedgerId.MAINNET);
+                        this.setMirrorNetwork(MirrorNetwork.MAINNET);
                         break;
 
                     case "testnet":
-                        this.setNetwork(Network.TESTNET);
+                        this.setNetwork(WebNetwork.TESTNET);
                         this.setLedgerId(LedgerId.TESTNET);
                         this.setMirrorNetwork(MirrorNetwork.TESTNET);
                         break;
 
                     case "previewnet":
-                        this.setNetwork(Network.PREVIEWNET);
+                        this.setNetwork(WebNetwork.PREVIEWNET);
                         this.setLedgerId(LedgerId.PREVIEWNET);
                         this.setMirrorNetwork(MirrorNetwork.PREVIEWNET);
                         break;
@@ -174,6 +143,56 @@ export default class WebClient extends Client {
     }
 
     /**
+     * Construct a Hedera client pre-configured for Mainnet access with network update.
+     *
+     * @returns {Promise<WebClient>}
+     */
+    static async forMainnetAsync() {
+        return new WebClient({
+            network: "mainnet",
+        }).updateNetwork();
+    }
+
+    /**
+     * Construct a Hedera client pre-configured for Testnet access with network update.
+     *
+     * @returns {Promise<WebClient>}
+     */
+    static async forTestnetAsync() {
+        return new WebClient({
+            network: "testnet",
+        }).updateNetwork();
+    }
+
+    /**
+     * Construct a Hedera client pre-configured for Previewnet access with network update.
+     *
+     * @returns {Promise<WebClient>}
+     */
+    static async forPreviewnetAsync() {
+        return new WebClient({
+            network: "previewnet",
+        }).updateNetwork();
+    }
+
+    /**
+     * Construct a client for a specific network with optional network update.
+     * Updates network only if the network is not "local-node".
+     *
+     * @param {string} network
+     * @returns {Promise<WebClient>}
+     */
+    static async forNameAsync(network) {
+        const client = new WebClient({ network });
+
+        if (network !== "local-node") {
+            await client.updateNetwork();
+        }
+
+        return client;
+    }
+
+    /**
      * Construct a client configured to use mirror nodes.
      * This will query the address book to get the network nodes.
      *
@@ -181,9 +200,7 @@ export default class WebClient extends Client {
      * @returns {Promise<WebClient>}
      */
     static async forMirrorNetwork(mirrorNetwork) {
-        const client = new WebClient();
-
-        client.setMirrorNetwork(mirrorNetwork);
+        const client = new WebClient({ mirrorNetwork: mirrorNetwork });
 
         await client.updateNetwork();
 
@@ -198,13 +215,13 @@ export default class WebClient extends Client {
         if (typeof network === "string") {
             switch (network) {
                 case "previewnet":
-                    this._network.setNetwork(Network.PREVIEWNET);
+                    this._network.setNetwork(WebNetwork.PREVIEWNET);
                     break;
                 case "testnet":
-                    this._network.setNetwork(Network.TESTNET);
+                    this._network.setNetwork(WebNetwork.TESTNET);
                     break;
                 case "mainnet":
-                    this._network.setNetwork(Network.MAINNET);
+                    this._network.setNetwork(WebNetwork.MAINNET);
             }
         } else {
             this._network.setNetwork(network);
@@ -242,11 +259,11 @@ export default class WebClient extends Client {
 
     /**
      * @override
-     * @returns {Promise<void>}
+     * @returns {Promise<this>}
      */
     async updateNetwork() {
         if (this._isUpdatingNetwork) {
-            return;
+            return this;
         }
 
         this._isUpdatingNetwork = true;
@@ -280,6 +297,8 @@ export default class WebClient extends Client {
         } finally {
             this._isUpdatingNetwork = false;
         }
+
+        return this;
     }
 
     /**

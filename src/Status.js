@@ -740,6 +740,8 @@ export default class Status {
                 return "AIRDROP_CONTAINS_MULTIPLE_SENDERS_FOR_A_TOKEN";
             case Status.GrpcWebProxyNotSupported:
                 return "GRPC_WEB_PROXY_NOT_SUPPORTED";
+            case Status.NftTransfersOnlyAllowedForNonFungibleUnique:
+                return "NFT_TRANSFERS_ONLY_ALLOWED_FOR_NON_FUNGIBLE_UNIQUE";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -1468,6 +1470,8 @@ export default class Status {
                 return Status.AirdropContainsMultipleSendersForAToken;
             case 399:
                 return Status.GrpcWebProxyNotSupported;
+            case 400:
+                return Status.NftTransfersOnlyAllowedForNonFungibleUnique;
             default:
                 throw new Error(
                     `(BUG) Status.fromCode() does not handle code: ${code}`,
@@ -3342,3 +3346,8 @@ Status.AirdropContainsMultipleSendersForAToken = new Status(398);
  * The GRPC proxy endpoint is set in the NodeCreate or NodeUpdate transaction, which the network does not support.
  */
 Status.GrpcWebProxyNotSupported = new Status(399);
+
+/**
+ * An NFT transfers list referenced a token type other than NON_FUNGIBLE_UNIQUE.
+ */
+Status.NftTransfersOnlyAllowedForNonFungibleUnique = new Status(400);

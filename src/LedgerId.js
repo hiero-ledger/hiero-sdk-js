@@ -40,11 +40,11 @@ export default class LedgerId {
             case "3":
                 return LedgerId.LOCAL_NODE;
             default: {
-                let ledgerIdDecoded = hex.decode(ledgerId);
-                if (ledgerIdDecoded.length == 0 && ledgerId.length != 0) {
-                    throw new Error("Default reached for fromString");
-                } else {
+                try {
+                    let ledgerIdDecoded = hex.decode(ledgerId);
                     return new LedgerId(ledgerIdDecoded);
+                } catch (error) {
+                    throw new Error("Default reached for fromString");
                 }
             }
         }

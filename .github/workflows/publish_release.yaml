@@ -6,14 +6,14 @@ on:
         description: "Existing Tag to Publish (eg: v3.7.0)"
         type: string
         required: true
-      dry-run-enabled:
-        description: "Dry Run Enabled"
-        type: boolean
-        required: false
-        default: false
       dual-publish-enabled:
         # Set default to true when the dual-publishing period is active
         description: "Dual Publish Enabled"
+        type: boolean
+        required: false
+        default: true
+      dry-run-enabled:
+        description: "Dry Run Enabled"
         type: boolean
         required: false
         default: false
@@ -34,7 +34,7 @@ jobs:
     runs-on: hiero-client-sdk-linux-medium
     env:
       # Set the default to 'true' when the dual-publishing period is active
-      DUAL_PUBLISH_ENABLED: ${{ inputs.dual-publish-enabled || 'false' }}
+      DUAL_PUBLISH_ENABLED: ${{ inputs.dual-publish-enabled || github.event_name == 'push' }}
     outputs:
       # Project tag
       tag: ${{ steps.tag.outputs.name }}
@@ -67,7 +67,7 @@ jobs:
           egress-policy: audit
 
       - name: Checkout Code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           ref: ${{ inputs.tag || '' }}
           fetch-depth: 0
@@ -163,6 +163,18 @@ jobs:
           fi
 
           echo "publish-required=${PUBLISH_REQUIRED}" >>"${GITHUB_OUTPUT}"
+
+      - name: Package Version Summary
+        run: |
+          echo "## Package Version Summary" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| Package | Version | Publish Required |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "|---------|---------|------------------|" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| @hashgraph/sdk | ${{ steps.npm-package.outputs.sdk-version }} | ${{ steps.sdk-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| @hiero-ledger/sdk | ${{ steps.npm-package.outputs.sdk-version }} | ${{ steps.hiero-sdk-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| @hashgraph/proto | ${{ steps.npm-package.outputs.proto-version }} | ${{ steps.proto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| @hiero-ledger/proto | ${{ steps.npm-package.outputs.proto-version }} | ${{ steps.hiero-proto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| @hashgraph/cryptography | ${{ steps.npm-package.outputs.crypto-version }} | ${{ steps.crypto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| @hiero-ledger/cryptography | ${{ steps.npm-package.outputs.crypto-version }} | ${{ steps.hiero-crypto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Extract SDK Tag Information
         id: tag
@@ -289,7 +301,7 @@ jobs:
           egress-policy: audit
 
       - name: Checkout Code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           ref: ${{ inputs.tag || '' }}
           submodules: recursive
@@ -307,7 +319,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Compile Code
         run: |
@@ -318,7 +330,7 @@ jobs:
     runs-on: hiero-client-sdk-linux-large
     env:
       # Set the default to 'true' when the dual-publishing period is active
-      DUAL_PUBLISH_ENABLED: ${{ inputs.dual-publish-enabled || 'false' }}
+      DUAL_PUBLISH_ENABLED: ${{ inputs.dual-publish-enabled || github.event_name == 'push' }}
       DRY_RUN_ENABLED: ${{ inputs.dry-run-enabled || 'false'}}
     needs:
       - validate-release
@@ -330,7 +342,7 @@ jobs:
           egress-policy: audit
 
       - name: Checkout Code
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           ref: ${{ inputs.tag || '' }}
           submodules: recursive
@@ -348,7 +360,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
-          node-version: 20
+          node-version: 22
           cache: pnpm
 
       - name: Install NPM Dependencies
@@ -455,13 +467,15 @@ jobs:
           NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
         run: |
             task -v publish -- ${{ steps.proto-publish.outputs.args }}
+        working-directory: packages/proto
 
-      - name: Publish SDK Release (@hiero-ledger/cryptography)
+      - name: Publish Cryptography Release (@hiero-ledger/cryptography)
         if: ${{ needs.validate-release.outputs.hiero-crypto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
         env:
           NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
         run: |
-          task -v publish -- ${{ steps.sdk-publish.outputs.args }}
+          task -v publish -- ${{ steps.crypto-publish.outputs.args }}
+        working-directory: packages/cryptography
 
       - name: Publish SDK Release (@hiero-ledger/sdk)
         if: ${{ needs.validate-release.outputs.hiero-sdk-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
