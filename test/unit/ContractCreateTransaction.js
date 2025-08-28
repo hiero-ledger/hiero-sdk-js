@@ -8,7 +8,6 @@ describe("ContractDeleteTransaction", function () {
     beforeEach(function () {
         stakedAccountId = new AccountId(0, 0, 3333);
         stakedNodeId = Long.fromNumber(5);
-        // privateKey = PrivateKey.generateED25519();
     });
 
     it("should throw an error if gas is negative", function () {
@@ -18,7 +17,7 @@ describe("ContractDeleteTransaction", function () {
         try {
             tx.setGas(-1);
         } catch (error) {
-            if (error.message.includes("Gas cannot be negative number"))
+            if (error.message.includes("Gas must be greater than 0"))
                 err = true;
         }
 
