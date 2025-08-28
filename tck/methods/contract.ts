@@ -1,6 +1,7 @@
 import {
     ContractCreateTransaction,
     ContractDeleteTransaction,
+    ContractExecuteTransaction,
     ContractUpdateTransaction,
     Hbar,
     Timestamp,
@@ -9,6 +10,7 @@ import {
 import {
     CreateContractParams,
     DeleteContractParams,
+    ExecuteContractParams,
     UpdateContractParams,
 } from "../params/contract";
 import { ContractResponse } from "../response/contract";
@@ -226,6 +228,49 @@ export const deleteContract = async ({
         );
     }
 
+    const response = await transaction.execute(sdk.getClient());
+    const receipt = await response.getReceipt(sdk.getClient());
+
+    return {
+        status: receipt.status.toString(),
+    };
+};
+
+export const executeContract = async ({
+    contractId,
+    gas,
+    amount,
+    functionParameters,
+    commonTransactionParams,
+}: ExecuteContractParams): Promise<ContractResponse> => {
+    const transaction = new ContractExecuteTransaction().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+
+    if (contractId != null) {
+        transaction.setContractId(contractId);
+    }
+
+    if (gas != null) {
+        transaction.setGas(Long.fromString(gas));
+    }
+
+    if (amount != null) {
+        transaction.setPayableAmount(Hbar.fromTinybars(amount));
+    }
+
+    if (functionParameters != null) {
+        const functionParams = decode(functionParameters);
+        transaction.setFunctionParameters(functionParams);
+    }
+
+    if (commonTransactionParams != null) {
+        applyCommonTransactionParams(
+            commonTransactionParams,
+            transaction,
+            sdk.getClient(),
+        );
+    }
     const response = await transaction.execute(sdk.getClient());
     const receipt = await response.getReceipt(sdk.getClient());
 
