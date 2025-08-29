@@ -47,7 +47,6 @@ export const createSchedule = async ({
     if (scheduledTransaction != null) {
         const scheduledTx = buildScheduledTransaction(scheduledTransaction);
         transaction.setScheduledTransaction(scheduledTx);
-        console.log("asd");
     }
 
     if (memo != null) {
