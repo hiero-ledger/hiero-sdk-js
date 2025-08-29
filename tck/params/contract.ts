@@ -37,3 +37,11 @@ export interface DeleteContractParams {
     readonly permanentRemoval?: boolean;
     readonly commonTransactionParams?: Record<string, any>;
 }
+
+export interface ExecuteContractParams {
+    readonly contractId: string;
+    readonly gas?: string;
+    readonly amount?: string;
+    readonly functionParameters?: string;
+    readonly commonTransactionParams?: Record<string, any>;
+}

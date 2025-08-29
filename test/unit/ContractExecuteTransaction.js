@@ -119,6 +119,13 @@ describe("ContractExecuteTransaction", function () {
             expect(transaction.gas.toNumber()).to.equal(gasNumber);
         });
 
+        it("should throw error if gas is negative", function () {
+            const gasNumber = -10;
+            expect(() => {
+                new ContractExecuteTransaction().setGas(gasNumber);
+            }).to.throw("Gas must be greater than 0");
+        });
+
         it("should set payable amount", function () {
             const transaction =
                 new ContractExecuteTransaction().setPayableAmount(
