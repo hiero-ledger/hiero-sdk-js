@@ -1,7 +1,7 @@
 import { AccountId, ContractCreateTransaction } from "../../src/index.js";
 import Long from "long";
 
-describe("ContractDeleteTransaction", function () {
+describe("ContractCreateTransaction", function () {
     let stakedAccountId;
     let stakedNodeId;
 
@@ -17,7 +17,7 @@ describe("ContractDeleteTransaction", function () {
         try {
             tx.setGas(-1);
         } catch (error) {
-            if (error.message.includes("Gas must be greater than 0"))
+            if (error.message.includes("Gas cannot be negative number"))
                 err = true;
         }
 
