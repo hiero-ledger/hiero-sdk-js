@@ -19,7 +19,7 @@ import { applyCommonTransactionParams } from "../params/common-tx-params";
 import { sdk } from "../sdk_data";
 import { getKeyFromString } from "../utils/key";
 import Long from "long";
-import { decode } from "../../src/encoding/hex.js";
+import { decode } from "../utils/hex";
 
 export const createContract = async ({
     adminKey,
