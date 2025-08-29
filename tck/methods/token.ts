@@ -62,7 +62,8 @@ import {
     TokenMintResponse,
 } from "../response/token";
 
-export const createToken = async ({
+// buildCreateToken builds a TokenCreateTransaction from parameters
+const buildCreateToken = ({
     name,
     symbol,
     decimals,
@@ -87,7 +88,7 @@ export const createToken = async ({
     metadata,
     metadataKey,
     commonTransactionParams,
-}: CreateTokenParams): Promise<TokenResponse> => {
+}: CreateTokenParams): TokenCreateTransaction => {
     let transaction = new TokenCreateTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -209,6 +210,14 @@ export const createToken = async ({
         );
     }
 
+    return transaction;
+};
+
+export const createToken = async (
+    params: CreateTokenParams,
+): Promise<TokenResponse> => {
+    const transaction = buildCreateToken(params);
+
     const txResponse = await transaction.execute(sdk.getClient());
     const receipt = await txResponse.getReceipt(sdk.getClient());
 
@@ -218,7 +227,8 @@ export const createToken = async ({
     };
 };
 
-export const updateToken = async ({
+// buildUpdateToken builds a TokenUpdateTransaction from parameters
+const buildUpdateToken = ({
     tokenId,
     symbol,
     name,
@@ -237,7 +247,7 @@ export const updateToken = async ({
     metadata,
     metadataKey,
     commonTransactionParams,
-}: UpdateTokenParams): Promise<TokenResponse> => {
+}: UpdateTokenParams): TokenUpdateTransaction => {
     let transaction = new TokenUpdateTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -322,6 +332,14 @@ export const updateToken = async ({
         );
     }
 
+    return transaction;
+};
+
+export const updateToken = async (
+    params: UpdateTokenParams,
+): Promise<TokenResponse> => {
+    const transaction = buildUpdateToken(params);
+
     const txResponse = await transaction.execute(sdk.getClient());
     const receipt = await txResponse.getReceipt(sdk.getClient());
 
@@ -330,10 +348,11 @@ export const updateToken = async ({
     };
 };
 
-export const deleteToken = async ({
+// buildDeleteToken builds a TokenDeleteTransaction from parameters
+const buildDeleteToken = ({
     tokenId,
     commonTransactionParams,
-}: DeleteTokenParams): Promise<TokenResponse> => {
+}: DeleteTokenParams): TokenDeleteTransaction => {
     let transaction = new TokenDeleteTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -350,6 +369,14 @@ export const deleteToken = async ({
         );
     }
 
+    return transaction;
+};
+
+export const deleteToken = async (
+    params: DeleteTokenParams,
+): Promise<TokenResponse> => {
+    const transaction = buildDeleteToken(params);
+
     const txResponse = await transaction.execute(sdk.getClient());
     const receipt = await txResponse.getReceipt(sdk.getClient());
 
@@ -358,11 +385,12 @@ export const deleteToken = async ({
     };
 };
 
-export const updateTokenFeeSchedule = async ({
+// buildUpdateTokenFeeSchedule builds a TokenFeeScheduleUpdateTransaction from parameters
+const buildUpdateTokenFeeSchedule = ({
     tokenId,
     customFees,
     commonTransactionParams,
-}: UpdateTokenFeeScheduleParams): Promise<TokenResponse> => {
+}: UpdateTokenFeeScheduleParams): TokenFeeScheduleUpdateTransaction => {
     let transaction = new TokenFeeScheduleUpdateTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -383,6 +411,14 @@ export const updateTokenFeeSchedule = async ({
             sdk.getClient(),
         );
     }
+
+    return transaction;
+};
+
+export const updateTokenFeeSchedule = async (
+    params: UpdateTokenFeeScheduleParams,
+): Promise<TokenResponse> => {
+    const transaction = buildUpdateTokenFeeSchedule(params);
 
     const txResponse = await transaction.execute(sdk.getClient());
     const receipt = await txResponse.getReceipt(sdk.getClient());
@@ -488,11 +524,19 @@ export const revokeTokenKyc = async (
     );
 };
 
+// buildMintToken builds a TokenMintTransaction from parameters
+export const buildMintToken = (
+    params: MintTokenParams,
+): TokenMintTransaction => {
+    const transaction = new TokenMintTransaction();
+    configureTokenManagementTransaction(transaction, params, sdk.getClient());
+    return transaction;
+};
+
 export const mintToken = async (
     params: MintTokenParams,
 ): Promise<TokenMintResponse> => {
-    const transaction = new TokenMintTransaction();
-    configureTokenManagementTransaction(transaction, params, sdk.getClient());
+    const transaction = buildMintToken(params);
 
     const txResponse = await transaction.execute(sdk.getClient());
     const receipt = await txResponse.getReceipt(sdk.getClient());
@@ -504,11 +548,19 @@ export const mintToken = async (
     };
 };
 
+// buildBurnToken builds a TokenBurnTransaction from parameters
+export const buildBurnToken = (
+    params: BurnTokenParams,
+): TokenBurnTransaction => {
+    const transaction = new TokenBurnTransaction();
+    configureTokenManagementTransaction(transaction, params, sdk.getClient());
+    return transaction;
+};
+
 export const burnToken = async (
     params: BurnTokenParams,
 ): Promise<TokenBurnResponse> => {
-    const transaction = new TokenBurnTransaction();
-    configureTokenManagementTransaction(transaction, params, sdk.getClient());
+    const transaction = buildBurnToken(params);
 
     const txResponse = await transaction.execute(sdk.getClient());
     const receipt = await txResponse.getReceipt(sdk.getClient());
@@ -533,10 +585,11 @@ export const wipeToken = async (
     };
 };
 
-export const airdropToken = async ({
+// buildAirdropToken builds a TokenAirdropTransaction from parameters
+const buildAirdropToken = ({
     tokenTransfers,
     commonTransactionParams,
-}: AirdropTokenParams): Promise<TokenResponse> => {
+}: AirdropTokenParams): TokenAirdropTransaction => {
     const transaction = new TokenAirdropTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -616,6 +669,14 @@ export const airdropToken = async ({
             sdk.getClient(),
         );
     }
+
+    return transaction;
+};
+
+export const airdropToken = async (
+    params: AirdropTokenParams,
+): Promise<TokenResponse> => {
+    const transaction = buildAirdropToken(params);
 
     const txResponse = await transaction.execute(sdk.getClient());
     const receipt = await txResponse.getReceipt(sdk.getClient());
