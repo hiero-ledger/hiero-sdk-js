@@ -8,6 +8,7 @@ import {
     FileDeleteTransaction,
     Hbar,
     Status,
+    AccountId,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 
@@ -41,9 +42,7 @@ describe("ContractUpdate", function () {
             .setAdminKey(operatorKey)
             .setGas(300_000)
             .setConstructorParameters(
-                new ContractFunctionParameters().addString(
-                    "Hello from Hedera.",
-                ),
+                new ContractFunctionParameters().addString("Hello from Hiero."),
             )
             .setBytecodeFileId(file)
             .setContractMemo("[e2e::ContractCreateTransaction]")
@@ -136,9 +135,7 @@ describe("ContractUpdate", function () {
             .setAdminKey(operatorKey)
             .setGas(300_000)
             .setConstructorParameters(
-                new ContractFunctionParameters().addString(
-                    "Hello from Hedera.",
-                ),
+                new ContractFunctionParameters().addString("Hello from Hiero."),
             )
             .setBytecodeFileId(file)
             .setContractMemo("[e2e::ContractCreateTransaction]")
@@ -180,6 +177,108 @@ describe("ContractUpdate", function () {
         if (!err) {
             throw new Error("contract update did not error");
         }
+    });
+
+    it("should update the auto renew account ID to 0.0.0", async function () {
+        const operatorKey = env.operatorKey.publicKey;
+
+        let response = await new FileCreateTransaction()
+            .setKeys([operatorKey])
+            .setContents(smartContractBytecode)
+            .execute(env.client);
+
+        let receipt = await response.getReceipt(env.client);
+
+        expect(receipt.fileId).to.not.be.null;
+        expect(receipt.fileId != null ? receipt.fileId.num > 0 : false).to.be
+            .true;
+
+        const file = receipt.fileId;
+
+        response = await new ContractCreateTransaction()
+            .setAdminKey(operatorKey)
+            .setGas(300_000)
+            .setConstructorParameters(
+                new ContractFunctionParameters().addString("Hello from Hiero."),
+            )
+            .setBytecodeFileId(file)
+            .setContractMemo("[e2e::ContractCreateTransaction]")
+            .setAutoRenewAccountId(env.client.operatorAccountId)
+            .execute(env.client);
+
+        receipt = await response.getReceipt(env.client);
+        console.log("contract");
+
+        expect(receipt.contractId).to.not.be.null;
+        expect(receipt.contractId != null ? receipt.contractId.num > 0 : false)
+            .to.be.true;
+
+        let contract = receipt.contractId;
+
+        let info = await new ContractInfoQuery()
+            .setContractId(contract)
+            .setQueryPayment(new Hbar(1))
+            .execute(env.client);
+
+        expect(info.contractId.toString()).to.be.equal(contract.toString());
+        expect(info.accountId).to.be.not.null;
+        expect(
+            info.contractId != null ? info.contractId.toString() : "",
+        ).to.be.equal(contract.toString());
+        expect(info.adminKey).to.be.not.null;
+        expect(
+            info.adminKey != null ? info.adminKey.toString() : "",
+        ).to.be.equal(operatorKey.toString());
+        expect(info.storage.toInt()).to.be.equal(128);
+        expect(info.contractMemo).to.be.equal(
+            "[e2e::ContractCreateTransaction]",
+        );
+        expect(info.autoRenewAccountId.toString()).to.be.equal(
+            env.client.operatorAccountId.toString(),
+        );
+
+        await (
+            await new ContractUpdateTransaction()
+                .setContractId(contract)
+                .setContractMemo("[e2e::ContractUpdateTransaction]")
+                .setAutoRenewAccountId(new AccountId(0, 0, 0))
+                .execute(env.client)
+        ).getReceipt(env.client);
+
+        info = await new ContractInfoQuery()
+            .setContractId(contract)
+            .setQueryPayment(new Hbar(5))
+            .execute(env.client);
+
+        expect(info.contractId.toString()).to.be.equal(contract.toString());
+        expect(info.accountId).to.be.not.null;
+        expect(
+            info.contractId != null ? info.contractId.toString() : "",
+        ).to.be.equal(contract.toString());
+        expect(info.adminKey).to.be.not.null;
+        expect(
+            info.adminKey != null ? info.adminKey.toString() : "",
+        ).to.be.equal(operatorKey.toString());
+        expect(info.storage.toInt()).to.be.equal(128);
+        expect(info.contractMemo).to.be.equal(
+            "[e2e::ContractUpdateTransaction]",
+        );
+        expect(info.autoRenewAccountId.toString()).to.be.equal(
+            new AccountId(0, 0, 0).toString(),
+        );
+
+        await (
+            await new ContractDeleteTransaction()
+                .setContractId(contract)
+                .setTransferAccountId(env.client.operatorAccountId)
+                .execute(env.client)
+        ).getReceipt(env.client);
+
+        await (
+            await new FileDeleteTransaction()
+                .setFileId(file)
+                .execute(env.client)
+        ).getReceipt(env.client);
     });
 
     afterAll(async function () {
