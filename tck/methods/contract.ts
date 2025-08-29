@@ -2,7 +2,6 @@ import {
     ContractCreateTransaction,
     ContractDeleteTransaction,
     ContractUpdateTransaction,
-    FileId,
     Hbar,
     Timestamp,
 } from "@hashgraph/sdk";
