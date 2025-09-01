@@ -189,7 +189,11 @@ export default class ContractExecuteTransaction extends Transaction {
      */
     setGas(gas) {
         this._requireNotFrozen();
-        this._gas = gas instanceof Long ? gas : Long.fromValue(gas);
+        const gasLong = gas instanceof Long ? gas : Long.fromValue(gas);
+        if (gasLong.lt(0)) {
+            throw new Error("Gas must be greater than 0");
+        }
+        this._gas = gasLong;
 
         return this;
     }

@@ -5,6 +5,44 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.72.0
+
+### Added
+- Validation for negative gas in `ContractExecuteTransaction`, ensuring safer transaction execution. [#3317](https://github.com/hiero-ledger/hiero-sdk-js/pull/3317)
+- Support for `CustomFee` in scheduled transaction body, enabling more flexible fee structures in scheduled transactions. [#3254](https://github.com/hiero-ledger/hiero-sdk-js/pull/3254)
+
+## v2.71.0
+
+### Added
+- Async client initialization support for `WebClient` to allow fetching the latest address book during setup:
+  - `WebClient.forMainnetAsync()`
+  - `WebClient.forTestnetAsync()`
+  - `WebClient.forPreviewnetAsync()`
+  - `WebClient.forNameAsync(name)` [#3274](https://github.com/hiero-ledger/hiero-sdk-js/pull/3274)
+  
+  These methods default to performing an address book update unless `scheduleNetworkUpdate` is explicitly set to `false`, improving client reliability.
+- Async client initialization for `NativeClient` (intended for **React Native / Expo users**), allowing automatic address book updates at instantiation time. [#3285](https://github.com/hiero-ledger/hiero-sdk-js/pull/3285)
+  - `NativeClient.forMainnetAsync()`
+  - `NativeClient.forTestnetAsync()`
+  - `NativeClient.forPreviewnetAsync()`
+  - `NativeClient.forNameAsync(networkName)`
+
+  These methods fetch the latest address book unless `scheduleNetworkUpdate` is explicitly set to `false`.
+- Support for HIP-1046 ([HIP Link](https://hips.hedera.com/hip/hip-1046)): Enabled in native environments to expand protocol capabilities. [#3283](https://github.com/hiero-ledger/hiero-sdk-js/pull/3283)
+- Implemented `permanentRemoval` in `ContractDeleteTransaction`, enabling permanent contract deletion behavior. [#3304](https://github.com/hiero-ledger/hiero-sdk-js/pull/3304)
+- Added ability to remove auto-renew account in `ContractUpdateTransaction` by setting it to `0.0.0`.
+- Added validation in `ContractCreateTransaction` to reject gas values less than 0.
+- Added validations in `hex.js` to reject invalid hex string decoding. [#3299](https://github.com/hiero-ledger/hiero-sdk-js/pull/3299)
+
+### Changed
+- Native clients (React Native / Expo) now attempt to retrieve node addresses from mirror nodes before falling back to hardcoded values in Web environments. [#3283](https://github.com/hiero-ledger/hiero-sdk-js/pull/3283)
+- Made `setStakedAccountId` and `setStakedNodeId` explicitly mutually exclusive. Setting one clears the other.
+- Made `setTransferAccountId` and `setTransferContractId` explicitly mutually exclusive. Setting one clears the other. [#3299](https://github.com/hiero-ledger/hiero-sdk-js/pull/3299)
+
+
+### Fixed
+- Fixed a bug where an error status triggered the error callback twice. [#3280](https://github.com/hiero-ledger/hiero-sdk-js/pull/3280)
+
 ## v2.71.0-beta.0
 
 ### Added
