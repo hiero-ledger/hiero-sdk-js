@@ -6,6 +6,7 @@ import {
     PrivateKey,
     PublicKey,
     Status,
+    Timestamp,
     TokenId,
     TopicCreateTransaction,
     TopicDeleteTransaction,
@@ -839,6 +840,381 @@ describe("TopicCreate", function () {
                     Status.DuplicateDenominationInMaxCustomFeeList,
                 );
             }
+        });
+
+        describe("Scheduled transactions with custom fee limits", function () {
+            it("should charge hbars with limit using scheduled transaction", async function () {
+                const hbar = 100_000_000;
+
+                const customFixedFee = new CustomFixedFee()
+                    .setFeeCollectorAccountId(env.client.operatorAccountId)
+                    .setAmount(hbar / 2);
+
+                // Create a revenue generating topic
+                const { topicId } = await (
+                    await new TopicCreateTransaction()
+                        .setAdminKey(env.operatorPublicKey)
+                        .setFeeScheduleKey(env.operatorPublicKey)
+                        .addCustomFee(customFixedFee)
+                        .execute(env.client)
+                ).getReceipt(env.client);
+
+                // Create payer with 1 Hbar
+                const {
+                    accountId: payerAccountId,
+                    newKey: payerAccountPrivateKey,
+                } = await createAccount(env.client);
+
+                const customFeeLimit = new CustomFeeLimit()
+                    .setAccountId(payerAccountId)
+                    .setFees([customFixedFee]);
+
+                // Submit a message to the revenue generating topic with custom fee limit using scheduled transaction
+                env.client.setOperator(payerAccountId, payerAccountPrivateKey);
+
+                const submitMessageTransaction =
+                    new TopicMessageSubmitTransaction()
+                        .setMessage("Hello, Hedera!")
+                        .setTopicId(topicId)
+                        .addCustomFeeLimit(customFeeLimit);
+
+                const { scheduleId } = await (
+                    await submitMessageTransaction
+                        .schedule()
+                        .setExpirationTime(
+                            Timestamp.generate().plusNanos(
+                                60 * 60 * 24 * 1_000_000_000,
+                            ), // 1 day
+                        )
+                        .execute(env.client)
+                ).getReceipt(env.client);
+
+                // The scheduled transaction should execute immediately since we have all required signatures
+                expect(scheduleId).to.not.be.null;
+
+                env.client.setOperator(env.operatorId, env.operatorKey);
+
+                // Verify the custom fee charged
+                const accountInfo = await new AccountBalanceQuery()
+                    .setAccountId(payerAccountId)
+                    .execute(env.client);
+
+                expect(accountInfo.hbars.toTinybars().toNumber()).to.be.below(
+                    hbar / 2,
+                );
+            });
+
+            it("should charge tokens with limit using scheduled transaction", async function () {
+                const tokenId = await createFungibleToken(env.client);
+
+                const customFixedFee = new CustomFixedFee()
+                    .setAmount(1)
+                    .setDenominatingTokenId(tokenId)
+                    .setFeeCollectorAccountId(env.client.operatorAccountId);
+
+                // Create a revenue generating topic
+                const { topicId } = await (
+                    await new TopicCreateTransaction()
+                        .setAdminKey(env.operatorPublicKey)
+                        .setFeeScheduleKey(env.operatorPublicKey)
+                        .addCustomFee(customFixedFee)
+                        .execute(env.client)
+                ).getReceipt(env.client);
+
+                // Create payer
+                const {
+                    accountId: payerAccountId,
+                    newKey: payerAccountPrivateKey,
+                } = await createAccount(env.client, (transaction) => {
+                    transaction.setMaxAutomaticTokenAssociations(-1);
+                });
+
+                // Send tokens to payer
+                await (
+                    await new TransferTransaction()
+                        .addTokenTransfer(
+                            tokenId,
+                            env.client.operatorAccountId,
+                            -1,
+                        )
+                        .addTokenTransfer(tokenId, payerAccountId, 1)
+                        .execute(env.client)
+                ).getReceipt(env.client);
+
+                const customFeeLimit = new CustomFeeLimit()
+                    .setAccountId(payerAccountId)
+                    .setFees([
+                        new CustomFixedFee()
+                            .setAmount(1)
+                            .setDenominatingTokenId(tokenId),
+                    ]);
+
+                // Submit a message to the revenue generating topic with custom fee limit using scheduled transaction
+                env.client.setOperator(payerAccountId, payerAccountPrivateKey);
+
+                const submitMessageTransaction =
+                    new TopicMessageSubmitTransaction()
+                        .setMessage("Hello, Hedera!")
+                        .setTopicId(topicId)
+                        .addCustomFeeLimit(customFeeLimit);
+
+                const { scheduleId } = await (
+                    await submitMessageTransaction
+                        .schedule()
+                        .setExpirationTime(
+                            Timestamp.generate().plusNanos(
+                                60 * 60 * 24 * 1_000_000_000,
+                            ), // 1 day
+                        )
+                        .execute(env.client)
+                ).getReceipt(env.client);
+
+                // The scheduled transaction should execute immediately since we have all required signatures
+                expect(scheduleId).to.not.be.null;
+
+                env.client.setOperator(env.operatorId, env.operatorKey);
+
+                // Verify the custom fee charged
+                const accountInfo = await new AccountBalanceQuery()
+                    .setAccountId(payerAccountId)
+                    .execute(env.client);
+
+                expect(accountInfo.tokens.get(tokenId).toNumber()).to.be.eql(0);
+            });
+
+            it("should not charge hbars with lower limit using scheduled transaction", async function () {
+                const hbar = 100_000_000;
+
+                const customFixedFee = new CustomFixedFee()
+                    .setFeeCollectorAccountId(env.client.operatorAccountId)
+                    .setAmount(hbar / 2);
+
+                // Create a revenue generating topic with Hbar custom fee
+                const { topicId } = await (
+                    await new TopicCreateTransaction()
+                        .setAdminKey(env.operatorPublicKey)
+                        .setFeeScheduleKey(env.operatorPublicKey)
+                        .addCustomFee(customFixedFee)
+                        .execute(env.client)
+                ).getReceipt(env.client);
+
+                // Create payer with 1 Hbar
+                const {
+                    accountId: payerAccountId,
+                    newKey: payerAccountPrivateKey,
+                } = await createAccount(env.client);
+
+                // Set custom fee limit with lower amount than the custom fee
+                const customFeeLimit = new CustomFeeLimit()
+                    .setAccountId(payerAccountId)
+                    .setFees([new CustomFixedFee().setAmount(hbar / 2 - 1)]);
+
+                // Submit a message to the revenue generating topic with custom fee limit using scheduled transaction
+                env.client.setOperator(payerAccountId, payerAccountPrivateKey);
+
+                try {
+                    const submitMessageTransaction =
+                        new TopicMessageSubmitTransaction()
+                            .setMessage("Hello, Hedera!")
+                            .setTopicId(topicId)
+                            .addCustomFeeLimit(customFeeLimit);
+
+                    await (
+                        await submitMessageTransaction
+                            .schedule()
+                            .setExpirationTime(
+                                Timestamp.generate().plusNanos(
+                                    60 * 60 * 24 * 1_000_000_000,
+                                ), // 1 day
+                            )
+                            .execute(env.client)
+                    ).getReceipt(env.client);
+                } catch (e) {
+                    expect(e.message).to.include(
+                        Status.MaxCustomFeeLimitExceeded,
+                    );
+                }
+            });
+
+            it("should not charge tokens with lower limit using scheduled transaction", async function () {
+                const tokenId = await createFungibleToken(env.client);
+
+                const customFixedFee = new CustomFixedFee()
+                    .setAmount(2)
+                    .setDenominatingTokenId(tokenId)
+                    .setFeeCollectorAccountId(env.client.operatorAccountId);
+
+                // Create a revenue generating topic
+                const { topicId } = await (
+                    await new TopicCreateTransaction()
+                        .setAdminKey(env.operatorPublicKey)
+                        .setFeeScheduleKey(env.operatorPublicKey)
+                        .addCustomFee(customFixedFee)
+                        .execute(env.client)
+                ).getReceipt(env.client);
+
+                // Create payer with unlimited token associations
+                const {
+                    accountId: payerAccountId,
+                    newKey: payerAccountPrivateKey,
+                } = await createAccount(env.client, (transaction) => {
+                    transaction.setMaxAutomaticTokenAssociations(-1);
+                });
+
+                // Send tokens to payer
+                await (
+                    await new TransferTransaction()
+                        .addTokenTransfer(
+                            tokenId,
+                            env.client.operatorAccountId,
+                            -2,
+                        )
+                        .addTokenTransfer(tokenId, payerAccountId, 2)
+                        .execute(env.client)
+                ).getReceipt(env.client);
+
+                // Set custom fee limit with lower amount than the custom fee
+                const customFeeLimit = new CustomFeeLimit()
+                    .setAccountId(payerAccountId)
+                    .setFees([
+                        new CustomFixedFee()
+                            .setAmount(1)
+                            .setDenominatingTokenId(tokenId),
+                    ]);
+
+                // Submit a message to the revenue generating topic with custom fee limit using scheduled transaction
+                env.client.setOperator(payerAccountId, payerAccountPrivateKey);
+
+                // Submit a message to the revenue generating topic with custom fee limit - fails with MAX_CUSTOM_FEE_LIMIT_EXCEEDED
+                try {
+                    const submitMessageTransaction =
+                        new TopicMessageSubmitTransaction()
+                            .setMessage("Hello, Hedera!")
+                            .setTopicId(topicId)
+                            .addCustomFeeLimit(customFeeLimit);
+
+                    await (
+                        await submitMessageTransaction
+                            .schedule()
+                            .setExpirationTime(
+                                Timestamp.generate().plusNanos(
+                                    60 * 60 * 24 * 1_000_000_000,
+                                ), // 1 day
+                            )
+                            .execute(env.client)
+                    ).getReceipt(env.client);
+                } catch (e) {
+                    expect(e.message).to.include(
+                        Status.MaxCustomFeeLimitExceeded,
+                    );
+                }
+            });
+
+            it("should not execute with invalid custom fee limit using scheduled transaction", async function () {
+                const tokenId = await createFungibleToken(env.client);
+
+                const customFixedFee = new CustomFixedFee()
+                    .setAmount(2)
+                    .setDenominatingTokenId(tokenId)
+                    .setFeeCollectorAccountId(env.client.operatorAccountId);
+
+                // Create a revenue generating topic
+                const { topicId } = await (
+                    await new TopicCreateTransaction()
+                        .setAdminKey(env.operatorPublicKey)
+                        .setFeeScheduleKey(env.operatorPublicKey)
+                        .addCustomFee(customFixedFee)
+                        .execute(env.client)
+                ).getReceipt(env.client);
+
+                // Create payer with unlimited token associations
+                const {
+                    accountId: payerAccountId,
+                    newKey: payerAccountPrivateKey,
+                } = await createAccount(env.client, (transaction) => {
+                    transaction.setMaxAutomaticTokenAssociations(-1);
+                });
+
+                // Send tokens to payer
+                await (
+                    await new TransferTransaction()
+                        .addTokenTransfer(
+                            tokenId,
+                            env.client.operatorAccountId,
+                            -2,
+                        )
+                        .addTokenTransfer(tokenId, payerAccountId, 2)
+                        .execute(env.client)
+                ).getReceipt(env.client);
+
+                // Set custom fee limit with lower amount than the custom fee
+                let customFeeLimit = new CustomFeeLimit()
+                    .setAccountId(payerAccountId)
+                    .setFees([
+                        new CustomFixedFee()
+                            .setAmount(1)
+                            .setDenominatingTokenId(new TokenId(0)),
+                    ]);
+
+                // Submit a message to the revenue generating topic with custom fee limit using scheduled transaction
+                env.client.setOperator(payerAccountId, payerAccountPrivateKey);
+
+                // Submit a message to the revenue generating topic with invalid custom fee limit - fails with NO_VALID_MAX_CUSTOM_FEE
+                try {
+                    const submitMessageTransaction =
+                        new TopicMessageSubmitTransaction()
+                            .setMessage("Hello, Hedera!")
+                            .setTopicId(topicId)
+                            .addCustomFeeLimit(customFeeLimit);
+
+                    await (
+                        await submitMessageTransaction
+                            .schedule()
+                            .setExpirationTime(
+                                Timestamp.generate().plusNanos(
+                                    60 * 60 * 24 * 1_000_000_000,
+                                ), // 1 day
+                            )
+                            .execute(env.client)
+                    ).getReceipt(env.client);
+                } catch (e) {
+                    expect(e.message).to.include(Status.NoValidMaxCustomFee);
+                }
+
+                customFeeLimit = new CustomFeeLimit()
+                    .setAccountId(payerAccountId)
+                    .setFees([
+                        new CustomFixedFee()
+                            .setAmount(1)
+                            .setDenominatingTokenId(tokenId),
+                        new CustomFixedFee()
+                            .setAmount(2)
+                            .setDenominatingTokenId(tokenId),
+                    ]);
+                // Submit a message to the revenue generating topic - fails with DUPLICATE_DENOMINATION_IN_MAX_CUSTOM_FEE_LIST
+                try {
+                    const submitMessageTransaction =
+                        new TopicMessageSubmitTransaction()
+                            .setMessage("Hello, Hedera!")
+                            .setTopicId(topicId)
+                            .addCustomFeeLimit(customFeeLimit);
+
+                    await (
+                        await submitMessageTransaction
+                            .schedule()
+                            .setExpirationTime(
+                                Timestamp.generate().plusNanos(
+                                    60 * 60 * 24 * 1_000_000_000,
+                                ), // 1 day
+                            )
+                            .execute(env.client)
+                    ).getReceipt(env.client);
+                } catch (e) {
+                    expect(e.message).to.include(
+                        Status.DuplicateDenominationInMaxCustomFeeList,
+                    );
+                }
+            });
         });
     });
 

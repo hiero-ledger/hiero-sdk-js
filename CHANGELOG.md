@@ -5,6 +5,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.72.0
+
+### Added
+- Validation for negative gas in `ContractExecuteTransaction`, ensuring safer transaction execution. [#3317](https://github.com/hiero-ledger/hiero-sdk-js/pull/3317)
+- Support for `CustomFee` in scheduled transaction body, enabling more flexible fee structures in scheduled transactions. [#3254](https://github.com/hiero-ledger/hiero-sdk-js/pull/3254)
 
 ## v2.71.0
 
