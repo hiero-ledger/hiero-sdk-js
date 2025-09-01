@@ -2836,10 +2836,12 @@ expo-modules-core@2.3.12:
   dependencies:
     invariant "^2.2.4"
 
-expo-status-bar@~2.0.1:
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/expo-status-bar/-/expo-status-bar-2.0.1.tgz#fc07726346dc30fbb68aadb0d7890b34fba42eee"
-  integrity sha512-AkIPX7jWHRPp83UBZ1iXtVvyr0g+DgBVvIXTtlmPtmUsm8Vq9Bb5IGj86PW8osuFlgoTVAg7HI/+Ok7yEYwiRg==
+expo-status-bar@~3.0.6:
+  version "3.0.6"
+  resolved "https://registry.yarnpkg.com/expo-status-bar/-/expo-status-bar-3.0.6.tgz#4d4301416915e1dbbc3bd8332bec00746eb4c974"
+  integrity sha512-OxNRhtREkbPdfpBHlxTulwZacu2h0vis4wB9Wj1xhf7imEBNwu/HpIRCJHYkNT5rG6MymyyyvwrdfRLZIzvYxw==
+  dependencies:
+    react-native-is-edge-to-edge "^1.2.1"
 
 expo@~53.0.4:
   version "53.0.4"
@@ -4503,6 +4505,11 @@ react-native-get-random-values@^1.11.0:
   integrity sha512-4BTbDbRmS7iPdhYLRcz3PGFIpFJBwNZg9g42iwa2P6FOv9vZj/xJc678RZXnLNZzd0qd7Q3CCF6Yd+CU2eoXKQ==
   dependencies:
     fast-base64-decode "^1.0.0"
+
+react-native-is-edge-to-edge@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/react-native-is-edge-to-edge/-/react-native-is-edge-to-edge-1.2.1.tgz#64e10851abd9d176cbf2b40562f751622bde3358"
+  integrity sha512-FLbPWl/MyYQWz+KwqOZsSyj2JmLKglHatd3xLZWskXOpRaio4LfEDEz8E/A6uD8QoTHW6Aobw1jbEwK7KMgR7Q==
 
 react-native@~0.78.0:
   version "0.78.0"
