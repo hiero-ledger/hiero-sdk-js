@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@noble/curves':
-        specifier: 1.8.1
-        version: 1.8.1
+        specifier: ^2.0.0
+        version: 2.0.1
       ansi-regex:
         specifier: 6.2.2
         version: 6.2.2
@@ -18,19 +18,19 @@ importers:
         specifier: 6.2.3
         version: 6.2.3
       asn1js:
-        specifier: 3.0.6
+        specifier: ^3.0.6
         version: 3.0.6
       bignumber.js:
-        specifier: 9.1.1
+        specifier: ^9.1.1
         version: 9.1.1
       bn.js:
-        specifier: 5.2.1
+        specifier: ^5.2.1
         version: 5.2.1
       buffer:
-        specifier: 6.0.3
+        specifier: ^6.0.3
         version: 6.0.3
       crypto-js:
-        specifier: 4.2.0
+        specifier: ^4.2.0
         version: 4.2.0
       debug:
         specifier: 4.4.1
@@ -1134,13 +1134,13 @@ packages:
   '@nicolo-ribaudo/eslint-scope-5-internals@5.1.1-v1':
     resolution: {integrity: sha512-54/JRvkLIzzDWshCWfuhadfrfZVPiElY8Fcgmg1HroEly/EDSszzhBAsarCux+D/kOslTRquNzuyGSmUSTTHGg==}
 
-  '@noble/curves@1.8.1':
-    resolution: {integrity: sha512-warwspo+UYUPep0Q+vtdVB4Ugn8GGQj8iyB3gnRWsztmUHTI3S1nhdiWNsPUGL0vud7JlRRk1XEu7Lq1KGTnMQ==}
-    engines: {node: ^14.21.3 || >=16}
+  '@noble/curves@2.0.1':
+    resolution: {integrity: sha512-vs1Az2OOTBiP4q0pwjW5aF0xp9n4MxVrmkFBxc6EKZc6ddYx5gaZiAsZoq0uRRXWbi3AT/sBqn05eRPtn1JCPw==}
+    engines: {node: '>= 20.19.0'}
 
-  '@noble/hashes@1.7.1':
-    resolution: {integrity: sha512-B8XBPsn4vT/KJAGqDzbwztd+6Yte3P4V7iafm24bxgDe/mlRuK6xmWPuCNrKt2vDafZ8MfJLlchDG/vYafQEjQ==}
-    engines: {node: ^14.21.3 || >=16}
+  '@noble/hashes@2.0.1':
+    resolution: {integrity: sha512-XlOlEbQcE9fmuXxrVTXCTlG2nlRXa9Rj3rr5Ue/+tX+nmkgbX720YHh0VR3hBF9xDvwnb8D2shVGOwNx+ulArw==}
+    engines: {node: '>= 20.19.0'}
 
   '@nodelib/fs.scandir@2.1.5':
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
@@ -5726,11 +5726,11 @@ snapshots:
     dependencies:
       eslint-scope: 5.1.1
 
-  '@noble/curves@1.8.1':
+  '@noble/curves@2.0.1':
     dependencies:
-      '@noble/hashes': 1.7.1
+      '@noble/hashes': 2.0.1
 
-  '@noble/hashes@1.7.1': {}
+  '@noble/hashes@2.0.1': {}
 
   '@nodelib/fs.scandir@2.1.5':
     dependencies:
