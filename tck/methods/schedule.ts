@@ -2,9 +2,17 @@ import {
     ScheduleCreateTransaction,
     Timestamp,
     AccountId,
+    ScheduleSignTransaction,
+    ScheduleId,
+    TransactionReceiptQuery,
+    Status,
 } from "@hashgraph/sdk";
 
-import { ScheduleCreateParams, ScheduledTransaction } from "../params/schedule";
+import {
+    ScheduleCreateParams,
+    ScheduledTransaction,
+    ScheduleSignParams,
+} from "../params/schedule";
 import { ScheduleResponse } from "../response/schedule";
 
 import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";
@@ -79,11 +87,20 @@ export const createSchedule = async ({
         );
     }
 
-    const response = await transaction.execute(sdk.getClient());
-    const receipt = await response.getReceipt(sdk.getClient());
+    const txResponse = await transaction.execute(sdk.getClient());
+    const receipt = await new TransactionReceiptQuery()
+        .setTransactionId(txResponse.transactionId)
+        .setValidateStatus(true)
+        .execute(sdk.getClient());
+
+    let scheduleId: string | undefined;
+    if (receipt.status === Status.Success) {
+        scheduleId = receipt.scheduleId?.toString();
+    }
 
     return {
-        scheduleId: receipt.scheduleId?.toString(),
+        scheduleId: scheduleId,
+        transactionId: receipt.scheduledTransactionId?.toString(),
         status: receipt.status.toString(),
     };
 };
@@ -125,4 +142,36 @@ const buildScheduledTransaction = (scheduledTx: ScheduledTransaction): any => {
                 `Unsupported scheduled transaction method: ${scheduledTx.method} (only transferCrypto, approveAllowance, mintToken, burnToken, submitMessage, createTopic, and createAccount are supported)`,
             );
     }
+};
+
+export const signSchedule = async ({
+    scheduleId,
+    commonTransactionParams,
+}: ScheduleSignParams): Promise<ScheduleResponse> => {
+    const transaction = new ScheduleSignTransaction().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+
+    if (scheduleId != null) {
+        const scheduleID = ScheduleId.fromString(scheduleId);
+        transaction.setScheduleId(scheduleID);
+    }
+
+    if (commonTransactionParams != null) {
+        applyCommonTransactionParams(
+            commonTransactionParams,
+            transaction,
+            sdk.getClient(),
+        );
+    }
+
+    const txResponse = await transaction.execute(sdk.getClient());
+    const receipt = await new TransactionReceiptQuery()
+        .setTransactionId(txResponse.transactionId)
+        .setValidateStatus(true)
+        .execute(sdk.getClient());
+
+    return {
+        status: receipt.status.toString(),
+    };
 };

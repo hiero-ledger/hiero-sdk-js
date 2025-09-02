@@ -12,3 +12,8 @@ export interface ScheduledTransaction {
     readonly method: string;
     readonly params: any;
 }
+
+export interface ScheduleSignParams {
+    readonly scheduleId?: string;
+    readonly commonTransactionParams?: Record<string, any>;
+}
