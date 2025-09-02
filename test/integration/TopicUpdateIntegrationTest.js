@@ -359,9 +359,11 @@ describe("TopicUpdate", function () {
         it("should successfully update Submit Key to dead key when topic has only Submit Key", async function () {
             // Create a private topic with only Submit Key (no Admin Key)
             const submitKey = PrivateKey.generateECDSA();
+            const adminKey = PrivateKey.generateECDSA();
 
             const response = new TopicCreateTransaction()
                 .setSubmitKey(submitKey.publicKey)
+                .setAdminKey(adminKey.publicKey)
                 .freezeWith(env.client);
 
             await response.sign(submitKey);
@@ -388,7 +390,7 @@ describe("TopicUpdate", function () {
                         .setTopicId(topicId)
                         .setSubmitKey(deadKey)
                         .freezeWith(env.client)
-                        .sign(submitKey)
+                        .sign(adminKey)
                 ).execute(env.client)
             ).getReceipt(env.client);
 
@@ -743,9 +745,11 @@ describe("TopicUpdate", function () {
         it("should allow message submission without signature when Submit Key is updated to empty key list with only Submit Key", async function () {
             // Create a private topic with only Submit Key (no Admin Key)
             const submitKey = PrivateKey.generateECDSA();
+            const adminKey = PrivateKey.generateECDSA();
 
             const response = new TopicCreateTransaction()
                 .setSubmitKey(submitKey.publicKey)
+                .setAdminKey(adminKey.publicKey)
                 .freezeWith(env.client);
 
             await response.sign(submitKey);
@@ -771,7 +775,7 @@ describe("TopicUpdate", function () {
                         .setTopicId(topicId)
                         .setSubmitKey(new KeyList())
                         .freezeWith(env.client)
-                        .sign(submitKey)
+                        .sign(adminKey)
                 ).execute(env.client)
             ).getReceipt(env.client);
 
