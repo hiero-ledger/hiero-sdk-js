@@ -361,15 +361,15 @@ describe("TopicUpdate", function () {
             const submitKey = PrivateKey.generateECDSA();
             const adminKey = PrivateKey.generateECDSA();
 
-            const response = new TopicCreateTransaction()
-                .setSubmitKey(submitKey.publicKey)
-                .setAdminKey(adminKey.publicKey)
-                .freezeWith(env.client);
-
-            await response.sign(submitKey);
-            const receipt = await response.execute(env.client);
-
-            const topicId = (await receipt.getReceipt(env.client)).topicId;
+            const { topicId } = await (
+                await (
+                    await new TopicCreateTransaction()
+                        .setSubmitKey(submitKey.publicKey)
+                        .setAdminKey(adminKey.publicKey)
+                        .freezeWith(env.client)
+                        .sign(adminKey)
+                ).execute(env.client)
+            ).getReceipt(env.client);
 
             // Verify initial message submission works
             await (
@@ -752,7 +752,7 @@ describe("TopicUpdate", function () {
                 .setAdminKey(adminKey.publicKey)
                 .freezeWith(env.client);
 
-            await response.sign(submitKey);
+            await response.sign(adminKey);
             const receipt = await response.execute(env.client);
 
             const topicId = (await receipt.getReceipt(env.client)).topicId;
