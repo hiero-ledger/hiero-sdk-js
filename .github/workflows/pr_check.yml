@@ -22,7 +22,7 @@ concurrency:
 jobs:
   title-check:
     name: Title Check
-    runs-on: hiero-network-node-linux-medium
+    runs-on: hiero-client-sdk-linux-medium
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
@@ -30,13 +30,13 @@ jobs:
           egress-policy: audit
 
       - name: Check PR Title
-        uses: step-security/conventional-pr-title-action@101b3d5adffb51b5789997fea508c8313c8ddf02 # v3.2.2
+        uses: step-security/conventional-pr-title-action@d47e8818876fa91d2010b65c4d699bb5f0d34d56 # v3.2.3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   assignee-check:
     name: Assignee Check
-    runs-on: hiero-network-node-linux-medium
+    runs-on: hiero-client-sdk-linux-medium
 
     steps:
       - name: Harden Runner
