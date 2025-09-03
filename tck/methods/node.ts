@@ -45,8 +45,8 @@ const createServiceEndpoint = (
     return endpoint;
 };
 
-const stringToUint8Array = (str: string): Uint8Array => {
-    return new TextEncoder().encode(str);
+const bufferFromHex = (str: string): Uint8Array => {
+    return Buffer.from(str, "hex");
 };
 
 export const createNode = async ({
@@ -84,13 +84,11 @@ export const createNode = async ({
     }
 
     if (gossipCaCertificate != null) {
-        transaction.setGossipCaCertificate(
-            stringToUint8Array(gossipCaCertificate),
-        );
+        transaction.setGossipCaCertificate(bufferFromHex(gossipCaCertificate));
     }
 
     if (grpcCertificateHash != null) {
-        transaction.setCertificateHash(stringToUint8Array(grpcCertificateHash));
+        transaction.setCertificateHash(bufferFromHex(grpcCertificateHash));
     }
 
     if (grpcWebProxyEndpoint != null) {
@@ -113,6 +111,8 @@ export const createNode = async ({
             sdk.getClient(),
         );
     }
+
+    console.log(transaction);
 
     const txResponse = await transaction.execute(sdk.getClient());
     const receipt = await txResponse.getReceipt(sdk.getClient());
@@ -158,13 +158,11 @@ export const updateNode = async ({
     }
 
     if (gossipCaCertificate != null) {
-        transaction.setGossipCaCertificate(
-            stringToUint8Array(gossipCaCertificate),
-        );
+        transaction.setGossipCaCertificate(bufferFromHex(gossipCaCertificate));
     }
 
     if (grpcCertificateHash != null) {
-        transaction.setCertificateHash(stringToUint8Array(grpcCertificateHash));
+        transaction.setCertificateHash(bufferFromHex(grpcCertificateHash));
     }
 
     if (grpcWebProxyEndpoint != null) {
