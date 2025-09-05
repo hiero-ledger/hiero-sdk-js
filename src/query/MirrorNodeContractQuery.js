@@ -221,8 +221,15 @@ export default class MirrorNodeContractQuery {
         const contractCallEndpoint = "/api/v1/contracts/call";
 
         if (!client.ledgerId || client.ledgerId?.isLocalNode()) {
+            const currentMirrorNetworkPort =
+                client.mirrorNetwork[0].split(":")[1];
             mirrorNetworkAddress = "http://"
-                .concat(client.mirrorNetwork[0].replace("5600", "8545"))
+                .concat(
+                    client.mirrorNetwork[0].replace(
+                        currentMirrorNetworkPort,
+                        "8545",
+                    ),
+                )
                 .concat(contractCallEndpoint);
         } else {
             let trimmed = client.mirrorNetwork[0].split(":");
