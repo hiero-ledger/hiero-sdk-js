@@ -211,6 +211,11 @@ export const MirrorNetwork = {
     LOCAL_NODE: ["127.0.0.1:5600"],
 };
 
+export const WebMirrorNetwork = {
+    ...MirrorNetwork,
+    LOCAL_NODE: ["127.0.0.1:5551"],
+};
+
 export const WebNetwork = {
     /**
      * @param {string} name
