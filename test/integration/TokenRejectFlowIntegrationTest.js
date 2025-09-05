@@ -120,7 +120,7 @@ describe("TokenRejectIntegrationTest", function () {
 
         await new TokenMintTransaction()
             .setTokenId(tokenId)
-            .addMetadata(Buffer.from("====="))
+            .addMetadata(new TextEncoder().encode("====="))
             .execute(env.client);
 
         const nftId = new NftId(tokenId, 1);

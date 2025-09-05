@@ -16,7 +16,9 @@ import {
     TopicInfoQuery,
 } from "../../src/index.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
-import { setTimeout } from "timers/promises";
+
+// Cross-environment sleep function
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const retryCountMap = new Map();
 
@@ -28,7 +30,7 @@ describe.skip("BatchTransaction", function () {
         env = await IntegrationTestEnv.new();
         const testName = expect.getState().currentTestName;
         const backoffMs = getBackoffBasedOnAttempt(testName);
-        await setTimeout(backoffMs);
+        await sleep(backoffMs);
     });
 
     it(
@@ -146,7 +148,13 @@ describe.skip("BatchTransaction", function () {
         async function () {
             const freezeTransaction = await new FreezeTransaction()
                 .setFileId(FileId.fromString("4.5.6"))
-                .setFileHash(Buffer.from("1723904587120938954702349857", "hex"))
+                .setFileHash(
+                    new Uint8Array(
+                        "1723904587120938954702349857"
+                            .match(/.{1,2}/g)
+                            .map((byte) => parseInt(byte, 16)),
+                    ),
+                )
                 .setStartTime(new Date())
                 .setFreezeType(FreezeType.FreezeOnly)
                 .batchify(env.client, env.operatorKey);
