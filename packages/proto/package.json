@@ -36,7 +36,11 @@
     ],
     "dependencies": {
         "long": "5.2.3",
-        "protobufjs": "7.2.5"
+        "protobufjs": "7.2.5",
+        "ansi-styles": "6.2.3",
+        "ansi-regex": "6.2.2",
+        "strip-ansi": "7.1.2",
+        "debug": "4.4.1"
     },
     "devDependencies": {
         "@babel/cli": "7.23.4",

@@ -12,18 +12,22 @@
     "license": "ISC",
     "dependencies": {
         "@hashgraph/sdk": "file:..",
-        "body-parser": "^1.20.2",
-        "express": "^4.19.2",
-        "glob": "^11.0.3",
-        "json-rpc-2.0": "^1.7.0",
-        "lossless-json": "^1.0.5"
+        "ansi-regex": "6.2.2",
+        "ansi-styles": "6.2.3",
+        "body-parser": "1.20.3",
+        "express": "4.21.2",
+        "glob": "11.0.3",
+        "json-rpc-2.0": "1.7.0",
+        "lossless-json": "1.0.5",
+        "strip-ansi": "7.1.2"
     },
     "devDependencies": {
-        "@types/body-parser": "^1.19.5",
-        "@types/express": "^4.17.21",
-        "@types/glob": "^8.1.0",
-        "@types/lossless-json": "^1.0.4",
-        "nodemon": "^3.1.10",
-        "ts-node": "^10.9.2"
+        "@types/body-parser": "1.19.5",
+        "@types/express": "4.17.21",
+        "@types/glob": "8.1.0",
+        "@types/lossless-json": "1.0.4",
+        "debug": "4.4.1",
+        "nodemon": "3.1.10",
+        "ts-node": "10.9.2"
     }
 }
