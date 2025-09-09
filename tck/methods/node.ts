@@ -21,6 +21,7 @@ import {
     ServiceEndpointParams,
 } from "../params/node";
 import { applyCommonTransactionParams } from "../params/common-tx-params";
+import { decode } from "../utils/hex";
 
 const createServiceEndpoint = (
     params: ServiceEndpointParams,
@@ -42,10 +43,6 @@ const createServiceEndpoint = (
     }
 
     return endpoint;
-};
-
-const bufferFromHex = (str: string): Uint8Array => {
-    return Buffer.from(str, "hex");
 };
 
 export const createNode = async ({
@@ -83,11 +80,11 @@ export const createNode = async ({
     }
 
     if (gossipCaCertificate != null) {
-        transaction.setGossipCaCertificate(bufferFromHex(gossipCaCertificate));
+        transaction.setGossipCaCertificate(decode(gossipCaCertificate));
     }
 
     if (grpcCertificateHash != null) {
-        transaction.setCertificateHash(bufferFromHex(grpcCertificateHash));
+        transaction.setCertificateHash(decode(grpcCertificateHash));
     }
 
     if (grpcWebProxyEndpoint != null) {
@@ -110,8 +107,6 @@ export const createNode = async ({
             sdk.getClient(),
         );
     }
-
-    console.log(transaction);
 
     const txResponse = await transaction.execute(sdk.getClient());
     const receipt = await txResponse.getReceipt(sdk.getClient());
@@ -157,11 +152,11 @@ export const updateNode = async ({
     }
 
     if (gossipCaCertificate != null) {
-        transaction.setGossipCaCertificate(bufferFromHex(gossipCaCertificate));
+        transaction.setGossipCaCertificate(decode(gossipCaCertificate));
     }
 
     if (grpcCertificateHash != null) {
-        transaction.setCertificateHash(bufferFromHex(grpcCertificateHash));
+        transaction.setCertificateHash(decode(grpcCertificateHash));
     }
 
     if (grpcWebProxyEndpoint != null) {
