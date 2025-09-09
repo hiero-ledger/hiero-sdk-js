@@ -29,8 +29,7 @@ const createServiceEndpoint = (
 
     if (params.ipAddressV4 != null) {
         // Convert string IP to Uint8Array
-        const ipParts = params.ipAddressV4.split(".").map(Number);
-        const ipBytes = new Uint8Array(ipParts);
+        const ipBytes = Buffer.from(params.ipAddressV4, "hex");
         endpoint.setIpAddressV4(ipBytes);
     }
 
