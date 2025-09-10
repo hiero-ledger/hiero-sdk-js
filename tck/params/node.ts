@@ -18,6 +18,7 @@ export interface CreateNodeParams {
 }
 
 export interface UpdateNodeParams {
+    readonly accountId?: string;
     readonly nodeId?: string;
     readonly description?: string;
     readonly gossipEndpoints?: ServiceEndpointParams[];

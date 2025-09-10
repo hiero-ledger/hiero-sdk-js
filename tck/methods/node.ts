@@ -118,6 +118,7 @@ export const createNode = async ({
 };
 
 export const updateNode = async ({
+    accountId,
     nodeId,
     description,
     gossipEndpoints,
@@ -132,6 +133,10 @@ export const updateNode = async ({
     let transaction = new NodeUpdateTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
+
+    if (accountId != null) {
+        transaction.setAccountId(AccountId.fromString(accountId));
+    }
 
     if (nodeId != null) {
         transaction.setNodeId(Long.fromNumber(parseInt(nodeId)));
