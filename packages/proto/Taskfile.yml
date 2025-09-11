@@ -1,6 +1,6 @@
 version: "3"
 
-silent: true
+silent: false
 
 tasks:
     default:
@@ -54,7 +54,7 @@ tasks:
             - "install:submodules"
         cmds:
             - task "move:protobufs"
-            - pnpm i > /dev/null
+            - pnpm i
 
     build:
         deps:
@@ -66,7 +66,7 @@ tasks:
         cmds:
             - npx pbjs -r hashgraph -t static-module -w es6 -p=src/proto --force-long --no-beautify --no-convert --no-delimited --no-verify -o src/proto.js src/proto/**/*.proto
             - npx pbts -n hashgraph -o src/proto.d.ts src/proto.js
-            - perl -pi -e "s#(?<!api\.)proto\.#hashgraph.proto.#g" src/proto.d.ts
+            - perl -pi -e 's#(?<!api\.)proto\.#hashgraph.proto.#g' src/proto.d.ts
             - task: format
             - task: lint
             - npx babel src -d lib

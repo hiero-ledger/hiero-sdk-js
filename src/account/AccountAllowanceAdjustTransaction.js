@@ -104,22 +104,22 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
                     typeof spenderAccountId === "string"
                         ? AccountId.fromString(spenderAccountId)
                         : spenderAccountId instanceof ContractId
-                          ? AccountId.fromEvmAddress(
-                                spenderAccountId.shard,
-                                spenderAccountId.realm,
-                                spenderAccountId.toEvmAddress(),
-                            )
-                          : spenderAccountId,
+                        ? AccountId.fromEvmAddress(
+                              spenderAccountId.shard,
+                              spenderAccountId.realm,
+                              spenderAccountId.toEvmAddress(),
+                          )
+                        : spenderAccountId,
                 ownerAccountId:
                     typeof ownerAccountId === "string"
                         ? AccountId.fromString(ownerAccountId)
                         : ownerAccountId instanceof ContractId
-                          ? AccountId.fromEvmAddress(
-                                ownerAccountId.shard,
-                                ownerAccountId.realm,
-                                ownerAccountId.toEvmAddress(),
-                            )
-                          : ownerAccountId,
+                        ? AccountId.fromEvmAddress(
+                              ownerAccountId.shard,
+                              ownerAccountId.realm,
+                              ownerAccountId.toEvmAddress(),
+                          )
+                        : ownerAccountId,
                 amount: amount,
             }),
         );
@@ -202,22 +202,22 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
                     typeof spenderAccountId === "string"
                         ? AccountId.fromString(spenderAccountId)
                         : spenderAccountId instanceof ContractId
-                          ? AccountId.fromEvmAddress(
-                                spenderAccountId.shard,
-                                spenderAccountId.realm,
-                                spenderAccountId.toEvmAddress(),
-                            )
-                          : spenderAccountId,
+                        ? AccountId.fromEvmAddress(
+                              spenderAccountId.shard,
+                              spenderAccountId.realm,
+                              spenderAccountId.toEvmAddress(),
+                          )
+                        : spenderAccountId,
                 ownerAccountId:
                     typeof ownerAccountId === "string"
                         ? AccountId.fromString(ownerAccountId)
                         : ownerAccountId instanceof ContractId
-                          ? AccountId.fromEvmAddress(
-                                ownerAccountId.shard,
-                                ownerAccountId.realm,
-                                ownerAccountId.toEvmAddress(),
-                            )
-                          : ownerAccountId,
+                        ? AccountId.fromEvmAddress(
+                              ownerAccountId.shard,
+                              ownerAccountId.realm,
+                              ownerAccountId.toEvmAddress(),
+                          )
+                        : ownerAccountId,
                 amount:
                     typeof amount === "number"
                         ? Long.fromNumber(amount)
@@ -286,22 +286,22 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
             typeof spenderAccountId === "string"
                 ? AccountId.fromString(spenderAccountId)
                 : spenderAccountId instanceof ContractId
-                  ? AccountId.fromEvmAddress(
-                        spenderAccountId.shard,
-                        spenderAccountId.realm,
-                        spenderAccountId.toEvmAddress(),
-                    )
-                  : spenderAccountId;
+                ? AccountId.fromEvmAddress(
+                      spenderAccountId.shard,
+                      spenderAccountId.realm,
+                      spenderAccountId.toEvmAddress(),
+                  )
+                : spenderAccountId;
         const owner =
             typeof ownerAccountId === "string"
                 ? AccountId.fromString(ownerAccountId)
                 : ownerAccountId instanceof ContractId
-                  ? AccountId.fromEvmAddress(
-                        ownerAccountId.shard,
-                        ownerAccountId.realm,
-                        ownerAccountId.toEvmAddress(),
-                    )
-                  : ownerAccountId;
+                ? AccountId.fromEvmAddress(
+                      ownerAccountId.shard,
+                      ownerAccountId.realm,
+                      ownerAccountId.toEvmAddress(),
+                  )
+                : ownerAccountId;
         let found = false;
 
         for (const allowance of this._nftAllowances) {
@@ -452,23 +452,23 @@ export default class AccountAllowanceAdjustTransaction extends Transaction {
                         ? typeof ownerAccountId === "string"
                             ? AccountId.fromString(ownerAccountId)
                             : ownerAccountId instanceof ContractId
-                              ? AccountId.fromEvmAddress(
-                                    ownerAccountId.shard,
-                                    ownerAccountId.realm,
-                                    ownerAccountId.toEvmAddress(),
-                                )
-                              : ownerAccountId
+                            ? AccountId.fromEvmAddress(
+                                  ownerAccountId.shard,
+                                  ownerAccountId.realm,
+                                  ownerAccountId.toEvmAddress(),
+                              )
+                            : ownerAccountId
                         : null,
                 spenderAccountId:
                     typeof spenderAccountId === "string"
                         ? AccountId.fromString(spenderAccountId)
                         : spenderAccountId instanceof ContractId
-                          ? AccountId.fromEvmAddress(
-                                spenderAccountId.shard,
-                                spenderAccountId.realm,
-                                spenderAccountId.toEvmAddress(),
-                            )
-                          : spenderAccountId,
+                        ? AccountId.fromEvmAddress(
+                              spenderAccountId.shard,
+                              spenderAccountId.realm,
+                              spenderAccountId.toEvmAddress(),
+                          )
+                        : spenderAccountId,
                 serialNumbers: null,
                 allSerials,
                 delegatingSpender: null,

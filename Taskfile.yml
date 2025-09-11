@@ -1,6 +1,6 @@
 version: "3"
 
-silent: true
+silent: false
 
 includes:
     examples:
@@ -63,7 +63,7 @@ tasks:
             - "cryptography:build"
         cmds:
             - task: "yalc:add"
-            - pnpm i --no-frozen-lockfile > /dev/null
+            - pnpm i --no-frozen-lockfile
 
     build:
         cmds:

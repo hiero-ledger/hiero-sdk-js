@@ -557,7 +557,7 @@ export default class Executable {
         const LOCAL_NODE_ATTEMPTS = 1000;
         const maxAttempts = isLocalNode
             ? LOCAL_NODE_ATTEMPTS
-            : (client._maxAttempts ?? this._maxAttempts);
+            : client._maxAttempts ?? this._maxAttempts;
 
         // Checks if has a valid nodes to which the TX can be sent
         if (this.transactionNodeIds.length) {
@@ -577,8 +577,12 @@ export default class Executable {
                 const isSingleNode = nodeAccountIds.length === 1;
 
                 throw new Error(
-                    `Attempting to execute a transaction against node${isSingleNode ? "" : "s"} ${displayNodeAccountIds}, ` +
-                        `which ${isSingleNode ? "is" : "are"} not included in the Client's node list. Please review your Client configuration.`,
+                    `Attempting to execute a transaction against node${
+                        isSingleNode ? "" : "s"
+                    } ${displayNodeAccountIds}, ` +
+                        `which ${
+                            isSingleNode ? "is" : "are"
+                        } not included in the Client's node list. Please review your Client configuration.`,
                 );
             }
         }
@@ -667,7 +671,9 @@ export default class Executable {
 
                 if (isLastNode || this._nodeAccountIds.length <= 1) {
                     throw new Error(
-                        `Network connectivity issue: All nodes are unhealthy. Original node list: ${this._nodeAccountIds.list.join(", ")}`,
+                        `Network connectivity issue: All nodes are unhealthy. Original node list: ${this._nodeAccountIds.list.join(
+                            ", ",
+                        )}`,
                     );
                 }
 

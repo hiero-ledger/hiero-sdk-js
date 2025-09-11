@@ -35,12 +35,7 @@
         "last 1 Firefox versions"
     ],
     "dependencies": {
-        "long": "5.2.3",
-        "protobufjs": "7.2.5",
-        "ansi-styles": "6.2.3",
-        "ansi-regex": "6.2.2",
-        "strip-ansi": "7.1.2",
-        "debug": "4.4.1"
+        "long": "5.3.1"
     },
     "devDependencies": {
         "@babel/cli": "7.23.4",
@@ -72,6 +67,13 @@
         "tmp": "0.2.4",
         "typescript": "5.7.2",
         "protobufjs-cli": "1.0.2"
+    },
+    "peerDependencies": {
+        "protobufjs": "7.2.5",
+        "ansi-styles": "6.2.3",
+        "ansi-regex": "6.2.2",
+        "strip-ansi": "7.1.2",
+        "debug": "4.4.1"
     },
     "publishConfig": {
         "access": "public",

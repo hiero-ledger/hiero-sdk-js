@@ -472,11 +472,11 @@ export default class TransactionRecord {
                       false,
                   )
                 : record.contractCreateResult != null
-                  ? ContractFunctionResult._fromProtobuf(
-                        record.contractCreateResult,
-                        true,
-                    )
-                  : undefined;
+                ? ContractFunctionResult._fromProtobuf(
+                      record.contractCreateResult,
+                      true,
+                  )
+                : undefined;
 
         const newPendingAirdrops =
             record.newPendingAirdrops != null
