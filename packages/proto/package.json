@@ -59,14 +59,14 @@
         "eslint-plugin-jsdoc": "54.1.1",
         "eslint-plugin-n": "17.15.1",
         "estraverse": "5.3.0",
-        "jsdoc": "4.0.0",
+        "jsdoc": "4.0.3",
         "npm-run-all": "4.1.5",
         "prettier": "3.0.3",
         "replace-in-file": "8.3.0",
-        "semver": "7.3.8",
+        "semver": "7.5.2",
         "tmp": "0.2.4",
         "typescript": "5.7.2",
-        "protobufjs-cli": "1.0.2"
+        "protobufjs-cli": "1.1.0"
     },
     "peerDependencies": {
         "protobufjs": "7.2.5",
