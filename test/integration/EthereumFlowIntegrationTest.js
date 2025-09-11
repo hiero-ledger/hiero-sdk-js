@@ -13,13 +13,11 @@ import {
     Status,
     TransactionRecord,
 } from "../../src/exports.js";
+import { wait } from "../../src/util.js";
 import { SMART_CONTRACT_BYTECODE_JUMBO } from "./contents.js";
 import * as rlp from "@ethersproject/rlp";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import * as hex from "../../src/encoding/hex.js";
-
-// Cross-environment sleep function
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * @description
@@ -73,7 +71,7 @@ describe("EthereumFlowIntegrationTest", function () {
             ).sign(operatorKey)
         ).execute(client);
 
-        await sleep(2500);
+        await wait(2500);
         expect(contractResponse).to.be.instanceof(TransactionResponse);
         const contractReceipt = await contractResponse.getReceipt(client);
         expect(contractReceipt).to.be.instanceof(TransactionReceipt);

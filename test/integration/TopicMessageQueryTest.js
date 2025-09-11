@@ -1,12 +1,10 @@
-// Cross-environment sleep function
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
 import {
     TopicMessageQuery,
     TopicCreateTransaction,
     TopicMessageSubmitTransaction,
     TopicDeleteTransaction,
 } from "../../src/exports.js";
+import { wait } from "../../src/util.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 
 describe("TopicMessageQuery", function () {
@@ -33,7 +31,7 @@ describe("TopicMessageQuery", function () {
         let finished = false;
 
         // wait for mirror node to receive the new topic
-        await sleep(5000);
+        await wait(5000);
         new TopicMessageQuery()
             .setTopicId(topicId)
             .setLimit(1)
@@ -43,7 +41,7 @@ describe("TopicMessageQuery", function () {
                 expectedContents = new TextDecoder().decode(topic.contents);
             });
 
-        await sleep(2000);
+        await wait(2000);
         await (
             await new TopicMessageSubmitTransaction()
                 .setTopicId(topicId)
@@ -56,7 +54,7 @@ describe("TopicMessageQuery", function () {
             .execute(env.client);
 
         //NOSONAR
-        await sleep(5000);
+        await wait(5000);
 
         if (!finished) {
             throw new Error("Did not receive message from query");

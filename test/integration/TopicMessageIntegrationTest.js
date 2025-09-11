@@ -1,6 +1,3 @@
-// Cross-environment sleep function
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
 import {
     Status,
     TopicCreateTransaction,
@@ -8,6 +5,7 @@ import {
     TopicMessageQuery,
     TopicMessageSubmitTransaction,
 } from "../../src/exports.js";
+import { wait } from "../../src/util.js";
 import { bigContents } from "./contents.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 
@@ -32,7 +30,7 @@ describe("TopicMessage", function () {
         ).getReceipt(env.client);
 
         // wait for mirror node to see new topic id
-        await sleep(2500);
+        await wait(2500);
 
         new TopicMessageQuery()
             .setTopicId(topicId)
@@ -47,7 +45,7 @@ describe("TopicMessage", function () {
             });
 
         // waiting for mirror node
-        await sleep(2500);
+        await wait(2500);
         await (
             await new TopicMessageSubmitTransaction()
                 .setTopicId(topicId)
@@ -62,7 +60,7 @@ describe("TopicMessage", function () {
         ).getReceipt(env.client);
 
         // waiting for setCompletionHandler to be executed
-        await sleep(1000);
+        await wait(1000);
 
         if (!finished) {
             throw new Error("Failed to receive message in 30s");
@@ -89,7 +87,7 @@ describe("TopicMessage", function () {
         let finished = false;
 
         // waiting for mirror node to see the new topic
-        await sleep(1000);
+        await wait(1000);
         new TopicMessageQuery()
             .setTopicId(topic)
             .setStartTime(0)
@@ -102,7 +100,7 @@ describe("TopicMessage", function () {
                 // Do nothing
             });
 
-        await sleep(1000);
+        await wait(1000);
         const startTime = Date.now();
 
         await (
@@ -115,7 +113,7 @@ describe("TopicMessage", function () {
 
         while (!finished && Date.now() < startTime + 45000) {
             //NOSONAR
-            await sleep(2000);
+            await wait(2000);
         }
 
         await (
@@ -125,7 +123,7 @@ describe("TopicMessage", function () {
         ).getReceipt(env.client);
 
         // need to wait for completionHandler to be called
-        await sleep(1000);
+        await wait(1000);
 
         if (!finished) {
             throw new Error("Failed to receive message in 45s");

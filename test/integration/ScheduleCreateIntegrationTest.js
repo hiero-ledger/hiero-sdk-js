@@ -1,6 +1,3 @@
-// Cross-environment sleep function
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
 import {
     Hbar,
     KeyList,
@@ -15,6 +12,7 @@ import {
     Timestamp,
     AccountUpdateTransaction,
 } from "../../src/exports.js";
+import { wait } from "../../src/util.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { createAccount } from "./utils/Fixtures.js";
 
@@ -488,7 +486,7 @@ describe("ScheduleCreate", function () {
             .setAccountId(accountId)
             .execute(env.client);
 
-        await sleep(SHORT_EXPIRATION_TIME);
+        await wait(SHORT_EXPIRATION_TIME);
 
         const balanceAfter = await new AccountBalanceQuery()
             .setAccountId(accountId)
