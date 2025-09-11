@@ -144,17 +144,15 @@ describe.skip("BatchTransaction", function () {
     it(
         "blacklisted inner transaction should throw an error",
         async function () {
-            const fileHashBytes =  new Uint8Array(
+            const fileHashBytes = new Uint8Array(
                 "1723904587120938954702349857"
                     .match(/.{1,2}/g)
                     .map((byte) => parseInt(byte, 16)),
             );
-            
+
             const freezeTransaction = await new FreezeTransaction()
                 .setFileId(FileId.fromString("4.5.6"))
-                .setFileHash(
-                    fileHashBytes
-                )
+                .setFileHash(fileHashBytes)
                 .setStartTime(new Date())
                 .setFreezeType(FreezeType.FreezeOnly)
                 .batchify(env.client, env.operatorKey);
