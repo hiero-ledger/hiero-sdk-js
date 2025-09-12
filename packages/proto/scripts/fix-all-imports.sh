@@ -16,7 +16,12 @@ apply_fix() {
     local description="$3"
     
     echo "  - $description"
-    find "$PROTO_DIR" -name "*.proto" -type f -exec sed -i '' "s|$pattern|$replacement|g" {} \;
+    find "$PROTO_DIR" -name "*.proto" -type f | while read -r file; do
+        # Use a temporary file to avoid sed issues
+        temp_file="${file}.tmp"
+        sed "s|$pattern|$replacement|g" "$file" > "$temp_file"
+        mv "$temp_file" "$file"
+    done
 }
 
 # 1. Fix platform/event/* imports (files moved to services/)
