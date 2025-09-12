@@ -29,9 +29,9 @@ option java_multiple_files = true;
 
 option java_package = "com.hedera.mirror.api.proto";
 
-import "basic_types.proto";
-import "timestamp.proto";
-import "consensus_submit_message.proto";
+import "services/basic_types.proto";
+import "services/timestamp.proto";
+import "services/consensus_submit_message.proto";
 
 message ConsensusTopicQuery {
     /**

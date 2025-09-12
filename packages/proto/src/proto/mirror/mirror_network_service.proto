@@ -25,8 +25,8 @@ package com.hedera.mirror.api.proto;
 option java_multiple_files = true; // Required for the reactor-grpc generator to work correctly
 option java_package = "com.hedera.mirror.api.proto";
 
-import "basic_types.proto";
-import "timestamp.proto";
+import "services/basic_types.proto";
+import "services/timestamp.proto";
 
 /**
  * Request object to query an address book for its list of nodes

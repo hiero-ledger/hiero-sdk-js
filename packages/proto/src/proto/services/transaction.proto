@@ -87,7 +87,7 @@ import "services/node_update.proto";
 import "services/node_delete.proto";
 
 import "services/custom_fees.proto";
-import "platform/event/state_signature_transaction.proto";
+import "services/state_signature_transaction.proto";
 
 import "services/auxiliary/hints/hints_key_publication.proto";
 import "services/auxiliary/hints/hints_preprocessing_vote.proto";

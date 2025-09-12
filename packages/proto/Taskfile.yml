@@ -36,13 +36,26 @@ tasks:
             - "install:submodules"
         desc: "Move protobufs from src/services/hapi/hedera-protobufs-java-api/src/main/proto to src/proto"
         cmds:
-            - rm -rf src/proto/services
-            - rm -rf src/proto/streams
+            - rm -rf src/proto/services src/proto/streams
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/services src/proto/
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/streams src/proto/
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/event/* src/proto/services/
             - echo "Protobufs moved successfully!"
             - task "delete:submodule"
+
+    restore:missing-files:
+        after:
+            - "move:protobufs"
+        desc: "Restore missing proto files that are needed by the codebase"
+        cmds:
+            - ./scripts/restore-missing.sh
+
+    fix:import-paths:
+        after:
+            - "restore:missing-files"
+        desc: "Fix all import path issues in proto files"
+        cmds:
+            - ./scripts/fix-all-imports.sh
 
     delete:submodule:
         cmds:
@@ -54,7 +67,9 @@ tasks:
             - "install:submodules"
         cmds:
             - task "move:protobufs"
-            - pnpm i
+            - task "restore:missing-files"
+            - task "fix:import-paths"
+            - pnpm i > /dev/null
 
     build:
         deps:
@@ -121,7 +136,9 @@ tasks:
                 git checkout {{.stag}}
                 )
             - task "move:protobufs"
-            - pnpm i
+            - task "restore:missing-files"
+            - task "fix:import-paths"
+            - pnpm i > /dev/null
             - task "build:standalone"
             - echo "Successfully updated protobufs to {{.proto}}"
 
