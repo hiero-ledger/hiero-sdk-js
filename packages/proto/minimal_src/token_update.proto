@@ -1,0 +1,106 @@
+/**
+ * # Token Update
+ * Update a token.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "duration.proto";
+import "timestamp.proto";
+
+/**
+ * At consensus, updates an already created token to the given values.
+ */
+message TokenUpdateTransactionBody {
+    /**
+     * The Token to be updated.
+     */
+    TokenID token = 1;
+
+    /**
+     * The new publicly visible token symbol.
+     */
+    string symbol = 2;
+
+    /**
+     * The new publicly visible name of the token.
+     */
+    string name = 3;
+
+    /**
+     * The new Treasury account of the Token.
+     */
+    AccountID treasury = 4;
+
+    /**
+     * The new admin key of the Token.
+     */
+    Key adminKey = 5;
+
+    /**
+     * The new KYC key of the Token.
+     */
+    Key kycKey = 6;
+
+    /**
+     * The new Freeze key of the Token.
+     */
+    Key freezeKey = 7;
+
+    /**
+     * The new Wipe key of the Token.
+     */
+    Key wipeKey = 8;
+
+    /**
+     * The new Supply key of the Token.
+     */
+    Key supplyKey = 9;
+
+    /**
+     * The new account which will be automatically charged to renew the token's expiration.
+     */
+    AccountID autoRenewAccount = 10;
+
+    /**
+     * The new interval at which the auto-renew account will be charged to extend the token's expiry.
+     */
+    Duration autoRenewPeriod = 11;
+
+    /**
+     * The new expiry time of the token.
+     */
+    Timestamp expiry = 12;
+
+    /**
+     * If set, the new memo to be associated with the token.
+     */
+    string memo = 13;
+
+    /**
+     * If set, the new key to use to update the token's custom fee schedule.
+     */
+    Key fee_schedule_key = 14;
+
+    /**
+     * If set, the new key that can pause and unpause the Token.
+     */
+    Key pause_key = 15;
+
+    /**
+     * The new metadata of the token.
+     */
+    bytes metadata = 16;
+
+    /**
+     * The new key which can update the metadata of a token.
+     */
+    Key metadata_key = 17;
+}
+

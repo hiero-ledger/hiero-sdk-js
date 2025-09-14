@@ -1,0 +1,79 @@
+/**
+ * # Contract Create Transaction
+ * Transaction for creating new smart contracts.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "contract_create.proto";
+import "duration.proto";
+import "custom_fees.proto";
+
+/**
+ * A wrapper around signed transaction bytes for contract creation.
+ */
+message Transaction {
+    // <<<pbj.java_package = "com.hedera.hapi.node.base">>> This comment is special code for setting PBJ Compiler java package
+    /**
+     * A valid, serialized, `SignedTransaction` message.
+     */
+    bytes signedTransactionBytes = 5;
+}
+
+/**
+ * A transaction body for contract creation.
+ */
+message TransactionBody {
+    // <<<pbj.java_package = "com.hedera.hapi.node.transaction">>> This comment is special code for setting PBJ Compiler java package
+    reserved 30, 61, 62, 63, 64;
+
+    reserved "tssMessage", "tssVote", "tssShareSignature", "tssEncryptionKey";
+
+    /**
+     * A transaction identifier.
+     */
+    TransactionID transactionID = 1;
+
+    /**
+     * A node account identifier.
+     */
+    AccountID nodeAccountID = 2;
+
+    /**
+     * A maximum transaction fee, in tinybar.
+     */
+    uint64 transactionFee = 3;
+
+    /**
+     * A maximum duration in which to execute this transaction.
+     */
+    Duration transactionValidDuration = 4;
+
+    /**
+     * A short description for this transaction.
+     */
+    string memo = 6;
+
+    /**
+     * The public key of the trusted batch assembler.
+     */
+    Key batch_key = 73;
+
+    oneof data {
+        /**
+         * Create a smart contract.
+         */
+        ContractCreateTransactionBody contractCreateInstance = 8;
+    }
+
+    /**
+     * A list of maximum custom fees that the users are willing to pay.
+     */
+    repeated CustomFeeLimit max_custom_fees = 1001;
+}
+

@@ -1,0 +1,149 @@
+/**
+ * # Node Update Transaction
+ * Transaction for updating consensus node attributes.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "duration.proto";
+import "custom_fees.proto";
+
+/**
+ * A wrapper around signed transaction bytes for node update.
+ */
+message Transaction {
+    /**
+     * A valid, serialized, `SignedTransaction` message.
+     */
+    bytes signedTransactionBytes = 5;
+}
+
+/**
+ * A wrapper for optional string values.
+ */
+message StringValue {
+    /**
+     * The string value.
+     */
+    string value = 1;
+}
+
+/**
+ * A wrapper for optional boolean values.
+ */
+message BoolValue {
+    /**
+     * The boolean value.
+     */
+    bool value = 1;
+}
+
+/**
+ * Transaction body to modify address book node attributes.
+ */
+message NodeUpdateTransactionBody {
+    /**
+     * A consensus node identifier in the network state.
+     */
+    uint64 node_id = 1;
+
+    /**
+     * An account identifier.
+     */
+    AccountID account_id = 2;
+
+    /**
+     * A short description of the node.
+     */
+    StringValue description = 3;
+
+    /**
+     * A list of service endpoints for gossip.
+     */
+    repeated ServiceEndpoint gossip_endpoint = 4;
+
+    /**
+     * A list of service endpoints for gRPC calls.
+     */
+    repeated ServiceEndpoint service_endpoint = 5;
+
+    /**
+     * A certificate used to sign gossip events.
+     */
+    BytesValue gossip_ca_certificate = 6;
+
+    /**
+     * A hash of the node gRPC TLS certificate.
+     */
+    BytesValue grpc_certificate_hash = 7;
+
+    /**
+     * An administrative key controlled by the node operator.
+     */
+    Key admin_key = 8;
+
+    /**
+     * A boolean indicating that this node has chosen to decline node rewards.
+     */
+    BoolValue decline_reward = 9;
+
+    /**
+     * A web proxy for gRPC from non-gRPC clients.
+     */
+    ServiceEndpoint grpc_proxy_endpoint = 10;
+}
+
+/**
+ * A transaction body for node update.
+ */
+message TransactionBody {
+    reserved 30, 61, 62, 63, 64;
+
+    /**
+     * A transaction identifier.
+     */
+    TransactionID transactionID = 1;
+
+    /**
+     * A node account identifier.
+     */
+    AccountID nodeAccountID = 2;
+
+    /**
+     * A maximum transaction fee, in tinybar.
+     */
+    uint64 transactionFee = 3;
+
+    /**
+     * A maximum duration in which to execute this transaction.
+     */
+    Duration transactionValidDuration = 4;
+
+    /**
+     * A short description for this transaction.
+     */
+    string memo = 6;
+
+    /**
+     * The public key of the trusted batch assembler.
+     */
+    Key batch_key = 73;
+
+    oneof data {
+        /**
+         * Update a node in the network address book.
+         */
+        NodeUpdateTransactionBody nodeUpdate = 55;
+    }
+
+    /**
+     * A list of maximum custom fees that the users are willing to pay.
+     */
+    repeated CustomFeeLimit max_custom_fees = 1001;
+}

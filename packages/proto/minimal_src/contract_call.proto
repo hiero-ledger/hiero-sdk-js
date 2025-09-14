@@ -1,0 +1,39 @@
+/**
+ * # Contract Call
+ * Transaction body for calls to a Smart Contract.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+
+/**
+ * Call a function of a given smart contract.
+ */
+message ContractCallTransactionBody {
+    /**
+     * The ID of a smart contract to call.
+     */
+    ContractID contractID = 1;
+
+    /**
+     * A maximum limit to the amount of gas to use for this call.
+     */
+    int64 gas = 2;
+
+    /**
+     * Number of tinybars sent as the "value" for this call.
+     */
+    int64 amount = 3;
+
+    /**
+     * Which function to call, and the parameters to pass to the function.
+     */
+    bytes functionParameters = 4;
+}
+

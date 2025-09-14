@@ -1,0 +1,41 @@
+/**
+ * # Contract Delete
+ * Delete a smart contract.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+
+/**
+ * Mark a smart contract as deleted, and transfer its remaining hbars to another account.
+ */
+message ContractDeleteTransactionBody {
+    /**
+     * The contract to delete.
+     */
+    ContractID contractID = 1;
+
+    oneof obtainers {
+        /**
+         * The account to receive any remaining hbars from the deleted contract.
+         */
+        AccountID transferAccountID = 2;
+
+        /**
+         * The contract to receive any remaining hbars from the deleted contract.
+         */
+        ContractID transferContractID = 3;
+    }
+
+    /**
+     * If set to true, means this is a permanent deletion (versus an expiration).
+     */
+    bool permanent_removal = 4;
+}
+

@@ -1,0 +1,135 @@
+/**
+ * # Freeze Transaction
+ * Transaction for freezing the network.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "timestamp.proto";
+import "duration.proto";
+import "custom_fees.proto";
+
+/**
+ * A wrapper around signed transaction bytes for freeze.
+ */
+message Transaction {
+    /**
+     * A valid, serialized, `SignedTransaction` message.
+     */
+    bytes signedTransactionBytes = 5;
+}
+
+/**
+ * The type of freeze.
+ */
+enum FreezeType {
+    /**
+     * An (invalid) default value for this enum.
+     */
+    UNKNOWN_FREEZE_TYPE = 0;
+
+    /**
+     * Freezes the network at the specified time.
+     */
+    FREEZE_ONLY = 1;
+
+    /**
+     * Prepares the network for a software upgrade.
+     */
+    PREPARE_UPGRADE = 2;
+
+    /**
+     * Freezes the network and upgrades software.
+     */
+    FREEZE_UPGRADE = 3;
+
+    /**
+     * Aborts a pending network freeze.
+     */
+    FREEZE_ABORT = 4;
+
+    /**
+     * Upgrades telemetry.
+     */
+    TELEMETRY_UPGRADE = 5;
+}
+
+/**
+ * A transaction body for all freeze transactions.
+ */
+message FreezeTransactionBody {
+    /**
+     * An upgrade file.
+     */
+    FileID update_file = 5;
+
+    /**
+     * A SHA384 hash of file content.
+     */
+    bytes file_hash = 6;
+
+    /**
+     * A start time for the freeze.
+     */
+    Timestamp start_time = 7;
+
+    /**
+     * The type of freeze.
+     */
+    FreezeType freeze_type = 8;
+}
+
+/**
+ * A transaction body for freeze.
+ */
+message TransactionBody {
+    reserved 30, 61, 62, 63, 64;
+
+    /**
+     * A transaction identifier.
+     */
+    TransactionID transactionID = 1;
+
+    /**
+     * A node account identifier.
+     */
+    AccountID nodeAccountID = 2;
+
+    /**
+     * A maximum transaction fee, in tinybar.
+     */
+    uint64 transactionFee = 3;
+
+    /**
+     * A maximum duration in which to execute this transaction.
+     */
+    Duration transactionValidDuration = 4;
+
+    /**
+     * A short description for this transaction.
+     */
+    string memo = 6;
+
+    /**
+     * The public key of the trusted batch assembler.
+     */
+    Key batch_key = 73;
+
+    oneof data {
+        /**
+         * Freeze the network.
+         */
+        FreezeTransactionBody freeze = 23;
+    }
+
+    /**
+     * A list of maximum custom fees that the users are willing to pay.
+     */
+    repeated CustomFeeLimit max_custom_fees = 1001;
+}

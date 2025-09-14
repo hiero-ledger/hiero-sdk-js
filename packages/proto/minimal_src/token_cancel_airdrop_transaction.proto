@@ -1,0 +1,84 @@
+/**
+ * # Token Cancel Airdrop Transaction
+ * Transaction for canceling pending airdrops.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "duration.proto";
+import "custom_fees.proto";
+
+/**
+ * A wrapper around signed transaction bytes for token cancel airdrop.
+ */
+message Transaction {
+    /**
+     * A valid, serialized, `SignedTransaction` message.
+     */
+    bytes signedTransactionBytes = 5;
+}
+
+/**
+ * Token cancel airdrop - remove pending airdrops from state.
+ */
+message TokenCancelAirdropTransactionBody {
+    /**
+     * A list of one or more pending airdrop identifiers.
+     */
+    repeated PendingAirdropId pending_airdrops = 1;
+}
+
+/**
+ * A transaction body for token cancel airdrop.
+ */
+message TransactionBody {
+    reserved 30, 61, 62, 63, 64;
+
+    /**
+     * A transaction identifier.
+     */
+    TransactionID transactionID = 1;
+
+    /**
+     * A node account identifier.
+     */
+    AccountID nodeAccountID = 2;
+
+    /**
+     * A maximum transaction fee, in tinybar.
+     */
+    uint64 transactionFee = 3;
+
+    /**
+     * A maximum duration in which to execute this transaction.
+     */
+    Duration transactionValidDuration = 4;
+
+    /**
+     * A short description for this transaction.
+     */
+    string memo = 6;
+
+    /**
+     * The public key of the trusted batch assembler.
+     */
+    Key batch_key = 73;
+
+    oneof data {
+        /**
+         * Cancel one or more pending airdrops.
+         */
+        TokenCancelAirdropTransactionBody tokenCancelAirdrop = 59;
+    }
+
+    /**
+     * A list of maximum custom fees that the users are willing to pay.
+     */
+    repeated CustomFeeLimit max_custom_fees = 1001;
+}

@@ -1,0 +1,45 @@
+/**
+ * # Consensus Create Topic
+ * Create a new consensus topic.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "duration.proto";
+
+/**
+ * Create a new topic.
+ */
+message ConsensusCreateTopicTransactionBody {
+    /**
+     * Short publicly visible memo about the topic.
+     */
+    string memo = 1;
+
+    /**
+     * Access control for updateTopic/deleteTopic.
+     */
+    Key adminKey = 2;
+
+    /**
+     * Access control for submitMessage.
+     */
+    Key submitKey = 3;
+
+    /**
+     * The initial lifetime of the topic and the amount of time to extend the topic's lifetime by.
+     */
+    Duration autoRenewPeriod = 6;
+
+    /**
+     * An optional account to be used at the topic's expiration time to extend the life of the topic.
+     */
+    AccountID autoRenewAccount = 7;
+}
+

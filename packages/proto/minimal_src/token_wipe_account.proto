@@ -1,0 +1,39 @@
+/**
+ * # Token Wipe Account
+ * Wipe tokens from an account.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+
+/**
+ * Wipes the provided amount of tokens from the specified Account.
+ */
+message TokenWipeAccountTransactionBody {
+    /**
+     * The token for which the account will be wiped.
+     */
+    TokenID token = 1;
+
+    /**
+     * The account to be wiped.
+     */
+    AccountID account = 2;
+
+    /**
+     * Applicable to tokens of type FUNGIBLE_COMMON. The amount of tokens to wipe.
+     */
+    uint64 amount = 3;
+
+    /**
+     * Applicable to tokens of type NON_FUNGIBLE_UNIQUE. The list of serial numbers to be wiped.
+     */
+    repeated int64 serialNumbers = 4;
+}
+

@@ -1,0 +1,82 @@
+/**
+ * # Contract Update
+ * Update a smart contract.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "duration.proto";
+
+/**
+ * Modify a smart contract.
+ */
+message ContractUpdateTransactionBody {
+    /**
+     * The Contract ID of the contract to update.
+     */
+    ContractID contractID = 1;
+
+    /**
+     * The expiration time to extend to (the amount to extend the current expiration time).
+     */
+    Timestamp expirationTime = 2;
+
+    /**
+     * The new admin key for this contract.
+     */
+    Key adminKey = 3;
+
+    /**
+     * An account that is charged for auto-renewal of this contract.
+     */
+    AccountID proxyAccountID = 6 [deprecated = true];
+
+    /**
+     * The auto renew period for this contract.
+     */
+    Duration autoRenewPeriod = 7;
+
+    /**
+     * The new file ID of the bytecode to update the contract with.
+     */
+    FileID fileID = 8;
+
+    /**
+     * The new contract memo, assumed to be Unicode encoded with UTF-8.
+     */
+    string memo = 9;
+
+    /**
+     * The maximum number of tokens that this contract can be automatically associated with.
+     */
+    int32 max_automatic_token_associations = 10;
+
+    /**
+     * An account to charge for auto-renewal of this contract.
+     */
+    AccountID auto_renew_account_id = 11;
+
+    oneof staked_id {
+        /**
+         * ID of the account to which this contract is staking.
+         */
+        AccountID staked_account_id = 12;
+
+        /**
+         * ID of the node this contract is staked to.
+         */
+        int64 staked_node_id = 13;
+    }
+
+    /**
+     * If set to the sentinel value of -1, then this contract declines receiving a staking reward.
+     */
+    bool decline_reward = 14;
+}
+

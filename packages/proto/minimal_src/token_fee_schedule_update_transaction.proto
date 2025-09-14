@@ -1,0 +1,89 @@
+/**
+ * # Token Fee Schedule Update Transaction
+ * Transaction for updating the custom fee schedule for a token.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "custom_fees.proto";
+import "duration.proto";
+
+/**
+ * A wrapper around signed transaction bytes for token fee schedule update.
+ */
+message Transaction {
+    /**
+     * A valid, serialized, `SignedTransaction` message.
+     */
+    bytes signedTransactionBytes = 5;
+}
+
+/**
+ * Update the custom fee schedule for a token type.
+ */
+message TokenFeeScheduleUpdateTransactionBody {
+    /**
+     * A token identifier.
+     */
+    TokenID token_id = 1;
+
+    /**
+     * A list of custom fees representing a fee schedule.
+     */
+    repeated CustomFee custom_fees = 2;
+}
+
+/**
+ * A transaction body for token fee schedule update.
+ */
+message TransactionBody {
+    reserved 30, 61, 62, 63, 64;
+
+    /**
+     * A transaction identifier.
+     */
+    TransactionID transactionID = 1;
+
+    /**
+     * A node account identifier.
+     */
+    AccountID nodeAccountID = 2;
+
+    /**
+     * A maximum transaction fee, in tinybar.
+     */
+    uint64 transactionFee = 3;
+
+    /**
+     * A maximum duration in which to execute this transaction.
+     */
+    Duration transactionValidDuration = 4;
+
+    /**
+     * A short description for this transaction.
+     */
+    string memo = 6;
+
+    /**
+     * The public key of the trusted batch assembler.
+     */
+    Key batch_key = 73;
+
+    oneof data {
+        /**
+         * Update the custom fee schedule for a token.
+         */
+        TokenFeeScheduleUpdateTransactionBody token_fee_schedule_update = 45;
+    }
+
+    /**
+     * A list of maximum custom fees that the users are willing to pay.
+     */
+    repeated CustomFeeLimit max_custom_fees = 1001;
+}

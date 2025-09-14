@@ -1,0 +1,54 @@
+/**
+ * # Consensus Submit Message
+ * Submit a message to a consensus topic.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+
+/**
+ * Information about a chunk in a fragmented message.
+ */
+message ConsensusMessageChunkInfo {
+    /**
+     * The TransactionID of the first chunk.
+     */
+    TransactionID initialTransactionID = 1;
+
+    /**
+     * The total number of chunks in the message.
+     */
+    int32 total = 2;
+
+    /**
+     * The sequence number (from 1 to total) of the current chunk in the message.
+     */
+    int32 number = 3;
+}
+
+/**
+ * Submit a message to a topic.
+ */
+message ConsensusSubmitMessageTransactionBody {
+    /**
+     * Topic to submit message to.
+     */
+    TopicID topicID = 1;
+
+    /**
+     * Message to be submitted.
+     */
+    bytes message = 2;
+
+    /**
+     * Optional information about the current chunk in a fragmented message.
+     */
+    ConsensusMessageChunkInfo chunkInfo = 3;
+}
+

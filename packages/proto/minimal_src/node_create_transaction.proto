@@ -1,0 +1,124 @@
+/**
+ * # Node Create Transaction
+ * Transaction for creating new consensus nodes.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "duration.proto";
+import "custom_fees.proto";
+
+/**
+ * A wrapper around signed transaction bytes for node create.
+ */
+message Transaction {
+    /**
+     * A valid, serialized, `SignedTransaction` message.
+     */
+    bytes signedTransactionBytes = 5;
+}
+
+/**
+ * A transaction body to add a new consensus node to the network address book.
+ */
+message NodeCreateTransactionBody {
+    /**
+     * A Node account identifier.
+     */
+    AccountID account_id = 1;
+
+    /**
+     * A short description of the node.
+     */
+    string description = 2;
+
+    /**
+     * A list of service endpoints for gossip.
+     */
+    repeated ServiceEndpoint gossip_endpoint = 3;
+
+    /**
+     * A list of service endpoints for gRPC calls.
+     */
+    repeated ServiceEndpoint service_endpoint = 4;
+
+    /**
+     * A certificate used to sign gossip events.
+     */
+    bytes gossip_ca_certificate = 5;
+
+    /**
+     * A hash of the node gRPC TLS certificate.
+     */
+    bytes grpc_certificate_hash = 6;
+
+    /**
+     * An administrative key controlled by the node operator.
+     */
+    Key admin_key = 7;
+
+    /**
+     * A boolean flag indicating whether the node operator declines to receive node rewards.
+     */
+    bool decline_reward = 8;
+
+    /**
+     * A web proxy for gRPC from non-gRPC clients.
+     */
+    ServiceEndpoint grpc_proxy_endpoint = 9;
+}
+
+/**
+ * A transaction body for node create.
+ */
+message TransactionBody {
+    reserved 30, 61, 62, 63, 64;
+
+    /**
+     * A transaction identifier.
+     */
+    TransactionID transactionID = 1;
+
+    /**
+     * A node account identifier.
+     */
+    AccountID nodeAccountID = 2;
+
+    /**
+     * A maximum transaction fee, in tinybar.
+     */
+    uint64 transactionFee = 3;
+
+    /**
+     * A maximum duration in which to execute this transaction.
+     */
+    Duration transactionValidDuration = 4;
+
+    /**
+     * A short description for this transaction.
+     */
+    string memo = 6;
+
+    /**
+     * The public key of the trusted batch assembler.
+     */
+    Key batch_key = 73;
+
+    oneof data {
+        /**
+         * Create a new node in the network address book.
+         */
+        NodeCreateTransactionBody nodeCreate = 54;
+    }
+
+    /**
+     * A list of maximum custom fees that the users are willing to pay.
+     */
+    repeated CustomFeeLimit max_custom_fees = 1001;
+}

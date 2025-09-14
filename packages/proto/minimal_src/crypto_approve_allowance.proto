@@ -1,0 +1,114 @@
+/**
+ * # Crypto Approve Allowance
+ * Approve allowances for spenders to transfer HBAR or tokens.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+
+/**
+ * Creates one or more hbar/token approved allowances.
+ */
+message CryptoApproveAllowanceTransactionBody {
+    /**
+     * List of hbar allowances approved by the account owner.
+     */
+    repeated CryptoAllowance cryptoAllowances = 1;
+
+    /**
+     * List of NFT allowances approved by the account owner.
+     */
+    repeated NftAllowance nftAllowances = 2;
+
+    /**
+     * List of fungible token allowances approved by the account owner.
+     */
+    repeated TokenAllowance tokenAllowances = 3;
+}
+
+/**
+ * An approved allowance of hbar transfers for a spender.
+ */
+message CryptoAllowance {
+    /**
+     * The account that owns the hbar.
+     */
+    AccountID owner = 1;
+
+    /**
+     * The account authorized to spend the hbar.
+     */
+    AccountID spender = 2;
+
+    /**
+     * The amount of hbar authorized to be spent by the spender.
+     */
+    int64 amount = 3;
+}
+
+/**
+ * An approved allowance of NFT transfers for a spender.
+ */
+message NftAllowance {
+    /**
+     * The account that owns the NFT.
+     */
+    AccountID owner = 1;
+
+    /**
+     * The account authorized to spend the NFT.
+     */
+    AccountID spender = 2;
+
+    /**
+     * The token that the allowance pertains to.
+     */
+    TokenID tokenId = 3;
+
+    /**
+     * List of serial numbers that the spender is authorized to transfer.
+     */
+    repeated int64 serialNumbers = 4;
+
+    /**
+     * If true, the spender has access to all of the owner's NFT units.
+     */
+    bool approvedForAll = 5;
+
+    /**
+     * The account that should be charged the fee for the current allowance.
+     */
+    AccountID delegatingSpender = 6;
+}
+
+/**
+ * An approved allowance of fungible token transfers for a spender.
+ */
+message TokenAllowance {
+    /**
+     * The account that owns the tokens.
+     */
+    AccountID owner = 1;
+
+    /**
+     * The account authorized to spend the tokens.
+     */
+    AccountID spender = 2;
+
+    /**
+     * The amount of tokens that the spender is authorized to spend.
+     */
+    int64 amount = 3;
+
+    /**
+     * The token that the allowance pertains to.
+     */
+    TokenID tokenId = 4;
+}
+

@@ -1,0 +1,185 @@
+/**
+ * # Node Stake Update Transaction
+ * Transaction for updating stake information for nodes.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "timestamp.proto";
+import "duration.proto";
+import "custom_fees.proto";
+
+/**
+ * A wrapper around signed transaction bytes for node stake update.
+ */
+message Transaction {
+    /**
+     * A valid, serialized, `SignedTransaction` message.
+     */
+    bytes signedTransactionBytes = 5;
+}
+
+/**
+ * Staking information for one node at the end of a staking period.
+ */
+message NodeStake {
+    /**
+     * A limit to the amount of stake considered for consensus weight.
+     */
+    int64 max_stake = 1;
+
+    /**
+     * A minimum amount of HBAR staked to a node to receive rewards.
+     */
+    int64 min_stake = 2;
+
+    /**
+     * A node identifier.
+     */
+    int64 node_id = 3;
+
+    /**
+     * The rate of rewards, in tinybar per HBAR.
+     */
+    int64 reward_rate = 4;
+
+    /**
+     * A consensus weight assigned to this node for the next staking period.
+     */
+    int64 stake = 5;
+
+    /**
+     * The total amount staked to this node, while declining rewards.
+     */
+    int64 stake_not_rewarded = 6;
+
+    /**
+     * The total amount staked to this node, while accepting rewards.
+     */
+    int64 stake_rewarded = 7;
+}
+
+/**
+ * A system initiated transaction to update staking information.
+ */
+message NodeStakeUpdateTransactionBody {
+    /**
+     * A timestamp indicating the end of the staking period.
+     */
+    Timestamp end_of_staking_period = 1;
+
+    /**
+     * A list of NodeStake entries for each node.
+     */
+    repeated NodeStake node_stake = 2;
+
+    /**
+     * A maximum reward rate for this staking period.
+     */
+    int64 max_staking_reward_rate_per_hbar = 3;
+
+    /**
+     * A fraction of network and service fees paid to the node reward account.
+     */
+    Fraction node_reward_fee_fraction = 4;
+
+    /**
+     * A limit to the number of staking periods held for inactive accounts.
+     */
+    int64 staking_periods_stored = 5;
+
+    /**
+     * A number of minutes representing a staking period.
+     */
+    int64 staking_period = 6;
+
+    /**
+     * A fraction of network and service fees paid to the general reward account.
+     */
+    Fraction staking_reward_fee_fraction = 7;
+
+    /**
+     * A minimum balance required to pay general staking rewards.
+     */
+    int64 staking_start_threshold = 8;
+
+    /**
+     * An amount reserved in the staking reward account.
+     */
+    int64 reserved_staking_rewards = 10;
+
+    /**
+     * An available, unreserved, amount in the staking reward account.
+     */
+    int64 unreserved_staking_reward_balance = 11;
+
+    /**
+     * A minimum balance required for maximum staking rewards.
+     */
+    int64 reward_balance_threshold = 12;
+
+    /**
+     * A maximum network-wide stake that can earn full rewards.
+     */
+    int64 max_stake_rewarded = 13;
+
+    /**
+     * A limit amount that could be paid as staking rewards.
+     */
+    int64 max_total_reward = 14;
+}
+
+/**
+ * A transaction body for node stake update.
+ */
+message TransactionBody {
+    reserved 30, 61, 62, 63, 64;
+
+    /**
+     * A transaction identifier.
+     */
+    TransactionID transactionID = 1;
+
+    /**
+     * A node account identifier.
+     */
+    AccountID nodeAccountID = 2;
+
+    /**
+     * A maximum transaction fee, in tinybar.
+     */
+    uint64 transactionFee = 3;
+
+    /**
+     * A maximum duration in which to execute this transaction.
+     */
+    Duration transactionValidDuration = 4;
+
+    /**
+     * A short description for this transaction.
+     */
+    string memo = 6;
+
+    /**
+     * The public key of the trusted batch assembler.
+     */
+    Key batch_key = 73;
+
+    oneof data {
+        /**
+         * Update the staking information.
+         */
+        NodeStakeUpdateTransactionBody node_stake_update = 51;
+    }
+
+    /**
+     * A list of maximum custom fees that the users are willing to pay.
+     */
+    repeated CustomFeeLimit max_custom_fees = 1001;
+}

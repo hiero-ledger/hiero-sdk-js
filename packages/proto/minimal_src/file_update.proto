@@ -1,0 +1,45 @@
+/**
+ * # File Update
+ * Modify a file.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "timestamp.proto";
+
+/**
+ * Modify the metadata and/or contents of a file.
+ */
+message FileUpdateTransactionBody {
+    /**
+     * The ID of the file to update.
+     */
+    FileID fileID = 1;
+
+    /**
+     * The new expiry time.
+     */
+    Timestamp expirationTime = 2;
+
+    /**
+     * The new list of keys that can modify or delete this file.
+     */
+    KeyList keys = 3;
+
+    /**
+     * The new contents that should overwrite the file's current contents.
+     */
+    bytes contents = 4;
+
+    /**
+     * If set, the new memo to be associated with the file.
+     */
+    string memo = 5;
+}
+
