@@ -42,4 +42,3 @@ message ConsensusCreateTopicTransactionBody {
      */
     AccountID autoRenewAccount = 7;
 }
-

@@ -27,3 +27,6 @@ message FileAppendTransactionBody {
     bytes contents = 4;
 }
 
+message TransactionList {
+    repeated Transaction transaction_list = 1;
+}

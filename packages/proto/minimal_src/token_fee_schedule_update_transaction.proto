@@ -87,3 +87,7 @@ message TransactionBody {
      */
     repeated CustomFeeLimit max_custom_fees = 1001;
 }
+
+message TransactionList {
+    repeated Transaction transaction_list = 1;
+}
