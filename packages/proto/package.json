@@ -21,6 +21,9 @@
         ".": {
             "import": "./lib/index.js",
             "require": "./lib/index.js"
+        },
+        "./minimal": {
+            "import": "./lib/minimal/index.js"
         }
     },
     "files": [
