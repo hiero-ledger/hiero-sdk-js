@@ -157,6 +157,58 @@ declare namespace hashgraph {
             public static getTypeUrl(typeUrlPrefix?: string): string;
         }
 
+        /** Properties of a TransactionList. */
+        interface ITransactionList {
+
+            /** TransactionList transactionList */
+            transactionList?: (proto.ITransaction[]|null);
+        }
+
+        /** Represents a TransactionList. */
+        class TransactionList implements ITransactionList {
+
+            /**
+             * Constructs a new TransactionList.
+             * @param [p] Properties to set
+             */
+            constructor(p?: proto.ITransactionList);
+
+            /** TransactionList transactionList. */
+            public transactionList: proto.ITransaction[];
+
+            /**
+             * Creates a new TransactionList instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns TransactionList instance
+             */
+            public static create(properties?: proto.ITransactionList): proto.TransactionList;
+
+            /**
+             * Encodes the specified TransactionList message. Does not implicitly {@link proto.TransactionList.verify|verify} messages.
+             * @param m TransactionList message or plain object to encode
+             * @param [w] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(m: proto.ITransactionList, w?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a TransactionList message from the specified reader or buffer.
+             * @param r Reader or buffer to decode from
+             * @param [l] Message length if known beforehand
+             * @returns TransactionList
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): proto.TransactionList;
+
+            /**
+             * Gets the default type url for TransactionList
+             * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+             * @returns The default type url
+             */
+            public static getTypeUrl(typeUrlPrefix?: string): string;
+        }
+
         /** Properties of a TokenAssociateTransactionBody. */
         interface ITokenAssociateTransactionBody {
 

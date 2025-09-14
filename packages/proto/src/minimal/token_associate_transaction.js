@@ -358,6 +358,120 @@ export const proto = $root.proto = (() => {
         return TransactionBody;
     })();
 
+    proto.TransactionList = (function() {
+
+        /**
+         * Properties of a TransactionList.
+         * @memberof proto
+         * @interface ITransactionList
+         * @property {Array.<proto.ITransaction>|null} [transactionList] TransactionList transactionList
+         */
+
+        /**
+         * Constructs a new TransactionList.
+         * @memberof proto
+         * @classdesc Represents a TransactionList.
+         * @implements ITransactionList
+         * @constructor
+         * @param {proto.ITransactionList=} [p] Properties to set
+         */
+        function TransactionList(p) {
+            this.transactionList = [];
+            if (p)
+                for (var ks = Object.keys(p), i = 0; i < ks.length; ++i)
+                    if (p[ks[i]] != null)
+                        this[ks[i]] = p[ks[i]];
+        }
+
+        /**
+         * TransactionList transactionList.
+         * @member {Array.<proto.ITransaction>} transactionList
+         * @memberof proto.TransactionList
+         * @instance
+         */
+        TransactionList.prototype.transactionList = $util.emptyArray;
+
+        /**
+         * Creates a new TransactionList instance using the specified properties.
+         * @function create
+         * @memberof proto.TransactionList
+         * @static
+         * @param {proto.ITransactionList=} [properties] Properties to set
+         * @returns {proto.TransactionList} TransactionList instance
+         */
+        TransactionList.create = function create(properties) {
+            return new TransactionList(properties);
+        };
+
+        /**
+         * Encodes the specified TransactionList message. Does not implicitly {@link proto.TransactionList.verify|verify} messages.
+         * @function encode
+         * @memberof proto.TransactionList
+         * @static
+         * @param {proto.ITransactionList} m TransactionList message or plain object to encode
+         * @param {$protobuf.Writer} [w] Writer to encode to
+         * @returns {$protobuf.Writer} Writer
+         */
+        TransactionList.encode = function encode(m, w) {
+            if (!w)
+                w = $Writer.create();
+            if (m.transactionList != null && m.transactionList.length) {
+                for (var i = 0; i < m.transactionList.length; ++i)
+                    $root.proto.Transaction.encode(m.transactionList[i], w.uint32(10).fork()).ldelim();
+            }
+            return w;
+        };
+
+        /**
+         * Decodes a TransactionList message from the specified reader or buffer.
+         * @function decode
+         * @memberof proto.TransactionList
+         * @static
+         * @param {$protobuf.Reader|Uint8Array} r Reader or buffer to decode from
+         * @param {number} [l] Message length if known beforehand
+         * @returns {proto.TransactionList} TransactionList
+         * @throws {Error} If the payload is not a reader or valid buffer
+         * @throws {$protobuf.util.ProtocolError} If required fields are missing
+         */
+        TransactionList.decode = function decode(r, l) {
+            if (!(r instanceof $Reader))
+                r = $Reader.create(r);
+            var c = l === undefined ? r.len : r.pos + l, m = new $root.proto.TransactionList();
+            while (r.pos < c) {
+                var t = r.uint32();
+                switch (t >>> 3) {
+                case 1: {
+                        if (!(m.transactionList && m.transactionList.length))
+                            m.transactionList = [];
+                        m.transactionList.push($root.proto.Transaction.decode(r, r.uint32()));
+                        break;
+                    }
+                default:
+                    r.skipType(t & 7);
+                    break;
+                }
+            }
+            return m;
+        };
+
+        /**
+         * Gets the default type url for TransactionList
+         * @function getTypeUrl
+         * @memberof proto.TransactionList
+         * @static
+         * @param {string} [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+         * @returns {string} The default type url
+         */
+        TransactionList.getTypeUrl = function getTypeUrl(typeUrlPrefix) {
+            if (typeUrlPrefix === undefined) {
+                typeUrlPrefix = "type.googleapis.com";
+            }
+            return typeUrlPrefix + "/proto.TransactionList";
+        };
+
+        return TransactionList;
+    })();
+
     proto.TokenAssociateTransactionBody = (function() {
 
         /**
