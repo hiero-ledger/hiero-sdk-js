@@ -104,7 +104,7 @@ tasks:
                         
                         # Generate each transaction with its specific dependencies to src/minimal
                         if npx pbjs -t static-module -w es6 -p=minimal_src --dependency protobufjs/minimal --force-long --no-beautify --no-convert --no-delimited --no-verify -o "src/minimal/${base_name}.js" "$proto_file" $imports $common_deps 2>/dev/null; then
-                            npx pbjs -t static-module -w es6 -p=minimal_src --dependency protobufjs/minimal --force-long --no-beautify --no-convert --no-delimited --no-verify -o "src/minimal/transaction_response.js" "transaction_response.proto" response_code.proto
+                            npx pbjs -t static-module -w es6 -p=minimal_src --dependency protobufjs/minimal --force-long --no-beautify --no-convert --no-delimited --no-verify -o "src/minimal/transaction_contents.js" transaction_contents.proto timestamp.proto google_protobuf_wrappers.proto
                             npx pbts -n hashgraph -o src/minimal/${base_name}.d.ts src/minimal/${base_name}.js
                             echo "✓ Successfully generated $base_name.js"
                             success_count=$((success_count + 1))
@@ -137,12 +137,15 @@ tasks:
                 EOF
 
                 # Add named exports for each .js file
-                for js_file in lib/minimal/*_transaction.js; do
+                for js_file in lib/minimal/*.js; do
                     if [ -f "$js_file" ]; then
                         base_name=$(basename "$js_file" .js)
-                        # Convert snake_case to PascalCase
-                        class_name=$(echo "$base_name" | awk -F_ '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)} 1' OFS="")
-                        echo "export { default as $class_name } from \"./$base_name.js\";" >> lib/minimal/index.js
+                        # Skip index.js to avoid circular reference
+                        if [ "$base_name" != "index" ]; then
+                            # Convert snake_case to PascalCase
+                            class_name=$(echo "$base_name" | awk -F_ '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)} 1' OFS="")
+                            echo "export { default as $class_name } from \"./$base_name.js\";" >> lib/minimal/index.js
+                        fi
                     fi
                 done
 
@@ -154,9 +157,12 @@ tasks:
                 for js_file in lib/minimal/*.js; do
                     if [ -f "$js_file" ]; then
                         base_name=$(basename "$js_file" .js)
-                        # Convert snake_case to PascalCase
-                        class_name=$(echo "$base_name" | awk -F_ '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)} 1' OFS="")
-                        echo "    $class_name: () => import(\"./$base_name.js\")," >> lib/minimal/index.js
+                        # Skip index.js to avoid circular reference
+                        if [ "$base_name" != "index" ]; then
+                            # Convert snake_case to PascalCase
+                            class_name=$(echo "$base_name" | awk -F_ '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)} 1' OFS="")
+                            echo "    $class_name: () => import(\"./$base_name.js\")," >> lib/minimal/index.js
+                        fi
                     fi
                 done
 
