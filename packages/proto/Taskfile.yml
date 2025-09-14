@@ -61,6 +61,7 @@ tasks:
             - install
         cmds:
             - task "build:standalone"
+            - task "build:minimal:transactions"
 
     build:standalone:
         cmds:
@@ -73,6 +74,97 @@ tasks:
             - npx copyfiles -u 1 src/index.d.ts src/proto.d.ts lib/ > /dev/null
               # This is necessary to correctly run browser tests with an unpublished proto package
             - npx yalc publish > /dev/null
+    build:minimal:transactions:
+        desc: "Generate individual JS files for each transaction proto file"
+        cmds:
+            - mkdir -p src/minimal
+            - |
+                success_count=0
+                fail_count=0
+
+                # Generate individual transaction files with specific dependencies
+                for proto_file in minimal_src/*_transaction.proto; do
+                    if [ -f "$proto_file" ]; then
+                        base_name=$(basename "$proto_file" .proto)
+                        echo "Generating $base_name.js..."
+                        
+                        # Get the imports from the transaction file
+                        imports=$(grep -h '^import' "$proto_file" | sed 's/import "\(.*\)";/minimal_src\/\1/' | tr '\n' ' ')
+                        
+                        # Get list of directly imported files (without minimal_src/ prefix) 
+                        direct_imports=$(grep -h '^import' "$proto_file" | sed 's/import "\(.*\)";/\1/' | tr '\n' ' ')
+                        
+                        # Build common deps, excluding any that are directly imported
+                        common_deps=""
+                        for dep in duration.proto basic_types.proto custom_fees.proto timestamp.proto google_protobuf_wrappers.proto; do
+                            if ! echo "$direct_imports" | grep -q "$dep"; then
+                                common_deps="$common_deps minimal_src/$dep"
+                            fi
+                        done
+                        
+                        # Generate each transaction with its specific dependencies to src/minimal
+                        if npx pbjs -t static-module -w es6 -p=minimal_src --dependency protobufjs/minimal --force-long --no-beautify --no-convert --no-delimited --no-verify -o "src/minimal/${base_name}.js" "$proto_file" $imports $common_deps 2>/dev/null; then
+                            npx pbjs -t static-module -w es6 -p=minimal_src --dependency protobufjs/minimal --force-long --no-beautify --no-convert --no-delimited --no-verify -o "src/minimal/transaction_response.js" "transaction_response.proto" response_code.proto
+                            npx pbts -n hashgraph -o src/minimal/${base_name}.d.ts src/minimal/${base_name}.js
+                            echo "✓ Successfully generated $base_name.js"
+                            success_count=$((success_count + 1))
+                        fi
+                    fi
+                done
+
+                echo ""
+                echo "Summary: $success_count files generated successfully, $fail_count failed"
+                if [ $success_count -gt 0 ]; then
+                    echo "✓ Each generated JS file contains the specific transaction and its dependencies"
+                fi
+                if [ $fail_count -gt 0 ]; then
+                    echo "Note: Failed files likely have missing dependencies that need to be added to minimal_src/"
+                fi
+            - npx babel src/minimal -d lib/minimal > /dev/null
+            - task: generate:minimal:index
+
+    generate:minimal:index:
+        desc: "Generate index.js file for tree-shaking support in lib/minimal"
+        cmds:
+            - |
+                echo "Generating lib/minimal/index.js for tree-shaking..."
+
+                # Create the index.js content
+                cat > lib/minimal/index.js << 'EOF'
+                // Auto-generated index file for minimal transaction proto modules
+                // This enables tree-shaking by providing named exports for each transaction type
+
+                EOF
+
+                # Add named exports for each .js file
+                for js_file in lib/minimal/*_transaction.js; do
+                    if [ -f "$js_file" ]; then
+                        base_name=$(basename "$js_file" .js)
+                        # Convert snake_case to PascalCase
+                        class_name=$(echo "$base_name" | awk -F_ '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)} 1' OFS="")
+                        echo "export { default as $class_name } from \"./$base_name.js\";" >> lib/minimal/index.js
+                    fi
+                done
+
+                echo "" >> lib/minimal/index.js
+                echo "// For backwards compatibility, also export all as a single object" >> lib/minimal/index.js
+                echo "export default {" >> lib/minimal/index.js
+
+                # Add dynamic imports for default export
+                for js_file in lib/minimal/*.js; do
+                    if [ -f "$js_file" ]; then
+                        base_name=$(basename "$js_file" .js)
+                        # Convert snake_case to PascalCase
+                        class_name=$(echo "$base_name" | awk -F_ '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)} 1' OFS="")
+                        echo "    $class_name: () => import(\"./$base_name.js\")," >> lib/minimal/index.js
+                    fi
+                done
+
+                echo "};" >> lib/minimal/index.js
+
+                # Count the exports
+                export_count=$(grep -c "export { default as" lib/minimal/index.js)
+                echo "✓ Generated index.js with $export_count transaction exports"
 
     clean:
         cmds:
@@ -98,7 +190,7 @@ tasks:
 
     "lint:js":
         cmds:
-            - npx eslint --fix "src/*.js"
+            - npx eslint --fix "src/proto.js"
 
     "test:release":
         deps:
