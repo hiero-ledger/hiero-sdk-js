@@ -44,6 +44,14 @@ tasks:
             - echo "Protobufs moved successfully!"
             - task "delete:submodule"
 
+    flatten:protobufs:
+        after:
+            - "move:protobufs"
+        desc: "Flatten proto directory structure to src/proto/* and fix imports"
+        cmds:
+            - chmod +x scripts/flatten-protos.sh
+            - ./scripts/flatten-protos.sh
+
     delete:submodule:
         cmds:
             - find src/services -mindepth 1 -delete
@@ -54,6 +62,7 @@ tasks:
             - "install:submodules"
         cmds:
             - task "move:protobufs"
+            - task "flatten:protobufs"
             - pnpm i
 
     build:
@@ -121,6 +130,7 @@ tasks:
                 git checkout {{.stag}}
                 )
             - task "move:protobufs"
+            - task "flatten:protobufs"
             - pnpm i
             - task "build:standalone"
             - echo "Successfully updated protobufs to {{.proto}}"
