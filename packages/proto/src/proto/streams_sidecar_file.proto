@@ -26,11 +26,11 @@ option java_package = "com.hedera.services.stream.proto";
 // <<<pbj.java_package = "com.hedera.hapi.streams">>> This comment is special code for setting PBJ Compiler java package
 option java_multiple_files = true;
 
-import "basic_types.proto";
-import "timestamp.proto";
-import "contract_state_change.proto";
-import "contract_action.proto";
-import "contract_bytecode.proto";
+import "services_basic_types.proto";
+import "services_timestamp.proto";
+import "streams_contract_state_change.proto";
+import "streams_contract_action.proto";
+import "services_state_contract_bytecode.proto";
 
 /**
  * A SidecarFile contains a list of TransactionSidecarRecords that are all created

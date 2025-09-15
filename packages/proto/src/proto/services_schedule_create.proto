@@ -22,9 +22,9 @@ option java_package = "com.hederahashgraph.api.proto.java";
 // <<<pbj.java_package = "com.hedera.hapi.node.scheduled">>> This comment is special code for setting PBJ Compiler java package
 option java_multiple_files = true;
 
-import "basic_types.proto";
-import "timestamp.proto";
-import "schedulable_transaction_body.proto";
+import "services_basic_types.proto";
+import "services_timestamp.proto";
+import "services_schedulable_transaction_body.proto";
 
 /**
  * Create a new Schedule.

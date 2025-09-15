@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# Script to flatten all proto files to src/proto/ and fix import paths
-# Moves all .proto files to the root of src/proto/ and updates import paths to current directory
+# Generic script to flatten all proto files to src/proto/ and fix import paths
+# This script is future-proof and doesn't hardcode any specific filenames
 
 set -e
 
@@ -19,7 +19,6 @@ if [ $(find "$PROTO_DIR" -mindepth 2 -name "*.proto" -type f | wc -l) -eq 0 ]; t
     exit 0
 fi
 
-# Find all proto files recursively and copy them to temp directory
 echo "  - Collecting all proto files..."
 
 # First, copy all files from subdirectories (mindepth 2) with prefixed names
@@ -33,12 +32,21 @@ done
 # Only copy if we don't already have a prefixed version from subdirectories
 find "$PROTO_DIR" -maxdepth 1 -name "*.proto" -type f | while read -r file; do
     filename=$(basename "$file")
-    # Check if we already have a services_ prefixed version
-    if [ ! -f "$TEMP_DIR/services_$filename" ]; then
+    
+    # Check if we already have a prefixed version from subdirectories
+    prefixed_exists=false
+    for prefixed_file in "$TEMP_DIR"/*; do
+        if [[ "$prefixed_file" == *"_$filename" ]]; then
+            prefixed_exists=true
+            break
+        fi
+    done
+    
+    if [ "$prefixed_exists" = false ]; then
         cp "$file" "$TEMP_DIR/$filename"
         echo "    Copied $file as $filename"
     else
-        echo "    Skipped $file (already have services_$filename from subdirectory)"
+        echo "    Skipped $file (already have prefixed version from subdirectory)"
     fi
 done
 
@@ -49,34 +57,67 @@ mv "$TEMP_DIR" "$PROTO_DIR"
 
 # Update import paths in all proto files
 echo "  - Updating import paths..."
-find "$PROTO_DIR" -name "*.proto" -type f | while read -r file; do
-    temp_file="${file}.tmp"
+
+# Create a temporary script to handle the import mapping
+cat > /tmp/update_imports.sh << 'EOF'
+#!/bin/bash
+
+# Function to update imports in a single file
+update_imports_in_file() {
+    local file="$1"
+    local temp_file="${file}.tmp"
     
-    # Update import paths to be flat (just filename)
-    # Don't change google imports - they should stay as is
-    sed -E 's|import "([^g][^"]*)/([^/"]*\.proto)";|import "\2";|g' "$file" > "$temp_file"
+    # Start with the original file
+    cp "$file" "$temp_file"
     
+    # Find all import statements that reference local proto files (not google/*)
+    grep -o 'import "[^"]*\.proto";' "$file" | while read -r import_line; do
+        # Extract the filename from the import statement
+        import_file=$(echo "$import_line" | sed 's/import "\([^"]*\)";/\1/')
+        
+        # Skip google imports and other external imports
+        if [[ "$import_file" == google/* ]] || [[ "$import_file" == */* ]]; then
+            continue
+        fi
+        
+        # Find the new prefixed filename
+        new_filename=""
+        for proto_file in "$PROTO_DIR"/*.proto; do
+            if [[ -f "$proto_file" ]]; then
+                basename_file=$(basename "$proto_file")
+                if [[ "$basename_file" == *"_$import_file" ]] || [[ "$basename_file" == "$import_file" ]]; then
+                    new_filename="$basename_file"
+                    break
+                fi
+            fi
+        done
+        
+        # Update the import if we found a new filename
+        if [[ -n "$new_filename" ]] && [[ "$new_filename" != "$import_file" ]]; then
+            sed -i.tmp "s|import \"$import_file\";|import \"$new_filename\";|g" "$temp_file"
+            rm -f "$temp_file.tmp"
+            echo "    Updated import: $import_file -> $new_filename"
+        fi
+    done
+    
+    # Replace the original file with the updated one
     mv "$temp_file" "$file"
-    echo "    Updated imports in: $(basename "$file")"
-done
+}
 
-# Restore missing files that are needed by the codebase
-echo "  - Restoring missing files..."
-git checkout HEAD -- src/proto/transaction_list.proto 2>/dev/null || echo "    transaction_list.proto not found in HEAD"
-git checkout HEAD -- src/proto/consensus_service.proto 2>/dev/null || echo "    consensus_service.proto not found in HEAD"
-git checkout HEAD -- src/proto/mirror_network_service.proto 2>/dev/null || echo "    mirror_network_service.proto not found in HEAD"
-
-# Update import paths in restored files
-echo "  - Updating imports in restored files..."
-for file in "$PROTO_DIR"/transaction_list.proto "$PROTO_DIR"/consensus_service.proto "$PROTO_DIR"/mirror_network_service.proto; do
-    if [ -f "$file" ]; then
-        temp_file="${file}.tmp"
-        # Update import paths to be flat (just filename)
-        sed -E 's|import "([^g][^"]*)/([^/"]*\.proto)";|import "\2";|g' "$file" > "$temp_file"
-        mv "$temp_file" "$file"
-        echo "    Updated imports in: $(basename "$file")"
+# Process all proto files
+for file in "$PROTO_DIR"/*.proto; do
+    if [[ -f "$file" ]]; then
+        echo "    Processing: $(basename "$file")"
+        update_imports_in_file "$file"
     fi
 done
+EOF
+
+chmod +x /tmp/update_imports.sh
+PROTO_DIR="$PROTO_DIR" /tmp/update_imports.sh
+
+# Clean up temporary script
+rm -f /tmp/update_imports.sh
 
 echo "Proto files flattened successfully!"
-echo "All .proto files are now in $PROTO_DIR/ with flat import paths"
+echo "All .proto files are now in $PROTO_DIR/ with updated import paths"
