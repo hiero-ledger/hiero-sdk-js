@@ -12,6 +12,8 @@ import Long from "long";
 import * as sha384 from "../cryptography/sha384.js";
 import * as hex from "../encoding/hex.js";
 import * as HieroProto from "@hashgraph/proto";
+import { FileAppendTransaction } from "@hashgraph/proto/minimal";
+import { proto as TransactionContentsProto } from "../../packages/proto/lib/minimal/transaction_contents.js";
 import PrecheckStatusError from "../PrecheckStatusError.js";
 import AccountId from "../account/AccountId.js";
 import PublicKey from "../PublicKey.js";
@@ -21,6 +23,9 @@ import * as util from "../util.js";
 import CustomFeeLimit from "./CustomFeeLimit.js";
 import Key from "../Key.js";
 import SignableNodeTransactionBodyBytes from "./SignableNodeTransactionBodyBytes.js";
+
+// Extract SignedTransaction from TransactionContentsProto
+const SignedTransaction = TransactionContentsProto.SignedTransaction;
 
 /**
  * @typedef {import("bignumber.js").default} BigNumber
@@ -286,6 +291,7 @@ export default class Transaction extends Executable {
                 // Make sure the transaction ID within the body is set
                 if (body.transactionID != null) {
                     const transactionId = TransactionId._fromProtobuf(
+                        // @ts-ignore
                         /** @type {HieroProto.proto.ITransactionID} */ (
                             body.transactionID
                         ),
@@ -345,6 +351,7 @@ export default class Transaction extends Executable {
                 // Make sure the transaction ID within the body is set
                 if (body.transactionID != null) {
                     const transactionId = TransactionId._fromProtobuf(
+                        // @ts-ignore
                         /** @type {HieroProto.proto.ITransactionID} */ (
                             body.transactionID
                         ),
@@ -362,6 +369,7 @@ export default class Transaction extends Executable {
                 // Make sure the node account ID within the body is set
                 if (body.nodeAccountID != null) {
                     const nodeAccountId = AccountId._fromProtobuf(
+                        // @ts-ignore
                         /** @type {HieroProto.proto.IAccountID} */ (
                             body.nodeAccountID
                         ),
@@ -520,15 +528,18 @@ export default class Transaction extends Executable {
         transaction._maxTransactionFee =
             body.transactionFee != null &&
             body.transactionFee > new Long(0, 0, true)
-                ? Hbar.fromTinybars(body.transactionFee)
+                ? // @ts-ignore
+                  Hbar.fromTinybars(body.transactionFee)
                 : null;
         transaction._customFeeLimits =
             body.maxCustomFees != null
                 ? body.maxCustomFees?.map((fee) =>
+                      // @ts-ignore
                       CustomFeeLimit._fromProtobuf(fee),
                   )
                 : [];
         transaction._batchKey =
+            // @ts-ignore
             body.batchKey != null ? Key._fromProtobufKey(body?.batchKey) : null;
 
         transaction._transactionMemo = body.memo != null ? body.memo : "";
@@ -596,7 +607,8 @@ export default class Transaction extends Executable {
         this._requireFrozen();
         return this._makeRequestAsync().then(
             (request) =>
-                HieroProto.proto.Transaction.encode(request).finish().length,
+                FileAppendTransaction.proto.Transaction.encode(request).finish()
+                    .length,
         );
     }
 
@@ -611,7 +623,8 @@ export default class Transaction extends Executable {
     get bodySize() {
         const body = this._makeTransactionBody(AccountId.fromString("0.0.0"));
 
-        return HieroProto.proto.TransactionBody.encode(body).finish().length;
+        return TransactionContents.proto.TransactionBody.encode(body).finish()
+            .length;
     }
 
     /**
@@ -979,7 +992,9 @@ export default class Transaction extends Executable {
                 }
 
                 const transactionId =
+                    // @ts-ignore
                     TransactionId._fromProtobuf(transactionID);
+                // @ts-ignore
                 const nodeAccountId = AccountId._fromProtobuf(nodeAccountID);
 
                 const nodeSignatures = signatureMap.get(nodeAccountId);
@@ -1332,12 +1347,14 @@ export default class Transaction extends Executable {
                 throw new Error("Missing nodeAccountID in transaction body.");
             }
 
+            // @ts-ignore
             const nodeAccountId = AccountId._fromProtobuf(body.nodeAccountID);
             if (!body.transactionID) {
                 throw new Error("Missing transactionID in transaction body.");
             }
 
             const transactionId = TransactionId._fromProtobuf(
+                // @ts-ignore
                 body.transactionID,
             );
 
@@ -1525,7 +1542,11 @@ export default class Transaction extends Executable {
         }
 
         // Construct and encode the transaction list
-        return HieroProto.proto.TransactionList.encode({
+        console.log(
+            "this._transactions.list",
+            this._transactions.list[0]?.bodyBytes,
+        );
+        return FileAppendTransaction.proto.TransactionList.encode({
             transactionList: /** @type {HieroProto.proto.ITransaction[]} */ (
                 this._transactions.list
             ),
@@ -1557,7 +1578,7 @@ export default class Transaction extends Executable {
         this._signedTransactions.setLocked();
 
         // Construct and encode the transaction list
-        return HieroProto.proto.TransactionList.encode({
+        return FileAppendTransaction.proto.TransactionList.encode({
             transactionList: /** @type {HieroProto.proto.ITransaction[]} */ (
                 this._transactions.list
             ),
@@ -1638,6 +1659,7 @@ export default class Transaction extends Executable {
      * @param {Client} client
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+    // @ts-ignore
     _validateChecksums(client) {
         // Do nothing
     }
@@ -1835,19 +1857,17 @@ export default class Transaction extends Executable {
         // incomplete transaction must be updated in order to be prepared for execution
         if (this._transactions.list[index] != null) {
             this._transactions.set(index, {
-                signedTransactionBytes:
-                    HieroProto.proto.SignedTransaction.encode(
-                        this._signedTransactions.get(index),
-                    ).finish(),
+                signedTransactionBytes: SignedTransaction.encode(
+                    this._signedTransactions.get(index),
+                ).finish(),
             });
         }
 
         this._transactions.setIfAbsent(index, () => {
             return {
-                signedTransactionBytes:
-                    HieroProto.proto.SignedTransaction.encode(
-                        this._signedTransactions.get(index),
-                    ).finish(),
+                signedTransactionBytes: SignedTransaction.encode(
+                    this._signedTransactions.get(index),
+                ).finish(),
             };
         });
     }
@@ -1878,6 +1898,7 @@ export default class Transaction extends Executable {
      * @returns {[Status, ExecutionState]}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // @ts-ignore
     _shouldRetry(request, response) {
         const { nodeTransactionPrecheckCode } = response;
 
@@ -1933,6 +1954,7 @@ export default class Transaction extends Executable {
      * @returns {Error}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    // @ts-ignore
     _mapStatusError(request, response, nodeId) {
         const { nodeTransactionPrecheckCode } = response;
 
@@ -1966,6 +1988,7 @@ export default class Transaction extends Executable {
      * @param {HieroProto.proto.ITransaction} request
      * @returns {Promise<TransactionResponse>}
      */
+    // @ts-ignore
     async _mapResponse(response, nodeId, request) {
         const transactionHash = await sha384.digest(
             /** @type {Uint8Array} */ (request.signedTransactionBytes),
@@ -2044,20 +2067,24 @@ export default class Transaction extends Executable {
                     ? this._maxTransactionFee.toTinybars()
                     : null,
             memo: this._transactionMemo,
+            // @ts-ignore
             transactionID:
                 this._transactionIds.current != null
                     ? this._transactionIds.current._toProtobuf()
                     : null,
+            // @ts-ignore
             nodeAccountID: nodeId != null ? nodeId._toProtobuf() : null,
             transactionValidDuration: {
                 seconds: Long.fromNumber(this._transactionValidDuration),
             },
+            // @ts-ignore
             maxCustomFees:
                 this._customFeeLimits != null
                     ? this._customFeeLimits.map((maxCustomFee) =>
                           maxCustomFee._toProtobuf(),
                       )
                     : null,
+            // @ts-ignore
             batchKey: this.batchKey?._toProtobufKey(),
         };
     }
@@ -2089,6 +2116,7 @@ export default class Transaction extends Executable {
                 this._maxTransactionFee == null
                     ? this._defaultMaxTransactionFee.toTinybars()
                     : this._maxTransactionFee.toTinybars(),
+            // @ts-ignore
             maxCustomFees:
                 this._customFeeLimits != null
                     ? this._customFeeLimits.map((maxCustomFee) =>
