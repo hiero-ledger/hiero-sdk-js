@@ -58,10 +58,6 @@ mv "$TEMP_DIR" "$PROTO_DIR"
 # Update import paths in all proto files
 echo "  - Updating import paths..."
 
-# Create a temporary script to handle the import mapping
-cat > /tmp/update_imports.sh << 'EOF'
-#!/bin/bash
-
 # Function to update imports in a single file
 update_imports_in_file() {
     local file="$1"
@@ -111,13 +107,6 @@ for file in "$PROTO_DIR"/*.proto; do
         update_imports_in_file "$file"
     fi
 done
-EOF
-
-chmod +x /tmp/update_imports.sh
-PROTO_DIR="$PROTO_DIR" /tmp/update_imports.sh
-
-# Clean up temporary script
-rm -f /tmp/update_imports.sh
 
 echo "Proto files flattened successfully!"
 echo "All .proto files are now in $PROTO_DIR/ with updated import paths"
