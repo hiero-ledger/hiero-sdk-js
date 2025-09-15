@@ -1,6 +1,6 @@
 /**
- * # File Append
- * Append data to the end of a file.
+ * # File Append Transaction
+ * Transaction for appending data to files.
  */
 syntax = "proto3";
 
@@ -27,6 +27,3 @@ message FileAppendTransactionBody {
     bytes contents = 4;
 }
 
-message TransactionList {
-    repeated Transaction transaction_list = 1;
-}
