@@ -43,7 +43,11 @@ describe.skip("NodeCreateTransaction", function () {
             .setPort(12345);
 
         // Convert hex string to byte array
-        const validGossipCert = Buffer.from(validGossipCertDER, "hex");
+        const validGossipCert = new Uint8Array(
+            validGossipCertDER
+                .match(/.{1,2}/g)
+                .map((byte) => parseInt(byte, 16)),
+        );
 
         // Generate admin key
         const adminKey = PrivateKey.generateED25519();

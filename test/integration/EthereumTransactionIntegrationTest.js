@@ -97,6 +97,7 @@ describe("EthereumTransactionIntegrationTest", function () {
         const maxGas = hex.decode("d1385c7bf0");
         const gasLimit = hex.decode("0249f0");
         const value = new Uint8Array();
+        console.log({ contractAddress });
         const to = hex.decode(contractAddress);
         const callData = new ContractFunctionParameters()
             .addString("new message")

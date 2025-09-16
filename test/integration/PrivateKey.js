@@ -12,14 +12,11 @@ import {
     AccountCreateTransaction,
     TransferTransaction,
 } from "../../src/exports.js";
-import dotenv from "dotenv";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { createAccount } from "./utils/Fixtures.js";
 import SignatureMap from "../../src/transaction/SignatureMap.js";
 
 import { proto } from "@hashgraph/proto";
-
-dotenv.config();
 
 describe("PrivateKey signTransaction", function () {
     let env, user1Key, user2Key, keyList;

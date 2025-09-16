@@ -1,4 +1,6 @@
-import { setTimeout } from "timers/promises";
+// Cross-environment sleep function
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 import {
     MirrorNodeContractCallQuery,
     ContractCreateTransaction,
@@ -41,7 +43,7 @@ describe.skip("MirrorNodeContractQuery", function () {
             ).getReceipt(env.client)
         ).contractId;
 
-        await setTimeout(5000);
+        await sleep(5000);
     });
 
     it("should get contract owner", async function () {
@@ -143,7 +145,7 @@ describe.skip("MirrorNodeContractQuery", function () {
 
         const newOwnerEvmAddress = accountId.toEvmAddress();
 
-        await setTimeout(3000);
+        await sleep(3000);
 
         const gas = await new MirrorNodeContractEstimateQuery()
             .setContractId(contractId)
