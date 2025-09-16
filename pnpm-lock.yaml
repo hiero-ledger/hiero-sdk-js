@@ -30,7 +30,7 @@ importers:
                 version: 1.10.0(react-native@0.78.0(@babel/core@7.23.3)(@babel/preset-env@7.22.15(@babel/core@7.23.3))(react@19.0.0))
             "@hashgraph/proto":
                 specifier: 2.22.0
-                version: 2.22.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@7.2.5)(strip-ansi@7.1.2)
+                version: 2.22.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@7.5.4)(strip-ansi@7.1.2)
             ansi-regex:
                 specifier: 6.2.2
                 version: 6.2.2
@@ -62,8 +62,8 @@ importers:
                 specifier: 13.0.0
                 version: 13.0.0
             protobufjs:
-                specifier: 7.2.5
-                version: 7.2.5
+                specifier: 7.5.4
+                version: 7.5.4
             rfc4648:
                 specifier: 1.5.3
                 version: 1.5.3
@@ -7371,10 +7371,10 @@ packages:
                 integrity: sha512-rZPNPKTOYVNEEKFaq1HqTgOwZD+4/YHS5ukLzQCypkj+OkYx7iv0mA91lJlpPPZ8vMau3IIGj5Qlwrx+8iiSmg==,
             }
 
-    protobufjs@7.2.5:
+    protobufjs@7.5.4:
         resolution:
             {
-                integrity: sha512-gGXRSXvxQ7UiPgfw8gevrfRWcTlSbOFg+p/N+JVJEK5VhueL2miT6qTymqAmjr1Q5WbOCyJbyrk6JfWKwlFn6A==,
+                integrity: sha512-CvexbZtbov6jW2eXAvLukXjXUW1TzFaivC46BpWc/3BpcCysb5Vffu+B3XHMm8lVEuy2Mm4XGex8hBSg1yapPg==,
             }
         engines: { node: ">=12.0.0" }
 
@@ -10547,14 +10547,14 @@ snapshots:
         dependencies:
             lodash.camelcase: 4.3.0
             long: 5.3.1
-            protobufjs: 7.2.5
+            protobufjs: 7.5.4
             yargs: 17.7.2
 
     "@grpc/proto-loader@0.7.9":
         dependencies:
             lodash.camelcase: 4.3.0
             long: 5.3.1
-            protobufjs: 7.2.5
+            protobufjs: 7.5.4
             yargs: 17.7.2
 
     "@hashgraph/cryptography@1.10.0(react-native@0.78.0(@babel/core@7.23.3)(@babel/preset-env@7.22.15(@babel/core@7.23.3))(react@19.0.0))":
@@ -10579,13 +10579,13 @@ snapshots:
             - react-native
             - supports-color
 
-    "@hashgraph/proto@2.22.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@7.2.5)(strip-ansi@7.1.2)":
+    "@hashgraph/proto@2.22.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@7.5.4)(strip-ansi@7.1.2)":
         dependencies:
             ansi-regex: 6.2.2
             ansi-styles: 6.2.3
             debug: 4.4.1
             long: 5.3.1
-            protobufjs: 7.2.5
+            protobufjs: 7.5.4
             strip-ansi: 7.1.2
 
     "@humanwhocodes/config-array@0.13.0":
@@ -14335,7 +14335,7 @@ snapshots:
         dependencies:
             asap: 2.0.6
 
-    protobufjs@7.2.5:
+    protobufjs@7.5.4:
         dependencies:
             "@protobufjs/aspromise": 1.1.2
             "@protobufjs/base64": 1.1.2
