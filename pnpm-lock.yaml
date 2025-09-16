@@ -27,11 +27,11 @@ importers:
         specifier: ^1.12.6
         version: 1.12.6
       '@hashgraph/cryptography':
-        specifier: 1.9.0
-        version: 1.9.0(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))
+        specifier: file:.yalc/@hashgraph/cryptography
+        version: file:.yalc/@hashgraph/cryptography(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))
       '@hashgraph/proto':
-        specifier: 2.22.0
-        version: 2.22.0
+        specifier: file:.yalc/@hashgraph/proto
+        version: file:.yalc/@hashgraph/proto
       bignumber.js:
         specifier: ^9.1.1
         version: 9.1.2
@@ -41,6 +41,9 @@ importers:
       crypto-js:
         specifier: ^4.2.0
         version: 4.2.0
+      import-sync:
+        specifier: ^2.2.3
+        version: 2.2.3
       js-base64:
         specifier: ^3.7.4
         version: 3.7.7
@@ -1512,8 +1515,8 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
-  '@hashgraph/cryptography@1.9.0':
-    resolution: {integrity: sha512-0UItolO1W/f8YIsGBrIxvjY+cSdvs4sEdzXOL49ThYEfPskJUprG3vhMhosRFoA4d0hxdJ7/glB7f7He8RW9xg==}
+  '@hashgraph/cryptography@file:.yalc/@hashgraph/cryptography':
+    resolution: {directory: .yalc/@hashgraph/cryptography, type: directory}
     engines: {node: '>=12.0.0'}
     peerDependencies:
       expo-crypto: '*'
@@ -1521,9 +1524,13 @@ packages:
       expo-crypto:
         optional: true
 
-  '@hashgraph/proto@2.22.0':
-    resolution: {integrity: sha512-+h2qqk+KwpV+rr1AN4ip1Gel3X4v0DvFO9WH7o0ZR3gQX9pfzurptKGs30DlBnH21xPqDH61v90bZvVknE27NA==}
+  '@hashgraph/proto@file:.yalc/@hashgraph/proto':
+    resolution: {directory: .yalc/@hashgraph/proto, type: directory}
     engines: {node: '>=10.0.0'}
+
+  '@httptoolkit/esm@3.3.2':
+    resolution: {integrity: sha512-mpB6FdMtn+c17RA6b6PDdsJXBLHG4P8ZJFK7sjS4IZn689kcOwjt90Ct+oxTaYo9pvCSb/GeTSjYEzoBv+bnbQ==}
+    engines: {node: '>=6'}
 
   '@humanwhocodes/config-array@0.13.0':
     resolution: {integrity: sha512-DZLEEqFWQFiyK6h5YIeynKx7JlvCYWL0cImfSRXZ9l4Sg2efkFGTuFf6vzXjK1cq6IYkU+Eg/JizXw+TD2vRNw==}
@@ -3690,6 +3697,9 @@ packages:
   import-fresh@3.3.0:
     resolution: {integrity: sha512-veYYhQa+D1QBKznvhUHxb8faxlrwUnxseDAbAp457E0wLNio2bOSKnjYDhMj+YiAq61xrMGhQk9iXVk5FzgQMw==}
     engines: {node: '>=6'}
+
+  import-sync@2.2.3:
+    resolution: {integrity: sha512-ZnF84+eGjetsXwYEuFZADO4eCYr1ngBo6UK476Oq4q6dkiDM1TN+6D5iQ5/e3erCyjo7O6xT3xHE6xdtCgDYhw==}
 
   imurmurhash@0.1.4:
     resolution: {integrity: sha512-JmXMZ6wuvDmLiHEml9ykzqO6lwFbof0GG4IkcGaENdCRDDmMVnny7s5HsIgHCbaq0w2MyPhDqkhTUgS2LU2PHA==}
@@ -7561,7 +7571,7 @@ snapshots:
       protobufjs: 7.2.5
       yargs: 17.7.2
 
-  '@hashgraph/cryptography@1.9.0(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))':
+  '@hashgraph/cryptography@file:.yalc/@hashgraph/cryptography(react-native@0.78.0(@babel/core@7.26.0)(@babel/preset-env@7.26.0(@babel/core@7.26.0))(react@19.0.0))':
     dependencies:
       '@noble/curves': 1.8.2
       asn1js: 3.0.6
@@ -7578,10 +7588,12 @@ snapshots:
     transitivePeerDependencies:
       - react-native
 
-  '@hashgraph/proto@2.22.0':
+  '@hashgraph/proto@file:.yalc/@hashgraph/proto':
     dependencies:
       long: 5.3.1
       protobufjs: 7.2.5
+
+  '@httptoolkit/esm@3.3.2': {}
 
   '@humanwhocodes/config-array@0.13.0':
     dependencies:
@@ -10139,6 +10151,10 @@ snapshots:
     dependencies:
       parent-module: 1.0.1
       resolve-from: 4.0.0
+
+  import-sync@2.2.3:
+    dependencies:
+      '@httptoolkit/esm': 3.3.2
 
   imurmurhash@0.1.4: {}
 

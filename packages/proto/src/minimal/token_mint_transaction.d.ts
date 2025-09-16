@@ -11,11 +11,41 @@ declare namespace hashgraph_token_mint_transaction {
         /** Properties of a Transaction. */
         interface ITransaction {
 
-            /** A valid, serialized, `SignedTransaction` message. */
+            /**
+             * Replaced with `signedTransactionBytes`.<br/>
+             * The body of the transaction.
+             */
+            body?: (proto.ITransactionBody|null);
+
+            /**
+             * Replaced with `signedTransactionBytes`.<br/>
+             * The signatures on the body.
+             */
+            sigs?: (proto.ISignatureList|null);
+
+            /**
+             * Replaced with `signedTransactionBytes`.<br/>
+             * The signatures on the body with a newer format.
+             */
+            sigMap?: (proto.ISignatureMap|null);
+
+            /**
+             * Replaced with `signedTransactionBytes`.<br/>
+             * TransactionBody serialized into bytes.
+             */
+            bodyBytes?: (Uint8Array|null);
+
+            /**
+             * A valid, serialized, `SignedTransaction` message.
+             * <p>
+             * This field MUST be present.
+             * This field MUST NOT exceed the current network transaction size limit
+             * (currently 6144 bytes).
+             */
             signedTransactionBytes?: (Uint8Array|null);
         }
 
-        /** A wrapper around signed transaction bytes for token minting. */
+        /** Represents a Transaction. */
         class Transaction implements ITransaction {
 
             /**
@@ -24,7 +54,37 @@ declare namespace hashgraph_token_mint_transaction {
              */
             constructor(p?: proto.ITransaction);
 
-            /** A valid, serialized, `SignedTransaction` message. */
+            /**
+             * Replaced with `signedTransactionBytes`.<br/>
+             * The body of the transaction.
+             */
+            public body?: (proto.ITransactionBody|null);
+
+            /**
+             * Replaced with `signedTransactionBytes`.<br/>
+             * The signatures on the body.
+             */
+            public sigs?: (proto.ISignatureList|null);
+
+            /**
+             * Replaced with `signedTransactionBytes`.<br/>
+             * The signatures on the body with a newer format.
+             */
+            public sigMap?: (proto.ISignatureMap|null);
+
+            /**
+             * Replaced with `signedTransactionBytes`.<br/>
+             * TransactionBody serialized into bytes.
+             */
+            public bodyBytes: Uint8Array;
+
+            /**
+             * A valid, serialized, `SignedTransaction` message.
+             * <p>
+             * This field MUST be present.
+             * This field MUST NOT exceed the current network transaction size limit
+             * (currently 6144 bytes).
+             */
             public signedTransactionBytes: Uint8Array;
 
             /**
@@ -203,82 +263,6 @@ declare namespace hashgraph_token_mint_transaction {
 
             /**
              * Gets the default type url for TransactionList
-             * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
-             * @returns The default type url
-             */
-            public static getTypeUrl(typeUrlPrefix?: string): string;
-        }
-
-        /** Properties of a TokenMintTransactionBody. */
-        interface ITokenMintTransactionBody {
-
-            /** The token for which to mint tokens. */
-            token?: (proto.ITokenID|null);
-
-            /**
-             * Applicable to tokens of type FUNGIBLE_COMMON.
-             * The amount to mint to the Treasury Account.
-             */
-            amount?: (Long|null);
-
-            /**
-             * Applicable to tokens of type NON_FUNGIBLE_UNIQUE.
-             * A list of metadata that are being created.
-             */
-            metadata?: (Uint8Array[]|null);
-        }
-
-        /** Mints tokens to the Token's treasury Account. */
-        class TokenMintTransactionBody implements ITokenMintTransactionBody {
-
-            /**
-             * Constructs a new TokenMintTransactionBody.
-             * @param [p] Properties to set
-             */
-            constructor(p?: proto.ITokenMintTransactionBody);
-
-            /** The token for which to mint tokens. */
-            public token?: (proto.ITokenID|null);
-
-            /**
-             * Applicable to tokens of type FUNGIBLE_COMMON.
-             * The amount to mint to the Treasury Account.
-             */
-            public amount: Long;
-
-            /**
-             * Applicable to tokens of type NON_FUNGIBLE_UNIQUE.
-             * A list of metadata that are being created.
-             */
-            public metadata: Uint8Array[];
-
-            /**
-             * Creates a new TokenMintTransactionBody instance using the specified properties.
-             * @param [properties] Properties to set
-             * @returns TokenMintTransactionBody instance
-             */
-            public static create(properties?: proto.ITokenMintTransactionBody): proto.TokenMintTransactionBody;
-
-            /**
-             * Encodes the specified TokenMintTransactionBody message. Does not implicitly {@link proto.TokenMintTransactionBody.verify|verify} messages.
-             * @param m TokenMintTransactionBody message or plain object to encode
-             * @param [w] Writer to encode to
-             * @returns Writer
-             */
-            public static encode(m: proto.ITokenMintTransactionBody, w?: $protobuf.Writer): $protobuf.Writer;
-
-            /**
-             * Decodes a TokenMintTransactionBody message from the specified reader or buffer.
-             * @param r Reader or buffer to decode from
-             * @param [l] Message length if known beforehand
-             * @returns TokenMintTransactionBody
-             * @throws {Error} If the payload is not a reader or valid buffer
-             * @throws {$protobuf.util.ProtocolError} If required fields are missing
-             */
-            public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): proto.TokenMintTransactionBody;
-
-            /**
-             * Gets the default type url for TokenMintTransactionBody
              * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
              * @returns The default type url
              */
@@ -5769,6 +5753,82 @@ declare namespace hashgraph_token_mint_transaction {
 
             /**
              * Gets the default type url for CustomFeeLimit
+             * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+             * @returns The default type url
+             */
+            public static getTypeUrl(typeUrlPrefix?: string): string;
+        }
+
+        /** Properties of a TokenMintTransactionBody. */
+        interface ITokenMintTransactionBody {
+
+            /** The token for which to mint tokens. */
+            token?: (proto.ITokenID|null);
+
+            /**
+             * Applicable to tokens of type FUNGIBLE_COMMON.
+             * The amount to mint to the Treasury Account.
+             */
+            amount?: (Long|null);
+
+            /**
+             * Applicable to tokens of type NON_FUNGIBLE_UNIQUE.
+             * A list of metadata that are being created.
+             */
+            metadata?: (Uint8Array[]|null);
+        }
+
+        /** Mints tokens to the Token's treasury Account. */
+        class TokenMintTransactionBody implements ITokenMintTransactionBody {
+
+            /**
+             * Constructs a new TokenMintTransactionBody.
+             * @param [p] Properties to set
+             */
+            constructor(p?: proto.ITokenMintTransactionBody);
+
+            /** The token for which to mint tokens. */
+            public token?: (proto.ITokenID|null);
+
+            /**
+             * Applicable to tokens of type FUNGIBLE_COMMON.
+             * The amount to mint to the Treasury Account.
+             */
+            public amount: Long;
+
+            /**
+             * Applicable to tokens of type NON_FUNGIBLE_UNIQUE.
+             * A list of metadata that are being created.
+             */
+            public metadata: Uint8Array[];
+
+            /**
+             * Creates a new TokenMintTransactionBody instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns TokenMintTransactionBody instance
+             */
+            public static create(properties?: proto.ITokenMintTransactionBody): proto.TokenMintTransactionBody;
+
+            /**
+             * Encodes the specified TokenMintTransactionBody message. Does not implicitly {@link proto.TokenMintTransactionBody.verify|verify} messages.
+             * @param m TokenMintTransactionBody message or plain object to encode
+             * @param [w] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(m: proto.ITokenMintTransactionBody, w?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a TokenMintTransactionBody message from the specified reader or buffer.
+             * @param r Reader or buffer to decode from
+             * @param [l] Message length if known beforehand
+             * @returns TokenMintTransactionBody
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): proto.TokenMintTransactionBody;
+
+            /**
+             * Gets the default type url for TokenMintTransactionBody
              * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
              * @returns The default type url
              */

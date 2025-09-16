@@ -10,16 +10,43 @@ package proto;
 option java_package = "com.hederahashgraph.api.proto.java";
 option java_multiple_files = true;
 
-import "token_mint.proto";
+import "basic_types.proto";
 import "duration.proto";
 import "custom_fees.proto";
+import "token_mint.proto";
 
-/**
- * A wrapper around signed transaction bytes for token minting.
- */
 message Transaction {
+    // <<<pbj.java_package = "com.hedera.hapi.node.base">>> This comment is special code for setting PBJ Compiler java package
+    /**
+     * Replaced with `signedTransactionBytes`.<br/>
+     * The body of the transaction.
+     */
+    TransactionBody body = 1 [deprecated = true];
+
+    /**
+     * Replaced with `signedTransactionBytes`.<br/>
+     * The signatures on the body.
+     */
+    SignatureList sigs = 2 [deprecated = true];
+
+    /**
+     * Replaced with `signedTransactionBytes`.<br/>
+     * The signatures on the body with a newer format.
+     */
+    SignatureMap sigMap = 3 [deprecated = true];
+
+    /**
+     * Replaced with `signedTransactionBytes`.<br/>
+     * TransactionBody serialized into bytes.
+     */
+    bytes bodyBytes = 4 [deprecated = true];
+
     /**
      * A valid, serialized, `SignedTransaction` message.
+     * <p>
+     * This field MUST be present.
+     * This field MUST NOT exceed the current network transaction size limit
+     * (currently 6144 bytes).
      */
     bytes signedTransactionBytes = 5;
 }

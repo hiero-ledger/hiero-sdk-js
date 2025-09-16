@@ -470,5 +470,638 @@ declare namespace transaction_response {
             GRPC_WEB_PROXY_NOT_SUPPORTED = 399,
             NFT_TRANSFERS_ONLY_ALLOWED_FOR_NON_FUNGIBLE_UNIQUE = 400
         }
+
+        /** Properties of a Timestamp. */
+        interface ITimestamp {
+
+            /**
+             * The number of complete seconds since the start of the epoch.
+             * <p>
+             * For this purpose, `epoch` SHALL be the UNIX epoch with 0
+             * at `1970-01-01T00:00:00.000Z`.<br/>
+             * This value MUST be greater than 0.<br/>
+             * This value SHOULD be strictly greater than `946684800`.
+             */
+            seconds?: (Long|null);
+
+            /**
+             * The number of nanoseconds after the start of the second referenced
+             * in `seconds`.
+             * <p>
+             * This value MUST be greater than or equal to 0.<br/>
+             * This value MUST be strictly less than 1,000,000,000.
+             */
+            nanos?: (number|null);
+        }
+
+        /**
+         * An exact date and time.<br/>
+         * This is the same data structure as the Google protobuf Timestamp.proto.
+         *
+         * #### Additional Notes
+         * Useful information is present in comments on the
+         * [Google version](https://github.com/google/protobuf/blob/master/src/google/protobuf/timestamp.proto).
+         */
+        class Timestamp implements ITimestamp {
+
+            /**
+             * Constructs a new Timestamp.
+             * @param [p] Properties to set
+             */
+            constructor(p?: proto.ITimestamp);
+
+            /**
+             * The number of complete seconds since the start of the epoch.
+             * <p>
+             * For this purpose, `epoch` SHALL be the UNIX epoch with 0
+             * at `1970-01-01T00:00:00.000Z`.<br/>
+             * This value MUST be greater than 0.<br/>
+             * This value SHOULD be strictly greater than `946684800`.
+             */
+            public seconds: Long;
+
+            /**
+             * The number of nanoseconds after the start of the second referenced
+             * in `seconds`.
+             * <p>
+             * This value MUST be greater than or equal to 0.<br/>
+             * This value MUST be strictly less than 1,000,000,000.
+             */
+            public nanos: number;
+
+            /**
+             * Creates a new Timestamp instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns Timestamp instance
+             */
+            public static create(properties?: proto.ITimestamp): proto.Timestamp;
+
+            /**
+             * Encodes the specified Timestamp message. Does not implicitly {@link proto.Timestamp.verify|verify} messages.
+             * @param m Timestamp message or plain object to encode
+             * @param [w] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(m: proto.ITimestamp, w?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a Timestamp message from the specified reader or buffer.
+             * @param r Reader or buffer to decode from
+             * @param [l] Message length if known beforehand
+             * @returns Timestamp
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): proto.Timestamp;
+
+            /**
+             * Gets the default type url for Timestamp
+             * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+             * @returns The default type url
+             */
+            public static getTypeUrl(typeUrlPrefix?: string): string;
+        }
+
+        /** Properties of a TimestampSeconds. */
+        interface ITimestampSeconds {
+
+            /**
+             * The number of complete seconds since the start of the epoch.
+             * <p>
+             * For this purpose, `epoch` SHALL be the UNIX epoch with 0
+             * at `1970-01-01T00:00:00.000Z`.<br/>
+             * This value MUST be greater than 0.<br/>
+             * This value SHOULD be strictly greater than `946684800`.
+             */
+            seconds?: (Long|null);
+        }
+
+        /** An exact date and time, with a resolution of one second. */
+        class TimestampSeconds implements ITimestampSeconds {
+
+            /**
+             * Constructs a new TimestampSeconds.
+             * @param [p] Properties to set
+             */
+            constructor(p?: proto.ITimestampSeconds);
+
+            /**
+             * The number of complete seconds since the start of the epoch.
+             * <p>
+             * For this purpose, `epoch` SHALL be the UNIX epoch with 0
+             * at `1970-01-01T00:00:00.000Z`.<br/>
+             * This value MUST be greater than 0.<br/>
+             * This value SHOULD be strictly greater than `946684800`.
+             */
+            public seconds: Long;
+
+            /**
+             * Creates a new TimestampSeconds instance using the specified properties.
+             * @param [properties] Properties to set
+             * @returns TimestampSeconds instance
+             */
+            public static create(properties?: proto.ITimestampSeconds): proto.TimestampSeconds;
+
+            /**
+             * Encodes the specified TimestampSeconds message. Does not implicitly {@link proto.TimestampSeconds.verify|verify} messages.
+             * @param m TimestampSeconds message or plain object to encode
+             * @param [w] Writer to encode to
+             * @returns Writer
+             */
+            public static encode(m: proto.ITimestampSeconds, w?: $protobuf.Writer): $protobuf.Writer;
+
+            /**
+             * Decodes a TimestampSeconds message from the specified reader or buffer.
+             * @param r Reader or buffer to decode from
+             * @param [l] Message length if known beforehand
+             * @returns TimestampSeconds
+             * @throws {Error} If the payload is not a reader or valid buffer
+             * @throws {$protobuf.util.ProtocolError} If required fields are missing
+             */
+            public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): proto.TimestampSeconds;
+
+            /**
+             * Gets the default type url for TimestampSeconds
+             * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+             * @returns The default type url
+             */
+            public static getTypeUrl(typeUrlPrefix?: string): string;
+        }
+    }
+
+    /** Namespace google. */
+    namespace google {
+
+        /** Namespace protobuf. */
+        namespace protobuf {
+
+            /** Properties of a UInt32Value. */
+            interface IUInt32Value {
+
+                /** The uint32 value. */
+                value?: (number|null);
+            }
+
+            /** Wrapper message for `uint32`. */
+            class UInt32Value implements IUInt32Value {
+
+                /**
+                 * Constructs a new UInt32Value.
+                 * @param [p] Properties to set
+                 */
+                constructor(p?: google.protobuf.IUInt32Value);
+
+                /** The uint32 value. */
+                public value: number;
+
+                /**
+                 * Creates a new UInt32Value instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns UInt32Value instance
+                 */
+                public static create(properties?: google.protobuf.IUInt32Value): google.protobuf.UInt32Value;
+
+                /**
+                 * Encodes the specified UInt32Value message. Does not implicitly {@link google.protobuf.UInt32Value.verify|verify} messages.
+                 * @param m UInt32Value message or plain object to encode
+                 * @param [w] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(m: google.protobuf.IUInt32Value, w?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a UInt32Value message from the specified reader or buffer.
+                 * @param r Reader or buffer to decode from
+                 * @param [l] Message length if known beforehand
+                 * @returns UInt32Value
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): google.protobuf.UInt32Value;
+
+                /**
+                 * Gets the default type url for UInt32Value
+                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns The default type url
+                 */
+                public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            /** Properties of a StringValue. */
+            interface IStringValue {
+
+                /** The string value. */
+                value?: (string|null);
+            }
+
+            /** Wrapper message for `string`. */
+            class StringValue implements IStringValue {
+
+                /**
+                 * Constructs a new StringValue.
+                 * @param [p] Properties to set
+                 */
+                constructor(p?: google.protobuf.IStringValue);
+
+                /** The string value. */
+                public value: string;
+
+                /**
+                 * Creates a new StringValue instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns StringValue instance
+                 */
+                public static create(properties?: google.protobuf.IStringValue): google.protobuf.StringValue;
+
+                /**
+                 * Encodes the specified StringValue message. Does not implicitly {@link google.protobuf.StringValue.verify|verify} messages.
+                 * @param m StringValue message or plain object to encode
+                 * @param [w] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(m: google.protobuf.IStringValue, w?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a StringValue message from the specified reader or buffer.
+                 * @param r Reader or buffer to decode from
+                 * @param [l] Message length if known beforehand
+                 * @returns StringValue
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): google.protobuf.StringValue;
+
+                /**
+                 * Gets the default type url for StringValue
+                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns The default type url
+                 */
+                public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            /** Properties of a BoolValue. */
+            interface IBoolValue {
+
+                /** The bool value. */
+                value?: (boolean|null);
+            }
+
+            /** Wrapper message for `bool`. */
+            class BoolValue implements IBoolValue {
+
+                /**
+                 * Constructs a new BoolValue.
+                 * @param [p] Properties to set
+                 */
+                constructor(p?: google.protobuf.IBoolValue);
+
+                /** The bool value. */
+                public value: boolean;
+
+                /**
+                 * Creates a new BoolValue instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns BoolValue instance
+                 */
+                public static create(properties?: google.protobuf.IBoolValue): google.protobuf.BoolValue;
+
+                /**
+                 * Encodes the specified BoolValue message. Does not implicitly {@link google.protobuf.BoolValue.verify|verify} messages.
+                 * @param m BoolValue message or plain object to encode
+                 * @param [w] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(m: google.protobuf.IBoolValue, w?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a BoolValue message from the specified reader or buffer.
+                 * @param r Reader or buffer to decode from
+                 * @param [l] Message length if known beforehand
+                 * @returns BoolValue
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): google.protobuf.BoolValue;
+
+                /**
+                 * Gets the default type url for BoolValue
+                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns The default type url
+                 */
+                public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            /** Properties of a BytesValue. */
+            interface IBytesValue {
+
+                /** The bytes value. */
+                value?: (Uint8Array|null);
+            }
+
+            /** Wrapper message for `bytes`. */
+            class BytesValue implements IBytesValue {
+
+                /**
+                 * Constructs a new BytesValue.
+                 * @param [p] Properties to set
+                 */
+                constructor(p?: google.protobuf.IBytesValue);
+
+                /** The bytes value. */
+                public value: Uint8Array;
+
+                /**
+                 * Creates a new BytesValue instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns BytesValue instance
+                 */
+                public static create(properties?: google.protobuf.IBytesValue): google.protobuf.BytesValue;
+
+                /**
+                 * Encodes the specified BytesValue message. Does not implicitly {@link google.protobuf.BytesValue.verify|verify} messages.
+                 * @param m BytesValue message or plain object to encode
+                 * @param [w] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(m: google.protobuf.IBytesValue, w?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a BytesValue message from the specified reader or buffer.
+                 * @param r Reader or buffer to decode from
+                 * @param [l] Message length if known beforehand
+                 * @returns BytesValue
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): google.protobuf.BytesValue;
+
+                /**
+                 * Gets the default type url for BytesValue
+                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns The default type url
+                 */
+                public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            /** Properties of a UInt64Value. */
+            interface IUInt64Value {
+
+                /** The uint64 value. */
+                value?: (Long|null);
+            }
+
+            /** Wrapper message for `uint64`. */
+            class UInt64Value implements IUInt64Value {
+
+                /**
+                 * Constructs a new UInt64Value.
+                 * @param [p] Properties to set
+                 */
+                constructor(p?: google.protobuf.IUInt64Value);
+
+                /** The uint64 value. */
+                public value: Long;
+
+                /**
+                 * Creates a new UInt64Value instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns UInt64Value instance
+                 */
+                public static create(properties?: google.protobuf.IUInt64Value): google.protobuf.UInt64Value;
+
+                /**
+                 * Encodes the specified UInt64Value message. Does not implicitly {@link google.protobuf.UInt64Value.verify|verify} messages.
+                 * @param m UInt64Value message or plain object to encode
+                 * @param [w] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(m: google.protobuf.IUInt64Value, w?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a UInt64Value message from the specified reader or buffer.
+                 * @param r Reader or buffer to decode from
+                 * @param [l] Message length if known beforehand
+                 * @returns UInt64Value
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): google.protobuf.UInt64Value;
+
+                /**
+                 * Gets the default type url for UInt64Value
+                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns The default type url
+                 */
+                public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            /** Properties of an Int32Value. */
+            interface IInt32Value {
+
+                /** The int32 value. */
+                value?: (number|null);
+            }
+
+            /** Wrapper message for `int32`. */
+            class Int32Value implements IInt32Value {
+
+                /**
+                 * Constructs a new Int32Value.
+                 * @param [p] Properties to set
+                 */
+                constructor(p?: google.protobuf.IInt32Value);
+
+                /** The int32 value. */
+                public value: number;
+
+                /**
+                 * Creates a new Int32Value instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns Int32Value instance
+                 */
+                public static create(properties?: google.protobuf.IInt32Value): google.protobuf.Int32Value;
+
+                /**
+                 * Encodes the specified Int32Value message. Does not implicitly {@link google.protobuf.Int32Value.verify|verify} messages.
+                 * @param m Int32Value message or plain object to encode
+                 * @param [w] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(m: google.protobuf.IInt32Value, w?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes an Int32Value message from the specified reader or buffer.
+                 * @param r Reader or buffer to decode from
+                 * @param [l] Message length if known beforehand
+                 * @returns Int32Value
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): google.protobuf.Int32Value;
+
+                /**
+                 * Gets the default type url for Int32Value
+                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns The default type url
+                 */
+                public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            /** Properties of an Int64Value. */
+            interface IInt64Value {
+
+                /** The int64 value. */
+                value?: (Long|null);
+            }
+
+            /** Wrapper message for `int64`. */
+            class Int64Value implements IInt64Value {
+
+                /**
+                 * Constructs a new Int64Value.
+                 * @param [p] Properties to set
+                 */
+                constructor(p?: google.protobuf.IInt64Value);
+
+                /** The int64 value. */
+                public value: Long;
+
+                /**
+                 * Creates a new Int64Value instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns Int64Value instance
+                 */
+                public static create(properties?: google.protobuf.IInt64Value): google.protobuf.Int64Value;
+
+                /**
+                 * Encodes the specified Int64Value message. Does not implicitly {@link google.protobuf.Int64Value.verify|verify} messages.
+                 * @param m Int64Value message or plain object to encode
+                 * @param [w] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(m: google.protobuf.IInt64Value, w?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes an Int64Value message from the specified reader or buffer.
+                 * @param r Reader or buffer to decode from
+                 * @param [l] Message length if known beforehand
+                 * @returns Int64Value
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): google.protobuf.Int64Value;
+
+                /**
+                 * Gets the default type url for Int64Value
+                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns The default type url
+                 */
+                public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            /** Properties of a FloatValue. */
+            interface IFloatValue {
+
+                /** The float value. */
+                value?: (number|null);
+            }
+
+            /** Wrapper message for `float`. */
+            class FloatValue implements IFloatValue {
+
+                /**
+                 * Constructs a new FloatValue.
+                 * @param [p] Properties to set
+                 */
+                constructor(p?: google.protobuf.IFloatValue);
+
+                /** The float value. */
+                public value: number;
+
+                /**
+                 * Creates a new FloatValue instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns FloatValue instance
+                 */
+                public static create(properties?: google.protobuf.IFloatValue): google.protobuf.FloatValue;
+
+                /**
+                 * Encodes the specified FloatValue message. Does not implicitly {@link google.protobuf.FloatValue.verify|verify} messages.
+                 * @param m FloatValue message or plain object to encode
+                 * @param [w] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(m: google.protobuf.IFloatValue, w?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a FloatValue message from the specified reader or buffer.
+                 * @param r Reader or buffer to decode from
+                 * @param [l] Message length if known beforehand
+                 * @returns FloatValue
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): google.protobuf.FloatValue;
+
+                /**
+                 * Gets the default type url for FloatValue
+                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns The default type url
+                 */
+                public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+
+            /** Properties of a DoubleValue. */
+            interface IDoubleValue {
+
+                /** The double value. */
+                value?: (number|null);
+            }
+
+            /** Wrapper message for `double`. */
+            class DoubleValue implements IDoubleValue {
+
+                /**
+                 * Constructs a new DoubleValue.
+                 * @param [p] Properties to set
+                 */
+                constructor(p?: google.protobuf.IDoubleValue);
+
+                /** The double value. */
+                public value: number;
+
+                /**
+                 * Creates a new DoubleValue instance using the specified properties.
+                 * @param [properties] Properties to set
+                 * @returns DoubleValue instance
+                 */
+                public static create(properties?: google.protobuf.IDoubleValue): google.protobuf.DoubleValue;
+
+                /**
+                 * Encodes the specified DoubleValue message. Does not implicitly {@link google.protobuf.DoubleValue.verify|verify} messages.
+                 * @param m DoubleValue message or plain object to encode
+                 * @param [w] Writer to encode to
+                 * @returns Writer
+                 */
+                public static encode(m: google.protobuf.IDoubleValue, w?: $protobuf.Writer): $protobuf.Writer;
+
+                /**
+                 * Decodes a DoubleValue message from the specified reader or buffer.
+                 * @param r Reader or buffer to decode from
+                 * @param [l] Message length if known beforehand
+                 * @returns DoubleValue
+                 * @throws {Error} If the payload is not a reader or valid buffer
+                 * @throws {$protobuf.util.ProtocolError} If required fields are missing
+                 */
+                public static decode(r: ($protobuf.Reader|Uint8Array), l?: number): google.protobuf.DoubleValue;
+
+                /**
+                 * Gets the default type url for DoubleValue
+                 * @param [typeUrlPrefix] your custom typeUrlPrefix(default "type.googleapis.com")
+                 * @returns The default type url
+                 */
+                public static getTypeUrl(typeUrlPrefix?: string): string;
+            }
+        }
     }
 }

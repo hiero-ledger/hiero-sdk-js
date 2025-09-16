@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
+import importSync from "import-sync";
+
+//import importSync from "import-sync";
+
 /**
  * Dynamic transaction encoder that imports transaction-specific proto encoders
  * This enables tree-shaking and reduces bundle size by only loading the needed proto code
@@ -92,7 +96,7 @@ const protoModuleCache = new Map();
  * @param {string} transactionDataCase - The transaction data case from _getTransactionDataCase()
  * @returns {Promise<any>} The proto module with TransactionBody encoder
  */
-export async function getTransactionProtoEncoder(transactionDataCase) {
+export function getTransactionProtoEncoder(transactionDataCase) {
     // Check cache first
     if (protoModuleCache.has(transactionDataCase)) {
         return protoModuleCache.get(transactionDataCase);
@@ -109,8 +113,8 @@ export async function getTransactionProtoEncoder(transactionDataCase) {
 
     try {
         // Dynamic import using the minimal proto package
-        const protoModule = await import(
-            `@hashgraph/proto/lib/minimal/${protoModuleName.toLowerCase().replace(/transaction$/, "_transaction.js")}`
+        const protoModule = importSync(
+            `@hashgraph/proto/lib/minimal/${protoModuleName.toLowerCase().replace(/transaction$/, "_transaction.js")}`,
         );
 
         // Cache the result
@@ -124,42 +128,6 @@ export async function getTransactionProtoEncoder(transactionDataCase) {
             `Failed to dynamically import proto module for ${transactionDataCase}: ${errorMessage}`,
         );
     }
-}
-
-/**
- * Dynamically encodes a transaction body using the appropriate proto encoder
- * @param {any} body - The transaction body to encode
- * @param {string} transactionDataCase - The transaction data case from _getTransactionDataCase()
- * @returns {Promise<Uint8Array>} The encoded transaction body bytes
- */
-export async function encodeTransactionBody(body, transactionDataCase) {
-    const protoModule = await getTransactionProtoEncoder(transactionDataCase);
-
-    // Use the proto module to encode the transaction body
-    return protoModule.proto.TransactionBody.encode(body).finish();
-}
-
-/**
- * Dynamically encodes a transaction body using the appropriate proto encoder (sync version with fallback)
- * This version attempts to use a cached encoder first, falls back to main proto if not available
- * @param {any} body - The transaction body to encode
- * @param {string} transactionDataCase - The transaction data case from _getTransactionDataCase()
- * @param {any} fallbackProto - Fallback proto module (e.g., HieroProto)
- * @returns {Uint8Array} The encoded transaction body bytes
- */
-export function encodeTransactionBodySync(
-    body,
-    transactionDataCase,
-    fallbackProto,
-) {
-    // Check if we have a cached proto module
-    if (protoModuleCache.has(transactionDataCase)) {
-        const protoModule = protoModuleCache.get(transactionDataCase);
-        return protoModule.proto.TransactionBody.encode(body).finish();
-    }
-
-    // Fall back to the main proto module if no cached version available
-    return fallbackProto.proto.TransactionBody.encode(body).finish();
 }
 
 /**
@@ -178,40 +146,6 @@ export function getTransactionTypeFromBodyBytes(bodyBytes, fallbackProto) {
 }
 
 /**
- * Dynamically decodes a transaction body using only the specific transaction proto
- * This avoids importing the full TransactionBody and only loads the needed transaction type
- * @param {Uint8Array} bodyBytes - The encoded transaction body bytes
- * @param {string} transactionDataCase - The transaction data case (e.g., "fileCreate")
- * @returns {Promise<any>} The decoded transaction body
- */
-export async function decodeTransactionBody(bodyBytes, transactionDataCase) {
-    const protoModule = await getTransactionProtoEncoder(transactionDataCase);
-    return protoModule.proto.TransactionBody.decode(bodyBytes);
-}
-
-/**
- * Synchronous version with fallback
- * @param {Uint8Array} bodyBytes - The encoded transaction body bytes
- * @param {string} transactionDataCase - The transaction data case (e.g., "fileCreate")
- * @param {any} fallbackProto - Fallback proto module (e.g., HieroProto)
- * @returns {any} The decoded transaction body
- */
-export function decodeTransactionBodySync(
-    bodyBytes,
-    transactionDataCase,
-    fallbackProto,
-) {
-    // Check if we have a cached proto module
-    if (protoModuleCache.has(transactionDataCase)) {
-        const protoModule = protoModuleCache.get(transactionDataCase);
-        return protoModule.proto.TransactionBody.decode(bodyBytes);
-    }
-
-    // Fall back to the main proto module if no cached version available
-    return fallbackProto.proto.TransactionBody.decode(bodyBytes);
-}
-
-/**
  * Preload specific transaction proto encoders
  * This can be called during app initialization for commonly used transactions
  * @param {string[]} transactionTypes - Array of transaction data cases to preload
@@ -227,12 +161,272 @@ export async function preloadTransactionEncoders(transactionTypes) {
     await Promise.all(promises);
 }
 
+// --- Minimal oneof discriminator helpers ---
+// These helpers avoid importing full @hashgraph/proto by peeking field tags
+// of proto.TransactionBody to determine which `data` arm is present.
+
+/**
+ * Known top-level non-oneof field numbers in proto.TransactionBody
+ * Keep this list in sync with minimal_src definitions
+ */
+const NON_ONEOF_TRANSACTION_BODY_FIELDS = new Set([1, 2, 3, 4, 6, 73, 1001]);
+
+/**
+ * Detects which oneof `data` field number is present in a TransactionBody
+ * without decoding with a full schema.
+ * Returns the field number (e.g., 16 for fileAppend) or null if none found.
+ *
+ * @param {Uint8Array} bodyBytes
+ * @returns {number | null}
+ */
+export function detectTransactionBodyDataFieldNumber(bodyBytes) {
+    // Lazy import to avoid hard dependency unless used
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const { Reader } = require("protobufjs/minimal");
+    const reader = Reader.create(bodyBytes);
+
+    while (reader.pos < reader.len) {
+        const tag = reader.uint32();
+        const fieldNumber = tag >>> 3;
+        const wireType = tag & 7;
+
+        if (!NON_ONEOF_TRANSACTION_BODY_FIELDS.has(fieldNumber)) {
+            // Oneof arms are messages → length-delimited
+            if (wireType === 2) {
+                return fieldNumber;
+            }
+        }
+
+        reader.skipType(wireType);
+    }
+
+    return null;
+}
+
+/**
+ * Optional mapping from TransactionBody oneof `data` field numbers to case strings.
+ * Extend as needed. Only include values you need to detect.
+ * @type {Record<number, string>}
+ */
+export const TRANSACTION_BODY_FIELD_NUMBER_TO_CASE = {
+    // Contract
+    7: "contractCall",
+    8: "contractCreateInstance",
+    9: "contractUpdateInstance",
+    22: "contractDeleteInstance",
+
+    // Crypto
+    11: "cryptoCreateAccount",
+    12: "cryptoDelete",
+    14: "cryptoTransfer",
+    15: "cryptoUpdate",
+    48: "cryptoApproveAllowance",
+    49: "cryptoDeleteAllowance",
+
+    // File
+    16: "fileAppend",
+    17: "fileCreate",
+    18: "fileDelete",
+    19: "fileUpdate",
+
+    // System
+    20: "systemDelete",
+    21: "systemUndelete",
+    23: "freeze",
+
+    // Consensus (Topic)
+    24: "consensusCreateTopic",
+    25: "consensusUpdateTopic",
+    26: "consensusDeleteTopic",
+    27: "consensusSubmitMessage",
+
+    // Token
+    29: "tokenCreation",
+    31: "tokenFreeze",
+    32: "tokenUnfreeze",
+    33: "tokenGrantKyc",
+    34: "tokenRevokeKyc",
+    35: "tokenDeletion",
+    36: "tokenUpdate",
+    37: "tokenMint",
+    38: "tokenBurn",
+    39: "tokenWipe",
+    40: "tokenAssociate",
+    41: "tokenDissociate",
+    45: "tokenFeeScheduleUpdate",
+    46: "tokenPause",
+    47: "tokenUnpause",
+    53: "tokenUpdateNfts",
+    57: "tokenReject",
+    58: "tokenAirdrop",
+    59: "tokenCancelAirdrop",
+    60: "tokenClaimAirdrop",
+
+    // Schedule
+    42: "scheduleCreate",
+    43: "scheduleDelete",
+    44: "scheduleSign",
+
+    // Other
+    50: "ethereumTransaction",
+    51: "nodeStakeUpdate",
+    52: "utilPrng",
+    54: "nodeCreate",
+    55: "nodeUpdate",
+    56: "nodeDelete",
+    74: "atomicBatch",
+};
+
+/**
+ *
+ * @param {Uint8Array} bodyBytes
+ * @returns
+ */
+export function decodeTransactionBodyAutoSync(bodyBytes) {
+    const dataCase = detectTransactionBodyCaseFromBytes(bodyBytes);
+    console.log(dataCase);
+
+    if (!dataCase) {
+        throw new Error("Unknown transaction type");
+    }
+
+    // Get the file name from direct mapping
+    const fileName = TRANSACTION_CASE_TO_FILE_NAME[dataCase];
+    if (!fileName) {
+        throw new Error("Unknown transaction type");
+    }
+
+    try {
+        // Use importSync for synchronous dynamic import
+        const protoModule = importSync(
+            `@hashgraph/proto/lib/minimal/${fileName}`,
+        );
+        return protoModule.proto.TransactionBody.decode(bodyBytes);
+    } catch (error) {
+        console.warn(`Failed to load ${dataCase} module:`, error);
+    }
+}
+
+/**
+ *
+ * @param {Uint8Array} bodyBytes
+ * @returns
+ */
+export function enodeTransactionBodyAutoSync(bodyBytes) {
+    const dataCase = detectTransactionBodyCaseFromBytes(bodyBytes);
+    console.log(dataCase);
+
+    if (!dataCase) {
+        throw new Error("Unknown transaction type");
+    }
+
+    // Get the file name from direct mapping
+    const fileName = TRANSACTION_CASE_TO_FILE_NAME[dataCase];
+    if (!fileName) {
+        throw new Error("Unknown transaction type");
+    }
+
+    try {
+        // Use importSync for synchronous dynamic import
+        const protoModule = importSync(
+            `@hashgraph/proto/lib/minimal/${fileName}`,
+        );
+        return protoModule.proto.TransactionBody.encode(bodyBytes);
+    } catch (error) {
+        console.warn(`Failed to load ${dataCase} module:`, error);
+    }
+}
+
+/**
+ * Detects the TransactionBody oneof case string directly from bytes, when mapped.
+ * Falls back to null if unknown.
+ *
+ * @param {Uint8Array} bodyBytes
+ * @returns {string | null}
+ */
+export function detectTransactionBodyCaseFromBytes(bodyBytes) {
+    const field = detectTransactionBodyDataFieldNumber(bodyBytes);
+    if (field == null) return null;
+    return TRANSACTION_BODY_FIELD_NUMBER_TO_CASE[field] ?? null;
+}
+
+/**
+ * Direct mapping from transaction data case to actual file names
+ * @type {Record<string, string>}
+ */
+const TRANSACTION_CASE_TO_FILE_NAME = {
+    // Contract
+    contractCall: "contract_call_transaction.js",
+    contractCreateInstance: "contract_create_transaction.js",
+    contractUpdateInstance: "contract_update_transaction.js",
+    contractDeleteInstance: "contract_delete_transaction.js",
+
+    // Crypto
+    cryptoCreateAccount: "crypto_create_transaction.js",
+    cryptoDelete: "crypto_delete_transaction.js",
+    cryptoTransfer: "crypto_transfer_transaction.js",
+    cryptoUpdate: "crypto_update_transaction.js",
+    cryptoApproveAllowance: "crypto_approve_allowance_transaction.js",
+    cryptoDeleteAllowance: "crypto_delete_allowance_transaction.js",
+
+    // File
+    fileCreate: "file_create_transaction.js",
+    fileAppend: "file_append_transaction.js",
+    fileUpdate: "file_update_transaction.js",
+    fileDelete: "file_delete_transaction.js",
+
+    // System
+    systemDelete: "system_delete_transaction.js",
+    systemUndelete: "system_undelete_transaction.js",
+    freeze: "freeze_transaction.js",
+
+    // Consensus (Topic)
+    consensusCreateTopic: "consensus_create_topic_transaction.js",
+    consensusUpdateTopic: "consensus_update_topic_transaction.js",
+    consensusDeleteTopic: "consensus_delete_topic_transaction.js",
+    consensusSubmitMessage: "consensus_submit_message_transaction.js",
+
+    // Token
+    tokenCreation: "token_create_transaction.js",
+    tokenUpdate: "token_update_transaction.js",
+    tokenMint: "token_mint_transaction.js",
+    tokenBurn: "token_burn_transaction.js",
+    tokenDeletion: "token_delete_transaction.js",
+    tokenWipe: "token_wipe_account_transaction.js",
+    tokenFreeze: "token_freeze_account_transaction.js",
+    tokenUnfreeze: "token_unfreeze_account_transaction.js",
+    tokenGrantKyc: "token_grant_kyc_transaction.js",
+    tokenRevokeKyc: "token_revoke_kyc_transaction.js",
+    tokenAssociate: "token_associate_transaction.js",
+    tokenDissociate: "token_dissociate_transaction.js",
+    tokenFeeScheduleUpdate: "token_fee_schedule_update_transaction.js",
+    tokenPause: "token_pause_transaction.js",
+    tokenUnpause: "token_unpause_transaction.js",
+    tokenUpdateNfts: "token_update_nfts_transaction.js",
+    tokenReject: "token_reject_transaction.js",
+    tokenAirdrop: "token_airdrop_transaction.js",
+    tokenCancelAirdrop: "token_cancel_airdrop_transaction.js",
+    tokenClaimAirdrop: "token_claim_airdrop_transaction.js",
+
+    // Schedule
+    scheduleCreate: "schedule_create_transaction.js",
+    scheduleDelete: "schedule_delete_transaction.js",
+    scheduleSign: "schedule_sign_transaction.js",
+
+    // Other
+    ethereumTransaction: "ethereum_transaction_transaction.js",
+    nodeStakeUpdate: "node_stake_update_transaction.js",
+    utilPrng: "util_prng_transaction.js",
+    nodeCreate: "node_create_transaction.js",
+    nodeUpdate: "node_update_transaction.js",
+    nodeDelete: "node_delete_transaction.js",
+    atomicBatch: "atomic_batch_transaction.js",
+};
+
 export default {
     getTransactionProtoEncoder,
-    encodeTransactionBody,
-    encodeTransactionBodySync,
-    decodeTransactionBody,
-    decodeTransactionBodySync,
+    decodeTransactionBodyAutoSync,
+    enodeTransactionBodyAutoSync,
     getTransactionTypeFromBodyBytes,
     preloadTransactionEncoders,
     TRANSACTION_PROTO_MAPPING,
