@@ -5,6 +5,16 @@
     "main": "lib/index.js",
     "browser": "src/index.js",
     "types": "lib/index.d.ts",
+    "typesVersions": {
+        "*": {
+            "minimal": [
+                "./lib/minimal/index.d.ts"
+            ],
+            "minimal/*": [
+                "./lib/minimal/*"
+            ]
+        }
+    },
     "license": "Apache-2.0",
     "author": "Launchbadge <contact@launchbadge.com>",
     "repository": "https://github.com/hiero-ledger/hiero-sdk-js",
@@ -23,7 +33,9 @@
             "require": "./lib/index.js"
         },
         "./minimal": {
-            "import": "./lib/minimal/index.js"
+            "import": "./lib/minimal/index.js",
+            "require": "./lib/minimal/index.js",
+            "types": "./lib/minimal/index.d.ts"
         }
     },
     "files": [

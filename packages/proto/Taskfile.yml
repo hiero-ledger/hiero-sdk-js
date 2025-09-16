@@ -102,10 +102,14 @@ tasks:
                             fi
                         done
                         
-                        # Generate each transaction with its specific dependencies to src/minimal
-                        if npx pbjs -t static-module -w es6 -p=minimal_src --dependency protobufjs/minimal --force-long --no-beautify --no-convert --no-delimited --no-verify -o "src/minimal/${base_name}.js" "$proto_file" $imports $common_deps 2>/dev/null; then
-                            npx pbjs -t static-module -w es6 -p=minimal_src --dependency protobufjs/minimal --force-long --no-beautify --no-convert --no-delimited --no-verify -o "src/minimal/transaction_contents.js" transaction_contents.proto timestamp.proto google_protobuf_wrappers.proto
-                            npx pbts -n hashgraph -o src/minimal/${base_name}.d.ts src/minimal/${base_name}.js
+                        # Generate each transaction with its own unique namespace to avoid conflicts
+                        unique_namespace="hashgraph_${base_name}"
+                        if  npx pbjs -r "$unique_namespace" -t static-module -w es6 -p=minimal_src --dependency protobufjs/minimal --force-long --no-beautify --no-convert --no-delimited --no-verify -o "src/minimal/${base_name}.js" "$proto_file" $imports $common_deps 2>/dev/null; then
+                            npx pbjs -r "transaction_contents" -t static-module -w es6 -p=minimal_src --dependency protobufjs/minimal --force-long --no-beautify --no-convert --no-delimited --no-verify -o "src/minimal/transaction_contents.js" transaction_contents.proto timestamp.proto google_protobuf_wrappers.proto
+                            npx pbjs -r "transaction_response" -t static-module -w es6 -p=minimal_src --dependency protobufjs/minimal --force-long --no-beautify --no-convert --no-delimited --no-verify -o "src/minimal/transaction_response.js" transaction_response.proto timestamp.proto google_protobuf_wrappers.proto
+                            npx pbts -n "$unique_namespace" -o src/minimal/${base_name}.d.ts src/minimal/${base_name}.js
+                            npx pbts -n "transaction_contents" -o src/minimal/transaction_contents.d.ts src/minimal/transaction_contents.js
+                            npx pbts -n "transaction_response" -o src/minimal/transaction_response.d.ts src/minimal/transaction_response.js
                             echo "✓ Successfully generated $base_name.js"
                             success_count=$((success_count + 1))
                         fi
@@ -120,7 +124,8 @@ tasks:
                 if [ $fail_count -gt 0 ]; then
                     echo "Note: Failed files likely have missing dependencies that need to be added to minimal_src/"
                 fi
-            - npx babel src/minimal -d lib/minimal > /dev/null
+            - npx copyfiles -u 1 "src/minimal/*.d.ts" lib/ > /dev/null
+            - npx babel src/minimal -d lib/minimal
             - task: generate:minimal:index
 
     generate:minimal:index:
@@ -171,6 +176,28 @@ tasks:
                 # Count the exports
                 export_count=$(grep -c "export { default as" lib/minimal/index.js)
                 echo "✓ Generated index.js with $export_count transaction exports"
+            - task: generate:minimal:index:types
+
+    generate:minimal:index:types:
+        desc: "Generate TypeScript definitions for lib/minimal/index.js"
+        cmds:
+            - |
+                # Generate index.d.ts for the minimal package
+                echo "// Auto-generated index types for minimal transaction proto modules" > lib/minimal/index.d.ts
+                echo "// This enables tree-shaking by providing named exports for each transaction type" >> lib/minimal/index.d.ts
+                echo "" >> lib/minimal/index.d.ts
+
+                # Convert export statements to TypeScript
+                grep "^export { default as" lib/minimal/index.js | sed 's/\.js";$/";/' >> lib/minimal/index.d.ts
+
+                # Add default export type
+                echo "" >> lib/minimal/index.d.ts
+                echo "// For backwards compatibility, also export all as a single object" >> lib/minimal/index.d.ts
+                echo "declare const _default: {" >> lib/minimal/index.d.ts
+                grep "() => import" lib/minimal/index.js | sed 's/: () => import(\"\(.*\)\.js\"),/: () => Promise<typeof import("\1")>;/' >> lib/minimal/index.d.ts
+                echo "};" >> lib/minimal/index.d.ts
+                echo "" >> lib/minimal/index.d.ts
+                echo "export default _default;" >> lib/minimal/index.d.ts
 
     clean:
         cmds:
