@@ -17,6 +17,7 @@ import {
     TransactionContents,
     TransactionResponse as TransactionResponseProto,
 } from "@hashgraph/proto/minimal";
+import { encodeTransactionBodySync } from "./DynamicTransactionEncoder.js";
 import PrecheckStatusError from "../PrecheckStatusError.js";
 import AccountId from "../account/AccountId.js";
 import PublicKey from "../PublicKey.js";
@@ -246,9 +247,7 @@ export default class Transaction extends Executable {
         const bodies = [];
 
         const list =
-            FileAppendTransaction.proto.TransactionList.decode(
-                bytes,
-            ).transactionList;
+            HieroProto.proto.TransactionList.decode(bytes).transactionList;
 
         // If the list is of length 0, then teh bytes provided were not a
         // `proto.TransactionList`
@@ -629,8 +628,11 @@ export default class Transaction extends Executable {
     get bodySize() {
         const body = this._makeTransactionBody(AccountId.fromString("0.0.0"));
 
-        // TODO: Implement
-        return 1;
+        return encodeTransactionBodySync(
+            body,
+            this._getTransactionDataCase(),
+            HieroProto,
+        ).length;
     }
 
     /**
@@ -2033,8 +2035,11 @@ export default class Transaction extends Executable {
         if (this._logger) {
             this._logger.info(`Transaction Body: ${JSON.stringify(body)}`);
         }
-        const bodyBytes =
-            FileAppendTransaction.proto.TransactionBody.encode(body).finish();
+        const bodyBytes = encodeTransactionBodySync(
+            body,
+            this._getTransactionDataCase(),
+            HieroProto,
+        );
 
         return {
             sigMap: {

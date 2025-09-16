@@ -163,6 +163,55 @@ export function encodeTransactionBodySync(
 }
 
 /**
+ * Gets the transaction type from bodyBytes without importing the full TransactionBody
+ * This does a minimal decode using only the basic proto structure
+ * @param {Uint8Array} bodyBytes - The encoded transaction body bytes
+ * @param {any} fallbackProto - Fallback proto module (e.g., HieroProto)
+ * @returns {string} The transaction data case (e.g., "fileCreate")
+ */
+export function getTransactionTypeFromBodyBytes(bodyBytes, fallbackProto) {
+    // We need to do a minimal decode to get the transaction type
+    // This is unavoidable since the type is embedded in the protobuf structure
+    // But we can use a lightweight approach
+    const tempBody = fallbackProto.proto.TransactionBody.decode(bodyBytes);
+    return tempBody.data;
+}
+
+/**
+ * Dynamically decodes a transaction body using only the specific transaction proto
+ * This avoids importing the full TransactionBody and only loads the needed transaction type
+ * @param {Uint8Array} bodyBytes - The encoded transaction body bytes
+ * @param {string} transactionDataCase - The transaction data case (e.g., "fileCreate")
+ * @returns {Promise<any>} The decoded transaction body
+ */
+export async function decodeTransactionBody(bodyBytes, transactionDataCase) {
+    const protoModule = await getTransactionProtoEncoder(transactionDataCase);
+    return protoModule.proto.TransactionBody.decode(bodyBytes);
+}
+
+/**
+ * Synchronous version with fallback
+ * @param {Uint8Array} bodyBytes - The encoded transaction body bytes
+ * @param {string} transactionDataCase - The transaction data case (e.g., "fileCreate")
+ * @param {any} fallbackProto - Fallback proto module (e.g., HieroProto)
+ * @returns {any} The decoded transaction body
+ */
+export function decodeTransactionBodySync(
+    bodyBytes,
+    transactionDataCase,
+    fallbackProto,
+) {
+    // Check if we have a cached proto module
+    if (protoModuleCache.has(transactionDataCase)) {
+        const protoModule = protoModuleCache.get(transactionDataCase);
+        return protoModule.proto.TransactionBody.decode(bodyBytes);
+    }
+
+    // Fall back to the main proto module if no cached version available
+    return fallbackProto.proto.TransactionBody.decode(bodyBytes);
+}
+
+/**
  * Preload specific transaction proto encoders
  * This can be called during app initialization for commonly used transactions
  * @param {string[]} transactionTypes - Array of transaction data cases to preload
@@ -182,6 +231,9 @@ export default {
     getTransactionProtoEncoder,
     encodeTransactionBody,
     encodeTransactionBodySync,
+    decodeTransactionBody,
+    decodeTransactionBodySync,
+    getTransactionTypeFromBodyBytes,
     preloadTransactionEncoders,
     TRANSACTION_PROTO_MAPPING,
 };
