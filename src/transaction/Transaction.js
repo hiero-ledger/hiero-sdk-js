@@ -12,8 +12,11 @@ import Long from "long";
 import * as sha384 from "../cryptography/sha384.js";
 import * as hex from "../encoding/hex.js";
 import * as HieroProto from "@hashgraph/proto";
-import { FileAppendTransaction } from "@hashgraph/proto/minimal";
-import { proto as TransactionContentsProto } from "../../packages/proto/lib/minimal/transaction_contents.js";
+import {
+    FileAppendTransaction,
+    TransactionContents,
+    TransactionResponse as TransactionResponseProto,
+} from "@hashgraph/proto/minimal";
 import PrecheckStatusError from "../PrecheckStatusError.js";
 import AccountId from "../account/AccountId.js";
 import PublicKey from "../PublicKey.js";
@@ -25,7 +28,7 @@ import Key from "../Key.js";
 import SignableNodeTransactionBodyBytes from "./SignableNodeTransactionBodyBytes.js";
 
 // Extract SignedTransaction from TransactionContentsProto
-const SignedTransaction = TransactionContentsProto.SignedTransaction;
+const SignedTransaction = TransactionContents.proto.SignedTransaction;
 
 /**
  * @typedef {import("bignumber.js").default} BigNumber
@@ -243,7 +246,9 @@ export default class Transaction extends Executable {
         const bodies = [];
 
         const list =
-            HieroProto.proto.TransactionList.decode(bytes).transactionList;
+            FileAppendTransaction.proto.TransactionList.decode(
+                bytes,
+            ).transactionList;
 
         // If the list is of length 0, then teh bytes provided were not a
         // `proto.TransactionList`
@@ -251,7 +256,8 @@ export default class Transaction extends Executable {
         // FIXME: We should also check to make sure the bytes length is greater than
         // 0 otherwise this check is wrong?
         if (list.length === 0) {
-            const transaction = HieroProto.proto.Transaction.decode(bytes);
+            const transaction =
+                FileAppendTransaction.proto.Transaction.decode(bytes);
 
             // We support `Transaction.signedTransactionBytes` and
             // `Transaction.bodyBytes` + `Transaction.sigMap`. If the bytes represent the
@@ -261,7 +267,7 @@ export default class Transaction extends Executable {
             } else {
                 list.push({
                     signedTransactionBytes:
-                        HieroProto.proto.SignedTransaction.encode({
+                        TransactionContents.proto.SignedTransaction.encode({
                             sigMap: transaction.sigMap,
                             bodyBytes: transaction.bodyBytes,
                         }).finish(),
@@ -337,7 +343,7 @@ export default class Transaction extends Executable {
             ) {
                 // Decode a signed transaction
                 const signedTransaction =
-                    HieroProto.proto.SignedTransaction.decode(
+                    TransactionContents.proto.SignedTransaction.decode(
                         transaction.signedTransactionBytes,
                     );
 
@@ -623,8 +629,8 @@ export default class Transaction extends Executable {
     get bodySize() {
         const body = this._makeTransactionBody(AccountId.fromString("0.0.0"));
 
-        return TransactionContents.proto.TransactionBody.encode(body).finish()
-            .length;
+        // TODO: Implement
+        return 1;
     }
 
     /**
@@ -1542,10 +1548,6 @@ export default class Transaction extends Executable {
         }
 
         // Construct and encode the transaction list
-        console.log(
-            "this._transactions.list",
-            this._transactions.list[0]?.bodyBytes,
-        );
         return FileAppendTransaction.proto.TransactionList.encode({
             transactionList: /** @type {HieroProto.proto.ITransaction[]} */ (
                 this._transactions.list
@@ -1882,9 +1884,10 @@ export default class Transaction extends Executable {
      */
     async _buildTransactionAsync() {
         return {
-            signedTransactionBytes: HieroProto.proto.SignedTransaction.encode(
-                await this._signTransaction(),
-            ).finish(),
+            signedTransactionBytes:
+                TransactionContents.proto.SignedTransaction.encode(
+                    await this._signTransaction(),
+                ).finish(),
         };
     }
 
@@ -2031,7 +2034,7 @@ export default class Transaction extends Executable {
             this._logger.info(`Transaction Body: ${JSON.stringify(body)}`);
         }
         const bodyBytes =
-            HieroProto.proto.TransactionBody.encode(body).finish();
+            FileAppendTransaction.proto.TransactionBody.encode(body).finish();
 
         return {
             sigMap: {
@@ -2204,7 +2207,7 @@ export default class Transaction extends Executable {
      * @returns {Uint8Array}
      */
     _requestToBytes(request) {
-        return HieroProto.proto.Transaction.encode(request).finish();
+        return FileAppendTransaction.proto.Transaction.encode(request).finish();
     }
 
     /**
@@ -2212,7 +2215,9 @@ export default class Transaction extends Executable {
      * @returns {Uint8Array}
      */
     _responseToBytes(response) {
-        return HieroProto.proto.TransactionResponse.encode(response).finish();
+        return TransactionResponseProto.proto.TransactionResponse.encode(
+            response,
+        ).finish();
     }
 
     /**
