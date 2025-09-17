@@ -108,10 +108,10 @@ export default class TokenNftAllowance {
             serialNumbers: allSerials
                 ? null
                 : allowance.serialNumbers != null
-                ? allowance.serialNumbers.map((serialNumber) =>
-                      Long.fromValue(serialNumber),
-                  )
-                : [],
+                  ? allowance.serialNumbers.map((serialNumber) =>
+                        Long.fromValue(serialNumber),
+                    )
+                  : [],
             allSerials,
             delegatingSpender:
                 allowance.delegatingSpender != null
