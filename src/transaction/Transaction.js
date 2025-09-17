@@ -11,10 +11,10 @@ import Status from "../Status.js";
 import Long from "long";
 import * as sha384 from "../cryptography/sha384.js";
 import * as hex from "../encoding/hex.js";
+import * as HieroProto from "@hashgraph/proto";
 
 import {
     FileAppendTransaction,
-    TokenMintTransaction,
     TransactionContents,
     TransactionResponse as TransactionResponseProto,
 } from "@hashgraph/proto/minimal";
@@ -29,7 +29,9 @@ import Key from "../Key.js";
 import SignableNodeTransactionBodyBytes from "./SignableNodeTransactionBodyBytes.js";
 import {
     decodeTransactionBodyAutoSync,
-    encodeTransactionBodySync,
+    encodeTransactionBodyAutoSync,
+    encodeTransactionBodyDynamic,
+    encodeTransactionDynamic,
 } from "./DynamicTransactionEncoder.js";
 
 // Extract SignedTransaction from TransactionContentsProto
@@ -261,8 +263,7 @@ export default class Transaction extends Executable {
         // FIXME: We should also check to make sure the bytes length is greater than
         // 0 otherwise this check is wrong?
         if (list.length === 0) {
-            const transaction =
-                FileAppendTransaction.proto.Transaction.decode(bytes);
+            const transaction = HieroProto.proto.Transaction.decode(bytes);
 
             // We support `Transaction.signedTransactionBytes` and
             // `Transaction.bodyBytes` + `Transaction.sigMap`. If the bytes represent the
@@ -356,7 +357,7 @@ export default class Transaction extends Executable {
 
                 // Decode a transaction body
 
-                const body = TokenMintTransaction.proto.TransactionBody.decode(
+                const body = HieroProto.proto.TransactionBody.decode(
                     signedTransaction.bodyBytes,
                 );
 
@@ -619,8 +620,7 @@ export default class Transaction extends Executable {
         this._requireFrozen();
         return this._makeRequestAsync().then(
             (request) =>
-                FileAppendTransaction.proto.Transaction.encode(request).finish()
-                    .length,
+                HieroProto.proto.Transaction.encode(request).finish().length,
         );
     }
 
@@ -635,8 +635,10 @@ export default class Transaction extends Executable {
     get bodySize() {
         const body = this._makeTransactionBody(AccountId.fromString("0.0.0"));
 
-        return encodeTransactionBodySync(body, this._getTransactionDataCase())
-            .length;
+        return encodeTransactionBodyDynamic(
+            body,
+            this._getTransactionDataCase(),
+        ).length;
     }
 
     /**
@@ -1552,7 +1554,7 @@ export default class Transaction extends Executable {
         }
 
         // Construct and encode the transaction list
-        return FileAppendTransaction.proto.TransactionList.encode({
+        return HieroProto.proto.TransactionList.encode({
             transactionList:
                 /** @type {import("@hashgraph/proto").proto.ITransaction[]} */ (
                     this._transactions.list
@@ -1585,7 +1587,7 @@ export default class Transaction extends Executable {
         this._signedTransactions.setLocked();
 
         // Construct and encode the transaction list
-        return FileAppendTransaction.proto.TransactionList.encode({
+        return HieroProto.proto.TransactionList.encode({
             transactionList:
                 /** @type {import("@hashgraph/proto").proto.ITransaction[]} */ (
                     this._transactions.list
@@ -2036,12 +2038,17 @@ export default class Transaction extends Executable {
      */
     _makeSignedTransaction(nodeId) {
         const body = this._makeTransactionBody(nodeId);
+
         if (this._logger) {
             this._logger.info(`Transaction Body: ${JSON.stringify(body)}`);
         }
-        const bodyBytes = encodeTransactionBodySync(
+
+        const transactionDataCase = this._getTransactionDataCase();
+
+        // Get the transaction data case and encode dynamically
+        const bodyBytes = encodeTransactionBodyDynamic(
             body,
-            this._getTransactionDataCase(),
+            transactionDataCase,
         );
 
         return {
@@ -2215,7 +2222,7 @@ export default class Transaction extends Executable {
      * @returns {Uint8Array}
      */
     _requestToBytes(request) {
-        return FileAppendTransaction.proto.Transaction.encode(request).finish();
+        return HieroProto.proto.Transaction.encode(request).finish();
     }
 
     /**

@@ -85,82 +85,6 @@ const TRANSACTION_PROTO_MAPPING = {
     atomicBatch: "AtomicBatchTransaction",
 };
 
-/**
- * Cache for dynamically imported proto modules to avoid re-importing
- * @type {Map<string, any>}
- */
-const protoModuleCache = new Map();
-
-/**
- * Dynamically imports and returns the appropriate transaction proto encoder
- * @param {string} transactionDataCase - The transaction data case from _getTransactionDataCase()
- * @returns {Promise<any>} The proto module with TransactionBody encoder
- */
-export function getTransactionProtoEncoder(transactionDataCase) {
-    // Check cache first
-    if (protoModuleCache.has(transactionDataCase)) {
-        return protoModuleCache.get(transactionDataCase);
-    }
-
-    // Get the proto module name
-    const protoModuleName = TRANSACTION_PROTO_MAPPING[transactionDataCase];
-
-    if (!protoModuleName) {
-        throw new Error(
-            `No proto module mapping found for transaction type: ${transactionDataCase}`,
-        );
-    }
-
-    try {
-        // Dynamic import using the minimal proto package
-        const protoModule = importSync(
-            `@hashgraph/proto/lib/minimal/${protoModuleName.toLowerCase().replace(/transaction$/, "_transaction.js")}`,
-        );
-
-        // Cache the result
-        protoModuleCache.set(transactionDataCase, protoModule);
-
-        return protoModule;
-    } catch (error) {
-        const errorMessage =
-            error instanceof Error ? error.message : String(error);
-        throw new Error(
-            `Failed to dynamically import proto module for ${transactionDataCase}: ${errorMessage}`,
-        );
-    }
-}
-
-/**
- * Gets the transaction type from bodyBytes without importing the full TransactionBody
- * This does a minimal decode using only the basic proto structure
- * @param {Uint8Array} bodyBytes - The encoded transaction body bytes
- * @param {any} fallbackProto - Fallback proto module (e.g., HieroProto)
- * @returns {string} The transaction data case (e.g., "fileCreate")
- */
-export function getTransactionTypeFromBodyBytes(bodyBytes, fallbackProto) {
-    // We need to do a minimal decode to get the transaction type
-    // This is unavoidable since the type is embedded in the protobuf structure
-    // But we can use a lightweight approach
-    const tempBody = fallbackProto.proto.TransactionBody.decode(bodyBytes);
-    return tempBody.data;
-}
-
-/**
- * Preload specific transaction proto encoders
- * This can be called during app initialization for commonly used transactions
- * @param {string[]} transactionTypes - Array of transaction data cases to preload
- * @returns {Promise<void>}
- */
-export async function preloadTransactionEncoders(transactionTypes) {
-    const promises = transactionTypes.map((type) =>
-        getTransactionProtoEncoder(type).catch((error) =>
-            console.warn(`Failed to preload proto encoder for ${type}:`, error),
-        ),
-    );
-
-    await Promise.all(promises);
-}
-
 // --- Minimal oneof discriminator helpers ---
 // These helpers avoid importing full @hashgraph/proto by peeking field tags
 // of proto.TransactionBody to determine which `data` arm is present.
@@ -312,7 +236,7 @@ export function decodeTransactionBodyAutoSync(bodyBytes) {
  * @param {Uint8Array} bodyBytes
  * @returns
  */
-export function enodeTransactionBodyAutoSync(bodyBytes) {
+export function encodeTransactionBodyAutoSync(bodyBytes) {
     const dataCase = detectTransactionBodyCaseFromBytes(bodyBytes);
     console.log(dataCase);
 
@@ -334,6 +258,30 @@ export function enodeTransactionBodyAutoSync(bodyBytes) {
         return protoModule.proto.TransactionBody.encode(bodyBytes);
     } catch (error) {
         console.warn(`Failed to load ${dataCase} module:`, error);
+    }
+}
+
+/**
+ *
+ * @param {import("@hashgraph/proto").proto.ITransaction} body
+ * @param {string} transactionDataCase
+ * @returns
+ */
+export function encodeTransactionDynamic(body, transactionDataCase) {
+    // Get the file name from direct mapping
+    const fileName = TRANSACTION_CASE_TO_FILE_NAME[transactionDataCase];
+    if (!fileName) {
+        throw new Error("Unknown transaction type");
+    }
+
+    try {
+        // Use importSync for synchronous dynamic import
+        const protoModule = importSync(
+            `@hashgraph/proto/lib/minimal/${fileName}`,
+        );
+        return protoModule.proto.Transaction.encode(body);
+    } catch (error) {
+        console.warn(`Failed to load ${transactionDataCase} module:`, error);
     }
 }
 
@@ -423,11 +371,62 @@ const TRANSACTION_CASE_TO_FILE_NAME = {
     atomicBatch: "atomic_batch_transaction.js",
 };
 
+// Add this to DynamicTransactionEncoder.js
+export const TRANSACTION_FIELD_NUMBER_TO_CASE = Object.fromEntries(
+    Object.entries(TRANSACTION_BODY_FIELD_NUMBER_TO_CASE).map(
+        ([fieldNumber, caseName]) => [parseInt(fieldNumber), caseName],
+    ),
+);
+
+/**
+ * Encodes transaction body using field number
+ * @param {any} body - The transaction body to encode
+ * @param {number} fieldNumber - The protobuf field number
+ * @returns {Uint8Array} The encoded transaction body bytes
+ */
+export function encodeTransactionBodyByFieldNumber(body, fieldNumber) {
+    const transactionDataCase = TRANSACTION_FIELD_NUMBER_TO_CASE[fieldNumber];
+
+    if (!transactionDataCase) {
+        throw new Error(`Unknown field number: ${fieldNumber}`);
+    }
+
+    return encodeTransactionBodyDynamic(body, transactionDataCase);
+}
+
+/**
+ * Dynamically encodes a transaction body using the specific transaction proto module
+ * @param {any} body - The transaction body to encode
+ * @param {string} transactionDataCase - The transaction data case (e.g., "fileCreate")
+ * @returns {Uint8Array} The encoded transaction body bytes
+ */
+export function encodeTransactionBodyDynamic(body, transactionDataCase) {
+    // Get the file name from the transaction data case
+    const fileName = TRANSACTION_CASE_TO_FILE_NAME[transactionDataCase];
+
+    if (!fileName) {
+        throw new Error(`Unknown transaction type: ${transactionDataCase}`);
+    }
+
+    try {
+        // Use importSync for synchronous dynamic import
+        const protoModule = importSync(
+            `@hashgraph/proto/lib/minimal/${fileName}`,
+        );
+
+        // Use the specific transaction proto module to encode
+        return protoModule.proto.TransactionBody.encode(body).finish();
+    } catch (error) {
+        console.warn(`Failed to load ${transactionDataCase} module:`, error);
+        throw new Error(
+            `Failed to encode transaction body for type: ${transactionDataCase}`,
+        );
+    }
+}
+
 export default {
-    getTransactionProtoEncoder,
     decodeTransactionBodyAutoSync,
-    enodeTransactionBodyAutoSync,
-    getTransactionTypeFromBodyBytes,
-    preloadTransactionEncoders,
+    encodeTransactionBodyAutoSync,
+    encodeTransactionDynamic,
     TRANSACTION_PROTO_MAPPING,
 };

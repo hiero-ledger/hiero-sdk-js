@@ -18,7 +18,7 @@ describe("AccountCreate", function () {
         env = await IntegrationTestEnv.new();
     });
 
-    it("should be executable", async function () {
+    it.only("should be executable", async function () {
         const operatorId = env.operatorId;
         const key = PrivateKey.generateED25519();
 

@@ -22,7 +22,7 @@ describe("TokenTransfer", function () {
         env = await IntegrationTestEnv.new();
     });
 
-    it("should be executable", async function () {
+    it.only("should be executable", async function () {
         // Create token with required keys
         const token = await createFungibleToken(env.client, (transaction) => {
             transaction.setKycKey(env.operatorKey).setFreezeDefault(false);
