@@ -1240,7 +1240,7 @@ packages:
       ansi-regex: 6.2.2
       ansi-styles: 6.2.3
       debug: 4.4.1
-      protobufjs: 7.2.5
+      protobufjs: 7.5.4
       strip-ansi: 7.1.2
 
   '@humanwhocodes/config-array@0.13.0':
