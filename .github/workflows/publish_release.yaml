@@ -473,8 +473,10 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
         run: |
+          cp .npmrc .npmrc.bkp
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >>".npmrc"
           task -v publish -- ${{ steps.proto-publish.outputs.args }}
+          cp .npmrc.bkp .npmrc
         working-directory: packages/proto
 
       - name: Publish Cryptography Release (@hiero-ledger/cryptography)
@@ -482,8 +484,10 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
         run: |
+          cp .npmrc .npmrc.bkp
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >>".npmrc"
           task -v publish -- ${{ steps.crypto-publish.outputs.args }}
+          cp .npmrc.bkp .npmrc
         working-directory: packages/cryptography
 
       - name: Publish SDK Release (@hiero-ledger/sdk)
@@ -491,8 +495,10 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
         run: |
+          cp .npmrc .npmrc.bkp
           echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >>".npmrc"
           task -v publish -- ${{ steps.sdk-publish.outputs.args }}
+          cp .npmrc.bkp .npmrc
 
       - name: Reset workspace
         if: ${{ env.DUAL_PUBLISH_ENABLED == 'true' }}
