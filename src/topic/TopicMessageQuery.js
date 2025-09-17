@@ -224,8 +224,8 @@ export default class TopicMessageQuery {
             startTime instanceof Timestamp
                 ? startTime
                 : startTime instanceof Date
-                ? Timestamp.fromDate(startTime)
-                : new Timestamp(startTime, 0);
+                  ? Timestamp.fromDate(startTime)
+                  : new Timestamp(startTime, 0);
         return this;
     }
 
@@ -247,8 +247,8 @@ export default class TopicMessageQuery {
             endTime instanceof Timestamp
                 ? endTime
                 : endTime instanceof Date
-                ? Timestamp.fromDate(endTime)
-                : new Timestamp(endTime, 0);
+                  ? Timestamp.fromDate(endTime)
+                  : new Timestamp(endTime, 0);
         return this;
     }
 

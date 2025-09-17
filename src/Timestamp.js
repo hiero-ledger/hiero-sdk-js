@@ -129,8 +129,8 @@ export default class Timestamp {
             timestamp.seconds instanceof Long
                 ? timestamp.seconds.toInt()
                 : timestamp.seconds != null
-                ? timestamp.seconds
-                : 0,
+                  ? timestamp.seconds
+                  : 0,
 
             timestamp.nanos != null ? timestamp.nanos : 0,
         );

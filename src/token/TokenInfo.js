@@ -398,14 +398,14 @@ export default class TokenInfo {
                 this.defaultFreezeStatus == null
                     ? 0
                     : this.defaultFreezeStatus
-                    ? 1
-                    : 2,
+                      ? 1
+                      : 2,
             defaultKycStatus:
                 this.defaultKycStatus == null
                     ? 0
                     : this.defaultKycStatus
-                    ? 1
-                    : 2,
+                      ? 1
+                      : 2,
             pauseStatus:
                 this.pauseStatus == null ? 0 : this.pauseStatus ? 1 : 2,
             deleted: this.isDeleted,
