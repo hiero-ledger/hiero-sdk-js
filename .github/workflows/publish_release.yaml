@@ -364,9 +364,7 @@ jobs:
           cache: pnpm
 
       - name: Install NPM Dependencies
-        run: |
-          pnpm update
-          task -v install
+        run: task -v install
 
       - name: Install Playwright Dependencies
         run: sudo npx playwright install-deps
