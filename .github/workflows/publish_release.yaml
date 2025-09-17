@@ -364,7 +364,9 @@ jobs:
           cache: pnpm
 
       - name: Install NPM Dependencies
-        run: task -v install
+        run: |
+          pnpm update
+          task -v install
 
       - name: Install Playwright Dependencies
         run: sudo npx playwright install-deps
@@ -380,6 +382,9 @@ jobs:
           [[ "${{ needs.validate-release.outputs.proto-prerelease }}" == "true" ]] && PUBLISH_ARGS="${PUBLISH_ARGS} --tag ${{ needs.validate-release.outputs.proto-type }}"
 
           echo "args=${PUBLISH_ARGS}" >> "${GITHUB_OUTPUT}"
+
+          # Add the registry authentication stanza with variable substitution to the .npmrc configuration file.
+          echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >>".npmrc"
         working-directory: packages/proto
 
       - name: Calculate Crypto Subpackage Publish Arguments
@@ -418,11 +423,7 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
         run: |
-          # Add the registry authentication stanza with variable substitution to the .npmrc configuration file.
-          cp .npmrc .npmrc.bkp
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >>".npmrc"
           task -v publish -- ${{ steps.proto-publish.outputs.args }}
-          cp .npmrc.bkp .npmrc
         working-directory: packages/proto
 
       - name: Publish Cryptography Release (@hashgraph/cryptography)
@@ -430,10 +431,7 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
         run: |
-          cp .npmrc .npmrc.bkp
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >>".npmrc"
           task -v publish -- ${{ steps.crypto-publish.outputs.args }}
-          cp .npmrc.bkp .npmrc
         working-directory: packages/cryptography
 
       - name: Publish SDK Release (@hashgraph/sdk)
@@ -441,10 +439,7 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
         run: |
-          cp .npmrc .npmrc.bkp
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >>".npmrc"
           task -v publish -- ${{ steps.sdk-publish.outputs.args }}
-          cp .npmrc.bkp .npmrc
 
       - name: Update Files for Dual Publish
         if: ${{ env.DUAL_PUBLISH_ENABLED == 'true' }}
@@ -473,10 +468,7 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
         run: |
-          cp .npmrc .npmrc.bkp
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >>".npmrc"
-          task -v publish -- ${{ steps.proto-publish.outputs.args }}
-          cp .npmrc.bkp .npmrc
+            task -v publish -- ${{ steps.proto-publish.outputs.args }}
         working-directory: packages/proto
 
       - name: Publish Cryptography Release (@hiero-ledger/cryptography)
@@ -484,10 +476,7 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
         run: |
-          cp .npmrc .npmrc.bkp
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >>".npmrc"
           task -v publish -- ${{ steps.crypto-publish.outputs.args }}
-          cp .npmrc.bkp .npmrc
         working-directory: packages/cryptography
 
       - name: Publish SDK Release (@hiero-ledger/sdk)
@@ -495,10 +484,7 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
         run: |
-          cp .npmrc .npmrc.bkp
-          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >>".npmrc"
           task -v publish -- ${{ steps.sdk-publish.outputs.args }}
-          cp .npmrc.bkp .npmrc
 
       - name: Reset workspace
         if: ${{ env.DUAL_PUBLISH_ENABLED == 'true' }}

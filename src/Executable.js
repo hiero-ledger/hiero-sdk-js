@@ -557,7 +557,7 @@ export default class Executable {
         const LOCAL_NODE_ATTEMPTS = 1000;
         const maxAttempts = isLocalNode
             ? LOCAL_NODE_ATTEMPTS
-            : (client._maxAttempts ?? this._maxAttempts);
+            : client._maxAttempts ?? this._maxAttempts;
 
         // Checks if has a valid nodes to which the TX can be sent
         if (this.transactionNodeIds.length) {
