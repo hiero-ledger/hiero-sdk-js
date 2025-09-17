@@ -8,8 +8,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## v2.73.0
 
 ### Added
-- Validation for negative gas in `ContractExecuteTransaction`, ensuring safer transaction execution. [#3317](https://github.com/hiero-ledger/hiero-sdk-js/pull/3317)
-- Support for `CustomFee` in scheduled transaction body, enabling more flexible fee structures in scheduled transactions. [#3254](https://github.com/hiero-ledger/hiero-sdk-js/pull/3254)
+
+- Added negative NodeId check in the NodeUpdateTransaction and NodeDeleteTransaction
+- Updated NodeDeleteTransaction and NodeUpdateTransaction to transform the input always to Long
+
+### Changed
+
+- Pin all dependency versions in the SDK package/proto package/cryptography 
 
 ## v2.72.0
 
