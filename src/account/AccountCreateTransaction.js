@@ -39,6 +39,7 @@ export default class AccountCreateTransaction extends Transaction {
      * @param {Long | number} [props.stakedNodeId]
      * @param {boolean} [props.declineStakingReward]
      * @param {EvmAddress} [props.alias]
+     * @param {import("../hooks/HookCreationDetails.js").default[]} [props.hooks]
      */
     constructor(props = {}) {
         super();
@@ -120,6 +121,18 @@ export default class AccountCreateTransaction extends Transaction {
          * @type {?EvmAddress}
          */
         this._alias = null;
+
+        /**
+         * @private
+         * @type {import("../hooks/HookCreationDetails.js").default[]}
+         */
+        this._hooks = [];
+
+        if (props.hooks != null) {
+            props.hooks.forEach((hook) => {
+                this.addHook(hook);
+            });
+        }
 
         if (props.key != null) {
             this.setKeyWithoutAlias(props.key);
@@ -654,6 +667,31 @@ export default class AccountCreateTransaction extends Transaction {
             declineReward: this.declineStakingRewards,
             alias,
         };
+    }
+
+    /**
+     * @param {import("../hooks/HookCreationDetails.js").default} hook
+     * @returns {this}
+     */
+    addHook(hook) {
+        this._hooks.push(hook);
+        return this;
+    }
+
+    /**
+     * @param {import("../hooks/HookCreationDetails.js").default[]} hooks
+     * @returns {this}
+     */
+    setHooks(hooks) {
+        this._hooks = hooks;
+        return this;
+    }
+
+    /**
+     * @returns {import("../hooks/HookCreationDetails.js").default[]}
+     */
+    get hooks() {
+        return this._hooks;
     }
 
     /**
