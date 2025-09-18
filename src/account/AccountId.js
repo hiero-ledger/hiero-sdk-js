@@ -179,17 +179,15 @@ export default class AccountId {
         if (this.evmAddress === null) {
             throw new Error("field `evmAddress` should not be null");
         }
-        const mirrorUrl = client.mirrorNetwork[0].slice(
-            0,
-            client.mirrorNetwork[0].indexOf(":"),
-        );
+        const mirrorRestApiBaseUrl = client.mirrorRestApiBaseUrl;
+
+        const url = `${mirrorRestApiBaseUrl}/accounts/${this.evmAddress.toString()}`;
 
         await new Promise((resolve) => {
             setTimeout(resolve, 3000);
         });
 
         /* eslint-disable */
-        const url = `https://${mirrorUrl}/api/v1/accounts/${this.evmAddress.toString()}`;
         const response = await fetch(url);
         const data = await response.json();
         const mirrorAccountId = data.account;
@@ -211,17 +209,15 @@ export default class AccountId {
         if (this.num === null) {
             throw new Error("field `num` should not be null");
         }
-        const mirrorUrl = client.mirrorNetwork[0].slice(
-            0,
-            client.mirrorNetwork[0].indexOf(":"),
-        );
+        const mirrorRestApiBaseUrl = client.mirrorRestApiBaseUrl;
+
+        const url = `${mirrorRestApiBaseUrl}/accounts/${this.num.toString()}`;
 
         await new Promise((resolve) => {
             setTimeout(resolve, 3000);
         });
 
         /* eslint-disable */
-        const url = `https://${mirrorUrl}/api/v1/accounts/${this.num.toString()}`;
         const response = await fetch(url);
         const data = await response.json();
         const mirrorAccountId = data.evm_address;
