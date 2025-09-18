@@ -7,11 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## v2.73.1
 
-- Corrected some linting errors
-- Fixed bugs in CI for publishing workflow packages
-
-## v2.73.0
-
 ### Added
 
 - Added negative NodeId check in the NodeUpdateTransaction and NodeDeleteTransaction
