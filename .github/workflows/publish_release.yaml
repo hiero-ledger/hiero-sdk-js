@@ -382,7 +382,7 @@ jobs:
           echo "args=${PUBLISH_ARGS}" >> "${GITHUB_OUTPUT}"
 
           # Add the registry authentication stanza with variable substitution to the .npmrc configuration file.
-          echo '\n//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >>".npmrc"
+          echo "\n" >>".npmrc" && echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >>".npmrc"
           cat .npmrc
         working-directory: packages/proto
 
@@ -399,7 +399,7 @@ jobs:
           echo "args=${PUBLISH_ARGS}" >>"${GITHUB_OUTPUT}"
 
           # Add the registry authentication stanza with variable substitution to the .npmrc configuration file.
-          echo '\n//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >>".npmrc"
+          echo "\n" >>".npmrc" && echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >>".npmrc"
         working-directory: packages/cryptography
 
       - name: Calculate SDK Publish Arguments
@@ -415,7 +415,7 @@ jobs:
           echo "args=${PUBLISH_ARGS}" >>"${GITHUB_OUTPUT}"
 
           # Add the registry authentication stanza with variable substitution to the .npmrc configuration file.
-          echo '\n//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >>".npmrc"
+          echo "\n" >>".npmrc" && echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >>".npmrc"
 
       - name: Publish Proto Release (@hashgraph/proto)
         if: ${{ needs.validate-release.outputs.hashgraph-proto-publish-required == 'true' }}
