@@ -421,6 +421,7 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
         run: |
+          export NPM_TOKEN
           echo "PNPM Authenticated as:"
           pnpm whoami
           task -v publish -- ${{ steps.proto-publish.outputs.args }}
@@ -470,8 +471,8 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
         run: |
-            pnpm whoami
-            task -v publish -- ${{ steps.proto-publish.outputs.args }}
+          pnpm whoami
+          task -v publish -- ${{ steps.proto-publish.outputs.args }}
         working-directory: packages/proto
 
       - name: Publish Cryptography Release (@hiero-ledger/cryptography)
