@@ -24,5 +24,8 @@
         "react-native-dotenv": "^3.4.9",
         "typescript": "^5.7.2"
     },
+    "peerDependencies": {
+        "protobufjs": "7.5.4"
+    },
     "private": true
 }

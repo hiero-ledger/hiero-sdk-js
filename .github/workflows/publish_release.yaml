@@ -314,7 +314,7 @@ jobs:
       - name: Install PNPM
         uses: step-security/action-setup@598c7206e1c7d361165e303487aa7772566a8e05 # v4.1.0
         with:
-          version: 9.15.5
+          version: 10.17.0
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -355,7 +355,7 @@ jobs:
       - name: Install PNPM
         uses: step-security/action-setup@598c7206e1c7d361165e303487aa7772566a8e05 # v4.1.0
         with:
-          version: 9.15.5
+          version: 10.17.0
 
       - name: Setup Node
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
@@ -382,7 +382,7 @@ jobs:
           echo "args=${PUBLISH_ARGS}" >> "${GITHUB_OUTPUT}"
 
           # Add the registry authentication stanza with variable substitution to the .npmrc configuration file.
-          echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >>".npmrc"
+          echo "\n" >>".npmrc" && echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >>".npmrc"
         working-directory: packages/proto
 
       - name: Calculate Crypto Subpackage Publish Arguments
@@ -398,7 +398,7 @@ jobs:
           echo "args=${PUBLISH_ARGS}" >>"${GITHUB_OUTPUT}"
 
           # Add the registry authentication stanza with variable substitution to the .npmrc configuration file.
-          echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >>".npmrc"
+          echo "\n" >>".npmrc" && echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >>".npmrc"
         working-directory: packages/cryptography
 
       - name: Calculate SDK Publish Arguments
@@ -414,7 +414,7 @@ jobs:
           echo "args=${PUBLISH_ARGS}" >>"${GITHUB_OUTPUT}"
 
           # Add the registry authentication stanza with variable substitution to the .npmrc configuration file.
-          echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >>".npmrc"
+          echo "\n" >>".npmrc" && echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >>".npmrc"
 
       - name: Publish Proto Release (@hashgraph/proto)
         if: ${{ needs.validate-release.outputs.hashgraph-proto-publish-required == 'true' }}
@@ -466,7 +466,7 @@ jobs:
         env:
           NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
         run: |
-            task -v publish -- ${{ steps.proto-publish.outputs.args }}
+          task -v publish -- ${{ steps.proto-publish.outputs.args }}
         working-directory: packages/proto
 
       - name: Publish Cryptography Release (@hiero-ledger/cryptography)
