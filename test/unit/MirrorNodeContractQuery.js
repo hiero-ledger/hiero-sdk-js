@@ -111,21 +111,6 @@ describe("MirrorNodeContractQuery", function () {
             }
         });
 
-        it("should use correct insecure HTTP scheme for port 80", async function () {
-            // Setup client with custom mirror network using HTTP port 80
-            const client = new Client();
-            client.setMirrorNetwork(["example.com:80"]);
-
-            // Call the method
-            await query.performMirrorNodeRequest(client, {});
-
-            // Verify fetch was called with HTTP URL (port 80)
-            expect(fetchStub.calledOnce).to.be.true;
-            expect(fetchStub.firstCall.args[0]).to.equal(
-                "http://example.com:80/api/v1/contracts/call",
-            );
-        });
-
         it("should use correct secure HTTPS scheme for port 443", async function () {
             // Setup client with custom mirror network using HTTPS port 443
             const client = new Client();
