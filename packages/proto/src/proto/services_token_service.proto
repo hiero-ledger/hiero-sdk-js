@@ -20,7 +20,7 @@ option java_package = "com.hederahashgraph.service.proto.java";
 import "services_query.proto";
 import "services_response.proto";
 import "services_transaction_response.proto";
-import "services_ethereum_transaction.proto";
+import "services_transaction.proto";
 
 /**
  * Transactions and queries for the Token Service
