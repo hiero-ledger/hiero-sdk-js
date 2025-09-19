@@ -44,7 +44,7 @@ jobs:
 
       # Note: After Step-Security is enabled return to step-security/action-setup version
       - name: Install PNPM
-        uses: step-security/action-setup@598c7206e1c7d361165e303487aa7772566a8e05 # v4.1.0
+        uses: step-security/action-setup@92da25bc4fa3a114b7a78c686a5ec142ccb12c8b # v4.1.1
         with:
           version: 9.15.5
 
