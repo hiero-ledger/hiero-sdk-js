@@ -857,7 +857,6 @@ export default class Client {
         }
 
         // For other ports, assume HTTPS for security
-        // This covers cases like 5600 (local mirror node) and other custom ports
         return "https";
     }
 
