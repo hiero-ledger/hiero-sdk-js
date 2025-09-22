@@ -2,6 +2,7 @@
 
 import AccountId from "./account/AccountId.js";
 import Hbar from "./Hbar.js";
+import HookCall from "./hooks/HookCall.js";
 
 /**
  * @typedef {object} TransferJSON
@@ -31,6 +32,8 @@ export default class Transfer {
      * @param {AccountId | string} props.accountId
      * @param {number | string | Long | BigNumber | Hbar} props.amount
      * @param {boolean} props.isApproved
+     * @param {HookCall | null} props.prePostTxAllowanceHook
+     * @param {HookCall | null} props.preTxAllowanceHook
      */
     constructor(props) {
         /**
@@ -52,6 +55,8 @@ export default class Transfer {
                 : new Hbar(props.amount);
 
         this.isApproved = props.isApproved;
+        this.prePostTxAllowanceHook = props.prePostTxAllowanceHook;
+        this.preTxAllowanceHook = props.preTxAllowanceHook;
     }
 
     /**
@@ -74,6 +79,18 @@ export default class Transfer {
                         transfer.amount != null ? transfer.amount : 0,
                     ),
                     isApproved: /** @type {boolean} */ (transfer.isApproval),
+                    prePostTxAllowanceHook:
+                        transfer.prePostTxAllowanceHook != null
+                            ? HookCall._fromProtobuf(
+                                  transfer.prePostTxAllowanceHook,
+                              )
+                            : null,
+                    preTxAllowanceHook:
+                        transfer.preTxAllowanceHook != null
+                            ? HookCall._fromProtobuf(
+                                  transfer.preTxAllowanceHook,
+                              )
+                            : null,
                 }),
             );
         }
@@ -90,6 +107,8 @@ export default class Transfer {
             accountID: this.accountId._toProtobuf(),
             amount: this.amount.toTinybars(),
             isApproval: this.isApproved,
+            preTxAllowanceHook: this.preTxAllowanceHook,
+            prePostTxAllowanceHook: this.prePostTxAllowanceHook,
         };
     }
 
