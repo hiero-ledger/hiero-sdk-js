@@ -37,6 +37,35 @@ class LambdaMappingEntry {
         this.value = value;
         return this;
     }
+
+    /**
+     *
+     * @param {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaMappingEntry} lambdaMappingEntry
+     * @returns
+     */
+    static _fromProtobuf(lambdaMappingEntry) {
+        return new LambdaMappingEntry({
+            key:
+                lambdaMappingEntry.key != null
+                    ? lambdaMappingEntry.key
+                    : undefined,
+            value:
+                lambdaMappingEntry.value != null
+                    ? lambdaMappingEntry.value
+                    : undefined,
+        });
+    }
+
+    /**
+     *
+     * @returns {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaMappingEntry}
+     */
+    _toProtobuf() {
+        return {
+            key: this.key,
+            value: this.value,
+        };
+    }
 }
 
 export default LambdaMappingEntry;

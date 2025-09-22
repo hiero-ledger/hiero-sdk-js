@@ -1,23 +1,49 @@
-class LambdaSStoreTransaction {
+import Transaction from "../transaction/Transaction.js";
+
+/**
+ * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../Timestamp.js").default} Timestamp
+ * @typedef {import("../transaction/TransactionId.js").default} TransactionId
+ */
+
+class LambdaSStoreTransaction extends Transaction {
     /**
      *
      * @param {object} props
-     * @param {number} [props.hookId]
+     * @param {import("../hooks/HookId.js").default} [props.hookId]
      * @param {import("../hooks/LambdaStorageUpdate.js").default[]} [props.storageUpdates]
      */
     constructor(props) {
+        super();
         this.hookId = props.hookId;
         this.storageUpdates = props.storageUpdates;
     }
 
     /**
      *
-     * @returns {import("@hashgraph/proto").proto.iLambdaSStoreTransaction} HieroProto.proto.ILambdaSStoreTransactionBody
+     * @returns {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaSStoreTransactionBody} HieroProto.proto.ILambdaSStoreTransactionBody
      */
-    toProto() {
+    _toProtobuf() {
         return {
-            hook_id: this.hookId,
-            storage_updates: this.storageUpdates,
+            hookId: this.hookId != null ? this.hookId._toProtobuf() : undefined,
+            storageUpdates:
+                this.storageUpdates != null
+                    ? this.storageUpdates.map((update) => update._toProtobuf())
+                    : undefined,
         };
     }
+
+    /**
+     * @override
+     * @internal
+     * @param {Channel} channel
+     * @param {import("@hashgraph/proto").proto.ITransaction} request
+     * @returns {Promise<import("@hashgraph/proto").proto.ITransactionResponse>}
+     */
+    _execute(channel, request) {
+        return channel.smartContract.lambdaSStore(request);
+    }
 }
+
+export default LambdaSStoreTransaction;

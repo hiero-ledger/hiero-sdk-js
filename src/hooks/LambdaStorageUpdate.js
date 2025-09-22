@@ -1,9 +1,12 @@
+import LambdaMappingEntry from "./LambdaMappingEntry.js";
+import LambdaStorageSlot from "./LambdaStorageSlot.js";
+
 class LambdaStorageUpdate {
     /**
      *
      * @param {object} props
      * @param {import("./LambdaStorageSlot.js").default} [props.storageSlot]
-     * @param {import("./LambdaMappingEntry.js").default[]} [props.mappingEntries]
+     * @param {LambdaMappingEntries} [props.mappingEntries]
      */
     constructor(props = {}) {
         this.storageSlot = null;
@@ -30,12 +33,92 @@ class LambdaStorageUpdate {
 
     /**
      *
-     * @param {import("./LambdaMappingEntry.js").default[]} mappingEntries
+     * @param {LambdaMappingEntries} mappingEntries
      * @returns
      */
     setMappingEntries(mappingEntries) {
         this.mappingEntries = mappingEntries;
         return this;
+    }
+
+    /**
+     *
+     * @param {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate} lambdaStorageUpdate
+     * @returns
+     */
+    static _fromProtobuf(lambdaStorageUpdate) {
+        return new LambdaStorageUpdate({
+            storageSlot:
+                lambdaStorageUpdate.storageSlot != null
+                    ? LambdaStorageSlot._fromProtobuf(
+                          lambdaStorageUpdate.storageSlot,
+                      )
+                    : undefined,
+            mappingEntries:
+                lambdaStorageUpdate.mappingEntries != null
+                    ? LambdaMappingEntries._fromProtobuf(
+                          lambdaStorageUpdate.mappingEntries,
+                      )
+                    : undefined,
+        });
+    }
+
+    /**
+     *
+     * @returns {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate}
+     */
+    _toProtobuf() {
+        return {
+            storageSlot: this.storageSlot?._toProtobuf(),
+            mappingEntries: this.mappingEntries?._toProtobuf(),
+        };
+    }
+}
+
+class LambdaMappingEntries {
+    /**
+     *
+     * @param {object} props
+     * @param {Uint8Array} [props.mappingSlot]
+     * @param {import("./LambdaMappingEntry.js").default[]} [props.entries]
+     */
+    constructor(props) {
+        this.mappingSlot = props.mappingSlot;
+        this.entries = props.entries;
+    }
+
+    /**
+     *
+     * @param {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaMappingEntries} lambdaMappingEntries
+     * @returns
+     */
+    static _fromProtobuf(lambdaMappingEntries) {
+        return new LambdaMappingEntries({
+            mappingSlot:
+                lambdaMappingEntries.mappingSlot != null
+                    ? lambdaMappingEntries.mappingSlot
+                    : undefined,
+            entries:
+                lambdaMappingEntries.entries != null
+                    ? lambdaMappingEntries.entries.map((entry) =>
+                          LambdaMappingEntry._fromProtobuf(entry),
+                      )
+                    : undefined,
+        });
+    }
+
+    /**
+     *
+     * @returns {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaMappingEntries}
+     */
+    _toProtobuf() {
+        return {
+            mappingSlot: this.mappingSlot,
+            entries:
+                this.entries != null
+                    ? this.entries.map((entry) => entry._toProtobuf())
+                    : undefined,
+        };
     }
 }
 

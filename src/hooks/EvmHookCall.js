@@ -1,3 +1,8 @@
+/**
+ * @namespace proto
+ * @typedef {import("@hashgraph/proto").proto.IEvmHookCall} HieroProto.proto.IEvmHookCall
+ */
+
 class EvmHookCall {
     /**
      *
@@ -36,6 +41,27 @@ class EvmHookCall {
     setGasLimit(gasLimit) {
         this.gasLimit = gasLimit;
         return this;
+    }
+
+    /**
+     *
+     * @param {HieroProto.proto.IEvmHookCall} evmHookCall
+     * @returns {EvmHookCall}
+     */
+    static _fromProtobuf(evmHookCall) {
+        return new EvmHookCall({
+            data: evmHookCall.data ? evmHookCall.data : undefined,
+            gasLimit: evmHookCall.gasLimit
+                ? evmHookCall.gasLimit.toNumber()
+                : undefined,
+        });
+    }
+
+    _toProtobuf() {
+        return {
+            data: this.data,
+            gasLimit: this.gasLimit,
+        };
     }
 }
 
