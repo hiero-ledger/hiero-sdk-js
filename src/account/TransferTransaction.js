@@ -13,6 +13,7 @@ import TokenNftTransfer from "../token/TokenNftTransfer.js";
 import NftId from "../token/NftId.js";
 import AbstractTokenTransferTransaction from "../token/AbstractTokenTransferTransaction.js";
 import HookCall from "../hooks/HookCall.js";
+import HookType from "../hooks/HookType.js";
 
 /**
  * @typedef {import("../long.js").LongObject} LongObject
@@ -325,17 +326,16 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      *
      * @param {AccountId} accountId
      * @param {Long} amount
-     * @param {HookCall} preTxAllowanceHook
+     * @param {HookCall} hook
+     * @param {number} hookType
      * @returns
      */
-    addHbarTransferWithPreTxHook(accountId, amount, preTxAllowanceHook) {
-        return this._addHbarTransfer(
-            accountId,
-            amount,
-            false,
-            preTxAllowanceHook,
-            null,
-        );
+    addHbarTransferWithHook(accountId, amount, hook, hookType) {
+        if (hookType === HookType.PRE_POST_HOOK_RECEIVER) {
+            return this._addHbarTransfer(accountId, amount, false, null, hook);
+        } else {
+            return this._addHbarTransfer(accountId, amount, false, hook, null);
+        }
     }
 
     /**
@@ -364,25 +364,34 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @param {NftId} nftId
      * @param {AccountId} sender
      * @param {AccountId} receiver
-     * @param {HookCall} preTxSenderAllowanceHook
+     * @param {HookCall} hook
+     * @param {number} hookType
      * @returns
      */
-    addNftTransferWithPreTxSenderHook(
-        nftId,
-        sender,
-        receiver,
-        preTxSenderAllowanceHook,
-    ) {
-        return this._addNftTransfer(
-            false,
-            nftId,
-            sender,
-            receiver,
-            null,
-            preTxSenderAllowanceHook,
-            null,
-            null,
-        );
+    addNftTransferWithSenderHook(nftId, sender, receiver, hook, hookType) {
+        if (hookType === HookType.PRE_POST_HOOK_SENDER) {
+            return this._addNftTransfer(
+                false,
+                nftId,
+                sender,
+                receiver,
+                hook,
+                null,
+                null,
+                null,
+            );
+        } else {
+            return this._addNftTransfer(
+                false,
+                nftId,
+                sender,
+                receiver,
+                null,
+                hook,
+                null,
+                null,
+            );
+        }
     }
 
     /**
@@ -390,104 +399,67 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @param {NftId} nftId
      * @param {AccountId} sender
      * @param {AccountId} receiver
-     * @param {HookCall} prePostTxSenderAllowanceHook
+     * @param {HookCall} hook
+     * @param {number} hookType
      * @returns
      */
-    addNftTransferWithPrePostTxSenderHook(
-        nftId,
-        sender,
-        receiver,
-        prePostTxSenderAllowanceHook,
-    ) {
-        return this._addNftTransfer(
-            false,
-            nftId,
-            sender,
-            receiver,
-            prePostTxSenderAllowanceHook,
-            null,
-            null,
-            null,
-        );
+    addNftTransferWithReceiverHook(nftId, sender, receiver, hook, hookType) {
+        if (hookType === HookType.PRE_POST_HOOK_RECEIVER) {
+            return this._addNftTransfer(
+                false,
+                nftId,
+                sender,
+                receiver,
+                null,
+                null,
+                hook,
+                null,
+            );
+        } else {
+            return this._addNftTransfer(
+                false,
+                nftId,
+                sender,
+                receiver,
+                null,
+                null,
+                null,
+                hook,
+            );
+        }
     }
 
     /**
      *
-     * @param {NftId} nftId
-     * @param {AccountId} sender
-     * @param {AccountId} receiver
-     * @param {HookCall} preTxReceiverAllowanceHook
+     * @param {TokenId} tokenId
+     * @param {AccountId} accountId
+     * @param {Long} amount
+     * @param {HookCall} hook
+     * @param {number} hookType
      * @returns
      */
-    addNftTransferWithPreTxReceiverHook(
-        nftId,
-        sender,
-        receiver,
-        preTxReceiverAllowanceHook,
-    ) {
-        return this._addNftTransfer(
-            false,
-            nftId,
-            sender,
-            receiver,
-            null,
-            null,
-            null,
-            preTxReceiverAllowanceHook,
-        );
-    }
-
-    /**
-     *
-     * @param {NftId} nftId
-     * @param {AccountId} sender
-     * @param {AccountId} receiver
-     * @param {HookCall} prePostTxReceiverAllowanceHook
-     * @returns
-     */
-    addNftTransferWithPrePostTxReceiverHook(
-        nftId,
-        sender,
-        receiver,
-        prePostTxReceiverAllowanceHook,
-    ) {
-        return this._addNftTransfer(
-            false,
-            nftId,
-            sender,
-            receiver,
-            null,
-            null,
-            prePostTxReceiverAllowanceHook,
-            null,
-        );
-    }
-
-    /**
-     *
-     * @param {NftId} nftId
-     * @param {AccountId} sender
-     * @param {AccountId} receiver
-     * @param {HookCall} senderHook
-     * @param {HookCall} receiverHook
-     */
-    addNftTransferWithSenderReceiverHooks(
-        nftId,
-        sender,
-        receiver,
-        senderHook,
-        receiverHook,
-    ) {
-        return this._addNftTransfer(
-            false,
-            nftId,
-            sender,
-            receiver,
-            senderHook,
-            null,
-            receiverHook,
-            null,
-        );
+    addTokenTransferWithHook(tokenId, accountId, amount, hook, hookType) {
+        if (hookType === HookType.PRE_POST_HOOK_RECEIVER) {
+            return this._addTokenTransfer(
+                tokenId,
+                accountId,
+                amount,
+                false,
+                null,
+                hook,
+                null,
+            );
+        } else {
+            return this._addTokenTransfer(
+                tokenId,
+                accountId,
+                amount,
+                false,
+                null,
+                null,
+                hook,
+            );
+        }
     }
     /**
      * @override

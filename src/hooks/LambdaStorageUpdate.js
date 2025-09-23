@@ -22,9 +22,18 @@ class LambdaStorageUpdate {
     }
 
     /**
+     * @returns {LambdaStorageUpdate}
+     */
+    clearStorageUpdates() {
+        this.storageSlot = null;
+        this.mappingEntries = null;
+        return this;
+    }
+
+    /**
      *
      * @param {import("./LambdaStorageSlot.js").default} storageSlot
-     * @returns
+     * @returns {this}
      */
     setStorageSlot(storageSlot) {
         this.storageSlot = storageSlot;
@@ -34,7 +43,7 @@ class LambdaStorageUpdate {
     /**
      *
      * @param {LambdaMappingEntries} mappingEntries
-     * @returns
+     * @returns {this}
      */
     setMappingEntries(mappingEntries) {
         this.mappingEntries = mappingEntries;
@@ -44,7 +53,7 @@ class LambdaStorageUpdate {
     /**
      *
      * @param {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate} lambdaStorageUpdate
-     * @returns
+     * @returns {LambdaStorageUpdate}
      */
     static _fromProtobuf(lambdaStorageUpdate) {
         return new LambdaStorageUpdate({
@@ -90,7 +99,7 @@ class LambdaMappingEntries {
     /**
      *
      * @param {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaMappingEntries} lambdaMappingEntries
-     * @returns
+     * @returns {LambdaMappingEntries}
      */
     static _fromProtobuf(lambdaMappingEntries) {
         return new LambdaMappingEntries({
