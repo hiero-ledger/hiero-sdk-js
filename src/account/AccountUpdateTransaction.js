@@ -44,6 +44,8 @@ export default class AccountUpdateTransaction extends Transaction {
      * @param {AccountId | string} [props.stakedAccountId]
      * @param {Long | number} [props.stakedNodeId]
      * @param {?boolean} [props.declineStakingReward]
+     * @param {import("../hooks/HookCreationDetails.js").default[]} [props.hooksToBeCreated]
+     * @param {number[]} [props.hooksToBeDeleted]
      */
     constructor(props = {}) {
         super();
@@ -120,6 +122,18 @@ export default class AccountUpdateTransaction extends Transaction {
          */
         this._declineStakingReward = null;
 
+        /**
+         * @private
+         * @type {import("../hooks/HookCreationDetails.js").default[]}
+         */
+        this._hooksToBeCreated = [];
+
+        /**
+         * @private
+         * @type {number[]}
+         */
+        this._hooksToBeDeleted = [];
+
         if (props.accountId != null) {
             this.setAccountId(props.accountId);
         }
@@ -165,6 +179,14 @@ export default class AccountUpdateTransaction extends Transaction {
 
         if (props.declineStakingReward != null) {
             this.setDeclineStakingReward(props.declineStakingReward);
+        }
+
+        if (props.hooksToBeCreated != null) {
+            this.setHooks(props.hooksToBeCreated);
+        }
+
+        if (props.hooksToBeDeleted != null) {
+            this.deleteHooks(props.hooksToBeDeleted);
         }
     }
 
@@ -531,6 +553,59 @@ export default class AccountUpdateTransaction extends Transaction {
         this._declineStakingReward = declineStakingReward;
 
         return this;
+    }
+
+    /**
+     * @param {import("../hooks/HookCreationDetails.js").default} hook
+     * @returns {this}
+     */
+    addHook(hook) {
+        this._hooksToBeCreated.push(hook);
+        return this;
+    }
+
+    /**
+     * @param {import("../hooks/HookCreationDetails.js").default[]} hooks
+     * @returns {this}
+     */
+    setHooks(hooks) {
+        this._hooksToBeCreated = hooks;
+        return this;
+    }
+
+    /**
+     * @returns {import("../hooks/HookCreationDetails.js").default[]}
+     */
+    get hooksToCreate() {
+        return this._hooksToBeCreated;
+    }
+
+    /**
+     *
+     * @param {number} hook
+     * @returns
+     */
+    deleteHook(hook) {
+        this._hooksToBeDeleted.push(hook);
+        return this;
+    }
+
+    /**
+     * @param {number[]} hookIds
+     * @returns {this}
+     */
+    deleteHooks(hookIds) {
+        this._hooksToBeDeleted = this._hooksToBeDeleted.filter(
+            (h) => !hookIds.includes(h), // should it be 0, is there a way it can be null/undefined?
+        );
+        return this;
+    }
+
+    /**
+     * @returns {number[]}
+     */
+    get hooksToDelete() {
+        return this._hooksToBeDeleted;
     }
 
     /**
