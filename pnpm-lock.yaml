@@ -27,11 +27,11 @@ importers:
         specifier: 1.12.6
         version: 1.12.6
       '@hashgraph/cryptography':
-        specifier: file:.yalc/@hashgraph/cryptography
-        version: file:.yalc/@hashgraph/cryptography(react-native@0.78.0(@babel/core@7.23.3)(@babel/preset-env@7.22.15(@babel/core@7.23.3))(react@19.0.0))
+        specifier: 1.11.0
+        version: 1.11.0(react-native@0.78.0(@babel/core@7.23.3)(@babel/preset-env@7.22.15(@babel/core@7.23.3))(react@19.0.0))
       '@hashgraph/proto':
-        specifier: file:.yalc/@hashgraph/proto
-        version: file:.yalc/@hashgraph/proto(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@7.5.4)(strip-ansi@7.1.2)
+        specifier: 2.23.0
+        version: 2.23.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@7.5.4)(strip-ansi@7.1.2)
       ansi-regex:
         specifier: 6.2.2
         version: 6.2.2
@@ -1224,8 +1224,8 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
-  '@hashgraph/cryptography@file:.yalc/@hashgraph/cryptography':
-    resolution: {directory: .yalc/@hashgraph/cryptography, type: directory}
+  '@hashgraph/cryptography@1.11.0':
+    resolution: {integrity: sha512-DU3k2lfsqctfOe+HCwLeLe4K575gDCLIvNvzNORq2eHdeB4Qe4I/K9eLf9lAa4ZQzoMF1/kPxP3Fr0rhlz19nw==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
       expo-crypto: '*'
@@ -1233,8 +1233,8 @@ packages:
       expo-crypto:
         optional: true
 
-  '@hashgraph/proto@file:.yalc/@hashgraph/proto':
-    resolution: {directory: .yalc/@hashgraph/proto, type: directory}
+  '@hashgraph/proto@2.23.0':
+    resolution: {integrity: sha512-2IWei6P/cddhUmhDsvBEGx62/74siF4ZUIvuqBRq4JuVTEqcJaTH2T0RN5XL/IH6brwQUuEGlAs8gRMXa0bxaQ==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       ansi-regex: 6.2.2
@@ -6851,7 +6851,7 @@ snapshots:
       protobufjs: 7.5.4
       yargs: 17.7.2
 
-  '@hashgraph/cryptography@file:.yalc/@hashgraph/cryptography(react-native@0.78.0(@babel/core@7.23.3)(@babel/preset-env@7.22.15(@babel/core@7.23.3))(react@19.0.0))':
+  '@hashgraph/cryptography@1.11.0(react-native@0.78.0(@babel/core@7.23.3)(@babel/preset-env@7.22.15(@babel/core@7.23.3))(react@19.0.0))':
     dependencies:
       '@noble/curves': 1.8.1
       ansi-regex: 6.2.2
@@ -6873,7 +6873,7 @@ snapshots:
       - react-native
       - supports-color
 
-  '@hashgraph/proto@file:.yalc/@hashgraph/proto(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@7.5.4)(strip-ansi@7.1.2)':
+  '@hashgraph/proto@2.23.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@7.5.4)(strip-ansi@7.1.2)':
     dependencies:
       ansi-regex: 6.2.2
       ansi-styles: 6.2.3
