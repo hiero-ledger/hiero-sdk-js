@@ -1292,6 +1292,62 @@ export default class Transaction extends Executable {
     }
 
     /**
+     * Apply maxNodesPerTransaction limit to an already frozen transaction.
+     * This trims the node list to the first N nodes while preserving existing signatures.
+     *
+     * Note: This method assumes the caller has already verified that trimming is needed.
+     *
+     * @private
+     * @param {import("../client/Client.js").default<Channel, *>} client
+     */
+    _applyMaxNodesPerTransactionLimit(client) {
+        const maxNodes = client.maxNodesPerTransaction;
+
+        if (this._logger) {
+            this._logger.debug(
+                `Trimming frozen transaction from ${this._nodeAccountIds.length} nodes to ${maxNodes} nodes based on maxNodesPerTransaction setting`,
+            );
+        }
+
+        // Trim the node account IDs to the first N nodes
+        const trimmedNodeIds = this._nodeAccountIds.list.slice(0, maxNodes);
+
+        // Trim the signed transactions to match the trimmed node list
+        // Each chunk has transactions for all nodes, so we need to trim each chunk
+        const nodeCount = this._nodeAccountIds.length;
+        const chunkCount = this._transactionIds.length;
+        const trimmedSignedTransactions = [];
+
+        for (let chunkIndex = 0; chunkIndex < chunkCount; chunkIndex++) {
+            const chunkStart = chunkIndex * nodeCount;
+
+            // Add the first maxNodes transactions from this chunk
+            for (let nodeIndex = 0; nodeIndex < maxNodes; nodeIndex++) {
+                const transactionIndex = chunkStart + nodeIndex;
+                if (transactionIndex < this._signedTransactions.length) {
+                    trimmedSignedTransactions.push(
+                        this._signedTransactions.get(transactionIndex),
+                    );
+                }
+            }
+        }
+
+        // Clear and rebuild the transactions list since it's derived from signed transactions
+        this._transactions.clear();
+
+        // Update the node account IDs (we need to unlock, update, and relock)
+        const wasNodeAccountIdsLocked = this._nodeAccountIds.locked;
+        this._nodeAccountIds.locked = false;
+        this._nodeAccountIds.setList(trimmedNodeIds);
+        if (wasNodeAccountIdsLocked) {
+            this._nodeAccountIds.setLocked();
+        }
+
+        // Update the signed transactions
+        this._signedTransactions.setList(trimmedSignedTransactions);
+    }
+
+    /**
      * @description Set the key that will sign the batch of which this Transaction is a part of.
      * @param {Key} batchKey
      * @returns {this}
@@ -1665,6 +1721,13 @@ export default class Transaction extends Executable {
         // Make sure we're frozen
         if (!this._isFrozen()) {
             this.freezeWith(client);
+        }
+
+        // Apply maxNodesPerTransaction limit to already frozen transaction
+        // This allows changing the node count even after freezing while preserving signatures
+        const maxNodes = client.maxNodesPerTransaction;
+        if (maxNodes > 0 && this._nodeAccountIds.length > maxNodes) {
+            this._applyMaxNodesPerTransactionLimit(client);
         }
 
         // Valid checksums if the option is enabled
