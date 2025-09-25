@@ -1336,12 +1336,11 @@ export default class Transaction extends Executable {
         this._transactions.clear();
 
         // Update the node account IDs (we need to unlock, update, and relock)
-        const wasNodeAccountIdsLocked = this._nodeAccountIds.locked;
         this._nodeAccountIds.locked = false;
+
         this._nodeAccountIds.setList(trimmedNodeIds);
-        if (wasNodeAccountIdsLocked) {
-            this._nodeAccountIds.setLocked();
-        }
+
+        this._nodeAccountIds.locked = true;
 
         // Update the signed transactions
         this._signedTransactions.setList(trimmedSignedTransactions);
