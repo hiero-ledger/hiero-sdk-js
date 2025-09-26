@@ -1303,6 +1303,10 @@ export default class Transaction extends Executable {
     _applyMaxNodesPerTransactionLimit(client) {
         const maxNodes = client.maxNodesPerTransaction;
 
+        if (maxNodes <= 0 || this._nodeAccountIds.length <= maxNodes) {
+            return;
+        }
+
         if (this._logger) {
             this._logger.debug(
                 `Trimming frozen transaction from ${this._nodeAccountIds.length} nodes to ${maxNodes} nodes based on maxNodesPerTransaction setting`,
@@ -1724,10 +1728,7 @@ export default class Transaction extends Executable {
 
         // Apply maxNodesPerTransaction limit to already frozen transaction
         // This allows changing the node count even after freezing while preserving signatures
-        const maxNodes = client.maxNodesPerTransaction;
-        if (maxNodes > 0 && this._nodeAccountIds.length > maxNodes) {
-            this._applyMaxNodesPerTransactionLimit(client);
-        }
+        this._applyMaxNodesPerTransactionLimit(client);
 
         // Valid checksums if the option is enabled
         if (client.isAutoValidateChecksumsEnabled()) {
