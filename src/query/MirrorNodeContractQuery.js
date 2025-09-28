@@ -217,29 +217,26 @@ export default class MirrorNodeContractQuery {
             throw new Error("Contract ID is not set");
         }
         this._fillEvmAddress();
-        let mirrorNetworkAddress = client.mirrorNetwork[0];
-        const contractCallEndpoint = "/api/v1/contracts/call";
+        let mirrorRestApiBaseUrl = client.mirrorRestApiBaseUrl;
+        const contractCallEndpointPath = "/contracts/call";
 
-        if (!client.ledgerId || client.ledgerId?.isLocalNode()) {
-            const currentMirrorNetworkPort =
-                client.mirrorNetwork[0].split(":")[1];
-            mirrorNetworkAddress = "http://"
-                .concat(
-                    client.mirrorNetwork[0].replace(
-                        currentMirrorNetworkPort,
-                        "8545",
-                    ),
-                )
-                .concat(contractCallEndpoint);
-        } else {
-            let trimmed = client.mirrorNetwork[0].split(":");
-            mirrorNetworkAddress = "https://"
-                .concat(trimmed[0])
-                .concat(contractCallEndpoint);
+        // Check if this is a local environment (localhost or 127.0.0.1)
+        const mirrorNode = client._mirrorNetwork.getNextMirrorNode();
+        const host = mirrorNode.address.address;
+        const isLocalEnvironment = host === "localhost" || host === "127.0.0.1";
+
+        if (isLocalEnvironment) {
+            // For local environments, use HTTP scheme and port 8545
+            const url = new URL(mirrorRestApiBaseUrl);
+            url.protocol = "http:";
+            url.port = "8545";
+            mirrorRestApiBaseUrl = url.toString();
         }
 
+        const contractCallEndpointUrl = `${mirrorRestApiBaseUrl}${contractCallEndpointPath}`;
+
         // eslint-disable-next-line n/no-unsupported-features/node-builtins
-        const response = await fetch(mirrorNetworkAddress, {
+        const response = await fetch(contractCallEndpointUrl, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
