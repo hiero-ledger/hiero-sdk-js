@@ -268,6 +268,33 @@ export default class Client {
     }
 
     /**
+     * @returns {string}
+     * @throws {Error} When no mirror network is configured or available
+     */
+    get mirrorRestApiBaseUrl() {
+        try {
+            const mirrorNode = this._mirrorNetwork.getNextMirrorNode();
+            const host = mirrorNode.address.address;
+            const port = mirrorNode.address.port;
+
+            if (!host || !port) {
+                throw new Error(
+                    "Mirror node has invalid address configuration",
+                );
+            }
+
+            const scheme = this._getSchemeFromHostAndPort(host, port);
+
+            return `${scheme}://${host}:${port}/api/v1`;
+        } catch (error) {
+            // Re-throw with a more descriptive error message
+            throw new Error(
+                "Client has no mirror network configured or no healthy mirror nodes are available",
+            );
+        }
+    }
+
+    /**
      * @returns {boolean}
      */
     get signOnDemand() {
@@ -535,15 +562,24 @@ export default class Client {
     }
 
     /**
-     * @returns {number}
+     * Gets the maximum number of nodes that a transaction or query will attempt to execute against.
+     *
+     * @returns {number} The current maximum nodes per transaction setting.
+     *   Returns -1 if no limit is set (uses network defaults).
      */
     get maxNodesPerTransaction() {
         return this._network.maxNodesPerTransaction;
     }
 
     /**
-     * @param {number} maxNodesPerTransaction
-     * @returns {this}
+     * Sets the maximum number of nodes that a transaction or query will execute against.
+     *
+     * - **Before freezing**: Limits automatic node selection when no explicit nodes are set
+     * - **After freezing**: Trims frozen transactions to the first N nodes while preserving signatures
+     * - **Special values**: 0 disables limiting, values > available nodes cause no trimming
+     *
+     * @param {number} maxNodesPerTransaction - Maximum nodes per transaction. Set to 0 to disable.
+     * @returns {this} The client instance for method chaining
      */
     setMaxNodesPerTransaction(maxNodesPerTransaction) {
         this._network.setMaxNodesPerTransaction(maxNodesPerTransaction);
@@ -803,6 +839,34 @@ export default class Client {
                 this._scheduleNetworkUpdate();
             }
         }, this._networkUpdatePeriod);
+    }
+
+    /**
+     * Determines the appropriate scheme (http/https) based on the host and port.
+     *
+     * @private
+     * @param {string} host - The host address
+     * @param {number} port - The port number
+     * @returns {string} - The scheme ('http' or 'https')
+     */
+    _getSchemeFromHostAndPort(host, port) {
+        // For localhost and 127.0.0.1, use HTTP scheme
+        if (host === "localhost" || host === "127.0.0.1") {
+            return "http";
+        }
+
+        // Standard HTTPS ports
+        if (port === 443) {
+            return "https";
+        }
+
+        // Standard HTTP ports
+        if (port === 80) {
+            return "http";
+        }
+
+        // For other ports, assume HTTPS for security
+        return "https";
     }
 
     /**
