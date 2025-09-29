@@ -185,7 +185,7 @@ describe("TokenAssociate", function () {
                 const tokenMintSignedTransaction =
                     await new TokenMintTransaction()
                         .setTokenId(tokenId1)
-                        .setMetadata([Buffer.from("-")])
+                        .setMetadata([new TextEncoder().encode("-")])
                         .execute(env.client);
 
                 const { serials } = await tokenMintSignedTransaction.getReceipt(
@@ -212,7 +212,7 @@ describe("TokenAssociate", function () {
                 const tokenMintSignedTransaction2 =
                     await new TokenMintTransaction()
                         .setTokenId(tokenId2)
-                        .addMetadata(Buffer.from("-"))
+                        .addMetadata(new TextEncoder().encode("-"))
                         .execute(env.client);
 
                 const serials2 = (
@@ -297,7 +297,7 @@ describe("TokenAssociate", function () {
 
                 const tokenMintTx = await new TokenMintTransaction()
                     .setTokenId(tokenId)
-                    .setMetadata([Buffer.from("-")])
+                    .setMetadata([new TextEncoder().encode("-")])
                     .freezeWith(env.client)
                     .sign(env.operatorKey);
 
@@ -398,14 +398,14 @@ describe("TokenAssociate", function () {
 
                 const mintTokenTx = await new TokenMintTransaction()
                     .setTokenId(tokenId1)
-                    .setMetadata([Buffer.from("-")])
+                    .setMetadata([new TextEncoder().encode("-")])
                     .execute(env.client);
 
                 const { serials } = await mintTokenTx.getReceipt(env.client);
 
                 const mintTokenTx2 = await new TokenMintTransaction()
                     .setTokenId(tokenId2)
-                    .setMetadata([Buffer.from("-")])
+                    .setMetadata([new TextEncoder().encode("-")])
                     .execute(env.client);
 
                 await mintTokenTx2.getReceipt(env.client);
@@ -555,7 +555,7 @@ describe("TokenAssociate", function () {
                 await (
                     await new TokenMintTransaction()
                         .setTokenId(tokenId)
-                        .setMetadata([Buffer.from("-")])
+                        .setMetadata([new TextEncoder().encode("-")])
                         .execute(env.client)
                 ).getReceipt(env.client);
 

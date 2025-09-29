@@ -1,6 +1,6 @@
 version: "3"
 
-silent: true
+silent: false
 
 includes:
     examples:
@@ -44,17 +44,17 @@ tasks:
 
     "yalc:install":
         cmds:
-            - npm install -g yalc > /dev/null
+            - npm install -g yalc
 
     "yalc:add":
         cmds:
-            - npx yalc add @hashgraph/proto > /dev/null
-            - npx yalc add @hashgraph/cryptography > /dev/null
+            - npx yalc add @hashgraph/proto
+            - npx yalc add @hashgraph/cryptography
 
     "yalc:remove":
         cmds:
-            - npx yalc remove @hashgraph/proto > /dev/null
-            - npx yalc remove @hashgraph/cryptography > /dev/null
+            - npx yalc remove @hashgraph/proto
+            - npx yalc remove @hashgraph/cryptography
 
     install:
         deps:
@@ -63,7 +63,7 @@ tasks:
             - "cryptography:build"
         cmds:
             - task: "yalc:add"
-            - pnpm i --no-frozen-lockfile > /dev/null
+            - pnpm i --no-frozen-lockfile
 
     build:
         cmds:
@@ -79,9 +79,9 @@ tasks:
 
     "build:compile":
         cmds:
-            - npx babel src -d lib --out-file-extension .cjs > /dev/null
-            - npx rollup -c > /dev/null
-            - npx yalc publish > /dev/null
+            - npx babel src -d lib --out-file-extension .cjs
+            - npx rollup -c
+            - npx yalc publish
 
     clean:
         deps:
@@ -95,7 +95,7 @@ tasks:
 
     format:
         cmds:
-            - npx prettier src "test/unit/*.js" "test/integration/*.js" "*.json" "src/*.js" "scripts/*.js" --write > /dev/null
+            - npx prettier src "test/unit/*.js" "test/integration/*.js" "*.json" "src/*.js" "scripts/*.js" --write
 
     lint:
         deps:
@@ -115,7 +115,7 @@ tasks:
 
     "lint:format":
         cmds:
-            - npx prettier src "test/unit/*.js" "test/integration/*.js" "*.json" "src/*.js" --check > /dev/null
+            - npx prettier src "test/unit/*.js" "test/integration/*.js" "*.json" "src/*.js" --check
 
     "lint:js":
         cmds:
@@ -154,14 +154,20 @@ tasks:
     "test:integration":
         deps:
             - "test:integration:node"
+            - "test:integration:browser"
 
     "test:integration:node":
         cmds:
             - npx vitest --config=test/vitest-node-integration.config.ts
 
+    "test:integration:browser":
+        cmds:
+            - npx vitest --config=test/vitest-browser-integration.config.ts
+
     "test:integration:codecov":
         cmds:
             - npx vitest --coverage --config=test/vitest-node-integration.config.ts
+            - npx vitest --coverage --config=test/vitest-browser-integration.config.ts
     "update:proto":
         deps:
             - "proto:update"
@@ -189,6 +195,6 @@ tasks:
 
     "publish:release":
         preconditions:
-            - "! grep '\".*\": \"\\(link\\|file\\):.*\"' package.json > /dev/null"
+            - "! grep '\".*\": \"\\(link\\|file\\):.*\"' package.json"
         cmds:
             - pnpm publish {{.CLI_ARGS}}

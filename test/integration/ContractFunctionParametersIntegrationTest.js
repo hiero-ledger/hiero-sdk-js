@@ -1,4 +1,3 @@
-import { setTimeout } from "timers/promises";
 import {
     FileCreateTransaction,
     ContractCreateTransaction,
@@ -10,6 +9,7 @@ import {
     FileDeleteTransaction,
     MirrorNodeContractEstimateQuery,
 } from "../../src/exports.js";
+import { wait } from "../../src/util.js";
 import { REQUIRE_ARRAY_ERROR } from "../../src/util.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import BigNumber from "bignumber.js";
@@ -161,7 +161,7 @@ describe("ContractFunctionParameters", function () {
 
         //Get the receipt of the file create transaction
         const contractReceipt = await contractResponse.getReceipt(env.client);
-        await setTimeout(2500);
+        await wait(2500);
 
         //Get the smart contract ID
         newContractId = contractReceipt.contractId;

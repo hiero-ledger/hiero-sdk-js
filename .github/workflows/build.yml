@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
         with:
           egress-policy: audit
 
@@ -48,7 +48,7 @@ jobs:
           version: 3.35.1
 
       - name: Install PNPM
-        uses: step-security/action-setup@598c7206e1c7d361165e303487aa7772566a8e05 # v4.1.0
+        uses: step-security/action-setup@92da25bc4fa3a114b7a78c686a5ec142ccb12c8b # v4.1.1
         with:
           version: 9.15.5
 
@@ -70,7 +70,7 @@ jobs:
 
     steps:
       -  name: Harden Runner
-         uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+         uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
          with:
            egress-policy: audit
 
@@ -85,7 +85,7 @@ jobs:
           version: 3.35.1
 
       - name: Install PNPM
-        uses: step-security/action-setup@598c7206e1c7d361165e303487aa7772566a8e05 # v4.1.0
+        uses: step-security/action-setup@92da25bc4fa3a114b7a78c686a5ec142ccb12c8b # v4.1.1
         with:
           version: 9.15.5
 
@@ -99,13 +99,21 @@ jobs:
         id: build-sdk
         run: task build
 
+      - name: Install Playwright Dependencies
+        id: playwright-deps
+        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
+        run: |
+            sudo npx playwright install-deps
+            npx playwright install
+
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@a39acf8cfbaa2feb195a86530d0ab643a45aa541 # v0.10
+        uses: hiero-ledger/hiero-solo-action@b76850c1ac44466900f8e7412b309c3aa0f539c1 # v0.12
         with:
           installMirrorNode: true
           hieroVersion: v0.65.0
-          mirrorNodeVersion: v0.136.1
+          mirrorNodeVersion: v0.138.0
+          grpcProxyPort: 8080
 
       - name: Set Operator Account
         run: |
@@ -118,7 +126,7 @@ jobs:
         run: ${{ env.CG_EXEC }} task test:integration:codecov
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@fdcc8476540edceab3de004e990f80d881c6cc00 # v5.5.0
+        uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/lcov.info
@@ -129,12 +137,6 @@ jobs:
         if: ${{ steps.build-sdk.conclusion == 'success' && steps.stop-local-node.conclusion == 'success' && !cancelled() && always() }}
         run: ${{ env.CG_EXEC }} task build
 
-      - name: Install Playwright Dependencies
-        id: playwright-deps
-        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
-        run: |
-            sudo npx playwright install-deps
-            npx playwright install
 
       - name: Browser Unit Test @hashgraph/cryptography
         working-directory: packages/cryptography
@@ -147,7 +149,7 @@ jobs:
         run: ${{ env.CG_EXEC }} task test:unit:codecov
 
       - name: Upload @hashgraph/cryptography coverage to Codecov
-        uses: codecov/codecov-action@fdcc8476540edceab3de004e990f80d881c6cc00 # v5.5.0
+        uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./packages/cryptography/coverage/lcov.info
@@ -162,7 +164,7 @@ jobs:
         run: ${{ env.CG_EXEC }} task test:unit:codecov
 
       - name: Upload @hashgraph/sdk coverage to Codecov
-        uses: codecov/codecov-action@fdcc8476540edceab3de004e990f80d881c6cc00 # v5.5.0
+        uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
@@ -175,7 +177,7 @@ jobs:
         node: [ "22" ]
     steps:
       -  name: Harden Runner
-         uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+         uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
          with:
           egress-policy: audit
 
@@ -190,7 +192,7 @@ jobs:
           version: 3.35.1
 
       - name: Install PNPM
-        uses: step-security/action-setup@598c7206e1c7d361165e303487aa7772566a8e05 # v4.1.0
+        uses: step-security/action-setup@92da25bc4fa3a114b7a78c686a5ec142ccb12c8b # v4.1.1
         with:
           version: 9.15.5
 
@@ -206,11 +208,12 @@ jobs:
 
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@a39acf8cfbaa2feb195a86530d0ab643a45aa541 # v0.10
+        uses: hiero-ledger/hiero-solo-action@b76850c1ac44466900f8e7412b309c3aa0f539c1 # v0.12
         with:
           installMirrorNode: true
           hieroVersion: v0.65.0
-          mirrorNodeVersion: v0.136.1
+          mirrorNodeVersion: v0.138.0
+          grpcProxyPort: 8080
 
       - name: Set Operator Account
         run: |
