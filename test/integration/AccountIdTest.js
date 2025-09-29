@@ -52,7 +52,7 @@ describe("AccountId", function () {
         }
     });
 
-    it.only("should populate account number from EVM address", async function () {
+    it("should populate account number from EVM address", async function () {
         // Create a new integration test environment for this test
         const env = await IntegrationTestEnv.new();
 

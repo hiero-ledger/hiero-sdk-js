@@ -180,7 +180,6 @@ export default class AccountId {
             throw new Error("field `evmAddress` should not be null");
         }
         const mirrorRestApiBaseUrl = client.mirrorRestApiBaseUrl;
-        console.log("mirrorRestApiBaseUrl", mirrorRestApiBaseUrl);
 
         const url = `${mirrorRestApiBaseUrl}/accounts/${this.evmAddress.toString()}`;
 

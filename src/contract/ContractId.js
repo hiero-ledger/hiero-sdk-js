@@ -120,15 +120,13 @@ export default class ContractId extends Key {
         if (this.evmAddress === null) {
             throw new Error("field `evmAddress` should not be null");
         }
-        const mirrorUrl = client.mirrorNetwork[0].slice(
-            0,
-            client.mirrorNetwork[0].indexOf(":"),
-        );
 
-        /* eslint-disable */
-        const url = `https://${mirrorUrl}/api/v1/contracts/${hex.encode(
+        const mirrorRestApiBaseUrl = client.mirrorRestApiBaseUrl;
+        const url = `${mirrorRestApiBaseUrl}/contracts/${hex.encode(
             this.evmAddress,
         )}`;
+
+        /* eslint-disable */
         const response = await fetch(url);
         const data = await response.json();
         const mirrorAccountId = data.contract_id;
