@@ -4,8 +4,8 @@ import TokenId from "./TokenId.js";
 import Transaction, {
     TRANSACTION_REGISTRY,
 } from "../transaction/Transaction.js";
-import Long from "long";
 import * as hex from "../encoding/hex.js";
+import { convertAmountToLong } from "../util.js";
 
 /**
  * @namespace proto
@@ -23,6 +23,7 @@ import * as hex from "../encoding/hex.js";
  * @typedef {import("../client/Client.js").default<*, *>} Client
  * @typedef {import("../account/AccountId.js").default} AccountId
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
+ * @typedef {import("bignumber.js").default} BigNumber
  */
 
 /**
@@ -32,7 +33,7 @@ export default class TokenMintTransaction extends Transaction {
     /**
      * @param {object} [props]
      * @param {TokenId | string} [props.tokenId]
-     * @param {Long | number} [props.amount]
+     * @param {Long | number | BigNumber | bigint} [props.amount]
      * @param {Uint8Array[]} [props.metadata]
      */
     constructor(props = {}) {
@@ -138,12 +139,12 @@ export default class TokenMintTransaction extends Transaction {
     }
 
     /**
-     * @param {Long | number} amount
+     * @param {Long | number | BigNumber | bigint} amount
      * @returns {this}
      */
     setAmount(amount) {
         this._requireNotFrozen();
-        this._amount = amount instanceof Long ? amount : Long.fromValue(amount);
+        this._amount = convertAmountToLong(amount);
 
         return this;
     }
