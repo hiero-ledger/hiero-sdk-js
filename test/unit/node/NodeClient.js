@@ -363,7 +363,7 @@ describe("Client", function () {
             const mirrorRestApiBaseUrl = client.mirrorRestApiBaseUrl;
 
             expect(mirrorRestApiBaseUrl).to.equal(
-                "http://localhost:5600/api/v1",
+                "http://localhost:5551/api/v1",
             );
         });
 
@@ -378,7 +378,7 @@ describe("Client", function () {
             const mirrorRestApiBaseUrl = client.mirrorRestApiBaseUrl;
 
             expect(mirrorRestApiBaseUrl).to.equal(
-                "http://127.0.0.1:5600/api/v1",
+                "http://127.0.0.1:5551/api/v1",
             );
         });
 

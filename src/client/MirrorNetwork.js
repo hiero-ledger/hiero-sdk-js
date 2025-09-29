@@ -84,4 +84,22 @@ export default class MirrorNetwork extends ManagedNetwork {
     getNextMirrorNode() {
         return this._getNumberOfMostHealthyNodes(1)[0];
     }
+
+    /**
+     * Gets the base URL for the mirror node REST API.
+     *
+     * @returns {string} The base URL for the mirror node REST API
+     * @throws {Error} When no mirror network is configured or available
+     */
+    get mirrorRestApiBaseUrl() {
+        try {
+            const mirrorNode = this.getNextMirrorNode();
+            return mirrorNode.mirrorRestApiBaseUrl;
+        } catch (error) {
+            // Re-throw with a more descriptive error message
+            throw new Error(
+                "Client has no mirror network configured or no healthy mirror nodes are available",
+            );
+        }
+    }
 }
