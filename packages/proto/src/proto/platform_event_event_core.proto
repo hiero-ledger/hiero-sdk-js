@@ -34,7 +34,7 @@ package com.hedera.hapi.platform.event;
  */
 
 import "services_basic_types.proto";
-import "services_event_descriptor.proto";
+import "platform_event_event_descriptor.proto";
 import "services_timestamp.proto";
 
 option java_package = "com.hedera.hapi.platform.event.legacy";
@@ -64,6 +64,14 @@ message EventCore {
    * If the event has a self parent, this timestamp MUST be strictly greater than the `time_created` of the self parent.
    */
   proto.Timestamp time_created = 3;
+
+  /**
+   * A random number used in the unlikely case that the consensus algorithm gets to a coin vote.<br/>
+   * This number SHALL be used to break ties in the consensus algorithm.<br/>
+   * The number SHALL be between 0 and the size of the roster (inclusive) for the event's birth round.<br/>
+   * For example, if the roster size is 10, the minimum value is 0 and the maximum value is 10.<br/>
+   */
+  int64 coin = 5;
 
   /**
    * Used to be a list of EventDescriptors representing the parents of this event.<br/>

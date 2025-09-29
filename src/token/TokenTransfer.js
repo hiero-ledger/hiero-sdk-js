@@ -3,6 +3,7 @@
 import Long from "long";
 import AccountId from "../account/AccountId.js";
 import TokenId from "./TokenId.js";
+import HookCall from "../hooks/HookCall.js";
 
 /**
  * @namespace proto
@@ -10,6 +11,7 @@ import TokenId from "./TokenId.js";
  * @typedef {import("@hashgraph/proto").proto.IAccountAmount} HieroProto.proto.IAccountAmount
  * @typedef {import("@hashgraph/proto").proto.IAccountID} HieroProto.proto.IAccountID
  * @typedef {import("@hashgraph/proto").proto.ITokenID} HieroProto.proto.ITokenID
+ * @typedef {import("@hashgraph/proto").proto.HookCall} HieroProto.proto.HookCall
  */
 
 /**
@@ -37,6 +39,8 @@ export default class TokenTransfer {
      * @param {number | null} props.expectedDecimals
      * @param {Long | number} props.amount
      * @param {boolean} props.isApproved
+     * @param {HookCall | null} props.prePostTxAllowanceHook
+     * @param {HookCall | null} props.preTxAllowanceHook
      */
     constructor(props) {
         /**
@@ -62,6 +66,8 @@ export default class TokenTransfer {
         this.expectedDecimals = props.expectedDecimals;
         this.amount = Long.fromValue(props.amount);
         this.isApproved = props.isApproved;
+        this.prePostTxAllowanceHook = props.prePostTxAllowanceHook;
+        this.preTxAllowanceHook = props.preTxAllowanceHook;
     }
 
     /**
@@ -100,6 +106,18 @@ export default class TokenTransfer {
                                 ? transfer.amount
                                 : Long.ZERO,
                         isApproved: transfer.isApproval == true,
+                        prePostTxAllowanceHook:
+                            transfer.prePostTxAllowanceHook != null
+                                ? HookCall._fromProtobuf(
+                                      transfer.prePostTxAllowanceHook,
+                                  )
+                                : null,
+                        preTxAllowanceHook:
+                            transfer.preTxAllowanceHook != null
+                                ? HookCall._fromProtobuf(
+                                      transfer.preTxAllowanceHook,
+                                  )
+                                : null,
                     }),
                 );
             }
@@ -117,6 +135,8 @@ export default class TokenTransfer {
             accountID: this.accountId._toProtobuf(),
             amount: this.amount,
             isApproval: this.isApproved,
+            prePostTxAllowanceHook: this.prePostTxAllowanceHook,
+            preTxAllowanceHook: this.preTxAllowanceHook,
         };
     }
 

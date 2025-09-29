@@ -12,6 +12,8 @@ import HbarTransferMap from "./HbarTransferMap.js";
 import TokenNftTransfer from "../token/TokenNftTransfer.js";
 import NftId from "../token/NftId.js";
 import AbstractTokenTransferTransaction from "../token/AbstractTokenTransferTransaction.js";
+import HookCall from "../hooks/HookCall.js";
+import HookType from "../hooks/HookType.js";
 
 /**
  * @typedef {import("../long.js").LongObject} LongObject
@@ -169,9 +171,17 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @param {AccountId | string} accountId
      * @param {number | string | Long | LongObject | BigNumber | Hbar} amount
      * @param {boolean} isApproved
+     * @param {HookCall | null} preTxAllowanceHook
+     * @param {HookCall | null} prePostTxAllowanceHook
      * @returns {TransferTransaction}
      */
-    _addHbarTransfer(accountId, amount, isApproved) {
+    _addHbarTransfer(
+        accountId,
+        amount,
+        isApproved,
+        preTxAllowanceHook,
+        prePostTxAllowanceHook,
+    ) {
         this._requireNotFrozen();
 
         const account =
@@ -194,6 +204,8 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
                 accountId: account,
                 amount: hbars,
                 isApproved,
+                prePostTxAllowanceHook,
+                preTxAllowanceHook,
             }),
         );
 
@@ -207,7 +219,7 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @returns {TransferTransaction}
      */
     addHbarTransfer(accountId, amount) {
-        return this._addHbarTransfer(accountId, amount, false);
+        return this._addHbarTransfer(accountId, amount, false, null, null);
     }
 
     /**
@@ -217,7 +229,7 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @returns {TransferTransaction}
      */
     addApprovedHbarTransfer(accountId, amount) {
-        return this._addHbarTransfer(accountId, amount, true);
+        return this._addHbarTransfer(accountId, amount, true, null, null);
     }
 
     /**
@@ -311,6 +323,145 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
     }
 
     /**
+     *
+     * @param {AccountId} accountId
+     * @param {Long} amount
+     * @param {HookCall} hook
+     * @param {number} hookType
+     * @returns
+     */
+    addHbarTransferWithHook(accountId, amount, hook, hookType) {
+        if (hookType === HookType.PRE_POST_HOOK_RECEIVER) {
+            return this._addHbarTransfer(accountId, amount, false, null, hook);
+        } else {
+            return this._addHbarTransfer(accountId, amount, false, hook, null);
+        }
+    }
+
+    /**
+     *
+     * @param {AccountId} accountId
+     * @param {Long} amount
+     * @param {HookCall} prePostTxAllowanceHook
+     * @returns
+     */
+    addHbarTransferWithPrePostTxHook(
+        accountId,
+        amount,
+        prePostTxAllowanceHook,
+    ) {
+        return this._addHbarTransfer(
+            accountId,
+            amount,
+            false,
+            null,
+            prePostTxAllowanceHook,
+        );
+    }
+
+    /**
+     *
+     * @param {NftId} nftId
+     * @param {AccountId} sender
+     * @param {AccountId} receiver
+     * @param {HookCall} hook
+     * @param {number} hookType
+     * @returns
+     */
+    addNftTransferWithSenderHook(nftId, sender, receiver, hook, hookType) {
+        if (hookType === HookType.PRE_POST_HOOK_SENDER) {
+            return this._addNftTransfer(
+                false,
+                nftId,
+                sender,
+                receiver,
+                hook,
+                null,
+                null,
+                null,
+            );
+        } else {
+            return this._addNftTransfer(
+                false,
+                nftId,
+                sender,
+                receiver,
+                null,
+                hook,
+                null,
+                null,
+            );
+        }
+    }
+
+    /**
+     *
+     * @param {NftId} nftId
+     * @param {AccountId} sender
+     * @param {AccountId} receiver
+     * @param {HookCall} hook
+     * @param {number} hookType
+     * @returns
+     */
+    addNftTransferWithReceiverHook(nftId, sender, receiver, hook, hookType) {
+        if (hookType === HookType.PRE_POST_HOOK_RECEIVER) {
+            return this._addNftTransfer(
+                false,
+                nftId,
+                sender,
+                receiver,
+                null,
+                null,
+                hook,
+                null,
+            );
+        } else {
+            return this._addNftTransfer(
+                false,
+                nftId,
+                sender,
+                receiver,
+                null,
+                null,
+                null,
+                hook,
+            );
+        }
+    }
+
+    /**
+     *
+     * @param {TokenId} tokenId
+     * @param {AccountId} accountId
+     * @param {Long} amount
+     * @param {HookCall} hook
+     * @param {number} hookType
+     * @returns
+     */
+    addTokenTransferWithHook(tokenId, accountId, amount, hook, hookType) {
+        if (hookType === HookType.PRE_POST_HOOK_RECEIVER) {
+            return this._addTokenTransfer(
+                tokenId,
+                accountId,
+                amount,
+                false,
+                null,
+                hook,
+                null,
+            );
+        } else {
+            return this._addTokenTransfer(
+                tokenId,
+                accountId,
+                amount,
+                false,
+                null,
+                null,
+                hook,
+            );
+        }
+    }
+    /**
      * @override
      * @internal
      * @param {Channel} channel
@@ -347,6 +498,8 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
                         accountID: transfer.accountId._toProtobuf(),
                         amount: transfer.amount.toTinybars(),
                         isApproval: transfer.isApproved,
+                        prePostTxAllowanceHook: transfer.prePostTxAllowanceHook,
+                        preTxAllowanceHook: transfer.preTxAllowanceHook,
                     };
                 }),
             },

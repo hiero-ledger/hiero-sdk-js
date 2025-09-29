@@ -11,6 +11,7 @@ import Transaction, {
 import Long from "long";
 import Duration from "../Duration.js";
 import Key from "../Key.js";
+import HookCreationDetails from "../hooks/HookCreationDetails.js";
 
 /**
  * @namespace proto
@@ -69,6 +70,7 @@ export default class ContractCreateTransaction extends Transaction {
      * @param {Long | number} [props.stakedNodeId]
      * @param {boolean} [props.declineStakingReward]
      * @param {AccountId} [props.autoRenewAccountId]
+     * @param {number[]} [props.hooks]
      */
     constructor(props = {}) {
         super();
@@ -157,6 +159,16 @@ export default class ContractCreateTransaction extends Transaction {
          * @type {?AccountId}
          */
         this._autoRenewAccountId = null;
+
+        /**
+         * @private
+         * @type {number[]}
+         */
+        this._hooks = [];
+
+        if (props.hooks != null) {
+            this._hooks = props.hooks;
+        }
 
         if (props.bytecodeFileId != null) {
             this.setBytecodeFileId(props.bytecodeFileId);
@@ -602,6 +614,31 @@ export default class ContractCreateTransaction extends Transaction {
     }
 
     /**
+     * @param {number} hook
+     * @returns {this}
+     */
+    addHook(hook) {
+        this._hooks.push(hook);
+        return this;
+    }
+
+    /**
+     * @param {number[]} hooks
+     * @returns {this}
+     */
+    setHooks(hooks) {
+        this._hooks = hooks;
+        return this;
+    }
+
+    /**
+     * @returns {number[]}
+     */
+    get hooks() {
+        return this._hooks;
+    }
+
+    /**
      * @override
      * @internal
      * @param {Channel} channel
@@ -658,6 +695,8 @@ export default class ContractCreateTransaction extends Transaction {
                 this._autoRenewAccountId != null
                     ? this._autoRenewAccountId._toProtobuf()
                     : null,
+            // @ts-ignore - hook_creation_details field exists in protobuf but not in TypeScript definitions
+            hook_creation_details: this._hooks.map((hook) => hook.toProtobuf()),
         };
     }
 
