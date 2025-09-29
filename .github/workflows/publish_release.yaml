@@ -62,7 +62,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
         with:
           egress-policy: audit
 
@@ -296,7 +296,7 @@ jobs:
     runs-on: hiero-client-sdk-linux-medium
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
         with:
           egress-policy: audit
 
@@ -312,7 +312,7 @@ jobs:
           version: 3.35.1
 
       - name: Install PNPM
-        uses: step-security/action-setup@598c7206e1c7d361165e303487aa7772566a8e05 # v4.1.0
+        uses: step-security/action-setup@92da25bc4fa3a114b7a78c686a5ec142ccb12c8b # v4.1.1
         with:
           version: 10.17.0
 
@@ -337,7 +337,7 @@ jobs:
       - run-safety-checks
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@ec9f2d5744a09debf3a187a3f4f675c53b671911 # v2.13.0
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
         with:
           egress-policy: audit
 
@@ -353,7 +353,7 @@ jobs:
           version: 3.35.1
 
       - name: Install PNPM
-        uses: step-security/action-setup@598c7206e1c7d361165e303487aa7772566a8e05 # v4.1.0
+        uses: step-security/action-setup@92da25bc4fa3a114b7a78c686a5ec142ccb12c8b # v4.1.1
         with:
           version: 10.17.0
 

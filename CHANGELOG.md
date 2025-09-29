@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.73.2
+
+### Added
+- Introduced `Client.mirrorRestApiBaseUrl` getter to provide the full Mirror Node REST API base URL, including scheme and port. [#3376](https://github.com/hiero-ledger/hiero-sdk-js/pull/3376)
+
+### Changed
+- Updated `AccountId.populateAccountEvmAddress`, `AccountId.populateAccountNum`  `MirrorNodeContractQuery` to construct URLs using `mirrorRestApiBaseUrl` instead of manually parsing strings. [#3376](https://github.com/hiero-ledger/hiero-sdk-js/pull/3376)
+ 
+### Fixed
+- Resolved an issue in `MirrorNodeContractQuery` where the port was incorrectly overridden to `8545` for custom network configurations. [#3376](https://github.com/hiero-ledger/hiero-sdk-js/pull/3376)
+
 ## v2.73.1
 
 ### Added
