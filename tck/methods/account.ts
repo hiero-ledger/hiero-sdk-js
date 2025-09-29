@@ -11,11 +11,15 @@ import {
     NftId,
     TokenId,
     EvmAddress,
+    AccountBalanceQuery,
 } from "@hashgraph/sdk";
 import Long from "long";
 
 import { sdk } from "../sdk_data";
-import { AccountResponse } from "../response/account";
+import {
+    AccountResponse,
+    GetAccountBalanceResponse,
+} from "../response/account";
 
 import { getKeyFromString } from "../utils/key";
 import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";
@@ -26,6 +30,7 @@ import {
     CreateAccountParams,
     DeleteAccountParams,
     DeleteAllowanceParams,
+    GetAccountBalanceParams,
     UpdateAccountParams,
 } from "../params/account";
 import { applyCommonTransactionParams } from "../params/common-tx-params";
@@ -243,6 +248,29 @@ export const deleteAccount = async (
 
     return {
         status: receipt.status.toString(),
+    };
+};
+
+export const getAccountBalance = async ({
+    accountId,
+    contractId,
+}: GetAccountBalanceParams): Promise<GetAccountBalanceResponse> => {
+    const transaction = new AccountBalanceQuery().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+
+    if (accountId != null) {
+        transaction.setAccountId(accountId);
+    }
+
+    if (contractId != null) {
+        transaction.setContractId(contractId);
+    }
+
+    const txResponse = await transaction.execute(sdk.getClient());
+
+    return {
+        balance: txResponse.hbars.toTinybars().toString(),
     };
 };
 
