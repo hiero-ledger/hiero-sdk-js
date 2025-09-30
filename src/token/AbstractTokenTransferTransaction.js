@@ -5,11 +5,15 @@ import TokenId from "./TokenId.js";
 import NftId from "./NftId.js";
 import AccountId from "../account/AccountId.js";
 import Transaction from "../transaction/Transaction.js";
-import Long from "long";
 import NullableTokenDecimalMap from "../account/NullableTokenDecimalMap.js";
 import TokenNftTransferMap from "../account/TokenNftTransferMap.js";
 import TokenTransferMap from "../account/TokenTransferMap.js";
 import TokenTransferAccountMap from "../account/TokenTransferAccountMap.js";
+import { convertAmountToLong } from "../util.js";
+
+/**
+ * @typedef {import("bignumber.js").default} BigNumber
+ */
 
 /**
  * @namespace proto
@@ -20,7 +24,7 @@ import TokenTransferAccountMap from "../account/TokenTransferAccountMap.js";
  * @typedef {object} TransferTokensInput
  * @property {TokenId | string} tokenId
  * @property {AccountId | string} accountId
- * @property {Long | number} amount
+ * @property {Long | number | BigNumber | bigint} amount
  */
 
 /**
@@ -99,7 +103,7 @@ export default class AbstractTokenTransferTransaction extends Transaction {
     /**
      * @param {TokenId | string} tokenId
      * @param {AccountId | string} accountId
-     * @param {number | Long} amount
+     * @param {number | Long | BigNumber | bigint} amount
      * @param {boolean} isApproved
      * @param {number | null} expectedDecimals
      * @returns {this}
@@ -119,7 +123,7 @@ export default class AbstractTokenTransferTransaction extends Transaction {
             accountId instanceof AccountId
                 ? accountId
                 : AccountId.fromString(accountId);
-        const value = amount instanceof Long ? amount : Long.fromNumber(amount);
+        const value = convertAmountToLong(amount);
 
         for (const tokenTransfer of this._tokenTransfers) {
             if (
@@ -148,7 +152,7 @@ export default class AbstractTokenTransferTransaction extends Transaction {
     /**
      * @param {TokenId | string} tokenId
      * @param {AccountId | string} accountId
-     * @param {number | Long} amount
+     * @param {number | Long | BigNumber | bigint} amount
      * @returns {this}
      */
     addTokenTransfer(tokenId, accountId, amount) {
@@ -290,7 +294,7 @@ export default class AbstractTokenTransferTransaction extends Transaction {
     /**
      * @param {TokenId | string} tokenId
      * @param {AccountId | string} accountId
-     * @param {number | Long} amount
+     * @param {number | Long | BigNumber | bigint} amount
      * @returns {this}
      */
     addApprovedTokenTransfer(tokenId, accountId, amount) {
@@ -300,7 +304,7 @@ export default class AbstractTokenTransferTransaction extends Transaction {
     /**
      * @param {TokenId | string} tokenId
      * @param {AccountId | string} accountId
-     * @param {number | Long} amount
+     * @param {number | Long | BigNumber | bigint} amount
      * @param {number} decimals
      * @returns {this}
      */
@@ -313,7 +317,7 @@ export default class AbstractTokenTransferTransaction extends Transaction {
             accountId instanceof AccountId
                 ? accountId
                 : AccountId.fromString(accountId);
-        const value = amount instanceof Long ? amount : Long.fromNumber(amount);
+        const value = convertAmountToLong(amount);
 
         let found = false;
 

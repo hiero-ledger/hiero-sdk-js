@@ -6,16 +6,21 @@
 
 import Long from "long";
 import PendingAirdropId from "./PendingAirdropId.js";
+import { convertAmountToLong } from "../util.js";
+
+/**
+ * @typedef {import("bignumber.js").default} BigNumber
+ */
 
 export default class PendingAirdropRecord {
     /**
      * @param {object} props
      * @param {PendingAirdropId} props.airdropId
-     * @param {Long} props.amount
+     * @param {Long | number | BigNumber | bigint} props.amount
      */
     constructor(props) {
         this.airdropId = props.airdropId;
-        this.amount = props.amount;
+        this.amount = convertAmountToLong(props.amount);
     }
 
     /**

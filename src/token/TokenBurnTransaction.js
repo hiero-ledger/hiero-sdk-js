@@ -5,6 +5,7 @@ import Transaction, {
     TRANSACTION_REGISTRY,
 } from "../transaction/Transaction.js";
 import Long from "long";
+import { convertAmountToLong } from "../util.js";
 
 /**
  * @namespace proto
@@ -22,6 +23,7 @@ import Long from "long";
  * @typedef {import("../client/Client.js").default<*, *>} Client
  * @typedef {import("../account/AccountId.js").default} AccountId
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
+ * @typedef {import("bignumber.js").default} BigNumber
  */
 
 /**
@@ -31,7 +33,7 @@ export default class TokenBurnTransaction extends Transaction {
     /**
      * @param {object} [props]
      * @param {TokenId | string} [props.tokenId]
-     * @param {Long | number} [props.amount]
+     * @param {Long | number | BigNumber | bigint} [props.amount]
      * @param {(Long | number)[]} [props.serials]
      */
     constructor(props = {}) {
@@ -139,12 +141,12 @@ export default class TokenBurnTransaction extends Transaction {
     }
 
     /**
-     * @param {Long | number} amount
+     * @param {Long | number | BigNumber | bigint} amount
      * @returns {this}
      */
     setAmount(amount) {
         this._requireNotFrozen();
-        this._amount = amount instanceof Long ? amount : Long.fromValue(amount);
+        this._amount = convertAmountToLong(amount);
 
         return this;
     }

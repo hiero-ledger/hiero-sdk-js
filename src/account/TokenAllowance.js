@@ -3,6 +3,7 @@
 import TokenId from "../token/TokenId.js";
 import AccountId from "./AccountId.js";
 import Long from "long";
+import { convertAmountToLong } from "../util.js";
 
 /**
  * @namespace proto
@@ -14,6 +15,7 @@ import Long from "long";
 
 /**
  * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("bignumber.js").default} BigNumber
  */
 
 /**
@@ -30,7 +32,7 @@ export default class TokenAllowance {
      * @param {TokenId} props.tokenId
      * @param {AccountId | null} props.spenderAccountId
      * @param {AccountId | null} props.ownerAccountId
-     * @param {Long | null} props.amount
+     * @param {Long | number | BigNumber | bigint | null} props.amount
      */
     constructor(props) {
         /**
@@ -61,7 +63,8 @@ export default class TokenAllowance {
          *
          * @readonly
          */
-        this.amount = props.amount;
+        this.amount =
+            props.amount != null ? convertAmountToLong(props.amount) : null;
 
         Object.freeze(this);
     }
