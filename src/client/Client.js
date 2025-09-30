@@ -562,15 +562,24 @@ export default class Client {
     }
 
     /**
-     * @returns {number}
+     * Gets the maximum number of nodes that a transaction or query will attempt to execute against.
+     *
+     * @returns {number} The current maximum nodes per transaction setting.
+     *   Returns -1 if no limit is set (uses network defaults).
      */
     get maxNodesPerTransaction() {
         return this._network.maxNodesPerTransaction;
     }
 
     /**
-     * @param {number} maxNodesPerTransaction
-     * @returns {this}
+     * Sets the maximum number of nodes that a transaction or query will execute against.
+     *
+     * - **Before freezing**: Limits automatic node selection when no explicit nodes are set
+     * - **After freezing**: Trims frozen transactions to the first N nodes while preserving signatures
+     * - **Special values**: 0 disables limiting, values > available nodes cause no trimming
+     *
+     * @param {number} maxNodesPerTransaction - Maximum nodes per transaction. Set to 0 to disable.
+     * @returns {this} The client instance for method chaining
      */
     setMaxNodesPerTransaction(maxNodesPerTransaction) {
         this._network.setMaxNodesPerTransaction(maxNodesPerTransaction);

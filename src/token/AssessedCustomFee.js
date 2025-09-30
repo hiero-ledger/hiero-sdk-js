@@ -2,7 +2,11 @@
 
 import TokenId from "./TokenId.js";
 import AccountId from "../account/AccountId.js";
-import Long from "long";
+import { convertAmountToLong } from "../util.js";
+
+/**
+ * @typedef {import("bignumber.js").default} BigNumber
+ */
 
 /**
  * @namespace proto
@@ -27,7 +31,7 @@ export default class AssessedCustomFee {
      * @param {object} props
      * @param {AccountId | string} [props.feeCollectorAccountId]
      * @param {TokenId | string} [props.tokenId]
-     * @param {Long | number} [props.amount]
+     * @param {Long | number | BigNumber | bigint} [props.amount]
      * @param {AccountId[]} [props.payerAccountIds]
      */
     constructor(props = {}) {
@@ -112,12 +116,11 @@ export default class AssessedCustomFee {
     }
 
     /**
-     * @param {Long | number} amount
+     * @param {Long | number | BigNumber | bigint} amount
      * @returns {AssessedCustomFee}
      */
     setAmount(amount) {
-        this._amount =
-            typeof amount === "number" ? Long.fromNumber(amount) : amount;
+        this._amount = convertAmountToLong(amount);
         return this;
     }
 

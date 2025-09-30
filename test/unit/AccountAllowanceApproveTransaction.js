@@ -1,4 +1,5 @@
 import Long from "long";
+import BigNumber from "bignumber.js";
 
 import {
     AccountAllowanceApproveTransaction,
@@ -304,5 +305,153 @@ describe("AccountAllowanceApproveTransaction", function () {
         expect(hbarAllowanceValidateStub.calledOnceWith(client)).to.be.true;
         expect(tokenAllowanceValidateStub.calledOnceWith(client)).to.be.true;
         expect(nftAllowanceValidateStub.calledOnceWith(client)).to.be.true;
+    });
+
+    it("should handle BigNumber amount in approveTokenAllowance", function () {
+        const tokenId = new TokenId(10);
+        const ownerAccountId = new AccountId(15);
+        const spenderAccountId = new AccountId(20);
+        const amount = new BigNumber("1000.5");
+
+        const transaction =
+            new AccountAllowanceApproveTransaction().approveTokenAllowance(
+                tokenId,
+                ownerAccountId,
+                spenderAccountId,
+                amount,
+            );
+
+        expect(transaction.tokenApprovals.length).to.equal(1);
+        expect(transaction.tokenApprovals[0].tokenId.toString()).to.equal(
+            tokenId.toString(),
+        );
+        expect(
+            transaction.tokenApprovals[0].ownerAccountId.toString(),
+        ).to.equal(ownerAccountId.toString());
+        expect(
+            transaction.tokenApprovals[0].spenderAccountId.toString(),
+        ).to.equal(spenderAccountId.toString());
+        expect(transaction.tokenApprovals[0].amount.toString()).to.equal(
+            "1000",
+        );
+    });
+
+    it("should handle bigint amount in approveTokenAllowance", function () {
+        const tokenId = new TokenId(10);
+        const ownerAccountId = new AccountId(15);
+        const spenderAccountId = new AccountId(20);
+        const amount = 2000n;
+
+        const transaction =
+            new AccountAllowanceApproveTransaction().approveTokenAllowance(
+                tokenId,
+                ownerAccountId,
+                spenderAccountId,
+                amount,
+            );
+
+        expect(transaction.tokenApprovals.length).to.equal(1);
+        expect(transaction.tokenApprovals[0].tokenId.toString()).to.equal(
+            tokenId.toString(),
+        );
+        expect(
+            transaction.tokenApprovals[0].ownerAccountId.toString(),
+        ).to.equal(ownerAccountId.toString());
+        expect(
+            transaction.tokenApprovals[0].spenderAccountId.toString(),
+        ).to.equal(spenderAccountId.toString());
+        expect(transaction.tokenApprovals[0].amount.toString()).to.equal(
+            "2000",
+        );
+    });
+
+    it("should handle BigNumber amount in addTokenAllowance", function () {
+        const tokenId = new TokenId(10);
+        const spenderAccountId = new AccountId(15);
+        const amount = new BigNumber("3000.7");
+
+        const transaction =
+            new AccountAllowanceApproveTransaction().addTokenAllowance(
+                tokenId,
+                spenderAccountId,
+                amount,
+            );
+
+        expect(transaction.tokenApprovals.length).to.equal(1);
+        expect(transaction.tokenApprovals[0].tokenId.toString()).to.equal(
+            tokenId.toString(),
+        );
+        expect(
+            transaction.tokenApprovals[0].spenderAccountId.toString(),
+        ).to.equal(spenderAccountId.toString());
+        expect(transaction.tokenApprovals[0].amount.toString()).to.equal(
+            "3000",
+        );
+        expect(transaction.tokenApprovals[0].ownerAccountId).to.be.null;
+    });
+
+    it("should handle bigint amount in addTokenAllowance", function () {
+        const tokenId = new TokenId(10);
+        const spenderAccountId = new AccountId(15);
+        const amount = 4000n;
+
+        const transaction =
+            new AccountAllowanceApproveTransaction().addTokenAllowance(
+                tokenId,
+                spenderAccountId,
+                amount,
+            );
+
+        expect(transaction.tokenApprovals.length).to.equal(1);
+        expect(transaction.tokenApprovals[0].tokenId.toString()).to.equal(
+            tokenId.toString(),
+        );
+        expect(
+            transaction.tokenApprovals[0].spenderAccountId.toString(),
+        ).to.equal(spenderAccountId.toString());
+        expect(transaction.tokenApprovals[0].amount.toString()).to.equal(
+            "4000",
+        );
+        expect(transaction.tokenApprovals[0].ownerAccountId).to.be.null;
+    });
+
+    it("should handle large BigNumber amounts", function () {
+        const tokenId = new TokenId(10);
+        const ownerAccountId = new AccountId(15);
+        const spenderAccountId = new AccountId(20);
+        const amount = new BigNumber("9000000000000000000");
+
+        const transaction =
+            new AccountAllowanceApproveTransaction().approveTokenAllowance(
+                tokenId,
+                ownerAccountId,
+                spenderAccountId,
+                amount,
+            );
+
+        expect(transaction.tokenApprovals.length).to.equal(1);
+        expect(transaction.tokenApprovals[0].amount.toString()).to.equal(
+            "9000000000000000000",
+        );
+    });
+
+    it("should handle large bigint amounts", function () {
+        const tokenId = new TokenId(10);
+        const ownerAccountId = new AccountId(15);
+        const spenderAccountId = new AccountId(20);
+        const amount = 9000000000000000000n;
+
+        const transaction =
+            new AccountAllowanceApproveTransaction().approveTokenAllowance(
+                tokenId,
+                ownerAccountId,
+                spenderAccountId,
+                amount,
+            );
+
+        expect(transaction.tokenApprovals.length).to.equal(1);
+        expect(transaction.tokenApprovals[0].amount.toString()).to.equal(
+            "9000000000000000000",
+        );
     });
 });
