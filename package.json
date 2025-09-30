@@ -6,10 +6,13 @@
     "main": "./lib/index.cjs",
     "module": "./src/index.js",
     "react-native": {
-        "./lib/index.cjs": "./src/native.js",
-        "./src/encoding/hex.js": "./src/encoding/hex.native.js",
-        "./src/encoding/utf8.js": "./src/encoding/utf8.native.js",
-        "./src/cryptography/sha384.js": "./src/cryptography/sha384.native.js"
+        "./lib/index.cjs": "./lib/native.js",
+        "./lib/encoding/hex.js": "./lib/encoding/hex.native.cjs",
+        "./lib/encoding/hex.cjs": "./lib/encoding/hex.native.cjs",
+        "./lib/encoding/utf8.js": "./lib/encoding/utf8.native.cjs",
+        "./lib/encoding/utf8.cjs": "./lib/encoding/utf8.native.cjs",
+        "./lib/cryptography/sha384.js": "./lib/cryptography/sha384.native.cjs",
+        "./lib/cryptography/sha384.cjs": "./lib/cryptography/sha384.native.cjs"
     },
     "browser": {
         "./lib/index.js": "./lib/browser.js",
@@ -22,6 +25,7 @@
     "exports": {
         "./package.json": "./package.json",
         ".": {
+            "react-native": "./lib/native.js",
             "types": "./lib/index.d.ts",
             "import": "./lib/index.js",
             "require": "./lib/index.cjs"
