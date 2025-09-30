@@ -5,12 +5,15 @@ import TokenId from "./TokenId.js";
 import NftId from "./NftId.js";
 import AccountId from "../account/AccountId.js";
 import Transaction from "../transaction/Transaction.js";
-import Long from "long";
-import BigNumber from "bignumber.js";
 import NullableTokenDecimalMap from "../account/NullableTokenDecimalMap.js";
 import TokenNftTransferMap from "../account/TokenNftTransferMap.js";
 import TokenTransferMap from "../account/TokenTransferMap.js";
 import TokenTransferAccountMap from "../account/TokenTransferAccountMap.js";
+import { convertAmountToLong } from "../util.js";
+
+/**
+ * @typedef {import("bignumber.js").default} BigNumber
+ */
 
 /**
  * @namespace proto
@@ -120,14 +123,7 @@ export default class AbstractTokenTransferTransaction extends Transaction {
             accountId instanceof AccountId
                 ? accountId
                 : AccountId.fromString(accountId);
-        const value =
-            amount instanceof Long
-                ? amount
-                : BigNumber.isBigNumber(amount)
-                ? Long.fromValue(amount.toString())
-                : typeof amount === "bigint"
-                ? Long.fromValue(amount.toString())
-                : Long.fromNumber(amount);
+        const value = convertAmountToLong(amount);
 
         for (const tokenTransfer of this._tokenTransfers) {
             if (
@@ -321,14 +317,7 @@ export default class AbstractTokenTransferTransaction extends Transaction {
             accountId instanceof AccountId
                 ? accountId
                 : AccountId.fromString(accountId);
-        const value =
-            amount instanceof Long
-                ? amount
-                : BigNumber.isBigNumber(amount)
-                ? Long.fromValue(amount.toString())
-                : typeof amount === "bigint"
-                ? Long.fromValue(amount.toString())
-                : Long.fromNumber(amount);
+        const value = convertAmountToLong(amount);
 
         let found = false;
 
