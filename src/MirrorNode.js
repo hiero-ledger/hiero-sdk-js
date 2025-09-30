@@ -79,11 +79,6 @@ export default class MirrorNode extends ManagedNode {
             return "http";
         }
 
-        // Standard HTTPS ports
-        if (port === 443) {
-            return "https";
-        }
-
         // Standard HTTP ports
         if (port === 80) {
             return "http";
