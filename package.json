@@ -6,10 +6,13 @@
     "main": "./lib/index.cjs",
     "module": "./src/index.js",
     "react-native": {
-        "./lib/index.cjs": "./src/native.js",
-        "./src/encoding/hex.js": "./src/encoding/hex.native.js",
-        "./src/encoding/utf8.js": "./src/encoding/utf8.native.js",
-        "./src/cryptography/sha384.js": "./src/cryptography/sha384.native.js"
+        "./lib/index.cjs": "./lib/native.js",
+        "./lib/encoding/hex.js": "./lib/encoding/hex.native.cjs",
+        "./lib/encoding/hex.cjs": "./lib/encoding/hex.native.cjs",
+        "./lib/encoding/utf8.js": "./lib/encoding/utf8.native.cjs",
+        "./lib/encoding/utf8.cjs": "./lib/encoding/utf8.native.cjs",
+        "./lib/cryptography/sha384.js": "./lib/cryptography/sha384.native.cjs",
+        "./lib/cryptography/sha384.cjs": "./lib/cryptography/sha384.native.cjs"
     },
     "browser": {
         "./lib/index.js": "./lib/browser.js",
@@ -22,7 +25,7 @@
     "exports": {
         "./package.json": "./package.json",
         ".": {
-            "react-native": "./src/native.js",
+            "react-native": "./lib/native.js",
             "types": "./lib/index.d.ts",
             "import": "./lib/index.js",
             "require": "./lib/index.cjs"
@@ -62,8 +65,8 @@
         "@ethersproject/bytes": "5.8.0",
         "@ethersproject/rlp": "5.8.0",
         "@grpc/grpc-js": "1.12.6",
-        "@hashgraph/cryptography": "1.11.0",
-        "@hashgraph/proto": "2.23.0",
+        "@hashgraph/cryptography": "file:.yalc/@hashgraph/cryptography",
+        "@hashgraph/proto": "file:.yalc/@hashgraph/proto",
         "ansi-regex": "6.2.2",
         "ansi-styles": "6.2.3",
         "bignumber.js": "9.1.1",
@@ -140,5 +143,6 @@
     },
     "resolutions": {
         "bn.js": "5.2.1"
-    }
+    },
+    "packageManager": "pnpm@10.12.3+sha512.467df2c586056165580ad6dfb54ceaad94c5a30f80893ebdec5a44c5aa73c205ae4a5bb9d5ed6bb84ea7c249ece786642bbb49d06a307df218d03da41c317417"
 }
