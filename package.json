@@ -65,8 +65,8 @@
         "@ethersproject/bytes": "5.8.0",
         "@ethersproject/rlp": "5.8.0",
         "@grpc/grpc-js": "1.12.6",
-        "@hashgraph/cryptography": "file:.yalc/@hashgraph/cryptography",
-        "@hashgraph/proto": "file:.yalc/@hashgraph/proto",
+        "@hashgraph/cryptography": "1.11.0",
+        "@hashgraph/proto": "2.23.0",
         "ansi-regex": "6.2.2",
         "ansi-styles": "6.2.3",
         "bignumber.js": "9.1.1",
@@ -143,6 +143,5 @@
     },
     "resolutions": {
         "bn.js": "5.2.1"
-    },
-    "packageManager": "pnpm@10.12.3+sha512.467df2c586056165580ad6dfb54ceaad94c5a30f80893ebdec5a44c5aa73c205ae4a5bb9d5ed6bb84ea7c249ece786642bbb49d06a307df218d03da41c317417"
+    }
 }
