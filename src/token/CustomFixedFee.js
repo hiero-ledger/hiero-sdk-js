@@ -3,8 +3,12 @@
 import TokenId from "./TokenId.js";
 import CustomFee from "./CustomFee.js";
 import AccountId from "../account/AccountId.js";
-import Long from "long";
 import Hbar from "../Hbar.js";
+import { convertAmountToLong } from "../util.js";
+
+/**
+ * @typedef {import("bignumber.js").default} BigNumber
+ */
 
 /**
  * @namespace proto
@@ -19,7 +23,7 @@ export default class CustomFixedFee extends CustomFee {
      * @param {AccountId | string} [props.feeCollectorAccountId]
      * @param {boolean} [props.allCollectorsAreExempt]
      * @param {TokenId | string} [props.denominatingTokenId]
-     * @param {Long | number} [props.amount]
+     * @param {Long | number | BigNumber | bigint} [props.amount]
      */
     constructor(props = {}) {
         super(props);
@@ -97,12 +101,11 @@ export default class CustomFixedFee extends CustomFee {
     }
 
     /**
-     * @param {Long | number} amount
+     * @param {Long | number | BigNumber | bigint} amount
      * @returns {CustomFixedFee}
      */
     setAmount(amount) {
-        this._amount =
-            typeof amount === "number" ? Long.fromNumber(amount) : amount;
+        this._amount = convertAmountToLong(amount);
         return this;
     }
 
