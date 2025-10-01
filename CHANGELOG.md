@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.74.0
+
+### Fixed
+
+- Fixed an issue where setMaxNodesPerTransaction() had no effect if called after a transaction was frozen. The setting is now applied correctly, allowing dApps and wallets to reduce redundant signing prompts when executing transactions. [#3383](https://github.com/hiero-ledger/hiero-sdk-js/pull/3383)
+
+### Added
+
+- Extended amount field support across the SDK to accept BigNumber and bigint types in addition to existing Long and number types, ensuring consistent handling of large amounts throughout the codebase. [#3394](https://github.com/hiero-ledger/hiero-sdk-js/pull/3394)
+- Added support for latest Metro bundler by adding "react-native" to `package.json`'s exports [#3388](https://github.com/hiero-ledger/hiero-sdk-js/pull/3388)
+
+### Changed
+
+- This moves the mirrorRestApiBaseUrl construction from the client to the MirrorNode class for better separation of concerns.
+Additional fix - port for the rest api is handled correctly for local dev environments. [#3395](https://github.com/hiero-ledger/hiero-sdk-js/pull/3395)
+- Added New gRPC web proxies for node 33 and node 34[#3384](https://github.com/hiero-ledger/hiero-sdk-js/pull/3384)
+
 ## v2.73.2
 
 ### Added
