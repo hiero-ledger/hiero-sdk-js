@@ -157,8 +157,8 @@ importers:
         specifier: 10.1.3
         version: 10.1.3
       chromedriver:
-        specifier: 140.0.4
-        version: 140.0.4(debug@4.4.1)
+        specifier: 141.0.0
+        version: 141.0.0(debug@4.4.1)
       codecov:
         specifier: 3.8.3
         version: 3.8.3
@@ -2455,8 +2455,8 @@ packages:
     engines: {node: '>=12.13.0'}
     hasBin: true
 
-  chromedriver@140.0.4:
-    resolution: {integrity: sha512-/NUoxYBNkJeoNj1B5ux3KxGShITlxJctkbApgVAa3ZC8EvCLKaBclwU3/IEj5MJHnBJzqOVDxs/eTyaF9k2fOg==}
+  chromedriver@141.0.0:
+    resolution: {integrity: sha512-w0U5jyWlLaRHV+dhaSikDz4x0qOwZcbles2HBu4oRdd+Eq7M43Uns4eoP/6dKu9Uc5ppcK9gA/E9GHROGXhgPg==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -8412,7 +8412,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  chromedriver@140.0.4(debug@4.4.1):
+  chromedriver@141.0.0(debug@4.4.1):
     dependencies:
       '@testim/chrome-version': 1.1.4
       axios: 1.12.2(debug@4.4.1)
