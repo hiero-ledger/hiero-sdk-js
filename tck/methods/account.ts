@@ -269,8 +269,20 @@ export const getAccountBalance = async ({
 
     const txResponse = await transaction.execute(sdk.getClient());
 
+    let tokenBalances = {};
+    for (const [tokenId, amount] of txResponse.tokens) {
+        tokenBalances[tokenId.toString()] = amount.toString();
+    }
+
+    let tokenDecimals = {};
+    for (const [tokenId, decimals] of txResponse.tokenDecimals) {
+        tokenDecimals[tokenId.toString()] = decimals;
+    }
+
     return {
-        balance: txResponse.hbars.toTinybars().toString(),
+        hbars: txResponse.hbars.toTinybars().toString(),
+        tokenBalances: tokenBalances,
+        tokenDecimals: tokenDecimals,
     };
 };
 

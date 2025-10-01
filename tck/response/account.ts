@@ -4,5 +4,7 @@ export interface AccountResponse {
 }
 
 export interface GetAccountBalanceResponse {
-    readonly balance: string;
+    readonly hbars: string;
+    readonly tokenBalances: Record<string, string>;
+    readonly tokenDecimals: Record<string, string>;
 }
