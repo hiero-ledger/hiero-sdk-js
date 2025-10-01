@@ -17,3 +17,8 @@ export interface ScheduleSignParams {
     readonly scheduleId?: string;
     readonly commonTransactionParams?: Record<string, any>;
 }
+
+export interface ScheduleDeleteParams {
+    readonly scheduleId?: string;
+    readonly commonTransactionParams?: Record<string, any>;
+}
