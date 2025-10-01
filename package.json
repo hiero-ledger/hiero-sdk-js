@@ -65,7 +65,7 @@
         "@ethersproject/bytes": "5.8.0",
         "@ethersproject/rlp": "5.8.0",
         "@grpc/grpc-js": "1.12.6",
-        "@hashgraph/cryptography": "1.11.0",
+        "@hashgraph/cryptography": "1.12.0",
         "@hashgraph/proto": "2.23.0",
         "ansi-regex": "6.2.2",
         "ansi-styles": "6.2.3",
