@@ -1,6 +1,6 @@
 {
     "name": "@hashgraph/sdk",
-    "version": "2.73.2",
+    "version": "2.74.0",
     "description": "Hiero SDK",
     "types": "./lib/index.d.ts",
     "main": "./lib/index.cjs",
