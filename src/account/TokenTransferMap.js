@@ -4,6 +4,7 @@ import TokenId from "../token/TokenId.js";
 import AccountId from "../account/AccountId.js";
 import TokenTransferAccountMap from "./TokenTransferAccountMap.js";
 import ObjectMap from "../ObjectMap.js";
+import { convertAmountToLong } from "../util.js";
 
 /**
  * @namespace proto
@@ -11,6 +12,10 @@ import ObjectMap from "../ObjectMap.js";
  * @typedef {import("@hashgraph/proto").proto.IAccountAmount} HieroProto.proto.IAccountAmount
  * @typedef {import("@hashgraph/proto").proto.ITokenID} HieroProto.proto.ITokenID
  * @typedef {import("@hashgraph/proto").proto.IAccountID} HieroProto.proto.IAccountID
+ */
+
+/**
+ * @typedef {import("bignumber.js").default} BigNumber
  */
 
 /**
@@ -25,7 +30,7 @@ export default class TokenTransferMap extends ObjectMap {
      * @internal
      * @param {TokenId} tokenId
      * @param {AccountId} accountId
-     * @param {Long} amount
+     * @param {Long | number | BigNumber | bigint} amount
      */
     __set(tokenId, accountId, amount) {
         const token = tokenId.toString();
@@ -37,7 +42,7 @@ export default class TokenTransferMap extends ObjectMap {
             this.__map.set(tokenId, _map);
         }
 
-        _map._set(accountId, amount);
+        _map._set(accountId, convertAmountToLong(amount));
     }
 
     /**
