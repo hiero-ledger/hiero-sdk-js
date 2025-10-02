@@ -50,6 +50,6 @@ export interface RemoveAllowancesParams {
 }
 
 export interface GetAccountBalanceParams {
-    readonly accountId: string;
+    readonly accountId?: string;
     readonly contractId?: string;
 }
