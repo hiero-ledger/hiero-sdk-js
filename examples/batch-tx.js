@@ -42,6 +42,7 @@ async function main() {
 
     await executeBatchWithBatchify(client);
     await executeBatchWithManualInnerTransactionFreeze(client);
+    await executeBatchWithSetInnerTransactions(client);
     client.close();
 }
 
@@ -54,13 +55,13 @@ async function main() {
  */
 async function executeBatchWithBatchify(client) {
     /**
-     * Step 2: Create batch key and prepare transfers for batching
+     * Step 1: Create batch key and prepare transfers for batching
      */
 
     const batchKey1 = PrivateKey.generateECDSA();
 
     /**
-     * Step 3: Create account for Alice
+     * Step 2: Create account for Alice
      */
     const aliceKey = PrivateKey.generateECDSA();
     const alice = (
@@ -73,14 +74,14 @@ async function executeBatchWithBatchify(client) {
     ).accountId;
 
     /**
-     * Step 4: Create client for Alice
+     * Step 3: Create client for Alice
      */
     const aliceClient = Client.forName(process.env.HEDERA_NETWORK)
         .setOperator(alice, aliceKey)
         .setLogger(new Logger(LogLevel.Info));
 
     /**
-     * Step 5: Batchify a transfer transaction
+     * Step 4: Batchify a transfer transaction
      */
     const aliceBatchedTransfer = await new TransferTransaction()
         .addHbarTransfer(alice, Hbar.from(-1, HbarUnit.Hbar))
@@ -94,8 +95,7 @@ async function executeBatchWithBatchify(client) {
     console.log("Created account for Alice: " + aliceClient.toString());
 
     /**
-     * Step 6:
-     * Get the balance in order to compare after this batch
+     * Step 5: Get the balance in order to compare after this batch
      */
     const aliceBalanceBefore = await new AccountBalanceQuery()
         .setAccountId(alice)
@@ -105,8 +105,7 @@ async function executeBatchWithBatchify(client) {
         .execute(client);
 
     /**
-     * Step 7:
-     * Execute the batch transaction
+     * Step 6: Execute the batch transaction
      */
     console.log("Executing batch transaction...");
     const batch = await new BatchTransaction()
@@ -121,8 +120,7 @@ async function executeBatchWithBatchify(client) {
     );
 
     /**
-     * Step 8:
-     * Verify the balance after batch transaction
+     * Step 7: Verify the balance after batch transaction
      */
     console.log("Verifying the balance after batch transaction...");
 
@@ -157,8 +155,7 @@ async function executeBatchWithBatchify(client) {
  */
 async function executeBatchWithManualInnerTransactionFreeze(client) {
     /**
-     * Step 2:
-     * Create three account create transactions
+     * Step 1: Create three account create transactions
      * and prepare transfers for batching.
      */
     const batchKey1 = PrivateKey.generateECDSA();
@@ -232,8 +229,7 @@ async function executeBatchWithManualInnerTransactionFreeze(client) {
         .sign(carolKey);
 
     /**
-     * Step 3:
-     * Get the balance in order to compare after this batch
+     * Step 2: Get the balance in order to compare after this batch
      */
     const aliceBalanceBefore = await new AccountBalanceQuery()
         .setAccountId(alice)
@@ -252,8 +248,7 @@ async function executeBatchWithManualInnerTransactionFreeze(client) {
         .execute(client);
 
     /**
-     * Step 4:
-     * Execute the batch transaction
+     * Step 3: Execute the batch transaction
      */
     console.log("Executing batch transaction...");
     const batch = await (
@@ -306,6 +301,164 @@ async function executeBatchWithManualInnerTransactionFreeze(client) {
         "Operator's original balance: " +
             operatorBalanceBefore.hbars.toString(),
     );
+}
+
+/**
+ * This example demonstrates using setInnerTransactions to set all transactions at once.
+ * It creates three accounts (David, Eve, Frank), prepares batchified transfer transactions,
+ * and executes them in a single batch using the setInnerTransactions method.
+ * @param {Client} client
+ */
+async function executeBatchWithSetInnerTransactions(client) {
+    /**
+     * Step 1: Create accounts for David, Eve, and Frank
+     */
+    console.log("Created accounts for David, Eve, and Frank");
+    
+    const davidKey = PrivateKey.generateECDSA();
+    const david = (
+        await (
+            await new AccountCreateTransaction()
+                .setKey(davidKey.publicKey)
+                .setInitialBalance(new Hbar(2))
+                .execute(client)
+        ).getReceipt(client)
+    ).accountId;
+
+    const eveKey = PrivateKey.generateECDSA();
+    const eve = (
+        await (
+            await new AccountCreateTransaction()
+                .setKey(eveKey.publicKey)
+                .setInitialBalance(new Hbar(2))
+                .execute(client)
+        ).getReceipt(client)
+    ).accountId;
+
+    const frankKey = PrivateKey.generateECDSA();
+    const frank = (
+        await (
+            await new AccountCreateTransaction()
+                .setKey(frankKey.publicKey)
+                .setInitialBalance(new Hbar(2))
+                .execute(client)
+        ).getReceipt(client)
+    ).accountId;
+
+    console.log("Created third account (David): " + david.toString());
+    console.log("Created fourth account (Eve): " + eve.toString());
+    console.log("Created fifth account (Frank): " + frank.toString());
+
+    /**
+     * Step 2: Create separate clients for each account
+     */
+    const davidClient = Client.forName(process.env.HEDERA_NETWORK)
+        .setOperator(david, davidKey)
+        .setLogger(new Logger(LogLevel.Silent));
+    const eveClient = Client.forName(process.env.HEDERA_NETWORK)
+        .setOperator(eve, eveKey)
+        .setLogger(new Logger(LogLevel.Silent));
+    const frankClient = Client.forName(process.env.HEDERA_NETWORK)
+        .setOperator(frank, frankKey)
+        .setLogger(new Logger(LogLevel.Silent));
+
+    /**
+     * Step 3: Create a shared batch key
+     */
+    const batchKey = PrivateKey.generateECDSA();
+
+    /**
+     * Step 4: Batchify transfer transactions for each account
+     */
+    const davidBatchedTransfer = await new TransferTransaction()
+        .addHbarTransfer(david, Hbar.from(-1, HbarUnit.Hbar))
+        .addHbarTransfer(client.getOperator().accountId, Hbar.from(1, HbarUnit.Hbar))
+        .batchify(davidClient, batchKey);
+
+    const eveBatchedTransfer = await new TransferTransaction()
+        .addHbarTransfer(eve, Hbar.from(-1, HbarUnit.Hbar))
+        .addHbarTransfer(client.getOperator().accountId, Hbar.from(1, HbarUnit.Hbar))
+        .batchify(eveClient, batchKey);
+
+    const frankBatchedTransfer = await new TransferTransaction()
+        .addHbarTransfer(frank, Hbar.from(-1, HbarUnit.Hbar))
+        .addHbarTransfer(client.getOperator().accountId, Hbar.from(1, HbarUnit.Hbar))
+        .batchify(frankClient, batchKey);
+
+    /**
+     * Step 5: Get balances before batch transaction
+     */
+    const davidBalanceBefore = await new AccountBalanceQuery()
+        .setAccountId(david)
+        .execute(client);
+    const eveBalanceBefore = await new AccountBalanceQuery()
+        .setAccountId(eve)
+        .execute(client);
+    const frankBalanceBefore = await new AccountBalanceQuery()
+        .setAccountId(frank)
+        .execute(client);
+    const operatorBalanceBefore = await new AccountBalanceQuery()
+        .setAccountId(client.getOperator().accountId)
+        .execute(client);
+
+    /**
+     * Step 6: Execute batch transaction using setInnerTransactions
+     */
+    console.log("Executing batch transaction using setInnerTransactions...");
+
+    const batch = await new BatchTransaction()
+        .setInnerTransactions([
+            davidBatchedTransfer,
+            eveBatchedTransfer,
+            frankBatchedTransfer,
+        ])
+        .freezeWith(client)
+        .sign(batchKey);
+
+    const batchId = await (await batch.execute(client)).getReceipt(client);
+
+    console.log(
+        "Batch transaction executed with status: " + batchId.status.toString(),
+    );
+
+    console.log("Verifying the balance after batch transaction...");
+
+    const davidBalanceAfter = await new AccountBalanceQuery()
+        .setAccountId(david)
+        .execute(client);
+    const eveBalanceAfter = await new AccountBalanceQuery()
+        .setAccountId(eve)
+        .execute(client);
+    const frankBalanceAfter = await new AccountBalanceQuery()
+        .setAccountId(frank)
+        .execute(client);
+    const operatorBalanceAfter = await new AccountBalanceQuery()
+        .setAccountId(client.getOperator().accountId)
+        .execute(client);
+
+    console.log("David balance after: " + davidBalanceAfter.hbars.toString());
+    console.log("Eve balance after: " + eveBalanceAfter.hbars.toString());
+    console.log("Frank balance after: " + frankBalanceAfter.hbars.toString());
+    console.log(
+        "Operator balance after: " + operatorBalanceAfter.hbars.toString(),
+    );
+
+    console.log(
+        "David's original balance: " + davidBalanceBefore.hbars.toString(),
+    );
+    console.log("Eve's original balance: " + eveBalanceBefore.hbars.toString());
+    console.log(
+        "Frank's original balance: " + frankBalanceBefore.hbars.toString(),
+    );
+    console.log(
+        "Operator's original balance: " +
+            operatorBalanceBefore.hbars.toString(),
+    );
+
+    // Close the additional clients
+    davidClient.close();
+    eveClient.close();
+    frankClient.close();
 }
 
 void main();
