@@ -1,6 +1,4 @@
-import EvmHookSpec from "./EvmHookSpec";
-
-class LambdaEvmHook extends EvmHookSpec {
+class LambdaEvmHook {
     /**
      *
      * @param {object} props
@@ -8,18 +6,16 @@ class LambdaEvmHook extends EvmHookSpec {
      * @param {import("./LambdaStorageUpdate.js").default[]} [props.storageUpdates]
      */
     constructor(props = {}) {
-        super({
-            contractId:
-                props.spec?.contractId != null
-                    ? props.spec.contractId
-                    : undefined,
-        });
-
+        this.spec = null;
         this.storageUpdates =
             props.storageUpdates != null ? props.storageUpdates : [];
 
         if (props.storageUpdates != null) {
             this.setStorageUpdates(props.storageUpdates);
+        }
+
+        if (props.spec != null) {
+            this.setSpec(props.spec);
         }
     }
 
@@ -31,6 +27,28 @@ class LambdaEvmHook extends EvmHookSpec {
     setStorageUpdates(storageUpdates) {
         this.storageUpdates = storageUpdates;
         return this;
+    }
+
+    /**
+     * @param {import("./EvmHookSpec.js").default} spec
+     * @returns {this}
+     */
+    setSpec(spec) {
+        this.spec = spec;
+        return this;
+    }
+
+    /**
+     *
+     * @returns {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaEvmHook}
+     */
+    toProtobuf() {
+        return {
+            spec: this.spec?.toProtobuf(),
+            storageUpdates: this.storageUpdates.map((update) =>
+                update._toProtobuf(),
+            ),
+        };
     }
 }
 

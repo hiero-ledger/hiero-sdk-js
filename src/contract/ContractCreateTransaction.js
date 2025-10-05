@@ -11,7 +11,6 @@ import Transaction, {
 import Long from "long";
 import Duration from "../Duration.js";
 import Key from "../Key.js";
-import HookCreationDetails from "../hooks/HookCreationDetails.js";
 
 /**
  * @namespace proto

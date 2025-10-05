@@ -688,6 +688,13 @@ export default class AccountUpdateTransaction extends Transaction {
                 this.declineStakingRewards != null
                     ? { value: this.declineStakingRewards }
                     : null,
+
+            hookIdsToDelete: this._hooksToBeDeleted.map((hook) =>
+                Long.fromInt(hook),
+            ),
+            hookCreationDetails: this._hooksToBeCreated.map((hook) =>
+                hook.toProtobuf(),
+            ),
         };
     }
 

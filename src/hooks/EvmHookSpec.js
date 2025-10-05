@@ -22,10 +22,13 @@ class EvmHookSpec {
         return this;
     }
 
+    /**
+     *
+     * @returns {import("@hashgraph/proto").com.hedera.hapi.node.hooks.IEvmHookSpec}
+     */
     toProtobuf() {
         return {
-            contract_id:
-                this.contractId != null ? this.contractId._toProtobuf() : null,
+            contractId: this.contractId?._toProtobuf(),
         };
     }
 }

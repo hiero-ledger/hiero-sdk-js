@@ -1,3 +1,5 @@
+import Long from "long";
+
 class HookCreationDetails {
     /**
      *
@@ -14,12 +16,16 @@ class HookCreationDetails {
         this.key = props.key;
     }
 
+    /**
+     *
+     * @returns {import("@hashgraph/proto").com.hedera.hapi.node.hooks.IHookCreationDetails}
+     */
     toProtobuf() {
         return {
-            extension_point: this.extensionPoint,
-            hook_id: this.hookId,
-            hook: this.hook,
-            key: this.key,
+            extensionPoint: this.extensionPoint,
+            hookId: Long.fromInt(this.hookId ?? 0),
+            lambdaEvmHook: this.hook?.toProtobuf(),
+            adminKey: this.key?._toProtobufKey(),
         };
     }
 }
