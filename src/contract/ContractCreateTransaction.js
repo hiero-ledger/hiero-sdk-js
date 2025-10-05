@@ -695,7 +695,7 @@ export default class ContractCreateTransaction extends Transaction {
                     ? this._autoRenewAccountId._toProtobuf()
                     : null,
             // @ts-ignore - hook_creation_details field exists in protobuf but not in TypeScript definitions
-            hook_creation_details: this._hooks.map((hook) => hook.toProtobuf()),
+            hookCreationDetails: this._hooks.map((hook) => hook.toProtobuf()),
         };
     }
 
