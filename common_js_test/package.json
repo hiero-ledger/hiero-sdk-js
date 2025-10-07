@@ -11,6 +11,6 @@
     "dependencies": {
         "@hashgraph/sdk": "link:..",
         "chai": "^4.3.6",
-        "mocha": "~10.6.0"
+        "mocha": "~11.0.1"
     }
 }
