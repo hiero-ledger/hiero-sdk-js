@@ -30,7 +30,7 @@ import "services_basic_types.proto";
 import "services_timestamp.proto";
 import "streams_contract_state_change.proto";
 import "streams_contract_action.proto";
-import "services_state_contract_bytecode.proto";
+import "streams_contract_bytecode.proto";
 
 /**
  * A SidecarFile contains a list of TransactionSidecarRecords that are all created
