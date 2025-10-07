@@ -213,6 +213,10 @@ export default class RequestType {
                 return "CrsPublication";
             case RequestType.AtomicBatch:
                 return "AtomicBatch";
+            case RequestType.LambdaSStore:
+                return "LambdaSStore";
+            case RequestType.HookDispatch:
+                return "HookDispatch";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -415,6 +419,10 @@ export default class RequestType {
                 return RequestType.CrsPublication;
             case 108:
                 return RequestType.AtomicBatch;
+            case 109:
+                return RequestType.LambdaSStore;
+            case 110:
+                return RequestType.HookDispatch;
         }
 
         throw new Error(
@@ -918,3 +926,13 @@ RequestType.HistoryProofVote = new RequestType(106);
  * Sign a particular atomic batch.
  */
 RequestType.AtomicBatch = new RequestType(108);
+
+/**
+ * lambda s store
+ */
+RequestType.LambdaSStore = new RequestType(109);
+
+/**
+ * hook dispatch
+ */
+RequestType.HookDispatch = new RequestType(110);
