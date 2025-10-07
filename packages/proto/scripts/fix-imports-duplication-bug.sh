@@ -30,7 +30,11 @@ set -euo pipefail
 # =============================================================================
 
 
-ROOT="/Users/ivaylonikolov/hedera-sdk-js3/packages/proto/src/proto"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Go up one level to get the proto package root
+PROTO_PACKAGE_ROOT="$(dirname "$SCRIPT_DIR")"
+# Set the proto files directory
+ROOT="$PROTO_PACKAGE_ROOT/src/proto"
 
 echo "Removing duplicate proto files..."
 
