@@ -36,7 +36,7 @@ PROTO_PACKAGE_ROOT="$(dirname "$SCRIPT_DIR")"
 # Set the proto files directory
 ROOT="$PROTO_PACKAGE_ROOT/src/proto"
 
-echo "Removing duplicate proto files..."
+echo "Removing duplicate proto files from: $ROOT"
 
 # Remove auxiliary_* files if a services_* counterpart exists
 shopt -s nullglob
@@ -52,6 +52,7 @@ for aux in "$ROOT"/auxiliary_*.proto; do
 done
 
 # Remove platform_event_event_* files if services_event_* counterpart exists
+# These are created when platform/event/* files get flattened after being moved to services/
 for platform in "$ROOT"/platform_event_event_*.proto; do
   base="$(basename "$platform")"
   tail="${base#platform_event_event_}"
@@ -64,6 +65,7 @@ for platform in "$ROOT"/platform_event_event_*.proto; do
 done
 
 # Remove root-level event_* files if services_event_* counterpart exists
+# These are leftover files that weren't properly moved during the flattening process
 for event in "$ROOT"/event_*.proto; do
   base="$(basename "$event")"
   svc="$ROOT/services_$base"
@@ -75,17 +77,31 @@ for event in "$ROOT"/event_*.proto; do
 done
 
 # Remove root-level gossip_event.proto if services_gossip_event.proto exists
+# This handles the specific case where gossip_event.proto exists at root level
 if [[ -f "$ROOT/gossip_event.proto" && -f "$ROOT/services_gossip_event.proto" ]]; then
     echo "Removing duplicate: gossip_event.proto (services version exists: services_gossip_event.proto)"
     rm -f "$ROOT/gossip_event.proto"
 fi
 
+# Remove any duplicate state signature transaction files
+# This handles case sensitivity issues in CI where different case variations might exist
+find "$ROOT" -name "*state*signature*transaction*.proto" -type f | while read -r file; do
+    if [[ "$file" != "$ROOT/services_state_signature_transaction.proto" ]]; then
+        echo "Removing potential duplicate: $file (keeping services_state_signature_transaction.proto)"
+        rm -f "$file"
+    fi
+done
+
 shopt -u nullglob
 
 # Show remaining definitions for sanity
 echo
-echo "Remaining definitions of GossipEvent:"
-grep -rn "message[[:space:]]\+GossipEvent\b" "$ROOT" || true
+echo "Remaining definitions of EventCore:"
+grep -rn "message[[:space:]]\+EventCore\b" "$ROOT" || true
+
+echo
+echo "Remaining definitions of StateSignatureTransaction:"
+grep -rn "message[[:space:]]\+StateSignatureTransaction\b" "$ROOT" || true
 
 echo
 echo "Done."
