@@ -185,6 +185,15 @@ export { default as NodeCreateTransaction } from "./node/NodeCreateTransaction.j
 export { default as ServiceEndpoint } from "./node/ServiceEndpoint.js";
 export { default as NodeDeleteTransaction } from "./node/NodeDeleteTransaction.js";
 export { default as NodeUpdateTransaction } from "./node/NodeUpdateTransaction.js";
+export { default as HookExtensionPoint } from "./hooks/HookExtensionPoint.js";
+export { default as HookCreationDetails } from "./hooks/HookCreationDetails.js";
+export { default as LambdaEvmHook } from "./hooks/LambdaEvmHook.js";
+export { default as EvmHookSpec } from "./hooks/EvmHookSpec.js";
+export { default as LambdaStorageUpdate } from "./hooks/LambdaStorageUpdate.js";
+export { default as LambdaSlotKey } from "./hooks/LambdaStorageSlot.js";
+export { default as HookCall } from "./hooks/HookCall.js";
+export { default as LambdaSStoreTransaction } from "./hooks/LambdaSStoreTransaction.js";
+export { default as HookId } from "./hooks/HookId.js";
 
 export { default as WebClient } from "./client/WebClient.js";
 

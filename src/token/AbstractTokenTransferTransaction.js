@@ -10,11 +10,14 @@ import NullableTokenDecimalMap from "../account/NullableTokenDecimalMap.js";
 import TokenNftTransferMap from "../account/TokenNftTransferMap.js";
 import TokenTransferMap from "../account/TokenTransferMap.js";
 import TokenTransferAccountMap from "../account/TokenTransferAccountMap.js";
-import HookCall from "../hooks/HookCall.js";
 
 /**
  * @namespace proto
  * @typedef {import("@hashgraph/proto").proto.ITokenAirdropTransactionBody} HieroProto.proto.ITokenAirdropTransactionBody
+ */
+
+/**
+ * @typedef {import("../hooks/HookCall.js").default} HookCall
  */
 
 /**
@@ -179,11 +182,11 @@ export default class AbstractTokenTransferTransaction extends Transaction {
      * @param {NftId | TokenId | string} tokenIdOrNftId
      * @param {AccountId | string | Long | number} senderAccountIdOrSerialNumber
      * @param {AccountId | string} receiverAccountIdOrSenderAccountId
-     * @param {(AccountId | string)=} receiver
      * @param {HookCall | null} prePostTxSenderAllowanceHook
      * @param {HookCall | null} preTxSenderAllowanceHook
      * @param {HookCall | null} prePostTxReceiverAllowanceHook
      * @param {HookCall | null} preTxReceiverAllowanceHook
+     * @param {(AccountId | string)=} receiver
      * @returns {this}
      */
     _addNftTransfer(

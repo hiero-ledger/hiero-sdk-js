@@ -1,4 +1,4 @@
-import { AccountId } from "../exports";
+import AccountId from "../account/AccountId.js";
 
 class HookEntityId {
     /**

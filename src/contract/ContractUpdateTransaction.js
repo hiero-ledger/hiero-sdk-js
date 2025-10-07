@@ -622,7 +622,7 @@ export default class ContractUpdateTransaction extends Transaction {
     /**
      *
      * @param {number} hook
-     * @returns
+     * @returns {this}
      */
     deleteHook(hook) {
         this._hooksToBeDeleted.push(hook);

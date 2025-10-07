@@ -69,7 +69,7 @@ export default class ContractCreateTransaction extends Transaction {
      * @param {Long | number} [props.stakedNodeId]
      * @param {boolean} [props.declineStakingReward]
      * @param {AccountId} [props.autoRenewAccountId]
-     * @param {number[]} [props.hooks]
+     * @param {import("../hooks/HookCreationDetails.js").default[]} [props.hooks]
      */
     constructor(props = {}) {
         super();
@@ -161,7 +161,7 @@ export default class ContractCreateTransaction extends Transaction {
 
         /**
          * @private
-         * @type {number[]}
+         * @type {import("../hooks/HookCreationDetails.js").default[]}
          */
         this._hooks = [];
 
@@ -613,7 +613,7 @@ export default class ContractCreateTransaction extends Transaction {
     }
 
     /**
-     * @param {number} hook
+     * @param {import("../hooks/HookCreationDetails.js").default} hook
      * @returns {this}
      */
     addHook(hook) {
@@ -622,7 +622,7 @@ export default class ContractCreateTransaction extends Transaction {
     }
 
     /**
-     * @param {number[]} hooks
+     * @param {import("../hooks/HookCreationDetails.js").default[]} hooks
      * @returns {this}
      */
     setHooks(hooks) {
@@ -631,7 +631,7 @@ export default class ContractCreateTransaction extends Transaction {
     }
 
     /**
-     * @returns {number[]}
+     * @returns {import("../hooks/HookCreationDetails.js").default[]}
      */
     get hooks() {
         return this._hooks;
@@ -694,8 +694,7 @@ export default class ContractCreateTransaction extends Transaction {
                 this._autoRenewAccountId != null
                     ? this._autoRenewAccountId._toProtobuf()
                     : null,
-            // @ts-ignore - hook_creation_details field exists in protobuf but not in TypeScript definitions
-            hookCreationDetails: this._hooks.map((hook) => hook.toProtobuf()),
+            hookCreationDetails: this.hooks.map((hook) => hook.toProtobuf()),
         };
     }
 

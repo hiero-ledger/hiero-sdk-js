@@ -12,12 +12,13 @@ import HbarTransferMap from "./HbarTransferMap.js";
 import TokenNftTransfer from "../token/TokenNftTransfer.js";
 import NftId from "../token/NftId.js";
 import AbstractTokenTransferTransaction from "../token/AbstractTokenTransferTransaction.js";
-import HookCall from "../hooks/HookCall.js";
+
 import HookType from "../hooks/HookType.js";
 
 /**
  * @typedef {import("../long.js").LongObject} LongObject
  * @typedef {import("bignumber.js").default} BigNumber
+ * @typedef {import("../hooks/HookCall.js").default} HookCall
  */
 
 /**
@@ -328,10 +329,13 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @param {Long} amount
      * @param {HookCall} hook
      * @param {number} hookType
-     * @returns
+     * @returns {TransferTransaction}
      */
     addHbarTransferWithHook(accountId, amount, hook, hookType) {
-        if (hookType === HookType.PRE_POST_HOOK_RECEIVER) {
+        if (
+            hookType === HookType.PRE_POST_HOOK_RECEIVER ||
+            hookType === HookType.PRE_POST_HOOK_SENDER
+        ) {
             return this._addHbarTransfer(accountId, amount, false, null, hook);
         } else {
             return this._addHbarTransfer(accountId, amount, false, hook, null);
@@ -343,7 +347,7 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @param {AccountId} accountId
      * @param {Long} amount
      * @param {HookCall} prePostTxAllowanceHook
-     * @returns
+     * @returns {TransferTransaction}
      */
     addHbarTransferWithPrePostTxHook(
         accountId,
@@ -366,7 +370,7 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @param {AccountId} receiver
      * @param {HookCall} hook
      * @param {number} hookType
-     * @returns
+     * @returns {TransferTransaction}
      */
     addNftTransferWithSenderHook(nftId, sender, receiver, hook, hookType) {
         if (hookType === HookType.PRE_POST_HOOK_SENDER) {
@@ -401,7 +405,7 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @param {AccountId} receiver
      * @param {HookCall} hook
      * @param {number} hookType
-     * @returns
+     * @returns {TransferTransaction}
      */
     addNftTransferWithReceiverHook(nftId, sender, receiver, hook, hookType) {
         if (hookType === HookType.PRE_POST_HOOK_RECEIVER) {
@@ -436,7 +440,7 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @param {Long} amount
      * @param {HookCall} hook
      * @param {number} hookType
-     * @returns
+     * @returns {TransferTransaction}
      */
     addTokenTransferWithHook(tokenId, accountId, amount, hook, hookType) {
         if (hookType === HookType.PRE_POST_HOOK_RECEIVER) {
@@ -498,8 +502,10 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
                         accountID: transfer.accountId._toProtobuf(),
                         amount: transfer.amount.toTinybars(),
                         isApproval: transfer.isApproved,
-                        prePostTxAllowanceHook: transfer.prePostTxAllowanceHook,
-                        preTxAllowanceHook: transfer.preTxAllowanceHook,
+                        prePostTxAllowanceHook:
+                            transfer.prePostTxAllowanceHook?._toProtobuf(),
+                        preTxAllowanceHook:
+                            transfer.preTxAllowanceHook?._toProtobuf(),
                     };
                 }),
             },

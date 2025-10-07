@@ -21,7 +21,7 @@ class LambdaMappingEntry {
     /**
      *
      * @param {Uint8Array} key
-     * @returns
+     * @returns {this}
      */
     setKey(key) {
         this.key = key;
@@ -31,7 +31,7 @@ class LambdaMappingEntry {
     /**
      *
      * @param {Uint8Array} value
-     * @returns
+     * @returns {this}
      */
     setValue(value) {
         this.value = value;
@@ -41,7 +41,7 @@ class LambdaMappingEntry {
     /**
      *
      * @param {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaMappingEntry} lambdaMappingEntry
-     * @returns
+     * @returns {LambdaMappingEntry}
      */
     static _fromProtobuf(lambdaMappingEntry) {
         return new LambdaMappingEntry({

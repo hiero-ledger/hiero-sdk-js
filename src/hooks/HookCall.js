@@ -28,7 +28,7 @@ class HookCall {
     /**
      *
      * @param {Long} hookId
-     * @returns
+     * @returns {this}
      */
     setHookId(hookId) {
         this.hookId = hookId;
@@ -38,7 +38,7 @@ class HookCall {
     /**
      *
      * @param {import("../hooks/EvmHookCall.js").default} call
-     * @returns
+     * @returns {this}
      */
     setCall(call) {
         this.call = call;

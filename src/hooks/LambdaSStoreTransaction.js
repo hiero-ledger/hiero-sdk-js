@@ -1,4 +1,8 @@
-import Transaction from "../transaction/Transaction.js";
+import HookId from "../hooks/HookId.js";
+import LambdaStorageUpdate from "../hooks/LambdaStorageUpdate.js";
+import Transaction, {
+    TRANSACTION_REGISTRY,
+} from "../transaction/Transaction.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -14,17 +18,46 @@ class LambdaSStoreTransaction extends Transaction {
      * @param {import("../hooks/HookId.js").default} [props.hookId]
      * @param {import("../hooks/LambdaStorageUpdate.js").default[]} [props.storageUpdates]
      */
-    constructor(props) {
+    constructor(props = {}) {
         super();
-        this.hookId = props.hookId;
-        this.storageUpdates = props.storageUpdates;
+
+        this.hookId = null;
+        this.storageUpdates = null;
+
+        if (props.hookId != null) {
+            this.setHookId(props.hookId);
+        }
+
+        if (props.storageUpdates != null) {
+            this.setStorageUpdates(props.storageUpdates);
+        }
     }
 
     /**
      *
+     * @param {HookId} hookId
+     * @returns {this}
+     */
+    setHookId(hookId) {
+        this.hookId = hookId;
+        return this;
+    }
+
+    /**
+     *
+     * @param {LambdaStorageUpdate[]} storageUpdates
+     * @returns {this}
+     */
+    setStorageUpdates(storageUpdates) {
+        this.storageUpdates = storageUpdates;
+        return this;
+    }
+    /**
+     * @override
+     * @protected
      * @returns {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaSStoreTransactionBody} HieroProto.proto.ILambdaSStoreTransactionBody
      */
-    _toProtobuf() {
+    _makeTransactionData() {
         return {
             hookId: this.hookId != null ? this.hookId._toProtobuf() : undefined,
             storageUpdates:
@@ -44,6 +77,74 @@ class LambdaSStoreTransaction extends Transaction {
     _execute(channel, request) {
         return channel.smartContract.lambdaSStore(request);
     }
+
+    /**
+     * @override
+     * @protected
+     * @returns {NonNullable<import("@hashgraph/proto").proto.TransactionBody["data"]>}
+     */
+    _getTransactionDataCase() {
+        return "lambdaSstore";
+    }
+
+    /**
+     * @returns {string}
+     */
+    _getLogId() {
+        const timestamp = /** @type {import("../Timestamp.js").default} */ (
+            this._transactionIds.current.validStart
+        );
+        return `LambdaSStoreTransaction:${timestamp.toString()}`;
+    }
+
+    /**
+     * @internal
+     * @param {import("@hashgraph/proto").proto.ITransaction[]} transactions
+     * @param {import("@hashgraph/proto").proto.ISignedTransaction[]} signedTransactions
+     * @param {TransactionId[]} transactionIds
+     * @param {import("../account/AccountId.js").default[]} nodeIds
+     * @param {import("@hashgraph/proto").proto.ITransactionBody[]} bodies
+     * @returns {LambdaSStoreTransaction}
+     */
+    static _fromProtobuf(
+        transactions,
+        signedTransactions,
+        transactionIds,
+        nodeIds,
+        bodies,
+    ) {
+        const body = bodies[0];
+        const create =
+            /** @type {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaSStoreTransactionBody} */ (
+                body.lambdaSstore
+            );
+
+        return Transaction._fromProtobufTransactions(
+            new LambdaSStoreTransaction({
+                hookId:
+                    create.hookId != null
+                        ? HookId._fromProtobuf(create.hookId)
+                        : undefined,
+                storageUpdates:
+                    create.storageUpdates != null
+                        ? create.storageUpdates.map((update) =>
+                              LambdaStorageUpdate._fromProtobuf(update),
+                          )
+                        : undefined,
+            }),
+            transactions,
+            signedTransactions,
+            transactionIds,
+            nodeIds,
+            bodies,
+        );
+    }
 }
+
+TRANSACTION_REGISTRY.set(
+    "lambdaSstore",
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    LambdaSStoreTransaction._fromProtobuf,
+);
 
 export default LambdaSStoreTransaction;

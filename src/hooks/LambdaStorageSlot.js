@@ -12,7 +12,7 @@ class LambdaStorageSlot {
     /**
      *
      * @param {Uint8Array} key
-     * @returns
+     * @returns {this}
      */
     setKey(key) {
         this.key = key;
@@ -22,7 +22,7 @@ class LambdaStorageSlot {
     /**
      *
      * @param {Uint8Array} value
-     * @returns
+     * @returns {this}
      */
     setValue(value) {
         this.value = value;

@@ -26,7 +26,7 @@ class EvmHookCall {
     /**
      *
      * @param {Uint8Array} data
-     * @returns
+     * @returns {this}
      */
     setData(data) {
         this.data = data;
@@ -36,7 +36,7 @@ class EvmHookCall {
     /**
      *
      * @param {number} gasLimit
-     * @returns
+     * @returns {this}
      */
     setGasLimit(gasLimit) {
         this.gasLimit = gasLimit;

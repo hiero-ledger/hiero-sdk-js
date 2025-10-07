@@ -107,8 +107,8 @@ export default class Transfer {
             accountID: this.accountId._toProtobuf(),
             amount: this.amount.toTinybars(),
             isApproval: this.isApproved,
-            preTxAllowanceHook: this.preTxAllowanceHook,
-            prePostTxAllowanceHook: this.prePostTxAllowanceHook,
+            preTxAllowanceHook: this.preTxAllowanceHook?._toProtobuf(),
+            prePostTxAllowanceHook: this.prePostTxAllowanceHook?._toProtobuf(),
         };
     }
 

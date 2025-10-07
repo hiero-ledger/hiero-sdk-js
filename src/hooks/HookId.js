@@ -1,4 +1,3 @@
-import * as HieroProto from "@hashgraph/proto";
 import HookEntityId from "./HookEntityId";
 
 export default class HookId {
@@ -15,7 +14,7 @@ export default class HookId {
     /**
      *
      * @param {import("@hashgraph/proto").proto.IHookId} hookId
-     * @returns
+     * @returns {HookId}
      */
     static _fromProtobuf(hookId) {
         return new HookId({
@@ -29,7 +28,7 @@ export default class HookId {
 
     /**
      *
-     * @returns {HieroProto.proto.IHookId}
+     * @returns {import("@hashgraph/proto").proto.IHookId}
      */
     _toProtobuf() {
         return {
