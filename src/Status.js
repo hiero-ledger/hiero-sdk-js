@@ -742,6 +742,56 @@ export default class Status {
                 return "GRPC_WEB_PROXY_NOT_SUPPORTED";
             case Status.NftTransfersOnlyAllowedForNonFungibleUnique:
                 return "NFT_TRANSFERS_ONLY_ALLOWED_FOR_NON_FUNGIBLE_UNIQUE";
+            case Status.InvalidSerializedTxMessageHashAlgorithm:
+                return "INVALID_SERIALIZED_TX_MESSAGE_HASH_ALGORITHM";
+            case Status.EvmHookGasThrottled:
+                return "EVM_HOOK_GAS_THROTTLED";
+            case Status.HookIdInUse:
+                return "HOOK_ID_IN_USE";
+            case Status.BadHookRequest:
+                return "BAD_HOOK_REQUEST";
+            case Status.RejectedByAccountAllowanceHook:
+                return "REJECTED_BY_ACCOUNT_ALLOWANCE_HOOK";
+            case Status.HookNotFound:
+                return "HOOK_NOT_FOUND";
+            case Status.LambdaStorageUpdateBytesTooLong:
+                return "LAMBDA_STORAGE_UPDATE_BYTES_TOO_LONG";
+            case Status.LambdaStorageUpdateBytesMustUseMinimalRepresentation:
+                return "LAMBDA_STORAGE_UPDATE_BYTES_MUST_USE_MINIMAL_REPRESENTATION";
+            case Status.InvalidHookId:
+                return "INVALID_HOOK_ID";
+            case Status.EmptyLambdaStorageUpdate:
+                return "EMPTY_LAMBDA_STORAGE_UPDATE";
+            case Status.HookIdRepeatedInCreationDetails:
+                return "HOOK_ID_REPEATED_IN_CREATION_DETAILS";
+            case Status.HooksNotEnabled:
+                return "HOOKS_NOT_ENABLED";
+            case Status.HookIsNotALambda:
+                return "HOOK_IS_NOT_A_LAMBDA";
+            case Status.HookDeleted:
+                return "HOOK_DELETED";
+            case Status.TooManyLambdaStorageUpdates:
+                return "TOO_MANY_LAMBDA_STORAGE_UPDATES";
+            case Status.HookCreationBytesMustUseMinimalRepresentation:
+                return "HOOK_CREATION_BYTES_MUST_USE_MINIMAL_REPRESENTATION";
+            case Status.HookCreationBytesTooLong:
+                return "HOOK_CREATION_BYTES_TOO_LONG";
+            case Status.InvalidHookCreationSpec:
+                return "INVALID_HOOK_CREATION_SPEC";
+            case Status.HookExtensionEmpty:
+                return "HOOK_EXTENSION_EMPTY";
+            case Status.InvalidHookAdminKey:
+                return "INVALID_HOOK_ADMIN_KEY";
+            case Status.HookDeletionRequiresZeroStorageSlots:
+                return "HOOK_DELETION_REQUIRES_ZERO_STORAGE_SLOTS";
+            case Status.CannotSetHooksAndApproval:
+                return "CANNOT_SET_HOOKS_AND_APPROVAL";
+            case Status.TransactionRequiresZeroHooks:
+                return "TRANSACTION_REQUIRES_ZERO_HOOKS";
+            case Status.InvalidHookCall:
+                return "INVALID_HOOK_CALL";
+            case Status.HooksAreNotSupportedInAirdrops:
+                return "HOOKS_ARE_NOT_SUPPORTED_IN_AIRDROPS";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -1472,6 +1522,56 @@ export default class Status {
                 return Status.GrpcWebProxyNotSupported;
             case 400:
                 return Status.NftTransfersOnlyAllowedForNonFungibleUnique;
+            case 401:
+                return Status.InvalidSerializedTxMessageHashAlgorithm;
+            case 500:
+                return Status.EvmHookGasThrottled;
+            case 501:
+                return Status.HookIdInUse;
+            case 502:
+                return Status.BadHookRequest;
+            case 503:
+                return Status.RejectedByAccountAllowanceHook;
+            case 504:
+                return Status.HookNotFound;
+            case 505:
+                return Status.LambdaStorageUpdateBytesTooLong;
+            case 506:
+                return Status.LambdaStorageUpdateBytesMustUseMinimalRepresentation;
+            case 507:
+                return Status.InvalidHookId;
+            case 508:
+                return Status.EmptyLambdaStorageUpdate;
+            case 509:
+                return Status.HookIdRepeatedInCreationDetails;
+            case 510:
+                return Status.HooksNotEnabled;
+            case 511:
+                return Status.HookIsNotALambda;
+            case 512:
+                return Status.HookDeleted;
+            case 513:
+                return Status.TooManyLambdaStorageUpdates;
+            case 514:
+                return Status.HookCreationBytesMustUseMinimalRepresentation;
+            case 515:
+                return Status.HookCreationBytesTooLong;
+            case 516:
+                return Status.InvalidHookCreationSpec;
+            case 517:
+                return Status.HookExtensionEmpty;
+            case 518:
+                return Status.InvalidHookAdminKey;
+            case 519:
+                return Status.HookDeletionRequiresZeroStorageSlots;
+            case 520:
+                return Status.CannotSetHooksAndApproval;
+            case 521:
+                return Status.TransactionRequiresZeroHooks;
+            case 522:
+                return Status.InvalidHookCall;
+            case 523:
+                return Status.HooksAreNotSupportedInAirdrops;
             default:
                 throw new Error(
                     `(BUG) Status.fromCode() does not handle code: ${code}`,
@@ -3351,3 +3451,128 @@ Status.GrpcWebProxyNotSupported = new Status(399);
  * An NFT transfers list referenced a token type other than NON_FUNGIBLE_UNIQUE.
  */
 Status.NftTransfersOnlyAllowedForNonFungibleUnique = new Status(400);
+
+/**
+ * invalid serialized tx message hash algorithm
+ */
+Status.InvalidSerializedTxMessageHashAlgorithm = new Status(401);
+
+/**
+ * evm hook gas throttled
+ */
+Status.EvmHookGasThrottled = new Status(500);
+
+/**
+ * hook id in use
+ */
+Status.HookIdInUse = new Status(501);
+
+/**
+ * bad hook request
+ */
+Status.BadHookRequest = new Status(502);
+
+/**
+ * rejected by account allowance hook
+ */
+Status.RejectedByAccountAllowanceHook = new Status(503);
+
+/**
+ * hook not found
+ */
+Status.HookNotFound = new Status(504);
+
+/**
+ * lambda storage update bytes too long
+ */
+Status.LambdaStorageUpdateBytesTooLong = new Status(505);
+
+/**
+ * lambda storage update bytes must use minimal representation
+ */
+Status.LambdaStorageUpdateBytesMustUseMinimalRepresentation = new Status(506);
+
+/**
+ * invalid hook id
+ */
+Status.InvalidHookId = new Status(507);
+
+/**
+ * empty lambda storage update
+ */
+Status.EmptyLambdaStorageUpdate = new Status(508);
+
+/**
+ * hook id repeated in creation details
+ */
+Status.HookIdRepeatedInCreationDetails = new Status(509);
+
+/**
+ * hooks not enabled
+ */
+Status.HooksNotEnabled = new Status(510);
+
+/**
+ * hook is not a lambda
+ */
+Status.HookIsNotALambda = new Status(511);
+
+/**
+ * hook deleted
+ */
+Status.HookDeleted = new Status(512);
+
+/**
+ * too many lambda storage updates
+ */
+Status.TooManyLambdaStorageUpdates = new Status(513);
+
+/**
+ * A lambda mapping slot, storage key, or storage value failed to use the minimal representation (i.e., no leading zeros).
+ */
+Status.HookCreationBytesMustUseMinimalRepresentation = new Status(514);
+
+/**
+ * A lambda mapping slot, storage key, or storage value exceeded 32 bytes.
+ */
+Status.HookCreationBytesTooLong = new Status(515);
+
+/**
+ * A hook creation spec was not found.
+ */
+Status.InvalidHookCreationSpec = new Status(516);
+
+/**
+ * A hook extension point was empty.
+ */
+Status.HookExtensionEmpty = new Status(517);
+
+/**
+ * A hook admin key was invalid.
+ */
+Status.InvalidHookAdminKey = new Status(518);
+
+/**
+ * The hook deletion requires the hook to have zero storage slots.
+ */
+Status.HookDeletionRequiresZeroStorageSlots = new Status(519);
+
+/**
+ * Cannot set both a hook call and an approval on the same AccountAmount or NftTransfer message.
+ */
+Status.CannotSetHooksAndApproval = new Status(520);
+
+/**
+ * The attempted operation is invalid until all the target entity's hooks have been deleted.
+ */
+Status.TransactionRequiresZeroHooks = new Status(521);
+
+/**
+ * The HookCall set in the transaction is invalid
+ */
+Status.InvalidHookCall = new Status(522);
+
+/**
+ * Hooks are not supported to be used in TokenAirdrop transactions
+ */
+Status.HooksAreNotSupportedInAirdrops = new Status(523);
