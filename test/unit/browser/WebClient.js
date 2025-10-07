@@ -59,6 +59,45 @@ const generateAddressBookResponse = (nodeObjectMap) => {
     };
 };
 
+/**
+ * Generates a paginated address book response for testing pagination functionality.
+ * @param {Array<{nodeAddress: string, id: AccountId}>} nodesData - Array of node data
+ * @param {string|null} nextUrl - Next page URL or null for last page
+ * @returns {AddressBookQueryWebResponse} - A paginated address book response object.
+ */
+const generatePaginatedAddressBookResponse = (nodesData, nextUrl = null) => {
+    return {
+        nodes: nodesData.map(({ nodeAddress, id }) => {
+            const [domain_name, port] = nodeAddress.split(":");
+
+            return {
+                admin_key: {
+                    key: `sample-key-${id}`,
+                    _type: "ED25519",
+                },
+                decline_reward: false,
+                grpc_proxy_endpoint: {
+                    domain_name,
+                    port: Number(port),
+                },
+                file_id: `file-id-${id}`,
+                memo: `Node ${id}`,
+                public_key: `public-key-${id}`,
+                node_id: id,
+                node_account_id: `${id}`,
+                node_cert_hash: `cert-hash-${id}`,
+                address: "127.0.0.1",
+                service_endpoints: [],
+                description: `Node ${id}`,
+                stake: 0,
+            };
+        }),
+        links: {
+            next: nextUrl,
+        },
+    };
+};
+
 const server = setupWorker();
 
 describe("WebClient", function () {
@@ -1926,6 +1965,253 @@ describe("WebClient", function () {
                     createNetworkAddressNodeSet(WEB_PREVIEWNET);
                 expect(networkEntries).to.deep.equal(previewnetEntries);
             });
+        });
+    });
+
+    describe("AddressBookQueryWeb Pagination", function () {
+        it("should fetch all pages automatically and aggregate results", async function () {
+            const client = Client.forTestnet();
+            const initialNetwork = { ...client.network };
+
+            // Mock paginated responses
+            let requestCount = 0;
+            server.use(
+                http.get(
+                    "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
+                    ({ request }) => {
+                        const url = new URL(request.url);
+                        const fileId = url.searchParams.get("file.id");
+                        const limit = url.searchParams.get("limit");
+
+                        // Verify the request parameters
+                        expect(fileId).to.equal(FileId.ADDRESS_BOOK.toString());
+                        expect(limit).to.equal("25"); // Should use DEFAULT_PAGE_SIZE
+
+                        requestCount++;
+
+                        if (requestCount === 1) {
+                            // First page - return 3 nodes with next link
+                            return HttpResponse.json(
+                                generatePaginatedAddressBookResponse(
+                                    [
+                                        {
+                                            nodeAddress:
+                                                "0.testnet.hedera.com:443",
+                                            id: new AccountId(3),
+                                        },
+                                        {
+                                            nodeAddress:
+                                                "1.testnet.hedera.com:443",
+                                            id: new AccountId(4),
+                                        },
+                                        {
+                                            nodeAddress:
+                                                "2.testnet.hedera.com:443",
+                                            id: new AccountId(5),
+                                        },
+                                    ],
+                                    "/api/v1/network/nodes?file.id=0.0.102&limit=25&node.id=gt:3",
+                                ),
+                            );
+                        } else if (requestCount === 2) {
+                            // Second page - return 2 more nodes with next link
+                            return HttpResponse.json(
+                                generatePaginatedAddressBookResponse(
+                                    [
+                                        {
+                                            nodeAddress:
+                                                "3.testnet.hedera.com:443",
+                                            id: new AccountId(6),
+                                        },
+                                        {
+                                            nodeAddress:
+                                                "4.testnet.hedera.com:443",
+                                            id: new AccountId(7),
+                                        },
+                                    ],
+                                    "/api/v1/network/nodes?file.id=0.0.102&limit=25&node.id=gt:5",
+                                ),
+                            );
+                        } else if (requestCount === 3) {
+                            // Third page - return 1 final node with no next link
+                            return HttpResponse.json(
+                                generatePaginatedAddressBookResponse(
+                                    [
+                                        {
+                                            nodeAddress:
+                                                "5.testnet.hedera.com:443",
+                                            id: new AccountId(8),
+                                        },
+                                    ],
+                                    null, // No more pages
+                                ),
+                            );
+                        }
+
+                        return HttpResponse.json({ nodes: [] });
+                    },
+                ),
+            );
+
+            await client.updateNetwork();
+
+            const updatedNetwork = client.network;
+
+            // Verify that all 3 requests were made
+            expect(requestCount).to.equal(3);
+
+            // Verify that all 6 nodes were aggregated
+            const initialEntries = createNetworkAddressNodeSet(initialNetwork);
+            const updatedEntries = createNetworkAddressNodeSet(updatedNetwork);
+
+            // Networks should be different since we got new nodes from the mirror
+            expect(initialEntries).not.toEqual(updatedEntries);
+
+            // Should have the new nodes from the paginated response
+            expect(updatedEntries).toContain("0.testnet.hedera.com:443:0.0.3");
+            expect(updatedEntries).toContain("1.testnet.hedera.com:443:0.0.4");
+            expect(updatedEntries).toContain("2.testnet.hedera.com:443:0.0.5");
+            expect(updatedEntries).toContain("3.testnet.hedera.com:443:0.0.6");
+            expect(updatedEntries).toContain("4.testnet.hedera.com:443:0.0.7");
+            expect(updatedEntries).toContain("5.testnet.hedera.com:443:0.0.8");
+
+            // Should have exactly 6 nodes (all pages aggregated)
+            expect(updatedEntries.size).toBe(6);
+        });
+
+        it("should handle single page response (no pagination)", async function () {
+            const client = Client.forTestnet();
+            const initialNetwork = { ...client.network };
+
+            let requestCount = 0;
+            server.use(
+                http.get(
+                    "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
+                    () => {
+                        requestCount++;
+
+                        return HttpResponse.json(
+                            generatePaginatedAddressBookResponse(
+                                [
+                                    {
+                                        nodeAddress: "0.testnet.hedera.com:443",
+                                        id: new AccountId(3),
+                                    },
+                                ],
+                                null, // No pagination
+                            ),
+                        );
+                    },
+                ),
+            );
+
+            await client.updateNetwork();
+
+            const updatedNetwork = client.network;
+
+            // Verify that only 1 request was made
+            expect(requestCount).to.equal(1);
+
+            // Verify that the single node was returned
+            const initialEntries = createNetworkAddressNodeSet(initialNetwork);
+            const updatedEntries = createNetworkAddressNodeSet(updatedNetwork);
+
+            expect(initialEntries).not.toEqual(updatedEntries);
+            expect(updatedEntries).toContain("0.testnet.hedera.com:443:0.0.3");
+            expect(updatedEntries.size).toBe(1);
+        });
+
+        it("should handle empty response", async function () {
+            const client = Client.forTestnet();
+            const initialNetwork = { ...client.network };
+
+            let requestCount = 0;
+            server.use(
+                http.get(
+                    "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
+                    () => {
+                        requestCount++;
+
+                        return HttpResponse.json(
+                            generatePaginatedAddressBookResponse(
+                                [], // No nodes
+                                null,
+                            ),
+                        );
+                    },
+                ),
+            );
+
+            await client.updateNetwork();
+
+            const updatedNetwork = client.network;
+
+            // Verify that only 1 request was made
+            expect(requestCount).to.equal(1);
+
+            // Verify that no nodes were returned
+            const initialEntries = createNetworkAddressNodeSet(initialNetwork);
+            const updatedEntries = createNetworkAddressNodeSet(updatedNetwork);
+
+            expect(initialEntries).not.toEqual(updatedEntries);
+            expect(updatedEntries.size).toBe(0);
+        });
+
+        it("should handle missing links object in response", async function () {
+            const client = Client.forTestnet();
+            const initialNetwork = { ...client.network };
+
+            let requestCount = 0;
+            server.use(
+                http.get(
+                    "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
+                    () => {
+                        requestCount++;
+
+                        return HttpResponse.json({
+                            nodes: [
+                                {
+                                    admin_key: {
+                                        key: "sample-key-3",
+                                        _type: "ED25519",
+                                    },
+                                    decline_reward: false,
+                                    grpc_proxy_endpoint: {
+                                        domain_name: "0.testnet.hedera.com",
+                                        port: 443,
+                                    },
+                                    file_id: "file-id-3",
+                                    memo: "Node 3",
+                                    public_key: "public-key-3",
+                                    node_id: 3,
+                                    node_account_id: "3",
+                                    node_cert_hash: "cert-hash-3",
+                                    address: "127.0.0.1",
+                                    service_endpoints: [],
+                                    description: "Node 3",
+                                    stake: 0,
+                                },
+                            ],
+                            // No links object - should terminate pagination
+                        });
+                    },
+                ),
+            );
+
+            await client.updateNetwork();
+
+            const updatedNetwork = client.network;
+
+            // Verify that only 1 request was made
+            expect(requestCount).to.equal(1);
+
+            // Verify that the single node was returned
+            const initialEntries = createNetworkAddressNodeSet(initialNetwork);
+            const updatedEntries = createNetworkAddressNodeSet(updatedNetwork);
+
+            expect(initialEntries).not.toEqual(updatedEntries);
+            expect(updatedEntries).toContain("0.testnet.hedera.com:443:0.0.3");
+            expect(updatedEntries.size).toBe(1);
         });
     });
 });

@@ -49,7 +49,14 @@ import {
  *   description: string,
  *   stake: number
  * }>} nodes
+ * @property {?{next: ?string}} links - Links object containing pagination information
  */
+
+/**
+ * Default page size limit for optimal pagination performance
+ * @constant {number}
+ */
+const DEFAULT_PAGE_SIZE = 25;
 
 /**
  * Web-compatible query to get a list of Hedera network node addresses from a mirror node.
@@ -65,7 +72,7 @@ export default class AddressBookQueryWeb extends Query {
     /**
      * @param {object} props
      * @param {FileId | string} [props.fileId]
-     * @param {number} [props.limit]
+     * @param {number} [props.limit] - Page size limit (defaults to DEFAULT_PAGE_SIZE for optimal performance)
      */
     constructor(props = {}) {
         super();
@@ -232,111 +239,135 @@ export default class AddressBookQueryWeb extends Query {
             baseUrl = `${baseUrl}:${port}`;
         }
 
-        const url = new URL(`${baseUrl}/api/v1/network/nodes`);
+        // Initialize aggregated results
+        this._addresses = [];
+        let nextUrl = null;
+        let isLastPage = false;
 
+        // Build initial URL
+        const initialUrl = new URL(`${baseUrl}/api/v1/network/nodes`);
         if (this._fileId != null) {
-            url.searchParams.append("file.id", this._fileId.toString());
-        }
-        if (this._limit != null) {
-            url.searchParams.append("limit", this._limit.toString());
+            initialUrl.searchParams.append("file.id", this._fileId.toString());
         }
 
-        for (let attempt = 0; attempt <= this._maxAttempts; attempt++) {
-            try {
-                // eslint-disable-next-line n/no-unsupported-features/node-builtins
-                const response = await fetch(url.toString(), {
-                    method: "GET",
-                    headers: {
-                        Accept: "application/json",
-                    },
-                    signal: requestTimeout
-                        ? AbortSignal.timeout(requestTimeout)
-                        : undefined,
-                });
+        // Use the specified limit, or default to DEFAULT_PAGE_SIZE for optimal pagination performance
+        const effectiveLimit =
+            this._limit != null ? this._limit : DEFAULT_PAGE_SIZE;
+        initialUrl.searchParams.append("limit", effectiveLimit.toString());
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+        // Fetch all pages
+        while (!isLastPage) {
+            const currentUrl = nextUrl ? new URL(nextUrl, baseUrl) : initialUrl;
 
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                const data = /** @type {AddressBookQueryWebResponse} */ (
-                    await response.json()
-                );
+            for (let attempt = 0; attempt <= this._maxAttempts; attempt++) {
+                try {
+                    // eslint-disable-next-line n/no-unsupported-features/node-builtins
+                    const response = await fetch(currentUrl.toString(), {
+                        method: "GET",
+                        headers: {
+                            Accept: "application/json",
+                        },
+                        signal: requestTimeout
+                            ? AbortSignal.timeout(requestTimeout)
+                            : undefined,
+                    });
 
-                const nodes = data.nodes || [];
-
-                // eslint-disable-next-line ie11/no-loop-func
-                this._addresses = nodes.map((node) =>
-                    NodeAddress.fromJSON({
-                        nodeId: node.node_id.toString(),
-                        accountId: node.node_account_id,
-                        addresses: this._handleAddressesFromGrpcProxyEndpoint(
-                            node,
-                            client,
-                        ),
-                        certHash: node.node_cert_hash,
-                        publicKey: node.public_key,
-                        description: node.description,
-                        stake: node.stake.toString(),
-                    }),
-                );
-
-                const addressBook = new NodeAddressBook({
-                    nodeAddresses: this._addresses,
-                });
-
-                resolve(addressBook);
-                return;
-            } catch (error) {
-                console.error("Error in _makeFetchRequest:", error);
-                const message =
-                    error instanceof Error ? error.message : String(error);
-
-                // Check if we should retry
-                if (
-                    attempt < this._maxAttempts &&
-                    !client.isClientShutDown &&
-                    this._retryHandler(
-                        /** @type {MirrorError | Error | null} */ (error),
-                    )
-                ) {
-                    const delay = Math.min(
-                        250 * 2 ** attempt,
-                        this._maxBackoff,
-                    );
-
-                    if (this._logger) {
-                        this._logger.debug(
-                            `Error getting nodes from mirror for file ${
-                                this._fileId != null
-                                    ? this._fileId.toString()
-                                    : "UNKNOWN"
-                            } during attempt ${
-                                attempt + 1
-                            }. Waiting ${delay} ms before next attempt: ${message}`,
+                    if (!response.ok) {
+                        throw new Error(
+                            `HTTP error! status: ${response.status}`,
                         );
                     }
 
-                    // Wait before next attempt
-                    // eslint-disable-next-line ie11/no-loop-func
-                    await new Promise((resolve) => setTimeout(resolve, delay));
-                    continue;
-                }
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    const data = /** @type {AddressBookQueryWebResponse} */ (
+                        await response.json()
+                    );
 
-                // If we shouldn't retry or have exhausted attempts, reject
-                const maxAttemptsReached = attempt >= this._maxAttempts;
-                const errorMessage = maxAttemptsReached
-                    ? `Failed to query address book after ${
-                          this._maxAttempts + 1
-                      } attempts. Last error: ${message}`
-                    : `Failed to query address book: ${message}`;
-                reject(new Error(errorMessage));
-                return;
+                    const nodes = data.nodes || [];
+
+                    // Aggregate nodes from this page
+                    const pageNodes = nodes.map((node) =>
+                        NodeAddress.fromJSON({
+                            nodeId: node.node_id.toString(),
+                            accountId: node.node_account_id,
+                            addresses:
+                                this._handleAddressesFromGrpcProxyEndpoint(
+                                    node,
+                                    client,
+                                ),
+                            certHash: node.node_cert_hash,
+                            publicKey: node.public_key,
+                            description: node.description,
+                            stake: node.stake.toString(),
+                        }),
+                    );
+
+                    this._addresses.push(...pageNodes);
+                    nextUrl = data.links?.next || null;
+
+                    // If no more pages, set flag to exit loop
+                    if (!nextUrl) {
+                        isLastPage = true;
+                    }
+
+                    // Move to next page
+                    break;
+                } catch (error) {
+                    console.error("Error in _makeFetchRequest:", error);
+                    const message =
+                        error instanceof Error ? error.message : String(error);
+
+                    // Check if we should retry
+                    if (
+                        attempt < this._maxAttempts &&
+                        !client.isClientShutDown &&
+                        this._retryHandler(
+                            /** @type {MirrorError | Error | null} */ (error),
+                        )
+                    ) {
+                        const delay = Math.min(
+                            250 * 2 ** attempt,
+                            this._maxBackoff,
+                        );
+
+                        if (this._logger) {
+                            this._logger.debug(
+                                `Error getting nodes from mirror for file ${
+                                    this._fileId != null
+                                        ? this._fileId.toString()
+                                        : "UNKNOWN"
+                                } during attempt ${
+                                    attempt + 1
+                                }. Waiting ${delay} ms before next attempt: ${message}`,
+                            );
+                        }
+
+                        // Wait before next attempt
+                        // eslint-disable-next-line ie11/no-loop-func
+                        await new Promise((resolve) =>
+                            setTimeout(resolve, delay),
+                        );
+                        continue;
+                    }
+
+                    // If we shouldn't retry or have exhausted attempts, reject
+                    const maxAttemptsReached = attempt >= this._maxAttempts;
+                    const errorMessage = maxAttemptsReached
+                        ? `Failed to query address book after ${
+                              this._maxAttempts + 1
+                          } attempts. Last error: ${message}`
+                        : `Failed to query address book: ${message}`;
+                    reject(new Error(errorMessage));
+                    return;
+                }
             }
         }
 
-        // This should never be reached, but just in case
-        reject(new Error("failed to query address book"));
+        // Return the aggregated results
+        const addressBook = new NodeAddressBook({
+            nodeAddresses: this._addresses,
+        });
+        resolve(addressBook);
     }
 
     /**
