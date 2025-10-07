@@ -3,6 +3,7 @@
 import Long from "long";
 import AccountId from "../account/AccountId.js";
 import TokenId from "./TokenId.js";
+import HookCall from "../hooks/HookCall.js";
 
 /**
  * @namespace proto
@@ -29,6 +30,10 @@ export default class TokenNftTransfer {
      * @param {AccountId | string} props.receiverAccountId
      * @param {Long | number} props.serialNumber
      * @param {boolean} props.isApproved
+     * @param {HookCall | null} props.preTxSenderAllowanceHook
+     * @param {HookCall | null} props.prePostTxSenderAllowanceHook
+     * @param {HookCall | null} props.preTxReceiverAllowanceHook
+     * @param {HookCall | null} props.prePostTxReceiverAllowanceHook
      */
     constructor(props) {
         /**
@@ -56,6 +61,11 @@ export default class TokenNftTransfer {
                 : AccountId.fromString(props.receiverAccountId);
 
         this.serialNumber = Long.fromValue(props.serialNumber);
+        this.preTxSenderAllowanceHook = props.preTxSenderAllowanceHook;
+        this.prePostTxSenderAllowanceHook = props.prePostTxSenderAllowanceHook;
+        this.preTxReceiverAllowanceHook = props.preTxReceiverAllowanceHook;
+        this.prePostTxReceiverAllowanceHook =
+            props.prePostTxReceiverAllowanceHook;
         this.isApproved = props.isApproved;
     }
 
@@ -92,6 +102,30 @@ export default class TokenNftTransfer {
                                 ? transfer.serialNumber
                                 : Long.ZERO,
                         isApproved: transfer.isApproval == true,
+                        prePostTxReceiverAllowanceHook:
+                            transfer.prePostTxReceiverAllowanceHook != null
+                                ? HookCall._fromProtobuf(
+                                      transfer.prePostTxReceiverAllowanceHook,
+                                  )
+                                : null,
+                        prePostTxSenderAllowanceHook:
+                            transfer.prePostTxSenderAllowanceHook != null
+                                ? HookCall._fromProtobuf(
+                                      transfer.prePostTxSenderAllowanceHook,
+                                  )
+                                : null,
+                        preTxSenderAllowanceHook:
+                            transfer.preTxSenderAllowanceHook != null
+                                ? HookCall._fromProtobuf(
+                                      transfer.preTxSenderAllowanceHook,
+                                  )
+                                : null,
+                        preTxReceiverAllowanceHook:
+                            transfer.preTxReceiverAllowanceHook != null
+                                ? HookCall._fromProtobuf(
+                                      transfer.preTxReceiverAllowanceHook,
+                                  )
+                                : null,
                     }),
                 );
             }
@@ -110,6 +144,10 @@ export default class TokenNftTransfer {
             receiverAccountID: this.receiverAccountId._toProtobuf(),
             serialNumber: this.serialNumber,
             isApproval: this.isApproved,
+            preTxSenderAllowanceHook: this.preTxSenderAllowanceHook,
+            prePostTxSenderAllowanceHook: this.prePostTxSenderAllowanceHook,
+            preTxReceiverAllowanceHook: this.preTxReceiverAllowanceHook,
+            prePostTxReceiverAllowanceHook: this.prePostTxReceiverAllowanceHook,
         };
     }
 }

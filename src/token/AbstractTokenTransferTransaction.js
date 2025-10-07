@@ -21,6 +21,10 @@ import { convertAmountToLong } from "../util.js";
  */
 
 /**
+ * @typedef {import("../hooks/HookCall.js").default} HookCall
+ */
+
+/**
  * @typedef {object} TransferTokensInput
  * @property {TokenId | string} tokenId
  * @property {AccountId | string} accountId
@@ -96,6 +100,10 @@ export default class AbstractTokenTransferTransaction extends Transaction {
             tokenIdOrNftId,
             senderAccountIdOrSerialNumber,
             receiverAccountIdOrSenderAccountId,
+            null,
+            null,
+            null,
+            null,
             receiver,
         );
     }
@@ -106,6 +114,8 @@ export default class AbstractTokenTransferTransaction extends Transaction {
      * @param {number | Long | BigNumber | bigint} amount
      * @param {boolean} isApproved
      * @param {number | null} expectedDecimals
+     * @param {HookCall | null} prePostTxAllowanceHook
+     * @param {HookCall | null} preTxAllowanceHook
      * @returns {this}
      */
     _addTokenTransfer(
@@ -114,6 +124,8 @@ export default class AbstractTokenTransferTransaction extends Transaction {
         amount,
         isApproved,
         expectedDecimals,
+        prePostTxAllowanceHook,
+        preTxAllowanceHook,
     ) {
         this._requireNotFrozen();
 
@@ -143,6 +155,8 @@ export default class AbstractTokenTransferTransaction extends Transaction {
                 expectedDecimals: expectedDecimals,
                 amount,
                 isApproved,
+                prePostTxAllowanceHook,
+                preTxAllowanceHook,
             }),
         );
 
@@ -156,7 +170,15 @@ export default class AbstractTokenTransferTransaction extends Transaction {
      * @returns {this}
      */
     addTokenTransfer(tokenId, accountId, amount) {
-        return this._addTokenTransfer(tokenId, accountId, amount, false, null);
+        return this._addTokenTransfer(
+            tokenId,
+            accountId,
+            amount,
+            false,
+            null,
+            null,
+            null,
+        );
     }
 
     /**
@@ -164,6 +186,10 @@ export default class AbstractTokenTransferTransaction extends Transaction {
      * @param {NftId | TokenId | string} tokenIdOrNftId
      * @param {AccountId | string | Long | number} senderAccountIdOrSerialNumber
      * @param {AccountId | string} receiverAccountIdOrSenderAccountId
+     * @param {HookCall | null} prePostTxSenderAllowanceHook
+     * @param {HookCall | null} preTxSenderAllowanceHook
+     * @param {HookCall | null} prePostTxReceiverAllowanceHook
+     * @param {HookCall | null} preTxReceiverAllowanceHook
      * @param {(AccountId | string)=} receiver
      * @returns {this}
      */
@@ -172,6 +198,10 @@ export default class AbstractTokenTransferTransaction extends Transaction {
         tokenIdOrNftId,
         senderAccountIdOrSerialNumber,
         receiverAccountIdOrSenderAccountId,
+        prePostTxSenderAllowanceHook,
+        preTxSenderAllowanceHook,
+        prePostTxReceiverAllowanceHook,
+        preTxReceiverAllowanceHook,
         receiver,
     ) {
         this._requireNotFrozen();
@@ -263,6 +293,10 @@ export default class AbstractTokenTransferTransaction extends Transaction {
                 senderAccountId,
                 receiverAccountId,
                 isApproved,
+                prePostTxSenderAllowanceHook,
+                preTxSenderAllowanceHook,
+                prePostTxReceiverAllowanceHook,
+                preTxReceiverAllowanceHook,
             }),
         );
 
@@ -287,6 +321,10 @@ export default class AbstractTokenTransferTransaction extends Transaction {
             tokenIdOrNftId,
             senderAccountIdOrSerialNumber,
             receiverAccountIdOrSenderAccountId,
+            null,
+            null,
+            null,
+            null,
             receiver,
         );
     }
@@ -298,7 +336,15 @@ export default class AbstractTokenTransferTransaction extends Transaction {
      * @returns {this}
      */
     addApprovedTokenTransfer(tokenId, accountId, amount) {
-        return this._addTokenTransfer(tokenId, accountId, amount, true, null);
+        return this._addTokenTransfer(
+            tokenId,
+            accountId,
+            amount,
+            true,
+            null,
+            null,
+            null,
+        );
     }
 
     /**
@@ -351,6 +397,8 @@ export default class AbstractTokenTransferTransaction extends Transaction {
                 expectedDecimals: decimals,
                 amount,
                 isApproved: false,
+                prePostTxAllowanceHook: null,
+                preTxAllowanceHook: null,
             }),
         );
 
