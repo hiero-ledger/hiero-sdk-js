@@ -40,7 +40,9 @@ tasks:
             - rm -rf src/proto/streams
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/services src/proto/
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/streams src/proto/
-            - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/event/* src/proto/services/
+            - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/event/* src/proto/
+            - chmod +x scripts/fix-imports.sh
+            - ./scripts/fix-imports.sh
             - echo "Protobufs moved successfully!"
             - task "delete:submodule"
 
