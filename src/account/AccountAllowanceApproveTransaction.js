@@ -7,11 +7,11 @@ import AccountId from "./AccountId.js";
 import ContractId from "../contract/ContractId.js";
 import TokenId from "../token/TokenId.js";
 import NftId from "../token/NftId.js";
-import Long from "long";
 import Hbar from "../Hbar.js";
 import HbarAllowance from "./HbarAllowance.js";
 import TokenAllowance from "./TokenAllowance.js";
 import TokenNftAllowance from "./TokenNftAllowance.js";
+import { convertAmountToLong } from "../util.js";
 
 /**
  * @namespace proto
@@ -192,11 +192,14 @@ export default class AccountAllowanceApproveTransaction extends Transaction {
      * @param {TokenId | string} tokenId
      * @param {AccountId | string} ownerAccountId
      * @param {AccountId | ContractId | string} spenderAccountId
-     * @param {Long | number} amount
+     * @param {Long | number | BigNumber | bigint} amount
      * @returns {AccountAllowanceApproveTransaction}
      */
     approveTokenAllowance(tokenId, ownerAccountId, spenderAccountId, amount) {
         this._requireNotFrozen();
+
+        // Convert amount to Long
+        const amountLong = convertAmountToLong(amount);
 
         this._tokenApprovals.push(
             new TokenAllowance({
@@ -224,10 +227,7 @@ export default class AccountAllowanceApproveTransaction extends Transaction {
                               ownerAccountId.toEvmAddress(),
                           )
                         : ownerAccountId,
-                amount:
-                    typeof amount === "number"
-                        ? Long.fromNumber(amount)
-                        : amount,
+                amount: amountLong,
             }),
         );
 
@@ -238,11 +238,14 @@ export default class AccountAllowanceApproveTransaction extends Transaction {
      * @deprecated - Use `approveTokenAllowance()` instead
      * @param {TokenId | string} tokenId
      * @param {AccountId | string} spenderAccountId
-     * @param {Long | number} amount
+     * @param {Long | number | BigNumber | bigint} amount
      * @returns {AccountAllowanceApproveTransaction}
      */
     addTokenAllowance(tokenId, spenderAccountId, amount) {
         this._requireNotFrozen();
+
+        // Convert amount to Long
+        const amountLong = convertAmountToLong(amount);
 
         this._tokenApprovals.push(
             new TokenAllowance({
@@ -254,10 +257,7 @@ export default class AccountAllowanceApproveTransaction extends Transaction {
                     typeof spenderAccountId === "string"
                         ? AccountId.fromString(spenderAccountId)
                         : spenderAccountId,
-                amount:
-                    typeof amount === "number"
-                        ? Long.fromNumber(amount)
-                        : amount,
+                amount: amountLong,
                 ownerAccountId: null,
             }),
         );

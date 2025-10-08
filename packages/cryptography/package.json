@@ -1,6 +1,6 @@
 {
     "name": "@hashgraph/cryptography",
-    "version": "1.11.0",
+    "version": "1.12.0",
     "description": "Cryptographic utilities and primitives for the Hiero SDK",
     "main": "./lib/index.cjs",
     "types": "./lib/index.d.ts",
@@ -105,7 +105,7 @@
         "eslint-plugin-deprecation": "3.0.0",
         "eslint-plugin-ie11": "1.0.0",
         "eslint-plugin-import": "2.31.0",
-        "eslint-plugin-jsdoc": "54.1.1",
+        "eslint-plugin-jsdoc": "60.6.0",
         "eslint-plugin-n": "17.17.0",
         "eslint-plugin-vitest": "0.5.4",
         "geckodriver": "5.0.0",
