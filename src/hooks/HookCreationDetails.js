@@ -18,16 +18,19 @@ class HookCreationDetails {
          * @type {number | null}
          */
         this.extensionPoint = null;
+
         /**
          * @protected
          * @type {Long | null}
          */
         this.hookId = null;
+
         /**
          * @protected
          * @type {import("./LambdaEvmHook.js").default | null}
          */
         this.hook = null;
+
         /**
          * @protected
          * @type {import("../Key.js").default | null}

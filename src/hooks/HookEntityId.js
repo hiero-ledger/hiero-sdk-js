@@ -7,7 +7,12 @@ class HookEntityId {
      * @param {AccountId} [props.accountId]
      */
     constructor(props = {}) {
+        /**
+         * @protected
+         * @type {?AccountId}
+         */
         this.accountId = null;
+
         if (props.accountId != null) {
             this.setAccountId(props.accountId);
         }

@@ -8,6 +8,10 @@ class EvmHookSpec {
      * @param {import("../contract/ContractId.js").default} [props.contractId]
      */
     constructor(props = {}) {
+        /**
+         * @protected
+         * @type {?import("../contract/ContractId.js").default}
+         */
         this.contractId = null;
 
         if (props.contractId != null) {

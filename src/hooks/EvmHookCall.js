@@ -16,7 +16,16 @@ class EvmHookCall {
      * @param {number} [props.gasLimit]
      */
     constructor(props = {}) {
+        /**
+         * @protected
+         * @type {?Uint8Array}
+         */
         this.data = null;
+
+        /**
+         * @protected
+         * @type {?number}
+         */
         this.gasLimit = null;
 
         if (props.data != null) {

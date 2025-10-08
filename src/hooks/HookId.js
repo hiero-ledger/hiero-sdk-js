@@ -14,11 +14,19 @@ export default class HookId {
      * @param {Long} [props.hookId]
      */
     constructor(props = {}) {
+        /**
+         * @protected
+         * @type {?HookEntityId}
+         */
         this.entityId = null;
         if (props.entityId != null) {
             this.setEntityId(props.entityId);
         }
 
+        /**
+         * @protected
+         * @type {?Long}
+         */
         this.hookId = null;
         if (props.hookId != null) {
             this.setHookId(props.hookId);

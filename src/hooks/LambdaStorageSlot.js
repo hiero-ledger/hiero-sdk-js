@@ -1,12 +1,29 @@
 class LambdaStorageSlot {
     /**
-     *
-     * @param {Uint8Array} key
-     * @param {Uint8Array} value
+     * @param {object} props
+     * @param {Uint8Array} [props.key]
+     * @param {Uint8Array} [props.value]
      */
-    constructor(key, value) {
-        this.key = key;
-        this.value = value;
+    constructor(props = {}) {
+        /**
+         * @protected
+         * @type {?Uint8Array}
+         */
+        this.key = null;
+
+        /**
+         * @protected
+         * @type {?Uint8Array}
+         */
+        this.value = null;
+
+        if (props.key != null) {
+            this.setKey(props.key);
+        }
+
+        if (props.value != null) {
+            this.setValue(props.value);
+        }
     }
 
     /**
@@ -35,14 +52,15 @@ class LambdaStorageSlot {
      * @returns {LambdaStorageSlot}
      */
     static _fromProtobuf(lambdaStorageSlot) {
-        return new LambdaStorageSlot(
+        const key =
             lambdaStorageSlot.key != null
                 ? lambdaStorageSlot.key
-                : new Uint8Array(),
+                : new Uint8Array();
+        const value =
             lambdaStorageSlot.value != null
                 ? lambdaStorageSlot.value
-                : new Uint8Array(),
-        );
+                : new Uint8Array();
+        return new LambdaStorageSlot({ key, value });
     }
 
     /**

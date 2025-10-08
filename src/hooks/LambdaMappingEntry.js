@@ -16,8 +16,17 @@ class LambdaMappingEntry {
      * @param {Uint8Array} [props.value]
      */
     constructor(props = {}) {
-        this.key = props.key;
-        this.value = props.value;
+        /**
+         * @protected
+         * @type {?Uint8Array}
+         */
+        this.key = null;
+
+        /**
+         * @protected
+         * @type {?Uint8Array}
+         */
+        this.value = null;
 
         if (props.key != null) {
             this.setKey(props.key);
@@ -46,6 +55,22 @@ class LambdaMappingEntry {
     setValue(value) {
         this.value = value;
         return this;
+    }
+
+    /**
+     *
+     * @returns {Uint8Array | null}
+     */
+    getKey() {
+        return this.key;
+    }
+
+    /**
+     *
+     * @returns {Uint8Array | null}
+     */
+    getValue() {
+        return this.value;
     }
 
     /**

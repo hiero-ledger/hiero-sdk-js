@@ -24,8 +24,22 @@ class HookCall {
      * @param {import("../hooks/EvmHookCall.js").default} [props.evmHookCall]
      */
     constructor(props = {}) {
+        /**
+         * @protected
+         * @type {?Long}
+         */
         this.hookId = null;
+
+        /**
+         * @protected
+         * @type {?import("../hooks/HookId.js").default}
+         */
+
         this.fullHookId = null;
+        /**
+         * @protected
+         * @type {?import("../hooks/EvmHookCall.js").default}
+         */
         this.evmHookCall = null;
 
         if (props.hookId != null) {

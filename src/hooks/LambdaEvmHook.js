@@ -9,9 +9,17 @@ class LambdaEvmHook {
      * @param {import("./LambdaStorageUpdate.js").default[]} [props.storageUpdates]
      */
     constructor(props = {}) {
+        /**
+         * @protected
+         * @type {?import("./EvmHookSpec.js").default}
+         */
         this.spec = null;
-        this.storageUpdates =
-            props.storageUpdates != null ? props.storageUpdates : [];
+
+        /**
+         * @protected
+         * @type {import("./LambdaStorageUpdate.js").default[]}
+         */
+        this.storageUpdates = [];
 
         if (props.storageUpdates != null) {
             this.setStorageUpdates(props.storageUpdates);

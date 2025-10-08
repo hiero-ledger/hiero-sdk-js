@@ -9,7 +9,16 @@ class LambdaStorageUpdate {
      * @param {LambdaMappingEntries} [props.mappingEntries]
      */
     constructor(props = {}) {
+        /**
+         * @protected
+         * @type {?import("./LambdaStorageSlot.js").default}
+         */
         this.storageSlot = null;
+
+        /**
+         * @protected
+         * @type {?LambdaMappingEntries}
+         */
         this.mappingEntries = null;
 
         if (props.storageSlot != null) {
@@ -104,8 +113,60 @@ class LambdaMappingEntries {
      * @param {import("./LambdaMappingEntry.js").default[]} [props.entries]
      */
     constructor(props) {
-        this.mappingSlot = props.mappingSlot;
-        this.entries = props.entries;
+        /**
+         * @protected
+         * @type {?Uint8Array}
+         */
+        this.mappingSlot = null;
+        /**
+         * @protected
+         * @type {?import("./LambdaMappingEntry.js").default[]}
+         */
+        this.entries = null;
+
+        if (props.mappingSlot != null) {
+            this.setMappingSlot(props.mappingSlot);
+        }
+
+        if (props.entries != null) {
+            this.setEntries(props.entries);
+        }
+    }
+
+    /**
+     *
+     * @param {Uint8Array} mappingSlot
+     * @returns {this}
+     */
+    setMappingSlot(mappingSlot) {
+        this.mappingSlot = mappingSlot;
+        return this;
+    }
+
+    /**
+     *
+     * @param {import("./LambdaMappingEntry.js").default[]} entries
+     * @returns {this}
+     */
+    setEntries(entries) {
+        this.entries = entries;
+        return this;
+    }
+
+    /**
+     *
+     * @returns {Uint8Array | null}
+     */
+    getMappingSlot() {
+        return this.mappingSlot;
+    }
+
+    /**
+     *
+     * @returns {import("./LambdaMappingEntry.js").default[] | null}
+     */
+    getEntries() {
+        return this.entries;
     }
 
     /**
