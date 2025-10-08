@@ -493,7 +493,7 @@ jobs:
           echo "::endgroup::"
 
       - name: Generate Github Release
-        uses: ncipollo/release-action@b7eabc95ff50cbeeedec83973935c8f306dfcd0b # v1.20.0
+        uses: step-security/release-action@03a57407052f15d1537fd5469a6fbbc536aba326 # v1.20.0
         if: ${{ env.DRY_RUN_ENABLED != 'true' }}
         with:
           tag: ${{ needs.validate-release.outputs.tag }}
