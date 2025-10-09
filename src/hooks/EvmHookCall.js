@@ -1,9 +1,9 @@
+import Long from "long";
+
 /**
  * @namespace proto
  * @typedef {import("@hashgraph/proto").proto.IEvmHookCall} HieroProto.proto.IEvmHookCall
  */
-
-import Long from "long";
 
 /**
  * Specifies details of a call to an EVM hook.
