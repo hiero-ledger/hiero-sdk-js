@@ -2,6 +2,7 @@ import LambdaMappingEntry from "./LambdaMappingEntry.js";
 
 /**
  *
+ * @abstract
  * Specifies a key/value pair in the storage of a lambda, either by the explicit storage
  * slot contents; or by a combination of a Solidity mapping's slot key and the key into
  * that mapping.
@@ -27,7 +28,7 @@ class LambdaStorageUpdate {
     }
 
     /**
-     *
+     * @abstract
      * @returns {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate}
      */
     _toProtobuf() {
