@@ -1,5 +1,8 @@
 import AccountId from "../account/AccountId.js";
 
+/**
+ * The id of an entity using a hook.
+ */
 class HookEntityId {
     /**
      *
