@@ -160,7 +160,7 @@ class LambdaMappingEntries extends LambdaStorageUpdate {
      * @param {Uint8Array} [props.mappingSlot]
      * @param {import("./LambdaMappingEntry.js").default[]} [props.entries]
      */
-    constructor(props) {
+    constructor(props = {}) {
         super();
         /**
          * @private
@@ -253,4 +253,4 @@ class LambdaMappingEntries extends LambdaStorageUpdate {
     }
 }
 
-export default { LambdaStorageUpdate, LambdaStorageSlot, LambdaMappingEntries };
+export { LambdaStorageUpdate, LambdaStorageSlot, LambdaMappingEntries };

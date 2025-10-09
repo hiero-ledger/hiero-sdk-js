@@ -6,7 +6,7 @@ class LambdaEvmHook {
      *
      * @param {object} [props]
      * @param {import("./EvmHookSpec.js").default} [props.spec]
-     * @param {import("./LambdaStorageUpdate.js").default[]} [props.storageUpdates]
+     * @param {import("./LambdaStorageUpdate.js").LambdaStorageUpdate[]} [props.storageUpdates]
      */
     constructor(props = {}) {
         /**
@@ -17,7 +17,7 @@ class LambdaEvmHook {
 
         /**
          * @private
-         * @type {import("./LambdaStorageUpdate.js").default[]}
+         * @type {import("./LambdaStorageUpdate.js").LambdaStorageUpdate[]}
          */
         this._storageUpdates = [];
 
@@ -32,7 +32,7 @@ class LambdaEvmHook {
 
     /**
      *
-     * @param {import("./LambdaStorageUpdate.js").default[]} storageUpdates
+     * @param {import("./LambdaStorageUpdate.js").LambdaStorageUpdate[]} storageUpdates
      * @returns {this}
      */
     setStorageUpdates(storageUpdates) {
@@ -59,7 +59,7 @@ class LambdaEvmHook {
 
     /**
      *
-     * @returns {import("./LambdaStorageUpdate.js").default[]}
+     * @returns {import("./LambdaStorageUpdate.js").LambdaStorageUpdate[]}
      */
     get storageUpdates() {
         return this._storageUpdates;
