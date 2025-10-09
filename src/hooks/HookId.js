@@ -6,7 +6,7 @@ import HookEntityId from "./HookEntityId";
  * A composite of its creating entity's id and an arbitrary 64-bit hook id
  * (which need not be sequential).
  */
-export default class HookId {
+class HookId {
     /**
      *
      * @param {object} props
@@ -96,3 +96,5 @@ export default class HookId {
         };
     }
 }
+
+export default HookId;
