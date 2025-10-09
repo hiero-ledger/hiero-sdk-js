@@ -1,84 +1,27 @@
 import LambdaMappingEntry from "./LambdaMappingEntry.js";
-import LambdaStorageSlot from "./LambdaStorageSlot.js";
 
+/**
+ *
+ * Specifies a key/value pair in the storage of a lambda, either by the explicit storage
+ * slot contents; or by a combination of a Solidity mapping's slot key and the key into
+ * that mapping.
+ */
 class LambdaStorageUpdate {
-    /**
-     *
-     * @param {object} props
-     * @param {import("./LambdaStorageSlot.js").default} [props.storageSlot]
-     * @param {LambdaMappingEntries} [props.mappingEntries]
-     */
-    constructor(props = {}) {
-        /**
-         * @protected
-         * @type {?import("./LambdaStorageSlot.js").default}
-         */
-        this.storageSlot = null;
-
-        /**
-         * @protected
-         * @type {?LambdaMappingEntries}
-         */
-        this.mappingEntries = null;
-
-        if (props.storageSlot != null) {
-            this.setStorageSlot(props.storageSlot);
-        }
-
-        if (props.mappingEntries != null) {
-            this.setMappingEntries(props.mappingEntries);
-        }
-    }
-
-    /**
-     * @returns {LambdaStorageUpdate}
-     */
-    clearStorageUpdates() {
-        this.storageSlot = null;
-        this.mappingEntries = null;
-        return this;
-    }
-
-    /**
-     *
-     * @param {import("./LambdaStorageSlot.js").default} storageSlot
-     * @returns {this}
-     */
-    setStorageSlot(storageSlot) {
-        this.storageSlot = storageSlot;
-        return this;
-    }
-
-    /**
-     *
-     * @param {LambdaMappingEntries} mappingEntries
-     * @returns {this}
-     */
-    setMappingEntries(mappingEntries) {
-        this.mappingEntries = mappingEntries;
-        return this;
-    }
-
     /**
      *
      * @param {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate} lambdaStorageUpdate
      * @returns {LambdaStorageUpdate}
      */
     static _fromProtobuf(lambdaStorageUpdate) {
-        return new LambdaStorageUpdate({
-            storageSlot:
-                lambdaStorageUpdate.storageSlot != null
-                    ? LambdaStorageSlot._fromProtobuf(
-                          lambdaStorageUpdate.storageSlot,
-                      )
-                    : undefined,
-            mappingEntries:
-                lambdaStorageUpdate.mappingEntries != null
-                    ? LambdaMappingEntries._fromProtobuf(
-                          lambdaStorageUpdate.mappingEntries,
-                      )
-                    : undefined,
-        });
+        if (lambdaStorageUpdate.storageSlot != null) {
+            return LambdaStorageSlot._fromProtobuf(lambdaStorageUpdate);
+        }
+        if (lambdaStorageUpdate.mappingEntries != null) {
+            return LambdaMappingEntries._fromProtobuf(lambdaStorageUpdate);
+        }
+        throw new Error(
+            "LambdaStorageUpdate must have either storage_slot or mapping_entries set",
+        );
     }
 
     /**
@@ -86,9 +29,96 @@ class LambdaStorageUpdate {
      * @returns {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate}
      */
     _toProtobuf() {
+        throw new Error(
+            "LambdaStorageUpdate._toProtobuf must be implemented by a subclass",
+        );
+    }
+}
+
+/**
+ * A slot in the storage of a lambda EVM hook.
+ */
+class LambdaStorageSlot extends LambdaStorageUpdate {
+    /**
+     * @param {object} props
+     * @param {Uint8Array} [props.key]
+     * @param {Uint8Array} [props.value]
+     */
+    constructor(props = {}) {
+        super();
+        /**
+         * @protected
+         * @type {?Uint8Array}
+         */
+        this.key = null;
+
+        /**
+         * @protected
+         * @type {?Uint8Array}
+         */
+        this.value = null;
+
+        if (props.key != null) {
+            this.setKey(props.key);
+        }
+
+        if (props.value != null) {
+            this.setValue(props.value);
+        }
+    }
+
+    /**
+     *
+     * @param {Uint8Array} key
+     * @returns {this}
+     */
+    setKey(key) {
+        this.key = key;
+        return this;
+    }
+
+    /**
+     *
+     * @param {Uint8Array} value
+     * @returns {this}
+     */
+    setValue(value) {
+        this.value = value;
+        return this;
+    }
+
+    /**
+     *
+     * @param {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate} lambdaStorageSlot
+     * @returns {LambdaStorageSlot}
+     */
+    static _fromProtobuf(lambdaStorageSlot) {
+        if (lambdaStorageSlot.storageSlot != null) {
+            return new LambdaStorageSlot({
+                key:
+                    lambdaStorageSlot.storageSlot.key != null
+                        ? lambdaStorageSlot.storageSlot.key
+                        : undefined,
+                value:
+                    lambdaStorageSlot.storageSlot.value != null
+                        ? lambdaStorageSlot.storageSlot.value
+                        : undefined,
+            });
+        }
+        throw new Error(
+            "LambdaStorageSlot._fromProtobuf must be implemented by a subclass",
+        );
+    }
+
+    /**
+     * @returns {import("@hashgraph/proto").com.hedera.hapi.node.hooks.LambdaStorageUpdate}
+     */
+    _toProtobuf() {
         return {
-            storageSlot: this.storageSlot?._toProtobuf(),
-            mappingEntries: this.mappingEntries?._toProtobuf(),
+            storageSlot: {
+                key: this.key,
+                value: this.value,
+            },
         };
     }
 }
@@ -105,7 +135,7 @@ class LambdaStorageUpdate {
  * stream consumer following the metaprotocol would have to invert the Keccak256
  * hash to determine which mapping entry was being updated, which is not possible.
  */
-class LambdaMappingEntries {
+class LambdaMappingEntries extends LambdaStorageUpdate {
     /**
      *
      * @param {object} props
@@ -113,6 +143,7 @@ class LambdaMappingEntries {
      * @param {import("./LambdaMappingEntry.js").default[]} [props.entries]
      */
     constructor(props) {
+        super();
         /**
          * @protected
          * @type {?Uint8Array}
@@ -171,37 +202,36 @@ class LambdaMappingEntries {
 
     /**
      *
-     * @param {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaMappingEntries} lambdaMappingEntries
+     * @param {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate} lambdaStorageUpdate
      * @returns {LambdaMappingEntries}
      */
-    static _fromProtobuf(lambdaMappingEntries) {
+    static _fromProtobuf(lambdaStorageUpdate) {
         return new LambdaMappingEntries({
             mappingSlot:
-                lambdaMappingEntries.mappingSlot != null
-                    ? lambdaMappingEntries.mappingSlot
+                lambdaStorageUpdate.mappingEntries?.mappingSlot != null
+                    ? lambdaStorageUpdate.mappingEntries.mappingSlot
                     : undefined,
-            entries:
-                lambdaMappingEntries.entries != null
-                    ? lambdaMappingEntries.entries.map((entry) =>
-                          LambdaMappingEntry._fromProtobuf(entry),
-                      )
-                    : undefined,
+            entries: lambdaStorageUpdate.mappingEntries?.entries?.map((entry) =>
+                LambdaMappingEntry._fromProtobuf(entry),
+            ),
         });
     }
 
     /**
      *
-     * @returns {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaMappingEntries}
+     * @returns {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate}
      */
     _toProtobuf() {
         return {
-            mappingSlot: this.mappingSlot,
-            entries:
-                this.entries != null
-                    ? this.entries.map((entry) => entry._toProtobuf())
-                    : undefined,
+            mappingEntries: {
+                mappingSlot: this.mappingSlot,
+                entries:
+                    this.entries != null
+                        ? this.entries.map((entry) => entry._toProtobuf())
+                        : null,
+            },
         };
     }
 }
 
-export default LambdaStorageUpdate;
+export default { LambdaStorageUpdate, LambdaStorageSlot, LambdaMappingEntries };
