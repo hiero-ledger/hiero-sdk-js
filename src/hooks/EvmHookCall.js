@@ -13,7 +13,7 @@ class EvmHookCall {
      *
      * @param {object} props
      * @param {Uint8Array} [props.data]
-     * @param {number} [props.gasLimit]
+     * @param {Long} [props.gasLimit]
      */
     constructor(props = {}) {
         /**
@@ -24,7 +24,7 @@ class EvmHookCall {
 
         /**
          * @protected
-         * @type {?number}
+         * @type {?Long}
          */
         this.gasLimit = null;
 
@@ -49,7 +49,7 @@ class EvmHookCall {
 
     /**
      *
-     * @param {number} gasLimit
+     * @param {Long} gasLimit
      * @returns {this}
      */
     setGasLimit(gasLimit) {
@@ -67,7 +67,7 @@ class EvmHookCall {
 
     /**
      *
-     * @returns {number | null}
+     * @returns {Long | null}
      */
     getGasLimit() {
         return this.gasLimit;
@@ -81,9 +81,7 @@ class EvmHookCall {
     static _fromProtobuf(evmHookCall) {
         return new EvmHookCall({
             data: evmHookCall.data ? evmHookCall.data : undefined,
-            gasLimit: evmHookCall.gasLimit
-                ? evmHookCall.gasLimit.toNumber()
-                : undefined,
+            gasLimit: evmHookCall.gasLimit ? evmHookCall.gasLimit : undefined,
         });
     }
 
@@ -94,7 +92,7 @@ class EvmHookCall {
     _toProtobuf() {
         return {
             data: this.data,
-            gasLimit: this.gasLimit ? Long.fromNumber(this.gasLimit) : null,
+            gasLimit: this.gasLimit ? this.gasLimit : null,
         };
     }
 }
