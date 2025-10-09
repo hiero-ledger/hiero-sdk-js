@@ -14,6 +14,7 @@ class LambdaMappingEntry {
      * @param {object} props
      * @param {Uint8Array} [props.key]
      * @param {Uint8Array} [props.value]
+     * @param {Uint8Array} [props.preimage]
      */
     constructor(props = {}) {
         /**
@@ -27,6 +28,16 @@ class LambdaMappingEntry {
          * @type {?Uint8Array}
          */
         this.value = null;
+
+        /**
+         * @protected
+         * @type {?Uint8Array}
+         */
+        this.preimage = null;
+
+        if (props.preimage != null) {
+            this.setPreimage(props.preimage);
+        }
 
         if (props.key != null) {
             this.setKey(props.key);
@@ -44,6 +55,7 @@ class LambdaMappingEntry {
      */
     setKey(key) {
         this.key = key;
+        this.preimage = null;
         return this;
     }
 
@@ -54,6 +66,17 @@ class LambdaMappingEntry {
      */
     setValue(value) {
         this.value = value;
+        return this;
+    }
+
+    /**
+     *
+     * @param {Uint8Array} preimage
+     * @returns {this}
+     */
+    setPreimage(preimage) {
+        this.preimage = preimage;
+        this.key = null;
         return this;
     }
 
@@ -75,6 +98,14 @@ class LambdaMappingEntry {
 
     /**
      *
+     * @returns {Uint8Array | null}
+     */
+    getPreimage() {
+        return this.preimage;
+    }
+
+    /**
+     *
      * @param {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaMappingEntry} lambdaMappingEntry
      * @returns {LambdaMappingEntry}
      */
@@ -88,6 +119,10 @@ class LambdaMappingEntry {
                 lambdaMappingEntry.value != null
                     ? lambdaMappingEntry.value
                     : undefined,
+            preimage:
+                lambdaMappingEntry.preimage != null
+                    ? lambdaMappingEntry.preimage
+                    : undefined,
         });
     }
 
@@ -99,6 +134,7 @@ class LambdaMappingEntry {
         return {
             key: this.key,
             value: this.value,
+            preimage: this.preimage,
         };
     }
 }
