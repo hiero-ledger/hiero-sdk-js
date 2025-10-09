@@ -9,10 +9,10 @@ class EvmHookSpec {
      */
     constructor(props = {}) {
         /**
-         * @protected
+         * @private
          * @type {?import("../contract/ContractId.js").default}
          */
-        this.contractId = null;
+        this._contractId = null;
 
         if (props.contractId != null) {
             this.setContractId(props.contractId);
@@ -25,7 +25,7 @@ class EvmHookSpec {
      * @returns {EvmHookSpec}
      */
     setContractId(contractId) {
-        this.contractId = contractId;
+        this._contractId = contractId;
         return this;
     }
 
@@ -33,8 +33,8 @@ class EvmHookSpec {
      *
      * @returns {import("../contract/ContractId.js").default | null}
      */
-    getContractId() {
-        return this.contractId;
+    get contractId() {
+        return this._contractId;
     }
 
     /**
@@ -43,7 +43,7 @@ class EvmHookSpec {
      */
     _toProtobuf() {
         return {
-            contractId: this.contractId?._toProtobuf(),
+            contractId: this._contractId?._toProtobuf(),
         };
     }
 }

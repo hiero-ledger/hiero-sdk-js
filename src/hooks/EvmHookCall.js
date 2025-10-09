@@ -17,16 +17,16 @@ class EvmHookCall {
      */
     constructor(props = {}) {
         /**
-         * @protected
+         * @private
          * @type {?Uint8Array}
          */
-        this.data = null;
+        this._data = null;
 
         /**
-         * @protected
+         * @private
          * @type {?Long}
          */
-        this.gasLimit = null;
+        this._gasLimit = null;
 
         if (props.data != null) {
             this.setData(props.data);
@@ -43,7 +43,7 @@ class EvmHookCall {
      * @returns {this}
      */
     setData(data) {
-        this.data = data;
+        this._data = data;
         return this;
     }
 
@@ -53,7 +53,7 @@ class EvmHookCall {
      * @returns {this}
      */
     setGasLimit(gasLimit) {
-        this.gasLimit = gasLimit;
+        this._gasLimit = gasLimit;
         return this;
     }
 
@@ -61,16 +61,16 @@ class EvmHookCall {
      *
      * @returns {Uint8Array | null}
      */
-    getData() {
-        return this.data;
+    get data() {
+        return this._data;
     }
 
     /**
      *
      * @returns {Long | null}
      */
-    getGasLimit() {
-        return this.gasLimit;
+    get gasLimit() {
+        return this._gasLimit;
     }
 
     /**
@@ -91,8 +91,8 @@ class EvmHookCall {
      */
     _toProtobuf() {
         return {
-            data: this.data,
-            gasLimit: this.gasLimit ? this.gasLimit : null,
+            data: this._data,
+            gasLimit: this._gasLimit ? this._gasLimit : null,
         };
     }
 }

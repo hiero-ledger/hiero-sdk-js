@@ -14,28 +14,28 @@ class HookCreationDetails {
      */
     constructor(props = {}) {
         /**
-         * @protected
+         * @private
          * @type {number | null}
          */
-        this.extensionPoint = null;
+        this._extensionPoint = null;
 
         /**
-         * @protected
+         * @private
          * @type {Long | null}
          */
-        this.hookId = null;
+        this._hookId = null;
 
         /**
-         * @protected
+         * @private
          * @type {import("./LambdaEvmHook.js").default | null}
          */
-        this.hook = null;
+        this._hook = null;
 
         /**
-         * @protected
+         * @private
          * @type {import("../Key.js").default | null}
          */
-        this.adminKey = null;
+        this._adminKey = null;
 
         if (props.extensionPoint != null) {
             this.setExtensionPoint(props.extensionPoint);
@@ -60,8 +60,7 @@ class HookCreationDetails {
      * @returns {this}
      */
     setExtensionPoint(extensionPoint) {
-        this.extensionPoint = extensionPoint;
-
+        this._extensionPoint = extensionPoint;
         return this;
     }
 
@@ -71,7 +70,7 @@ class HookCreationDetails {
      * @returns {this}
      */
     setHookId(hookId) {
-        this.hookId = hookId;
+        this._hookId = hookId;
         return this;
     }
 
@@ -81,7 +80,7 @@ class HookCreationDetails {
      * @returns {this}
      */
     setHook(hook) {
-        this.hook = hook;
+        this._hook = hook;
         return this;
     }
 
@@ -91,7 +90,7 @@ class HookCreationDetails {
      * @returns {this}
      */
     setKey(adminKey) {
-        this.adminKey = adminKey;
+        this._adminKey = adminKey;
         return this;
     }
 
@@ -99,32 +98,32 @@ class HookCreationDetails {
      *
      * @returns {number | null}
      */
-    getExtensionPoint() {
-        return this.extensionPoint;
+    get extensionPoint() {
+        return this._extensionPoint;
     }
 
     /**
      *
      * @returns {Long | null}
      */
-    getHookId() {
-        return this.hookId;
+    get hookId() {
+        return this._hookId;
     }
 
     /**
      *
      * @returns {import("./LambdaEvmHook.js").default | null}
      */
-    getHook() {
-        return this.hook;
+    get hook() {
+        return this._hook;
     }
 
     /**
      *
      * @returns {import("../Key.js").default | null}
      */
-    getKey() {
-        return this.adminKey;
+    get adminKey() {
+        return this._adminKey;
     }
 
     /**
@@ -133,11 +132,11 @@ class HookCreationDetails {
      */
     _toProtobuf() {
         return {
-            extensionPoint: this.extensionPoint,
-            hookId: this.hookId,
-            lambdaEvmHook: this.hook != null ? this.hook._toProtobuf() : null,
+            extensionPoint: this._extensionPoint,
+            hookId: this._hookId,
+            lambdaEvmHook: this._hook != null ? this._hook._toProtobuf() : null,
             adminKey:
-                this.adminKey != null ? this.adminKey._toProtobufKey() : null,
+                this._adminKey != null ? this._adminKey._toProtobufKey() : null,
         };
     }
 }

@@ -10,16 +10,16 @@ class LambdaEvmHook {
      */
     constructor(props = {}) {
         /**
-         * @protected
+         * @private
          * @type {?import("./EvmHookSpec.js").default}
          */
-        this.spec = null;
+        this._spec = null;
 
         /**
-         * @protected
+         * @private
          * @type {import("./LambdaStorageUpdate.js").default[]}
          */
-        this.storageUpdates = [];
+        this._storageUpdates = [];
 
         if (props.storageUpdates != null) {
             this.setStorageUpdates(props.storageUpdates);
@@ -36,7 +36,7 @@ class LambdaEvmHook {
      * @returns {this}
      */
     setStorageUpdates(storageUpdates) {
-        this.storageUpdates = storageUpdates;
+        this._storageUpdates = storageUpdates;
         return this;
     }
 
@@ -45,7 +45,7 @@ class LambdaEvmHook {
      * @returns {this}
      */
     setSpec(spec) {
-        this.spec = spec;
+        this._spec = spec;
         return this;
     }
 
@@ -53,16 +53,16 @@ class LambdaEvmHook {
      *
      * @returns {import("./EvmHookSpec.js").default | null}
      */
-    getSpec() {
-        return this.spec;
+    get spec() {
+        return this._spec;
     }
 
     /**
      *
      * @returns {import("./LambdaStorageUpdate.js").default[]}
      */
-    getStorageUpdates() {
-        return this.storageUpdates;
+    get storageUpdates() {
+        return this._storageUpdates;
     }
 
     /**
@@ -71,8 +71,8 @@ class LambdaEvmHook {
      */
     _toProtobuf() {
         return {
-            spec: this.spec?._toProtobuf(),
-            storageUpdates: this.storageUpdates.map((update) =>
+            spec: this._spec?._toProtobuf(),
+            storageUpdates: this._storageUpdates.map((update) =>
                 update._toProtobuf(),
             ),
         };

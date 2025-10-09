@@ -15,19 +15,21 @@ class HookId {
      */
     constructor(props = {}) {
         /**
-         * @protected
+         * @private
          * @type {?HookEntityId}
          */
-        this.entityId = null;
+        this._entityId = null;
+
+        /**
+         * @private
+         * @type {?Long}
+         */
+        this._hookId = null;
+
         if (props.entityId != null) {
             this.setEntityId(props.entityId);
         }
 
-        /**
-         * @protected
-         * @type {?Long}
-         */
-        this.hookId = null;
         if (props.hookId != null) {
             this.setHookId(props.hookId);
         }
@@ -39,7 +41,7 @@ class HookId {
      * @returns {this}
      */
     setEntityId(entityId) {
-        this.entityId = entityId;
+        this._entityId = entityId;
         return this;
     }
 
@@ -49,7 +51,7 @@ class HookId {
      * @returns {this}
      */
     setHookId(hookId) {
-        this.hookId = hookId;
+        this._hookId = hookId;
         return this;
     }
 
@@ -57,16 +59,16 @@ class HookId {
      *
      * @returns {HookEntityId | null}
      */
-    getEntityId() {
-        return this.entityId;
+    get entityId() {
+        return this._entityId;
     }
 
     /**
      *
      * @returns {Long | null}
      */
-    getHookId() {
-        return this.hookId;
+    get hookId() {
+        return this._hookId;
     }
 
     /**
@@ -91,8 +93,8 @@ class HookId {
     _toProtobuf() {
         return {
             entityId:
-                this.entityId != null ? this.entityId._toProtobuf() : null,
-            hookId: this.hookId,
+                this._entityId != null ? this._entityId._toProtobuf() : null,
+            hookId: this._hookId,
         };
     }
 }

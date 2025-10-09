@@ -8,10 +8,10 @@ class HookEntityId {
      */
     constructor(props = {}) {
         /**
-         * @protected
+         * @private
          * @type {?AccountId}
          */
-        this.accountId = null;
+        this._accountId = null;
 
         if (props.accountId != null) {
             this.setAccountId(props.accountId);
@@ -19,20 +19,20 @@ class HookEntityId {
     }
 
     /**
-     *
-     * @returns {AccountId | null}
-     */
-    getAccountId() {
-        return this.accountId;
-    }
-
-    /**
      * @param {AccountId} accountId
      * @returns {this}
      */
     setAccountId(accountId) {
-        this.accountId = accountId;
+        this._accountId = accountId;
         return this;
+    }
+
+    /**
+     *
+     * @returns {AccountId | null}
+     */
+    get accountId() {
+        return this._accountId;
     }
 
     /**
@@ -42,7 +42,7 @@ class HookEntityId {
     _toProtobuf() {
         return {
             accountId:
-                this.accountId != null ? this.accountId._toProtobuf() : null,
+                this._accountId != null ? this._accountId._toProtobuf() : null,
         };
     }
 

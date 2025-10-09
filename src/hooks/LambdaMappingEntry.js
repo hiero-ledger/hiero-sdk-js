@@ -18,22 +18,22 @@ class LambdaMappingEntry {
      */
     constructor(props = {}) {
         /**
-         * @protected
+         * @private
          * @type {?Uint8Array}
          */
-        this.key = null;
+        this._key = null;
 
         /**
-         * @protected
+         * @private
          * @type {?Uint8Array}
          */
-        this.value = null;
+        this._value = null;
 
         /**
-         * @protected
+         * @private
          * @type {?Uint8Array}
          */
-        this.preimage = null;
+        this._preimage = null;
 
         if (props.preimage != null) {
             this.setPreimage(props.preimage);
@@ -54,8 +54,8 @@ class LambdaMappingEntry {
      * @returns {this}
      */
     setKey(key) {
-        this.key = key;
-        this.preimage = null;
+        this._key = key;
+        this._preimage = null;
         return this;
     }
 
@@ -65,7 +65,7 @@ class LambdaMappingEntry {
      * @returns {this}
      */
     setValue(value) {
-        this.value = value;
+        this._value = value;
         return this;
     }
 
@@ -75,8 +75,8 @@ class LambdaMappingEntry {
      * @returns {this}
      */
     setPreimage(preimage) {
-        this.preimage = preimage;
-        this.key = null;
+        this._preimage = preimage;
+        this._key = null;
         return this;
     }
 
@@ -84,24 +84,24 @@ class LambdaMappingEntry {
      *
      * @returns {Uint8Array | null}
      */
-    getKey() {
-        return this.key;
+    get key() {
+        return this._key;
     }
 
     /**
      *
      * @returns {Uint8Array | null}
      */
-    getValue() {
-        return this.value;
+    get value() {
+        return this._value;
     }
 
     /**
      *
      * @returns {Uint8Array | null}
      */
-    getPreimage() {
-        return this.preimage;
+    get preimage() {
+        return this._preimage;
     }
 
     /**
@@ -132,9 +132,9 @@ class LambdaMappingEntry {
      */
     _toProtobuf() {
         return {
-            key: this.key,
-            value: this.value,
-            preimage: this.preimage,
+            key: this._key,
+            value: this._value,
+            preimage: this._preimage,
         };
     }
 }

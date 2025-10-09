@@ -16,9 +16,11 @@ class LambdaStorageUpdate {
         if (lambdaStorageUpdate.storageSlot != null) {
             return LambdaStorageSlot._fromProtobuf(lambdaStorageUpdate);
         }
+
         if (lambdaStorageUpdate.mappingEntries != null) {
             return LambdaMappingEntries._fromProtobuf(lambdaStorageUpdate);
         }
+
         throw new Error(
             "LambdaStorageUpdate must have either storage_slot or mapping_entries set",
         );
@@ -47,16 +49,16 @@ class LambdaStorageSlot extends LambdaStorageUpdate {
     constructor(props = {}) {
         super();
         /**
-         * @protected
+         * @private
          * @type {?Uint8Array}
          */
-        this.key = null;
+        this._key = null;
 
         /**
-         * @protected
+         * @private
          * @type {?Uint8Array}
          */
-        this.value = null;
+        this._value = null;
 
         if (props.key != null) {
             this.setKey(props.key);
@@ -73,7 +75,7 @@ class LambdaStorageSlot extends LambdaStorageUpdate {
      * @returns {this}
      */
     setKey(key) {
-        this.key = key;
+        this._key = key;
         return this;
     }
 
@@ -83,8 +85,24 @@ class LambdaStorageSlot extends LambdaStorageUpdate {
      * @returns {this}
      */
     setValue(value) {
-        this.value = value;
+        this._value = value;
         return this;
+    }
+
+    /**
+     *
+     * @returns {Uint8Array | null}
+     */
+    get key() {
+        return this._key;
+    }
+
+    /**
+     *
+     * @returns {Uint8Array | null}
+     */
+    get value() {
+        return this._value;
     }
 
     /**
@@ -116,8 +134,8 @@ class LambdaStorageSlot extends LambdaStorageUpdate {
     _toProtobuf() {
         return {
             storageSlot: {
-                key: this.key,
-                value: this.value,
+                key: this._key,
+                value: this._value,
             },
         };
     }
@@ -145,15 +163,16 @@ class LambdaMappingEntries extends LambdaStorageUpdate {
     constructor(props) {
         super();
         /**
-         * @protected
+         * @private
          * @type {?Uint8Array}
          */
-        this.mappingSlot = null;
+        this._mappingSlot = null;
+
         /**
-         * @protected
+         * @private
          * @type {?import("./LambdaMappingEntry.js").default[]}
          */
-        this.entries = null;
+        this._entries = null;
 
         if (props.mappingSlot != null) {
             this.setMappingSlot(props.mappingSlot);
@@ -170,7 +189,7 @@ class LambdaMappingEntries extends LambdaStorageUpdate {
      * @returns {this}
      */
     setMappingSlot(mappingSlot) {
-        this.mappingSlot = mappingSlot;
+        this._mappingSlot = mappingSlot;
         return this;
     }
 
@@ -180,7 +199,7 @@ class LambdaMappingEntries extends LambdaStorageUpdate {
      * @returns {this}
      */
     setEntries(entries) {
-        this.entries = entries;
+        this._entries = entries;
         return this;
     }
 
@@ -188,16 +207,16 @@ class LambdaMappingEntries extends LambdaStorageUpdate {
      *
      * @returns {Uint8Array | null}
      */
-    getMappingSlot() {
-        return this.mappingSlot;
+    get mappingSlot() {
+        return this._mappingSlot;
     }
 
     /**
      *
      * @returns {import("./LambdaMappingEntry.js").default[] | null}
      */
-    getEntries() {
-        return this.entries;
+    get entries() {
+        return this._entries;
     }
 
     /**
@@ -224,10 +243,10 @@ class LambdaMappingEntries extends LambdaStorageUpdate {
     _toProtobuf() {
         return {
             mappingEntries: {
-                mappingSlot: this.mappingSlot,
+                mappingSlot: this._mappingSlot,
                 entries:
-                    this.entries != null
-                        ? this.entries.map((entry) => entry._toProtobuf())
+                    this._entries != null
+                        ? this._entries.map((entry) => entry._toProtobuf())
                         : null,
             },
         };
