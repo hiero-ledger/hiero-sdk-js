@@ -13,12 +13,6 @@ echo "Flattening proto directory structure..."
 # Create temporary directory
 mkdir -p "$TEMP_DIR"
 
-# Check if files are already flattened (no subdirectories exist)
-if [ $(find "$PROTO_DIR" -mindepth 2 -name "*.proto" -type f | wc -l) -eq 0 ]; then
-    echo "  - Files are already flattened, skipping flattening process"
-    exit 0
-fi
-
 echo "  - Collecting all proto files..."
 
 # First, copy all files from subdirectories (mindepth 2) with prefixed names
@@ -71,29 +65,35 @@ update_imports_in_file() {
         # Extract the filename from the import statement
         import_file=$(echo "$import_line" | sed 's/import "\([^"]*\)";/\1/')
         
-        # Skip google imports and other external imports
-        if [[ "$import_file" == google/* ]] || [[ "$import_file" == */* ]]; then
-            continue
+        # Skip only google imports
+if [[ "$import_file" == google/* ]]; then
+    continue
+fi
+
+# Candidate flattened name for subdir imports
+flat_candidate="${import_file//\//_}"
+
+new_filename=""
+# Prefer exact flattened candidate if present
+if [[ -f "$PROTO_DIR/$flat_candidate" ]]; then
+    new_filename="$flat_candidate"
+else
+    # Fallback: search for a file that ends with _basename or exact basename
+    basename_file=$(basename "$import_file")
+    for proto_file in "$PROTO_DIR"/*.proto; do
+        f="$(basename "$proto_file")"
+        if [[ "$f" == *"_$basename_file" || "$f" == "$basename_file" ]]; then
+            new_filename="$f"
+            break
         fi
-        
-        # Find the new prefixed filename
-        new_filename=""
-        for proto_file in "$PROTO_DIR"/*.proto; do
-            if [[ -f "$proto_file" ]]; then
-                basename_file=$(basename "$proto_file")
-                if [[ "$basename_file" == *"_$import_file" ]] || [[ "$basename_file" == "$import_file" ]]; then
-                    new_filename="$basename_file"
-                    break
-                fi
-            fi
-        done
-        
-        # Update the import if we found a new filename
-        if [[ -n "$new_filename" ]] && [[ "$new_filename" != "$import_file" ]]; then
-            sed -i.tmp "s|import \"$import_file\";|import \"$new_filename\";|g" "$temp_file"
-            rm -f "$temp_file.tmp"
-            echo "    Updated import: $import_file -> $new_filename"
-        fi
+    done
+fi
+
+if [[ -n "$new_filename" && "$new_filename" != "$import_file" ]]; then
+    sed -i.tmp "s|import \"$import_file\";|import \"$new_filename\";|g" "$temp_file"
+    rm -f "$temp_file.tmp"
+    echo "    Updated import: $import_file -> $new_filename"
+fi
     done
     
     # Replace the original file with the updated one

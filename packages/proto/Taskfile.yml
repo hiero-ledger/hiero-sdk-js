@@ -19,7 +19,7 @@ tasks:
 
     install:submodules:
         vars:
-            commit: "7ca2f4e457a68fbc092edd17552bc5db7e032f6d" # v0.65.0
+            commit: "18cc64cd7d93fb99be73920d65966bdcbb69b8a9" # hiero-hooks commit on main
         cmds:
             - git submodule update --init --recursive --remote
             - |

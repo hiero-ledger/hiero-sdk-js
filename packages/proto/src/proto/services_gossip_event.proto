@@ -29,8 +29,8 @@ package com.hedera.hapi.platform.event;
  * limitations under the License.
  */
 
-import "services_event_core.proto";
-import "services_event_descriptor.proto";
+import "platform_event_event_core.proto";
+import "services_event_event_descriptor.proto";
 
 option java_package = "com.hedera.hapi.platform.event.legacy";
 // <<<pbj.java_package = "com.hedera.hapi.platform.event">>> This comment is special code for setting PBJ Compiler java package

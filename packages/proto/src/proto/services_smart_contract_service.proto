@@ -21,7 +21,7 @@ option java_package = "com.hederahashgraph.service.proto.java";
 import "services_transaction_response.proto";
 import "services_query.proto";
 import "services_response.proto";
-import "services_ethereum_transaction.proto";
+import "services_transaction.proto";
 
 /**
  * The Hedera Smart Contract Service (HSCS) provides an interface to an EVM
@@ -171,4 +171,9 @@ service SmartContractService {
      * is less than this "floor" amount.
      */
     rpc callEthereum (Transaction) returns (TransactionResponse);
+
+    /**
+     * Update zero or more slots of a lambda.
+     */
+    rpc lambdaSStore (Transaction) returns (TransactionResponse);
 }
