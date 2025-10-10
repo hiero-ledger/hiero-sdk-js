@@ -437,6 +437,7 @@ export default class Executable {
         if (error instanceof GrpcServiceError) {
             return (
                 error.status._code === GrpcStatus.Timeout._code ||
+                error.status._code === GrpcStatus.DeadlineExceeded._code ||
                 error.status._code === GrpcStatus.Unavailable._code ||
                 error.status._code === GrpcStatus.ResourceExhausted._code ||
                 error.status._code === GrpcStatus.GrpcWeb._code ||
@@ -699,7 +700,7 @@ export default class Executable {
                 // from blocking this request
                 const promises = [];
 
-                // If a grpc deadline is est, we should race it, otherwise the only thing in the
+                // If a grpc deadline is set, we should race it, otherwise the only thing in the
                 // list of promises will be the execution promise.
                 if (this._grpcDeadline != null) {
                     promises.push(
@@ -708,7 +709,11 @@ export default class Executable {
                             setTimeout(
                                 // eslint-disable-next-line ie11/no-loop-func
                                 () =>
-                                    reject(new Error("grpc deadline exceeded")),
+                                    reject(
+                                        new GrpcServiceError(
+                                            GrpcStatus.DeadlineExceeded,
+                                        ),
+                                    ),
                                 /** @type {number=} */ (this._grpcDeadline),
                             ),
                         ),
