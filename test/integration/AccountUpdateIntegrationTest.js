@@ -16,8 +16,7 @@ import LambdaEvmHook from "../../src/hooks/LambdaEvmHook.js";
 import EvmHookSpec from "../../src/hooks/EvmHookSpec.js";
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
 import HookExtensionPoint from "../../src/hooks/HookExtensionPoint.js";
-import LambdaStorageUpdate from "../../src/hooks/LambdaStorageUpdate.js";
-import LambdaStorageSlot from "../../src/hooks/LambdaStorageSlot.js";
+import { LambdaStorageSlot } from "../../src/hooks/LambdaStorageUpdate.js";
 
 describe("AccountUpdate", function () {
     let env;
@@ -124,23 +123,12 @@ describe("AccountUpdate", function () {
             const response = await (
                 await new AccountUpdateTransaction()
                     .setAccountId(accountId)
-                    .addHook(hookDetails)
+                    .addHookToCreate(hookDetails)
                     .freezeWith(env.client)
                     .sign(newKey)
             ).execute(env.client);
 
             await response.getReceipt(env.client);
-
-            // Then: the hook is successfully attached to the account
-            // Note: We can't directly verify hook attachment without additional query capabilities
-            // The test passes if the transaction succeeds without errors
-
-            await deleteAccount(env.client, newKey, (transaction) => {
-                transaction
-                    .setAccountId(accountId)
-                    .setTransferAccountId(env.client.operatorAccountId)
-                    .setTransactionId(TransactionId.generate(accountId));
-            });
         });
 
         it("should fail with HOOK_ID_REPEATED_IN_CREATION_DETAILS when duplicate hook IDs are used", async function () {
@@ -172,8 +160,8 @@ describe("AccountUpdate", function () {
                 await (
                     await new AccountUpdateTransaction()
                         .setAccountId(accountId)
-                        .addHook(hookDetails1)
-                        .addHook(hookDetails2)
+                        .addHookToCreate(hookDetails1)
+                        .addHookToCreate(hookDetails2)
                         .freezeWith(env.client)
                         .sign(newKey)
                 ).execute(env.client);
@@ -187,13 +175,6 @@ describe("AccountUpdate", function () {
             expect(errorStatus).to.be.eql(
                 Status.HookIdRepeatedInCreationDetails,
             );
-
-            await deleteAccount(env.client, newKey, (transaction) => {
-                transaction
-                    .setAccountId(accountId)
-                    .setTransferAccountId(env.client.operatorAccountId)
-                    .setTransactionId(TransactionId.generate(accountId));
-            });
         });
 
         it("should fail with HOOK_ID_IN_USE when attempting to add hook with existing ID", async function () {
@@ -213,31 +194,28 @@ describe("AccountUpdate", function () {
 
             // First, add a hook
             await (
-                await new AccountUpdateTransaction()
-                    .setAccountId(accountId)
-                    .addHook(hookDetails)
-                    .freezeWith(env.client)
-                    .sign(newKey)
-            ).execute(env.client);
-
-            // When: AccountUpdateTransaction attempts to add a hook with the same ID
-            const duplicateHookDetails = new HookCreationDetails({
-                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook,
-                hookId: 1, // Same ID as existing hook
-            });
+                await (
+                    await new AccountUpdateTransaction()
+                        .setAccountId(accountId)
+                        .addHookToCreate(hookDetails)
+                        .freezeWith(env.client)
+                        .sign(newKey)
+                ).execute(env.client)
+            ).getReceipt(env.client);
 
             let errorOccurred = false;
             let errorStatus = null;
 
             try {
                 await (
-                    await new AccountUpdateTransaction()
-                        .setAccountId(accountId)
-                        .addHook(duplicateHookDetails)
-                        .freezeWith(env.client)
-                        .sign(newKey)
-                ).execute(env.client);
+                    await (
+                        await new AccountUpdateTransaction()
+                            .setAccountId(accountId)
+                            .addHookToCreate(hookDetails)
+                            .freezeWith(env.client)
+                            .sign(newKey)
+                    ).execute(env.client)
+                ).getReceipt(env.client);
             } catch (error) {
                 errorOccurred = true;
                 errorStatus = error.status;
@@ -246,13 +224,6 @@ describe("AccountUpdate", function () {
             // Then: the transaction fails with HOOK_ID_IN_USE error
             expect(errorOccurred).to.be.true;
             expect(errorStatus).to.be.eql(Status.HookIdInUse);
-
-            await deleteAccount(env.client, newKey, (transaction) => {
-                transaction
-                    .setAccountId(accountId)
-                    .setTransferAccountId(env.client.operatorAccountId)
-                    .setTransactionId(TransactionId.generate(accountId));
-            });
         });
 
         it("should successfully add lambda EVM hook with initial storage updates", async function () {
@@ -264,11 +235,9 @@ describe("AccountUpdate", function () {
             const lambdaHook = new LambdaEvmHook({
                 spec: new EvmHookSpec().setContractId(testContractId),
                 storageUpdates: [
-                    new LambdaStorageUpdate({
-                        storageSlot: new LambdaStorageSlot(
-                            new Uint8Array([0x01, 0x02, 0x03, 0x04]),
-                        ),
-                    }),
+                    new LambdaStorageSlot(
+                        new Uint8Array([0x01, 0x02, 0x03, 0x04]),
+                    ),
                 ],
             });
 
@@ -281,23 +250,12 @@ describe("AccountUpdate", function () {
             const response = await (
                 await new AccountUpdateTransaction()
                     .setAccountId(accountId)
-                    .addHook(hookDetails)
+                    .addHookToCreate(hookDetails)
                     .freezeWith(env.client)
                     .sign(newKey)
             ).execute(env.client);
 
             await response.getReceipt(env.client);
-
-            // Then: the hook is attached and storage is initialized correctly
-            // Note: We can't directly verify storage initialization without additional query capabilities
-            // The test passes if the transaction succeeds without errors
-
-            await deleteAccount(env.client, newKey, (transaction) => {
-                transaction
-                    .setAccountId(accountId)
-                    .setTransferAccountId(env.client.operatorAccountId)
-                    .setTransactionId(TransactionId.generate(accountId));
-            });
         });
 
         it("should fail with HOOK_ID_IN_USE when attempting to add another hook with same ID", async function () {
@@ -320,7 +278,7 @@ describe("AccountUpdate", function () {
                 await (
                     await new AccountUpdateTransaction()
                         .setAccountId(accountId)
-                        .addHook(hookDetails)
+                        .addHookToCreate(hookDetails)
                         .freezeWith(env.client)
                         .sign(newKey)
                 ).execute(env.client)
@@ -334,13 +292,12 @@ describe("AccountUpdate", function () {
                     await (
                         await new AccountUpdateTransaction()
                             .setAccountId(accountId)
-                            .addHook(hookDetails)
+                            .addHookToCreate(hookDetails)
                             .freezeWith(env.client)
                             .sign(newKey)
                     ).execute(env.client)
                 ).getReceipt(env.client);
             } catch (error) {
-                console.log(error);
                 errorOccurred = true;
                 errorStatus = error.status;
             }
@@ -369,7 +326,7 @@ describe("AccountUpdate", function () {
             await (
                 await new AccountUpdateTransaction()
                     .setAccountId(accountId)
-                    .addHook(hookDetails)
+                    .addHookToCreate(hookDetails)
                     .freezeWith(env.client)
                     .sign(newKey)
             ).execute(env.client);
@@ -378,7 +335,7 @@ describe("AccountUpdate", function () {
             const response = await (
                 await new AccountUpdateTransaction()
                     .setAccountId(accountId)
-                    .deleteHook(1)
+                    .addHookToDelete(1)
                     .freezeWith(env.client)
                     .sign(newKey)
             ).execute(env.client);
@@ -389,13 +346,6 @@ describe("AccountUpdate", function () {
             // Then: the hook is successfully removed from the account
             // Note: We can't directly verify hook removal without additional query capabilities
             // The test passes if the transaction succeeds without errors
-
-            await deleteAccount(env.client, newKey, (transaction) => {
-                transaction
-                    .setAccountId(accountId)
-                    .setTransferAccountId(env.client.operatorAccountId)
-                    .setTransactionId(TransactionId.generate(accountId));
-            });
         });
 
         it("should fail with HOOK_NOT_FOUND when attempting to delete non-existent hook", async function () {
@@ -417,7 +367,7 @@ describe("AccountUpdate", function () {
             await (
                 await new AccountUpdateTransaction()
                     .setAccountId(accountId)
-                    .addHook(hookDetails)
+                    .addHookToCreate(hookDetails)
                     .freezeWith(env.client)
                     .sign(newKey)
             ).execute(env.client);
@@ -431,7 +381,7 @@ describe("AccountUpdate", function () {
                     await (
                         await new AccountUpdateTransaction()
                             .setAccountId(accountId)
-                            .deleteHook(999) // Non-existent hook ID
+                            .addHookToDelete(999) // Non-existent hook ID
                             .freezeWith(env.client)
                             .sign(newKey)
                     ).execute(env.client)
@@ -469,8 +419,8 @@ describe("AccountUpdate", function () {
                     await (
                         await new AccountUpdateTransaction()
                             .setAccountId(accountId)
-                            .addHook(hookDetails)
-                            .deleteHook(1) // Same ID as the hook being added
+                            .addHookToCreate(hookDetails)
+                            .addHookToDelete(1) // Same ID as the hook being added
                             .freezeWith(env.client)
                             .sign(newKey)
                     ).execute(env.client)
@@ -483,13 +433,6 @@ describe("AccountUpdate", function () {
             // Then: the transaction fails with HOOK_NOT_FOUND error
             expect(errorOccurred).to.be.true;
             expect(errorStatus).to.be.eql(Status.HookNotFound);
-
-            await deleteAccount(env.client, newKey, (transaction) => {
-                transaction
-                    .setAccountId(accountId)
-                    .setTransferAccountId(env.client.operatorAccountId)
-                    .setTransactionId(TransactionId.generate(accountId));
-            });
         });
 
         //  this doesn't seem to be a valid test case
@@ -513,7 +456,7 @@ describe("AccountUpdate", function () {
                 await (
                     await new AccountUpdateTransaction()
                         .setAccountId(accountId)
-                        .addHook(hookDetails)
+                        .addHookToCreate(hookDetails)
                         .freezeWith(env.client)
                         .sign(newKey)
                 ).execute(env.client)
@@ -524,7 +467,7 @@ describe("AccountUpdate", function () {
                 await (
                     await new AccountUpdateTransaction()
                         .setAccountId(accountId)
-                        .deleteHook(1)
+                        .addHookToDelete(1)
                         .freezeWith(env.client)
                         .sign(newKey)
                 ).execute(env.client)
@@ -539,7 +482,7 @@ describe("AccountUpdate", function () {
                     await (
                         await new AccountUpdateTransaction()
                             .setAccountId(accountId)
-                            .deleteHook(1) // Same ID as previously deleted hook
+                            .addHookToDelete(1) // Same ID as previously deleted hook
                             .freezeWith(env.client)
                             .sign(newKey)
                     ).execute(env.client)
