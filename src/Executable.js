@@ -527,6 +527,11 @@ export default class Executable {
                 requestTimeout != null ? requestTimeout : client.requestTimeout;
         }
 
+        // If the grpc deadline is not set on the request, use the default value from client
+        if (this._grpcDeadline == null) {
+            this._grpcDeadline = client.grpcDeadline;
+        }
+
         // Some request need to perform additional requests before the executing
         // such as paid queries need to fetch the cost of the query before
         // finally executing the actual query.
