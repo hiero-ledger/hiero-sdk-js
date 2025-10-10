@@ -72,7 +72,7 @@ export default class AddressBookQueryWeb extends Query {
     /**
      * @param {object} props
      * @param {FileId | string} [props.fileId]
-     * @param {number} [props.limit] - Page size limit (defaults to DEFAULT_PAGE_SIZE for optimal performance)
+     * @param {number} [props.limit] - Page size limit (defaults to 25 for optimal performance)
      */
     constructor(props = {}) {
         super();
