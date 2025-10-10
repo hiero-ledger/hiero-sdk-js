@@ -9,7 +9,6 @@ import {
     Hbar,
     Status,
     AccountId,
-    PrivateKey,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { decode } from "../../src/encoding/hex.js";
@@ -873,19 +872,6 @@ describe("ContractUpdate", function () {
             // Then: the transaction fails with HOOK_DELETED error
             expect(errorOccurred).to.be.true;
             expect(errorStatus).to.be.eql(Status.HookDeleted);
-
-            await (
-                await new ContractDeleteTransaction()
-                    .setContractId(contract)
-                    .setTransferAccountId(env.client.operatorAccountId)
-                    .execute(env.client)
-            ).getReceipt(env.client);
-
-            await (
-                await new FileDeleteTransaction()
-                    .setFileId(file)
-                    .execute(env.client)
-            ).getReceipt(env.client);
         });
     });
 
