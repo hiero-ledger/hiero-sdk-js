@@ -55,7 +55,7 @@ export default class ContractUpdateTransaction extends Transaction {
      * @param {boolean} [props.declineStakingReward]
      * @param {AccountId} [props.autoRenewAccountId]
      * @param {import("../hooks/HookCreationDetails.js").default[]} [props.hooksToBeCreated]
-     * @param {number[]} [props.hooksToBeDeleted]
+     * @param {Long[]} [props.hooksToBeDeleted]
      */
     constructor(props = {}) {
         super();
@@ -139,7 +139,7 @@ export default class ContractUpdateTransaction extends Transaction {
 
         /**
          * @private
-         * @type {number[]}
+         * @type {Long[]}
          */
         this._hooksToBeDeleted = [];
 
@@ -621,7 +621,7 @@ export default class ContractUpdateTransaction extends Transaction {
 
     /**
      *
-     * @param {number} hook
+     * @param {Long} hook
      * @returns {this}
      */
     addHookToDelete(hook) {
@@ -630,18 +630,16 @@ export default class ContractUpdateTransaction extends Transaction {
     }
 
     /**
-     * @param {number[]} hookIds
+     * @param {Long[]} hookIds
      * @returns {this}
      */
     setHooksToDelete(hookIds) {
-        this._hooksToBeDeleted = this._hooksToBeDeleted.filter(
-            (h) => !hookIds.includes(h), // should it be 0, is there a way it can be null/undefined?
-        );
+        this._hooksToBeDeleted = hookIds;
         return this;
     }
 
     /**
-     * @returns {number[]}
+     * @returns {Long[]}
      */
     get hooksToDelete() {
         return this._hooksToBeDeleted;
@@ -722,12 +720,13 @@ export default class ContractUpdateTransaction extends Transaction {
                         ? Proto.proto.AccountID.create()
                         : this._autoRenewAccountId._toProtobuf()
                     : null,
-            // @ts-ignore - hook_ids_to_delete field exists in protobuf but not in TypeScript definitions
-            hook_ids_to_delete: this._hooksToBeDeleted,
-            // @ts-ignore - hook_creation_details field exists in protobuf but not in TypeScript definitions
-            hook_creation_details: this._hooksToBeCreated.map((hook) =>
-                hook._toProtobuf(),
-            ),
+
+            hookIdsToDelete:
+                this._hooksToBeDeleted != null ? this._hooksToBeDeleted : null,
+            hookCreationDetails:
+                this._hooksToBeCreated != null
+                    ? this._hooksToBeCreated.map((hook) => hook._toProtobuf())
+                    : null,
         };
     }
 

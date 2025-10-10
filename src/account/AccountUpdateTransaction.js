@@ -45,7 +45,7 @@ export default class AccountUpdateTransaction extends Transaction {
      * @param {Long | number} [props.stakedNodeId]
      * @param {?boolean} [props.declineStakingReward]
      * @param {import("../hooks/HookCreationDetails.js").default[]} [props.hooksToBeCreated]
-     * @param {number[]} [props.hooksToBeDeleted]
+     * @param {Long[]} [props.hooksToBeDeleted]
      */
     constructor(props = {}) {
         super();
@@ -130,7 +130,7 @@ export default class AccountUpdateTransaction extends Transaction {
 
         /**
          * @private
-         * @type {number[]}
+         * @type {Long[]}
          */
         this._hooksToBeDeleted = [];
 
@@ -182,11 +182,11 @@ export default class AccountUpdateTransaction extends Transaction {
         }
 
         if (props.hooksToBeCreated != null) {
-            this.setHooks(props.hooksToBeCreated);
+            this.setHooksToCreate(props.hooksToBeCreated);
         }
 
         if (props.hooksToBeDeleted != null) {
-            this.deleteHooks(props.hooksToBeDeleted);
+            this.setHooksToDelete(props.hooksToBeDeleted);
         }
     }
 
@@ -582,7 +582,7 @@ export default class AccountUpdateTransaction extends Transaction {
 
     /**
      *
-     * @param {number} hook
+     * @param {Long} hook
      * @returns {this}
      */
     addHookToDelete(hook) {
@@ -591,18 +591,16 @@ export default class AccountUpdateTransaction extends Transaction {
     }
 
     /**
-     * @param {number[]} hookIds
+     * @param {Long[]} hookIds
      * @returns {this}
      */
     setHooksToDelete(hookIds) {
-        this._hooksToBeDeleted = this._hooksToBeDeleted.filter(
-            (h) => !hookIds.includes(h), // should it be 0, is there a way it can be null/undefined?
-        );
+        this._hooksToBeDeleted = hookIds;
         return this;
     }
 
     /**
-     * @returns {number[]}
+     * @returns {Long[]}
      */
     get hooksToDelete() {
         return this._hooksToBeDeleted;
@@ -689,9 +687,7 @@ export default class AccountUpdateTransaction extends Transaction {
                     ? { value: this.declineStakingRewards }
                     : null,
 
-            hookIdsToDelete: this._hooksToBeDeleted.map((hook) =>
-                Long.fromInt(hook),
-            ),
+            hookIdsToDelete: this._hooksToBeDeleted,
             hookCreationDetails: this._hooksToBeCreated.map((hook) =>
                 hook._toProtobuf(),
             ),
