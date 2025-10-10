@@ -14,10 +14,7 @@ import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
 import HookExtensionPoint from "../../src/hooks/HookExtensionPoint.js";
 import LambdaEvmHook from "../../src/hooks/LambdaEvmHook.js";
 
-import {
-    LambdaStorageUpdate,
-    LambdaStorageSlot,
-} from "../../src/hooks/LambdaStorageUpdate.js";
+import { LambdaStorageSlot } from "../../src/hooks/LambdaStorageUpdate.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { deleteAccount } from "./utils/Fixtures.js";
 import { decode } from "../../src/encoding/hex.js";
