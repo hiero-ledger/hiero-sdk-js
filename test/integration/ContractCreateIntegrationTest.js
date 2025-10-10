@@ -13,8 +13,7 @@ import EvmHookSpec from "../../src/hooks/EvmHookSpec.js";
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
 import HookExtensionPoint from "../../src/hooks/HookExtensionPoint.js";
 import LambdaEvmHook from "../../src/hooks/LambdaEvmHook.js";
-import LambdaStorageSlot from "../../src/hooks/LambdaStorageSlot.js";
-import LambdaStorageUpdate from "../../src/hooks/LambdaStorageUpdate.js";
+import { LambdaStorageSlot } from "../../src/hooks/LambdaStorageUpdate.js";
 import PrivateKey from "../../src/PrivateKey.js";
 import { decode } from "../../src/encoding/hex.js";
 
@@ -254,11 +253,9 @@ describe("ContractCreate", function () {
             const lambdaHook = new LambdaEvmHook({
                 spec: new EvmHookSpec().setContractId(contractId),
                 storageUpdates: [
-                    new LambdaStorageUpdate({
-                        storageSlot: new LambdaStorageSlot(
-                            new Uint8Array([0x01, 0x02, 0x03, 0x04]),
-                        ),
-                    }),
+                    new LambdaStorageSlot(
+                        new Uint8Array([0x01, 0x02, 0x03, 0x04]),
+                    ),
                 ],
             });
 
@@ -285,11 +282,9 @@ describe("ContractCreate", function () {
 
             const lambdaHook = new LambdaEvmHook({
                 storageUpdates: [
-                    new LambdaStorageUpdate({
-                        storageSlot: new LambdaStorageSlot(
-                            new Uint8Array([0x01, 0x02, 0x03, 0x04]),
-                        ),
-                    }),
+                    new LambdaStorageSlot(
+                        new Uint8Array([0x01, 0x02, 0x03, 0x04]),
+                    ),
                 ],
             });
 
@@ -308,7 +303,6 @@ describe("ContractCreate", function () {
                         .execute(env.client)
                 ).getReceipt(env.client);
             } catch (error) {
-                console.log(error);
                 err = error
                     .toString()
                     .includes(Status.InvalidHookCreationSpec.toString());
@@ -375,11 +369,9 @@ describe("ContractCreate", function () {
 
             const lambdaHook = new LambdaEvmHook({
                 storageUpdates: [
-                    new LambdaStorageUpdate({
-                        storageSlot: new LambdaStorageSlot(
-                            new Uint8Array([0x01, 0x02, 0x03, 0x04]),
-                        ),
-                    }),
+                    new LambdaStorageSlot(
+                        new Uint8Array([0x01, 0x02, 0x03, 0x04]),
+                    ),
                 ],
                 spec: new EvmHookSpec().setContractId(contractId),
             });
