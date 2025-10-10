@@ -195,11 +195,11 @@ export default class ContractUpdateTransaction extends Transaction {
         }
 
         if (props.hooksToBeCreated != null) {
-            this.setHooks(props.hooksToBeCreated);
+            this.setHooksToCreate(props.hooksToBeCreated);
         }
 
         if (props.hooksToBeDeleted != null) {
-            this.deleteHooks(props.hooksToBeDeleted);
+            this.setHooksToDelete(props.hooksToBeDeleted);
         }
     }
 
@@ -598,7 +598,7 @@ export default class ContractUpdateTransaction extends Transaction {
      * @param {import("../hooks/HookCreationDetails.js").default} hook
      * @returns {this}
      */
-    addHook(hook) {
+    addHookToCreate(hook) {
         this._hooksToBeCreated.push(hook);
         return this;
     }
@@ -607,7 +607,7 @@ export default class ContractUpdateTransaction extends Transaction {
      * @param {import("../hooks/HookCreationDetails.js").default[]} hooks
      * @returns {this}
      */
-    setHooks(hooks) {
+    setHooksToCreate(hooks) {
         this._hooksToBeCreated = hooks;
         return this;
     }
@@ -624,7 +624,7 @@ export default class ContractUpdateTransaction extends Transaction {
      * @param {number} hook
      * @returns {this}
      */
-    deleteHook(hook) {
+    addHookToDelete(hook) {
         this._hooksToBeDeleted.push(hook);
         return this;
     }
@@ -633,7 +633,7 @@ export default class ContractUpdateTransaction extends Transaction {
      * @param {number[]} hookIds
      * @returns {this}
      */
-    deleteHooks(hookIds) {
+    setHooksToDelete(hookIds) {
         this._hooksToBeDeleted = this._hooksToBeDeleted.filter(
             (h) => !hookIds.includes(h), // should it be 0, is there a way it can be null/undefined?
         );
@@ -726,7 +726,7 @@ export default class ContractUpdateTransaction extends Transaction {
             hook_ids_to_delete: this._hooksToBeDeleted,
             // @ts-ignore - hook_creation_details field exists in protobuf but not in TypeScript definitions
             hook_creation_details: this._hooksToBeCreated.map((hook) =>
-                hook.toProtobuf(),
+                hook._toProtobuf(),
             ),
         };
     }

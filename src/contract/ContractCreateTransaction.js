@@ -694,7 +694,7 @@ export default class ContractCreateTransaction extends Transaction {
                 this._autoRenewAccountId != null
                     ? this._autoRenewAccountId._toProtobuf()
                     : null,
-            hookCreationDetails: this.hooks.map((hook) => hook.toProtobuf()),
+            hookCreationDetails: this.hooks.map((hook) => hook._toProtobuf()),
         };
     }
 

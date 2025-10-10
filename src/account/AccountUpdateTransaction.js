@@ -559,7 +559,7 @@ export default class AccountUpdateTransaction extends Transaction {
      * @param {import("../hooks/HookCreationDetails.js").default} hook
      * @returns {this}
      */
-    addHook(hook) {
+    addHookToCreate(hook) {
         this._hooksToBeCreated.push(hook);
         return this;
     }
@@ -568,7 +568,7 @@ export default class AccountUpdateTransaction extends Transaction {
      * @param {import("../hooks/HookCreationDetails.js").default[]} hooks
      * @returns {this}
      */
-    setHooks(hooks) {
+    setHooksToCreate(hooks) {
         this._hooksToBeCreated = hooks;
         return this;
     }
@@ -585,7 +585,7 @@ export default class AccountUpdateTransaction extends Transaction {
      * @param {number} hook
      * @returns {this}
      */
-    deleteHook(hook) {
+    addHookToDelete(hook) {
         this._hooksToBeDeleted.push(hook);
         return this;
     }
@@ -594,7 +594,7 @@ export default class AccountUpdateTransaction extends Transaction {
      * @param {number[]} hookIds
      * @returns {this}
      */
-    deleteHooks(hookIds) {
+    setHooksToDelete(hookIds) {
         this._hooksToBeDeleted = this._hooksToBeDeleted.filter(
             (h) => !hookIds.includes(h), // should it be 0, is there a way it can be null/undefined?
         );
@@ -693,7 +693,7 @@ export default class AccountUpdateTransaction extends Transaction {
                 Long.fromInt(hook),
             ),
             hookCreationDetails: this._hooksToBeCreated.map((hook) =>
-                hook.toProtobuf(),
+                hook._toProtobuf(),
             ),
         };
     }

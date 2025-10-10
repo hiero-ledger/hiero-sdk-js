@@ -665,7 +665,7 @@ export default class AccountCreateTransaction extends Transaction {
                     : null,
             stakedNodeId: this.stakedNodeId,
             declineReward: this.declineStakingRewards,
-            hookCreationDetails: this._hooks.map((hook) => hook.toProtobuf()),
+            hookCreationDetails: this._hooks.map((hook) => hook._toProtobuf()),
             alias,
         };
     }
