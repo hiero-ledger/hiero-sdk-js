@@ -1,10 +1,10 @@
-import { setTimeout } from "timers/promises";
 import {
     TopicMessageQuery,
     TopicCreateTransaction,
     TopicMessageSubmitTransaction,
     TopicDeleteTransaction,
 } from "../../src/exports.js";
+import { wait } from "../../src/util.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 
 describe("TopicMessageQuery", function () {
@@ -31,19 +31,17 @@ describe("TopicMessageQuery", function () {
         let finished = false;
 
         // wait for mirror node to receive the new topic
-        await setTimeout(5000);
+        await wait(5000);
         new TopicMessageQuery()
             .setTopicId(topicId)
             .setLimit(1)
             // eslint-disable-next-line no-unused-vars
             .subscribe(env.client, (topic, _) => {
                 finished = true;
-                expectedContents = Buffer.from(topic.contents).toString(
-                    "utf-8",
-                );
+                expectedContents = new TextDecoder().decode(topic.contents);
             });
 
-        await setTimeout(2000);
+        await wait(2000);
         await (
             await new TopicMessageSubmitTransaction()
                 .setTopicId(topicId)
@@ -56,7 +54,7 @@ describe("TopicMessageQuery", function () {
             .execute(env.client);
 
         //NOSONAR
-        await setTimeout(5000);
+        await wait(5000);
 
         if (!finished) {
             throw new Error("Did not receive message from query");

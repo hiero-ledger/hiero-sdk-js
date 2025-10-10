@@ -7,11 +7,15 @@ import {
     AccountId,
     TokenId,
 } from "../../src/index.js";
+import PendingAirdropRecord from "../../src/token/PendingAirdropRecord.js";
+import PendingAirdropId from "../../src/token/PendingAirdropId.js";
 import TokenTransfer from "../../src/token/TokenTransfer.js";
 import TokenAssociation from "../../src/token/TokenAssociation.js";
 import TokenTransferMap from "../../src/account/TokenTransferMap.js";
 import TokenNFTTransferMap from "../../src/account/TokenNftTransferMap.js";
 import * as hex from "../../src/encoding/hex.js";
+import Long from "long";
+import BigNumber from "bignumber.js";
 
 const HEX_BYTES =
     "1a93020a3b081612070800100018de092a260a110801100c1a0b0880ae99a4ffffffffff0112110801100f1a0b08c0bd98a4ffffffffff0138004200580078001230cac44f2db045ba441f3fbc295217f2eb0f956293d28b3401578f6160e66f4e47ea87952d91c4b1cb5bda6447823b979a1a0c08f3fcb495061083d9be900322190a0c08e8fcb495061098f09cf20112070800100018850918002a0030bee8f013526c0a0f0a0608001000180510d0df820118000a0f0a0608001000186210f08dff1e18000a100a070800100018a00610def1ef0318000a100a070800100018a10610def1ef0318000a110a070800100018850910fbf8b7e10718000a110a070800100018de091080a8d6b90718008a0100aa0100";
@@ -84,5 +88,153 @@ describe("TransactionRecord", function () {
         const actualJSON = JSON.parse(JSON.stringify(newRecord));
 
         expect(actualJSON).to.deep.equal(expectedJSON);
+    });
+
+    it("should handle AssessedCustomFee with BigNumber amount", function () {
+        const tokenID = TokenId.fromString("0.0.123");
+        const accID = AccountId.fromString("0.0.1246");
+        const amount = new BigNumber("1000.5");
+
+        const assessedCustomFee = new AssessedCustomFee({
+            tokenId: tokenID,
+            feeCollectorAccountId: accID,
+            amount: amount,
+            payerAccountIds: [accID],
+        });
+
+        expect(assessedCustomFee.tokenId.toString()).to.equal(
+            tokenID.toString(),
+        );
+        expect(assessedCustomFee.feeCollectorAccountId.toString()).to.equal(
+            accID.toString(),
+        );
+        expect(assessedCustomFee.amount.toString()).to.equal("1000");
+        expect(assessedCustomFee.payerAccountIds[0].toString()).to.equal(
+            accID.toString(),
+        );
+    });
+
+    it("should handle AssessedCustomFee with bigint amount", function () {
+        const tokenID = TokenId.fromString("0.0.123");
+        const accID = AccountId.fromString("0.0.1246");
+        const amount = 2000n;
+
+        const assessedCustomFee = new AssessedCustomFee({
+            tokenId: tokenID,
+            feeCollectorAccountId: accID,
+            amount: amount,
+            payerAccountIds: [accID],
+        });
+
+        expect(assessedCustomFee.tokenId.toString()).to.equal(
+            tokenID.toString(),
+        );
+        expect(assessedCustomFee.feeCollectorAccountId.toString()).to.equal(
+            accID.toString(),
+        );
+        expect(assessedCustomFee.amount.toString()).to.equal("2000");
+        expect(assessedCustomFee.payerAccountIds[0].toString()).to.equal(
+            accID.toString(),
+        );
+    });
+
+    it("should handle AssessedCustomFee with Long amount", function () {
+        const tokenID = TokenId.fromString("0.0.123");
+        const accID = AccountId.fromString("0.0.1246");
+        const amount = Long.fromNumber(3000);
+
+        const assessedCustomFee = new AssessedCustomFee({
+            tokenId: tokenID,
+            feeCollectorAccountId: accID,
+            amount: amount,
+            payerAccountIds: [accID],
+        });
+
+        expect(assessedCustomFee.tokenId.toString()).to.equal(
+            tokenID.toString(),
+        );
+        expect(assessedCustomFee.feeCollectorAccountId.toString()).to.equal(
+            accID.toString(),
+        );
+        expect(assessedCustomFee.amount.equals(amount)).to.be.true;
+        expect(assessedCustomFee.payerAccountIds[0].toString()).to.equal(
+            accID.toString(),
+        );
+    });
+
+    it("should handle PendingAirdropRecord with BigNumber amount", function () {
+        const airdropId = new PendingAirdropId({
+            senderAccountId: AccountId.fromString("0.0.1"),
+            tokenId: TokenId.fromString("0.0.123"),
+            receiverAccountId: AccountId.fromString("0.0.2"),
+        });
+        const amount = new BigNumber("5000.7");
+
+        const pendingAirdropRecord = new PendingAirdropRecord({
+            airdropId: airdropId,
+            amount: amount,
+        });
+
+        expect(pendingAirdropRecord.airdropId.toString()).to.equal(
+            airdropId.toString(),
+        );
+        expect(pendingAirdropRecord.amount.toString()).to.equal("5000");
+    });
+
+    it("should handle PendingAirdropRecord with bigint amount", function () {
+        const airdropId = new PendingAirdropId({
+            senderAccountId: AccountId.fromString("0.0.1"),
+            tokenId: TokenId.fromString("0.0.123"),
+            receiverAccountId: AccountId.fromString("0.0.2"),
+        });
+        const amount = 6000n;
+
+        const pendingAirdropRecord = new PendingAirdropRecord({
+            airdropId: airdropId,
+            amount: amount,
+        });
+
+        expect(pendingAirdropRecord.airdropId.toString()).to.equal(
+            airdropId.toString(),
+        );
+        expect(pendingAirdropRecord.amount.toString()).to.equal("6000");
+    });
+
+    it("should handle PendingAirdropRecord with Long amount", function () {
+        const airdropId = new PendingAirdropId({
+            senderAccountId: AccountId.fromString("0.0.1"),
+            tokenId: TokenId.fromString("0.0.123"),
+            receiverAccountId: AccountId.fromString("0.0.2"),
+        });
+        const amount = Long.fromNumber(7000);
+
+        const pendingAirdropRecord = new PendingAirdropRecord({
+            airdropId: airdropId,
+            amount: amount,
+        });
+
+        expect(pendingAirdropRecord.airdropId.toString()).to.equal(
+            airdropId.toString(),
+        );
+        expect(pendingAirdropRecord.amount.equals(amount)).to.be.true;
+    });
+
+    it("should handle PendingAirdropRecord with number amount", function () {
+        const airdropId = new PendingAirdropId({
+            senderAccountId: AccountId.fromString("0.0.1"),
+            tokenId: TokenId.fromString("0.0.123"),
+            receiverAccountId: AccountId.fromString("0.0.2"),
+        });
+        const amount = 8000;
+
+        const pendingAirdropRecord = new PendingAirdropRecord({
+            airdropId: airdropId,
+            amount: amount,
+        });
+
+        expect(pendingAirdropRecord.airdropId.toString()).to.equal(
+            airdropId.toString(),
+        );
+        expect(pendingAirdropRecord.amount.toNumber()).to.equal(amount);
     });
 });

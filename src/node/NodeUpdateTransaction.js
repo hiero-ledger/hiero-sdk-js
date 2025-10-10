@@ -6,6 +6,7 @@ import Transaction, {
     TRANSACTION_REGISTRY,
 } from "../transaction/Transaction.js";
 import ServiceEndpoint from "./ServiceEndpoint.js";
+import Long from "long";
 
 const DESCRIPTION_MAX_LENGTH = 100;
 const GOSSIP_ENDPOINTS_MAX_LENGTH = 10;
@@ -221,7 +222,24 @@ export default class NodeUpdateTransaction extends Transaction {
      */
     setNodeId(nodeId) {
         this._requireNotFrozen();
-        this._nodeId = nodeId;
+
+        if (nodeId == null) {
+            this._nodeId = null;
+            return this;
+        }
+
+        // Convert to Long if it's a plain number
+        const longNodeId = Long.isLong(nodeId)
+            ? nodeId
+            : Long.fromValue(nodeId);
+
+        if (longNodeId.toNumber() < 0) {
+            throw new Error(
+                "NodeUpdateTransaction: 'nodeId' must be positive.",
+            );
+        }
+
+        this._nodeId = longNodeId;
 
         return this;
     }

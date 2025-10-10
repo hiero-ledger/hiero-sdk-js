@@ -31,6 +31,9 @@ export const MAINNET = {
     "node29.swirldslabs.com:443": new AccountId(32),
     "node30.swirldslabs.com:443": new AccountId(33),
     "node31.swirldslabs.com:443": new AccountId(34),
+    // "node32.swirldslabs.com:443": new AccountId(35), - temporarily disabled
+    "node33.swirldslabs.com:443": new AccountId(36),
+    "node34.swirldslabs.com:443": new AccountId(37),
 };
 
 export const WEB_TESTNET = {
@@ -51,6 +54,22 @@ export const WEB_PREVIEWNET = {
     "previewnet-node04-00-grpc.hedera.com:443": new AccountId(7),
     "previewnet-node05-00-grpc.hedera.com:443": new AccountId(8),
     "previewnet-node06-00-grpc.hedera.com:443": new AccountId(9),
+};
+
+export const NATIVE_TESTNET = {
+    "testnet-node00-00-grpc.hedera.com:443": new AccountId(3),
+};
+
+export const NATIVE_PREVIEWNET = {
+    "previewnet-node00-00-grpc.hedera.com:443": new AccountId(3),
+};
+
+export const LocalNodeNetwork = {
+    "127.0.0.1:50211": new AccountId(3),
+};
+
+export const LocalNodeWebNetwork = {
+    "localhost:8080": new AccountId(3),
 };
 
 /**
@@ -195,6 +214,11 @@ export const MirrorNetwork = {
     LOCAL_NODE: ["127.0.0.1:5600"],
 };
 
+export const WebMirrorNetwork = {
+    ...MirrorNetwork,
+    LOCAL_NODE: ["127.0.0.1:5551"],
+};
+
 export const WebNetwork = {
     /**
      * @param {string} name
@@ -211,6 +235,9 @@ export const WebNetwork = {
             case "previewnet":
                 return WebNetwork.PREVIEWNET;
 
+            case "local-node":
+                return WebNetwork.LOCAL_NODE;
+
             default:
                 throw new Error(`unknown network name: ${name}`);
         }
@@ -219,4 +246,5 @@ export const WebNetwork = {
     MAINNET: MAINNET,
     TESTNET: WEB_TESTNET,
     PREVIEWNET: WEB_PREVIEWNET,
+    LOCAL_NODE: LocalNodeWebNetwork,
 };

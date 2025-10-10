@@ -15,8 +15,8 @@ import {
     TransactionReceiptQuery,
     TopicInfoQuery,
 } from "../../src/index.js";
+import { wait } from "../../src/util.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
-import { setTimeout } from "timers/promises";
 
 const retryCountMap = new Map();
 
@@ -28,7 +28,7 @@ describe.skip("BatchTransaction", function () {
         env = await IntegrationTestEnv.new();
         const testName = expect.getState().currentTestName;
         const backoffMs = getBackoffBasedOnAttempt(testName);
-        await setTimeout(backoffMs);
+        await wait(backoffMs);
     });
 
     it(
@@ -144,9 +144,15 @@ describe.skip("BatchTransaction", function () {
     it(
         "blacklisted inner transaction should throw an error",
         async function () {
+            const fileHashBytes = new Uint8Array(
+                "1723904587120938954702349857"
+                    .match(/.{1,2}/g)
+                    .map((byte) => parseInt(byte, 16)),
+            );
+
             const freezeTransaction = await new FreezeTransaction()
                 .setFileId(FileId.fromString("4.5.6"))
-                .setFileHash(Buffer.from("1723904587120938954702349857", "hex"))
+                .setFileHash(fileHashBytes)
                 .setStartTime(new Date())
                 .setFreezeType(FreezeType.FreezeOnly)
                 .batchify(env.client, env.operatorKey);

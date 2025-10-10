@@ -1,6 +1,6 @@
 version: "3"
 
-silent: true
+silent: false
 
 tasks:
     default:
@@ -44,6 +44,14 @@ tasks:
             - echo "Protobufs moved successfully!"
             - task "delete:submodule"
 
+    flatten:protobufs:
+        after:
+            - "move:protobufs"
+        desc: "Flatten proto directory structure to src/proto/* and fix imports"
+        cmds:
+            - chmod +x scripts/flatten-protos.sh
+            - ./scripts/flatten-protos.sh
+
     delete:submodule:
         cmds:
             - find src/services -mindepth 1 -delete
@@ -54,7 +62,8 @@ tasks:
             - "install:submodules"
         cmds:
             - task "move:protobufs"
-            - pnpm i > /dev/null
+            - task "flatten:protobufs"
+            - pnpm i
 
     build:
         deps:
@@ -66,13 +75,13 @@ tasks:
         cmds:
             - npx pbjs -r hashgraph -t static-module -w es6 -p=src/proto --force-long --no-beautify --no-convert --no-delimited --no-verify -o src/proto.js src/proto/**/*.proto
             - npx pbts -n hashgraph -o src/proto.d.ts src/proto.js
-            - perl -pi -e "s#(?<!api\.)proto\.#hashgraph.proto.#g" src/proto.d.ts
+            - perl -pi -e 's#(?<!api\.)proto\.#hashgraph.proto.#g' src/proto.d.ts
             - task: format
             - task: lint
             - npx babel src -d lib
-            - npx copyfiles -u 1 src/index.d.ts src/proto.d.ts lib/ > /dev/null
+            - npx copyfiles -u 1 src/index.d.ts src/proto.d.ts lib/
               # This is necessary to correctly run browser tests with an unpublished proto package
-            - npx yalc publish > /dev/null
+            - npx yalc publish
 
     clean:
         cmds:
@@ -80,7 +89,7 @@ tasks:
 
     format:
         cmds:
-            - npx prettier "*.json" "src/*.js" --write > /dev/null
+            - npx prettier "*.json" "src/*.js" --write
 
     lint:
         deps:
@@ -94,7 +103,7 @@ tasks:
 
     "lint:format":
         cmds:
-            - npx prettier "*.json" "src/*.js" --check > /dev/null
+            - npx prettier "*.json" "src/*.js" --check
 
     "lint:js":
         cmds:
@@ -121,13 +130,14 @@ tasks:
                 git checkout {{.stag}}
                 )
             - task "move:protobufs"
-            - pnpm i > /dev/null
+            - task "flatten:protobufs"
+            - pnpm i
             - task "build:standalone"
             - echo "Successfully updated protobufs to {{.proto}}"
 
     publish:
         preconditions:
-            - "! grep '\".*\": \"\\(link\\|file\\):.*\"' package.json > /dev/null"
+            - "! grep '\".*\": \"\\(link\\|file\\):.*\"' package.json"
         deps:
             - "test:release"
         cmds:

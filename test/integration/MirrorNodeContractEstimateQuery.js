@@ -1,10 +1,10 @@
-import { setTimeout } from "timers/promises";
 import {
     MirrorNodeContractCallQuery,
     ContractCreateTransaction,
     FileCreateTransaction,
     ContractFunctionParameters,
 } from "../../src/exports.js";
+import { wait } from "../../src/util.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 
 /**
@@ -35,7 +35,7 @@ describe.skip("MirrorNodeContractCallQuery", function () {
         ).getReceipt(env.client);
 
         // wait 5 seconds for MN to update
-        await setTimeout(10000);
+        await wait(10000);
 
         const result = await new MirrorNodeContractCallQuery()
             .setContractId(contractId)

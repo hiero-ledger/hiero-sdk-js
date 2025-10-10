@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.74.0
+
+### Fixed
+
+- Fixed an issue where setMaxNodesPerTransaction() had no effect if called after a transaction was frozen. The setting is now applied correctly, allowing dApps and wallets to reduce redundant signing prompts when executing transactions. [#3383](https://github.com/hiero-ledger/hiero-sdk-js/pull/3383)
+
+### Added
+
+- Extended amount field support across the SDK to accept BigNumber and bigint types in addition to existing Long and number types, ensuring consistent handling of large amounts throughout the codebase. [#3394](https://github.com/hiero-ledger/hiero-sdk-js/pull/3394)
+- Added support for latest Metro bundler by adding "react-native" to `package.json`'s exports [#3388](https://github.com/hiero-ledger/hiero-sdk-js/pull/3388)
+
+### Changed
+
+- This moves the mirrorRestApiBaseUrl construction from the client to the MirrorNode class for better separation of concerns.
+Additional fix - port for the rest api is handled correctly for local dev environments. [#3395](https://github.com/hiero-ledger/hiero-sdk-js/pull/3395)
+- Added New gRPC web proxies for node 33 and node 34[#3384](https://github.com/hiero-ledger/hiero-sdk-js/pull/3384)
+
+## v2.73.2
+
+### Added
+- Introduced `Client.mirrorRestApiBaseUrl` getter to provide the full Mirror Node REST API base URL, including scheme and port. [#3376](https://github.com/hiero-ledger/hiero-sdk-js/pull/3376)
+
+### Changed
+- Updated `AccountId.populateAccountEvmAddress`, `AccountId.populateAccountNum`  `MirrorNodeContractQuery` to construct URLs using `mirrorRestApiBaseUrl` instead of manually parsing strings. [#3376](https://github.com/hiero-ledger/hiero-sdk-js/pull/3376)
+ 
+### Fixed
+- Resolved an issue in `MirrorNodeContractQuery` where the port was incorrectly overridden to `8545` for custom network configurations. [#3376](https://github.com/hiero-ledger/hiero-sdk-js/pull/3376)
+
+## v2.73.1
+
+### Added
+
+- Added negative NodeId check in the NodeUpdateTransaction and NodeDeleteTransaction
+- Updated NodeDeleteTransaction and NodeUpdateTransaction to transform the input always to Long
+
+### Changed
+
+- Pin all dependency versions in the SDK package/proto package/cryptography 
+
 ## v2.72.0
 
 ### Added

@@ -48,7 +48,11 @@ describe("TokenUpdateNftsTransaction", function () {
         const metadatas = await geNftsMetadata(client, tokenId, serials);
         expect(
             metadatas.every(
-                (mt) => mt === Buffer.from(metadata).toString("hex"),
+                (mt) =>
+                    mt ===
+                    Array.from(metadata)
+                        .map((b) => b.toString(16).padStart(2, "0"))
+                        .join(""),
             ),
         ).to.be.true;
 
@@ -66,7 +70,11 @@ describe("TokenUpdateNftsTransaction", function () {
         const newMetadatas = await geNftsMetadata(client, tokenId, serials);
         expect(
             newMetadatas.every(
-                (mt) => mt === Buffer.from(newMetadata).toString("hex"),
+                (mt) =>
+                    mt ===
+                    Array.from(newMetadata)
+                        .map((b) => b.toString(16).padStart(2, "0"))
+                        .join(""),
             ),
         ).to.be.true;
     });
@@ -90,7 +98,11 @@ describe("TokenUpdateNftsTransaction", function () {
         const metadatas = await geNftsMetadata(client, tokenId, serials);
         expect(
             metadatas.every(
-                (mt) => mt === Buffer.from(metadata).toString("hex"),
+                (mt) =>
+                    mt ===
+                    Array.from(metadata)
+                        .map((b) => b.toString(16).padStart(2, "0"))
+                        .join(""),
             ),
         ).to.be.true;
 
@@ -108,7 +120,11 @@ describe("TokenUpdateNftsTransaction", function () {
         const newMetadatas = await geNftsMetadata(client, tokenId, serials);
         expect(
             newMetadatas.map(
-                (mt) => mt === Buffer.from(newMetadata).toString("hex"),
+                (mt) =>
+                    mt ===
+                    Array.from(newMetadata)
+                        .map((b) => b.toString(16).padStart(2, "0"))
+                        .join(""),
             ),
         ).to.deep.eql([true, true, false, false]);
     });
@@ -132,7 +148,11 @@ describe("TokenUpdateNftsTransaction", function () {
         const metadatas = await geNftsMetadata(client, tokenId, serials);
         expect(
             metadatas.every(
-                (mt) => mt === Buffer.from(metadata).toString("hex"),
+                (mt) =>
+                    mt ===
+                    Array.from(metadata)
+                        .map((b) => b.toString(16).padStart(2, "0"))
+                        .join(""),
             ),
         ).to.be.true;
 
@@ -149,7 +169,11 @@ describe("TokenUpdateNftsTransaction", function () {
         const sameMetadatas = await geNftsMetadata(client, tokenId, serials);
         expect(
             sameMetadatas.every(
-                (mt) => mt === Buffer.from(metadata).toString("hex"),
+                (mt) =>
+                    mt ===
+                    Array.from(metadata)
+                        .map((b) => b.toString(16).padStart(2, "0"))
+                        .join(""),
             ),
         ).to.be.true;
     });
@@ -173,7 +197,11 @@ describe("TokenUpdateNftsTransaction", function () {
         const metadatas = await geNftsMetadata(client, tokenId, serials);
         expect(
             metadatas.every(
-                (mt) => mt === Buffer.from(metadata).toString("hex"),
+                (mt) =>
+                    mt ===
+                    Array.from(metadata)
+                        .map((b) => b.toString(16).padStart(2, "0"))
+                        .join(""),
             ),
         ).to.be.true;
 
@@ -191,7 +219,11 @@ describe("TokenUpdateNftsTransaction", function () {
         const sameMetadatas = await geNftsMetadata(client, tokenId, serials);
         expect(
             sameMetadatas.every(
-                (mt) => mt === Buffer.from(new Uint8Array()).toString("hex"),
+                (mt) =>
+                    mt ===
+                    Array.from(new Uint8Array())
+                        .map((b) => b.toString(16).padStart(2, "0"))
+                        .join(""),
             ),
         ).to.be.true;
     });

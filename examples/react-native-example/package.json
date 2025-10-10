@@ -11,7 +11,7 @@
     },
     "dependencies": {
         "@hashgraph/sdk": "file:.yalc/@hashgraph/sdk",
-        "expo": "~53.0.4",
+        "expo": "~54.0.11",
         "expo-status-bar": "~3.0.6",
         "react": "19.0.0",
         "react-dom": "19.0.0",
@@ -23,6 +23,9 @@
         "@types/react": "19.0.0",
         "react-native-dotenv": "^3.4.9",
         "typescript": "^5.7.2"
+    },
+    "peerDependencies": {
+        "protobufjs": "7.5.4"
     },
     "private": true
 }

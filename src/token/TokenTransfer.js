@@ -3,6 +3,7 @@
 import Long from "long";
 import AccountId from "../account/AccountId.js";
 import TokenId from "./TokenId.js";
+import { convertAmountToLong } from "../util.js";
 
 /**
  * @namespace proto
@@ -35,7 +36,7 @@ export default class TokenTransfer {
      * @param {TokenId | string} props.tokenId
      * @param {AccountId | string} props.accountId
      * @param {number | null} props.expectedDecimals
-     * @param {Long | number} props.amount
+     * @param {Long | number | BigNumber | bigint} props.amount
      * @param {boolean} props.isApproved
      */
     constructor(props) {
@@ -60,7 +61,7 @@ export default class TokenTransfer {
                 : AccountId.fromString(props.accountId);
 
         this.expectedDecimals = props.expectedDecimals;
-        this.amount = Long.fromValue(props.amount);
+        this.amount = convertAmountToLong(props.amount);
         this.isApproved = props.isApproved;
     }
 

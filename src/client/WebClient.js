@@ -3,7 +3,8 @@
 import Client from "./Client.js";
 import WebChannel from "../channel/WebChannel.js";
 import LedgerId from "../LedgerId.js";
-import { WebNetwork, MirrorNetwork } from "../constants/ClientConstants.js";
+import { WebNetwork, WebMirrorNetwork } from "../constants/ClientConstants.js";
+
 import AddressBookQuery from "../network/AddressBookQueryWeb.js";
 import FileId from "../file/FileId.js";
 
@@ -31,20 +32,26 @@ export default class WebClient extends Client {
                 switch (props.network) {
                     case "mainnet":
                         this.setNetwork(WebNetwork.MAINNET);
+                        this.setMirrorNetwork(WebMirrorNetwork.MAINNET);
                         this.setLedgerId(LedgerId.MAINNET);
-                        this.setMirrorNetwork(MirrorNetwork.MAINNET);
                         break;
 
                     case "testnet":
                         this.setNetwork(WebNetwork.TESTNET);
                         this.setLedgerId(LedgerId.TESTNET);
-                        this.setMirrorNetwork(MirrorNetwork.TESTNET);
+                        this.setMirrorNetwork(WebMirrorNetwork.TESTNET);
                         break;
 
                     case "previewnet":
                         this.setNetwork(WebNetwork.PREVIEWNET);
                         this.setLedgerId(LedgerId.PREVIEWNET);
-                        this.setMirrorNetwork(MirrorNetwork.PREVIEWNET);
+                        this.setMirrorNetwork(WebMirrorNetwork.PREVIEWNET);
+                        break;
+
+                    case "local-node":
+                        this.setNetwork(WebNetwork.LOCAL_NODE);
+                        this.setLedgerId(LedgerId.LOCAL_NODE);
+                        this.setMirrorNetwork(WebMirrorNetwork.LOCAL_NODE);
                         break;
 
                     default:
@@ -143,6 +150,20 @@ export default class WebClient extends Client {
     }
 
     /**
+     * Construct a Hedera client pre-configured for local-node access.
+     *
+     * @param {object} [props]
+     * @param {boolean} [props.scheduleNetworkUpdate]
+     * @returns {WebClient}
+     */
+    static forLocalNode(props = { scheduleNetworkUpdate: false }) {
+        return new WebClient({
+            network: "local-node",
+            ...props,
+        });
+    }
+
+    /**
      * Construct a Hedera client pre-configured for Mainnet access with network update.
      *
      * @returns {Promise<WebClient>}
@@ -222,6 +243,10 @@ export default class WebClient extends Client {
                     break;
                 case "mainnet":
                     this._network.setNetwork(WebNetwork.MAINNET);
+                    break;
+                case "local-node":
+                    this._network.setNetwork(WebNetwork.LOCAL_NODE);
+                    break;
             }
         } else {
             this._network.setNetwork(network);
@@ -236,16 +261,16 @@ export default class WebClient extends Client {
         if (typeof mirrorNetwork === "string") {
             switch (mirrorNetwork) {
                 case "local-node":
-                    this._mirrorNetwork.setNetwork(MirrorNetwork.LOCAL_NODE);
+                    this._mirrorNetwork.setNetwork(WebMirrorNetwork.LOCAL_NODE);
                     break;
                 case "previewnet":
-                    this._mirrorNetwork.setNetwork(MirrorNetwork.PREVIEWNET);
+                    this._mirrorNetwork.setNetwork(WebMirrorNetwork.PREVIEWNET);
                     break;
                 case "testnet":
-                    this._mirrorNetwork.setNetwork(MirrorNetwork.TESTNET);
+                    this._mirrorNetwork.setNetwork(WebMirrorNetwork.TESTNET);
                     break;
                 case "mainnet":
-                    this._mirrorNetwork.setNetwork(MirrorNetwork.MAINNET);
+                    this._mirrorNetwork.setNetwork(WebMirrorNetwork.MAINNET);
                     break;
                 default:
                     this._mirrorNetwork.setNetwork([mirrorNetwork]);

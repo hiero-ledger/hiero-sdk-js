@@ -48,3 +48,8 @@ export interface RemoveAllowancesParams {
     readonly ownerAccountId: string;
     readonly serialNumbers?: string[];
 }
+
+export interface GetAccountBalanceParams {
+    readonly accountId?: string;
+    readonly contractId?: string;
+}

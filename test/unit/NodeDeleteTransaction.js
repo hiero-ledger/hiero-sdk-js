@@ -5,13 +5,14 @@ import {
     Timestamp,
     TransactionId,
 } from "../../src/index.js";
+import Long from "long";
 
 describe("NodeDeleteTransaction", function () {
     let tx;
+    const NODE_ID = Long.fromValue(420);
 
     beforeEach(function () {
-        const NODE_ID = 420,
-            VALID_START = new Timestamp(1596210382, 0);
+        const VALID_START = new Timestamp(1596210382, 0);
 
         tx = new NodeDeleteTransaction()
             .setNodeAccountIds([
@@ -41,12 +42,19 @@ describe("NodeDeleteTransaction", function () {
     });
 
     it("should return node id", function () {
-        expect(tx.nodeId).to.equal(420);
+        expect(tx.nodeId).to.equal(NODE_ID);
     });
 
     it("should set node id", function () {
-        tx.setNodeId(421);
-        expect(tx.nodeId).to.equal(421);
+        const nodeId = Long.fromValue(421);
+        tx.setNodeId(nodeId);
+        expect(tx.nodeId).to.equal(nodeId);
+    });
+
+    it("should throw error when setting node id to negative", function () {
+        expect(() => tx.setNodeId(-1)).to.throw(
+            "NodeDeleteTransaction: 'nodeId' must be positive.",
+        );
     });
 
     describe("nodeId validation", function () {
@@ -58,7 +66,7 @@ describe("NodeDeleteTransaction", function () {
                 .setTransactionId(
                     TransactionId.withValidStart(ACCOUNT_ID, VALID_START),
                 )
-                .setNodeId(420);
+                .setNodeId(Long.fromValue(420));
 
             expect(() => transaction.freeze()).to.not.throw();
         });

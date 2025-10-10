@@ -117,18 +117,10 @@ export default class ContractId extends Key {
      * @returns {Promise<ContractId>}
      */
     async populateAccountNum(client) {
-        if (this.evmAddress === null) {
-            throw new Error("field `evmAddress` should not be null");
-        }
-        const mirrorUrl = client.mirrorNetwork[0].slice(
-            0,
-            client.mirrorNetwork[0].indexOf(":"),
-        );
+        const mirrorRestApiBaseUrl = client.mirrorRestApiBaseUrl;
+        const url = `${mirrorRestApiBaseUrl}/contracts/${this.toEvmAddress()}`;
 
         /* eslint-disable */
-        const url = `https://${mirrorUrl}/api/v1/contracts/${hex.encode(
-            this.evmAddress,
-        )}`;
         const response = await fetch(url);
         const data = await response.json();
         const mirrorAccountId = data.contract_id;

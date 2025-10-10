@@ -222,7 +222,11 @@ export default class AddressBookQueryWeb extends Query {
         const { port, address } =
             client._mirrorNetwork.getNextMirrorNode().address;
 
-        let baseUrl = `${address.includes("127.0.0.1") || address.includes("localhost") ? "http" : "https"}://${address}`;
+        let baseUrl = `${
+            address.includes("127.0.0.1") || address.includes("localhost")
+                ? "http"
+                : "https"
+        }://${address}`;
 
         if (port) {
             baseUrl = `${baseUrl}:${port}`;
@@ -322,7 +326,9 @@ export default class AddressBookQueryWeb extends Query {
                 // If we shouldn't retry or have exhausted attempts, reject
                 const maxAttemptsReached = attempt >= this._maxAttempts;
                 const errorMessage = maxAttemptsReached
-                    ? `Failed to query address book after ${this._maxAttempts + 1} attempts. Last error: ${message}`
+                    ? `Failed to query address book after ${
+                          this._maxAttempts + 1
+                      } attempts. Last error: ${message}`
                     : `Failed to query address book: ${message}`;
                 reject(new Error(errorMessage));
                 return;

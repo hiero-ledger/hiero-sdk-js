@@ -24,6 +24,7 @@ import AbstractTokenTransferTransaction from "./AbstractTokenTransferTransaction
  * @typedef {import("../account/AccountId.js").default} AccountId
  * @typedef {import("./NftId.js").default} NftId
  * @typedef {import("./TokenId.js").default} TokenId
+ * @typedef {import("bignumber.js").default} BigNumber
  */
 
 /**
@@ -119,7 +120,7 @@ export default class TokenAirdropTransaction extends AbstractTokenTransferTransa
      *
      * @param {TokenId} tokenId
      * @param {AccountId} accountId
-     * @param {Long} amount
+     * @param {Long | number | BigNumber | bigint} amount
      * @param {number} expectedDecimals
      * @returns {this}
      */

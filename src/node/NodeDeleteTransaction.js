@@ -3,6 +3,7 @@
 import Transaction, {
     TRANSACTION_REGISTRY,
 } from "../transaction/Transaction.js";
+import Long from "long";
 
 /**
  * @namespace proto
@@ -84,7 +85,25 @@ export default class NodeDeleteTransaction extends Transaction {
      * @returns {NodeDeleteTransaction}
      */
     setNodeId(nodeId) {
-        this._nodeId = nodeId;
+        this._requireNotFrozen();
+
+        if (nodeId == null) {
+            this._nodeId = null;
+            return this;
+        }
+
+        // Convert to Long if it's a plain number
+        const longNodeId = Long.isLong(nodeId)
+            ? nodeId
+            : Long.fromValue(nodeId);
+
+        if (longNodeId.toNumber() < 0) {
+            throw new Error(
+                "NodeDeleteTransaction: 'nodeId' must be positive.",
+            );
+        }
+
+        this._nodeId = longNodeId;
 
         return this;
     }

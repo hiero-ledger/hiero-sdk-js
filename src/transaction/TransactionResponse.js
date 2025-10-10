@@ -262,7 +262,9 @@ export default class TransactionResponse {
                     continue;
                 }
                 this.logger?.error(
-                    `An error occurred after throttle retry: ${err instanceof Error ? err.message : String(err)}`,
+                    `An error occurred after throttle retry: ${
+                        err instanceof Error ? err.message : String(err)
+                    }`,
                 );
                 throw err;
             }

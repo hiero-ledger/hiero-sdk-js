@@ -6,10 +6,12 @@ import {
     ScheduleId,
     TransactionReceiptQuery,
     Status,
+    ScheduleDeleteTransaction,
 } from "@hashgraph/sdk";
 
 import {
     ScheduleCreateParams,
+    ScheduleDeleteParams,
     ScheduledTransaction,
     ScheduleSignParams,
 } from "../params/schedule";
@@ -149,6 +151,38 @@ export const signSchedule = async ({
     commonTransactionParams,
 }: ScheduleSignParams): Promise<ScheduleResponse> => {
     const transaction = new ScheduleSignTransaction().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+
+    if (scheduleId != null) {
+        const scheduleID = ScheduleId.fromString(scheduleId);
+        transaction.setScheduleId(scheduleID);
+    }
+
+    if (commonTransactionParams != null) {
+        applyCommonTransactionParams(
+            commonTransactionParams,
+            transaction,
+            sdk.getClient(),
+        );
+    }
+
+    const txResponse = await transaction.execute(sdk.getClient());
+    const receipt = await new TransactionReceiptQuery()
+        .setTransactionId(txResponse.transactionId)
+        .setValidateStatus(true)
+        .execute(sdk.getClient());
+
+    return {
+        status: receipt.status.toString(),
+    };
+};
+
+export const deleteSchedule = async ({
+                                       scheduleId,
+                                       commonTransactionParams,
+                                   }: ScheduleDeleteParams): Promise<ScheduleResponse> => {
+    const transaction = new ScheduleDeleteTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
 
