@@ -13,8 +13,11 @@ import EvmHookSpec from "../../src/hooks/EvmHookSpec.js";
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
 import HookExtensionPoint from "../../src/hooks/HookExtensionPoint.js";
 import LambdaEvmHook from "../../src/hooks/LambdaEvmHook.js";
-import LambdaStorageSlot from "../../src/hooks/LambdaStorageSlot.js";
-import LambdaStorageUpdate from "../../src/hooks/LambdaStorageUpdate.js";
+
+import {
+    LambdaStorageUpdate,
+    LambdaStorageSlot,
+} from "../../src/hooks/LambdaStorageUpdate.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { deleteAccount } from "./utils/Fixtures.js";
 import { decode } from "../../src/encoding/hex.js";
@@ -74,11 +77,9 @@ describe("AccountCreate", function () {
             const lambdaHook = new LambdaEvmHook({
                 spec: new EvmHookSpec().setContractId(contractId),
                 storageUpdates: [
-                    new LambdaStorageUpdate({
-                        storageSlot: new LambdaStorageSlot(
-                            new Uint8Array([0x01, 0x02, 0x03, 0x04]),
-                        ),
-                    }),
+                    new LambdaStorageSlot(
+                        new Uint8Array([0x01, 0x02, 0x03, 0x04]),
+                    ),
                 ],
             });
 
@@ -108,11 +109,9 @@ describe("AccountCreate", function () {
         it("sshould revert when lambda hook but no contract id is provided", async function () {
             const lambdaHook = new LambdaEvmHook({
                 storageUpdates: [
-                    new LambdaStorageUpdate({
-                        storageSlot: new LambdaStorageSlot(
-                            new Uint8Array([0x01, 0x02, 0x03, 0x04]),
-                        ),
-                    }),
+                    new LambdaStorageSlot(
+                        new Uint8Array([0x01, 0x02, 0x03, 0x04]),
+                    ),
                 ],
             });
 
@@ -188,11 +187,9 @@ describe("AccountCreate", function () {
         it("should execute hook with an admin key provided", async function () {
             const lambdaHook = new LambdaEvmHook({
                 storageUpdates: [
-                    new LambdaStorageUpdate({
-                        storageSlot: new LambdaStorageSlot(
-                            new Uint8Array([0x01, 0x02, 0x03, 0x04]),
-                        ),
-                    }),
+                    new LambdaStorageSlot(
+                        new Uint8Array([0x01, 0x02, 0x03, 0x04]),
+                    ),
                 ],
                 spec: new EvmHookSpec().setContractId(contractId),
             });
