@@ -489,6 +489,7 @@ describe("AccountUpdate", function () {
                 ).getReceipt(env.client);
             } catch (error) {
                 errorOccurred = true;
+                console.log(error);
                 errorStatus = error.status;
             }
 
