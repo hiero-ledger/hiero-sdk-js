@@ -20,6 +20,22 @@ import AddressBookQuery from "../network/AddressBookQuery.js";
  */
 
 /**
+ * Default gRPC deadline in milliseconds (10 seconds)
+ *
+ * Maximum time allowed for a single gRPC request. If exceeded, the node
+ * is marked unhealthy and the SDK rotates to the next node.
+ */
+const DEFAULT_GRPC_DEADLINE = 10 * 1000;
+
+/**
+ * Default request timeout in milliseconds (2 minutes)
+ *
+ * Maximum total time for a complete Transaction/Query operation including
+ * retries and node rotation. Must be >= grpcDeadline.
+ */
+const DEFAULT_REQUEST_TIMEOUT = 2 * 60 * 1000;
+
+/**
  * @typedef {object} Operator
  * @property {string | PrivateKey} privateKey
  * @property {string | AccountId} accountId
@@ -40,6 +56,8 @@ import AddressBookQuery from "../network/AddressBookQuery.js";
  * @property {boolean} [scheduleNetworkUpdate]
  * @property {number} [shard]
  * @property {number} [realm]
+ * @property {number} [grpcDeadline]
+ * @property {number} [requestTimeout]
  */
 
 /**
@@ -127,7 +145,10 @@ export default class Client {
         this._defaultRegenerateTransactionId = true;
 
         /** @private */
-        this._requestTimeout = null;
+        this._requestTimeout = DEFAULT_REQUEST_TIMEOUT;
+
+        /** @private */
+        this._grpcDeadline = DEFAULT_GRPC_DEADLINE;
 
         /**
          * @type {boolean}
@@ -154,6 +175,14 @@ export default class Client {
 
         if (props != null && props.realm != null) {
             this._realm = props.realm;
+        }
+
+        if (props != null && props.grpcDeadline != null) {
+            this._grpcDeadline = props.grpcDeadline;
+        }
+
+        if (props != null && props.requestTimeout != null) {
+            this._requestTimeout = props.requestTimeout;
         }
 
         /** @internal */
@@ -675,7 +704,9 @@ export default class Client {
     }
 
     /**
-     * @param {number} requestTimeout - Number of milliseconds
+     * Set the total request timeout for complete operations.
+     *
+     * @param {number} requestTimeout - Maximum time in milliseconds for complete Transaction/Query operations
      * @returns {this}
      */
     setRequestTimeout(requestTimeout) {
@@ -684,10 +715,32 @@ export default class Client {
     }
 
     /**
-     * @returns {?number}
+     * Get the total request timeout for complete operations.
+     *
+     * @returns {number} Maximum time in milliseconds for complete Transaction/Query operations
      */
     get requestTimeout() {
         return this._requestTimeout;
+    }
+
+    /**
+     * Set the global gRPC deadline for all requests.
+     *
+     * @param {number} grpcDeadline - Maximum time in milliseconds for a single gRPC request
+     * @returns {this}
+     */
+    setGrpcDeadline(grpcDeadline) {
+        this._grpcDeadline = grpcDeadline;
+        return this;
+    }
+
+    /**
+     * Get the global gRPC deadline for all requests.
+     *
+     * @returns {number} Maximum time in milliseconds for a single gRPC request
+     */
+    get grpcDeadline() {
+        return this._grpcDeadline;
     }
 
     /**
