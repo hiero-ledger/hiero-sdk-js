@@ -6,15 +6,6 @@ import { applyCommonTransactionParams } from "../params/common-tx-params";
 import { EthereumTxParams } from "../params/ethereum";
 import { EthereumResponse } from "../response/ethereum";
 
-interface CommonTransactionParams {
-    readonly transactionId?: string;
-    readonly maxTransactionFee?: number;
-    readonly validTransactionDuration?: number;
-    readonly memo?: string;
-    readonly regenerateTransactionId?: boolean;
-    readonly signers?: string[];
-}
-
 export const createEthereumTransaction = async ({
     ethereumData,
     callDataFileId,
