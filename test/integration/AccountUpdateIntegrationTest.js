@@ -437,7 +437,7 @@ describe("AccountUpdate", function () {
 
         //  this doesn't seem to be a valid test case
         // TODO: check with consensus node guys if this should work as expected
-        it.skip("should fail with HOOK_DELETED when attempting to delete already deleted hook", async function () {
+        it.skip("should fail with HOOK_NOT_FOUND when attempting to delete already deleted hook", async function () {
             const { accountId, newKey } = await createAccount(env.client);
             expect(accountId).to.not.be.null;
 
@@ -489,13 +489,11 @@ describe("AccountUpdate", function () {
                 ).getReceipt(env.client);
             } catch (error) {
                 errorOccurred = true;
-                console.log(error);
                 errorStatus = error.status;
             }
 
-            // Then: the transaction fails with HOOK_DELETED error
             expect(errorOccurred).to.be.true;
-            expect(errorStatus).to.be.eql(Status.HookDeleted);
+            expect(errorStatus).to.be.eql(Status.HookNotFound);
         });
     });
 

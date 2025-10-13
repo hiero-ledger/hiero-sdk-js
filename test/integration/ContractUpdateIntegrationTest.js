@@ -800,7 +800,7 @@ describe("ContractUpdate", function () {
             ).getReceipt(env.client);
         });
 
-        it.skip("should fail with HOOK_DELETED when attempting to delete already deleted hook", async function () {
+        it.skip("should fail with HOOK_NOT_FOUND when attempting to delete already deleted hook", async function () {
             // Given: a contract exists with a hook that has been previously deleted
             const operatorKey = env.operatorKey.publicKey;
 
@@ -869,9 +869,8 @@ describe("ContractUpdate", function () {
                 errorStatus = error.status;
             }
 
-            // Then: the transaction fails with HOOK_DELETED error
             expect(errorOccurred).to.be.true;
-            expect(errorStatus).to.be.eql(Status.HookDeleted);
+            expect(errorStatus).to.be.eql(Status.HookNotFound);
         });
     });
 
