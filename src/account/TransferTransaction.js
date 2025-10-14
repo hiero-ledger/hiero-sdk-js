@@ -494,17 +494,9 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
 
         return {
             transfers: {
-                accountAmounts: this._hbarTransfers.map((transfer) => {
-                    return {
-                        accountID: transfer.accountId._toProtobuf(),
-                        amount: transfer.amount.toTinybars(),
-                        isApproval: transfer.isApproved,
-                        prePostTxAllowanceHook:
-                            transfer.prePostTxAllowanceHook?._toProtobuf(),
-                        preTxAllowanceHook:
-                            transfer.preTxAllowanceHook?._toProtobuf(),
-                    };
-                }),
+                accountAmounts: this._hbarTransfers.map((transfer) =>
+                    transfer._toProtobuf(),
+                ),
             },
             tokenTransfers,
         };
