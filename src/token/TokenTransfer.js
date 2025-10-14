@@ -6,7 +6,6 @@ import TokenId from "./TokenId.js";
 import { convertAmountToLong } from "../util.js";
 import HookCall from "../hooks/HookCall.js";
 
-
 /**
  * @namespace proto
  * @typedef {import("@hashgraph/proto").proto.ITokenTransferList} HieroProto.proto.ITokenTransferList
@@ -68,8 +67,15 @@ export default class TokenTransfer {
         this.expectedDecimals = props.expectedDecimals;
         this.amount = convertAmountToLong(props.amount);
         this.isApproved = props.isApproved;
-        this.prePostTxAllowanceHook = props.prePostTxAllowanceHook;
-        this.preTxAllowanceHook = props.preTxAllowanceHook;
+        this.prePostTxAllowanceHook = null;
+        this.preTxAllowanceHook = null;
+
+        if (props.prePostTxAllowanceHook) {
+            this.prePostTxAllowanceHook = props.prePostTxAllowanceHook;
+        }
+        if (props.preTxAllowanceHook) {
+            this.preTxAllowanceHook = props.preTxAllowanceHook;
+        }
     }
 
     /**
@@ -137,8 +143,8 @@ export default class TokenTransfer {
             accountID: this.accountId._toProtobuf(),
             amount: this.amount,
             isApproval: this.isApproved,
-            prePostTxAllowanceHook: this.prePostTxAllowanceHook,
-            preTxAllowanceHook: this.preTxAllowanceHook,
+            prePostTxAllowanceHook: this.prePostTxAllowanceHook?._toProtobuf(),
+            preTxAllowanceHook: this.preTxAllowanceHook?._toProtobuf(),
         };
     }
 

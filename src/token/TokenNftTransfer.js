@@ -61,11 +61,25 @@ export default class TokenNftTransfer {
                 : AccountId.fromString(props.receiverAccountId);
 
         this.serialNumber = Long.fromValue(props.serialNumber);
-        this.preTxSenderAllowanceHook = props.preTxSenderAllowanceHook;
-        this.prePostTxSenderAllowanceHook = props.prePostTxSenderAllowanceHook;
-        this.preTxReceiverAllowanceHook = props.preTxReceiverAllowanceHook;
-        this.prePostTxReceiverAllowanceHook =
-            props.prePostTxReceiverAllowanceHook;
+        this.preTxSenderAllowanceHook = null;
+        this.prePostTxSenderAllowanceHook = null;
+        this.preTxReceiverAllowanceHook = null;
+        this.prePostTxReceiverAllowanceHook = null;
+
+        if (props.preTxSenderAllowanceHook) {
+            this.preTxSenderAllowanceHook = props.preTxSenderAllowanceHook;
+        }
+        if (props.prePostTxSenderAllowanceHook) {
+            this.prePostTxSenderAllowanceHook =
+                props.prePostTxSenderAllowanceHook;
+        }
+        if (props.preTxReceiverAllowanceHook) {
+            this.preTxReceiverAllowanceHook = props.preTxReceiverAllowanceHook;
+        }
+        if (props.prePostTxReceiverAllowanceHook) {
+            this.prePostTxReceiverAllowanceHook =
+                props.prePostTxReceiverAllowanceHook;
+        }
         this.isApproved = props.isApproved;
     }
 
@@ -144,10 +158,14 @@ export default class TokenNftTransfer {
             receiverAccountID: this.receiverAccountId._toProtobuf(),
             serialNumber: this.serialNumber,
             isApproval: this.isApproved,
-            preTxSenderAllowanceHook: this.preTxSenderAllowanceHook,
-            prePostTxSenderAllowanceHook: this.prePostTxSenderAllowanceHook,
-            preTxReceiverAllowanceHook: this.preTxReceiverAllowanceHook,
-            prePostTxReceiverAllowanceHook: this.prePostTxReceiverAllowanceHook,
+            preTxSenderAllowanceHook:
+                this.preTxSenderAllowanceHook?._toProtobuf(),
+            prePostTxSenderAllowanceHook:
+                this.prePostTxSenderAllowanceHook?._toProtobuf(),
+            preTxReceiverAllowanceHook:
+                this.preTxReceiverAllowanceHook?._toProtobuf(),
+            prePostTxReceiverAllowanceHook:
+                this.prePostTxReceiverAllowanceHook?._toProtobuf(),
         };
     }
 }
