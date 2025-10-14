@@ -17,7 +17,7 @@ export const createEthereumTransaction = async ({
     );
 
     if (ethereumData != null) {
-        transaction.setEthereumData(Buffer.from(ethereumData.data));
+        transaction.setEthereumData(Buffer.from(ethereumData, "hex"));
     }
 
     if (callDataFileId != null) {
