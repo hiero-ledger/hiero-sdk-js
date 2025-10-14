@@ -5,6 +5,7 @@ import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";
 import { applyCommonTransactionParams } from "../params/common-tx-params";
 import { EthereumTxParams } from "../params/ethereum";
 import { EthereumResponse } from "../response/ethereum";
+import { decode } from "../utils/hex";
 
 export const createEthereumTransaction = async ({
     ethereumData,
@@ -17,7 +18,7 @@ export const createEthereumTransaction = async ({
     );
 
     if (ethereumData != null) {
-        transaction.setEthereumData(Buffer.from(ethereumData, "hex"));
+        transaction.setEthereumData(decode(ethereumData));
     }
 
     if (callDataFileId != null) {
