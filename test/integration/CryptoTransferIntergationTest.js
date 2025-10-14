@@ -13,6 +13,11 @@ import { decode } from "../../src/encoding/hex.js";
 import ContractCreateTransaction from "../../src/contract/ContractCreateTransaction.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { createAccount, deleteAccount } from "./utils/Fixtures.js";
+import TokenCreateTransaction from "../../src/token/TokenCreateTransaction.js";
+import TokenMintTransaction from "../../src/token/TokenMintTransaction.js";
+import TokenAssociateTransaction from "../../src/token/TokenAssociateTransaction.js";
+import TokenType from "../../src/token/TokenType.js";
+import NftId from "../../src/token/NftId.js";
 
 describe("CryptoTransfer", function () {
     let env;
@@ -85,6 +90,413 @@ describe("CryptoTransfer", function () {
                     .execute(env.client)
             ).getReceipt(env.client);
             lambdaContractId = receipt.contractId;
+        });
+
+        it("should transfer HBAR to account with pre-transaction allowance hook", async function () {
+            const operatorId = env.operatorId;
+
+            // Create account with a pre allowance hook on receiving side
+            const key = PrivateKey.generateED25519();
+            const lambdaHook = new LambdaEvmHook({
+                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                storageUpdates: [],
+            });
+            const hookDetails = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                hook: lambdaHook,
+                hookId: 2,
+            });
+
+            const createResp = await (
+                await new AccountCreateTransaction()
+                    .setKeyWithoutAlias(key.publicKey)
+                    .setInitialBalance(new Hbar(1))
+                    .addHook(hookDetails)
+                    .freezeWith(env.client)
+                    .sign(key)
+            ).execute(env.client);
+            const { accountId } = await createResp.getReceipt(env.client);
+
+            const call = new HookCall({
+                hookId: Long.fromInt(2),
+                call: new EvmHookCall({ gasLimit: 25000 }),
+            });
+
+            // Operator sends TO the account with hook (receiver hook)
+            const response = await (
+                await new TransferTransaction()
+                    .addHbarTransfer(operatorId, new Hbar(-1))
+                    .addHbarTransferWithHook(
+                        accountId,
+                        new Hbar(1),
+                        call,
+                        HookType.PRE_HOOK_RECEIVER,
+                    )
+                    .execute(env.client)
+            ).getReceipt(env.client);
+
+            expect(response.status.toString()).to.be.equal("SUCCESS");
+        });
+
+        it("should execute hooks on multiple accounts in same transfer", async function () {
+            const operatorId = env.operatorId;
+
+            // Create two accounts, each with their own hook
+            const key1 = PrivateKey.generateED25519();
+            const lambdaHook1 = new LambdaEvmHook({
+                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                storageUpdates: [],
+            });
+            const hookDetails1 = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                hook: lambdaHook1,
+                hookId: 2,
+            });
+
+            const createResp1 = await (
+                await new AccountCreateTransaction()
+                    .setKeyWithoutAlias(key1.publicKey)
+                    .setInitialBalance(new Hbar(1))
+                    .addHook(hookDetails1)
+                    .freezeWith(env.client)
+                    .sign(key1)
+            ).execute(env.client);
+            const { accountId: accountId1 } = await createResp1.getReceipt(
+                env.client,
+            );
+
+            const key2 = PrivateKey.generateED25519();
+            const lambdaHook2 = new LambdaEvmHook({
+                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                storageUpdates: [],
+            });
+            const hookDetails2 = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                hook: lambdaHook2,
+                hookId: 2,
+            });
+
+            const createResp2 = await (
+                await new AccountCreateTransaction()
+                    .setKeyWithoutAlias(key2.publicKey)
+                    .setInitialBalance(new Hbar(1))
+                    .addHook(hookDetails2)
+                    .freezeWith(env.client)
+                    .sign(key2)
+            ).execute(env.client);
+            const { accountId: accountId2 } = await createResp2.getReceipt(
+                env.client,
+            );
+
+            const call1 = new HookCall({
+                hookId: Long.fromInt(2),
+                call: new EvmHookCall({ gasLimit: 25000 }),
+            });
+
+            const call2 = new HookCall({
+                hookId: Long.fromInt(2),
+                call: new EvmHookCall({ gasLimit: 25000 }),
+            });
+
+            // Transfer to both accounts - both hooks must approve
+            const response = await (
+                await new TransferTransaction()
+                    .addHbarTransfer(operatorId, new Hbar(-2))
+                    .addHbarTransferWithHook(
+                        accountId1,
+                        new Hbar(1),
+                        call1,
+                        HookType.PRE_HOOK_RECEIVER,
+                    )
+                    .addHbarTransferWithHook(
+                        accountId2,
+                        new Hbar(1),
+                        call2,
+                        HookType.PRE_HOOK_RECEIVER,
+                    )
+                    .execute(env.client)
+            ).getReceipt(env.client);
+
+            expect(response.status.toString()).to.be.equal("SUCCESS");
+        });
+
+        it("should execute both sender and receiver hooks in HBAR transfer", async function () {
+            const operatorId = env.operatorId;
+
+            // Create sender account with hook
+            const senderKey = PrivateKey.generateED25519();
+            const senderHook = new LambdaEvmHook({
+                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                storageUpdates: [],
+            });
+            const senderHookDetails = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                hook: senderHook,
+                hookId: 2,
+            });
+
+            const senderResp = await (
+                await new AccountCreateTransaction()
+                    .setKeyWithoutAlias(senderKey.publicKey)
+                    .setInitialBalance(new Hbar(3))
+                    .addHook(senderHookDetails)
+                    .freezeWith(env.client)
+                    .sign(senderKey)
+            ).execute(env.client);
+            const { accountId: senderId } = await senderResp.getReceipt(
+                env.client,
+            );
+
+            // Create receiver account with hook
+            const receiverKey = PrivateKey.generateED25519();
+            const receiverHook = new LambdaEvmHook({
+                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                storageUpdates: [],
+            });
+            const receiverHookDetails = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                hook: receiverHook,
+                hookId: 2,
+            });
+
+            const receiverResp = await (
+                await new AccountCreateTransaction()
+                    .setKeyWithoutAlias(receiverKey.publicKey)
+                    .setInitialBalance(new Hbar(1))
+                    .addHook(receiverHookDetails)
+                    .freezeWith(env.client)
+                    .sign(receiverKey)
+            ).execute(env.client);
+            const { accountId: receiverId } = await receiverResp.getReceipt(
+                env.client,
+            );
+
+            const senderCall = new HookCall({
+                hookId: Long.fromInt(2),
+                call: new EvmHookCall({ gasLimit: 25000 }),
+            });
+
+            const receiverCall = new HookCall({
+                hookId: Long.fromInt(2),
+                call: new EvmHookCall({ gasLimit: 25000 }),
+            });
+
+            // Transfer from sender to receiver, both with hooks
+            const response = await (
+                await new TransferTransaction()
+                    .addHbarTransferWithHook(
+                        senderId,
+                        new Hbar(-1),
+                        senderCall,
+                        HookType.PRE_HOOK_SENDER,
+                    )
+                    .addHbarTransferWithHook(
+                        receiverId,
+                        new Hbar(1),
+                        receiverCall,
+                        HookType.PRE_HOOK_RECEIVER,
+                    )
+                    .freezeWith(env.client)
+                    .sign(senderKey)
+            ).execute(env.client);
+
+            const receipt = await response.getReceipt(env.client);
+            expect(receipt.status.toString()).to.be.equal("SUCCESS");
+        });
+
+        it("should transfer fungible tokens with allowance hook", async function () {
+            const operatorId = env.operatorId;
+
+            // Create receiver account with hook
+            const receiverKey = PrivateKey.generateED25519();
+            const lambdaHook = new LambdaEvmHook({
+                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                storageUpdates: [],
+            });
+            const hookDetails = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                hook: lambdaHook,
+                hookId: 1,
+            });
+
+            const receiverResp = await (
+                await new AccountCreateTransaction()
+                    .setKeyWithoutAlias(receiverKey.publicKey)
+                    .setInitialBalance(new Hbar(2))
+                    .addHook(hookDetails)
+                    .freezeWith(env.client)
+                    .sign(receiverKey)
+            ).execute(env.client);
+            const { accountId: receiverId } = await receiverResp.getReceipt(
+                env.client,
+            );
+
+            const tokenResp = await (
+                await new TokenCreateTransaction()
+                    .setTokenName("FT-HOOK")
+                    .setTokenSymbol("FTH")
+                    .setDecimals(2)
+                    .setInitialSupply(10000)
+                    .setTreasuryAccountId(operatorId)
+                    .setAdminKey(env.operatorKey)
+                    .setSupplyKey(env.operatorKey)
+                    .execute(env.client)
+            ).getReceipt(env.client);
+            const tokenId = tokenResp.tokenId;
+
+            await (
+                await new TokenAssociateTransaction()
+                    .setAccountId(receiverId)
+                    .setTokenIds([tokenId])
+                    .freezeWith(env.client)
+                    .sign(receiverKey)
+            ).execute(env.client);
+
+            const call = new HookCall({
+                hookId: Long.fromInt(1),
+                call: new EvmHookCall({ gasLimit: 25000 }),
+            });
+
+            // Transfer tokens with hook
+            const response = await (
+                await new TransferTransaction()
+                    .addTokenTransferWithHook(
+                        tokenId,
+                        operatorId,
+                        -1000,
+                        call,
+                        HookType.PRE_HOOK_SENDER,
+                    )
+                    .addTokenTransfer(tokenId, receiverId, 1000)
+                    .execute(env.client)
+            ).getReceipt(env.client);
+
+            expect(response.status.toString()).to.be.equal("SUCCESS");
+        });
+
+        it("should transfer NFT with sender and receiver allowance hooks", async function () {
+            const operatorId = env.operatorId;
+
+            // Create sender account with hook
+            const senderKey = PrivateKey.generateED25519();
+            const senderHook = new LambdaEvmHook({
+                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                storageUpdates: [],
+            });
+            const senderHookDetails = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                hook: senderHook,
+                hookId: 2,
+            });
+
+            const senderResp = await (
+                await new AccountCreateTransaction()
+                    .setKeyWithoutAlias(senderKey.publicKey)
+                    .setInitialBalance(new Hbar(2))
+                    .addHook(senderHookDetails)
+                    .freezeWith(env.client)
+                    .sign(senderKey)
+            ).execute(env.client);
+            const { accountId: senderId } = await senderResp.getReceipt(
+                env.client,
+            );
+
+            // Create receiver account with hook
+            const receiverKey = PrivateKey.generateED25519();
+            const receiverHook = new LambdaEvmHook({
+                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                storageUpdates: [],
+            });
+
+            const receiverHookDetails = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                hook: receiverHook,
+                hookId: 2,
+            });
+
+            const receiverResp = await (
+                await new AccountCreateTransaction()
+                    .setKeyWithoutAlias(receiverKey.publicKey)
+                    .setInitialBalance(new Hbar(2))
+                    .addHook(receiverHookDetails)
+                    .freezeWith(env.client)
+                    .sign(receiverKey)
+            ).execute(env.client);
+            const { accountId: receiverId } = await receiverResp.getReceipt(
+                env.client,
+            );
+
+            const tokenResp = await (
+                await new TokenCreateTransaction()
+                    .setTokenName("NFT-HOOK")
+                    .setTokenSymbol("NHK")
+                    .setTokenType(TokenType.NonFungibleUnique)
+                    .setInitialSupply(0)
+                    .setTreasuryAccountId(senderId)
+                    .setAdminKey(senderKey.publicKey)
+                    .setSupplyKey(senderKey.publicKey)
+                    .freezeWith(env.client)
+                    .sign(senderKey)
+            ).execute(env.client);
+            const tokenId = (await tokenResp.getReceipt(env.client)).tokenId;
+
+            // Mint NFT
+            const tokenMintReceipt = await (
+                await (
+                    await new TokenMintTransaction()
+                        .setTokenId(tokenId)
+                        .setMetadata([new Uint8Array([1])])
+                        .freezeWith(env.client)
+                        .sign(senderKey)
+                ).execute(env.client)
+            ).getReceipt(env.client);
+
+            const serials = tokenMintReceipt.serials;
+
+            // Associate receiver with token
+            await (
+                await new TokenAssociateTransaction()
+                    .setAccountId(receiverId)
+                    .setTokenIds([tokenId])
+                    .freezeWith(env.client)
+                    .sign(receiverKey)
+            ).execute(env.client);
+
+            const senderCall = new HookCall({
+                hookId: Long.fromInt(2),
+                call: new EvmHookCall({ gasLimit: 25000 }),
+            });
+
+            const receiverCall = new HookCall({
+                hookId: Long.fromInt(2),
+                call: new EvmHookCall({ gasLimit: 25000 }),
+            });
+
+            const nftId = new NftId(tokenId, 1);
+
+            // Transfer NFT with both sender and receiver hooks
+            const response = await (
+                await new TransferTransaction()
+                    .addNftTransferWithSenderHook(
+                        nftId,
+                        senderId,
+                        receiverId,
+                        senderCall,
+                        HookType.PRE_HOOK_SENDER,
+                    )
+                    .addNftTransferWithReceiverHook(
+                        nftId,
+                        senderId,
+                        receiverId,
+                        receiverCall,
+                        HookType.PRE_HOOK_RECEIVER,
+                    )
+                    .freezeWith(env.client)
+                    .sign(senderKey)
+            ).execute(env.client);
+
+            const receipt = await response.getReceipt(env.client);
+            expect(receipt.status.toString()).to.be.equal("SUCCESS");
         });
 
         it("should call pre-transaction allowance hook and approve transfer", async function () {
