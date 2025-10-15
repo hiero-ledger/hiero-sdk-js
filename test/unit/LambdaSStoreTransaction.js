@@ -455,9 +455,11 @@ describe("LambdaSStoreTransaction", function () {
         });
 
         it("should serialize and deserialize with storage updates", function () {
+            const key = new Uint8Array([1, 2, 3, 4]);
+            const value = new Uint8Array([5, 6, 7, 8]);
             const storageSlot = new LambdaStorageSlot({
-                key: new Uint8Array([1, 2, 3, 4]),
-                value: new Uint8Array([5, 6, 7, 8]),
+                key,
+                value,
             });
 
             const transaction = new LambdaSStoreTransaction({
@@ -477,6 +479,8 @@ describe("LambdaSStoreTransaction", function () {
             expect(deserializedTx.storageUpdates[0]).to.be.an.instanceof(
                 LambdaStorageSlot,
             );
+            expect(deserializedTx.storageUpdates[0].key).to.deep.equal(key);
+            expect(deserializedTx.storageUpdates[0].value).to.deep.equal(value);
         });
 
         it("should serialize and deserialize complete transaction", function () {
