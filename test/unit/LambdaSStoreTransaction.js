@@ -25,7 +25,8 @@ describe("LambdaSStoreTransaction", function () {
 
             expect(transaction).to.be.an.instanceof(LambdaSStoreTransaction);
             expect(transaction.hookId).to.be.null;
-            expect(transaction.storageUpdates).to.be.null;
+            expect(transaction.storageUpdates).to.be.an("array");
+            expect(transaction.storageUpdates).to.have.lengthOf(0);
         });
 
         it("should create transaction with hookId", function () {
@@ -41,7 +42,8 @@ describe("LambdaSStoreTransaction", function () {
             });
 
             expect(transaction.hookId).to.equal(hookId);
-            expect(transaction.storageUpdates).to.be.null;
+            expect(transaction.storageUpdates).to.be.an("array");
+            expect(transaction.storageUpdates).to.have.lengthOf(0);
         });
 
         it("should create transaction with storage updates", function () {
@@ -191,7 +193,8 @@ describe("LambdaSStoreTransaction", function () {
             const data = transaction._makeTransactionData();
 
             expect(data.hookId).to.not.be.undefined;
-            expect(data.storageUpdates).to.be.undefined;
+            expect(data.storageUpdates).to.be.an("array");
+            expect(data.storageUpdates).to.have.lengthOf(0);
         });
 
         it("should create transaction data with storage updates only", function () {
@@ -241,7 +244,8 @@ describe("LambdaSStoreTransaction", function () {
             const data = transaction._makeTransactionData();
 
             expect(data.hookId).to.be.undefined;
-            expect(data.storageUpdates).to.be.undefined;
+            expect(data.storageUpdates).to.be.an("array");
+            expect(data.storageUpdates).to.have.lengthOf(0);
         });
     });
 
@@ -410,6 +414,23 @@ describe("LambdaSStoreTransaction", function () {
     });
 
     describe("serialization", function () {
+        it("should serialize and deserialize empty transaction with nothing set", function () {
+            const transaction = new LambdaSStoreTransaction()
+                .setNodeAccountIds([nodeAccountId])
+                .setTransactionId(
+                    TransactionId.withValidStart(accountId, timestamp),
+                )
+                .freeze();
+
+            const bytes = transaction.toBytes();
+            const deserializedTx = Transaction.fromBytes(bytes);
+
+            expect(deserializedTx).to.be.an.instanceof(LambdaSStoreTransaction);
+            expect(deserializedTx.hookId).to.be.null;
+            expect(deserializedTx.storageUpdates).to.be.an("array");
+            expect(deserializedTx.storageUpdates).to.have.lengthOf(0);
+        });
+
         it("should serialize and deserialize with hookId only", function () {
             const hookId = new HookId({
                 entityId: new HookEntityId({
