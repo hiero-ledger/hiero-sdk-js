@@ -21,8 +21,17 @@ class LambdaSStoreTransaction extends Transaction {
     constructor(props = {}) {
         super();
 
-        this.hookId = null;
-        this.storageUpdates = null;
+        /**
+         * @private
+         * @type {HookId | null}
+         */
+        this._hookId = null;
+
+        /**
+         * @private
+         * @type {LambdaStorageUpdate[]}
+         */
+        this._storageUpdates = [];
 
         if (props.hookId != null) {
             this.setHookId(props.hookId);
@@ -34,12 +43,26 @@ class LambdaSStoreTransaction extends Transaction {
     }
 
     /**
+     * @returns {HookId | null}
+     */
+    get hookId() {
+        return this._hookId;
+    }
+
+    /**
+     * @returns {LambdaStorageUpdate[] | []}
+     */
+    get storageUpdates() {
+        return this._storageUpdates;
+    }
+
+    /**
      *
      * @param {HookId} hookId
      * @returns {this}
      */
     setHookId(hookId) {
-        this.hookId = hookId;
+        this._hookId = hookId;
         return this;
     }
 
@@ -49,9 +72,19 @@ class LambdaSStoreTransaction extends Transaction {
      * @returns {this}
      */
     setStorageUpdates(storageUpdates) {
-        this.storageUpdates = storageUpdates;
+        this._storageUpdates = storageUpdates;
         return this;
     }
+
+    /**
+     * @param {LambdaStorageUpdate} storageUpdate
+     * @returns {this}
+     */
+    addStorageUpdate(storageUpdate) {
+        this._storageUpdates.push(storageUpdate);
+        return this;
+    }
+
     /**
      * @override
      * @protected
