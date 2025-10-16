@@ -33,7 +33,7 @@ async function main() {
         provider,
     );
 
-    const operatorPrivateKey = hashgraph.PrivateKey.fromStringDer(
+    const operatorPrivateKey = hashgraph.PrivateKey.fromStringECDSA(
         process.env.OPERATOR_KEY,
     );
     const operatorPublicKey = operatorPrivateKey.publicKey;

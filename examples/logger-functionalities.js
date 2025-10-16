@@ -42,7 +42,7 @@ async function main() {
     }
 
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
-    const operatorKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
+    const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
 
     let debugLogger = new Logger(LogLevel.Debug);
     let infoLogger = new Logger(LogLevel.Info);

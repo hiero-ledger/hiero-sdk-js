@@ -32,7 +32,7 @@ async function main() {
 
     const client = Client.forName(process.env.HEDERA_NETWORK).setOperator(
         AccountId.fromString(process.env.OPERATOR_ID),
-        PrivateKey.fromStringDer(process.env.OPERATOR_KEY),
+        PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY),
     );
 
     const CID = [
