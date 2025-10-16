@@ -30,7 +30,7 @@ async function main() {
     const client = Client.forName(network).setOperator(operatorId, operatorKey);
 
     // Generate a admin key
-    const adminKey = PrivateKey.generateED25519();
+    const adminKey = PrivateKey.generateECDSA();
     // Initial metadata
     const metadata = new Uint8Array([1]);
     // New metadata

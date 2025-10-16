@@ -60,7 +60,7 @@ async function main() {
 
     const wallet = new Wallet(client.operatorAccountId, operatorKey, provider);
 
-    const privateKey = PrivateKey.generateED25519();
+    const privateKey = PrivateKey.generateECDSA();
     const publicKey = privateKey.publicKey;
     const aliasAccountId = publicKey.toAccountId(0, 0);
 

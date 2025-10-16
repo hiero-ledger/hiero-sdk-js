@@ -58,7 +58,7 @@ async function main() {
      * Create accounts A, B, and C
      */
 
-    let firstAccountPrivateKey = PrivateKey.generateED25519();
+    let firstAccountPrivateKey = PrivateKey.generateECDSA();
     let firstAccountPublicKey = firstAccountPrivateKey.publicKey;
 
     let createAccountAtx = await new AccountCreateTransaction()
@@ -77,7 +77,7 @@ async function main() {
         provider,
     );
 
-    let secondAccountPrivateKey = PrivateKey.generateED25519();
+    let secondAccountPrivateKey = PrivateKey.generateECDSA();
     let secondAccountPublicKey = secondAccountPrivateKey.publicKey;
 
     let createAccountBtx = await new AccountCreateTransaction()
@@ -96,7 +96,7 @@ async function main() {
         provider,
     );
 
-    let thirdAccountPrivateKey = PrivateKey.generateED25519();
+    let thirdAccountPrivateKey = PrivateKey.generateECDSA();
     let thirdAccountPublicKey = thirdAccountPrivateKey.publicKey;
 
     let createAccountCtx = await new AccountCreateTransaction()

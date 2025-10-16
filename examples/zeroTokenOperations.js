@@ -11,7 +11,7 @@ dotenv.config();
 //Step 6 is executed through the SDK
 
 async function main() {
-    // Keys should be ED25519
+    // Keys should be ECDSA
     // TODO: Fix the wallet to work with ECDSA
     if (
         process.env.OPERATOR_ID == null ||
@@ -42,7 +42,7 @@ async function main() {
         process.env.OPERATOR_ID,
     );
 
-    const alicePrivateKey = hashgraph.PrivateKey.generateED25519();
+    const alicePrivateKey = hashgraph.PrivateKey.generateECDSA();
     const alicePublicKey = alicePrivateKey.publicKey;
 
     try {

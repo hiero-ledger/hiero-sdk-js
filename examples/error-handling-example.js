@@ -32,12 +32,12 @@ async function main() {
     }
 
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
-    const operatorKey = PrivateKey.fromStringED25519(process.env.OPERATOR_KEY);
+    const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
 
     const client = Client.forName(process.env.HEDERA_NETWORK);
     client.setOperator(operatorId, operatorKey);
 
-    const newKey = PrivateKey.generateED25519();
+    const newKey = PrivateKey.generateECDSA();
     console.log(`Generated new public key: ${newKey.publicKey.toString()}`);
     let accountId = null;
 
