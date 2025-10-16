@@ -55,6 +55,7 @@ class LambdaSStoreTransaction extends Transaction {
      * @returns {this}
      */
     setHookId(hookId) {
+        this._requireNotFrozen();
         this._hookId = hookId;
         return this;
     }
@@ -72,6 +73,7 @@ class LambdaSStoreTransaction extends Transaction {
      * @returns {this}
      */
     setStorageUpdates(storageUpdates) {
+        this._requireNotFrozen();
         this._storageUpdates = storageUpdates;
         return this;
     }
@@ -81,6 +83,7 @@ class LambdaSStoreTransaction extends Transaction {
      * @returns {this}
      */
     addStorageUpdate(storageUpdate) {
+        this._requireNotFrozen();
         this._storageUpdates.push(storageUpdate);
         return this;
     }
