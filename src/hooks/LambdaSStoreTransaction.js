@@ -50,13 +50,6 @@ class LambdaSStoreTransaction extends Transaction {
     }
 
     /**
-     * @returns {LambdaStorageUpdate[] | []}
-     */
-    get storageUpdates() {
-        return this._storageUpdates;
-    }
-
-    /**
      *
      * @param {HookId} hookId
      * @returns {this}
@@ -64,6 +57,13 @@ class LambdaSStoreTransaction extends Transaction {
     setHookId(hookId) {
         this._hookId = hookId;
         return this;
+    }
+
+    /**
+     * @returns {LambdaStorageUpdate[] | []}
+     */
+    get storageUpdates() {
+        return this._storageUpdates;
     }
 
     /**
