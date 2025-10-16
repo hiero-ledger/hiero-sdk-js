@@ -144,7 +144,7 @@ describe("LambdaSStore", function () {
         expect(error).toBe(true);
     });
 
-    it("should fail with UNAUTHORIZED when signed without proper key", async function () {
+    it("should fail with INVALID_SIGNATURE when signed without proper key", async function () {
         const storageSlot = new LambdaStorageSlot(
             new Uint8Array([0x31, 0x32, 0x33, 0x34]),
             new Uint8Array([0x35, 0x36, 0x37, 0x38]),
@@ -166,7 +166,7 @@ describe("LambdaSStore", function () {
         } catch (err) {
             error = err.status
                 .toString()
-                .includes(Status.Unauthorized.toString());
+                .includes(Status.InvalidSignature.toString());
         }
 
         expect(error).toBe(true);
