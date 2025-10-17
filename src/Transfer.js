@@ -111,7 +111,6 @@ export default class Transfer {
             isApproval: this.isApproved,
         };
 
-        console.log({ hookcall: this.hookCall });
         if (this.hookCall != null) {
             switch (this.hookCall.type) {
                 case FungibleHookType.PRE_TX_ALLOWANCE_HOOK:
