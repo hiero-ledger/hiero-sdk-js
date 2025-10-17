@@ -228,9 +228,9 @@ describe("ContractCreateTransaction", function () {
                 expect(tx.hooks).to.have.lengthOf(1);
                 expect(tx.hooks[0].extensionPoint).to.equal(1);
                 expect(tx.hooks[0].hook).to.equal(lambdaHook);
-                expect(
-                    tx.hooks[0].hook.spec.contractId.num.toNumber(),
-                ).to.equal(100);
+                expect(tx.hooks[0].hook.contractId.num.toNumber()).to.equal(
+                    100,
+                );
             });
 
             it("should create a hook with LambdaStorageSlot", function () {

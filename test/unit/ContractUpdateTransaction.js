@@ -411,7 +411,7 @@ describe("ContractUpdateTransaction", function () {
                 expect(tx.hooksToCreate[0].extensionPoint).to.equal(1);
                 expect(tx.hooksToCreate[0].hook).to.equal(lambdaHook);
                 expect(
-                    tx.hooksToCreate[0].hook.spec.contractId.num.toNumber(),
+                    tx.hooksToCreate[0].hook.contractId.num.toNumber(),
                 ).to.equal(100);
             });
 
