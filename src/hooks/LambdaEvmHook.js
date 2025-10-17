@@ -5,15 +5,15 @@ class LambdaEvmHook {
     /**
      *
      * @param {object} [props]
-     * @param {import("./EvmHookSpec.js").default} [props.spec]
+     * @param {import("./../contract/ContractId").default} [props.contractId]
      * @param {import("./LambdaStorageUpdate.js").LambdaStorageUpdate[]} [props.storageUpdates]
      */
     constructor(props = {}) {
         /**
          * @private
-         * @type {?import("./EvmHookSpec.js").default}
+         * @type {?import("./../contract/ContractId.js").default}
          */
-        this._spec = null;
+        this._contractId = null;
 
         /**
          * @private
@@ -25,36 +25,27 @@ class LambdaEvmHook {
             this.setStorageUpdates(props.storageUpdates);
         }
 
-        if (props.spec != null) {
-            this.setSpec(props.spec);
+        if (props.contractId != null) {
+            this.setContractId(props.contractId);
         }
     }
 
     /**
-     *
+     * @param {import("./../contract/ContractId.js").default} contractId
+     * @returns {this}
+     */
+    setContractId(contractId) {
+        this._contractId = contractId;
+        return this;
+    }
+
+    /**
      * @param {import("./LambdaStorageUpdate.js").LambdaStorageUpdate[]} storageUpdates
      * @returns {this}
      */
     setStorageUpdates(storageUpdates) {
         this._storageUpdates = storageUpdates;
         return this;
-    }
-
-    /**
-     * @param {import("./EvmHookSpec.js").default} spec
-     * @returns {this}
-     */
-    setSpec(spec) {
-        this._spec = spec;
-        return this;
-    }
-
-    /**
-     *
-     * @returns {import("./EvmHookSpec.js").default | null}
-     */
-    get spec() {
-        return this._spec;
     }
 
     /**
@@ -67,11 +58,21 @@ class LambdaEvmHook {
 
     /**
      *
+     * @returns {import("./../contract/ContractId.js").default | null}
+     */
+    get contractId() {
+        return this._contractId;
+    }
+
+    /**
+     *
      * @returns {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaEvmHook}
      */
     _toProtobuf() {
         return {
-            spec: this._spec?._toProtobuf(),
+            spec: {
+                contractId: this._contractId?._toProtobuf(),
+            },
             storageUpdates: this._storageUpdates.map((update) =>
                 update._toProtobuf(),
             ),

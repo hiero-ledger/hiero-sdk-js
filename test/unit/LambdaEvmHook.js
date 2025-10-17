@@ -1,5 +1,4 @@
 import LambdaEvmHook from "../../src/hooks/LambdaEvmHook.js";
-import EvmHookSpec from "../../src/hooks/EvmHookSpec.js";
 import { LambdaStorageSlot } from "../../src/hooks/LambdaStorageUpdate.js";
 import { ContractId } from "../../src/index.js";
 
@@ -8,18 +7,16 @@ describe("LambdaEvmHook", function () {
         it("should create an instance with default values", function () {
             const hook = new LambdaEvmHook();
 
-            expect(hook.spec).to.be.null;
+            expect(hook.contractId).to.be.null;
             expect(hook.storageUpdates).to.be.an("array");
             expect(hook.storageUpdates).to.have.lengthOf(0);
         });
 
-        it("should create an instance with provided spec", function () {
-            const spec = new EvmHookSpec({
-                contractId: new ContractId(1, 2, 3),
-            });
-            const hook = new LambdaEvmHook({ spec });
+        it("should create an instance with provided contractId", function () {
+            const contractId = new ContractId(1, 2, 3);
+            const hook = new LambdaEvmHook({ contractId });
 
-            expect(hook.spec).to.equal(spec);
+            expect(hook.contractId).to.equal(contractId);
             expect(hook.storageUpdates).to.have.lengthOf(0);
         });
 
@@ -32,31 +29,32 @@ describe("LambdaEvmHook", function () {
             ];
             const hook = new LambdaEvmHook({ storageUpdates: updates });
 
-            expect(hook.spec).to.be.null;
+            expect(hook.contractId).to.be.null;
             expect(hook.storageUpdates).to.equal(updates);
             expect(hook.storageUpdates).to.have.lengthOf(1);
         });
 
-        it("should create an instance with both spec and storageUpdates", function () {
-            const spec = new EvmHookSpec({
-                contractId: new ContractId(5, 6, 7),
-            });
+        it("should create an instance with both contractId and storageUpdates", function () {
+            const contractId = new ContractId(5, 6, 7);
             const updates = [
                 new LambdaStorageSlot({
                     key: new Uint8Array([10, 20]),
                     value: new Uint8Array([30, 40]),
                 }),
             ];
-            const hook = new LambdaEvmHook({ spec, storageUpdates: updates });
+            const hook = new LambdaEvmHook({
+                contractId,
+                storageUpdates: updates,
+            });
 
-            expect(hook.spec).to.equal(spec);
+            expect(hook.contractId).to.equal(contractId);
             expect(hook.storageUpdates).to.equal(updates);
         });
 
         it("should create an instance with empty storageUpdates array", function () {
             const hook = new LambdaEvmHook({ storageUpdates: [] });
 
-            expect(hook.spec).to.be.null;
+            expect(hook.contractId).to.be.null;
             expect(hook.storageUpdates).to.be.an("array");
             expect(hook.storageUpdates).to.have.lengthOf(0);
         });
@@ -64,53 +62,43 @@ describe("LambdaEvmHook", function () {
         it("should create an instance with empty props object", function () {
             const hook = new LambdaEvmHook({});
 
-            expect(hook.spec).to.be.null;
+            expect(hook.contractId).to.be.null;
             expect(hook.storageUpdates).to.have.lengthOf(0);
         });
     });
 
-    describe("setSpec", function () {
-        it("should set spec and return this for chaining", function () {
+    describe("setContractId", function () {
+        it("should set contractId and return this for chaining", function () {
             const hook = new LambdaEvmHook();
-            const spec = new EvmHookSpec({
-                contractId: new ContractId(10, 20, 30),
-            });
+            const contractId = new ContractId(10, 20, 30);
 
-            const result = hook.setSpec(spec);
+            const result = hook.setContractId(contractId);
 
             expect(result).to.equal(hook);
-            expect(hook.spec).to.equal(spec);
+            expect(hook.contractId).to.equal(contractId);
         });
 
-        it("should overwrite existing spec", function () {
-            const oldSpec = new EvmHookSpec({
-                contractId: new ContractId(1, 1, 1),
-            });
-            const newSpec = new EvmHookSpec({
-                contractId: new ContractId(2, 2, 2),
-            });
-            const hook = new LambdaEvmHook({ spec: oldSpec });
+        it("should overwrite existing contractId", function () {
+            const oldContractId = new ContractId(1, 1, 1);
+            const newContractId = new ContractId(2, 2, 2);
+            const hook = new LambdaEvmHook({ contractId: oldContractId });
 
-            hook.setSpec(newSpec);
+            hook.setContractId(newContractId);
 
-            expect(hook.spec).to.equal(newSpec);
-            expect(hook.spec).to.not.equal(oldSpec);
+            expect(hook.contractId).to.equal(newContractId);
+            expect(hook.contractId).to.not.equal(oldContractId);
         });
 
-        it("should handle different EvmHookSpec instances", function () {
+        it("should handle different ContractId instances", function () {
             const hook = new LambdaEvmHook();
 
-            const spec1 = new EvmHookSpec({
-                contractId: new ContractId(1, 2, 3),
-            });
-            hook.setSpec(spec1);
-            expect(hook.spec.contractId.toString()).to.equal("1.2.3");
+            const contractId1 = new ContractId(1, 2, 3);
+            hook.setContractId(contractId1);
+            expect(hook.contractId.toString()).to.equal("1.2.3");
 
-            const spec2 = new EvmHookSpec({
-                contractId: new ContractId(4, 5, 6),
-            });
-            hook.setSpec(spec2);
-            expect(hook.spec.contractId.toString()).to.equal("4.5.6");
+            const contractId2 = new ContractId(4, 5, 6);
+            hook.setContractId(contractId2);
+            expect(hook.contractId.toString()).to.equal("4.5.6");
         });
     });
 
@@ -194,13 +182,11 @@ describe("LambdaEvmHook", function () {
     });
 
     describe("getters", function () {
-        it("should get spec using getter", function () {
-            const spec = new EvmHookSpec({
-                contractId: new ContractId(15, 25, 35),
-            });
-            const hook = new LambdaEvmHook({ spec });
+        it("should get contractId using getter", function () {
+            const contractId = new ContractId(15, 25, 35);
+            const hook = new LambdaEvmHook({ contractId });
 
-            expect(hook.spec).to.equal(spec);
+            expect(hook.contractId).to.equal(contractId);
         });
 
         it("should get storageUpdates using getter", function () {
@@ -215,10 +201,10 @@ describe("LambdaEvmHook", function () {
             expect(hook.storageUpdates).to.equal(updates);
         });
 
-        it("should return null for unset spec", function () {
+        it("should return null for unset contractId", function () {
             const hook = new LambdaEvmHook();
 
-            expect(hook.spec).to.be.null;
+            expect(hook.contractId).to.be.null;
         });
 
         it("should return empty array for default storageUpdates", function () {
@@ -231,9 +217,7 @@ describe("LambdaEvmHook", function () {
 
     describe("method chaining", function () {
         it("should support full method chaining", function () {
-            const spec = new EvmHookSpec({
-                contractId: new ContractId(11, 12, 13),
-            });
+            const contractId = new ContractId(11, 12, 13);
             const updates = [
                 new LambdaStorageSlot({
                     key: new Uint8Array([1]),
@@ -242,17 +226,15 @@ describe("LambdaEvmHook", function () {
             ];
 
             const hook = new LambdaEvmHook()
-                .setSpec(spec)
+                .setContractId(contractId)
                 .setStorageUpdates(updates);
 
-            expect(hook.spec).to.equal(spec);
+            expect(hook.contractId).to.equal(contractId);
             expect(hook.storageUpdates).to.equal(updates);
         });
 
         it("should support chaining in any order", function () {
-            const spec = new EvmHookSpec({
-                contractId: new ContractId(1, 2, 3),
-            });
+            const contractId = new ContractId(1, 2, 3);
             const updates = [
                 new LambdaStorageSlot({
                     key: new Uint8Array([5]),
@@ -262,35 +244,38 @@ describe("LambdaEvmHook", function () {
 
             const hook = new LambdaEvmHook()
                 .setStorageUpdates(updates)
-                .setSpec(spec);
+                .setContractId(contractId);
 
-            expect(hook.spec).to.equal(spec);
+            expect(hook.contractId).to.equal(contractId);
             expect(hook.storageUpdates).to.equal(updates);
         });
     });
 
     describe("_toProtobuf", function () {
         it("should convert to protobuf with all fields", function () {
-            const spec = new EvmHookSpec({
-                contractId: new ContractId(50, 60, 70),
-            });
+            const contractId = new ContractId(50, 60, 70);
             const updates = [
                 new LambdaStorageSlot({
                     key: new Uint8Array([10, 20]),
                     value: new Uint8Array([30, 40]),
                 }),
             ];
-            const hook = new LambdaEvmHook({ spec, storageUpdates: updates });
+            const hook = new LambdaEvmHook({
+                contractId,
+                storageUpdates: updates,
+            });
 
             const proto = hook._toProtobuf();
 
             expect(proto.spec).to.not.be.undefined;
-            expect(proto.spec).to.deep.equal(spec._toProtobuf());
+            expect(proto.spec.contractId).to.deep.equal(
+                contractId._toProtobuf(),
+            );
             expect(proto.storageUpdates).to.be.an("array");
             expect(proto.storageUpdates).to.have.lengthOf(1);
         });
 
-        it("should convert to protobuf with null spec", function () {
+        it("should convert to protobuf with null contractId", function () {
             const updates = [
                 new LambdaStorageSlot({
                     key: new Uint8Array([1]),
@@ -301,19 +286,17 @@ describe("LambdaEvmHook", function () {
 
             const proto = hook._toProtobuf();
 
-            expect(proto.spec).to.be.undefined;
+            expect(proto.spec.contractId).to.be.undefined;
             expect(proto.storageUpdates).to.have.lengthOf(1);
         });
 
         it("should convert to protobuf with empty storageUpdates", function () {
-            const spec = new EvmHookSpec({
-                contractId: new ContractId(1, 2, 3),
-            });
-            const hook = new LambdaEvmHook({ spec });
+            const contractId = new ContractId(1, 2, 3);
+            const hook = new LambdaEvmHook({ contractId });
 
             const proto = hook._toProtobuf();
 
-            expect(proto.spec).to.not.be.undefined;
+            expect(proto.spec.contractId).to.not.be.undefined;
             expect(proto.storageUpdates).to.be.an("array");
             expect(proto.storageUpdates).to.have.lengthOf(0);
         });
@@ -323,7 +306,7 @@ describe("LambdaEvmHook", function () {
 
             const proto = hook._toProtobuf();
 
-            expect(proto.spec).to.be.undefined;
+            expect(proto.spec.contractId).to.be.undefined;
             expect(proto.storageUpdates).to.be.an("array");
             expect(proto.storageUpdates).to.have.lengthOf(0);
         });
@@ -354,19 +337,15 @@ describe("LambdaEvmHook", function () {
     });
 
     describe("edge cases", function () {
-        it("should handle spec with null contractId", function () {
-            const spec = new EvmHookSpec();
-            const hook = new LambdaEvmHook({ spec });
+        it("should handle null contractId", function () {
+            const hook = new LambdaEvmHook();
 
-            expect(hook.spec).to.equal(spec);
-            expect(hook.spec.contractId).to.be.null;
+            expect(hook.contractId).to.be.null;
         });
 
         it("should not mutate original objects", function () {
-            const spec = new EvmHookSpec({
-                contractId: new ContractId(5, 5, 5),
-            });
-            const originalContractId = spec.contractId.toString();
+            const contractId = new ContractId(5, 5, 5);
+            const originalContractId = contractId.toString();
             const updates = [
                 new LambdaStorageSlot({
                     key: new Uint8Array([1]),
@@ -375,13 +354,14 @@ describe("LambdaEvmHook", function () {
             ];
             const originalLength = updates.length;
 
-            const hook = new LambdaEvmHook({ spec, storageUpdates: updates });
-            hook.setSpec(
-                new EvmHookSpec({ contractId: new ContractId(9, 9, 9) }),
-            );
+            const hook = new LambdaEvmHook({
+                contractId,
+                storageUpdates: updates,
+            });
+            hook.setContractId(new ContractId(9, 9, 9));
             hook.setStorageUpdates([]);
 
-            expect(spec.contractId.toString()).to.equal(originalContractId);
+            expect(contractId.toString()).to.equal(originalContractId);
             expect(updates).to.have.lengthOf(originalLength);
         });
 

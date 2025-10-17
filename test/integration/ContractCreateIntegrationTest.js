@@ -9,7 +9,6 @@ import {
     Status,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
-import EvmHookSpec from "../../src/hooks/EvmHookSpec.js";
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
 import HookExtensionPoint from "../../src/hooks/HookExtensionPoint.js";
 import LambdaEvmHook from "../../src/hooks/LambdaEvmHook.js";
@@ -212,7 +211,7 @@ describe("ContractCreate", function () {
         ).getReceipt(env.client);
 
         const lambdaHook = new LambdaEvmHook({
-            spec: new EvmHookSpec().setContractId(lambdaId),
+            contractId: lambdaId,
         });
 
         const hookDetails = new HookCreationDetails({
@@ -251,7 +250,7 @@ describe("ContractCreate", function () {
         });
         it("should execute with lambda hook and storage updates", async function () {
             const lambdaHook = new LambdaEvmHook({
-                spec: new EvmHookSpec().setContractId(contractId),
+                contractId: contractId,
                 storageUpdates: [
                     new LambdaStorageSlot(
                         new Uint8Array([0x01, 0x02, 0x03, 0x04]),
@@ -324,7 +323,7 @@ describe("ContractCreate", function () {
             ).getReceipt(env.client);
 
             const lambdaHook = new LambdaEvmHook({
-                spec: new EvmHookSpec().setContractId(lambdaId),
+                contractId: lambdaId,
             });
 
             const hookDetails = new HookCreationDetails({
@@ -373,7 +372,7 @@ describe("ContractCreate", function () {
                         new Uint8Array([0x01, 0x02, 0x03, 0x04]),
                     ),
                 ],
-                spec: new EvmHookSpec().setContractId(contractId),
+                contractId: contractId,
             });
 
             const hookDetails = new HookCreationDetails({

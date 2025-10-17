@@ -11,7 +11,6 @@ import {
 } from "../../src/index.js";
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
 import LambdaEvmHook from "../../src/hooks/LambdaEvmHook.js";
-import EvmHookSpec from "../../src/hooks/EvmHookSpec.js";
 import {
     LambdaStorageSlot,
     LambdaMappingEntries,
@@ -400,10 +399,9 @@ describe("AccountCreateTransaction", function () {
         });
 
         describe("complex hook configurations", function () {
-            it("should create a hook with LambdaEvmHook and EvmHookSpec", function () {
+            it("should create a hook with LambdaEvmHook", function () {
                 const contractId = new ContractId(0, 0, 100);
-                const spec = new EvmHookSpec({ contractId });
-                const lambdaHook = new LambdaEvmHook({ spec });
+                const lambdaHook = new LambdaEvmHook({ contractId });
                 const hook = new HookCreationDetails({
                     extensionPoint: 1,
                     hook: lambdaHook,
@@ -426,9 +424,8 @@ describe("AccountCreateTransaction", function () {
                 const storageSlot = new LambdaStorageSlot({ key, value });
 
                 const contractId = new ContractId(0, 0, 100);
-                const spec = new EvmHookSpec({ contractId });
                 const lambdaHook = new LambdaEvmHook({
-                    spec,
+                    contractId,
                     storageUpdates: [storageSlot],
                 });
                 const hook = new HookCreationDetails({
@@ -462,9 +459,8 @@ describe("AccountCreateTransaction", function () {
                 });
 
                 const contractId = new ContractId(0, 0, 100);
-                const spec = new EvmHookSpec({ contractId });
                 const lambdaHook = new LambdaEvmHook({
-                    spec,
+                    contractId,
                     storageUpdates: [mappingEntries],
                 });
                 const hook = new HookCreationDetails({
@@ -520,12 +516,11 @@ describe("AccountCreateTransaction", function () {
                 const hookId = Long.fromNumber(999);
                 const adminKey = PrivateKey.generateED25519().publicKey;
                 const contractId = new ContractId(0, 0, 100);
-                const spec = new EvmHookSpec({ contractId });
                 const key = new Uint8Array([1, 2, 3, 4]);
                 const value = new Uint8Array([5, 6, 7, 8]);
                 const storageSlot = new LambdaStorageSlot({ key, value });
                 const lambdaHook = new LambdaEvmHook({
-                    spec,
+                    contractId,
                     storageUpdates: [storageSlot],
                 });
                 const hook = new HookCreationDetails({
@@ -580,7 +575,6 @@ describe("AccountCreateTransaction", function () {
                 const hookId = Long.fromNumber(999);
                 const adminKey = PrivateKey.generateED25519().publicKey;
                 const contractId = new ContractId(0, 0, 100);
-                const spec = new EvmHookSpec({ contractId });
                 const storageKey = new Uint8Array([1, 2, 3, 4]);
                 const storageValue = new Uint8Array([5, 6, 7, 8]);
                 const storageSlot = new LambdaStorageSlot({
@@ -588,7 +582,7 @@ describe("AccountCreateTransaction", function () {
                     value: storageValue,
                 });
                 const lambdaHook = new LambdaEvmHook({
-                    spec,
+                    contractId,
                     storageUpdates: [storageSlot],
                 });
                 const hook = new HookCreationDetails({
@@ -637,7 +631,6 @@ describe("AccountCreateTransaction", function () {
         describe("edge cases", function () {
             it("should handle multiple storage updates in a hook", function () {
                 const contractId = new ContractId(0, 0, 100);
-                const spec = new EvmHookSpec({ contractId });
 
                 const storageSlot1 = new LambdaStorageSlot({
                     key: new Uint8Array([1, 2]),
@@ -649,7 +642,7 @@ describe("AccountCreateTransaction", function () {
                 });
 
                 const lambdaHook = new LambdaEvmHook({
-                    spec,
+                    contractId,
                     storageUpdates: [storageSlot1, storageSlot2],
                 });
 
@@ -680,9 +673,8 @@ describe("AccountCreateTransaction", function () {
                 });
 
                 const contractId = new ContractId(0, 0, 100);
-                const spec = new EvmHookSpec({ contractId });
                 const lambdaHook = new LambdaEvmHook({
-                    spec,
+                    contractId,
                     storageUpdates: [mappingEntries],
                 });
                 const hook = new HookCreationDetails({
