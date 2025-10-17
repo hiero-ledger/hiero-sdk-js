@@ -20,7 +20,6 @@ import NftHookType from "../hooks/NftHookType.js";
 /**
  * @typedef {import("../long.js").LongObject} LongObject
  * @typedef {import("bignumber.js").default} BigNumber
- * @typedef {import("../hooks/HookCall.js").default} HookCall
  */
 
 /**
@@ -321,11 +320,10 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      *
      * @param {AccountId} accountId
      * @param {Long} amount
-     * @param {HookCall} hook
-     * @param {number} hookType
+     * @param {FungibleHookCall} hook
      * @returns {TransferTransaction}
      */
-    addHbarTransferWithHook(accountId, amount, hook, hookType) {
+    addHbarTransferWithHook(accountId, amount, hook) {
         return this._addHbarTransfer(
             accountId,
             amount,
@@ -333,30 +331,9 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
             new FungibleHookCall({
                 hookId: hook.hookId ?? undefined,
                 evmHookCall: hook.evmHookCall ?? undefined,
-                type: hookType,
+                type: hook.type,
             }),
         );
-    }
-
-    /**
-     *
-     * @param {AccountId} accountId
-     * @param {Long} amount
-     * @param {HookCall} prePostTxAllowanceHook
-     * @returns {TransferTransaction}
-     */
-    addHbarTransferWithPrePostTxHook(
-        accountId,
-        amount,
-        prePostTxAllowanceHook,
-    ) {
-        const fungibleHook = new FungibleHookCall({
-            hookId: prePostTxAllowanceHook.hookId ?? undefined,
-            evmHookCall: prePostTxAllowanceHook.evmHookCall ?? undefined,
-            type: FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK,
-        });
-
-        return this._addHbarTransfer(accountId, amount, false, fungibleHook);
     }
 
     /**
@@ -364,19 +341,45 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @param {NftId} nftId
      * @param {AccountId} sender
      * @param {AccountId} receiver
-     * @param {HookCall} hook
-     * @param {number} hookType
+     * @param {NftHookCall} hook
      * @returns {TransferTransaction}
      */
-    addNftTransferWithSenderHook(nftId, sender, receiver, hook, hookType) {
-        const senderHook = new NftHookCall({
-            hookId: hook.hookId ?? undefined,
-            evmHookCall: hook.evmHookCall ?? undefined,
-            type:
-                hookType === NftHookType.PRE_POST_HOOK_SENDER
-                    ? NftHookType.PRE_POST_HOOK_SENDER
-                    : NftHookType.PRE_HOOK_SENDER,
-        });
+    addNftTransferWithHook(nftId, sender, receiver, hook) {
+        let senderHook = null;
+        let receiverHook = null;
+
+        switch (hook.type) {
+            case NftHookType.PRE_POST_HOOK_SENDER:
+                senderHook = new NftHookCall({
+                    hookId: hook.hookId ?? undefined,
+                    evmHookCall: hook.evmHookCall ?? undefined,
+                    type: NftHookType.PRE_POST_HOOK_SENDER,
+                });
+                break;
+            case NftHookType.PRE_HOOK_SENDER:
+                senderHook = new NftHookCall({
+                    hookId: hook.hookId ?? undefined,
+                    evmHookCall: hook.evmHookCall ?? undefined,
+                    type: NftHookType.PRE_HOOK_SENDER,
+                });
+                break;
+            case NftHookType.PRE_POST_HOOK_RECEIVER:
+                receiverHook = new NftHookCall({
+                    hookId: hook.hookId ?? undefined,
+                    evmHookCall: hook.evmHookCall ?? undefined,
+                    type: NftHookType.PRE_POST_HOOK_RECEIVER,
+                });
+                break;
+            case NftHookType.PRE_HOOK_RECEIVER:
+                receiverHook = new NftHookCall({
+                    hookId: hook.hookId ?? undefined,
+                    evmHookCall: hook.evmHookCall ?? undefined,
+                    type: NftHookType.PRE_HOOK_RECEIVER,
+                });
+                break;
+            default:
+                throw new Error(`Invalid hook type: ${hook.type}`);
+        }
 
         return this._addNftTransfer(
             false,
@@ -384,36 +387,6 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
             sender,
             receiver,
             senderHook,
-            null,
-        );
-    }
-
-    /**
-     *
-     * @param {NftId} nftId
-     * @param {AccountId} sender
-     * @param {AccountId} receiver
-     * @param {HookCall} hook
-     * @param {number} hookType
-     * @returns {TransferTransaction}
-     */
-    addNftTransferWithReceiverHook(nftId, sender, receiver, hook, hookType) {
-        const receiverHook = new NftHookCall({
-            hookId: hook.hookId != null ? hook.hookId : undefined,
-            evmHookCall:
-                hook.evmHookCall != null ? hook.evmHookCall : undefined,
-            type:
-                hookType === NftHookType.PRE_POST_HOOK_RECEIVER
-                    ? NftHookType.PRE_POST_HOOK_RECEIVER
-                    : NftHookType.PRE_HOOK_RECEIVER,
-        });
-
-        return this._addNftTransfer(
-            false,
-            nftId,
-            sender,
-            receiver,
-            null,
             receiverHook,
         );
     }
@@ -423,17 +396,16 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @param {TokenId} tokenId
      * @param {AccountId} accountId
      * @param {Long} amount
-     * @param {HookCall} hook
-     * @param {number} hookType
+     * @param {FungibleHookCall} hook
      * @returns {TransferTransaction}
      */
-    addTokenTransferWithHook(tokenId, accountId, amount, hook, hookType) {
+    addTokenTransferWithHook(tokenId, accountId, amount, hook) {
         const fungibleHook = new FungibleHookCall({
             hookId: hook.hookId != null ? hook.hookId : undefined,
             evmHookCall:
                 hook.evmHookCall != null ? hook.evmHookCall : undefined,
             type:
-                hookType === FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK
+                hook.type === FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK
                     ? FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK
                     : FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
         });
