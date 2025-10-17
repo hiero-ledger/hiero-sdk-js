@@ -35,9 +35,6 @@ export default class NodeClient extends Client {
     constructor(props) {
         super(props);
 
-        /** @private */
-        this._maxExecutionTime = 10000;
-
         if (props != null) {
             if (typeof props.network === "string") {
                 this._setNetworkFromName(props.network);
@@ -358,7 +355,7 @@ export default class NodeClient extends Client {
      * @returns {(address: string, cert?: string) => NodeChannel}
      */
     _createNetworkChannel() {
-        return (address) => new NodeChannel(address, this._maxExecutionTime);
+        return (address) => new NodeChannel(address, this.grpcDeadline);
     }
 
     /**
