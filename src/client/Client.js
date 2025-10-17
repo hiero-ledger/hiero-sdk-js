@@ -12,28 +12,16 @@ import FileId from "../file/FileId.js";
 import Logger from "../logger/Logger.js"; // eslint-disable-line
 import { convertToNumber } from "../util.js";
 import AddressBookQuery from "../network/AddressBookQuery.js";
+import {
+    DEFAULT_GRPC_DEADLINE,
+    DEFAULT_REQUEST_TIMEOUT,
+} from "../constants/ClientConstants.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
  * @typedef {import("../address_book/NodeAddressBook.js").default} NodeAddressBook
  */
-
-/**
- * Default gRPC deadline in milliseconds (10 seconds)
- *
- * Maximum time allowed for a single gRPC request. If exceeded, the node
- * is marked unhealthy and the SDK rotates to the next node.
- */
-const DEFAULT_GRPC_DEADLINE = 10 * 1000;
-
-/**
- * Default request timeout in milliseconds (2 minutes)
- *
- * Maximum total time for a complete Transaction/Query operation including
- * retries and node rotation. Must be >= grpcDeadline.
- */
-const DEFAULT_REQUEST_TIMEOUT = 2 * 60 * 1000;
 
 /**
  * @typedef {object} Operator
