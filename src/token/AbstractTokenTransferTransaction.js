@@ -22,6 +22,8 @@ import { convertAmountToLong } from "../util.js";
 
 /**
  * @typedef {import("../hooks/HookCall.js").default} HookCall
+ * @typedef {import("../hooks/FungibleHookCall.js").default} FungibleHookCall
+ * @typedef {import("../hooks/NftHookCall.js").default} NftHookCall
  */
 
 /**
@@ -102,8 +104,6 @@ export default class AbstractTokenTransferTransaction extends Transaction {
             receiverAccountIdOrSenderAccountId,
             null,
             null,
-            null,
-            null,
             receiver,
         );
     }
@@ -114,8 +114,7 @@ export default class AbstractTokenTransferTransaction extends Transaction {
      * @param {number | Long | BigNumber | bigint} amount
      * @param {boolean} isApproved
      * @param {number | null} expectedDecimals
-     * @param {HookCall | null} prePostTxAllowanceHook
-     * @param {HookCall | null} preTxAllowanceHook
+     * @param {FungibleHookCall | null} hookCall
      * @returns {this}
      */
     _addTokenTransfer(
@@ -124,8 +123,7 @@ export default class AbstractTokenTransferTransaction extends Transaction {
         amount,
         isApproved,
         expectedDecimals,
-        prePostTxAllowanceHook,
-        preTxAllowanceHook,
+        hookCall,
     ) {
         this._requireNotFrozen();
 
@@ -155,8 +153,7 @@ export default class AbstractTokenTransferTransaction extends Transaction {
                 expectedDecimals: expectedDecimals,
                 amount,
                 isApproved,
-                prePostTxAllowanceHook,
-                preTxAllowanceHook,
+                hookCall,
             }),
         );
 
@@ -177,7 +174,6 @@ export default class AbstractTokenTransferTransaction extends Transaction {
             false,
             null,
             null,
-            null,
         );
     }
 
@@ -186,10 +182,8 @@ export default class AbstractTokenTransferTransaction extends Transaction {
      * @param {NftId | TokenId | string} tokenIdOrNftId
      * @param {AccountId | string | Long | number} senderAccountIdOrSerialNumber
      * @param {AccountId | string} receiverAccountIdOrSenderAccountId
-     * @param {HookCall | null} prePostTxSenderAllowanceHook
-     * @param {HookCall | null} preTxSenderAllowanceHook
-     * @param {HookCall | null} prePostTxReceiverAllowanceHook
-     * @param {HookCall | null} preTxReceiverAllowanceHook
+     * @param {NftHookCall | null} senderHookCall
+     * @param {NftHookCall | null} receiverHookCall
      * @param {(AccountId | string)=} receiver
      * @returns {this}
      */
@@ -198,10 +192,8 @@ export default class AbstractTokenTransferTransaction extends Transaction {
         tokenIdOrNftId,
         senderAccountIdOrSerialNumber,
         receiverAccountIdOrSenderAccountId,
-        prePostTxSenderAllowanceHook,
-        preTxSenderAllowanceHook,
-        prePostTxReceiverAllowanceHook,
-        preTxReceiverAllowanceHook,
+        senderHookCall,
+        receiverHookCall,
         receiver,
     ) {
         this._requireNotFrozen();
@@ -293,10 +285,8 @@ export default class AbstractTokenTransferTransaction extends Transaction {
                 senderAccountId,
                 receiverAccountId,
                 isApproved,
-                prePostTxSenderAllowanceHook,
-                preTxSenderAllowanceHook,
-                prePostTxReceiverAllowanceHook,
-                preTxReceiverAllowanceHook,
+                senderHookCall,
+                receiverHookCall,
             }),
         );
 
@@ -323,8 +313,6 @@ export default class AbstractTokenTransferTransaction extends Transaction {
             receiverAccountIdOrSenderAccountId,
             null,
             null,
-            null,
-            null,
             receiver,
         );
     }
@@ -341,7 +329,6 @@ export default class AbstractTokenTransferTransaction extends Transaction {
             accountId,
             amount,
             true,
-            null,
             null,
             null,
         );
@@ -397,8 +384,7 @@ export default class AbstractTokenTransferTransaction extends Transaction {
                 expectedDecimals: decimals,
                 amount,
                 isApproved: false,
-                prePostTxAllowanceHook: null,
-                preTxAllowanceHook: null,
+                hookCall: null,
             }),
         );
 

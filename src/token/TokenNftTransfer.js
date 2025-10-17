@@ -3,7 +3,8 @@
 import Long from "long";
 import AccountId from "../account/AccountId.js";
 import TokenId from "./TokenId.js";
-import HookCall from "../hooks/HookCall.js";
+import NftHookCall from "../hooks/NftHookCall.js";
+import NftHookType from "../hooks/NftHookType.js";
 
 /**
  * @namespace proto
@@ -30,10 +31,8 @@ export default class TokenNftTransfer {
      * @param {AccountId | string} props.receiverAccountId
      * @param {Long | number} props.serialNumber
      * @param {boolean} props.isApproved
-     * @param {HookCall | null} props.preTxSenderAllowanceHook
-     * @param {HookCall | null} props.prePostTxSenderAllowanceHook
-     * @param {HookCall | null} props.preTxReceiverAllowanceHook
-     * @param {HookCall | null} props.prePostTxReceiverAllowanceHook
+     * @param {NftHookCall | null} props.senderHookCall
+     * @param {NftHookCall | null} props.receiverHookCall
      */
     constructor(props) {
         /**
@@ -61,25 +60,8 @@ export default class TokenNftTransfer {
                 : AccountId.fromString(props.receiverAccountId);
 
         this.serialNumber = Long.fromValue(props.serialNumber);
-        this.preTxSenderAllowanceHook = null;
-        this.prePostTxSenderAllowanceHook = null;
-        this.preTxReceiverAllowanceHook = null;
-        this.prePostTxReceiverAllowanceHook = null;
-
-        if (props.preTxSenderAllowanceHook) {
-            this.preTxSenderAllowanceHook = props.preTxSenderAllowanceHook;
-        }
-        if (props.prePostTxSenderAllowanceHook) {
-            this.prePostTxSenderAllowanceHook =
-                props.prePostTxSenderAllowanceHook;
-        }
-        if (props.preTxReceiverAllowanceHook) {
-            this.preTxReceiverAllowanceHook = props.preTxReceiverAllowanceHook;
-        }
-        if (props.prePostTxReceiverAllowanceHook) {
-            this.prePostTxReceiverAllowanceHook =
-                props.prePostTxReceiverAllowanceHook;
-        }
+        this.senderHookCall = props.senderHookCall || null;
+        this.receiverHookCall = props.receiverHookCall || null;
         this.isApproved = props.isApproved;
     }
 
@@ -98,6 +80,34 @@ export default class TokenNftTransfer {
             for (const transfer of tokenTransfer.nftTransfers != null
                 ? tokenTransfer.nftTransfers
                 : []) {
+                // Determine sender hook type
+                let senderHookCall = null;
+                if (transfer.preTxSenderAllowanceHook != null) {
+                    senderHookCall = NftHookCall._fromProtobufWithType(
+                        transfer.preTxSenderAllowanceHook,
+                        NftHookType.PRE_HOOK_SENDER,
+                    );
+                } else if (transfer.prePostTxSenderAllowanceHook != null) {
+                    senderHookCall = NftHookCall._fromProtobufWithType(
+                        transfer.prePostTxSenderAllowanceHook,
+                        NftHookType.PRE_POST_HOOK_SENDER,
+                    );
+                }
+
+                // Determine receiver hook type
+                let receiverHookCall = null;
+                if (transfer.preTxReceiverAllowanceHook != null) {
+                    receiverHookCall = NftHookCall._fromProtobufWithType(
+                        transfer.preTxReceiverAllowanceHook,
+                        NftHookType.PRE_HOOK_RECEIVER,
+                    );
+                } else if (transfer.prePostTxReceiverAllowanceHook != null) {
+                    receiverHookCall = NftHookCall._fromProtobufWithType(
+                        transfer.prePostTxReceiverAllowanceHook,
+                        NftHookType.PRE_POST_HOOK_RECEIVER,
+                    );
+                }
+
                 transfers.push(
                     new TokenNftTransfer({
                         tokenId,
@@ -116,30 +126,8 @@ export default class TokenNftTransfer {
                                 ? transfer.serialNumber
                                 : Long.ZERO,
                         isApproved: transfer.isApproval == true,
-                        prePostTxReceiverAllowanceHook:
-                            transfer.prePostTxReceiverAllowanceHook != null
-                                ? HookCall._fromProtobuf(
-                                      transfer.prePostTxReceiverAllowanceHook,
-                                  )
-                                : null,
-                        prePostTxSenderAllowanceHook:
-                            transfer.prePostTxSenderAllowanceHook != null
-                                ? HookCall._fromProtobuf(
-                                      transfer.prePostTxSenderAllowanceHook,
-                                  )
-                                : null,
-                        preTxSenderAllowanceHook:
-                            transfer.preTxSenderAllowanceHook != null
-                                ? HookCall._fromProtobuf(
-                                      transfer.preTxSenderAllowanceHook,
-                                  )
-                                : null,
-                        preTxReceiverAllowanceHook:
-                            transfer.preTxReceiverAllowanceHook != null
-                                ? HookCall._fromProtobuf(
-                                      transfer.preTxReceiverAllowanceHook,
-                                  )
-                                : null,
+                        senderHookCall: senderHookCall,
+                        receiverHookCall: receiverHookCall,
                     }),
                 );
             }
@@ -153,19 +141,42 @@ export default class TokenNftTransfer {
      * @returns {HieroProto.proto.INftTransfer}
      */
     _toProtobuf() {
-        return {
+        /** @type {HieroProto.proto.INftTransfer} */
+        const result = {
             senderAccountID: this.senderAccountId._toProtobuf(),
             receiverAccountID: this.receiverAccountId._toProtobuf(),
             serialNumber: this.serialNumber,
             isApproval: this.isApproved,
-            preTxSenderAllowanceHook:
-                this.preTxSenderAllowanceHook?._toProtobuf(),
-            prePostTxSenderAllowanceHook:
-                this.prePostTxSenderAllowanceHook?._toProtobuf(),
-            preTxReceiverAllowanceHook:
-                this.preTxReceiverAllowanceHook?._toProtobuf(),
-            prePostTxReceiverAllowanceHook:
-                this.prePostTxReceiverAllowanceHook?._toProtobuf(),
         };
+
+        // Handle sender hook
+        if (this.senderHookCall != null) {
+            switch (this.senderHookCall.type) {
+                case NftHookType.PRE_HOOK_SENDER:
+                    result.preTxSenderAllowanceHook =
+                        this.senderHookCall._toProtobuf();
+                    break;
+                case NftHookType.PRE_POST_HOOK_SENDER:
+                    result.prePostTxSenderAllowanceHook =
+                        this.senderHookCall._toProtobuf();
+                    break;
+            }
+        }
+
+        // Handle receiver hook
+        if (this.receiverHookCall != null) {
+            switch (this.receiverHookCall.type) {
+                case NftHookType.PRE_HOOK_RECEIVER:
+                    result.preTxReceiverAllowanceHook =
+                        this.receiverHookCall._toProtobuf();
+                    break;
+                case NftHookType.PRE_POST_HOOK_RECEIVER:
+                    result.prePostTxReceiverAllowanceHook =
+                        this.receiverHookCall._toProtobuf();
+                    break;
+            }
+        }
+
+        return result;
     }
 }

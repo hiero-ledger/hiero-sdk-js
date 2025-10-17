@@ -12,8 +12,10 @@ import HbarTransferMap from "./HbarTransferMap.js";
 import TokenNftTransfer from "../token/TokenNftTransfer.js";
 import NftId from "../token/NftId.js";
 import AbstractTokenTransferTransaction from "../token/AbstractTokenTransferTransaction.js";
-
-import HookType from "../hooks/HookType.js";
+import FungibleHookCall from "../hooks/FungibleHookCall.js";
+import FungibleHookType from "../hooks/FungibleHookType.js";
+import NftHookCall from "../hooks/NftHookCall.js";
+import NftHookType from "../hooks/NftHookType.js";
 
 /**
  * @typedef {import("../long.js").LongObject} LongObject
@@ -172,17 +174,10 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @param {AccountId | string} accountId
      * @param {number | string | Long | LongObject | BigNumber | Hbar} amount
      * @param {boolean} isApproved
-     * @param {HookCall | null} preTxAllowanceHook
-     * @param {HookCall | null} prePostTxAllowanceHook
+     * @param {FungibleHookCall | null} hookCall
      * @returns {TransferTransaction}
      */
-    _addHbarTransfer(
-        accountId,
-        amount,
-        isApproved,
-        preTxAllowanceHook,
-        prePostTxAllowanceHook,
-    ) {
+    _addHbarTransfer(accountId, amount, isApproved, hookCall) {
         this._requireNotFrozen();
 
         const account =
@@ -205,8 +200,7 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
                 accountId: account,
                 amount: hbars,
                 isApproved,
-                prePostTxAllowanceHook,
-                preTxAllowanceHook,
+                hookCall,
             }),
         );
 
@@ -220,7 +214,7 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @returns {TransferTransaction}
      */
     addHbarTransfer(accountId, amount) {
-        return this._addHbarTransfer(accountId, amount, false, null, null);
+        return this._addHbarTransfer(accountId, amount, false, null);
     }
 
     /**
@@ -230,7 +224,7 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @returns {TransferTransaction}
      */
     addApprovedHbarTransfer(accountId, amount) {
-        return this._addHbarTransfer(accountId, amount, true, null, null);
+        return this._addHbarTransfer(accountId, amount, true, null);
     }
 
     /**
@@ -332,11 +326,16 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @returns {TransferTransaction}
      */
     addHbarTransferWithHook(accountId, amount, hook, hookType) {
-        if (hookType === HookType.PRE_HOOK) {
-            return this._addHbarTransfer(accountId, amount, false, hook, null);
-        } else {
-            return this._addHbarTransfer(accountId, amount, false, null, hook);
-        }
+        return this._addHbarTransfer(
+            accountId,
+            amount,
+            false,
+            new FungibleHookCall({
+                hookId: hook.hookId ?? undefined,
+                evmHookCall: hook.evmHookCall ?? undefined,
+                type: hookType,
+            }),
+        );
     }
 
     /**
@@ -351,13 +350,13 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
         amount,
         prePostTxAllowanceHook,
     ) {
-        return this._addHbarTransfer(
-            accountId,
-            amount,
-            false,
-            null,
-            prePostTxAllowanceHook,
-        );
+        const fungibleHook = new FungibleHookCall({
+            hookId: prePostTxAllowanceHook.hookId ?? undefined,
+            evmHookCall: prePostTxAllowanceHook.evmHookCall ?? undefined,
+            type: FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK,
+        });
+
+        return this._addHbarTransfer(accountId, amount, false, fungibleHook);
     }
 
     /**
@@ -370,27 +369,21 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @returns {TransferTransaction}
      */
     addNftTransferWithSenderHook(nftId, sender, receiver, hook, hookType) {
-        if (hookType === HookType.PRE_POST_HOOK_SENDER) {
-            return this._addNftTransfer(
-                false,
-                nftId,
-                sender,
-                receiver,
-                hook,
-                null,
-                null,
-                null,
-            );
-        }
+        const senderHook = new NftHookCall({
+            hookId: hook.hookId ?? undefined,
+            evmHookCall: hook.evmHookCall ?? undefined,
+            type:
+                hookType === NftHookType.PRE_POST_HOOK_SENDER
+                    ? NftHookType.PRE_POST_HOOK_SENDER
+                    : NftHookType.PRE_HOOK_SENDER,
+        });
 
         return this._addNftTransfer(
             false,
             nftId,
             sender,
             receiver,
-            null,
-            hook,
-            null,
+            senderHook,
             null,
         );
     }
@@ -405,18 +398,15 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @returns {TransferTransaction}
      */
     addNftTransferWithReceiverHook(nftId, sender, receiver, hook, hookType) {
-        if (hookType === HookType.PRE_POST_HOOK_RECEIVER) {
-            return this._addNftTransfer(
-                false,
-                nftId,
-                sender,
-                receiver,
-                null,
-                null,
-                hook,
-                null,
-            );
-        }
+        const receiverHook = new NftHookCall({
+            hookId: hook.hookId != null ? hook.hookId : undefined,
+            evmHookCall:
+                hook.evmHookCall != null ? hook.evmHookCall : undefined,
+            type:
+                hookType === NftHookType.PRE_POST_HOOK_RECEIVER
+                    ? NftHookType.PRE_POST_HOOK_RECEIVER
+                    : NftHookType.PRE_HOOK_RECEIVER,
+        });
 
         return this._addNftTransfer(
             false,
@@ -424,9 +414,7 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
             sender,
             receiver,
             null,
-            null,
-            null,
-            hook,
+            receiverHook,
         );
     }
 
@@ -440,17 +428,15 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @returns {TransferTransaction}
      */
     addTokenTransferWithHook(tokenId, accountId, amount, hook, hookType) {
-        if (hookType === HookType.PRE_POST_HOOK_RECEIVER) {
-            return this._addTokenTransfer(
-                tokenId,
-                accountId,
-                amount,
-                false,
-                null,
-                hook,
-                null,
-            );
-        }
+        const fungibleHook = new FungibleHookCall({
+            hookId: hook.hookId != null ? hook.hookId : undefined,
+            evmHookCall:
+                hook.evmHookCall != null ? hook.evmHookCall : undefined,
+            type:
+                hookType === FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK
+                    ? FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK
+                    : FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
+        });
 
         return this._addTokenTransfer(
             tokenId,
@@ -458,8 +444,7 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
             amount,
             false,
             null,
-            null,
-            hook,
+            fungibleHook,
         );
     }
     /**
