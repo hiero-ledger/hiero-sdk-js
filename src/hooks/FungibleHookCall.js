@@ -2,10 +2,15 @@
 
 import HookCall from "./HookCall.js";
 import EvmHookCall from "./EvmHookCall.js";
+import FungibleHookType from "./FungibleHookType.js";
 
 /**
  * @namespace proto
  * @typedef {import("@hashgraph/proto").proto.IHookCall} HieroProto.proto.IHookCall
+ */
+
+/**
+ * @typedef {typeof FungibleHookType[keyof typeof FungibleHookType]} FungibleHookTypeValue
  */
 
 /**
@@ -17,7 +22,7 @@ class FungibleHookCall extends HookCall {
      * @param {Long} [props.hookId]
      * @param {import("../hooks/HookId.js").default} [props.fullHookId]
      * @param {import("../hooks/EvmHookCall.js").default} [props.evmHookCall]
-     * @param {number} props.type - One of FungibleHookType.PRE_TX_ALLOWANCE_HOOK or FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK
+     * @param {FungibleHookTypeValue} props.type - One of FungibleHookType.PRE_TX_ALLOWANCE_HOOK or FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK
      */
     constructor(props) {
         super(props);
@@ -44,7 +49,7 @@ class FungibleHookCall extends HookCall {
     /**
      * @internal
      * @param {HieroProto.proto.IHookCall} hookCall
-     * @param {number} type
+     * @param {FungibleHookTypeValue} type
      * @returns {FungibleHookCall}
      */
     static _fromProtobufWithType(hookCall, type) {

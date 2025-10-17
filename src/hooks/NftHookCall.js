@@ -2,10 +2,14 @@
 
 import HookCall from "./HookCall.js";
 import EvmHookCall from "./EvmHookCall.js";
-
+import NftHookType from "./NftHookType.js";
 /**
  * @namespace proto
  * @typedef {import("@hashgraph/proto").proto.IHookCall} HieroProto.proto.IHookCall
+ */
+
+/**
+ * @typedef {typeof NftHookType[keyof typeof NftHookType]} NftHookTypeValue
  */
 
 /**
@@ -17,7 +21,7 @@ class NftHookCall extends HookCall {
      * @param {Long} [props.hookId]
      * @param {import("../hooks/HookId.js").default} [props.fullHookId]
      * @param {import("../hooks/EvmHookCall.js").default} [props.evmHookCall]
-     * @param {number | null} [props.type] - One of NftHookType (PRE_HOOK_SENDER, PRE_POST_HOOK_SENDER, PRE_HOOK_RECEIVER, PRE_POST_HOOK_RECEIVER)
+     * @param {NftHookTypeValue} props.type - One of NftHookType (PRE_HOOK_SENDER, PRE_POST_HOOK_SENDER, PRE_HOOK_RECEIVER, PRE_POST_HOOK_RECEIVER)
      */
     constructor(props) {
         super(props);
@@ -25,20 +29,17 @@ class NftHookCall extends HookCall {
         if (props.type == null) {
             throw new Error("type cannot be null");
         }
+
         /**
          * The type of NFT hook
          * @private
-         * @type {number | null}
+         * @type {number}
          */
-        this._type = null;
-
-        if (props.type != null) {
-            this._type = props.type;
-        }
+        this._type = props.type;
     }
 
     /**
-     * @returns {number | null}
+     * @returns {number}
      */
     get type() {
         return this._type;
@@ -47,7 +48,7 @@ class NftHookCall extends HookCall {
     /**
      * @internal
      * @param {HieroProto.proto.IHookCall} hookCall
-     * @param {number} type
+     * @param {NftHookTypeValue} type
      * @returns {NftHookCall}
      */
     static _fromProtobufWithType(hookCall, type) {
