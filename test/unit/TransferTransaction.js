@@ -387,11 +387,13 @@ describe("TransferTransaction", function () {
                 accountId: accountId1,
                 amount: amount.negated(),
                 isApproved: false,
+                hookCall: null,
             },
             {
                 accountId: accountId2,
                 amount: amount,
                 isApproved: false,
+                hookCall: null,
             },
         ]);
     });
