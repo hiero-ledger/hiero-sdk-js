@@ -5,10 +5,8 @@ import PrivateKey from "../../src/PrivateKey.js";
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
 import HookExtensionPoint from "../../src/hooks/HookExtensionPoint.js";
 import LambdaEvmHook from "../../src/hooks/LambdaEvmHook.js";
-import EvmHookSpec from "../../src/hooks/EvmHookSpec.js";
 import HookCall from "../../src/hooks/HookCall.js";
 import EvmHookCall from "../../src/hooks/EvmHookCall.js";
-import HookType from "../../src/hooks/HookType.js";
 import { decode } from "../../src/encoding/hex.js";
 import ContractCreateTransaction from "../../src/contract/ContractCreateTransaction.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
@@ -18,6 +16,8 @@ import TokenMintTransaction from "../../src/token/TokenMintTransaction.js";
 import TokenAssociateTransaction from "../../src/token/TokenAssociateTransaction.js";
 import TokenType from "../../src/token/TokenType.js";
 import NftId from "../../src/token/NftId.js";
+import FungibleHookType from "../../src/hooks/FungibleHookType.js";
+import NftHookType from "../../src/hooks/NftHookType.js";
 
 describe("CryptoTransfer", function () {
     let env;
@@ -98,7 +98,7 @@ describe("CryptoTransfer", function () {
             // Create account with a pre allowance hook on receiving side
             const key = PrivateKey.generateED25519();
             const lambdaHook = new LambdaEvmHook({
-                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                contractId: lambdaContractId,
                 storageUpdates: [],
             });
             const hookDetails = new HookCreationDetails({
@@ -119,7 +119,7 @@ describe("CryptoTransfer", function () {
 
             const call = new HookCall({
                 hookId: Long.fromInt(2),
-                call: new EvmHookCall({ gasLimit: 25000 }),
+                evmHookCall: new EvmHookCall({ gasLimit: 25000 }),
             });
 
             // Operator sends TO the account with hook (receiver hook)
@@ -130,7 +130,7 @@ describe("CryptoTransfer", function () {
                         accountId,
                         new Hbar(1),
                         call,
-                        HookType.PRE_HOOK_RECEIVER,
+                        FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
                     )
                     .execute(env.client)
             ).getReceipt(env.client);
@@ -144,7 +144,7 @@ describe("CryptoTransfer", function () {
             // Create two accounts, each with their own hook
             const key1 = PrivateKey.generateED25519();
             const lambdaHook1 = new LambdaEvmHook({
-                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                contractId: lambdaContractId,
                 storageUpdates: [],
             });
             const hookDetails1 = new HookCreationDetails({
@@ -167,7 +167,7 @@ describe("CryptoTransfer", function () {
 
             const key2 = PrivateKey.generateED25519();
             const lambdaHook2 = new LambdaEvmHook({
-                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                contractId: lambdaContractId,
                 storageUpdates: [],
             });
             const hookDetails2 = new HookCreationDetails({
@@ -190,12 +190,12 @@ describe("CryptoTransfer", function () {
 
             const call1 = new HookCall({
                 hookId: Long.fromInt(2),
-                call: new EvmHookCall({ gasLimit: 25000 }),
+                evmHookCall: new EvmHookCall({ gasLimit: 25000 }),
             });
 
             const call2 = new HookCall({
                 hookId: Long.fromInt(2),
-                call: new EvmHookCall({ gasLimit: 25000 }),
+                evmHookCall: new EvmHookCall({ gasLimit: 25000 }),
             });
 
             // Transfer to both accounts - both hooks must approve
@@ -206,13 +206,13 @@ describe("CryptoTransfer", function () {
                         accountId1,
                         new Hbar(1),
                         call1,
-                        HookType.PRE_HOOK_RECEIVER,
+                        FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
                     )
                     .addHbarTransferWithHook(
                         accountId2,
                         new Hbar(1),
                         call2,
-                        HookType.PRE_HOOK_RECEIVER,
+                        FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
                     )
                     .execute(env.client)
             ).getReceipt(env.client);
@@ -221,12 +221,10 @@ describe("CryptoTransfer", function () {
         });
 
         it("should execute both sender and receiver hooks in HBAR transfer", async function () {
-            const operatorId = env.operatorId;
-
             // Create sender account with hook
             const senderKey = PrivateKey.generateED25519();
             const senderHook = new LambdaEvmHook({
-                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                contractId: lambdaContractId,
                 storageUpdates: [],
             });
             const senderHookDetails = new HookCreationDetails({
@@ -250,7 +248,7 @@ describe("CryptoTransfer", function () {
             // Create receiver account with hook
             const receiverKey = PrivateKey.generateED25519();
             const receiverHook = new LambdaEvmHook({
-                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                contractId: lambdaContractId,
                 storageUpdates: [],
             });
             const receiverHookDetails = new HookCreationDetails({
@@ -273,12 +271,12 @@ describe("CryptoTransfer", function () {
 
             const senderCall = new HookCall({
                 hookId: Long.fromInt(2),
-                call: new EvmHookCall({ gasLimit: 25000 }),
+                evmHookCall: new EvmHookCall({ gasLimit: 25000 }),
             });
 
             const receiverCall = new HookCall({
                 hookId: Long.fromInt(2),
-                call: new EvmHookCall({ gasLimit: 25000 }),
+                evmHookCall: new EvmHookCall({ gasLimit: 25000 }),
             });
 
             // Transfer from sender to receiver, both with hooks
@@ -288,13 +286,13 @@ describe("CryptoTransfer", function () {
                         senderId,
                         new Hbar(-1),
                         senderCall,
-                        HookType.PRE_HOOK_SENDER,
+                        FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
                     )
                     .addHbarTransferWithHook(
                         receiverId,
                         new Hbar(1),
                         receiverCall,
-                        HookType.PRE_HOOK_RECEIVER,
+                        FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
                     )
                     .freezeWith(env.client)
                     .sign(senderKey)
@@ -310,7 +308,7 @@ describe("CryptoTransfer", function () {
             // Create receiver account with hook
             const receiverKey = PrivateKey.generateED25519();
             const lambdaHook = new LambdaEvmHook({
-                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                contractId: lambdaContractId,
                 storageUpdates: [],
             });
             const hookDetails = new HookCreationDetails({
@@ -354,20 +352,20 @@ describe("CryptoTransfer", function () {
 
             const call = new HookCall({
                 hookId: Long.fromInt(1),
-                call: new EvmHookCall({ gasLimit: 25000 }),
+                evmHookCall: new EvmHookCall({ gasLimit: 25000 }),
             });
 
             // Transfer tokens with hook
             const response = await (
                 await new TransferTransaction()
+                    .addTokenTransfer(tokenId, operatorId, -1000)
                     .addTokenTransferWithHook(
                         tokenId,
-                        operatorId,
-                        -1000,
+                        receiverId,
+                        1000,
                         call,
-                        HookType.PRE_HOOK_SENDER,
+                        FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
                     )
-                    .addTokenTransfer(tokenId, receiverId, 1000)
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -375,12 +373,10 @@ describe("CryptoTransfer", function () {
         });
 
         it("should transfer NFT with sender and receiver allowance hooks", async function () {
-            const operatorId = env.operatorId;
-
             // Create sender account with hook
             const senderKey = PrivateKey.generateED25519();
             const senderHook = new LambdaEvmHook({
-                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                contractId: lambdaContractId,
                 storageUpdates: [],
             });
             const senderHookDetails = new HookCreationDetails({
@@ -404,7 +400,7 @@ describe("CryptoTransfer", function () {
             // Create receiver account with hook
             const receiverKey = PrivateKey.generateED25519();
             const receiverHook = new LambdaEvmHook({
-                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                contractId: lambdaContractId,
                 storageUpdates: [],
             });
 
@@ -441,7 +437,7 @@ describe("CryptoTransfer", function () {
             const tokenId = (await tokenResp.getReceipt(env.client)).tokenId;
 
             // Mint NFT
-            const tokenMintReceipt = await (
+            await (
                 await (
                     await new TokenMintTransaction()
                         .setTokenId(tokenId)
@@ -450,8 +446,6 @@ describe("CryptoTransfer", function () {
                         .sign(senderKey)
                 ).execute(env.client)
             ).getReceipt(env.client);
-
-            const serials = tokenMintReceipt.serials;
 
             // Associate receiver with token
             await (
@@ -464,12 +458,12 @@ describe("CryptoTransfer", function () {
 
             const senderCall = new HookCall({
                 hookId: Long.fromInt(2),
-                call: new EvmHookCall({ gasLimit: 25000 }),
+                evmHookCall: new EvmHookCall({ gasLimit: 25000 }),
             });
 
             const receiverCall = new HookCall({
                 hookId: Long.fromInt(2),
-                call: new EvmHookCall({ gasLimit: 25000 }),
+                evmHookCall: new EvmHookCall({ gasLimit: 25000 }),
             });
 
             const nftId = new NftId(tokenId, 1);
@@ -482,14 +476,14 @@ describe("CryptoTransfer", function () {
                         senderId,
                         receiverId,
                         senderCall,
-                        HookType.PRE_HOOK_SENDER,
+                        NftHookType.PRE_HOOK_SENDER,
                     )
                     .addNftTransferWithReceiverHook(
                         nftId,
                         senderId,
                         receiverId,
                         receiverCall,
-                        HookType.PRE_HOOK_RECEIVER,
+                        NftHookType.PRE_HOOK_RECEIVER,
                     )
                     .freezeWith(env.client)
                     .sign(senderKey)
@@ -505,7 +499,7 @@ describe("CryptoTransfer", function () {
             // Create account with a pre allowance hook (hookId = 1)
             const key = PrivateKey.generateED25519();
             const lambdaHook = new LambdaEvmHook({
-                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                contractId: lambdaContractId,
                 storageUpdates: [],
             });
             const hookDetails = new HookCreationDetails({
@@ -526,7 +520,7 @@ describe("CryptoTransfer", function () {
 
             const call = new HookCall({
                 hookId: Long.fromInt(1),
-                call: new EvmHookCall({ gasLimit: 1000000 }),
+                evmHookCall: new EvmHookCall({ gasLimit: 1000000 }),
             });
 
             const response = await (
@@ -535,7 +529,7 @@ describe("CryptoTransfer", function () {
                         accountId,
                         new Hbar(-1),
                         call,
-                        HookType.PRE_HOOK,
+                        FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
                     )
                     .addHbarTransfer(operatorId, new Hbar(1))
                     .freezeWith(env.client)
@@ -552,7 +546,7 @@ describe("CryptoTransfer", function () {
             // Create account with a pre/post allowance hook (hookId = 1)
             const key = PrivateKey.generateED25519();
             const lambdaHook = new LambdaEvmHook({
-                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                contractId: lambdaContractId,
             });
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
@@ -572,7 +566,7 @@ describe("CryptoTransfer", function () {
 
             const call = new HookCall({
                 hookId: Long.fromInt(2),
-                call: new EvmHookCall({ gasLimit: 500000 }),
+                evmHookCall: new EvmHookCall({ gasLimit: 500000 }),
             });
 
             // Execute transfer with pre/post hook on sender
@@ -582,14 +576,14 @@ describe("CryptoTransfer", function () {
                         accountId,
                         new Hbar(-1),
                         call,
-                        HookType.PRE_POST_HOOK_SENDER,
+                        FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK,
                     )
                     .addHbarTransfer(operatorId, new Hbar(1))
                     .addHbarTransferWithHook(
                         accountId,
                         new Hbar(-1),
                         call,
-                        HookType.PRE_POST_HOOK_SENDER,
+                        FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK,
                     )
                     .addHbarTransfer(operatorId, new Hbar(1))
                     .freezeWith(env.client)
