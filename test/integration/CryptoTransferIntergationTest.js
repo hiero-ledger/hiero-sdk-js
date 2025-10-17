@@ -5,7 +5,6 @@ import PrivateKey from "../../src/PrivateKey.js";
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
 import HookExtensionPoint from "../../src/hooks/HookExtensionPoint.js";
 import LambdaEvmHook from "../../src/hooks/LambdaEvmHook.js";
-import HookCall from "../../src/hooks/HookCall.js";
 import EvmHookCall from "../../src/hooks/EvmHookCall.js";
 import { decode } from "../../src/encoding/hex.js";
 import ContractCreateTransaction from "../../src/contract/ContractCreateTransaction.js";
@@ -18,6 +17,8 @@ import TokenType from "../../src/token/TokenType.js";
 import NftId from "../../src/token/NftId.js";
 import FungibleHookType from "../../src/hooks/FungibleHookType.js";
 import NftHookType from "../../src/hooks/NftHookType.js";
+import FungibleHookCall from "../../src/hooks/FungibleHookCall.js";
+import NftHookCall from "../../src/hooks/NftHookCall.js";
 
 describe("CryptoTransfer", function () {
     let env;
@@ -117,21 +118,17 @@ describe("CryptoTransfer", function () {
             ).execute(env.client);
             const { accountId } = await createResp.getReceipt(env.client);
 
-            const call = new HookCall({
+            const call = new FungibleHookCall({
                 hookId: Long.fromInt(2),
                 evmHookCall: new EvmHookCall({ gasLimit: 25000 }),
+                type: FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
             });
 
             // Operator sends TO the account with hook (receiver hook)
             const response = await (
                 await new TransferTransaction()
                     .addHbarTransfer(operatorId, new Hbar(-1))
-                    .addHbarTransferWithHook(
-                        accountId,
-                        new Hbar(1),
-                        call,
-                        FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
-                    )
+                    .addHbarTransferWithHook(accountId, new Hbar(1), call)
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -188,14 +185,16 @@ describe("CryptoTransfer", function () {
                 env.client,
             );
 
-            const call1 = new HookCall({
+            const call1 = new FungibleHookCall({
                 hookId: Long.fromInt(2),
                 evmHookCall: new EvmHookCall({ gasLimit: 25000 }),
+                type: FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
             });
 
-            const call2 = new HookCall({
+            const call2 = new FungibleHookCall({
                 hookId: Long.fromInt(2),
                 evmHookCall: new EvmHookCall({ gasLimit: 25000 }),
+                type: FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
             });
 
             // Transfer to both accounts - both hooks must approve
@@ -269,30 +268,26 @@ describe("CryptoTransfer", function () {
                 env.client,
             );
 
-            const senderCall = new HookCall({
+            const senderCall = new FungibleHookCall({
                 hookId: Long.fromInt(2),
                 evmHookCall: new EvmHookCall({ gasLimit: 25000 }),
+                type: FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
             });
 
-            const receiverCall = new HookCall({
+            const receiverCall = new FungibleHookCall({
                 hookId: Long.fromInt(2),
                 evmHookCall: new EvmHookCall({ gasLimit: 25000 }),
+                type: FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
             });
 
             // Transfer from sender to receiver, both with hooks
             const response = await (
                 await new TransferTransaction()
-                    .addHbarTransferWithHook(
-                        senderId,
-                        new Hbar(-1),
-                        senderCall,
-                        FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
-                    )
+                    .addHbarTransferWithHook(senderId, new Hbar(-1), senderCall)
                     .addHbarTransferWithHook(
                         receiverId,
                         new Hbar(1),
                         receiverCall,
-                        FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
                     )
                     .freezeWith(env.client)
                     .sign(senderKey)
@@ -350,9 +345,10 @@ describe("CryptoTransfer", function () {
                     .sign(receiverKey)
             ).execute(env.client);
 
-            const call = new HookCall({
+            const call = new FungibleHookCall({
                 hookId: Long.fromInt(1),
                 evmHookCall: new EvmHookCall({ gasLimit: 25000 }),
+                type: FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
             });
 
             // Transfer tokens with hook
@@ -456,14 +452,16 @@ describe("CryptoTransfer", function () {
                     .sign(receiverKey)
             ).execute(env.client);
 
-            const senderCall = new HookCall({
+            const senderCall = new NftHookCall({
                 hookId: Long.fromInt(2),
                 evmHookCall: new EvmHookCall({ gasLimit: 25000 }),
+                type: NftHookType.PRE_HOOK_SENDER,
             });
 
-            const receiverCall = new HookCall({
+            const receiverCall = new NftHookCall({
                 hookId: Long.fromInt(2),
                 evmHookCall: new EvmHookCall({ gasLimit: 25000 }),
+                type: NftHookType.PRE_HOOK_RECEIVER,
             });
 
             const nftId = new NftId(tokenId, 1);
@@ -471,19 +469,17 @@ describe("CryptoTransfer", function () {
             // Transfer NFT with both sender and receiver hooks
             const response = await (
                 await new TransferTransaction()
-                    .addNftTransferWithSenderHook(
+                    .addNftTransferWithHook(
                         nftId,
                         senderId,
                         receiverId,
                         senderCall,
-                        NftHookType.PRE_HOOK_SENDER,
                     )
-                    .addNftTransferWithReceiverHook(
+                    .addNftTransferWithHook(
                         nftId,
                         senderId,
                         receiverId,
                         receiverCall,
-                        NftHookType.PRE_HOOK_RECEIVER,
                     )
                     .freezeWith(env.client)
                     .sign(senderKey)
@@ -518,9 +514,10 @@ describe("CryptoTransfer", function () {
             ).execute(env.client);
             const { accountId } = await createResp.getReceipt(env.client);
 
-            const call = new HookCall({
+            const call = new FungibleHookCall({
                 hookId: Long.fromInt(1),
                 evmHookCall: new EvmHookCall({ gasLimit: 1000000 }),
+                type: FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
             });
 
             const response = await (
@@ -564,27 +561,18 @@ describe("CryptoTransfer", function () {
             ).execute(env.client);
             const { accountId } = await createResp.getReceipt(env.client);
 
-            const call = new HookCall({
+            const call = new FungibleHookCall({
                 hookId: Long.fromInt(2),
                 evmHookCall: new EvmHookCall({ gasLimit: 500000 }),
+                type: FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
             });
 
             // Execute transfer with pre/post hook on sender
             const response = await (
                 await new TransferTransaction()
-                    .addHbarTransferWithHook(
-                        accountId,
-                        new Hbar(-1),
-                        call,
-                        FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK,
-                    )
+                    .addHbarTransferWithHook(accountId, new Hbar(-1), call)
                     .addHbarTransfer(operatorId, new Hbar(1))
-                    .addHbarTransferWithHook(
-                        accountId,
-                        new Hbar(-1),
-                        call,
-                        FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK,
-                    )
+                    .addHbarTransferWithHook(accountId, new Hbar(-1), call)
                     .addHbarTransfer(operatorId, new Hbar(1))
                     .freezeWith(env.client)
                     .sign(key)
