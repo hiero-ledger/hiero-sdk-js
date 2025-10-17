@@ -344,7 +344,7 @@ export default class WebClient extends Client {
      * @returns {(address: string) => WebChannel}
      */
     _createNetworkChannel() {
-        return (address) => new WebChannel(address);
+        return (address) => new WebChannel(address, this.grpcDeadline);
     }
 
     /**
