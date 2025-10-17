@@ -34,13 +34,13 @@ class FungibleHookCall extends HookCall {
         /**
          * The type of fungible hook
          * @private
-         * @type {number}
+         * @type {FungibleHookTypeValue}
          */
         this._type = props.type;
     }
 
     /**
-     * @returns {number}
+     * @returns {FungibleHookTypeValue}
      */
     get type() {
         return this._type;

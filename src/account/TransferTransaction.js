@@ -329,8 +329,9 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
             amount,
             false,
             new FungibleHookCall({
-                hookId: hook.hookId ?? undefined,
-                evmHookCall: hook.evmHookCall ?? undefined,
+                hookId: hook.hookId != null ? hook.hookId : undefined,
+                evmHookCall:
+                    hook.evmHookCall != null ? hook.evmHookCall : undefined,
                 type: hook.type,
             }),
         );
@@ -341,53 +342,24 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @param {NftId} nftId
      * @param {AccountId} sender
      * @param {AccountId} receiver
-     * @param {NftHookCall} hook
+     * @param {NftHookCall} senderHookCall
+     * @param {NftHookCall} receiverHookCall
      * @returns {TransferTransaction}
      */
-    addNftTransferWithHook(nftId, sender, receiver, hook) {
-        let senderHook = null;
-        let receiverHook = null;
-
-        switch (hook.type) {
-            case NftHookType.PRE_POST_HOOK_SENDER:
-                senderHook = new NftHookCall({
-                    hookId: hook.hookId ?? undefined,
-                    evmHookCall: hook.evmHookCall ?? undefined,
-                    type: NftHookType.PRE_POST_HOOK_SENDER,
-                });
-                break;
-            case NftHookType.PRE_HOOK_SENDER:
-                senderHook = new NftHookCall({
-                    hookId: hook.hookId ?? undefined,
-                    evmHookCall: hook.evmHookCall ?? undefined,
-                    type: NftHookType.PRE_HOOK_SENDER,
-                });
-                break;
-            case NftHookType.PRE_POST_HOOK_RECEIVER:
-                receiverHook = new NftHookCall({
-                    hookId: hook.hookId ?? undefined,
-                    evmHookCall: hook.evmHookCall ?? undefined,
-                    type: NftHookType.PRE_POST_HOOK_RECEIVER,
-                });
-                break;
-            case NftHookType.PRE_HOOK_RECEIVER:
-                receiverHook = new NftHookCall({
-                    hookId: hook.hookId ?? undefined,
-                    evmHookCall: hook.evmHookCall ?? undefined,
-                    type: NftHookType.PRE_HOOK_RECEIVER,
-                });
-                break;
-            default:
-                throw new Error(`Invalid hook type: ${hook.type}`);
-        }
-
+    addNftTransferWithHook(
+        nftId,
+        sender,
+        receiver,
+        senderHookCall,
+        receiverHookCall,
+    ) {
         return this._addNftTransfer(
             false,
             nftId,
             sender,
             receiver,
-            senderHook,
-            receiverHook,
+            senderHookCall,
+            receiverHookCall,
         );
     }
 
