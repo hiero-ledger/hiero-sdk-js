@@ -24,33 +24,15 @@ class HookCall {
      * @param {import("../hooks/EvmHookCall.js").default} [props.evmHookCall]
      */
     constructor(props = {}) {
-        /**
-         * @private
-         * @type {?Long}
-         */
-        this._hookId = null;
-
-        /**
-         * @private
-         * @type {?import("../hooks/HookId.js").default}
-         */
-        this._fullHookId = null;
-
-        /**
-         * @private
-         * @type {?import("../hooks/EvmHookCall.js").default}
-         */
-        this._evmHookCall = null;
-
-        if (props.hookId != null) {
+        if (props.hookId !== undefined) {
             this.setHookId(props.hookId);
         }
 
-        if (props.fullHookId != null) {
+        if (props.fullHookId !== undefined) {
             this.setFullHookId(props.fullHookId);
         }
 
-        if (props.evmHookCall != null) {
+        if (props.evmHookCall !== undefined) {
             this.setCall(props.evmHookCall);
         }
     }
@@ -63,7 +45,7 @@ class HookCall {
     setHookId(hookId) {
         this._hookId = hookId;
         // clear fullHookId when setting hookId
-        this._fullHookId = null;
+        this._fullHookId = undefined;
         return this;
     }
 
@@ -84,13 +66,13 @@ class HookCall {
     setFullHookId(fullHookId) {
         this._fullHookId = fullHookId;
         // clear hookId when setting fullHookId
-        this._hookId = null;
+        this._hookId = undefined;
         return this;
     }
 
     /**
      *
-     * @returns {Long | null}
+     * @returns {Long | undefined}
      */
     get hookId() {
         return this._hookId;
@@ -98,7 +80,7 @@ class HookCall {
 
     /**
      *
-     * @returns {import("../hooks/HookId.js").default | null}
+     * @returns {import("../hooks/HookId.js").default | undefined}
      */
     get fullHookId() {
         return this._fullHookId;
@@ -106,7 +88,7 @@ class HookCall {
 
     /**
      *
-     * @returns {import("../hooks/EvmHookCall.js").default | null}
+     * @returns {import("../hooks/EvmHookCall.js").default | undefined}
      */
     get evmHookCall() {
         return this._evmHookCall;
@@ -119,7 +101,7 @@ class HookCall {
      */
     static _fromProtobuf(hookCall) {
         return new HookCall({
-            hookId: hookCall.hookId != null ? hookCall.hookId : undefined,
+            hookId: hookCall.hookId ?? undefined,
             evmHookCall: hookCall.evmHookCall
                 ? EvmHookCall._fromProtobuf(hookCall.evmHookCall)
                 : undefined,

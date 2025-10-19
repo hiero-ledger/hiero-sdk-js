@@ -95,7 +95,6 @@ export default class TokenAirdropTransaction extends AbstractTokenTransferTransa
                     tokenTransfer.amount,
                     tokenTransfer.isApproved,
                     tokenTransfer.expectedDecimals,
-                    null,
                 );
             }
         }
@@ -111,8 +110,6 @@ export default class TokenAirdropTransaction extends AbstractTokenTransferTransa
                     nftTransfer.tokenId,
                     nftTransfer.serialNumber,
                     nftTransfer.senderAccountId,
-                    null,
-                    null,
                     nftTransfer.receiverAccountId,
                 );
             }
@@ -140,7 +137,7 @@ export default class TokenAirdropTransaction extends AbstractTokenTransferTransa
             amount,
             true,
             expectedDecimals,
-            null,
+            undefined,
         );
         return this;
     }

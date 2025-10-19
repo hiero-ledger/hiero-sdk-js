@@ -58,7 +58,7 @@ class FungibleHookCall extends HookCall {
             evmHookCall: hookCall.evmHookCall
                 ? EvmHookCall._fromProtobuf(hookCall.evmHookCall)
                 : undefined,
-            type: type,
+            type,
         });
     }
 }

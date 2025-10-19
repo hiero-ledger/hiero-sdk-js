@@ -31,8 +31,8 @@ export default class TokenNftTransfer {
      * @param {AccountId | string} props.receiverAccountId
      * @param {Long | number} props.serialNumber
      * @param {boolean} props.isApproved
-     * @param {NftHookCall | null} props.senderHookCall
-     * @param {NftHookCall | null} props.receiverHookCall
+     * @param {NftHookCall} [props.senderHookCall]
+     * @param {NftHookCall} [props.receiverHookCall]
      */
     constructor(props) {
         /**
@@ -60,8 +60,8 @@ export default class TokenNftTransfer {
                 : AccountId.fromString(props.receiverAccountId);
 
         this.serialNumber = Long.fromValue(props.serialNumber);
-        this.senderHookCall = props.senderHookCall || null;
-        this.receiverHookCall = props.receiverHookCall || null;
+        this.senderHookCall = props.senderHookCall;
+        this.receiverHookCall = props.receiverHookCall;
         this.isApproved = props.isApproved;
     }
 
@@ -81,7 +81,7 @@ export default class TokenNftTransfer {
                 ? tokenTransfer.nftTransfers
                 : []) {
                 // Determine sender hook type
-                let senderHookCall = null;
+                let senderHookCall;
                 if (transfer.preTxSenderAllowanceHook != null) {
                     senderHookCall = NftHookCall._fromProtobufWithType(
                         transfer.preTxSenderAllowanceHook,
@@ -95,7 +95,7 @@ export default class TokenNftTransfer {
                 }
 
                 // Determine receiver hook type
-                let receiverHookCall = null;
+                let receiverHookCall;
                 if (transfer.preTxReceiverAllowanceHook != null) {
                     receiverHookCall = NftHookCall._fromProtobufWithType(
                         transfer.preTxReceiverAllowanceHook,

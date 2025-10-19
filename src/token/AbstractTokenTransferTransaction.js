@@ -102,8 +102,6 @@ export default class AbstractTokenTransferTransaction extends Transaction {
             tokenIdOrNftId,
             senderAccountIdOrSerialNumber,
             receiverAccountIdOrSenderAccountId,
-            null,
-            null,
             receiver,
         );
     }
@@ -114,7 +112,7 @@ export default class AbstractTokenTransferTransaction extends Transaction {
      * @param {number | Long | BigNumber | bigint} amount
      * @param {boolean} isApproved
      * @param {number | null} expectedDecimals
-     * @param {FungibleHookCall | null} hookCall
+     * @param {FungibleHookCall} [hookCall]
      * @returns {this}
      */
     _addTokenTransfer(
@@ -150,7 +148,7 @@ export default class AbstractTokenTransferTransaction extends Transaction {
             new TokenTransfer({
                 tokenId,
                 accountId,
-                expectedDecimals: expectedDecimals,
+                expectedDecimals,
                 amount,
                 isApproved,
                 hookCall,
@@ -167,14 +165,7 @@ export default class AbstractTokenTransferTransaction extends Transaction {
      * @returns {this}
      */
     addTokenTransfer(tokenId, accountId, amount) {
-        return this._addTokenTransfer(
-            tokenId,
-            accountId,
-            amount,
-            false,
-            null,
-            null,
-        );
+        return this._addTokenTransfer(tokenId, accountId, amount, false, null);
     }
 
     /**
@@ -182,9 +173,9 @@ export default class AbstractTokenTransferTransaction extends Transaction {
      * @param {NftId | TokenId | string} tokenIdOrNftId
      * @param {AccountId | string | Long | number} senderAccountIdOrSerialNumber
      * @param {AccountId | string} receiverAccountIdOrSenderAccountId
-     * @param {NftHookCall | null} senderHookCall
-     * @param {NftHookCall | null} receiverHookCall
      * @param {(AccountId | string)=} receiver
+     * @param {NftHookCall=} senderHookCall
+     * @param {NftHookCall=} receiverHookCall
      * @returns {this}
      */
     _addNftTransfer(
@@ -192,9 +183,9 @@ export default class AbstractTokenTransferTransaction extends Transaction {
         tokenIdOrNftId,
         senderAccountIdOrSerialNumber,
         receiverAccountIdOrSenderAccountId,
+        receiver,
         senderHookCall,
         receiverHookCall,
-        receiver,
     ) {
         this._requireNotFrozen();
 
@@ -311,8 +302,6 @@ export default class AbstractTokenTransferTransaction extends Transaction {
             tokenIdOrNftId,
             senderAccountIdOrSerialNumber,
             receiverAccountIdOrSenderAccountId,
-            null,
-            null,
             receiver,
         );
     }
@@ -324,14 +313,7 @@ export default class AbstractTokenTransferTransaction extends Transaction {
      * @returns {this}
      */
     addApprovedTokenTransfer(tokenId, accountId, amount) {
-        return this._addTokenTransfer(
-            tokenId,
-            accountId,
-            amount,
-            true,
-            null,
-            null,
-        );
+        return this._addTokenTransfer(tokenId, accountId, amount, true, null);
     }
 
     /**
@@ -384,7 +366,6 @@ export default class AbstractTokenTransferTransaction extends Transaction {
                 expectedDecimals: decimals,
                 amount,
                 isApproved: false,
-                hookCall: null,
             }),
         );
 

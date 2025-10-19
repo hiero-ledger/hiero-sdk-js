@@ -41,7 +41,7 @@ export default class TokenTransfer {
      * @param {number | null} props.expectedDecimals
      * @param {Long | number | BigNumber | bigint} props.amount
      * @param {boolean} props.isApproved
-     * @param {FungibleHookCall | null} props.hookCall
+     * @param {FungibleHookCall} [props.hookCall]
      */
     constructor(props) {
         /**
@@ -120,7 +120,7 @@ export default class TokenTransfer {
                                 ? transfer.amount
                                 : Long.ZERO,
                         isApproved: transfer.isApproval == true,
-                        hookCall: hookCall,
+                        hookCall: hookCall ?? undefined,
                     }),
                 );
             }

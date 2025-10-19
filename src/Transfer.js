@@ -33,7 +33,7 @@ export default class Transfer {
      * @param {AccountId | string} props.accountId
      * @param {number | string | Long | BigNumber | Hbar} props.amount
      * @param {boolean} props.isApproved
-     * @param {FungibleHookCall | null} props.hookCall
+     * @param {FungibleHookCall} [props.hookCall]
      */
     constructor(props) {
         /**
@@ -67,7 +67,7 @@ export default class Transfer {
         const transfers = [];
 
         for (const transfer of accountAmounts) {
-            let hookCall = null;
+            let hookCall = undefined;
             if (transfer.preTxAllowanceHook != null) {
                 hookCall = FungibleHookCall._fromProtobufWithType(
                     transfer.preTxAllowanceHook,
@@ -91,7 +91,7 @@ export default class Transfer {
                         transfer.amount != null ? transfer.amount : 0,
                     ),
                     isApproved: /** @type {boolean} */ (transfer.isApproval),
-                    hookCall: hookCall,
+                    hookCall,
                 }),
             );
         }

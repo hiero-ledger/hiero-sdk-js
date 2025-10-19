@@ -13,9 +13,7 @@ import TokenNftTransfer from "../token/TokenNftTransfer.js";
 import NftId from "../token/NftId.js";
 import AbstractTokenTransferTransaction from "../token/AbstractTokenTransferTransaction.js";
 import FungibleHookCall from "../hooks/FungibleHookCall.js";
-import FungibleHookType from "../hooks/FungibleHookType.js";
 import NftHookCall from "../hooks/NftHookCall.js";
-import NftHookType from "../hooks/NftHookType.js";
 
 /**
  * @typedef {import("../long.js").LongObject} LongObject
@@ -173,7 +171,7 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @param {AccountId | string} accountId
      * @param {number | string | Long | LongObject | BigNumber | Hbar} amount
      * @param {boolean} isApproved
-     * @param {FungibleHookCall | null} hookCall
+     * @param {FungibleHookCall} [hookCall]
      * @returns {TransferTransaction}
      */
     _addHbarTransfer(accountId, amount, isApproved, hookCall) {
@@ -213,7 +211,7 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @returns {TransferTransaction}
      */
     addHbarTransfer(accountId, amount) {
-        return this._addHbarTransfer(accountId, amount, false, null);
+        return this._addHbarTransfer(accountId, amount, false);
     }
 
     /**
@@ -223,7 +221,7 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @returns {TransferTransaction}
      */
     addApprovedHbarTransfer(accountId, amount) {
-        return this._addHbarTransfer(accountId, amount, true, null);
+        return this._addHbarTransfer(accountId, amount, true);
     }
 
     /**
@@ -324,14 +322,14 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
      * @returns {TransferTransaction}
      */
     addHbarTransferWithHook(accountId, amount, hook) {
+        const isApproved = false; // this is not approved transfer, adding comment for clarity
         return this._addHbarTransfer(
             accountId,
             amount,
-            false,
+            isApproved,
             new FungibleHookCall({
-                hookId: hook.hookId != null ? hook.hookId : undefined,
-                evmHookCall:
-                    hook.evmHookCall != null ? hook.evmHookCall : undefined,
+                hookId: hook.hookId,
+                evmHookCall: hook.evmHookCall,
                 type: hook.type,
             }),
         );
@@ -358,6 +356,7 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
             nftId,
             sender,
             receiver,
+            undefined, // receiver
             senderHookCall,
             receiverHookCall,
         );
@@ -376,18 +375,18 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
             hookId: hook.hookId != null ? hook.hookId : undefined,
             evmHookCall:
                 hook.evmHookCall != null ? hook.evmHookCall : undefined,
-            type:
-                hook.type === FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK
-                    ? FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK
-                    : FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
+            type: hook.type,
         });
+
+        const isApproved = false; // this is not approved transfer, adding comment for clarity
+        const expectedDecimals = null; // we don't expect  decimals here, adding comment for clarity
 
         return this._addTokenTransfer(
             tokenId,
             accountId,
             amount,
-            false,
-            null,
+            isApproved,
+            expectedDecimals,
             fungibleHook,
         );
     }
