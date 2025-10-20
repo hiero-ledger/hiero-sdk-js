@@ -28,7 +28,7 @@ export default class NativeChannel extends Channel {
          * @type {number}
          * @private
          */
-        this._grpcDeadline = grpcDeadline || DEFAULT_GRPC_DEADLINE;
+        this._grpcDeadline = grpcDeadline ?? DEFAULT_GRPC_DEADLINE;
 
         /**
          * Flag indicating if the connection is ready (health check has passed)
