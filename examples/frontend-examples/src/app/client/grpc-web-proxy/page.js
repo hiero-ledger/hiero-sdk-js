@@ -41,7 +41,7 @@ const Home = () => {
     const client = useMemo(() => {
         return WebClient.forNetwork(initialNetwork).setOperator(
             AccountId.fromString(process.env.NEXT_PUBLIC_OPERATOR_ID),
-            PrivateKey.fromStringDer(process.env.NEXT_PUBLIC_OPERATOR_KEY),
+            PrivateKey.fromStringECDSA(process.env.NEXT_PUBLIC_OPERATOR_KEY),
         );
     }, []);
 
@@ -80,7 +80,7 @@ const Home = () => {
         setIsLoading(true);
         try {
             console.log(client.network);
-            const privateKey = PrivateKey.generateED25519();
+            const privateKey = PrivateKey.generateECDSA();
             const publicKey = privateKey.publicKey;
 
             const transaction = await new AccountCreateTransaction()
