@@ -166,11 +166,11 @@ export default class Client {
         }
 
         if (props != null && props.grpcDeadline != null) {
-            this._grpcDeadline = props.grpcDeadline;
+            this.setGrpcDeadline(props.grpcDeadline);
         }
 
         if (props != null && props.requestTimeout != null) {
-            this._requestTimeout = props.requestTimeout;
+            this.setRequestTimeout(props.requestTimeout);
         }
 
         /** @internal */
@@ -698,6 +698,9 @@ export default class Client {
      * @returns {this}
      */
     setRequestTimeout(requestTimeout) {
+        if (requestTimeout <= 0) {
+            throw new Error("requestTimeout must be a positive number");
+        }
         this._requestTimeout = requestTimeout;
         return this;
     }
@@ -718,6 +721,9 @@ export default class Client {
      * @returns {this}
      */
     setGrpcDeadline(grpcDeadline) {
+        if (grpcDeadline <= 0) {
+            throw new Error("grpcDeadline must be a positive number");
+        }
         this._grpcDeadline = grpcDeadline;
         return this;
     }
@@ -835,7 +841,9 @@ export default class Client {
      * @returns {(address: string) => ChannelT}
      */
     _createNetworkChannel() {
-        throw new Error("not implemented");
+        return () => {
+            throw new Error("not implemented");
+        };
     }
 
     /**
@@ -843,7 +851,9 @@ export default class Client {
      * @returns {(address: string) => MirrorChannelT}
      */
     _createMirrorNetworkChannel() {
-        throw new Error("not implemented");
+        return () => {
+            throw new Error("not implemented");
+        };
     }
 
     /**
