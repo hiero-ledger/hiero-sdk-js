@@ -20,16 +20,11 @@ class HookCall {
      *
      * @param {object} props
      * @param {Long} [props.hookId]
-     * @param {import("../hooks/HookId.js").default} [props.fullHookId]
      * @param {import("../hooks/EvmHookCall.js").default} [props.evmHookCall]
      */
     constructor(props = {}) {
         if (props.hookId !== undefined) {
             this.setHookId(props.hookId);
-        }
-
-        if (props.fullHookId !== undefined) {
-            this.setFullHookId(props.fullHookId);
         }
 
         if (props.evmHookCall !== undefined) {
@@ -44,8 +39,6 @@ class HookCall {
      */
     setHookId(hookId) {
         this._hookId = hookId;
-        // clear fullHookId when setting hookId
-        this._fullHookId = undefined;
         return this;
     }
 
@@ -60,30 +53,11 @@ class HookCall {
     }
 
     /**
-     * @param {import("../hooks/HookId.js").default} fullHookId
-     * @returns {this}
-     */
-    setFullHookId(fullHookId) {
-        this._fullHookId = fullHookId;
-        // clear hookId when setting fullHookId
-        this._hookId = undefined;
-        return this;
-    }
-
-    /**
      *
      * @returns {Long | undefined}
      */
     get hookId() {
         return this._hookId;
-    }
-
-    /**
-     *
-     * @returns {import("../hooks/HookId.js").default | undefined}
-     */
-    get fullHookId() {
-        return this._fullHookId;
     }
 
     /**
@@ -116,7 +90,6 @@ class HookCall {
         return {
             hookId: this._hookId,
             evmHookCall: this._evmHookCall?._toProtobuf(),
-            fullHookId: this._fullHookId?._toProtobuf(),
         };
     }
 }
