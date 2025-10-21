@@ -26,7 +26,6 @@ import TransferTransaction from "../../src/account/TransferTransaction.js";
 import AccountId from "../../src/account/AccountId.js";
 import Hbar from "../../src/Hbar.js";
 import Status from "../../src/Status.js";
-import Hbar from "../../src/Hbar.js";
 
 describe("CryptoTransfer", function () {
     let env;
@@ -654,58 +653,6 @@ describe("CryptoTransfer", function () {
                 expect(err).to.equal(true);
             });
 
-            it("should fail when 0 gas for hook execution", async function () {
-                const operatorId = env.operatorId;
-
-                // Create account with hook
-                const key = PrivateKey.generateED25519();
-                const lambdaHook = new LambdaEvmHook({
-                    contractId: lambdaContractId,
-                    storageUpdates: [],
-                });
-                const hookDetails = new HookCreationDetails({
-                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                    hook: lambdaHook,
-                    hookId: 1,
-                });
-
-                const createResp = await (
-                    await new AccountCreateTransaction()
-                        .setKeyWithoutAlias(key.publicKey)
-                        .setInitialBalance(new Hbar(2))
-                        .addHook(hookDetails)
-                        .freezeWith(env.client)
-                        .sign(key)
-                ).execute(env.client);
-                const { accountId } = await createResp.getReceipt(env.client);
-
-                // Try to call with insufficient gas limit (too low)
-                const call = new FungibleHookCall({
-                    hookId: Long.fromInt(1),
-                    evmHookCall: new EvmHookCall({ gasLimit: 1000 }), // Very low gas
-                    type: FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
-                });
-
-                let err;
-
-                try {
-                    await (
-                        await new TransferTransaction()
-                            .addHbarTransferWithHook(
-                                accountId,
-                                new Hbar(1),
-                                call,
-                            )
-                            .addHbarTransfer(operatorId, new Hbar(-1))
-                            .execute(env.client)
-                    ).getReceipt(env.client);
-                } catch (error) {
-                    err = error;
-                }
-
-                expect(err).to.exist;
-            });
-
             it("should fail with insufficient gas for hook execution", async function () {
                 const operatorId = env.operatorId;
 
@@ -812,7 +759,7 @@ describe("CryptoTransfer", function () {
                         .includes(Status.RejectedByAccountAllowanceHook);
                 }
 
-                expect(err).to.exist;
+                expect(err).to.equal(true);
             });
         });
     });
