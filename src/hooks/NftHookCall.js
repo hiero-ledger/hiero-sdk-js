@@ -19,7 +19,6 @@ class NftHookCall extends HookCall {
     /**
      * @param {object} props
      * @param {Long} [props.hookId]
-     * @param {import("../hooks/HookId.js").default} [props.fullHookId]
      * @param {import("../hooks/EvmHookCall.js").default} [props.evmHookCall]
      * @param {NftHookTypeValue} props.type - One of NftHookType (PRE_HOOK_SENDER, PRE_POST_HOOK_SENDER, PRE_HOOK_RECEIVER, PRE_POST_HOOK_RECEIVER)
      */

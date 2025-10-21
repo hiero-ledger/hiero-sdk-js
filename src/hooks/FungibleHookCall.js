@@ -20,7 +20,6 @@ class FungibleHookCall extends HookCall {
     /**
      * @param {object} props
      * @param {Long} [props.hookId]
-     * @param {import("../hooks/HookId.js").default} [props.fullHookId]
      * @param {import("../hooks/EvmHookCall.js").default} [props.evmHookCall]
      * @param {FungibleHookTypeValue} props.type - One of FungibleHookType.PRE_TX_ALLOWANCE_HOOK or FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK
      */
