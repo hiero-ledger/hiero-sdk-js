@@ -505,7 +505,7 @@ describe("AccountInfoMocking", function () {
                 .setGrpcDeadline(1)
                 .execute(client);
         } catch (error) {
-            err = error.message == "grpc deadline exceeded";
+            err = error.message.includes("DEADLINE_EXCEEDED");
         }
 
         if (!err) {

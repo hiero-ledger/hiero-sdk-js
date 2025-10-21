@@ -307,7 +307,7 @@ export default class NativeClient extends Client {
      * @returns {(address: string) => NativeChannel}
      */
     _createNetworkChannel() {
-        return (address) => new NativeChannel(address);
+        return (address) => new NativeChannel(address, this.grpcDeadline);
     }
 
     /**

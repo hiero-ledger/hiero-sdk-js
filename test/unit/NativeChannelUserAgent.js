@@ -3,12 +3,13 @@ import { SDK_NAME, SDK_VERSION } from "../../src/version.js";
 import NativeChannel from "../../src/channel/NativeChannel.js";
 
 // Mock the client constants if needed
-vi.mock("../../src/constants/ClientConstants.js", () => ({
+vi.mock("../../src/constants/ClientConstants.js", async (importOriginal) => ({
     ALL_NODES: {
         "https://example.com": {
             toString: () => "example-node",
         },
     },
+    ...(await importOriginal()),
 }));
 
 // Mock FileReader for the native environment
