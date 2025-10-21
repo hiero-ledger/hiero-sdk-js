@@ -165,3 +165,5 @@ Hiero uses the Linux Foundation Decentralised Trust [Code of Conduct](https://ww
 ## License
 
 [Apache License 2.0](LICENSE)
+<br>## Welcome to Hedera Consensus<br>Hedera's aBFT consensus handles 10k TPS—new contributors, start with the HCS tutorial for your first message. Tip: Use Mirror Node for queries! <br>
+
