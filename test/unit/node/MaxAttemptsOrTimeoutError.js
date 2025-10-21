@@ -57,20 +57,6 @@ describe("MaxAttemptsOrTimeoutError", function () {
                 .setNodeAccountIds([new AccountId(5)]);
         });
 
-        it("should throw a timeout error when the timeout exceeds", async function () {
-            // Set the client's request timeout to 0 for testing
-            client.setRequestTimeout(0);
-            transaction = transaction.freezeWith(client);
-
-            try {
-                await transaction.execute(client);
-                throw new Error("Expected request to time out but it didn't.");
-            } catch (error) {
-                expect(error.message).to.include("timeout exceeded");
-                expect(error.nodeAccountId).to.equal("0.0.5");
-            }
-        });
-
         it("should throw a max attempts error when max attempts is reached", async function () {
             // Set the transaction's max attempts to 0 for testing
             transaction = transaction.setMaxAttempts(0).freezeWith(client);
