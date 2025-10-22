@@ -13,7 +13,6 @@ import {
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { decode } from "../../src/encoding/hex.js";
 import LambdaEvmHook from "../../src/hooks/LambdaEvmHook.js";
-import EvmHookSpec from "../../src/hooks/EvmHookSpec.js";
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
 import HookExtensionPoint from "../../src/hooks/HookExtensionPoint.js";
 import { LambdaStorageSlot } from "../../src/hooks/LambdaStorageUpdate.js";
@@ -334,7 +333,7 @@ describe("ContractUpdate", function () {
 
             // When: ContractUpdateTransaction adds a basic lambda EVM hook
             const lambdaHook = new LambdaEvmHook({
-                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                contractId: lambdaContractId,
             });
 
             const hookDetails = new HookCreationDetails({
@@ -379,7 +378,7 @@ describe("ContractUpdate", function () {
             let contract = receipt.contractId;
 
             const lambdaHook = new LambdaEvmHook({
-                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                contractId: lambdaContractId,
             });
 
             const hookDetails1 = new HookCreationDetails({
@@ -446,7 +445,7 @@ describe("ContractUpdate", function () {
             let contract = receipt.contractId;
 
             const lambdaHook = new LambdaEvmHook({
-                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                contractId: lambdaContractId,
             });
 
             const hookDetails = new HookCreationDetails({
@@ -519,7 +518,7 @@ describe("ContractUpdate", function () {
 
             // When: ContractUpdateTransaction adds a lambda EVM hook with initial storage updates
             const lambdaHook = new LambdaEvmHook({
-                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                contractId: lambdaContractId,
                 storageUpdates: [
                     new LambdaStorageSlot(
                         new Uint8Array([0x01, 0x02, 0x03, 0x04]),
@@ -569,7 +568,7 @@ describe("ContractUpdate", function () {
             let contract = receipt.contractId;
 
             const lambdaHook = new LambdaEvmHook({
-                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                contractId: lambdaContractId,
             });
 
             const hookDetails = new HookCreationDetails({
@@ -634,7 +633,7 @@ describe("ContractUpdate", function () {
             let contract = receipt.contractId;
 
             const lambdaHook = new LambdaEvmHook({
-                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                contractId: lambdaContractId,
             });
 
             const hookDetails = new HookCreationDetails({
@@ -691,7 +690,7 @@ describe("ContractUpdate", function () {
             let contract = receipt.contractId;
 
             const lambdaHook = new LambdaEvmHook({
-                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                contractId: lambdaContractId,
             });
 
             const hookDetails = new HookCreationDetails({
@@ -757,7 +756,7 @@ describe("ContractUpdate", function () {
             let contract = receipt.contractId;
 
             const lambdaHook = new LambdaEvmHook({
-                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                contractId: lambdaContractId,
             });
 
             const hookDetails = new HookCreationDetails({
@@ -828,7 +827,7 @@ describe("ContractUpdate", function () {
             let contract = receipt.contractId;
 
             const lambdaHook = new LambdaEvmHook({
-                spec: new EvmHookSpec().setContractId(lambdaContractId),
+                contractId: lambdaContractId,
             });
 
             const hookDetails = new HookCreationDetails({

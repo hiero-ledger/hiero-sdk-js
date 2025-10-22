@@ -1,7 +1,6 @@
 import Long from "long";
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
 import LambdaEvmHook from "../../src/hooks/LambdaEvmHook.js";
-import EvmHookSpec from "../../src/hooks/EvmHookSpec.js";
 import { PrivateKey, ContractId } from "../../src/index.js";
 
 describe("HookCreationDetails", function () {
@@ -36,10 +35,8 @@ describe("HookCreationDetails", function () {
         });
 
         it("should create an instance with provided hook", function () {
-            const spec = new EvmHookSpec({
-                contractId: new ContractId(0, 0, 100),
-            });
-            const hook = new LambdaEvmHook({ spec });
+            const contractId = new ContractId(0, 0, 100);
+            const hook = new LambdaEvmHook({ contractId });
             const details = new HookCreationDetails({ hook });
 
             expect(details.extensionPoint).to.be.null;
@@ -61,10 +58,8 @@ describe("HookCreationDetails", function () {
         it("should create an instance with all properties", function () {
             const extensionPoint = 2;
             const hookId = Long.fromNumber(999);
-            const spec = new EvmHookSpec({
-                contractId: new ContractId(1, 2, 3),
-            });
-            const hook = new LambdaEvmHook({ spec });
+            const contractId = new ContractId(1, 2, 3);
+            const hook = new LambdaEvmHook({ contractId });
             const key = PrivateKey.generateECDSA().publicKey;
 
             const details = new HookCreationDetails({
@@ -138,10 +133,8 @@ describe("HookCreationDetails", function () {
     describe("setHook", function () {
         it("should set hook and return this for chaining", function () {
             const details = new HookCreationDetails();
-            const spec = new EvmHookSpec({
-                contractId: new ContractId(5, 6, 7),
-            });
-            const hook = new LambdaEvmHook({ spec });
+            const contractId = new ContractId(5, 6, 7);
+            const hook = new LambdaEvmHook({ contractId });
 
             const result = details.setHook(hook);
 
@@ -150,14 +143,10 @@ describe("HookCreationDetails", function () {
         });
 
         it("should overwrite existing hook", function () {
-            const oldSpec = new EvmHookSpec({
-                contractId: new ContractId(1, 1, 1),
-            });
-            const oldHook = new LambdaEvmHook({ spec: oldSpec });
-            const newSpec = new EvmHookSpec({
-                contractId: new ContractId(2, 2, 2),
-            });
-            const newHook = new LambdaEvmHook({ spec: newSpec });
+            const oldContractId = new ContractId(1, 1, 1);
+            const oldHook = new LambdaEvmHook({ contractId: oldContractId });
+            const newContractId = new ContractId(2, 2, 2);
+            const newHook = new LambdaEvmHook({ contractId: newContractId });
 
             const details = new HookCreationDetails({ hook: oldHook });
             details.setHook(newHook);
@@ -217,10 +206,8 @@ describe("HookCreationDetails", function () {
         });
 
         it("should get hook using getter", function () {
-            const spec = new EvmHookSpec({
-                contractId: new ContractId(8, 9, 10),
-            });
-            const hook = new LambdaEvmHook({ spec });
+            const contractId = new ContractId(8, 9, 10);
+            const hook = new LambdaEvmHook({ contractId });
             const details = new HookCreationDetails({ hook });
 
             expect(details.hook).to.equal(hook);
@@ -247,10 +234,8 @@ describe("HookCreationDetails", function () {
         it("should support full method chaining", function () {
             const extensionPoint = 3;
             const hookId = Long.fromNumber(777);
-            const spec = new EvmHookSpec({
-                contractId: new ContractId(4, 5, 6),
-            });
-            const hook = new LambdaEvmHook({ spec });
+            const contractId = new ContractId(4, 5, 6);
+            const hook = new LambdaEvmHook({ contractId });
             const key = PrivateKey.generateED25519().publicKey;
 
             const details = new HookCreationDetails()
@@ -281,10 +266,8 @@ describe("HookCreationDetails", function () {
         it("should convert to protobuf with all fields", function () {
             const extensionPoint = 4;
             const hookId = Long.fromNumber(5000);
-            const spec = new EvmHookSpec({
-                contractId: new ContractId(7, 8, 9),
-            });
-            const hook = new LambdaEvmHook({ spec });
+            const contractId = new ContractId(7, 8, 9);
+            const hook = new LambdaEvmHook({ contractId });
             const key = PrivateKey.generateED25519().publicKey;
 
             const details = new HookCreationDetails({
@@ -324,10 +307,8 @@ describe("HookCreationDetails", function () {
         it("should convert to protobuf with null adminKey", function () {
             const extensionPoint = 5;
             const hookId = Long.fromNumber(999);
-            const spec = new EvmHookSpec({
-                contractId: new ContractId(1, 2, 3),
-            });
-            const hook = new LambdaEvmHook({ spec });
+            const contractId = new ContractId(1, 2, 3);
+            const hook = new LambdaEvmHook({ contractId });
 
             const details = new HookCreationDetails({
                 extensionPoint,
@@ -355,10 +336,8 @@ describe("HookCreationDetails", function () {
         });
 
         it("should call _toProtobuf on hook", function () {
-            const spec = new EvmHookSpec({
-                contractId: new ContractId(5, 5, 5),
-            });
-            const hook = new LambdaEvmHook({ spec });
+            const contractId = new ContractId(5, 5, 5);
+            const hook = new LambdaEvmHook({ contractId });
             const details = new HookCreationDetails({ hook });
 
             const proto = details._toProtobuf();
@@ -408,25 +387,25 @@ describe("HookCreationDetails", function () {
         it("should not mutate original objects", function () {
             const hookId = Long.fromNumber(5000);
             const originalValue = hookId.toNumber();
-            const spec = new EvmHookSpec({
-                contractId: new ContractId(1, 2, 3),
-            });
-            const hook = new LambdaEvmHook({ spec });
+            const contractId = new ContractId(1, 2, 3);
+            const hook = new LambdaEvmHook({ contractId });
 
             const details = new HookCreationDetails({ hookId, hook });
             details.setHookId(Long.fromNumber(9999));
-            details.setHook(new LambdaEvmHook({ spec: new EvmHookSpec() }));
+            details.setHook(new LambdaEvmHook());
 
             expect(hookId.toNumber()).to.equal(originalValue);
-            expect(hook.spec).to.equal(spec);
+            expect(hook.contractId).to.equal(contractId);
         });
     });
 
     describe("integration tests", function () {
         it("should work with complex LambdaEvmHook", function () {
             const contractId = new ContractId(10, 20, 30);
-            const spec = new EvmHookSpec({ contractId });
-            const hook = new LambdaEvmHook({ spec, storageUpdates: [] });
+            const hook = new LambdaEvmHook({
+                contractId,
+                storageUpdates: [],
+            });
             const details = new HookCreationDetails({
                 extensionPoint: 1,
                 hookId: Long.fromNumber(100),
@@ -446,10 +425,8 @@ describe("HookCreationDetails", function () {
 
             const extensionPoint = 99;
             const hookId = Long.fromNumber(12345);
-            const spec = new EvmHookSpec({
-                contractId: new ContractId(1, 2, 3),
-            });
-            const hook = new LambdaEvmHook({ spec });
+            const contractId = new ContractId(1, 2, 3);
+            const hook = new LambdaEvmHook({ contractId });
             const key = PrivateKey.generateECDSA().publicKey;
 
             details
