@@ -32,7 +32,7 @@ async function main() {
 
     const client = Client.forName(process.env.HEDERA_NETWORK).setOperator(
         AccountId.fromString(process.env.OPERATOR_ID),
-        PrivateKey.fromStringDer(process.env.OPERATOR_KEY),
+        PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY),
     );
 
     const CID = [
@@ -66,7 +66,7 @@ async function main() {
             .execute(client)
     ).getReceipt(client);
 
-    const privateKey3 = PrivateKey.generateED25519();
+    const privateKey3 = PrivateKey.generateECDSA();
     const { accountId: accountId3 } = await (
         await new AccountCreateTransaction()
             .setKeyWithoutAlias(privateKey3)

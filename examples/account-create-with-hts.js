@@ -47,14 +47,13 @@ async function main() {
     const supplyKey = PrivateKey.generateECDSA();
     const freezeKey = PrivateKey.generateECDSA();
     const wipeKey = PrivateKey.generateECDSA();
-
     if (process.env.OPERATOR_ID == null || process.env.OPERATOR_KEY == null) {
         throw new Error(
             "Environment variables OPERATOR_ID, and OPERATOR_KEY are required.",
         );
     }
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
-    const operatorKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
+    const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
 
     const nodes = {
         "127.0.0.1:50211": new AccountId(3),

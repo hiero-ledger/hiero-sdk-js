@@ -56,7 +56,9 @@ const ClientProvider = ({ children }) => {
             // Set operator for the client
             newClient.setOperator(
                 AccountId.fromString(process.env.NEXT_PUBLIC_OPERATOR_ID),
-                PrivateKey.fromStringDer(process.env.NEXT_PUBLIC_OPERATOR_KEY),
+                PrivateKey.fromStringECDSA(
+                    process.env.NEXT_PUBLIC_OPERATOR_KEY,
+                ),
             );
 
             setClient(newClient);
@@ -176,7 +178,7 @@ const AsyncClientDemo = () => {
 
         setIsActionLoading(true);
         try {
-            const privateKey = PrivateKey.generateED25519();
+            const privateKey = PrivateKey.generateECDSA();
             const publicKey = privateKey.publicKey;
 
             const transaction = await new AccountCreateTransaction()

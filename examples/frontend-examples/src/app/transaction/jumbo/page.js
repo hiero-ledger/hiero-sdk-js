@@ -32,7 +32,7 @@ const JumboPage = () => {
     const operatorId = AccountId.fromString(
         process.env.NEXT_PUBLIC_OPERATOR_ID,
     );
-    const operatorKey = PrivateKey.fromStringED25519(
+    const operatorKey = PrivateKey.fromStringECDSA(
         process.env.NEXT_PUBLIC_OPERATOR_KEY,
     );
     const [contractId, setContractId] = useState("0.0.6255191");

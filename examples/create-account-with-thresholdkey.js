@@ -33,7 +33,7 @@ async function main() {
     }
 
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
-    const operatorKey = PrivateKey.fromStringED25519(process.env.OPERATOR_KEY);
+    const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
 
     //  Create the client based on the HEDERA_NETWORK environment variable
     const client = Client.forName(process.env.HEDERA_NETWORK);
@@ -56,7 +56,7 @@ async function main() {
         const privateKeys = [];
         const publicKeys = [];
         for (let i = 0; i < 3; i++) {
-            const key = PrivateKey.generateED25519();
+            const key = PrivateKey.generateECDSA();
             privateKeys.push(key);
             publicKeys.push(key.publicKey);
         }

@@ -40,7 +40,7 @@ async function main() {
 
     const client = Client.forName(process.env.HEDERA_NETWORK).setOperator(
         AccountId.fromString(process.env.OPERATOR_ID),
-        PrivateKey.fromStringED25519(process.env.OPERATOR_KEY),
+        PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY),
     );
 
     /**
@@ -179,7 +179,7 @@ const getAllSignaturesFromTransaction = (signedTransaction) => {
             transaction.sigMap.sigPair.forEach((sigPair) => {
                 if (sigPair.ed25519) {
                     signatures.push(
-                        PrivateKey.fromBytesED25519(
+                        PrivateKey.fromBytesECDSA(
                             sigPair.ed25519,
                         ).toStringDer(),
                     );

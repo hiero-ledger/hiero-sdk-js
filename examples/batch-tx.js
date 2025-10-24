@@ -32,7 +32,7 @@ async function main() {
     }
 
     const operatorAccId = AccountId.fromString(process.env.OPERATOR_ID);
-    const operatorPrivKey = PrivateKey.fromStringED25519(
+    const operatorPrivKey = PrivateKey.fromStringECDSA(
         process.env.OPERATOR_KEY,
     );
 

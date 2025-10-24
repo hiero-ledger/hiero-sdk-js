@@ -23,7 +23,7 @@ function executeTx() {
 
     // setup client and operator
     const operatorId = sdk.AccountId.fromString(operatorIdValue);
-    const operatorKey = sdk.PrivateKey.fromStringED25519(operatorKeyValue);
+    const operatorKey = sdk.PrivateKey.fromStringECDSA(operatorKeyValue);
     const client = sdk.Client.forTestnet().setOperator(operatorId, operatorKey);
 
     // start loading until the query is executed

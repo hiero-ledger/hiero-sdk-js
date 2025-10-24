@@ -39,7 +39,7 @@ dotenv.config();
 
 // Configure accounts and client, and generate needed keys
 const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
-const operatorKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
+const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
 const nodes = {
     "127.0.0.1:50211": new AccountId(3),
 };

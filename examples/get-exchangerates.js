@@ -3,6 +3,7 @@ import {
     LocalProvider,
     FileContentsQuery,
     ExchangeRates,
+    PrivateKey,
 } from "@hashgraph/sdk";
 
 import dotenv from "dotenv";
@@ -22,11 +23,10 @@ async function main() {
 
     const provider = new LocalProvider();
 
-    const wallet = new Wallet(
-        process.env.OPERATOR_ID,
-        process.env.OPERATOR_KEY,
-        provider,
-    );
+    // Parse ECDSA key explicitly
+    const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
+
+    const wallet = new Wallet(process.env.OPERATOR_ID, operatorKey, provider);
     let resp;
     try {
         resp = await new FileContentsQuery()

@@ -32,7 +32,7 @@ async function main() {
 
     // Configure client using environment variables
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
-    const operatorKey = PrivateKey.fromStringED25519(process.env.OPERATOR_KEY);
+    const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
 
     const client = Client.forName(network).setOperator(operatorId, operatorKey);
 

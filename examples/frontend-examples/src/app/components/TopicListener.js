@@ -1,5 +1,5 @@
 import EventEmitter from "events";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 const TopicListener = ({ topicId }) => {
     const [messages, setMessages] = useState([]);

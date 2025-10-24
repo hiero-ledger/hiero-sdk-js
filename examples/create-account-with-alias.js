@@ -30,7 +30,7 @@ async function main() {
         );
     }
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
-    const operatorKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
+    const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
 
     const nodes = {
         "127.0.0.1:50211": new AccountId(3),
@@ -193,7 +193,7 @@ async function main() {
          *
          * Create an account key and an ECSDA private alias key
          */
-        const key = PrivateKey.generateED25519();
+        const key = PrivateKey.generateECDSA();
         const aliasKey = PrivateKey.generateECDSA();
         console.log(`Alias key: ${aliasKey.toStringDer()}`);
 
@@ -341,7 +341,7 @@ async function main() {
          *
          * Create an account key and an derive an ECSDA public alias key
          */
-        const key = PrivateKey.generateED25519();
+        const key = PrivateKey.generateECDSA();
         const aliasKey = PrivateKey.generateECDSA();
         const publicAliasKey = aliasKey.publicKey;
 

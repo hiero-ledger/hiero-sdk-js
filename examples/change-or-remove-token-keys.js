@@ -33,7 +33,7 @@ async function main() {
 
     // Configure client using environment variables
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
-    const operatorKey = PrivateKey.fromStringED25519(process.env.OPERATOR_KEY);
+    const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
 
     const client = Client.forName(network).setOperator(operatorId, operatorKey);
 
@@ -41,14 +41,14 @@ async function main() {
     const infoLogger = new Logger(LogLevel.Info);
     client.setLogger(infoLogger);
 
-    const adminKey = PrivateKey.generateED25519();
-    const supplyKey = PrivateKey.generateED25519();
-    const newSupplyKey = PrivateKey.generateED25519();
-    const wipeKey = PrivateKey.generateED25519();
-    const freezeKey = PrivateKey.generateED25519();
-    const pauseKey = PrivateKey.generateED25519();
-    const feeScheduleKey = PrivateKey.generateED25519();
-    const metadataKey = PrivateKey.generateED25519();
+    const adminKey = PrivateKey.generateECDSA();
+    const supplyKey = PrivateKey.generateECDSA();
+    const newSupplyKey = PrivateKey.generateECDSA();
+    const wipeKey = PrivateKey.generateECDSA();
+    const freezeKey = PrivateKey.generateECDSA();
+    const pauseKey = PrivateKey.generateECDSA();
+    const feeScheduleKey = PrivateKey.generateECDSA();
+    const metadataKey = PrivateKey.generateECDSA();
 
     // This HIP introduces ability to remove lower-privilege keys (Wipe, KYC, Freeze, Pause, Supply, Fee Schedule, Metadata) from a Token:
     // - using an update with the empty KeyList;

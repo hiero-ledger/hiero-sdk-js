@@ -18,7 +18,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const OPERATOR_ID = AccountId.fromString(process.env.OPERATOR_ID);
-const OPERATOR_KEY = PrivateKey.fromStringED25519(process.env.OPERATOR_KEY);
+const OPERATOR_KEY = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
 const HEDERA_NETWORK = process.env.HEDERA_NETWORK || "testnet";
 
 async function main() {

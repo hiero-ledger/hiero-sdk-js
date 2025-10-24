@@ -36,7 +36,7 @@ async function main() {
     try {
         const fileCreateTxResponse = await (
             await new FileCreateTransaction()
-                .setKeys([PrivateKey.fromStringDer(process.env.OPERATOR_KEY)])
+                .setKeys([PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY)])
                 .setContents(SMART_CONTRACT_BYTECODE)
                 .setMaxTransactionFee(new Hbar(2))
                 .freezeWithSigner(wallet)
@@ -48,7 +48,9 @@ async function main() {
 
         const contractCreateTxResponse = await (
             await new ContractCreateTransaction()
-                .setAdminKey(PrivateKey.fromStringDer(process.env.OPERATOR_KEY))
+                .setAdminKey(
+                    PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY),
+                )
                 .setGas(100000)
                 .setBytecodeFileId(newFileId)
                 .setContractMemo(
