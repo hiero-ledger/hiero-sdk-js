@@ -249,6 +249,19 @@ export default class WebClient extends Client {
                     break;
             }
         } else {
+            // Check for deprecation warnings for network endpoints with schemes
+            for (const [key] of Object.entries(network)) {
+                if (key.startsWith("https://") || key.startsWith("http://")) {
+                    console.warn(
+                        '[Deprecation Notice] Hiero SDK: Network endpoint "' +
+                            key +
+                            '" includes a URL scheme (e.g. "https://"). ' +
+                            "This format was accepted in earlier versions but is deprecated. " +
+                            'Please remove the scheme and use "host:port" instead (e.g. "node00.swirldslabs.com:443"). ' +
+                            "Support for scheme-prefixed endpoints will be removed in a future majorrelease.",
+                    );
+                }
+            }
             this._network.setNetwork(network);
         }
     }

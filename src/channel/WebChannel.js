@@ -39,14 +39,26 @@ export default class WebChannel extends Channel {
         // eslint-disable-next-line @typescript-eslint/no-misused-promises
         return async (method, requestData, callback) => {
             try {
-                const shouldUseHttps = !(
-                    this._address.includes("localhost") ||
-                    this._address.includes("127.0.0.1")
-                );
+                // Check if address already contains a scheme
+                const hasScheme =
+                    this._address.startsWith("http://") ||
+                    this._address.startsWith("https://");
 
-                const address = shouldUseHttps
-                    ? `https://${this._address}`
-                    : `http://${this._address}`;
+                let address;
+                if (hasScheme) {
+                    // Use the address as-is if it already has a scheme
+                    address = this._address;
+                } else {
+                    // Only prepend scheme if none exists
+                    const shouldUseHttps = !(
+                        this._address.includes("localhost") ||
+                        this._address.includes("127.0.0.1")
+                    );
+
+                    address = shouldUseHttps
+                        ? `https://${this._address}`
+                        : `http://${this._address}`;
+                }
                 // this will be executed in a browser environment so eslint is
                 // disabled for the fetch call
                 //eslint-disable-next-line n/no-unsupported-features/node-builtins
