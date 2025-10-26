@@ -1,4 +1,4 @@
-import HookEntityId from "./HookEntityId";
+import HookEntityId from "./HookEntityId.js";
 
 /**
  * Once a hook is created, its full id.
