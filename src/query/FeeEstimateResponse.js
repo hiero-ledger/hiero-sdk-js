@@ -86,14 +86,14 @@ export default class FeeEstimateResponse {
 
     /**
      * @internal
-     * @returns {object}
+     * @returns {import("@hashgraph/proto").com.hedera.mirror.api.proto.IFeeEstimateResponse}
      */
     _toProtobuf() {
         return {
             mode: this.mode,
-            networkFee: this.networkFee._toProtobuf(),
-            nodeFee: this.nodeFee._toProtobuf(),
-            serviceFee: this.serviceFee._toProtobuf(),
+            network: this.networkFee._toProtobuf(),
+            node: this.nodeFee._toProtobuf(),
+            service: this.serviceFee._toProtobuf(),
             notes: this.notes,
             total: this.total,
         };
