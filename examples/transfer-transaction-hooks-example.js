@@ -21,7 +21,7 @@ import {
     HookCreationDetails,
     LambdaEvmHook,
     AccountCreateTransaction,
-} from "../src/index.js";
+} from "@hashgraph/sdk";
 
 import dotenv from "dotenv";
 
