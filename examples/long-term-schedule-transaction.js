@@ -30,13 +30,13 @@ async function main() {
 
     // Step 0: Create and configure the SDK Client.
     const operatorId = process.env.OPERATOR_ID;
-    const operatorKey = PrivateKey.fromStringED25519(process.env.OPERATOR_KEY);
+    const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
     const client = Client.forName(process.env.HEDERA_NETWORK || "testnet");
     client.setOperator(operatorId, operatorKey);
 
     // Step 1: Create key pairs
-    const privateKey1 = PrivateKey.generateED25519();
-    const privateKey2 = PrivateKey.generateED25519();
+    const privateKey1 = PrivateKey.generateECDSA();
+    const privateKey2 = PrivateKey.generateECDSA();
     const thresholdKey = new KeyList([
         privateKey1.publicKey,
         privateKey2.publicKey,

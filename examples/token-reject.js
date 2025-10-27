@@ -33,12 +33,12 @@ async function main() {
         "QmPzY5GxevjyfMUF5vEAjtyRoigzWp47MiKAtLBduLMC1T",
     ];
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
-    const operatorKey = PrivateKey.fromStringED25519(process.env.OPERATOR_KEY);
+    const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
     const network = process.env.HEDERA_NETWORK;
     const client = Client.forName(network).setOperator(operatorId, operatorKey);
 
     // create a treasury account
-    const treasuryPrivateKey = PrivateKey.generateED25519();
+    const treasuryPrivateKey = PrivateKey.generateECDSA();
     const treasuryAccountId = (
         await (
             await new AccountCreateTransaction()
@@ -49,7 +49,7 @@ async function main() {
     ).accountId;
 
     // create a receiver account with unlimited max auto associations
-    const receiverPrivateKey = PrivateKey.generateED25519();
+    const receiverPrivateKey = PrivateKey.generateECDSA();
     const receiverAccountId = (
         await (
             await new AccountCreateTransaction()

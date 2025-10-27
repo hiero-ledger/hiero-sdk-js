@@ -39,7 +39,7 @@ async function main() {
 
         // Set the operator for the client
         const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
-        const operatorKey = PrivateKey.fromStringED25519(
+        const operatorKey = PrivateKey.fromStringECDSA(
             process.env.OPERATOR_KEY,
         );
         client.setOperator(operatorId, operatorKey);
@@ -79,7 +79,7 @@ async function main() {
         // Create a new account
         console.log("Creating a new account...");
         try {
-            const newKey = PrivateKey.generateED25519();
+            const newKey = PrivateKey.generateECDSA();
             console.log(`Generated new key pair:`);
             console.log(`   Private Key: ${newKey.toString()}`);
             console.log(`   Public Key: ${newKey.publicKey.toString()}`);

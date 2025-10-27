@@ -18,7 +18,7 @@ const Home = () => {
 
     const client = WebClient.forTestnet().setOperator(
         AccountId.fromString(process.env.NEXT_PUBLIC_OPERATOR_ID),
-        PrivateKey.fromStringDer(process.env.NEXT_PUBLIC_OPERATOR_KEY),
+        PrivateKey.fromStringECDSA(process.env.NEXT_PUBLIC_OPERATOR_KEY),
     );
 
     return (
@@ -48,7 +48,7 @@ const Home = () => {
                         const tx = new AccountCreateTransaction();
                         if (key) {
                             tx.setKeyWithoutAlias(
-                                PublicKey.fromStringED25519(key),
+                                PublicKey.fromStringECDSA(key),
                             );
                         }
                         if (initialBalance) {

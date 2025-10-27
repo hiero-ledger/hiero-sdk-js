@@ -58,7 +58,7 @@ async function main() {
 
     console.log('"Creating" a new account');
 
-    const privateKey = PrivateKey.generateED25519();
+    const privateKey = PrivateKey.generateECDSA();
     const publicKey = privateKey.publicKey;
 
     // Assuming that the target shard and realm are known.

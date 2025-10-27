@@ -24,7 +24,7 @@ async function main() {
         provider,
     );
 
-    const operatorPrivateKey = hashgraph.PrivateKey.fromStringED25519(
+    const operatorPrivateKey = hashgraph.PrivateKey.fromStringECDSA(
         process.env.OPERATOR_KEY,
     );
     const operatorPublicKey = operatorPrivateKey.publicKey;
@@ -33,7 +33,7 @@ async function main() {
         process.env.OPERATOR_ID,
     );
 
-    const alicePrivateKey = hashgraph.PrivateKey.generateED25519();
+    const alicePrivateKey = hashgraph.PrivateKey.generateECDSA();
     const alicePublicKey = alicePrivateKey.publicKey;
 
     try {
