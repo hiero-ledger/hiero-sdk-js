@@ -216,10 +216,6 @@ async function main() {
                 .execute(client)
         ).getReceipt(client);
 
-        console.log(
-            "   HBAR TransferTransaction built with pre-tx allowance hook",
-        );
-
         // Transaction 2: NFT transfer with sender and receiver hooks
         console.log("\n2. Building NFT TransferTransaction with hooks...");
         await (
@@ -233,10 +229,6 @@ async function main() {
                 )
                 .execute(client)
         ).getReceipt(client);
-
-        console.log(
-            "   NFT TransferTransaction built with sender and receiver hooks",
-        );
 
         // Transaction 3: Fungible token transfers with hook
         console.log(
@@ -255,11 +247,7 @@ async function main() {
         ).getReceipt(client);
 
         console.log(
-            "   Fungible Token TransferTransaction built with pre-post allowance hook",
-        );
-
-        console.log(
-            "\nAll TransferTransactions built successfully with the following hook calls:",
+            "\nAll TransferTransactions executed successfully with the following hook calls:",
         );
         console.log(
             "  - Transaction 1: HBAR transfer with pre-tx allowance hook",
@@ -271,10 +259,6 @@ async function main() {
             "  - Transaction 3: Fungible token transfer with pre-post allowance hook",
         );
 
-        // Demonstrate the API without executing (since hooks don't exist)
-        console.log(
-            "\nNote: This demonstrates the separate TransferTransaction APIs with hooks.",
-        );
         console.log("Transfer Transaction Hooks Example Complete!");
     } catch (error) {
         console.error("Error occurred:", error);
