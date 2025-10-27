@@ -127,17 +127,17 @@ async function main() {
         });
 
         try {
-            let accountUpdateTransaction = await new AccountUpdateTransaction()
-                .setAccountId(accountId)
-                .addHookToCreate(hook1)
-                .addHookToCreate(hook2)
-                .freezeWith(client);
+            await (
+                await (
+                    await new AccountUpdateTransaction()
+                        .setAccountId(accountId)
+                        .addHookToCreate(hook1)
+                        .addHookToCreate(hook2)
+                        .freezeWith(client)
+                        .sign(accountKey)
+                ).execute(client)
+            ).getReceipt(client);
 
-            accountUpdateTransaction =
-                await accountUpdateTransaction.sign(accountKey);
-            const accountUpdateResponse =
-                await accountUpdateTransaction.execute(client);
-            await accountUpdateResponse.getReceipt(client);
             console.log("Successfully added hooks to account!");
         } catch (error) {
             console.error("Failed to execute hook transaction:", error);

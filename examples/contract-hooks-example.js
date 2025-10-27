@@ -120,17 +120,16 @@ async function main() {
         });
 
         try {
-            let contractUpdateTransaction =
-                await new ContractUpdateTransaction()
-                    .setContractId(contractWithHooksId)
-                    .addHookToCreate(hook3)
-                    .freezeWith(client);
+            await (
+                await (
+                    await new ContractUpdateTransaction()
+                        .setContractId(contractWithHooksId)
+                        .addHookToCreate(hook3)
+                        .freezeWith(client)
+                        .sign(operatorKey)
+                ).execute(client)
+            ).getReceipt(client);
 
-            contractUpdateTransaction =
-                await contractUpdateTransaction.sign(operatorKey);
-            const contractUpdateResponse =
-                await contractUpdateTransaction.execute(client);
-            await contractUpdateResponse.getReceipt(client);
             console.log("Successfully added hooks to contract!");
         } catch (error) {
             console.error("Failed to execute hook transaction:", error);
