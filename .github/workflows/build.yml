@@ -1,229 +1,229 @@
 name: Build & Test
 on:
-    push:
-        branches:
-            - main
-            - develop
-            - release/*
-            - integration-test-workflow
-    pull_request:
-        branches:
-            - main
-            - develop
-            - release/*
+  push:
+    branches:
+      - main
+      - develop
+      - release/*
+      - integration-test-workflow
+  pull_request:
+    branches:
+      - main
+      - develop
+      - release/*
 
 defaults:
-    run:
-        shell: bash
+  run:
+    shell: bash
 
 permissions:
-    contents: read
-    pull-requests: write
+  contents: read
+  pull-requests: write
 
 env:
-    CG_EXEC: ionice -c 2 -n 2 nice -n 19
+  CG_EXEC: ionice -c 2 -n 2 nice -n 19
 
 jobs:
-    build:
-        name: Build using Node ${{ matrix.node }}
-        runs-on: hiero-client-sdk-linux-medium
-        strategy:
-            matrix:
-                node: ["22", "24"]
+  build:
+    name: Build using Node ${{ matrix.node }}
+    runs-on: hiero-client-sdk-linux-medium
+    strategy:
+      matrix:
+        node: ["22", "24"]
 
-        steps:
-            - name: Harden Runner
-              uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
-              with:
-                  egress-policy: audit
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
 
-            - name: Checkout Code
-              uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-              with:
-                  submodules: true
+      - name: Checkout Code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          submodules: true
 
-            - name: Install Task
-              uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v2.0.0
-              with:
-                  version: 3.35.1
+      - name: Install Task
+        uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v2.0.0
+        with:
+          version: 3.35.1
 
-            - name: Install PNPM
-              uses: step-security/action-setup@92da25bc4fa3a114b7a78c686a5ec142ccb12c8b # v4.1.1
-              with:
-                  version: 9.15.5
+      - name: Install PNPM
+        uses: step-security/action-setup@92da25bc4fa3a114b7a78c686a5ec142ccb12c8b # v4.1.1
+        with:
+          version: 9.15.5
 
-            - name: Setup Node
-              uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
-              with:
-                  node-version: ${{ matrix.node }}
-                  cache: pnpm
+      - name: Setup Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
 
-            - name: Build @hashgraph/sdk
-              run: task -v build
+      - name: Build @hashgraph/sdk
+        run: task -v build
 
-    test:
-        name: Test using Node ${{ matrix.node }}
-        runs-on: hiero-client-sdk-linux-large
-        strategy:
-            matrix:
-                node: ["22"]
+  test:
+    name: Test using Node ${{ matrix.node }}
+    runs-on: hiero-client-sdk-linux-large
+    strategy:
+      matrix:
+        node: ["22"]
 
-        steps:
-            - name: Harden Runner
-              uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
-              with:
-                  egress-policy: audit
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
 
-            - name: Checkout Code
-              uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-              with:
-                  submodules: recursive
+      - name: Checkout Code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          submodules: recursive
 
-            - name: Install Task
-              uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v2.0.0
-              with:
-                  version: 3.35.1
+      - name: Install Task
+        uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v2.0.0
+        with:
+          version: 3.35.1
 
-            - name: Install PNPM
-              uses: step-security/action-setup@92da25bc4fa3a114b7a78c686a5ec142ccb12c8b # v4.1.1
-              with:
-                  version: 9.15.5
+      - name: Install PNPM
+        uses: step-security/action-setup@92da25bc4fa3a114b7a78c686a5ec142ccb12c8b # v4.1.1
+        with:
+          version: 9.15.5
 
-            - name: Setup Node
-              uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
-              with:
-                  node-version: ${{ matrix.node }}
-                  cache: pnpm
+      - name: Setup Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
 
-            - name: Build @hashgraph/sdk
-              id: build-sdk
-              run: task build
+      - name: Build @hashgraph/sdk
+        id: build-sdk
+        run: task build
 
-            - name: Install Playwright Dependencies
-              id: playwright-deps
-              if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
-              run: |
-                  sudo npx playwright install-deps
-                  npx playwright install
+      - name: Install Playwright Dependencies
+        id: playwright-deps
+        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
+        run: |
+          sudo npx playwright install-deps
+          npx playwright install
 
-            - name: Prepare Hiero Solo
-              id: solo
-              uses: hiero-ledger/hiero-solo-action@b76850c1ac44466900f8e7412b309c3aa0f539c1 # v0.12
-              with:
-                  installMirrorNode: true
-                  hieroVersion: v0.65.0
-                  mirrorNodeVersion: v0.138.0
-                  grpcProxyPort: 8080
+      - name: Prepare Hiero Solo
+        id: solo
+        uses: hiero-ledger/hiero-solo-action@b76850c1ac44466900f8e7412b309c3aa0f539c1 # v0.12
+        with:
+          installMirrorNode: true
+          hieroVersion: v0.65.0
+          mirrorNodeVersion: v0.138.0
+          grpcProxyPort: 8080
 
-            - name: Set Operator Account
-              run: |
-                  echo "OPERATOR_KEY=${{ steps.solo.outputs.ed25519PrivateKey }}" >> $GITHUB_ENV
-                  echo "OPERATOR_ID=${{ steps.solo.outputs.ed25519AccountId }}" >> $GITHUB_ENV
-                  echo "HEDERA_NETWORK=local-node" >> $GITHUB_ENV
+      - name: Set Operator Account
+        run: |
+          echo "OPERATOR_KEY=${{ steps.solo.outputs.ed25519PrivateKey }}" >> $GITHUB_ENV
+          echo "OPERATOR_ID=${{ steps.solo.outputs.ed25519AccountId }}" >> $GITHUB_ENV
+          echo "HEDERA_NETWORK=local-node" >> $GITHUB_ENV
 
-            - name: Run Hedera SDK Integration Tests
-              if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
-              run: ${{ env.CG_EXEC }} task test:integration:codecov
+      - name: Run Hedera SDK Integration Tests
+        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
+        run: ${{ env.CG_EXEC }} task test:integration:codecov
 
-            - name: Upload coverage to Codecov
-              uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2
-              with:
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  files: ./coverage/lcov.info
-                  fail_ci_if_error: false
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
 
-            - name: Build @hashgraph/cryptography
-              working-directory: packages/cryptography
-              if: ${{ steps.build-sdk.conclusion == 'success' && steps.stop-local-node.conclusion == 'success' && !cancelled() && always() }}
-              run: ${{ env.CG_EXEC }} task build
+      - name: Build @hashgraph/cryptography
+        working-directory: packages/cryptography
+        if: ${{ steps.build-sdk.conclusion == 'success' && steps.stop-local-node.conclusion == 'success' && !cancelled() && always() }}
+        run: ${{ env.CG_EXEC }} task build
 
-            - name: Browser Unit Test @hashgraph/cryptography
-              working-directory: packages/cryptography
-              if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
-              run: ${{ env.CG_EXEC }} task test:unit:browser
+      - name: Browser Unit Test @hashgraph/cryptography
+        working-directory: packages/cryptography
+        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
+        run: ${{ env.CG_EXEC }} task test:unit:browser
 
-            - name: Codecov @hashgraph/cryptography
-              working-directory: packages/cryptography
-              if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
-              run: ${{ env.CG_EXEC }} task test:unit:codecov
+      - name: Codecov @hashgraph/cryptography
+        working-directory: packages/cryptography
+        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
+        run: ${{ env.CG_EXEC }} task test:unit:codecov
 
-            - name: Upload @hashgraph/cryptography coverage to Codecov
-              uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2
-              with:
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  files: ./packages/cryptography/coverage/lcov.info
-                  fail_ci_if_error: false
+      - name: Upload @hashgraph/cryptography coverage to Codecov
+        uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./packages/cryptography/coverage/lcov.info
+          fail_ci_if_error: false
 
-            - name: Browser Unit Test @hashgraph/sdk
-              if: ${{ steps.build-sdk.conclusion == 'success' && steps.playwright-deps.conclusion == 'success' && !cancelled() && always() }}
-              run: ${{ env.CG_EXEC }} task test:unit:browser
+      - name: Browser Unit Test @hashgraph/sdk
+        if: ${{ steps.build-sdk.conclusion == 'success' && steps.playwright-deps.conclusion == 'success' && !cancelled() && always() }}
+        run: ${{ env.CG_EXEC }} task test:unit:browser
 
-            - name: Codecov @hashgraph/sdk
-              if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
-              run: ${{ env.CG_EXEC }} task test:unit:codecov
+      - name: Codecov @hashgraph/sdk
+        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
+        run: ${{ env.CG_EXEC }} task test:unit:codecov
 
-            - name: Upload @hashgraph/sdk coverage to Codecov
-              uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2
-              with:
-                  token: ${{ secrets.CODECOV_TOKEN }}
-                  fail_ci_if_error: true
+      - name: Upload @hashgraph/sdk coverage to Codecov
+        uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
 
-    examples:
-        name: Run examples using Node ${{ matrix.node }}
-        runs-on: hiero-client-sdk-linux-medium
-        strategy:
-            matrix:
-                node: ["22"]
-        steps:
-            - name: Harden Runner
-              uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
-              with:
-                  egress-policy: audit
+  examples:
+    name: Run examples using Node ${{ matrix.node }}
+    runs-on: hiero-client-sdk-linux-medium
+    strategy:
+      matrix:
+        node: ["22"]
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
 
-            - name: Checkout Code
-              uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
-              with:
-                  submodules: recursive
+      - name: Checkout Code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          submodules: recursive
 
-            - name: Install Task
-              uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v2.0.0
-              with:
-                  version: 3.35.1
+      - name: Install Task
+        uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v2.0.0
+        with:
+          version: 3.35.1
 
-            - name: Install PNPM
-              uses: step-security/action-setup@92da25bc4fa3a114b7a78c686a5ec142ccb12c8b # v4.1.1
-              with:
-                  version: 9.15.5
+      - name: Install PNPM
+        uses: step-security/action-setup@92da25bc4fa3a114b7a78c686a5ec142ccb12c8b # v4.1.1
+        with:
+          version: 9.15.5
 
-            - name: Setup Node
-              uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
-              with:
-                  node-version: ${{ matrix.node }}
-                  cache: pnpm
+      - name: Setup Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
 
-            - name: Build @hashgraph/sdk
-              id: build-sdk
-              run: task build
+      - name: Build @hashgraph/sdk
+        id: build-sdk
+        run: task build
 
-            - name: Prepare Hiero Solo
-              id: solo
-              uses: hiero-ledger/hiero-solo-action@b76850c1ac44466900f8e7412b309c3aa0f539c1 # v0.12
-              with:
-                  installMirrorNode: true
-                  hieroVersion: v0.65.0
-                  mirrorNodeVersion: v0.138.0
-                  grpcProxyPort: 8080
+      - name: Prepare Hiero Solo
+        id: solo
+        uses: hiero-ledger/hiero-solo-action@b76850c1ac44466900f8e7412b309c3aa0f539c1 # v0.12
+        with:
+          installMirrorNode: true
+          hieroVersion: v0.65.0
+          mirrorNodeVersion: v0.138.0
+          grpcProxyPort: 8080
 
-            - name: Set Operator Account
-              run: |
-                  echo "OPERATOR_KEY=${{ steps.solo.outputs.ecdsaPrivateKey }}" >> $GITHUB_ENV
-                  echo "OPERATOR_ID=${{ steps.solo.outputs.ecdsaAccountId }}" >> $GITHUB_ENV
-                  echo "HEDERA_NETWORK=local-node" >> $GITHUB_ENV
+      - name: Set Operator Account
+        run: |
+          echo "OPERATOR_KEY=${{ steps.solo.outputs.ecdsaPrivateKey }}" >> $GITHUB_ENV
+          echo "OPERATOR_ID=${{ steps.solo.outputs.ecdsaAccountId }}" >> $GITHUB_ENV
+          echo "HEDERA_NETWORK=local-node" >> $GITHUB_ENV
 
-            - name: Install dependencies
-              run: |
-                  cd examples
-                  pnpm i
+      - name: Install dependencies
+        run: |
+          cd examples
+          pnpm i
 
-            - name: Run all examples
-              run: task run:examples
+      - name: Run all examples
+        run: task run:examples
