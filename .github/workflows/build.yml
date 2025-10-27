@@ -29,7 +29,7 @@ jobs:
     runs-on: hiero-client-sdk-linux-medium
     strategy:
       matrix:
-        node: ["22", "24"]
+        node: [ "22", "24" ]
 
     steps:
       - name: Harden Runner
@@ -66,13 +66,13 @@ jobs:
     runs-on: hiero-client-sdk-linux-large
     strategy:
       matrix:
-        node: ["22"]
+        node: [ "22" ]
 
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
-        with:
-          egress-policy: audit
+      -  name: Harden Runner
+         uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+         with:
+           egress-policy: audit
 
       - name: Checkout Code
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
@@ -103,8 +103,8 @@ jobs:
         id: playwright-deps
         if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
         run: |
-          sudo npx playwright install-deps
-          npx playwright install
+            sudo npx playwright install-deps
+            npx playwright install
 
       - name: Prepare Hiero Solo
         id: solo
@@ -136,6 +136,7 @@ jobs:
         working-directory: packages/cryptography
         if: ${{ steps.build-sdk.conclusion == 'success' && steps.stop-local-node.conclusion == 'success' && !cancelled() && always() }}
         run: ${{ env.CG_EXEC }} task build
+
 
       - name: Browser Unit Test @hashgraph/cryptography
         working-directory: packages/cryptography
@@ -173,11 +174,11 @@ jobs:
     runs-on: hiero-client-sdk-linux-medium
     strategy:
       matrix:
-        node: ["22"]
+        node: [ "22" ]
     steps:
-      - name: Harden Runner
-        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
-        with:
+      -  name: Harden Runner
+         uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+         with:
           egress-policy: audit
 
       - name: Checkout Code
