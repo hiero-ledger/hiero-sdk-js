@@ -83,7 +83,7 @@ describe("NodeClient Mocking Integration Tests", function () {
             );
         });
 
-        it("should use request-level grpcDeadline over client-level", async function () {
+        it("should use request-level grpcDeadline over client-level when request level deadline is more than client level deadline", async function () {
             const slowResponse = {
                 call: async () => {
                     await new Promise((resolve) => setTimeout(resolve, 2000)); // 2 seconds
@@ -108,6 +108,28 @@ describe("NodeClient Mocking Integration Tests", function () {
             } catch (error) {
                 expect(error.message).to.include("DEADLINE_EXCEEDED");
             }
+        });
+
+        it("should override client-level grpcDeadline in channel when request level deadline is less than client level deadline", async function () {
+            const slowResponse = {
+                call: async () => {
+                    await new Promise((resolve) => setTimeout(resolve, 500)); // 500 ms
+                    return TRANSACTION_RECEIPT_QUERY_RECEIPT_RESPONSE;
+                },
+            };
+
+            ({ client, servers } = await Mocker.withResponses([
+                [slowResponse],
+            ]));
+            client.setGrpcDeadline(1); // 1 ms client deadline
+
+            // Create a query with shorter deadline
+            const query = new TransactionReceiptQuery()
+                .setTransactionId("0.0.3@4.5")
+                .setMaxAttempts(1)
+                .setGrpcDeadline(1000); // 1 second request deadline
+
+            await query.execute(client);
         });
     });
 

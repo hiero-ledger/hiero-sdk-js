@@ -650,6 +650,12 @@ export default class Executable {
             }
 
             const channel = node.getChannel();
+
+            // Set the gRPC deadline on the channel if this query has a custom deadline
+            if (this._grpcDeadline != null) {
+                channel.setGrpcDeadline(this._grpcDeadline);
+            }
+
             const request = await this._makeRequestAsync();
 
             let response;

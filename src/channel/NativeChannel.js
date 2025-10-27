@@ -4,7 +4,6 @@ import * as base64 from "../encoding/base64.native.js";
 import HttpError from "../http/HttpError.js";
 import HttpStatus from "../http/HttpStatus.js";
 import { SDK_NAME, SDK_VERSION } from "../version.js";
-import { DEFAULT_GRPC_DEADLINE } from "../constants/ClientConstants.js";
 import GrpcServiceError from "../grpc/GrpcServiceError.js";
 import GrpcStatus from "../grpc/GrpcStatus.js";
 
@@ -14,21 +13,13 @@ export default class NativeChannel extends Channel {
      * @param {number=} grpcDeadline
      */
     constructor(address, grpcDeadline) {
-        super();
+        super(grpcDeadline);
 
         /**
          * @type {string}
          * @private
          */
         this._address = address;
-
-        /**
-         * gRPC deadline in milliseconds for initial connection to a node
-         *
-         * @type {number}
-         * @private
-         */
-        this._grpcDeadline = grpcDeadline ?? DEFAULT_GRPC_DEADLINE;
 
         /**
          * Flag indicating if the connection is ready (health check has passed)

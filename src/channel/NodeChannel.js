@@ -4,10 +4,7 @@ import { Client, credentials, Metadata } from "@grpc/grpc-js";
 import Channel from "./Channel.js";
 import GrpcServicesError from "../grpc/GrpcServiceError.js";
 import GrpcStatus from "../grpc/GrpcStatus.js";
-import {
-    ALL_NETWORK_IPS,
-    DEFAULT_GRPC_DEADLINE,
-} from "../constants/ClientConstants.js";
+import { ALL_NETWORK_IPS } from "../constants/ClientConstants.js";
 import { SDK_NAME, SDK_VERSION } from "../version.js";
 
 /** @type {{ [key: string]: Client }} */
@@ -20,13 +17,12 @@ export default class NodeChannel extends Channel {
      * @param {number=} grpcDeadline
      */
     constructor(address, grpcDeadline) {
-        super();
+        super(grpcDeadline);
 
         /** @type {Client | null} */
         this._client = null;
 
         this.address = address;
-        this.maxExecutionTime = grpcDeadline;
 
         const { ip, port } = this.parseAddress(address);
         this.nodeIp = ip;
@@ -149,8 +145,7 @@ export default class NodeChannel extends Channel {
             this._initializeClient()
                 .then(() => {
                     const deadline = new Date();
-                    const milliseconds =
-                        this.maxExecutionTime ?? DEFAULT_GRPC_DEADLINE;
+                    const milliseconds = this.grpcDeadline;
                     deadline.setMilliseconds(
                         deadline.getMilliseconds() + milliseconds,
                     );

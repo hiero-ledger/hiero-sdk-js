@@ -1,8 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import {
-    ALL_WEB_NETWORK_NODES,
-    DEFAULT_GRPC_DEADLINE,
-} from "../constants/ClientConstants.js";
+import { ALL_WEB_NETWORK_NODES } from "../constants/ClientConstants.js";
 import GrpcServiceError from "../grpc/GrpcServiceError.js";
 import GrpcStatus from "../grpc/GrpcStatus.js";
 import HttpError from "../http/HttpError.js";
@@ -16,7 +13,7 @@ export default class WebChannel extends Channel {
      * @param {number=} grpcDeadline
      */
     constructor(address, grpcDeadline) {
-        super();
+        super(grpcDeadline);
 
         /**
          * @type {string}
@@ -24,13 +21,7 @@ export default class WebChannel extends Channel {
          */
         this._address = address;
 
-        /**
-         * gRPC deadline in milliseconds for initial connection to a node
-         *
-         * @type {number}
-         * @private
-         */
-        this._grpcDeadline = grpcDeadline ?? DEFAULT_GRPC_DEADLINE;
+        // Set the gRPC deadline using the base class method
 
         /**
          * Flag indicating if the connection is ready (health check has passed)
