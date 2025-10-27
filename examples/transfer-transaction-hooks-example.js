@@ -275,14 +275,6 @@ async function main() {
         console.log(
             "\nNote: This demonstrates the separate TransferTransaction APIs with hooks.",
         );
-        console.log(
-            "To actually execute these transactions, the hooks must exist on the network.",
-        );
-        console.log("The transactions would be executed with:");
-        console.log("  - hbarTransferTx.execute(client)");
-        console.log("  - nftTransferTx.execute(client)");
-        console.log("  - fungibleTokenTransferTx.execute(client)");
-
         console.log("Transfer Transaction Hooks Example Complete!");
     } catch (error) {
         console.error("Error occurred:", error);
