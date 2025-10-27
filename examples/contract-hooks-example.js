@@ -78,7 +78,7 @@ async function main() {
 
         // Build a basic lambda EVM hook (no admin key, no storage updates)
         const lambdaHook = new LambdaEvmHook({ contractId: hookContractId });
-        const hookDetails = new HookCreationDetails({
+        const hookWithId1 = new HookCreationDetails({
             extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
             hookId: Long.fromInt(1),
             hook: lambdaHook,
@@ -90,7 +90,7 @@ async function main() {
                     .setAdminKey(operatorKey.publicKey)
                     .setGas(400_000)
                     .setBytecode(decode(simpleContractBytecodeHex))
-                    .addHook(hookDetails)
+                    .addHook(hookWithId1)
                     .freezeWith(client)
                     .sign(operatorKey)
             ).execute(client)
@@ -112,7 +112,7 @@ async function main() {
 
         // Hook 3: Basic lambda hook with no storage updates (using ID 3 to avoid conflict with existing hook 1)
         const basicHook = new LambdaEvmHook({ contractId: hookContractId });
-        const hook3 = new HookCreationDetails({
+        const hookWithId3 = new HookCreationDetails({
             extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
             hookId: Long.fromInt(3),
             hook: basicHook,
@@ -124,7 +124,7 @@ async function main() {
                 await (
                     await new ContractUpdateTransaction()
                         .setContractId(contractWithHooksId)
-                        .addHookToCreate(hook3)
+                        .addHookToCreate(hookWithId3)
                         .freezeWith(client)
                         .sign(operatorKey)
                 ).execute(client)

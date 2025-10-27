@@ -3,7 +3,6 @@ import fs from "fs";
 import {
     AccountCreateTransaction,
     AccountUpdateTransaction,
-    AccountInfoQuery,
     ContractCreateTransaction,
     PrivateKey,
     Hbar,
@@ -74,15 +73,12 @@ async function main() {
         const accountKey = PrivateKey.generate();
         const accountPublicKey = accountKey.publicKey;
 
-        console.log(`private key = ${accountKey.toString()}`);
-        console.log(`public key = ${accountPublicKey.toString()}`);
-
         // Create a lambda EVM hook
         const lambdaHook = new LambdaEvmHook({ contractId });
 
         // Create hook creation details
         const adminKey = client.operatorPublicKey;
-        const hookDetails = new HookCreationDetails({
+        const hookWithId1002 = new HookCreationDetails({
             extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
             hookId: Long.fromInt(1002),
             hook: lambdaHook,
@@ -94,7 +90,7 @@ async function main() {
                 await new AccountCreateTransaction()
                     .setKeyWithoutAlias(accountPublicKey)
                     .setInitialBalance(new Hbar(1))
-                    .addHook(hookDetails)
+                    .addHook(hookWithId1002)
                     .freezeWith(client)
                     .sign(operatorKey)
             ).execute(client)
@@ -111,7 +107,7 @@ async function main() {
 
         // Create basic lambda hooks with no storage updates
         const basicHook = new LambdaEvmHook({ contractId });
-        const hook1 = new HookCreationDetails({
+        const hookWithId1 = new HookCreationDetails({
             extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
             hookId: Long.fromInt(1),
             hook: basicHook,
@@ -119,7 +115,7 @@ async function main() {
         });
 
         const basicHook2 = new LambdaEvmHook({ contractId });
-        const hook2 = new HookCreationDetails({
+        const hookWithId2 = new HookCreationDetails({
             extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
             hookId: Long.fromInt(2),
             hook: basicHook2,
@@ -131,8 +127,8 @@ async function main() {
                 await (
                     await new AccountUpdateTransaction()
                         .setAccountId(accountId)
-                        .addHookToCreate(hook1)
-                        .addHookToCreate(hook2)
+                        .addHookToCreate(hookWithId1)
+                        .addHookToCreate(hookWithId2)
                         .freezeWith(client)
                         .sign(accountKey)
                 ).execute(client)
@@ -141,18 +137,6 @@ async function main() {
             console.log("Successfully added hooks to account!");
         } catch (error) {
             console.error("Failed to execute hook transaction:", error);
-        }
-
-        // Verify the account by querying account info
-        try {
-            const accountInfo = await new AccountInfoQuery()
-                .setAccountId(accountId)
-                .execute(client);
-
-            console.log("Account ID:", accountInfo.accountId.toString());
-            console.log("Account balance:", accountInfo.balance.toString());
-        } catch (error) {
-            console.error("Failed to query account info:", error);
         }
 
         /*

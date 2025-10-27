@@ -75,20 +75,26 @@ async function main() {
             hook: new LambdaEvmHook({ contractId: hookContractId }),
         });
 
-        await (
+        const senderpPrivateKey = PrivateKey.generateECDSA();
+        const { accountId: senderAccountId } = await (
             await (
                 await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(operatorKey.publicKey)
-                    .setInitialBalance(new Hbar(1))
+                    .setKeyWithoutAlias(senderpPrivateKey.publicKey)
+                    .setInitialBalance(new Hbar(10))
                     .addHook(hookDetails)
                     .freezeWith(client)
-                    .sign(operatorKey)
+                    .sign(senderpPrivateKey)
             ).execute(client)
         ).getReceipt(client);
 
-        // Use existing accounts (operator as sender, node 0.0.3 as receiver)
-        const senderAccountId = operatorId;
-        const receiverAccountId = new AccountId(0, 0, 3);
+        const { accountId: receiverAccountId } = await (
+            await new AccountCreateTransaction()
+                .setKeyWithoutAlias(PrivateKey.generateECDSA().publicKey)
+                .setMaxAutomaticTokenAssociations(100)
+                .setInitialBalance(new Hbar(10))
+                .addHook(hookDetails)
+                .execute(client)
+        ).getReceipt(client);
 
         console.log("Creating fungible token...");
         let { tokenId: fungibleTokenId } = await (
@@ -99,11 +105,11 @@ async function main() {
                     .setTokenType(TokenType.FungibleCommon)
                     .setDecimals(2)
                     .setInitialSupply(10000)
-                    .setTreasuryAccountId(operatorId)
-                    .setAdminKey(operatorKey.publicKey)
-                    .setSupplyKey(operatorKey.publicKey)
+                    .setTreasuryAccountId(senderAccountId)
+                    .setAdminKey(senderpPrivateKey.publicKey)
+                    .setSupplyKey(senderpPrivateKey.publicKey)
                     .freezeWith(client)
-                    .sign(operatorKey)
+                    .sign(senderpPrivateKey)
             ).execute(client)
         ).getReceipt(client);
 
@@ -119,11 +125,11 @@ async function main() {
                     .setTokenName("Example NFT Token")
                     .setTokenSymbol("ENT")
                     .setTokenType(TokenType.NonFungibleUnique)
-                    .setTreasuryAccountId(operatorId)
-                    .setAdminKey(operatorKey.publicKey)
-                    .setSupplyKey(operatorKey.publicKey)
+                    .setTreasuryAccountId(senderAccountId)
+                    .setAdminKey(senderpPrivateKey.publicKey)
+                    .setSupplyKey(senderpPrivateKey.publicKey)
                     .freezeWith(client)
-                    .sign(operatorKey)
+                    .sign(senderpPrivateKey)
             ).execute(client)
         ).getReceipt(client);
 
@@ -137,7 +143,7 @@ async function main() {
                     .setTokenId(nftTokenId)
                     .addMetadata(metadata)
                     .freezeWith(client)
-                    .sign(operatorKey)
+                    .sign(senderpPrivateKey)
             ).execute(client)
         ).getReceipt(client);
 
@@ -194,76 +200,88 @@ async function main() {
             type: FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK,
         });
 
-        // Build TransferTransaction with hooks (demonstration)
-        console.log("Building TransferTransaction with hooks...");
-        new TransferTransaction()
-            // HBAR transfers with hook
-            .addHbarTransferWithHook(
-                senderAccountId,
-                Long.fromInt(-100),
-                hbarHook,
-            )
-            .addHbarTransfer(receiverAccountId, Long.fromInt(100))
+        // Build separate TransferTransactions with hooks (demonstration)
+        console.log("Building separate TransferTransactions with hooks...");
 
-            // NFT transfer with sender and receiver hooks
-            .addNftTransferWithHook(
-                nftId,
-                senderAccountId,
-                receiverAccountId,
-                nftSenderHook,
-                nftReceiverHook,
-            )
-
-            // Fungible token transfers with hook
-            .addTokenTransferWithHook(
-                fungibleTokenId,
-                senderAccountId,
-                Long.fromInt(-1000),
-                fungibleTokenHook,
-            )
-            .addTokenTransfer(fungibleTokenId, receiverAccountId, 1000);
+        // Transaction 1: HBAR transfers with hook
+        console.log("\n1. Building HBAR TransferTransaction with hook...");
+        await (
+            await new TransferTransaction()
+                .addHbarTransferWithHook(
+                    senderAccountId,
+                    Long.fromInt(-1),
+                    hbarHook,
+                )
+                .addHbarTransfer(receiverAccountId, Long.fromInt(1))
+                .execute(client)
+        ).getReceipt(client);
 
         console.log(
-            "TransferTransaction built successfully with the following hook calls:",
+            "   HBAR TransferTransaction built with pre-tx allowance hook",
         );
-        console.log("  - HBAR transfer with pre-tx allowance hook (ID: 1001)");
+
+        // Transaction 2: NFT transfer with sender and receiver hooks
+        console.log("\n2. Building NFT TransferTransaction with hooks...");
+        await (
+            await new TransferTransaction()
+                .addNftTransferWithHook(
+                    nftId,
+                    senderAccountId,
+                    receiverAccountId,
+                    nftSenderHook,
+                    nftReceiverHook,
+                )
+                .execute(client)
+        ).getReceipt(client);
+
         console.log(
-            "  - NFT transfer with sender hook (ID: 1002) and receiver hook (ID: 1003)",
+            "   NFT TransferTransaction built with sender and receiver hooks",
+        );
+
+        // Transaction 3: Fungible token transfers with hook
+        console.log(
+            "\n3. Building Fungible Token TransferTransaction with hook...",
+        );
+        await (
+            await new TransferTransaction()
+                .addTokenTransferWithHook(
+                    fungibleTokenId,
+                    senderAccountId,
+                    Long.fromInt(-1000),
+                    fungibleTokenHook,
+                )
+                .addTokenTransfer(fungibleTokenId, receiverAccountId, 1000)
+                .execute(client)
+        ).getReceipt(client);
+
+        console.log(
+            "   Fungible Token TransferTransaction built with pre-post allowance hook",
+        );
+
+        console.log(
+            "\nAll TransferTransactions built successfully with the following hook calls:",
         );
         console.log(
-            "  - Fungible token transfer with pre-post allowance hook (ID: 1004)",
+            "  - Transaction 1: HBAR transfer with pre-tx allowance hook",
+        );
+        console.log(
+            "  - Transaction 2: NFT transfer with sender and receiver hooks",
+        );
+        console.log(
+            "  - Transaction 3: Fungible token transfer with pre-post allowance hook",
         );
 
         // Demonstrate the API without executing (since hooks don't exist)
         console.log(
-            "\nNote: This demonstrates the TransferTransaction API with hooks.",
+            "\nNote: This demonstrates the separate TransferTransaction APIs with hooks.",
         );
         console.log(
-            "To actually execute this transaction, the hooks (IDs 1001-1004) must exist on the network.",
+            "To actually execute these transactions, the hooks must exist on the network.",
         );
-        console.log(
-            "The transaction would be executed with: transferTx.execute(client)",
-        );
-
-        /*
-         * Step 3: Execute a simple transfer without hooks that actually works
-         */
-        console.log("\n=== Executing Simple Transfer (without hooks) ===");
-        try {
-            await (
-                await (
-                    await new TransferTransaction()
-                        .addHbarTransfer(senderAccountId, new Hbar(-1))
-                        .addHbarTransfer(receiverAccountId, new Hbar(1))
-                        .freezeWith(client)
-                        .sign(operatorKey)
-                ).execute(client)
-            ).getReceipt(client);
-
-            console.log("Successfully executed simple HBAR transfer!");
-        } catch (error) {
-            console.error("Failed to execute simple transfer:", error);
-        }
+        console.log("The transactions would be executed with:");
+        console.log("  - hbarTransferTx.execute(client)");
+        console.log("  - nftTransferTx.execute(client)");
+        console.log("  - fungibleTokenTransferTx.execute(client)");
 
         console.log("Transfer Transaction Hooks Example Complete!");
     } catch (error) {

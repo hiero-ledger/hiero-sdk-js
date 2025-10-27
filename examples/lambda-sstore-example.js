@@ -3,12 +3,12 @@ import fs from "fs";
 import {
     AccountCreateTransaction,
     ContractCreateTransaction,
+    HookCreationDetails,
     LambdaSStoreTransaction,
     PrivateKey,
     Hbar,
     Client,
     AccountId,
-    HookCreationDetails,
     LambdaEvmHook,
     HookExtensionPoint,
     HookId,
@@ -48,7 +48,7 @@ async function main() {
         // Create the hook contract
         console.log("Creating hook contract...");
         const contractBytecodeHex = fs.readFileSync(
-            "./hooks-contract/hook.bytecode.txt",
+            "./contracts/HieroHookContract.bytecode.txt",
             "utf8",
         );
 
@@ -69,9 +69,6 @@ async function main() {
         console.log("Creating account with lambda hook...");
         const accountKey = PrivateKey.generate();
         const accountPublicKey = accountKey.publicKey;
-
-        console.log(`private key = ${accountKey.toString()}`);
-        console.log(`public key = ${accountPublicKey.toString()}`);
 
         // Create a lambda EVM hook
         const lambdaHook = new LambdaEvmHook({ contractId });
