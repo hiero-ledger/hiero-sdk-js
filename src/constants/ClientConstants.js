@@ -31,7 +31,7 @@ export const MAINNET = {
     "node29.swirldslabs.com:443": new AccountId(32),
     "node30.swirldslabs.com:443": new AccountId(33),
     "node31.swirldslabs.com:443": new AccountId(34),
-    // "node32.swirldslabs.com:443": new AccountId(35), - temporarily disabled
+    "node32.swirldslabs.com:443": new AccountId(35),
     "node33.swirldslabs.com:443": new AccountId(36),
     "node34.swirldslabs.com:443": new AccountId(37),
 };
