@@ -217,8 +217,8 @@ jobs:
 
       - name: Set Operator Account
         run: |
-          echo "OPERATOR_KEY=${{ steps.solo.outputs.ed25519PrivateKey }}" >> $GITHUB_ENV
-          echo "OPERATOR_ID=${{ steps.solo.outputs.ed25519AccountId }}" >> $GITHUB_ENV
+          echo "OPERATOR_KEY=${{ steps.solo.outputs.ecdsaPrivateKey }}" >> $GITHUB_ENV
+          echo "OPERATOR_ID=${{ steps.solo.outputs.ecdsaAccountId }}" >> $GITHUB_ENV
           echo "HEDERA_NETWORK=local-node" >> $GITHUB_ENV
 
       - name: Install dependencies

@@ -1,6 +1,17 @@
 import { http, HttpResponse } from "msw";
 import { setupWorker } from "msw/browser";
-import { Client, FileId, AccountId, LedgerId } from "../../../src/browser.js";
+import Long from "long";
+import * as HieroProto from "@hashgraph/proto";
+import { encodeRequest } from "../../../src/channel/Channel.js";
+import {
+    Client,
+    FileId,
+    AccountId,
+    TransactionId,
+    LedgerId,
+    TransactionReceiptQuery,
+    Status,
+} from "../../../src/browser.js";
 import {
     MAINNET,
     WEB_TESTNET,
@@ -98,19 +109,49 @@ const generatePaginatedAddressBookResponse = (nodesData, nextUrl = null) => {
     };
 };
 
-const server = setupWorker();
+/**
+ * MSW worker for mocking HTTP responses
+ */
+let worker;
+
+/**
+ * Setup MSW worker with handlers and start it
+ * @param {Array} handlers - MSW handlers
+ * @param {Object} options - Start options (defaults to {quiet: true})
+ */
+const setupMSW = async (handlers) => {
+    worker = setupWorker(...handlers);
+    await worker.start({ quiet: true });
+    return worker;
+};
+
+/**
+ * Clean up MSW worker
+ */
+const cleanupMSW = async () => {
+    if (worker) {
+        await worker.stop();
+        worker = null;
+    }
+};
+
+/**
+ * Serializes a protobuf response for gRPC-Web
+ * @param {HieroProto.proto.IResponse} response - The protobuf response to serialize
+ * @returns {ArrayBuffer} The serialized response as ArrayBuffer
+ */
+function serializeProtobufResponse(response) {
+    // Encode the protobuf response
+    const responseBytes = HieroProto.proto.Response.encode(response).finish();
+
+    // Wrap it in gRPC-Web format using encodeRequest
+    return encodeRequest(responseBytes);
+}
 
 describe("WebClient", function () {
-    beforeEach(() => {
-        server.start({ quiet: true });
-    });
-
-    afterEach(() => {
-        server.resetHandlers();
-    });
-
-    afterAll(() => {
-        server.stop();
+    afterEach(async () => {
+        // Clean up MSW worker after each test
+        await cleanupMSW();
     });
 
     describe("Mainnet network", function () {
@@ -118,7 +159,7 @@ describe("WebClient", function () {
             const client = Client.forMainnet();
             const initialNetwork = { ...client.network };
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://mainnet-public.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -135,7 +176,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -158,7 +199,7 @@ describe("WebClient", function () {
                 node.grpc_proxy_endpoint = null;
             });
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://mainnet-public.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -173,7 +214,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -199,7 +240,7 @@ describe("WebClient", function () {
                 }
             });
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://mainnet-public.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -214,7 +255,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -237,7 +278,7 @@ describe("WebClient", function () {
                 node.grpc_proxy_endpoint.domain_name = "";
             });
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://mainnet-public.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -252,7 +293,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -275,7 +316,7 @@ describe("WebClient", function () {
                 node.grpc_proxy_endpoint.port = "";
             });
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://mainnet-public.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -290,7 +331,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -313,7 +354,7 @@ describe("WebClient", function () {
                 delete node.grpc_proxy_endpoint;
             });
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://mainnet-public.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -328,7 +369,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -354,7 +395,7 @@ describe("WebClient", function () {
             const newNodesResponse =
                 generateAddressBookResponse(differentNodes);
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://mainnet-public.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -369,7 +410,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -414,7 +455,7 @@ describe("WebClient", function () {
                 delete node.grpc_proxy_endpoint;
             });
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://mainnet-public.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -429,7 +470,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -461,7 +502,7 @@ describe("WebClient", function () {
 
             const partialResponse = generateAddressBookResponse(partialNodes);
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://mainnet-public.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -476,7 +517,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -512,7 +553,7 @@ describe("WebClient", function () {
             const client = Client.forTestnet();
             const initialNetwork = { ...client.network };
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -529,7 +570,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -552,7 +593,7 @@ describe("WebClient", function () {
                 node.grpc_proxy_endpoint = null;
             });
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -567,7 +608,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -593,7 +634,7 @@ describe("WebClient", function () {
                 }
             });
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -608,7 +649,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -631,7 +672,7 @@ describe("WebClient", function () {
                 node.grpc_proxy_endpoint.domain_name = "";
             });
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -646,7 +687,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -669,7 +710,7 @@ describe("WebClient", function () {
                 node.grpc_proxy_endpoint.port = "";
             });
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -684,7 +725,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -707,7 +748,7 @@ describe("WebClient", function () {
                 delete node.grpc_proxy_endpoint;
             });
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -722,7 +763,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -748,7 +789,7 @@ describe("WebClient", function () {
             const newNodesResponse =
                 generateAddressBookResponse(differentNodes);
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -763,7 +804,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -808,7 +849,7 @@ describe("WebClient", function () {
                 delete node.grpc_proxy_endpoint;
             });
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -823,7 +864,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -855,7 +896,7 @@ describe("WebClient", function () {
 
             const partialResponse = generateAddressBookResponse(partialNodes);
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -870,7 +911,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -906,7 +947,7 @@ describe("WebClient", function () {
             const client = Client.forPreviewnet();
             const initialNetwork = { ...client.network };
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://previewnet.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -923,7 +964,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -946,7 +987,7 @@ describe("WebClient", function () {
                 node.grpc_proxy_endpoint = null;
             });
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://previewnet.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -961,7 +1002,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -987,7 +1028,7 @@ describe("WebClient", function () {
                 }
             });
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://previewnet.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -1002,7 +1043,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -1025,7 +1066,7 @@ describe("WebClient", function () {
                 node.grpc_proxy_endpoint.domain_name = "";
             });
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://previewnet.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -1040,7 +1081,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -1063,7 +1104,7 @@ describe("WebClient", function () {
                 node.grpc_proxy_endpoint.port = "";
             });
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://previewnet.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -1078,7 +1119,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -1101,7 +1142,7 @@ describe("WebClient", function () {
                 delete node.grpc_proxy_endpoint;
             });
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://previewnet.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -1116,7 +1157,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -1142,7 +1183,7 @@ describe("WebClient", function () {
             const newNodesResponse =
                 generateAddressBookResponse(differentNodes);
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://previewnet.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -1157,7 +1198,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -1202,7 +1243,7 @@ describe("WebClient", function () {
                 delete node.grpc_proxy_endpoint;
             });
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://previewnet.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -1217,7 +1258,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -1249,7 +1290,7 @@ describe("WebClient", function () {
 
             const partialResponse = generateAddressBookResponse(partialNodes);
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://previewnet.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -1264,7 +1305,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -1358,7 +1399,7 @@ describe("WebClient", function () {
                 ],
             };
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://custom-mirror.example.com:5551/api/v1/network/nodes",
                     ({ request }) => {
@@ -1378,10 +1419,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
-
-            // Ensure MSW is ready by waiting a bit
-            await new Promise((resolve) => setTimeout(resolve, 100));
+            ]);
 
             await client.updateNetwork();
 
@@ -1470,7 +1508,7 @@ describe("WebClient", function () {
                 ],
             };
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://custom-mirror.example.com:5551/api/v1/network/nodes",
                     ({ request }) => {
@@ -1490,7 +1528,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -1562,7 +1600,7 @@ describe("WebClient", function () {
                 ],
             };
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://custom-mirror.example.com:5551/api/v1/network/nodes",
                     ({ request }) => {
@@ -1583,7 +1621,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -1691,7 +1729,7 @@ describe("WebClient", function () {
                 ],
             };
 
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://custom-mirror.example.com:5551/api/v1/network/nodes",
                     ({ request }) => {
@@ -1711,7 +1749,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -1756,7 +1794,7 @@ describe("WebClient", function () {
         describe("forMainnetAsync", function () {
             it("should create mainnet client with network update", async function () {
                 // Mock the mirror node response for mainnet
-                server.use(
+                await setupMSW([
                     http.get(
                         "https://mainnet-public.mirrornode.hedera.com/api/v1/network/nodes",
                         ({ request }) => {
@@ -1772,7 +1810,7 @@ describe("WebClient", function () {
                             return HttpResponse.json({ nodes: [] });
                         },
                     ),
-                );
+                ]);
 
                 const client = await Client.forMainnetAsync();
 
@@ -1792,7 +1830,7 @@ describe("WebClient", function () {
         describe("forTestnetAsync", function () {
             it("should create testnet client with newest addressbook", async function () {
                 // Mock the mirror node response for testnet
-                server.use(
+                await setupMSW([
                     http.get(
                         "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
                         ({ request }) => {
@@ -1808,7 +1846,7 @@ describe("WebClient", function () {
                             return HttpResponse.json({ nodes: [] });
                         },
                     ),
-                );
+                ]);
 
                 const client = await Client.forTestnetAsync();
 
@@ -1828,7 +1866,7 @@ describe("WebClient", function () {
         describe("forPreviewnetAsync", function () {
             it("should create previewnet client with newest addressbook", async function () {
                 // Mock the mirror node response for previewnet
-                server.use(
+                await setupMSW([
                     http.get(
                         "https://previewnet.mirrornode.hedera.com/api/v1/network/nodes",
                         ({ request }) => {
@@ -1844,7 +1882,7 @@ describe("WebClient", function () {
                             return HttpResponse.json({ nodes: [] });
                         },
                     ),
-                );
+                ]);
 
                 const client = await Client.forPreviewnetAsync();
 
@@ -1865,7 +1903,7 @@ describe("WebClient", function () {
         describe("forNameAsync", function () {
             it("should create mainnet client by name with newest addressbook", async function () {
                 // Mock the mirror node response for mainnet
-                server.use(
+                await setupMSW([
                     http.get(
                         "https://mainnet-public.mirrornode.hedera.com/api/v1/network/nodes",
                         ({ request }) => {
@@ -1881,7 +1919,7 @@ describe("WebClient", function () {
                             return HttpResponse.json({ nodes: [] });
                         },
                     ),
-                );
+                ]);
 
                 const client = await Client.forNameAsync("mainnet");
 
@@ -1899,7 +1937,7 @@ describe("WebClient", function () {
 
             it("should create testnet client by name with newest addressbook", async function () {
                 // Mock the mirror node response for testnet
-                server.use(
+                await setupMSW([
                     http.get(
                         "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
                         ({ request }) => {
@@ -1915,7 +1953,7 @@ describe("WebClient", function () {
                             return HttpResponse.json({ nodes: [] });
                         },
                     ),
-                );
+                ]);
 
                 const client = await Client.forNameAsync("testnet");
 
@@ -1933,7 +1971,7 @@ describe("WebClient", function () {
 
             it("should create previewnet client by name with newest addressbook", async function () {
                 // Mock the mirror node response for previewnet
-                server.use(
+                await setupMSW([
                     http.get(
                         "https://previewnet.mirrornode.hedera.com/api/v1/network/nodes",
                         ({ request }) => {
@@ -1949,7 +1987,7 @@ describe("WebClient", function () {
                             return HttpResponse.json({ nodes: [] });
                         },
                     ),
-                );
+                ]);
 
                 const client = await Client.forNameAsync("previewnet");
 
@@ -1975,7 +2013,7 @@ describe("WebClient", function () {
 
             // Mock paginated responses
             let requestCount = 0;
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
                     ({ request }) => {
@@ -2051,7 +2089,7 @@ describe("WebClient", function () {
                         return HttpResponse.json({ nodes: [] });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -2084,7 +2122,7 @@ describe("WebClient", function () {
             const initialNetwork = { ...client.network };
 
             let requestCount = 0;
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
                     () => {
@@ -2103,7 +2141,7 @@ describe("WebClient", function () {
                         );
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -2126,7 +2164,7 @@ describe("WebClient", function () {
             const initialNetwork = { ...client.network };
 
             let requestCount = 0;
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
                     () => {
@@ -2140,7 +2178,7 @@ describe("WebClient", function () {
                         );
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -2162,7 +2200,7 @@ describe("WebClient", function () {
             const initialNetwork = { ...client.network };
 
             let requestCount = 0;
-            server.use(
+            await setupMSW([
                 http.get(
                     "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
                     () => {
@@ -2196,7 +2234,7 @@ describe("WebClient", function () {
                         });
                     },
                 ),
-            );
+            ]);
 
             await client.updateNetwork();
 
@@ -2212,6 +2250,319 @@ describe("WebClient", function () {
             expect(initialEntries).not.toEqual(updatedEntries);
             expect(updatedEntries).toContain("0.testnet.hedera.com:443:0.0.3");
             expect(updatedEntries.size).toBe(1);
+        });
+    });
+
+    describe("Network endpoint scheme handling", function () {
+        const ACCOUNT_ID = {
+            shardNum: Long.ZERO,
+            realmNum: Long.ZERO,
+            accountNum: Long.fromNumber(10),
+        };
+
+        const TRANSACTION_RECEIPT_QUERY_RECEIPT_RESPONSE = {
+            transactionGetReceipt: {
+                header: { nodeTransactionPrecheckCode: 0 },
+                receipt: {
+                    status: 22,
+                    accountId: ACCOUNT_ID,
+                },
+            },
+        };
+        it("should work correctly with https:// scheme in network endpoints", async function () {
+            const networkWithHttps = {
+                "https://test-node.example.com:443": new AccountId(3),
+            };
+
+            const client = Client.forNetwork(networkWithHttps);
+
+            // Mock the gRPC-Web request to the endpoint with scheme
+            await setupMSW([
+                http.post(
+                    "https://test-node.example.com/proto.CryptoService/getTransactionReceipts",
+                    () => {
+                        console.log(
+                            "Mocking request to get transaction receipt",
+                        );
+                        // Serialize the protobuf response properly
+                        const serializedResponse = serializeProtobufResponse(
+                            TRANSACTION_RECEIPT_QUERY_RECEIPT_RESPONSE,
+                        );
+                        return new Response(serializedResponse, {
+                            status: 200,
+                            headers: {
+                                "content-type": "application/grpc-web+proto",
+                            },
+                        });
+                    },
+                ),
+            ]);
+
+            const transactionId = TransactionId.generate(new AccountId(3));
+            const receiptQuery = new TransactionReceiptQuery().setTransactionId(
+                transactionId,
+            );
+
+            // Execute the query to test the endpoint
+            const response = await receiptQuery.execute(client);
+
+            // Verify the response
+            expect(response).to.not.be.null;
+            expect(response.status.toString()).to.equal(
+                Status.Success.toString(),
+            );
+        });
+
+        it("should work correctly with http:// scheme in network endpoints", async function () {
+            const networkWithHttp = {
+                "http://dev-node.local:50211": new AccountId(3),
+            };
+
+            const client = Client.forNetwork(networkWithHttp);
+
+            // Mock the gRPC-Web request to the endpoint with http scheme
+            await setupMSW([
+                http.post(
+                    "http://dev-node.local:50211/proto.CryptoService/getTransactionReceipts",
+                    () => {
+                        console.log(
+                            "Mocking request to get transaction receipt with http",
+                        );
+                        // Serialize the protobuf response properly
+                        const serializedResponse = serializeProtobufResponse(
+                            TRANSACTION_RECEIPT_QUERY_RECEIPT_RESPONSE,
+                        );
+                        return new Response(serializedResponse, {
+                            status: 200,
+                            headers: {
+                                "content-type": "application/grpc-web+proto",
+                            },
+                        });
+                    },
+                ),
+            ]);
+
+            const transactionId = TransactionId.generate(new AccountId(3));
+            const receiptQuery = new TransactionReceiptQuery().setTransactionId(
+                transactionId,
+            );
+
+            // Execute the query to test the endpoint
+            const response = await receiptQuery.execute(client);
+
+            // Verify the response
+            expect(response).to.not.be.null;
+            expect(response.status.toString()).to.equal(
+                Status.Success.toString(),
+            );
+        });
+
+        it("should work correctly with endpoints without scheme (auto-detected https)", async function () {
+            const networkWithoutScheme = {
+                "test-node.example.com:443": new AccountId(3),
+            };
+
+            const client = Client.forNetwork(networkWithoutScheme);
+
+            // Mock the gRPC-Web request to the endpoint (should auto-add https)
+            await setupMSW([
+                http.post(
+                    "https://test-node.example.com/proto.CryptoService/getTransactionReceipts",
+                    () => {
+                        console.log(
+                            "Mocking request to get transaction receipt without scheme",
+                        );
+                        // Serialize the protobuf response properly
+                        const serializedResponse = serializeProtobufResponse(
+                            TRANSACTION_RECEIPT_QUERY_RECEIPT_RESPONSE,
+                        );
+                        return new Response(serializedResponse, {
+                            status: 200,
+                            headers: {
+                                "content-type": "application/grpc-web+proto",
+                            },
+                        });
+                    },
+                ),
+            ]);
+
+            const transactionId = TransactionId.generate(new AccountId(3));
+            const receiptQuery = new TransactionReceiptQuery().setTransactionId(
+                transactionId,
+            );
+
+            // Execute the query to test the endpoint
+            const response = await receiptQuery.execute(client);
+
+            // Verify the response
+            expect(response).to.not.be.null;
+            expect(response.status.toString()).to.equal(
+                Status.Success.toString(),
+            );
+        });
+
+        it("should work correctly with localhost endpoints (auto-detected http)", async function () {
+            const networkWithLocalhost = {
+                "localhost:50211": new AccountId(3),
+            };
+
+            const client = Client.forNetwork(networkWithLocalhost);
+
+            // Mock the gRPC-Web request to the localhost endpoint (should auto-add http)
+            await setupMSW([
+                http.post(
+                    "http://localhost:50211/proto.CryptoService/getTransactionReceipts",
+                    () => {
+                        console.log("Mocking request to localhost");
+                        // Serialize the protobuf response properly
+                        const serializedResponse = serializeProtobufResponse(
+                            TRANSACTION_RECEIPT_QUERY_RECEIPT_RESPONSE,
+                        );
+                        return new Response(serializedResponse, {
+                            status: 200,
+                            headers: {
+                                "content-type": "application/grpc-web+proto",
+                            },
+                        });
+                    },
+                ),
+            ]);
+
+            const transactionId = TransactionId.generate(new AccountId(3));
+            const receiptQuery = new TransactionReceiptQuery().setTransactionId(
+                transactionId,
+            );
+
+            // Execute the query to test the endpoint
+            const response = await receiptQuery.execute(client);
+
+            // Verify the response
+            expect(response).to.not.be.null;
+            expect(response.status.toString()).to.equal(
+                Status.Success.toString(),
+            );
+        });
+
+        it("should work correctly with 127.0.0.1 endpoints (auto-detected http)", async function () {
+            const networkWithLocalhost = {
+                "127.0.0.1:50211": new AccountId(3),
+            };
+
+            const client = Client.forNetwork(networkWithLocalhost);
+
+            // Mock the gRPC-Web request to the 127.0.0.1 endpoint (should auto-add http)
+            await setupMSW([
+                http.post(
+                    "http://127.0.0.1:50211/proto.CryptoService/getTransactionReceipts",
+                    () => {
+                        console.log(
+                            "Mocking request to get transaction receipt with 127.0.0.1",
+                        );
+                        // Serialize the protobuf response properly
+                        const serializedResponse = serializeProtobufResponse(
+                            TRANSACTION_RECEIPT_QUERY_RECEIPT_RESPONSE,
+                        );
+                        return new Response(serializedResponse, {
+                            status: 200,
+                            headers: {
+                                "content-type": "application/grpc-web+proto",
+                            },
+                        });
+                    },
+                ),
+            ]);
+
+            const transactionId = TransactionId.generate(new AccountId(3));
+            const receiptQuery = new TransactionReceiptQuery().setTransactionId(
+                transactionId,
+            );
+
+            // Execute the query to test the endpoint
+            const response = await receiptQuery.execute(client);
+
+            // Verify the response
+            expect(response).to.not.be.null;
+            expect(response.status.toString()).to.equal(
+                Status.Success.toString(),
+            );
+        });
+
+        it("should work correctly with mixed scheme endpoints", async function () {
+            const networkWithMixedSchemes = {
+                "https://secure-node.example.com:443": new AccountId(3),
+                "http://dev-node.local:50211": new AccountId(4),
+                "test-node.example.com:443": new AccountId(5),
+            };
+
+            const client = Client.forNetwork(networkWithMixedSchemes);
+
+            // Mock the gRPC-Web requests for all endpoints
+            await setupMSW([
+                // HTTPS endpoint with explicit scheme
+                http.post(
+                    "https://secure-node.example.com/proto.CryptoService/getTransactionReceipts",
+                    () => {
+                        console.log(
+                            "Mocking request to secure-node.example.com",
+                        );
+                        const serializedResponse = serializeProtobufResponse(
+                            TRANSACTION_RECEIPT_QUERY_RECEIPT_RESPONSE,
+                        );
+                        return new Response(serializedResponse, {
+                            status: 200,
+                            headers: {
+                                "content-type": "application/grpc-web+proto",
+                            },
+                        });
+                    },
+                ),
+                // HTTP dev-node.local endpoint
+                http.post(
+                    "http://dev-node.local:50211/proto.CryptoService/getTransactionReceipts",
+                    () => {
+                        console.log("Mocking request to dev-node.local");
+                        const serializedResponse = serializeProtobufResponse(
+                            TRANSACTION_RECEIPT_QUERY_RECEIPT_RESPONSE,
+                        );
+                        return new Response(serializedResponse, {
+                            status: 200,
+                            headers: {
+                                "content-type": "application/grpc-web+proto",
+                            },
+                        });
+                    },
+                ),
+                // Auto-detected HTTPS endpoint
+                http.post(
+                    "https://test-node.example.com/proto.CryptoService/getTransactionReceipts",
+                    () => {
+                        console.log("Mocking request to test-node.example.com");
+                        const serializedResponse = serializeProtobufResponse(
+                            TRANSACTION_RECEIPT_QUERY_RECEIPT_RESPONSE,
+                        );
+                        return new Response(serializedResponse, {
+                            status: 200,
+                            headers: {
+                                "content-type": "application/grpc-web+proto",
+                            },
+                        });
+                    },
+                ),
+            ]);
+
+            const transactionId = TransactionId.generate(new AccountId(3));
+            const receiptQuery = new TransactionReceiptQuery().setTransactionId(
+                transactionId,
+            );
+
+            // Execute the query to test the endpoint
+            const response = await receiptQuery.execute(client);
+
+            // Verify the response
+            expect(response).to.not.be.null;
+            expect(response.status.toString()).to.equal(
+                Status.Success.toString(),
+            );
         });
     });
 });

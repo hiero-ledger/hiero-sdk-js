@@ -25,12 +25,12 @@ async function main() {
     }
 
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
-    const operatorKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
+    const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
     const network = process.env.HEDERA_NETWORK;
     const client = Client.forName(network).setOperator(operatorId, operatorKey);
 
     // Generate a metadata key
-    const metadataKey = PrivateKey.generateED25519();
+    const metadataKey = PrivateKey.generateECDSA();
     // Initial metadata
     const metadata = new Uint8Array([1]);
     // New metadata

@@ -6,7 +6,7 @@ async function main() {
         const mnemonic = await Mnemonic.generate();
         console.log(`24 words mnemonic = ${mnemonic.toString()}`);
 
-        const key = await mnemonic.toStandardEd25519PrivateKey("", 0);
+        const key = await mnemonic.toStandardECDSAsecp256k1PrivateKey("", 0);
         console.log(`private key = ${key.toString()}`);
         console.log(`public key = ${key.publicKey.toString()}`);
 
@@ -18,7 +18,7 @@ async function main() {
             mnemonic.toString(),
         );
         const recoveredRootKey =
-            await recoveredMnemonic.toStandardEd25519PrivateKey("", 0);
+            await recoveredMnemonic.toStandardECDSAsecp256k1PrivateKey("", 0);
 
         recoveredRootKey.toString() === key.toString()
             ? console.log(`successful key recovery!`)
@@ -27,7 +27,10 @@ async function main() {
         const mnemonic12 = await Mnemonic.generate12();
         console.log(`12 words mnemonic = ${mnemonic12.toString()}`);
 
-        const key12 = await mnemonic12.toStandardEd25519PrivateKey("", 0);
+        const key12 = await mnemonic12.toStandardECDSAsecp256k1PrivateKey(
+            "",
+            0,
+        );
         console.log(`private key = ${key12.toString()}`);
         console.log(`public key = ${key12.publicKey.toString()}`);
     } catch (error) {
