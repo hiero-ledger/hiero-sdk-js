@@ -18,12 +18,7 @@ import FungibleHookType from "../../src/hooks/FungibleHookType.js";
 import NftHookType from "../../src/hooks/NftHookType.js";
 import FungibleHookCall from "../../src/hooks/FungibleHookCall.js";
 import NftHookCall from "../../src/hooks/NftHookCall.js";
-import HookId from "../../src/hooks/HookId.js";
-import HookEntityId from "../../src/hooks/HookEntityId.js";
-import AccountBalanceQuery from "../../src/account/AccountBalanceQuery.js";
-import AccountInfoQuery from "../../src/account/AccountInfoQuery.js";
 import TransferTransaction from "../../src/account/TransferTransaction.js";
-import AccountId from "../../src/account/AccountId.js";
 import Hbar from "../../src/Hbar.js";
 import Status from "../../src/Status.js";
 
@@ -486,6 +481,122 @@ describe("CryptoTransfer", function () {
                         nftId,
                         senderId,
                         receiverId,
+                        receiverCall,
+                    )
+                    .freezeWith(env.client)
+                    .sign(senderKey)
+            ).execute(env.client);
+
+            const receipt = await response.getReceipt(env.client);
+            expect(receipt.status.toString()).to.be.equal("SUCCESS");
+        });
+
+        it.only("should transfer NFT with pre_post hooks on both sender and receiver", async function () {
+            // Create sender account with hook
+            const senderKey = PrivateKey.generateED25519();
+            const senderHook = new LambdaEvmHook({
+                contractId: lambdaContractId,
+                storageUpdates: [],
+            });
+            const senderHookDetails = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                hook: senderHook,
+                hookId: 2,
+            });
+
+            const senderResp = await (
+                await new AccountCreateTransaction()
+                    .setKeyWithoutAlias(senderKey.publicKey)
+                    .setInitialBalance(new Hbar(2))
+                    .addHook(senderHookDetails)
+                    .freezeWith(env.client)
+                    .sign(senderKey)
+            ).execute(env.client);
+            const { accountId: senderId } = await senderResp.getReceipt(
+                env.client,
+            );
+
+            // Create receiver account with hook
+            const receiverKey = PrivateKey.generateED25519();
+            const receiverHook = new LambdaEvmHook({
+                contractId: lambdaContractId,
+                storageUpdates: [],
+            });
+            const receiverHookDetails = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                hook: receiverHook,
+                hookId: 2,
+            });
+
+            const receiverResp = await (
+                await new AccountCreateTransaction()
+                    .setKeyWithoutAlias(receiverKey.publicKey)
+                    .setInitialBalance(new Hbar(2))
+                    .addHook(receiverHookDetails)
+                    .freezeWith(env.client)
+                    .sign(receiverKey)
+            ).execute(env.client);
+            const { accountId: receiverId } = await receiverResp.getReceipt(
+                env.client,
+            );
+
+            // Create NFT token with sender as treasury and mint one serial
+            const tokenResp = await (
+                await new TokenCreateTransaction()
+                    .setTokenName("NFT-HOOK-PP")
+                    .setTokenSymbol("NHPP")
+                    .setTokenType(TokenType.NonFungibleUnique)
+                    .setInitialSupply(0)
+                    .setTreasuryAccountId(senderId)
+                    .setAdminKey(senderKey.publicKey)
+                    .setSupplyKey(senderKey.publicKey)
+                    .freezeWith(env.client)
+                    .sign(senderKey)
+            ).execute(env.client);
+            const tokenId = (await tokenResp.getReceipt(env.client)).tokenId;
+
+            await (
+                await (
+                    await new TokenMintTransaction()
+                        .setTokenId(tokenId)
+                        .setMetadata([new Uint8Array([1])])
+                        .freezeWith(env.client)
+                        .sign(senderKey)
+                ).execute(env.client)
+            ).getReceipt(env.client);
+
+            // Associate receiver with token
+            await (
+                await new TokenAssociateTransaction()
+                    .setAccountId(receiverId)
+                    .setTokenIds([tokenId])
+                    .freezeWith(env.client)
+                    .sign(receiverKey)
+            ).execute(env.client);
+
+            const nftId = new NftId(tokenId, 1);
+
+            // Build pre_post hooks for both sender and receiver
+            const senderCall = new NftHookCall({
+                hookId: Long.fromInt(2),
+                evmHookCall: new EvmHookCall({ gasLimit: 25000 }),
+                type: NftHookType.PRE_POST_HOOK_SENDER,
+            });
+
+            const receiverCall = new NftHookCall({
+                hookId: Long.fromInt(2),
+                evmHookCall: new EvmHookCall({ gasLimit: 25000 }),
+                type: NftHookType.PRE_POST_HOOK_RECEIVER,
+            });
+
+            // Transfer NFT with both sender and receiver pre_post hooks in a single op
+            const response = await (
+                await new TransferTransaction()
+                    .addNftTransferWithHook(
+                        nftId,
+                        senderId,
+                        receiverId,
+                        senderCall,
                         receiverCall,
                     )
                     .freezeWith(env.client)
