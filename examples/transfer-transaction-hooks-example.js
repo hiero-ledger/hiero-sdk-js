@@ -75,22 +75,22 @@ async function main() {
             hook: new LambdaEvmHook({ contractId: hookContractId }),
         });
 
-        const senderpPrivateKey = PrivateKey.generateECDSA();
+        const senderPrivateKey = PrivateKey.generateECDSA();
         const { accountId: senderAccountId } = await (
             await (
                 await new AccountCreateTransaction()
-                    .setKeyWithoutAlias(senderpPrivateKey.publicKey)
+                    .setKeyWithoutAlias(senderPrivateKey.publicKey)
                     .setInitialBalance(new Hbar(10))
                     .addHook(hookDetails)
                     .freezeWith(client)
-                    .sign(senderpPrivateKey)
+                    .sign(senderPrivateKey)
             ).execute(client)
         ).getReceipt(client);
 
         const { accountId: receiverAccountId } = await (
             await new AccountCreateTransaction()
                 .setKeyWithoutAlias(PrivateKey.generateECDSA().publicKey)
-                .setMaxAutomaticTokenAssociations(100)
+                .setMaxAutomaticTokenAssociations(-1)
                 .setInitialBalance(new Hbar(10))
                 .addHook(hookDetails)
                 .execute(client)
@@ -106,10 +106,10 @@ async function main() {
                     .setDecimals(2)
                     .setInitialSupply(10000)
                     .setTreasuryAccountId(senderAccountId)
-                    .setAdminKey(senderpPrivateKey.publicKey)
-                    .setSupplyKey(senderpPrivateKey.publicKey)
+                    .setAdminKey(senderPrivateKey.publicKey)
+                    .setSupplyKey(senderPrivateKey.publicKey)
                     .freezeWith(client)
-                    .sign(senderpPrivateKey)
+                    .sign(senderPrivateKey)
             ).execute(client)
         ).getReceipt(client);
 
@@ -126,10 +126,10 @@ async function main() {
                     .setTokenSymbol("ENT")
                     .setTokenType(TokenType.NonFungibleUnique)
                     .setTreasuryAccountId(senderAccountId)
-                    .setAdminKey(senderpPrivateKey.publicKey)
-                    .setSupplyKey(senderpPrivateKey.publicKey)
+                    .setAdminKey(senderPrivateKey.publicKey)
+                    .setSupplyKey(senderPrivateKey.publicKey)
                     .freezeWith(client)
-                    .sign(senderpPrivateKey)
+                    .sign(senderPrivateKey)
             ).execute(client)
         ).getReceipt(client);
 
@@ -143,7 +143,7 @@ async function main() {
                     .setTokenId(nftTokenId)
                     .addMetadata(metadata)
                     .freezeWith(client)
-                    .sign(senderpPrivateKey)
+                    .sign(senderPrivateKey)
             ).execute(client)
         ).getReceipt(client);
 
