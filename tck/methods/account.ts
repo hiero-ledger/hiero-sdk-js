@@ -37,19 +37,22 @@ import { applyCommonTransactionParams } from "../params/common-tx-params";
 import { TransferCryptoParams } from "../params/transfer";
 
 // buildCreateAccount builds an AccountCreateTransaction from parameters
-export const buildCreateAccount = ({
-    key,
-    initialBalance,
-    receiverSignatureRequired,
-    maxAutoTokenAssociations,
-    commonTransactionParams,
-    stakedAccountId,
-    stakedNodeId,
-    declineStakingReward,
-    memo,
-    autoRenewPeriod,
-    alias,
-}: CreateAccountParams): AccountCreateTransaction => {
+export const buildCreateAccount = (
+    {
+        key,
+        initialBalance,
+        receiverSignatureRequired,
+        maxAutoTokenAssociations,
+        commonTransactionParams,
+        stakedAccountId,
+        stakedNodeId,
+        declineStakingReward,
+        memo,
+        autoRenewPeriod,
+        alias,
+    }: CreateAccountParams,
+    client,
+): AccountCreateTransaction => {
     let transaction = new AccountCreateTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -100,7 +103,7 @@ export const buildCreateAccount = ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
@@ -110,10 +113,11 @@ export const buildCreateAccount = ({
 export const createAccount = async (
     params: CreateAccountParams,
 ): Promise<AccountResponse> => {
-    const transaction = buildCreateAccount(params);
+    const client = sdk.getClient(params.sessionId);
+    const transaction = buildCreateAccount(params, client);
 
-    const txResponse = await transaction.execute(sdk.getClient());
-    const receipt = await txResponse.getReceipt(sdk.getClient());
+    const txResponse = await transaction.execute(client);
+    const receipt = await txResponse.getReceipt(client);
 
     return {
         accountId: receipt.accountId?.toString(),
@@ -122,19 +126,22 @@ export const createAccount = async (
 };
 
 // buildUpdateAccount builds an AccountUpdateTransaction from parameters
-const buildUpdateAccount = ({
-    accountId,
-    key,
-    autoRenewPeriod,
-    expirationTime,
-    receiverSignatureRequired,
-    memo,
-    maxAutoTokenAssociations,
-    stakedAccountId,
-    stakedNodeId,
-    declineStakingReward,
-    commonTransactionParams,
-}: UpdateAccountParams): AccountUpdateTransaction => {
+const buildUpdateAccount = (
+    {
+        accountId,
+        key,
+        autoRenewPeriod,
+        expirationTime,
+        receiverSignatureRequired,
+        memo,
+        maxAutoTokenAssociations,
+        stakedAccountId,
+        stakedNodeId,
+        declineStakingReward,
+        commonTransactionParams,
+    }: UpdateAccountParams,
+    client,
+): AccountUpdateTransaction => {
     let transaction = new AccountUpdateTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -187,7 +194,7 @@ const buildUpdateAccount = ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
@@ -197,10 +204,11 @@ const buildUpdateAccount = ({
 export const updateAccount = async (
     params: UpdateAccountParams,
 ): Promise<AccountResponse> => {
-    const transaction = buildUpdateAccount(params);
+    const client = sdk.getClient(params.sessionId);
+    const transaction = buildUpdateAccount(params, client);
 
-    const txResponse = await transaction.execute(sdk.getClient());
-    const receipt = await txResponse.getReceipt(sdk.getClient());
+    const txResponse = await transaction.execute(client);
+    const receipt = await txResponse.getReceipt(client);
 
     return {
         status: receipt.status.toString(),
@@ -208,11 +216,14 @@ export const updateAccount = async (
 };
 
 // buildDeleteAccount builds an AccountDeleteTransaction from parameters
-const buildDeleteAccount = ({
-    deleteAccountId,
-    transferAccountId,
-    commonTransactionParams,
-}: DeleteAccountParams): AccountDeleteTransaction => {
+const buildDeleteAccount = (
+    {
+        deleteAccountId,
+        transferAccountId,
+        commonTransactionParams,
+    }: DeleteAccountParams,
+    client,
+): AccountDeleteTransaction => {
     let transaction = new AccountDeleteTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -231,7 +242,7 @@ const buildDeleteAccount = ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
@@ -241,10 +252,11 @@ const buildDeleteAccount = ({
 export const deleteAccount = async (
     params: DeleteAccountParams,
 ): Promise<AccountResponse> => {
-    const transaction = buildDeleteAccount(params);
+    const client = sdk.getClient(params.sessionId);
+    const transaction = buildDeleteAccount(params, client);
 
-    const txResponse = await transaction.execute(sdk.getClient());
-    const receipt = await txResponse.getReceipt(sdk.getClient());
+    const txResponse = await transaction.execute(client);
+    const receipt = await txResponse.getReceipt(client);
 
     return {
         status: receipt.status.toString(),
@@ -254,7 +266,9 @@ export const deleteAccount = async (
 export const getAccountBalance = async ({
     accountId,
     contractId,
+    sessionId,
 }: GetAccountBalanceParams): Promise<GetAccountBalanceResponse> => {
+    const client = sdk.getClient(sessionId);
     const transaction = new AccountBalanceQuery().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -267,7 +281,7 @@ export const getAccountBalance = async ({
         transaction.setContractId(contractId);
     }
 
-    const txResponse = await transaction.execute(sdk.getClient());
+    const txResponse = await transaction.execute(client);
 
     let tokenBalances = {};
     for (const [tokenId, amount] of txResponse.tokens) {
@@ -287,10 +301,13 @@ export const getAccountBalance = async ({
 };
 
 // buildApproveAllowance builds an AccountAllowanceApproveTransaction from parameters
-export const buildApproveAllowance = ({
-    allowances,
-    commonTransactionParams,
-}: AccountAllowanceApproveParams): AccountAllowanceApproveTransaction => {
+export const buildApproveAllowance = (
+    {
+        allowances,
+        commonTransactionParams,
+    }: AccountAllowanceApproveParams,
+    client,
+): AccountAllowanceApproveTransaction => {
     const transaction = new AccountAllowanceApproveTransaction();
     transaction.setGrpcDeadline(DEFAULT_GRPC_DEADLINE);
 
@@ -324,7 +341,7 @@ export const buildApproveAllowance = ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
@@ -334,10 +351,11 @@ export const buildApproveAllowance = ({
 export const approveAllowance = async (
     params: AccountAllowanceApproveParams,
 ): Promise<AccountResponse> => {
-    const transaction = buildApproveAllowance(params);
+    const client = sdk.getClient(params.sessionId);
+    const transaction = buildApproveAllowance(params, client);
 
-    const txResponse = await transaction.execute(sdk.getClient());
-    const receipt = await txResponse.getReceipt(sdk.getClient());
+    const txResponse = await transaction.execute(client);
+    const receipt = await txResponse.getReceipt(client);
 
     return {
         status: receipt.status.toString(),
@@ -345,10 +363,13 @@ export const approveAllowance = async (
 };
 
 // buildDeleteAllowance builds an AccountAllowanceDeleteTransaction from parameters
-const buildDeleteAllowance = ({
-    allowances,
-    commonTransactionParams,
-}: DeleteAllowanceParams): AccountAllowanceDeleteTransaction => {
+const buildDeleteAllowance = (
+    {
+        allowances,
+        commonTransactionParams,
+    }: DeleteAllowanceParams,
+    client,
+): AccountAllowanceDeleteTransaction => {
     let transaction = new AccountAllowanceDeleteTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -368,7 +389,7 @@ const buildDeleteAllowance = ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
@@ -378,10 +399,11 @@ const buildDeleteAllowance = ({
 export const deleteAllowance = async (
     params: DeleteAllowanceParams,
 ): Promise<AccountResponse> => {
-    const transaction = buildDeleteAllowance(params);
+    const client = sdk.getClient(params.sessionId);
+    const transaction = buildDeleteAllowance(params, client);
 
-    const txResponse = await transaction.execute(sdk.getClient());
-    const receipt = await txResponse.getReceipt(sdk.getClient());
+    const txResponse = await transaction.execute(client);
+    const receipt = await txResponse.getReceipt(client);
 
     return {
         status: receipt.status.toString(),
@@ -389,10 +411,13 @@ export const deleteAllowance = async (
 };
 
 // buildTransferCrypto builds a TransferTransaction from parameters
-export const buildTransferCrypto = ({
-    transfers,
-    commonTransactionParams,
-}: TransferCryptoParams): TransferTransaction => {
+export const buildTransferCrypto = (
+    {
+        transfers,
+        commonTransactionParams,
+    }: TransferCryptoParams,
+    client,
+): TransferTransaction => {
     if (!transfers.length) {
         throw new Error("No transfers provided.");
     }
@@ -480,7 +505,7 @@ export const buildTransferCrypto = ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
@@ -490,10 +515,11 @@ export const buildTransferCrypto = ({
 export const transferCrypto = async (
     params: TransferCryptoParams,
 ): Promise<AccountResponse> => {
-    const transaction = buildTransferCrypto(params);
+    const client = sdk.getClient(params.sessionId);
+    const transaction = buildTransferCrypto(params, client);
 
-    const txResponse = await transaction.execute(sdk.getClient());
-    const receipt = await txResponse.getReceipt(sdk.getClient());
+    const txResponse = await transaction.execute(client);
+    const receipt = await txResponse.getReceipt(client);
 
     return {
         status: receipt.status.toString(),

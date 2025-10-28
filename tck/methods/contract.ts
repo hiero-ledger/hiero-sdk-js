@@ -37,7 +37,9 @@ export const createContract = async ({
     maxAutomaticTokenAssociations,
     constructorParameters,
     commonTransactionParams,
+    sessionId,
 }: CreateContractParams): Promise<ContractResponse> => {
+    const client = sdk.getClient(sessionId);
     const transaction = new ContractCreateTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -102,12 +104,12 @@ export const createContract = async ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
-    const response = await transaction.execute(sdk.getClient());
-    const receipt = await response.getReceipt(sdk.getClient());
+    const response = await transaction.execute(client);
+    const receipt = await response.getReceipt(client);
 
     return {
         contractId: receipt.contractId?.toString(),
@@ -115,8 +117,7 @@ export const createContract = async ({
     };
 };
 
-export const updateContract = async ({
-    contractId,
+export const updateContract = async ({contractId,
     adminKey,
     autoRenewPeriod,
     autoRenewAccountId,
@@ -127,7 +128,8 @@ export const updateContract = async ({
     maxAutomaticTokenAssociations,
     expirationTime,
     commonTransactionParams,
-}: UpdateContractParams): Promise<ContractResponse> => {
+    sessionId}: UpdateContractParams): Promise<ContractResponse> => {
+    const client = sdk.getClient(sessionId);
     const transaction = new ContractUpdateTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -180,25 +182,25 @@ export const updateContract = async ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
-    const response = await transaction.execute(sdk.getClient());
-    const receipt = await response.getReceipt(sdk.getClient());
+    const response = await transaction.execute(client);
+    const receipt = await response.getReceipt(client);
 
     return {
         status: receipt.status.toString(),
     };
 };
 
-export const deleteContract = async ({
-    contractId,
+export const deleteContract = async ({contractId,
     transferAccountId,
     transferContractId,
     permanentRemoval,
     commonTransactionParams,
-}: DeleteContractParams): Promise<ContractResponse> => {
+    sessionId}: DeleteContractParams): Promise<ContractResponse> => {
+    const client = sdk.getClient(sessionId);
     const transaction = new ContractDeleteTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -224,25 +226,25 @@ export const deleteContract = async ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
-    const response = await transaction.execute(sdk.getClient());
-    const receipt = await response.getReceipt(sdk.getClient());
+    const response = await transaction.execute(client);
+    const receipt = await response.getReceipt(client);
 
     return {
         status: receipt.status.toString(),
     };
 };
 
-export const executeContract = async ({
-    contractId,
+export const executeContract = async ({contractId,
     gas,
     amount,
     functionParameters,
     commonTransactionParams,
-}: ExecuteContractParams): Promise<ContractResponse> => {
+    sessionId}: ExecuteContractParams): Promise<ContractResponse> => {
+    const client = sdk.getClient(sessionId);
     const transaction = new ContractExecuteTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -268,11 +270,11 @@ export const executeContract = async ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
-    const response = await transaction.execute(sdk.getClient());
-    const receipt = await response.getReceipt(sdk.getClient());
+    const response = await transaction.execute(client);
+    const receipt = await response.getReceipt(client);
 
     return {
         status: receipt.status.toString(),

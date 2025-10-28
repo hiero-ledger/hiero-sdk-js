@@ -1,4 +1,6 @@
-export interface TopicCreateParams {
+import { BaseParams } from "./base";
+
+export interface TopicCreateParams extends BaseParams {
     readonly memo?: string;
     readonly adminKey?: string;
     readonly submitKey?: string;
@@ -10,7 +12,7 @@ export interface TopicCreateParams {
     readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface TopicUpdateParams {
+export interface TopicUpdateParams extends BaseParams {
     readonly topicId: string;
     readonly memo?: string;
     readonly adminKey?: string;
@@ -24,12 +26,12 @@ export interface TopicUpdateParams {
     readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface TopicDeleteParams {
+export interface TopicDeleteParams extends BaseParams {
     readonly topicId: string;
     readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface TopicSubmitMessageParams {
+export interface TopicSubmitMessageParams extends BaseParams {
     readonly topicId: string;
     readonly message: string;
     readonly maxChunks?: number;

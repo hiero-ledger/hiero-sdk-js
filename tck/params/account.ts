@@ -1,6 +1,7 @@
 import { AllowanceParams } from "./allowance";
+import { BaseParams } from "./base";
 
-export interface CreateAccountParams {
+export interface CreateAccountParams extends BaseParams {
     readonly key?: string;
     readonly initialBalance?: string;
     readonly receiverSignatureRequired?: boolean;
@@ -14,7 +15,7 @@ export interface CreateAccountParams {
     readonly alias?: string;
 }
 
-export interface UpdateAccountParams {
+export interface UpdateAccountParams extends BaseParams {
     readonly accountId?: string;
     readonly key?: string;
     readonly autoRenewPeriod?: string;
@@ -28,17 +29,17 @@ export interface UpdateAccountParams {
     readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface DeleteAccountParams {
+export interface DeleteAccountParams extends BaseParams {
     readonly deleteAccountId?: string;
     readonly transferAccountId?: string;
     readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface AccountAllowanceApproveParams {
+export interface AccountAllowanceApproveParams extends BaseParams {
     readonly allowances: AllowanceParams[];
     readonly commonTransactionParams?: Record<string, any>;
 }
-export interface DeleteAllowanceParams {
+export interface DeleteAllowanceParams extends BaseParams {
     readonly allowances: RemoveAllowancesParams[];
     readonly commonTransactionParams?: Record<string, any>;
 }
@@ -49,7 +50,7 @@ export interface RemoveAllowancesParams {
     readonly serialNumbers?: string[];
 }
 
-export interface GetAccountBalanceParams {
+export interface GetAccountBalanceParams extends BaseParams {
     readonly accountId?: string;
     readonly contractId?: string;
 }

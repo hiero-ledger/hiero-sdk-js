@@ -45,8 +45,7 @@ const createServiceEndpoint = (
     return endpoint;
 };
 
-export const createNode = async ({
-    accountId,
+export const createNode = async ({accountId,
     description,
     gossipEndpoints,
     serviceEndpoints,
@@ -56,7 +55,8 @@ export const createNode = async ({
     adminKey,
     declineReward,
     commonTransactionParams,
-}: CreateNodeParams): Promise<NodeResponse> => {
+    sessionId}: CreateNodeParams): Promise<NodeResponse> => {
+    const client = sdk.getClient(sessionId);
     let transaction = new NodeCreateTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -104,12 +104,12 @@ export const createNode = async ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
-    const txResponse = await transaction.execute(sdk.getClient());
-    const receipt = await txResponse.getReceipt(sdk.getClient());
+    const txResponse = await transaction.execute(client);
+    const receipt = await txResponse.getReceipt(client);
 
     return {
         nodeId: receipt.nodeId?.toString(),
@@ -117,8 +117,7 @@ export const createNode = async ({
     };
 };
 
-export const updateNode = async ({
-    accountId,
+export const updateNode = async ({accountId,
     nodeId,
     description,
     gossipEndpoints,
@@ -129,7 +128,8 @@ export const updateNode = async ({
     adminKey,
     declineReward,
     commonTransactionParams,
-}: UpdateNodeParams): Promise<NodeResponse> => {
+    sessionId}: UpdateNodeParams): Promise<NodeResponse> => {
+    const client = sdk.getClient(sessionId);
     let transaction = new NodeUpdateTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -181,22 +181,22 @@ export const updateNode = async ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
-    const txResponse = await transaction.execute(sdk.getClient());
-    const receipt = await txResponse.getReceipt(sdk.getClient());
+    const txResponse = await transaction.execute(client);
+    const receipt = await txResponse.getReceipt(client);
 
     return {
         status: receipt.status.toString(),
     };
 };
 
-export const deleteNode = async ({
-    nodeId,
+export const deleteNode = async ({nodeId,
     commonTransactionParams,
-}: DeleteNodeParams): Promise<NodeResponse> => {
+    sessionId}: DeleteNodeParams): Promise<NodeResponse> => {
+    const client = sdk.getClient(sessionId);
     let transaction = new NodeDeleteTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -209,12 +209,12 @@ export const deleteNode = async ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
-    const txResponse = await transaction.execute(sdk.getClient());
-    const receipt = await txResponse.getReceipt(sdk.getClient());
+    const txResponse = await transaction.execute(client);
+    const receipt = await txResponse.getReceipt(client);
 
     return {
         status: receipt.status.toString(),

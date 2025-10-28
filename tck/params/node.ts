@@ -1,10 +1,12 @@
-export interface ServiceEndpointParams {
+import { BaseParams } from "./base";
+
+export interface ServiceEndpointParams extends BaseParams {
     readonly ipAddressV4?: string;
     readonly port?: number;
     readonly domainName?: string;
 }
 
-export interface CreateNodeParams {
+export interface CreateNodeParams extends BaseParams {
     readonly accountId?: string;
     readonly description?: string;
     readonly gossipEndpoints?: ServiceEndpointParams[];
@@ -17,7 +19,7 @@ export interface CreateNodeParams {
     readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface UpdateNodeParams {
+export interface UpdateNodeParams extends BaseParams {
     readonly accountId?: string;
     readonly nodeId?: string;
     readonly description?: string;
@@ -31,7 +33,7 @@ export interface UpdateNodeParams {
     readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface DeleteNodeParams {
+export interface DeleteNodeParams extends BaseParams {
     readonly nodeId?: string;
     readonly commonTransactionParams?: Record<string, any>;
 }
