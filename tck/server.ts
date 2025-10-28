@@ -48,7 +48,12 @@ if ("default" in methods) {
 // Create mapping server method
 server.addMethod(
     "mapping",
-    async (...args: [params: RpcMethodParams, serverParams?: void]) => {
+    async (
+        ...args: [
+            params: RpcMethodParams & { sessionId?: string },
+            serverParams?: void,
+        ]
+    ) => {
         // Basic mapping for unimplemented functions
         return await mapping(args[0]);
     },
@@ -144,4 +149,13 @@ if (args.length > 0) {
 
 app.listen(port, () => {
     console.log(`-- JSON-RPC JS server running on localhost port ${port}`);
+
+    // Print statistics every 30 seconds for debugging
+    // Only for testing purposes
+    setInterval(() => {
+        const { sdk } = require("./sdk_data");
+        if (sdk.getActiveSessionCount() > 0) {
+            sdk.printStatistics();
+        }
+    }, 30000);
 });
