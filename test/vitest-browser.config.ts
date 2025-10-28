@@ -11,7 +11,11 @@ export default defineConfig({
             instances: [{ browser: "chromium" }],
         },
         include: ["test/unit/**/*.js"],
-        exclude: ["test/unit/Mocker.js", "test/unit/node/*"],
+        exclude: [
+            "test/unit/Mocker.js",
+            "test/unit/browser/utils/*",
+            "test/unit/node/*",
+        ],
         testTimeout: 120000,
         retry: 1,
         maxWorkers: 4,

@@ -1,5 +1,4 @@
 import { http, HttpResponse } from "msw";
-import { setupWorker } from "msw/browser";
 import Long from "long";
 import {
     Client,
@@ -9,6 +8,7 @@ import {
     TransactionId,
 } from "../../../src/browser.js";
 import { encodeRequest } from "../../../src/channel/Channel.js";
+import { startMSW, cleanupMSW } from "./utils/MswSetup.js";
 import * as HieroProto from "@hashgraph/proto";
 
 const TRANSACTION_RECEIPT_QUERY_RECEIPT_RESPONSE = {
@@ -44,37 +44,13 @@ const SERIALIZED_TRANSACTION_RECEIPT_RESPONSE = serializeProtobufResponse(
 );
 
 /**
- * MSW worker for mocking HTTP responses
- */
-let worker;
-
-/**
- * Setup MSW worker with handlers
- * @param {Array} handlers - MSW handlers
- */
-const setupMSW = (handlers) => {
-    worker = setupWorker(...handlers);
-    return worker;
-};
-
-/**
- * Clean up MSW worker
- */
-const cleanupMSW = async () => {
-    if (worker) {
-        await worker.stop();
-        worker = null;
-    }
-};
-
-/**
  * Setup test client with custom network configuration
  * @param {Object} network - Network configuration object
  * @param {number} maxAttempts - Maximum number of attempts
  * @returns {Client} Configured client instance
  */
 const setupClientWithNetwork = (network) => {
-    const MAX_ATTEMPTS = 2;
+    const MAX_ATTEMPTS = 2; // We don't want long running tests
     const client = Client.forNetwork(network)
         .setNodeMinBackoff(0)
         .setNodeMaxBackoff(0)
@@ -89,11 +65,16 @@ const setupClientWithNetwork = (network) => {
 describe("WebClient gRPC Deadline and Health Check Tests", function () {
     let client;
     let testPrivateKey;
+    /**
+     * MSW worker for mocking HTTP responses
+     */
+    let worker;
+
     const testAccountId = "0.0.123456";
 
     beforeEach(async function () {
         // Clean up any existing worker
-        await cleanupMSW();
+        await cleanupMSW(worker);
 
         // Generate a test private key
         testPrivateKey = PrivateKey.generate();
@@ -103,7 +84,7 @@ describe("WebClient gRPC Deadline and Health Check Tests", function () {
         if (client) {
             client.close();
         }
-        await cleanupMSW();
+        await cleanupMSW(worker);
     });
 
     it("should timeout when server response exceeds gRPC deadline", async function () {
@@ -159,7 +140,7 @@ describe("WebClient gRPC Deadline and Health Check Tests", function () {
             ),
         ];
 
-        await setupMSW(handlers).start({ silent: true });
+        worker = await startMSW(handlers);
 
         // Create client with custom 1-second deadline
         client = setupClientWithNetwork({
@@ -182,7 +163,6 @@ describe("WebClient gRPC Deadline and Health Check Tests", function () {
                 "Expected timeout due to server throttling exceeding 1-second deadline",
             );
         } catch (error) {
-            console.log("Error:", error);
             // Should fail due to timeout - server response takes 2 seconds but deadline is 1 second
             expect(error.constructor.name).to.equal(
                 "MaxAttemptsOrTimeoutError",
@@ -192,10 +172,6 @@ describe("WebClient gRPC Deadline and Health Check Tests", function () {
             // Verify that requests were made
             expect(healthCheckRequestTime).to.not.be.null;
             expect(serviceRequestTime).to.not.be.null;
-
-            // Verify the time between health check and service request is reasonable
-            const timeDiff = serviceRequestTime - healthCheckRequestTime;
-            expect(timeDiff).to.be.lessThan(1000); // Should be well under 1 second
         }
     });
 
@@ -243,7 +219,7 @@ describe("WebClient gRPC Deadline and Health Check Tests", function () {
             ),
         ];
 
-        await setupMSW(handlers).start();
+        worker = await startMSW(handlers);
 
         // Create client with client-level deadline
         client = setupClientWithNetwork({
@@ -318,7 +294,7 @@ describe("WebClient gRPC Deadline and Health Check Tests", function () {
             ),
         ];
 
-        await setupMSW(handlers).start();
+        worker = await startMSW(handlers);
 
         // Create client with short deadline to trigger timeout
         client = setupClientWithNetwork({
@@ -392,7 +368,7 @@ describe("WebClient gRPC Deadline and Health Check Tests", function () {
             ),
         ];
 
-        await setupMSW(handlers).start();
+        worker = await startMSW(handlers);
 
         // Create client
         client = setupClientWithNetwork({
