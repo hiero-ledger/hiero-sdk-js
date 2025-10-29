@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added New gRPC web proxies for node 32. [#3482](https://github.com/hiero-ledger/hiero-sdk-js/pull/3482)
+- Added New gRPC web proxy for node 32. [#3482](https://github.com/hiero-ledger/hiero-sdk-js/pull/3482)
 
 ### Fixed
 
