@@ -269,10 +269,14 @@ export default class NodeClient extends Client {
      * Available only for NodeClient
      *
      * @param {number} maxExecutionTime
+     * @param {boolean} validate
      * @returns {this}
      */
-    setMaxExecutionTime(maxExecutionTime) {
-        this._maxExecutionTime = maxExecutionTime;
+    setMaxExecutionTime(maxExecutionTime, validate) {
+        if (validate === false) {
+            this._maxExecutionTime = maxExecutionTime;
+            return this;
+        }
         return this;
     }
 

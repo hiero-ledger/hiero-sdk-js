@@ -213,10 +213,11 @@ export default class Client {
 
     /**
      * @param {{[key: string]: (string | AccountId)} | string} network
+     * @param {boolean} validate
      * @returns {void}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    setNetwork(network) {
+    setNetwork(network, validate = true) {
         // TODO: This logic _can_ be de-duplicated and likely should
         throw new Error("not implemented");
     }
