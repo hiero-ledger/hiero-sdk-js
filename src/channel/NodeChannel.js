@@ -14,16 +14,15 @@ export default class NodeChannel extends Channel {
     /**
      * @internal
      * @param {string} address
-     * @param {number=} maxExecutionTime
+     * @param {number=} grpcDeadline
      */
-    constructor(address, maxExecutionTime) {
-        super();
+    constructor(address, grpcDeadline) {
+        super(grpcDeadline);
 
         /** @type {Client | null} */
         this._client = null;
 
         this.address = address;
-        this.maxExecutionTime = maxExecutionTime;
 
         const { ip, port } = this.parseAddress(address);
         this.nodeIp = ip;
@@ -146,9 +145,7 @@ export default class NodeChannel extends Channel {
             this._initializeClient()
                 .then(() => {
                     const deadline = new Date();
-                    const milliseconds = this.maxExecutionTime
-                        ? this.maxExecutionTime
-                        : 10000;
+                    const milliseconds = this.grpcDeadline;
                     deadline.setMilliseconds(
                         deadline.getMilliseconds() + milliseconds,
                     );

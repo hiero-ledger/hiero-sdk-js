@@ -1,6 +1,22 @@
 /* NOSONAR */
 import AccountId from "../account/AccountId.js";
 
+/**
+ * Default gRPC deadline in milliseconds (10 seconds)
+ *
+ * Maximum time allowed for a single gRPC request. If exceeded, the node
+ * is marked unhealthy and the SDK rotates to the next node.
+ */
+export const DEFAULT_GRPC_DEADLINE = 10 * 1000;
+
+/**
+ * Default request timeout in milliseconds (2 minutes)
+ *
+ * Maximum total time for a complete Transaction/Query operation including
+ * retries and node rotation. Must be >= grpcDeadline.
+ */
+export const DEFAULT_REQUEST_TIMEOUT = 2 * 60 * 1000;
+
 // MAINNET node proxies are the same for both 'WebClient' and 'NativeClient'
 export const MAINNET = {
     "node00.swirldslabs.com:443": new AccountId(3),
