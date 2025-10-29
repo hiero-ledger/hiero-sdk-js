@@ -31,6 +31,48 @@ export default class WebChannel extends Channel {
          * @private
          */
         this._isReady = false;
+
+        /**
+         * Promise that resolves when the health check is complete
+         * Used to prevent multiple concurrent health checks
+         *
+         * @type {Promise<void>|null}
+         * @private
+         */
+        this._healthCheckPromise = null;
+    }
+
+    /**
+     * Determines whether to use HTTPS based on the address
+     * @param {string} address - The address to check
+     * @returns {boolean} - True if HTTPS should be used, false for HTTP
+     * @private
+     */
+    _shouldUseHttps(address) {
+        return !(
+            address.includes("localhost") || address.includes("127.0.0.1")
+        );
+    }
+
+    /**
+     * Builds the full URL with appropriate scheme (http/https)
+     * @param {string} address - The base address
+     * @returns {string} - The full URL with scheme
+     * @private
+     */
+    _buildUrl(address) {
+        // Check if address already contains a scheme
+        const hasScheme =
+            address.startsWith("http://") || address.startsWith("https://");
+
+        if (hasScheme) {
+            // Use the address as-is if it already has a scheme
+            return address;
+        } else {
+            // Only prepend scheme if none exists
+            const shouldUseHttps = this._shouldUseHttps(address);
+            return shouldUseHttps ? `https://${address}` : `http://${address}`;
+        }
     }
 
     /**
@@ -38,6 +80,7 @@ export default class WebChannel extends Channel {
      * Performs a POST request and verifies the response has gRPC-Web headers,
      * which indicates the proxy is running and processing gRPC requests.
      * Results are cached per address for the entire lifecycle.
+     * Uses promise-based synchronization to prevent multiple concurrent health checks.
      *
      * @param {Date} deadline - Deadline for the health check
      * @returns {Promise<void>}
@@ -49,14 +92,30 @@ export default class WebChannel extends Channel {
             return; // Health check already passed for this address
         }
 
-        const shouldUseHttps = !(
-            this._address.includes("localhost") ||
-            this._address.includes("127.0.0.1")
-        );
+        // If a health check is already in progress, wait for it to complete
+        if (this._healthCheckPromise) {
+            return this._healthCheckPromise;
+        }
 
-        const address = shouldUseHttps
-            ? `https://${this._address}`
-            : `http://${this._address}`;
+        // Start a new health check and store the promise
+        this._healthCheckPromise = this._performHealthCheck(deadline);
+
+        try {
+            await this._healthCheckPromise;
+        } finally {
+            // Clear the promise when done (success or failure)
+            this._healthCheckPromise = null;
+        }
+    }
+
+    /**
+     * Performs the actual health check request
+     * @param {Date} deadline - Deadline for the health check
+     * @returns {Promise<void>}
+     * @private
+     */
+    async _performHealthCheck(deadline) {
+        const address = this._buildUrl(this._address);
 
         // Calculate remaining time until deadline
         const timeoutMs = deadline.getTime() - Date.now();
@@ -87,8 +146,12 @@ export default class WebChannel extends Channel {
 
             clearTimeout(timeoutId);
 
-            // Check if response is successful (200) and has gRPC headers
-            if (response.status === 200) {
+            // Check if response is successful (200) or indicates a redirect (3xx)
+            // 3xx status codes indicate the resource has moved, which is valid for proxies
+            if (
+                response.ok ||
+                (response.status >= 300 && response.status < 400)
+            ) {
                 const grpcStatus = response.headers.get("grpc-status");
                 const grpcMessage = response.headers.get("grpc-message");
 
@@ -100,7 +163,7 @@ export default class WebChannel extends Channel {
                 }
             }
 
-            // If we get here, either status isn't 200 or no gRPC headers present
+            // If we get here, either status isn't 200/3xx or no gRPC headers present
             // This means the proxy might not be configured correctly or not running
             throw new GrpcServiceError(
                 GrpcStatus.Unavailable,
@@ -152,28 +215,11 @@ export default class WebChannel extends Channel {
             deadline.setMilliseconds(deadline.getMilliseconds() + milliseconds);
 
             try {
-                // Check if address already contains a scheme
-                const hasScheme =
-                    this._address.startsWith("http://") ||
-                    this._address.startsWith("https://");
                 // Wait for connection to be ready (similar to gRPC waitForReady)
                 await this._waitForReady(deadline);
 
-                let address;
-                if (hasScheme) {
-                    // Use the address as-is if it already has a scheme
-                    address = this._address;
-                } else {
-                    // Only prepend scheme if none exists
-                    const shouldUseHttps = !(
-                        this._address.includes("localhost") ||
-                        this._address.includes("127.0.0.1")
-                    );
-
-                    address = shouldUseHttps
-                        ? `https://${this._address}`
-                        : `http://${this._address}`;
-                }
+                // Build the full URL with appropriate scheme
+                const address = this._buildUrl(this._address);
                 // this will be executed in a browser environment so eslint is
                 // disabled for the fetch call
                 //eslint-disable-next-line n/no-unsupported-features/node-builtins

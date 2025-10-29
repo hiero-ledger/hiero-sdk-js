@@ -173,6 +173,11 @@ export default class Client {
             this.setRequestTimeout(props.requestTimeout);
         }
 
+        // Validate that requestTimeout is larger than grpcDeadline after both are set
+        if (this._requestTimeout <= this._grpcDeadline) {
+            throw new Error("requestTimeout must be larger than grpcDeadline");
+        }
+
         /** @internal */
         /** @type {NodeJS.Timeout} */
         this._timer;
@@ -701,6 +706,9 @@ export default class Client {
         if (requestTimeout <= 0) {
             throw new Error("requestTimeout must be a positive number");
         }
+        if (requestTimeout <= this._grpcDeadline) {
+            throw new Error("requestTimeout must be larger than grpcDeadline");
+        }
         this._requestTimeout = requestTimeout;
         return this;
     }
@@ -723,6 +731,9 @@ export default class Client {
     setGrpcDeadline(grpcDeadline) {
         if (grpcDeadline <= 0) {
             throw new Error("grpcDeadline must be a positive number");
+        }
+        if (grpcDeadline >= this._requestTimeout) {
+            throw new Error("grpcDeadline must be smaller than requestTimeout");
         }
         this._grpcDeadline = grpcDeadline;
         return this;

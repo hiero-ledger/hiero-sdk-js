@@ -76,4 +76,81 @@ describe("Client deadline configuration", function () {
                 }),
         ).to.throw("requestTimeout must be a positive number");
     });
+
+    it("throws when grpcDeadline is set to be larger than or equal to requestTimeout", function () {
+        const client = new Client({ scheduleNetworkUpdate: false });
+        client.setRequestTimeout(12000); // Set requestTimeout to 12 seconds
+
+        expect(() => client.setGrpcDeadline(13000)).to.throw(
+            "grpcDeadline must be smaller than requestTimeout",
+        );
+        expect(() => client.setGrpcDeadline(12000)).to.throw(
+            "grpcDeadline must be smaller than requestTimeout",
+        );
+    });
+
+    it("throws when requestTimeout is set to be smaller than or equal to grpcDeadline", function () {
+        const client = new Client({ scheduleNetworkUpdate: false });
+        client.setGrpcDeadline(5000); // Set grpcDeadline to 5 seconds
+
+        expect(() => client.setRequestTimeout(5000)).to.throw(
+            "requestTimeout must be larger than grpcDeadline",
+        );
+        expect(() => client.setRequestTimeout(3000)).to.throw(
+            "requestTimeout must be larger than grpcDeadline",
+        );
+    });
+
+    it("throws when initializing via constructor with grpcDeadline larger than or equal to requestTimeout", function () {
+        expect(
+            () =>
+                new Client({
+                    scheduleNetworkUpdate: false,
+                    grpcDeadline: 10000,
+                    requestTimeout: 10000,
+                }),
+        ).to.throw("requestTimeout must be larger than grpcDeadline");
+
+        expect(
+            () =>
+                new Client({
+                    scheduleNetworkUpdate: false,
+                    grpcDeadline: 15000,
+                    requestTimeout: 10000,
+                }),
+        ).to.throw("requestTimeout must be larger than grpcDeadline");
+    });
+
+    it("allows valid combinations where requestTimeout is larger than grpcDeadline", function () {
+        const client = new Client({ scheduleNetworkUpdate: false });
+
+        // Test setter methods
+        client.setGrpcDeadline(5000);
+        client.setRequestTimeout(10000);
+        expect(client.grpcDeadline).to.equal(5000);
+        expect(client.requestTimeout).to.equal(10000);
+
+        // Test constructor
+        const client2 = new Client({
+            scheduleNetworkUpdate: false,
+            grpcDeadline: 2000,
+            requestTimeout: 8000,
+        });
+        expect(client2.grpcDeadline).to.equal(2000);
+        expect(client2.requestTimeout).to.equal(8000);
+    });
+
+    it("allows setting grpcDeadline and requestTimeout in any order when both are valid", function () {
+        const client1 = new Client({ scheduleNetworkUpdate: false });
+        client1.setRequestTimeout(15000);
+        client1.setGrpcDeadline(5000);
+        expect(client1.grpcDeadline).to.equal(5000);
+        expect(client1.requestTimeout).to.equal(15000);
+
+        const client2 = new Client({ scheduleNetworkUpdate: false });
+        client2.setGrpcDeadline(3000);
+        client2.setRequestTimeout(12000);
+        expect(client2.grpcDeadline).to.equal(3000);
+        expect(client2.requestTimeout).to.equal(12000);
+    });
 });

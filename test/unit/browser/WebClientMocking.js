@@ -168,9 +168,6 @@ describe("WebClient Browser Tests", function () {
     const testAccountId = "0.0.123456";
 
     beforeEach(async function () {
-        // Clean up any existing worker
-        await cleanupMSW(worker);
-
         // Generate a test private key
         testPrivateKey = PrivateKey.generate();
     });
@@ -417,7 +414,7 @@ describe("WebClient Browser Tests", function () {
             expect(error.constructor.name).to.equal(
                 "MaxAttemptsOrTimeoutError",
             );
-            expect(error.message).to.include("DEADLINE_EXCEEDED");
+            expect(error.message).to.include("TIMEOUT");
 
             // Verify health check was attempted
             expect(healthCheckAttempts).to.be.greaterThan(0);
@@ -505,6 +502,93 @@ describe("WebClient Browser Tests", function () {
             // If it fails, it should be due to the mock response format, not caching issues
             expect(error.message).to.not.include("health");
         }
+    });
+
+    it("should cache health check results even with high concurrency (20 simultaneous transactions)", async function () {
+        const customNodeAddress = "concurrent-health-node.example.com";
+        const customNodeAddressWithPort = `${customNodeAddress}:443`;
+        const customNodeId = 105;
+
+        let healthCheckAttempts = 0;
+        let serviceRequestAttempts = 0;
+
+        // Setup MSW to track health check requests
+        const handlers = [
+            // Health check endpoint (should only be called once even with 20 concurrent requests)
+            http.post(`https://${customNodeAddress}`, () => {
+                healthCheckAttempts++;
+                return new HttpResponse(null, {
+                    status: 200,
+                    headers: {
+                        "grpc-status": "0",
+                        "grpc-message": "OK",
+                    },
+                });
+            }),
+            // Service endpoint (should be called 20 times - once per transaction)
+            http.post(
+                `https://${customNodeAddress}/proto.CryptoService/getTransactionReceipts`,
+                () => {
+                    serviceRequestAttempts++;
+                    return new HttpResponse(
+                        SERIALIZED_TRANSACTION_RECEIPT_RESPONSE,
+                        {
+                            status: 200,
+                            headers: {
+                                "Content-Type": "application/grpc-web+proto",
+                            },
+                        },
+                    );
+                },
+            ),
+        ];
+
+        worker = await startMSW(handlers);
+
+        // Create client
+        client = setupClientWithNetwork({
+            [customNodeAddressWithPort]: new AccountId(customNodeId),
+        });
+
+        // Set operator with generated private key
+        const accountId = AccountId.fromString(testAccountId);
+        client.setOperator(accountId, testPrivateKey);
+
+        // Create 20 transaction receipt queries
+        const receiptQueries = [];
+        for (let i = 0; i < 20; i++) {
+            const transactionId = TransactionId.generate(accountId);
+            const receiptQuery = new TransactionReceiptQuery().setTransactionId(
+                transactionId,
+            );
+            receiptQueries.push(receiptQuery);
+        }
+
+        try {
+            // Execute all 20 queries simultaneously
+            const promises = receiptQueries.map((query) =>
+                query.execute(client),
+            );
+            const responses = await Promise.all(promises);
+
+            // Verify all responses are successful
+            responses.forEach((response) => {
+                expect(response).to.not.be.null;
+            });
+        } catch (error) {
+            console.log("ERROR: ", error);
+            // If it fails, it should be due to the mock response format, not caching issues
+            expect(error.message).to.not.include("health");
+        }
+
+        // Verify health check was only called once (cached) even with 20 concurrent requests
+        expect(healthCheckAttempts).to.equal(1);
+
+        // Verify service requests were made for all 20 transactions
+        expect(serviceRequestAttempts).to.equal(20);
+
+        console.log(`Health check attempts: ${healthCheckAttempts}`);
+        console.log(`Service request attempts: ${serviceRequestAttempts}`);
     });
 
     // ========================================
