@@ -264,12 +264,16 @@ export default class NodeClient extends Client {
 
     /**
      * Available only for NodeClient
-     *
+     * Legacy method maintained for backward compatibility.
+     * This method now calls setGrpcDeadline internally to ensure proper validation.
+     * @deprecated Use setGrpcDeadline instead.
      * @param {number} maxExecutionTime
      * @returns {this}
      */
     setMaxExecutionTime(maxExecutionTime) {
-        this._maxExecutionTime = maxExecutionTime;
+        // Use the parent class setGrpcDeadline method to ensure proper validation
+        // This ensures that maxExecutionTime follows the same validation rules as grpcDeadline
+        this.setGrpcDeadline(maxExecutionTime);
         return this;
     }
 

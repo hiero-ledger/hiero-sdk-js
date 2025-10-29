@@ -249,7 +249,7 @@ client.setSignOnDemand(true);
 -   `setMaxBackoff` - Set maximum backoff time for retries
     Same as above but this sets on the maximum amount of seconds the backoff time may go.
 
--   `setRequestTimeout` - This timeout is the maximum allowed time for the entire transaction/query, including all retries.
+-   `setRequestTimeout` - This timeout is the maximum allowed time for the entire transaction/query, including all retries. This timeout must be larger than the `grpcDeadline` to ensure that individual gRPC requests have enough time to complete within the overall operation timeout.
 
 ```javascript
 let client = Client.forTestnet();
@@ -258,13 +258,22 @@ client.setRequestTimeout(30000);
 // Network doesn't matter here.
 ```
 
--   `setMaxExecutionTime` - this timeout applies to each single gRPC request within the transaction/query. It’s used for the edge cases where 10 seconds are not enough for the execution of a single gRPC request and the user can pass more.
+-   `setGrpcDeadline` - This timeout applies to each single gRPC request within the transaction/query. It's the maximum time allowed for a single gRPC call before it times out. This value must be smaller than the `requestTimeout` to ensure that individual requests can complete within the overall operation timeout.
+
+```javascript
+const client = Client.forNetwork();
+client.setGrpcDeadline(5000); // Set gRPC deadline to 5 seconds (5000 milliseconds)
+```
+
+-   `setMaxExecutionTime` - This is an alias for `setGrpcDeadline` and is maintained for backward compatibility. It applies to each single gRPC request within the transaction/query. It's used for the edge cases where 10 seconds are not enough for the execution of a single gRPC request and the user can pass more.
 
 ```javascript
 const client = Client.forNetwork();
 const timeInMs = 10000;
-client.setMaxExecutionTime(10000); // Set the request timeout to 10 seconds (10000 milliseconds)
+client.setMaxExecutionTime(10000); // Set the gRPC deadline to 10 seconds (10000 milliseconds)
 ```
+
+**Important**: When configuring timeouts, ensure that `requestTimeout` is always larger than `grpcDeadline`. The SDK will throw an error if you attempt to set `grpcDeadline` greater than or equal to `requestTimeout`, or if you set `requestTimeout` less than or equal to `grpcDeadline`. This validation ensures that individual gRPC requests have sufficient time to complete within the overall operation timeout.
 
 ### Node Management
 
