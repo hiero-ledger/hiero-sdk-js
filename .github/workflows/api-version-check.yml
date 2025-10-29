@@ -46,36 +46,49 @@ jobs:
             - name: Install Dependencies
               run: pnpm install
 
-            - name: Install TypeScript and dts-bundle-generator
+            - name: Install TypeScript and ts-semver-detector
               run: |
                   pnpm add -D typescript
-                  pnpm add -g dts-bundle-generator ts-semver-detector
+                  pnpm add -g ts-semver-detector
 
             - name: Generate Base Commit Declarations
               run: |
                   echo "Generating declarations for base commit: ${{ github.event.pull_request.base.sha }}"
                   git checkout ${{ github.event.pull_request.base.sha }}
 
-                  # Generate all declaration files using tsc
-                  npx tsc --declaration --emitDeclarationOnly --outDir temp/base-declarations
+                  # Create a temporary tsconfig for bundling
+                  cat > tsconfig.bundle.json << 'EOF'
+                  {
+                    "compilerOptions": {
+                      "target": "esnext",
+                      "module": "esnext",
+                      "lib": ["ESNext", "DOM"],
+                      "allowJs": true,
+                      "checkJs": true,
+                      "emitDeclarationOnly": true,
+                      "declaration": true,
+                      "declarationMap": false,
+                      "outFile": "base.d.ts",
+                      "rootDir": "src/",
+                      "strict": true,
+                      "noImplicitAny": true,
+                      "noUnusedLocals": true,
+                      "noUnusedParameters": false,
+                      "downlevelIteration": true,
+                      "noImplicitReturns": true,
+                      "noFallthroughCasesInSwitch": true,
+                      "moduleResolution": "node",
+                      "allowSyntheticDefaultImports": true,
+                      "esModuleInterop": true,
+                      "forceConsistentCasingInFileNames": true
+                    },
+                    "include": ["src"]
+                  }
+                  EOF
 
-                  # Find the actual index.d.ts file location
-                  INDEX_FILE=$(find temp/base-declarations -name "index.d.ts" | head -1)
-                  if [ -z "$INDEX_FILE" ]; then
-                    echo "ERROR: index.d.ts not found in base declarations"
-                    find temp/base-declarations -name "*.d.ts" | head -10
-                    exit 1
-                  fi
-
-                  echo "Found index.d.ts at: $INDEX_FILE"
-
-                  # Bundle all declarations into a single file
-                  dts-bundle-generator \
-                    -o base.d.ts \
-                    "$INDEX_FILE" \
-                    --project tsconfig.json \
-                    --no-banner || {
-                    echo "ERROR: Failed to bundle base declarations"
+                  # Generate single bundled declaration file
+                  npx tsc --project tsconfig.bundle.json || {
+                    echo "ERROR: Failed to generate base declarations"
                     exit 1
                   }
 
@@ -86,26 +99,39 @@ jobs:
                   echo "Generating declarations for head commit: ${{ github.event.pull_request.head.sha }}"
                   git checkout ${{ github.event.pull_request.head.sha }}
 
-                  # Generate all declaration files using tsc
-                  npx tsc --declaration --emitDeclarationOnly --outDir temp/head-declarations
+                  # Create a temporary tsconfig for bundling
+                  cat > tsconfig.bundle.json << 'EOF'
+                  {
+                    "compilerOptions": {
+                      "target": "esnext",
+                      "module": "esnext",
+                      "lib": ["ESNext", "DOM"],
+                      "allowJs": true,
+                      "checkJs": true,
+                      "emitDeclarationOnly": true,
+                      "declaration": true,
+                      "declarationMap": false,
+                      "outFile": "head.d.ts",
+                      "rootDir": "src/",
+                      "strict": true,
+                      "noImplicitAny": true,
+                      "noUnusedLocals": true,
+                      "noUnusedParameters": false,
+                      "downlevelIteration": true,
+                      "noImplicitReturns": true,
+                      "noFallthroughCasesInSwitch": true,
+                      "moduleResolution": "node",
+                      "allowSyntheticDefaultImports": true,
+                      "esModuleInterop": true,
+                      "forceConsistentCasingInFileNames": true
+                    },
+                    "include": ["src"]
+                  }
+                  EOF
 
-                  # Find the actual index.d.ts file location
-                  INDEX_FILE=$(find temp/head-declarations -name "index.d.ts" | head -1)
-                  if [ -z "$INDEX_FILE" ]; then
-                    echo "ERROR: index.d.ts not found in head declarations"
-                    find temp/head-declarations -name "*.d.ts" | head -10
-                    exit 1
-                  fi
-
-                  echo "Found index.d.ts at: $INDEX_FILE"
-
-                  # Bundle all declarations into a single file
-                  dts-bundle-generator \
-                    -o head.d.ts \
-                    "$INDEX_FILE" \
-                    --project tsconfig.json \
-                    --no-banner || {
-                    echo "ERROR: Failed to bundle head declarations"
+                  # Generate single bundled declaration file
+                  npx tsc --project tsconfig.bundle.json || {
+                    echo "ERROR: Failed to generate head declarations"
                     exit 1
                   }
 
