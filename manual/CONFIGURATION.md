@@ -273,7 +273,9 @@ const timeInMs = 10000;
 client.setMaxExecutionTime(10000); // Set the gRPC deadline to 10 seconds (10000 milliseconds)
 ```
 
-**Important**: When configuring timeouts, ensure that `requestTimeout` is always larger than `grpcDeadline`. The SDK will throw an error if you attempt to set `grpcDeadline` greater than or equal to `requestTimeout`, or if you set `requestTimeout` less than or equal to `grpcDeadline`. This validation ensures that individual gRPC requests have sufficient time to complete within the overall operation timeout.
+**Important**: When configuring timeouts, ensure that `requestTimeout` is always larger than `grpcDeadline`. The SDK will display deprecation warnings if you attempt to set `grpcDeadline` greater than or equal to `requestTimeout`, or if you set `requestTimeout` less than or equal to `grpcDeadline`. These warnings will become errors in the next major version. This validation ensures that individual gRPC requests have sufficient time to complete within the overall operation timeout.
+
+**Deprecation Notice**: Invalid timeout configurations currently show warnings but will throw errors in the next major version. Please update your timeout configurations to avoid future breaking changes.
 
 ### Node Management
 

@@ -77,48 +77,97 @@ describe("Client deadline configuration", function () {
         ).to.throw("requestTimeout must be a positive number");
     });
 
-    it("throws when grpcDeadline is set to be larger than or equal to requestTimeout", function () {
+    it("warns when grpcDeadline is set to be larger than or equal to requestTimeout", function () {
         const client = new Client({ scheduleNetworkUpdate: false });
         client.setRequestTimeout(12000); // Set requestTimeout to 12 seconds
 
-        expect(() => client.setGrpcDeadline(13000)).to.throw(
-            "grpcDeadline must be smaller than requestTimeout",
-        );
-        expect(() => client.setGrpcDeadline(12000)).to.throw(
-            "grpcDeadline must be smaller than requestTimeout",
-        );
+        // Capture console.warn calls
+        const originalWarn = console.warn;
+        const warnings = [];
+        console.warn = (...args) => warnings.push(args.join(" "));
+
+        try {
+            // These should warn but not throw
+            client.setGrpcDeadline(13000);
+            client.setGrpcDeadline(12000);
+
+            // Verify warnings were issued
+            expect(warnings).to.have.length(2);
+            expect(warnings[0]).to.include("DEPRECATION WARNING");
+            expect(warnings[0]).to.include(
+                "grpcDeadline (13000ms) should be smaller than requestTimeout (12000ms)",
+            );
+            expect(warnings[1]).to.include("DEPRECATION WARNING");
+            expect(warnings[1]).to.include(
+                "grpcDeadline (12000ms) should be smaller than requestTimeout (12000ms)",
+            );
+        } finally {
+            console.warn = originalWarn;
+        }
     });
 
-    it("throws when requestTimeout is set to be smaller than or equal to grpcDeadline", function () {
+    it("warns when requestTimeout is set to be smaller than or equal to grpcDeadline", function () {
         const client = new Client({ scheduleNetworkUpdate: false });
         client.setGrpcDeadline(5000); // Set grpcDeadline to 5 seconds
 
-        expect(() => client.setRequestTimeout(5000)).to.throw(
-            "requestTimeout must be larger than grpcDeadline",
-        );
-        expect(() => client.setRequestTimeout(3000)).to.throw(
-            "requestTimeout must be larger than grpcDeadline",
-        );
+        // Capture console.warn calls
+        const originalWarn = console.warn;
+        const warnings = [];
+        console.warn = (...args) => warnings.push(args.join(" "));
+
+        try {
+            // These should warn but not throw
+            client.setRequestTimeout(5000);
+            client.setRequestTimeout(3000);
+
+            // Verify warnings were issued
+            expect(warnings).to.have.length(2);
+            expect(warnings[0]).to.include("DEPRECATION WARNING");
+            expect(warnings[0]).to.include(
+                "requestTimeout (5000ms) should be larger than grpcDeadline (5000ms)",
+            );
+            expect(warnings[1]).to.include("DEPRECATION WARNING");
+            expect(warnings[1]).to.include(
+                "requestTimeout (3000ms) should be larger than grpcDeadline (5000ms)",
+            );
+        } finally {
+            console.warn = originalWarn;
+        }
     });
 
-    it("throws when initializing via constructor with grpcDeadline larger than or equal to requestTimeout", function () {
-        expect(
-            () =>
-                new Client({
-                    scheduleNetworkUpdate: false,
-                    grpcDeadline: 10000,
-                    requestTimeout: 10000,
-                }),
-        ).to.throw("requestTimeout must be larger than grpcDeadline");
+    it("warns when initializing via constructor with grpcDeadline larger than or equal to requestTimeout", function () {
+        // Capture console.warn calls
+        const originalWarn = console.warn;
+        const warnings = [];
+        console.warn = (...args) => warnings.push(args.join(" "));
 
-        expect(
-            () =>
-                new Client({
-                    scheduleNetworkUpdate: false,
-                    grpcDeadline: 15000,
-                    requestTimeout: 10000,
-                }),
-        ).to.throw("requestTimeout must be larger than grpcDeadline");
+        try {
+            // These should warn but not throw
+            new Client({
+                scheduleNetworkUpdate: false,
+                grpcDeadline: 10000,
+                requestTimeout: 10000,
+            });
+
+            new Client({
+                scheduleNetworkUpdate: false,
+                grpcDeadline: 15000,
+                requestTimeout: 10000,
+            });
+
+            // Verify warnings were issued
+            expect(warnings).to.have.length(4);
+            expect(warnings[0]).to.include("DEPRECATION WARNING");
+            expect(warnings[1]).to.include(
+                "requestTimeout (10000ms) should be larger than grpcDeadline (10000ms)",
+            );
+            expect(warnings[2]).to.include("DEPRECATION WARNING");
+            expect(warnings[3]).to.include(
+                "requestTimeout (10000ms) should be larger than grpcDeadline (15000ms)",
+            );
+        } finally {
+            console.warn = originalWarn;
+        }
     });
 
     it("allows valid combinations where requestTimeout is larger than grpcDeadline", function () {

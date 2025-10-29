@@ -175,7 +175,11 @@ export default class Client {
 
         // Validate that requestTimeout is larger than grpcDeadline after both are set
         if (this._requestTimeout <= this._grpcDeadline) {
-            throw new Error("requestTimeout must be larger than grpcDeadline");
+            console.warn(
+                `DEPRECATION WARNING: requestTimeout (${this._requestTimeout}ms) should be larger than grpcDeadline (${this._grpcDeadline}ms). ` +
+                    `This configuration may cause operations to fail unexpectedly. ` +
+                    `This will throw an error in the next major version. Please adjust your timeout values.`,
+            );
         }
 
         /** @internal */
@@ -707,7 +711,11 @@ export default class Client {
             throw new Error("requestTimeout must be a positive number");
         }
         if (requestTimeout <= this._grpcDeadline) {
-            throw new Error("requestTimeout must be larger than grpcDeadline");
+            console.warn(
+                `DEPRECATION WARNING: requestTimeout (${requestTimeout}ms) should be larger than grpcDeadline (${this._grpcDeadline}ms). ` +
+                    `This configuration may cause operations to fail unexpectedly. ` +
+                    `This will throw an error in the next major version. Please adjust your timeout values.`,
+            );
         }
         this._requestTimeout = requestTimeout;
         return this;
@@ -733,7 +741,11 @@ export default class Client {
             throw new Error("grpcDeadline must be a positive number");
         }
         if (grpcDeadline >= this._requestTimeout) {
-            throw new Error("grpcDeadline must be smaller than requestTimeout");
+            console.warn(
+                `DEPRECATION WARNING: grpcDeadline (${grpcDeadline}ms) should be smaller than requestTimeout (${this._requestTimeout}ms). ` +
+                    `This configuration may cause operations to fail unexpectedly. ` +
+                    `This will throw an error in the next major version. Please adjust your timeout values.`,
+            );
         }
         this._grpcDeadline = grpcDeadline;
         return this;
