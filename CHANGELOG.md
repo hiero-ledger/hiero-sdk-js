@@ -13,11 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Restored backward compatibility for custom network configurations in the web environment that include a URL scheme (e.g., https://node00.swirldslabs.com:443). The SDK now normalizes these endpoints internally to the expected host:port format to prevent breaking existing integrations. A deprecation warning is logged to encourage migration to the correct format.
+- Restored backward compatibility for custom network configurations in the web environment that include a URL scheme (e.g., https://node00.swirldslabs.com:443). The SDK now normalizes these endpoints internally to the expected host:port format to prevent breaking existing integrations. A deprecation warning is logged to encourage migration to the correct format.[#3480](https://github.com/hiero-ledger/hiero-sdk-js/pull/3480)
 
 ### Deprecated
 
-- Endpoints with URL schemes (http:// or https://) are now deprecated. While still accepted for backward compatibility, developers should update their configurations to use the documented host:port format (e.g., node00.swirldslabs.com:443). Support for scheme-prefixed endpoints will be removed in a future release.
+- Endpoints with URL schemes (http:// or https://) are now deprecated. While still accepted for backward compatibility, developers should update their configurations to use the documented host:port format (e.g., node00.swirldslabs.com:443). Support for scheme-prefixed endpoints will be removed in a future release.[#3480](https://github.com/hiero-ledger/hiero-sdk-js/pull/3480)
 
 ## v2.75.0 
 
