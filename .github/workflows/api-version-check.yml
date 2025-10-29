@@ -1,0 +1,131 @@
+name: API Version Check
+
+on:
+    pull_request:
+        branches:
+            - main
+            - develop
+            - release/*
+
+permissions:
+    contents: read
+
+jobs:
+    check-api-changes:
+        name: Check API Breaking Changes
+        runs-on: hiero-client-sdk-linux-medium
+
+        steps:
+            - name: Harden Runner
+              uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+              with:
+                  egress-policy: audit
+
+            - name: Checkout Code
+              uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+              with:
+                  submodules: true
+                  fetch-depth: 0
+
+            - name: Install Task
+              uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v2.0.0
+              with:
+                  version: 3.35.1
+
+            - name: Install PNPM
+              uses: step-security/action-setup@92da25bc4fa3a114b7a78c686a5ec142ccb12c8b # v4.1.1
+              with:
+                  version: 9.15.5
+
+            - name: Setup Node
+              uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+              with:
+                  node-version: "22"
+                  cache: pnpm
+
+            - name: Install Dependencies
+              run: pnpm install
+
+            - name: Build Base Commit
+              run: |
+                  echo "Building base commit: ${{ github.event.pull_request.base.sha }}"
+                  git checkout ${{ github.event.pull_request.base.sha }}
+                  task build
+                  cp lib/index.d.ts base.d.ts
+                  echo "Base build completed"
+
+            - name: Build Head Commit
+              run: |
+                  echo "Building head commit: ${{ github.event.pull_request.head.sha }}"
+                  git checkout ${{ github.event.pull_request.head.sha }}
+                  task build
+                  cp lib/index.d.ts head.d.ts
+                  echo "Head build completed"
+
+            - name: Install ts-semver-detector
+              run: pnpm add -g ts-semver-detector
+
+            - name: Check API Changes
+              run: |
+                  echo "Comparing API changes between base and head commits..."
+
+                  # Check if both declaration files exist
+                  if [ ! -f "base.d.ts" ]; then
+                    echo "ERROR: Base TypeScript declaration file not found"
+                    exit 1
+                  fi
+
+                  if [ ! -f "head.d.ts" ]; then
+                    echo "ERROR: Head TypeScript declaration file not found"
+                    exit 1
+                  fi
+
+                  # Run ts-semver-detector
+                  ts-semver-detector \
+                    --old base.d.ts \
+                    --new head.d.ts \
+                    --format json \
+                    --output report.json || {
+                    echo "ERROR: ts-semver-detector failed to run"
+                    exit 1
+                  }
+
+                  # Check the results
+                  if [ -f "report.json" ]; then
+                    echo "API Change Report:"
+                    cat report.json | jq '.'
+                    
+                    # Check for breaking changes
+                    BREAKING_CHANGES=$(cat report.json | jq -r '.breakingChanges | length' 2>/dev/null || echo "0")
+                    
+                    if [ "$BREAKING_CHANGES" -gt 0 ]; then
+                      echo "FAILURE: BREAKING CHANGES DETECTED!"
+                      echo "This PR contains $BREAKING_CHANGES breaking change(s)."
+                      echo "Please review the changes and consider updating the major version."
+                      echo ""
+                      echo "Breaking changes:"
+                      cat report.json | jq -r '.breakingChanges[] | "- " + .message'
+                      exit 1
+                    else
+                      echo "SUCCESS: No breaking changes detected"
+                      
+                      # Show other changes
+                      NEW_FEATURES=$(cat report.json | jq -r '.newFeatures | length' 2>/dev/null || echo "0")
+                      BUG_FIXES=$(cat report.json | jq -r '.bugFixes | length' 2>/dev/null || echo "0")
+                      
+                      if [ "$NEW_FEATURES" -gt 0 ] || [ "$BUG_FIXES" -gt 0 ]; then
+                        echo "Other changes detected:"
+                        if [ "$NEW_FEATURES" -gt 0 ]; then
+                          echo "  - $NEW_FEATURES new feature(s)"
+                        fi
+                        if [ "$BUG_FIXES" -gt 0 ]; then
+                          echo "  - $BUG_FIXES bug fix(es)"
+                        fi
+                      fi
+                      
+                      echo "API changes are backward compatible"
+                    fi
+                  else
+                    echo "ERROR: No report generated by ts-semver-detector"
+                    exit 1
+                  fi
