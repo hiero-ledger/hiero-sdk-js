@@ -464,7 +464,7 @@ jobs:
       - name: Publish Proto Release (@hiero-ledger/proto)
         if: ${{ needs.validate-release.outputs.hiero-proto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
         env:
-          NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           task -v publish -- ${{ steps.proto-publish.outputs.args }}
         working-directory: packages/proto
@@ -472,7 +472,7 @@ jobs:
       - name: Publish Cryptography Release (@hiero-ledger/cryptography)
         if: ${{ needs.validate-release.outputs.hiero-crypto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
         env:
-          NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           task -v publish -- ${{ steps.crypto-publish.outputs.args }}
         working-directory: packages/cryptography
@@ -480,7 +480,7 @@ jobs:
       - name: Publish SDK Release (@hiero-ledger/sdk)
         if: ${{ needs.validate-release.outputs.hiero-sdk-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
         env:
-          NPM_TOKEN: ${{ secrets.NPM_HL_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           task -v publish -- ${{ steps.sdk-publish.outputs.args }}
 
