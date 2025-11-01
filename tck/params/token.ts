@@ -1,3 +1,5 @@
+import { BaseParams } from "./base";
+
 import {
     CustomFixedFee,
     CustomFractionalFee,
@@ -6,7 +8,7 @@ import {
 
 import { TransferParams } from "./transfer";
 
-export interface CreateTokenParams {
+export interface CreateTokenParams extends BaseParams {
     readonly name?: string;
     readonly symbol?: string;
     readonly decimals?: number;
@@ -36,7 +38,7 @@ export interface CreateTokenParams {
     readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface UpdateTokenParams {
+export interface UpdateTokenParams extends BaseParams {
     readonly tokenId?: string;
     readonly symbol?: string;
     readonly name?: string;
@@ -57,12 +59,12 @@ export interface UpdateTokenParams {
     readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface DeleteTokenParams {
+export interface DeleteTokenParams extends BaseParams {
     readonly tokenId?: string;
     readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface UpdateTokenFeeScheduleParams {
+export interface UpdateTokenFeeScheduleParams extends BaseParams {
     readonly tokenId?: string;
     readonly customFees?:
         | CustomFixedFee[]
@@ -71,37 +73,37 @@ export interface UpdateTokenFeeScheduleParams {
     readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface AssociateDisassociateTokenParams {
+export interface AssociateDisassociateTokenParams extends BaseParams {
     readonly accountId?: string;
     readonly tokenIds?: string[];
     readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface PauseUnpauseTokenParams {
+export interface PauseUnpauseTokenParams extends BaseParams {
     readonly tokenId?: string;
     readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface FreezeUnfreezeTokenParams {
+export interface FreezeUnfreezeTokenParams extends BaseParams {
     readonly accountId?: string;
     readonly tokenId?: string;
     readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface GrantRevokeTokenKycParams {
+export interface GrantRevokeTokenKycParams extends BaseParams {
     readonly tokenId?: string;
     readonly accountId?: string;
     readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface MintTokenParams {
+export interface MintTokenParams extends BaseParams {
     readonly tokenId?: string;
     readonly amount?: string;
     readonly metadata?: string[];
     readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface BurnTokenParams {
+export interface BurnTokenParams extends BaseParams {
     readonly tokenId?: string;
     readonly amount?: string;
     readonly metadata?: string[];
@@ -109,7 +111,7 @@ export interface BurnTokenParams {
     readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface WipeTokenParams {
+export interface WipeTokenParams extends BaseParams {
     readonly tokenId?: string;
     readonly accountId?: string;
     readonly amount?: string;
@@ -117,7 +119,7 @@ export interface WipeTokenParams {
     readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface AirdropTokenParams {
+export interface AirdropTokenParams extends BaseParams {
     readonly tokenTransfers: TransferParams[];
     readonly commonTransactionParams?: Record<string, any>;
 }
@@ -129,12 +131,12 @@ interface PendingAirdrop {
     readonly serialNumbers?: string[];
 }
 
-export interface AirdropCancelTokenParams {
+export interface AirdropCancelTokenParams extends BaseParams {
     readonly pendingAirdrops: PendingAirdrop[];
     readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface AirdropClaimTokenParams {
+export interface AirdropClaimTokenParams extends BaseParams {
     readonly senderAccountId?: string;
     readonly receiverAccountId?: string;
     readonly tokenId?: string;
@@ -142,7 +144,7 @@ export interface AirdropClaimTokenParams {
     readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface RejectTokenParams {
+export interface RejectTokenParams extends BaseParams {
     readonly ownerId?: string;
     readonly tokenIds?: string[];
     readonly nftIds?: string[];

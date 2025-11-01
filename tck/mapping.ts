@@ -2,20 +2,21 @@ import { sdk } from "./sdk_data";
 import { RpcMethodParams } from "./params/sdk";
 
 /**
- * Very primitive catch-all mapping prototype
+ * Very primitive catch-all mapping prototype with session support
  * @returns {Promise<*>}
- * @param {Input} input
+ * @param {Input} input - Input parameters including optional sessionId
  */
 export default async function mapMethods({
     callClass,
     methods,
-}: RpcMethodParams): Promise<string> {
+    sessionId,
+}: RpcMethodParams & { sessionId?: string }): Promise<string> {
     const cl: any = (await import("@hashgraph/sdk"))[callClass];
 
     let currentObject: any = new cl();
     for (let { name, param } of methods) {
         if (param === "client") {
-            param = sdk.getClient();
+            param = sdk.getClient(sessionId);
         }
 
         if (typeof currentObject[name] === "function") {
