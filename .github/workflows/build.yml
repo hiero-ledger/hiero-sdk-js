@@ -48,7 +48,7 @@ jobs:
           version: 3.35.1
 
       - name: Install PNPM
-        uses: step-security/action-setup@92da25bc4fa3a114b7a78c686a5ec142ccb12c8b # v4.1.1
+        uses: step-security/action-setup@3d419c73e38e670dbffe349ffff26dd13c164640 # v4.2.0
         with:
           version: 9.15.5
 
@@ -85,7 +85,7 @@ jobs:
           version: 3.35.1
 
       - name: Install PNPM
-        uses: step-security/action-setup@92da25bc4fa3a114b7a78c686a5ec142ccb12c8b # v4.1.1
+        uses: step-security/action-setup@3d419c73e38e670dbffe349ffff26dd13c164640 # v4.2.0
         with:
           version: 9.15.5
 
@@ -192,7 +192,7 @@ jobs:
           version: 3.35.1
 
       - name: Install PNPM
-        uses: step-security/action-setup@92da25bc4fa3a114b7a78c686a5ec142ccb12c8b # v4.1.1
+        uses: step-security/action-setup@3d419c73e38e670dbffe349ffff26dd13c164640 # v4.2.0
         with:
           version: 9.15.5
 
