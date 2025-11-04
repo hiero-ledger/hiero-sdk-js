@@ -95,7 +95,7 @@
         "@grpc/proto-loader": "0.7.9",
         "@playwright/test": "1.30.0",
         "@rollup/plugin-alias": "5.1.1",
-        "@rollup/plugin-commonjs": "28.0.3",
+        "@rollup/plugin-commonjs": "29.0.0",
         "@rollup/plugin-json": "6.1.0",
         "@rollup/plugin-node-resolve": "16.0.1",
         "@rollup/plugin-replace": "6.0.2",
