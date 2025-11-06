@@ -2,6 +2,7 @@
 
 import * as HieroProto from "@hashgraph/proto";
 import * as utf8 from "../encoding/utf8.js";
+import { DEFAULT_GRPC_DEADLINE } from "../constants/ClientConstants.js";
 
 const { proto } = HieroProto;
 
@@ -12,8 +13,9 @@ const { proto } = HieroProto;
 export default class Channel {
     /**
      * @protected
+     * @param {number} [grpcDeadline] - The gRPC deadline in milliseconds
      */
-    constructor() {
+    constructor(grpcDeadline = DEFAULT_GRPC_DEADLINE) {
         /**
          * @protected
          * @type {?HieroProto.proto.CryptoService}
@@ -73,6 +75,28 @@ export default class Channel {
          * @type {?HieroProto.proto.AddressBookService}
          */
         this._addressBook = null;
+
+        /**
+         * @protected
+         * @type {number}
+         */
+        this._grpcDeadline = grpcDeadline;
+    }
+
+    /**
+     * Set the gRPC deadline for this channel
+     * @param {number} deadline - The deadline in milliseconds, or null to clear
+     */
+    setGrpcDeadline(deadline) {
+        this._grpcDeadline = deadline;
+    }
+
+    /**
+     * Get the gRPC deadline for this channel
+     * @returns {number}
+     */
+    get grpcDeadline() {
+        return this._grpcDeadline;
     }
 
     /**

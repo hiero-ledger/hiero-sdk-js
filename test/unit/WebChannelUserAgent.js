@@ -3,12 +3,13 @@ import { SDK_NAME, SDK_VERSION } from "../../src/version.js";
 import WebChannel from "../../src/channel/WebChannel.js";
 
 // Mock the client constants
-vi.mock("../../src/constants/ClientConstants.js", () => ({
+vi.mock("../../src/constants/ClientConstants.js", async (importOriginal) => ({
     ALL_WEB_NETWORK_NODES: {
         "https://example.com": {
             toString: () => "example-node",
         },
     },
+    ...(await importOriginal()),
 }));
 
 // Get the global object in any environment
