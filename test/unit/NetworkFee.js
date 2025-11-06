@@ -225,7 +225,7 @@ describe("NetworkFee", function () {
                 },
             ];
 
-            edgeCases.forEach((props, index) => {
+            edgeCases.forEach((props) => {
                 const original = new NetworkFee(props);
                 const protoObj = original._toProtobuf();
                 const converted = NetworkFee._fromProtobuf(protoObj);
