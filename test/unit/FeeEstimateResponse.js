@@ -388,7 +388,7 @@ describe("FeeEstimateResponse", function () {
                 },
             ];
 
-            edgeCases.forEach((props, index) => {
+            edgeCases.forEach((props) => {
                 const original = new FeeEstimateResponse(props);
                 const protoObj = original._toProtobuf();
                 const converted = FeeEstimateResponse._fromProtobuf(protoObj);

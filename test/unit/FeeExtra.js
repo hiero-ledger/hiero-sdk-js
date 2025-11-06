@@ -262,7 +262,7 @@ describe("FeeExtra", function () {
                 },
             ];
 
-            edgeCases.forEach((props, index) => {
+            edgeCases.forEach((props) => {
                 const original = new FeeExtra(props);
                 const protoObj = original._toProtobuf();
                 const converted = FeeExtra._fromProtobuf(protoObj);
