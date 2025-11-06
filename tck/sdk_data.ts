@@ -27,12 +27,6 @@ class ClientRegistry {
         if (sessionId) {
             const client = this.clients.get(sessionId);
             if (!client) {
-                console.error(
-                    `[SDK ClientRegistry] ❌ Client not found for session: ${sessionId.substring(
-                        0,
-                        8,
-                    )}...`,
-                );
                 throw new Error(`Client not set up for session: ${sessionId}`);
             }
 
@@ -40,11 +34,7 @@ class ClientRegistry {
         }
 
         if (this.defaultClient == null) {
-            console.error(
-                `[SDK ClientRegistry] ❌ No default client set up and no sessionId provided. This may indicate missing session propagation in a test.`,
-            );
-            console.error(`[SDK ClientRegistry] ❌ No default client set up`);
-            throw new Error("Client not set up");
+            throw new Error("Client not set up for default session");
         }
 
         return this.defaultClient;
@@ -104,32 +94,6 @@ class ClientRegistry {
      */
     getActiveSessionCount(): number {
         return this.clients.size;
-    }
-
-    /**
-     * Prints statistics about current sessions for debugging
-     */
-    printStatistics(): void {
-        console.log(`\n========================================`);
-        console.log(`[SDK ClientRegistry] 📊 SESSION STATISTICS`);
-        console.log(`========================================`);
-        console.log(`Total active sessions: ${this.clients.size}`);
-        console.log(`Has default client: ${this.defaultClient !== null}`);
-
-        if (this.clients.size > 0) {
-            console.log(`\nActive Sessions:`);
-            for (const [sessionId, _] of this.clients) {
-                const reqCount = this.requestCounts.get(sessionId) || 0;
-                const creationTime = this.sessionCreationTime.get(sessionId);
-                const lifetime = creationTime
-                    ? ((Date.now() - creationTime) / 1000).toFixed(2)
-                    : "unknown";
-                console.log(
-                    `  - ${sessionId}: ${reqCount} requests, ${lifetime}s alive`,
-                );
-            }
-        }
-        console.log(`========================================\n`);
     }
 }
 

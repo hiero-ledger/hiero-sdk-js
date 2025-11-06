@@ -36,7 +36,6 @@ export default {
         mirrorNetworkIp,
         sessionId,
     }: SdkSetupParams): SdkResponse => {
-        // Validate required operator credentials
         if (!operatorAccountId || !operatorPrivateKey) {
             throw new Error(
                 "Operator credentials missing: operatorAccountId/operatorPrivateKey",

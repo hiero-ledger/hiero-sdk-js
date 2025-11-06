@@ -149,13 +149,4 @@ if (args.length > 0) {
 
 app.listen(port, () => {
     console.log(`-- JSON-RPC JS server running on localhost port ${port}`);
-
-    // Print statistics every 30 seconds for debugging
-    // Only for testing purposes
-    setInterval(() => {
-        const { sdk } = require("./sdk_data");
-        if (sdk.getActiveSessionCount() > 0) {
-            sdk.printStatistics();
-        }
-    }, 30000);
 });
