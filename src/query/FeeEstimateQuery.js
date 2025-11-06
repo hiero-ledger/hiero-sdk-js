@@ -1,14 +1,16 @@
 // SPDX-License-Identifier: Apache-2.0
-
 import Query from "./Query.js";
 import FeeEstimateMode from "./enums/FeeEstimateMode.js";
 import FeeEstimateResponse from "./FeeEstimateResponse.js";
+import NetworkFee from "./NetworkFee.js";
+import FeeEstimate from "./FeeEstimate.js";
 import * as HieroProto from "@hashgraph/proto";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../channel/MirrorChannel.js").MirrorError} MirrorError
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../transaction/Transaction.js").default} Transaction
  */
 
@@ -139,36 +141,163 @@ export default class FeeEstimateQuery extends Query {
      * @param {(error: Error) => void} reject
      */
     _makeMirrorNodeRequest(client, resolve, reject) {
-        const request =
-            HieroProto.com.hedera.mirror.api.proto.FeeEstimateQuery.encode({
-                mode: FeeEstimateMode.STATE,
-                transaction: this._transaction?._transactions.get(0),
-            }).finish();
+        if (this._transaction == null) {
+            reject(new Error("FeeEstimateQuery requires a transaction"));
+            return;
+        }
 
-        /** @type {any} */ client._mirrorNetwork
-            .getNextMirrorNode()
-            .getChannel()
-            .makeServerStreamRequest(
-                "NetworkService",
-                "getFeeEstimate",
-                request,
-                /** @param {any} data */ (data) => {
-                    const response =
-                        HieroProto.com.hedera.mirror.api.proto.FeeEstimateResponse.decode(
-                            data,
+        const txObj = this._transaction;
+
+        // Ensure the transaction is prepared so chunk and node matrices exist
+        txObj.freezeWith(client);
+        // Ensure protobuf transactions exist for lookup
+        txObj._buildAllTransactions();
+
+        const rowLength = txObj._nodeAccountIds.length || 1;
+        const chunks = txObj.getRequiredChunks();
+
+        /** @type {Promise<FeeEstimateResponse>[]} */
+        const perChunkPromises = [];
+
+        /**
+         * @param {number} index
+         * @returns {Promise<FeeEstimateResponse>}
+         */
+        const requestForIndex = (index) =>
+            this._requestFeeEstimateForIndex(client, txObj, index);
+
+        // Use the first node for each chunk row
+        for (let chunk = 0; chunk < chunks; chunk++) {
+            const index = chunk * rowLength + 0;
+            perChunkPromises.push(requestForIndex(index));
+        }
+
+        Promise.all(perChunkPromises)
+            .then((responses) => {
+                resolve(this._aggregateFeeResponses(responses));
+            })
+            .catch(reject);
+    }
+
+    /**
+     * Aggregate per-chunk fee responses into a single response.
+     * @private
+     * @param {FeeEstimateResponse[]} responses
+     * @returns {FeeEstimateResponse}
+     */
+    _aggregateFeeResponses(responses) {
+        if (responses.length === 0) {
+            return new FeeEstimateResponse({
+                mode: this._mode,
+                networkFee: new NetworkFee({
+                    multiplier: 0,
+                    subtotal: 0,
+                }),
+                nodeFee: new FeeEstimate({ base: 0, extras: [] }),
+                serviceFee: new FeeEstimate({ base: 0, extras: [] }),
+                notes: [],
+                total: 0,
+            });
+        }
+
+        // Aggregate results across chunks
+        let networkMultiplier = responses[0].networkFee.multiplier;
+        let networkSubtotal = 0;
+        let nodeBase = 0;
+        let serviceBase = 0;
+        /** @type {import("./FeeExtra.js").default[]} */
+        const nodeExtras = [];
+        /** @type {import("./FeeExtra.js").default[]} */
+        const serviceExtras = [];
+        const notes = [];
+        let total = 0;
+
+        for (const r of responses) {
+            networkMultiplier = r.networkFee.multiplier;
+            networkSubtotal += Number(r.networkFee.subtotal);
+            nodeBase += Number(r.nodeFee.base);
+            serviceBase += Number(r.serviceFee.base);
+            nodeExtras.push(...r.nodeFee.extras);
+            serviceExtras.push(...r.serviceFee.extras);
+            notes.push(...r.notes);
+            total += Number(r.total);
+        }
+
+        return new FeeEstimateResponse({
+            mode: this._mode,
+            networkFee: new NetworkFee({
+                multiplier: networkMultiplier,
+                subtotal: networkSubtotal,
+            }),
+            nodeFee: new FeeEstimate({
+                base: nodeBase,
+                extras: nodeExtras,
+            }),
+            serviceFee: new FeeEstimate({
+                base: serviceBase,
+                extras: serviceExtras,
+            }),
+            notes,
+            total,
+        });
+    }
+
+    /**
+     * Send a fee estimate request for the transaction chunk at a flattened index.
+     * @private
+     * @param {Client} client
+     * @param {Transaction} txObj
+     * @param {number} index
+     * @returns {Promise<FeeEstimateResponse>}
+     */
+    _requestFeeEstimateForIndex(client, txObj, index) {
+        return new Promise((res, rej) => {
+            // Ensure this index is built
+            txObj._buildTransaction(index);
+            const tx =
+                /** @type {HieroProto.proto.ITransaction | undefined} */ (
+                    txObj._transactions.get(index)
+                );
+            if (tx == null) {
+                rej(new Error("Failed to build transaction for fee estimate"));
+                return;
+            }
+
+            const request =
+                HieroProto.com.hedera.mirror.api.proto.FeeEstimateQuery.encode({
+                    mode: this._mode,
+                    transaction: tx,
+                }).finish();
+
+            client._mirrorNetwork
+                .getNextMirrorNode()
+                .getChannel()
+                .makeServerStreamRequest(
+                    "NetworkService",
+                    "getFeeEstimate",
+                    request,
+                    /** @param {Uint8Array} data */ (data) => {
+                        const response =
+                            HieroProto.com.hedera.mirror.api.proto.FeeEstimateResponse.decode(
+                                data,
+                            );
+                        res(FeeEstimateResponse._fromProtobuf(response));
+                    },
+                    /**
+                     * @param {MirrorError | Error} error
+                     */ (error) => {
+                        const errorMessage =
+                            error instanceof Error
+                                ? error.message
+                                : error.details || String(error);
+                        rej(
+                            new Error(
+                                `Failed to estimate fees: ${errorMessage}`,
+                            ),
                         );
-                    resolve(FeeEstimateResponse._fromProtobuf(response));
-                },
-                /** @param {any} error */ (error) => {
-                    reject(
-                        new Error(
-                            `Failed to estimate fees: ${
-                                error.message || error.details
-                            }`,
-                        ),
-                    );
-                },
-                () => {},
-            );
+                    },
+                    () => {},
+                );
+        });
     }
 }
