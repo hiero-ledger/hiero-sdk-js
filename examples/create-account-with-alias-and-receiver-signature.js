@@ -15,7 +15,7 @@ dotenv.config();
 /*
 Reference: [HIP-583 Expand alias support in CryptoCreate & CryptoTransfer Transactions](https://hips.hedera.com/hip/hip-583)
     ## Example 1:
-    - Create an ECSDA private key and an ED25519 admin private key
+    - Create an ECSDA private key and an ECDSA admin private key
     - Extract the ECDSA public key
     - Extract the Ethereum public address
     - Use the `AccountCreateTransaction`
@@ -32,7 +32,7 @@ async function main() {
         );
     }
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
-    const operatorKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
+    const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
 
     const nodes = {
         "127.0.0.1:50211": new AccountId(3),
@@ -47,9 +47,9 @@ async function main() {
         /**
          * Step 1
          *
-         * Create an ECSDA private key and an ED25519 admin private key
+         * Create an ECSDA private key and an ECDSA admin private key
          */
-        const adminKey = PrivateKey.generateED25519();
+        const adminKey = PrivateKey.generateECDSA();
         console.log(`Admin private key: ${adminKey.toStringDer()}`);
 
         const privateKey = PrivateKey.generateECDSA();

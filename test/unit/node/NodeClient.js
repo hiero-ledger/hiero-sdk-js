@@ -2,6 +2,7 @@ import { Client, LedgerId } from "../../../src/index.js";
 import AccountId from "../../../src/account/AccountId.js";
 import NodeClient from "../../../src/client/NodeClient.js";
 import MirrorNode from "../../../src/MirrorNode.js";
+import { DEFAULT_GRPC_DEADLINE } from "../../../src/constants/ClientConstants.js";
 
 const ledgerId = LedgerId.LOCAL_NODE;
 
@@ -105,6 +106,17 @@ describe("Client", function () {
         expect(network["2.testnet.hedera.com:50211"].toString()).to.be.equal(
             "0.0.6",
         );
+    });
+
+    it("maintains backward compatibility with maxExecutionTime setter", function () {
+        const client = new Client({ scheduleNetworkUpdate: false });
+
+        // Test that grpcDeadline is set to the default value
+        expect(client.grpcDeadline).to.equal(DEFAULT_GRPC_DEADLINE);
+
+        // Test that setting maxExecutionTime updates grpcDeadline
+        client.setMaxExecutionTime(5000);
+        expect(client.grpcDeadline).to.equal(5000);
     });
 
     describe("local-node factories work", function () {

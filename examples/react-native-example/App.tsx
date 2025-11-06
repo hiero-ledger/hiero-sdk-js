@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
 
 const App = () => {
     const operatorId = AccountId.fromString(OPERATOR_ID);
-    const operatorKey = PrivateKey.fromString(OPERATOR_KEY);
+    const operatorKey = PrivateKey.fromStringECDSA(OPERATOR_KEY);
     const client = Client.forTestnet().setOperator(operatorId, operatorKey);
 
     const [transaction, setTransaction] = useState<TransactionResponse | null>(

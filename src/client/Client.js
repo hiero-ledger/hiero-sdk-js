@@ -12,6 +12,10 @@ import FileId from "../file/FileId.js";
 import Logger from "../logger/Logger.js"; // eslint-disable-line
 import { convertToNumber } from "../util.js";
 import AddressBookQuery from "../network/AddressBookQuery.js";
+import {
+    DEFAULT_GRPC_DEADLINE,
+    DEFAULT_REQUEST_TIMEOUT,
+} from "../constants/ClientConstants.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -40,6 +44,8 @@ import AddressBookQuery from "../network/AddressBookQuery.js";
  * @property {boolean} [scheduleNetworkUpdate]
  * @property {number} [shard]
  * @property {number} [realm]
+ * @property {number} [grpcDeadline]
+ * @property {number} [requestTimeout]
  */
 
 /**
@@ -127,7 +133,10 @@ export default class Client {
         this._defaultRegenerateTransactionId = true;
 
         /** @private */
-        this._requestTimeout = null;
+        this._requestTimeout = DEFAULT_REQUEST_TIMEOUT;
+
+        /** @private */
+        this._grpcDeadline = DEFAULT_GRPC_DEADLINE;
 
         /**
          * @type {boolean}
@@ -154,6 +163,23 @@ export default class Client {
 
         if (props != null && props.realm != null) {
             this._realm = props.realm;
+        }
+
+        if (props != null && props.grpcDeadline != null) {
+            this.setGrpcDeadline(props.grpcDeadline);
+        }
+
+        if (props != null && props.requestTimeout != null) {
+            this.setRequestTimeout(props.requestTimeout);
+        }
+
+        // Validate that requestTimeout is larger than grpcDeadline after both are set
+        if (this._requestTimeout <= this._grpcDeadline) {
+            console.warn(
+                `DEPRECATION WARNING: requestTimeout (${this._requestTimeout}ms) should be larger than grpcDeadline (${this._grpcDeadline}ms). ` +
+                    `This configuration may cause operations to fail unexpectedly. ` +
+                    `This will throw an error in the next major version. Please adjust your timeout values.`,
+            );
         }
 
         /** @internal */
@@ -675,19 +701,63 @@ export default class Client {
     }
 
     /**
-     * @param {number} requestTimeout - Number of milliseconds
+     * Set the total request timeout for complete operations.
+     *
+     * @param {number} requestTimeout - Maximum time in milliseconds for complete Transaction/Query operations
      * @returns {this}
      */
     setRequestTimeout(requestTimeout) {
+        if (requestTimeout <= 0) {
+            throw new Error("requestTimeout must be a positive number");
+        }
+        if (requestTimeout <= this._grpcDeadline) {
+            console.warn(
+                `DEPRECATION WARNING: requestTimeout (${requestTimeout}ms) should be larger than grpcDeadline (${this._grpcDeadline}ms). ` +
+                    `This configuration may cause operations to fail unexpectedly. ` +
+                    `This will throw an error in the next major version. Please adjust your timeout values.`,
+            );
+        }
         this._requestTimeout = requestTimeout;
         return this;
     }
 
     /**
-     * @returns {?number}
+     * Get the total request timeout for complete operations.
+     *
+     * @returns {number} Maximum time in milliseconds for complete Transaction/Query operations
      */
     get requestTimeout() {
         return this._requestTimeout;
+    }
+
+    /**
+     * Set the global gRPC deadline for all requests.
+     *
+     * @param {number} grpcDeadline - Maximum time in milliseconds for a single gRPC request
+     * @returns {this}
+     */
+    setGrpcDeadline(grpcDeadline) {
+        if (grpcDeadline <= 0) {
+            throw new Error("grpcDeadline must be a positive number");
+        }
+        if (grpcDeadline >= this._requestTimeout) {
+            console.warn(
+                `DEPRECATION WARNING: grpcDeadline (${grpcDeadline}ms) should be smaller than requestTimeout (${this._requestTimeout}ms). ` +
+                    `This configuration may cause operations to fail unexpectedly. ` +
+                    `This will throw an error in the next major version. Please adjust your timeout values.`,
+            );
+        }
+        this._grpcDeadline = grpcDeadline;
+        return this;
+    }
+
+    /**
+     * Get the global gRPC deadline for all requests.
+     *
+     * @returns {number} Maximum time in milliseconds for a single gRPC request
+     */
+    get grpcDeadline() {
+        return this._grpcDeadline;
     }
 
     /**
@@ -794,7 +864,9 @@ export default class Client {
      * @returns {(address: string) => ChannelT}
      */
     _createNetworkChannel() {
-        throw new Error("not implemented");
+        return () => {
+            throw new Error("not implemented");
+        };
     }
 
     /**
@@ -802,7 +874,9 @@ export default class Client {
      * @returns {(address: string) => MirrorChannelT}
      */
     _createMirrorNetworkChannel() {
-        throw new Error("not implemented");
+        return () => {
+            throw new Error("not implemented");
+        };
     }
 
     /**

@@ -210,7 +210,34 @@ class GrpcServer {
 
                         if (response.call != null) {
                             try {
-                                value = response.call(request, index);
+                                const result = response.call(request, index);
+                                // Handle both sync and async responses
+                                if (result instanceof Promise) {
+                                    result
+                                        .then((resolvedValue) => {
+                                            value = resolvedValue;
+                                            if (callback != null) {
+                                                callback(error, value);
+                                            } else {
+                                                call.write(value);
+                                            }
+                                        })
+                                        .catch((err) => {
+                                            callback(
+                                                {
+                                                    name: "ABORTED",
+                                                    message: `responses[${index}].call failed with error: ${err.toString()} and stack trace: ${
+                                                        err.stack
+                                                    }`,
+                                                    code: 10,
+                                                },
+                                                null,
+                                            );
+                                        });
+                                    return; // Don't continue with sync processing
+                                } else {
+                                    value = result;
+                                }
                             } catch (err) {
                                 callback(
                                     {
