@@ -586,9 +586,6 @@ describe("WebClient Browser Tests", function () {
 
         // Verify service requests were made for all 20 transactions
         expect(serviceRequestAttempts).to.equal(20);
-
-        console.log(`Health check attempts: ${healthCheckAttempts}`);
-        console.log(`Service request attempts: ${serviceRequestAttempts}`);
     });
 
     // ========================================
@@ -884,6 +881,248 @@ describe("WebClient Browser Tests", function () {
                 const previewnetEntries =
                     createNetworkAddressNodeSet(WEB_PREVIEWNET);
                 expect(networkEntries).to.deep.equal(previewnetEntries);
+            });
+        });
+
+        describe("forMirrorNetwork factory method", function () {
+            it("should create client with mainnet mirror network", async function () {
+                const handlers = [
+                    http.get(
+                        "https://mainnet-public.mirrornode.hedera.com/api/v1/network/nodes",
+                        ({ request }) => {
+                            const url = new URL(request.url);
+                            const fileId = url.searchParams.get("file.id");
+
+                            if (fileId === FileId.ADDRESS_BOOK.toString()) {
+                                return HttpResponse.json(
+                                    generateAddressBookResponse(MAINNET),
+                                );
+                            }
+
+                            return HttpResponse.json({ nodes: [] });
+                        },
+                    ),
+                ];
+
+                worker = await startMSW(handlers);
+
+                const client = await Client.forMirrorNetwork("mainnet");
+
+                expect(client).to.be.instanceOf(Client);
+                expect(client.network).to.not.be.empty;
+
+                // Verify that the network was updated from mirror node
+                const networkEntries = createNetworkAddressNodeSet(
+                    client.network,
+                );
+                const mainnetEntries = createNetworkAddressNodeSet(MAINNET);
+                expect(networkEntries).to.deep.equal(mainnetEntries);
+
+                // Verify mirror network is set
+                expect(client._mirrorNetwork).to.not.be.null;
+            });
+
+            it("should create client with testnet mirror network", async function () {
+                const handlers = [
+                    http.get(
+                        "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
+                        ({ request }) => {
+                            const url = new URL(request.url);
+                            const fileId = url.searchParams.get("file.id");
+
+                            if (fileId === FileId.ADDRESS_BOOK.toString()) {
+                                return HttpResponse.json(
+                                    generateAddressBookResponse(WEB_TESTNET),
+                                );
+                            }
+
+                            return HttpResponse.json({ nodes: [] });
+                        },
+                    ),
+                ];
+
+                worker = await startMSW(handlers);
+
+                const client = await Client.forMirrorNetwork("testnet");
+
+                expect(client).to.be.instanceOf(Client);
+                expect(client.network).to.not.be.empty;
+
+                // Verify that the network was updated from mirror node
+                const networkEntries = createNetworkAddressNodeSet(
+                    client.network,
+                );
+                const testnetEntries = createNetworkAddressNodeSet(WEB_TESTNET);
+                expect(networkEntries).to.deep.equal(testnetEntries);
+
+                // Verify mirror network is set
+                expect(client._mirrorNetwork).to.not.be.null;
+            });
+
+            it("should create client with previewnet mirror network", async function () {
+                const handlers = [
+                    http.get(
+                        "https://previewnet.mirrornode.hedera.com/api/v1/network/nodes",
+                        ({ request }) => {
+                            const url = new URL(request.url);
+                            const fileId = url.searchParams.get("file.id");
+
+                            if (fileId === FileId.ADDRESS_BOOK.toString()) {
+                                return HttpResponse.json(
+                                    generateAddressBookResponse(WEB_PREVIEWNET),
+                                );
+                            }
+
+                            return HttpResponse.json({ nodes: [] });
+                        },
+                    ),
+                ];
+
+                worker = await startMSW(handlers);
+
+                const client = await Client.forMirrorNetwork("previewnet");
+
+                expect(client).to.be.instanceOf(Client);
+                expect(client.network).to.not.be.empty;
+
+                // Verify that the network was updated from mirror node
+                const networkEntries = createNetworkAddressNodeSet(
+                    client.network,
+                );
+                const previewnetEntries =
+                    createNetworkAddressNodeSet(WEB_PREVIEWNET);
+                expect(networkEntries).to.deep.equal(previewnetEntries);
+
+                // Verify mirror network is set
+                expect(client._mirrorNetwork).to.not.be.null;
+            });
+
+            it("should create client with custom mirror network URL", async function () {
+                const customMirrorUrl = "custom-mirror.example.com:443";
+                const customNodes = {
+                    "custom-node-1.example.com:443": new AccountId(200),
+                    "custom-node-2.example.com:443": new AccountId(201),
+                    "custom-node-3.example.com:443": new AccountId(202),
+                };
+
+                const handlers = [
+                    http.get(
+                        `https://${
+                            customMirrorUrl.split(":")[0]
+                        }/api/v1/network/nodes`,
+                        ({ request }) => {
+                            const url = new URL(request.url);
+                            const fileId = url.searchParams.get("file.id");
+
+                            if (fileId === FileId.ADDRESS_BOOK.toString()) {
+                                return HttpResponse.json(
+                                    generateAddressBookResponse(customNodes),
+                                );
+                            }
+
+                            return HttpResponse.json({ nodes: [] });
+                        },
+                    ),
+                ];
+
+                worker = await startMSW(handlers);
+
+                const client = await Client.forMirrorNetwork(customMirrorUrl);
+
+                expect(client).to.be.instanceOf(Client);
+                expect(client.network).to.not.be.empty;
+
+                // Verify that the network was updated with custom nodes
+                const networkEntries = createNetworkAddressNodeSet(
+                    client.network,
+                );
+
+                // Verify all custom nodes are present
+                expect(networkEntries).toContain(
+                    "custom-node-1.example.com:443:0.0.200",
+                );
+                expect(networkEntries).toContain(
+                    "custom-node-2.example.com:443:0.0.201",
+                );
+                expect(networkEntries).toContain(
+                    "custom-node-3.example.com:443:0.0.202",
+                );
+
+                // Verify we have exactly 3 nodes
+                expect(networkEntries.size).toBe(3);
+
+                // Verify mirror network is set
+                expect(client._mirrorNetwork).to.not.be.null;
+            });
+
+            it("should create client with array of custom mirror network URLs", async function () {
+                const customMirrorUrls = [
+                    "custom-mirror-1.example.com:8081",
+                    "custom-mirror-2.example.com:8080",
+                ];
+                const customNodes = {
+                    "custom-node-1.example.com:443": new AccountId(300),
+                    "custom-node-2.example.com:443": new AccountId(301),
+                };
+
+                const handlers = [
+                    http.get(
+                        `https://${customMirrorUrls[0]}/api/v1/network/nodes`,
+                        ({ request }) => {
+                            const url = new URL(request.url);
+                            const fileId = url.searchParams.get("file.id");
+
+                            if (fileId === FileId.ADDRESS_BOOK.toString()) {
+                                return HttpResponse.json(
+                                    generateAddressBookResponse(customNodes),
+                                );
+                            }
+
+                            return HttpResponse.json({ nodes: [] });
+                        },
+                    ),
+                    http.get(
+                        `https://${customMirrorUrls[1]}/api/v1/network/nodes`,
+                        ({ request }) => {
+                            const url = new URL(request.url);
+                            const fileId = url.searchParams.get("file.id");
+
+                            if (fileId === FileId.ADDRESS_BOOK.toString()) {
+                                return HttpResponse.json(
+                                    generateAddressBookResponse(customNodes),
+                                );
+                            }
+
+                            return HttpResponse.json({ nodes: [] });
+                        },
+                    ),
+                ];
+
+                worker = await startMSW(handlers);
+
+                const client = await Client.forMirrorNetwork(customMirrorUrls);
+
+                expect(client).to.be.instanceOf(Client);
+                expect(client.network).to.not.be.empty;
+
+                // Verify that the network was updated with custom nodes
+                const networkEntries = createNetworkAddressNodeSet(
+                    client.network,
+                );
+
+                // Verify all custom nodes are present
+                expect(networkEntries).toContain(
+                    "custom-node-1.example.com:443:0.0.300",
+                );
+                expect(networkEntries).toContain(
+                    "custom-node-2.example.com:443:0.0.301",
+                );
+
+                // Verify we have exactly 2 nodes
+                expect(networkEntries.size).toBe(2);
+
+                // Verify mirror network is set with both URLs
+                expect(client._mirrorNetwork).to.not.be.null;
             });
         });
 
