@@ -169,6 +169,63 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
 
+  dab-tests:
+    name: DAB Tests using Node ${{ matrix.node }}
+    runs-on: hiero-client-sdk-linux-medium
+    strategy:
+      matrix:
+        node: [ "22" ]
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        with:
+          submodules: recursive
+
+      - name: Install Task
+        uses: arduino/setup-task@b91d5d2c96a56797b48ac1e0e89220bf64044611 # v2.0.0
+        with:
+          version: 3.35.1
+
+      - name: Install PNPM
+        uses: step-security/action-setup@3d419c73e38e670dbffe349ffff26dd13c164640 # v4.2.0
+        with:
+          version: 9.15.5
+
+      - name: Setup Node
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+
+      - name: Build @hashgraph/sdk
+        id: build-sdk
+        run: task build
+
+      - name: Prepare Hiero Solo
+        id: solo
+        uses: hiero-ledger/hiero-solo-action@9471711c98a56179def6123e1040ab6c2e668881 # branch: 75-add-support-for-multiple-consensus-nodes
+        with:
+          installMirrorNode: true
+          hieroVersion: v0.68.1-rc.1
+          mirrorNodeVersion: v0.142.0
+          dualMode: true
+
+      - name: Set Operator Account
+        run: |
+          echo "OPERATOR_KEY=${{ steps.solo.outputs.ed25519PrivateKey }}" >> $GITHUB_ENV
+          echo "OPERATOR_ID=${{ steps.solo.outputs.ed25519AccountId }}" >> $GITHUB_ENV
+          echo "HEDERA_NETWORK=local-node" >> $GITHUB_ENV
+
+      - name: Run DAB Integration Tests
+        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
+        run: npx vitest --coverage --poolOptions.threads.singleThread --config=test/vitest-node-integration-dual-mode.config.ts NodeUpdateIntegrationTest.js
+
   examples:
     name: Run examples using Node ${{ matrix.node }}
     runs-on: hiero-client-sdk-linux-medium

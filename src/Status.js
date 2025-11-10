@@ -742,6 +742,8 @@ export default class Status {
                 return "GRPC_WEB_PROXY_NOT_SUPPORTED";
             case Status.NftTransfersOnlyAllowedForNonFungibleUnique:
                 return "NFT_TRANSFERS_ONLY_ALLOWED_FOR_NON_FUNGIBLE_UNIQUE";
+            case Status.NodeAccountHasZeroBalance:
+                return "NODE_ACCOUNT_HAS_ZERO_BALANCE";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -1472,6 +1474,8 @@ export default class Status {
                 return Status.GrpcWebProxyNotSupported;
             case 400:
                 return Status.NftTransfersOnlyAllowedForNonFungibleUnique;
+            case 526:
+                return Status.NodeAccountHasZeroBalance;
             default:
                 throw new Error(
                     `(BUG) Status.fromCode() does not handle code: ${code}`,
@@ -3351,3 +3355,11 @@ Status.GrpcWebProxyNotSupported = new Status(399);
  * An NFT transfers list referenced a token type other than NON_FUNGIBLE_UNIQUE.
  */
 Status.NftTransfersOnlyAllowedForNonFungibleUnique = new Status(400);
+
+/**
+ * This operation cannot be completed because the target
+ * account has a zero balance.<br/>
+ * Node accounts require a positive balance. The transaction may be
+ * resubmitted once the account has been funded.
+ */
+Status.NodeAccountHasZeroBalance = new Status(526);
