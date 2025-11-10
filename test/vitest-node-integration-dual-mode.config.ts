@@ -10,21 +10,18 @@ const pkg = JSON.parse(
 /** @type {import("vitest").UserConfig} */
 export default defineConfig({
     test: {
+        allowOnly: true,
         watch: false,
         globals: true,
         environment: "node",
-        include: ["test/integration/**/*.js"],
+        include: ["test/integration/dual-mode/**/*.js"],
         exclude: [
             "test/integration/client/*",
             "test/integration/resources/*",
             "test/integration/utils/*",
-            "test/integration/contents.js",
-            "test/integration/dual-mode/**/*.js",
         ],
         hookTimeout: 120000,
         testTimeout: 120000,
-        maxWorkers: 4,
-        minWorkers: 4,
         coverage: {
             include: ["src/**/*.js"],
             provider: "v8",
