@@ -2,7 +2,7 @@ import {
     CustomFixedFee,
     CustomFractionalFee,
     CustomRoyaltyFee,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 import { TransferParams } from "./transfer";
 

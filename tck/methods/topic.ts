@@ -8,7 +8,7 @@ import {
     TopicMessageSubmitTransaction,
     CustomFeeLimit,
     AccountId,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 import Long from "long";
 
 import { applyCommonTransactionParams } from "../params/common-tx-params";

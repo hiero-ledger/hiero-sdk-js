@@ -12,7 +12,7 @@ import {
     TransactionResponse,
     AccountInfo,
     AccountBalance,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 import { OPERATOR_ID, OPERATOR_KEY } from "@env";
 

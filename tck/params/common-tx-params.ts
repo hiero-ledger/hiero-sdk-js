@@ -5,7 +5,7 @@ import {
     TransactionId,
     PrivateKey,
     AccountId,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 import { getKeyFromString } from "../utils/key";
 

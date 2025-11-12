@@ -8,15 +8,15 @@ importers:
 
   .:
     dependencies:
-      '@hashgraph/sdk':
+      '@hiero-ledger/sdk':
         specifier: link:..
         version: link:..
       chai:
         specifier: ^4.3.6
-        version: 4.3.7
+        version: 4.5.0
       mocha:
         specifier: ~10.6.0
-        version: 10.6.0
+        version: 10.6.1
 
 packages:
 
@@ -45,12 +45,12 @@ packages:
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
 
-  binary-extensions@2.2.0:
-    resolution: {integrity: sha512-jDctJ/IVQbZoJykoeHbhXpOlNBqGNcwXJKJog42E5HDPUwQTSdjCHdihjj0DlnheQ7blbT6dHOafNAiS8ooQKA==}
+  binary-extensions@2.3.0:
+    resolution: {integrity: sha512-Ceh+7ox5qe7LJuLHoY0feh3pHuUDHAcRUeyL2VYghZwfpkNIy/+8Ocg0a3UuSoYzavmylwuLWQOf3hl0jjMMIw==}
     engines: {node: '>=8'}
 
-  brace-expansion@2.0.1:
-    resolution: {integrity: sha512-XnAIvQ8eM+kC6aULx6wuQiwVsnzsi9d3WxzV3FpWTGA19F621kwdbsAcFKXgKUHZWsy+mY6iL1sHTxWEFCytDA==}
+  brace-expansion@2.0.2:
+    resolution: {integrity: sha512-Jt0vHyM+jmUBqojB7E1NIYadt0vI0Qxjxd2TErW94wDz+E2LAm5vKMXXwg6ZZBTHPuUlDgQHKXvjGBdfcF1ZDQ==}
 
   braces@3.0.3:
     resolution: {integrity: sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==}
@@ -63,19 +63,19 @@ packages:
     resolution: {integrity: sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==}
     engines: {node: '>=10'}
 
-  chai@4.3.7:
-    resolution: {integrity: sha512-HLnAzZ2iupm25PlN0xFreAlBA5zaBSv3og0DdeGA4Ar6h6rJ3A0rolRUKJhSF2V10GZKDgWF/VmAEsNWjCRB+A==}
+  chai@4.5.0:
+    resolution: {integrity: sha512-RITGBfijLkBddZvnn8jdqoTypxvqbOLYQkGGxXzeFjVHvudaPw0HNFD9x928/eUwYWd2dPCugVqspGALTZZQKw==}
     engines: {node: '>=4'}
 
   chalk@4.1.2:
     resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
     engines: {node: '>=10'}
 
-  check-error@1.0.2:
-    resolution: {integrity: sha512-BrgHpW9NURQgzoNyjfq0Wu6VFO6D7IZEmJNdtgNqpzGG8RuNFHt2jQxWlAs4HMe119chBnv+34syEZtc6IhLtA==}
+  check-error@1.0.3:
+    resolution: {integrity: sha512-iKEoDYaRmd1mxM90a2OEfWhjsjPpYPuQ+lMYsoxB126+t8fw7ySEO48nmDg5COTjxDI65/Y2OWpeEHk3ZOe8zg==}
 
-  chokidar@3.5.3:
-    resolution: {integrity: sha512-Dr3sfKRP6oTcjf2JmUmFJfeVMvXBdegxB0iVQ5eb2V10uFJUCAS8OByZdVAyVb8xXNz3GjjTgj9kLWsZTqE6kw==}
+  chokidar@3.6.0:
+    resolution: {integrity: sha512-7VT13fmjotKpGipCW9JEQAusEPE+Ei8nl6/g4FBAmIm0GOOLMua9NDDo/DWp0ZAxCr3cPq5ZpBqmPAQgDda2Pw==}
     engines: {node: '>= 8.10.0'}
 
   cliui@7.0.4:
@@ -88,8 +88,8 @@ packages:
   color-name@1.1.4:
     resolution: {integrity: sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==}
 
-  debug@4.3.7:
-    resolution: {integrity: sha512-Er2nc/H7RrMXZBFCEim6TCmMk02Z8vLC2Rbi1KEBggpo0fS6l0S1nnapwmIi3yW/+GOJap1Krg4w0Hg80oCqgQ==}
+  debug@4.4.3:
+    resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
     engines: {node: '>=6.0'}
     peerDependencies:
       supports-color: '*'
@@ -101,8 +101,8 @@ packages:
     resolution: {integrity: sha512-9iE1PgSik9HeIIw2JO94IidnE3eBoQrFJ3w7sFuzSX4DpmZ3v5sZpUiV5Swcf6mQEF+Y0ru8Neo+p+nyh2J+hQ==}
     engines: {node: '>=10'}
 
-  deep-eql@4.1.3:
-    resolution: {integrity: sha512-WaEtAOpRA1MQ0eohqZjpGD8zdI0Ovsm8mmFhaDN8dvDZzyoUMcYDnf5Y6iu7HTXxf8JDS23qWa4a+hKCDyOPzw==}
+  deep-eql@4.1.4:
+    resolution: {integrity: sha512-SUwdGfqdKOwxCPeVYjwSyRpJ7Z+fhpwIAtmCUdZIWZ/YP5R9WAsyuSgpLVDi9bjWoN2LXHNss/dk3urXtdQxGg==}
     engines: {node: '>=6'}
 
   diff@5.2.0:
@@ -112,8 +112,8 @@ packages:
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
 
-  escalade@3.1.1:
-    resolution: {integrity: sha512-k0er2gUkLf8O0zKJiAhmkTnJlTvINGv7ygDNPbeIsX/TJjGJZHuh9B2UxbsaEkmlEo9MfhrSzmhIlhRlI2GXnw==}
+  escalade@3.2.0:
+    resolution: {integrity: sha512-WUj2qlxaQtO4g6Pq5c29GTcWGDyd8itL8zTlipgECz3JesAiiOKotd8JU6otB3PACgG6xkJUyVhboMS+bje/jA==}
     engines: {node: '>=6'}
 
   escape-string-regexp@4.0.0:
@@ -135,8 +135,8 @@ packages:
   fs.realpath@1.0.0:
     resolution: {integrity: sha512-OO0pH2lK6a0hZnAdau5ItzHPI6pUlvI7jMVnxUQRtw4owF2wk8lOSabtGDCTP4Ggrg2MbGnWO9X8K1t4+fGMDw==}
 
-  fsevents@2.3.2:
-    resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
+  fsevents@2.3.3:
+    resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
 
@@ -144,8 +144,8 @@ packages:
     resolution: {integrity: sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==}
     engines: {node: 6.* || 8.* || >= 10.*}
 
-  get-func-name@2.0.0:
-    resolution: {integrity: sha512-Hm0ixYtaSZ/V7C8FJrtZIuBBI+iSgL+1Aq82zSu8VQNB4S3Gk8e7Qs3VwBDJAhmRZcFqkl3tQu36g/Foh5I5ig==}
+  get-func-name@2.0.2:
+    resolution: {integrity: sha512-8vXOvuE167CtIc3OyItco7N/dpRtBbYOsPsXCz7X/PMnlGjYjSGuZJgM1Y7mmew7BKf9BqvLX2tnOVy1BBUsxQ==}
 
   glob-parent@5.1.2:
     resolution: {integrity: sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==}
@@ -199,8 +199,8 @@ packages:
     resolution: {integrity: sha512-knxG2q4UC3u8stRGyAVJCOdxFmv5DZiRcdlIaAQXAbSfJya+OhopNotLQrstBhququ4ZpuKbDc/8S6mgXgPFPw==}
     engines: {node: '>=10'}
 
-  js-yaml@4.1.0:
-    resolution: {integrity: sha512-wpxZs9NoxZaJESJGIZTyDEaYpl0FKSA+FB9aJiyemKhMwkxQg63h4T1KJgUGHpTqPDNRcmmYLugrRjJlBtWvRA==}
+  js-yaml@4.1.1:
+    resolution: {integrity: sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==}
     hasBin: true
 
   locate-path@6.0.0:
@@ -211,15 +211,15 @@ packages:
     resolution: {integrity: sha512-8XPvpAA8uyhfteu8pIvQxpJZ7SYYdpUivZpGy6sFsBuKRY/7rQGavedeB8aK+Zkyq6upMFVL/9AW6vOYzfRyLg==}
     engines: {node: '>=10'}
 
-  loupe@2.3.6:
-    resolution: {integrity: sha512-RaPMZKiMy8/JruncMU5Bt6na1eftNoo++R4Y+N2FrxkDVTrGvcyzFTsaGif4QTeKESheMGegbhw6iUAq+5A8zA==}
+  loupe@2.3.7:
+    resolution: {integrity: sha512-zSMINGVYkdpYSOBmLi0D1Uo7JU9nVdQKrHxC8eYlV+9YKK9WePqAlL7lSlorG/U2Fw1w0hTBmaa/jrQ3UbPHtA==}
 
   minimatch@5.1.6:
     resolution: {integrity: sha512-lKwV/1brpG6mBUFHtb7NUmtABCb2WZZmm2wNiOA5hAb8VdCS4B3dtMWyvcoViccwAW/COERjXLt0zP1zXUN26g==}
     engines: {node: '>=10'}
 
-  mocha@10.6.0:
-    resolution: {integrity: sha512-hxjt4+EEB0SA0ZDygSS015t65lJw/I2yRCS3Ae+SJ5FrbzrXgfYwJr96f0OvIXdj7h4lv/vLCrH3rkiuizFSvw==}
+  mocha@10.6.1:
+    resolution: {integrity: sha512-3DI5OWZGF2kRsNS2JV1GBU9YOwljNy0aBj8cJM3ndartWTd6iRwKleO00XB5/mAzzkUZ5h40Z0DcbswsQZ/Gvw==}
     engines: {node: '>= 14.0.0'}
     hasBin: true
 
@@ -293,8 +293,8 @@ packages:
     resolution: {integrity: sha512-65P7iz6X5yEr1cwcgvQxbbIw7Uk3gOy5dIdtZ4rDveLqhrdJP+Li/Hx6tyK0NEb+2GCyneCMJiGqrADCSNk8sQ==}
     engines: {node: '>=8.0'}
 
-  type-detect@4.0.8:
-    resolution: {integrity: sha512-0fr/mIH1dlO+x7TlcMy+bIDqKPsw/70tVyeHW787goQjhmqaZe10uwLujubK9q9Lg6Fiho1KUKDYz0Z7k7g5/g==}
+  type-detect@4.1.0:
+    resolution: {integrity: sha512-Acylog8/luQ8L7il+geoSxhEkazvkslg7PSNKOX59mbB9cOveP5aq9h74Y7YU8yDpJwetzQQrfIwtf4Wp4LKcw==}
     engines: {node: '>=4'}
 
   workerpool@6.5.1:
@@ -348,9 +348,9 @@ snapshots:
 
   balanced-match@1.0.2: {}
 
-  binary-extensions@2.2.0: {}
+  binary-extensions@2.3.0: {}
 
-  brace-expansion@2.0.1:
+  brace-expansion@2.0.2:
     dependencies:
       balanced-match: 1.0.2
 
@@ -362,24 +362,26 @@ snapshots:
 
   camelcase@6.3.0: {}
 
-  chai@4.3.7:
+  chai@4.5.0:
     dependencies:
       assertion-error: 1.1.0
-      check-error: 1.0.2
-      deep-eql: 4.1.3
-      get-func-name: 2.0.0
-      loupe: 2.3.6
+      check-error: 1.0.3
+      deep-eql: 4.1.4
+      get-func-name: 2.0.2
+      loupe: 2.3.7
       pathval: 1.1.1
-      type-detect: 4.0.8
+      type-detect: 4.1.0
 
   chalk@4.1.2:
     dependencies:
       ansi-styles: 4.3.0
       supports-color: 7.2.0
 
-  check-error@1.0.2: {}
+  check-error@1.0.3:
+    dependencies:
+      get-func-name: 2.0.2
 
-  chokidar@3.5.3:
+  chokidar@3.6.0:
     dependencies:
       anymatch: 3.1.3
       braces: 3.0.3
@@ -389,7 +391,7 @@ snapshots:
       normalize-path: 3.0.0
       readdirp: 3.6.0
     optionalDependencies:
-      fsevents: 2.3.2
+      fsevents: 2.3.3
 
   cliui@7.0.4:
     dependencies:
@@ -403,7 +405,7 @@ snapshots:
 
   color-name@1.1.4: {}
 
-  debug@4.3.7(supports-color@8.1.1):
+  debug@4.4.3(supports-color@8.1.1):
     dependencies:
       ms: 2.1.3
     optionalDependencies:
@@ -411,15 +413,15 @@ snapshots:
 
   decamelize@4.0.0: {}
 
-  deep-eql@4.1.3:
+  deep-eql@4.1.4:
     dependencies:
-      type-detect: 4.0.8
+      type-detect: 4.1.0
 
   diff@5.2.0: {}
 
   emoji-regex@8.0.0: {}
 
-  escalade@3.1.1: {}
+  escalade@3.2.0: {}
 
   escape-string-regexp@4.0.0: {}
 
@@ -436,12 +438,12 @@ snapshots:
 
   fs.realpath@1.0.0: {}
 
-  fsevents@2.3.2:
+  fsevents@2.3.3:
     optional: true
 
   get-caller-file@2.0.5: {}
 
-  get-func-name@2.0.0: {}
+  get-func-name@2.0.2: {}
 
   glob-parent@5.1.2:
     dependencies:
@@ -468,7 +470,7 @@ snapshots:
 
   is-binary-path@2.1.0:
     dependencies:
-      binary-extensions: 2.2.0
+      binary-extensions: 2.3.0
 
   is-extglob@2.1.1: {}
 
@@ -484,7 +486,7 @@ snapshots:
 
   is-unicode-supported@0.1.0: {}
 
-  js-yaml@4.1.0:
+  js-yaml@4.1.1:
     dependencies:
       argparse: 2.0.1
 
@@ -497,26 +499,26 @@ snapshots:
       chalk: 4.1.2
       is-unicode-supported: 0.1.0
 
-  loupe@2.3.6:
+  loupe@2.3.7:
     dependencies:
-      get-func-name: 2.0.0
+      get-func-name: 2.0.2
 
   minimatch@5.1.6:
     dependencies:
-      brace-expansion: 2.0.1
+      brace-expansion: 2.0.2
 
-  mocha@10.6.0:
+  mocha@10.6.1:
     dependencies:
       ansi-colors: 4.1.3
       browser-stdout: 1.3.1
-      chokidar: 3.5.3
-      debug: 4.3.7(supports-color@8.1.1)
+      chokidar: 3.6.0
+      debug: 4.4.3(supports-color@8.1.1)
       diff: 5.2.0
       escape-string-regexp: 4.0.0
       find-up: 5.0.0
       glob: 8.1.0
       he: 1.2.0
-      js-yaml: 4.1.0
+      js-yaml: 4.1.1
       log-symbols: 4.1.0
       minimatch: 5.1.6
       ms: 2.1.3
@@ -590,7 +592,7 @@ snapshots:
     dependencies:
       is-number: 7.0.0
 
-  type-detect@4.0.8: {}
+  type-detect@4.1.0: {}
 
   workerpool@6.5.1: {}
 
@@ -616,7 +618,7 @@ snapshots:
   yargs@16.2.0:
     dependencies:
       cliui: 7.0.4
-      escalade: 3.1.1
+      escalade: 3.2.0
       get-caller-file: 2.0.5
       require-directory: 2.1.1
       string-width: 4.2.3
