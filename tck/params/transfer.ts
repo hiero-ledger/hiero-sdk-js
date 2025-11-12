@@ -1,8 +1,7 @@
-import { BaseParams } from "./base";
+import { BaseTransactionParams } from "./base";
 
-export interface TransferCryptoParams extends BaseParams {
+export interface TransferCryptoParams extends BaseTransactionParams {
     readonly transfers?: TransferParams[];
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
 export interface TransferParams {

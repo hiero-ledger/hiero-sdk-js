@@ -1,12 +1,11 @@
 import { AllowanceParams } from "./allowance";
-import { BaseParams } from "./base";
+import { BaseParams, BaseTransactionParams } from "./base";
 
-export interface CreateAccountParams extends BaseParams {
+export interface CreateAccountParams extends BaseTransactionParams {
     readonly key?: string;
     readonly initialBalance?: string;
     readonly receiverSignatureRequired?: boolean;
     readonly maxAutoTokenAssociations?: number;
-    readonly commonTransactionParams?: Record<string, any>;
     readonly stakedAccountId?: string;
     readonly stakedNodeId?: string;
     readonly declineStakingReward?: boolean;
@@ -15,7 +14,7 @@ export interface CreateAccountParams extends BaseParams {
     readonly alias?: string;
 }
 
-export interface UpdateAccountParams extends BaseParams {
+export interface UpdateAccountParams extends BaseTransactionParams {
     readonly accountId?: string;
     readonly key?: string;
     readonly autoRenewPeriod?: string;
@@ -26,22 +25,18 @@ export interface UpdateAccountParams extends BaseParams {
     readonly stakedAccountId?: string;
     readonly stakedNodeId?: string;
     readonly declineStakingReward?: boolean;
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface DeleteAccountParams extends BaseParams {
+export interface DeleteAccountParams extends BaseTransactionParams {
     readonly deleteAccountId?: string;
     readonly transferAccountId?: string;
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface AccountAllowanceApproveParams extends BaseParams {
+export interface AccountAllowanceApproveParams extends BaseTransactionParams {
     readonly allowances: AllowanceParams[];
-    readonly commonTransactionParams?: Record<string, any>;
 }
-export interface DeleteAllowanceParams extends BaseParams {
+export interface DeleteAllowanceParams extends BaseTransactionParams {
     readonly allowances: RemoveAllowancesParams[];
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
 export interface RemoveAllowancesParams {

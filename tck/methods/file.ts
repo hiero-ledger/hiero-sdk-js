@@ -20,12 +20,14 @@ import { FileResponse } from "../response/file";
 import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";
 import { getKeyFromString } from "../utils/key";
 
-export const createFile = async ({keys,
+export const createFile = async ({
+    keys,
     contents,
     expirationTime,
     memo,
     commonTransactionParams,
-    sessionId}: FileCreateParams): Promise<FileResponse> => {
+    sessionId,
+}: FileCreateParams): Promise<FileResponse> => {
     const client = sdk.getClient(sessionId);
     const transaction = new FileCreateTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
@@ -66,13 +68,15 @@ export const createFile = async ({keys,
     };
 };
 
-export const updateFile = async ({fileId,
+export const updateFile = async ({
+    fileId,
     keys,
     contents,
     expirationTime,
     memo,
     commonTransactionParams,
-    sessionId}: any): Promise<FileResponse> => {
+    sessionId,
+}: any): Promise<FileResponse> => {
     const client = sdk.getClient(sessionId);
     const transaction = new FileUpdateTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
@@ -116,12 +120,14 @@ export const updateFile = async ({fileId,
     };
 };
 
-export const appendFile = async ({fileId,
+export const appendFile = async ({
+    fileId,
     contents,
     maxChunks,
     chunkSize,
     commonTransactionParams,
-    sessionId}: FileAppendParams): Promise<FileResponse> => {
+    sessionId,
+}: FileAppendParams): Promise<FileResponse> => {
     const client = sdk.getClient(sessionId);
     const transaction = new FileAppendTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
@@ -159,9 +165,11 @@ export const appendFile = async ({fileId,
     };
 };
 
-export const deleteFile = async ({fileId,
+export const deleteFile = async ({
+    fileId,
     commonTransactionParams,
-    sessionId}: FileDeleteParams): Promise<FileResponse> => {
+    sessionId,
+}: FileDeleteParams): Promise<FileResponse> => {
     const client = sdk.getClient(sessionId);
     const transaction = new FileDeleteTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,

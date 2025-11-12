@@ -45,7 +45,8 @@ const createServiceEndpoint = (
     return endpoint;
 };
 
-export const createNode = async ({accountId,
+export const createNode = async ({
+    accountId,
     description,
     gossipEndpoints,
     serviceEndpoints,
@@ -55,7 +56,8 @@ export const createNode = async ({accountId,
     adminKey,
     declineReward,
     commonTransactionParams,
-    sessionId}: CreateNodeParams): Promise<NodeResponse> => {
+    sessionId,
+}: CreateNodeParams): Promise<NodeResponse> => {
     const client = sdk.getClient(sessionId);
     let transaction = new NodeCreateTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
@@ -117,7 +119,8 @@ export const createNode = async ({accountId,
     };
 };
 
-export const updateNode = async ({accountId,
+export const updateNode = async ({
+    accountId,
     nodeId,
     description,
     gossipEndpoints,
@@ -128,7 +131,8 @@ export const updateNode = async ({accountId,
     adminKey,
     declineReward,
     commonTransactionParams,
-    sessionId}: UpdateNodeParams): Promise<NodeResponse> => {
+    sessionId,
+}: UpdateNodeParams): Promise<NodeResponse> => {
     const client = sdk.getClient(sessionId);
     let transaction = new NodeUpdateTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
@@ -193,9 +197,11 @@ export const updateNode = async ({accountId,
     };
 };
 
-export const deleteNode = async ({nodeId,
+export const deleteNode = async ({
+    nodeId,
     commonTransactionParams,
-    sessionId}: DeleteNodeParams): Promise<NodeResponse> => {
+    sessionId,
+}: DeleteNodeParams): Promise<NodeResponse> => {
     const client = sdk.getClient(sessionId);
     let transaction = new NodeDeleteTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,

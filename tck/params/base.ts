@@ -7,9 +7,9 @@ export interface BaseParams {
 }
 
 /**
- * Helper type to add sessionId to existing parameter interfaces.
- * Usage: WithSession<ExistingParams>
+ * Base interface for transaction parameters.
+ * Extends BaseParams and includes common transaction parameters.
  */
-export type WithSession<T> = T & BaseParams;
-
-
+export interface BaseTransactionParams extends BaseParams {
+    readonly commonTransactionParams?: Record<string, any>;
+}

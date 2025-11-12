@@ -1,8 +1,7 @@
-import { BaseParams } from "./base";
+import { BaseTransactionParams } from "./base";
 
-export interface EthereumTxParams extends BaseParams {
+export interface EthereumTxParams extends BaseTransactionParams {
     readonly ethereumData?: any;
     readonly callDataFileId?: string;
     readonly maxGasAllowance?: string;
-    readonly commonTransactionParams?: Record<string, any>;
 }

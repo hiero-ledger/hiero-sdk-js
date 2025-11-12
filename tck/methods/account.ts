@@ -302,10 +302,7 @@ export const getAccountBalance = async ({
 
 // buildApproveAllowance builds an AccountAllowanceApproveTransaction from parameters
 export const buildApproveAllowance = (
-    {
-        allowances,
-        commonTransactionParams,
-    }: AccountAllowanceApproveParams,
+    { allowances, commonTransactionParams }: AccountAllowanceApproveParams,
     client,
 ): AccountAllowanceApproveTransaction => {
     const transaction = new AccountAllowanceApproveTransaction();
@@ -364,10 +361,7 @@ export const approveAllowance = async (
 
 // buildDeleteAllowance builds an AccountAllowanceDeleteTransaction from parameters
 const buildDeleteAllowance = (
-    {
-        allowances,
-        commonTransactionParams,
-    }: DeleteAllowanceParams,
+    { allowances, commonTransactionParams }: DeleteAllowanceParams,
     client,
 ): AccountAllowanceDeleteTransaction => {
     let transaction = new AccountAllowanceDeleteTransaction().setGrpcDeadline(
@@ -412,10 +406,7 @@ export const deleteAllowance = async (
 
 // buildTransferCrypto builds a TransferTransaction from parameters
 export const buildTransferCrypto = (
-    {
-        transfers,
-        commonTransactionParams,
-    }: TransferCryptoParams,
+    { transfers, commonTransactionParams }: TransferCryptoParams,
     client,
 ): TransferTransaction => {
     if (!transfers.length) {

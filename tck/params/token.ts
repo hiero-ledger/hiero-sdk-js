@@ -1,4 +1,4 @@
-import { BaseParams } from "./base";
+import { BaseTransactionParams } from "./base";
 
 import {
     CustomFixedFee,
@@ -8,7 +8,7 @@ import {
 
 import { TransferParams } from "./transfer";
 
-export interface CreateTokenParams extends BaseParams {
+export interface CreateTokenParams extends BaseTransactionParams {
     readonly name?: string;
     readonly symbol?: string;
     readonly decimals?: number;
@@ -35,10 +35,9 @@ export interface CreateTokenParams extends BaseParams {
     readonly pauseKey?: string;
     readonly metadata?: string;
     readonly metadataKey?: string;
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface UpdateTokenParams extends BaseParams {
+export interface UpdateTokenParams extends BaseTransactionParams {
     readonly tokenId?: string;
     readonly symbol?: string;
     readonly name?: string;
@@ -56,72 +55,62 @@ export interface UpdateTokenParams extends BaseParams {
     readonly pauseKey?: string;
     readonly metadata?: string;
     readonly metadataKey?: string;
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface DeleteTokenParams extends BaseParams {
+export interface DeleteTokenParams extends BaseTransactionParams {
     readonly tokenId?: string;
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface UpdateTokenFeeScheduleParams extends BaseParams {
+export interface UpdateTokenFeeScheduleParams extends BaseTransactionParams {
     readonly tokenId?: string;
     readonly customFees?:
         | CustomFixedFee[]
         | CustomFractionalFee[]
         | CustomRoyaltyFee[];
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface AssociateDisassociateTokenParams extends BaseParams {
+export interface AssociateDisassociateTokenParams
+    extends BaseTransactionParams {
     readonly accountId?: string;
     readonly tokenIds?: string[];
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface PauseUnpauseTokenParams extends BaseParams {
+export interface PauseUnpauseTokenParams extends BaseTransactionParams {
     readonly tokenId?: string;
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface FreezeUnfreezeTokenParams extends BaseParams {
+export interface FreezeUnfreezeTokenParams extends BaseTransactionParams {
     readonly accountId?: string;
     readonly tokenId?: string;
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface GrantRevokeTokenKycParams extends BaseParams {
+export interface GrantRevokeTokenKycParams extends BaseTransactionParams {
     readonly tokenId?: string;
     readonly accountId?: string;
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface MintTokenParams extends BaseParams {
+export interface MintTokenParams extends BaseTransactionParams {
     readonly tokenId?: string;
     readonly amount?: string;
     readonly metadata?: string[];
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface BurnTokenParams extends BaseParams {
+export interface BurnTokenParams extends BaseTransactionParams {
     readonly tokenId?: string;
     readonly amount?: string;
     readonly metadata?: string[];
     readonly serialNumbers?: string[];
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface WipeTokenParams extends BaseParams {
+export interface WipeTokenParams extends BaseTransactionParams {
     readonly tokenId?: string;
     readonly accountId?: string;
     readonly amount?: string;
     readonly serialNumbers?: string[];
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface AirdropTokenParams extends BaseParams {
+export interface AirdropTokenParams extends BaseTransactionParams {
     readonly tokenTransfers: TransferParams[];
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
 interface PendingAirdrop {
@@ -131,23 +120,20 @@ interface PendingAirdrop {
     readonly serialNumbers?: string[];
 }
 
-export interface AirdropCancelTokenParams extends BaseParams {
+export interface AirdropCancelTokenParams extends BaseTransactionParams {
     readonly pendingAirdrops: PendingAirdrop[];
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface AirdropClaimTokenParams extends BaseParams {
+export interface AirdropClaimTokenParams extends BaseTransactionParams {
     readonly senderAccountId?: string;
     readonly receiverAccountId?: string;
     readonly tokenId?: string;
     readonly serialNumbers?: string[];
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface RejectTokenParams extends BaseParams {
+export interface RejectTokenParams extends BaseTransactionParams {
     readonly ownerId?: string;
     readonly tokenIds?: string[];
     readonly nftIds?: string[];
     readonly serialNumbers?: string[];
-    readonly commonTransactionParams?: Record<string, any>;
 }

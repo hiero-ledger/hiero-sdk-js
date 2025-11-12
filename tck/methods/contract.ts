@@ -117,7 +117,8 @@ export const createContract = async ({
     };
 };
 
-export const updateContract = async ({contractId,
+export const updateContract = async ({
+    contractId,
     adminKey,
     autoRenewPeriod,
     autoRenewAccountId,
@@ -128,7 +129,8 @@ export const updateContract = async ({contractId,
     maxAutomaticTokenAssociations,
     expirationTime,
     commonTransactionParams,
-    sessionId}: UpdateContractParams): Promise<ContractResponse> => {
+    sessionId,
+}: UpdateContractParams): Promise<ContractResponse> => {
     const client = sdk.getClient(sessionId);
     const transaction = new ContractUpdateTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
@@ -194,12 +196,14 @@ export const updateContract = async ({contractId,
     };
 };
 
-export const deleteContract = async ({contractId,
+export const deleteContract = async ({
+    contractId,
     transferAccountId,
     transferContractId,
     permanentRemoval,
     commonTransactionParams,
-    sessionId}: DeleteContractParams): Promise<ContractResponse> => {
+    sessionId,
+}: DeleteContractParams): Promise<ContractResponse> => {
     const client = sdk.getClient(sessionId);
     const transaction = new ContractDeleteTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
@@ -238,12 +242,14 @@ export const deleteContract = async ({contractId,
     };
 };
 
-export const executeContract = async ({contractId,
+export const executeContract = async ({
+    contractId,
     gas,
     amount,
     functionParameters,
     commonTransactionParams,
-    sessionId}: ExecuteContractParams): Promise<ContractResponse> => {
+    sessionId,
+}: ExecuteContractParams): Promise<ContractResponse> => {
     const client = sdk.getClient(sessionId);
     const transaction = new ContractExecuteTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
