@@ -27,39 +27,10 @@ export default class WebClient extends Client {
      */
     constructor(props) {
         super(props);
+
         if (props != null) {
             if (typeof props.network === "string") {
-                switch (props.network) {
-                    case "mainnet":
-                        this.setNetwork(WebNetwork.MAINNET);
-                        this.setMirrorNetwork(WebMirrorNetwork.MAINNET);
-                        this.setLedgerId(LedgerId.MAINNET);
-                        break;
-
-                    case "testnet":
-                        this.setNetwork(WebNetwork.TESTNET);
-                        this.setLedgerId(LedgerId.TESTNET);
-                        this.setMirrorNetwork(WebMirrorNetwork.TESTNET);
-                        break;
-
-                    case "previewnet":
-                        this.setNetwork(WebNetwork.PREVIEWNET);
-                        this.setLedgerId(LedgerId.PREVIEWNET);
-                        this.setMirrorNetwork(WebMirrorNetwork.PREVIEWNET);
-                        break;
-
-                    case "local-node":
-                        this.setNetwork(WebNetwork.LOCAL_NODE);
-                        this.setLedgerId(LedgerId.LOCAL_NODE);
-                        this.setMirrorNetwork(WebMirrorNetwork.LOCAL_NODE);
-                        break;
-
-                    default:
-                        throw new Error(
-                            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                            `unknown network: ${props.network}`,
-                        );
-                }
+                this._setNetworkFromName(props.network);
             } else if (props.network != null) {
                 Client._validateNetworkConsistency(props.network);
 
@@ -73,6 +44,28 @@ export default class WebClient extends Client {
                 this._realm = realm;
 
                 this.setNetwork(props.network);
+            }
+
+            if (typeof props.mirrorNetwork === "string") {
+                switch (props.mirrorNetwork) {
+                    case "mainnet":
+                        this.setMirrorNetwork(WebMirrorNetwork.MAINNET);
+                        break;
+
+                    case "testnet":
+                        this.setMirrorNetwork(WebMirrorNetwork.TESTNET);
+                        break;
+
+                    case "previewnet":
+                        this.setMirrorNetwork(WebMirrorNetwork.PREVIEWNET);
+                        break;
+
+                    default:
+                        this.setMirrorNetwork([props.mirrorNetwork]);
+                        break;
+                }
+            } else if (props.mirrorNetwork != null) {
+                this.setMirrorNetwork(props.mirrorNetwork);
             }
         }
     }
@@ -292,6 +285,46 @@ export default class WebClient extends Client {
             this._mirrorNetwork.setNetwork(mirrorNetwork);
         }
 
+        return this;
+    }
+
+    /**
+     * @private
+     * @param {string} name
+     * @returns {this}
+     */
+    _setNetworkFromName(name) {
+        switch (name) {
+            case "mainnet":
+                this.setNetwork(WebNetwork.MAINNET);
+                this.setMirrorNetwork(WebMirrorNetwork.MAINNET);
+                this.setLedgerId(LedgerId.MAINNET);
+                break;
+
+            case "testnet":
+                this.setNetwork(WebNetwork.TESTNET);
+                this.setMirrorNetwork(WebMirrorNetwork.TESTNET);
+                this.setLedgerId(LedgerId.TESTNET);
+                break;
+
+            case "previewnet":
+                this.setNetwork(WebNetwork.PREVIEWNET);
+                this.setMirrorNetwork(WebMirrorNetwork.PREVIEWNET);
+                this.setLedgerId(LedgerId.PREVIEWNET);
+                break;
+
+            case "local-node":
+                this.setNetwork(WebNetwork.LOCAL_NODE);
+                this.setMirrorNetwork(WebMirrorNetwork.LOCAL_NODE);
+                this.setLedgerId(LedgerId.LOCAL_NODE);
+                break;
+
+            default:
+                throw new Error(
+                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
+                    `unknown network: ${name}`,
+                );
+        }
         return this;
     }
 
