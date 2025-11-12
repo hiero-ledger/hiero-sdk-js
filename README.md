@@ -36,7 +36,7 @@ The SDK is also available as a UMD (Universal Module Definition) build, which ca
 ### UNPKG
 
 ```html
-<script src="https://unpkg.com/@hiero-ledger/sdk@2.62.0-beta.3/dist/umd.js"></script>
+<script src="https://unpkg.com/@hiero-ledger/sdk@2.70.0/dist/umd.js"></script>
 ```
 
 When using the UMD build in the browser, the SDK will be available as a global variable `sdk`. A minified version is also available at `dist/umd.min.js`.

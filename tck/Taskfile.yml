@@ -31,7 +31,7 @@ tasks:
             - |
                 if ! command -v hedera &> /dev/null; then
                   echo "Hedera Local Node CLI not found, installing..."
-                  npm install @hiero-ledger/hedera-local -g
+                  npm install @hashgraph/hedera-local -g
                 else
                   echo "Hedera Local Node CLI is already installed."
                 fi
