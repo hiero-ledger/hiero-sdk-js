@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+
+## v2.77.0
+
+### Fixed
+- Resolved an issue where the mirror network was not correctly set in the client state when using `WebClient.forMirrorNetwork` in web environments. [#3510](https://github.com/hiero-ledger/hiero-sdk-js/pull/3510)
+- Fixed a bug preventing `AddressBookQuery` from executing when the `Client` class had an empty network state. [#3510](https://github.com/hiero-ledger/hiero-sdk-js/pull/3510)
+- Corrected a model definition issue where a property of the `Node` model was not marked as optional. [#3510](https://github.com/hiero-ledger/hiero-sdk-js/pull/3510)
+
+
 ## v2.76.0
 
 ### Added
