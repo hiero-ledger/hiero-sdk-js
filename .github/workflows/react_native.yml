@@ -57,7 +57,7 @@ jobs:
       - name: Install Yarn
         run: npm install -g yarn
 
-      - name: Build @hashgraph/sdk
+      - name: Build @hiero-ledger/sdk
         run: task build
 
       - name: Install detox
@@ -74,7 +74,7 @@ jobs:
       - name: Build
         working-directory: examples/react-native-example
         run: |
-          ../../node_modules/.bin/yalc add "@hashgraph/sdk"
+          ../../node_modules/.bin/yalc add "@hiero-ledger/sdk"
           yarn
           detox build --configuration android
 
@@ -119,7 +119,7 @@ jobs:
       - name: Install Yarn
         run: npm install -g yarn
 
-      - name: Build @hashgraph/sdk
+      - name: Build @hiero-ledger/sdk
         run: task build
 
       - name: Install detox
@@ -130,7 +130,7 @@ jobs:
         run: |
           brew tap wix/brew
           brew install applesimutils
-          yalc add "@hashgraph/sdk"
+          yalc add "@hiero-ledger/sdk"
           yarn
           detox build --configuration ios
 

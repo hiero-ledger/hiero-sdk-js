@@ -54,7 +54,7 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: pnpm
 
-      - name: Build @hashgraph/sdk
+      - name: Build @hiero-ledger/sdk
         run: task build
 
       - name: Install dependencies

@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# v2.78.0-beta.1
+
+### Changed
+
+- Updated the entire codebase to use the definitions from the @hiero-ledger/* packages instead of @hashgraph/* packages. This is part of the transition to the new @hiero-ledger namespace for all SDK packages. [#3400]
+- Swap publishing order of @hiero-ledger and @hashgraph packages to ensure @hiero-ledger packages are published first. [#3400]
 
 ## v2.77.0
 

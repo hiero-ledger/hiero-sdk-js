@@ -58,7 +58,7 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: pnpm
 
-      - name: Build @hashgraph/sdk
+      - name: Build @hiero-ledger/sdk
         run: task -v build
 
   test:
@@ -95,7 +95,7 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: pnpm
 
-      - name: Build @hashgraph/sdk
+      - name: Build @hiero-ledger/sdk
         id: build-sdk
         run: task build
 
@@ -132,38 +132,38 @@ jobs:
           files: ./coverage/lcov.info
           fail_ci_if_error: false
 
-      - name: Build @hashgraph/cryptography
+      - name: Build @hiero-ledger/cryptography
         working-directory: packages/cryptography
         if: ${{ steps.build-sdk.conclusion == 'success' && steps.stop-local-node.conclusion == 'success' && !cancelled() && always() }}
         run: ${{ env.CG_EXEC }} task build
 
 
-      - name: Browser Unit Test @hashgraph/cryptography
+      - name: Browser Unit Test @hiero-ledger/cryptography
         working-directory: packages/cryptography
         if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
         run: ${{ env.CG_EXEC }} task test:unit:browser
 
-      - name: Codecov @hashgraph/cryptography
+      - name: Codecov @hiero-ledger/cryptography
         working-directory: packages/cryptography
         if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
         run: ${{ env.CG_EXEC }} task test:unit:codecov
 
-      - name: Upload @hashgraph/cryptography coverage to Codecov
+      - name: Upload @hiero-ledger/cryptography coverage to Codecov
         uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./packages/cryptography/coverage/lcov.info
           fail_ci_if_error: false
 
-      - name: Browser Unit Test @hashgraph/sdk
+      - name: Browser Unit Test @hiero-ledger/sdk
         if: ${{ steps.build-sdk.conclusion == 'success' && steps.playwright-deps.conclusion == 'success' && !cancelled() && always() }}
         run: ${{ env.CG_EXEC }} task test:unit:browser
 
-      - name: Codecov @hashgraph/sdk
+      - name: Codecov @hiero-ledger/sdk
         if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
         run: ${{ env.CG_EXEC }} task test:unit:codecov
 
-      - name: Upload @hashgraph/sdk coverage to Codecov
+      - name: Upload @hiero-ledger/sdk coverage to Codecov
         uses: codecov/codecov-action@5c47607acb93fed5485fdbf7232e8a31425f672a # v5.0.2
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -202,7 +202,7 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: pnpm
 
-      - name: Build @hashgraph/sdk
+      - name: Build @hiero-ledger/sdk
         id: build-sdk
         run: task build
 
