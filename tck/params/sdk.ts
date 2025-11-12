@@ -15,4 +15,5 @@ type RpcMethod = {
 export interface RpcMethodParams {
     readonly callClass: string;
     readonly methods: RpcMethod[];
+    readonly sessionId?: string;
 }

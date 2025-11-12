@@ -48,12 +48,7 @@ if ("default" in methods) {
 // Create mapping server method
 server.addMethod(
     "mapping",
-    async (
-        ...args: [
-            params: RpcMethodParams & { sessionId?: string },
-            serverParams?: void,
-        ]
-    ) => {
+    async (...args: [params: RpcMethodParams, serverParams?: void]) => {
         // Basic mapping for unimplemented functions
         return await mapping(args[0]);
     },

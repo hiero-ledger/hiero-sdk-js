@@ -10,7 +10,7 @@ export default async function mapMethods({
     callClass,
     methods,
     sessionId,
-}: RpcMethodParams & { sessionId?: string }): Promise<string> {
+}: RpcMethodParams): Promise<string> {
     const cl: any = (await import("@hashgraph/sdk"))[callClass];
 
     let currentObject: any = new cl();
