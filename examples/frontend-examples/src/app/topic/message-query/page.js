@@ -8,7 +8,7 @@ import {
     TopicCreateTransaction,
     TopicId,
     TopicMessageSubmitTransaction,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 import { Button, TextField, CircularProgress } from "@mui/material";
 import TopicListener from "@/app/components/TopicListener";
 

@@ -8,7 +8,7 @@ import {
     KeyList,
     TransferTransaction,
     Transaction,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
 

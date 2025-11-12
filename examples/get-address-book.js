@@ -1,4 +1,4 @@
-import { Client, FileId, AddressBookQuery } from "@hashgraph/sdk";
+import { Client, FileId, AddressBookQuery } from "@hiero-ledger/sdk";
 
 import fs from "node:fs/promises";
 

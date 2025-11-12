@@ -1,6 +1,6 @@
 import express from "express";
 import readline from "readline";
-import { Wallet, LocalProvider, Transaction, Query } from "@hashgraph/sdk";
+import { Wallet, LocalProvider, Transaction, Query } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
 

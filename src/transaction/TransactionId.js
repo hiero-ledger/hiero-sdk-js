@@ -2,7 +2,7 @@
 
 import AccountId from "../account/AccountId.js";
 import Timestamp from "../Timestamp.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 import Long from "long";
 import CACHE from "../Cache.js";
 

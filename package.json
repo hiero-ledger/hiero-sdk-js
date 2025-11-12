@@ -1,5 +1,5 @@
 {
-    "name": "@hashgraph/sdk",
+    "name": "@hiero-ledger/sdk",
     "version": "2.77.0",
     "description": "Hiero SDK",
     "types": "./lib/index.d.ts",
@@ -65,8 +65,8 @@
         "@ethersproject/bytes": "5.8.0",
         "@ethersproject/rlp": "5.8.0",
         "@grpc/grpc-js": "1.12.6",
-        "@hashgraph/cryptography": "1.15.0",
-        "@hashgraph/proto": "2.24.0",
+        "@hashgraph/cryptography": "file:.yalc/@hashgraph/cryptography",
+        "@hashgraph/proto": "file:.yalc/@hashgraph/proto",
         "ansi-regex": "6.2.2",
         "ansi-styles": "6.2.3",
         "bignumber.js": "9.1.1",

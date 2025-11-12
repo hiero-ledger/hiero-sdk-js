@@ -9,7 +9,7 @@ import ScheduleId from "../schedule/ScheduleId.js";
 import ExchangeRate from "../ExchangeRate.js";
 import Status from "../Status.js";
 import Long from "long";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 import TransactionId from "../transaction/TransactionId.js";
 import * as hex from "../encoding/hex.js";
 

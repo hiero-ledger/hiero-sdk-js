@@ -1,7 +1,7 @@
 module.exports = {
     optimizeDeps: {
         allowNodeBuiltins: [
-            "@hashgraph/cryptography"
+            "@hiero-ledger/cryptography"
         ]
     }
 }

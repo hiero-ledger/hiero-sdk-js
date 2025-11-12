@@ -1,4 +1,4 @@
-import { Mnemonic } from "@hashgraph/sdk";
+import { Mnemonic } from "@hiero-ledger/sdk";
 
 async function main() {
     try {

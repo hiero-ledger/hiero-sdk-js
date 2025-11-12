@@ -6,7 +6,7 @@ import Hbar from "../Hbar.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITokenAssociation} HieroProto.proto.ITokenAssociation
+ * @typedef {import("@hiero-ledger/proto").proto.ITokenAssociation} HieroProto.proto.ITokenAssociation
  */
 
 /**

@@ -5,7 +5,7 @@ import AccountId from "../account/AccountId.js";
 import Hbar from "../Hbar.js";
 import { ExecutionState } from "../Executable.js";
 import TransactionId from "../transaction/TransactionId.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 import PrecheckStatusError from "../PrecheckStatusError.js";
 import MaxQueryPaymentExceeded from "../MaxQueryPaymentExceeded.js";
 import QueryBase from "./QueryBase.js";

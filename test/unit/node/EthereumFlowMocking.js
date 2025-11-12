@@ -1,6 +1,6 @@
 import * as hex from "../../../src/encoding/hex.js";
 import * as rlp from "@ethersproject/rlp";
-import { proto } from "@hashgraph/proto";
+import { proto } from "@hiero-ledger/proto";
 import Mocker from "../Mocker.js";
 import { EthereumFlow, FileId } from "../../../src/index.js";
 

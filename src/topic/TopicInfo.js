@@ -5,7 +5,7 @@ import AccountId from "../account/AccountId.js";
 import Timestamp from "../Timestamp.js";
 import Long from "long";
 import Duration from "../Duration.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 import Key from "../Key.js";
 import LedgerId from "../LedgerId.js";
 import CustomFixedFee from "../token/CustomFixedFee.js";

@@ -1,5 +1,5 @@
 {
-    "name": "@hashgraph/cryptography",
+    "name": "@hiero-ledger/cryptography",
     "version": "1.15.0",
     "description": "Cryptographic utilities and primitives for the Hiero SDK",
     "main": "./lib/index.cjs",

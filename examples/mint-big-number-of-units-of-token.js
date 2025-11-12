@@ -8,7 +8,7 @@ import {
     TokenInfoQuery,
     Long,
     Status,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 import dotenv from "dotenv";
 
 dotenv.config();

@@ -1,4 +1,4 @@
-import { AccountId, PrivateKey } from "@hashgraph/sdk";
+import { AccountId, PrivateKey } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
 

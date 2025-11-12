@@ -12,7 +12,7 @@ import {
 } from "../../src/index.js";
 import * as hex from "../../src/encoding/hex.js";
 import Client from "../../src/client/NodeClient.js";
-import * as HashgraphProto from "@hashgraph/proto";
+import * as HashgraphProto from "@hiero-ledger/proto";
 import Long from "long";
 import BigNumber from "bignumber.js";
 import sinon from "sinon";

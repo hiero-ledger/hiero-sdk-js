@@ -11,7 +11,7 @@ import {
 } from "../../../src/browser.js";
 import { encodeRequest } from "../../../src/channel/Channel.js";
 import { startMSW, cleanupMSW } from "./utils/MswSetup.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 import {
     MAINNET,
     WEB_TESTNET,

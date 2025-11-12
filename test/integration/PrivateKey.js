@@ -16,7 +16,7 @@ import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { createAccount } from "./utils/Fixtures.js";
 import SignatureMap from "../../src/transaction/SignatureMap.js";
 
-import { proto } from "@hashgraph/proto";
+import { proto } from "@hiero-ledger/proto";
 
 describe("PrivateKey signTransaction", function () {
     let env, user1Key, user2Key, keyList;

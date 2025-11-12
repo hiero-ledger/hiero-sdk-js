@@ -3,7 +3,7 @@
 import Executable from "../Executable.js";
 import Hbar from "../Hbar.js";
 import AccountId from "../account/AccountId.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 import Long from "long";
 
 /**

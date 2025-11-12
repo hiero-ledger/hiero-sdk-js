@@ -5,7 +5,7 @@ import Hbar from "../Hbar.js";
 import TokenId from "../token/TokenId.js";
 import TokenBalanceMap from "./TokenBalanceMap.js";
 import TokenDecimalMap from "./TokenDecimalMap.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 
 /**
  * @typedef {object} TokenBalanceJson

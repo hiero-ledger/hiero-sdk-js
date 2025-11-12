@@ -6,7 +6,7 @@ import {
     AccountInfoQuery,
     TransactionReceiptQuery,
     TopicCreateTransaction,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
 

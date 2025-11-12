@@ -1,4 +1,4 @@
-import { Wallet, LocalProvider } from "@hashgraph/sdk";
+import { Wallet, LocalProvider } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
 

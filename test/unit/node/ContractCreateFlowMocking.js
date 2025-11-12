@@ -4,7 +4,7 @@ import {
     PrivateKey,
 } from "../../../src/index.js";
 import Mocker, { TRANSACTION_RECEIPT_SUCCESS_RESPONSE } from "../Mocker.js";
-import { proto } from "@hashgraph/proto";
+import { proto } from "@hiero-ledger/proto";
 import { bigContents } from "../../integration/contents.js";
 
 describe("ContractCreateFlowMocking", function () {

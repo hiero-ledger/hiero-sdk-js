@@ -4,8 +4,8 @@ import ContractId from "./ContractId.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IContractLoginfo} HieroProto.proto.IContractLoginfo
- * @typedef {import("@hashgraph/proto").proto.IContractID} HieroProto.proto.IContractID
+ * @typedef {import("@hiero-ledger/proto").proto.IContractLoginfo} HieroProto.proto.IContractLoginfo
+ * @typedef {import("@hiero-ledger/proto").proto.IContractID} HieroProto.proto.IContractID
  */
 
 /**

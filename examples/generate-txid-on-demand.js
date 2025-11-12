@@ -7,7 +7,7 @@ import {
     TransactionId,
     AccountCreateTransaction,
     TransferTransaction,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
 dotenv.config();

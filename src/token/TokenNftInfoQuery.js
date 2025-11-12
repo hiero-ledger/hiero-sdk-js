@@ -11,17 +11,17 @@ import Long from "long";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IQuery} HieroProto.proto.IQuery
- * @typedef {import("@hashgraph/proto").proto.IQueryHeader} HieroProto.proto.IQueryHeader
- * @typedef {import("@hashgraph/proto").proto.IResponse} HieroProto.proto.IResponse
- * @typedef {import("@hashgraph/proto").proto.ITokenNftInfo} HieroProto.proto.ITokenNftInfo
- * @typedef {import("@hashgraph/proto").proto.IResponseHeader} HieroProto.proto.IResponseHeader
- * @typedef {import("@hashgraph/proto").proto.ITokenGetNftInfoQuery} HieroProto.proto.ITokenGetNftInfoQuery
- * @typedef {import("@hashgraph/proto").proto.ITokenGetNftInfosQuery} HieroProto.proto.ITokenGetNftInfosQuery
- * @typedef {import("@hashgraph/proto").proto.ITokenGetAccountNftInfosQuery} HieroProto.proto.ITokenGetAccountNftInfosQuery
- * @typedef {import("@hashgraph/proto").proto.ITokenGetNftInfoResponse} HieroProto.proto.ITokenGetNftInfoResponse
- * @typedef {import("@hashgraph/proto").proto.ITokenGetNftInfosResponse} HieroProto.proto.ITokenGetNftInfosResponse
- * @typedef {import("@hashgraph/proto").proto.ITokenGetAccountNftInfosResponse} HieroProto.proto.ITokenGetAccountNftInfosResponse
+ * @typedef {import("@hiero-ledger/proto").proto.IQuery} HieroProto.proto.IQuery
+ * @typedef {import("@hiero-ledger/proto").proto.IQueryHeader} HieroProto.proto.IQueryHeader
+ * @typedef {import("@hiero-ledger/proto").proto.IResponse} HieroProto.proto.IResponse
+ * @typedef {import("@hiero-ledger/proto").proto.ITokenNftInfo} HieroProto.proto.ITokenNftInfo
+ * @typedef {import("@hiero-ledger/proto").proto.IResponseHeader} HieroProto.proto.IResponseHeader
+ * @typedef {import("@hiero-ledger/proto").proto.ITokenGetNftInfoQuery} HieroProto.proto.ITokenGetNftInfoQuery
+ * @typedef {import("@hiero-ledger/proto").proto.ITokenGetNftInfosQuery} HieroProto.proto.ITokenGetNftInfosQuery
+ * @typedef {import("@hiero-ledger/proto").proto.ITokenGetAccountNftInfosQuery} HieroProto.proto.ITokenGetAccountNftInfosQuery
+ * @typedef {import("@hiero-ledger/proto").proto.ITokenGetNftInfoResponse} HieroProto.proto.ITokenGetNftInfoResponse
+ * @typedef {import("@hiero-ledger/proto").proto.ITokenGetNftInfosResponse} HieroProto.proto.ITokenGetNftInfosResponse
+ * @typedef {import("@hiero-ledger/proto").proto.ITokenGetAccountNftInfosResponse} HieroProto.proto.ITokenGetAccountNftInfosResponse
  */
 
 /**

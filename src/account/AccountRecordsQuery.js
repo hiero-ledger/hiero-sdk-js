@@ -6,13 +6,13 @@ import TransactionRecord from "../transaction/TransactionRecord.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IQuery} HieroProto.proto.IQuery
- * @typedef {import("@hashgraph/proto").proto.IQueryHeader} HieroProto.proto.IQueryHeader
- * @typedef {import("@hashgraph/proto").proto.IResponse} HieroProto.proto.IResponse
- * @typedef {import("@hashgraph/proto").proto.IResponseHeader} HieroProto.proto.IResponseHeader
- * @typedef {import("@hashgraph/proto").proto.ICryptoGetAccountRecordsQuery} HieroProto.proto.ICryptoGetAccountRecordsQuery
- * @typedef {import("@hashgraph/proto").proto.ICryptoGetAccountRecordsResponse} HieroProto.proto.ICryptoGetAccountRecordsResponse
- * @typedef {import("@hashgraph/proto").proto.ITransactionRecord} HieroProto.proto.ITransactionRecord
+ * @typedef {import("@hiero-ledger/proto").proto.IQuery} HieroProto.proto.IQuery
+ * @typedef {import("@hiero-ledger/proto").proto.IQueryHeader} HieroProto.proto.IQueryHeader
+ * @typedef {import("@hiero-ledger/proto").proto.IResponse} HieroProto.proto.IResponse
+ * @typedef {import("@hiero-ledger/proto").proto.IResponseHeader} HieroProto.proto.IResponseHeader
+ * @typedef {import("@hiero-ledger/proto").proto.ICryptoGetAccountRecordsQuery} HieroProto.proto.ICryptoGetAccountRecordsQuery
+ * @typedef {import("@hiero-ledger/proto").proto.ICryptoGetAccountRecordsResponse} HieroProto.proto.ICryptoGetAccountRecordsResponse
+ * @typedef {import("@hiero-ledger/proto").proto.ITransactionRecord} HieroProto.proto.ITransactionRecord
  */
 
 /**

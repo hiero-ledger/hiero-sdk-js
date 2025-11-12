@@ -5,7 +5,7 @@ import {
     Hbar,
     AccountInfoQuery,
     AccountCreateTransaction,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
 

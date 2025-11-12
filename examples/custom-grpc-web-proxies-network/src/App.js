@@ -8,7 +8,7 @@ import {
     TransferTransaction,
     Logger,
     LogLevel,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 function App() {
     const transferTransaction = async () => {

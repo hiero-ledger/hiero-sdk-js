@@ -10,7 +10,7 @@ import {
     FileCreateTransaction,
     FileAppendTransaction,
     FileContentsQuery,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 import dotenv from "dotenv";
 
 const bigContents = Array(1000).fill("Lorem ipsum dolor sit amet. ").join("");

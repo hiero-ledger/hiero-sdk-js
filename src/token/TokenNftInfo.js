@@ -8,16 +8,16 @@ import LedgerId from "../LedgerId.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.TokenFreezeStatus} HieroProto.proto.TokenFreezeStatus
- * @typedef {import("@hashgraph/proto").proto.TokenKycStatus} HieroProto.proto.TokenKycStatus
- * @typedef {import("@hashgraph/proto").proto.TokenPauseStatus} HieroProto.proto.TokenPauseStatus
- * @typedef {import("@hashgraph/proto").proto.ITokenNftInfo} HieroProto.proto.ITokenNftInfo
- * @typedef {import("@hashgraph/proto").proto.INftID} HieroProto.proto.INftID
- * @typedef {import("@hashgraph/proto").proto.ITimestamp} HieroProto.proto.ITimestamp
- * @typedef {import("@hashgraph/proto").proto.ITokenID} HieroProto.proto.ITokenID
- * @typedef {import("@hashgraph/proto").proto.IAccountID} HieroProto.proto.IAccountID
- * @typedef {import("@hashgraph/proto").proto.IKey} HieroProto.proto.IKey
- * @typedef {import("@hashgraph/proto").proto.IDuration} HieroProto.proto.IDuration
+ * @typedef {import("@hiero-ledger/proto").proto.TokenFreezeStatus} HieroProto.proto.TokenFreezeStatus
+ * @typedef {import("@hiero-ledger/proto").proto.TokenKycStatus} HieroProto.proto.TokenKycStatus
+ * @typedef {import("@hiero-ledger/proto").proto.TokenPauseStatus} HieroProto.proto.TokenPauseStatus
+ * @typedef {import("@hiero-ledger/proto").proto.ITokenNftInfo} HieroProto.proto.ITokenNftInfo
+ * @typedef {import("@hiero-ledger/proto").proto.INftID} HieroProto.proto.INftID
+ * @typedef {import("@hiero-ledger/proto").proto.ITimestamp} HieroProto.proto.ITimestamp
+ * @typedef {import("@hiero-ledger/proto").proto.ITokenID} HieroProto.proto.ITokenID
+ * @typedef {import("@hiero-ledger/proto").proto.IAccountID} HieroProto.proto.IAccountID
+ * @typedef {import("@hiero-ledger/proto").proto.IKey} HieroProto.proto.IKey
+ * @typedef {import("@hiero-ledger/proto").proto.IDuration} HieroProto.proto.IDuration
  */
 
 export default class TokenNftInfo {

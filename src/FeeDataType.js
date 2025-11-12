@@ -2,7 +2,7 @@
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.SubType} HieroProto.proto.SubType
+ * @typedef {import("@hiero-ledger/proto").proto.SubType} HieroProto.proto.SubType
  */
 
 export default class FeeDataType {

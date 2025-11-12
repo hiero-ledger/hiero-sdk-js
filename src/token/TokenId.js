@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import * as EntityIdHelper from "../EntityIdHelper.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 import EvmAddress from "../EvmAddress.js";
 import * as util from "../util.js";
 

@@ -3,7 +3,7 @@
 import Query from "../query/Query.js";
 import NodeAddress from "../address_book/NodeAddress.js";
 import NodeAddressBook from "../address_book/NodeAddressBook.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 import FileId from "../file/FileId.js";
 import { RST_STREAM } from "../Executable.js";
 

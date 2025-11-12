@@ -1,4 +1,4 @@
-const { Client, AccountBalanceQuery } = require("@hashgraph/sdk");
+const { Client, AccountBalanceQuery } = require("@hiero-ledger/sdk");
 
 describe("CommonJS", function () {
     it("should query each node's balance", async function () {

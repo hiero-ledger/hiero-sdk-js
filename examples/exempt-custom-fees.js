@@ -9,7 +9,7 @@ import {
     AccountCreateTransaction,
     LocalProvider,
     Wallet,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 import axios from "axios";
 
 import dotenv from "dotenv";

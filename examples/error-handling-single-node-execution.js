@@ -7,7 +7,7 @@ import {
     PrivateKey,
     Client,
     StatusError,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 import dotenv from "dotenv";
 
 import { wait } from "../src/util.js";

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 import * as utf8 from "../encoding/utf8.js";
 import { DEFAULT_GRPC_DEADLINE } from "../constants/ClientConstants.js";
 

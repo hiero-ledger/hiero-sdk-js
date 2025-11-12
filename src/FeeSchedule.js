@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 import TransactionFeeSchedule from "./TransactionFeeSchedule.js";
 import Timestamp from "./Timestamp.js";
 

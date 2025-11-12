@@ -7,7 +7,7 @@ import {
     FileCreateTransaction,
     LogLevel,
     Logger,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 import dotenv from "dotenv";
 
 /**

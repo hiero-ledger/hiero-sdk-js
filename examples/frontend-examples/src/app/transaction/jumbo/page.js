@@ -22,7 +22,7 @@ import {
     ContractId,
     Client,
     Status,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 import * as rlp from "@ethersproject/rlp";
 import * as hex from "@/app/util/hex.js";
 

@@ -1,4 +1,4 @@
-import * as hashgraph from "@hashgraph/sdk";
+import * as hashgraph from "@hiero-ledger/sdk";
 
 /**
  *

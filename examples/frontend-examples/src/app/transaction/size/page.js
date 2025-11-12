@@ -9,7 +9,7 @@ import {
     PublicKey,
     Hbar,
     AccountId,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 const Home = () => {
     const [initialBalance, setInitialBalance] = useState("");
