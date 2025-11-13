@@ -27,11 +27,11 @@ importers:
         specifier: 1.12.6
         version: 1.12.6
       '@hiero-ledger/cryptography':
-        specifier: file:.yalc/@hiero-ledger/cryptography
-        version: file:.yalc/@hiero-ledger/cryptography(react-native@0.82.1(@babel/core@7.23.3)(react@19.2.0))
+        specifier: 1.15.0
+        version: 1.15.0
       '@hiero-ledger/proto':
-        specifier: file:.yalc/@hiero-ledger/proto
-        version: file:.yalc/@hiero-ledger/proto(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@7.5.4)(strip-ansi@7.1.2)
+        specifier: 2.24.0
+        version: 2.24.0
       ansi-regex:
         specifier: 6.2.2
         version: 6.2.2
