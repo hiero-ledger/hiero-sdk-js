@@ -1150,8 +1150,8 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
-  '@hiero-ledger/cryptography@file:.yalc/@hiero-ledger/cryptography':
-    resolution: {directory: .yalc/@hiero-ledger/cryptography, type: directory}
+  '@hiero-ledger/cryptography@1.15.0':
+    resolution: {integrity: sha512-KLbueVfPuTotZfGT+HxcA3zz455eIZW/dBGxkpj9MEp+J2pruR9TyWzenozkuFAzvQ+ouJexE8OmtJMwV5XBBg==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
       expo-crypto: '*'
@@ -1159,8 +1159,8 @@ packages:
       expo-crypto:
         optional: true
 
-  '@hiero-ledger/proto@file:.yalc/@hiero-ledger/proto':
-    resolution: {directory: .yalc/@hiero-ledger/proto, type: directory}
+  '@hiero-ledger/proto@2.24.0':
+    resolution: {integrity: "sha512-zz+azwsj8le6zoxd+xrjh4vfkig8ya6lvykzqtuqgjpzjyl53ypcauwwqo7ei0x66kbgero+mlbekmsesz38nw==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       ansi-regex: 6.2.2
@@ -6613,7 +6613,7 @@ snapshots:
       protobufjs: 7.5.4
       yargs: 17.7.2
 
-  '@hiero-ledger/cryptography@file:.yalc/@hiero-ledger/cryptography(react-native@0.82.1(@babel/core@7.23.3)(react@19.2.0))':
+  '@hiero-ledger/cryptography@2.24.0':
     dependencies:
       '@noble/curves': 1.8.1
       ansi-regex: 6.2.2
@@ -6635,7 +6635,7 @@ snapshots:
       - react-native
       - supports-color
 
-  '@hiero-ledger/proto@file:.yalc/@hiero-ledger/proto(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@7.5.4)(strip-ansi@7.1.2)':
+  '@hiero-ledger/proto@1.15.0':
     dependencies:
       ansi-regex: 6.2.2
       ansi-styles: 6.2.3
