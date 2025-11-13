@@ -206,6 +206,13 @@ jobs:
       - name: Build @hashgraph/sdk
         id: build-sdk
         run: task build
+        
+      - name: Install Playwright Dependencies
+        id: playwright-deps
+        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
+        run: |
+            sudo npx playwright install-deps
+            npx playwright install
 
       - name: Prepare Hiero Solo
         id: solo
