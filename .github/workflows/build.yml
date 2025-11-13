@@ -206,7 +206,7 @@ jobs:
       - name: Build @hashgraph/sdk
         id: build-sdk
         run: task build
-        
+
       - name: Install Playwright Dependencies
         id: playwright-deps
         if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
@@ -221,6 +221,7 @@ jobs:
           installMirrorNode: true
           hieroVersion: v0.68.1-rc.1
           mirrorNodeVersion: v0.142.0
+          grpcProxyPort: 8080
           dualMode: true
           dualModeGrpcProxyPort: 8081
 
