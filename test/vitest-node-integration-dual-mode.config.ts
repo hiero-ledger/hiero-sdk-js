@@ -10,7 +10,6 @@ const pkg = JSON.parse(
 /** @type {import("vitest").UserConfig} */
 export default defineConfig({
     test: {
-        allowOnly: true,
         watch: false,
         globals: true,
         environment: "node",
@@ -19,6 +18,8 @@ export default defineConfig({
             "test/integration/client/*",
             "test/integration/resources/*",
             "test/integration/utils/*",
+            "test/integration/dual-mode/NodeConstants.js",
+            "test/integration/dual-mode/WebConstants.js",
         ],
         hookTimeout: 120000,
         testTimeout: 120000,

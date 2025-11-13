@@ -815,7 +815,15 @@ export default class Executable {
                         // Initiate addressbook query and update the client's network
                         // This will make the SDK client have the latest node account IDs for subsequent transactions
                         try {
-                            await client.updateNetwork();
+                            if (client.mirrorNetwork.length > 0) {
+                                await client.updateNetwork();
+                            } else {
+                                if (this._logger) {
+                                    this._logger.warn(
+                                        "Cannot update address book: no mirror network configured. Retrying with existing network configuration.",
+                                    );
+                                }
+                            }
                         } catch (error) {
                             if (this._logger) {
                                 const errorMessage =

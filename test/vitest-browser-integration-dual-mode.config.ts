@@ -22,10 +22,15 @@ export default defineConfig({
             instances: [{ browser: "chromium" }],
         },
         include: ["test/integration/dual-mode/**/*.js"],
+        exclude: [
+            "test/integration/client/*",
+            "test/integration/resources/*",
+            "test/integration/utils/*",
+            "test/integration/dual-mode/NodeConstants.js",
+            "test/integration/dual-mode/WebConstants.js",
+        ],
         hookTimeout: 120000,
         testTimeout: 120000,
-        maxWorkers: 4,
-        minWorkers: 4,
         coverage: {
             include: ["src/**/*.js"],
             provider: "v8",
@@ -79,7 +84,7 @@ export default defineConfig({
             "../../src/LocalProvider.js": "../../src/LocalProviderWeb.js",
             "../src/LocalProvider.js": "../src/LocalProviderWeb.js",
             "src/LocalProvider.js": "src/LocalProviderWeb.js",
-
+            "./NodeConstants.js": "./WebConstants.js",
             // Add more comprehensive aliases for NodeIntegrationTestEnv
             "NodeIntegrationTestEnv.js": "WebIntegrationTestEnv.js",
             "./client/NodeIntegrationTestEnv": "./client/WebIntegrationTestEnv",

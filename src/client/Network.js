@@ -284,7 +284,7 @@ export default class Network extends ManagedNetwork {
         if (this._maxNodesPerTransaction > 0) {
             return this._maxNodesPerTransaction;
         }
-        return this._healthyNodes.length;
+        return this._nodes.length;
     }
 
     /**
