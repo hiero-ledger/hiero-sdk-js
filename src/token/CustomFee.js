@@ -4,7 +4,7 @@ import AccountId from "../account/AccountId.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ICustomFee} HieroProto.proto.ICustomFee
+ * @typedef {import("@hiero-ledger/proto").proto.ICustomFee} HieroProto.proto.ICustomFee
  */
 
 export default class CustomFee {

@@ -2,7 +2,7 @@
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.TokenSupplyType} HieroProto.proto.TokenSupplyType
+ * @typedef {import("@hiero-ledger/proto").proto.TokenSupplyType} HieroProto.proto.TokenSupplyType
  */
 
 export default class TokenSupplyType {

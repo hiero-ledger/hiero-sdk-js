@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.PendingAirdropRecord} HieroProto.proto.PendingAirdropRecord
+ * @typedef {import("@hiero-ledger/proto").proto.PendingAirdropRecord} HieroProto.proto.PendingAirdropRecord
  */
 
 import Long from "long";

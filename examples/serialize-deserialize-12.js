@@ -8,7 +8,7 @@ import {
     AccountUpdateTransaction,
     TransactionId,
     Timestamp,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 import dotenv from "dotenv";
 
 /**

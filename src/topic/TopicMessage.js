@@ -7,12 +7,12 @@ import TransactionId from "../transaction/TransactionId.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITimestamp} HieroProto.proto.ITimestamp
+ * @typedef {import("@hiero-ledger/proto").proto.ITimestamp} HieroProto.proto.ITimestamp
  */
 
 /**
  * @namespace com
- * @typedef {import("@hashgraph/proto").com.hedera.mirror.api.proto.IConsensusTopicResponse} com.hedera.mirror.api.proto.IConsensusTopicResponse
+ * @typedef {import("@hiero-ledger/proto").com.hedera.mirror.api.proto.IConsensusTopicResponse} com.hedera.mirror.api.proto.IConsensusTopicResponse
  */
 
 export default class TopicMessage {

@@ -8,7 +8,7 @@ import Transaction, {
 } from "../transaction/Transaction.js";
 import Key from "../Key.js";
 import Hbar from "../Hbar.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 
 /**
  * @typedef {import("bignumber.js").default} BigNumber

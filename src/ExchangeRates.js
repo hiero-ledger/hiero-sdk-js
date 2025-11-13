@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import ExchangeRate from "./ExchangeRate.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 
 const { proto } = HieroProto;
 

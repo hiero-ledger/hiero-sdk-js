@@ -5,7 +5,7 @@ import Cache from "./Cache.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITimestamp} HieroProto.proto.ITimestamp
+ * @typedef {import("@hiero-ledger/proto").proto.ITimestamp} HieroProto.proto.ITimestamp
  */
 
 const MAX_NS = Long.fromNumber(1000000000);

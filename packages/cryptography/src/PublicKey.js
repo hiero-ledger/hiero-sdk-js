@@ -124,13 +124,13 @@ export default class PublicKey extends Key {
     }
 
     /**
-     * @deprecated - use `@hashgraph/sdk`.PublicKey instead
+     * @deprecated - use `@hiero-ledger/sdk`.PublicKey instead
      * @param {Transaction} transaction
      * @returns {boolean}
      */
     verifyTransaction(transaction) {
         //NOSONAR
-        console.log("Deprecated: use `@hashgraph/sdk`.PublicKey instead");
+        console.log("Deprecated: use `@hiero-ledger/sdk`.PublicKey instead");
 
         transaction._requireFrozen();
 

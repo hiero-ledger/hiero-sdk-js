@@ -20,11 +20,11 @@ import {
     TokenUpdateTransaction,
     TransferTransaction,
     AccountCreateTransaction,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 /**
- * @typedef {import("@hashgraph/sdk").TokenInfo} TokenInfo
- * @typedef {import("@hashgraph/sdk").TransactionReceipt} TransactionReceipt
+ * @typedef {import("@hiero-ledger/sdk").TokenInfo} TokenInfo
+ * @typedef {import("@hiero-ledger/sdk").TransactionReceipt} TransactionReceipt
  */
 
 import dotenv from "dotenv";

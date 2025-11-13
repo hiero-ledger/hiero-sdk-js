@@ -2,7 +2,7 @@
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.FreezeType} HieroProto.proto.FreezeType
+ * @typedef {import("@hiero-ledger/proto").proto.FreezeType} HieroProto.proto.FreezeType
  */
 
 export default class FreezeType {

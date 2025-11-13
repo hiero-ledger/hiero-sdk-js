@@ -43,22 +43,22 @@ jobs:
       sdk-version: ${{ steps.tag.outputs.version }}
       sdk-prerelease: ${{ steps.tag.outputs.prerelease }}
       sdk-type: ${{ steps.tag.outputs.type }}
-      hashgraph-sdk-publish-required: ${{ steps.sdk-required.outputs.publish-required }}
       hiero-sdk-publish-required: ${{ steps.hiero-sdk-required.outputs.publish-required }}
+      hashgraph-sdk-publish-required: ${{ steps.sdk-required.outputs.publish-required }}
 
       # proto sub-package
       proto-version: ${{ steps.npm-package.outputs.proto-version }}
       proto-prerelease: ${{ steps.proto-package.outputs.prerelease }}
       proto-type: ${{ steps.proto-package.outputs.type }}
-      hashgraph-proto-publish-required: ${{ steps.proto-required.outputs.publish-required }}
       hiero-proto-publish-required: ${{ steps.hiero-proto-required.outputs.publish-required }}
+      hashgraph-proto-publish-required: ${{ steps.proto-required.outputs.publish-required }}
 
       # crypto sub-package
       crypto-version: ${{ steps.npm-package.outputs.crypto-version }}
       crypto-prerelease: ${{ steps.crypto-package.output.prerelease }}
       crypto-type: ${{ steps.crypto-package.output.type }}
-      hashgraph-crypto-publish-required: ${{ steps.crypto-required.outputs.publish-required }}
       hiero-crypto-publish-required: ${{ steps.hiero-crypto-required.outputs.publish-required }}
+      hashgraph-crypto-publish-required: ${{ steps.crypto-required.outputs.publish-required }}
 
     steps:
       - name: Harden Runner
@@ -101,16 +101,6 @@ jobs:
           echo "proto-version=${PROTO_PACKAGE_VERSION}" >>"${GITHUB_OUTPUT}"
           echo "crypto-version=${CRYPTO_PACKAGE_VERSION}" >>"${GITHUB_OUTPUT}"
 
-      - name: Proto Subpackage Publish Required
-        id: proto-required
-        run: |
-          PUBLISH_REQUIRED="false"
-          if ! curl -sSLf "https://registry.npmjs.org/@hashgraph/proto/${{ steps.npm-package.outputs.proto-version }}" >/dev/null 2>&1; then
-            PUBLISH_REQUIRED="true"
-          fi
-
-          echo "publish-required=${PUBLISH_REQUIRED}" >>"${GITHUB_OUTPUT}"
-
       - name: Hiero Proto Subpackage Publish Required
         id: hiero-proto-required
         if: ${{ env.DUAL_PUBLISH_ENABLED == 'true' }}
@@ -122,11 +112,11 @@ jobs:
 
           echo "publish-required=${PUBLISH_REQUIRED}" >>"${GITHUB_OUTPUT}"
 
-      - name: Crypto Subpackage Publish Required
-        id: crypto-required
+      - name: Proto Subpackage Publish Required
+        id: proto-required
         run: |
           PUBLISH_REQUIRED="false"
-          if ! curl -sSLf "https://registry.npmjs.org/@hashgraph/cryptography/${{ steps.npm-package.outputs.crypto-version }}" >/dev/null 2>&1; then
+          if ! curl -sSLf "https://registry.npmjs.org/@hashgraph/proto/${{ steps.npm-package.outputs.proto-version }}" >/dev/null 2>&1; then
             PUBLISH_REQUIRED="true"
           fi
 
@@ -143,11 +133,11 @@ jobs:
 
           echo "publish-required=${PUBLISH_REQUIRED}" >>"${GITHUB_OUTPUT}"
 
-      - name: SDK Publish Required
-        id: sdk-required
+      - name: Crypto Subpackage Publish Required
+        id: crypto-required
         run: |
           PUBLISH_REQUIRED="false"
-          if ! curl -sSLf "https://registry.npmjs.org/@hashgraph/sdk/${{ steps.npm-package.outputs.sdk-version }}" >/dev/null 2>&1; then
+          if ! curl -sSLf "https://registry.npmjs.org/@hashgraph/cryptography/${{ steps.npm-package.outputs.crypto-version }}" >/dev/null 2>&1; then
             PUBLISH_REQUIRED="true"
           fi
 
@@ -164,17 +154,27 @@ jobs:
 
           echo "publish-required=${PUBLISH_REQUIRED}" >>"${GITHUB_OUTPUT}"
 
+      - name: SDK Publish Required
+        id: sdk-required
+        run: |
+          PUBLISH_REQUIRED="false"
+          if ! curl -sSLf "https://registry.npmjs.org/@hashgraph/sdk/${{ steps.npm-package.outputs.sdk-version }}" >/dev/null 2>&1; then
+            PUBLISH_REQUIRED="true"
+          fi
+
+          echo "publish-required=${PUBLISH_REQUIRED}" >>"${GITHUB_OUTPUT}"
+
       - name: Package Version Summary
         run: |
           echo "## Package Version Summary" >> "${GITHUB_STEP_SUMMARY}"
           echo "| Package | Version | Publish Required |" >> "${GITHUB_STEP_SUMMARY}"
           echo "|---------|---------|------------------|" >> "${GITHUB_STEP_SUMMARY}"
-          echo "| @hashgraph/sdk | ${{ steps.npm-package.outputs.sdk-version }} | ${{ steps.sdk-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
           echo "| @hiero-ledger/sdk | ${{ steps.npm-package.outputs.sdk-version }} | ${{ steps.hiero-sdk-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
-          echo "| @hashgraph/proto | ${{ steps.npm-package.outputs.proto-version }} | ${{ steps.proto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| @hashgraph/sdk | ${{ steps.npm-package.outputs.sdk-version }} | ${{ steps.sdk-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
           echo "| @hiero-ledger/proto | ${{ steps.npm-package.outputs.proto-version }} | ${{ steps.hiero-proto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
-          echo "| @hashgraph/cryptography | ${{ steps.npm-package.outputs.crypto-version }} | ${{ steps.crypto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| @hashgraph/proto | ${{ steps.npm-package.outputs.proto-version }} | ${{ steps.proto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
           echo "| @hiero-ledger/cryptography | ${{ steps.npm-package.outputs.crypto-version }} | ${{ steps.hiero-crypto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
+          echo "| @hashgraph/cryptography | ${{ steps.npm-package.outputs.crypto-version }} | ${{ steps.crypto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Extract SDK Tag Information
         id: tag
@@ -416,51 +416,6 @@ jobs:
           # Add the registry authentication stanza with variable substitution to the .npmrc configuration file.
           echo "\n" >>".npmrc" && echo '//registry.npmjs.org/:_authToken=${NPM_TOKEN}' >>".npmrc"
 
-      - name: Publish Proto Release (@hashgraph/proto)
-        if: ${{ needs.validate-release.outputs.hashgraph-proto-publish-required == 'true' }}
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
-        run: |
-          task -v publish -- ${{ steps.proto-publish.outputs.args }}
-        working-directory: packages/proto
-
-      - name: Publish Cryptography Release (@hashgraph/cryptography)
-        if: ${{ needs.validate-release.outputs.hashgraph-crypto-publish-required == 'true' }}
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
-        run: |
-          task -v publish -- ${{ steps.crypto-publish.outputs.args }}
-        working-directory: packages/cryptography
-
-      - name: Publish SDK Release (@hashgraph/sdk)
-        if: ${{ needs.validate-release.outputs.hashgraph-sdk-publish-required == 'true' }}
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
-        run: |
-          task -v publish -- ${{ steps.sdk-publish.outputs.args }}
-
-      - name: Update Files for Dual Publish
-        if: ${{ env.DUAL_PUBLISH_ENABLED == 'true' }}
-        run: |
-          echo "::group::Update package.json files for dual publish"
-          files=("package.json" "packages/proto/package.json" "packages/cryptography/package.json")
-          for file in "${files[@]}"; do
-            if [[ -f "$file" ]]; then
-              cp "$file" "$file.tmp"
-              jq '.name |= sub("@hashgraph";"@hiero-ledger")' "$file.tmp" > "$file"
-            else
-              echo "::warning::File $file does not exist, skipping update."
-            fi
-          done
-          
-          find . -type f -name "*.js" -exec sed -i "s/\b@hashgraph\/proto\b/@hiero-ledger\/proto/g" {} +
-          find . -type f -name "*.js" -exec sed -i "s/\b@hashgraph\/cryptography\b/@hiero-ledger\/cryptography/g" {} +
-          find . -type f -name "*.js" -exec sed -i "s/\b@hashgraph\/sdk\b/@hiero-ledger\/sdk/g" {} +
-          echo "::endgroup::"
-
-      - name: Run safety checks
-        run: task -v build
-
       - name: Publish Proto Release (@hiero-ledger/proto)
         if: ${{ needs.validate-release.outputs.hiero-proto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
         env:
@@ -481,6 +436,51 @@ jobs:
         if: ${{ needs.validate-release.outputs.hiero-sdk-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
         env:
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          task -v publish -- ${{ steps.sdk-publish.outputs.args }}
+
+      - name: Update Files for Dual Publish
+        if: ${{ env.DUAL_PUBLISH_ENABLED == 'true' }}
+        run: |
+          echo "::group::Update package.json files for dual publish"
+          files=("package.json" "packages/proto/package.json" "packages/cryptography/package.json")
+          for file in "${files[@]}"; do
+            if [[ -f "$file" ]]; then
+              cp "$file" "$file.tmp"
+              jq '.name |= sub("@hiero-ledger";"@hashgraph")' "$file.tmp" > "$file"
+            else
+              echo "::warning::File $file does not exist, skipping update."
+            fi
+          done
+          
+          find . -type f -name "*.js" -exec sed -i "s/\b@hiero-ledger\/proto\b/@hashgraph\/proto/g" {} +
+          find . -type f -name "*.js" -exec sed -i "s/\b@hiero-ledger\/cryptography\b/@hashgraph\/cryptography/g" {} +
+          find . -type f -name "*.js" -exec sed -i "s/\b@hiero-ledger\/sdk\b/@hashgraph\/sdk/g" {} +
+          echo "::endgroup::"
+
+      - name: Run safety checks
+        run: task -v build
+
+      - name: Publish Proto Release (@hashgraph/proto)
+        if: ${{ needs.validate-release.outputs.hashgraph-proto-publish-required == 'true' }}
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
+        run: |
+          task -v publish -- ${{ steps.proto-publish.outputs.args }}
+        working-directory: packages/proto
+
+      - name: Publish Cryptography Release (@hashgraph/cryptography)
+        if: ${{ needs.validate-release.outputs.hashgraph-crypto-publish-required == 'true' }}
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
+        run: |
+          task -v publish -- ${{ steps.crypto-publish.outputs.args }}
+        working-directory: packages/cryptography
+
+      - name: Publish SDK Release (@hashgraph/sdk)
+        if: ${{ needs.validate-release.outputs.hashgraph-sdk-publish-required == 'true' }}
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_HG_TOKEN }}
         run: |
           task -v publish -- ${{ steps.sdk-publish.outputs.args }}
 

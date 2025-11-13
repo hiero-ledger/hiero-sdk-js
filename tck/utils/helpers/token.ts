@@ -7,7 +7,7 @@ import {
     CustomRoyaltyFee,
     FeeAssessmentMethod,
     Transaction,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 import Long from "long";
 
 import { DEFAULT_GRPC_DEADLINE } from "../../utils/constants/config";

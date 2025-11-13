@@ -61,7 +61,7 @@ export default class ExchangeRate {
 
     /**
      * @internal
-     * @param {import("@hashgraph/proto").proto.IExchangeRate} rate
+     * @param {import("@hiero-ledger/proto").proto.IExchangeRate} rate
      * @returns {ExchangeRate}
      */
     static _fromProtobuf(rate) {
@@ -82,7 +82,7 @@ export default class ExchangeRate {
 
     /**
      * @internal
-     * @returns {import("@hashgraph/proto").proto.IExchangeRate}
+     * @returns {import("@hiero-ledger/proto").proto.IExchangeRate}
      */
     _toProtobuf() {
         return {

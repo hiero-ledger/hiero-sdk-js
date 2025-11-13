@@ -6,13 +6,13 @@ import LiveHash from "./LiveHash.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IQuery} HieroProto.proto.IQuery
- * @typedef {import("@hashgraph/proto").proto.IQueryHeader} HieroProto.proto.IQueryHeader
- * @typedef {import("@hashgraph/proto").proto.IResponse} HieroProto.proto.IResponse
- * @typedef {import("@hashgraph/proto").proto.IResponseHeader} HieroProto.proto.IResponseHeader
- * @typedef {import("@hashgraph/proto").proto.ICryptoGetLiveHashQuery} HieroProto.proto.ICryptoGetLiveHashQuery
- * @typedef {import("@hashgraph/proto").proto.ICryptoGetLiveHashResponse} HieroProto.proto.ICryptoGetLiveHashResponse
- * @typedef {import("@hashgraph/proto").proto.ILiveHash} HieroProto.proto.ILiveHash
+ * @typedef {import("@hiero-ledger/proto").proto.IQuery} HieroProto.proto.IQuery
+ * @typedef {import("@hiero-ledger/proto").proto.IQueryHeader} HieroProto.proto.IQueryHeader
+ * @typedef {import("@hiero-ledger/proto").proto.IResponse} HieroProto.proto.IResponse
+ * @typedef {import("@hiero-ledger/proto").proto.IResponseHeader} HieroProto.proto.IResponseHeader
+ * @typedef {import("@hiero-ledger/proto").proto.ICryptoGetLiveHashQuery} HieroProto.proto.ICryptoGetLiveHashQuery
+ * @typedef {import("@hiero-ledger/proto").proto.ICryptoGetLiveHashResponse} HieroProto.proto.ICryptoGetLiveHashResponse
+ * @typedef {import("@hiero-ledger/proto").proto.ILiveHash} HieroProto.proto.ILiveHash
  */
 
 /**

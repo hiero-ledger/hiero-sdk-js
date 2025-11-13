@@ -10,19 +10,19 @@ import Duration from "../Duration.js";
 import Timestamp from "../Timestamp.js";
 import Key from "../Key.js";
 import Long from "long";
-import * as Proto from "@hashgraph/proto";
+import * as Proto from "@hiero-ledger/proto";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
- * @typedef {import("@hashgraph/proto").proto.IContractUpdateTransactionBody} HieroProto.proto.IContractUpdateTransactionBody
- * @typedef {import("@hashgraph/proto").proto.IAccountID} HieroProto.proto.IAccountID
- * @typedef {import("@hashgraph/proto").proto.IContractID} HieroProto.proto.IContractID
- * @typedef {import("@hashgraph/proto").proto.IFileID} HieroProto.proto.IFileID
+ * @typedef {import("@hiero-ledger/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hiero-ledger/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hiero-ledger/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
+ * @typedef {import("@hiero-ledger/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
+ * @typedef {import("@hiero-ledger/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
+ * @typedef {import("@hiero-ledger/proto").proto.IContractUpdateTransactionBody} HieroProto.proto.IContractUpdateTransactionBody
+ * @typedef {import("@hiero-ledger/proto").proto.IAccountID} HieroProto.proto.IAccountID
+ * @typedef {import("@hiero-ledger/proto").proto.IContractID} HieroProto.proto.IContractID
+ * @typedef {import("@hiero-ledger/proto").proto.IFileID} HieroProto.proto.IFileID
  */
 
 /**

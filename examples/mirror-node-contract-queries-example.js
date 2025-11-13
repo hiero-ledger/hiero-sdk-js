@@ -11,7 +11,7 @@ import {
     AccountId,
     FileCreateTransaction,
     Long,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 import { setTimeout } from "timers/promises";
 import dotenv from "dotenv";
 

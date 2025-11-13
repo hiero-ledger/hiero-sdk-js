@@ -7,7 +7,7 @@ import {
     ContractFunctionParameters,
     ContractCallQuery,
     Hbar,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
 

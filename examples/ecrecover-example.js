@@ -22,7 +22,7 @@ import {
     ContractCallQuery,
     ContractFunctionParameters,
     ContractExecuteTransaction,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 import ecrecoverCaller from "./ecrecover_caller.json" with { type: "json" };
 

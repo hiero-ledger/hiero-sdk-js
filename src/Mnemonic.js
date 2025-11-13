@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import { Mnemonic as MnemonicCryptography } from "@hashgraph/cryptography";
+import { Mnemonic as MnemonicCryptography } from "@hiero-ledger/cryptography";
 import CACHE from "./Cache.js";
 
 /**

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import SemanticVersion from "./SemanticVersion.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 
 /**
  * Response when the client sends the node CryptoGetVersionInfoQuery.

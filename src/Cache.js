@@ -16,16 +16,16 @@
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IKey} HieroProto.proto.IKey
- * @typedef {import("@hashgraph/proto").proto.IKeyList} HieroProto.proto.IKeyList
- * @typedef {import("@hashgraph/proto").proto.IThresholdKey} HieroProto.proto.IThresholdKey
- * @typedef {import("@hashgraph/proto").proto.IContractID} HieroProto.proto.IContractID
+ * @typedef {import("@hiero-ledger/proto").proto.IKey} HieroProto.proto.IKey
+ * @typedef {import("@hiero-ledger/proto").proto.IKeyList} HieroProto.proto.IKeyList
+ * @typedef {import("@hiero-ledger/proto").proto.IThresholdKey} HieroProto.proto.IThresholdKey
+ * @typedef {import("@hiero-ledger/proto").proto.IContractID} HieroProto.proto.IContractID
  */
 
 /**
  * @namespace cryptography
- * @typedef {import("@hashgraph/cryptography").PrivateKey} cryptography.PrivateKey
- * @typedef {import("@hashgraph/cryptography").Mnemonic} cryptography.Mnemonic
+ * @typedef {import("@hiero-ledger/cryptography").PrivateKey} cryptography.PrivateKey
+ * @typedef {import("@hiero-ledger/cryptography").Mnemonic} cryptography.Mnemonic
  */
 
 /**

@@ -11,7 +11,7 @@ export default class SignaturePairMap extends ObjectMap {
 
     /**
      * This function is used to create a SignaturePairMap from an already built transaction.
-     * @param {import("@hashgraph/proto").proto.ISignatureMap} sigMap
+     * @param {import("@hiero-ledger/proto").proto.ISignatureMap} sigMap
      * @returns {SignaturePairMap}
      */
     static _fromTransactionSigMap(sigMap) {

@@ -6,9 +6,9 @@ import KeyList from "../KeyList.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IAccountID} HieroProto.proto.IAccountID
- * @typedef {import("@hashgraph/proto").proto.ILiveHash} HieroProto.proto.ILiveHash
- * @typedef {import("@hashgraph/proto").proto.IDuration} HieroProto.proto.IDuration
+ * @typedef {import("@hiero-ledger/proto").proto.IAccountID} HieroProto.proto.IAccountID
+ * @typedef {import("@hiero-ledger/proto").proto.ILiveHash} HieroProto.proto.ILiveHash
+ * @typedef {import("@hiero-ledger/proto").proto.IDuration} HieroProto.proto.IDuration
  */
 
 /**

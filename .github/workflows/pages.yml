@@ -44,7 +44,7 @@ jobs:
         with:
           version: 9.15.5
 
-      - name: Build @hashgraph/sdk
+      - name: Build @hiero-ledger/sdk
         run: task build
 
       - name: Generate pages

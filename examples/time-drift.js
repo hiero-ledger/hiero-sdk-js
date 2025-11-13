@@ -4,7 +4,7 @@ import {
     AccountId,
     AccountCreateTransaction,
     Cache,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 import axios from "axios";
 
 import dotenv from "dotenv";

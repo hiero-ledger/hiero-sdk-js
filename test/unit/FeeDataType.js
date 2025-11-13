@@ -1,4 +1,4 @@
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 import { FeeDataType } from "../../src/exports.js";
 
 describe("FeeDataType", function () {

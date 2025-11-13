@@ -4,7 +4,7 @@ import IPv4Address from "./IPv4Address.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IServiceEndpoint} HieroProto.proto.IServiceEndpoint
+ * @typedef {import("@hiero-ledger/proto").proto.IServiceEndpoint} HieroProto.proto.IServiceEndpoint
  */
 
 /**

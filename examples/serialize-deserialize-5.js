@@ -10,7 +10,7 @@ import {
     Transaction,
     TransactionId,
     AccountCreateTransaction,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 import dotenv from "dotenv";
 
 /**

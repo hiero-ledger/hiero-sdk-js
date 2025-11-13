@@ -2,13 +2,13 @@
 
 import ContractId from "./ContractId.js";
 import Long from "long";
-import * as protos from "@hashgraph/proto";
+import * as protos from "@hiero-ledger/proto";
 const { proto } = protos;
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IContractNonceInfo} HieroProto.proto.IContractNonceInfo
- * @typedef {import("@hashgraph/proto").proto.IContractID} HieroProto.proto.IContractID
+ * @typedef {import("@hiero-ledger/proto").proto.IContractNonceInfo} HieroProto.proto.IContractNonceInfo
+ * @typedef {import("@hiero-ledger/proto").proto.IContractID} HieroProto.proto.IContractID
  * @typedef {object} ContractNonceInfoJSON
  * @property {string} contractId
  * @property {number} nonce

@@ -6,7 +6,7 @@ import {
     AccountId,
     TransactionId,
 } from "../../src/index.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 import Long from "long";
 
 describe("TopicCreateTransaction", function () {

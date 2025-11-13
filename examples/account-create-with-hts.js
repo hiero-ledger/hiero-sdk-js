@@ -12,7 +12,7 @@ import {
     AccountInfoQuery,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     TransactionReceipt,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 import axios from "axios";
 
 import dotenv from "dotenv";

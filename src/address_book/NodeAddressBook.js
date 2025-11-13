@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import NodeAddress from "./NodeAddress.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 
 /**
  * @typedef {import("./NodeAddress.js").NodeAddressJson} NodeAddressJson

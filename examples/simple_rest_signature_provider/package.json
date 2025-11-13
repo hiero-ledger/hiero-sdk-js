@@ -21,7 +21,7 @@
         "@babel/plugin-syntax-dynamic-import": "^7.8.3",
         "@babel/plugin-transform-modules-commonjs": "^7.22.15",
         "@babel/register": "^7.22.15",
-        "@hashgraph/sdk": "link:../..",
+        "@hiero-ledger/sdk": "link:../..",
         "@types/crypto-js": "^4.2.0",
         "@types/express": "^4.17.17",
         "@types/long": "^4.0.2",

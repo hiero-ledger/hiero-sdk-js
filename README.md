@@ -3,7 +3,7 @@
 [![](https://img.shields.io/discord/373889138199494658)](https://discord.com/channels/373889138199494658/616725732650909710)
 [![Docs](https://img.shields.io/badge/docs-%F0%9F%93%84-blue)](https://docs.hedera.com/hedera/getting-started/environment-set-up)
 [![JSDoc](https://img.shields.io/badge/jsdoc-%F0%9F%93%84-green)](https://hiero-ledger.github.io/hiero-sdk-js/)
-[![NPM Package](https://img.shields.io/npm/v/@hashgraph/sdk.svg)](https://www.npmjs.org/package/@hashgraph/sdk)
+[![NPM Package](https://img.shields.io/npm/v/@hiero-ledger/sdk.svg)](https://www.npmjs.org/package/@hiero-ledger/sdk)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/hiero-ledger/hiero-sdk-js/badge)](https://scorecard.dev/viewer/?uri=github.com/hiero-ledger/hiero-sdk-js)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/10697/badge)](https://bestpractices.coreinfrastructure.org/projects/10697)
 [![License](https://img.shields.io/badge/license-apache2-blue.svg)](LICENSE)
@@ -20,13 +20,13 @@
 
 ```
 # with NPM
-$ npm install --save @hashgraph/sdk
+$ npm install --save @hiero-ledger/sdk
 
 # with Yarn
-$ yarn add @hashgraph/sdk
+$ yarn add @hiero-ledger/sdk
 
 # with PNPM
-$ pnpm add @hashgraph/sdk
+$ pnpm add @hiero-ledger/sdk
 ```
 
 ## Browser Usage
@@ -36,7 +36,7 @@ The SDK is also available as a UMD (Universal Module Definition) build, which ca
 ### UNPKG
 
 ```html
-<script src="https://unpkg.com/@hashgraph/sdk@2.62.0-beta.3/dist/umd.js"></script>
+<script src="https://unpkg.com/@hiero-ledger/sdk@2.70.0/dist/umd.js"></script>
 ```
 
 When using the UMD build in the browser, the SDK will be available as a global variable `sdk`. A minified version is also available at `dist/umd.min.js`.
@@ -118,7 +118,7 @@ import {
     Client,
     PrivateKey
     AccountBalance,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 ...
 ```
 

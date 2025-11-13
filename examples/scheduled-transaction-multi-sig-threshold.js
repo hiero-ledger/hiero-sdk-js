@@ -10,15 +10,15 @@ import {
     ScheduleSignTransaction,
     ScheduleInfoQuery,
     TransactionRecordQuery,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
 
 dotenv.config();
 
 /**
- * @typedef {import("@hashgraph/sdk").AccountBalance} AccountBalance
- * @typedef {import("@hashgraph/sdk").AccountId} AccountId
+ * @typedef {import("@hiero-ledger/sdk").AccountBalance} AccountBalance
+ * @typedef {import("@hiero-ledger/sdk").AccountId} AccountId
  */
 
 async function main() {

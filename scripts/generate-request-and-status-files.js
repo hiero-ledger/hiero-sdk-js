@@ -1,4 +1,4 @@
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 import fs from "fs";
 import path from "path";
 

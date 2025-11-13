@@ -3,7 +3,7 @@
 import TransactionId from "../transaction/TransactionId.js";
 import Hbar from "../Hbar.js";
 import AccountId from "../account/AccountId.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 import QueryBase from "./QueryBase.js";
 
 /**

@@ -9,10 +9,10 @@ import {
     AccountAllowanceApproveTransaction,
     TransferTransaction,
     Hbar,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 /**
- * @typedef {import("@hashgraph/sdk").AccountId} AccountId
+ * @typedef {import("@hiero-ledger/sdk").AccountId} AccountId
  */
 
 import dotenv from "dotenv";

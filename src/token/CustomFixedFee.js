@@ -12,9 +12,9 @@ import { convertAmountToLong } from "../util.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ICustomFee} HieroProto.proto.ICustomFee
- * @typedef {import("@hashgraph/proto").proto.IFixedFee} HieroProto.proto.IFixedFee
- * @typedef {import("@hashgraph/proto").proto.IFixedCustomFee} HieroProto.proto.IFixedCustomFee
+ * @typedef {import("@hiero-ledger/proto").proto.ICustomFee} HieroProto.proto.ICustomFee
+ * @typedef {import("@hiero-ledger/proto").proto.IFixedFee} HieroProto.proto.IFixedFee
+ * @typedef {import("@hiero-ledger/proto").proto.IFixedCustomFee} HieroProto.proto.IFixedCustomFee
  */
 
 export default class CustomFixedFee extends CustomFee {

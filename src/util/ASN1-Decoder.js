@@ -1,4 +1,4 @@
-import { proto } from "@hashgraph/proto";
+import { proto } from "@hiero-ledger/proto";
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /**
  * A class to decode ASN.1 encoded data, typically used for parsing cryptographic key data.

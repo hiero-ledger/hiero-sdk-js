@@ -5,9 +5,9 @@ import CACHE from "./Cache.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IKey} HieroProto.proto.IKey
- * @typedef {import("@hashgraph/proto").proto.IKeyList} HieroProto.proto.IKeyList
- * @typedef {import("@hashgraph/proto").proto.IThresholdKey} HieroProto.proto.IThresholdKey
+ * @typedef {import("@hiero-ledger/proto").proto.IKey} HieroProto.proto.IKey
+ * @typedef {import("@hiero-ledger/proto").proto.IKeyList} HieroProto.proto.IKeyList
+ * @typedef {import("@hiero-ledger/proto").proto.IThresholdKey} HieroProto.proto.IThresholdKey
  */
 
 /**

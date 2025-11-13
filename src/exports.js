@@ -9,7 +9,7 @@ export {
     HEDERA_PATH,
     SLIP44_ECDSA_ETH_PATH,
     SLIP44_ECDSA_HEDERA_PATH,
-} from "@hashgraph/cryptography";
+} from "@hiero-ledger/cryptography";
 export { default as PrivateKey } from "./PrivateKey.js";
 export { default as PublicKey } from "./PublicKey.js";
 export { default as KeyList } from "./KeyList.js";

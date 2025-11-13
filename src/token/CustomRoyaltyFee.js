@@ -7,10 +7,10 @@ import CustomFixedFee from "./CustomFixedFee.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IFraction} HieroProto.proto.IFraction
- * @typedef {import("@hashgraph/proto").proto.IRoyaltyFee} HieroProto.proto.IRoyaltyFee
- * @typedef {import("@hashgraph/proto").proto.ICustomFee} HieroProto.proto.ICustomFee
- * @typedef {import("@hashgraph/proto").proto.IFixedFee} HieroProto.proto.IFixedFee
+ * @typedef {import("@hiero-ledger/proto").proto.IFraction} HieroProto.proto.IFraction
+ * @typedef {import("@hiero-ledger/proto").proto.IRoyaltyFee} HieroProto.proto.IRoyaltyFee
+ * @typedef {import("@hiero-ledger/proto").proto.ICustomFee} HieroProto.proto.ICustomFee
+ * @typedef {import("@hiero-ledger/proto").proto.IFixedFee} HieroProto.proto.IFixedFee
  */
 
 export default class CustomRoyalyFee extends CustomFee {

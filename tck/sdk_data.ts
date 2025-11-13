@@ -1,4 +1,4 @@
-import { Client } from "@hashgraph/sdk";
+import { Client } from "@hiero-ledger/sdk";
 
 export const sdk = {
     client: null,

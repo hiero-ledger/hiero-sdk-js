@@ -4,7 +4,7 @@ import Long from "long";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IDuration} HieroProto.proto.IDuration
+ * @typedef {import("@hiero-ledger/proto").proto.IDuration} HieroProto.proto.IDuration
  */
 
 /**

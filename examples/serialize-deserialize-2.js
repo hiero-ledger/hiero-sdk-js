@@ -8,7 +8,7 @@ import {
     LogLevel,
     Transaction,
     AccountCreateTransaction,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 import dotenv from "dotenv";
 
 /**

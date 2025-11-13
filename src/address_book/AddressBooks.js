@@ -2,7 +2,7 @@
 
 import NodeAddressBook from "./NodeAddressBook.js";
 import * as hex from "../encoding/hex.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 
 export const PREVIEWNET_ADDRESS_BOOK = NodeAddressBook._fromProtobuf(
     HieroProto.proto.NodeAddressBook.decode(

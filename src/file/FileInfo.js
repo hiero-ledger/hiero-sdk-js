@@ -5,7 +5,7 @@ import Timestamp from "../Timestamp.js";
 import Long from "long";
 import KeyList from "../KeyList.js";
 import LedgerId from "../LedgerId.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 
 const { proto } = HieroProto;
 

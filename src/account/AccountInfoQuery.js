@@ -8,13 +8,13 @@ import Hbar from "../Hbar.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IQuery} HieroProto.proto.IQuery
- * @typedef {import("@hashgraph/proto").proto.IQueryHeader} HieroProto.proto.IQueryHeader
- * @typedef {import("@hashgraph/proto").proto.IResponse} HieroProto.proto.IResponse
- * @typedef {import("@hashgraph/proto").proto.IResponseHeader} HieroProto.proto.IResponseHeader
- * @typedef {import("@hashgraph/proto").proto.CryptoGetInfoResponse.IAccountInfo} HieroProto.proto.CryptoGetInfoResponse.IAccountInfo
- * @typedef {import("@hashgraph/proto").proto.ICryptoGetInfoQuery} HieroProto.proto.ICryptoGetInfoQuery
- * @typedef {import("@hashgraph/proto").proto.ICryptoGetInfoResponse} HieroProto.proto.ICryptoGetInfoResponse
+ * @typedef {import("@hiero-ledger/proto").proto.IQuery} HieroProto.proto.IQuery
+ * @typedef {import("@hiero-ledger/proto").proto.IQueryHeader} HieroProto.proto.IQueryHeader
+ * @typedef {import("@hiero-ledger/proto").proto.IResponse} HieroProto.proto.IResponse
+ * @typedef {import("@hiero-ledger/proto").proto.IResponseHeader} HieroProto.proto.IResponseHeader
+ * @typedef {import("@hiero-ledger/proto").proto.CryptoGetInfoResponse.IAccountInfo} HieroProto.proto.CryptoGetInfoResponse.IAccountInfo
+ * @typedef {import("@hiero-ledger/proto").proto.ICryptoGetInfoQuery} HieroProto.proto.ICryptoGetInfoQuery
+ * @typedef {import("@hiero-ledger/proto").proto.ICryptoGetInfoResponse} HieroProto.proto.ICryptoGetInfoResponse
  */
 
 /**

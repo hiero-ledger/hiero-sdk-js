@@ -3,7 +3,7 @@ import {
     Client,
     AccountId,
     AccountCreateTransaction,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
 
