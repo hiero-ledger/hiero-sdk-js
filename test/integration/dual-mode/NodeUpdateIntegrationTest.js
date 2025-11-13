@@ -11,18 +11,35 @@ import {
     ServiceEndpoint,
 } from "../../../src/exports.js";
 import { Client } from "../../../src/index.js";
+import {
+    mirrorNetwork,
+    node2Address,
+    node2PortToReplace,
+    network,
+} from "./NodeConstants.js";
 
-describe("Node Update Integration Network Tests", function () {
+const restoreOriginalGrpcWebProxyEndpoint = async (client) => {
+    const response = await new NodeUpdateTransaction()
+        .setNodeId(1)
+        .setNodeAccountIds([AccountId.fromString("0.0.3")])
+        .setGrpcWebProxyEndpoint(
+            new ServiceEndpoint()
+                .setDomainName("envoy-proxy-node2-svc.solo.svc.cluster.local")
+                .setPort(8080),
+        )
+        .execute(client);
+    const receipt = await response.getReceipt(client);
+    expect(receipt.status).to.equal(Status.Success);
+};
+
+describe("Node Update Integration Tests", function () {
     let client;
     let operatorAccountId;
     let operatorKey;
 
     beforeEach(function () {
         // Initialize client with integration network
-        client = Client.forNetwork({
-            "127.0.0.1:50211": "0.0.3",
-            "127.0.0.1:51211": "0.0.4",
-        }).setMirrorNetwork(["localhost:5600"]);
+        client = Client.forNetwork(network).setMirrorNetwork(mirrorNetwork);
 
         // Set the operator to be account 0.0.2
         operatorAccountId = AccountId.fromString("0.0.2");
@@ -41,8 +58,8 @@ describe("Node Update Integration Network Tests", function () {
 
     it("should execute node update transaction", async function () {
         const response = await new NodeUpdateTransaction()
-            .setNodeId(0)
-            .setNodeAccountIds([AccountId.fromString("0.0.4")])
+            .setNodeId(1)
+            .setNodeAccountIds([AccountId.fromString("0.0.3")])
             .setDescription("testUpdated")
             .setDeclineReward(true)
             .setGrpcWebProxyEndpoint(
@@ -58,18 +75,23 @@ describe("Node Update Integration Network Tests", function () {
 
     it("should delete grpc web proxy endpoint", async function () {
         const response = await new NodeUpdateTransaction()
-            .setNodeId(0)
+            .setNodeId(1)
+            .setNodeAccountIds([AccountId.fromString("0.0.3")])
             .deleteGrpcWebProxyEndpoint()
             .execute(client);
 
         const receipt = await response.getReceipt(client);
         expect(receipt.status).to.equal(Status.Success);
+
+        // Restore the original grpc web proxy endpoint
+        await restoreOriginalGrpcWebProxyEndpoint(client);
     });
 
     it("should change node account ID and revert back", async function () {
         // Change node account ID from 0.0.3 to 0.0.2
         const response1 = await new NodeUpdateTransaction()
             .setNodeId(0)
+            .setNodeAccountIds([AccountId.fromString("0.0.4")])
             .setAccountId(AccountId.fromString("0.0.2"))
             .execute(client);
 
@@ -79,6 +101,7 @@ describe("Node Update Integration Network Tests", function () {
         // Revert the ID back to 0.0.3
         const response2 = await new NodeUpdateTransaction()
             .setNodeId(0)
+            .setNodeAccountIds([AccountId.fromString("0.0.4")])
             .setAccountId(AccountId.fromString("0.0.3"))
             .execute(client);
 
@@ -115,10 +138,11 @@ describe("Node Update Integration Network Tests", function () {
     });
 
     it("should change node account ID to the same account", async function () {
+        console.log(client.network);
         const response = await new NodeUpdateTransaction()
-            .setNodeId(0)
-            .setNodeAccountIds([AccountId.fromString("0.0.4")])
-            .setAccountId(AccountId.fromString("0.0.3"))
+            .setNodeId(1)
+            .setNodeAccountIds([AccountId.fromString("0.0.3")])
+            .setAccountId(AccountId.fromString("0.0.4"))
             .execute(client);
 
         const receipt = await response.getReceipt(client);
@@ -271,7 +295,7 @@ describe("Node Update Integration Network Tests", function () {
                 AccountId.fromString("0.0.3"),
             ])
             .execute(client);
-
+        console.log("tuka se ebava v maikata");
         const testReceipt = await testResp.getReceipt(client);
         expect(testReceipt.status).to.equal(Status.Success);
         // Verify address book has been updated
@@ -288,21 +312,19 @@ describe("Node Update Integration Network Tests", function () {
         )?.[0];
 
         // Assert the address matches the expected value
-        expect(newNodeAddress).to.equal(
-            "network-node2-svc.solo.svc.cluster.local:50211",
-        );
+        expect(newNodeAddress).to.equal(node2Address);
 
         // This is not an ideal workaround - reconstruct the network state
         // because the mirror node returns a different address than expected
-        if (
-            newNodeAddress === "network-node2-svc.solo.svc.cluster.local:50211"
-        ) {
+        if (newNodeAddress === node2Address) {
             const oldNetworkState = { ...network };
             delete oldNetworkState[newNodeAddress];
             const newNetworkState = {
                 ...oldNetworkState,
-                "network-node2-svc.solo.svc.cluster.local:51211":
-                    newNodeAccountID,
+                [node2Address.replace(
+                    node2Address.split(":")[1],
+                    node2PortToReplace,
+                )]: newNodeAccountID,
             };
             client.setNetwork(newNetworkState);
         }
@@ -328,10 +350,7 @@ describe("Node Update Integration Network Tests", function () {
 
     it("should handle node account ID change without mirror node setup", async function () {
         // Create a client without mirror network
-        const networkClient = Client.forNetwork({
-            "127.0.0.1:50211": "0.0.3",
-            "127.0.0.1:51211": "0.0.4",
-        });
+        const networkClient = Client.forNetwork(network);
 
         networkClient.setOperator(operatorAccountId, operatorKey);
 

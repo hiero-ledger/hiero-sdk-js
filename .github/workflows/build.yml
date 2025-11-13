@@ -224,7 +224,7 @@ jobs:
 
       - name: Run DAB Integration Tests
         if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
-        run: npx vitest --coverage --poolOptions.threads.singleThread --config=test/vitest-node-integration-dual-mode.config.ts NodeUpdateIntegrationTest.js
+        run: task test:integration:dual-mode
 
   examples:
     name: Run examples using Node ${{ matrix.node }}
