@@ -209,12 +209,13 @@ jobs:
 
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@9471711c98a56179def6123e1040ab6c2e668881 # branch: 75-add-support-for-multiple-consensus-nodes
+        uses: hiero-ledger/hiero-solo-action@33f19f2eb8cbc49a61567a0781f3bc37bf2a32aa # support gualGrpxProxyPort
         with:
           installMirrorNode: true
           hieroVersion: v0.68.1-rc.1
           mirrorNodeVersion: v0.142.0
           dualMode: true
+          dualModeGrpcProxyPort: 8081
 
       - name: Set Operator Account
         run: |
