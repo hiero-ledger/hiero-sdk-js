@@ -6,8 +6,6 @@ import { Client } from "@hashgraph/sdk";
  */
 class ClientRegistry {
     private clients: Map<string, Client> = new Map();
-    private requestCounts: Map<string, number> = new Map();
-    private sessionCreationTime: Map<string, number> = new Map();
 
     /**
      * Gets a client for the specified session.
@@ -16,12 +14,6 @@ class ClientRegistry {
      * @throws Error if no client is set up for the session
      */
     getClient(sessionId: string): Client {
-        // Track request count
-        this.requestCounts.set(
-            sessionId,
-            (this.requestCounts.get(sessionId) || 0) + 1,
-        );
-
         const client = this.clients.get(sessionId);
         if (!client) {
             throw new Error(`Client not set up for session: ${sessionId}`);
@@ -37,8 +29,6 @@ class ClientRegistry {
      */
     setClient(client: Client, sessionId: string): void {
         this.clients.set(sessionId, client);
-        this.sessionCreationTime.set(sessionId, Date.now());
-        this.requestCounts.set(sessionId, 0);
     }
 
     /**
@@ -50,8 +40,6 @@ class ClientRegistry {
         if (client) {
             client.close();
             this.clients.delete(sessionId);
-            this.requestCounts.delete(sessionId);
-            this.sessionCreationTime.delete(sessionId);
         }
     }
 
