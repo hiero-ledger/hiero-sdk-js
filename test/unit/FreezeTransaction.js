@@ -6,7 +6,7 @@ import {
     TransactionId,
     AccountId,
 } from "../../src/index.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 import Long from "long";
 import * as hex from "../../src/encoding/hex.js";
 

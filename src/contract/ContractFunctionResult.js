@@ -18,8 +18,8 @@ import ContractNonceInfo from "./ContractNonceInfo.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IContractFunctionResult} HieroProto.proto.IContractFunctionResult
- * @typedef {import("@hashgraph/proto").proto.IContractID} HieroProto.proto.IContractID
+ * @typedef {import("@hiero-ledger/proto").proto.IContractFunctionResult} HieroProto.proto.IContractFunctionResult
+ * @typedef {import("@hiero-ledger/proto").proto.IContractID} HieroProto.proto.IContractID
  */
 
 /**

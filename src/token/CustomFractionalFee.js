@@ -7,9 +7,9 @@ import Long from "long";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ICustomFee} HieroProto.proto.ICustomFee
- * @typedef {import("@hashgraph/proto").proto.IFractionalFee} HieroProto.proto.IFractionalFee
- * @typedef {import("@hashgraph/proto").proto.IFraction} HieroProto.proto.IFraction
+ * @typedef {import("@hiero-ledger/proto").proto.ICustomFee} HieroProto.proto.ICustomFee
+ * @typedef {import("@hiero-ledger/proto").proto.IFractionalFee} HieroProto.proto.IFractionalFee
+ * @typedef {import("@hiero-ledger/proto").proto.IFraction} HieroProto.proto.IFraction
  */
 
 export default class CustomFractionalFee extends CustomFee {

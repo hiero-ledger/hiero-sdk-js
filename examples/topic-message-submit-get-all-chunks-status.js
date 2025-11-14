@@ -5,7 +5,7 @@ import {
     TopicCreateTransaction,
     TopicMessageSubmitTransaction,
     TransactionReceiptQuery,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
 

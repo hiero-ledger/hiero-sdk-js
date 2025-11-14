@@ -16,7 +16,7 @@ import {
     ContractCreateFlow,
     ContractFunctionParameters,
     MirrorNodeContractCallQuery,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 import ecrecoverCaller from "./ecrecover_caller.json" with { type: "json" };
 import { setTimeout } from "node:timers/promises";

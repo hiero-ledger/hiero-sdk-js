@@ -7,7 +7,7 @@ import Long from "long";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.INodeAddress} HieroProto.proto.INodeAddress
+ * @typedef {import("@hiero-ledger/proto").proto.INodeAddress} HieroProto.proto.INodeAddress
  */
 
 /**

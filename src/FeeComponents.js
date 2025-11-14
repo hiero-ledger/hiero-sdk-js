@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import Long from "long";
 

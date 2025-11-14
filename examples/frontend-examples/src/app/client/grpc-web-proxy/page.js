@@ -25,7 +25,7 @@ import {
     PrivateKey,
     AccountCreateTransaction,
     Hbar,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 const initialNetwork = {
     "127.0.0.1:8081": new AccountId(0, 0, 4),

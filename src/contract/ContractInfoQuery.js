@@ -8,13 +8,13 @@ import Hbar from "../Hbar.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IQuery} HieroProto.proto.IQuery
- * @typedef {import("@hashgraph/proto").proto.IQueryHeader} HieroProto.proto.IQueryHeader
- * @typedef {import("@hashgraph/proto").proto.IResponse} HieroProto.proto.IResponse
- * @typedef {import("@hashgraph/proto").proto.IResponseHeader} HieroProto.proto.IResponseHeader
- * @typedef {import("@hashgraph/proto").proto.IContractGetInfoQuery} HieroProto.proto.IContractGetInfoQuery
- * @typedef {import("@hashgraph/proto").proto.IContractGetInfoResponse} HieroProto.proto.IContractGetInfoResponse
- * @typedef {import("@hashgraph/proto").proto.ContractGetInfoResponse.IContractInfo} HieroProto.proto.ContractGetInfoResponse.IContractInfo
+ * @typedef {import("@hiero-ledger/proto").proto.IQuery} HieroProto.proto.IQuery
+ * @typedef {import("@hiero-ledger/proto").proto.IQueryHeader} HieroProto.proto.IQueryHeader
+ * @typedef {import("@hiero-ledger/proto").proto.IResponse} HieroProto.proto.IResponse
+ * @typedef {import("@hiero-ledger/proto").proto.IResponseHeader} HieroProto.proto.IResponseHeader
+ * @typedef {import("@hiero-ledger/proto").proto.IContractGetInfoQuery} HieroProto.proto.IContractGetInfoQuery
+ * @typedef {import("@hiero-ledger/proto").proto.IContractGetInfoResponse} HieroProto.proto.IContractGetInfoResponse
+ * @typedef {import("@hiero-ledger/proto").proto.ContractGetInfoResponse.IContractInfo} HieroProto.proto.ContractGetInfoResponse.IContractInfo
  */
 
 /**

@@ -6,11 +6,11 @@ import Long from "long";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IGrantedNftAllowance} HieroProto.proto.IGrantedNftAllowance
- * @typedef {import("@hashgraph/proto").proto.INftRemoveAllowance} HieroProto.proto.INftRemoveAllowance
- * @typedef {import("@hashgraph/proto").proto.INftAllowance} HieroProto.proto.INftAllowance
- * @typedef {import("@hashgraph/proto").proto.ITokenID} HieroProto.proto.ITokenID
- * @typedef {import("@hashgraph/proto").proto.IAccountID} HieroProto.proto.IAccountID
+ * @typedef {import("@hiero-ledger/proto").proto.IGrantedNftAllowance} HieroProto.proto.IGrantedNftAllowance
+ * @typedef {import("@hiero-ledger/proto").proto.INftRemoveAllowance} HieroProto.proto.INftRemoveAllowance
+ * @typedef {import("@hiero-ledger/proto").proto.INftAllowance} HieroProto.proto.INftAllowance
+ * @typedef {import("@hiero-ledger/proto").proto.ITokenID} HieroProto.proto.ITokenID
+ * @typedef {import("@hiero-ledger/proto").proto.IAccountID} HieroProto.proto.IAccountID
  */
 
 /**

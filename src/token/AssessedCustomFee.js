@@ -10,7 +10,7 @@ import { convertAmountToLong } from "../util.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IAssessedCustomFee} HieroProto.proto.IAssessedCustomFee
+ * @typedef {import("@hiero-ledger/proto").proto.IAssessedCustomFee} HieroProto.proto.IAssessedCustomFee
  */
 
 /**

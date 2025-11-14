@@ -1,13 +1,13 @@
 import FreezeTransaction from "../system/FreezeTransaction.js";
 import Transaction, { TRANSACTION_REGISTRY } from "./Transaction.js";
-import { proto } from "@hashgraph/proto";
+import { proto } from "@hiero-ledger/proto";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
+ * @typedef {import("@hiero-ledger/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hiero-ledger/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
+ * @typedef {import("@hiero-ledger/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
+ * @typedef {import("@hiero-ledger/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
  */
 
 /**

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { hexlify } from "@ethersproject/bytes";
-import { PrivateKey as PrivateKeyCrypto } from "@hashgraph/cryptography";
-import { proto } from "@hashgraph/proto";
+import { PrivateKey as PrivateKeyCrypto } from "@hiero-ledger/cryptography";
+import { proto } from "@hiero-ledger/proto";
 import Mnemonic from "./Mnemonic.js";
 import PublicKey from "./PublicKey.js";
 import Key from "./Key.js";
@@ -18,11 +18,11 @@ import { ASN1Decoder } from "./util/ASN1-Decoder.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IKey} HieroProto.proto.IKey
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.ISignaturePair} HieroProto.proto.ISignaturePair
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
+ * @typedef {import("@hiero-ledger/proto").proto.IKey} HieroProto.proto.IKey
+ * @typedef {import("@hiero-ledger/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hiero-ledger/proto").proto.ISignaturePair} HieroProto.proto.ISignaturePair
+ * @typedef {import("@hiero-ledger/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hiero-ledger/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
  */
 
 export default class PrivateKey extends Key {

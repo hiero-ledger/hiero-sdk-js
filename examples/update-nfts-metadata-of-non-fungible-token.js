@@ -13,7 +13,7 @@ import {
     Hbar,
     TransferTransaction,
     TokenAssociateTransaction,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 import dotenv from "dotenv";
 
 dotenv.config();

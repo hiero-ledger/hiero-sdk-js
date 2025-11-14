@@ -43,7 +43,7 @@ export default class SignatureMap extends ObjectMap {
         signed transactions are for the second node account id and so on.
         */
         for (let row = 0; row < rowLength; row++) {
-            /** @type { List<import("@hashgraph/proto").proto.ISignedTransaction> } */
+            /** @type { List<import("@hiero-ledger/proto").proto.ISignedTransaction> } */
             const signedTransactions = new List();
 
             for (let col = 0; col < columns; col++) {

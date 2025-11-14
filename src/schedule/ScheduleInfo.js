@@ -4,7 +4,7 @@ import ScheduleId from "./ScheduleId.js";
 import AccountId from "../account/AccountId.js";
 import Timestamp from "../Timestamp.js";
 import Transaction from "../transaction/Transaction.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 import TransactionId from "../transaction/TransactionId.js";
 import Key from "../Key.js";
 import KeyList from "../KeyList.js";

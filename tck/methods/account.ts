@@ -12,7 +12,7 @@ import {
     TokenId,
     EvmAddress,
     AccountBalanceQuery,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 import Long from "long";
 
 import { sdk } from "../sdk_data";

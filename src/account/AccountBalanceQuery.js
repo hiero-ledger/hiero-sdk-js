@@ -7,12 +7,12 @@ import AccountBalance from "./AccountBalance.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IQuery} HieroProto.proto.IQuery
- * @typedef {import("@hashgraph/proto").proto.IQueryHeader} HieroProto.proto.IQueryHeader
- * @typedef {import("@hashgraph/proto").proto.IResponse} HieroProto.proto.IResponse
- * @typedef {import("@hashgraph/proto").proto.IResponseHeader} HieroProto.proto.IResponseHeader
- * @typedef {import("@hashgraph/proto").proto.ICryptoGetAccountBalanceQuery} HieroProto.proto.ICryptoGetAccountBalanceQuery
- * @typedef {import("@hashgraph/proto").proto.ICryptoGetAccountBalanceResponse} HieroProto.proto.ICryptoGetAccountBalanceResponse
+ * @typedef {import("@hiero-ledger/proto").proto.IQuery} HieroProto.proto.IQuery
+ * @typedef {import("@hiero-ledger/proto").proto.IQueryHeader} HieroProto.proto.IQueryHeader
+ * @typedef {import("@hiero-ledger/proto").proto.IResponse} HieroProto.proto.IResponse
+ * @typedef {import("@hiero-ledger/proto").proto.IResponseHeader} HieroProto.proto.IResponseHeader
+ * @typedef {import("@hiero-ledger/proto").proto.ICryptoGetAccountBalanceQuery} HieroProto.proto.ICryptoGetAccountBalanceQuery
+ * @typedef {import("@hiero-ledger/proto").proto.ICryptoGetAccountBalanceResponse} HieroProto.proto.ICryptoGetAccountBalanceResponse
  */
 
 /**

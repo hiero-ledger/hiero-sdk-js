@@ -2,7 +2,7 @@
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.TokenKeyValidation} HieroProto.proto.TokenKeyValidation
+ * @typedef {import("@hiero-ledger/proto").proto.TokenKeyValidation} HieroProto.proto.TokenKeyValidation
  */
 
 /** Types of validation strategies for token keys. */

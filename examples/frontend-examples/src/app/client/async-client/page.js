@@ -25,7 +25,7 @@ import {
     AccountCreateTransaction,
     Hbar,
     LedgerId,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 // Client Context
 const ClientContext = createContext();

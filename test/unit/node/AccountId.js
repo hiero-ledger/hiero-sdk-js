@@ -1,4 +1,4 @@
-import { proto } from "@hashgraph/proto";
+import { proto } from "@hiero-ledger/proto";
 
 import BigNumber from "bignumber.js";
 import EvmAddress from "../../../src/EvmAddress.js";

@@ -3,8 +3,8 @@ import CustomFixedFee from "../token/CustomFixedFee.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IFixedFee} HieroProto.proto.IFixedFee
- * @typedef {import("@hashgraph/proto").proto.ICustomFeeLimit} HieroProto.proto.ICustomFeeLimit
+ * @typedef {import("@hiero-ledger/proto").proto.IFixedFee} HieroProto.proto.IFixedFee
+ * @typedef {import("@hiero-ledger/proto").proto.ICustomFeeLimit} HieroProto.proto.ICustomFeeLimit
  */
 
 export default class CustomFeeLimit {

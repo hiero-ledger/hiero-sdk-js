@@ -2,7 +2,7 @@
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ResponseCodeEnum} HieroProto.proto.ResponseCodeEnum
+ * @typedef {import("@hiero-ledger/proto").proto.ResponseCodeEnum} HieroProto.proto.ResponseCodeEnum
  */
 
 export default class Status {

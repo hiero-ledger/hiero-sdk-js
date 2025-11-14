@@ -14,7 +14,7 @@ import {
 } from "../../src/index.js";
 import * as hex from "../../src/encoding/hex.js";
 import Client from "../../src/client/NodeClient.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 import Long from "long";
 import BigNumber from "bignumber.js";
 import SignatureMap from "../../src/transaction/SignatureMap.js";

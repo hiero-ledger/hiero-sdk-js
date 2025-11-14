@@ -2,7 +2,7 @@
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IServiceEndpoint} IServiceEndpoint
+ * @typedef {import("@hiero-ledger/proto").proto.IServiceEndpoint} IServiceEndpoint
  */
 
 export default class ServiceEndpoint {

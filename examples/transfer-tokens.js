@@ -12,7 +12,7 @@ import {
     TransferTransaction,
     TokenWipeTransaction,
     TransactionId,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
 

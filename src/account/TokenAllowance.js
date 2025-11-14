@@ -7,10 +7,10 @@ import { convertAmountToLong } from "../util.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IGrantedTokenAllowance} HieroProto.proto.IGrantedTokenAllowance
- * @typedef {import("@hashgraph/proto").proto.ITokenAllowance} HieroProto.proto.ITokenAllowance
- * @typedef {import("@hashgraph/proto").proto.ITokenID} HieroProto.proto.ITokenID
- * @typedef {import("@hashgraph/proto").proto.IAccountID} HieroProto.proto.IAccountID
+ * @typedef {import("@hiero-ledger/proto").proto.IGrantedTokenAllowance} HieroProto.proto.IGrantedTokenAllowance
+ * @typedef {import("@hiero-ledger/proto").proto.ITokenAllowance} HieroProto.proto.ITokenAllowance
+ * @typedef {import("@hiero-ledger/proto").proto.ITokenID} HieroProto.proto.ITokenID
+ * @typedef {import("@hiero-ledger/proto").proto.IAccountID} HieroProto.proto.IAccountID
  */
 
 /**

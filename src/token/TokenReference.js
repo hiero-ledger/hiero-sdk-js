@@ -3,7 +3,7 @@ import TokenId from "./TokenId.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.TokenReference} HieroProto.proto.TokenReference
+ * @typedef {import("@hiero-ledger/proto").proto.TokenReference} HieroProto.proto.TokenReference
  */
 
 export default class TokenReference {

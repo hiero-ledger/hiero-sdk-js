@@ -48,13 +48,13 @@ tasks:
 
     "yalc:add":
         cmds:
-            - npx yalc add @hashgraph/proto
-            - npx yalc add @hashgraph/cryptography
+            - npx yalc add @hiero-ledger/proto
+            - npx yalc add @hiero-ledger/cryptography
 
     "yalc:remove":
         cmds:
-            - npx yalc remove @hashgraph/proto
-            - npx yalc remove @hashgraph/cryptography
+            - npx yalc remove @hiero-ledger/proto
+            - npx yalc remove @hiero-ledger/cryptography
 
     install:
         deps:
@@ -172,9 +172,9 @@ tasks:
         deps:
             - "proto:update"
         cmds:
-            - npx yalc add @hashgraph/proto
+            - npx yalc add @hiero-ledger/proto
             # Remove proto so on `task build` we fix the link
-            - rm -rf ./node_modules/@hashgraph/proto
+            - rm -rf ./node_modules/@hiero-ledger/proto
 
     "update:addressbooks":
         cmds:

@@ -1,4 +1,4 @@
-import { EthereumTransaction, Hbar, FileId } from "@hashgraph/sdk";
+import { EthereumTransaction, Hbar, FileId } from "@hiero-ledger/sdk";
 
 import { sdk } from "../sdk_data";
 import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";

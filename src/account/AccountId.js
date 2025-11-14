@@ -2,7 +2,7 @@
 
 import Long from "long";
 import * as EntityIdHelper from "../EntityIdHelper.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 import Key from "../Key.js";
 import PublicKey from "../PublicKey.js";
 import CACHE from "../Cache.js";

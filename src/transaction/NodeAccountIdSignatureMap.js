@@ -3,7 +3,7 @@
 import ObjectMap from "../ObjectMap.js";
 import TransactionId from "./TransactionId.js";
 import SignaturePairMap from "./SignaturePairMap.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 
 /**
  * @augments {ObjectMap<TransactionId, SignaturePairMap>}
@@ -15,7 +15,7 @@ export default class NodeAccountIdSignatureMap extends ObjectMap {
 
     /**
      * This function is used to create a NodeAccountIdSignaturemap from an already built transaction.
-     * @param { import('./List.js').default<import("@hashgraph/proto").proto.ISignedTransaction>} signedTransactions
+     * @param { import('./List.js').default<import("@hiero-ledger/proto").proto.ISignedTransaction>} signedTransactions
      * @returns {NodeAccountIdSignatureMap}
      */
     static _fromSignedTransactions(signedTransactions) {

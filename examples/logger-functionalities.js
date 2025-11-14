@@ -10,7 +10,7 @@ import {
     TopicCreateTransaction,
     Logger,
     LogLevel,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
 dotenv.config();

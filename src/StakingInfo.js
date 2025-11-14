@@ -3,7 +3,7 @@
 import AccountId from "./account/AccountId.js";
 import Hbar from "./Hbar.js";
 import Timestamp from "./Timestamp.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 
 /**
  * @typedef {import("long")} Long

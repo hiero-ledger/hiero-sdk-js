@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.PendingAirdropId} HieroProto.proto.PendingAirdropId
+ * @typedef {import("@hiero-ledger/proto").proto.PendingAirdropId} HieroProto.proto.PendingAirdropId
  */
 
 import AccountId from "../account/AccountId.js";

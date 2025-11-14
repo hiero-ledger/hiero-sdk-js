@@ -1,4 +1,4 @@
-import { Wallet, LocalProvider, PrngTransaction } from "@hashgraph/sdk";
+import { Wallet, LocalProvider, PrngTransaction } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
 

@@ -5,7 +5,7 @@ import * as hex from "./encoding/hex.js";
 import BadEntityIdError from "./BadEntityIdError.js";
 import * as util from "./util.js";
 import base32 from "./base32.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 import PublicKey from "./PublicKey.js";
 import { arrayify } from "@ethersproject/bytes";
 import EvmAddress from "./EvmAddress.js";

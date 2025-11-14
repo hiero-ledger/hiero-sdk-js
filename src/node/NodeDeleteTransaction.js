@@ -7,16 +7,16 @@ import Long from "long";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITransaction} ITransaction
- * @typedef {import("@hashgraph/proto").proto.ITransaction} ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} TransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionBody} ITransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} ITransactionResponse
+ * @typedef {import("@hiero-ledger/proto").proto.ITransaction} ITransaction
+ * @typedef {import("@hiero-ledger/proto").proto.ITransaction} ISignedTransaction
+ * @typedef {import("@hiero-ledger/proto").proto.TransactionBody} TransactionBody
+ * @typedef {import("@hiero-ledger/proto").proto.ITransactionBody} ITransactionBody
+ * @typedef {import("@hiero-ledger/proto").proto.ITransactionResponse} ITransactionResponse
  */
 
 /**
  * @namespace com.hedera.hapi.node.addressbook
- * @typedef {import("@hashgraph/proto").com.hedera.hapi.node.addressbook.INodeDeleteTransactionBody} INodeDeleteTransactionBody
+ * @typedef {import("@hiero-ledger/proto").com.hedera.hapi.node.addressbook.INodeDeleteTransactionBody} INodeDeleteTransactionBody
  */
 
 /**

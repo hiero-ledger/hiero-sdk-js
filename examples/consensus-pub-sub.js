@@ -5,7 +5,7 @@ import {
     TopicMessageQuery,
     TopicCreateTransaction,
     TopicMessageSubmitTransaction,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
 import { setTimeout } from "node:timers/promises";

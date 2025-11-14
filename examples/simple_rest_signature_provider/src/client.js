@@ -15,7 +15,7 @@ import {
     TransactionReceipt,
     TransactionResponse,
     TransferTransaction,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 const instance = axios.create({
     baseURL: "http://127.0.0.1:3000/",
@@ -25,16 +25,16 @@ const instance = axios.create({
  * @template RequestT
  * @template ResponseT
  * @template OutputT
- * @typedef {import("@hashgraph/sdk").Executable<RequestT, ResponseT, OutputT>} Executable<RequestT, ResponseT, OutputT>
+ * @typedef {import("@hiero-ledger/sdk").Executable<RequestT, ResponseT, OutputT>} Executable<RequestT, ResponseT, OutputT>
  */
 
 /**
- * @typedef {import("@hashgraph/sdk").Signer} Signer
- * @typedef {import("@hashgraph/sdk").Provider} Provider
- * @typedef {import("@hashgraph/sdk").TransactionResponseJSON} TransactionResponseJSON
- * @typedef {import("@hashgraph/sdk").Key} Key
- * @typedef {import("@hashgraph/sdk").SignerSignature} SignerSignature
- * @typedef {import("@hashgraph/sdk").TransactionRecord} TransactionRecord
+ * @typedef {import("@hiero-ledger/sdk").Signer} Signer
+ * @typedef {import("@hiero-ledger/sdk").Provider} Provider
+ * @typedef {import("@hiero-ledger/sdk").TransactionResponseJSON} TransactionResponseJSON
+ * @typedef {import("@hiero-ledger/sdk").Key} Key
+ * @typedef {import("@hiero-ledger/sdk").SignerSignature} SignerSignature
+ * @typedef {import("@hiero-ledger/sdk").TransactionRecord} TransactionRecord
  */
 
 /**

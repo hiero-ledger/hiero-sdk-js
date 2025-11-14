@@ -4,7 +4,7 @@ import CACHE from "./Cache.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IKey} HieroProto.proto.IKey
+ * @typedef {import("@hiero-ledger/proto").proto.IKey} HieroProto.proto.IKey
  */
 
 export default class Key {

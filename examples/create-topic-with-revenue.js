@@ -1,6 +1,6 @@
-import { TokenCreateTransaction } from "@hashgraph/sdk";
-import { TopicUpdateTransaction } from "@hashgraph/sdk";
-import { TransferTransaction } from "@hashgraph/sdk";
+import { TokenCreateTransaction } from "@hiero-ledger/sdk";
+import { TopicUpdateTransaction } from "@hiero-ledger/sdk";
+import { TransferTransaction } from "@hiero-ledger/sdk";
 import {
     TopicCreateTransaction,
     TopicMessageSubmitTransaction,
@@ -13,7 +13,7 @@ import {
     AccountBalanceQuery,
     CustomFeeLimit,
     HbarUnit,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
 

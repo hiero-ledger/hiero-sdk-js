@@ -2,7 +2,7 @@
 
 import * as EntityIdHelper from "../EntityIdHelper.js";
 import Key from "../Key.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
 import CACHE from "../Cache.js";
 import * as hex from "../encoding/hex.js";
 import { arrayEqual } from "../array.js";

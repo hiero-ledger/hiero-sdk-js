@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# v2.78.0-beta.2
+
+### Changed
+
+- Updated the entire codebase to use the definitions from the @hiero-ledger/* packages instead of @hashgraph/* packages. This is part of the transition to the new @hiero-ledger namespace for all SDK packages. [#3400]
+- Swap publishing order of @hiero-ledger and @hashgraph packages to ensure @hiero-ledger packages are published first. [#3400]
+
+## v2.77.0
+
+### Fixed
+- Resolved an issue where the mirror network was not correctly set in the client state when using `WebClient.forMirrorNetwork` in web environments. [#3510](https://github.com/hiero-ledger/hiero-sdk-js/pull/3510)
+- Fixed a bug preventing `AddressBookQuery` from executing when the `Client` class had an empty network state. [#3510](https://github.com/hiero-ledger/hiero-sdk-js/pull/3510)
+- Corrected a model definition issue where a property of the `Node` model was not marked as optional. [#3510](https://github.com/hiero-ledger/hiero-sdk-js/pull/3510)
+
+
 ## v2.76.0
 
 ### Added
@@ -19,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Endpoints with URL schemes (http:// or https://) are now deprecated. While still accepted for backward compatibility, developers should update their configurations to use the documented host:port format (e.g., node00.swirldslabs.com:443). Support for scheme-prefixed endpoints will be removed in a future release.[#3480](https://github.com/hiero-ledger/hiero-sdk-js/pull/3480)
 
-## v2.75.0 
+## v2.75.0
 
 ### Fixed
 
@@ -49,7 +64,7 @@ Additional fix - port for the rest api is handled correctly for local dev enviro
 
 ### Changed
 - Updated `AccountId.populateAccountEvmAddress`, `AccountId.populateAccountNum`  `MirrorNodeContractQuery` to construct URLs using `mirrorRestApiBaseUrl` instead of manually parsing strings. [#3376](https://github.com/hiero-ledger/hiero-sdk-js/pull/3376)
- 
+
 ### Fixed
 - Resolved an issue in `MirrorNodeContractQuery` where the port was incorrectly overridden to `8545` for custom network configurations. [#3376](https://github.com/hiero-ledger/hiero-sdk-js/pull/3376)
 
@@ -62,7 +77,7 @@ Additional fix - port for the rest api is handled correctly for local dev enviro
 
 ### Changed
 
-- Pin all dependency versions in the SDK package/proto package/cryptography 
+- Pin all dependency versions in the SDK package/proto package/cryptography
 
 ## v2.72.0
 
@@ -78,7 +93,7 @@ Additional fix - port for the rest api is handled correctly for local dev enviro
   - `WebClient.forTestnetAsync()`
   - `WebClient.forPreviewnetAsync()`
   - `WebClient.forNameAsync(name)` [#3274](https://github.com/hiero-ledger/hiero-sdk-js/pull/3274)
-  
+
   These methods default to performing an address book update unless `scheduleNetworkUpdate` is explicitly set to `false`, improving client reliability.
 - Async client initialization for `NativeClient` (intended for **React Native / Expo users**), allowing automatic address book updates at instantiation time. [#3285](https://github.com/hiero-ledger/hiero-sdk-js/pull/3285)
   - `NativeClient.forMainnetAsync()`
@@ -110,13 +125,13 @@ Additional fix - port for the rest api is handled correctly for local dev enviro
 
 ## v2.70.0
 
-> ⚠️ **Important Notice**  
-> Starting from this version (`v2.70.0`), we will be releasing all packages under both the `@hiero-ledger` and `@hashgraph` namespaces for a transitional period.  
-> Eventually, `@hashgraph/*` packages will be **deprecated** and all development will continue solely under the `@hiero-ledger/*` scope.  
->  
-> No breaking changes are introduced in this release from a user perspective.  
->  
-> To support this transition, a detailed [migration guide is available here](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/manual/migration_hiero.md).  
+> ⚠️ **Important Notice**
+> Starting from this version (`v2.70.0`), we will be releasing all packages under both the `@hiero-ledger` and `@hashgraph` namespaces for a transitional period.
+> Eventually, `@hashgraph/*` packages will be **deprecated** and all development will continue solely under the `@hiero-ledger/*` scope.
+>
+> No breaking changes are introduced in this release from a user perspective.
+>
+> To support this transition, a detailed [migration guide is available here](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/manual/migration_hiero.md).
 > Please begin migrating to `@hiero-ledger` packages at your earliest convenience.
 
 ---
@@ -258,7 +273,7 @@ Additional fix - port for the rest api is handled correctly for local dev enviro
 ### Added
 
 -   Added a UMD example demonstrating usage of the SDK in browser environments [#3028](https://github.com/hiero-ledger/hiero-sdk-js/pull/3028)
--   Added `PrivateKey.getRecoveryId(r, s, message)` method to enable recovery ID (v) calculation from raw `ECDSA` signature components.  
+-   Added `PrivateKey.getRecoveryId(r, s, message)` method to enable recovery ID (v) calculation from raw `ECDSA` signature components.
     This addition allows developers to compute the recovery ID directly, enabling full support for signing and serializing Ethereum transactions (including `EIP-155`) within the SDK. It enhances compatibility with external Ethereum clients and tooling. [#3021](https://github.com/hiero-ledger/hiero-sdk-js/pull/3021)
 -   Added an example demonstrating how to sign and recover Ethereum addresses using the Hedera SDK, Ethereum-style signature hashing (`EIP-191`), and the ecrecover contract. [#3029](https://github.com/hiero-ledger/hiero-sdk-js/pull/3029)
 -   Implemented dynamic generation of `RequestType.js` and `Status.js` by parsing protobuf definitions. [#3018](https://github.com/hiero-ledger/hiero-sdk-js/pull/3018)
@@ -300,7 +315,7 @@ This is NOT a Breaking Change. The SDK continues to function exactly as before, 
 -   Improved `AccountId` behavior with more explicit protobuf conversion in the following scenarios:
     -   Both `AccountId` number and alias are set
     -   Only alias is set
-    -   Only `AccountId` number is set  
+    -   Only `AccountId` number is set
         Comprehensive test coverage was added. by @ivaylonikolov7 in #2994
 
 ### Documentation

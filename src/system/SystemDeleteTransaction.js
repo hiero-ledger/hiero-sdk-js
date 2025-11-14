@@ -9,14 +9,14 @@ import Timestamp from "../Timestamp.js";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.ITransaction} HieroProto.proto.ITransaction
- * @typedef {import("@hashgraph/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
- * @typedef {import("@hashgraph/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
- * @typedef {import("@hashgraph/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
- * @typedef {import("@hashgraph/proto").proto.ISystemDeleteTransactionBody} HieroProto.proto.ISystemDeleteTransactionBody
- * @typedef {import("@hashgraph/proto").proto.IContractID} HieroProto.proto.IContractID
- * @typedef {import("@hashgraph/proto").proto.IFileID} HieroProto.proto.IFileID
+ * @typedef {import("@hiero-ledger/proto").proto.ITransaction} HieroProto.proto.ITransaction
+ * @typedef {import("@hiero-ledger/proto").proto.ISignedTransaction} HieroProto.proto.ISignedTransaction
+ * @typedef {import("@hiero-ledger/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
+ * @typedef {import("@hiero-ledger/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
+ * @typedef {import("@hiero-ledger/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
+ * @typedef {import("@hiero-ledger/proto").proto.ISystemDeleteTransactionBody} HieroProto.proto.ISystemDeleteTransactionBody
+ * @typedef {import("@hiero-ledger/proto").proto.IContractID} HieroProto.proto.IContractID
+ * @typedef {import("@hiero-ledger/proto").proto.IFileID} HieroProto.proto.IFileID
  */
 
 /**

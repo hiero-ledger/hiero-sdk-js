@@ -3,7 +3,7 @@ import {
     LocalProvider,
     TopicCreateTransaction,
     TopicMessageSubmitTransaction,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
 

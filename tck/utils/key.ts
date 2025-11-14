@@ -1,5 +1,5 @@
-import { PrivateKey, PublicKey, KeyList, Key } from "@hashgraph/sdk";
-import { proto } from "@hashgraph/proto";
+import { PrivateKey, PublicKey, KeyList, Key } from "@hiero-ledger/sdk";
+import { proto } from "@hiero-ledger/proto";
 
 import { AccountKey } from "./enums/account-key";
 import { asn1DecodeStringDer } from "../utils/asn1-decoder";

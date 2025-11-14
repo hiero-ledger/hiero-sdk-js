@@ -10,7 +10,7 @@ import {
 } from "../../../src/index";
 import Mocker, { UNAVAILABLE, INTERNAL, PRIVATE_KEY } from "../Mocker.js";
 import Long from "long";
-import { proto } from "@hashgraph/proto";
+import { proto } from "@hiero-ledger/proto";
 import * as hex from "../../../src/encoding/hex.js";
 
 const ACCOUNT_INFO_QUERY_COST_RESPONSE = {

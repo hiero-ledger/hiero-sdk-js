@@ -4,7 +4,7 @@ import {
     FileUpdateTransaction,
     FileDeleteTransaction,
     Timestamp,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 import Long from "long";
 
 import { applyCommonTransactionParams } from "../params/common-tx-params";
