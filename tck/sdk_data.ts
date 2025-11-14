@@ -6,86 +6,62 @@ import { Client } from "@hashgraph/sdk";
  */
 class ClientRegistry {
     private clients: Map<string, Client> = new Map();
-    private defaultClient: Client | null = null;
     private requestCounts: Map<string, number> = new Map();
     private sessionCreationTime: Map<string, number> = new Map();
 
     /**
-     * Gets a client for the specified session, or the default client if no session is provided.
-     * @param sessionId - Optional session ID for parallel test execution
+     * Gets a client for the specified session.
+     * @param sessionId - Session ID for parallel test execution
      * @returns The client instance
-     * @throws Error if no client is set up for the session or default
+     * @throws Error if no client is set up for the session
      */
-    getClient(sessionId?: string): Client {
+    getClient(sessionId: string): Client {
         // Track request count
-        const trackingId = sessionId || "default";
         this.requestCounts.set(
-            trackingId,
-            (this.requestCounts.get(trackingId) || 0) + 1,
+            sessionId,
+            (this.requestCounts.get(sessionId) || 0) + 1,
         );
 
-        if (sessionId) {
-            const client = this.clients.get(sessionId);
-            if (!client) {
-                throw new Error(`Client not set up for session: ${sessionId}`);
-            }
-
-            return client;
+        const client = this.clients.get(sessionId);
+        if (!client) {
+            throw new Error(`Client not set up for session: ${sessionId}`);
         }
 
-        if (this.defaultClient == null) {
-            throw new Error("Client not set up for default session");
-        }
-
-        return this.defaultClient;
+        return client;
     }
 
     /**
-     * Sets a client for the specified session, or as the default client.
+     * Sets a client for the specified session.
      * @param client - The client instance to store
-     * @param sessionId - Optional session ID for parallel test execution
+     * @param sessionId - Session ID for parallel test execution
      */
-    setClient(client: Client, sessionId?: string): void {
-        if (sessionId) {
-            this.clients.set(sessionId, client);
-            this.sessionCreationTime.set(sessionId, Date.now());
-            this.requestCounts.set(sessionId, 0);
-        } else {
-            this.defaultClient = client;
+    setClient(client: Client, sessionId: string): void {
+        this.clients.set(sessionId, client);
+        this.sessionCreationTime.set(sessionId, Date.now());
+        this.requestCounts.set(sessionId, 0);
+    }
+
+    /**
+     * Removes a client for the specified session.
+     * @param sessionId - Session ID for parallel test execution
+     */
+    removeClient(sessionId: string): void {
+        const client = this.clients.get(sessionId);
+        if (client) {
+            client.close();
+            this.clients.delete(sessionId);
+            this.requestCounts.delete(sessionId);
+            this.sessionCreationTime.delete(sessionId);
         }
     }
 
     /**
-     * Removes a client for the specified session, or the default client.
-     * @param sessionId - Optional session ID for parallel test execution
-     */
-    removeClient(sessionId?: string): void {
-        if (sessionId) {
-            const client = this.clients.get(sessionId);
-            if (client) {
-                client.close();
-                this.clients.delete(sessionId);
-                this.requestCounts.delete(sessionId);
-                this.sessionCreationTime.delete(sessionId);
-            }
-        } else {
-            if (this.defaultClient) {
-                this.defaultClient.close();
-                this.defaultClient = null;
-            }
-        }
-    }
-
-    /**
-     * Checks if a client exists for the specified session or as default.
-     * @param sessionId - Optional session ID
+     * Checks if a client exists for the specified session.
+     * @param sessionId - Session ID
      * @returns true if a client exists
      */
-    hasClient(sessionId?: string): boolean {
-        if (sessionId) {
-            return this.clients.has(sessionId);
-        }
-        return this.defaultClient !== null;
+    hasClient(sessionId: string): boolean {
+        return this.clients.has(sessionId);
     }
 
     /**
