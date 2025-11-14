@@ -53,3 +53,7 @@ export interface GetAccountBalanceParams {
     readonly accountId?: string;
     readonly contractId?: string;
 }
+
+export interface GetAccountInfoParams extends BaseParams {
+    readonly accountId?: string;
+}
