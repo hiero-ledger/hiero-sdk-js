@@ -1,11 +1,11 @@
 import { AllowanceParams } from "./allowance";
+import { BaseParams, BaseTransactionParams } from "./base";
 
-export interface CreateAccountParams {
+export interface CreateAccountParams extends BaseTransactionParams {
     readonly key?: string;
     readonly initialBalance?: string;
     readonly receiverSignatureRequired?: boolean;
     readonly maxAutoTokenAssociations?: number;
-    readonly commonTransactionParams?: Record<string, any>;
     readonly stakedAccountId?: string;
     readonly stakedNodeId?: string;
     readonly declineStakingReward?: boolean;
@@ -14,7 +14,7 @@ export interface CreateAccountParams {
     readonly alias?: string;
 }
 
-export interface UpdateAccountParams {
+export interface UpdateAccountParams extends BaseTransactionParams {
     readonly accountId?: string;
     readonly key?: string;
     readonly autoRenewPeriod?: string;
@@ -25,22 +25,18 @@ export interface UpdateAccountParams {
     readonly stakedAccountId?: string;
     readonly stakedNodeId?: string;
     readonly declineStakingReward?: boolean;
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface DeleteAccountParams {
+export interface DeleteAccountParams extends BaseTransactionParams {
     readonly deleteAccountId?: string;
     readonly transferAccountId?: string;
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface AccountAllowanceApproveParams {
+export interface AccountAllowanceApproveParams extends BaseTransactionParams {
     readonly allowances: AllowanceParams[];
-    readonly commonTransactionParams?: Record<string, any>;
 }
-export interface DeleteAllowanceParams {
+export interface DeleteAllowanceParams extends BaseTransactionParams {
     readonly allowances: RemoveAllowancesParams[];
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
 export interface RemoveAllowancesParams {
@@ -49,7 +45,7 @@ export interface RemoveAllowancesParams {
     readonly serialNumbers?: string[];
 }
 
-export interface GetAccountBalanceParams {
+export interface GetAccountBalanceParams extends BaseParams {
     readonly accountId?: string;
     readonly contractId?: string;
 }

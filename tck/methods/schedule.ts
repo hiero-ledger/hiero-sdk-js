@@ -49,13 +49,18 @@ export const createSchedule = async ({
     expirationTime,
     waitForExpiry,
     commonTransactionParams,
+    sessionId,
 }: ScheduleCreateParams): Promise<ScheduleResponse> => {
+    const client = sdk.getClient(sessionId);
     const transaction = new ScheduleCreateTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
 
     if (scheduledTransaction != null) {
-        const scheduledTx = buildScheduledTransaction(scheduledTransaction);
+        const scheduledTx = buildScheduledTransaction(
+            scheduledTransaction,
+            client,
+        );
         transaction.setScheduledTransaction(scheduledTx);
     }
 
@@ -85,15 +90,15 @@ export const createSchedule = async ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
-    const txResponse = await transaction.execute(sdk.getClient());
+    const txResponse = await transaction.execute(client);
     const receipt = await new TransactionReceiptQuery()
         .setTransactionId(txResponse.transactionId)
         .setValidateStatus(true)
-        .execute(sdk.getClient());
+        .execute(client);
 
     let scheduleId: string | undefined;
     if (receipt.status === Status.Success) {
@@ -108,36 +113,39 @@ export const createSchedule = async ({
 };
 
 // buildScheduledTransaction creates the appropriate transaction based on method name
-const buildScheduledTransaction = (scheduledTx: ScheduledTransaction): any => {
+const buildScheduledTransaction = (
+    scheduledTx: ScheduledTransaction,
+    client,
+): any => {
     switch (scheduledTx.method) {
         case "transferCrypto":
             const transferParams = scheduledTx.params as TransferCryptoParams;
-            return buildTransferCrypto(transferParams);
+            return buildTransferCrypto(transferParams, client);
 
         case "approveAllowance":
             const allowanceParams =
                 scheduledTx.params as AccountAllowanceApproveParams;
-            return buildApproveAllowance(allowanceParams);
+            return buildApproveAllowance(allowanceParams, client);
 
         case "mintToken":
             const mintParams = scheduledTx.params as MintTokenParams;
-            return buildMintToken(mintParams);
+            return buildMintToken(mintParams, client);
 
         case "burnToken":
             const burnParams = scheduledTx.params as BurnTokenParams;
-            return buildBurnToken(burnParams);
+            return buildBurnToken(burnParams, client);
 
         case "submitMessage":
             const submitParams = scheduledTx.params as TopicSubmitMessageParams;
-            return buildSubmitTopicMessage(submitParams);
+            return buildSubmitTopicMessage(submitParams, client);
 
         case "createTopic":
             const topicParams = scheduledTx.params as TopicCreateParams;
-            return buildCreateTopic(topicParams);
+            return buildCreateTopic(topicParams, client);
 
         case "createAccount":
             const accountParams = scheduledTx.params as CreateAccountParams;
-            return buildCreateAccount(accountParams);
+            return buildCreateAccount(accountParams, client);
 
         default:
             throw new Error(
@@ -149,7 +157,9 @@ const buildScheduledTransaction = (scheduledTx: ScheduledTransaction): any => {
 export const signSchedule = async ({
     scheduleId,
     commonTransactionParams,
+    sessionId,
 }: ScheduleSignParams): Promise<ScheduleResponse> => {
+    const client = sdk.getClient(sessionId);
     const transaction = new ScheduleSignTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -163,15 +173,15 @@ export const signSchedule = async ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
-    const txResponse = await transaction.execute(sdk.getClient());
+    const txResponse = await transaction.execute(client);
     const receipt = await new TransactionReceiptQuery()
         .setTransactionId(txResponse.transactionId)
         .setValidateStatus(true)
-        .execute(sdk.getClient());
+        .execute(client);
 
     return {
         status: receipt.status.toString(),
@@ -179,9 +189,11 @@ export const signSchedule = async ({
 };
 
 export const deleteSchedule = async ({
-                                       scheduleId,
-                                       commonTransactionParams,
-                                   }: ScheduleDeleteParams): Promise<ScheduleResponse> => {
+    scheduleId,
+    commonTransactionParams,
+    sessionId,
+}: ScheduleDeleteParams): Promise<ScheduleResponse> => {
+    const client = sdk.getClient(sessionId);
     const transaction = new ScheduleDeleteTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -195,15 +207,15 @@ export const deleteSchedule = async ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
-    const txResponse = await transaction.execute(sdk.getClient());
+    const txResponse = await transaction.execute(client);
     const receipt = await new TransactionReceiptQuery()
         .setTransactionId(txResponse.transactionId)
         .setValidateStatus(true)
-        .execute(sdk.getClient());
+        .execute(client);
 
     return {
         status: receipt.status.toString(),

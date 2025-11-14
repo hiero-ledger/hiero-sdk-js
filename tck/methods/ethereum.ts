@@ -12,7 +12,9 @@ export const createEthereumTransaction = async ({
     callDataFileId,
     maxGasAllowance,
     commonTransactionParams,
+    sessionId,
 }: EthereumTxParams): Promise<EthereumResponse> => {
+    const client = sdk.getClient(sessionId);
     const transaction = new EthereumTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -33,12 +35,12 @@ export const createEthereumTransaction = async ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
-    const txResponse = await transaction.execute(sdk.getClient());
-    const receipt = await txResponse.getReceipt(sdk.getClient());
+    const txResponse = await transaction.execute(client);
+    const receipt = await txResponse.getReceipt(client);
 
     return {
         status: receipt.status.toString(),

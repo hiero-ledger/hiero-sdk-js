@@ -1,10 +1,12 @@
-export interface ServiceEndpointParams {
+import { BaseParams, BaseTransactionParams } from "./base";
+
+export interface ServiceEndpointParams extends BaseParams {
     readonly ipAddressV4?: string;
     readonly port?: number;
     readonly domainName?: string;
 }
 
-export interface CreateNodeParams {
+export interface CreateNodeParams extends BaseTransactionParams {
     readonly accountId?: string;
     readonly description?: string;
     readonly gossipEndpoints?: ServiceEndpointParams[];
@@ -14,10 +16,9 @@ export interface CreateNodeParams {
     readonly grpcWebProxyEndpoint?: ServiceEndpointParams;
     readonly adminKey?: string;
     readonly declineReward?: boolean;
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface UpdateNodeParams {
+export interface UpdateNodeParams extends BaseTransactionParams {
     readonly accountId?: string;
     readonly nodeId?: string;
     readonly description?: string;
@@ -28,10 +29,8 @@ export interface UpdateNodeParams {
     readonly grpcWebProxyEndpoint?: ServiceEndpointParams;
     readonly adminKey?: string;
     readonly declineReward?: boolean;
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface DeleteNodeParams {
+export interface DeleteNodeParams extends BaseTransactionParams {
     readonly nodeId?: string;
-    readonly commonTransactionParams?: Record<string, any>;
 }

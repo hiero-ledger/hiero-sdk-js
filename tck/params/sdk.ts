@@ -4,6 +4,7 @@ export interface SdkSetupParams {
     readonly nodeIp?: string;
     readonly nodeAccountId?: string;
     readonly mirrorNetworkIp?: string;
+    readonly sessionId?: string;
 }
 
 type RpcMethod = {
@@ -14,4 +15,5 @@ type RpcMethod = {
 export interface RpcMethodParams {
     readonly callClass: string;
     readonly methods: RpcMethod[];
+    readonly sessionId?: string;
 }

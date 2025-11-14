@@ -1,29 +1,27 @@
-export interface FileCreateParams {
+import { BaseTransactionParams } from "./base";
+
+export interface FileCreateParams extends BaseTransactionParams {
     readonly keys: string[];
     readonly contents: string;
     readonly expirationTime: string;
     readonly memo: string;
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface FileUpdateParams {
+export interface FileUpdateParams extends BaseTransactionParams {
     readonly fileId: string;
     readonly keys: string[];
     readonly contents: string;
     readonly expirationTime: string;
     readonly memo: string;
-    readonly commonTransactionParams: Record<string, any>;
 }
 
-export interface FileAppendParams {
+export interface FileAppendParams extends BaseTransactionParams {
     readonly fileId: string;
     readonly contents: string;
     readonly maxChunks: number;
     readonly chunkSize: number;
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface FileDeleteParams {
+export interface FileDeleteParams extends BaseTransactionParams {
     readonly fileId: string;
-    readonly commonTransactionParams?: Record<string, any>;
 }
