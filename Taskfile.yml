@@ -168,6 +168,12 @@ tasks:
         cmds:
             - npx vitest --coverage --config=test/vitest-node-integration.config.ts
             - npx vitest --coverage --config=test/vitest-browser-integration.config.ts
+
+    "test:integration:dual-mode":
+        cmds:
+            - npx vitest --poolOptions.threads.singleThread --config=test/vitest-node-integration-dual-mode.config.ts
+            - npx vitest --poolOptions.threads.singleThread --config=test/vitest-browser-integration-dual-mode.config.ts
+
     "update:proto":
         deps:
             - "proto:update"

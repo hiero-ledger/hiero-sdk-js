@@ -1966,6 +1966,7 @@ export default class Transaction extends Executable {
             case Status.Unknown:
             case Status.PlatformTransactionNotCreated:
             case Status.PlatformNotActive:
+            case Status.InvalidNodeAccount:
                 return [status, ExecutionState.Retry];
             case Status.Ok:
                 return [status, ExecutionState.Finished];
