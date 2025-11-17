@@ -23,7 +23,9 @@ const restoreOriginalGrpcWebProxyEndpoint = async (client) => {
         .setNodeId(1)
         .setNodeAccountIds([AccountId.fromString("0.0.3")])
         .setGrpcWebProxyEndpoint(
-            new ServiceEndpoint().setDomainName(node2Address).setPort(8080),
+            new ServiceEndpoint()
+                .setDomainName(node2Address.split(":")[0])
+                .setPort(Number(node2Address.split(":")[1])),
         )
         .execute(client);
     const receipt = await response.getReceipt(client);
