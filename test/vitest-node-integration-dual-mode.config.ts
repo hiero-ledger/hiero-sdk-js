@@ -20,6 +20,7 @@ export default defineConfig({
             "test/integration/utils/*",
             "test/integration/dual-mode/NodeConstants.js",
             "test/integration/dual-mode/WebConstants.js",
+            "test/integration/dual-mode/SharedConstants.js",
         ],
         hookTimeout: 120000,
         testTimeout: 120000,
