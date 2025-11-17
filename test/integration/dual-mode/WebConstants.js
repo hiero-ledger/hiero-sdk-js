@@ -1,4 +1,5 @@
-const node2Address = "envoy-proxy-node2-svc.solo.svc.cluster.local:8080";
+import { SOLO_NAMESPACE } from "./SharedConstants.js";
+const node2Address = `envoy-proxy-node2-svc.${SOLO_NAMESPACE}.svc.cluster.local:8080`;
 const node2PortToReplace = 8081;
 const network = {
     "localhost:8080": "0.0.3",
