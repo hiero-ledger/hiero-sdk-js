@@ -1,11 +1,12 @@
-export interface ScheduleCreateParams {
+import { BaseTransactionParams } from "./base";
+
+export interface ScheduleCreateParams extends BaseTransactionParams {
     readonly scheduledTransaction?: ScheduledTransaction;
     readonly memo?: string;
     readonly adminKey?: string;
     readonly payerAccountId?: string;
     readonly expirationTime?: string;
     readonly waitForExpiry?: boolean;
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
 export interface ScheduledTransaction {
@@ -13,12 +14,10 @@ export interface ScheduledTransaction {
     readonly params: any;
 }
 
-export interface ScheduleSignParams {
+export interface ScheduleSignParams extends BaseTransactionParams {
     readonly scheduleId?: string;
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface ScheduleDeleteParams {
+export interface ScheduleDeleteParams extends BaseTransactionParams {
     readonly scheduleId?: string;
-    readonly commonTransactionParams?: Record<string, any>;
 }

@@ -1,4 +1,6 @@
-export interface TopicCreateParams {
+import { BaseTransactionParams } from "./base";
+
+export interface TopicCreateParams extends BaseTransactionParams {
     readonly memo?: string;
     readonly adminKey?: string;
     readonly submitKey?: string;
@@ -7,10 +9,9 @@ export interface TopicCreateParams {
     readonly feeScheduleKey?: string;
     readonly feeExemptKeys?: string[];
     readonly customFees?: CustomFee[];
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface TopicUpdateParams {
+export interface TopicUpdateParams extends BaseTransactionParams {
     readonly topicId: string;
     readonly memo?: string;
     readonly adminKey?: string;
@@ -21,21 +22,18 @@ export interface TopicUpdateParams {
     readonly feeScheduleKey?: string;
     readonly feeExemptKeys?: string[];
     readonly customFees?: CustomFee[];
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface TopicDeleteParams {
+export interface TopicDeleteParams extends BaseTransactionParams {
     readonly topicId: string;
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface TopicSubmitMessageParams {
+export interface TopicSubmitMessageParams extends BaseTransactionParams {
     readonly topicId: string;
     readonly message: string;
     readonly maxChunks?: number;
     readonly chunkSize?: number;
     readonly customFeeLimits?: CustomFeeLimit[];
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
 export interface CustomFee {

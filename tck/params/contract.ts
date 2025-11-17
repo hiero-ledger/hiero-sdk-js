@@ -1,4 +1,6 @@
-export interface CreateContractParams {
+import { BaseTransactionParams } from "./base";
+
+export interface CreateContractParams extends BaseTransactionParams {
     readonly adminKey?: string;
     readonly gas?: string;
     readonly initialBalance?: string;
@@ -13,10 +15,9 @@ export interface CreateContractParams {
     readonly constructorParameters?: string;
     readonly memo?: string;
     readonly maxAutomaticTokenAssociations?: number;
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface UpdateContractParams {
+export interface UpdateContractParams extends BaseTransactionParams {
     readonly contractId: string;
     readonly adminKey?: string;
     readonly stakedAccountId?: string;
@@ -27,21 +28,18 @@ export interface UpdateContractParams {
     readonly memo?: string;
     readonly maxAutomaticTokenAssociations?: number;
     readonly expirationTime?: string;
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface DeleteContractParams {
+export interface DeleteContractParams extends BaseTransactionParams {
     readonly contractId: string;
     readonly transferAccountId?: string;
     readonly transferContractId?: string;
     readonly permanentRemoval?: boolean;
-    readonly commonTransactionParams?: Record<string, any>;
 }
 
-export interface ExecuteContractParams {
+export interface ExecuteContractParams extends BaseTransactionParams {
     readonly contractId: string;
     readonly gas?: string;
     readonly amount?: string;
     readonly functionParameters?: string;
-    readonly commonTransactionParams?: Record<string, any>;
 }

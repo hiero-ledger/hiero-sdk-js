@@ -26,7 +26,9 @@ export const createFile = async ({
     expirationTime,
     memo,
     commonTransactionParams,
+    sessionId,
 }: FileCreateParams): Promise<FileResponse> => {
+    const client = sdk.getClient(sessionId);
     const transaction = new FileCreateTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -53,12 +55,12 @@ export const createFile = async ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
-    const response = await transaction.execute(sdk.getClient());
-    const receipt = await response.getReceipt(sdk.getClient());
+    const response = await transaction.execute(client);
+    const receipt = await response.getReceipt(client);
 
     return {
         fileId: receipt.fileId.toString(),
@@ -73,7 +75,9 @@ export const updateFile = async ({
     expirationTime,
     memo,
     commonTransactionParams,
+    sessionId,
 }: any): Promise<FileResponse> => {
+    const client = sdk.getClient(sessionId);
     const transaction = new FileUpdateTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -104,12 +108,12 @@ export const updateFile = async ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
-    const response = await transaction.execute(sdk.getClient());
-    const receipt = await response.getReceipt(sdk.getClient());
+    const response = await transaction.execute(client);
+    const receipt = await response.getReceipt(client);
 
     return {
         status: receipt.status.toString(),
@@ -122,7 +126,9 @@ export const appendFile = async ({
     maxChunks,
     chunkSize,
     commonTransactionParams,
+    sessionId,
 }: FileAppendParams): Promise<FileResponse> => {
+    const client = sdk.getClient(sessionId);
     const transaction = new FileAppendTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -147,12 +153,12 @@ export const appendFile = async ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
-    const response = await transaction.execute(sdk.getClient());
-    const receipt = await response.getReceipt(sdk.getClient());
+    const response = await transaction.execute(client);
+    const receipt = await response.getReceipt(client);
 
     return {
         status: receipt.status.toString(),
@@ -162,7 +168,9 @@ export const appendFile = async ({
 export const deleteFile = async ({
     fileId,
     commonTransactionParams,
+    sessionId,
 }: FileDeleteParams): Promise<FileResponse> => {
+    const client = sdk.getClient(sessionId);
     const transaction = new FileDeleteTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -175,12 +183,12 @@ export const deleteFile = async ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
-    const response = await transaction.execute(sdk.getClient());
-    const receipt = await response.getReceipt(sdk.getClient());
+    const response = await transaction.execute(client);
+    const receipt = await response.getReceipt(client);
 
     return {
         status: receipt.status.toString(),

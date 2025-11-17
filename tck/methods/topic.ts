@@ -26,17 +26,20 @@ import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";
 import { getKeyFromString } from "../utils/key";
 
 // buildCreateTopic builds a TopicCreateTransaction from parameters
-export const buildCreateTopic = ({
-    memo,
-    adminKey,
-    submitKey,
-    autoRenewPeriod,
-    autoRenewAccountId,
-    feeScheduleKey,
-    feeExemptKeys,
-    customFees,
-    commonTransactionParams,
-}: TopicCreateParams): TopicCreateTransaction => {
+export const buildCreateTopic = (
+    {
+        memo,
+        adminKey,
+        submitKey,
+        autoRenewPeriod,
+        autoRenewAccountId,
+        feeScheduleKey,
+        feeExemptKeys,
+        customFees,
+        commonTransactionParams,
+    }: TopicCreateParams,
+    client,
+): TopicCreateTransaction => {
     const transaction = new TopicCreateTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -95,7 +98,7 @@ export const buildCreateTopic = ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
@@ -105,10 +108,11 @@ export const buildCreateTopic = ({
 export const createTopic = async (
     params: TopicCreateParams,
 ): Promise<TopicResponse> => {
-    const transaction = buildCreateTopic(params);
+    const client = sdk.getClient(params.sessionId);
+    const transaction = buildCreateTopic(params, client);
 
-    const response = await transaction.execute(sdk.getClient());
-    const receipt = await response.getReceipt(sdk.getClient());
+    const response = await transaction.execute(client);
+    const receipt = await response.getReceipt(client);
 
     return {
         topicId: receipt.topicId?.toString(),
@@ -117,19 +121,22 @@ export const createTopic = async (
 };
 
 // buildUpdateTopic builds a TopicUpdateTransaction from parameters
-const buildUpdateTopic = ({
-    topicId,
-    memo,
-    adminKey,
-    submitKey,
-    autoRenewPeriod,
-    autoRenewAccountId,
-    expirationTime,
-    feeScheduleKey,
-    feeExemptKeys,
-    customFees,
-    commonTransactionParams,
-}: TopicUpdateParams): TopicUpdateTransaction => {
+const buildUpdateTopic = (
+    {
+        topicId,
+        memo,
+        adminKey,
+        submitKey,
+        autoRenewPeriod,
+        autoRenewAccountId,
+        expirationTime,
+        feeScheduleKey,
+        feeExemptKeys,
+        customFees,
+        commonTransactionParams,
+    }: TopicUpdateParams,
+    client,
+): TopicUpdateTransaction => {
     const transaction = new TopicUpdateTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -143,7 +150,6 @@ const buildUpdateTopic = ({
     }
 
     if (adminKey != null) {
-        console.log("adminKey in updateTopic", adminKey);
         transaction.setAdminKey(getKeyFromString(adminKey));
     }
 
@@ -156,7 +162,6 @@ const buildUpdateTopic = ({
     }
 
     if (autoRenewAccountId != null) {
-        console.log("autoRenewAccountId in updateTopic", autoRenewAccountId);
         transaction.setAutoRenewAccountId(autoRenewAccountId);
     }
 
@@ -213,7 +218,7 @@ const buildUpdateTopic = ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
@@ -223,10 +228,11 @@ const buildUpdateTopic = ({
 export const updateTopic = async (
     params: TopicUpdateParams,
 ): Promise<TopicResponse> => {
-    const transaction = buildUpdateTopic(params);
+    const client = sdk.getClient(params.sessionId);
+    const transaction = buildUpdateTopic(params, client);
 
-    const response = await transaction.execute(sdk.getClient());
-    const receipt = await response.getReceipt(sdk.getClient());
+    const response = await transaction.execute(client);
+    const receipt = await response.getReceipt(client);
 
     return {
         status: receipt.status.toString(),
@@ -234,16 +240,15 @@ export const updateTopic = async (
 };
 
 // buildDeleteTopic builds a TopicDeleteTransaction from parameters
-const buildDeleteTopic = ({
-    topicId,
-    commonTransactionParams,
-}: TopicDeleteParams): TopicDeleteTransaction => {
+const buildDeleteTopic = (
+    { topicId, commonTransactionParams }: TopicDeleteParams,
+    client,
+): TopicDeleteTransaction => {
     const transaction = new TopicDeleteTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
 
     if (topicId != null) {
-        console.log("topicId in deleteTopic", topicId);
         transaction.setTopicId(topicId);
     }
 
@@ -251,7 +256,7 @@ const buildDeleteTopic = ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
@@ -261,10 +266,11 @@ const buildDeleteTopic = ({
 export const deleteTopic = async (
     params: TopicDeleteParams,
 ): Promise<TopicResponse> => {
-    const transaction = buildDeleteTopic(params);
+    const client = sdk.getClient(params.sessionId);
+    const transaction = buildDeleteTopic(params, client);
 
-    const response = await transaction.execute(sdk.getClient());
-    const receipt = await response.getReceipt(sdk.getClient());
+    const response = await transaction.execute(client);
+    const receipt = await response.getReceipt(client);
 
     return {
         status: receipt.status.toString(),
@@ -272,14 +278,17 @@ export const deleteTopic = async (
 };
 
 // buildSubmitTopicMessage builds a TopicMessageSubmitTransaction from parameters
-export const buildSubmitTopicMessage = ({
-    topicId,
-    message,
-    maxChunks,
-    chunkSize,
-    customFeeLimits,
-    commonTransactionParams,
-}: TopicSubmitMessageParams): TopicMessageSubmitTransaction => {
+export const buildSubmitTopicMessage = (
+    {
+        topicId,
+        message,
+        maxChunks,
+        chunkSize,
+        customFeeLimits,
+        commonTransactionParams,
+    }: TopicSubmitMessageParams,
+    client,
+): TopicMessageSubmitTransaction => {
     const transaction = new TopicMessageSubmitTransaction().setGrpcDeadline(
         DEFAULT_GRPC_DEADLINE,
     );
@@ -326,7 +335,7 @@ export const buildSubmitTopicMessage = ({
         applyCommonTransactionParams(
             commonTransactionParams,
             transaction,
-            sdk.getClient(),
+            client,
         );
     }
 
@@ -336,10 +345,11 @@ export const buildSubmitTopicMessage = ({
 export const submitTopicMessage = async (
     params: TopicSubmitMessageParams,
 ): Promise<TopicResponse> => {
-    const transaction = buildSubmitTopicMessage(params);
+    const client = sdk.getClient(params.sessionId);
+    const transaction = buildSubmitTopicMessage(params, client);
 
-    const response = await transaction.execute(sdk.getClient());
-    const receipt = await response.getReceipt(sdk.getClient());
+    const response = await transaction.execute(client);
+    const receipt = await response.getReceipt(client);
 
     return {
         status: receipt.status.toString(),
