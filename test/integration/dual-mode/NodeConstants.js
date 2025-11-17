@@ -1,4 +1,5 @@
-const node2Address = "network-node2-svc.solo.svc.cluster.local:50211";
+import { SOLO_NAMESPACE } from "./SharedConstants.js";
+const node2Address = `network-node2-svc.${SOLO_NAMESPACE}.svc.cluster.local:50211`;
 const node2PortToReplace = 51211;
 const network = {
     "127.0.0.1:50211": "0.0.3",

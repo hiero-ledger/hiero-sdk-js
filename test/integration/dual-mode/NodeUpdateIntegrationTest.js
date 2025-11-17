@@ -23,9 +23,7 @@ const restoreOriginalGrpcWebProxyEndpoint = async (client) => {
         .setNodeId(1)
         .setNodeAccountIds([AccountId.fromString("0.0.3")])
         .setGrpcWebProxyEndpoint(
-            new ServiceEndpoint()
-                .setDomainName("envoy-proxy-node2-svc.solo.svc.cluster.local")
-                .setPort(8080),
+            new ServiceEndpoint().setDomainName(node2Address).setPort(8080),
         )
         .execute(client);
     const receipt = await response.getReceipt(client);
@@ -138,7 +136,6 @@ describe("Node Update Integration Tests", function () {
     });
 
     it("should change node account ID to the same account", async function () {
-        console.log(client.network);
         const response = await new NodeUpdateTransaction()
             .setNodeId(1)
             .setNodeAccountIds([AccountId.fromString("0.0.3")])
@@ -295,7 +292,6 @@ describe("Node Update Integration Tests", function () {
                 AccountId.fromString("0.0.3"),
             ])
             .execute(client);
-        console.log("tuka se ebava v maikata");
         const testReceipt = await testResp.getReceipt(client);
         expect(testReceipt.status).to.equal(Status.Success);
         // Verify address book has been updated
