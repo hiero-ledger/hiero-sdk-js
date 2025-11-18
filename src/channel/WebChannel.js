@@ -50,7 +50,9 @@ export default class WebChannel extends Channel {
      */
     _shouldUseHttps(address) {
         return !(
-            address.includes("localhost") || address.includes("127.0.0.1")
+            address.includes("localhost") ||
+            address.includes("127.0.0.1") ||
+            address.includes(".cluster.local")
         );
     }
 
