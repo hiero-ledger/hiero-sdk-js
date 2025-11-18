@@ -143,5 +143,10 @@
     },
     "resolutions": {
         "bn.js": "5.2.1"
+    },
+    "pnpm": {
+        "overrides": {
+            "glob@<10": "^10.3.10"
+        }
     }
 }
