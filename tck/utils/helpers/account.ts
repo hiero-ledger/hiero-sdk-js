@@ -4,7 +4,7 @@ import {
     TokenId,
     NftId,
     AccountInfo,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 import Long from "long";
 
 import { NftAllowanceParams } from "../../params/allowance";
