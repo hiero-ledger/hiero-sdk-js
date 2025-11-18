@@ -5,7 +5,7 @@ import {
     AccountId,
     ServiceEndpoint,
     Key,
-} from "@hiero-ledger/sdk";
+} from "@hashgraph/sdk";
 import Long from "long";
 
 import { sdk } from "../sdk_data";

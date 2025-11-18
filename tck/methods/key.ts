@@ -1,4 +1,4 @@
-import { PrivateKey, KeyList } from "@hiero-ledger/sdk";
+import { PrivateKey, KeyList } from "@hashgraph/sdk";
 
 import { invalidParamError } from "../utils/invalid-param-error";
 import {

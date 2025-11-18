@@ -1,4 +1,4 @@
-import { Client, AccountId } from "@hiero-ledger/sdk";
+import { Client, AccountId } from "@hashgraph/sdk";
 
 import { sdk } from "../sdk_data";
 import { SdkResponse } from "../response/sdk";

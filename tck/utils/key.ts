@@ -1,4 +1,4 @@
-import { PrivateKey, PublicKey, KeyList, Key } from "@hiero-ledger/sdk";
+import { PrivateKey, PublicKey, KeyList, Key } from "@hashgraph/sdk";
 import { proto } from "@hiero-ledger/proto";
 
 import { AccountKey } from "./enums/account-key";

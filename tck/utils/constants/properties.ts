@@ -1,4 +1,4 @@
-import { TokenType, TokenSupplyType } from "@hiero-ledger/sdk";
+import { TokenType, TokenSupplyType } from "@hashgraph/sdk";
 
 export const tokenTypeMap = {
     ft: TokenType.FungibleCommon,

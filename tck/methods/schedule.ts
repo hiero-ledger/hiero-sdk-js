@@ -7,7 +7,7 @@ import {
     TransactionReceiptQuery,
     Status,
     ScheduleDeleteTransaction,
-} from "@hiero-ledger/sdk";
+} from "@hashgraph/sdk";
 
 import {
     ScheduleCreateParams,

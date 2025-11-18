@@ -5,7 +5,7 @@ import {
     ContractUpdateTransaction,
     Hbar,
     Timestamp,
-} from "@hiero-ledger/sdk";
+} from "@hashgraph/sdk";
 
 import {
     CreateContractParams,

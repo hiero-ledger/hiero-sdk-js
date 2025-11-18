@@ -1,4 +1,4 @@
-import { Client } from "@hiero-ledger/sdk";
+import { Client } from "@hashgraph/sdk";
 
 /**
  * Client registry for session-based client management.

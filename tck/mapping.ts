@@ -11,7 +11,7 @@ export default async function mapMethods({
     methods,
     sessionId,
 }: RpcMethodParams): Promise<string> {
-    const cl: any = (await import("@hiero-ledger/sdk"))[callClass];
+    const cl: any = (await import("@hashgraph/sdk"))[callClass];
 
     let currentObject: any = new cl();
     for (let { name, param } of methods) {
