@@ -1,0 +1,57 @@
+/**
+ * # Hook Primitives
+ * Identifiers and call parameters shared by hook-related transactions and state.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "services_basic_types.proto";
+
+/**
+ * Identifies the owner of a hook. Currently hooks are scoped to accounts, but this
+ * message allows for future expansion to other entity types.
+ */
+message HookEntityId {
+  oneof entity {
+    /**
+     * The account that owns the hook.
+     */
+    AccountID account_id = 1;
+  }
+}
+
+/**
+ * Identifies a specific hook owned by an entity.
+ */
+message HookId {
+  /**
+   * The entity that owns the hook.
+   */
+  HookEntityId entity_id = 1;
+
+  /**
+   * The per-entity identifier of the hook.
+   */
+  int64 hook_id = 2;
+}
+
+/**
+ * Specifies invocation details for a hook.
+ */
+message HookCall {
+  /**
+   * The hook to invoke.
+   */
+  HookId hook_id = 1;
+
+  /**
+   * Optional call data supplied to the hook implementation.
+   */
+  bytes call_data = 2;
+}
+
