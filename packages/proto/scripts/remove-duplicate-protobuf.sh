@@ -7,6 +7,7 @@ set -euo pipefail
 # 
 # PROBLEM: This script fixes duplicate proto files that cause compilation errors
 # like "duplicate name 'EventCore' in Namespace .com.hedera.hapi.platform.event"
+# or "duplicate name 'HookEntityId' in Namespace .proto"
 #
 # ROOT CAUSE: The proto flattening process in Taskfile.yml creates multiple
 # copies of the same files with different prefixes:
@@ -27,6 +28,11 @@ set -euo pipefail
 #
 # SOLUTION: Remove duplicate files, keeping only the services_* versions since
 # they represent the canonical location after the move operation.
+#
+# ADDITIONAL CASE: services_hook_primitives.proto contains duplicate message
+# definitions (HookEntityId, HookId, HookCall) that are already defined in
+# services_basic_types.proto. The hook_primitives file is removed to prevent
+# duplicate name errors.
 # =============================================================================
 
 
@@ -92,6 +98,14 @@ find "$ROOT" -name "*state*signature*transaction*.proto" -type f | while read -r
     fi
 done
 
+# Remove services_hook_primitives.proto if services_basic_types.proto exists
+# All message definitions (HookEntityId, HookId, HookCall) in hook_primitives are duplicates
+# of what's already defined in services_basic_types.proto, causing "duplicate name" errors
+if [[ -f "$ROOT/services_hook_primitives.proto" && -f "$ROOT/services_basic_types.proto" ]]; then
+    echo "Removing duplicate: services_hook_primitives.proto (all messages already defined in services_basic_types.proto)"
+    rm -f "$ROOT/services_hook_primitives.proto"
+fi
+
 shopt -u nullglob
 
 # Show remaining definitions for sanity
@@ -102,6 +116,18 @@ grep -rn "message[[:space:]]\+EventCore\b" "$ROOT" || true
 echo
 echo "Remaining definitions of StateSignatureTransaction:"
 grep -rn "message[[:space:]]\+StateSignatureTransaction\b" "$ROOT" || true
+
+echo
+echo "Remaining definitions of HookEntityId:"
+grep -rn "message[[:space:]]\+HookEntityId\b" "$ROOT" || true
+
+echo
+echo "Remaining definitions of HookId:"
+grep -rn "message[[:space:]]\+HookId\b" "$ROOT" || true
+
+echo
+echo "Remaining definitions of HookCall:"
+grep -rn "message[[:space:]]\+HookCall\b" "$ROOT" || true
 
 echo
 echo "Done."
