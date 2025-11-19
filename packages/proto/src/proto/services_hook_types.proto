@@ -3,7 +3,6 @@ syntax = "proto3";
 package com.hedera.hapi.node.hooks;
 
 import "services_basic_types.proto";
-import "services_hook_primitives.proto";
 import "google/protobuf/wrappers.proto";
 
 // SPDX-License-Identifier: Apache-2.0

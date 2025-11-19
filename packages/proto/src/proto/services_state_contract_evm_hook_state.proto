@@ -18,7 +18,6 @@ option java_package = "com.hedera.hapi.node.state.hooks.legacy";
 option java_multiple_files = true;
 
 import "services_basic_types.proto";
-import "services_hook_primitives.proto";
 import "services_hook_types.proto";
 import "google/protobuf/wrappers.proto";
 

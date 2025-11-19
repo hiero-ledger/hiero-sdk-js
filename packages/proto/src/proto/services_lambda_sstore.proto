@@ -8,7 +8,6 @@ option java_package = "com.hedera.hapi.node.hooks.legacy";
 option java_multiple_files = true;
 
 import "services_basic_types.proto";
-import "services_hook_primitives.proto";
 import "services_hook_types.proto";
 
 /**
