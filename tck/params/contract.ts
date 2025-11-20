@@ -1,4 +1,4 @@
-import { BaseTransactionParams } from "./base";
+import { BaseParams, BaseTransactionParams } from "./base";
 
 export interface CreateContractParams extends BaseTransactionParams {
     readonly adminKey?: string;
@@ -42,4 +42,13 @@ export interface ExecuteContractParams extends BaseTransactionParams {
     readonly gas?: string;
     readonly amount?: string;
     readonly functionParameters?: string;
+}
+
+export interface ContractCallQueryParams extends BaseParams {
+    readonly contractId?: string;
+    readonly gas?: string;
+    readonly functionName?: string;
+    readonly functionParameters?: string;
+    readonly maxQueryPayment?: string;
+    readonly senderAccountId?: string;
 }
