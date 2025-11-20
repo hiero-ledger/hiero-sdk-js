@@ -42,6 +42,7 @@ tasks:
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/streams src/proto/
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/event/* src/proto/
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/state/* src/proto/
+            - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/block/stream/chain_of_trust_proof.proto src/proto/
             - chmod +x scripts/remove-duplicate-protobuf.sh
             - ./scripts/remove-duplicate-protobuf.sh
             - echo "Protobufs moved successfully!"

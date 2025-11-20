@@ -28,13 +28,20 @@ find "$PROTO_DIR" -maxdepth 1 -name "*.proto" -type f | while read -r file; do
     filename=$(basename "$file")
     
     # Check if we already have a prefixed version from subdirectories
+    # or if the exact filename already exists (from subdirectory flattening)
     prefixed_exists=false
-    for prefixed_file in "$TEMP_DIR"/*; do
-        if [[ "$prefixed_file" == *"_$filename" ]]; then
-            prefixed_exists=true
-            break
-        fi
-    done
+    if [[ -f "$TEMP_DIR/$filename" ]]; then
+        # Exact filename match exists (from subdirectory)
+        prefixed_exists=true
+    else
+        # Check for prefixed versions (ending with _filename)
+        for prefixed_file in "$TEMP_DIR"/*; do
+            if [[ "$prefixed_file" == *"_$filename" ]]; then
+                prefixed_exists=true
+                break
+            fi
+        done
+    fi
     
     if [ "$prefixed_exists" = false ]; then
         cp "$file" "$TEMP_DIR/$filename"
