@@ -3,6 +3,7 @@ import {
     ContractDeleteTransaction,
     ContractExecuteTransaction,
     ContractUpdateTransaction,
+    ContractByteCodeQuery,
     Hbar,
     Timestamp,
 } from "@hiero-ledger/sdk";
@@ -12,8 +13,12 @@ import {
     DeleteContractParams,
     ExecuteContractParams,
     UpdateContractParams,
+    ContractByteCodeQueryParams,
 } from "../params/contract";
-import { ContractResponse } from "../response/contract";
+import {
+    ContractResponse,
+    ContractByteCodeQueryResponse,
+} from "../response/contract";
 
 import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";
 import { applyCommonTransactionParams } from "../params/common-tx-params";
