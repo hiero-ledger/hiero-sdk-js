@@ -1,5 +1,4 @@
 import { BaseParams, BaseTransactionParams } from "./base";
-import { BaseParams, BaseTransactionParams } from "./base";
 
 export interface CreateContractParams extends BaseTransactionParams {
     readonly adminKey?: string;
