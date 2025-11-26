@@ -58,3 +58,9 @@ export interface ContractCallQueryParams extends BaseParams {
     readonly maxQueryPayment?: string;
     readonly senderAccountId?: string;
 }
+
+export interface ContractInfoQueryParams extends BaseParams {
+    readonly contractId?: string;
+    readonly queryPayment?: string;
+    readonly maxQueryPayment?: string;
+}
