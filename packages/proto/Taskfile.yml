@@ -19,7 +19,7 @@ tasks:
 
     install:submodules:
         vars:
-            commit: "7ca2f4e457a68fbc092edd17552bc5db7e032f6d" # v0.65.0
+            commit: "20f39f28061087e08f013d4b96b38ed732a9cc55" # 0.68.1
         cmds:
             - git submodule update --init --recursive --remote
             - |
@@ -40,7 +40,11 @@ tasks:
             - rm -rf src/proto/streams
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/services src/proto/
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/streams src/proto/
-            - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/event/* src/proto/services/
+            - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/event/* src/proto/
+            - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/state/* src/proto/
+            - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/block/stream/chain_of_trust_proof.proto src/proto/
+            - chmod +x scripts/remove-duplicate-protobuf.sh
+            - ./scripts/remove-duplicate-protobuf.sh
             - echo "Protobufs moved successfully!"
             - task "delete:submodule"
 
