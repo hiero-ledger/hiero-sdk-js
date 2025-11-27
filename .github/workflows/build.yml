@@ -111,7 +111,7 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@b76850c1ac44466900f8e7412b309c3aa0f539c1 # v0.12
         with:
           installMirrorNode: true
-          hieroVersion: v0.65.0
+          hieroVersion: v0.69.0-alpha.2
           mirrorNodeVersion: v0.138.0
           grpcProxyPort: 8080
 
@@ -211,7 +211,7 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@b76850c1ac44466900f8e7412b309c3aa0f539c1 # v0.12
         with:
           installMirrorNode: true
-          hieroVersion: v0.65.0
+          hieroVersion: v0.69.0-alpha.2
           mirrorNodeVersion: v0.138.0
           grpcProxyPort: 8080
 
