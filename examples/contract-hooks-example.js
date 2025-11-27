@@ -10,6 +10,7 @@ import {
     LambdaEvmHook,
     HookExtensionPoint,
     Long,
+    Hbar,
 } from "@hashgraph/sdk";
 
 import dotenv from "dotenv";
@@ -55,6 +56,7 @@ async function main() {
                     .setAdminKey(operatorKey.publicKey)
                     .setGas(500_000)
                     .setBytecode(decode(hookContractBytecodeHex))
+                    .setMaxTransactionFee(new Hbar(10))
                     .freezeWith(client)
                     .sign(operatorKey)
             ).execute(client)
@@ -91,6 +93,7 @@ async function main() {
                     .setGas(400_000)
                     .setBytecode(decode(simpleContractBytecodeHex))
                     .addHook(hookWithId1)
+                    .setMaxTransactionFee(new Hbar(10))
                     .freezeWith(client)
                     .sign(operatorKey)
             ).execute(client)
@@ -125,6 +128,7 @@ async function main() {
                     await new ContractUpdateTransaction()
                         .setContractId(contractWithHooksId)
                         .addHookToCreate(hookWithId3)
+                        .setMaxTransactionFee(new Hbar(10))
                         .freezeWith(client)
                         .sign(operatorKey)
                 ).execute(client)
@@ -148,6 +152,7 @@ async function main() {
                         .setContractId(contractWithHooksId)
                         .addHookToDelete(Long.fromNumber(1)) // Delete hook created during contract creation
                         .addHookToDelete(Long.fromNumber(3)) // Delete hook added via contract update
+                        .setMaxTransactionFee(new Hbar(10))
                         .freezeWith(client)
                         .sign(operatorKey)
                 ).execute(client)

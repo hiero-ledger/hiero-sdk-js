@@ -62,6 +62,7 @@ async function main() {
                     .setAdminKey(operatorKey.publicKey)
                     .setGas(1000000)
                     .setBytecode(decode(hookBytecode))
+                    .setMaxTransactionFee(new Hbar(10))
                     .freezeWith(client)
                     .sign(operatorKey)
             ).execute(client)
@@ -82,6 +83,7 @@ async function main() {
                     .setKeyWithoutAlias(senderPrivateKey.publicKey)
                     .setInitialBalance(new Hbar(10))
                     .addHook(hookDetails)
+                    .setMaxTransactionFee(new Hbar(10))
                     .freezeWith(client)
                     .sign(senderPrivateKey)
             ).execute(client)
@@ -93,6 +95,7 @@ async function main() {
                 .setMaxAutomaticTokenAssociations(-1)
                 .setInitialBalance(new Hbar(10))
                 .addHook(hookDetails)
+                .setMaxTransactionFee(new Hbar(10))
                 .execute(client)
         ).getReceipt(client);
 
@@ -213,6 +216,7 @@ async function main() {
                     hbarHook,
                 )
                 .addHbarTransfer(receiverAccountId, Long.fromInt(1))
+                .setMaxTransactionFee(new Hbar(10))
                 .execute(client)
         ).getReceipt(client);
 
@@ -227,6 +231,7 @@ async function main() {
                     nftSenderHook,
                     nftReceiverHook,
                 )
+                .setMaxTransactionFee(new Hbar(10))
                 .execute(client)
         ).getReceipt(client);
 
@@ -243,6 +248,7 @@ async function main() {
                     fungibleTokenHook,
                 )
                 .addTokenTransfer(fungibleTokenId, receiverAccountId, 1000)
+                .setMaxTransactionFee(new Hbar(10))
                 .execute(client)
         ).getReceipt(client);
 
