@@ -113,7 +113,8 @@ describe("CryptoTransfer", function () {
             const createResp = await (
                 await new AccountCreateTransaction()
                     .setKeyWithoutAlias(key.publicKey)
-                    .setInitialBalance(new Hbar(1))
+                    .setInitialBalance(new Hbar(10))
+                    .setMaxTransactionFee(new Hbar(100))
                     .addHook(hookDetails)
                     .freezeWith(env.client)
                     .sign(key)
@@ -156,7 +157,8 @@ describe("CryptoTransfer", function () {
             const createResp1 = await (
                 await new AccountCreateTransaction()
                     .setKeyWithoutAlias(key1.publicKey)
-                    .setInitialBalance(new Hbar(1))
+                    .setInitialBalance(new Hbar(10))
+                    .setMaxTransactionFee(new Hbar(100))
                     .addHook(hookDetails1)
                     .freezeWith(env.client)
                     .sign(key1)
@@ -179,7 +181,8 @@ describe("CryptoTransfer", function () {
             const createResp2 = await (
                 await new AccountCreateTransaction()
                     .setKeyWithoutAlias(key2.publicKey)
-                    .setInitialBalance(new Hbar(1))
+                    .setInitialBalance(new Hbar(10))
+                    .setMaxTransactionFee(new Hbar(100))
                     .addHook(hookDetails2)
                     .freezeWith(env.client)
                     .sign(key2)
@@ -239,7 +242,8 @@ describe("CryptoTransfer", function () {
             const senderResp = await (
                 await new AccountCreateTransaction()
                     .setKeyWithoutAlias(senderKey.publicKey)
-                    .setInitialBalance(new Hbar(3))
+                    .setInitialBalance(new Hbar(10))
+                    .setMaxTransactionFee(new Hbar(100))
                     .addHook(senderHookDetails)
                     .freezeWith(env.client)
                     .sign(senderKey)
@@ -263,7 +267,8 @@ describe("CryptoTransfer", function () {
             const receiverResp = await (
                 await new AccountCreateTransaction()
                     .setKeyWithoutAlias(receiverKey.publicKey)
-                    .setInitialBalance(new Hbar(1))
+                    .setInitialBalance(new Hbar(10))
+                    .setMaxTransactionFee(new Hbar(100))
                     .addHook(receiverHookDetails)
                     .freezeWith(env.client)
                     .sign(receiverKey)
@@ -320,7 +325,8 @@ describe("CryptoTransfer", function () {
             const receiverResp = await (
                 await new AccountCreateTransaction()
                     .setKeyWithoutAlias(receiverKey.publicKey)
-                    .setInitialBalance(new Hbar(2))
+                    .setInitialBalance(new Hbar(10))
+                    .setMaxTransactionFee(new Hbar(100))
                     .addHook(hookDetails)
                     .freezeWith(env.client)
                     .sign(receiverKey)
@@ -390,7 +396,8 @@ describe("CryptoTransfer", function () {
             const senderResp = await (
                 await new AccountCreateTransaction()
                     .setKeyWithoutAlias(senderKey.publicKey)
-                    .setInitialBalance(new Hbar(2))
+                    .setInitialBalance(new Hbar(10))
+                    .setMaxTransactionFee(new Hbar(100))
                     .addHook(senderHookDetails)
                     .freezeWith(env.client)
                     .sign(senderKey)
@@ -415,7 +422,8 @@ describe("CryptoTransfer", function () {
             const receiverResp = await (
                 await new AccountCreateTransaction()
                     .setKeyWithoutAlias(receiverKey.publicKey)
-                    .setInitialBalance(new Hbar(2))
+                    .setInitialBalance(new Hbar(10))
+                    .setMaxTransactionFee(new Hbar(100))
                     .addHook(receiverHookDetails)
                     .freezeWith(env.client)
                     .sign(receiverKey)
@@ -512,7 +520,8 @@ describe("CryptoTransfer", function () {
             const senderResp = await (
                 await new AccountCreateTransaction()
                     .setKeyWithoutAlias(senderKey.publicKey)
-                    .setInitialBalance(new Hbar(2))
+                    .setInitialBalance(new Hbar(10))
+                    .setMaxTransactionFee(new Hbar(100))
                     .addHook(senderHookDetails)
                     .freezeWith(env.client)
                     .sign(senderKey)
@@ -536,7 +545,8 @@ describe("CryptoTransfer", function () {
             const receiverResp = await (
                 await new AccountCreateTransaction()
                     .setKeyWithoutAlias(receiverKey.publicKey)
-                    .setInitialBalance(new Hbar(2))
+                    .setInitialBalance(new Hbar(10))
+                    .setMaxTransactionFee(new Hbar(100))
                     .addHook(receiverHookDetails)
                     .freezeWith(env.client)
                     .sign(receiverKey)
@@ -631,7 +641,8 @@ describe("CryptoTransfer", function () {
             const createResp = await (
                 await new AccountCreateTransaction()
                     .setKeyWithoutAlias(key.publicKey)
-                    .setInitialBalance(new Hbar(2))
+                    .setInitialBalance(new Hbar(10))
+                    .setMaxTransactionFee(new Hbar(100))
                     .addHook(hookDetails)
                     .freezeWith(env.client)
                     .sign(key)
@@ -679,7 +690,8 @@ describe("CryptoTransfer", function () {
             const createResp = await (
                 await new AccountCreateTransaction()
                     .setKeyWithoutAlias(key.publicKey)
-                    .setInitialBalance(new Hbar(2))
+                    .setInitialBalance(new Hbar(10))
+                    .setMaxTransactionFee(new Hbar(100))
                     .addHook(hookDetails)
                     .freezeWith(env.client)
                     .sign(key)
@@ -733,7 +745,8 @@ describe("CryptoTransfer", function () {
                 const createResp = await (
                     await new AccountCreateTransaction()
                         .setKeyWithoutAlias(key.publicKey)
-                        .setInitialBalance(new Hbar(2))
+                        .setInitialBalance(new Hbar(10))
+                        .setMaxTransactionFee(new Hbar(100))
                         .addHook(hookDetails)
                         .freezeWith(env.client)
                         .sign(key)
@@ -791,7 +804,8 @@ describe("CryptoTransfer", function () {
                 const createResp = await (
                     await new AccountCreateTransaction()
                         .setKeyWithoutAlias(key.publicKey)
-                        .setInitialBalance(new Hbar(2))
+                        .setInitialBalance(new Hbar(10))
+                        .setMaxTransactionFee(new Hbar(100))
                         .addHook(hookDetails)
                         .freezeWith(env.client)
                         .sign(key)
@@ -849,7 +863,8 @@ describe("CryptoTransfer", function () {
                 const createResp = await (
                     await new AccountCreateTransaction()
                         .setKeyWithoutAlias(key.publicKey)
-                        .setInitialBalance(new Hbar(2))
+                        .setInitialBalance(new Hbar(10))
+                        .setMaxTransactionFee(new Hbar(100))
                         .addHook(negativeHookDetails)
                         .freezeWith(env.client)
                         .sign(key)
