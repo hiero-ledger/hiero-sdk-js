@@ -26,6 +26,7 @@ import { sdk } from "../sdk_data";
 import { getKeyFromString } from "../utils/key";
 import Long from "long";
 import { decode } from "../utils/hex";
+import { buildContractCallQueryResponse } from "../utils/helpers/contract";
 
 export const createContract = async ({
     adminKey,
@@ -331,79 +332,5 @@ export const contractCallQuery = async ({
 
     const result = await query.execute(client);
 
-    // Helper function to safely get values from result
-    const safeGetString = (getter: () => string) => {
-        try {
-            return getter();
-        } catch {
-            return undefined;
-        }
-    };
-
-    const safeGetBool = (getter: () => boolean) => {
-        try {
-            return getter();
-        } catch {
-            return undefined;
-        }
-    };
-
-    const safeGetNumber = (getter: () => number) => {
-        try {
-            return getter().toString();
-        } catch {
-            return undefined;
-        }
-    };
-
-    const safeGetBigNumber = (getter: () => any) => {
-        try {
-            const value = getter();
-            return value.toString();
-        } catch {
-            return undefined;
-        }
-    };
-
-    // Build response with all possible return types
-    const response: ContractCallQueryResponse = {
-        bytes: result.bytes
-            ? "0x" + Buffer.from(result.bytes).toString("hex")
-            : undefined,
-        contractId: result.contractId?.toString(),
-        gasUsed: result.gasUsed?.toString(),
-        errorMessage: result.errorMessage || undefined,
-        // Try to extract common return value types
-        string: safeGetString(() => result.getString(0)),
-        bool: safeGetBool(() => result.getBool(0)),
-        address: safeGetString(() => {
-            const addr = result.getAddress(0);
-            return addr ? "0x" + addr : addr;
-        }),
-        bytes32:
-            result.bytes.length >= 32
-                ? "0x" + Buffer.from(result.getBytes32(0)).toString("hex")
-                : undefined,
-        // Integer types
-        int8: safeGetNumber(() => result.getInt8(0)),
-        uint8: safeGetNumber(() => result.getUint8(0)),
-        int16: safeGetNumber(() => result.getInt16(0)),
-        uint16: safeGetNumber(() => result.getUint16(0)),
-        int24: safeGetBigNumber(() => result.getInt24(0)),
-        uint24: safeGetBigNumber(() => result.getUint24(0)),
-        int32: safeGetNumber(() => result.getInt32(0)),
-        uint32: safeGetNumber(() => result.getUint32(0)),
-        int40: safeGetBigNumber(() => result.getInt40(0)),
-        uint40: safeGetBigNumber(() => result.getUint40(0)),
-        int48: safeGetBigNumber(() => result.getInt48(0)),
-        uint48: safeGetBigNumber(() => result.getUint48(0)),
-        int56: safeGetBigNumber(() => result.getInt56(0)),
-        uint56: safeGetBigNumber(() => result.getUint56(0)),
-        int64: safeGetBigNumber(() => result.getInt64(0)),
-        uint64: safeGetBigNumber(() => result.getUint64(0)),
-        int256: safeGetBigNumber(() => result.getInt256(0)),
-        uint256: safeGetBigNumber(() => result.getUint256(0)),
-    };
-
-    return response;
+    return buildContractCallQueryResponse(result);
 };
