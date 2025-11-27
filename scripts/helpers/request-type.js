@@ -10,7 +10,7 @@ function getRequestTypeComment(name) {
     try {
         const protoPath = path.join(
             process.cwd(),
-            "packages/proto/src/proto/services/basic_types.proto",
+            "packages/proto/src/proto/services_basic_types.proto",
         );
         const protoContent = fs.readFileSync(protoPath, "utf8");
 

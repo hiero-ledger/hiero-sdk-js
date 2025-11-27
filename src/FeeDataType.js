@@ -39,6 +39,8 @@ export default class FeeDataType {
                 return "TOPIC_CREATE_WITH_CUSTOM_FEES";
             case FeeDataType.SubmitMessageWithCustomFees:
                 return "SUBMIT_MESSAGE_WITH_CUSTOM_FEES";
+            case FeeDataType.CryptoTransferWithHooks:
+                return "CRYPTO_TRANSFER_WITH_HOOKS";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -67,6 +69,8 @@ export default class FeeDataType {
                 return FeeDataType.TopicCreateWithCustomFees;
             case 7:
                 return FeeDataType.SubmitMessageWithCustomFees;
+            case 8:
+                return FeeDataType.CryptoTransferWithHooks;
         }
 
         throw new Error(
@@ -123,3 +127,8 @@ FeeDataType.TopicCreateWithCustomFees = new FeeDataType(6);
  * for a topic with custom fees.
  */
 FeeDataType.SubmitMessageWithCustomFees = new FeeDataType(7);
+
+/**
+ * The resource cost for the transaction type includes a CryptoTransfer with hook invocations.
+ */
+FeeDataType.CryptoTransferWithHooks = new FeeDataType(8);

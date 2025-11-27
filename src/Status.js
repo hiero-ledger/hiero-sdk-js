@@ -742,6 +742,64 @@ export default class Status {
                 return "GRPC_WEB_PROXY_NOT_SUPPORTED";
             case Status.NftTransfersOnlyAllowedForNonFungibleUnique:
                 return "NFT_TRANSFERS_ONLY_ALLOWED_FOR_NON_FUNGIBLE_UNIQUE";
+            case Status.InvalidSerializedTxMessageHashAlgorithm:
+                return "INVALID_SERIALIZED_TX_MESSAGE_HASH_ALGORITHM";
+            case Status.WrongHookEntityType:
+                return "WRONG_HOOK_ENTITY_TYPE";
+            case Status.EvmHookGasThrottled:
+                return "EVM_HOOK_GAS_THROTTLED";
+            case Status.HookIdInUse:
+                return "HOOK_ID_IN_USE";
+            case Status.BadHookRequest:
+                return "BAD_HOOK_REQUEST";
+            case Status.RejectedByAccountAllowanceHook:
+                return "REJECTED_BY_ACCOUNT_ALLOWANCE_HOOK";
+            case Status.HookNotFound:
+                return "HOOK_NOT_FOUND";
+            case Status.LambdaStorageUpdateBytesTooLong:
+                return "LAMBDA_STORAGE_UPDATE_BYTES_TOO_LONG";
+            case Status.LambdaStorageUpdateBytesMustUseMinimalRepresentation:
+                return "LAMBDA_STORAGE_UPDATE_BYTES_MUST_USE_MINIMAL_REPRESENTATION";
+            case Status.InvalidHookId:
+                return "INVALID_HOOK_ID";
+            case Status.EmptyLambdaStorageUpdate:
+                return "EMPTY_LAMBDA_STORAGE_UPDATE";
+            case Status.HookIdRepeatedInCreationDetails:
+                return "HOOK_ID_REPEATED_IN_CREATION_DETAILS";
+            case Status.HooksNotEnabled:
+                return "HOOKS_NOT_ENABLED";
+            case Status.HookIsNotALambda:
+                return "HOOK_IS_NOT_A_LAMBDA";
+            case Status.HookDeleted:
+                return "HOOK_DELETED";
+            case Status.TooManyLambdaStorageUpdates:
+                return "TOO_MANY_LAMBDA_STORAGE_UPDATES";
+            case Status.HookCreationBytesMustUseMinimalRepresentation:
+                return "HOOK_CREATION_BYTES_MUST_USE_MINIMAL_REPRESENTATION";
+            case Status.HookCreationBytesTooLong:
+                return "HOOK_CREATION_BYTES_TOO_LONG";
+            case Status.InvalidHookCreationSpec:
+                return "INVALID_HOOK_CREATION_SPEC";
+            case Status.HookExtensionEmpty:
+                return "HOOK_EXTENSION_EMPTY";
+            case Status.InvalidHookAdminKey:
+                return "INVALID_HOOK_ADMIN_KEY";
+            case Status.HookDeletionRequiresZeroStorageSlots:
+                return "HOOK_DELETION_REQUIRES_ZERO_STORAGE_SLOTS";
+            case Status.CannotSetHooksAndApproval:
+                return "CANNOT_SET_HOOKS_AND_APPROVAL";
+            case Status.TransactionRequiresZeroHooks:
+                return "TRANSACTION_REQUIRES_ZERO_HOOKS";
+            case Status.InvalidHookCall:
+                return "INVALID_HOOK_CALL";
+            case Status.HooksAreNotSupportedInAirdrops:
+                return "HOOKS_ARE_NOT_SUPPORTED_IN_AIRDROPS";
+            case Status.AccountIsLinkedToANode:
+                return "ACCOUNT_IS_LINKED_TO_A_NODE";
+            case Status.HooksExecutionsRequireTopLevelCryptoTransfer:
+                return "HOOKS_EXECUTIONS_REQUIRE_TOP_LEVEL_CRYPTO_TRANSFER";
+            case Status.NodeAccountHasZeroBalance:
+                return "NODE_ACCOUNT_HAS_ZERO_BALANCE";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -1472,6 +1530,64 @@ export default class Status {
                 return Status.GrpcWebProxyNotSupported;
             case 400:
                 return Status.NftTransfersOnlyAllowedForNonFungibleUnique;
+            case 401:
+                return Status.InvalidSerializedTxMessageHashAlgorithm;
+            case 499:
+                return Status.WrongHookEntityType;
+            case 500:
+                return Status.EvmHookGasThrottled;
+            case 501:
+                return Status.HookIdInUse;
+            case 502:
+                return Status.BadHookRequest;
+            case 503:
+                return Status.RejectedByAccountAllowanceHook;
+            case 504:
+                return Status.HookNotFound;
+            case 505:
+                return Status.LambdaStorageUpdateBytesTooLong;
+            case 506:
+                return Status.LambdaStorageUpdateBytesMustUseMinimalRepresentation;
+            case 507:
+                return Status.InvalidHookId;
+            case 508:
+                return Status.EmptyLambdaStorageUpdate;
+            case 509:
+                return Status.HookIdRepeatedInCreationDetails;
+            case 510:
+                return Status.HooksNotEnabled;
+            case 511:
+                return Status.HookIsNotALambda;
+            case 512:
+                return Status.HookDeleted;
+            case 513:
+                return Status.TooManyLambdaStorageUpdates;
+            case 514:
+                return Status.HookCreationBytesMustUseMinimalRepresentation;
+            case 515:
+                return Status.HookCreationBytesTooLong;
+            case 516:
+                return Status.InvalidHookCreationSpec;
+            case 517:
+                return Status.HookExtensionEmpty;
+            case 518:
+                return Status.InvalidHookAdminKey;
+            case 519:
+                return Status.HookDeletionRequiresZeroStorageSlots;
+            case 520:
+                return Status.CannotSetHooksAndApproval;
+            case 521:
+                return Status.TransactionRequiresZeroHooks;
+            case 522:
+                return Status.InvalidHookCall;
+            case 523:
+                return Status.HooksAreNotSupportedInAirdrops;
+            case 524:
+                return Status.AccountIsLinkedToANode;
+            case 525:
+                return Status.HooksExecutionsRequireTopLevelCryptoTransfer;
+            case 526:
+                return Status.NodeAccountHasZeroBalance;
             default:
                 throw new Error(
                     `(BUG) Status.fromCode() does not handle code: ${code}`,
@@ -3351,3 +3467,148 @@ Status.GrpcWebProxyNotSupported = new Status(399);
  * An NFT transfers list referenced a token type other than NON_FUNGIBLE_UNIQUE.
  */
 Status.NftTransfersOnlyAllowedForNonFungibleUnique = new Status(400);
+
+/**
+ * invalid serialized tx message hash algorithm
+ */
+Status.InvalidSerializedTxMessageHashAlgorithm = new Status(401);
+
+/**
+ * wrong hook entity type
+ */
+Status.WrongHookEntityType = new Status(499);
+
+/**
+ * evm hook gas throttled
+ */
+Status.EvmHookGasThrottled = new Status(500);
+
+/**
+ * hook id in use
+ */
+Status.HookIdInUse = new Status(501);
+
+/**
+ * bad hook request
+ */
+Status.BadHookRequest = new Status(502);
+
+/**
+ * rejected by account allowance hook
+ */
+Status.RejectedByAccountAllowanceHook = new Status(503);
+
+/**
+ * hook not found
+ */
+Status.HookNotFound = new Status(504);
+
+/**
+ * lambda storage update bytes too long
+ */
+Status.LambdaStorageUpdateBytesTooLong = new Status(505);
+
+/**
+ * lambda storage update bytes must use minimal representation
+ */
+Status.LambdaStorageUpdateBytesMustUseMinimalRepresentation = new Status(506);
+
+/**
+ * invalid hook id
+ */
+Status.InvalidHookId = new Status(507);
+
+/**
+ * empty lambda storage update
+ */
+Status.EmptyLambdaStorageUpdate = new Status(508);
+
+/**
+ * hook id repeated in creation details
+ */
+Status.HookIdRepeatedInCreationDetails = new Status(509);
+
+/**
+ * hooks not enabled
+ */
+Status.HooksNotEnabled = new Status(510);
+
+/**
+ * hook is not a lambda
+ */
+Status.HookIsNotALambda = new Status(511);
+
+/**
+ * hook deleted
+ */
+Status.HookDeleted = new Status(512);
+
+/**
+ * too many lambda storage updates
+ */
+Status.TooManyLambdaStorageUpdates = new Status(513);
+
+/**
+ * hook creation bytes must use minimal representation
+ */
+Status.HookCreationBytesMustUseMinimalRepresentation = new Status(514);
+
+/**
+ * hook creation bytes too long
+ */
+Status.HookCreationBytesTooLong = new Status(515);
+
+/**
+ * invalid hook creation spec
+ */
+Status.InvalidHookCreationSpec = new Status(516);
+
+/**
+ * hook extension empty
+ */
+Status.HookExtensionEmpty = new Status(517);
+
+/**
+ * invalid hook admin key
+ */
+Status.InvalidHookAdminKey = new Status(518);
+
+/**
+ * hook deletion requires zero storage slots
+ */
+Status.HookDeletionRequiresZeroStorageSlots = new Status(519);
+
+/**
+ * cannot set hooks and approval
+ */
+Status.CannotSetHooksAndApproval = new Status(520);
+
+/**
+ * transaction requires zero hooks
+ */
+Status.TransactionRequiresZeroHooks = new Status(521);
+
+/**
+ * invalid hook call
+ */
+Status.InvalidHookCall = new Status(522);
+
+/**
+ * hooks are not supported in airdrops
+ */
+Status.HooksAreNotSupportedInAirdrops = new Status(523);
+
+/**
+ * account is linked to a node
+ */
+Status.AccountIsLinkedToANode = new Status(524);
+
+/**
+ * hooks executions require top level crypto transfer
+ */
+Status.HooksExecutionsRequireTopLevelCryptoTransfer = new Status(525);
+
+/**
+ * node account has zero balance
+ */
+Status.NodeAccountHasZeroBalance = new Status(526);
