@@ -15,7 +15,7 @@ import {
     HookEntityId,
     LambdaStorageSlot,
     Long,
-} from "@hashgraph/sdk";
+} from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
 
