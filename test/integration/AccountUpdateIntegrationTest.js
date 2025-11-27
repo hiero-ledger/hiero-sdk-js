@@ -432,7 +432,7 @@ describe("AccountUpdate", function () {
                             .setAccountId(accountId)
                             .addHookToCreate(hookDetails)
                             .addHookToDelete(1) // Same ID as the hook being added
-                            .setMaxTransactionFee(new Hbar(10))
+                            .setMaxTransactionFee(new Hbar(100))
                             .freezeWith(env.client)
                             .sign(newKey)
                     ).execute(env.client)

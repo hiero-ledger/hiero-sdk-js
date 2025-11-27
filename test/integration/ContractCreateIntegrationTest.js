@@ -225,7 +225,7 @@ describe("ContractCreate", function () {
                 .setBytecode(bytecode)
                 .setGas(300_000)
                 .addHook(hookDetails)
-                .setMaxTransactionFee(new Hbar(10))
+                .setMaxTransactionFee(new Hbar(100))
                 .execute(env.client)
         ).getReceipt(env.client);
 
@@ -245,7 +245,7 @@ describe("ContractCreate", function () {
                 await new ContractCreateTransaction()
                     .setBytecode(bytecode)
                     .setGas(300_000)
-                    .setMaxTransactionFee(new Hbar(10))
+                    .setMaxTransactionFee(new Hbar(100))
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -271,7 +271,7 @@ describe("ContractCreate", function () {
                     .setBytecode(bytecode)
                     .setGas(300_000)
                     .addHook(hookDetails)
-                    .setMaxTransactionFee(new Hbar(10))
+                    .setMaxTransactionFee(new Hbar(100))
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -393,7 +393,7 @@ describe("ContractCreate", function () {
                         .setBytecode(bytecode)
                         .setGas(300_000)
                         .addHook(hookDetails)
-                        .setMaxTransactionFee(new Hbar(10))
+                        .setMaxTransactionFee(new Hbar(100))
                         .freezeWith(env.client)
                         .sign(adminKey)
                 ).execute(env.client)
