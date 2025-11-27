@@ -106,7 +106,7 @@ class LambdaMappingEntry {
 
     /**
      *
-     * @param {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaMappingEntry} lambdaMappingEntry
+     * @param {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.ILambdaMappingEntry} lambdaMappingEntry
      * @returns {LambdaMappingEntry}
      */
     static _fromProtobuf(lambdaMappingEntry) {
@@ -128,7 +128,7 @@ class LambdaMappingEntry {
 
     /**
      *
-     * @returns {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaMappingEntry}
+     * @returns {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.ILambdaMappingEntry}
      */
     _toProtobuf() {
         return {

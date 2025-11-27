@@ -5,7 +5,7 @@ import EvmHookCall from "./EvmHookCall.js";
 import NftHookType from "./NftHookType.js";
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IHookCall} HieroProto.proto.IHookCall
+ * @typedef {import("@hiero-ledger/proto").proto.IHookCall} HieroProto.proto.IHookCall
  */
 
 /**

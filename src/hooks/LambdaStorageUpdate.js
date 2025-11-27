@@ -10,7 +10,7 @@ import LambdaMappingEntry from "./LambdaMappingEntry.js";
 class LambdaStorageUpdate {
     /**
      *
-     * @param {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate} lambdaStorageUpdate
+     * @param {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate} lambdaStorageUpdate
      * @returns {LambdaStorageUpdate}
      */
     static _fromProtobuf(lambdaStorageUpdate) {
@@ -29,7 +29,7 @@ class LambdaStorageUpdate {
 
     /**
      * @abstract
-     * @returns {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate}
+     * @returns {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate}
      */
     _toProtobuf() {
         throw new Error(
@@ -108,7 +108,7 @@ class LambdaStorageSlot extends LambdaStorageUpdate {
 
     /**
      *
-     * @param {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate} lambdaStorageSlot
+     * @param {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate} lambdaStorageSlot
      * @returns {LambdaStorageSlot}
      */
     static _fromProtobuf(lambdaStorageSlot) {
@@ -130,7 +130,7 @@ class LambdaStorageSlot extends LambdaStorageUpdate {
     }
 
     /**
-     * @returns {import("@hashgraph/proto").com.hedera.hapi.node.hooks.LambdaStorageUpdate}
+     * @returns {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.LambdaStorageUpdate}
      */
     _toProtobuf() {
         return {
@@ -222,7 +222,7 @@ class LambdaMappingEntries extends LambdaStorageUpdate {
 
     /**
      *
-     * @param {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate} lambdaStorageUpdate
+     * @param {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate} lambdaStorageUpdate
      * @returns {LambdaMappingEntries}
      */
     static _fromProtobuf(lambdaStorageUpdate) {
@@ -239,7 +239,7 @@ class LambdaMappingEntries extends LambdaStorageUpdate {
 
     /**
      *
-     * @returns {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate}
+     * @returns {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate}
      */
     _toProtobuf() {
         return {

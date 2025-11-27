@@ -40,7 +40,7 @@ class HookEntityId {
 
     /**
      *
-     * @returns {import("@hashgraph/proto").proto.IHookEntityId}
+     * @returns {import("@hiero-ledger/proto").proto.IHookEntityId}
      */
     _toProtobuf() {
         return {
@@ -51,7 +51,7 @@ class HookEntityId {
 
     /**
      *
-     * @param {import("@hashgraph/proto").proto.IHookEntityId} hookEntityId
+     * @param {import("@hiero-ledger/proto").proto.IHookEntityId} hookEntityId
      * @returns {HookEntityId}
      */
     static _fromProtobuf(hookEntityId) {

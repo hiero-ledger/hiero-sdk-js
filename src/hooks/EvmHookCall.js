@@ -2,7 +2,7 @@ import Long from "long";
 
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IEvmHookCall} HieroProto.proto.IEvmHookCall
+ * @typedef {import("@hiero-ledger/proto").proto.IEvmHookCall} HieroProto.proto.IEvmHookCall
  */
 
 /**
@@ -87,7 +87,7 @@ class EvmHookCall {
 
     /**
      *
-     * @returns {import("@hashgraph/proto").proto.IEvmHookCall}
+     * @returns {import("@hiero-ledger/proto").proto.IEvmHookCall}
      */
     _toProtobuf() {
         return {

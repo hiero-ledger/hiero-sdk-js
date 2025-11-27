@@ -128,7 +128,7 @@ class HookCreationDetails {
 
     /**
      *
-     * @returns {import("@hashgraph/proto").com.hedera.hapi.node.hooks.IHookCreationDetails}
+     * @returns {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.IHookCreationDetails}
      */
     _toProtobuf() {
         return {

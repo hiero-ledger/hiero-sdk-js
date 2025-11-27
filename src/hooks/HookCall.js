@@ -1,6 +1,6 @@
 /**
  * @namespace proto
- * @typedef {import("@hashgraph/proto").proto.IHookCall} HieroProto.proto.IHookCall
+ * @typedef {import("@hiero-ledger/proto").proto.IHookCall} HieroProto.proto.IHookCall
  */
 
 import EvmHookCall from "../hooks/EvmHookCall.js";
@@ -84,7 +84,7 @@ class HookCall {
 
     /**
      *
-     * @returns {import("@hashgraph/proto").proto.HookCall}}
+     * @returns {import("@hiero-ledger/proto").proto.HookCall}}
      */
     _toProtobuf() {
         return {

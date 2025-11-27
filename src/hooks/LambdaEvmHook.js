@@ -66,7 +66,7 @@ class LambdaEvmHook {
 
     /**
      *
-     * @returns {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaEvmHook}
+     * @returns {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.ILambdaEvmHook}
      */
     _toProtobuf() {
         return {

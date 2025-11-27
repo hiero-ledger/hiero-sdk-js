@@ -91,7 +91,7 @@ class LambdaSStoreTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaSStoreTransactionBody} HieroProto.proto.ILambdaSStoreTransactionBody
+     * @returns {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.ILambdaSStoreTransactionBody} HieroProto.proto.ILambdaSStoreTransactionBody
      */
     _makeTransactionData() {
         return {
@@ -106,8 +106,8 @@ class LambdaSStoreTransaction extends Transaction {
      * @override
      * @internal
      * @param {Channel} channel
-     * @param {import("@hashgraph/proto").proto.ITransaction} request
-     * @returns {Promise<import("@hashgraph/proto").proto.ITransactionResponse>}
+     * @param {import("@hiero-ledger/proto").proto.ITransaction} request
+     * @returns {Promise<import("@hiero-ledger/proto").proto.ITransactionResponse>}
      */
     _execute(channel, request) {
         return channel.smartContract.lambdaSStore(request);
@@ -116,7 +116,7 @@ class LambdaSStoreTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {NonNullable<import("@hashgraph/proto").proto.TransactionBody["data"]>}
+     * @returns {NonNullable<import("@hiero-ledger/proto").proto.TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
         return "lambdaSstore";
@@ -134,11 +134,11 @@ class LambdaSStoreTransaction extends Transaction {
 
     /**
      * @internal
-     * @param {import("@hashgraph/proto").proto.ITransaction[]} transactions
-     * @param {import("@hashgraph/proto").proto.ISignedTransaction[]} signedTransactions
+     * @param {import("@hiero-ledger/proto").proto.ITransaction[]} transactions
+     * @param {import("@hiero-ledger/proto").proto.ISignedTransaction[]} signedTransactions
      * @param {TransactionId[]} transactionIds
      * @param {import("../account/AccountId.js").default[]} nodeIds
-     * @param {import("@hashgraph/proto").proto.ITransactionBody[]} bodies
+     * @param {import("@hiero-ledger/proto").proto.ITransactionBody[]} bodies
      * @returns {LambdaSStoreTransaction}
      */
     static _fromProtobuf(
@@ -150,7 +150,7 @@ class LambdaSStoreTransaction extends Transaction {
     ) {
         const body = bodies[0];
         const create =
-            /** @type {import("@hashgraph/proto").com.hedera.hapi.node.hooks.ILambdaSStoreTransactionBody} */ (
+            /** @type {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.ILambdaSStoreTransactionBody} */ (
                 body.lambdaSstore
             );
 
