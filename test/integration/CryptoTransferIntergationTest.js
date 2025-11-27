@@ -131,7 +131,7 @@ describe("CryptoTransfer", function () {
                 await new TransferTransaction()
                     .addHbarTransfer(operatorId, new Hbar(-1))
                     .addHbarTransferWithHook(accountId, new Hbar(1), call)
-                    .setMaxTransactionFee(new Hbar(100))
+                    .setMaxTransactionFee(new Hbar(500))
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -216,7 +216,7 @@ describe("CryptoTransfer", function () {
                         call2,
                         FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
                     )
-                    .setMaxTransactionFee(new Hbar(100))
+                    .setMaxTransactionFee(new Hbar(500))
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -293,7 +293,7 @@ describe("CryptoTransfer", function () {
                         new Hbar(1),
                         receiverCall,
                     )
-                    .setMaxTransactionFee(new Hbar(100))
+                    .setMaxTransactionFee(new Hbar(500))
                     .freezeWith(env.client)
                     .sign(senderKey)
             ).execute(env.client);
@@ -367,7 +367,7 @@ describe("CryptoTransfer", function () {
                         call,
                         FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
                     )
-                    .setMaxTransactionFee(new Hbar(100))
+                    .setMaxTransactionFee(new Hbar(500))
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -487,7 +487,7 @@ describe("CryptoTransfer", function () {
                         receiverId,
                         receiverCall,
                     )
-                    .setMaxTransactionFee(new Hbar(100))
+                    .setMaxTransactionFee(new Hbar(500))
                     .freezeWith(env.client)
                     .sign(senderKey)
             ).execute(env.client);
@@ -604,7 +604,7 @@ describe("CryptoTransfer", function () {
                         senderCall,
                         receiverCall,
                     )
-                    .setMaxTransactionFee(new Hbar(100))
+                    .setMaxTransactionFee(new Hbar(500))
                     .freezeWith(env.client)
                     .sign(senderKey)
             ).execute(env.client);
@@ -653,7 +653,7 @@ describe("CryptoTransfer", function () {
                         FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
                     )
                     .addHbarTransfer(operatorId, new Hbar(1))
-                    .setMaxTransactionFee(new Hbar(100))
+                    .setMaxTransactionFee(new Hbar(500))
                     .freezeWith(env.client)
                     .sign(key)
             ).execute(env.client);
@@ -699,7 +699,7 @@ describe("CryptoTransfer", function () {
                     .addHbarTransfer(operatorId, new Hbar(1))
                     .addHbarTransferWithHook(accountId, new Hbar(-1), call)
                     .addHbarTransfer(operatorId, new Hbar(1))
-                    .setMaxTransactionFee(new Hbar(100))
+                    .setMaxTransactionFee(new Hbar(500))
                     .freezeWith(env.client)
                     .sign(key)
             ).execute(env.client);
@@ -759,7 +759,7 @@ describe("CryptoTransfer", function () {
                                     call,
                                 )
                                 .addHbarTransfer(operatorId, new Hbar(1))
-                                .setMaxTransactionFee(new Hbar(100))
+                                .setMaxTransactionFee(new Hbar(500))
                                 .freezeWith(env.client)
                                 .sign(key)
                         ).execute(env.client)
@@ -816,7 +816,7 @@ describe("CryptoTransfer", function () {
                                 call,
                             )
                             .addHbarTransfer(operatorId, new Hbar(-1))
-                            .setMaxTransactionFee(new Hbar(100))
+                            .setMaxTransactionFee(new Hbar(500))
                             .execute(env.client)
                     ).getReceipt(env.client);
                 } catch (error) {
@@ -872,7 +872,7 @@ describe("CryptoTransfer", function () {
                                 call,
                             )
                             .addHbarTransfer(env.operatorId, new Hbar(1))
-                            .setMaxTransactionFee(new Hbar(100))
+                            .setMaxTransactionFee(new Hbar(500))
                             .execute(env.client)
                     ).getReceipt(env.client);
                 } catch (error) {
