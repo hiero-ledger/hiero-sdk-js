@@ -496,7 +496,7 @@ describe("CryptoTransfer", function () {
             expect(receipt.status.toString()).to.be.equal("SUCCESS");
         });
 
-        it.only("should transfer NFT with pre_post hooks on both sender and receiver", async function () {
+        it("should transfer NFT with pre_post hooks on both sender and receiver", async function () {
             // Create sender account with hook
             const senderKey = PrivateKey.generateED25519();
             const senderHook = new LambdaEvmHook({

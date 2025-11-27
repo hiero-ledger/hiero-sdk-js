@@ -59,6 +59,7 @@ describe("AccountCreate", function () {
             const tx = await new AccountCreateTransaction()
                 .setKeyWithoutAlias(newKey.publicKey)
                 .setInitialBalance(new Hbar(1))
+                .setMaxTransactionFee(new Hbar(10))
                 .addHook(hookDetails)
                 .freezeWith(env.client)
                 .sign(newKey);

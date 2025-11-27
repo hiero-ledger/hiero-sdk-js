@@ -794,6 +794,7 @@ describe("ContractUpdate", function () {
                         .setContractId(contract)
                         .addHookToCreate(hookDetails)
                         .addHookToDelete(1) // Same ID as the hook being added
+                        .setMaxTransactionFee(new Hbar(10))
                         .execute(env.client)
                 ).getReceipt(env.client);
             } catch (error) {

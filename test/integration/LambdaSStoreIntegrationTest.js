@@ -16,7 +16,6 @@ import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 
 import { decode } from "../../src/encoding/hex.js";
 import ContractCreateTransaction from "../../src/contract/ContractCreateTransaction.js";
-import EvmHookSpec from "../../src/hooks/EvmHookSpec.js";
 
 describe("LambdaSStore", function () {
     let env;
@@ -59,8 +58,8 @@ describe("LambdaSStore", function () {
 
         // Create lambda hook with storage
         const lambdaHook = new LambdaEvmHook({
+            contractId: contractId,
             storageUpdates: [storageSlot],
-            spec: new EvmHookSpec().setContractId(contractId),
         });
 
         const hookDetails = new HookCreationDetails({
