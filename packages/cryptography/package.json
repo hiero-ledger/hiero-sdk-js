@@ -28,6 +28,8 @@
     "exports": {
         "./package.json": "./package.json",
         ".": {
+            "react-native": "./src/index.native.js",
+            "types": "./lib/index.d.ts",
             "import": "./src/index.js",
             "require": "./lib/index.cjs"
         }
