@@ -97,6 +97,7 @@ describe("AccountUpdate", function () {
                 await new ContractCreateTransaction()
                     .setBytecode(bytecode)
                     .setGas(300_000)
+                    .setMaxTransactionFee(new Hbar(10))
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -123,6 +124,7 @@ describe("AccountUpdate", function () {
                 await new AccountUpdateTransaction()
                     .setAccountId(accountId)
                     .addHookToCreate(hookDetails)
+                    .setMaxTransactionFee(new Hbar(10))
                     .freezeWith(env.client)
                     .sign(newKey)
             ).execute(env.client);
@@ -161,6 +163,7 @@ describe("AccountUpdate", function () {
                         .setAccountId(accountId)
                         .addHookToCreate(hookDetails1)
                         .addHookToCreate(hookDetails2)
+                        .setMaxTransactionFee(new Hbar(10))
                         .freezeWith(env.client)
                         .sign(newKey)
                 ).execute(env.client);
@@ -197,6 +200,7 @@ describe("AccountUpdate", function () {
                     await new AccountUpdateTransaction()
                         .setAccountId(accountId)
                         .addHookToCreate(hookDetails)
+                        .setMaxTransactionFee(new Hbar(10))
                         .freezeWith(env.client)
                         .sign(newKey)
                 ).execute(env.client)
@@ -211,6 +215,7 @@ describe("AccountUpdate", function () {
                         await new AccountUpdateTransaction()
                             .setAccountId(accountId)
                             .addHookToCreate(hookDetails)
+                            .setMaxTransactionFee(new Hbar(10))
                             .freezeWith(env.client)
                             .sign(newKey)
                     ).execute(env.client)
@@ -250,6 +255,7 @@ describe("AccountUpdate", function () {
                 await new AccountUpdateTransaction()
                     .setAccountId(accountId)
                     .addHookToCreate(hookDetails)
+                    .setMaxTransactionFee(new Hbar(10))
                     .freezeWith(env.client)
                     .sign(newKey)
             ).execute(env.client);
@@ -278,6 +284,7 @@ describe("AccountUpdate", function () {
                     await new AccountUpdateTransaction()
                         .setAccountId(accountId)
                         .addHookToCreate(hookDetails)
+                        .setMaxTransactionFee(new Hbar(10))
                         .freezeWith(env.client)
                         .sign(newKey)
                 ).execute(env.client)
@@ -292,6 +299,7 @@ describe("AccountUpdate", function () {
                         await new AccountUpdateTransaction()
                             .setAccountId(accountId)
                             .addHookToCreate(hookDetails)
+                            .setMaxTransactionFee(new Hbar(10))
                             .freezeWith(env.client)
                             .sign(newKey)
                     ).execute(env.client)
@@ -326,6 +334,7 @@ describe("AccountUpdate", function () {
                 await new AccountUpdateTransaction()
                     .setAccountId(accountId)
                     .addHookToCreate(hookDetails)
+                    .setMaxTransactionFee(new Hbar(10))
                     .freezeWith(env.client)
                     .sign(newKey)
             ).execute(env.client);
@@ -335,6 +344,7 @@ describe("AccountUpdate", function () {
                 await new AccountUpdateTransaction()
                     .setAccountId(accountId)
                     .addHookToDelete(1)
+                    .setMaxTransactionFee(new Hbar(10))
                     .freezeWith(env.client)
                     .sign(newKey)
             ).execute(env.client);
@@ -367,6 +377,7 @@ describe("AccountUpdate", function () {
                 await new AccountUpdateTransaction()
                     .setAccountId(accountId)
                     .addHookToCreate(hookDetails)
+                    .setMaxTransactionFee(new Hbar(10))
                     .freezeWith(env.client)
                     .sign(newKey)
             ).execute(env.client);
@@ -381,6 +392,7 @@ describe("AccountUpdate", function () {
                         await new AccountUpdateTransaction()
                             .setAccountId(accountId)
                             .addHookToDelete(999) // Non-existent hook ID
+                            .setMaxTransactionFee(new Hbar(10))
                             .freezeWith(env.client)
                             .sign(newKey)
                     ).execute(env.client)
@@ -420,6 +432,7 @@ describe("AccountUpdate", function () {
                             .setAccountId(accountId)
                             .addHookToCreate(hookDetails)
                             .addHookToDelete(1) // Same ID as the hook being added
+                            .setMaxTransactionFee(new Hbar(10))
                             .freezeWith(env.client)
                             .sign(newKey)
                     ).execute(env.client)
@@ -456,6 +469,7 @@ describe("AccountUpdate", function () {
                     await new AccountUpdateTransaction()
                         .setAccountId(accountId)
                         .addHookToCreate(hookDetails)
+                        .setMaxTransactionFee(new Hbar(10))
                         .freezeWith(env.client)
                         .sign(newKey)
                 ).execute(env.client)
@@ -467,6 +481,7 @@ describe("AccountUpdate", function () {
                     await new AccountUpdateTransaction()
                         .setAccountId(accountId)
                         .addHookToDelete(1)
+                        .setMaxTransactionFee(new Hbar(10))
                         .freezeWith(env.client)
                         .sign(newKey)
                 ).execute(env.client)
@@ -482,6 +497,7 @@ describe("AccountUpdate", function () {
                         await new AccountUpdateTransaction()
                             .setAccountId(accountId)
                             .addHookToDelete(1) // Same ID as previously deleted hook
+                            .setMaxTransactionFee(new Hbar(10))
                             .freezeWith(env.client)
                             .sign(newKey)
                     ).execute(env.client)

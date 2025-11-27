@@ -36,6 +36,7 @@ describe("AccountCreate", function () {
                 await new ContractCreateTransaction()
                     .setBytecode(bytecode)
                     .setGas(300_000)
+                    .setMaxTransactionFee(new Hbar(10))
                     .execute(env.client)
             ).getReceipt(env.client);
             contractId = receipt.contractId;
@@ -92,6 +93,7 @@ describe("AccountCreate", function () {
                 .setKeyWithoutAlias(newKey.publicKey)
                 .setInitialBalance(new Hbar(1))
                 .addHook(hookDetails)
+                .setMaxTransactionFee(new Hbar(10))
                 .freezeWith(env.client)
                 .sign(newKey);
 
@@ -123,6 +125,7 @@ describe("AccountCreate", function () {
                 .setKeyWithoutAlias(newKey.publicKey)
                 .setInitialBalance(new Hbar(1))
                 .addHook(hookDetails)
+                .setMaxTransactionFee(new Hbar(10))
                 .freezeWith(env.client)
                 .sign(newKey);
 
@@ -163,6 +166,7 @@ describe("AccountCreate", function () {
                 .setInitialBalance(new Hbar(1))
                 .addHook(hookDetails)
                 .addHook(sameHookDetails)
+                .setMaxTransactionFee(new Hbar(10))
                 .freezeWith(env.client)
                 .sign(newKey);
 
@@ -203,6 +207,7 @@ describe("AccountCreate", function () {
                     .setKeyWithoutAlias(newKey.publicKey)
                     .setInitialBalance(new Hbar(1))
                     .addHook(hookDetails)
+                    .setMaxTransactionFee(new Hbar(10))
                     .execute(env.client)
             ).getReceipt(env.client);
         });
@@ -241,6 +246,7 @@ describe("AccountCreate", function () {
             .setTransactionId(TransactionId.generate(account))
             .addHbarTransfer(account, Hbar.fromTinybars(10).negated())
             .addHbarTransfer(env.operatorId, Hbar.fromTinybars(10))
+            .setMaxTransactionFee(new Hbar(10))
             .freezeWith(env.client);
 
         await transaction.sign(key);

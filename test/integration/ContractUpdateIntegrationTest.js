@@ -298,6 +298,7 @@ describe("ContractUpdate", function () {
                 await new ContractCreateTransaction()
                     .setBytecode(bytecode)
                     .setGas(300_000)
+                    .setMaxTransactionFee(new Hbar(10))
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -326,6 +327,7 @@ describe("ContractUpdate", function () {
                 )
                 .setBytecodeFileId(file)
                 .setContractMemo("[e2e::ContractCreateTransaction]")
+                .setMaxTransactionFee(new Hbar(10))
                 .execute(env.client);
 
             receipt = await response.getReceipt(env.client);
@@ -346,6 +348,7 @@ describe("ContractUpdate", function () {
                 await new ContractUpdateTransaction()
                     .setContractId(contract)
                     .addHookToCreate(hookDetails)
+                    .setMaxTransactionFee(new Hbar(10))
                     .execute(env.client)
             ).getReceipt(env.client);
         });
@@ -372,6 +375,7 @@ describe("ContractUpdate", function () {
                 )
                 .setBytecodeFileId(file)
                 .setContractMemo("[e2e::ContractCreateTransaction]")
+                .setMaxTransactionFee(new Hbar(10))
                 .execute(env.client);
 
             receipt = await response.getReceipt(env.client);
@@ -403,6 +407,7 @@ describe("ContractUpdate", function () {
                         .setContractId(contract)
                         .addHookToCreate(hookDetails1)
                         .addHookToCreate(hookDetails2)
+                        .setMaxTransactionFee(new Hbar(10))
                         .execute(env.client)
                 ).getReceipt(env.client);
             } catch (error) {
@@ -439,6 +444,7 @@ describe("ContractUpdate", function () {
                 )
                 .setBytecodeFileId(file)
                 .setContractMemo("[e2e::ContractCreateTransaction]")
+                .setMaxTransactionFee(new Hbar(10))
                 .execute(env.client);
 
             receipt = await response.getReceipt(env.client);
@@ -459,6 +465,7 @@ describe("ContractUpdate", function () {
                 await new ContractUpdateTransaction()
                     .setContractId(contract)
                     .addHookToCreate(hookDetails)
+                    .setMaxTransactionFee(new Hbar(10))
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -477,6 +484,7 @@ describe("ContractUpdate", function () {
                     await new ContractUpdateTransaction()
                         .setContractId(contract)
                         .addHookToCreate(duplicateHookDetails)
+                        .setMaxTransactionFee(new Hbar(10))
                         .execute(env.client)
                 ).getReceipt(env.client);
             } catch (error) {
@@ -511,6 +519,7 @@ describe("ContractUpdate", function () {
                 )
                 .setBytecodeFileId(file)
                 .setContractMemo("[e2e::ContractCreateTransaction]")
+                .setMaxTransactionFee(new Hbar(10))
                 .execute(env.client);
 
             receipt = await response.getReceipt(env.client);
@@ -536,6 +545,7 @@ describe("ContractUpdate", function () {
                 await new ContractUpdateTransaction()
                     .setContractId(contract)
                     .addHookToCreate(hookDetails)
+                    .setMaxTransactionFee(new Hbar(10))
                     .execute(env.client)
             ).getReceipt(env.client);
         });
@@ -562,6 +572,7 @@ describe("ContractUpdate", function () {
                 )
                 .setBytecodeFileId(file)
                 .setContractMemo("[e2e::ContractCreateTransaction]")
+                .setMaxTransactionFee(new Hbar(10))
                 .execute(env.client);
 
             receipt = await response.getReceipt(env.client);
@@ -582,6 +593,7 @@ describe("ContractUpdate", function () {
                 await new ContractUpdateTransaction()
                     .setContractId(contract)
                     .addHookToCreate(hookDetails)
+                    .setMaxTransactionFee(new Hbar(10))
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -593,6 +605,7 @@ describe("ContractUpdate", function () {
                     await new ContractUpdateTransaction()
                         .setContractId(contract)
                         .addHookToCreate(hookDetails)
+                        .setMaxTransactionFee(new Hbar(10))
                         .execute(env.client)
                 ).getReceipt(env.client);
             } catch (error) {
@@ -627,6 +640,7 @@ describe("ContractUpdate", function () {
                 )
                 .setBytecodeFileId(file)
                 .setContractMemo("[e2e::ContractCreateTransaction]")
+                .setMaxTransactionFee(new Hbar(10))
                 .execute(env.client);
 
             receipt = await response.getReceipt(env.client);
@@ -647,6 +661,7 @@ describe("ContractUpdate", function () {
                 await new ContractUpdateTransaction()
                     .setContractId(contract)
                     .addHookToCreate(hookDetails)
+                    .setMaxTransactionFee(new Hbar(10))
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -655,6 +670,7 @@ describe("ContractUpdate", function () {
                 await new ContractUpdateTransaction()
                     .setContractId(contract)
                     .addHookToDelete(1)
+                    .setMaxTransactionFee(new Hbar(10))
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -684,6 +700,7 @@ describe("ContractUpdate", function () {
                 )
                 .setBytecodeFileId(file)
                 .setContractMemo("[e2e::ContractCreateTransaction]")
+                .setMaxTransactionFee(new Hbar(10))
                 .execute(env.client);
 
             receipt = await response.getReceipt(env.client);
@@ -704,6 +721,7 @@ describe("ContractUpdate", function () {
                 await new ContractUpdateTransaction()
                     .setContractId(contract)
                     .addHookToCreate(hookDetails)
+                    .setMaxTransactionFee(new Hbar(10))
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -716,6 +734,7 @@ describe("ContractUpdate", function () {
                     await new ContractUpdateTransaction()
                         .setContractId(contract)
                         .addHookToDelete(999) // Non-existent hook ID
+                        .setMaxTransactionFee(new Hbar(10))
                         .execute(env.client)
                 ).getReceipt(env.client);
             } catch (error) {
@@ -750,6 +769,7 @@ describe("ContractUpdate", function () {
                 )
                 .setBytecodeFileId(file)
                 .setContractMemo("[e2e::ContractCreateTransaction]")
+                .setMaxTransactionFee(new Hbar(10))
                 .execute(env.client);
 
             receipt = await response.getReceipt(env.client);
@@ -821,6 +841,7 @@ describe("ContractUpdate", function () {
                 )
                 .setBytecodeFileId(file)
                 .setContractMemo("[e2e::ContractCreateTransaction]")
+                .setMaxTransactionFee(new Hbar(10))
                 .execute(env.client);
 
             receipt = await response.getReceipt(env.client);
@@ -841,6 +862,7 @@ describe("ContractUpdate", function () {
                 await new ContractUpdateTransaction()
                     .setContractId(contract)
                     .addHookToCreate(hookDetails)
+                    .setMaxTransactionFee(new Hbar(10))
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -849,6 +871,7 @@ describe("ContractUpdate", function () {
                 await new ContractUpdateTransaction()
                     .setContractId(contract)
                     .addHookToDelete(1)
+                    .setMaxTransactionFee(new Hbar(10))
                     .execute(env.client)
             ).getReceipt(env.client);
 
@@ -861,6 +884,7 @@ describe("ContractUpdate", function () {
                     await new ContractUpdateTransaction()
                         .setContractId(contract)
                         .addHookToDelete(1) // Same ID as previously deleted hook
+                        .setMaxTransactionFee(new Hbar(10))
                         .execute(env.client)
                 ).getReceipt(env.client);
             } catch (error) {

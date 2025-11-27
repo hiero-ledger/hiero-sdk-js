@@ -40,6 +40,7 @@ describe("LambdaSStore", function () {
             await new ContractCreateTransaction()
                 .setBytecode(HOOK_BYTECODE)
                 .setGas(300_000)
+                .setMaxTransactionFee(new Hbar(10))
                 .execute(env.client)
         ).getReceipt(env.client);
         contractId = contractCreate.contractId;
@@ -74,6 +75,7 @@ describe("LambdaSStore", function () {
                 .setKeyWithoutAlias(accountKey.publicKey)
                 .setInitialBalance(new Hbar(1))
                 .addHook(hookDetails)
+                .setMaxTransactionFee(new Hbar(10))
                 .freezeWith(env.client)
                 .sign(accountKey)
         ).execute(env.client);
