@@ -69,6 +69,7 @@ export default class ContractCreateTransaction extends Transaction {
      * @param {Long | number} [props.stakedNodeId]
      * @param {boolean} [props.declineStakingReward]
      * @param {AccountId} [props.autoRenewAccountId]
+     * @param {import("../hooks/HookCreationDetails.js").default[]} [props.hooks]
      */
     constructor(props = {}) {
         super();
@@ -157,6 +158,16 @@ export default class ContractCreateTransaction extends Transaction {
          * @type {?AccountId}
          */
         this._autoRenewAccountId = null;
+
+        /**
+         * @private
+         * @type {import("../hooks/HookCreationDetails.js").default[]}
+         */
+        this._hooks = [];
+
+        if (props.hooks != null) {
+            this._hooks = props.hooks;
+        }
 
         if (props.bytecodeFileId != null) {
             this.setBytecodeFileId(props.bytecodeFileId);
@@ -602,6 +613,31 @@ export default class ContractCreateTransaction extends Transaction {
     }
 
     /**
+     * @param {import("../hooks/HookCreationDetails.js").default} hook
+     * @returns {this}
+     */
+    addHook(hook) {
+        this._hooks.push(hook);
+        return this;
+    }
+
+    /**
+     * @param {import("../hooks/HookCreationDetails.js").default[]} hooks
+     * @returns {this}
+     */
+    setHooks(hooks) {
+        this._hooks = hooks;
+        return this;
+    }
+
+    /**
+     * @returns {import("../hooks/HookCreationDetails.js").default[]}
+     */
+    get hooks() {
+        return this._hooks;
+    }
+
+    /**
      * @override
      * @internal
      * @param {Channel} channel
@@ -658,6 +694,7 @@ export default class ContractCreateTransaction extends Transaction {
                 this._autoRenewAccountId != null
                     ? this._autoRenewAccountId._toProtobuf()
                     : null,
+            hookCreationDetails: this.hooks.map((hook) => hook._toProtobuf()),
         };
     }
 
