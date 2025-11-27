@@ -1,7 +1,5 @@
 import {
     AccountCreateTransaction,
-    AccountUpdateTransaction,
-    ContractId,
     Hbar,
     PrivateKey,
     Status,
@@ -11,10 +9,7 @@ import LambdaSStoreTransaction from "../../src/hooks/LambdaSStoreTransaction.js"
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
 import HookExtensionPoint from "../../src/hooks/HookExtensionPoint.js";
 import LambdaEvmHook from "../../src/hooks/LambdaEvmHook.js";
-import {
-    LambdaStorageSlot,
-    LambdaStorageUpdate,
-} from "../../src/hooks/LambdaStorageUpdate.js";
+import { LambdaStorageSlot } from "../../src/hooks/LambdaStorageUpdate.js";
 import HookId from "../../src/hooks/HookId.js";
 import HookEntityId from "../../src/hooks/HookEntityId.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
