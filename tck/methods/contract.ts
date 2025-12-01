@@ -3,6 +3,7 @@ import {
     ContractDeleteTransaction,
     ContractExecuteTransaction,
     ContractUpdateTransaction,
+    ContractByteCodeQuery,
     Hbar,
     Timestamp,
 } from "@hiero-ledger/sdk";
@@ -12,8 +13,12 @@ import {
     DeleteContractParams,
     ExecuteContractParams,
     UpdateContractParams,
+    ContractByteCodeQueryParams,
 } from "../params/contract";
-import { ContractResponse } from "../response/contract";
+import {
+    ContractResponse,
+    ContractByteCodeQueryResponse,
+} from "../response/contract";
 
 import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";
 import { applyCommonTransactionParams } from "../params/common-tx-params";
@@ -284,5 +289,39 @@ export const executeContract = async ({
 
     return {
         status: receipt.status.toString(),
+    };
+};
+
+export const contractByteCodeQuery = async ({
+    contractId,
+    queryPayment,
+    maxQueryPayment,
+    sessionId,
+}: ContractByteCodeQueryParams): Promise<ContractByteCodeQueryResponse> => {
+    const client = sdk.getClient(sessionId);
+    const query = new ContractByteCodeQuery().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+
+    if (contractId != null) {
+        query.setContractId(contractId);
+    }
+
+    if (queryPayment != null) {
+        query.setQueryPayment(Hbar.fromTinybars(queryPayment));
+    }
+
+    if (maxQueryPayment != null) {
+        query.setMaxQueryPayment(Hbar.fromTinybars(maxQueryPayment));
+    }
+
+    const result = await query.execute(client);
+
+    return {
+        bytecode:
+            result != null && result.length > 0
+                ? "0x" + Buffer.from(result).toString("hex")
+                : undefined,
+        contractId: query.contractId?.toString(),
     };
 };
