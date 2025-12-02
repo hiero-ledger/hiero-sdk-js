@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# 2.78.0
+
+### Added 
+
+- Retry mechanism when a transaction hits `INVALID_NODE_ACCOUNT_ID` that updates the network automatically in accordance to [#53](https://github.com/hiero-ledger/sdk-collaboration-hub/pull/53)
+
+### Fixed 
+
+-  Fix of the pollyfills for react native environment not being loaded correctly, causing No PRNG errors [#3526](https://github.com/hiero-ledger/hiero-sdk-js/pull/3526)
+
 # v2.78.0-beta.2
 
 ### Changed
