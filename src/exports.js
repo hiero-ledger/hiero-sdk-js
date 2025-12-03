@@ -58,6 +58,7 @@ export { default as EthereumTransaction } from "./EthereumTransaction.js";
 export { default as EthereumTransactionDataLegacy } from "./EthereumTransactionDataLegacy.js";
 export { default as EthereumTransactionDataEip1559 } from "./EthereumTransactionDataEip1559.js";
 export { default as EthereumTransactionDataEip2930 } from "./EthereumTransactionDataEip2930.js";
+export { default as EthereumTransactionDataEip7702 } from "./EthereumTransactionDataEip7702.js";
 export { default as EthereumTransactionData } from "./EthereumTransactionData.js";
 // eslint-disable-next-line deprecation/deprecation
 export { default as EthereumFlow } from "./EthereumFlow.js";

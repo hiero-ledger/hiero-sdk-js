@@ -29,6 +29,8 @@ export default class EthereumTransactionData {
                 return CACHE.ethereumTransactionDataEip2930FromBytes(bytes);
             case 2:
                 return CACHE.ethereumTransactionDataEip1559FromBytes(bytes);
+            case 4:
+                return CACHE.ethereumTransactionDataEip7702FromBytes(bytes);
             default:
                 return CACHE.ethereumTransactionDataLegacyFromBytes(bytes);
         }
