@@ -20,6 +20,22 @@ import CACHE from "./Cache.js";
  * @property {string} s
  */
 
+/**
+ * @typedef {[string, string, string, string, string, string, string, string[], Array<[string, string, string, string, string, string]>, string, string, string]} Eip7702RlpDecoded
+ * @property {0} chainId - chain_id
+ * @property {1} nonce - nonce
+ * @property {2} maxPriorityGas - max_priority_fee_per_gas
+ * @property {3} maxGas - max_fee_per_gas
+ * @property {4} gasLimit - gas_limit
+ * @property {5} to - destination
+ * @property {6} callData - data
+ * @property {7} accessList - access_list
+ * @property {8} authorizationList - authorization list: array of [chainId, contractAddress, nonce, yParity, r, s] tuples
+ * @property {9} recId - signature_y_parity
+ * @property {10} r - signature_r
+ * @property {11} s - signature_s
+ */
+
 export default class EthereumTransactionDataEip7702 extends EthereumTransactionData {
     /**
      * @private
@@ -66,7 +82,9 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const decoded = /** @type {any[]} */ (rlp.decode(bytes.subarray(1)));
+        const decoded = /** @type {Eip7702RlpDecoded} */ (
+            rlp.decode(bytes.subarray(1))
+        );
 
         if (!Array.isArray(decoded)) {
             throw new Error("ethereum data is not a list");
@@ -82,23 +100,27 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
         if (!Array.isArray(decoded[8])) {
             throw new Error("authorization list must be an array");
         }
-        const authorizationList = /** @type {string[]} */ (decoded[8]).map(
-            (authTuple) => {
-                if (!Array.isArray(authTuple) || authTuple.length !== 6) {
-                    throw new Error(
-                        "invalid authorization list entry: must be [chainId, contractAddress, nonce, yParity, r, s]",
-                    );
-                }
-                return [
-                    hex.decode(/** @type {string} */ (authTuple[0])), // chainId
-                    hex.decode(/** @type {string} */ (authTuple[1])), // contractAddress (20 bytes)
-                    hex.decode(/** @type {string} */ (authTuple[2])), // nonce
-                    hex.decode(/** @type {string} */ (authTuple[3])), // yParity (0 or 1)
-                    hex.decode(/** @type {string} */ (authTuple[4])), // r (32 bytes)
-                    hex.decode(/** @type {string} */ (authTuple[5])), // s (32 bytes)
-                ];
-            },
-        );
+        const authorizationList =
+            /** @type {Array<[string, string, string, string, string, string]>} */ (
+                decoded[8]
+            ).map(
+                /** @param {[string, string, string, string, string, string]} authTuple */
+                (authTuple) => {
+                    if (!Array.isArray(authTuple) || authTuple.length !== 6) {
+                        throw new Error(
+                            "invalid authorization list entry: must be [chainId, contractAddress, nonce, yParity, r, s]",
+                        );
+                    }
+                    return [
+                        hex.decode(/** @type {string} */ (authTuple[0])), // chainId
+                        hex.decode(/** @type {string} */ (authTuple[1])), // contractAddress (20 bytes)
+                        hex.decode(/** @type {string} */ (authTuple[2])), // nonce
+                        hex.decode(/** @type {string} */ (authTuple[3])), // yParity (0 or 1)
+                        hex.decode(/** @type {string} */ (authTuple[4])), // r (32 bytes)
+                        hex.decode(/** @type {string} */ (authTuple[5])), // s (32 bytes)
+                    ];
+                },
+            );
 
         return new EthereumTransactionDataEip7702({
             chainId: hex.decode(/** @type {string} */ (decoded[0])), // chain_id

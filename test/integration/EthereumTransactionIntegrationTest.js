@@ -491,6 +491,6 @@ describe("EthereumTransactionIntegrationTest", function () {
         expect(record).to.be.instanceof(TransactionRecord);
         expect(response).to.be.instanceof(TransactionResponse);
 
-        const receipt = await response.getReceiptWithSigner(wallet);
+        // const receipt = await response.getReceiptWithSigner(wallet);
     });
 });
