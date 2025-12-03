@@ -781,6 +781,9 @@ describe("TransactionIntegration", function () {
             const file = await new FileCreateTransaction()
                 .setContents(new Uint8Array(1024 * 10).fill(1))
                 .freezeWith(client);
+            console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
+            console.log(client.operator.accountId);
+            console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
             await (await file.execute(client)).getReceipt(client);
         });
