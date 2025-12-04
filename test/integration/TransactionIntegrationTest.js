@@ -28,6 +28,7 @@ import {
     createFungibleToken,
     createAccount,
 } from "./utils/Fixtures.js";
+import NodeClient from "../../src/client/NodeClient.js";
 
 describe("TransactionIntegration", function () {
     let env;
@@ -764,6 +765,7 @@ describe("TransactionIntegration", function () {
             const SYSTEM_ACCOUNT_KEY = PrivateKey.fromString(
                 "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137",
             );
+            const client = NodeClient.forLocalNode();
             client.setOperator(SYSTEM_ACCOUNT_ID, SYSTEM_ACCOUNT_KEY);
 
             let transaction = new AccountCreateTransaction()
@@ -782,6 +784,7 @@ describe("TransactionIntegration", function () {
             const SYSTEM_ACCOUNT_KEY = PrivateKey.fromString(
                 "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137",
             );
+            const client = NodeClient.forLocalNode();
             client.setOperator(SYSTEM_ACCOUNT_ID, SYSTEM_ACCOUNT_KEY);
             const file = await new FileCreateTransaction()
                 .setContents(new Uint8Array(1024 * 10).fill(1))
@@ -790,19 +793,7 @@ describe("TransactionIntegration", function () {
         });
 
         it("should not create a transaction with more than 6kbs of data in a file if normal account is used", async function () {
-            const regularUserKey = PrivateKey.generate();
-            const INITIAL_REGULAR_BALANCE = new Hbar(10); //
-            const regularAccountId = (
-                await (
-                    await new AccountCreateTransaction()
-                        .setKeyWithoutAlias(regularUserKey)
-                        .setInitialBalance(INITIAL_REGULAR_BALANCE)
-                        .freezeWith(client)
-                        .execute(client)
-                ).getReceipt(client)
-            ).accountId;
 
-            client.setOperator(regularAccountId, regularUserKey);
 
             let transaction = new FileCreateTransaction()
                 .setContents(new Uint8Array(1024 * 10).fill(1))
@@ -820,18 +811,6 @@ describe("TransactionIntegration", function () {
 
         it("should not create a transaction with more than 6kbs of data with signatures without system account", async function () {
             const regularUserKey = PrivateKey.generate();
-            const INITIAL_REGULAR_BALANCE = new Hbar(10); //
-            const regularAccountId = (
-                await (
-                    await new AccountCreateTransaction()
-                        .setKeyWithoutAlias(regularUserKey)
-                        .setInitialBalance(INITIAL_REGULAR_BALANCE)
-                        .freezeWith(client)
-                        .execute(client)
-                ).getReceipt(client)
-            ).accountId;
-
-            client.setOperator(regularAccountId, regularUserKey);
 
             let transaction = new AccountCreateTransaction()
                 .setKeyWithoutAlias(regularUserKey)
