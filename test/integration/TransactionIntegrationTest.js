@@ -782,7 +782,7 @@ describe("TransactionIntegration", function () {
                 .setContents(new Uint8Array(1024 * 10).fill(1))
                 .freezeWith(client);
             console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-            console.log(client.operator.accountId);
+            console.log(client.getOperator()?.accountId.toString());
             console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 
             await (await file.execute(client)).getReceipt(client);
