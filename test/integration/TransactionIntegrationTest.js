@@ -778,13 +778,14 @@ describe("TransactionIntegration", function () {
         });
 
         it("should create a transaction with more than 6kbs of data in a file", async function () {
+            const SYSTEM_ACCOUNT_ID = AccountId.fromString("0.0.2");
+            const SYSTEM_ACCOUNT_KEY = PrivateKey.fromString(
+                "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137",
+            );
+            client.setOperator(SYSTEM_ACCOUNT_ID, SYSTEM_ACCOUNT_KEY);
             const file = await new FileCreateTransaction()
                 .setContents(new Uint8Array(1024 * 10).fill(1))
                 .freezeWith(client);
-            console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-            console.log(client.getOperator()?.accountId.toString());
-            console.log("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-
             await (await file.execute(client)).getReceipt(client);
         });
 
