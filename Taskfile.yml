@@ -192,15 +192,15 @@ tasks:
             - task: update:proto
             - task: build
 
-    publish:
+    pack:
+        preconditions:
+            - "! grep '\".*\": \"\\(link\\|file\\):.*\"' package.json"
         deps:
             - "build"
         cmds:
             - task: "yalc:remove"
-            - task: "publish:release"
+            - pnpm pack --out {{.PACKAGE_NAME}}
 
-    "publish:release":
-        preconditions:
-            - "! grep '\".*\": \"\\(link\\|file\\):.*\"' package.json"
+    "publish":
         cmds:
             - pnpm publish {{.CLI_ARGS}}

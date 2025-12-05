@@ -139,10 +139,14 @@ tasks:
             - task "build:standalone"
             - echo "Successfully updated protobufs to {{.proto}}"
 
-    publish:
+    pack:
         preconditions:
             - "! grep '\".*\": \"\\(link\\|file\\):.*\"' package.json"
         deps:
             - "test:release"
+        cmds:
+            - pnpm pack --out {{.PACKAGE_NAME}}
+
+    publish:
         cmds:
             - pnpm publish {{.CLI_ARGS}}
