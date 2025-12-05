@@ -90,10 +90,14 @@ tasks:
         cmds:
             - task: build
 
-    publish:
+    pack:
         preconditions:
             - '! grep ''".*": "link:.*"'' package.json'
         deps:
             - "build"
+        cmds:
+            - pnpm pack --out {{.PACKAGE_NAME}}
+
+    publish:
         cmds:
             - pnpm publish {{.CLI_ARGS}}
