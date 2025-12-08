@@ -318,7 +318,9 @@ export const contractCallQuery = async ({
     if (functionParameters != null) {
         const functionParams = decode(functionParameters);
         query.setFunctionParameters(functionParams);
-    } else if (functionName != null) {
+    }
+
+    if (functionName != null) {
         query.setFunction(functionName);
     }
 
