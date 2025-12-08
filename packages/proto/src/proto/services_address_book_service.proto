@@ -18,7 +18,7 @@ option java_package = "com.hederahashgraph.service.proto.java";
 // <<<pbj.java_package = "com.hedera.hapi.node.addressbook">>> This comment is special code for setting PBJ Compiler java package
 
 import "services_transaction_response.proto";
-import "services_ethereum_transaction.proto";
+import "services_transaction.proto";
 
 /**
  * The Address Book service provides the ability for Hedera network node

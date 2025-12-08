@@ -1,6 +1,6 @@
 {
     "name": "@hiero-ledger/sdk",
-    "version": "2.78.0-beta.2",
+    "version": "2.78.0",
     "description": "Hiero SDK",
     "types": "./lib/index.d.ts",
     "main": "./lib/index.cjs",
@@ -66,7 +66,7 @@
         "@ethersproject/rlp": "5.8.0",
         "@grpc/grpc-js": "1.12.6",
         "@hiero-ledger/cryptography": "1.15.0",
-        "@hiero-ledger/proto": "2.24.0",
+        "@hiero-ledger/proto": "2.25.0",
         "ansi-regex": "6.2.2",
         "ansi-styles": "6.2.3",
         "bignumber.js": "9.1.1",
