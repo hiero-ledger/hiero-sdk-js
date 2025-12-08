@@ -25,7 +25,7 @@ export default class FeeEstimate {
          */
         this.extras = props.extras || [];
     }
-    
+
     /**
      * @typedef {object} FeeExtraJSON
      * @property {string} name

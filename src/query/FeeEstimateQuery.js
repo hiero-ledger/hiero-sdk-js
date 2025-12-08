@@ -6,7 +6,6 @@ import NetworkFee from "./NetworkFee.js";
 import FeeEstimate from "./FeeEstimate.js";
 import * as HieroProto from "@hiero-ledger/proto";
 
-
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
@@ -265,26 +264,40 @@ export default class FeeEstimateQuery extends Query {
             }
 
             const buffer = HieroProto.proto.Transaction.encode(tx).finish();
-            const url = `${client.mirrorRestApiBaseUrl}/api/v1/network/fees?mode=${this._mode === FeeEstimateMode.STATE ? "STATE" : "INTRINSIC"}`;
+            const url = `${
+                client.mirrorRestApiBaseUrl
+            }/api/v1/network/fees?mode=${
+                this._mode === FeeEstimateMode.STATE ? "STATE" : "INTRINSIC"
+            }`;
 
+            // eslint-disable-next-line n/no-unsupported-features/node-builtins
             fetch(url, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/protobuf",
                 },
-                body: /** @type {any} */ (buffer),
+                body: /** @type {BodyInit} */ (buffer),
             })
                 .then((response) => {
                     if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                        throw new Error(
+                            `HTTP error! status: ${response.status}`,
+                        );
                     }
                     return response.json();
                 })
-                .then((data) => {
-                    res(FeeEstimateResponse._fromJSON(data));
-                })
+                .then(
+                    /**
+                     * @param {Parameters<typeof FeeEstimateResponse._fromJSON>[0]} data
+                     */
+                    (data) => {
+                        res(FeeEstimateResponse._fromJSON(data));
+                    },
+                )
                 .catch((error) => {
-                    rej(new Error(`Failed to estimate fees: ${error.message}`));
+                    const message =
+                        error instanceof Error ? error.message : String(error);
+                    rej(new Error(`Failed to estimate fees: ${message}`));
                 });
         });
     }
