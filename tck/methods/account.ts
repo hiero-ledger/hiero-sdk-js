@@ -12,6 +12,8 @@ import {
     TokenId,
     EvmAddress,
     AccountBalanceQuery,
+    AccountInfoQuery,
+    AccountInfo,
 } from "@hiero-ledger/sdk";
 import Long from "long";
 
@@ -19,11 +21,16 @@ import { sdk } from "../sdk_data";
 import {
     AccountResponse,
     GetAccountBalanceResponse,
+    GetAccountInfoResponse,
+    TokenRelationshipInfo,
 } from "../response/account";
 
 import { getKeyFromString } from "../utils/key";
 import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";
-import { handleNftAllowances } from "../utils/helpers/account";
+import {
+    handleNftAllowances,
+    mapAccountInfoResponse,
+} from "../utils/helpers/account";
 
 import {
     AccountAllowanceApproveParams,
@@ -31,6 +38,7 @@ import {
     DeleteAccountParams,
     DeleteAllowanceParams,
     GetAccountBalanceParams,
+    GetAccountInfoParams,
     UpdateAccountParams,
 } from "../params/account";
 import { applyCommonTransactionParams } from "../params/common-tx-params";
@@ -261,6 +269,21 @@ export const deleteAccount = async (
     return {
         status: receipt.status.toString(),
     };
+};
+
+export const getAccountInfo = async ({
+    accountId,
+    sessionId,
+}: GetAccountInfoParams): Promise<GetAccountInfoResponse> => {
+    const client = sdk.getClient(sessionId);
+    const query = new AccountInfoQuery().setGrpcDeadline(DEFAULT_GRPC_DEADLINE);
+
+    if (accountId != null) {
+        query.setAccountId(accountId);
+    }
+    const response = await query.execute(client);
+
+    return mapAccountInfoResponse(response);
 };
 
 export const getAccountBalance = async ({

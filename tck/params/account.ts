@@ -49,3 +49,7 @@ export interface GetAccountBalanceParams extends BaseParams {
     readonly accountId?: string;
     readonly contractId?: string;
 }
+
+export interface GetAccountInfoParams extends BaseTransactionParams {
+    readonly accountId?: string;
+}
