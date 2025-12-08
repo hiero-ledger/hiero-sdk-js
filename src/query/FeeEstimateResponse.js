@@ -60,24 +60,56 @@ export default class FeeEstimateResponse {
     }
 
     /**
+     * @typedef {object} NetworkFeeJSON
+     * @property {number} multiplier
+     * @property {number} subtotal
+     */
+
+    /**
+     * @typedef {object} FeeExtraJSON
+     * @property {string} name
+     * @property {number} included
+     * @property {number} count
+     * @property {number} charged
+     * @property {number} fee_per_unit
+     * @property {number} subtotal
+     */
+
+    /**
+     * @typedef {object} FeeEstimateJSON
+     * @property {number} baseFee
+     * @property {FeeExtraJSON[]} extras
+     */
+
+    /**
+     * @typedef {object} FeeEstimateResponseJSON
+     * @property {string} mode
+     * @property {NetworkFeeJSON} network
+     * @property {FeeEstimateJSON} node
+     * @property {FeeEstimateJSON} service
+     * @property {string[]} notes
+     * @property {number} total
+     */
+
+    /**
      * @internal
-     * @param {import("@hashgraph/proto").com.hedera.mirror.api.proto.IFeeEstimateResponse} response
+     * @param {FeeEstimateResponseJSON} response
      * @returns {FeeEstimateResponse}
      */
-    static _fromProtobuf(response) {
+    static _fromJSON(response) {
         return new FeeEstimateResponse({
             mode:
                 response.mode != null
                     ? Number(response.mode)
                     : FeeEstimateMode.STATE,
             networkFee: response.network
-                ? NetworkFee._fromProtobuf(response.network)
+                ? NetworkFee._fromJSON(response.network)
                 : new NetworkFee({ multiplier: 0, subtotal: 0 }),
             nodeFee: response.node
-                ? FeeEstimate._fromProtobuf(response.node)
+                ? FeeEstimate._fromJSON(response.node)
                 : new FeeEstimate({ base: 0, extras: [] }),
             serviceFee: response.service
-                ? FeeEstimate._fromProtobuf(response.service)
+                ? FeeEstimate._fromJSON(response.service)
                 : new FeeEstimate({ base: 0, extras: [] }),
             notes: response.notes || [],
             total: response.total || 0,
@@ -86,7 +118,16 @@ export default class FeeEstimateResponse {
 
     /**
      * @internal
-     * @returns {import("@hashgraph/proto").com.hedera.mirror.api.proto.IFeeEstimateResponse}
+     * @param {import("@hiero-ledger/proto").com.hedera.mirror.api.proto.IFeeEstimateResponse} response
+     * @returns {FeeEstimateResponse}
+     */
+    static _fromProtobuf(response) {
+        return FeeEstimateResponse._fromJSON(/** @type {any} */ (response));
+    }
+
+    /**
+     * @internal
+     * @returns {import("@hiero-ledger/proto").com.hedera.mirror.api.proto.IFeeEstimateResponse}
      */
     _toProtobuf() {
         return {

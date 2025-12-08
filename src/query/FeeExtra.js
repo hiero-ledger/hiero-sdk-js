@@ -56,8 +56,34 @@ export default class FeeExtra {
     }
 
     /**
+     * @typedef {object} FeeExtraJSON
+     * @property {string} name
+     * @property {number} included
+     * @property {number} count
+     * @property {number} charged
+     * @property {number} fee_per_unit
+     * @property {number} subtotal
+     */
+
+    /**
      * @internal
-     * @param {import("@hashgraph/proto").com.hedera.mirror.api.proto.IFeeExtra} feeExtra
+     * @param {FeeExtraJSON} feeExtra
+     * @returns {FeeExtra}
+     */
+    static _fromJSON(feeExtra) {
+        return new FeeExtra({
+            name: feeExtra.name || "",
+            included: feeExtra.included || 0,
+            count: feeExtra.count || 0,
+            charged: feeExtra.charged || 0,
+            feePerUnit: feeExtra.fee_per_unit || 0,
+            subtotal: feeExtra.subtotal || 0,
+        });
+    }
+
+    /**
+     * @internal
+     * @param {import("@hiero-ledger/proto").com.hedera.mirror.api.proto.IFeeExtra} feeExtra
      * @returns {FeeExtra}
      */
     static _fromProtobuf(feeExtra) {

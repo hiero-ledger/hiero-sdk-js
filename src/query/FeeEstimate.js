@@ -25,10 +25,40 @@ export default class FeeEstimate {
          */
         this.extras = props.extras || [];
     }
+    
+    /**
+     * @typedef {object} FeeExtraJSON
+     * @property {string} name
+     * @property {number} included
+     * @property {number} count
+     * @property {number} charged
+     * @property {number} fee_per_unit
+     * @property {number} subtotal
+     */
+
+    /**
+     * @typedef {object} FeeEstimateJSON
+     * @property {number} baseFee
+     * @property {FeeExtraJSON[]} extras
+     */
 
     /**
      * @internal
-     * @param {import("@hashgraph/proto").com.hedera.mirror.api.proto.IFeeEstimate} feeEstimate
+     * @param {FeeEstimateJSON} feeEstimate
+     * @returns {FeeEstimate}
+     */
+    static _fromJSON(feeEstimate) {
+        return new FeeEstimate({
+            base: feeEstimate.baseFee || 0,
+            extras: (feeEstimate.extras || []).map((extra) =>
+                FeeExtra._fromJSON(extra),
+            ),
+        });
+    }
+
+    /**
+     * @internal
+     * @param {import("@hiero-ledger/proto").com.hedera.mirror.api.proto.IFeeEstimate} feeEstimate
      * @returns {FeeEstimate}
      */
     static _fromProtobuf(feeEstimate) {

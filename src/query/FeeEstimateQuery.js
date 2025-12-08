@@ -4,7 +4,8 @@ import FeeEstimateMode from "./enums/FeeEstimateMode.js";
 import FeeEstimateResponse from "./FeeEstimateResponse.js";
 import NetworkFee from "./NetworkFee.js";
 import FeeEstimate from "./FeeEstimate.js";
-import * as HieroProto from "@hashgraph/proto";
+import * as HieroProto from "@hiero-ledger/proto";
+
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -263,41 +264,28 @@ export default class FeeEstimateQuery extends Query {
                 return;
             }
 
-            const request =
-                HieroProto.com.hedera.mirror.api.proto.FeeEstimateQuery.encode({
-                    mode: this._mode,
-                    transaction: tx,
-                }).finish();
+            const buffer = HieroProto.proto.Transaction.encode(tx).finish();
+            const url = `${client.mirrorRestApiBaseUrl}/api/v1/network/fees?mode=${this._mode === FeeEstimateMode.STATE ? "STATE" : "INTRINSIC"}`;
 
-            client._mirrorNetwork
-                .getNextMirrorNode()
-                .getChannel()
-                .makeServerStreamRequest(
-                    "NetworkService",
-                    "getFeeEstimate",
-                    request,
-                    /** @param {Uint8Array} data */ (data) => {
-                        const response =
-                            HieroProto.com.hedera.mirror.api.proto.FeeEstimateResponse.decode(
-                                data,
-                            );
-                        res(FeeEstimateResponse._fromProtobuf(response));
-                    },
-                    /**
-                     * @param {MirrorError | Error} error
-                     */ (error) => {
-                        const errorMessage =
-                            error instanceof Error
-                                ? error.message
-                                : error.details || String(error);
-                        rej(
-                            new Error(
-                                `Failed to estimate fees: ${errorMessage}`,
-                            ),
-                        );
-                    },
-                    () => {},
-                );
+            fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/protobuf",
+                },
+                body: /** @type {any} */ (buffer),
+            })
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    res(FeeEstimateResponse._fromJSON(data));
+                })
+                .catch((error) => {
+                    rej(new Error(`Failed to estimate fees: ${error.message}`));
+                });
         });
     }
 }
