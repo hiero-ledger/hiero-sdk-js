@@ -122,7 +122,23 @@ export default class FeeEstimateResponse {
      * @returns {FeeEstimateResponse}
      */
     static _fromProtobuf(response) {
-        return FeeEstimateResponse._fromJSON(/** @type {any} */ (response));
+        return new FeeEstimateResponse({
+            mode:
+                response.mode != null
+                    ? Number(response.mode)
+                    : FeeEstimateMode.STATE,
+            networkFee: response.network
+                ? NetworkFee._fromProtobuf(response.network)
+                : new NetworkFee({ multiplier: 0, subtotal: 0 }),
+            nodeFee: response.node
+                ? FeeEstimate._fromProtobuf(response.node)
+                : new FeeEstimate({ base: 0, extras: [] }),
+            serviceFee: response.service
+                ? FeeEstimate._fromProtobuf(response.service)
+                : new FeeEstimate({ base: 0, extras: [] }),
+            notes: response.notes || [],
+            total: response.total || 0,
+        });
     }
 
     /**
