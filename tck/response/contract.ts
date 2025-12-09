@@ -33,3 +33,8 @@ export interface ContractCallQueryResponse {
     readonly int256?: string;
     readonly uint256?: string;
 }
+
+export interface ContractByteCodeQueryResponse {
+    readonly bytecode?: string;
+    readonly contractId?: string;
+}

@@ -44,6 +44,12 @@ export interface ExecuteContractParams extends BaseTransactionParams {
     readonly functionParameters?: string;
 }
 
+export interface ContractByteCodeQueryParams extends BaseParams {
+    readonly contractId?: string;
+    readonly queryPayment?: string;
+    readonly maxQueryPayment?: string;
+}
+
 export interface ContractCallQueryParams extends BaseParams {
     readonly contractId?: string;
     readonly gas?: string;
