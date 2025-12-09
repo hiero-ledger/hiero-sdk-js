@@ -3,6 +3,7 @@ import {
     ContractDeleteTransaction,
     ContractExecuteTransaction,
     ContractUpdateTransaction,
+    ContractCallQuery,
     Hbar,
     Timestamp,
 } from "@hiero-ledger/sdk";
@@ -12,8 +13,12 @@ import {
     DeleteContractParams,
     ExecuteContractParams,
     UpdateContractParams,
+    ContractCallQueryParams,
 } from "../params/contract";
-import { ContractResponse } from "../response/contract";
+import {
+    ContractResponse,
+    ContractCallQueryResponse,
+} from "../response/contract";
 
 import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";
 import { applyCommonTransactionParams } from "../params/common-tx-params";
@@ -21,6 +26,7 @@ import { sdk } from "../sdk_data";
 import { getKeyFromString } from "../utils/key";
 import Long from "long";
 import { decode } from "../utils/hex";
+import { buildContractCallQueryResponse } from "../utils/helpers/contract";
 
 export const createContract = async ({
     adminKey,
@@ -285,4 +291,48 @@ export const executeContract = async ({
     return {
         status: receipt.status.toString(),
     };
+};
+
+export const contractCallQuery = async ({
+    contractId,
+    gas,
+    functionName,
+    functionParameters,
+    maxQueryPayment,
+    senderAccountId,
+    sessionId,
+}: ContractCallQueryParams): Promise<ContractCallQueryResponse> => {
+    const client = sdk.getClient(sessionId);
+    const query = new ContractCallQuery().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+
+    if (contractId != null) {
+        query.setContractId(contractId);
+    }
+
+    if (gas != null) {
+        query.setGas(Long.fromString(gas));
+    }
+
+    if (functionParameters != null) {
+        const functionParams = decode(functionParameters);
+        query.setFunctionParameters(functionParams);
+    }
+
+    if (functionName != null) {
+        query.setFunction(functionName);
+    }
+
+    if (maxQueryPayment != null) {
+        query.setMaxQueryPayment(Hbar.fromTinybars(maxQueryPayment));
+    }
+
+    if (senderAccountId != null) {
+        query.setSenderAccountId(senderAccountId);
+    }
+
+    const result = await query.execute(client);
+
+    return buildContractCallQueryResponse(result);
 };
