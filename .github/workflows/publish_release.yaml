@@ -649,13 +649,13 @@ jobs:
       - name: Publish Proto Release (${{ env.HIERO_PROTO_PKG_NAME }})
         if: ${{ needs.validate-release.outputs.hiero-proto-publish-required == 'true' }}
         run: |
-          task -v publish ${{ needs.build-release-package.outputs.hiero-proto-pkg-name }} -- ${{ needs.calculate-release-args.outputs.proto-publish-args }}
+          task -v publish TARBALL="${{ needs.build-release-package.outputs.hiero-proto-pkg-name }}" -- ${{ needs.calculate-release-args.outputs.proto-publish-args }}
         working-directory: packages/proto
 
       - name: Publish Proto Release (${{ env.HASHGRAPH_PROTO_PKG_NAME }})
         if: ${{ needs.validate-release.outputs.hashgraph-proto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
         run: |
-          task -v publish ${{ needs.build-release-package.outputs.hashgraph-proto-pkg-name }} -- ${{ needs.calculate-release-args.outputs.proto-publish-args }}
+          task -v publish TARBALL="${{ needs.build-release-package.outputs.hashgraph-proto-pkg-name }}" -- ${{ needs.calculate-release-args.outputs.proto-publish-args }}
         working-directory: packages/proto
 
       # Publish cryptography artifacts
@@ -676,13 +676,13 @@ jobs:
       - name: Publish Cryptography Release (${{ env.HIERO_CRYPTO_PKG_NAME }})
         if: ${{ needs.validate-release.outputs.hiero-crypto-publish-required == 'true' }}
         run: |
-          task -v publish ${{ needs.build-release-package.outputs.hiero-crypto-pkg-name }} -- ${{ needs.calculate-release-args.outputs.crypto-publish-args }}
+          task -v publish TARBALL="${{ needs.build-release-package.outputs.hiero-crypto-pkg-name }}" -- ${{ needs.calculate-release-args.outputs.crypto-publish-args }}
         working-directory: packages/cryptography
 
       - name: Publish Cryptography Release (${{ env.HASHGRAPH_CRYPTO_PKG_NAME }})
         if: ${{ needs.validate-release.outputs.hashgraph-crypto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
         run: |
-          task -v publish ${{ needs.build-release-package.outputs.hashgraph-crypto-pkg-name }} -- ${{ needs.calculate-release-args.outputs.crypto-publish-args }}
+          task -v publish TARBALL="${{ needs.build-release-package.outputs.hashgraph-crypto-pkg-name }}" -- ${{ needs.calculate-release-args.outputs.crypto-publish-args }}
         working-directory: packages/cryptography
 
       # Publish SDK artifacts
@@ -701,9 +701,9 @@ jobs:
       - name: Publish SDK Release (${{ env.HIERO_SDK_PKG_NAME }})
         if: ${{ needs.validate-release.outputs.hiero-sdk-publish-required == 'true' }}
         run: |
-          task -v publish ${{ needs.build-release-package.outputs.hiero-sdk-pkg-name }} -- ${{ needs.calculate-release-args.outputs.sdk-publish-args }}
+          task -v publish TARBALL="${{ needs.build-release-package.outputs.hiero-sdk-pkg-name }}" -- ${{ needs.calculate-release-args.outputs.sdk-publish-args }}
 
       - name: Publish SDK Release (${{ env.HASHGRAPH_SDK_PKG_NAME }})
         if: ${{ needs.validate-release.outputs.hashgraph-sdk-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
         run: |
-          task -v publish ${{ needs.build-release-package.outputs.hashgraph-sdk-pkg-name }} -- ${{ needs.calculate-release-args.outputs.sdk-publish-args }}
+          task -v publish TARBALL="${{ needs.build-release-package.outputs.hashgraph-sdk-pkg-name }}" -- ${{ needs.calculate-release-args.outputs.sdk-publish-args }}

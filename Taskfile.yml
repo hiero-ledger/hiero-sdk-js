@@ -204,4 +204,4 @@ tasks:
 
     "publish":
         cmds:
-            - pnpm publish {{.CLI_ARGS}}
+            - pnpm publish {{.TARBALL}} {{.CLI_ARGS}}
