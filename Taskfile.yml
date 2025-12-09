@@ -48,8 +48,8 @@ tasks:
 
     "yalc:add":
         cmds:
-            - npx yalc add @hiero-ledger/proto
-            - npx yalc add @hiero-ledger/cryptography
+            - npx yalc add @hiero-ledger/proto --pure
+            - npx yalc add @hiero-ledger/cryptography --pure
 
     "yalc:remove":
         cmds:
