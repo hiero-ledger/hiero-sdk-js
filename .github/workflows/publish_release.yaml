@@ -630,6 +630,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
 
       # Publish proto artifacts
       - name: Download HL Proto Package Artifact
