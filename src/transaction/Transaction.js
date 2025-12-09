@@ -21,6 +21,7 @@ import * as util from "../util.js";
 import CustomFeeLimit from "./CustomFeeLimit.js";
 import Key from "../Key.js";
 import SignableNodeTransactionBodyBytes from "./SignableNodeTransactionBodyBytes.js";
+import FeeEstimateQuery from "../query/FeeEstimateQuery.js";
 
 /**
  * @typedef {import("bignumber.js").default} BigNumber
@@ -432,6 +433,15 @@ export default class Transaction extends Executable {
         }
 
         return SCHEDULE_CREATE_TRANSACTION[0]()._setScheduledTransaction(this);
+    }
+
+    /**
+     * Create a `FeeEstimateQuery` for this transaction.
+     *
+     * @returns {FeeEstimateQuery}
+     */
+    feeEstimateQuery() {
+        return new FeeEstimateQuery({ transaction: this });
     }
 
     /**
