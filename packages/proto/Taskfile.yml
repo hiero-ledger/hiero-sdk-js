@@ -145,8 +145,8 @@ tasks:
         deps:
             - "test:release"
         cmds:
-            - pnpm pack --out {{.PACKAGE_NAME}}
-            - ls -lh {{.PACKAGE_NAME}}
+            - pnpm pack --out {{.CLI_ARGS}}
+            - ls -lh {{.CLI_ARGS}}
 
     publish:
         cmds:
