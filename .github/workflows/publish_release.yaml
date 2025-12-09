@@ -374,7 +374,7 @@ jobs:
       - name: Calculate Crypto Subpackage Publish Arguments
         id: crypto-publish-args
         if: ${{ (needs.validate-release.outputs.hashgraph-crypto-publish-required == 'true' ||
-          needs.validate-release.outputs.hiero-crypto-publish-required) &&
+          needs.validate-release.outputs.hiero-crypto-publish-required == 'true') &&
           !cancelled() && !failure() }}
         run: |
           PUBLISH_ARGS="--access public --no-git-checks"
