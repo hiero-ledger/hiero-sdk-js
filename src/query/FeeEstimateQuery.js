@@ -264,9 +264,7 @@ export default class FeeEstimateQuery extends Query {
             }
 
             const buffer = HieroProto.proto.Transaction.encode(tx).finish();
-            const url = `${
-                client.mirrorRestApiBaseUrl
-            }/api/v1/network/fees?mode=${
+            const url = `${client.mirrorRestApiBaseUrl}/network/fees?mode=${
                 this._mode === FeeEstimateMode.STATE ? "STATE" : "INTRINSIC"
             }`;
 
