@@ -146,6 +146,7 @@ tasks:
             - "test:release"
         cmds:
             - pnpm pack --out {{.PACKAGE_NAME}}
+            - ls -lh {{.PACKAGE_NAME}}
 
     publish:
         cmds:

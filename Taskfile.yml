@@ -200,6 +200,7 @@ tasks:
         cmds:
             - task: "yalc:remove"
             - pnpm pack --out {{.PACKAGE_NAME}}
+            - ls -lh {{.PACKAGE_NAME}}
 
     "publish":
         cmds:
