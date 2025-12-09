@@ -450,6 +450,11 @@ jobs:
       - name: Set Package Names
         id: set-package-names
         run: |
+          
+          clean_pkg_name() {
+            echo "${1}" | sed 's/^@//; s/\//-/g'
+          }
+          
           HL_PROTO_PKG_NAME="${{ env.HIERO_PROTO_PKG_NAME }}-${{ needs.validate-release.outputs.proto-version }}.tgz"
           HL_CRYPTO_PKG_NAME="${{ env.HIERO_CRYPTO_PKG_NAME }}-${{ needs.validate-release.outputs.crypto-version }}.tgz"
           HL_SDK_PKG_NAME="${{ env.HIERO_SDK_PKG_NAME }}-${{ needs.validate-release.outputs.sdk-version }}.tgz"
@@ -458,12 +463,12 @@ jobs:
           HG_SDK_PKG_NAME="${{ env.HASHGRAPH_SDK_PKG_NAME }}-${{ needs.validate-release.outputs.sdk-version }}.tgz"
           
           echo "::group::Expected Package Names"
-          echo "hl-proto-pkg-name=${HL_PROTO_PKG_NAME/#@/}" | tee -a "${GITHUB_OUTPUT}"
-          echo "hl-crypto-pkg-name=${HL_CRYPTO_PKG_NAME/#@/}" | tee -a "${GITHUB_OUTPUT}"
-          echo "hl-sdk-pkg-name=${HL_SDK_PKG_NAME/#@/}" | tee -a "${GITHUB_OUTPUT}"
-          echo "hg-proto-pkg-name=${HG_PROTO_PKG_NAME/#@/}" | tee -a "${GITHUB_OUTPUT}"
-          echo "hg-crypto-pkg-name=${HG_CRYPTO_PKG_NAME/#@/}" | tee -a "${GITHUB_OUTPUT}"
-          echo "hg-sdk-pkg-name=${HG_SDK_PKG_NAME/#@/}" | tee -a "${GITHUB_OUTPUT}"
+          echo "hl-proto-pkg-name=$(clean_pkg_name ${HL_PROTO_PKG_NAME/#@/}")  | tee -a "${GITHUB_OUTPUT}"
+          echo "hl-crypto-pkg-name=$(clean_pkg_name ${HL_CRYPTO_PKG_NAME/#@/}")  | tee -a "${GITHUB_OUTPUT}"
+          echo "hl-sdk-pkg-name=$(clean_pkg_name ${HL_SDK_PKG_NAME/#@/}")  | tee -a "${GITHUB_OUTPUT}"
+          echo "hg-proto-pkg-name=$(clean_pkg_name ${HG_PROTO_PKG_NAME/#@/}")  | tee -a "${GITHUB_OUTPUT}"
+          echo "hg-crypto-pkg-name=$(clean_pkg_name ${HG_CRYPTO_PKG_NAME/#@/}")  | tee -a "${GITHUB_OUTPUT}"
+          echo "hg-sdk-pkg-name=$(clean_pkg_name ${HG_SDK_PKG_NAME/#@/}")  | tee -a "${GITHUB_OUTPUT}"
           echo "::endgroup::"
 
       - name: Build Proto Release Package (${{ env.HIERO_PROTO_PKG_NAME }})
