@@ -101,4 +101,4 @@ tasks:
 
     publish:
         cmds:
-            - pnpm publish {{.TARBALL}} {{.CLI_ARGS}}
+            - npm publish {{.TARBALL}} {{.CLI_ARGS}}
