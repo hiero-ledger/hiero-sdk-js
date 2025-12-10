@@ -5,6 +5,7 @@ import {
     ContractUpdateTransaction,
     ContractCallQuery,
     ContractByteCodeQuery,
+    ContractInfoQuery,
     Hbar,
     Timestamp,
 } from "@hiero-ledger/sdk";
@@ -16,11 +17,13 @@ import {
     UpdateContractParams,
     ContractCallQueryParams,
     ContractByteCodeQueryParams,
+    ContractInfoQueryParams,
 } from "../params/contract";
 import {
     ContractResponse,
     ContractCallQueryResponse,
     ContractByteCodeQueryResponse,
+    ContractInfoQueryResponse,
 } from "../response/contract";
 
 import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";
@@ -371,5 +374,64 @@ export const contractByteCodeQuery = async ({
                 ? "0x" + Buffer.from(result).toString("hex")
                 : undefined,
         contractId: query.contractId?.toString(),
+    };
+};
+
+export const contractInfoQuery = async ({
+    contractId,
+    queryPayment,
+    maxQueryPayment,
+    sessionId,
+}: ContractInfoQueryParams): Promise<ContractInfoQueryResponse> => {
+    const client = sdk.getClient(sessionId);
+    const query = new ContractInfoQuery().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+
+    if (contractId != null) {
+        query.setContractId(contractId);
+    }
+
+    if (queryPayment != null) {
+        query.setQueryPayment(Hbar.fromTinybars(queryPayment));
+    }
+
+    if (maxQueryPayment != null) {
+        query.setMaxQueryPayment(Hbar.fromTinybars(maxQueryPayment));
+    }
+
+    const result = await query.execute(client);
+
+    return {
+        contractId: result.contractId?.toString(),
+        accountId: result.accountId?.toString(),
+        contractAccountId: result.contractAccountId || undefined,
+        adminKey: result.adminKey?.toString(),
+        expirationTime: result.expirationTime?.toString(),
+        autoRenewPeriod: result.autoRenewPeriod?.seconds?.toString(),
+        autoRenewAccountId: result.autoRenewAccountId?.toString(),
+        storage: result.storage?.toString(),
+        contractMemo: result.contractMemo || undefined,
+        balance: result.balance?.toTinybars().toString(),
+        isDeleted: result.isDeleted,
+        maxAutomaticTokenAssociations:
+            result.maxAutomaticTokenAssociations?.toString(),
+        ledgerId: result.ledgerId?.toString(),
+        stakingInfo: result.stakingInfo
+            ? {
+                  declineStakingReward: result.stakingInfo.declineStakingReward,
+                  stakePeriodStart:
+                      result.stakingInfo.stakePeriodStart?.toString(),
+                  pendingReward: result.stakingInfo.pendingReward
+                      ?.toTinybars()
+                      .toString(),
+                  stakedToMe: result.stakingInfo.stakedToMe
+                      ?.toTinybars()
+                      .toString(),
+                  stakedAccountId:
+                      result.stakingInfo.stakedAccountId?.toString(),
+                  stakedNodeId: result.stakingInfo.stakedNodeId?.toString(),
+              }
+            : undefined,
     };
 };
