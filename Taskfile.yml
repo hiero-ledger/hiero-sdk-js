@@ -48,8 +48,8 @@ tasks:
 
     "yalc:add":
         cmds:
-            - npx yalc add @hiero-ledger/proto
-            - npx yalc add @hiero-ledger/cryptography
+            - npx yalc add @hiero-ledger/proto --pure
+            - npx yalc add @hiero-ledger/cryptography --pure
 
     "yalc:remove":
         cmds:
@@ -192,15 +192,16 @@ tasks:
             - task: update:proto
             - task: build
 
-    publish:
+    pack:
+        preconditions:
+            - "! grep '\".*\": \"\\(link\\|file\\):.*\"' package.json"
         deps:
             - "build"
         cmds:
             - task: "yalc:remove"
-            - task: "publish:release"
+            - pnpm pack --out {{.CLI_ARGS}}
+            - ls -lh {{.CLI_ARGS}}
 
-    "publish:release":
-        preconditions:
-            - "! grep '\".*\": \"\\(link\\|file\\):.*\"' package.json"
+    "publish":
         cmds:
-            - pnpm publish {{.CLI_ARGS}}
+            - npm publish {{.TARBALL}} {{.CLI_ARGS}}
