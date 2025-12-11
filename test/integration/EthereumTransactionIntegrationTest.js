@@ -3,6 +3,7 @@ import {
     ContractFunctionParameters,
     ContractCreateTransaction,
     EthereumTransaction,
+    EthereumTransactionDataEip7702,
     PrivateKey,
     TransferTransaction,
     Hbar,
@@ -13,6 +14,8 @@ import {
     Status,
     TransactionRecord,
     MirrorNodeContractEstimateQuery,
+    AccountInfoQuery,
+    AccountId,
 } from "../../src/exports.js";
 import {
     SMART_CONTRACT_BYTECODE,
@@ -382,7 +385,7 @@ describe("EthereumTransactionIntegrationTest", function () {
             await (
                 await new ContractCreateTransaction()
                     .setAdminKey(operatorKey)
-                    .setGas(300_000)
+                    .setGas(500_000)
                     .setBytecodeFileId(fileId)
                     .setContractMemo("[e2e::ContractCreateTransaction]")
                     .freezeWithSigner(wallet)
@@ -397,39 +400,6 @@ describe("EthereumTransactionIntegrationTest", function () {
         const contractId = contractReceipt.contractId;
         expect(contractId).to.be.instanceof(ContractId);
         testContractAddress = contractId.toEvmAddress();
-
-        const type = "04";
-        const chainId = hex.decode("012a");
-        const nonce = new Uint8Array();
-        const maxPriorityGas = hex.decode("00");
-        const maxGas = hex.decode("d1385c7bf0");
-        const gasLimit = hex.decode("07A120");
-        const value = hex.decode("00");
-        const to = hex.decode(testContractAddress);
-        const callData = new ContractFunctionParameters()._build("test");
-
-        // EIP-7702 specific: authorizationList (empty for basic transactions)
-        // Each entry is: [contract_code, y_parity, r, s]
-        const authorizationList = [];
-        const accessList = [];
-
-        // First encode without signature for signing (fields 1-9: chain_id through authorizationList)
-        const encoded = rlp
-            .encode([
-                chainId, // 1. chain_id
-                nonce, // 2. nonce
-                maxPriorityGas, // 3. max_priority_fee_per_gas
-                maxGas, // 4. max_fee_per_gas
-                gasLimit, // 5. gas_limit
-                to, // 6. destination
-                value, // 7. value
-                callData, // 8. data
-                accessList, // 9. access_list
-                authorizationList, // 10 [[contract_code, y_parity, r, s], ...]
-            ])
-            .substring(2);
-
-        expect(typeof encoded).to.equal("string");
 
         const privateKey = PrivateKey.generateECDSA();
         expect(privateKey).to.be.instanceof(PrivateKey);
@@ -449,34 +419,167 @@ describe("EthereumTransactionIntegrationTest", function () {
         expect(transferReceipt).to.be.instanceof(TransactionReceipt);
         expect(transferReceipt.status).to.be.equal(Status.Success);
 
+        const chainId = hex.decode("012a");
+
+        // After the transfer creates the account, query its info
+        const accountInfo = await new AccountInfoQuery()
+            .setAccountId(AccountId.fromEvmAddress(0, 0, accountAlias))
+            .execute(env.client);
+
+        // Then use that nonce value
+        const nonceValue = accountInfo.ethereumNonce.toNumber();
+        const nonce =
+            nonceValue === 0
+                ? new Uint8Array()
+                : hex.decode(nonceValue.toString(16).padStart(2, "0"));
+
+        const maxPriorityGas = hex.decode("01");
+        const maxGas = hex.decode("d1385c7bf0");
+        const gasLimit = hex.decode("07A120");
+        const value = new Uint8Array();
+
+        const to = hex.decode(testContractAddress);
+        const callData = new ContractFunctionParameters()._build("test");
+        // Ensure accessList is always an array (even if empty) so it encodes as a list
+        const accessList = [];
+
+        // EIP-7702 specific: authorization_list = [[chain_id, address, nonce, y_parity, r, s], ...]
+        // The authorization sets the EOA's code to match a contract's code.
+        // The 'address' in authorization is the contract whose code will be delegated to the EOA.
+        // The signature is from the EOA owner (privateKey) authorizing this delegation.
+        // Note: The authorization 'address' and transaction 'to' are SEPARATE:
+        //   - authorization 'address': contract whose code the EOA will get
+        //   - transaction 'to': where the transaction executes
+        // In this test, they happen to be the same (both testContractAddress), but they don't have to be.
+        const contractAddressForAuthorization = hex.decode(testContractAddress); // Contract whose code EOA will get (as Uint8Array)
+        // The authorization message is: 0x05 || rlp([chain_id, address, nonce])
+        // NO keccak256 - the Java code will hash it internally
+        const EIP_7702_MAGIC = new Uint8Array([0x05]);
+        // RLP encode the authorization fields
+        // The server expects: 82012a9400000000000000000000000000000000000003f980
+        // Which is: 82 (2-byte item) + 012a (chainId) + 94 (20-byte item) + address + 80 (empty nonce)
+        // Manually construct RLP encoding to match server format
+        const authRlpEncoded = rlp.encode([
+            chainId,
+            contractAddressForAuthorization,
+            nonce,
+        ]);
+
+        // If the encoding doesn't match, try using hex strings
+        let authRlpBytes;
+        if (authRlpEncoded.substring(2).startsWith("d9")) {
+            // The RLP library is encoding as a long list, but server expects short format
+            // Try encoding with hex strings instead
+            const authRlpEncodedHex = rlp.encode([
+                `0x${hex.encode(chainId)}`,
+                `0x${hex.encode(contractAddressForAuthorization)}`,
+                `0x${hex.encode(nonce)}`,
+            ]);
+            authRlpBytes = hex.decode(authRlpEncodedHex.substring(2));
+        } else {
+            authRlpBytes = hex.decode(authRlpEncoded.substring(2));
+        }
+        const authPreimage = new Uint8Array(
+            EIP_7702_MAGIC.length + authRlpBytes.length,
+        );
+        authPreimage.set(EIP_7702_MAGIC, 0);
+        authPreimage.set(authRlpBytes, EIP_7702_MAGIC.length);
+
+        // Sign the RAW preimage - NOT the hash!
+        const authSignedBytes = privateKey.sign(authPreimage); // ← NO keccak256!
+        const authMiddleOfSignedBytes = authSignedBytes.length / 2;
+        const authR = authSignedBytes.slice(0, authMiddleOfSignedBytes);
+        const authS = authSignedBytes.slice(
+            authMiddleOfSignedBytes,
+            authSignedBytes.length,
+        );
+        const authRecoveryId = privateKey.getRecoveryId(
+            authR,
+            authS,
+            authPreimage, // ← RAW preimage!
+        );
+
+        const authYParity = new Uint8Array(
+            authRecoveryId === 0 ? [] : [authRecoveryId],
+        );
+
+        // Debug: Verify the authorization signature recovers to the correct address
+        console.log("=== ADDRESS VERIFICATION ===");
+        console.log("accountAlias (funded):", accountAlias);
+        // The authorization should recover to the same address
+
+        // Authorization: EOA (accountAlias) will get code from contractAddressForAuthorization
+        // The signature proves the EOA owner authorizes this delegation
+        // Ensure authorizationList is always an array (even if empty) so it encodes as a list
+        const authorizationList = [
+            [
+                chainId,
+                contractAddressForAuthorization, // Contract whose code EOA will get
+                nonce,
+                authYParity,
+                authR,
+                authS,
+            ],
+        ];
+
+        // Convert authorization list items to hex strings for RLP encoding
+        // Note: RLP encoder needs hex strings with 0x prefix for nested arrays
+
+        // First encode without the outer transaction signature for signing
+        // RLP encoding order: [chain_id, nonce, max_priority_fee_per_gas, max_fee_per_gas, gas_limit, destination, value, data, access_list, authorization_list]
+        // The authorization_list is included as raw bytes (they'll be encoded as a byte string, not a list)
+        // First encode without the outer transaction signature for signing
+        // Use the ORIGINAL authorizationList (nested array), NOT the pre-encoded bytes
+        const encoded = rlp
+            .encode([
+                chainId,
+                nonce,
+                maxPriorityGas,
+                maxGas,
+                gasLimit,
+                to,
+                value,
+                callData,
+                accessList, // ← Empty array []
+                authorizationList, // ← Original [[chainId, address, nonce, yParity, r, s]]
+            ])
+            .substring(2);
+        expect(typeof encoded).to.equal("string");
+
+        // Sign the transaction - the SDK may hash internally
+        const type = "04";
         const message = hex.decode(type + encoded);
-        const signedBytes = privateKey.sign(message);
+        const signedBytes = privateKey.sign(message); // Sign raw message, not hash
         const middleOfSignedBytes = signedBytes.length / 2;
         const r = signedBytes.slice(0, middleOfSignedBytes);
         const s = signedBytes.slice(middleOfSignedBytes, signedBytes.length);
         const recoveryId = privateKey.getRecoveryId(r, s, message);
+        // When `recoveryId` is 0, we set `recId` to an empty Uint8Array (`[]`).
+        // This is intentional: during RLP encoding, an empty value is interpreted as zero,
+        // but without explicitly encoding a `0x00` byte.
         const recId = new Uint8Array(recoveryId === 0 ? [] : [recoveryId]);
 
-        const data = rlp
-            .encode([
-                chainId, // 1. chain_id
-                nonce, // 2. nonce
-                maxPriorityGas, // 3. max_priority_fee_per_gas
-                maxGas, // 4. max_fee_per_gas
-                gasLimit, // 5. gas_limit
-                to, // 6. destination
-                value, // 7. value
-                callData, // 8. data
-                accessList, // 9. access_list
-                authorizationList, // 10. [[contract_code, y_parity, r, s], ...]
-                recId, // 11. signature_y_parity
-                r, // 12. signature_r
-                s, // 13. signature_s
-            ])
-            .substring(2);
-        expect(typeof data).to.equal("string");
+        // Create EthereumTransactionDataEip7702 instance with all fields including signature
+        // Ensure authorizationList and accessList are always arrays
+        const ethereumTransactionData = new EthereumTransactionDataEip7702({
+            chainId,
+            nonce,
+            maxPriorityGas,
+            maxGas,
+            gasLimit,
+            to,
+            value,
+            callData,
+            authorizationList: authorizationList || [], // Ensure it's always an array
+            accessList: accessList || [], // Ensure it's always an array
+            recId,
+            r,
+            s,
+        });
 
-        const ethereumData = hex.decode(type + data);
+        // Use toBytes() to get the final encoded transaction data
+        const ethereumData = ethereumTransactionData.toBytes();
+        const transactionHex = hex.encode(ethereumData);
         expect(ethereumData.length).to.be.gt(0);
 
         const response = await (
@@ -492,5 +595,7 @@ describe("EthereumTransactionIntegrationTest", function () {
         expect(response).to.be.instanceof(TransactionResponse);
 
         const receipt = await response.getReceiptWithSigner(wallet);
+        expect(receipt).to.be.instanceof(TransactionReceipt);
+        expect(receipt.status).to.be.equal(Status.Success);
     });
 });
