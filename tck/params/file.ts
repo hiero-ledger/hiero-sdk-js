@@ -1,4 +1,4 @@
-import { BaseTransactionParams } from "./base";
+import { BaseParams, BaseTransactionParams } from "./base";
 
 export interface FileCreateParams extends BaseTransactionParams {
     readonly keys: string[];
@@ -24,4 +24,11 @@ export interface FileAppendParams extends BaseTransactionParams {
 
 export interface FileDeleteParams extends BaseTransactionParams {
     readonly fileId: string;
+}
+
+export interface GetFileInfoParams extends BaseParams {
+    readonly fileId?: string;
+    readonly queryPayment?: string;
+    readonly maxQueryPayment?: string;
+    readonly getCost?: boolean;
 }
