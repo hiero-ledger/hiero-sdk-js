@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated publishing mechanism to support npmjs' new OIDC trusted publishers [#3572](https://github.com/hiero-ledger/hiero-sdk-js/pull/3572)
 
+### Documentation
+- Added explanatory comments to `examples/transfer-tokens.js` [#3586](https://github.com/hiero-ledger/hiero-sdk-js/pull/3586)
+
 # 2.78.0
 
 ### Added 
