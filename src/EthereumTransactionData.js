@@ -3,7 +3,7 @@ import CACHE from "./Cache.js";
 /**
  * Represents the base class for Ethereum transaction data.
  * This class provides the foundation for different types of Ethereum transactions
- * including Legacy, EIP-1559, and EIP-2930 transactions.
+ * including Legacy, EIP-1559, EIP-2930, and EIP-7702 transactions.
  */
 export default class EthereumTransactionData {
     /**
@@ -29,6 +29,8 @@ export default class EthereumTransactionData {
                 return CACHE.ethereumTransactionDataEip2930FromBytes(bytes);
             case 2:
                 return CACHE.ethereumTransactionDataEip1559FromBytes(bytes);
+            case 4:
+                return CACHE.ethereumTransactionDataEip7702FromBytes(bytes);
             default:
                 return CACHE.ethereumTransactionDataLegacyFromBytes(bytes);
         }
