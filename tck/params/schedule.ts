@@ -1,4 +1,4 @@
-import { BaseTransactionParams } from "./base";
+import { BaseParams, BaseTransactionParams } from "./base";
 
 export interface ScheduleCreateParams extends BaseTransactionParams {
     readonly scheduledTransaction?: ScheduledTransaction;
@@ -20,4 +20,11 @@ export interface ScheduleSignParams extends BaseTransactionParams {
 
 export interface ScheduleDeleteParams extends BaseTransactionParams {
     readonly scheduleId?: string;
+}
+
+export interface GetScheduleInfoParams extends BaseParams {
+    readonly scheduleId?: string;
+    readonly queryPayment?: string;
+    readonly maxQueryPayment?: string;
+    readonly getCost?: boolean;
 }
