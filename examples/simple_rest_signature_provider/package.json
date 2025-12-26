@@ -42,7 +42,7 @@
         "express": "^4.22.0",
         "mocha": "~10.6.0",
         "prettier": "^3.7.1",
-        "typedoc": "^0.25.1",
+        "typedoc": "^0.28.15",
         "typescript": "^5.7.2",
         "vite": "~4.5.14"
     },
