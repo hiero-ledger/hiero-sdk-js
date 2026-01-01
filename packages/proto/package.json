@@ -66,7 +66,7 @@
         "semver": "7.3.8",
         "tmp": "0.2.4",
         "typescript": "5.7.2",
-        "protobufjs-cli": "1.0.2"
+        "protobufjs-cli": "2.0.0"
     },
     "peerDependencies": {
         "protobufjs": "7.5.4",
