@@ -54,14 +54,14 @@ jobs:
         with:
           version: 9.15.5
 
-      - name: Install Yarn
-        run: npm install -g yarn
-
       - name: Build @hiero-ledger/sdk
         run: task build
 
       - name: Install detox
         run: npm install -g detox-cli
+
+      - name: Install React Native example deps
+        run: pnpm install --filter react-native-example --no-frozen-lockfile
 
       - name: AVD
         run: |
@@ -73,10 +73,7 @@ jobs:
 
       - name: Build
         working-directory: examples/react-native-example
-        run: |
-          ../../node_modules/.bin/yalc add "@hiero-ledger/sdk"
-          yarn
-          detox build --configuration android
+        run: detox build --configuration android
 
       - name: Test
         working-directory: examples/react-native-example
@@ -116,25 +113,22 @@ jobs:
         with:
           version: 9.15.5
 
-      - name: Install Yarn
-        run: npm install -g yarn
-
       - name: Build @hiero-ledger/sdk
         run: task build
 
       - name: Install detox
         run: npm install -g detox-cli
 
+      - name: Install React Native example deps
+        run: pnpm install --filter react-native-example --no-frozen-lockfile
+
       - name: Build
         working-directory: examples/react-native-example
         run: |
           brew tap wix/brew
           brew install applesimutils
-          yalc add "@hiero-ledger/sdk"
-          yarn
           detox build --configuration ios
 
       - name: Test
-        working-directory: examples/react-native
-        run: |
-          detox test --configuration ios
+        working-directory: examples/react-native-example
+        run: detox test --configuration ios
