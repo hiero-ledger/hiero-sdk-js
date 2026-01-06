@@ -35,6 +35,8 @@ export default defineConfig({
             // will take care of this
             "../../src/index.js": "../../src/browser.js",
             "../src/index.js": "../src/browser.js",
+            // Redirect proto package to use ESM version in browser mode
+            "@hiero-ledger/proto": "/packages/proto/src/index.js",
             // TODO: extract `encoding/hex.js` etc into a variable and call a function to generate
             // all the prefixes.
             "../../../src/encoding/hex.js":

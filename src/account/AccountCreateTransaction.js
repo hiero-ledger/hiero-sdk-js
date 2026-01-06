@@ -622,7 +622,6 @@ export default class AccountCreateTransaction extends Transaction {
      * @returns {HieroProto.proto.ICryptoCreateTransactionBody}
      */
     _makeTransactionData() {
-        console.log("MAIKAMUDEEEBAWEEEEeeeeeeeeee");
         let alias = null;
         if (this._alias != null) {
             alias = this._alias.toBytes();
