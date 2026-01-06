@@ -144,3 +144,10 @@ export interface GetTokenInfoParams extends BaseParams {
     readonly maxQueryPayment?: string;
     readonly getCost?: boolean;
 }
+
+export interface GetTokenNftInfoParams extends BaseParams {
+    readonly nftId?: string;
+    readonly queryPayment?: string;
+    readonly maxQueryPayment?: string;
+    readonly getCost?: boolean;
+}
