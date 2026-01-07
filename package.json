@@ -93,6 +93,7 @@
         "@babel/preset-env": "7.22.15",
         "@babel/register": "7.22.5",
         "@grpc/proto-loader": "0.7.9",
+        "@hashgraph/solo": "^0.52.0",
         "@playwright/test": "1.30.0",
         "@rollup/plugin-alias": "6.0.0",
         "@rollup/plugin-commonjs": "29.0.0",

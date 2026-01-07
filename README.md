@@ -141,17 +141,92 @@ Every example can be executed using the following command from the root director
 
 For detailed information on configuring the SDK, including environment variables and client settings, please refer to the [CONFIGURATION.md](./manual/CONFIGURATION.md) file.
 
-## Start tests
+## Local Development Setup
 
-- To start the integration tests follow the next steps:
-    - Run the [local node](https://github.com/hiero-ledger/hiero-local-node)
-    - Rename [sample.env](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/.env.sample) in the root directory to .env
-        - Ensure the `OPERATOR_ID` and `OPERATOR_KEY` are fields populated from accounts created by the local node
-        - Update the network to `HEDERA_NETWORK="local-node"`
-    - Run `task test:integration:node`
-    - Stop the [local node](https://github.com/hiero-ledger/hiero-local-node)
-- To start unit tests follow the next steps:
-    - Run `task test:unit`
+For contributors and developers who want to run integration tests locally, we provide **Solo** - the official Hiero local network solution. Solo provides a production-like Kubernetes-based environment with multiple consensus nodes and mirror node services.
+
+### Quick Setup
+
+1. **Install dependencies:**
+   ```bash
+   task install
+   ```
+   
+   **Important:** This installs Solo and all project dependencies. Must be run before setup.
+
+2. **Set up Solo local network:**
+   ```bash
+   task solo:setup
+   ```
+   
+   This will automatically:
+   - Create a local Kubernetes cluster with Kind
+   - Deploy a 2-node consensus network
+   - Deploy mirror node services (REST, Web3, gRPC)
+   - Create a dedicated ECDSA test account
+   - Generate a `.env` file with all necessary credentials
+
+3. **Run integration tests:**
+   ```bash
+   task test:integration
+   ```
+
+4. **Teardown when done:**
+   ```bash
+   task solo:teardown
+   ```
+
+For detailed setup instructions, troubleshooting, and advanced usage, see the [Solo Setup Guide](./manual/SOLO_SETUP.md).
+
+### Prerequisites
+
+Before setting up Solo, ensure you have:
+- Docker Desktop (or Docker Engine)
+- Kind (Kubernetes in Docker)
+- kubectl
+- Node.js v18+ (comes with npm/npx)
+
+See the [Solo Setup Guide](./manual/SOLO_SETUP.md#prerequisites) for installation instructions.
+
+## Running Tests
+
+### Unit Tests
+
+Unit tests do not require a local network and can be run directly:
+
+```bash
+task test:unit
+```
+
+Or separately for Node.js and browser:
+
+```bash
+task test:unit:node
+task test:unit:browser
+```
+
+### Integration Tests
+
+Integration tests require a running local network. After setting up Solo (see above):
+
+```bash
+# Run all integration tests
+task test:integration
+
+# Run Node.js integration tests only
+task test:integration:node
+
+# Run browser integration tests only
+task test:integration:browser
+
+# Run dual-mode tests
+task test:integration:dual-mode
+```
+
+**Note:** All integration tests should pass reliably with the Solo setup. If you encounter failures:
+1. Verify Solo is running: `task solo:status`
+2. Check the troubleshooting section in the [Solo Setup Guide](./manual/SOLO_SETUP.md#troubleshooting)
+3. Try a fresh setup: `task solo:teardown && task solo:setup`
 
 ## Contributing
 

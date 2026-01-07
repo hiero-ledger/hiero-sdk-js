@@ -52,7 +52,39 @@ Please ensure that your bug report contains the following:
 4. Run `task build`
 5. Run `node::name of the example file`
 
-Please note: Some of the examples require to run a [Local Node.](https://github.com/hiero-ledger/hiero-local-node)
+### Running Integration Tests
+
+To run integration tests locally, you need to set up Solo (the official Hiero local network):
+
+1. **Install dependencies:**
+   ```bash
+   task install
+   ```
+
+2. **Setup Solo local network:**
+   ```bash
+   task solo:setup
+   ```
+   
+   This will automatically create a local Kubernetes-based network with:
+   - 2 consensus nodes
+   - Mirror node services
+   - A dedicated ECDSA test account
+   - Auto-generated `.env` file
+
+3. **Run integration tests:**
+   ```bash
+   task test:integration
+   ```
+
+4. **Teardown when done:**
+   ```bash
+   task solo:teardown
+   ```
+
+For detailed setup instructions and troubleshooting, see the [Solo Setup Guide](./manual/SOLO_SETUP.md).
+
+**Note:** Some examples may also work with Solo running locally. Check the specific example's documentation.
 
 ## Feature Requests
 
@@ -95,9 +127,13 @@ Before submitting your pull request, refer to the pull request readiness checkli
 
 -   [ ] Includes tests to exercise the new behaviour
 -   [ ] Code is documented, especially public and user-facing constructs
--   [ ] Local run of `task build`, `task test:unit:node` and `task:test:integration:node` succeed
+-   [ ] Local run of `task build` succeeds
+-   [ ] Unit tests pass: `task test:unit:node`
+-   [ ] Integration tests pass with Solo: `task solo:setup && task test:integration:node`
 -   [ ] Git commit message is detailed and includes context behind the change
 -   [ ] If the change is related to an existing Bug Report or Feature Request, please include its issue number
+
+**Note:** Integration tests require Solo to be running. See the [Solo Setup Guide](./manual/SOLO_SETUP.md) for setup instructions.
 
 To contribute, please fork the GitHub repository and submit a pull request to the `develop` branch.
 

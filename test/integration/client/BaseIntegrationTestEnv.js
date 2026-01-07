@@ -81,9 +81,7 @@ export default class BaseIntegrationTestEnv {
             options.env.OPERATOR_KEY != null
         ) {
             operatorId = AccountId.fromString(options.env.OPERATOR_ID);
-            operatorKey = PrivateKey.fromStringED25519(
-                options.env.OPERATOR_KEY,
-            );
+            operatorKey = PrivateKey.fromStringDer(options.env.OPERATOR_KEY);
 
             client.setOperator(operatorId, operatorKey);
             client.setMirrorNetwork(options.env.HEDERA_NETWORK);
