@@ -264,7 +264,21 @@ export default class FeeEstimateQuery extends Query {
             }
 
             const buffer = HieroProto.proto.Transaction.encode(tx).finish();
-            const url = `${client.mirrorRestApiBaseUrl}/network/fees?mode=${
+
+            // For local environments, use port 8084 instead of 5551
+            // as this is the port for the mirror node JAVA REST API which includes this endpoint
+            let mirrorRestApiBaseUrl = client.mirrorRestApiBaseUrl;
+            if (
+                mirrorRestApiBaseUrl.includes("127.0.0.1") ||
+                mirrorRestApiBaseUrl.includes("localhost")
+            ) {
+                mirrorRestApiBaseUrl = mirrorRestApiBaseUrl.replace(
+                    ":5551",
+                    ":8084",
+                );
+            }
+
+            const url = `${mirrorRestApiBaseUrl}/network/fees?mode=${
                 this._mode === FeeEstimateMode.STATE ? "STATE" : "INTRINSIC"
             }`;
 
