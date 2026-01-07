@@ -222,7 +222,7 @@ describe("FeeEstimate", function () {
 
         it("should handle large baseFee values", function () {
             const jsonObj = {
-                baseFee: 9223372036854775807,
+                baseFee: Number.MAX_SAFE_INTEGER,
                 extras: [],
             };
 

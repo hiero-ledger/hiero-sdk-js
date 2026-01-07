@@ -176,8 +176,8 @@ describe("FeeExtra", function () {
                 included: 1000000,
                 count: 2000000,
                 charged: 1000000,
-                fee_per_unit: 9223372036854775807,
-                subtotal: 9223372036854775807,
+                fee_per_unit: Number.MAX_SAFE_INTEGER,
+                subtotal: Number.MAX_SAFE_INTEGER,
             };
 
             const feeExtra = FeeExtra._fromJSON(jsonObj);

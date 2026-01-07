@@ -152,7 +152,7 @@ describe("NetworkFee", function () {
         it("should handle large subtotal values", function () {
             const jsonObj = {
                 multiplier: 1.0,
-                subtotal: 9223372036854775807,
+                subtotal: Number.MAX_SAFE_INTEGER,
             };
 
             const networkFee = NetworkFee._fromJSON(jsonObj);
