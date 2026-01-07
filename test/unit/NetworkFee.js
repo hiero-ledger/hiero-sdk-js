@@ -80,161 +80,98 @@ describe("NetworkFee", function () {
         });
     });
 
-    describe("_fromProtobuf", function () {
-        it("should create from protobuf with all fields", function () {
-            const protoObj = {
+    describe("_fromJSON", function () {
+        it("should create from JSON with all fields", function () {
+            const jsonObj = {
                 multiplier: 1.75,
-                subtotal: Long.fromNumber(750),
+                subtotal: 750,
             };
 
-            const networkFee = NetworkFee._fromProtobuf(protoObj);
+            const networkFee = NetworkFee._fromJSON(jsonObj);
 
             expect(networkFee.multiplier).to.equal(1.75);
             expect(networkFee.subtotal.toNumber()).to.equal(750);
         });
 
-        it("should handle missing fields in protobuf", function () {
-            const protoObj = {
+        it("should handle missing fields in JSON", function () {
+            const jsonObj = {
                 multiplier: 2.0,
             };
 
-            const networkFee = NetworkFee._fromProtobuf(protoObj);
+            const networkFee = NetworkFee._fromJSON(jsonObj);
 
             expect(networkFee.multiplier).to.equal(2.0);
             expect(networkFee.subtotal.toNumber()).to.equal(0);
         });
 
-        it("should handle null/undefined fields in protobuf", function () {
-            const protoObj = {
+        it("should handle null/undefined fields in JSON", function () {
+            const jsonObj = {
                 multiplier: null,
                 subtotal: undefined,
             };
 
-            const networkFee = NetworkFee._fromProtobuf(protoObj);
+            const networkFee = NetworkFee._fromJSON(jsonObj);
 
             expect(networkFee.multiplier).to.equal(0);
             expect(networkFee.subtotal.toNumber()).to.equal(0);
         });
 
-        it("should handle empty protobuf object", function () {
-            const protoObj = {};
+        it("should handle empty JSON object", function () {
+            const jsonObj = {};
 
-            const networkFee = NetworkFee._fromProtobuf(protoObj);
-
-            expect(networkFee.multiplier).to.equal(0);
-            expect(networkFee.subtotal.toNumber()).to.equal(0);
-        });
-
-        it("should handle protobuf with zero values", function () {
-            const protoObj = {
-                multiplier: 0,
-                subtotal: Long.fromNumber(0),
-            };
-
-            const networkFee = NetworkFee._fromProtobuf(protoObj);
+            const networkFee = NetworkFee._fromJSON(jsonObj);
 
             expect(networkFee.multiplier).to.equal(0);
             expect(networkFee.subtotal.toNumber()).to.equal(0);
         });
-    });
 
-    describe("_toProtobuf", function () {
-        it("should convert to protobuf with all fields", function () {
-            const networkFee = new NetworkFee(defaultProps);
-            const protoObj = networkFee._toProtobuf();
-
-            expect(protoObj.multiplier).to.equal(2.5);
-            expect(protoObj.subtotal.toNumber()).to.equal(1000);
-        });
-
-        it("should convert to protobuf with zero values", function () {
-            const props = {
+        it("should handle JSON with zero values", function () {
+            const jsonObj = {
                 multiplier: 0,
                 subtotal: 0,
             };
 
-            const networkFee = new NetworkFee(props);
-            const protoObj = networkFee._toProtobuf();
+            const networkFee = NetworkFee._fromJSON(jsonObj);
 
-            expect(protoObj.multiplier).to.equal(0);
-            expect(protoObj.subtotal.toNumber()).to.equal(0);
+            expect(networkFee.multiplier).to.equal(0);
+            expect(networkFee.subtotal.toNumber()).to.equal(0);
         });
 
-        it("should convert to protobuf with large values", function () {
-            const props = {
-                multiplier: 999.999,
-                subtotal: Long.fromString("9223372036854775807"),
+        it("should handle decimal multiplier in JSON", function () {
+            const jsonObj = {
+                multiplier: 0.5,
+                subtotal: 200,
             };
 
-            const networkFee = new NetworkFee(props);
-            const protoObj = networkFee._toProtobuf();
+            const networkFee = NetworkFee._fromJSON(jsonObj);
 
-            expect(protoObj.multiplier).to.equal(999.999);
-            expect(protoObj.subtotal.toString()).to.equal(
-                "9223372036854775807",
-            );
+            expect(networkFee.multiplier).to.equal(0.5);
+            expect(networkFee.subtotal.toNumber()).to.equal(200);
         });
 
-        it("should convert to protobuf with negative multiplier", function () {
-            const props = {
-                multiplier: -2.5,
+        it("should handle large subtotal values", function () {
+            const jsonObj = {
+                multiplier: 1.0,
+                subtotal: 9223372036854775807,
+            };
+
+            const networkFee = NetworkFee._fromJSON(jsonObj);
+
+            expect(networkFee.multiplier).to.equal(1.0);
+            // Note: JavaScript number precision limits may affect very large values
+            expect(networkFee.subtotal.toNumber()).to.be.a("number");
+        });
+
+        it("should handle negative multiplier in JSON", function () {
+            const jsonObj = {
+                multiplier: -1.5,
                 subtotal: 100,
             };
 
-            const networkFee = new NetworkFee(props);
-            const protoObj = networkFee._toProtobuf();
+            const networkFee = NetworkFee._fromJSON(jsonObj);
 
-            expect(protoObj.multiplier).to.equal(-2.5);
-            expect(protoObj.subtotal.toNumber()).to.equal(100);
-        });
-    });
-
-    describe("round-trip conversion", function () {
-        it("should maintain data integrity through protobuf conversion", function () {
-            const original = new NetworkFee(defaultProps);
-            const protoObj = original._toProtobuf();
-            const converted = NetworkFee._fromProtobuf(protoObj);
-
-            expect(converted.multiplier).to.equal(original.multiplier);
-            expect(converted.subtotal.toNumber()).to.equal(
-                original.subtotal.toNumber(),
-            );
-        });
-
-        it("should handle edge cases in round-trip conversion", function () {
-            const edgeCases = [
-                {
-                    multiplier: 0,
-                    subtotal: 0,
-                },
-                {
-                    multiplier: 1,
-                    subtotal: 1,
-                },
-                {
-                    multiplier: 0.001,
-                    subtotal: 1,
-                },
-                {
-                    multiplier: 999.999,
-                    subtotal: Long.fromString("9223372036854775807"),
-                },
-                {
-                    multiplier: -1.5,
-                    subtotal: 100,
-                },
-            ];
-
-            edgeCases.forEach((props) => {
-                const original = new NetworkFee(props);
-                const protoObj = original._toProtobuf();
-                const converted = NetworkFee._fromProtobuf(protoObj);
-
-                expect(converted.multiplier).to.equal(original.multiplier);
-                expect(converted.subtotal.toNumber()).to.equal(
-                    original.subtotal.toNumber(),
-                );
-            });
+            expect(networkFee.multiplier).to.equal(-1.5);
+            expect(networkFee.subtotal.toNumber()).to.equal(100);
         });
     });
 

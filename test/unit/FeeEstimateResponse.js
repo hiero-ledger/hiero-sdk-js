@@ -148,61 +148,64 @@ describe("FeeEstimateResponse", function () {
         });
     });
 
-    describe("_fromProtobuf", function () {
-        it("should create from protobuf with all fields", function () {
-            const protoObj = {
-                mode: FeeEstimateMode.INTRINSIC,
+    describe("_fromJSON", function () {
+        it("should create from JSON with all fields", function () {
+            const jsonObj = {
+                mode: "1",
                 network: {
                     multiplier: 1.5,
-                    subtotal: Long.fromNumber(800),
+                    subtotal: 800,
                 },
                 node: {
-                    base: Long.fromNumber(400),
+                    baseFee: 400,
                     extras: [
                         {
-                            name: "protoNodeExtra",
+                            name: "jsonNodeExtra",
                             included: 1,
                             count: 2,
                             charged: 1,
-                            feePerUnit: 200,
+                            fee_per_unit: 200,
                             subtotal: 200,
                         },
                     ],
                 },
                 service: {
-                    base: Long.fromNumber(600),
+                    baseFee: 600,
                     extras: [],
                 },
-                notes: ["Proto note 1", "Proto note 2"],
-                total: Long.fromNumber(1800),
+                notes: ["JSON note 1", "JSON note 2"],
+                total: 1800,
             };
 
-            const response = FeeEstimateResponse._fromProtobuf(protoObj);
+            const response = FeeEstimateResponse._fromJSON(jsonObj);
 
-            expect(response.mode).to.equal(FeeEstimateMode.INTRINSIC);
+            expect(response.mode).to.equal(1);
             expect(response.networkFee.multiplier).to.equal(1.5);
             expect(response.networkFee.subtotal.toNumber()).to.equal(800);
             expect(response.nodeFee.base.toNumber()).to.equal(400);
             expect(response.nodeFee.extras).to.have.lengthOf(1);
-            expect(response.nodeFee.extras[0].name).to.equal("protoNodeExtra");
+            expect(response.nodeFee.extras[0].name).to.equal("jsonNodeExtra");
+            expect(response.nodeFee.extras[0].feePerUnit.toNumber()).to.equal(
+                200,
+            );
             expect(response.serviceFee.base.toNumber()).to.equal(600);
             expect(response.serviceFee.extras).to.have.lengthOf(0);
             expect(response.notes).to.deep.equal([
-                "Proto note 1",
-                "Proto note 2",
+                "JSON note 1",
+                "JSON note 2",
             ]);
             expect(response.total.toNumber()).to.equal(1800);
         });
 
-        it("should handle missing fields in protobuf", function () {
-            const protoObj = {
-                mode: FeeEstimateMode.STATE,
-                total: Long.fromNumber(1000),
+        it("should handle missing fields in JSON", function () {
+            const jsonObj = {
+                mode: "0",
+                total: 1000,
             };
 
-            const response = FeeEstimateResponse._fromProtobuf(protoObj);
+            const response = FeeEstimateResponse._fromJSON(jsonObj);
 
-            expect(response.mode).to.equal(FeeEstimateMode.STATE);
+            expect(response.mode).to.equal(0);
             expect(response.networkFee.multiplier).to.equal(0);
             expect(response.networkFee.subtotal.toNumber()).to.equal(0);
             expect(response.nodeFee.base.toNumber()).to.equal(0);
@@ -213,8 +216,8 @@ describe("FeeEstimateResponse", function () {
             expect(response.total.toNumber()).to.equal(1000);
         });
 
-        it("should handle null/undefined fields in protobuf", function () {
-            const protoObj = {
+        it("should handle null/undefined fields in JSON", function () {
+            const jsonObj = {
                 mode: null,
                 network: null,
                 node: null,
@@ -223,7 +226,7 @@ describe("FeeEstimateResponse", function () {
                 total: null,
             };
 
-            const response = FeeEstimateResponse._fromProtobuf(protoObj);
+            const response = FeeEstimateResponse._fromJSON(jsonObj);
 
             expect(response.mode).to.equal(FeeEstimateMode.STATE);
             expect(response.networkFee.multiplier).to.equal(0);
@@ -236,10 +239,10 @@ describe("FeeEstimateResponse", function () {
             expect(response.total.toNumber()).to.equal(0);
         });
 
-        it("should handle empty protobuf object", function () {
-            const protoObj = {};
+        it("should handle empty JSON object", function () {
+            const jsonObj = {};
 
-            const response = FeeEstimateResponse._fromProtobuf(protoObj);
+            const response = FeeEstimateResponse._fromJSON(jsonObj);
 
             expect(response.mode).to.equal(FeeEstimateMode.STATE);
             expect(response.networkFee.multiplier).to.equal(0);
@@ -253,152 +256,94 @@ describe("FeeEstimateResponse", function () {
         });
 
         it("should default to STATE mode when mode is null", function () {
-            const protoObj = {
+            const jsonObj = {
                 mode: null,
-                total: Long.fromNumber(1000),
+                total: 1000,
             };
 
-            const response = FeeEstimateResponse._fromProtobuf(protoObj);
+            const response = FeeEstimateResponse._fromJSON(jsonObj);
 
             expect(response.mode).to.equal(FeeEstimateMode.STATE);
         });
-    });
 
-    describe("_toProtobuf", function () {
-        it("should convert to protobuf with all fields", function () {
-            const response = new FeeEstimateResponse(defaultProps);
-            const protoObj = response._toProtobuf();
-
-            expect(protoObj.mode).to.equal(FeeEstimateMode.STATE);
-            expect(protoObj.network.multiplier).to.equal(2.0);
-            expect(protoObj.network.subtotal.toNumber()).to.equal(1000);
-            expect(protoObj.node.base.toNumber()).to.equal(500);
-            expect(protoObj.node.extras).to.have.lengthOf(1);
-            expect(protoObj.node.extras[0].name).to.equal("nodeExtra");
-            expect(protoObj.service.base.toNumber()).to.equal(750);
-            expect(protoObj.service.extras).to.have.lengthOf(1);
-            expect(protoObj.service.extras[0].name).to.equal("serviceExtra");
-            expect(protoObj.notes).to.deep.equal([
-                "Test note 1",
-                "Test note 2",
-            ]);
-            expect(protoObj.total.toNumber()).to.equal(2250);
-        });
-
-        it("should convert to protobuf with empty notes", function () {
-            const props = {
-                ...defaultProps,
-                notes: [],
+        it("should parse numeric string mode correctly", function () {
+            const jsonObj = {
+                mode: "1",
+                total: 1000,
             };
 
-            const response = new FeeEstimateResponse(props);
-            const protoObj = response._toProtobuf();
+            const response = FeeEstimateResponse._fromJSON(jsonObj);
 
-            expect(protoObj.notes).to.deep.equal([]);
+            expect(response.mode).to.equal(1);
         });
 
-        it("should convert to protobuf with zero values", function () {
-            const zeroNetworkFee = new NetworkFee({
-                multiplier: 0,
-                subtotal: 0,
-            });
-
-            const zeroNodeFee = new FeeEstimate({
-                base: 0,
-                extras: [],
-            });
-
-            const zeroServiceFee = new FeeEstimate({
-                base: 0,
-                extras: [],
-            });
-
-            const props = {
-                mode: FeeEstimateMode.STATE,
-                networkFee: zeroNetworkFee,
-                nodeFee: zeroNodeFee,
-                serviceFee: zeroServiceFee,
-                notes: [],
-                total: 0,
+        it("should handle network with all fields", function () {
+            const jsonObj = {
+                mode: "0",
+                network: {
+                    multiplier: 2.5,
+                    subtotal: 1500,
+                },
+                total: 1500,
             };
 
-            const response = new FeeEstimateResponse(props);
-            const protoObj = response._toProtobuf();
+            const response = FeeEstimateResponse._fromJSON(jsonObj);
 
-            expect(protoObj.mode).to.equal(FeeEstimateMode.STATE);
-            expect(protoObj.network.multiplier).to.equal(0);
-            expect(protoObj.network.subtotal.toNumber()).to.equal(0);
-            expect(protoObj.node.base.toNumber()).to.equal(0);
-            expect(protoObj.node.extras).to.have.lengthOf(0);
-            expect(protoObj.service.base.toNumber()).to.equal(0);
-            expect(protoObj.service.extras).to.have.lengthOf(0);
-            expect(protoObj.notes).to.deep.equal([]);
-            expect(protoObj.total.toNumber()).to.equal(0);
-        });
-    });
-
-    describe("round-trip conversion", function () {
-        it("should maintain data integrity through protobuf conversion", function () {
-            const original = new FeeEstimateResponse(defaultProps);
-            const protoObj = original._toProtobuf();
-            const converted = FeeEstimateResponse._fromProtobuf(protoObj);
-
-            expect(converted.mode).to.equal(original.mode);
-            expect(converted.networkFee.multiplier).to.equal(
-                original.networkFee.multiplier,
-            );
-            expect(converted.networkFee.subtotal.toNumber()).to.equal(
-                original.networkFee.subtotal.toNumber(),
-            );
-            expect(converted.nodeFee.base.toNumber()).to.equal(
-                original.nodeFee.base.toNumber(),
-            );
-            expect(converted.nodeFee.extras).to.have.lengthOf(
-                original.nodeFee.extras.length,
-            );
-            expect(converted.serviceFee.base.toNumber()).to.equal(
-                original.serviceFee.base.toNumber(),
-            );
-            expect(converted.serviceFee.extras).to.have.lengthOf(
-                original.serviceFee.extras.length,
-            );
-            expect(converted.notes).to.deep.equal(original.notes);
-            expect(converted.total.toNumber()).to.equal(
-                original.total.toNumber(),
-            );
+            expect(response.networkFee.multiplier).to.equal(2.5);
+            expect(response.networkFee.subtotal.toNumber()).to.equal(1500);
         });
 
-        it("should handle edge cases in round-trip conversion", function () {
-            const edgeCases = [
-                {
-                    mode: FeeEstimateMode.STATE,
-                    networkFee: new NetworkFee({ multiplier: 0, subtotal: 0 }),
-                    nodeFee: new FeeEstimate({ base: 0, extras: [] }),
-                    serviceFee: new FeeEstimate({ base: 0, extras: [] }),
-                    notes: [],
-                    total: 0,
+        it("should handle node with multiple extras", function () {
+            const jsonObj = {
+                mode: "0",
+                node: {
+                    baseFee: 1000,
+                    extras: [
+                        {
+                            name: "extra1",
+                            included: 1,
+                            count: 3,
+                            charged: 2,
+                            fee_per_unit: 100,
+                            subtotal: 200,
+                        },
+                        {
+                            name: "extra2",
+                            included: 0,
+                            count: 5,
+                            charged: 5,
+                            fee_per_unit: 50,
+                            subtotal: 250,
+                        },
+                    ],
                 },
-                {
-                    mode: FeeEstimateMode.INTRINSIC,
-                    networkFee: new NetworkFee({ multiplier: 1, subtotal: 1 }),
-                    nodeFee: new FeeEstimate({ base: 1, extras: [] }),
-                    serviceFee: new FeeEstimate({ base: 1, extras: [] }),
-                    notes: ["Single note"],
-                    total: 1,
+                total: 1450,
+            };
+
+            const response = FeeEstimateResponse._fromJSON(jsonObj);
+
+            expect(response.nodeFee.base.toNumber()).to.equal(1000);
+            expect(response.nodeFee.extras).to.have.lengthOf(2);
+            expect(response.nodeFee.extras[0].name).to.equal("extra1");
+            expect(response.nodeFee.extras[0].charged).to.equal(2);
+            expect(response.nodeFee.extras[1].name).to.equal("extra2");
+            expect(response.nodeFee.extras[1].charged).to.equal(5);
+        });
+
+        it("should handle service with empty extras", function () {
+            const jsonObj = {
+                mode: "0",
+                service: {
+                    baseFee: 500,
+                    extras: [],
                 },
-            ];
+                total: 500,
+            };
 
-            edgeCases.forEach((props) => {
-                const original = new FeeEstimateResponse(props);
-                const protoObj = original._toProtobuf();
-                const converted = FeeEstimateResponse._fromProtobuf(protoObj);
+            const response = FeeEstimateResponse._fromJSON(jsonObj);
 
-                expect(converted.mode).to.equal(original.mode);
-                expect(converted.total.toNumber()).to.equal(
-                    original.total.toNumber(),
-                );
-                expect(converted.notes).to.deep.equal(original.notes);
-            });
+            expect(response.serviceFee.base.toNumber()).to.equal(500);
+            expect(response.serviceFee.extras).to.have.lengthOf(0);
         });
     });
 
@@ -475,6 +420,20 @@ describe("FeeEstimateResponse", function () {
             expect(response.notes[1]).to.equal("Second");
             expect(response.notes[2]).to.equal("Third");
         });
+
+        it("should handle notes from JSON", function () {
+            const jsonObj = {
+                mode: "0",
+                notes: ["Note from JSON 1", "Note from JSON 2"],
+                total: 1000,
+            };
+
+            const response = FeeEstimateResponse._fromJSON(jsonObj);
+
+            expect(response.notes).to.have.lengthOf(2);
+            expect(response.notes[0]).to.equal("Note from JSON 1");
+            expect(response.notes[1]).to.equal("Note from JSON 2");
+        });
     });
 
     describe("mode handling", function () {
@@ -509,6 +468,62 @@ describe("FeeEstimateResponse", function () {
             const response = new FeeEstimateResponse(props);
 
             expect(response.mode).to.equal(0);
+        });
+
+        it("should handle mode from JSON string", function () {
+            const jsonObj = {
+                mode: "0",
+                total: 1000,
+            };
+
+            const response = FeeEstimateResponse._fromJSON(jsonObj);
+
+            expect(response.mode).to.equal(0);
+        });
+    });
+
+    describe("complete JSON parsing", function () {
+        it("should parse a realistic API response", function () {
+            const apiResponse = {
+                mode: "0",
+                network: {
+                    multiplier: 1.0,
+                    subtotal: 5000,
+                },
+                node: {
+                    baseFee: 2500,
+                    extras: [
+                        {
+                            name: "CRYPTO_TRANSFER_BPT_FEE",
+                            included: 25,
+                            count: 30,
+                            charged: 5,
+                            fee_per_unit: 100,
+                            subtotal: 500,
+                        },
+                    ],
+                },
+                service: {
+                    baseFee: 2500,
+                    extras: [],
+                },
+                notes: ["Estimated based on current network conditions"],
+                total: 10500,
+            };
+
+            const response = FeeEstimateResponse._fromJSON(apiResponse);
+
+            expect(response.mode).to.equal(0);
+            expect(response.networkFee.multiplier).to.equal(1.0);
+            expect(response.networkFee.subtotal.toNumber()).to.equal(5000);
+            expect(response.nodeFee.base.toNumber()).to.equal(2500);
+            expect(response.nodeFee.extras).to.have.lengthOf(1);
+            expect(response.nodeFee.extras[0].name).to.equal(
+                "CRYPTO_TRANSFER_BPT_FEE",
+            );
+            expect(response.serviceFee.base.toNumber()).to.equal(2500);
+            expect(response.notes).to.have.lengthOf(1);
+            expect(response.total.toNumber()).to.equal(10500);
         });
     });
 });

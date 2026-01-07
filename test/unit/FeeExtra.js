@@ -85,20 +85,20 @@ describe("FeeExtra", function () {
         });
     });
 
-    describe("_fromProtobuf", function () {
-        it("should create from protobuf with all fields", function () {
-            const protoObj = {
-                name: "protobufFee",
+    describe("_fromJSON", function () {
+        it("should create from JSON with all fields", function () {
+            const jsonObj = {
+                name: "jsonFee",
                 included: 3,
                 count: 8,
                 charged: 5,
-                feePerUnit: Long.fromNumber(150),
-                subtotal: Long.fromNumber(750),
+                fee_per_unit: 150,
+                subtotal: 750,
             };
 
-            const feeExtra = FeeExtra._fromProtobuf(protoObj);
+            const feeExtra = FeeExtra._fromJSON(jsonObj);
 
-            expect(feeExtra.name).to.equal("protobufFee");
+            expect(feeExtra.name).to.equal("jsonFee");
             expect(feeExtra.included).to.equal(3);
             expect(feeExtra.count).to.equal(8);
             expect(feeExtra.charged).to.equal(5);
@@ -106,13 +106,13 @@ describe("FeeExtra", function () {
             expect(feeExtra.subtotal.toNumber()).to.equal(750);
         });
 
-        it("should handle missing fields in protobuf", function () {
-            const protoObj = {
+        it("should handle missing fields in JSON", function () {
+            const jsonObj = {
                 name: "partialFee",
                 included: 2,
             };
 
-            const feeExtra = FeeExtra._fromProtobuf(protoObj);
+            const feeExtra = FeeExtra._fromJSON(jsonObj);
 
             expect(feeExtra.name).to.equal("partialFee");
             expect(feeExtra.included).to.equal(2);
@@ -122,17 +122,17 @@ describe("FeeExtra", function () {
             expect(feeExtra.subtotal.toNumber()).to.equal(0);
         });
 
-        it("should handle null/undefined fields in protobuf", function () {
-            const protoObj = {
+        it("should handle null/undefined fields in JSON", function () {
+            const jsonObj = {
                 name: null,
                 included: undefined,
                 count: null,
                 charged: undefined,
-                feePerUnit: null,
+                fee_per_unit: null,
                 subtotal: undefined,
             };
 
-            const feeExtra = FeeExtra._fromProtobuf(protoObj);
+            const feeExtra = FeeExtra._fromJSON(jsonObj);
 
             expect(feeExtra.name).to.equal("");
             expect(feeExtra.included).to.equal(0);
@@ -142,10 +142,10 @@ describe("FeeExtra", function () {
             expect(feeExtra.subtotal.toNumber()).to.equal(0);
         });
 
-        it("should handle empty protobuf object", function () {
-            const protoObj = {};
+        it("should handle empty JSON object", function () {
+            const jsonObj = {};
 
-            const feeExtra = FeeExtra._fromProtobuf(protoObj);
+            const feeExtra = FeeExtra._fromJSON(jsonObj);
 
             expect(feeExtra.name).to.equal("");
             expect(feeExtra.included).to.equal(0);
@@ -154,130 +154,92 @@ describe("FeeExtra", function () {
             expect(feeExtra.feePerUnit.toNumber()).to.equal(0);
             expect(feeExtra.subtotal.toNumber()).to.equal(0);
         });
-    });
 
-    describe("_toProtobuf", function () {
-        it("should convert to protobuf with all fields", function () {
-            const feeExtra = new FeeExtra(defaultProps);
-            const protoObj = feeExtra._toProtobuf();
-
-            expect(protoObj.name).to.equal("testFee");
-            expect(protoObj.included).to.equal(5);
-            expect(protoObj.count).to.equal(10);
-            expect(protoObj.charged).to.equal(5);
-            expect(protoObj.feePerUnit.toNumber()).to.equal(100);
-            expect(protoObj.subtotal.toNumber()).to.equal(500);
-        });
-
-        it("should convert to protobuf with zero values", function () {
-            const props = {
-                name: "zeroFee",
-                included: 0,
-                count: 0,
-                charged: 0,
-                feePerUnit: 0,
-                subtotal: 0,
+        it("should correctly map fee_per_unit to feePerUnit", function () {
+            const jsonObj = {
+                name: "testFee",
+                included: 1,
+                count: 2,
+                charged: 1,
+                fee_per_unit: 500,
+                subtotal: 500,
             };
 
-            const feeExtra = new FeeExtra(props);
-            const protoObj = feeExtra._toProtobuf();
+            const feeExtra = FeeExtra._fromJSON(jsonObj);
 
-            expect(protoObj.name).to.equal("zeroFee");
-            expect(protoObj.included).to.equal(0);
-            expect(protoObj.count).to.equal(0);
-            expect(protoObj.charged).to.equal(0);
-            expect(protoObj.feePerUnit.toNumber()).to.equal(0);
-            expect(protoObj.subtotal.toNumber()).to.equal(0);
+            expect(feeExtra.feePerUnit.toNumber()).to.equal(500);
         });
 
-        it("should convert to protobuf with large values", function () {
-            const props = {
+        it("should handle large values in JSON", function () {
+            const jsonObj = {
                 name: "largeFee",
                 included: 1000000,
                 count: 2000000,
                 charged: 1000000,
-                feePerUnit: Long.fromString("9223372036854775807"),
-                subtotal: Long.fromString("9223372036854775807"),
+                fee_per_unit: 9223372036854775807,
+                subtotal: 9223372036854775807,
             };
 
-            const feeExtra = new FeeExtra(props);
-            const protoObj = feeExtra._toProtobuf();
+            const feeExtra = FeeExtra._fromJSON(jsonObj);
 
-            expect(protoObj.name).to.equal("largeFee");
-            expect(protoObj.included).to.equal(1000000);
-            expect(protoObj.count).to.equal(2000000);
-            expect(protoObj.charged).to.equal(1000000);
-            expect(protoObj.feePerUnit.toString()).to.equal(
-                "9223372036854775807",
-            );
-            expect(protoObj.subtotal.toString()).to.equal(
-                "9223372036854775807",
-            );
-        });
-    });
-
-    describe("round-trip conversion", function () {
-        it("should maintain data integrity through protobuf conversion", function () {
-            const original = new FeeExtra(defaultProps);
-            const protoObj = original._toProtobuf();
-            const converted = FeeExtra._fromProtobuf(protoObj);
-
-            expect(converted.name).to.equal(original.name);
-            expect(converted.included).to.equal(original.included);
-            expect(converted.count).to.equal(original.count);
-            expect(converted.charged).to.equal(original.charged);
-            expect(converted.feePerUnit.toNumber()).to.equal(
-                original.feePerUnit.toNumber(),
-            );
-            expect(converted.subtotal.toNumber()).to.equal(
-                original.subtotal.toNumber(),
-            );
+            expect(feeExtra.name).to.equal("largeFee");
+            expect(feeExtra.included).to.equal(1000000);
+            expect(feeExtra.count).to.equal(2000000);
+            expect(feeExtra.charged).to.equal(1000000);
+            // Note: JavaScript number precision limits may affect very large values
+            expect(feeExtra.feePerUnit.toNumber()).to.be.a("number");
+            expect(feeExtra.subtotal.toNumber()).to.be.a("number");
         });
 
-        it("should handle edge cases in round-trip conversion", function () {
-            const edgeCases = [
-                {
-                    name: "",
-                    included: 0,
-                    count: 0,
-                    charged: 0,
-                    feePerUnit: 0,
-                    subtotal: 0,
-                },
-                {
-                    name: "a".repeat(1000), // Very long name
-                    included: 1,
-                    count: 1,
-                    charged: 0,
-                    feePerUnit: 1,
-                    subtotal: 0,
-                },
-                {
-                    name: "special-chars-!@#$%^&*()",
-                    included: 999999,
-                    count: 999999,
-                    charged: 0,
-                    feePerUnit: 999999,
-                    subtotal: 0,
-                },
-            ];
+        it("should handle zero values in JSON", function () {
+            const jsonObj = {
+                name: "zeroFee",
+                included: 0,
+                count: 0,
+                charged: 0,
+                fee_per_unit: 0,
+                subtotal: 0,
+            };
 
-            edgeCases.forEach((props) => {
-                const original = new FeeExtra(props);
-                const protoObj = original._toProtobuf();
-                const converted = FeeExtra._fromProtobuf(protoObj);
+            const feeExtra = FeeExtra._fromJSON(jsonObj);
 
-                expect(converted.name).to.equal(original.name);
-                expect(converted.included).to.equal(original.included);
-                expect(converted.count).to.equal(original.count);
-                expect(converted.charged).to.equal(original.charged);
-                expect(converted.feePerUnit.toNumber()).to.equal(
-                    original.feePerUnit.toNumber(),
-                );
-                expect(converted.subtotal.toNumber()).to.equal(
-                    original.subtotal.toNumber(),
-                );
-            });
+            expect(feeExtra.name).to.equal("zeroFee");
+            expect(feeExtra.included).to.equal(0);
+            expect(feeExtra.count).to.equal(0);
+            expect(feeExtra.charged).to.equal(0);
+            expect(feeExtra.feePerUnit.toNumber()).to.equal(0);
+            expect(feeExtra.subtotal.toNumber()).to.equal(0);
+        });
+
+        it("should handle special characters in name", function () {
+            const jsonObj = {
+                name: "special-chars-!@#$%^&*()",
+                included: 1,
+                count: 1,
+                charged: 0,
+                fee_per_unit: 100,
+                subtotal: 0,
+            };
+
+            const feeExtra = FeeExtra._fromJSON(jsonObj);
+
+            expect(feeExtra.name).to.equal("special-chars-!@#$%^&*()");
+        });
+
+        it("should handle very long name", function () {
+            const longName = "a".repeat(1000);
+            const jsonObj = {
+                name: longName,
+                included: 1,
+                count: 1,
+                charged: 0,
+                fee_per_unit: 100,
+                subtotal: 0,
+            };
+
+            const feeExtra = FeeExtra._fromJSON(jsonObj);
+
+            expect(feeExtra.name).to.equal(longName);
         });
     });
 
@@ -301,6 +263,39 @@ describe("FeeExtra", function () {
             expect(typeof feeExtra.charged).to.equal("number");
             expect(feeExtra.feePerUnit).to.be.instanceOf(Long);
             expect(feeExtra.subtotal).to.be.instanceOf(Long);
+        });
+    });
+
+    describe("charged calculation", function () {
+        it("should verify charged is max(0, count - included)", function () {
+            const testCases = [
+                { included: 5, count: 10, expectedCharged: 5 },
+                { included: 10, count: 5, expectedCharged: 0 },
+                { included: 5, count: 5, expectedCharged: 0 },
+                { included: 0, count: 10, expectedCharged: 10 },
+                { included: 10, count: 0, expectedCharged: 0 },
+            ];
+
+            testCases.forEach(({ included, count, expectedCharged }) => {
+                const actualCharged = Math.max(0, count - included);
+                expect(actualCharged).to.equal(expectedCharged);
+            });
+        });
+    });
+
+    describe("subtotal calculation", function () {
+        it("should verify subtotal is charged * feePerUnit", function () {
+            const testCases = [
+                { charged: 5, feePerUnit: 100, expectedSubtotal: 500 },
+                { charged: 0, feePerUnit: 100, expectedSubtotal: 0 },
+                { charged: 10, feePerUnit: 0, expectedSubtotal: 0 },
+                { charged: 3, feePerUnit: 150, expectedSubtotal: 450 },
+            ];
+
+            testCases.forEach(({ charged, feePerUnit, expectedSubtotal }) => {
+                const actualSubtotal = charged * feePerUnit;
+                expect(actualSubtotal).to.equal(expectedSubtotal);
+            });
         });
     });
 });

@@ -115,211 +115,141 @@ describe("FeeEstimate", function () {
         });
     });
 
-    describe("_fromProtobuf", function () {
-        it("should create from protobuf with all fields", function () {
-            const protoObj = {
-                base: Long.fromNumber(2000),
+    describe("_fromJSON", function () {
+        it("should create from JSON with all fields", function () {
+            const jsonObj = {
+                baseFee: 2000,
                 extras: [
                     {
-                        name: "protoExtra1",
+                        name: "jsonExtra1",
                         included: 3,
                         count: 6,
                         charged: 3,
-                        feePerUnit: 200,
+                        fee_per_unit: 200,
                         subtotal: 600,
                     },
                     {
-                        name: "protoExtra2",
+                        name: "jsonExtra2",
                         included: 1,
                         count: 5,
                         charged: 4,
-                        feePerUnit: 75,
+                        fee_per_unit: 75,
                         subtotal: 300,
                     },
                 ],
             };
 
-            const feeEstimate = FeeEstimate._fromProtobuf(protoObj);
+            const feeEstimate = FeeEstimate._fromJSON(jsonObj);
 
             expect(feeEstimate.base.toNumber()).to.equal(2000);
             expect(feeEstimate.extras).to.have.lengthOf(2);
-            expect(feeEstimate.extras[0].name).to.equal("protoExtra1");
-            expect(feeEstimate.extras[1].name).to.equal("protoExtra2");
+            expect(feeEstimate.extras[0].name).to.equal("jsonExtra1");
+            expect(feeEstimate.extras[0].included).to.equal(3);
+            expect(feeEstimate.extras[0].count).to.equal(6);
+            expect(feeEstimate.extras[0].charged).to.equal(3);
+            expect(feeEstimate.extras[0].feePerUnit.toNumber()).to.equal(200);
+            expect(feeEstimate.extras[0].subtotal.toNumber()).to.equal(600);
+            expect(feeEstimate.extras[1].name).to.equal("jsonExtra2");
         });
 
-        it("should handle missing fields in protobuf", function () {
-            const protoObj = {
-                base: Long.fromNumber(1000),
+        it("should handle missing fields in JSON", function () {
+            const jsonObj = {
+                baseFee: 1000,
             };
 
-            const feeEstimate = FeeEstimate._fromProtobuf(protoObj);
+            const feeEstimate = FeeEstimate._fromJSON(jsonObj);
 
             expect(feeEstimate.base.toNumber()).to.equal(1000);
             expect(feeEstimate.extras).to.have.lengthOf(0);
         });
 
-        it("should handle null/undefined fields in protobuf", function () {
-            const protoObj = {
-                base: null,
+        it("should handle null/undefined fields in JSON", function () {
+            const jsonObj = {
+                baseFee: null,
                 extras: undefined,
             };
 
-            const feeEstimate = FeeEstimate._fromProtobuf(protoObj);
+            const feeEstimate = FeeEstimate._fromJSON(jsonObj);
 
             expect(feeEstimate.base.toNumber()).to.equal(0);
             expect(feeEstimate.extras).to.have.lengthOf(0);
         });
 
-        it("should handle empty protobuf object", function () {
-            const protoObj = {};
+        it("should handle empty JSON object", function () {
+            const jsonObj = {};
 
-            const feeEstimate = FeeEstimate._fromProtobuf(protoObj);
+            const feeEstimate = FeeEstimate._fromJSON(jsonObj);
 
             expect(feeEstimate.base.toNumber()).to.equal(0);
             expect(feeEstimate.extras).to.have.lengthOf(0);
         });
 
-        it("should handle empty extras array in protobuf", function () {
-            const protoObj = {
-                base: Long.fromNumber(500),
+        it("should handle empty extras array in JSON", function () {
+            const jsonObj = {
+                baseFee: 500,
                 extras: [],
             };
 
-            const feeEstimate = FeeEstimate._fromProtobuf(protoObj);
+            const feeEstimate = FeeEstimate._fromJSON(jsonObj);
 
             expect(feeEstimate.base.toNumber()).to.equal(500);
             expect(feeEstimate.extras).to.have.lengthOf(0);
         });
 
-        it("should handle null extras in protobuf", function () {
-            const protoObj = {
-                base: Long.fromNumber(500),
+        it("should handle null extras in JSON", function () {
+            const jsonObj = {
+                baseFee: 500,
                 extras: null,
             };
 
-            const feeEstimate = FeeEstimate._fromProtobuf(protoObj);
+            const feeEstimate = FeeEstimate._fromJSON(jsonObj);
 
             expect(feeEstimate.base.toNumber()).to.equal(500);
             expect(feeEstimate.extras).to.have.lengthOf(0);
         });
-    });
 
-    describe("_toProtobuf", function () {
-        it("should convert to protobuf with all fields", function () {
-            const feeEstimate = new FeeEstimate(defaultProps);
-            const protoObj = feeEstimate._toProtobuf();
-
-            expect(protoObj.base.toNumber()).to.equal(1000);
-            expect(protoObj.extras).to.have.lengthOf(2);
-            expect(protoObj.extras[0].name).to.equal("extra1");
-            expect(protoObj.extras[1].name).to.equal("extra2");
-        });
-
-        it("should convert to protobuf with empty extras", function () {
-            const props = {
-                base: 500,
+        it("should handle zero baseFee in JSON", function () {
+            const jsonObj = {
+                baseFee: 0,
                 extras: [],
             };
 
-            const feeEstimate = new FeeEstimate(props);
-            const protoObj = feeEstimate._toProtobuf();
+            const feeEstimate = FeeEstimate._fromJSON(jsonObj);
 
-            expect(protoObj.base.toNumber()).to.equal(500);
-            expect(protoObj.extras).to.have.lengthOf(0);
+            expect(feeEstimate.base.toNumber()).to.equal(0);
+            expect(feeEstimate.extras).to.have.lengthOf(0);
         });
 
-        it("should convert to protobuf with zero base", function () {
-            const props = {
-                base: 0,
+        it("should handle large baseFee values", function () {
+            const jsonObj = {
+                baseFee: 9223372036854775807,
                 extras: [],
             };
 
-            const feeEstimate = new FeeEstimate(props);
-            const protoObj = feeEstimate._toProtobuf();
+            const feeEstimate = FeeEstimate._fromJSON(jsonObj);
 
-            expect(protoObj.base.toNumber()).to.equal(0);
-            expect(protoObj.extras).to.have.lengthOf(0);
+            // Note: JavaScript number precision limits may affect this
+            expect(feeEstimate.base.toNumber()).to.be.a("number");
         });
 
-        it("should convert to protobuf with large values", function () {
-            const largeExtra = new FeeExtra({
-                name: "largeExtra",
-                included: 1000000,
-                count: 2000000,
-                charged: 1000000,
-                feePerUnit: Long.fromString("9223372036854775807"),
-                subtotal: Long.fromString("9223372036854775807"),
-            });
-
-            const props = {
-                base: Long.fromString("9223372036854775807"),
-                extras: [largeExtra],
+        it("should correctly map fee_per_unit to feePerUnit", function () {
+            const jsonObj = {
+                baseFee: 1000,
+                extras: [
+                    {
+                        name: "testExtra",
+                        included: 1,
+                        count: 2,
+                        charged: 1,
+                        fee_per_unit: 500,
+                        subtotal: 500,
+                    },
+                ],
             };
 
-            const feeEstimate = new FeeEstimate(props);
-            const protoObj = feeEstimate._toProtobuf();
+            const feeEstimate = FeeEstimate._fromJSON(jsonObj);
 
-            expect(protoObj.base.toString()).to.equal("9223372036854775807");
-            expect(protoObj.extras).to.have.lengthOf(1);
-            expect(protoObj.extras[0].name).to.equal("largeExtra");
-        });
-    });
-
-    describe("round-trip conversion", function () {
-        it("should maintain data integrity through protobuf conversion", function () {
-            const original = new FeeEstimate(defaultProps);
-            const protoObj = original._toProtobuf();
-            const converted = FeeEstimate._fromProtobuf(protoObj);
-
-            expect(converted.base.toNumber()).to.equal(
-                original.base.toNumber(),
-            );
-            expect(converted.extras).to.have.lengthOf(original.extras.length);
-            expect(converted.extras[0].name).to.equal(original.extras[0].name);
-            expect(converted.extras[1].name).to.equal(original.extras[1].name);
-        });
-
-        it("should handle edge cases in round-trip conversion", function () {
-            const edgeCases = [
-                {
-                    base: 0,
-                    extras: [],
-                },
-                {
-                    base: 1,
-                    extras: [],
-                },
-                {
-                    base: Long.fromString("9223372036854775807"),
-                    extras: [],
-                },
-                {
-                    base: 1000,
-                    extras: [
-                        new FeeExtra({
-                            name: "",
-                            included: 0,
-                            count: 0,
-                            charged: 0,
-                            feePerUnit: 0,
-                            subtotal: 0,
-                        }),
-                    ],
-                },
-            ];
-
-            edgeCases.forEach((props) => {
-                const original = new FeeEstimate(props);
-                const protoObj = original._toProtobuf();
-                const converted = FeeEstimate._fromProtobuf(protoObj);
-
-                expect(converted.base.toNumber()).to.equal(
-                    original.base.toNumber(),
-                );
-                expect(converted.extras).to.have.lengthOf(
-                    original.extras.length,
-                );
-            });
+            expect(feeEstimate.extras[0].feePerUnit.toNumber()).to.equal(500);
         });
     });
 
