@@ -55,29 +55,4 @@ export default class FeeEstimate {
             ),
         });
     }
-
-    /**
-     * @internal
-     * @param {import("@hiero-ledger/proto").com.hedera.mirror.api.proto.IFeeEstimate} feeEstimate
-     * @returns {FeeEstimate}
-     */
-    static _fromProtobuf(feeEstimate) {
-        return new FeeEstimate({
-            base: feeEstimate.base || 0,
-            extras: (feeEstimate.extras || []).map((extra) =>
-                FeeExtra._fromProtobuf(extra),
-            ),
-        });
-    }
-
-    /**
-     * @internal
-     * @returns {object}
-     */
-    _toProtobuf() {
-        return {
-            base: this.base,
-            extras: this.extras.map((extra) => extra._toProtobuf()),
-        };
-    }
 }

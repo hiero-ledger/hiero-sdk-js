@@ -115,44 +115,4 @@ export default class FeeEstimateResponse {
             total: response.total || 0,
         });
     }
-
-    /**
-     * @internal
-     * @param {import("@hiero-ledger/proto").com.hedera.mirror.api.proto.IFeeEstimateResponse} response
-     * @returns {FeeEstimateResponse}
-     */
-    static _fromProtobuf(response) {
-        return new FeeEstimateResponse({
-            mode:
-                response.mode != null
-                    ? Number(response.mode)
-                    : FeeEstimateMode.STATE,
-            networkFee: response.network
-                ? NetworkFee._fromProtobuf(response.network)
-                : new NetworkFee({ multiplier: 0, subtotal: 0 }),
-            nodeFee: response.node
-                ? FeeEstimate._fromProtobuf(response.node)
-                : new FeeEstimate({ base: 0, extras: [] }),
-            serviceFee: response.service
-                ? FeeEstimate._fromProtobuf(response.service)
-                : new FeeEstimate({ base: 0, extras: [] }),
-            notes: response.notes || [],
-            total: response.total || 0,
-        });
-    }
-
-    /**
-     * @internal
-     * @returns {import("@hiero-ledger/proto").com.hedera.mirror.api.proto.IFeeEstimateResponse}
-     */
-    _toProtobuf() {
-        return {
-            mode: this.mode,
-            network: this.networkFee._toProtobuf(),
-            node: this.nodeFee._toProtobuf(),
-            service: this.serviceFee._toProtobuf(),
-            notes: this.notes,
-            total: this.total,
-        };
-    }
 }

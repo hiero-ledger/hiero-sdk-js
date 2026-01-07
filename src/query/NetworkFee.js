@@ -44,27 +44,4 @@ export default class NetworkFee {
             subtotal: networkFee.subtotal || 0,
         });
     }
-
-    /**
-     * @internal
-     * @param {import("@hiero-ledger/proto").com.hedera.mirror.api.proto.INetworkFee} networkFee
-     * @returns {NetworkFee}
-     */
-    static _fromProtobuf(networkFee) {
-        return new NetworkFee({
-            multiplier: networkFee.multiplier || 0,
-            subtotal: networkFee.subtotal || 0,
-        });
-    }
-
-    /**
-     * @internal
-     * @returns {object}
-     */
-    _toProtobuf() {
-        return {
-            multiplier: this.multiplier,
-            subtotal: this.subtotal,
-        };
-    }
 }

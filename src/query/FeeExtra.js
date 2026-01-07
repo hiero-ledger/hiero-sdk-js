@@ -80,35 +80,4 @@ export default class FeeExtra {
             subtotal: feeExtra.subtotal || 0,
         });
     }
-
-    /**
-     * @internal
-     * @param {import("@hiero-ledger/proto").com.hedera.mirror.api.proto.IFeeExtra} feeExtra
-     * @returns {FeeExtra}
-     */
-    static _fromProtobuf(feeExtra) {
-        return new FeeExtra({
-            name: feeExtra.name || "",
-            included: feeExtra.included || 0,
-            count: feeExtra.count || 0,
-            charged: feeExtra.charged || 0,
-            feePerUnit: feeExtra.feePerUnit || 0,
-            subtotal: feeExtra.subtotal || 0,
-        });
-    }
-
-    /**
-     * @internal
-     * @returns {object}
-     */
-    _toProtobuf() {
-        return {
-            name: this.name,
-            included: this.included,
-            count: this.count,
-            charged: this.charged,
-            feePerUnit: this.feePerUnit,
-            subtotal: this.subtotal,
-        };
-    }
 }
