@@ -83,6 +83,9 @@ class Cache {
         /** @type {((bytes: Uint8Array) => EthereumTransactionData) | null} */
         this._ethereumTransactionDataEip2930FromBytes = null;
 
+        /** @type {((bytes: Uint8Array) => EthereumTransactionData) | null} */
+        this._ethereumTransactionDataEip7702FromBytes = null;
+
         /** @type {(() => TransactionReceiptQuery) | null} */
         this._transactionReceiptQueryConstructor = null;
 
@@ -365,6 +368,29 @@ class Cache {
         }
 
         return this._ethereumTransactionDataEip2930FromBytes;
+    }
+
+    /**
+     * @param {((bytes: Uint8Array) => EthereumTransactionData)} ethereumTransactionDataEip7702FromBytes
+     */
+    setEthereumTransactionDataEip7702FromBytes(
+        ethereumTransactionDataEip7702FromBytes,
+    ) {
+        this._ethereumTransactionDataEip7702FromBytes =
+            ethereumTransactionDataEip7702FromBytes;
+    }
+
+    /**
+     * @returns {((bytes: Uint8Array) => EthereumTransactionData)}
+     */
+    get ethereumTransactionDataEip7702FromBytes() {
+        if (this._ethereumTransactionDataEip7702FromBytes == null) {
+            throw new Error(
+                "Cache.ethereumTransactionDataEip7702FromBytes was used before it was set",
+            );
+        }
+
+        return this._ethereumTransactionDataEip7702FromBytes;
     }
 
     /**
