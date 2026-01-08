@@ -23,6 +23,8 @@ import {
     PendingAirdropId,
     TokenRejectTransaction,
     TokenCancelAirdropTransaction,
+    TokenInfoQuery,
+    Hbar,
 } from "@hiero-ledger/sdk";
 import Long from "long";
 
@@ -35,6 +37,7 @@ import {
     configureTokenManagementTransaction,
     createCustomFees,
     executeTokenManagementTransaction,
+    mapTokenInfoResponse,
 } from "../utils/helpers/token";
 
 import { applyCommonTransactionParams } from "../params/common-tx-params";
@@ -54,12 +57,14 @@ import {
     AirdropCancelTokenParams,
     AirdropClaimTokenParams,
     RejectTokenParams,
+    GetTokenInfoParams,
 } from "../params/token";
 
 import {
     TokenResponse,
     TokenBurnResponse,
     TokenMintResponse,
+    TokenInfoQueryResponse,
 } from "../response/token";
 
 // buildCreateToken builds a TokenCreateTransaction from parameters
@@ -859,4 +864,39 @@ export const cancelAirdrop = async ({
     return {
         status: receipt.status.toString(),
     };
+};
+
+export const getTokenInfo = async ({
+    tokenId,
+    queryPayment,
+    maxQueryPayment,
+    getCost,
+    sessionId,
+}: GetTokenInfoParams): Promise<TokenInfoQueryResponse> => {
+    const client = sdk.getClient(sessionId);
+    const query = new TokenInfoQuery().setGrpcDeadline(DEFAULT_GRPC_DEADLINE);
+
+    if (tokenId != null) {
+        query.setTokenId(tokenId);
+    }
+
+    if (queryPayment != null) {
+        query.setQueryPayment(Hbar.fromTinybars(queryPayment));
+    }
+
+    if (maxQueryPayment != null) {
+        query.setMaxQueryPayment(Hbar.fromTinybars(maxQueryPayment));
+    }
+
+    if (getCost) {
+        const cost = await query.getCost(client);
+
+        return {
+            cost: cost.toTinybars().toString(),
+        };
+    }
+
+    const response = await query.execute(client);
+
+    return mapTokenInfoResponse(response);
 };
