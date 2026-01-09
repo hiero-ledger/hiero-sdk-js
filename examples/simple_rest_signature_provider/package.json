@@ -39,7 +39,7 @@
         "eslint-plugin-jsdoc": "^46.8.2",
         "eslint-plugin-mocha": "^10.1.0",
         "eslint-plugin-node": "^11.1.0",
-        "express": "^4.22.0",
+        "express": "^4.22.1",
         "mocha": "~10.6.0",
         "prettier": "^3.7.1",
         "typedoc": "^0.28.15",
