@@ -5,11 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# 2.79.0
+
+### Addded 
+
+- Tests for HIP-1300
+
 # 2.79.0-beta.13
 
 ### Added
 
-- Support for Ethereum type 4 transaction
+- Support for Ethereum type 4 transaction (currently not supported in consensus node)
 
 # 2.79.0-beta.12
 
