@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@hiero-ledger/sdk':
-        specifier: 2.79.0-beta.12
-        version: 2.79.0-beta.12(bn.js@5.2.2)(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))
+        specifier: 2.79.0
+        version: 2.79.0(bn.js@5.2.2)(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))
       chai:
         specifier: 4.3.6
         version: 4.3.6
@@ -256,8 +256,8 @@ packages:
       protobufjs: 7.5.4
       strip-ansi: 7.1.2
 
-  '@hiero-ledger/sdk@2.79.0-beta.12':
-    resolution: {integrity: sha512-6yazlMWkhwZ2gHo/qd8GF8lpay30qY1Y8ELc5HXJRnCkLoQ5ctmYvtWhLAyYXYfvcSRxroL1Fca69vgTzU9u2w==}
+  '@hiero-ledger/sdk@2.79.0':
+    resolution: {integrity: sha512-9x0yp7VSwSMMjAypWuAMj39D3k09ArrKMCBBJT6fBi7R3ZtSdDTJNrjZRBgR/afMi6N0gGEkqg61rx9eg77L+Q==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       bn.js: 5.2.1
@@ -2051,7 +2051,7 @@ snapshots:
       protobufjs: 7.5.4
       strip-ansi: 7.1.2
 
-  '@hiero-ledger/sdk@2.79.0-beta.12(bn.js@5.2.2)(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))':
+  '@hiero-ledger/sdk@2.79.0(bn.js@5.2.2)(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))':
     dependencies:
       '@ethersproject/abi': 5.8.0
       '@ethersproject/bignumber': 5.8.0
