@@ -47,3 +47,13 @@ export interface TokenInfoQueryResponse {
     readonly ledgerId?: string;
     readonly cost?: string;
 }
+
+export interface TokenNftInfoQueryResponse {
+    readonly nftId?: string;
+    readonly accountId?: string;
+    readonly creationTime?: string;
+    readonly metadata?: string;
+    readonly ledgerId?: string;
+    readonly spenderId?: string | null;
+    readonly cost?: string;
+}
