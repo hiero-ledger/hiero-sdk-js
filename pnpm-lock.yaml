@@ -107,7 +107,7 @@ importers:
         version: 0.7.9
       '@hashgraph/solo':
         specifier: ^0.52.0
-        version: 0.52.0(@types/node@24.0.8)(bn.js@5.2.1)(react-native@0.82.1(@babel/core@7.23.3)(react@19.2.1))
+        version: 0.52.0(@types/node@24.0.8)(bn.js@5.2.1)
       '@playwright/test':
         specifier: 1.30.0
         version: 1.30.0
@@ -242,7 +242,7 @@ importers:
     dependencies:
       '@hiero-ledger/sdk':
         specifier: 2.79.0
-        version: 2.79.0(bn.js@5.2.1)(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))
+        version: 2.79.0(bn.js@5.2.1)
       chai:
         specifier: 4.3.6
         version: 4.3.6
@@ -12729,11 +12729,6 @@ snapshots:
       '@babel/core': 7.28.5
       '@babel/helper-plugin-utils': 7.27.1
 
-  '@babel/plugin-syntax-bigint@7.8.3(@babel/core@7.23.3)':
-    dependencies:
-      '@babel/core': 7.23.3
-      '@babel/helper-plugin-utils': 7.27.1
-
   '@babel/plugin-syntax-bigint@7.8.3(@babel/core@7.26.10)':
     dependencies:
       '@babel/core': 7.26.10
@@ -14983,9 +14978,9 @@ snapshots:
       protobufjs: 7.5.4
       yargs: 17.7.2
 
-  '@hashgraph/solo@0.52.0(@types/node@24.0.8)(bn.js@5.2.1)(react-native@0.82.1(@babel/core@7.23.3)(react@19.2.1))':
+  '@hashgraph/solo@0.52.0(@types/node@24.0.8)(bn.js@5.2.1)':
     dependencies:
-      '@hiero-ledger/sdk': 2.79.0(bn.js@5.2.1)(react-native@0.82.1(@babel/core@7.23.3)(react@19.2.1))
+      '@hiero-ledger/sdk': 2.79.0(bn.js@5.2.1)
       '@inquirer/prompts': 7.10.1(@types/node@24.0.8)
       '@kubernetes/client-node': 0.22.3
       '@listr2/prompt-adapter-inquirer': 3.0.5(@inquirer/prompts@7.10.1(@types/node@24.0.8))(@types/node@24.0.8)(listr2@9.0.5)
@@ -15027,7 +15022,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  '@hiero-ledger/cryptography@1.15.0(react-native@0.82.1(@babel/core@7.23.3)(react@19.2.1))':
+  '@hiero-ledger/cryptography@1.15.0':
     dependencies:
       '@noble/curves': 1.8.1
       ansi-regex: 6.2.2
@@ -15040,7 +15035,7 @@ snapshots:
       debug: 4.4.1(supports-color@8.1.1)
       forge-light: 1.1.4
       js-base64: 3.7.7
-      react-native-get-random-values: 1.11.0(react-native@0.82.1(@babel/core@7.23.3)(react@19.2.1))
+      react-native-get-random-values: 1.11.0(react-native@0.82.1(@babel/core@7.26.10)(react@19.2.1))
       spark-md5: 3.0.2
       strip-ansi: 7.1.2
       tweetnacl: 1.0.3
@@ -15071,28 +15066,6 @@ snapshots:
       - react-native
       - supports-color
 
-  '@hiero-ledger/cryptography@1.15.0(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))':
-    dependencies:
-      '@noble/curves': 1.8.1
-      ansi-regex: 6.2.2
-      ansi-styles: 6.2.3
-      asn1js: 3.0.6
-      bignumber.js: 9.1.1
-      bn.js: 5.2.1
-      buffer: 6.0.3
-      crypto-js: 4.2.0
-      debug: 4.4.1(supports-color@8.1.1)
-      forge-light: 1.1.4
-      js-base64: 3.7.7
-      react-native-get-random-values: 1.11.0(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))
-      spark-md5: 3.0.2
-      strip-ansi: 7.1.2
-      tweetnacl: 1.0.3
-      utf8: 3.0.0
-    transitivePeerDependencies:
-      - react-native
-      - supports-color
-
   '@hiero-ledger/proto@2.25.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@7.5.4)(strip-ansi@7.1.2)':
     dependencies:
       ansi-regex: 6.2.2
@@ -15102,14 +15075,14 @@ snapshots:
       protobufjs: 7.5.4
       strip-ansi: 7.1.2
 
-  '@hiero-ledger/sdk@2.79.0(bn.js@5.2.1)(react-native@0.82.1(@babel/core@7.23.3)(react@19.2.1))':
+  '@hiero-ledger/sdk@2.79.0(bn.js@5.2.1)':
     dependencies:
       '@ethersproject/abi': 5.8.0
       '@ethersproject/bignumber': 5.8.0
       '@ethersproject/bytes': 5.8.0
       '@ethersproject/rlp': 5.8.0
       '@grpc/grpc-js': 1.12.6
-      '@hiero-ledger/cryptography': 1.15.0(react-native@0.82.1(@babel/core@7.23.3)(react@19.2.1))
+      '@hiero-ledger/cryptography': 1.15.0
       '@hiero-ledger/proto': 2.25.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@7.5.4)(strip-ansi@7.1.2)
       ansi-regex: 6.2.2
       ansi-styles: 6.2.3
@@ -15138,34 +15111,6 @@ snapshots:
       '@ethersproject/rlp': 5.8.0
       '@grpc/grpc-js': 1.12.6
       '@hiero-ledger/cryptography': 1.15.0(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.0.0)(react@19.0.0))
-      '@hiero-ledger/proto': 2.25.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@7.5.4)(strip-ansi@7.1.2)
-      ansi-regex: 6.2.2
-      ansi-styles: 6.2.3
-      bignumber.js: 9.1.1
-      bn.js: 5.2.1
-      crypto-js: 4.2.0
-      debug: 4.4.1(supports-color@8.1.1)
-      js-base64: 3.7.4
-      long: 5.3.1
-      pino: 10.1.0
-      pino-pretty: 13.0.0
-      protobufjs: 7.5.4
-      rfc4648: 1.5.3
-      strip-ansi: 7.1.2
-      utf8: 3.0.0
-    transitivePeerDependencies:
-      - expo-crypto
-      - react-native
-      - supports-color
-
-  '@hiero-ledger/sdk@2.79.0(bn.js@5.2.1)(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))':
-    dependencies:
-      '@ethersproject/abi': 5.8.0
-      '@ethersproject/bignumber': 5.8.0
-      '@ethersproject/bytes': 5.8.0
-      '@ethersproject/rlp': 5.8.0
-      '@grpc/grpc-js': 1.12.6
-      '@hiero-ledger/cryptography': 1.15.0(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))
       '@hiero-ledger/proto': 2.25.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@7.5.4)(strip-ansi@7.1.2)
       ansi-regex: 6.2.2
       ansi-styles: 6.2.3
@@ -16271,16 +16216,6 @@ snapshots:
       nullthrows: 1.1.1
       yargs: 17.7.2
 
-  '@react-native/codegen@0.82.1(@babel/core@7.23.3)':
-    dependencies:
-      '@babel/core': 7.23.3
-      '@babel/parser': 7.28.6
-      glob: 7.2.3
-      hermes-parser: 0.32.0
-      invariant: 2.2.4
-      nullthrows: 1.1.1
-      yargs: 17.7.2
-
   '@react-native/codegen@0.82.1(@babel/core@7.26.10)':
     dependencies:
       '@babel/core': 7.26.10
@@ -16443,26 +16378,12 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.0.0
 
-  '@react-native/virtualized-lists@0.82.1(react-native@0.82.1(@babel/core@7.23.3)(react@19.2.1))(react@19.2.1)':
-    dependencies:
-      invariant: 2.2.4
-      nullthrows: 1.1.1
-      react: 19.2.1
-      react-native: 0.82.1(@babel/core@7.23.3)(react@19.2.1)
-
   '@react-native/virtualized-lists@0.82.1(react-native@0.82.1(@babel/core@7.26.10)(react@19.2.1))(react@19.2.1)':
     dependencies:
       invariant: 2.2.4
       nullthrows: 1.1.1
       react: 19.2.1
       react-native: 0.82.1(@babel/core@7.26.10)(react@19.2.1)
-
-  '@react-native/virtualized-lists@0.82.1(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))(react@19.2.1)':
-    dependencies:
-      invariant: 2.2.4
-      nullthrows: 1.1.1
-      react: 19.2.1
-      react-native: 0.82.1(@babel/core@7.28.5)(react@19.2.1)
 
   '@rollup/plugin-alias@6.0.0(rollup@4.34.8)':
     optionalDependencies:
@@ -18429,19 +18350,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  babel-jest@29.7.0(@babel/core@7.23.3):
-    dependencies:
-      '@babel/core': 7.23.3
-      '@jest/transform': 29.7.0
-      '@types/babel__core': 7.20.5
-      babel-plugin-istanbul: 6.1.1
-      babel-preset-jest: 29.6.3(@babel/core@7.23.3)
-      chalk: 4.1.2
-      graceful-fs: 4.2.11
-      slash: 3.0.0
-    transitivePeerDependencies:
-      - supports-color
-
   babel-jest@29.7.0(@babel/core@7.26.10):
     dependencies:
       '@babel/core': 7.26.10
@@ -18690,25 +18598,6 @@ snapshots:
 
   babel-plugin-transform-undefined-to-void@6.9.4: {}
 
-  babel-preset-current-node-syntax@1.2.0(@babel/core@7.23.3):
-    dependencies:
-      '@babel/core': 7.23.3
-      '@babel/plugin-syntax-async-generators': 7.8.4(@babel/core@7.23.3)
-      '@babel/plugin-syntax-bigint': 7.8.3(@babel/core@7.23.3)
-      '@babel/plugin-syntax-class-properties': 7.12.13(@babel/core@7.23.3)
-      '@babel/plugin-syntax-class-static-block': 7.14.5(@babel/core@7.23.3)
-      '@babel/plugin-syntax-import-attributes': 7.27.1(@babel/core@7.23.3)
-      '@babel/plugin-syntax-import-meta': 7.10.4(@babel/core@7.23.3)
-      '@babel/plugin-syntax-json-strings': 7.8.3(@babel/core@7.23.3)
-      '@babel/plugin-syntax-logical-assignment-operators': 7.10.4(@babel/core@7.23.3)
-      '@babel/plugin-syntax-nullish-coalescing-operator': 7.8.3(@babel/core@7.23.3)
-      '@babel/plugin-syntax-numeric-separator': 7.10.4(@babel/core@7.23.3)
-      '@babel/plugin-syntax-object-rest-spread': 7.8.3(@babel/core@7.23.3)
-      '@babel/plugin-syntax-optional-catch-binding': 7.8.3(@babel/core@7.23.3)
-      '@babel/plugin-syntax-optional-chaining': 7.8.3(@babel/core@7.23.3)
-      '@babel/plugin-syntax-private-property-in-object': 7.14.5(@babel/core@7.23.3)
-      '@babel/plugin-syntax-top-level-await': 7.14.5(@babel/core@7.23.3)
-
   babel-preset-current-node-syntax@1.2.0(@babel/core@7.26.10):
     dependencies:
       '@babel/core': 7.26.10
@@ -18784,12 +18673,6 @@ snapshots:
       '@babel/core': 7.26.10
       babel-plugin-jest-hoist: 27.5.1
       babel-preset-current-node-syntax: 1.2.0(@babel/core@7.26.10)
-
-  babel-preset-jest@29.6.3(@babel/core@7.23.3):
-    dependencies:
-      '@babel/core': 7.23.3
-      babel-plugin-jest-hoist: 29.6.3
-      babel-preset-current-node-syntax: 1.2.0(@babel/core@7.23.3)
 
   babel-preset-jest@29.6.3(@babel/core@7.26.10):
     dependencies:
@@ -25484,11 +25367,6 @@ snapshots:
       fast-base64-decode: 1.0.0
       react-native: 0.78.3(@babel/core@7.26.10)(@babel/preset-env@7.22.15(@babel/core@7.26.10))(@types/react@19.0.0)(react@19.0.0)
 
-  react-native-get-random-values@1.11.0(react-native@0.82.1(@babel/core@7.23.3)(react@19.2.1)):
-    dependencies:
-      fast-base64-decode: 1.0.0
-      react-native: 0.82.1(@babel/core@7.23.3)(react@19.2.1)
-
   react-native-get-random-values@1.11.0(react-native@0.82.1(@babel/core@7.26.10)(react@19.2.1)):
     dependencies:
       fast-base64-decode: 1.0.0
@@ -25498,11 +25376,6 @@ snapshots:
     dependencies:
       fast-base64-decode: 1.0.0
       react-native: 0.82.1(@babel/core@7.28.5)(@types/react@19.0.0)(react@19.0.0)
-
-  react-native-get-random-values@1.11.0(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1)):
-    dependencies:
-      fast-base64-decode: 1.0.0
-      react-native: 0.82.1(@babel/core@7.28.5)(react@19.2.1)
 
   react-native-is-edge-to-edge@1.2.1(react-native@0.78.3(@babel/core@7.26.10)(@babel/preset-env@7.22.15(@babel/core@7.26.10))(@types/react@19.0.0)(react@19.0.0))(react@19.0.0):
     dependencies:
@@ -25554,52 +25427,6 @@ snapshots:
       - '@babel/core'
       - '@babel/preset-env'
       - '@react-native-community/cli'
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-
-  react-native@0.82.1(@babel/core@7.23.3)(react@19.2.1):
-    dependencies:
-      '@jest/create-cache-key-function': 29.7.0
-      '@react-native/assets-registry': 0.82.1
-      '@react-native/codegen': 0.82.1(@babel/core@7.23.3)
-      '@react-native/community-cli-plugin': 0.82.1
-      '@react-native/gradle-plugin': 0.82.1
-      '@react-native/js-polyfills': 0.82.1
-      '@react-native/normalize-colors': 0.82.1
-      '@react-native/virtualized-lists': 0.82.1(react-native@0.82.1(@babel/core@7.23.3)(react@19.2.1))(react@19.2.1)
-      abort-controller: 3.0.0
-      anser: 1.4.10
-      ansi-regex: 5.0.1
-      babel-jest: 29.7.0(@babel/core@7.23.3)
-      babel-plugin-syntax-hermes-parser: 0.32.0
-      base64-js: 1.5.1
-      commander: 12.1.0
-      flow-enums-runtime: 0.0.6
-      glob: 7.2.3
-      hermes-compiler: 0.0.0
-      invariant: 2.2.4
-      jest-environment-node: 29.7.0
-      memoize-one: 5.2.1
-      metro-runtime: 0.83.3
-      metro-source-map: 0.83.3
-      nullthrows: 1.1.1
-      pretty-format: 29.7.0
-      promise: 8.3.0
-      react: 19.2.1
-      react-devtools-core: 6.1.5
-      react-refresh: 0.14.2
-      regenerator-runtime: 0.13.11
-      scheduler: 0.26.0
-      semver: 7.3.8
-      stacktrace-parser: 0.1.11
-      whatwg-fetch: 3.6.20
-      ws: 6.2.3
-      yargs: 17.7.2
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@react-native-community/cli'
-      - '@react-native/metro-config'
       - bufferutil
       - supports-color
       - utf-8-validate
@@ -25690,52 +25517,6 @@ snapshots:
       yargs: 17.7.2
     optionalDependencies:
       '@types/react': 19.0.0
-    transitivePeerDependencies:
-      - '@babel/core'
-      - '@react-native-community/cli'
-      - '@react-native/metro-config'
-      - bufferutil
-      - supports-color
-      - utf-8-validate
-
-  react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1):
-    dependencies:
-      '@jest/create-cache-key-function': 29.7.0
-      '@react-native/assets-registry': 0.82.1
-      '@react-native/codegen': 0.82.1(@babel/core@7.28.5)
-      '@react-native/community-cli-plugin': 0.82.1
-      '@react-native/gradle-plugin': 0.82.1
-      '@react-native/js-polyfills': 0.82.1
-      '@react-native/normalize-colors': 0.82.1
-      '@react-native/virtualized-lists': 0.82.1(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))(react@19.2.1)
-      abort-controller: 3.0.0
-      anser: 1.4.10
-      ansi-regex: 5.0.1
-      babel-jest: 29.7.0(@babel/core@7.28.5)
-      babel-plugin-syntax-hermes-parser: 0.32.0
-      base64-js: 1.5.1
-      commander: 12.1.0
-      flow-enums-runtime: 0.0.6
-      glob: 7.2.3
-      hermes-compiler: 0.0.0
-      invariant: 2.2.4
-      jest-environment-node: 29.7.0
-      memoize-one: 5.2.1
-      metro-runtime: 0.83.3
-      metro-source-map: 0.83.3
-      nullthrows: 1.1.1
-      pretty-format: 29.7.0
-      promise: 8.3.0
-      react: 19.2.1
-      react-devtools-core: 6.1.5
-      react-refresh: 0.14.2
-      regenerator-runtime: 0.13.11
-      scheduler: 0.26.0
-      semver: 7.3.8
-      stacktrace-parser: 0.1.11
-      whatwg-fetch: 3.6.20
-      ws: 6.2.3
-      yargs: 17.7.2
     transitivePeerDependencies:
       - '@babel/core'
       - '@react-native-community/cli'
