@@ -43,8 +43,8 @@ importers:
         specifier: 7.25.9
         version: 7.25.9(@babel/core@7.23.3)
       '@types/node':
-        specifier: 24.0.8
-        version: 24.0.8
+        specifier: 25.0.6
+        version: 25.0.6
       '@typescript-eslint/eslint-plugin':
         specifier: 5.62.0
         version: 5.62.0(@typescript-eslint/parser@5.62.0(eslint@8.52.0)(typescript@5.7.2))(eslint@8.52.0)(typescript@5.7.2)
@@ -376,8 +376,8 @@ packages:
   '@types/mdurl@1.0.2':
     resolution: {integrity: sha512-eC4U9MlIcu2q0KQmXszyn5Akca/0jrQmwDRgpAMJai7qBWq4amIQhZyNau4VYGtCeALvW1/NtjzJJ567aZxfKA==}
 
-  '@types/node@24.0.8':
-    resolution: {integrity: sha512-WytNrFSgWO/esSH9NbpWUfTMGQwCGIKfCmNlmFDNiI5gGhgMmEA+V1AEvKLeBNvvtBnailJtkrEa2OIISwrVAA==}
+  '@types/node@25.0.6':
+    resolution: {integrity: sha512-NNu0sjyNxpoiW3YuVFfNz7mxSQ+S4X2G28uqg2s+CzoqoQjLPsWSbsFFyztIAqt2vb8kfEAsJNepMGPTxFDx3Q==}
 
   '@types/semver@7.5.0':
     resolution: {integrity: sha512-G8hZ6XJiHnuhQKR7ZmysCeJWE08o8T0AXtk5darsCaTVsYZhhgUrq53jizaR2FvsoeCwJhlmwTjkXBY5Pn/ZHw==}
@@ -1916,8 +1916,8 @@ packages:
   underscore@1.13.4:
     resolution: {integrity: sha512-BQFnUDuAQ4Yf/cYY5LNrK9NCJFKriaRbD9uR1fTeXnBeoa97W0i41qkZfGO9pSo8I5KzjAcSY2XYtdf0oKd7KQ==}
 
-  undici-types@7.8.0:
-    resolution: {integrity: sha512-9UJ2xGDvQ43tYyVMpuHlsgApydB8ZKfVYTsLDhXkFL/6gfkp+U8xTGdh8pMJv1SpZna0zxG1DwsKZsreLbXBxw==}
+  undici-types@7.16.0:
+    resolution: {integrity: sha512-Zz+aZWSj8LE6zoxD+xrjh4VfkIG8Ya6LvYkZqtUQGJPZjYl53ypCaUwWqo7eI0x66KBGeRo+mlBEkMSeSZ38Nw==}
 
   untildify@4.0.0:
     resolution: {integrity: sha512-KK8xQ1mkzZeg9inewmFVDNkg3l5LUhoq9kN6iWYB/CC9YMG8HA+c1Q8HwDe6dEX7kErrEVNVBO3fWsVq5iDgtw==}
@@ -2321,9 +2321,9 @@ snapshots:
 
   '@types/mdurl@1.0.2': {}
 
-  '@types/node@24.0.8':
+  '@types/node@25.0.6':
     dependencies:
-      undici-types: 7.8.0
+      undici-types: 7.16.0
 
   '@types/semver@7.5.0': {}
 
@@ -3765,7 +3765,7 @@ snapshots:
       '@protobufjs/path': 1.1.2
       '@protobufjs/pool': 1.1.0
       '@protobufjs/utf8': 1.1.0
-      '@types/node': 24.0.8
+      '@types/node': 25.0.6
       long: 5.3.1
 
   punycode@2.1.1: {}
@@ -4079,7 +4079,7 @@ snapshots:
 
   underscore@1.13.4: {}
 
-  undici-types@7.8.0: {}
+  undici-types@7.16.0: {}
 
   untildify@4.0.0: {}
 
