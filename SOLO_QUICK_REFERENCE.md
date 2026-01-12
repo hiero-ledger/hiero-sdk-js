@@ -6,6 +6,11 @@
 # Setup Solo (first time or fresh start)
 task solo:setup
 
+# Setup with custom versions
+task solo:setup -- --consensus-node-version v0.70.0
+task solo:setup -- --mirror-node-version v0.146.0
+task solo:setup -- --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
+
 # Check if Solo is running
 task solo:status
 
@@ -23,15 +28,22 @@ task test:integration:browser
 task solo:teardown
 ```
 
+## Default Versions
+
+-   **Consensus Node:** v0.69.1
+-   **Mirror Node:** v0.145.2
+
+Override with `--consensus-node-version` and/or `--mirror-node-version` flags.
+
 ## Service Endpoints
 
-| Service | Endpoint |
-|---------|----------|
-| Node 1 | `localhost:50211` |
-| Node 2 | `localhost:51211` |
-| Mirror REST | `localhost:5551` |
-| Mirror Web3 | `localhost:8545` |
-| Mirror gRPC | `localhost:5600` |
+| Service     | Endpoint          |
+| ----------- | ----------------- |
+| Node 1      | `localhost:50211` |
+| Node 2      | `localhost:51211` |
+| Mirror REST | `localhost:5551`  |
+| Mirror Web3 | `localhost:8545`  |
+| Mirror gRPC | `localhost:5600`  |
 
 ## Environment Variables
 
@@ -48,18 +60,21 @@ GENESIS_OPERATOR_KEY=302e...  # Genesis key
 ## Common Issues & Quick Fixes
 
 ### Docker not running
+
 ```bash
 # Start Docker Desktop, then:
 task solo:setup
 ```
 
 ### Port conflicts
+
 ```bash
 pkill -f "kubectl port-forward"
 task solo:setup
 ```
 
 ### Tests failing
+
 ```bash
 # Check Solo is running:
 task solo:status
@@ -73,12 +88,13 @@ task solo:setup
 ```
 
 ### Pods not starting
+
 ```bash
 # Check pod status:
-kubectl get pods -n solo-e2e
+kubectl get pods -n solo
 
 # View pod logs:
-kubectl logs -n solo-e2e <pod-name>
+kubectl logs -n solo <pod-name>
 
 # Full cleanup:
 task solo:teardown
@@ -89,10 +105,10 @@ task solo:setup
 
 ## Prerequisites
 
-- ✅ Docker Desktop (running)
-- ✅ Kind (Kubernetes in Docker)
-- ✅ kubectl
-- ✅ Node.js 18+
+-   ✅ Docker Desktop (running)
+-   ✅ Kind (Kubernetes in Docker)
+-   ✅ kubectl
+-   ✅ Node.js 18+
 
 ## Installation (macOS)
 
@@ -107,7 +123,11 @@ brew install kind kubectl
 task install
 
 # 2. Setup Solo (takes ~5-10 minutes)
+# Use defaults (consensus: v0.69.1, mirror: v0.145.2)
 task solo:setup
+
+# Or with custom versions
+task solo:setup -- --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
 
 # 3. Verify setup
 task solo:status
@@ -143,49 +163,47 @@ task solo:teardown
 
 ```bash
 # List all pods
-kubectl get pods -n solo-e2e
+kubectl get pods -n solo
 
 # List all services
-kubectl get services -n solo-e2e
+kubectl get services -n solo
 
 # Describe a pod
-kubectl describe pod <pod-name> -n solo-e2e
+kubectl describe pod <pod-name> -n solo
 
 # View pod logs
-kubectl logs -n solo-e2e <pod-name> -f
+kubectl logs -n solo <pod-name> -f
 
 # Restart port forwarding manually
-kubectl port-forward svc/haproxy-node1-svc -n solo-e2e 50211:50211
+kubectl port-forward svc/haproxy-node1-svc -n solo 50211:50211
 ```
 
 ## Account Types
 
 ### Standard Test Account (ECDSA)
-- **Use for:** 99% of integration tests
-- **Variables:** `OPERATOR_ID`, `OPERATOR_KEY`
-- **Type:** ECDSA
-- **Balance:** 10M HBAR
+
+-   **Use for:** 99% of integration tests
+-   **Variables:** `OPERATOR_ID`, `OPERATOR_KEY`
+-   **Type:** ECDSA
+-   **Balance:** 10M HBAR
 
 ### Genesis Account
-- **Use for:** Genesis-specific operations only
-- **Variables:** `GENESIS_OPERATOR_ID`, `GENESIS_OPERATOR_KEY`
-- **Type:** ED25519
-- **ID:** Always `0.0.2`
+
+-   **Use for:** Genesis-specific operations only
+-   **Variables:** `GENESIS_OPERATOR_ID`, `GENESIS_OPERATOR_KEY`
+-   **Type:** ED25519
+-   **ID:** Always `0.0.2`
 
 ## Documentation Links
 
-- [Full Setup Guide](./manual/SOLO_SETUP.md)
-- [Configuration Guide](./manual/CONFIGURATION.md)
-- [Implementation Summary](./SOLO_IMPLEMENTATION_SUMMARY.md)
-- [Contributing Guide](./CONTRIBUTING.md)
+-   [Contributing Guide](./CONTRIBUTING.md)
 
 ## Support
 
-- **Issues:** https://github.com/hiero-ledger/hiero-sdk-js/issues
-- **Discord:** https://discord.com/channels/373889138199494658
-- **Docs:** https://docs.hiero.org/
+-   **Issues:** https://github.com/hiero-ledger/hiero-sdk-js/issues
+-   **Discord:** https://discord.com/channels/373889138199494658
+-   **Docs:** https://docs.hiero.org/
 
 ---
 
 **Tip:** Keep this file open in a separate terminal or print it for quick reference!
-

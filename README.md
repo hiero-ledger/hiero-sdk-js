@@ -161,10 +161,22 @@ For contributors and developers who want to run integration tests locally, we pr
    
    This will automatically:
    - Create a local Kubernetes cluster with Kind
-   - Deploy a 2-node consensus network
-   - Deploy mirror node services (REST, Web3, gRPC)
+   - Deploy a 2-node consensus network (default: v0.69.1)
+   - Deploy mirror node services (default: v0.145.2)
    - Create a dedicated ECDSA test account
    - Generate a `.env` file with all necessary credentials
+
+   **Optional:** Specify custom versions:
+   ```bash
+   # Custom consensus node version
+   task solo:setup -- --consensus-node-version v0.70.0
+   
+   # Custom mirror node version
+   task solo:setup -- --mirror-node-version v0.146.0
+   
+   # Both custom versions
+   task solo:setup -- --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
+   ```
 
 3. **Run integration tests:**
    ```bash

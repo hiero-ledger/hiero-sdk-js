@@ -32,7 +32,7 @@ tasks:
         desc: "Setup Solo local network for development and integration testing"
         cmds:
             - chmod +x ./scripts/setup-solo.sh
-            - ./scripts/setup-solo.sh
+            - ./scripts/setup-solo.sh {{.CLI_ARGS}}
 
     "solo:teardown":
         desc: "Teardown Solo local network and cleanup resources"

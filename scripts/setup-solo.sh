@@ -11,6 +11,19 @@
 # 6. Creates a dedicated ECDSA test account
 # 7. Generates .env file with account credentials
 #
+# Usage:
+#   ./setup-solo.sh [options]
+#
+# Options:
+#   --consensus-node-version <version>   Consensus node version (default: v0.69.1)
+#   --mirror-node-version <version>      Mirror node version (default: v0.145.2)
+#   -h, --help                           Show this help message
+#
+# Examples:
+#   ./setup-solo.sh
+#   ./setup-solo.sh --consensus-node-version v0.70.0
+#   ./setup-solo.sh --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
+#
 
 set -e  # Exit on any error
 set -o pipefail  # Exit on pipe failures
@@ -22,13 +35,59 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Default configuration
+DEFAULT_CONSENSUS_NODE_VERSION=v0.69.1
+DEFAULT_MIRROR_NODE_VERSION=v0.145.2
+
+# Parse command line arguments
+show_help() {
+    echo "Usage: ./setup-solo.sh [options]"
+    echo ""
+    echo "Options:"
+    echo "  --consensus-node-version <version>   Consensus node version (default: ${DEFAULT_CONSENSUS_NODE_VERSION})"
+    echo "  --mirror-node-version <version>      Mirror node version (default: ${DEFAULT_MIRROR_NODE_VERSION})"
+    echo "  -h, --help                           Show this help message"
+    echo ""
+    echo "Examples:"
+    echo "  ./setup-solo.sh"
+    echo "  ./setup-solo.sh --consensus-node-version v0.70.0"
+    echo "  ./setup-solo.sh --consensus-node-version v0.70.0 --mirror-node-version v0.146.0"
+    exit 0
+}
+
+# Initialize with defaults
+CONSENSUS_VERSION=${DEFAULT_CONSENSUS_NODE_VERSION}
+MIRROR_VERSION=${DEFAULT_MIRROR_NODE_VERSION}
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --consensus-node-version)
+            CONSENSUS_VERSION="$2"
+            shift 2
+            ;;
+        --mirror-node-version)
+            MIRROR_VERSION="$2"
+            shift 2
+            ;;
+        -h|--help)
+            show_help
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Run './setup-solo.sh --help' for usage information"
+            exit 1
+            ;;
+    esac
+done
+
 # Configuration
 export SOLO_CLUSTER_NAME=solo-cluster
 export SOLO_NAMESPACE=solo
 export SOLO_CLUSTER_SETUP_NAMESPACE=solo-cluster-setup
 export SOLO_DEPLOYMENT=solo-deployment
-export CONSENSUS_NODE_VERSION=v0.69.1
-export MIRROR_NODE_VERSION=v0.145.2
+export CONSENSUS_NODE_VERSION=${CONSENSUS_VERSION}
+export MIRROR_NODE_VERSION=${MIRROR_VERSION}
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ENV_FILE="${PROJECT_ROOT}/.env"
@@ -354,6 +413,10 @@ main() {
     echo_info "Solo Setup for hiero-sdk-js"
     echo_info "======================================"
     echo ""
+    echo_info "Configuration:"
+    echo_info "  - Consensus Node Version: ${CONSENSUS_NODE_VERSION}"
+    echo_info "  - Mirror Node Version: ${MIRROR_NODE_VERSION}"
+    echo ""
     
     check_dependencies
     cleanup_previous
@@ -371,6 +434,8 @@ main() {
     echo_success "======================================"
     echo ""
     echo_info "Your local Hiero network is now running with:"
+    echo_info "  - Consensus Node Version: ${CONSENSUS_NODE_VERSION}"
+    echo_info "  - Mirror Node Version: ${MIRROR_NODE_VERSION}"
     echo_info "  - 2 consensus nodes"
     echo_info "  - Mirror node services"
     echo_info "  - Dedicated ECDSA test account: ${OPERATOR_ID}"
