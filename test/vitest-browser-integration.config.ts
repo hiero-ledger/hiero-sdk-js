@@ -88,6 +88,8 @@ export default defineConfig({
             "../cryptography/sha384.js": "../cryptography/sha384.browser.js",
             "./client/NodeIntegrationTestEnv.js":
                 "./client/WebIntegrationTestEnv.js",
+            "../client/NodeIntegrationTestEnv.js":
+                "../client/WebIntegrationTestEnv.js",
             "../integration/client/NodeIntegrationTestEnv.js":
                 "../integration/client/WebIntegrationTestEnv.js",
             "../../src/client/NodeClient.js": "../../src/client/WebClient.js",
