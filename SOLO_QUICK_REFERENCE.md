@@ -11,6 +11,9 @@ task solo:setup -- --consensus-node-version v0.70.0
 task solo:setup -- --mirror-node-version v0.146.0
 task solo:setup -- --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
 
+# Setup with local build (overrides consensus-node-version)
+task solo:setup -- --local-build-path ../hiero-consensus-node/hedera-node/data
+
 # Check if Solo is running
 task solo:status
 
@@ -30,10 +33,11 @@ task solo:teardown
 
 ## Default Versions
 
--   **Consensus Node:** v0.69.1
+-   **Consensus Node:** v0.69.1 (or use `--local-build-path` for local builds)
 -   **Mirror Node:** v0.145.2
 
-Override with `--consensus-node-version` and/or `--mirror-node-version` flags.
+Override with `--consensus-node-version` and/or `--mirror-node-version` flags.  
+Use `--local-build-path` for testing with a local Hiero consensus node build.
 
 ## Service Endpoints
 

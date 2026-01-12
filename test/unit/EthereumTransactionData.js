@@ -107,14 +107,10 @@ describe("EthereumTransactionData", function () {
                 hex.encode(maxPriorityGas),
             );
             expect(hex.encode(decoded.maxGas)).to.equal(hex.encode(maxGas));
-            expect(hex.encode(decoded.gasLimit)).to.equal(
-                hex.encode(gasLimit),
-            );
+            expect(hex.encode(decoded.gasLimit)).to.equal(hex.encode(gasLimit));
             expect(hex.encode(decoded.to)).to.equal(hex.encode(to));
             expect(hex.encode(decoded.value)).to.equal(hex.encode(value));
-            expect(hex.encode(decoded.callData)).to.equal(
-                hex.encode(callData),
-            );
+            expect(hex.encode(decoded.callData)).to.equal(hex.encode(callData));
             expect(hex.encode(decoded.recId)).to.equal(hex.encode(recId));
             expect(hex.encode(decoded.r)).to.equal(hex.encode(r));
             expect(hex.encode(decoded.s)).to.equal(hex.encode(s));
@@ -135,9 +131,7 @@ describe("EthereumTransactionData", function () {
             expect(hex.encode(decodedAuth[1])).to.equal(
                 hex.encode(authContractAddress),
             );
-            expect(hex.encode(decodedAuth[2])).to.equal(
-                hex.encode(authNonce),
-            );
+            expect(hex.encode(decodedAuth[2])).to.equal(hex.encode(authNonce));
             expect(hex.encode(decodedAuth[3])).to.equal(
                 hex.encode(authYParity),
             );

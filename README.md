@@ -166,7 +166,7 @@ For contributors and developers who want to run integration tests locally, we pr
    - Create a dedicated ECDSA test account
    - Generate a `.env` file with all necessary credentials
 
-   **Optional:** Specify custom versions:
+   **Optional:** Specify custom versions or use local build:
    ```bash
    # Custom consensus node version
    task solo:setup -- --consensus-node-version v0.70.0
@@ -176,6 +176,9 @@ For contributors and developers who want to run integration tests locally, we pr
    
    # Both custom versions
    task solo:setup -- --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
+   
+   # Use local build (overrides consensus-node-version)
+   task solo:setup -- --local-build-path ../hiero-consensus-node/hedera-node/data
    ```
 
 3. **Run integration tests:**

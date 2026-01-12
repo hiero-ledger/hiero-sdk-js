@@ -17,12 +17,14 @@
 # Options:
 #   --consensus-node-version <version>   Consensus node version (default: v0.69.1)
 #   --mirror-node-version <version>      Mirror node version (default: v0.145.2)
+#   --local-build-path <path>            Path to local build (overrides consensus-node-version)
 #   -h, --help                           Show this help message
 #
 # Examples:
 #   ./setup-solo.sh
 #   ./setup-solo.sh --consensus-node-version v0.70.0
 #   ./setup-solo.sh --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
+#   ./setup-solo.sh --local-build-path ../hiero-consensus-node/hedera-node/data
 #
 
 set -e  # Exit on any error
@@ -46,18 +48,21 @@ show_help() {
     echo "Options:"
     echo "  --consensus-node-version <version>   Consensus node version (default: ${DEFAULT_CONSENSUS_NODE_VERSION})"
     echo "  --mirror-node-version <version>      Mirror node version (default: ${DEFAULT_MIRROR_NODE_VERSION})"
+    echo "  --local-build-path <path>            Path to local build (overrides consensus-node-version)"
     echo "  -h, --help                           Show this help message"
     echo ""
     echo "Examples:"
     echo "  ./setup-solo.sh"
     echo "  ./setup-solo.sh --consensus-node-version v0.70.0"
     echo "  ./setup-solo.sh --consensus-node-version v0.70.0 --mirror-node-version v0.146.0"
+    echo "  ./setup-solo.sh --local-build-path ../hiero-consensus-node/hedera-node/data"
     exit 0
 }
 
 # Initialize with defaults
 CONSENSUS_VERSION=${DEFAULT_CONSENSUS_NODE_VERSION}
 MIRROR_VERSION=${DEFAULT_MIRROR_NODE_VERSION}
+LOCAL_BUILD_PATH=""
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
@@ -68,6 +73,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --mirror-node-version)
             MIRROR_VERSION="$2"
+            shift 2
+            ;;
+        --local-build-path)
+            LOCAL_BUILD_PATH="$2"
             shift 2
             ;;
         -h|--help)
@@ -86,7 +95,12 @@ export SOLO_CLUSTER_NAME=solo-cluster
 export SOLO_NAMESPACE=solo
 export SOLO_CLUSTER_SETUP_NAMESPACE=solo-cluster-setup
 export SOLO_DEPLOYMENT=solo-deployment
-export CONSENSUS_NODE_VERSION=${CONSENSUS_VERSION}
+
+# Only set CONSENSUS_NODE_VERSION if not using local build
+if [[ -z "${LOCAL_BUILD_PATH}" ]]; then
+    export CONSENSUS_NODE_VERSION=${CONSENSUS_VERSION}
+fi
+
 export MIRROR_NODE_VERSION=${MIRROR_VERSION}
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -239,10 +253,20 @@ deploy_network() {
         --dev
     
     echo_info "Setting up consensus nodes..."
-    npx solo consensus node setup \
-        --deployment "${SOLO_DEPLOYMENT}" \
-        -i node1,node2 \
-        --dev
+    if [[ -n "${LOCAL_BUILD_PATH}" ]]; then
+        echo_info "Using local build path: ${LOCAL_BUILD_PATH}"
+        npx solo consensus node setup \
+            --deployment "${SOLO_DEPLOYMENT}" \
+            -i node1,node2 \
+            --local-build-path "${LOCAL_BUILD_PATH}" \
+            --dev
+    else
+        echo_info "Using consensus node version: ${CONSENSUS_NODE_VERSION}"
+        npx solo consensus node setup \
+            --deployment "${SOLO_DEPLOYMENT}" \
+            -i node1,node2 \
+            --dev
+    fi
     
     echo_info "Starting consensus nodes..."
     npx solo consensus node start \
@@ -397,11 +421,6 @@ NODE2_ENDPOINT=127.0.0.1:51211
 MIRROR_REST_ENDPOINT=http://localhost:5551
 MIRROR_WEB3_ENDPOINT=http://localhost:8545
 MIRROR_GRPC_ENDPOINT=localhost:5600
-
-# Browser Test Configuration (for Vite)
-VITE_OPERATOR_ID=${OPERATOR_ID}
-VITE_OPERATOR_KEY=${OPERATOR_KEY}
-VITE_HEDERA_NETWORK=local-node
 EOF
     
     echo_success ".env file created at ${ENV_FILE}"
@@ -414,7 +433,11 @@ main() {
     echo_info "======================================"
     echo ""
     echo_info "Configuration:"
-    echo_info "  - Consensus Node Version: ${CONSENSUS_NODE_VERSION}"
+    if [[ -n "${LOCAL_BUILD_PATH}" ]]; then
+        echo_info "  - Using local build: ${LOCAL_BUILD_PATH}"
+    else
+        echo_info "  - Consensus Node Version: ${CONSENSUS_NODE_VERSION}"
+    fi
     echo_info "  - Mirror Node Version: ${MIRROR_NODE_VERSION}"
     echo ""
     
@@ -434,7 +457,11 @@ main() {
     echo_success "======================================"
     echo ""
     echo_info "Your local Hiero network is now running with:"
-    echo_info "  - Consensus Node Version: ${CONSENSUS_NODE_VERSION}"
+    if [[ -n "${LOCAL_BUILD_PATH}" ]]; then
+        echo_info "  - Local build from: ${LOCAL_BUILD_PATH}"
+    else
+        echo_info "  - Consensus Node Version: ${CONSENSUS_NODE_VERSION}"
+    fi
     echo_info "  - Mirror Node Version: ${MIRROR_NODE_VERSION}"
     echo_info "  - 2 consensus nodes"
     echo_info "  - Mirror node services"
