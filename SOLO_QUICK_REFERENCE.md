@@ -151,9 +151,10 @@ task test:integration
 task solo:teardown
 ```
 
-**Notes:** 
-- You must run `task install` before `task solo:setup` to install Solo as a dependency.
-- The `/etc/hosts` configuration is required for dynamic address book tests to pass.
+**Notes:**
+
+-   You must run `task install` before `task solo:setup` to install Solo as a dependency.
+-   The `/etc/hosts` configuration is required for dynamic address book tests to pass.
 
 ## Daily Development Workflow
 
