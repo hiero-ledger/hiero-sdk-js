@@ -133,18 +133,27 @@ task solo:setup
 # Or with custom versions
 task solo:setup -- --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
 
-# 3. Verify setup
+# 3. Configure hosts for dynamic address book tests
+# REQUIRED if you plan to run dynamic address book tests
+echo "127.0.0.1 network-node1-svc.solo.svc.cluster.local" | sudo tee -a /etc/hosts
+echo "127.0.0.1 envoy-proxy-node1-svc.solo.svc.cluster.local" | sudo tee -a /etc/hosts
+echo "127.0.0.1 network-node2-svc.solo.svc.cluster.local" | sudo tee -a /etc/hosts
+echo "127.0.0.1 envoy-proxy-node2-svc.solo.svc.cluster.local" | sudo tee -a /etc/hosts
+
+# 4. Verify setup
 task solo:status
 cat .env
 
-# 4. Run tests
+# 5. Run tests
 task test:integration
 
-# 5. Done! Teardown when finished
+# 6. Done! Teardown when finished
 task solo:teardown
 ```
 
-**Note:** You must run `task install` before `task solo:setup` to install Solo as a dependency.
+**Notes:** 
+- You must run `task install` before `task solo:setup` to install Solo as a dependency.
+- The `/etc/hosts` configuration is required for dynamic address book tests to pass.
 
 ## Daily Development Workflow
 

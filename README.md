@@ -181,12 +181,25 @@ For contributors and developers who want to run integration tests locally, we pr
    task solo:setup -- --local-build-path ../hiero-consensus-node/hedera-node/data
    ```
 
-3. **Run integration tests:**
+3. **(Required for dynamic address book tests) Configure hosts:**
+   
+   Before running dynamic address book tests, add Kubernetes service names to your `/etc/hosts` file:
+   
+   ```bash
+   echo "127.0.0.1 network-node1-svc.solo.svc.cluster.local" | sudo tee -a /etc/hosts
+   echo "127.0.0.1 envoy-proxy-node1-svc.solo.svc.cluster.local" | sudo tee -a /etc/hosts
+   echo "127.0.0.1 network-node2-svc.solo.svc.cluster.local" | sudo tee -a /etc/hosts
+   echo "127.0.0.1 envoy-proxy-node2-svc.solo.svc.cluster.local" | sudo tee -a /etc/hosts
+   ```
+   
+   **Note:** This is required for dynamic address book tests to pass. Skip if you're only running other integration tests.
+
+4. **Run integration tests:**
    ```bash
    task test:integration
    ```
 
-4. **Teardown when done:**
+5. **Teardown when done:**
    ```bash
    task solo:teardown
    ```
@@ -238,10 +251,15 @@ task test:integration:browser
 task test:integration:dual-mode
 ```
 
+#### Running Dynamic Address Book Tests
+
+Dynamic address book tests require the `/etc/hosts` configuration described in step 3 of the setup. These tests validate that the SDK can correctly handle node address changes and reconnections using Kubernetes service names.
+
 **Note:** All integration tests should pass reliably with the Solo setup. If you encounter failures:
 1. Verify Solo is running: `task solo:status`
-2. Check the troubleshooting section in the [Solo Setup Guide](./manual/SOLO_SETUP.md#troubleshooting)
-3. Try a fresh setup: `task solo:teardown && task solo:setup`
+2. For dynamic address book test failures, ensure `/etc/hosts` is configured (see setup step 3)
+3. Check the troubleshooting section in the [Solo Setup Guide](./manual/SOLO_SETUP.md#troubleshooting)
+4. Try a fresh setup: `task solo:teardown && task solo:setup`
 
 ## Contributing
 
