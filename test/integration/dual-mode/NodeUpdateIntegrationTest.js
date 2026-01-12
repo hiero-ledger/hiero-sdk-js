@@ -10,7 +10,7 @@ import {
     Status,
     ServiceEndpoint,
 } from "../../../src/exports.js";
-import { Client } from "../../../src/index.js";
+import IntegrationTestEnv from "../client/NodeIntegrationTestEnv.js";
 import {
     mirrorNetwork,
     node2Address,
@@ -34,20 +34,20 @@ const restoreOriginalGrpcWebProxyEndpoint = async (client) => {
 
 describe("Node Update Integration Tests", function () {
     let client;
-    let operatorAccountId;
-    let operatorKey;
 
-    beforeEach(function () {
+    let env;
+
+    beforeEach(async function () {
+        env = await IntegrationTestEnv.new();
+        client = env.client;
+
+        client.setNetwork(network);
+
         // Initialize client with integration network
-        client = Client.forNetwork(network).setMirrorNetwork(mirrorNetwork);
+        client.setMirrorNetwork(mirrorNetwork);
 
-        // Set the operator to be account 0.0.2
-        operatorAccountId = AccountId.fromString("0.0.2");
-        operatorKey = PrivateKey.fromStringDer(
-            "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137",
-        );
-
-        client.setOperator(operatorAccountId, operatorKey);
+        // Set the operator to be genesis operator
+        client.setOperator(env.genesisOperatorId, env.genesisOperatorKey);
     });
 
     afterEach(function () {
@@ -347,10 +347,8 @@ describe("Node Update Integration Tests", function () {
     });
 
     it("should handle node account ID change without mirror node setup", async function () {
-        // Create a client without mirror network
-        const networkClient = Client.forNetwork(network);
-
-        networkClient.setOperator(operatorAccountId, operatorKey);
+        // Set client without mirror network
+        client.setMirrorNetwork([]);
 
         try {
             // Create the account that will be the new node account ID
@@ -362,9 +360,9 @@ describe("Node Update Integration Tests", function () {
                     AccountId.fromString("0.0.4"),
                 ])
                 .setInitialBalance(new Hbar(1))
-                .execute(networkClient);
+                .execute(client);
 
-            const createReceipt = await createResp.getReceipt(networkClient);
+            const createReceipt = await createResp.getReceipt(client);
             const newNodeAccountID = createReceipt.accountId;
 
             // Update node account ID
@@ -372,11 +370,11 @@ describe("Node Update Integration Tests", function () {
                 await new NodeUpdateTransaction()
                     .setNodeId(0)
                     .setAccountId(newNodeAccountID)
-                    .freezeWith(networkClient)
+                    .freezeWith(client)
                     .sign(newAccountKey)
-            ).execute(networkClient);
+            ).execute(client);
 
-            await updateResp.getReceipt(networkClient);
+            await updateResp.getReceipt(client);
 
             // Wait for changes to propagate
             await new Promise((resolve) => setTimeout(resolve, 5000));
@@ -390,13 +388,13 @@ describe("Node Update Integration Tests", function () {
                     AccountId.fromString("0.0.3"),
                     AccountId.fromString("0.0.4"),
                 ])
-                .execute(networkClient);
+                .execute(client);
 
-            const testReceipt = await testResp.getReceipt(networkClient);
+            const testReceipt = await testResp.getReceipt(client);
             expect(testReceipt.status).to.equal(Status.Success);
 
             // Verify address book has NOT been updated (no mirror node)
-            const network = networkClient.network;
+            const network = client.network;
             const node1 = Object.entries(network).find(
                 ([, accountId]) => accountId.toString() === "0.0.3",
             );
@@ -410,9 +408,9 @@ describe("Node Update Integration Tests", function () {
             // This transaction should succeed with retries
             const finalResp = await new AccountCreateTransaction()
                 .setKey(anotherNewKey.publicKey)
-                .execute(networkClient);
+                .execute(client);
 
-            const finalReceipt = await finalResp.getReceipt(networkClient);
+            const finalReceipt = await finalResp.getReceipt(client);
             expect(finalReceipt.status).to.equal(Status.Success);
 
             // Revert the node account ID
@@ -420,11 +418,11 @@ describe("Node Update Integration Tests", function () {
                 .setNodeId(0)
                 .setNodeAccountIds([AccountId.fromString("0.0.4")])
                 .setAccountId(AccountId.fromString("0.0.3"))
-                .execute(networkClient);
+                .execute(client);
 
-            await revertResp.getReceipt(networkClient);
+            await revertResp.getReceipt(client);
         } finally {
-            networkClient.close();
+            client.close();
         }
     });
 });
