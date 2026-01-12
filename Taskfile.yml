@@ -28,6 +28,36 @@ tasks:
         deps:
             - build
 
+    "solo:setup":
+        desc: "Setup Solo local network for development and integration testing"
+        cmds:
+            - chmod +x ./scripts/setup-solo.sh
+            - ./scripts/setup-solo.sh {{.CLI_ARGS}}
+
+    "solo:teardown":
+        desc: "Teardown Solo local network and cleanup resources"
+        cmds:
+            - chmod +x ./scripts/teardown-solo.sh
+            - ./scripts/teardown-solo.sh
+
+    "solo:status":
+        desc: "Check Solo cluster status"
+        cmds:
+            - |
+              echo "Checking Solo cluster status..."
+              if kind get clusters 2>/dev/null | grep -q "^solo-cluster$"; then
+                echo "✓ Kind cluster 'solo-cluster' is running"
+                kubectl get pods -n solo-e2e 2>/dev/null || echo "✗ Namespace 'solo-e2e' not found"
+              else
+                echo "✗ Kind cluster 'solo-cluster' not found"
+                echo "Run 'task solo:setup' to create it"
+              fi
+
+    "solo:logs":
+        desc: "View logs from Solo services"
+        cmds:
+            - kubectl logs -n solo-e2e -l app=network-node --tail=100 -f
+
     "run:examples":
         cmds:
             - task: "examples:run-examples"

@@ -761,12 +761,8 @@ describe("TransactionIntegration", function () {
         const MAXIMUM_TRANSACTION_SIZE = 130000;
 
         it("should create a transaction with more than 6kbs of data with signatures", async function () {
-            const SYSTEM_ACCOUNT_ID = AccountId.fromString("0.0.2");
-            const SYSTEM_ACCOUNT_KEY = PrivateKey.fromString(
-                "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137",
-            );
             const client = NodeClient.forLocalNode();
-            client.setOperator(SYSTEM_ACCOUNT_ID, SYSTEM_ACCOUNT_KEY);
+            client.setOperator(env.genesisOperatorId, env.genesisOperatorKey);
 
             let transaction = new AccountCreateTransaction()
                 .setKeyWithoutAlias(PrivateKey.generate())
@@ -780,12 +776,8 @@ describe("TransactionIntegration", function () {
         });
 
         it("should create a transaction with more than 6kbs of data in a file", async function () {
-            const SYSTEM_ACCOUNT_ID = AccountId.fromString("0.0.2");
-            const SYSTEM_ACCOUNT_KEY = PrivateKey.fromString(
-                "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137",
-            );
             const client = NodeClient.forLocalNode();
-            client.setOperator(SYSTEM_ACCOUNT_ID, SYSTEM_ACCOUNT_KEY);
+            client.setOperator(env.genesisOperatorId, env.genesisOperatorKey);
             const file = await new FileCreateTransaction()
                 .setContents(new Uint8Array(1024 * 10).fill(1))
                 .freezeWith(client);
@@ -793,8 +785,6 @@ describe("TransactionIntegration", function () {
         });
 
         it("should not create a transaction with more than 6kbs of data in a file if normal account is used", async function () {
-
-
             let transaction = new FileCreateTransaction()
                 .setContents(new Uint8Array(1024 * 10).fill(1))
                 .freezeWith(client);
