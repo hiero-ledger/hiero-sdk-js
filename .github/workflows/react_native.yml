@@ -61,7 +61,7 @@ jobs:
         run: npm install -g detox-cli
 
       - name: Install React Native example deps
-        run: pnpm install --filter react-native-example --no-frozen-lockfile
+        run: pnpm install --filter react-native-example
 
       - name: AVD
         run: |
@@ -120,7 +120,7 @@ jobs:
         run: npm install -g detox-cli
 
       - name: Install React Native example deps
-        run: pnpm install --filter react-native-example --no-frozen-lockfile
+        run: pnpm install --filter react-native-example
 
       - name: Build
         working-directory: examples/react-native-example

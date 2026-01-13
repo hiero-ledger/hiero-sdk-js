@@ -77,7 +77,7 @@ tasks:
             - "proto:build"
             - "cryptography:build"
         cmds:
-            - pnpm i --no-frozen-lockfile
+            - pnpm i
 
     build:
         cmds:
@@ -202,7 +202,7 @@ tasks:
         deps:
             - "proto:update"
         cmds:
-            - pnpm install --no-frozen-lockfile
+            - pnpm install
 
     "update:addressbooks":
         cmds:
