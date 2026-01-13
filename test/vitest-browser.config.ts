@@ -9,6 +9,7 @@ export default defineConfig({
             provider: "playwright",
             enabled: true,
             instances: [{ browser: "chromium" }],
+            isolate: false,
         },
         include: ["test/unit/**/*.js"],
         exclude: [
@@ -19,8 +20,7 @@ export default defineConfig({
         testTimeout: 120000,
         retry: 1,
         maxWorkers: 4,
-        fileParallelism: true,
-        isolate: true,
+        fileParallelism: false,
         coverage: {
             include: ["src/**/*.js"],
             provider: "v8",
