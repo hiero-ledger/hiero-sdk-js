@@ -34,7 +34,7 @@ task solo:teardown
 ## Default Versions
 
 -   **Consensus Node:** v0.69.1 (or use `--local-build-path` for local builds)
--   **Mirror Node:** v0.145.2
+-   **Mirror Node:** v0.146.0
 
 Override with `--consensus-node-version` and/or `--mirror-node-version` flags.  
 Use `--local-build-path` for testing with a local Hiero consensus node build.
