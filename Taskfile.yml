@@ -72,33 +72,25 @@ tasks:
               --validation.invalidLink
               --entryPoints src/index.js src/browser.js src/native.js
 
-    "yalc:install":
-        cmds:
-            - npm install -g yalc
-
-    "yalc:add":
-        cmds:
-            - npx yalc add @hiero-ledger/proto --pure
-            - npx yalc add @hiero-ledger/cryptography --pure
-
-    "yalc:remove":
-        cmds:
-            - npx yalc remove @hiero-ledger/proto
-            - npx yalc remove @hiero-ledger/cryptography
-
     install:
         deps:
-            - "yalc:install"
             - "proto:build"
             - "cryptography:build"
         cmds:
-            - task: "yalc:add"
-            - pnpm i --no-frozen-lockfile
+            - pnpm i
 
     build:
         cmds:
             - task: build:prep
             - task: build:compile
+
+    "build:dev":
+        desc: "Build and globally link @hiero-ledger/sdk (and subpackages) for local dev"
+        cmds:
+            - task: "proto:build:dev"
+            - task: "cryptography:build:dev"
+            - task: build
+            - ./scripts/link-sdk-global.sh
 
     "build:prep":
         cmds:
@@ -111,17 +103,19 @@ tasks:
         cmds:
             - npx babel src -d lib --out-file-extension .cjs
             - npx rollup -c
-            - npx yalc publish
 
     clean:
         deps:
             - "examples:clean"
-            - "cryptography:clean"
-            - "proto:clean"
             - "simple_rest_signature_provider:clean"
             - "common_js_test:clean"
         cmds:
-            - rm -rf node_modules .yalc
+            # Remove in reverse dependency order to avoid re-linking
+            - |
+                pnpm list --global --depth 0 2>/dev/null | grep -q "@hiero-ledger/sdk" && pnpm remove --global @hiero-ledger/sdk 2>/dev/null || true
+            - task: "cryptography:clean"
+            - task: "proto:clean"
+            - rm -rf node_modules
 
     format:
         cmds:
@@ -208,9 +202,7 @@ tasks:
         deps:
             - "proto:update"
         cmds:
-            - npx yalc add @hiero-ledger/proto
-            # Remove proto so on `task build` we fix the link
-            - rm -rf ./node_modules/@hiero-ledger/proto
+            - pnpm install
 
     "update:addressbooks":
         cmds:
@@ -228,7 +220,6 @@ tasks:
         deps:
             - "build"
         cmds:
-            - task: "yalc:remove"
             - pnpm pack --out {{.CLI_ARGS}}
             - ls -lh {{.CLI_ARGS}}
 

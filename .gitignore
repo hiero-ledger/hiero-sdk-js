@@ -25,9 +25,6 @@ account_create_output_ecdsa.txt
 .coverage/
 coverage/
 
-.yalc
-yalc.lock
-
 examples/address-book.proto.bin
 
 #ds store
