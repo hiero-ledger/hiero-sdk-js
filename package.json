@@ -143,6 +143,5 @@
     },
     "resolutions": {
         "bn.js": "5.2.1"
-    },
-    "packageManager": "pnpm@9.15.5"
+    }
 }
