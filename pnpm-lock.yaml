@@ -27,10 +27,10 @@ importers:
         specifier: 1.12.6
         version: 1.12.6
       '@hiero-ledger/cryptography':
-        specifier: workspace:^1.15.0
+        specifier: workspace:^1.16.0-beta.1
         version: link:packages/cryptography
       '@hiero-ledger/proto':
-        specifier: workspace:^2.25.0
+        specifier: workspace:^2.26.0-beta.1
         version: link:packages/proto
       ansi-regex:
         specifier: 6.2.2
@@ -390,13 +390,13 @@ importers:
   examples/react-native-example:
     dependencies:
       '@hiero-ledger/cryptography':
-        specifier: workspace:^1.15.0
+        specifier: workspace:^1.16.0-beta.1
         version: link:../../packages/cryptography
       '@hiero-ledger/proto':
-        specifier: workspace:^2.25.0
+        specifier: workspace:^2.26.0-beta.1
         version: link:../../packages/proto
       '@hiero-ledger/sdk':
-        specifier: workspace:^2.79.0-beta.12
+        specifier: workspace:^2.80.0-beta.1
         version: link:../..
       expo:
         specifier: ~54.0.11
@@ -12413,7 +12413,7 @@ snapshots:
       '@babel/types': 7.28.6
       '@jridgewell/remapping': 2.3.5
       convert-source-map: 2.0.0
-      debug: 4.4.3
+      debug: 4.4.1(supports-color@8.1.1)
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
@@ -12612,7 +12612,7 @@ snapshots:
   '@babel/helper-member-expression-to-functions@7.28.5':
     dependencies:
       '@babel/traverse': 7.28.5
-      '@babel/types': 7.28.5
+      '@babel/types': 7.28.6
     transitivePeerDependencies:
       - supports-color
 
@@ -12659,7 +12659,7 @@ snapshots:
 
   '@babel/helper-optimise-call-expression@7.27.1':
     dependencies:
-      '@babel/types': 7.28.5
+      '@babel/types': 7.28.6
 
   '@babel/helper-plugin-utils@7.27.1': {}
 
@@ -12732,9 +12732,9 @@ snapshots:
 
   '@babel/helper-wrap-function@7.28.3':
     dependencies:
-      '@babel/template': 7.27.2
+      '@babel/template': 7.28.6
       '@babel/traverse': 7.28.5
-      '@babel/types': 7.28.5
+      '@babel/types': 7.28.6
     transitivePeerDependencies:
       - supports-color
 
@@ -14166,7 +14166,7 @@ snapshots:
       '@babel/parser': 7.28.6
       '@babel/template': 7.28.6
       '@babel/types': 7.28.6
-      debug: 4.4.3
+      debug: 4.4.1(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -15189,7 +15189,7 @@ snapshots:
       debug: 4.4.1(supports-color@8.1.1)
       forge-light: 1.1.4
       js-base64: 3.7.7
-      react-native-get-random-values: 1.11.0(react-native@0.78.3(@babel/core@7.26.10)(@babel/preset-env@7.22.15(@babel/core@7.26.10))(@types/react@19.0.0)(react@19.0.0))
+      react-native-get-random-values: 1.11.0(react-native@0.82.1(@babel/core@7.26.10)(react@19.2.1))
       spark-md5: 3.0.2
       strip-ansi: 7.1.2
       tweetnacl: 1.0.3
@@ -16288,7 +16288,7 @@ snapshots:
       '@babel/plugin-transform-sticky-regex': 7.27.1(@babel/core@7.26.10)
       '@babel/plugin-transform-typescript': 7.28.6(@babel/core@7.26.10)
       '@babel/plugin-transform-unicode-regex': 7.27.1(@babel/core@7.26.10)
-      '@babel/template': 7.27.2
+      '@babel/template': 7.28.6
       '@react-native/babel-plugin-codegen': 0.78.3(@babel/preset-env@7.22.15(@babel/core@7.26.10))
       babel-plugin-syntax-hermes-parser: 0.25.1
       babel-plugin-transform-flow-enums: 0.0.2(@babel/core@7.26.10)
@@ -16412,12 +16412,12 @@ snapshots:
   '@react-native/community-cli-plugin@0.82.1':
     dependencies:
       '@react-native/dev-middleware': 0.82.1
-      debug: 4.4.3
+      debug: 4.4.1(supports-color@8.1.1)
       invariant: 2.2.4
       metro: 0.83.3
       metro-config: 0.83.3
       metro-core: 0.83.3
-      semver: 7.7.3
+      semver: 7.3.8
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -16479,7 +16479,7 @@ snapshots:
       chrome-launcher: 0.15.2
       chromium-edge-launcher: 0.2.0
       connect: 3.7.0
-      debug: 4.4.3
+      debug: 4.4.1(supports-color@8.1.1)
       invariant: 2.2.4
       nullthrows: 1.1.1
       open: 7.4.2
@@ -18626,7 +18626,7 @@ snapshots:
 
   babel-plugin-jest-hoist@29.6.3:
     dependencies:
-      '@babel/template': 7.27.2
+      '@babel/template': 7.28.6
       '@babel/types': 7.28.6
       '@types/babel__core': 7.20.5
       '@types/babel__traverse': 7.28.0
@@ -23893,8 +23893,8 @@ snapshots:
   metro-transform-plugins@0.81.5:
     dependencies:
       '@babel/core': 7.26.10
-      '@babel/generator': 7.28.5
-      '@babel/template': 7.27.2
+      '@babel/generator': 7.28.6
+      '@babel/template': 7.28.6
       '@babel/traverse': 7.28.5
       flow-enums-runtime: 0.0.6
       nullthrows: 1.1.1
@@ -23915,7 +23915,7 @@ snapshots:
   metro-transform-worker@0.81.5:
     dependencies:
       '@babel/core': 7.26.10
-      '@babel/generator': 7.28.5
+      '@babel/generator': 7.28.6
       '@babel/parser': 7.28.6
       '@babel/types': 7.28.6
       flow-enums-runtime: 0.0.6
@@ -25684,7 +25684,7 @@ snapshots:
       react-refresh: 0.14.2
       regenerator-runtime: 0.13.11
       scheduler: 0.26.0
-      semver: 7.7.3
+      semver: 7.3.8
       stacktrace-parser: 0.1.11
       whatwg-fetch: 3.6.20
       ws: 6.2.3
@@ -25730,7 +25730,7 @@ snapshots:
       react-refresh: 0.14.2
       regenerator-runtime: 0.13.11
       scheduler: 0.26.0
-      semver: 7.7.3
+      semver: 7.3.8
       stacktrace-parser: 0.1.11
       whatwg-fetch: 3.6.20
       ws: 6.2.3
