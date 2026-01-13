@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# 2.80.0-beta.1
+
+### Changed
+- Switched to **pnpm workspaces** for local development library linking, replacing the unsupported `yalc`. This improves maintainability and contributor development experience. ([#3610](https://github.com/hiero-ledger/hiero-sdk-js/pull/3610))
+- Improved contributor experience by integrating **solo** as a development dependency with predefined start scripts and supporting documentation. ([#3614](https://github.com/hiero-ledger/hiero-sdk-js/pull/3614))
+
 # 2.79.0
 
 ### Addded 
