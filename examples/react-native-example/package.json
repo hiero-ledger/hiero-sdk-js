@@ -10,9 +10,9 @@
         "eject": "expo eject"
     },
     "dependencies": {
-        "@hiero-ledger/cryptography": "workspace:^1.16.0-beta.1",
-        "@hiero-ledger/proto": "workspace:^2.26.0-beta.1",
-        "@hiero-ledger/sdk": "workspace:^2.80.0-beta.1",
+        "@hiero-ledger/cryptography": "workspace:*",
+        "@hiero-ledger/proto": "workspace:*",
+        "@hiero-ledger/sdk": "workspace:*",
         "expo": "~54.0.11",
         "expo-status-bar": "~3.0.6",
         "react": "19.0.0",

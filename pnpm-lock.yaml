@@ -27,10 +27,10 @@ importers:
         specifier: 1.12.6
         version: 1.12.6
       '@hiero-ledger/cryptography':
-        specifier: workspace:^1.16.0-beta.1
+        specifier: workspace:*
         version: link:packages/cryptography
       '@hiero-ledger/proto':
-        specifier: workspace:^2.26.0-beta.1
+        specifier: workspace:*
         version: link:packages/proto
       ansi-regex:
         specifier: 6.2.2
@@ -242,7 +242,7 @@ importers:
     dependencies:
       '@hiero-ledger/sdk':
         specifier: 2.79.0
-        version: 2.79.0(bn.js@5.2.1)
+        version: 2.79.0(bn.js@5.2.1)(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))
       chai:
         specifier: 4.3.6
         version: 4.3.6
@@ -353,17 +353,17 @@ importers:
         specifier: ^5.8.0
         version: 5.8.0
       '@hiero-ledger/cryptography':
-        specifier: ^1.8.0
-        version: 1.15.0(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.0.0)(react@19.0.0))
+        specifier: workspace:*
+        version: link:../../packages/cryptography
       '@hiero-ledger/sdk':
-        specifier: ^2.66.0
-        version: 2.79.0(bn.js@5.2.1)(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.0.0)(react@19.0.0))
+        specifier: workspace:*
+        version: link:../..
       '@mui/material':
         specifier: ^7.1.1
         version: 7.3.7(@emotion/react@11.14.0(@types/react@19.0.0)(react@19.0.0))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.0.0)(react@19.0.0))(@types/react@19.0.0)(react@19.0.0))(@types/react@19.0.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       next:
         specifier: 15.4.10
-        version: 15.4.10(@babel/core@7.28.5)(@playwright/test@1.30.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+        version: 15.4.10(@babel/core@7.23.3)(@playwright/test@1.30.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react:
         specifier: ^19.0.0
         version: 19.0.0
@@ -390,13 +390,13 @@ importers:
   examples/react-native-example:
     dependencies:
       '@hiero-ledger/cryptography':
-        specifier: workspace:^1.16.0-beta.1
+        specifier: workspace:*
         version: link:../../packages/cryptography
       '@hiero-ledger/proto':
-        specifier: workspace:^2.26.0-beta.1
+        specifier: workspace:*
         version: link:../../packages/proto
       '@hiero-ledger/sdk':
-        specifier: workspace:^2.80.0-beta.1
+        specifier: workspace:*
         version: link:../..
       expo:
         specifier: ~54.0.11
@@ -15198,7 +15198,7 @@ snapshots:
       - react-native
       - supports-color
 
-  '@hiero-ledger/cryptography@1.15.0(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.0.0)(react@19.0.0))':
+  '@hiero-ledger/cryptography@1.15.0(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))':
     dependencies:
       '@noble/curves': 1.8.1
       ansi-regex: 6.2.2
@@ -15211,7 +15211,7 @@ snapshots:
       debug: 4.4.1(supports-color@8.1.1)
       forge-light: 1.1.4
       js-base64: 3.7.7
-      react-native-get-random-values: 1.11.0(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.0.0)(react@19.0.0))
+      react-native-get-random-values: 1.11.0(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))
       spark-md5: 3.0.2
       strip-ansi: 7.1.2
       tweetnacl: 1.0.3
@@ -15257,14 +15257,14 @@ snapshots:
       - react-native
       - supports-color
 
-  '@hiero-ledger/sdk@2.79.0(bn.js@5.2.1)(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.0.0)(react@19.0.0))':
+  '@hiero-ledger/sdk@2.79.0(bn.js@5.2.1)(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))':
     dependencies:
       '@ethersproject/abi': 5.8.0
       '@ethersproject/bignumber': 5.8.0
       '@ethersproject/bytes': 5.8.0
       '@ethersproject/rlp': 5.8.0
       '@grpc/grpc-js': 1.12.6
-      '@hiero-ledger/cryptography': 1.15.0(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.0.0)(react@19.0.0))
+      '@hiero-ledger/cryptography': 1.15.0(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))
       '@hiero-ledger/proto': 2.25.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@7.5.4)(strip-ansi@7.1.2)
       ansi-regex: 6.2.2
       ansi-styles: 6.2.3
@@ -16523,21 +16523,19 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.0.0
 
-  '@react-native/virtualized-lists@0.82.1(@types/react@19.0.0)(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.0.0)(react@19.0.0))(react@19.0.0)':
-    dependencies:
-      invariant: 2.2.4
-      nullthrows: 1.1.1
-      react: 19.0.0
-      react-native: 0.82.1(@babel/core@7.28.5)(@types/react@19.0.0)(react@19.0.0)
-    optionalDependencies:
-      '@types/react': 19.0.0
-
   '@react-native/virtualized-lists@0.82.1(react-native@0.82.1(@babel/core@7.26.10)(react@19.2.1))(react@19.2.1)':
     dependencies:
       invariant: 2.2.4
       nullthrows: 1.1.1
       react: 19.2.1
       react-native: 0.82.1(@babel/core@7.26.10)(react@19.2.1)
+
+  '@react-native/virtualized-lists@0.82.1(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))(react@19.2.1)':
+    dependencies:
+      invariant: 2.2.4
+      nullthrows: 1.1.1
+      react: 19.2.1
+      react-native: 0.82.1(@babel/core@7.28.5)(react@19.2.1)
 
   '@rollup/plugin-alias@6.0.0(rollup@4.34.8)':
     optionalDependencies:
@@ -24280,7 +24278,7 @@ snapshots:
 
   netmask@2.0.2: {}
 
-  next@15.4.10(@babel/core@7.28.5)(@playwright/test@1.30.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+  next@15.4.10(@babel/core@7.23.3)(@playwright/test@1.30.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
       '@next/env': 15.4.10
       '@swc/helpers': 0.5.15
@@ -24288,7 +24286,7 @@ snapshots:
       postcss: 8.4.31
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
-      styled-jsx: 5.1.6(@babel/core@7.28.5)(react@19.0.0)
+      styled-jsx: 5.1.6(@babel/core@7.23.3)(react@19.0.0)
     optionalDependencies:
       '@next/swc-darwin-arm64': 15.4.8
       '@next/swc-darwin-x64': 15.4.8
@@ -25592,10 +25590,10 @@ snapshots:
       fast-base64-decode: 1.0.0
       react-native: 0.82.1(@babel/core@7.26.10)(react@19.2.1)
 
-  react-native-get-random-values@1.11.0(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.0.0)(react@19.0.0)):
+  react-native-get-random-values@1.11.0(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1)):
     dependencies:
       fast-base64-decode: 1.0.0
-      react-native: 0.82.1(@babel/core@7.28.5)(@types/react@19.0.0)(react@19.0.0)
+      react-native: 0.82.1(@babel/core@7.28.5)(react@19.2.1)
 
   react-native-is-edge-to-edge@1.2.1(react-native@0.78.3(@babel/core@7.26.10)(@babel/preset-env@7.22.15(@babel/core@7.26.10))(@types/react@19.0.0)(react@19.0.0))(react@19.0.0):
     dependencies:
@@ -25697,7 +25695,7 @@ snapshots:
       - supports-color
       - utf-8-validate
 
-  react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.0.0)(react@19.0.0):
+  react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1):
     dependencies:
       '@jest/create-cache-key-function': 29.7.0
       '@react-native/assets-registry': 0.82.1
@@ -25706,7 +25704,7 @@ snapshots:
       '@react-native/gradle-plugin': 0.82.1
       '@react-native/js-polyfills': 0.82.1
       '@react-native/normalize-colors': 0.82.1
-      '@react-native/virtualized-lists': 0.82.1(@types/react@19.0.0)(react-native@0.82.1(@babel/core@7.28.5)(@types/react@19.0.0)(react@19.0.0))(react@19.0.0)
+      '@react-native/virtualized-lists': 0.82.1(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))(react@19.2.1)
       abort-controller: 3.0.0
       anser: 1.4.10
       ansi-regex: 5.0.1
@@ -25725,7 +25723,7 @@ snapshots:
       nullthrows: 1.1.1
       pretty-format: 29.7.0
       promise: 8.3.0
-      react: 19.0.0
+      react: 19.2.1
       react-devtools-core: 6.1.5
       react-refresh: 0.14.2
       regenerator-runtime: 0.13.11
@@ -25735,8 +25733,6 @@ snapshots:
       whatwg-fetch: 3.6.20
       ws: 6.2.3
       yargs: 17.7.2
-    optionalDependencies:
-      '@types/react': 19.0.0
     transitivePeerDependencies:
       - '@babel/core'
       - '@react-native-community/cli'
@@ -26820,12 +26816,12 @@ snapshots:
     dependencies:
       webpack: 5.104.1
 
-  styled-jsx@5.1.6(@babel/core@7.28.5)(react@19.0.0):
+  styled-jsx@5.1.6(@babel/core@7.23.3)(react@19.0.0):
     dependencies:
       client-only: 0.0.1
       react: 19.0.0
     optionalDependencies:
-      '@babel/core': 7.28.5
+      '@babel/core': 7.23.3
 
   stylehacks@5.1.1(postcss@8.5.6):
     dependencies:
