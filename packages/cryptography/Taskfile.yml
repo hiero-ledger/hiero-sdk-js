@@ -28,10 +28,18 @@ tasks:
             - task: format
             - task: lint
             - npx babel src -d lib --out-file-extension .cjs
-            - npx yalc publish
+
+    build:dev:
+        desc: "Build and globally link @hiero-ledger/cryptography for local dev"
+        deps:
+            - build
+        cmds:
+            - pnpm link --global --dir . --package @hiero-ledger/cryptography
 
     clean:
         cmds:
+            - |
+                pnpm list --global --depth 0 2>/dev/null | grep -q "@hiero-ledger/cryptography" && pnpm remove --global @hiero-ledger/cryptography 2>/dev/null || true
             - rm -rf node_modules
 
     format:

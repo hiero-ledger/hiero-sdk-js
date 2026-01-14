@@ -1,6 +1,6 @@
 {
     "name": "@hiero-ledger/proto",
-    "version": "2.25.0",
+    "version": "2.26.0-beta.3",
     "description": "Protobufs for the Hiero SDK",
     "main": "lib/index.js",
     "browser": "src/index.js",
@@ -66,7 +66,7 @@
         "semver": "7.3.8",
         "tmp": "0.2.4",
         "typescript": "5.7.2",
-        "protobufjs-cli": "1.0.2"
+        "protobufjs-cli": "2.0.0"
     },
     "peerDependencies": {
         "protobufjs": "7.5.4",

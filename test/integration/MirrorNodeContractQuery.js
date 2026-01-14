@@ -15,11 +15,7 @@ import {
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { createAccount } from "./utils/Fixtures.js";
 
-/**
- * Temporary skip this test until Solo is updated to support these queries again
- */
-// eslint-disable-next-line vitest/no-disabled-tests
-describe.skip("MirrorNodeContractQuery", function () {
+describe("MirrorNodeContractQuery", function () {
     let env, contractId;
     const ADDRESS = "0x5B38Da6a701c568545dCfcB03FcB875f56beddC4";
 

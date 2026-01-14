@@ -24,6 +24,7 @@ import {
     TokenRejectTransaction,
     TokenCancelAirdropTransaction,
     TokenInfoQuery,
+    TokenNftInfoQuery,
     Hbar,
 } from "@hiero-ledger/sdk";
 import Long from "long";
@@ -38,6 +39,7 @@ import {
     createCustomFees,
     executeTokenManagementTransaction,
     mapTokenInfoResponse,
+    mapTokenNftInfoResponse,
 } from "../utils/helpers/token";
 
 import { applyCommonTransactionParams } from "../params/common-tx-params";
@@ -58,6 +60,7 @@ import {
     AirdropClaimTokenParams,
     RejectTokenParams,
     GetTokenInfoParams,
+    GetTokenNftInfoParams,
 } from "../params/token";
 
 import {
@@ -65,6 +68,7 @@ import {
     TokenBurnResponse,
     TokenMintResponse,
     TokenInfoQueryResponse,
+    TokenNftInfoQueryResponse,
 } from "../response/token";
 
 // buildCreateToken builds a TokenCreateTransaction from parameters
@@ -899,4 +903,46 @@ export const getTokenInfo = async ({
     const response = await query.execute(client);
 
     return mapTokenInfoResponse(response);
+};
+
+export const getTokenNftInfo = async ({
+    nftId,
+    queryPayment,
+    maxQueryPayment,
+    getCost,
+    sessionId,
+}: GetTokenNftInfoParams): Promise<TokenNftInfoQueryResponse> => {
+    const client = sdk.getClient(sessionId);
+    const query = new TokenNftInfoQuery().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+
+    if (nftId != null) {
+        query.setNftId(nftId);
+    }
+
+    if (queryPayment != null) {
+        query.setQueryPayment(Hbar.fromTinybars(queryPayment));
+    }
+
+    if (maxQueryPayment != null) {
+        query.setMaxQueryPayment(Hbar.fromTinybars(maxQueryPayment));
+    }
+
+    if (getCost) {
+        const cost = await query.getCost(client);
+
+        return {
+            cost: cost.toTinybars().toString(),
+        };
+    }
+
+    const response = await query.execute(client);
+
+    // TokenNftInfoQuery returns an array, but for a single NFT query, we return the first result
+    if (response && response.length > 0) {
+        return mapTokenNftInfoResponse(response[0]);
+    }
+
+    throw new Error("No NFT info returned");
 };

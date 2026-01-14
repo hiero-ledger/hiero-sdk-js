@@ -13,10 +13,10 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@ethersproject/rlp": "^5.8.0",
-    "@hiero-ledger/cryptography": "^1.8.0",
-    "@hiero-ledger/sdk": "^2.66.0",
+    "@hiero-ledger/cryptography": "workspace:*",
+    "@hiero-ledger/sdk": "workspace:*",
     "@mui/material": "^7.1.1",
-    "next": "15.4.8",
+    "next": "15.4.10",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },

@@ -8,13 +8,17 @@ import {
     FeeAssessmentMethod,
     Transaction,
     TokenInfo,
+    TokenNftInfo,
 } from "@hiero-ledger/sdk";
 import Long from "long";
 
 import { DEFAULT_GRPC_DEADLINE } from "../../utils/constants/config";
 
 import { applyCommonTransactionParams } from "../../params/common-tx-params";
-import { TokenInfoQueryResponse } from "../../response/token";
+import {
+    TokenInfoQueryResponse,
+    TokenNftInfoQueryResponse,
+} from "../../response/token";
 
 export const executeTokenManagementTransaction = async (
     transaction: Transaction,
@@ -244,5 +248,22 @@ export const mapTokenInfoResponse = (
                 ? Buffer.from(info.metadata).toString("hex")
                 : "",
         ledgerId: info.ledgerId?.toString(),
+    };
+};
+
+// Helper function to map TokenNftInfo to TokenNftInfoQueryResponse
+export const mapTokenNftInfoResponse = (
+    info: TokenNftInfo,
+): TokenNftInfoQueryResponse => {
+    return {
+        nftId: info.nftId?.toString(),
+        accountId: info.accountId?.toString(),
+        creationTime: info.creationTime?.seconds.toString(),
+        metadata:
+            info.metadata && info.metadata.length > 0
+                ? Buffer.from(info.metadata).toString("hex")
+                : "",
+        ledgerId: info.ledgerId?.toString(),
+        spenderId: info.spenderId?.toString() || null,
     };
 };

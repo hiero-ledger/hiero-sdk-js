@@ -7,6 +7,8 @@ import {
     TransactionReceiptQuery,
     Status,
     ScheduleDeleteTransaction,
+    ScheduleInfoQuery,
+    Hbar,
 } from "@hiero-ledger/sdk";
 
 import {
@@ -14,13 +16,18 @@ import {
     ScheduleDeleteParams,
     ScheduledTransaction,
     ScheduleSignParams,
+    GetScheduleInfoParams,
 } from "../params/schedule";
-import { ScheduleResponse } from "../response/schedule";
+import {
+    ScheduleResponse,
+    ScheduleInfoQueryResponse,
+} from "../response/schedule";
 
 import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";
 import { applyCommonTransactionParams } from "../params/common-tx-params";
 import { sdk } from "../sdk_data";
 import { getKeyFromString } from "../utils/key";
+import { mapScheduleInfoResponse } from "../utils/helpers/schedule";
 import Long from "long";
 
 // Import parameter types for scheduled transactions
@@ -220,4 +227,41 @@ export const deleteSchedule = async ({
     return {
         status: receipt.status.toString(),
     };
+};
+
+export const getScheduleInfo = async ({
+    scheduleId,
+    queryPayment,
+    maxQueryPayment,
+    getCost,
+    sessionId,
+}: GetScheduleInfoParams): Promise<ScheduleInfoQueryResponse> => {
+    const client = sdk.getClient(sessionId);
+    const query = new ScheduleInfoQuery().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+
+    if (scheduleId != null) {
+        query.setScheduleId(scheduleId);
+    }
+
+    if (queryPayment != null) {
+        query.setQueryPayment(Hbar.fromTinybars(queryPayment));
+    }
+
+    if (maxQueryPayment != null) {
+        query.setMaxQueryPayment(Hbar.fromTinybars(maxQueryPayment));
+    }
+
+    if (getCost) {
+        const cost = await query.getCost(client);
+
+        return {
+            cost: cost.toTinybars().toString(),
+        };
+    }
+
+    const response = await query.execute(client);
+
+    return mapScheduleInfoResponse(response);
 };
