@@ -501,7 +501,7 @@ jobs:
           task -v publish TARBALL="${{ needs.build-release-package.outputs.hiero-proto-pkg-name }}" -- ${{ needs.calculate-release-args.outputs.proto-publish-args }}
         working-directory: packages/proto
 
-      # Publish crypto artifact
+      # Publish cryptography artifact
       - name: Download HL Crypto Package Artifact
         if: ${{ needs.validate-release.outputs.hiero-crypto-publish-required == 'true' }}
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
