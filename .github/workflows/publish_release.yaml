@@ -64,8 +64,8 @@ jobs:
 
       # crypto sub-package
       crypto-version: ${{ steps.npm-package.outputs.crypto-version }}
-      crypto-prerelease: ${{ steps.crypto-package.output.prerelease }}
-      crypto-type: ${{ steps.crypto-package.output.type }}
+      crypto-prerelease: ${{ steps.crypto-package.outputs.prerelease }}
+      crypto-type: ${{ steps.crypto-package.outputs.type }}
       hiero-crypto-publish-required: ${{ steps.hiero-crypto-required.outputs.publish-required }}
       hashgraph-crypto-publish-required: ${{ steps.crypto-required.outputs.publish-required }}
 

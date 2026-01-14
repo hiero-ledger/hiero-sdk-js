@@ -9,6 +9,7 @@ export default defineConfig({
             provider: "playwright",
             enabled: true,
             instances: [{ browser: "chromium" }],
+            isolate: false,
         },
         include: ["test/unit/**/*.js"],
         exclude: [
@@ -19,8 +20,7 @@ export default defineConfig({
         testTimeout: 120000,
         retry: 1,
         maxWorkers: 4,
-        fileParallelism: true,
-        isolate: true,
+        fileParallelism: false,
         coverage: {
             include: ["src/**/*.js"],
             provider: "v8",
@@ -35,6 +35,8 @@ export default defineConfig({
             // will take care of this
             "../../src/index.js": "../../src/browser.js",
             "../src/index.js": "../src/browser.js",
+            // Redirect proto package to use ESM version in browser mode
+            "@hiero-ledger/proto": "/packages/proto/src/index.js",
             // TODO: extract `encoding/hex.js` etc into a variable and call a function to generate
             // all the prefixes.
             "../../../src/encoding/hex.js":

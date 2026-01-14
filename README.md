@@ -72,6 +72,55 @@ After downloading the repo run:
 
 2. `task build` to build the SDK
 
+## Development
+
+### Local Development Workflow
+
+The SDK uses `pnpm workspaces` to manage its monorepo structure with sub-packages (`@hiero-ledger/proto` and `@hiero-ledger/cryptography`). For local development and testing the SDK in other projects, use the following workflow:
+
+#### Build and Link Globally
+
+Build the SDK and link it globally for use in other local projects:
+
+```bash
+task build:dev
+```
+
+This command:
+- Builds all packages (`proto`, `cryptography`, and the main SDK)
+- Creates global symlinks for all three packages
+- Allows you to use the local SDK in any other project on your machine
+
+#### Use in Another Project
+
+In your other project, link to the globally linked SDK:
+
+```bash
+cd /path/to/your/other/project
+pnpm link --global @hiero-ledger/sdk
+```
+
+Now any changes you make to the SDK and rebuild will be immediately available in your project.
+
+#### Unlink and Clean
+
+When you're done with local development:
+
+```bash
+# In the hiero-sdk-js repository
+task clean
+```
+
+This removes all global links and cleans up `node_modules`.
+
+To unlink in your other project:
+
+```bash
+# In your other project
+pnpm unlink @hiero-ledger/sdk
+pnpm install
+```
+
 ## React Native Support
 
 The Hiero JavaScript SDK provides comprehensive support for React Native environments, including Expo. To ensure seamless integration, follow the guidelines based on your Expo version:
