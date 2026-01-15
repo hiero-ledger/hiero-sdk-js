@@ -6,30 +6,31 @@ import {
     NodeAddress,
     ServiceEndpoint,
 } from "../response/network";
-import { GetAddressBookParams } from "../params/network";
+import { GetAddressBookParams, SdkNodeAddress } from "../params/network";
 import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";
 
 /**
- * Converts IPv4Address to hex string format
+ * Converts IPv4 address string (x.x.x.x) to hex string format
  */
-const ipv4ToHex = (ipv4Address: any): string | undefined => {
-    if (!ipv4Address) {
+const ipv4StringToHex = (ipString: string): string | undefined => {
+    const parts = ipString.split(".");
+    if (parts.length !== 4) {
         return undefined;
     }
 
-    // If it's already a string (domain name), return undefined
-    if (typeof ipv4Address === "string") {
+    const bytes = parts.map((part) => {
+        const num = Number.parseInt(part, 10);
+        if (Number.isNaN(num) || num < 0 || num > 255) {
+            return null;
+        }
+        return num;
+    });
+
+    if (bytes.some((byte) => byte === null)) {
         return undefined;
     }
 
-    // Convert IPv4Address to Uint8Array via _toProtobuf
-    const bytes = ipv4Address._toProtobuf();
-    if (!bytes || bytes.length !== 4) {
-        return undefined;
-    }
-
-    // Convert bytes to hex string
-    return Array.from(bytes)
+    return bytes
         .map((byte) => Number(byte).toString(16).padStart(2, "0"))
         .join("");
 };
@@ -37,9 +38,9 @@ const ipv4ToHex = (ipv4Address: any): string | undefined => {
 /**
  * Maps SDK NodeAddress to TCK response format
  */
-const mapNodeAddress = (nodeAddress: any): NodeAddress => {
-    const serviceEndpoints: ServiceEndpoint[] = (nodeAddress.addresses || [])
-        .map((endpoint: any) => {
+const mapNodeAddress = (nodeAddress: SdkNodeAddress): NodeAddress => {
+    const serviceEndpoints: ServiceEndpoint[] = nodeAddress.addresses
+        .map((endpoint) => {
             const address = endpoint.address;
             const port = endpoint.port;
 
@@ -56,7 +57,11 @@ const mapNodeAddress = (nodeAddress: any): NodeAddress => {
             if (typeof address === "string") {
                 domainName = address;
             } else if (address) {
-                ipAddressV4 = ipv4ToHex(address);
+                // Use toString() to get IP in x.x.x.x format, then convert to hex
+                const ipString = address.toString();
+                if (ipString) {
+                    ipAddressV4 = ipv4StringToHex(ipString);
+                }
             }
 
             // Filter out endpoints without valid IP or domain
@@ -125,7 +130,7 @@ export const getAddressBook = async ({
     }
 
     const response = await query.execute(client);
-    const nodeAddresses = (response.nodeAddresses || []).map(mapNodeAddress);
+    const nodeAddresses = response.nodeAddresses?.map(mapNodeAddress) || [];
 
     return {
         nodeAddresses,
