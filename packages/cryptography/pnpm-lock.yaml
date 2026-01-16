@@ -21,8 +21,8 @@ importers:
         specifier: 3.0.6
         version: 3.0.6
       bignumber.js:
-        specifier: 9.1.1
-        version: 9.1.1
+        specifier: 9.3.1
+        version: 9.3.1
       bn.js:
         specifier: 5.2.1
         version: 5.2.1
@@ -1837,8 +1837,8 @@ packages:
     resolution: {integrity: sha512-4Bcg1P8xhUuqcii/S0Z9wiHIrQVPMermM1any+MX5GeGD7faD3/msQUDGLol9wOcz4/jbg/WJnGqoJF6LiBdtg==}
     engines: {node: '>=10.0.0'}
 
-  bignumber.js@9.1.1:
-    resolution: {integrity: sha512-pHm4LsMJ6lzgNGVfZHjMoO8sdoRhOzOH4MLmY65Jg70bpxCKu5iOHNJyfF6OyvYw7t8Fpf35RuzUyqnQsj8Vig==}
+  bignumber.js@9.3.1:
+    resolution: {integrity: sha512-Ko0uX15oIUS7wJ3Rb30Fs6SkVbLmPBAKdlm7q9+ak9bbIeFf0MwuBsQV6z7+X768/cHsfg+WlysDWJcmthjsjQ==}
 
   binary-extensions@2.2.0:
     resolution: {integrity: sha512-jDctJ/IVQbZoJykoeHbhXpOlNBqGNcwXJKJog42E5HDPUwQTSdjCHdihjj0DlnheQ7blbT6dHOafNAiS8ooQKA==}
@@ -6576,7 +6576,7 @@ snapshots:
 
   basic-ftp@5.0.5: {}
 
-  bignumber.js@9.1.1: {}
+  bignumber.js@9.3.1: {}
 
   binary-extensions@2.2.0: {}
 
