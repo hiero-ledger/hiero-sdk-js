@@ -35,7 +35,7 @@
         "last 1 Firefox versions"
     ],
     "dependencies": {
-        "long": "5.3.1"
+        "long": "5.3.2"
     },
     "devDependencies": {
         "@babel/cli": "7.23.4",
