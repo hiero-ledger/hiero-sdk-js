@@ -60,7 +60,7 @@
     ],
     "dependencies": {
         "@noble/curves": "1.8.1",
-        "asn1js": "3.0.6",
+        "asn1js": "3.0.7",
         "bignumber.js": "9.1.1",
         "bn.js": "5.2.1",
         "buffer": "6.0.3",
