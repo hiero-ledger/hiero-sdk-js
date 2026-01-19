@@ -359,7 +359,8 @@ export default class NodeClient extends Client {
      * @returns {(address: string, cert?: string) => NodeChannel}
      */
     _createNetworkChannel() {
-        return (address) => new NodeChannel(address, this.grpcDeadline);
+        return (address) =>
+            new NodeChannel(address, this.grpcDeadline, this._channelsPerNode);
     }
 
     /**

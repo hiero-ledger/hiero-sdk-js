@@ -7,22 +7,91 @@ import GrpcStatus from "../grpc/GrpcStatus.js";
 import { ALL_NETWORK_IPS } from "../constants/ClientConstants.js";
 import { SDK_NAME, SDK_VERSION } from "../version.js";
 
-/** @type {{ [key: string]: Client }} */
-const clientCache = {};
+/**
+ * Manages a pool of gRPC clients per address for better concurrency
+ */
+class ChannelPool {
+    constructor() {
+        /** @type {{ [key: string]: Client[] }} */
+        this._pools = {};
+        /** @type {{ [key: string]: number }} */
+        this._currentIndex = {};
+        /** @type {{ [key: string]: number }} */
+        this._poolSize = {};
+    }
+
+    /**
+     * Get or create a client from the pool using round-robin
+     * @param {string} address
+     * @param {number} maxPoolSize
+     * @param {() => Client} createFn
+     * @returns {Client}
+     */
+    getClient(address, maxPoolSize, createFn) {
+        if (!this._pools[address]) {
+            this._pools[address] = [];
+            this._currentIndex[address] = 0;
+            this._poolSize[address] = maxPoolSize;
+        }
+
+        const pool = this._pools[address];
+
+        // Create channels up to maxPoolSize if needed
+        if (pool.length < this._poolSize[address]) {
+            pool.push(createFn());
+        }
+
+        // Round-robin through available channels
+        const client = pool[this._currentIndex[address]];
+        this._currentIndex[address] =
+            (this._currentIndex[address] + 1) % pool.length;
+        console.log(address, this._currentIndex[address]);
+        return client;
+    }
+
+    /**
+     * Close all clients for a specific address
+     * @param {string} address
+     */
+    closeAddress(address) {
+        if (this._pools[address]) {
+            for (const client of this._pools[address]) {
+                client.close();
+            }
+            delete this._pools[address];
+            delete this._currentIndex[address];
+            delete this._poolSize[address];
+        }
+    }
+
+    /**
+     * Close all clients in all pools
+     */
+    closeAll() {
+        for (var address in this._pools) {
+            this.closeAddress(address);
+        }
+    }
+}
+
+/** @type {ChannelPool} */
+const channelPool = new ChannelPool();
 
 export default class NodeChannel extends Channel {
     /**
      * @internal
      * @param {string} address
      * @param {number=} grpcDeadline
+     * @param {number=} channelsPerNode
      */
-    constructor(address, grpcDeadline) {
+    constructor(address, grpcDeadline, channelsPerNode = 1) {
         super(grpcDeadline);
 
         /** @type {Client | null} */
         this._client = null;
 
         this.address = address;
+        this._channelsPerNode = channelsPerNode;
 
         const { ip, port } = this.parseAddress(address);
         this.nodeIp = ip;
@@ -89,38 +158,41 @@ export default class NodeChannel extends Channel {
     }
 
     /**
-     * Initialize the gRPC client
+     * Initialize the gRPC client using the channel pool
      * @returns {Promise<void>}
      */
     async _initializeClient() {
-        if (clientCache[this.address]) {
-            this._client = clientCache[this.address];
-            return;
-        }
-
-        let security;
-        const options = {
-            "grpc.ssl_target_name_override": "127.0.0.1",
-            "grpc.default_authority": "127.0.0.1",
-            "grpc.http_connect_creds": "0",
-            "grpc.keepalive_time_ms": 100000,
-            "grpc.keepalive_timeout_ms": 10000,
-            "grpc.keepalive_permit_without_calls": 1,
-            "grpc.enable_retries": 1,
-        };
-
-        // If the port is 50212, use TLS
+        // Prepare security credentials if needed
+        let certificate = null;
         if (this.nodePort === "50212") {
-            const certificate = Buffer.from(await this._retrieveCertificate());
-
-            security = credentials.createSsl(certificate);
-        } else {
-            security = credentials.createInsecure();
+            certificate = Buffer.from(await this._retrieveCertificate());
         }
 
-        this._client = new Client(this.address, security, options);
+        // Use channel pool to get or create a client
+        this._client = channelPool.getClient(
+            this.address,
+            this._channelsPerNode,
+            () => {
+                const options = {
+                    "grpc.ssl_target_name_override": "127.0.0.1",
+                    "grpc.default_authority": "127.0.0.1",
+                    "grpc.http_connect_creds": "0",
+                    "grpc.keepalive_time_ms": 100000,
+                    "grpc.keepalive_timeout_ms": 10000,
+                    "grpc.keepalive_permit_without_calls": 1,
+                    "grpc.enable_retries": 1,
+                };
 
-        clientCache[this.address] = this._client;
+                let security;
+                if (certificate) {
+                    security = credentials.createSsl(certificate);
+                } else {
+                    security = credentials.createInsecure();
+                }
+
+                return new Client(this.address, security, options);
+            },
+        );
     }
 
     /**
@@ -128,10 +200,9 @@ export default class NodeChannel extends Channel {
      * @returns {void}
      */
     close() {
-        if (this._client) {
-            this._client.close();
-            delete clientCache[this.address];
-        }
+        // Close all pooled connections for this address
+        channelPool.closeAddress(this.address);
+        this._client = null;
     }
 
     /**

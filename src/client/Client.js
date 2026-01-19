@@ -46,6 +46,7 @@ import {
  * @property {number} [realm]
  * @property {number} [grpcDeadline]
  * @property {number} [requestTimeout]
+ * @property {number} [channelsPerNode]
  */
 
 /**
@@ -138,6 +139,12 @@ export default class Client {
         /** @private */
         this._grpcDeadline = DEFAULT_GRPC_DEADLINE;
 
+        /** @protected */
+        this._channelsPerNode = 1;
+
+        /** @private */
+        this._rotateHealthyNodes = false;
+
         /**
          * @type {boolean}
          */
@@ -171,6 +178,10 @@ export default class Client {
 
         if (props != null && props.requestTimeout != null) {
             this.setRequestTimeout(props.requestTimeout);
+        }
+
+        if (props != null && props.channelsPerNode != null) {
+            this.setChannelsPerNode(props.channelsPerNode);
         }
 
         // Validate that requestTimeout is larger than grpcDeadline after both are set
@@ -742,7 +753,7 @@ export default class Client {
         }
         if (grpcDeadline >= this._requestTimeout) {
             console.warn(
-                `DEPRECATION WARNING: grpcDeadline (${grpcDeadline}ms) should be smaller than requestTimeout (${this._requestTimeout}ms). ` +
+                `WARNING: grpcDeadline (${grpcDeadline}ms) should be smaller than requestTimeout (${this._requestTimeout}ms). ` +
                     `This configuration may cause operations to fail unexpectedly. ` +
                     `This will throw an error in the next major version. Please adjust your timeout values.`,
             );
@@ -758,6 +769,38 @@ export default class Client {
      */
     get grpcDeadline() {
         return this._grpcDeadline;
+    }
+
+    /**
+     * Set the number of gRPC channels (connections) to maintain per node.
+     * Higher values allow more concurrent requests per node but use more resources.
+     * Default is 1.
+     *
+     * @param {number} channelsPerNode - Number of channels per node (1-20 recommended)
+     * @returns {this}
+     */
+    setChannelsPerNode(channelsPerNode) {
+        if (channelsPerNode <= 0) {
+            throw new Error("channelsPerNode must be a positive number");
+        }
+        if (channelsPerNode > 20) {
+            console.warn(
+                `WARNING: channelsPerNode (${channelsPerNode}) is very high. ` +
+                    `This will create many connections and may use significant resources. ` +
+                    `Consider using a value between 1-10 for most use cases.`,
+            );
+        }
+        this._channelsPerNode = Math.floor(channelsPerNode);
+        return this;
+    }
+
+    /**
+     * Get the number of gRPC channels (connections) per node.
+     *
+     * @returns {number} Number of channels per node
+     */
+    get channelsPerNode() {
+        return this._channelsPerNode;
     }
 
     /**
@@ -795,6 +838,29 @@ export default class Client {
      */
     get logger() {
         return this._logger;
+    }
+
+    /**
+     * Enable or disable rotating through healthy nodes on each request.
+     * When enabled, each request will use the next available healthy node
+     * instead of repeatedly using the same node. This is useful for bulk
+     * operations to prevent overwhelming a single node with concurrent requests.
+     *
+     * @param {boolean} rotateHealthyNodes
+     * @returns {this}
+     */
+    setRotateHealthyNodes(rotateHealthyNodes) {
+        this._rotateHealthyNodes = rotateHealthyNodes;
+        return this;
+    }
+
+    /**
+     * Get whether rotating through healthy nodes is enabled.
+     *
+     * @returns {boolean}
+     */
+    get rotateHealthyNodes() {
+        return this._rotateHealthyNodes;
     }
 
     /**
