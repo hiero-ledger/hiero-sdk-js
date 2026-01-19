@@ -39,7 +39,7 @@ NC='\033[0m' # No Color
 
 # Default configuration
 DEFAULT_CONSENSUS_NODE_VERSION=v0.69.1
-DEFAULT_MIRROR_NODE_VERSION=v0.145.2
+DEFAULT_MIRROR_NODE_VERSION=v0.146.0
 
 # Parse command line arguments
 show_help() {
