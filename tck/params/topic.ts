@@ -1,4 +1,4 @@
-import { BaseTransactionParams } from "./base";
+import { BaseParams, BaseTransactionParams } from "./base";
 
 export interface TopicCreateParams extends BaseTransactionParams {
     readonly memo?: string;
@@ -50,4 +50,11 @@ export interface CustomFeeLimit {
 export interface FixedFee {
     readonly amount: string;
     readonly denominatingTokenId?: string;
+}
+
+export interface GetTopicInfoParams extends BaseParams {
+    readonly topicId?: string;
+    readonly queryPayment?: string;
+    readonly maxQueryPayment?: string;
+    readonly getCost?: boolean;
 }
