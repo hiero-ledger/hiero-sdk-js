@@ -5,25 +5,32 @@
 # This script:
 # 1. Creates a Kind Kubernetes cluster
 # 2. Initializes Solo
-# 3. Deploys a 2-node consensus network
+# 3. Deploys a consensus network (1 or 2 nodes)
 # 4. Deploys mirror node services
 # 5. Sets up port forwarding
 # 6. Creates a dedicated ECDSA test account
 # 7. Generates .env file with account credentials
 #
+# System Requirements:
+#   - macOS or Linux (Solo does not support Windows except via WSL2)
+#   - Single node: Minimum 12 GB RAM
+#   - Dual node:  Minimum 24 GB RAM (required for dynamic address book tests)
+#
 # Usage:
 #   ./setup-solo.sh [options]
 #
 # Options:
+#   --num-nodes <number>                 Number of consensus nodes (default: 1)
 #   --consensus-node-version <version>   Consensus node version (default: v0.69.1)
 #   --mirror-node-version <version>      Mirror node version (default: v0.145.2)
 #   --local-build-path <path>            Path to local build (overrides consensus-node-version)
 #   -h, --help                           Show this help message
 #
 # Examples:
-#   ./setup-solo.sh
+#   ./setup-solo.sh                                    # Single node (default)
+#   ./setup-solo.sh --num-nodes 2                      # Two nodes (for DAB tests)
 #   ./setup-solo.sh --consensus-node-version v0.70.0
-#   ./setup-solo.sh --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
+#   ./setup-solo.sh --num-nodes 2 --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
 #   ./setup-solo.sh --local-build-path ../hiero-consensus-node/hedera-node/data
 #
 
@@ -40,26 +47,30 @@ NC='\033[0m' # No Color
 # Default configuration
 DEFAULT_CONSENSUS_NODE_VERSION=v0.69.1
 DEFAULT_MIRROR_NODE_VERSION=v0.145.2
+DEFAULT_NUM_NODES=1
 
 # Parse command line arguments
 show_help() {
     echo "Usage: ./setup-solo.sh [options]"
     echo ""
     echo "Options:"
+    echo "  --num-nodes <number>                 Number of consensus nodes (default: ${DEFAULT_NUM_NODES})"
     echo "  --consensus-node-version <version>   Consensus node version (default: ${DEFAULT_CONSENSUS_NODE_VERSION})"
     echo "  --mirror-node-version <version>      Mirror node version (default: ${DEFAULT_MIRROR_NODE_VERSION})"
     echo "  --local-build-path <path>            Path to local build (overrides consensus-node-version)"
     echo "  -h, --help                           Show this help message"
     echo ""
     echo "Examples:"
-    echo "  ./setup-solo.sh"
+    echo "  ./setup-solo.sh                                    # Single node (default)"
+    echo "  ./setup-solo.sh --num-nodes 2                      # Two nodes (for DAB tests)"
     echo "  ./setup-solo.sh --consensus-node-version v0.70.0"
-    echo "  ./setup-solo.sh --consensus-node-version v0.70.0 --mirror-node-version v0.146.0"
+    echo "  ./setup-solo.sh --num-nodes 2 --consensus-node-version v0.70.0 --mirror-node-version v0.146.0"
     echo "  ./setup-solo.sh --local-build-path ../hiero-consensus-node/hedera-node/data"
     exit 0
 }
 
 # Initialize with defaults
+NUM_NODES=${DEFAULT_NUM_NODES}
 CONSENSUS_VERSION=${DEFAULT_CONSENSUS_NODE_VERSION}
 MIRROR_VERSION=${DEFAULT_MIRROR_NODE_VERSION}
 LOCAL_BUILD_PATH=""
@@ -67,6 +78,10 @@ LOCAL_BUILD_PATH=""
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
+        --num-nodes)
+            NUM_NODES="$2"
+            shift 2
+            ;;
         --consensus-node-version)
             CONSENSUS_VERSION="$2"
             shift 2
@@ -221,11 +236,11 @@ setup_deployment() {
         --dev
     
     # Add cluster to deployment
-    echo_info "Attaching cluster to deployment..."
+    echo_info "Attaching cluster to deployment (${NUM_NODES} node(s))..."
     npx solo deployment cluster attach \
         --deployment "${SOLO_DEPLOYMENT}" \
         --cluster-ref "${SOLO_CLUSTER_NAME}" \
-        --num-consensus-nodes 2 \
+        --num-consensus-nodes "${NUM_NODES}" \
         --dev
     
     # Setup cluster
@@ -239,6 +254,16 @@ setup_deployment() {
 
 # Generate and deploy network
 deploy_network() {
+    # Generate node ID list (node1 or node1,node2)
+    local node_ids=""
+    for ((i=1; i<=NUM_NODES; i++)); do
+        if [ $i -eq 1 ]; then
+            node_ids="node${i}"
+        else
+            node_ids="${node_ids},node${i}"
+        fi
+    done
+    
     echo_info "Generating consensus keys..."
     npx solo keys consensus generate \
         --gossip-keys \
@@ -246,10 +271,10 @@ deploy_network() {
         --deployment "${SOLO_DEPLOYMENT}" \
         --dev
     
-    echo_info "Deploying consensus network..."
+    echo_info "Deploying consensus network (${NUM_NODES} node(s): ${node_ids})..."
     npx solo consensus network deploy \
         --deployment "${SOLO_DEPLOYMENT}" \
-        -i node1,node2 \
+        -i "${node_ids}" \
         --dev
     
     echo_info "Setting up consensus nodes..."
@@ -257,21 +282,21 @@ deploy_network() {
         echo_info "Using local build path: ${LOCAL_BUILD_PATH}"
         npx solo consensus node setup \
             --deployment "${SOLO_DEPLOYMENT}" \
-            -i node1,node2 \
+            -i "${node_ids}" \
             --local-build-path "${LOCAL_BUILD_PATH}" \
             --dev
     else
         echo_info "Using consensus node version: ${CONSENSUS_NODE_VERSION}"
         npx solo consensus node setup \
             --deployment "${SOLO_DEPLOYMENT}" \
-            -i node1,node2 \
+            -i "${node_ids}" \
             --dev
     fi
     
     echo_info "Starting consensus nodes..."
     npx solo consensus node start \
         --deployment "${SOLO_DEPLOYMENT}" \
-        -i node1,node2 \
+        -i "${node_ids}" \
         --dev
     
     echo_success "Network deployed and started"
@@ -301,9 +326,11 @@ setup_port_forwarding() {
     kubectl port-forward svc/haproxy-node1-svc -n "${SOLO_NAMESPACE}" 50211:50211 > /dev/null 2>&1 &
     echo_info "  - Node 1 (consensus): localhost:50211"
     
-    # Node 2 - Consensus
-    kubectl port-forward svc/haproxy-node2-svc -n "${SOLO_NAMESPACE}" 51211:50211 > /dev/null 2>&1 &
-    echo_info "  - Node 2 (consensus): localhost:51211"
+    # Node 2 - Consensus (only for multi-node setups)
+    if [ "${NUM_NODES}" -ge 2 ]; then
+        kubectl port-forward svc/haproxy-node2-svc -n "${SOLO_NAMESPACE}" 51211:50211 > /dev/null 2>&1 &
+        echo_info "  - Node 2 (consensus): localhost:51211"
+    fi
     
     # Mirror REST API
     kubectl port-forward svc/mirror-1-rest -n "${SOLO_NAMESPACE}" 5551:80 > /dev/null 2>&1 &
