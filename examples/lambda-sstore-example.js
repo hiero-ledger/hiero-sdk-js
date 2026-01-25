@@ -4,16 +4,16 @@ import {
     AccountCreateTransaction,
     ContractCreateTransaction,
     HookCreationDetails,
-    LambdaSStoreTransaction,
+    HookStoreTransaction,
     PrivateKey,
     Hbar,
     Client,
     AccountId,
-    LambdaEvmHook,
+    EvmHook,
     HookExtensionPoint,
     HookId,
     HookEntityId,
-    LambdaStorageSlot,
+    EvmHookStorageSlot,
     Long,
 } from "@hiero-ledger/sdk";
 
@@ -71,16 +71,16 @@ async function main() {
         const accountKey = PrivateKey.generate();
         const accountPublicKey = accountKey.publicKey;
 
-        // Create a lambda EVM hook
-        const lambdaHook = new LambdaEvmHook({ contractId });
+        // Create an EVM hook
+        const evmHook = new EvmHook({ contractId });
 
         // Create hook creation details
         const adminKey = client.operatorPublicKey;
         const hookDetails = new HookCreationDetails({
             extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
             hookId: Long.fromInt(1),
-            hook: lambdaHook,
-            key: adminKey,
+            evmHook: evmHook,
+            adminKey: adminKey,
         });
 
         let { accountId } = await (
@@ -108,7 +108,7 @@ async function main() {
         const storageValue = new Uint8Array(32);
         storageValue.fill(200); // Fill with byte value 200
 
-        const storageUpdate = new LambdaStorageSlot({
+        const storageUpdate = new EvmHookStorageSlot({
             key: storageKey,
             value: storageValue,
         });
@@ -126,11 +126,11 @@ async function main() {
         console.log("  Hook ID:", hookId.hookId.toString());
         console.log("  Hook Entity ID:", hookId.entityId.accountId.toString());
 
-        // Execute LambdaSStoreTransaction
-        console.log("Executing LambdaSStoreTransaction...");
-        const lambdaStoreResponse = await (
+        // Execute HookStoreTransaction
+        console.log("Executing HookStoreTransaction...");
+        const hookStoreResponse = await (
             await (
-                await new LambdaSStoreTransaction()
+                await new HookStoreTransaction()
                     .setHookId(hookId)
                     .addStorageUpdate(storageUpdate)
                     .freezeWith(client)
@@ -138,9 +138,9 @@ async function main() {
             ).execute(client)
         ).getReceipt(client);
 
-        console.log("Successfully updated lambda hook storage!");
+        console.log("Successfully updated EVM hook storage!");
         console.log("Transaction completed successfully!");
-        console.log("Receipt status:", lambdaStoreResponse.status.toString());
+        console.log("Receipt status:", hookStoreResponse.status.toString());
 
         console.log("\nLambda SStore Example Complete!");
     } catch (error) {

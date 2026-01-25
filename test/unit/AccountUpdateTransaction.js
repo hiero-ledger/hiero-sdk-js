@@ -4,12 +4,12 @@ import {
     PrivateKey,
 } from "../../src/index.js";
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
-import LambdaEvmHook from "../../src/hooks/LambdaEvmHook.js";
+import EvmHook from "../../src/hooks/EvmHook.js";
 import {
-    LambdaStorageSlot,
-    LambdaMappingEntries,
-} from "../../src/hooks/LambdaStorageUpdate.js";
-import LambdaMappingEntry from "../../src/hooks/LambdaMappingEntry.js";
+    EvmHookStorageSlot,
+    EvmHookMappingEntries,
+} from "../../src/hooks/EvmHookStorageUpdate.js";
+import EvmHookMappingEntry from "../../src/hooks/EvmHookMappingEntry.js";
 import ContractId from "../../src/contract/ContractId.js";
 import Long from "long";
 
@@ -253,12 +253,12 @@ describe("AccountUpdateTransaction", function () {
         });
 
         describe("complex hook configurations", function () {
-            it("should create a hook with LambdaEvmHook and contractId", function () {
+            it("should create a hook with EvmHook and contractId", function () {
                 const contractId = new ContractId(0, 0, 100);
-                const lambdaHook = new LambdaEvmHook({ contractId });
+                const lambdaHook = new EvmHook({ contractId });
                 const hook = new HookCreationDetails({
                     extensionPoint: 1,
-                    hook: lambdaHook,
+                    evmHook: lambdaHook,
                 });
 
                 const tx = new AccountUpdateTransaction();
@@ -266,81 +266,81 @@ describe("AccountUpdateTransaction", function () {
 
                 expect(tx.hooksToCreate).to.have.lengthOf(1);
                 expect(tx.hooksToCreate[0].extensionPoint).to.equal(1);
-                expect(tx.hooksToCreate[0].hook).to.equal(lambdaHook);
+                expect(tx.hooksToCreate[0].evmHook).to.equal(lambdaHook);
                 expect(
-                    tx.hooksToCreate[0].hook.contractId.num.toNumber(),
+                    tx.hooksToCreate[0].evmHook.contractId.num.toNumber(),
                 ).to.equal(100);
             });
 
-            it("should create a hook with LambdaStorageSlot", function () {
+            it("should create a hook with EvmHookStorageSlot", function () {
                 const key = new Uint8Array([1, 2, 3, 4]);
                 const value = new Uint8Array([5, 6, 7, 8]);
-                const storageSlot = new LambdaStorageSlot({ key, value });
+                const storageSlot = new EvmHookStorageSlot({ key, value });
 
                 const contractId = new ContractId(0, 0, 100);
-                const lambdaHook = new LambdaEvmHook({
+                const lambdaHook = new EvmHook({
                     contractId,
                     storageUpdates: [storageSlot],
                 });
                 const hook = new HookCreationDetails({
                     extensionPoint: 1,
-                    hook: lambdaHook,
+                    evmHook: lambdaHook,
                 });
 
                 const tx = new AccountUpdateTransaction();
                 tx.addHookToCreate(hook);
 
                 expect(
-                    tx.hooksToCreate[0].hook.storageUpdates,
+                    tx.hooksToCreate[0].evmHook.storageUpdates,
                 ).to.have.lengthOf(1);
                 expect(
-                    tx.hooksToCreate[0].hook.storageUpdates[0].key,
+                    tx.hooksToCreate[0].evmHook.storageUpdates[0].key,
                 ).to.deep.equal(key);
                 expect(
-                    tx.hooksToCreate[0].hook.storageUpdates[0].value,
+                    tx.hooksToCreate[0].evmHook.storageUpdates[0].value,
                 ).to.deep.equal(value);
             });
 
-            it("should create a hook with LambdaMappingEntries", function () {
+            it("should create a hook with EvmHookMappingEntries", function () {
                 const mappingSlot = new Uint8Array([1, 2, 3, 4]);
                 const entryKey = new Uint8Array([5, 6, 7, 8]);
                 const entryValue = new Uint8Array([9, 10, 11, 12]);
-                const entry = new LambdaMappingEntry({
+                const entry = new EvmHookMappingEntry({
                     key: entryKey,
                     value: entryValue,
                 });
-                const mappingEntries = new LambdaMappingEntries({
+                const mappingEntries = new EvmHookMappingEntries({
                     mappingSlot,
                     entries: [entry],
                 });
 
                 const contractId = new ContractId(0, 0, 100);
-                const lambdaHook = new LambdaEvmHook({
+                const lambdaHook = new EvmHook({
                     contractId,
                     storageUpdates: [mappingEntries],
                 });
                 const hook = new HookCreationDetails({
                     extensionPoint: 1,
-                    hook: lambdaHook,
+                    evmHook: lambdaHook,
                 });
 
                 const tx = new AccountUpdateTransaction();
                 tx.addHookToCreate(hook);
 
                 expect(
-                    tx.hooksToCreate[0].hook.storageUpdates,
+                    tx.hooksToCreate[0].evmHook.storageUpdates,
                 ).to.have.lengthOf(1);
                 expect(
-                    tx.hooksToCreate[0].hook.storageUpdates[0].mappingSlot,
+                    tx.hooksToCreate[0].evmHook.storageUpdates[0].mappingSlot,
                 ).to.deep.equal(mappingSlot);
                 expect(
-                    tx.hooksToCreate[0].hook.storageUpdates[0].entries,
+                    tx.hooksToCreate[0].evmHook.storageUpdates[0].entries,
                 ).to.have.lengthOf(1);
                 expect(
-                    tx.hooksToCreate[0].hook.storageUpdates[0].entries[0].key,
+                    tx.hooksToCreate[0].evmHook.storageUpdates[0].entries[0].key,
                 ).to.deep.equal(entryKey);
                 expect(
-                    tx.hooksToCreate[0].hook.storageUpdates[0].entries[0].value,
+                    tx.hooksToCreate[0].evmHook.storageUpdates[0].entries[0].value,
                 ).to.deep.equal(entryValue);
             });
 
@@ -376,15 +376,15 @@ describe("AccountUpdateTransaction", function () {
                 const contractId = new ContractId(0, 0, 100);
                 const key = new Uint8Array([1, 2, 3, 4]);
                 const value = new Uint8Array([5, 6, 7, 8]);
-                const storageSlot = new LambdaStorageSlot({ key, value });
-                const lambdaHook = new LambdaEvmHook({
+                const storageSlot = new EvmHookStorageSlot({ key, value });
+                const lambdaHook = new EvmHook({
                     contractId,
                     storageUpdates: [storageSlot],
                 });
                 const hook = new HookCreationDetails({
                     extensionPoint: 1,
                     hookId,
-                    hook: lambdaHook,
+                    evmHook: lambdaHook,
                     key: adminKey,
                 });
 
@@ -393,7 +393,7 @@ describe("AccountUpdateTransaction", function () {
 
                 expect(tx.hooksToCreate[0].extensionPoint).to.equal(1);
                 expect(tx.hooksToCreate[0].hookId).to.equal(hookId);
-                expect(tx.hooksToCreate[0].hook).to.equal(lambdaHook);
+                expect(tx.hooksToCreate[0].evmHook).to.equal(lambdaHook);
                 expect(tx.hooksToCreate[0].adminKey).to.equal(adminKey);
             });
         });
@@ -456,15 +456,15 @@ describe("AccountUpdateTransaction", function () {
                 const contractId = new ContractId(0, 0, 100);
                 const key = new Uint8Array([1, 2, 3, 4]);
                 const value = new Uint8Array([5, 6, 7, 8]);
-                const storageSlot = new LambdaStorageSlot({ key, value });
-                const lambdaHook = new LambdaEvmHook({
+                const storageSlot = new EvmHookStorageSlot({ key, value });
+                const lambdaHook = new EvmHook({
                     contractId,
                     storageUpdates: [storageSlot],
                 });
                 const hook = new HookCreationDetails({
                     extensionPoint: 1,
                     hookId,
-                    hook: lambdaHook,
+                    evmHook: lambdaHook,
                     key: adminKey,
                 });
 
@@ -481,7 +481,7 @@ describe("AccountUpdateTransaction", function () {
                     1,
                 );
                 expect(txData.hookCreationDetails[0].hookId).to.equal(hookId);
-                expect(txData.hookCreationDetails[0].lambdaEvmHook).to.not.be
+                expect(txData.hookCreationDetails[0].evmHook).to.not.be
                     .null;
                 expect(txData.hookCreationDetails[0].adminKey).to.not.be.null;
             });
@@ -501,63 +501,63 @@ describe("AccountUpdateTransaction", function () {
             it("should handle multiple storage updates in a hook", function () {
                 const contractId = new ContractId(0, 0, 100);
 
-                const storageSlot1 = new LambdaStorageSlot({
+                const storageSlot1 = new EvmHookStorageSlot({
                     key: new Uint8Array([1, 2]),
                     value: new Uint8Array([3, 4]),
                 });
-                const storageSlot2 = new LambdaStorageSlot({
+                const storageSlot2 = new EvmHookStorageSlot({
                     key: new Uint8Array([5, 6]),
                     value: new Uint8Array([7, 8]),
                 });
 
-                const lambdaHook = new LambdaEvmHook({
+                const lambdaHook = new EvmHook({
                     contractId,
                     storageUpdates: [storageSlot1, storageSlot2],
                 });
 
                 const hook = new HookCreationDetails({
                     extensionPoint: 1,
-                    hook: lambdaHook,
+                    evmHook: lambdaHook,
                 });
 
                 const tx = new AccountUpdateTransaction();
                 tx.addHookToCreate(hook);
 
                 expect(
-                    tx.hooksToCreate[0].hook.storageUpdates,
+                    tx.hooksToCreate[0].evmHook.storageUpdates,
                 ).to.have.lengthOf(2);
             });
 
             it("should handle multiple mapping entries in a hook", function () {
                 const mappingSlot = new Uint8Array([1, 2, 3, 4]);
-                const entry1 = new LambdaMappingEntry({
+                const entry1 = new EvmHookMappingEntry({
                     key: new Uint8Array([5, 6]),
                     value: new Uint8Array([7, 8]),
                 });
-                const entry2 = new LambdaMappingEntry({
+                const entry2 = new EvmHookMappingEntry({
                     key: new Uint8Array([9, 10]),
                     value: new Uint8Array([11, 12]),
                 });
-                const mappingEntries = new LambdaMappingEntries({
+                const mappingEntries = new EvmHookMappingEntries({
                     mappingSlot,
                     entries: [entry1, entry2],
                 });
 
                 const contractId = new ContractId(0, 0, 100);
-                const lambdaHook = new LambdaEvmHook({
+                const lambdaHook = new EvmHook({
                     contractId,
                     storageUpdates: [mappingEntries],
                 });
                 const hook = new HookCreationDetails({
                     extensionPoint: 1,
-                    hook: lambdaHook,
+                    evmHook: lambdaHook,
                 });
 
                 const tx = new AccountUpdateTransaction();
                 tx.addHookToCreate(hook);
 
                 expect(
-                    tx.hooksToCreate[0].hook.storageUpdates[0].entries,
+                    tx.hooksToCreate[0].evmHook.storageUpdates[0].entries,
                 ).to.have.lengthOf(2);
             });
         });

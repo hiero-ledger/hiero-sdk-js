@@ -5,11 +5,11 @@ import {
     Status,
 } from "../../src/exports.js";
 import Long from "long";
-import LambdaSStoreTransaction from "../../src/hooks/LambdaSStoreTransaction.js";
+import HookStoreTransaction from "../../src/hooks/HookStoreTransaction.js";
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
 import HookExtensionPoint from "../../src/hooks/HookExtensionPoint.js";
-import LambdaEvmHook from "../../src/hooks/LambdaEvmHook.js";
-import { LambdaStorageSlot } from "../../src/hooks/LambdaStorageUpdate.js";
+import EvmHook from "../../src/hooks/EvmHook.js";
+import { EvmHookStorageSlot } from "../../src/hooks/EvmHookStorageUpdate.js";
 import HookId from "../../src/hooks/HookId.js";
 import HookEntityId from "../../src/hooks/HookEntityId.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
@@ -51,20 +51,20 @@ describe("LambdaSStore", function () {
         accountKey = PrivateKey.generateED25519();
 
         // Create initial storage slot
-        const storageSlot = new LambdaStorageSlot(
-            new Uint8Array([0x01, 0x02, 0x03, 0x04]), // key
-            new Uint8Array([0x05, 0x06, 0x07, 0x08]), // value
-        );
+        const storageSlot = new EvmHookStorageSlot({
+            key: new Uint8Array([0x01, 0x02, 0x03, 0x04]),
+            value: new Uint8Array([0x05, 0x06, 0x07, 0x08]),
+        });
 
-        // Create lambda hook with storage
-        const lambdaHook = new LambdaEvmHook({
+        // Create EVM hook with storage
+        const evmHook = new EvmHook({
             contractId: contractId,
             storageUpdates: [storageSlot],
         });
 
         const hookDetails = new HookCreationDetails({
             extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-            hook: lambdaHook,
+            evmHook: evmHook,
             hookId: hookId,
         });
 
@@ -93,14 +93,14 @@ describe("LambdaSStore", function () {
 
     it("should update storage slots with valid signatures", async function () {
         // Create new storage updates
-        const newStorageSlot = new LambdaStorageSlot(
-            new Uint8Array([0x09, 0x0a, 0x0b, 0x0c]), // new key
-            new Uint8Array([0x0d, 0x0e, 0x0f, 0x10]), // new value
-        );
+        const newStorageSlot = new EvmHookStorageSlot({
+            key: new Uint8Array([0x09, 0x0a, 0x0b, 0x0c]),
+            value: new Uint8Array([0x0d, 0x0e, 0x0f, 0x10]),
+        });
 
-        // When: LambdaSStoreTransaction updates storage slots with valid signatures
+        // When: HookStoreTransaction updates storage slots with valid signatures
         const response = await (
-            await new LambdaSStoreTransaction()
+            await new HookStoreTransaction()
                 .setHookId(transactionHookId)
                 .setStorageUpdates([newStorageSlot])
                 .freezeWith(env.client)
@@ -115,16 +115,16 @@ describe("LambdaSStore", function () {
 
     it("should fail with TOO_MANY_LAMBDA_STORAGE_UPDATES when updating more than 256 storage slots", async function () {
         // Create a storage slot
-        const storageSlot = new LambdaStorageSlot(
-            new Uint8Array([0x01, 0x02, 0x03, 0x04]), // key
-            new Uint8Array([0x05, 0x06, 0x07, 0x08]), // value
-        );
+        const storageSlot = new EvmHookStorageSlot({
+            key: new Uint8Array([0x01, 0x02, 0x03, 0x04]),
+            value: new Uint8Array([0x05, 0x06, 0x07, 0x08]),
+        });
 
         let error;
         try {
             await (
                 await (
-                    await new LambdaSStoreTransaction()
+                    await new HookStoreTransaction()
                         .setHookId(transactionHookId)
                         .setStorageUpdates(Array(256).fill(storageSlot))
                         .freezeWith(env.client)
@@ -141,10 +141,10 @@ describe("LambdaSStore", function () {
     });
 
     it("should fail with INVALID_SIGNATURE when signed without proper key", async function () {
-        const storageSlot = new LambdaStorageSlot(
-            new Uint8Array([0x31, 0x32, 0x33, 0x34]),
-            new Uint8Array([0x35, 0x36, 0x37, 0x38]),
-        );
+        const storageSlot = new EvmHookStorageSlot({
+            key: new Uint8Array([0x31, 0x32, 0x33, 0x34]),
+            value: new Uint8Array([0x35, 0x36, 0x37, 0x38]),
+        });
 
         const invalidKey = PrivateKey.generateED25519();
 
@@ -152,7 +152,7 @@ describe("LambdaSStore", function () {
         try {
             await (
                 await (
-                    await new LambdaSStoreTransaction()
+                    await new HookStoreTransaction()
                         .setHookId(transactionHookId)
                         .setStorageUpdates([storageSlot])
                         .freezeWith(env.client)
@@ -169,10 +169,10 @@ describe("LambdaSStore", function () {
     });
 
     it("should fail with HOOK_NOT_FOUND when using a non-existent hook id", async function () {
-        const storageSlot = new LambdaStorageSlot(
-            new Uint8Array([0x41, 0x42, 0x43, 0x44]),
-            new Uint8Array([0x45, 0x46, 0x47, 0x48]),
-        );
+        const storageSlot = new EvmHookStorageSlot({
+            key: new Uint8Array([0x41, 0x42, 0x43, 0x44]),
+            value: new Uint8Array([0x45, 0x46, 0x47, 0x48]),
+        });
 
         // Use a hook id that does not exist
         const nonExistentHookId = new HookId({
@@ -186,7 +186,7 @@ describe("LambdaSStore", function () {
         try {
             await (
                 await (
-                    await new LambdaSStoreTransaction()
+                    await new HookStoreTransaction()
                         .setHookId(nonExistentHookId)
                         .setStorageUpdates([storageSlot])
                         .freezeWith(env.client)

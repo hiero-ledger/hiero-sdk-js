@@ -1,4 +1,4 @@
-import LambdaMappingEntry from "./LambdaMappingEntry.js";
+import EvmHookMappingEntry from "./EvmHookMappingEntry.js";
 
 /**
  *
@@ -7,33 +7,33 @@ import LambdaMappingEntry from "./LambdaMappingEntry.js";
  * slot contents; or by a combination of a Solidity mapping's slot key and the key into
  * that mapping.
  */
-class LambdaStorageUpdate {
+class EvmHookStorageUpdate {
     /**
      *
-     * @param {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate} lambdaStorageUpdate
-     * @returns {LambdaStorageUpdate}
+     * @param {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.IEvmHookStorageUpdate} hookStorageUpdate
+     * @returns {EvmHookStorageUpdate}
      */
-    static _fromProtobuf(lambdaStorageUpdate) {
-        if (lambdaStorageUpdate.storageSlot != null) {
-            return LambdaStorageSlot._fromProtobuf(lambdaStorageUpdate);
+    static _fromProtobuf(hookStorageUpdate) {
+        if (hookStorageUpdate.storageSlot != null) {
+            return EvmHookStorageSlot._fromProtobuf(hookStorageUpdate);
         }
 
-        if (lambdaStorageUpdate.mappingEntries != null) {
-            return LambdaMappingEntries._fromProtobuf(lambdaStorageUpdate);
+        if (hookStorageUpdate.mappingEntries != null) {
+            return EvmHookMappingEntries._fromProtobuf(hookStorageUpdate);
         }
 
         throw new Error(
-            "LambdaStorageUpdate must have either storage_slot or mapping_entries set",
+            "EvmHookStorageUpdate must have either storage_slot or mapping_entries set",
         );
     }
 
     /**
      * @abstract
-     * @returns {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate}
+     * @returns {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.IEvmHookStorageUpdate}
      */
     _toProtobuf() {
         throw new Error(
-            "LambdaStorageUpdate._toProtobuf must be implemented by a subclass",
+            "EvmHookStorageUpdate._toProtobuf must be implemented by a subclass",
         );
     }
 }
@@ -41,7 +41,7 @@ class LambdaStorageUpdate {
 /**
  * A slot in the storage of a lambda EVM hook.
  */
-class LambdaStorageSlot extends LambdaStorageUpdate {
+class EvmHookStorageSlot extends EvmHookStorageUpdate {
     /**
      * @param {object} props
      * @param {Uint8Array} [props.key]
@@ -108,29 +108,29 @@ class LambdaStorageSlot extends LambdaStorageUpdate {
 
     /**
      *
-     * @param {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate} lambdaStorageSlot
-     * @returns {LambdaStorageSlot}
+     * @param {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.IEvmHookStorageUpdate} hookStorageSlot
+     * @returns {EvmHookStorageSlot}
      */
-    static _fromProtobuf(lambdaStorageSlot) {
-        if (lambdaStorageSlot.storageSlot != null) {
-            return new LambdaStorageSlot({
+    static _fromProtobuf(hookStorageSlot) {
+        if (hookStorageSlot.storageSlot != null) {
+            return new EvmHookStorageSlot({
                 key:
-                    lambdaStorageSlot.storageSlot.key != null
-                        ? lambdaStorageSlot.storageSlot.key
+                    hookStorageSlot.storageSlot.key != null
+                        ? hookStorageSlot.storageSlot.key
                         : undefined,
                 value:
-                    lambdaStorageSlot.storageSlot.value != null
-                        ? lambdaStorageSlot.storageSlot.value
+                    hookStorageSlot.storageSlot.value != null
+                        ? hookStorageSlot.storageSlot.value
                         : undefined,
             });
         }
         throw new Error(
-            "LambdaStorageSlot._fromProtobuf must be implemented by a subclass",
+            "EvmHookStorageSlot._fromProtobuf must be implemented by a subclass",
         );
     }
 
     /**
-     * @returns {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.LambdaStorageUpdate}
+     * @returns {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.EvmHookStorageUpdate}
      */
     _toProtobuf() {
         return {
@@ -154,12 +154,12 @@ class LambdaStorageSlot extends LambdaStorageUpdate {
  * stream consumer following the metaprotocol would have to invert the Keccak256
  * hash to determine which mapping entry was being updated, which is not possible.
  */
-class LambdaMappingEntries extends LambdaStorageUpdate {
+class EvmHookMappingEntries extends EvmHookStorageUpdate {
     /**
      *
      * @param {object} props
      * @param {Uint8Array} [props.mappingSlot]
-     * @param {import("./LambdaMappingEntry.js").default[]} [props.entries]
+     * @param {import("./EvmHookMappingEntry.js").default[]} [props.entries]
      */
     constructor(props = {}) {
         super();
@@ -171,7 +171,7 @@ class LambdaMappingEntries extends LambdaStorageUpdate {
 
         /**
          * @private
-         * @type {?import("./LambdaMappingEntry.js").default[]}
+         * @type {?import("./EvmHookMappingEntry.js").default[]}
          */
         this._entries = null;
 
@@ -196,7 +196,7 @@ class LambdaMappingEntries extends LambdaStorageUpdate {
 
     /**
      *
-     * @param {import("./LambdaMappingEntry.js").default[]} entries
+     * @param {import("./EvmHookMappingEntry.js").default[]} entries
      * @returns {this}
      */
     setEntries(entries) {
@@ -214,7 +214,7 @@ class LambdaMappingEntries extends LambdaStorageUpdate {
 
     /**
      *
-     * @returns {import("./LambdaMappingEntry.js").default[] | null}
+     * @returns {import("./EvmHookMappingEntry.js").default[] | null}
      */
     get entries() {
         return this._entries;
@@ -222,24 +222,24 @@ class LambdaMappingEntries extends LambdaStorageUpdate {
 
     /**
      *
-     * @param {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate} lambdaStorageUpdate
-     * @returns {LambdaMappingEntries}
+     * @param {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.IEvmHookStorageUpdate} hookStorageUpdate
+     * @returns {EvmHookMappingEntries}
      */
-    static _fromProtobuf(lambdaStorageUpdate) {
-        return new LambdaMappingEntries({
+    static _fromProtobuf(hookStorageUpdate) {
+        return new EvmHookMappingEntries({
             mappingSlot:
-                lambdaStorageUpdate.mappingEntries?.mappingSlot != null
-                    ? lambdaStorageUpdate.mappingEntries.mappingSlot
+                hookStorageUpdate.mappingEntries?.mappingSlot != null
+                    ? hookStorageUpdate.mappingEntries.mappingSlot
                     : undefined,
-            entries: lambdaStorageUpdate.mappingEntries?.entries?.map((entry) =>
-                LambdaMappingEntry._fromProtobuf(entry),
+            entries: hookStorageUpdate.mappingEntries?.entries?.map((entry) =>
+                EvmHookMappingEntry._fromProtobuf(entry),
             ),
         });
     }
 
     /**
      *
-     * @returns {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.ILambdaStorageUpdate}
+     * @returns {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.EvmHookStorageUpdate}
      */
     _toProtobuf() {
         return {
@@ -254,4 +254,4 @@ class LambdaMappingEntries extends LambdaStorageUpdate {
     }
 }
 
-export { LambdaStorageUpdate, LambdaStorageSlot, LambdaMappingEntries };
+export { EvmHookStorageUpdate, EvmHookStorageSlot, EvmHookMappingEntries };

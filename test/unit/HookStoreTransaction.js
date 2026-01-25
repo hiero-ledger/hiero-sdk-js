@@ -5,25 +5,25 @@ import {
     TransactionId,
     Timestamp,
 } from "../../src/index.js";
-import LambdaSStoreTransaction from "../../src/hooks/LambdaSStoreTransaction.js";
+import HookStoreTransaction from "../../src/hooks/HookStoreTransaction.js";
 import HookId from "../../src/hooks/HookId.js";
 import HookEntityId from "../../src/hooks/HookEntityId.js";
 import {
-    LambdaStorageSlot,
-    LambdaMappingEntries,
-} from "../../src/hooks/LambdaStorageUpdate.js";
-import LambdaMappingEntry from "../../src/hooks/LambdaMappingEntry.js";
+    EvmHookStorageSlot,
+    EvmHookMappingEntries,
+} from "../../src/hooks/EvmHookStorageUpdate.js";
+import EvmHookMappingEntry from "../../src/hooks/EvmHookMappingEntry.js";
 
-describe("LambdaSStoreTransaction", function () {
+describe("HookStoreTransaction", function () {
     const accountId = new AccountId(1);
     const nodeAccountId = new AccountId(3);
     const timestamp = new Timestamp(1234567890, 0);
 
     describe("constructor", function () {
         it("should create an empty transaction", function () {
-            const transaction = new LambdaSStoreTransaction();
+            const transaction = new HookStoreTransaction();
 
-            expect(transaction).to.be.an.instanceof(LambdaSStoreTransaction);
+            expect(transaction).to.be.an.instanceof(HookStoreTransaction);
             expect(transaction.hookId).to.be.null;
             expect(transaction.storageUpdates).to.be.an("array");
             expect(transaction.storageUpdates).to.have.lengthOf(0);
@@ -37,7 +37,7 @@ describe("LambdaSStoreTransaction", function () {
                 hookId: Long.fromNumber(999),
             });
 
-            const transaction = new LambdaSStoreTransaction({
+            const transaction = new HookStoreTransaction({
                 hookId,
             });
 
@@ -47,12 +47,12 @@ describe("LambdaSStoreTransaction", function () {
         });
 
         it("should create transaction with storage updates", function () {
-            const storageSlot = new LambdaStorageSlot({
+            const storageSlot = new EvmHookStorageSlot({
                 key: new Uint8Array([1, 2, 3, 4]),
                 value: new Uint8Array([5, 6, 7, 8]),
             });
 
-            const transaction = new LambdaSStoreTransaction({
+            const transaction = new HookStoreTransaction({
                 storageUpdates: [storageSlot],
             });
 
@@ -68,12 +68,12 @@ describe("LambdaSStoreTransaction", function () {
                 }),
                 hookId: Long.fromNumber(999),
             });
-            const storageSlot = new LambdaStorageSlot({
+            const storageSlot = new EvmHookStorageSlot({
                 key: new Uint8Array([1, 2, 3, 4]),
                 value: new Uint8Array([5, 6, 7, 8]),
             });
 
-            const transaction = new LambdaSStoreTransaction({
+            const transaction = new HookStoreTransaction({
                 hookId,
                 storageUpdates: [storageSlot],
             });
@@ -86,7 +86,7 @@ describe("LambdaSStoreTransaction", function () {
 
     describe("setHookId", function () {
         it("should set hook ID", function () {
-            const transaction = new LambdaSStoreTransaction();
+            const transaction = new HookStoreTransaction();
             const hookId = new HookId({
                 entityId: new HookEntityId({
                     accountId: new AccountId(1, 2, 3),
@@ -114,7 +114,7 @@ describe("LambdaSStoreTransaction", function () {
                 hookId: Long.fromNumber(222),
             });
 
-            const transaction = new LambdaSStoreTransaction().setHookId(
+            const transaction = new HookStoreTransaction().setHookId(
                 hookId1,
             );
             transaction.setHookId(hookId2);
@@ -125,8 +125,8 @@ describe("LambdaSStoreTransaction", function () {
 
     describe("setStorageUpdates", function () {
         it("should set storage updates", function () {
-            const transaction = new LambdaSStoreTransaction();
-            const storageSlot = new LambdaStorageSlot({
+            const transaction = new HookStoreTransaction();
+            const storageSlot = new EvmHookStorageSlot({
                 key: new Uint8Array([1, 2, 3, 4]),
                 value: new Uint8Array([5, 6, 7, 8]),
             });
@@ -139,16 +139,16 @@ describe("LambdaSStoreTransaction", function () {
         });
 
         it("should set multiple storage updates", function () {
-            const storageSlot1 = new LambdaStorageSlot({
+            const storageSlot1 = new EvmHookStorageSlot({
                 key: new Uint8Array([1, 2]),
                 value: new Uint8Array([3, 4]),
             });
-            const storageSlot2 = new LambdaStorageSlot({
+            const storageSlot2 = new EvmHookStorageSlot({
                 key: new Uint8Array([5, 6]),
                 value: new Uint8Array([7, 8]),
             });
 
-            const transaction = new LambdaSStoreTransaction().setStorageUpdates(
+            const transaction = new HookStoreTransaction().setStorageUpdates(
                 [storageSlot1, storageSlot2],
             );
 
@@ -158,16 +158,16 @@ describe("LambdaSStoreTransaction", function () {
         });
 
         it("should allow replacing storage updates", function () {
-            const storageSlot1 = new LambdaStorageSlot({
+            const storageSlot1 = new EvmHookStorageSlot({
                 key: new Uint8Array([1, 2]),
                 value: new Uint8Array([3, 4]),
             });
-            const storageSlot2 = new LambdaStorageSlot({
+            const storageSlot2 = new EvmHookStorageSlot({
                 key: new Uint8Array([5, 6]),
                 value: new Uint8Array([7, 8]),
             });
 
-            const transaction = new LambdaSStoreTransaction().setStorageUpdates(
+            const transaction = new HookStoreTransaction().setStorageUpdates(
                 [storageSlot1],
             );
             transaction.setStorageUpdates([storageSlot2]);
@@ -186,7 +186,7 @@ describe("LambdaSStoreTransaction", function () {
                 hookId: Long.fromNumber(999),
             });
 
-            const transaction = new LambdaSStoreTransaction({
+            const transaction = new HookStoreTransaction({
                 hookId,
             });
 
@@ -198,12 +198,12 @@ describe("LambdaSStoreTransaction", function () {
         });
 
         it("should create transaction data with storage updates only", function () {
-            const storageSlot = new LambdaStorageSlot({
+            const storageSlot = new EvmHookStorageSlot({
                 key: new Uint8Array([1, 2, 3, 4]),
                 value: new Uint8Array([5, 6, 7, 8]),
             });
 
-            const transaction = new LambdaSStoreTransaction({
+            const transaction = new HookStoreTransaction({
                 storageUpdates: [storageSlot],
             });
 
@@ -221,12 +221,12 @@ describe("LambdaSStoreTransaction", function () {
                 }),
                 hookId: Long.fromNumber(999),
             });
-            const storageSlot = new LambdaStorageSlot({
+            const storageSlot = new EvmHookStorageSlot({
                 key: new Uint8Array([1, 2, 3, 4]),
                 value: new Uint8Array([5, 6, 7, 8]),
             });
 
-            const transaction = new LambdaSStoreTransaction({
+            const transaction = new HookStoreTransaction({
                 hookId,
                 storageUpdates: [storageSlot],
             });
@@ -239,7 +239,7 @@ describe("LambdaSStoreTransaction", function () {
         });
 
         it("should handle null values", function () {
-            const transaction = new LambdaSStoreTransaction();
+            const transaction = new HookStoreTransaction();
 
             const data = transaction._makeTransactionData();
 
@@ -251,17 +251,17 @@ describe("LambdaSStoreTransaction", function () {
 
     describe("_getTransactionDataCase", function () {
         it("should return correct transaction data case", function () {
-            const transaction = new LambdaSStoreTransaction();
+            const transaction = new HookStoreTransaction();
 
             expect(transaction._getTransactionDataCase()).to.equal(
-                "lambdaSstore",
+                "hookStore",
             );
         });
     });
 
     describe("_getLogId", function () {
         it("should return correct log ID", function () {
-            const transaction = new LambdaSStoreTransaction()
+            const transaction = new HookStoreTransaction()
                 .setNodeAccountIds([nodeAccountId])
                 .setTransactionId(
                     TransactionId.withValidStart(accountId, timestamp),
@@ -269,25 +269,25 @@ describe("LambdaSStoreTransaction", function () {
 
             const logId = transaction._getLogId();
 
-            expect(logId).to.include("LambdaSStoreTransaction:");
+            expect(logId).to.include("HookStoreTransaction:");
             expect(logId).to.include(timestamp.toString());
         });
     });
 
     describe("storage update types", function () {
-        describe("LambdaStorageSlot", function () {
+        describe("EvmHookStorageSlot", function () {
             it("should handle storage slot updates", function () {
                 const key = new Uint8Array([1, 2, 3, 4]);
                 const value = new Uint8Array([5, 6, 7, 8]);
-                const storageSlot = new LambdaStorageSlot({ key, value });
+                const storageSlot = new EvmHookStorageSlot({ key, value });
 
-                const transaction = new LambdaSStoreTransaction({
+                const transaction = new HookStoreTransaction({
                     storageUpdates: [storageSlot],
                 });
 
                 expect(transaction.storageUpdates).to.have.lengthOf(1);
                 expect(transaction.storageUpdates[0]).to.be.an.instanceof(
-                    LambdaStorageSlot,
+                    EvmHookStorageSlot,
                 );
                 expect(transaction.storageUpdates[0].key).to.deep.equal(key);
                 expect(transaction.storageUpdates[0].value).to.deep.equal(
@@ -296,16 +296,16 @@ describe("LambdaSStoreTransaction", function () {
             });
 
             it("should handle multiple storage slot updates", function () {
-                const slot1 = new LambdaStorageSlot({
+                const slot1 = new EvmHookStorageSlot({
                     key: new Uint8Array([1, 2]),
                     value: new Uint8Array([3, 4]),
                 });
-                const slot2 = new LambdaStorageSlot({
+                const slot2 = new EvmHookStorageSlot({
                     key: new Uint8Array([5, 6]),
                     value: new Uint8Array([7, 8]),
                 });
 
-                const transaction = new LambdaSStoreTransaction({
+                const transaction = new HookStoreTransaction({
                     storageUpdates: [slot1, slot2],
                 });
 
@@ -315,27 +315,27 @@ describe("LambdaSStoreTransaction", function () {
             });
         });
 
-        describe("LambdaMappingEntries", function () {
+        describe("EvmHookMappingEntries", function () {
             it("should handle mapping entries", function () {
                 const mappingSlot = new Uint8Array([1, 2, 3, 4]);
                 const entryKey = new Uint8Array([5, 6, 7, 8]);
                 const entryValue = new Uint8Array([9, 10, 11, 12]);
-                const entry = new LambdaMappingEntry({
+                const entry = new EvmHookMappingEntry({
                     key: entryKey,
                     value: entryValue,
                 });
-                const mappingEntries = new LambdaMappingEntries({
+                const mappingEntries = new EvmHookMappingEntries({
                     mappingSlot,
                     entries: [entry],
                 });
 
-                const transaction = new LambdaSStoreTransaction({
+                const transaction = new HookStoreTransaction({
                     storageUpdates: [mappingEntries],
                 });
 
                 expect(transaction.storageUpdates).to.have.lengthOf(1);
                 expect(transaction.storageUpdates[0]).to.be.an.instanceof(
-                    LambdaMappingEntries,
+                    EvmHookMappingEntries,
                 );
                 expect(transaction.storageUpdates[0].mappingSlot).to.deep.equal(
                     mappingSlot,
@@ -353,20 +353,20 @@ describe("LambdaSStoreTransaction", function () {
 
             it("should handle multiple mapping entries", function () {
                 const mappingSlot = new Uint8Array([1, 2, 3, 4]);
-                const entry1 = new LambdaMappingEntry({
+                const entry1 = new EvmHookMappingEntry({
                     key: new Uint8Array([5, 6]),
                     value: new Uint8Array([7, 8]),
                 });
-                const entry2 = new LambdaMappingEntry({
+                const entry2 = new EvmHookMappingEntry({
                     key: new Uint8Array([9, 10]),
                     value: new Uint8Array([11, 12]),
                 });
-                const mappingEntries = new LambdaMappingEntries({
+                const mappingEntries = new EvmHookMappingEntries({
                     mappingSlot,
                     entries: [entry1, entry2],
                 });
 
-                const transaction = new LambdaSStoreTransaction({
+                const transaction = new HookStoreTransaction({
                     storageUpdates: [mappingEntries],
                 });
 
@@ -384,30 +384,30 @@ describe("LambdaSStoreTransaction", function () {
 
         describe("mixed storage update types", function () {
             it("should handle both storage slots and mapping entries", function () {
-                const storageSlot = new LambdaStorageSlot({
+                const storageSlot = new EvmHookStorageSlot({
                     key: new Uint8Array([1, 2]),
                     value: new Uint8Array([3, 4]),
                 });
-                const mappingEntries = new LambdaMappingEntries({
+                const mappingEntries = new EvmHookMappingEntries({
                     mappingSlot: new Uint8Array([5, 6]),
                     entries: [
-                        new LambdaMappingEntry({
+                        new EvmHookMappingEntry({
                             key: new Uint8Array([7, 8]),
                             value: new Uint8Array([9, 10]),
                         }),
                     ],
                 });
 
-                const transaction = new LambdaSStoreTransaction({
+                const transaction = new HookStoreTransaction({
                     storageUpdates: [storageSlot, mappingEntries],
                 });
 
                 expect(transaction.storageUpdates).to.have.lengthOf(2);
                 expect(transaction.storageUpdates[0]).to.be.an.instanceof(
-                    LambdaStorageSlot,
+                    EvmHookStorageSlot,
                 );
                 expect(transaction.storageUpdates[1]).to.be.an.instanceof(
-                    LambdaMappingEntries,
+                    EvmHookMappingEntries,
                 );
             });
         });
@@ -415,7 +415,7 @@ describe("LambdaSStoreTransaction", function () {
 
     describe("serialization", function () {
         it("should serialize and deserialize empty transaction with nothing set", function () {
-            const transaction = new LambdaSStoreTransaction()
+            const transaction = new HookStoreTransaction()
                 .setNodeAccountIds([nodeAccountId])
                 .setTransactionId(
                     TransactionId.withValidStart(accountId, timestamp),
@@ -425,7 +425,7 @@ describe("LambdaSStoreTransaction", function () {
             const bytes = transaction.toBytes();
             const deserializedTx = Transaction.fromBytes(bytes);
 
-            expect(deserializedTx).to.be.an.instanceof(LambdaSStoreTransaction);
+            expect(deserializedTx).to.be.an.instanceof(HookStoreTransaction);
             expect(deserializedTx.hookId).to.be.null;
             expect(deserializedTx.storageUpdates).to.be.an("array");
             expect(deserializedTx.storageUpdates).to.have.lengthOf(0);
@@ -439,7 +439,7 @@ describe("LambdaSStoreTransaction", function () {
                 hookId: Long.fromNumber(999),
             });
 
-            const transaction = new LambdaSStoreTransaction({ hookId })
+            const transaction = new HookStoreTransaction({ hookId })
                 .setNodeAccountIds([nodeAccountId])
                 .setTransactionId(
                     TransactionId.withValidStart(accountId, timestamp),
@@ -449,7 +449,7 @@ describe("LambdaSStoreTransaction", function () {
             const bytes = transaction.toBytes();
             const deserializedTx = Transaction.fromBytes(bytes);
 
-            expect(deserializedTx).to.be.an.instanceof(LambdaSStoreTransaction);
+            expect(deserializedTx).to.be.an.instanceof(HookStoreTransaction);
             expect(deserializedTx.hookId).to.not.be.null;
             expect(deserializedTx.hookId.hookId.toNumber()).to.equal(999);
         });
@@ -457,12 +457,12 @@ describe("LambdaSStoreTransaction", function () {
         it("should serialize and deserialize with storage updates", function () {
             const key = new Uint8Array([1, 2, 3, 4]);
             const value = new Uint8Array([5, 6, 7, 8]);
-            const storageSlot = new LambdaStorageSlot({
+            const storageSlot = new EvmHookStorageSlot({
                 key,
                 value,
             });
 
-            const transaction = new LambdaSStoreTransaction({
+            const transaction = new HookStoreTransaction({
                 storageUpdates: [storageSlot],
             })
                 .setNodeAccountIds([nodeAccountId])
@@ -474,10 +474,10 @@ describe("LambdaSStoreTransaction", function () {
             const bytes = transaction.toBytes();
             const deserializedTx = Transaction.fromBytes(bytes);
 
-            expect(deserializedTx).to.be.an.instanceof(LambdaSStoreTransaction);
+            expect(deserializedTx).to.be.an.instanceof(HookStoreTransaction);
             expect(deserializedTx.storageUpdates).to.have.lengthOf(1);
             expect(deserializedTx.storageUpdates[0]).to.be.an.instanceof(
-                LambdaStorageSlot,
+                EvmHookStorageSlot,
             );
             expect(deserializedTx.storageUpdates[0].key).to.deep.equal(key);
             expect(deserializedTx.storageUpdates[0].value).to.deep.equal(value);
@@ -490,21 +490,21 @@ describe("LambdaSStoreTransaction", function () {
                 }),
                 hookId: Long.fromNumber(999),
             });
-            const storageSlot = new LambdaStorageSlot({
+            const storageSlot = new EvmHookStorageSlot({
                 key: new Uint8Array([1, 2, 3, 4]),
                 value: new Uint8Array([5, 6, 7, 8]),
             });
-            const mappingEntries = new LambdaMappingEntries({
+            const mappingEntries = new EvmHookMappingEntries({
                 mappingSlot: new Uint8Array([9, 10, 11, 12]),
                 entries: [
-                    new LambdaMappingEntry({
+                    new EvmHookMappingEntry({
                         key: new Uint8Array([13, 14]),
                         value: new Uint8Array([15, 16]),
                     }),
                 ],
             });
 
-            const transaction = new LambdaSStoreTransaction({
+            const transaction = new HookStoreTransaction({
                 hookId,
                 storageUpdates: [storageSlot, mappingEntries],
             })
@@ -517,15 +517,15 @@ describe("LambdaSStoreTransaction", function () {
             const bytes = transaction.toBytes();
             const deserializedTx = Transaction.fromBytes(bytes);
 
-            expect(deserializedTx).to.be.an.instanceof(LambdaSStoreTransaction);
+            expect(deserializedTx).to.be.an.instanceof(HookStoreTransaction);
             expect(deserializedTx.hookId).to.not.be.null;
             expect(deserializedTx.hookId.hookId.toNumber()).to.equal(999);
             expect(deserializedTx.storageUpdates).to.have.lengthOf(2);
             expect(deserializedTx.storageUpdates[0]).to.be.an.instanceof(
-                LambdaStorageSlot,
+                EvmHookStorageSlot,
             );
             expect(deserializedTx.storageUpdates[1]).to.be.an.instanceof(
-                LambdaMappingEntries,
+                EvmHookMappingEntries,
             );
         });
     });
@@ -538,12 +538,12 @@ describe("LambdaSStoreTransaction", function () {
                 }),
                 hookId: Long.fromNumber(999),
             });
-            const storageSlot = new LambdaStorageSlot({
+            const storageSlot = new EvmHookStorageSlot({
                 key: new Uint8Array([1, 2, 3, 4]),
                 value: new Uint8Array([5, 6, 7, 8]),
             });
 
-            const transaction = new LambdaSStoreTransaction()
+            const transaction = new HookStoreTransaction()
                 .setHookId(hookId)
                 .setStorageUpdates([storageSlot])
                 .setNodeAccountIds([nodeAccountId])
@@ -551,7 +551,7 @@ describe("LambdaSStoreTransaction", function () {
                     TransactionId.withValidStart(accountId, timestamp),
                 );
 
-            expect(transaction).to.be.an.instanceof(LambdaSStoreTransaction);
+            expect(transaction).to.be.an.instanceof(HookStoreTransaction);
             expect(transaction.hookId).to.equal(hookId);
             expect(transaction.storageUpdates).to.have.lengthOf(1);
         });
@@ -559,7 +559,7 @@ describe("LambdaSStoreTransaction", function () {
 
     describe("edge cases", function () {
         it("should handle empty storage updates array", function () {
-            const transaction = new LambdaSStoreTransaction({
+            const transaction = new HookStoreTransaction({
                 storageUpdates: [],
             });
 
@@ -568,12 +568,12 @@ describe("LambdaSStoreTransaction", function () {
         });
 
         it("should handle setting storage updates to empty array", function () {
-            const storageSlot = new LambdaStorageSlot({
+            const storageSlot = new EvmHookStorageSlot({
                 key: new Uint8Array([1, 2]),
                 value: new Uint8Array([3, 4]),
             });
 
-            const transaction = new LambdaSStoreTransaction({
+            const transaction = new HookStoreTransaction({
                 storageUpdates: [storageSlot],
             });
 
@@ -585,12 +585,12 @@ describe("LambdaSStoreTransaction", function () {
         it("should handle large byte arrays in storage slots", function () {
             const largeKey = new Uint8Array(256).fill(1);
             const largeValue = new Uint8Array(512).fill(2);
-            const storageSlot = new LambdaStorageSlot({
+            const storageSlot = new EvmHookStorageSlot({
                 key: largeKey,
                 value: largeValue,
             });
 
-            const transaction = new LambdaSStoreTransaction({
+            const transaction = new HookStoreTransaction({
                 storageUpdates: [storageSlot],
             });
 
@@ -601,16 +601,16 @@ describe("LambdaSStoreTransaction", function () {
         });
 
         it("should handle mapping entry with preimage", function () {
-            const entry = new LambdaMappingEntry({
+            const entry = new EvmHookMappingEntry({
                 preimage: new Uint8Array([1, 2, 3, 4]),
                 value: new Uint8Array([5, 6, 7, 8]),
             });
-            const mappingEntries = new LambdaMappingEntries({
+            const mappingEntries = new EvmHookMappingEntries({
                 mappingSlot: new Uint8Array([9, 10]),
                 entries: [entry],
             });
 
-            const transaction = new LambdaSStoreTransaction({
+            const transaction = new HookStoreTransaction({
                 storageUpdates: [mappingEntries],
             });
 
@@ -629,7 +629,7 @@ describe("LambdaSStoreTransaction", function () {
                 hookId: largeHookId,
             });
 
-            const transaction = new LambdaSStoreTransaction({ hookId });
+            const transaction = new HookStoreTransaction({ hookId });
 
             expect(transaction.hookId.hookId.toString()).to.equal(
                 "9223372036854775807",
@@ -645,12 +645,12 @@ describe("LambdaSStoreTransaction", function () {
                 }),
                 hookId: Long.fromNumber(999),
             });
-            const storageSlot = new LambdaStorageSlot({
+            const storageSlot = new EvmHookStorageSlot({
                 key: new Uint8Array([1, 2, 3, 4]),
                 value: new Uint8Array([5, 6, 7, 8]),
             });
 
-            const transaction = new LambdaSStoreTransaction({
+            const transaction = new HookStoreTransaction({
                 hookId,
                 storageUpdates: [storageSlot],
             });

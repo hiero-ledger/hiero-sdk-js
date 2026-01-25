@@ -1,4 +1,5 @@
 import Long from "long";
+import HookExtensionPoint from "./HookExtensionPoint.js";
 
 /**
  * The details of a hook's creation.
@@ -7,15 +8,15 @@ class HookCreationDetails {
     /**
      *
      * @param {object} props
-     * @param {number} [props.extensionPoint]
-     * @param {Long} [props.hookId]
-     * @param {import("./LambdaEvmHook.js").default} [props.hook]
-     * @param {import("../Key.js").default} [props.key]
+     * @param {HookExtensionPoint} [props.extensionPoint]
+     * @param {Long | number} [props.hookId]
+     * @param {import("./EvmHook.js").default} [props.evmHook]
+     * @param {import("../Key.js").default} [props.adminKey]
      */
     constructor(props = {}) {
         /**
          * @private
-         * @type {number | null}
+         * @type {HookExtensionPoint | null}
          */
         this._extensionPoint = null;
 
@@ -27,9 +28,9 @@ class HookCreationDetails {
 
         /**
          * @private
-         * @type {import("./LambdaEvmHook.js").default | null}
+         * @type {import("./EvmHook.js").default | null}
          */
-        this._hook = null;
+        this._evmHook = null;
 
         /**
          * @private
@@ -45,18 +46,18 @@ class HookCreationDetails {
             this.setHookId(props.hookId);
         }
 
-        if (props.hook != null) {
-            this.setHook(props.hook);
+        if (props.evmHook != null) {
+            this.setEvmHook(props.evmHook);
         }
 
-        if (props.key != null) {
-            this.setKey(props.key);
+        if (props.adminKey != null) {
+            this.setAdminKey(props.adminKey);
         }
     }
 
     /**
      *
-     * @param {number} extensionPoint
+     * @param {HookExtensionPoint} extensionPoint
      * @returns {this}
      */
     setExtensionPoint(extensionPoint) {
@@ -66,21 +67,22 @@ class HookCreationDetails {
 
     /**
      *
-     * @param {Long} hookId
+     * @param {Long | number} hookId
      * @returns {this}
      */
     setHookId(hookId) {
-        this._hookId = hookId;
+        this._hookId =
+            hookId instanceof Long ? hookId : Long.fromNumber(hookId);
         return this;
     }
 
     /**
      *
-     * @param {import("./LambdaEvmHook.js").default} hook
+     * @param {import("./EvmHook.js").default} evmHook
      * @returns {this}
      */
-    setHook(hook) {
-        this._hook = hook;
+    setEvmHook(evmHook) {
+        this._evmHook = evmHook;
         return this;
     }
 
@@ -89,14 +91,14 @@ class HookCreationDetails {
      * @param {import("../Key.js").default} adminKey
      * @returns {this}
      */
-    setKey(adminKey) {
+    setAdminKey(adminKey) {
         this._adminKey = adminKey;
         return this;
     }
 
     /**
      *
-     * @returns {number | null}
+     * @returns {HookExtensionPoint | null}
      */
     get extensionPoint() {
         return this._extensionPoint;
@@ -112,10 +114,10 @@ class HookCreationDetails {
 
     /**
      *
-     * @returns {import("./LambdaEvmHook.js").default | null}
+     * @returns {import("./EvmHook.js").default | null}
      */
-    get hook() {
-        return this._hook;
+    get evmHook() {
+        return this._evmHook;
     }
 
     /**
@@ -132,9 +134,12 @@ class HookCreationDetails {
      */
     _toProtobuf() {
         return {
-            extensionPoint: this._extensionPoint,
+            extensionPoint:
+                /** @type {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.HookExtensionPoint} */ (
+                    this._extensionPoint
+                ),
             hookId: this._hookId,
-            lambdaEvmHook: this._hook != null ? this._hook._toProtobuf() : null,
+            evmHook: this._evmHook != null ? this._evmHook._toProtobuf() : null,
             adminKey:
                 this._adminKey != null ? this._adminKey._toProtobufKey() : null,
         };

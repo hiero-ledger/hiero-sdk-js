@@ -1,12 +1,12 @@
 /**
- * Definition of a lambda EVM hook.
+ * Definition of an EVM hook extending shared specifications for an EVM hook.
  */
-class LambdaEvmHook {
+class EvmHook {
     /**
      *
      * @param {object} [props]
      * @param {import("./../contract/ContractId").default} [props.contractId]
-     * @param {import("./LambdaStorageUpdate.js").LambdaStorageUpdate[]} [props.storageUpdates]
+     * @param {import("./EvmHookStorageUpdate.js").EvmHookStorageUpdate[]} [props.storageUpdates]
      */
     constructor(props = {}) {
         /**
@@ -17,7 +17,7 @@ class LambdaEvmHook {
 
         /**
          * @private
-         * @type {import("./LambdaStorageUpdate.js").LambdaStorageUpdate[]}
+         * @type {import("./EvmHookStorageUpdate.js").EvmHookStorageUpdate[]}
          */
         this._storageUpdates = [];
 
@@ -40,7 +40,7 @@ class LambdaEvmHook {
     }
 
     /**
-     * @param {import("./LambdaStorageUpdate.js").LambdaStorageUpdate[]} storageUpdates
+     * @param {import("./EvmHookStorageUpdate.js").EvmHookStorageUpdate[]} storageUpdates
      * @returns {this}
      */
     setStorageUpdates(storageUpdates) {
@@ -50,7 +50,7 @@ class LambdaEvmHook {
 
     /**
      *
-     * @returns {import("./LambdaStorageUpdate.js").LambdaStorageUpdate[]}
+     * @returns {import("./EvmHookStorageUpdate.js").EvmHookStorageUpdate[]}
      */
     get storageUpdates() {
         return this._storageUpdates;
@@ -66,7 +66,7 @@ class LambdaEvmHook {
 
     /**
      *
-     * @returns {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.ILambdaEvmHook}
+     * @returns {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.IEvmHook}
      */
     _toProtobuf() {
         return {
@@ -80,4 +80,4 @@ class LambdaEvmHook {
     }
 }
 
-export default LambdaEvmHook;
+export default EvmHook;

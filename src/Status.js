@@ -800,6 +800,10 @@ export default class Status {
                 return "HOOKS_EXECUTIONS_REQUIRE_TOP_LEVEL_CRYPTO_TRANSFER";
             case Status.NodeAccountHasZeroBalance:
                 return "NODE_ACCOUNT_HAS_ZERO_BALANCE";
+            case Status.TransferToFeeCollectionAccountNotAllowed:
+                return "TRANSFER_TO_FEE_COLLECTION_ACCOUNT_NOT_ALLOWED";
+            case Status.TooManyHookInvocations:
+                return "TOO_MANY_HOOK_INVOCATIONS";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -1588,6 +1592,10 @@ export default class Status {
                 return Status.HooksExecutionsRequireTopLevelCryptoTransfer;
             case 526:
                 return Status.NodeAccountHasZeroBalance;
+            case 527:
+                return Status.TransferToFeeCollectionAccountNotAllowed;
+            case 528:
+                return Status.TooManyHookInvocations;
             default:
                 throw new Error(
                     `(BUG) Status.fromCode() does not handle code: ${code}`,
@@ -3612,3 +3620,13 @@ Status.HooksExecutionsRequireTopLevelCryptoTransfer = new Status(525);
  * node account has zero balance
  */
 Status.NodeAccountHasZeroBalance = new Status(526);
+
+/**
+ * This operation cannot be completed because the target account is a "Fee Collection Account".<br/> Any attempt to transfer to a fee collection account is not permitted.
+ */
+Status.TransferToFeeCollectionAccountNotAllowed = new Status(527);
+
+/**
+ * The number of hook invocations exceeds the maximum allowed per transaction.
+ */
+Status.TooManyHookInvocations = new Status(528);

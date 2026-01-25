@@ -1,6 +1,6 @@
 import Long from "long";
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
-import LambdaEvmHook from "../../src/hooks/LambdaEvmHook.js";
+import EvmHook from "../../src/hooks/EvmHook.js";
 import { PrivateKey, ContractId } from "../../src/index.js";
 
 describe("HookCreationDetails", function () {
@@ -10,7 +10,7 @@ describe("HookCreationDetails", function () {
 
             expect(details.extensionPoint).to.be.null;
             expect(details.hookId).to.be.null;
-            expect(details.hook).to.be.null;
+            expect(details.evmHook).to.be.null;
             expect(details.adminKey).to.be.null;
         });
 
@@ -20,7 +20,7 @@ describe("HookCreationDetails", function () {
 
             expect(details.extensionPoint).to.equal(1);
             expect(details.hookId).to.be.null;
-            expect(details.hook).to.be.null;
+            expect(details.evmHook).to.be.null;
             expect(details.adminKey).to.be.null;
         });
 
@@ -30,28 +30,28 @@ describe("HookCreationDetails", function () {
 
             expect(details.extensionPoint).to.be.null;
             expect(details.hookId).to.equal(hookId);
-            expect(details.hook).to.be.null;
+            expect(details.evmHook).to.be.null;
             expect(details.adminKey).to.be.null;
         });
 
-        it("should create an instance with provided hook", function () {
+        it("should create an instance with provided evmHook", function () {
             const contractId = new ContractId(0, 0, 100);
-            const hook = new LambdaEvmHook({ contractId });
-            const details = new HookCreationDetails({ hook });
+            const hook = new EvmHook({ contractId });
+            const details = new HookCreationDetails({ evmHook: hook });
 
             expect(details.extensionPoint).to.be.null;
             expect(details.hookId).to.be.null;
-            expect(details.hook).to.equal(hook);
+            expect(details.evmHook).to.equal(hook);
             expect(details.adminKey).to.be.null;
         });
 
         it("should create an instance with provided adminKey", function () {
             const key = PrivateKey.generateED25519().publicKey;
-            const details = new HookCreationDetails({ key });
+            const details = new HookCreationDetails({ adminKey: key });
 
             expect(details.extensionPoint).to.be.null;
             expect(details.hookId).to.be.null;
-            expect(details.hook).to.be.null;
+            expect(details.evmHook).to.be.null;
             expect(details.adminKey).to.equal(key);
         });
 
@@ -59,19 +59,19 @@ describe("HookCreationDetails", function () {
             const extensionPoint = 2;
             const hookId = Long.fromNumber(999);
             const contractId = new ContractId(1, 2, 3);
-            const hook = new LambdaEvmHook({ contractId });
+            const hook = new EvmHook({ contractId });
             const key = PrivateKey.generateECDSA().publicKey;
 
             const details = new HookCreationDetails({
                 extensionPoint,
                 hookId,
-                hook,
-                key,
+                evmHook: hook,
+                adminKey: key,
             });
 
             expect(details.extensionPoint).to.equal(extensionPoint);
             expect(details.hookId).to.equal(hookId);
-            expect(details.hook).to.equal(hook);
+            expect(details.evmHook).to.equal(hook);
             expect(details.adminKey).to.equal(key);
         });
     });
@@ -130,38 +130,38 @@ describe("HookCreationDetails", function () {
         });
     });
 
-    describe("setHook", function () {
-        it("should set hook and return this for chaining", function () {
+    describe("setEvmHook", function () {
+        it("should set evmHook and return this for chaining", function () {
             const details = new HookCreationDetails();
             const contractId = new ContractId(5, 6, 7);
-            const hook = new LambdaEvmHook({ contractId });
+            const hook = new EvmHook({ contractId });
 
-            const result = details.setHook(hook);
+            const result = details.setEvmHook(hook);
 
             expect(result).to.equal(details);
-            expect(details.hook).to.equal(hook);
+            expect(details.evmHook).to.equal(hook);
         });
 
-        it("should overwrite existing hook", function () {
+        it("should overwrite existing evmHook", function () {
             const oldContractId = new ContractId(1, 1, 1);
-            const oldHook = new LambdaEvmHook({ contractId: oldContractId });
+            const oldHook = new EvmHook({ contractId: oldContractId });
             const newContractId = new ContractId(2, 2, 2);
-            const newHook = new LambdaEvmHook({ contractId: newContractId });
+            const newHook = new EvmHook({ contractId: newContractId });
 
-            const details = new HookCreationDetails({ hook: oldHook });
-            details.setHook(newHook);
+            const details = new HookCreationDetails({ evmHook: oldHook });
+            details.setEvmHook(newHook);
 
-            expect(details.hook).to.equal(newHook);
-            expect(details.hook).to.not.equal(oldHook);
+            expect(details.evmHook).to.equal(newHook);
+            expect(details.evmHook).to.not.equal(oldHook);
         });
     });
 
-    describe("setKey", function () {
+    describe("setAdminKey", function () {
         it("should set adminKey and return this for chaining", function () {
             const details = new HookCreationDetails();
             const key = PrivateKey.generateED25519().publicKey;
 
-            const result = details.setKey(key);
+            const result = details.setAdminKey(key);
 
             expect(result).to.equal(details);
             expect(details.adminKey).to.equal(key);
@@ -170,9 +170,9 @@ describe("HookCreationDetails", function () {
         it("should overwrite existing adminKey", function () {
             const oldKey = PrivateKey.generateED25519().publicKey;
             const newKey = PrivateKey.generateECDSA().publicKey;
-            const details = new HookCreationDetails({ key: oldKey });
+            const details = new HookCreationDetails({ adminKey: oldKey });
 
-            details.setKey(newKey);
+            details.setAdminKey(newKey);
 
             expect(details.adminKey).to.equal(newKey);
             expect(details.adminKey).to.not.equal(oldKey);
@@ -182,11 +182,11 @@ describe("HookCreationDetails", function () {
             const details = new HookCreationDetails();
 
             const ed25519Key = PrivateKey.generateED25519().publicKey;
-            details.setKey(ed25519Key);
+            details.setAdminKey(ed25519Key);
             expect(details.adminKey).to.equal(ed25519Key);
 
             const ecdsaKey = PrivateKey.generateECDSA().publicKey;
-            details.setKey(ecdsaKey);
+            details.setAdminKey(ecdsaKey);
             expect(details.adminKey).to.equal(ecdsaKey);
         });
     });
@@ -205,17 +205,17 @@ describe("HookCreationDetails", function () {
             expect(details.hookId).to.equal(hookId);
         });
 
-        it("should get hook using getter", function () {
+        it("should get evmHook using getter", function () {
             const contractId = new ContractId(8, 9, 10);
-            const hook = new LambdaEvmHook({ contractId });
-            const details = new HookCreationDetails({ hook });
+            const hook = new EvmHook({ contractId });
+            const details = new HookCreationDetails({ evmHook: hook });
 
-            expect(details.hook).to.equal(hook);
+            expect(details.evmHook).to.equal(hook);
         });
 
         it("should get adminKey using getter", function () {
             const key = PrivateKey.generateED25519().publicKey;
-            const details = new HookCreationDetails({ key });
+            const details = new HookCreationDetails({ adminKey: key });
 
             expect(details.adminKey).to.equal(key);
         });
@@ -225,7 +225,7 @@ describe("HookCreationDetails", function () {
 
             expect(details.extensionPoint).to.be.null;
             expect(details.hookId).to.be.null;
-            expect(details.hook).to.be.null;
+            expect(details.evmHook).to.be.null;
             expect(details.adminKey).to.be.null;
         });
     });
@@ -235,18 +235,18 @@ describe("HookCreationDetails", function () {
             const extensionPoint = 3;
             const hookId = Long.fromNumber(777);
             const contractId = new ContractId(4, 5, 6);
-            const hook = new LambdaEvmHook({ contractId });
+            const hook = new EvmHook({ contractId });
             const key = PrivateKey.generateED25519().publicKey;
 
             const details = new HookCreationDetails()
                 .setExtensionPoint(extensionPoint)
                 .setHookId(hookId)
-                .setHook(hook)
-                .setKey(key);
+                .setEvmHook(hook)
+                .setAdminKey(key);
 
             expect(details.extensionPoint).to.equal(extensionPoint);
             expect(details.hookId).to.equal(hookId);
-            expect(details.hook).to.equal(hook);
+            expect(details.evmHook).to.equal(hook);
             expect(details.adminKey).to.equal(key);
         });
 
@@ -257,7 +257,7 @@ describe("HookCreationDetails", function () {
 
             expect(details.extensionPoint).to.equal(1);
             expect(details.hookId.toNumber()).to.equal(123);
-            expect(details.hook).to.be.null;
+            expect(details.evmHook).to.be.null;
             expect(details.adminKey).to.be.null;
         });
     });
@@ -267,21 +267,21 @@ describe("HookCreationDetails", function () {
             const extensionPoint = 4;
             const hookId = Long.fromNumber(5000);
             const contractId = new ContractId(7, 8, 9);
-            const hook = new LambdaEvmHook({ contractId });
+            const hook = new EvmHook({ contractId });
             const key = PrivateKey.generateED25519().publicKey;
 
             const details = new HookCreationDetails({
                 extensionPoint,
                 hookId,
-                hook,
-                key,
+                evmHook: hook,
+                adminKey: key,
             });
 
             const proto = details._toProtobuf();
 
             expect(proto.extensionPoint).to.equal(extensionPoint);
             expect(proto.hookId).to.equal(hookId);
-            expect(proto.lambdaEvmHook).to.not.be.null;
+            expect(proto.evmHook).to.not.be.null;
             expect(proto.adminKey).to.not.be.null;
         });
 
@@ -293,14 +293,14 @@ describe("HookCreationDetails", function () {
             const details = new HookCreationDetails({
                 extensionPoint,
                 hookId,
-                key,
+                adminKey: key,
             });
 
             const proto = details._toProtobuf();
 
             expect(proto.extensionPoint).to.equal(extensionPoint);
             expect(proto.hookId).to.equal(hookId);
-            expect(proto.lambdaEvmHook).to.be.null;
+            expect(proto.evmHook).to.be.null;
             expect(proto.adminKey).to.not.be.null;
         });
 
@@ -308,19 +308,19 @@ describe("HookCreationDetails", function () {
             const extensionPoint = 5;
             const hookId = Long.fromNumber(999);
             const contractId = new ContractId(1, 2, 3);
-            const hook = new LambdaEvmHook({ contractId });
+            const hook = new EvmHook({ contractId });
 
             const details = new HookCreationDetails({
                 extensionPoint,
                 hookId,
-                hook,
+                evmHook: hook,
             });
 
             const proto = details._toProtobuf();
 
             expect(proto.extensionPoint).to.equal(extensionPoint);
             expect(proto.hookId).to.equal(hookId);
-            expect(proto.lambdaEvmHook).to.not.be.null;
+            expect(proto.evmHook).to.not.be.null;
             expect(proto.adminKey).to.be.null;
         });
 
@@ -331,23 +331,23 @@ describe("HookCreationDetails", function () {
 
             expect(proto.extensionPoint).to.be.null;
             expect(proto.hookId).to.be.null;
-            expect(proto.lambdaEvmHook).to.be.null;
+            expect(proto.evmHook).to.be.null;
             expect(proto.adminKey).to.be.null;
         });
 
-        it("should call _toProtobuf on hook", function () {
+        it("should call _toProtobuf on evmHook", function () {
             const contractId = new ContractId(5, 5, 5);
-            const hook = new LambdaEvmHook({ contractId });
-            const details = new HookCreationDetails({ hook });
+            const hook = new EvmHook({ contractId });
+            const details = new HookCreationDetails({ evmHook: hook });
 
             const proto = details._toProtobuf();
 
-            expect(proto.lambdaEvmHook).to.deep.equal(hook._toProtobuf());
+            expect(proto.evmHook).to.deep.equal(hook._toProtobuf());
         });
 
         it("should call _toProtobufKey on adminKey", function () {
             const key = PrivateKey.generateED25519().publicKey;
-            const details = new HookCreationDetails({ key });
+            const details = new HookCreationDetails({ adminKey: key });
 
             const proto = details._toProtobuf();
 
@@ -380,7 +380,7 @@ describe("HookCreationDetails", function () {
 
             expect(details.extensionPoint).to.be.null;
             expect(details.hookId).to.be.null;
-            expect(details.hook).to.be.null;
+            expect(details.evmHook).to.be.null;
             expect(details.adminKey).to.be.null;
         });
 
@@ -388,11 +388,11 @@ describe("HookCreationDetails", function () {
             const hookId = Long.fromNumber(5000);
             const originalValue = hookId.toNumber();
             const contractId = new ContractId(1, 2, 3);
-            const hook = new LambdaEvmHook({ contractId });
+            const hook = new EvmHook({ contractId });
 
-            const details = new HookCreationDetails({ hookId, hook });
+            const details = new HookCreationDetails({ hookId, evmHook: hook });
             details.setHookId(Long.fromNumber(9999));
-            details.setHook(new LambdaEvmHook());
+            details.setEvmHook(new EvmHook());
 
             expect(hookId.toNumber()).to.equal(originalValue);
             expect(hook.contractId).to.equal(contractId);
@@ -400,22 +400,22 @@ describe("HookCreationDetails", function () {
     });
 
     describe("integration tests", function () {
-        it("should work with complex LambdaEvmHook", function () {
+        it("should work with complex EvmHook", function () {
             const contractId = new ContractId(10, 20, 30);
-            const hook = new LambdaEvmHook({
+            const hook = new EvmHook({
                 contractId,
                 storageUpdates: [],
             });
             const details = new HookCreationDetails({
                 extensionPoint: 1,
                 hookId: Long.fromNumber(100),
-                hook,
-                key: PrivateKey.generateED25519().publicKey,
+                evmHook: hook,
+                adminKey: PrivateKey.generateED25519().publicKey,
             });
 
             const proto = details._toProtobuf();
 
-            expect(proto.lambdaEvmHook.spec.contractId).to.deep.equal(
+            expect(proto.evmHook.spec.contractId).to.deep.equal(
                 contractId._toProtobuf(),
             );
         });
@@ -426,18 +426,18 @@ describe("HookCreationDetails", function () {
             const extensionPoint = 99;
             const hookId = Long.fromNumber(12345);
             const contractId = new ContractId(1, 2, 3);
-            const hook = new LambdaEvmHook({ contractId });
+            const hook = new EvmHook({ contractId });
             const key = PrivateKey.generateECDSA().publicKey;
 
             details
                 .setExtensionPoint(extensionPoint)
                 .setHookId(hookId)
-                .setHook(hook)
-                .setKey(key);
+                .setEvmHook(hook)
+                .setAdminKey(key);
 
             expect(details.extensionPoint).to.equal(extensionPoint);
             expect(details.hookId.equals(hookId)).to.be.true;
-            expect(details.hook).to.equal(hook);
+            expect(details.evmHook).to.equal(hook);
             expect(details.adminKey).to.equal(key);
         });
     });

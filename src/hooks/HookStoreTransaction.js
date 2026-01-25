@@ -1,5 +1,5 @@
 import HookId from "../hooks/HookId.js";
-import { LambdaStorageUpdate } from "../hooks/LambdaStorageUpdate.js";
+import { EvmHookStorageUpdate } from "../hooks/EvmHookStorageUpdate.js";
 import Transaction, {
     TRANSACTION_REGISTRY,
 } from "../transaction/Transaction.js";
@@ -11,12 +11,12 @@ import Transaction, {
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  */
 
-class LambdaSStoreTransaction extends Transaction {
+class HookStoreTransaction extends Transaction {
     /**
      *
      * @param {object} props
      * @param {import("../hooks/HookId.js").default} [props.hookId]
-     * @param {import("../hooks/LambdaStorageUpdate.js").LambdaStorageUpdate[]} [props.storageUpdates]
+     * @param {import("../hooks/EvmHookStorageUpdate.js").EvmHookStorageUpdate[]} [props.storageUpdates]
      */
     constructor(props = {}) {
         super();
@@ -29,7 +29,7 @@ class LambdaSStoreTransaction extends Transaction {
 
         /**
          * @private
-         * @type {LambdaStorageUpdate[]}
+         * @type {EvmHookStorageUpdate[]}
          */
         this._storageUpdates = [];
 
@@ -61,7 +61,7 @@ class LambdaSStoreTransaction extends Transaction {
     }
 
     /**
-     * @returns {LambdaStorageUpdate[] | []}
+     * @returns {EvmHookStorageUpdate[] | []}
      */
     get storageUpdates() {
         return this._storageUpdates;
@@ -69,7 +69,7 @@ class LambdaSStoreTransaction extends Transaction {
 
     /**
      *
-     * @param {LambdaStorageUpdate[]} storageUpdates
+     * @param {EvmHookStorageUpdate[]} storageUpdates
      * @returns {this}
      */
     setStorageUpdates(storageUpdates) {
@@ -79,7 +79,7 @@ class LambdaSStoreTransaction extends Transaction {
     }
 
     /**
-     * @param {LambdaStorageUpdate} storageUpdate
+     * @param {EvmHookStorageUpdate} storageUpdate
      * @returns {this}
      */
     addStorageUpdate(storageUpdate) {
@@ -91,7 +91,7 @@ class LambdaSStoreTransaction extends Transaction {
     /**
      * @override
      * @protected
-     * @returns {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.ILambdaSStoreTransactionBody} HieroProto.proto.ILambdaSStoreTransactionBody
+     * @returns {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.IHookStoreTransactionBody} HieroProto.proto.IHookStoreTransactionBody
      */
     _makeTransactionData() {
         return {
@@ -110,7 +110,7 @@ class LambdaSStoreTransaction extends Transaction {
      * @returns {Promise<import("@hiero-ledger/proto").proto.ITransactionResponse>}
      */
     _execute(channel, request) {
-        return channel.smartContract.lambdaSStore(request);
+        return channel.smartContract.hookStore(request);
     }
 
     /**
@@ -119,7 +119,7 @@ class LambdaSStoreTransaction extends Transaction {
      * @returns {NonNullable<import("@hiero-ledger/proto").proto.TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
-        return "lambdaSstore";
+        return "hookStore";
     }
 
     /**
@@ -129,7 +129,7 @@ class LambdaSStoreTransaction extends Transaction {
         const timestamp = /** @type {import("../Timestamp.js").default} */ (
             this._transactionIds.current.validStart
         );
-        return `LambdaSStoreTransaction:${timestamp.toString()}`;
+        return `HookStoreTransaction:${timestamp.toString()}`;
     }
 
     /**
@@ -139,7 +139,7 @@ class LambdaSStoreTransaction extends Transaction {
      * @param {TransactionId[]} transactionIds
      * @param {import("../account/AccountId.js").default[]} nodeIds
      * @param {import("@hiero-ledger/proto").proto.ITransactionBody[]} bodies
-     * @returns {LambdaSStoreTransaction}
+     * @returns {HookStoreTransaction}
      */
     static _fromProtobuf(
         transactions,
@@ -150,12 +150,12 @@ class LambdaSStoreTransaction extends Transaction {
     ) {
         const body = bodies[0];
         const create =
-            /** @type {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.ILambdaSStoreTransactionBody} */ (
-                body.lambdaSstore
+            /** @type {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.IHookStoreTransactionBody} */ (
+                body.hookStore
             );
 
         return Transaction._fromProtobufTransactions(
-            new LambdaSStoreTransaction({
+            new HookStoreTransaction({
                 hookId:
                     create.hookId != null
                         ? HookId._fromProtobuf(create.hookId)
@@ -163,7 +163,7 @@ class LambdaSStoreTransaction extends Transaction {
                 storageUpdates:
                     create.storageUpdates != null
                         ? create.storageUpdates.map((update) =>
-                              LambdaStorageUpdate._fromProtobuf(update),
+                              EvmHookStorageUpdate._fromProtobuf(update),
                           )
                         : undefined,
             }),
@@ -177,9 +177,9 @@ class LambdaSStoreTransaction extends Transaction {
 }
 
 TRANSACTION_REGISTRY.set(
-    "lambdaSstore",
+    "hookStore",
     // eslint-disable-next-line @typescript-eslint/unbound-method
-    LambdaSStoreTransaction._fromProtobuf,
+    HookStoreTransaction._fromProtobuf,
 );
 
-export default LambdaSStoreTransaction;
+export default HookStoreTransaction;

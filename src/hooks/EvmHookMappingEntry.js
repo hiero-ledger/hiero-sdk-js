@@ -1,14 +1,14 @@
 /**
  * An entry in a Solidity mapping. Very helpful for protocols that apply
- * `LambdaSStore` to manage the entries of a hook contract's mapping instead
+ * `HookStore` to manage the entries of a hook contract's mapping instead
  * its raw storage slots.
  * <p>
  * This is especially attractive when the mapping value itself fits in a single
  * word; for more complicated value storage layouts it becomes necessary to
- * combine the mapping update with additional `LambdaStorageSlot` updates that
+ * combine the mapping update with additional `EvmHookStorageSlot` updates that
  * specify the complete storage slots of the value type.
  */
-class LambdaMappingEntry {
+class EvmHookMappingEntry {
     /**
      *
      * @param {object} props
@@ -106,29 +106,27 @@ class LambdaMappingEntry {
 
     /**
      *
-     * @param {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.ILambdaMappingEntry} lambdaMappingEntry
-     * @returns {LambdaMappingEntry}
+     * @param {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.IEvmHookMappingEntry} hookMappingEntry
+     * @returns {EvmHookMappingEntry}
      */
-    static _fromProtobuf(lambdaMappingEntry) {
-        return new LambdaMappingEntry({
+    static _fromProtobuf(hookMappingEntry) {
+        return new EvmHookMappingEntry({
             key:
-                lambdaMappingEntry.key != null
-                    ? lambdaMappingEntry.key
-                    : undefined,
+                hookMappingEntry.key != null ? hookMappingEntry.key : undefined,
             value:
-                lambdaMappingEntry.value != null
-                    ? lambdaMappingEntry.value
+                hookMappingEntry.value != null
+                    ? hookMappingEntry.value
                     : undefined,
             preimage:
-                lambdaMappingEntry.preimage != null
-                    ? lambdaMappingEntry.preimage
+                hookMappingEntry.preimage != null
+                    ? hookMappingEntry.preimage
                     : undefined,
         });
     }
 
     /**
      *
-     * @returns {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.ILambdaMappingEntry}
+     * @returns {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.IEvmHookMappingEntry}
      */
     _toProtobuf() {
         return {
@@ -139,4 +137,4 @@ class LambdaMappingEntry {
     }
 }
 
-export default LambdaMappingEntry;
+export default EvmHookMappingEntry;

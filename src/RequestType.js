@@ -217,6 +217,8 @@ export default class RequestType {
                 return "LambdaSStore";
             case RequestType.HookDispatch:
                 return "HookDispatch";
+            case RequestType.HookStore:
+                return "HookStore";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -423,6 +425,8 @@ export default class RequestType {
                 return RequestType.LambdaSStore;
             case 110:
                 return RequestType.HookDispatch;
+            case 111:
+                return RequestType.HookStore;
         }
 
         throw new Error(
@@ -936,3 +940,8 @@ RequestType.LambdaSStore = new RequestType(109);
  * hook dispatch
  */
 RequestType.HookDispatch = new RequestType(110);
+
+/**
+ * Update one or more storage slots in an EVM hook.
+ */
+RequestType.HookStore = new RequestType(111);
