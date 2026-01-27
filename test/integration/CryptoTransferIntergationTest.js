@@ -3,7 +3,7 @@ import AccountCreateTransaction from "../../src/account/AccountCreateTransaction
 import PrivateKey from "../../src/PrivateKey.js";
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
 import HookExtensionPoint from "../../src/hooks/HookExtensionPoint.js";
-import LambdaEvmHook from "../../src/hooks/LambdaEvmHook.js";
+import EvmHook from "../../src/hooks/EvmHook.js";
 import EvmHookCall from "../../src/hooks/EvmHookCall.js";
 import { decode } from "../../src/encoding/hex.js";
 import ContractCreateTransaction from "../../src/contract/ContractCreateTransaction.js";
@@ -78,7 +78,7 @@ describe("CryptoTransfer", function () {
     });
 
     describe("allowance hooks", function () {
-        let lambdaContractId;
+        let hookContractId;
 
         beforeAll(async function () {
             // contract bytecode for the hiero hook contract
@@ -92,7 +92,7 @@ describe("CryptoTransfer", function () {
                     .setGas(1_000_000)
                     .execute(env.client)
             ).getReceipt(env.client);
-            lambdaContractId = receipt.contractId;
+            hookContractId = receipt.contractId;
         });
 
         it("should transfer HBAR to account with pre-transaction allowance hook", async function () {
@@ -100,13 +100,13 @@ describe("CryptoTransfer", function () {
 
             // Create account with a pre allowance hook on receiving side
             const key = PrivateKey.generateED25519();
-            const lambdaHook = new LambdaEvmHook({
-                contractId: lambdaContractId,
+            const evmHook = new EvmHook({
+                contractId: hookContractId,
                 storageUpdates: [],
             });
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook,
+                hook: evmHook,
                 hookId: 2,
             });
 
@@ -144,13 +144,13 @@ describe("CryptoTransfer", function () {
 
             // Create two accounts, each with their own hook
             const key1 = PrivateKey.generateED25519();
-            const lambdaHook1 = new LambdaEvmHook({
-                contractId: lambdaContractId,
+            const evmHook1 = new EvmHook({
+                contractId: hookContractId,
                 storageUpdates: [],
             });
             const hookDetails1 = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook1,
+                hook: evmHook1,
                 hookId: 2,
             });
 
@@ -168,13 +168,13 @@ describe("CryptoTransfer", function () {
             );
 
             const key2 = PrivateKey.generateED25519();
-            const lambdaHook2 = new LambdaEvmHook({
-                contractId: lambdaContractId,
+            const evmHook2 = new EvmHook({
+                contractId: hookContractId,
                 storageUpdates: [],
             });
             const hookDetails2 = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook2,
+                hook: evmHook2,
                 hookId: 2,
             });
 
@@ -229,8 +229,8 @@ describe("CryptoTransfer", function () {
         it("should execute both sender and receiver hooks in HBAR transfer", async function () {
             // Create sender account with hook
             const senderKey = PrivateKey.generateED25519();
-            const senderHook = new LambdaEvmHook({
-                contractId: lambdaContractId,
+            const senderHook = new EvmHook({
+                contractId: hookContractId,
                 storageUpdates: [],
             });
             const senderHookDetails = new HookCreationDetails({
@@ -254,8 +254,8 @@ describe("CryptoTransfer", function () {
 
             // Create receiver account with hook
             const receiverKey = PrivateKey.generateED25519();
-            const receiverHook = new LambdaEvmHook({
-                contractId: lambdaContractId,
+            const receiverHook = new EvmHook({
+                contractId: hookContractId,
                 storageUpdates: [],
             });
             const receiverHookDetails = new HookCreationDetails({
@@ -312,13 +312,13 @@ describe("CryptoTransfer", function () {
 
             // Create receiver account with hook
             const receiverKey = PrivateKey.generateED25519();
-            const lambdaHook = new LambdaEvmHook({
-                contractId: lambdaContractId,
+            const evmHook = new EvmHook({
+                contractId: hookContractId,
                 storageUpdates: [],
             });
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook,
+                hook: evmHook,
                 hookId: 1,
             });
 
@@ -383,8 +383,8 @@ describe("CryptoTransfer", function () {
         it("should transfer NFT with sender and receiver allowance hooks", async function () {
             // Create sender account with hook
             const senderKey = PrivateKey.generateED25519();
-            const senderHook = new LambdaEvmHook({
-                contractId: lambdaContractId,
+            const senderHook = new EvmHook({
+                contractId: hookContractId,
                 storageUpdates: [],
             });
             const senderHookDetails = new HookCreationDetails({
@@ -408,8 +408,8 @@ describe("CryptoTransfer", function () {
 
             // Create receiver account with hook
             const receiverKey = PrivateKey.generateED25519();
-            const receiverHook = new LambdaEvmHook({
-                contractId: lambdaContractId,
+            const receiverHook = new EvmHook({
+                contractId: hookContractId,
                 storageUpdates: [],
             });
 
@@ -507,8 +507,8 @@ describe("CryptoTransfer", function () {
         it("should transfer NFT with pre_post hooks on both sender and receiver", async function () {
             // Create sender account with hook
             const senderKey = PrivateKey.generateED25519();
-            const senderHook = new LambdaEvmHook({
-                contractId: lambdaContractId,
+            const senderHook = new EvmHook({
+                contractId: hookContractId,
                 storageUpdates: [],
             });
             const senderHookDetails = new HookCreationDetails({
@@ -532,8 +532,8 @@ describe("CryptoTransfer", function () {
 
             // Create receiver account with hook
             const receiverKey = PrivateKey.generateED25519();
-            const receiverHook = new LambdaEvmHook({
-                contractId: lambdaContractId,
+            const receiverHook = new EvmHook({
+                contractId: hookContractId,
                 storageUpdates: [],
             });
             const receiverHookDetails = new HookCreationDetails({
@@ -628,13 +628,13 @@ describe("CryptoTransfer", function () {
 
             // Create account with a pre allowance hook (hookId = 1)
             const key = PrivateKey.generateED25519();
-            const lambdaHook = new LambdaEvmHook({
-                contractId: lambdaContractId,
+            const evmHook = new EvmHook({
+                contractId: hookContractId,
                 storageUpdates: [],
             });
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook,
+                hook: evmHook,
                 hookId: 1,
             });
 
@@ -678,12 +678,12 @@ describe("CryptoTransfer", function () {
 
             // Create account with a pre/post allowance hook (hookId = 1)
             const key = PrivateKey.generateED25519();
-            const lambdaHook = new LambdaEvmHook({
-                contractId: lambdaContractId,
+            const evmHook = new EvmHook({
+                contractId: hookContractId,
             });
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook,
+                hook: evmHook,
                 hookId: 2,
             });
 
@@ -732,13 +732,13 @@ describe("CryptoTransfer", function () {
 
                 // Create account with hook ID = 1
                 const key = PrivateKey.generateED25519();
-                const lambdaHook = new LambdaEvmHook({
-                    contractId: lambdaContractId,
+                const evmHook = new EvmHook({
+                    contractId: hookContractId,
                     storageUpdates: [],
                 });
                 const hookDetails = new HookCreationDetails({
                     extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                    hook: lambdaHook,
+                    hook: evmHook,
                     hookId: 1,
                 });
 
@@ -791,13 +791,13 @@ describe("CryptoTransfer", function () {
 
                 // Create account with hook
                 const key = PrivateKey.generateED25519();
-                const lambdaHook = new LambdaEvmHook({
-                    contractId: lambdaContractId,
+                const evmHook = new EvmHook({
+                    contractId: hookContractId,
                     storageUpdates: [],
                 });
                 const hookDetails = new HookCreationDetails({
                     extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                    hook: lambdaHook,
+                    hook: evmHook,
                     hookId: 1,
                 });
 
@@ -848,14 +848,14 @@ describe("CryptoTransfer", function () {
                         .execute(env.client)
                 ).getReceipt(env.client);
 
-                const negativeLambdaHook = new LambdaEvmHook({
+                const negativeEvmHook = new EvmHook({
                     contractId: negativeHookContractId.contractId,
                     storageUpdates: [],
                 });
 
                 const negativeHookDetails = new HookCreationDetails({
                     extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                    hook: negativeLambdaHook,
+                    hook: negativeEvmHook,
                     hookId: 1,
                 });
 

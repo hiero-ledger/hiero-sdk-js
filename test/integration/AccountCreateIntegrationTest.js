@@ -11,9 +11,9 @@ import {
 } from "../../src/exports.js";
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
 import HookExtensionPoint from "../../src/hooks/HookExtensionPoint.js";
-import LambdaEvmHook from "../../src/hooks/LambdaEvmHook.js";
+import EvmHook from "../../src/hooks/EvmHook.js";
 
-import { LambdaStorageSlot } from "../../src/hooks/LambdaStorageUpdate.js";
+import { EvmHookStorageSlot } from "../../src/hooks/EvmHookStorageUpdate.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { deleteAccount } from "./utils/Fixtures.js";
 import { decode } from "../../src/encoding/hex.js";
@@ -25,7 +25,7 @@ describe("AccountCreate", function () {
         env = await IntegrationTestEnv.new();
     });
 
-    describe("AccountCreate with Lambda Hook", function () {
+    describe("AccountCreate with EVM Hook", function () {
         let contractId;
 
         beforeAll(async function () {
@@ -42,14 +42,14 @@ describe("AccountCreate", function () {
             contractId = receipt.contractId;
         });
 
-        it("should execute with lambda hook", async function () {
-            const lambdaHook = new LambdaEvmHook({
+        it("should execute with EVM hook", async function () {
+            const evmHook = new EvmHook({
                 contractId: contractId,
             });
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook,
+                hook: evmHook,
                 // key: optional signing key for hook if required by network policy
             });
 
@@ -71,11 +71,11 @@ describe("AccountCreate", function () {
             expect(newAccountId).toBeDefined();
         });
 
-        it("should execute with lambda hook and storage updates", async function () {
-            const lambdaHook = new LambdaEvmHook({
+        it("should execute with EVM hook and storage updates", async function () {
+            const evmHook = new EvmHook({
                 contractId: contractId,
                 storageUpdates: [
-                    new LambdaStorageSlot(
+                    new EvmHookStorageSlot(
                         new Uint8Array([0x01, 0x02, 0x03, 0x04]),
                     ),
                 ],
@@ -83,7 +83,7 @@ describe("AccountCreate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook,
+                hook: evmHook,
                 // key: optional signing key for hook if required by network policy
             });
 
@@ -105,10 +105,10 @@ describe("AccountCreate", function () {
             expect(newAccountId).toBeDefined();
         });
 
-        it("sshould revert when lambda hook but no contract id is provided", async function () {
-            const lambdaHook = new LambdaEvmHook({
+        it("should revert when EVM hook but no contract id is provided", async function () {
+            const evmHook = new EvmHook({
                 storageUpdates: [
-                    new LambdaStorageSlot(
+                    new EvmHookStorageSlot(
                         new Uint8Array([0x01, 0x02, 0x03, 0x04]),
                     ),
                 ],
@@ -116,7 +116,7 @@ describe("AccountCreate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook,
+                hook: evmHook,
                 // key: optional signing key for hook if required by network policy
             });
 
@@ -143,19 +143,19 @@ describe("AccountCreate", function () {
         });
 
         it("should revert revert when duplicate hook id", async function () {
-            const lambdaHook = new LambdaEvmHook({
+            const evmHook = new EvmHook({
                 contractId: contractId,
             });
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook,
+                hook: evmHook,
                 hookId: 1,
             });
 
             const sameHookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook,
+                hook: evmHook,
                 hookId: 1,
             });
 
@@ -186,9 +186,9 @@ describe("AccountCreate", function () {
         });
 
         it("should execute hook with an admin key provided", async function () {
-            const lambdaHook = new LambdaEvmHook({
+            const evmHook = new EvmHook({
                 storageUpdates: [
-                    new LambdaStorageSlot(
+                    new EvmHookStorageSlot(
                         new Uint8Array([0x01, 0x02, 0x03, 0x04]),
                     ),
                 ],
@@ -197,7 +197,7 @@ describe("AccountCreate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook,
+                hook: evmHook,
                 key: PrivateKey.generateED25519(),
             });
 

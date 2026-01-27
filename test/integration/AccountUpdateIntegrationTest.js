@@ -12,10 +12,10 @@ import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import Long from "long";
 import { createAccount, deleteAccount } from "./utils/Fixtures.js";
 import { decode } from "../../src/encoding/hex.js";
-import LambdaEvmHook from "../../src/hooks/LambdaEvmHook.js";
+import EvmHook from "../../src/hooks/EvmHook.js";
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
 import HookExtensionPoint from "../../src/hooks/HookExtensionPoint.js";
-import { LambdaStorageSlot } from "../../src/hooks/LambdaStorageUpdate.js";
+import { EvmHookStorageSlot } from "../../src/hooks/EvmHookStorageUpdate.js";
 
 describe("AccountUpdate", function () {
     let env;
@@ -104,19 +104,19 @@ describe("AccountUpdate", function () {
             testContractId = contractId;
         });
 
-        it("should successfully add a basic lambda EVM hook to account without hooks", async function () {
+        it("should successfully add a basic EVM hook to account without hooks", async function () {
             // Given: an account exists without hooks
             const { accountId, newKey } = await createAccount(env.client);
             expect(accountId).to.not.be.null;
 
-            // When: AccountUpdateTransaction adds a basic lambda EVM hook
-            const lambdaHook = new LambdaEvmHook({
+            // When: AccountUpdateTransaction adds a basic EVM hook
+            const evmHook = new EvmHook({
                 contractId: testContractId,
             });
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook,
+                hook: evmHook,
                 hookId: 1,
             });
 
@@ -137,19 +137,19 @@ describe("AccountUpdate", function () {
             const { accountId, newKey } = await createAccount(env.client);
             expect(accountId).to.not.be.null;
 
-            const lambdaHook = new LambdaEvmHook({
+            const evmHook = new EvmHook({
                 contractId: testContractId,
             });
 
             const hookDetails1 = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook,
+                hook: evmHook,
                 hookId: 1,
             });
 
             const hookDetails2 = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook,
+                hook: evmHook,
                 hookId: 1, // Same ID as hookDetails1
             });
 
@@ -184,13 +184,13 @@ describe("AccountUpdate", function () {
             const { accountId, newKey } = await createAccount(env.client);
             expect(accountId).to.not.be.null;
 
-            const lambdaHook = new LambdaEvmHook({
+            const evmHook = new EvmHook({
                 contractId: testContractId,
             });
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook,
+                hook: evmHook,
                 hookId: 1,
             });
 
@@ -230,16 +230,16 @@ describe("AccountUpdate", function () {
             expect(errorStatus).to.be.eql(Status.HookIdInUse);
         });
 
-        it("should successfully add lambda EVM hook with initial storage updates", async function () {
+        it("should successfully add EVM hook with initial storage updates", async function () {
             // Given: an account exists without hooks
             const { accountId, newKey } = await createAccount(env.client);
             expect(accountId).to.not.be.null;
 
-            // When: AccountUpdateTransaction adds a lambda EVM hook with initial storage updates
-            const lambdaHook = new LambdaEvmHook({
+            // When: AccountUpdateTransaction adds an EVM hook with initial storage updates
+            const evmHook = new EvmHook({
                 contractId: testContractId,
                 storageUpdates: [
-                    new LambdaStorageSlot(
+                    new EvmHookStorageSlot(
                         new Uint8Array([0x01, 0x02, 0x03, 0x04]),
                     ),
                 ],
@@ -247,7 +247,7 @@ describe("AccountUpdate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook,
+                hook: evmHook,
                 hookId: 1,
             });
 
@@ -268,13 +268,13 @@ describe("AccountUpdate", function () {
             const { accountId, newKey } = await createAccount(env.client);
             expect(accountId).to.not.be.null;
 
-            const lambdaHook = new LambdaEvmHook({
+            const evmHook = new EvmHook({
                 contractId: testContractId,
             });
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook,
+                hook: evmHook,
                 hookId: 1,
             });
 
@@ -319,13 +319,13 @@ describe("AccountUpdate", function () {
             const { accountId, newKey } = await createAccount(env.client);
             expect(accountId).to.not.be.null;
 
-            const lambdaHook = new LambdaEvmHook({
+            const evmHook = new EvmHook({
                 contractId: testContractId,
             });
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook,
+                hook: evmHook,
                 hookId: 1,
             });
 
@@ -362,13 +362,13 @@ describe("AccountUpdate", function () {
             const { accountId, newKey } = await createAccount(env.client);
             expect(accountId).to.not.be.null;
 
-            const lambdaHook = new LambdaEvmHook({
+            const evmHook = new EvmHook({
                 contractId: testContractId,
             });
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook,
+                hook: evmHook,
                 hookId: 1,
             });
 
@@ -412,13 +412,13 @@ describe("AccountUpdate", function () {
             const { accountId, newKey } = await createAccount(env.client);
             expect(accountId).to.not.be.null;
 
-            const lambdaHook = new LambdaEvmHook({
+            const evmHook = new EvmHook({
                 contractId: testContractId,
             });
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook,
+                hook: evmHook,
                 hookId: 1,
             });
 
@@ -453,13 +453,13 @@ describe("AccountUpdate", function () {
             const { accountId, newKey } = await createAccount(env.client);
             expect(accountId).to.not.be.null;
 
-            const lambdaHook = new LambdaEvmHook({
+            const evmHook = new EvmHook({
                 contractId: testContractId,
             });
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: lambdaHook,
+                hook: evmHook,
                 hookId: 1,
             });
 
