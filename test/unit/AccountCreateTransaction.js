@@ -401,10 +401,10 @@ describe("AccountCreateTransaction", function () {
         describe("complex hook configurations", function () {
             it("should create a hook with EvmHook", function () {
                 const contractId = new ContractId(0, 0, 100);
-                const lambdaHook = new EvmHook({ contractId });
+                const evmHook = new EvmHook({ contractId });
                 const hook = new HookCreationDetails({
                     extensionPoint: 1,
-                    evmHook: lambdaHook,
+                    evmHook: evmHook,
                 });
 
                 const tx = new AccountCreateTransaction();
@@ -412,7 +412,7 @@ describe("AccountCreateTransaction", function () {
 
                 expect(tx.hooks).to.have.lengthOf(1);
                 expect(tx.hooks[0].extensionPoint).to.equal(1);
-                expect(tx.hooks[0].evmHook).to.equal(lambdaHook);
+                expect(tx.hooks[0].evmHook).to.equal(evmHook);
                 expect(tx.hooks[0].evmHook.contractId.num.toNumber()).to.equal(
                     100,
                 );
@@ -424,13 +424,13 @@ describe("AccountCreateTransaction", function () {
                 const storageSlot = new EvmHookStorageSlot({ key, value });
 
                 const contractId = new ContractId(0, 0, 100);
-                const lambdaHook = new EvmHook({
+                const evmHook = new EvmHook({
                     contractId,
                     storageUpdates: [storageSlot],
                 });
                 const hook = new HookCreationDetails({
                     extensionPoint: 1,
-                    evmHook: lambdaHook,
+                    evmHook: evmHook,
                 });
 
                 const tx = new AccountCreateTransaction();
@@ -440,9 +440,9 @@ describe("AccountCreateTransaction", function () {
                 expect(tx.hooks[0].evmHook.storageUpdates[0].key).to.deep.equal(
                     key,
                 );
-                expect(tx.hooks[0].evmHook.storageUpdates[0].value).to.deep.equal(
-                    value,
-                );
+                expect(
+                    tx.hooks[0].evmHook.storageUpdates[0].value,
+                ).to.deep.equal(value);
             });
 
             it("should create a hook with EvmHookMappingEntries", function () {
@@ -459,13 +459,13 @@ describe("AccountCreateTransaction", function () {
                 });
 
                 const contractId = new ContractId(0, 0, 100);
-                const lambdaHook = new EvmHook({
+                const evmHook = new EvmHook({
                     contractId,
                     storageUpdates: [mappingEntries],
                 });
                 const hook = new HookCreationDetails({
                     extensionPoint: 1,
-                    evmHook: lambdaHook,
+                    evmHook: evmHook,
                 });
 
                 const tx = new AccountCreateTransaction();
@@ -519,14 +519,14 @@ describe("AccountCreateTransaction", function () {
                 const key = new Uint8Array([1, 2, 3, 4]);
                 const value = new Uint8Array([5, 6, 7, 8]);
                 const storageSlot = new EvmHookStorageSlot({ key, value });
-                const lambdaHook = new EvmHook({
+                const evmHook = new EvmHook({
                     contractId,
                     storageUpdates: [storageSlot],
                 });
                 const hook = new HookCreationDetails({
                     extensionPoint: 1,
                     hookId,
-                    evmHook: lambdaHook,
+                    evmHook: evmHook,
                     key: adminKey,
                 });
 
@@ -535,7 +535,7 @@ describe("AccountCreateTransaction", function () {
 
                 expect(tx.hooks[0].extensionPoint).to.equal(1);
                 expect(tx.hooks[0].hookId).to.equal(hookId);
-                expect(tx.hooks[0].evmHook).to.equal(lambdaHook);
+                expect(tx.hooks[0].evmHook).to.equal(evmHook);
                 expect(tx.hooks[0].adminKey).to.equal(adminKey);
             });
         });
@@ -581,14 +581,14 @@ describe("AccountCreateTransaction", function () {
                     key: storageKey,
                     value: storageValue,
                 });
-                const lambdaHook = new EvmHook({
+                const evmHook = new EvmHook({
                     contractId,
                     storageUpdates: [storageSlot],
                 });
                 const hook = new HookCreationDetails({
                     extensionPoint: 1,
                     hookId,
-                    evmHook: lambdaHook,
+                    evmHook: evmHook,
                     key: adminKey,
                 });
 
@@ -605,8 +605,7 @@ describe("AccountCreateTransaction", function () {
                     1,
                 );
                 expect(txData.hookCreationDetails[0].hookId).to.equal(hookId);
-                expect(txData.hookCreationDetails[0].evmHook).to.not.be
-                    .null;
+                expect(txData.hookCreationDetails[0].evmHook).to.not.be.null;
                 expect(txData.hookCreationDetails[0].adminKey).to.not.be.null;
             });
 
@@ -641,14 +640,14 @@ describe("AccountCreateTransaction", function () {
                     value: new Uint8Array([7, 8]),
                 });
 
-                const lambdaHook = new EvmHook({
+                const evmHook = new EvmHook({
                     contractId,
                     storageUpdates: [storageSlot1, storageSlot2],
                 });
 
                 const hook = new HookCreationDetails({
                     extensionPoint: 1,
-                    evmHook: lambdaHook,
+                    evmHook: evmHook,
                 });
 
                 const tx = new AccountCreateTransaction();
@@ -673,13 +672,13 @@ describe("AccountCreateTransaction", function () {
                 });
 
                 const contractId = new ContractId(0, 0, 100);
-                const lambdaHook = new EvmHook({
+                const evmHook = new EvmHook({
                     contractId,
                     storageUpdates: [mappingEntries],
                 });
                 const hook = new HookCreationDetails({
                     extensionPoint: 1,
-                    evmHook: lambdaHook,
+                    evmHook: evmHook,
                 });
 
                 const tx = new AccountCreateTransaction();

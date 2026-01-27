@@ -631,7 +631,10 @@ describe("EvmHookMappingEntries", function () {
                     value: new Uint8Array([10, 11]),
                 }),
             ];
-            const original = new EvmHookMappingEntries({ mappingSlot, entries });
+            const original = new EvmHookMappingEntries({
+                mappingSlot,
+                entries,
+            });
 
             const proto = original._toProtobuf();
             const restored = EvmHookMappingEntries._fromProtobuf(proto);

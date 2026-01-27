@@ -114,9 +114,7 @@ describe("HookStoreTransaction", function () {
                 hookId: Long.fromNumber(222),
             });
 
-            const transaction = new HookStoreTransaction().setHookId(
-                hookId1,
-            );
+            const transaction = new HookStoreTransaction().setHookId(hookId1);
             transaction.setHookId(hookId2);
 
             expect(transaction.hookId).to.equal(hookId2);
@@ -148,9 +146,10 @@ describe("HookStoreTransaction", function () {
                 value: new Uint8Array([7, 8]),
             });
 
-            const transaction = new HookStoreTransaction().setStorageUpdates(
-                [storageSlot1, storageSlot2],
-            );
+            const transaction = new HookStoreTransaction().setStorageUpdates([
+                storageSlot1,
+                storageSlot2,
+            ]);
 
             expect(transaction.storageUpdates).to.have.lengthOf(2);
             expect(transaction.storageUpdates[0]).to.equal(storageSlot1);
@@ -167,9 +166,9 @@ describe("HookStoreTransaction", function () {
                 value: new Uint8Array([7, 8]),
             });
 
-            const transaction = new HookStoreTransaction().setStorageUpdates(
-                [storageSlot1],
-            );
+            const transaction = new HookStoreTransaction().setStorageUpdates([
+                storageSlot1,
+            ]);
             transaction.setStorageUpdates([storageSlot2]);
 
             expect(transaction.storageUpdates).to.have.lengthOf(1);
@@ -253,9 +252,7 @@ describe("HookStoreTransaction", function () {
         it("should return correct transaction data case", function () {
             const transaction = new HookStoreTransaction();
 
-            expect(transaction._getTransactionDataCase()).to.equal(
-                "hookStore",
-            );
+            expect(transaction._getTransactionDataCase()).to.equal("hookStore");
         });
     });
 
