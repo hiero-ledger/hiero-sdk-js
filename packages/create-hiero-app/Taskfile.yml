@@ -1,0 +1,46 @@
+version: "3"
+
+tasks:
+  install:
+    desc: Install dependencies
+    cmds:
+      - pnpm install
+
+  build:
+    desc: Build the CLI tool
+    cmds:
+      - pnpm run build
+
+  dev:
+    desc: Build in watch mode
+    cmds:
+      - pnpm run dev
+
+  clean:
+    desc: Clean build artifacts
+    cmds:
+      - rm -rf dist
+      - rm -rf node_modules
+
+  test-local:
+    desc: Test the CLI locally
+    cmds:
+      - pnpm run build
+      - node dist/index.js test-app --skip-install
+
+  link:
+    desc: Link package globally for local testing
+    cmds:
+      - pnpm run build
+      - pnpm link --global
+
+  unlink:
+    desc: Unlink package from global
+    cmds:
+      - pnpm unlink --global
+
+  publish:
+    desc: Publish to npm (requires authentication)
+    cmds:
+      - pnpm run build
+      - pnpm publish --access public

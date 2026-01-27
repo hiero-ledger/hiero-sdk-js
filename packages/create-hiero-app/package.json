@@ -1,0 +1,54 @@
+{
+    "name": "@hiero-ledger/create-hiero-app",
+    "version": "0.1.0",
+    "description": "Create Hiero SDK applications instantly",
+    "type": "module",
+    "bin": {
+        "create-hiero-app": "./dist/index.js"
+    },
+    "files": [
+        "dist",
+        "templates"
+    ],
+    "keywords": [
+        "hiero",
+        "hedera",
+        "hashgraph",
+        "sdk",
+        "starter",
+        "template",
+        "boilerplate",
+        "create-app"
+    ],
+    "author": "Hiero Ledger",
+    "license": "Apache-2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/hiero-ledger/hiero-sdk-js",
+        "directory": "packages/create-hiero-app"
+    },
+    "bugs": "https://github.com/hiero-ledger/hiero-sdk-js/issues",
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "scripts": {
+        "build": "tsc",
+        "dev": "tsc --watch",
+        "test": "node --test"
+    },
+    "dependencies": {
+        "chalk": "^5.3.0",
+        "commander": "^12.0.0",
+        "fs-extra": "^11.2.0",
+        "inquirer": "^9.2.15",
+        "ora": "^8.0.1",
+        "validate-npm-package-name": "^5.0.0"
+    },
+    "devDependencies": {
+        "@types/fs-extra": "^11.0.4",
+        "@types/inquirer": "^9.0.7",
+        "@types/node": "^20.11.5",
+        "@types/validate-npm-package-name": "^4.0.2",
+        "typescript": "^5.7.2"
+    }
+}
