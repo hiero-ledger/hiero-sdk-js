@@ -734,6 +734,9 @@ export default class Executable {
                 }
 
                 promises.push(this._execute(channel, request));
+                console.log(`nodeAccountId=${nodeAccountId.toString()}`);
+                console.log("attempt", attempt);
+                console.log("previousError", persistentError);
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 response = /** @type {ResponseT} */ (
                     await Promise.race(promises)
@@ -792,6 +795,8 @@ export default class Executable {
             // while for _most_ queries it would check if the response status is `SUCCESS`
             // The only odd balls are `TransactionReceiptQuery` and `TransactionRecordQuery`
             const [status, shouldRetry] = this._shouldRetry(request, response);
+
+            console.log("status", status.toString());
             if (
                 status.toString() !== Status.Ok.toString() &&
                 status.toString() !== Status.Success.toString()
@@ -848,6 +853,7 @@ export default class Executable {
                     continue;
                 case ExecutionState.Finished:
                     return this._mapResponse(response, nodeAccountId, request);
+
                 case ExecutionState.Error:
                     throw this._mapStatusError(
                         request,
