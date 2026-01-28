@@ -54,7 +54,13 @@ Please ensure that your bug report contains the following:
 
 ### Running Integration Tests
 
-To run integration tests locally, you need to set up Solo (the official Hiero local network):
+To run integration tests locally, you need to set up [Solo](https://solo.hiero.org/) (the official Hiero local network).
+
+**System Requirements:**
+- **Platform:** macOS or Linux only (Windows users must use WSL2)
+- **RAM:** Minimum 12 GB for single node, 24 GB for dual node (required for DAB tests)
+
+For complete system requirements, see the [official Solo documentation](https://solo.hiero.org/latest/docs/step-by-step-guide/#prerequisites).
 
 1. **Install dependencies:**
    ```bash
@@ -63,11 +69,15 @@ To run integration tests locally, you need to set up Solo (the official Hiero lo
 
 2. **Setup Solo local network:**
    ```bash
+   # Single node setup (default, requires 12 GB RAM)
    task solo:setup
+   
+   # OR dual node setup (requires 24 GB RAM, needed for DAB tests)
+   task solo:setup:dual-node
    ```
    
    This will automatically create a local Kubernetes-based network with:
-   - 2 consensus nodes
+   - Consensus node(s)
    - Mirror node services
    - A dedicated ECDSA test account
    - Auto-generated `.env` file

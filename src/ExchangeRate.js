@@ -72,8 +72,8 @@ export default class ExchangeRate {
                 rate.expirationTime != null
                     ? rate.expirationTime.seconds != null
                         ? Long.isLong(rate.expirationTime.seconds)
-                            ? rate.expirationTime.seconds.toInt() * 1000
-                            : rate.expirationTime.seconds
+                            ? rate.expirationTime.seconds.toNumber() * 1000
+                            : rate.expirationTime.seconds * 1000
                         : 0
                     : 0,
             ),
