@@ -665,13 +665,16 @@ export default class Executable {
                     this._nodeAccountIds.index ===
                     this._nodeAccountIds.list.length - 1;
 
-                // Check if the request is a transaction receipt or record
-                // request to retry 10 times, because getReceiptQuery/getRecordQuery
-                // are single node requests
-                if (
-                    isTransactionReceiptOrRecordRequest(request) ||
-                    isLocalNode
-                ) {
+                // Check if the request is a transaction receipt or record request
+                // with a single node (traditional behavior), or if it's a local node.
+                // For single-node receipt queries, we retry the same node with backoff.
+                // For multi-node receipt queries (when failover is enabled), we allow
+                // advancing to the next node like other queries.
+                const isSingleNodeReceiptOrRecordRequest =
+                    isTransactionReceiptOrRecordRequest(request) &&
+                    this._nodeAccountIds.length <= 1;
+
+                if (isSingleNodeReceiptOrRecordRequest || isLocalNode) {
                     await delayForAttempt(
                         isLocalNode,
                         attempt,
