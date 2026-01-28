@@ -143,5 +143,8 @@
     },
     "resolutions": {
         "bn.js": "5.2.1"
+    },
+    "scripts": {
+        "create-hiero-app": "node packages/create-hiero-app/dist/index.js"
     }
 }
