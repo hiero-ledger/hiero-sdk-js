@@ -217,7 +217,8 @@ describe("ContractCreate", function () {
 
         const hookDetails = new HookCreationDetails({
             extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-            hook: evmHook,
+            hookId: 1,
+            evmHook: evmHook,
         });
 
         const receipt = await (
@@ -263,7 +264,8 @@ describe("ContractCreate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
+                hookId: 1,
+                evmHook: evmHook,
             });
 
             const receipt = await (
@@ -293,7 +295,8 @@ describe("ContractCreate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
+                hookId: 1,
+                evmHook: evmHook,
             });
 
             let err = null;
@@ -333,14 +336,14 @@ describe("ContractCreate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             const sameHookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             let err = null;
@@ -383,8 +386,9 @@ describe("ContractCreate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
-                key: adminKey,
+                hookId: 1,
+                evmHook: evmHook,
+                adminKey: adminKey.publicKey,
             });
 
             const receipt = await (

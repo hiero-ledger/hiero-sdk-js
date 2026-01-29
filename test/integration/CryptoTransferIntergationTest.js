@@ -106,8 +106,8 @@ describe("CryptoTransfer", function () {
             });
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 2,
+                evmHook: evmHook,
             });
 
             const createResp = await (
@@ -150,8 +150,8 @@ describe("CryptoTransfer", function () {
             });
             const hookDetails1 = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook1,
                 hookId: 2,
+                evmHook: evmHook1,
             });
 
             const createResp1 = await (
@@ -174,8 +174,8 @@ describe("CryptoTransfer", function () {
             });
             const hookDetails2 = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook2,
                 hookId: 2,
+                evmHook: evmHook2,
             });
 
             const createResp2 = await (
@@ -235,8 +235,8 @@ describe("CryptoTransfer", function () {
             });
             const senderHookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: senderHook,
                 hookId: 2,
+                evmHook: senderHook,
             });
 
             const senderResp = await (
@@ -260,8 +260,8 @@ describe("CryptoTransfer", function () {
             });
             const receiverHookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: receiverHook,
                 hookId: 2,
+                evmHook: receiverHook,
             });
 
             const receiverResp = await (
@@ -318,8 +318,8 @@ describe("CryptoTransfer", function () {
             });
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             const receiverResp = await (
@@ -389,8 +389,8 @@ describe("CryptoTransfer", function () {
             });
             const senderHookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: senderHook,
                 hookId: 2,
+                evmHook: senderHook,
             });
 
             const senderResp = await (
@@ -415,8 +415,8 @@ describe("CryptoTransfer", function () {
 
             const receiverHookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: receiverHook,
                 hookId: 2,
+                evmHook: receiverHook,
             });
 
             const receiverResp = await (
@@ -513,8 +513,8 @@ describe("CryptoTransfer", function () {
             });
             const senderHookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: senderHook,
                 hookId: 2,
+                evmHook: senderHook,
             });
 
             const senderResp = await (
@@ -538,8 +538,8 @@ describe("CryptoTransfer", function () {
             });
             const receiverHookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: receiverHook,
                 hookId: 2,
+                evmHook: receiverHook,
             });
 
             const receiverResp = await (
@@ -634,8 +634,8 @@ describe("CryptoTransfer", function () {
             });
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             const createResp = await (
@@ -683,8 +683,8 @@ describe("CryptoTransfer", function () {
             });
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 2,
+                evmHook: evmHook,
             });
 
             const createResp = await (
@@ -738,8 +738,8 @@ describe("CryptoTransfer", function () {
                 });
                 const hookDetails = new HookCreationDetails({
                     extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                    hook: evmHook,
                     hookId: 1,
+                    evmHook: evmHook,
                 });
 
                 const createResp = await (
@@ -797,8 +797,8 @@ describe("CryptoTransfer", function () {
                 });
                 const hookDetails = new HookCreationDetails({
                     extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                    hook: evmHook,
                     hookId: 1,
+                    evmHook: evmHook,
                 });
 
                 const createResp = await (
@@ -855,8 +855,8 @@ describe("CryptoTransfer", function () {
 
                 const negativeHookDetails = new HookCreationDetails({
                     extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                    hook: negativeEvmHook,
                     hookId: 1,
+                    evmHook: negativeEvmHook,
                 });
 
                 const key = PrivateKey.generateED25519();

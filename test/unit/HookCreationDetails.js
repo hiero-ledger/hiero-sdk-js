@@ -324,21 +324,29 @@ describe("HookCreationDetails", function () {
             expect(proto.adminKey).to.be.null;
         });
 
-        it("should convert to protobuf with all null fields", function () {
+        it("should throw error when converting to protobuf with missing required fields", function () {
             const details = new HookCreationDetails();
 
-            const proto = details._toProtobuf();
+            expect(() => details._toProtobuf()).to.throw(
+                Error,
+                "extensionPoint is required for HookCreationDetails",
+            );
 
-            expect(proto.extensionPoint).to.be.null;
-            expect(proto.hookId).to.be.null;
-            expect(proto.evmHook).to.be.null;
-            expect(proto.adminKey).to.be.null;
+            details.setExtensionPoint(1);
+            expect(() => details._toProtobuf()).to.throw(
+                Error,
+                "hookId is required for HookCreationDetails",
+            );
         });
 
         it("should call _toProtobuf on evmHook", function () {
             const contractId = new ContractId(5, 5, 5);
             const hook = new EvmHook({ contractId });
-            const details = new HookCreationDetails({ evmHook: hook });
+            const details = new HookCreationDetails({
+                extensionPoint: 1,
+                hookId: Long.fromNumber(1),
+                evmHook: hook,
+            });
 
             const proto = details._toProtobuf();
 
@@ -347,7 +355,11 @@ describe("HookCreationDetails", function () {
 
         it("should call _toProtobufKey on adminKey", function () {
             const key = PrivateKey.generateED25519().publicKey;
-            const details = new HookCreationDetails({ adminKey: key });
+            const details = new HookCreationDetails({
+                extensionPoint: 1,
+                hookId: Long.fromNumber(1),
+                adminKey: key,
+            });
 
             const proto = details._toProtobuf();
 
@@ -357,7 +369,10 @@ describe("HookCreationDetails", function () {
 
     describe("edge cases", function () {
         it("should handle extensionPoint of 0", function () {
-            const details = new HookCreationDetails({ extensionPoint: 0 });
+            const details = new HookCreationDetails({
+                extensionPoint: 0,
+                hookId: Long.fromNumber(1),
+            });
 
             expect(details.extensionPoint).to.equal(0);
 
@@ -367,7 +382,10 @@ describe("HookCreationDetails", function () {
 
         it("should handle hookId of 0", function () {
             const hookId = Long.ZERO;
-            const details = new HookCreationDetails({ hookId });
+            const details = new HookCreationDetails({
+                extensionPoint: 1,
+                hookId,
+            });
 
             expect(details.hookId.equals(Long.ZERO)).to.be.true;
 

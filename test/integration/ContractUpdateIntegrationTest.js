@@ -340,8 +340,8 @@ describe("ContractUpdate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             await (
@@ -387,14 +387,14 @@ describe("ContractUpdate", function () {
 
             const hookDetails1 = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             const hookDetails2 = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1, // Same ID as hookDetails1
+                evmHook: evmHook,
             });
 
             let errorOccurred = false;
@@ -456,8 +456,8 @@ describe("ContractUpdate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             // First, add a hook
@@ -472,8 +472,8 @@ describe("ContractUpdate", function () {
             // When: ContractUpdateTransaction attempts to add a hook with the same ID
             const duplicateHookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1, // Same ID as existing hook
+                evmHook: evmHook,
             });
 
             let errorOccurred = false;
@@ -537,8 +537,8 @@ describe("ContractUpdate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             await (
@@ -584,8 +584,8 @@ describe("ContractUpdate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             // First, add a hook
@@ -652,8 +652,8 @@ describe("ContractUpdate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             // First, add a hook
@@ -712,8 +712,8 @@ describe("ContractUpdate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             // First, add a hook
@@ -781,8 +781,8 @@ describe("ContractUpdate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             let errorOccurred = false;
@@ -854,8 +854,8 @@ describe("ContractUpdate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             // First, add a hook

@@ -116,8 +116,8 @@ describe("AccountUpdate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             const response = await (
@@ -143,14 +143,14 @@ describe("AccountUpdate", function () {
 
             const hookDetails1 = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             const hookDetails2 = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1, // Same ID as hookDetails1
+                evmHook: evmHook,
             });
 
             let errorOccurred = false;
@@ -190,8 +190,8 @@ describe("AccountUpdate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             // First, add a hook
@@ -247,8 +247,8 @@ describe("AccountUpdate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             const response = await (
@@ -274,8 +274,8 @@ describe("AccountUpdate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             // First, add a hook
@@ -325,8 +325,8 @@ describe("AccountUpdate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             // First, add a hook
@@ -368,8 +368,8 @@ describe("AccountUpdate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             // First, add a hook
@@ -418,8 +418,8 @@ describe("AccountUpdate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             let errorOccurred = false;
@@ -459,8 +459,8 @@ describe("AccountUpdate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             // First, add a hook

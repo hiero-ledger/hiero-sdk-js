@@ -49,8 +49,8 @@ describe("AccountCreate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
-                // key: optional signing key for hook if required by network policy
+                hookId: 1,
+                evmHook: evmHook,
             });
 
             const newKey = PrivateKey.generateED25519();
@@ -83,8 +83,8 @@ describe("AccountCreate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
-                // key: optional signing key for hook if required by network policy
+                hookId: 1,
+                evmHook: evmHook,
             });
 
             const newKey = PrivateKey.generateED25519();
@@ -116,8 +116,8 @@ describe("AccountCreate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
-                // key: optional signing key for hook if required by network policy
+                hookId: 1,
+                evmHook: evmHook,
             });
 
             const newKey = PrivateKey.generateED25519();
@@ -149,14 +149,14 @@ describe("AccountCreate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             const sameHookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
                 hookId: 1,
+                evmHook: evmHook,
             });
 
             const newKey = PrivateKey.generateED25519();
@@ -197,8 +197,9 @@ describe("AccountCreate", function () {
 
             const hookDetails = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
-                hook: evmHook,
-                key: PrivateKey.generateED25519(),
+                hookId: 1,
+                evmHook: evmHook,
+                adminKey: PrivateKey.generateED25519().publicKey,
             });
 
             const newKey = PrivateKey.generateED25519();
