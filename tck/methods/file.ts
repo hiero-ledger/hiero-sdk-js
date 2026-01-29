@@ -6,6 +6,7 @@ import {
     FileInfoQuery,
     Hbar,
     Timestamp,
+    FileContentsQuery,
 } from "@hiero-ledger/sdk";
 import Long from "long";
 
@@ -15,10 +16,15 @@ import {
     FileAppendParams,
     FileDeleteParams,
     GetFileInfoParams,
+    GetFileContentsParams,
 } from "../params/file";
 
 import { sdk } from "../sdk_data";
-import { FileInfoQueryResponse, FileResponse } from "../response/file";
+import {
+    FileInfoQueryResponse,
+    FileResponse,
+    FileContentsResponse,
+} from "../response/file";
 
 import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";
 import { mapFileInfoResponse } from "../utils/helpers/file";
@@ -232,4 +238,39 @@ export const getFileInfo = async ({
     const response = await query.execute(client);
 
     return mapFileInfoResponse(response);
+};
+
+export const getFileContents = async ({
+    fileId,
+    queryPayment,
+    maxQueryPayment,
+    sessionId,
+}: GetFileContentsParams): Promise<FileContentsResponse> => {
+    const client = sdk.getClient(sessionId);
+    const query = new FileContentsQuery().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+
+    if (fileId != null) {
+        query.setFileId(fileId);
+    }
+
+    if (queryPayment != null) {
+        query.setQueryPayment(Hbar.fromTinybars(queryPayment));
+    }
+
+    if (maxQueryPayment != null) {
+        query.setMaxQueryPayment(Hbar.fromTinybars(maxQueryPayment));
+    }
+
+    const response = await query.execute(client);
+
+    // Convert Uint8Array to string
+    // Using TextDecoder to properly handle all byte sequences
+    const decoder = new TextDecoder("utf-8", { fatal: false });
+    const contents = decoder.decode(response);
+
+    return {
+        contents,
+    };
 };
