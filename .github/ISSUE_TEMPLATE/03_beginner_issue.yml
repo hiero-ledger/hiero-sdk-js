@@ -1,0 +1,225 @@
+name: Beginner Issue Template
+description: Create a Beginner Issue for fairly new contributors (JavaScript)
+title: "[Beginner]: "
+labels: ["beginner"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## **Thanks for contributing!** 😊
+
+        We truly appreciate your time and effort.
+
+        This template is designed to help you create a **Beginner-friendly issue** —
+        a moderately easy, well-scoped task that helps contributors build confidence
+        and deepen their understanding of the **Hiero JS SDK** codebase.
+
+        > Maintainers can read more about:
+        > [Beginner Issues](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/docs/maintainers/guidelines-beginner-issues.md)
+        ---
+
+  - type: textarea
+    id: intro
+    attributes:
+      label: 🐥 Beginner Friendly
+      description: Who is this issue for?
+      value: |
+        This issue is a great fit for contributors who are ready to explore the Hiero JavaScript
+        codebase a little more and take on slightly more independent work.
+
+        Beginner Issues often involve reading existing JavaScript code, understanding how
+        different parts of the SDK fit together, and making small, thoughtful updates
+        that follow established patterns.
+
+        The goal is to support skill growth while keeping the experience approachable,
+        well-scoped, and enjoyable.
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        > [!IMPORTANT]
+        > ### 🐥 About Beginner Issues
+        >
+        > Beginner Issues are a great next step for contributors who feel comfortable
+        > with the basic project workflow and want to explore the codebase a little more.
+        >
+        > These issues often involve:
+        > - Reading existing JavaScript code  
+        > - Understanding how different parts of the SDK fit together  
+        > - Making small, thoughtful updates that follow established patterns  
+        >
+        > You’ll usually see Beginner Issues focused on things like:
+        > - Small, well-scoped improvements to existing tests  
+        > - Narrow updates to `src` functionality (e.g. refining helpers or improving readability)  
+        > - Documentation or comment clarity  
+        > - Enhancements to existing examples  
+        >
+        > Other types of contributions — such as brand-new features, broader system changes,
+        > or deeper technical work — are just as valuable and may use different labels.
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: 👾 Description of the Issue
+      description: |
+        Describe the issue in a clear, approachable way.
+
+        Aim to explain the context, what needs to change, and the expected outcome
+        without assuming deep knowledge of the codebase. The goal is to make the
+        task feel understandable, well-scoped, and encouraging to take on.
+      value: |
+        Edit here. Example provided below.
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        <!-- Example (hidden in submission) -->
+        ## 👾 Description of the Issue — Example (JavaScript)
+
+        The `AccountId` class located in:
+
+        ```
+        src/account/AccountId.js
+        ```
+
+        currently throws a generic error message when parsing fails in the
+        `fromString()` method. When developers provide an invalid account ID
+        string, the error message doesn't clearly explain what formats are
+        accepted or what went wrong.
+
+        Improving these error messages would make debugging and development
+        easier for developers using the SDK.
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Proposed Solution
+      description: |
+        Describe the approach for addressing this issue in a clear and focused way.
+
+        Explain what will be changed and what the end result should look like,
+        keeping the scope straightforward and easy to follow.
+      value: |
+        Edit here. An example is provided below.
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        <!-- Example (hidden in submission) -->
+        ## 💡 Proposed Solution — Example (JavaScript)
+
+        Improve the error messages in the `fromString()` method in `AccountId`
+        to provide clear, actionable feedback when parsing fails.
+
+        The changes should:
+        - Preserve existing behavior for valid inputs
+        - Not change the public API
+        - Add specific error messages explaining what formats are accepted
+        - Help developers understand what went wrong
+
+        Example improved error message:
+
+        ```javascript
+        throw new Error(
+            `Invalid AccountId format: "${text}". ` +
+            `Expected formats: "0.0.123", "0x...", or alias key`
+        );
+        ```
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: 👩‍💻 Implementation Steps
+      description: |
+        Walk through how to implement the solution in clear, easy-to-follow steps.
+
+        Beginner Issues often leave a little more room for exploration than Good First
+        Issues, so it’s helpful to describe the overall approach, key files to look at,
+        what to change, and how to check the result.
+      value: |
+        Edit here. Example provided below.
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        <!-- Example (hidden in submission) -->
+        ### 👩‍💻 Implementation — Example (JavaScript)
+
+        To implement this improvement:
+
+        - [ ] Open the `AccountId` class in `src/account/AccountId.js`
+        - [ ] Locate the `fromString()` static method (around line 44-100)
+        - [ ] Review the current error handling and identify places where
+              generic errors are thrown
+        - [ ] Update error messages to be more descriptive and helpful:
+              - Explain which formats are valid
+              - Show what was provided
+              - Suggest how to fix the issue
+        - [ ] Review how other ID classes (like `TokenId`, `TopicId`) handle
+              similar parsing errors for consistency
+        - [ ] Update or extend existing unit tests to verify error messages
+        - [ ] Build the SDK and ensure all tests pass
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: ✅ Acceptance Criteria
+      description: Checklist required for completing this issue
+      value: |
+        To help get this change merged smoothly:
+
+        - [ ] **Scope:** Changes are limited to this issue
+        - [ ] **Behavior:** No other SDK behavior or API changes
+        - [ ] **Tests:** Existing and any new tests pass
+        - [ ] **Review:** All code review feedback addressed
+    validations:
+      required: true
+
+  - type: textarea
+    id: contribution_steps
+    attributes:
+      label: 📋 Step-by-Step Contribution Guide
+      description: Contribution workflow for contributors
+      value: |
+        To help keep contributions consistent and easy to review, we recommend following these steps:
+
+        - [ ] Comment `/assign` to request the issue
+        - [ ] Wait for assignment
+        - [ ] Fork the repository and create a branch
+        - [ ] Set up the project using the instructions in `README.md`
+        - [ ] Make the requested changes
+        - [ ] Sign each commit using `-s -S`
+        - [ ] Push your branch and open a pull request
+
+        Read [Workflow Guide](docs/training/workflow.md) for step-by-step workflow guidance.  
+        Read [README.md](README.md) for setup instructions.
+
+        ❗ Pull requests **cannot be merged** without `S` and `s` signed commits.  
+        See the [Signing Guide](docs/training/signing.md).
+    validations:
+      required: true
+
+  - type: textarea
+    id: information
+    attributes:
+      label: 🤔 Additional Information
+      description: Extra context or resources for contributors
+      value: |
+        If you have questions while working on this issue, feel free to ask!
+
+        You can reach the community and maintainers here:
+        [Hiero-SDK-JavaScript Discord](https://discord.com/channels/905194001349627914/1337424839761465364)
+
+        Whether you need help finding the right file, understanding existing code,
+        or confirming your approach — we’re happy to help.
