@@ -43,6 +43,7 @@ export default class TransactionResponse {
      * @param {TransactionId} props.transactionId
      * @param {Transaction} [props.transaction]
      * @param {Logger | null} [props.logger]
+     * @param {AccountId[]} [props.transactionNodeAccountIds]
      */
     constructor(props) {
         /** @readonly */
@@ -56,6 +57,14 @@ export default class TransactionResponse {
         this.transaction = props.transaction;
 
         this.logger = props.logger;
+
+        /**
+         * The node account IDs that were configured on the transaction.
+         * Used for receipt query failover when allowReceiptNodeFailover is enabled.
+         * @internal
+         * @type {AccountId[] | undefined}
+         */
+        this.transactionNodeAccountIds = props.transactionNodeAccountIds;
     }
 
     /**
@@ -167,6 +176,10 @@ export default class TransactionResponse {
      * `allowReceiptNodeFailover` enabled, the query can fail over to other nodes while
      * still starting with the submitting node first.
      *
+     * When failover is enabled, the node list is determined by:
+     * 1. Transaction's configured nodes (if transaction had specific nodes set), or
+     * 2. Client's network nodes (as fallback)
+     *
      * @param {Client} [client] - Optional client to enable failover behavior
      * @returns {TransactionReceiptQuery}
      */
@@ -176,13 +189,18 @@ export default class TransactionResponse {
         );
 
         // If client is provided and failover is enabled, construct a node list
-        // that starts with the submitting node followed by other client nodes
+        // that starts with the submitting node followed by other nodes
         if (client != null && client.allowReceiptNodeFailover) {
-            const clientNodes = client._network.getNodeAccountIdsForExecute();
+            // Use transaction's configured nodes if available, otherwise use client network
+            const availableNodes =
+                this.transactionNodeAccountIds != null &&
+                this.transactionNodeAccountIds.length > 0
+                    ? this.transactionNodeAccountIds
+                    : client._network.getNodeAccountIdsForExecute();
 
             // Build node list: [submittedNode, ...otherNodes] without duplicates
             const nodeList = [this.nodeId];
-            for (const node of clientNodes) {
+            for (const node of availableNodes) {
                 // Only add if it's not the submitting node (avoid duplicates)
                 if (!node.equals(this.nodeId)) {
                     nodeList.push(node);
