@@ -190,15 +190,18 @@ body:
       label: 📋 Step-by-Step Contribution Guide
       description: Contribution workflow for contributors
       value: |
-        To help keep contributions consistent and easy to review, we recommend following these steps:
+        To help keep contributions consistent and easy to review, remember these key steps:
 
-        - [ ] Comment `/assign` to request the issue
-        - [ ] Wait for assignment
-        - [ ] Fork the repository and create a branch
-        - [ ] Set up the project using the instructions in `README.md`
-        - [ ] Make the requested changes
-        - [ ] Sign each commit using `-s -S`
+        - [ ] Comment `/assign` to request the issue and get assigned
+        - [ ] Fork the repository and create a branch from an updated main
+        - [ ] Make the requested changes and sign each commit using `-s -S`
         - [ ] Push your branch and open a pull request
+
+        Here are some best practices to follow:
+        - [ ] Follow the existing project conventions and examples
+        - [ ] Avoid breaking public APIs
+        - [ ] Include tests and/or example updates where appropriate
+        - [ ] Address all code review feedback
 
         Read [Workflow Guide](manual/training/workflow.md) for step-by-step workflow guidance.  
         Read [README.md](README.md) for setup instructions.
