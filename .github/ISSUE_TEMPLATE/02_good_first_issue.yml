@@ -18,8 +18,8 @@ body:
         **Hiero JS SDK** codebase and workflow.
 
         > Maintainers can read more about:
-        > - [Good First Issues](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/docs/maintainers/guidelines-good-first-issues.md)
-        > - [Good First Issue Candidates](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/docs/maintainers/guidelines-good-first-issue-candidates.md)
+        > - [Good First Issues](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/manual/maintainers/guidelines-good-first-issues.md)
+        > - [Good First Issue Candidates](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/manual/maintainers/guidelines-good-first-issue-candidates.md)
         ---
 
   - type: textarea
@@ -48,7 +48,7 @@ body:
         > as possible.
         >
         > They usually focus on:
-        > - Small, clearly scoped changes  
+        > - Small, clearly scoped and guided changes  
         > - Straightforward updates to existing code or docs  
         > - Simple refactors or clarity improvements  
         >
@@ -73,25 +73,15 @@ body:
     attributes:
       value: |
         <!-- Example (hidden in submission) -->
-        ## 👾 Description of the Issue — Example (JavaScript)
+        ## 👾 Description of the Issue — Example
 
-        The file:
+        The file `README.md` contains a typo on line 42.
 
-        ```src/token/TokenAssociateTransaction.js```
+        **Current text:**
+        > "See the contibution guide for more details."
 
-        contains several methods that are part of the
-        `TokenAssociateTransaction` implementation.
-
-        Some getter and setter methods lack JSDoc comments explaining their
-        parameters and return values, which can make the file harder to
-        understand for new contributors who are unfamiliar with the SDK.
-
-        For example, the `get tokenIds()` and `get accountId()` getter methods
-        are correctly implemented, but lack JSDoc documentation describing
-        what they return.
-
-        The behavior is correct, but adding JSDoc comments would
-        make the file easier to read and maintain.
+        **Should be:**
+        > "See the contribution guide for more details."
 
   - type: textarea
     id: solution
@@ -111,15 +101,7 @@ body:
         <!-- Example (hidden in submission) -->
         ## 💡 Proposed Solution — Example
 
-        Add JSDoc comments to getter methods in
-        `src/token/TokenAssociateTransaction.js` explaining what each getter
-        returns and its purpose.
-
-        The changes should:
-        - Not modify any existing logic
-        - Not change behavior or public APIs
-        - Be limited to JSDoc comments only
-        - Follow the existing JSDoc style used elsewhere in the SDK
+        Fix the typo in `README.md` by changing "contibution" to "contribution".
 
   - type: textarea
     id: implementation
@@ -148,34 +130,10 @@ body:
         <!-- Example (hidden in submission) -->
         ### 👩‍💻 Implementation — Example
 
-        To complete this change:
-
-        - [ ] Open `src/token/TokenAssociateTransaction.js`
-        - [ ] Locate the getter methods around lines 106-110 and 128-132:
-          - `get tokenIds()`
-          - `get accountId()`
-        - [ ] Add **JSDoc comments** above each getter that explain:
-          - What the getter returns
-          - The return type
-
-        **JSDoc guidelines:**
-        - Follow the existing JSDoc format used in the file
-        - Example:
-          ```javascript
-          /**
-           * Get the token IDs to be associated with the account.
-           *
-           * @returns {?TokenId[]}
-           */
-          get tokenIds() {
-              return this._tokenIds;
-          }
-          ```
-
-        - [ ] Run existing tests or CI locally **if already set up**  
-              (CI will also run automatically when you open a pull request)
-
-        This change should only affect JSDoc comments and readability.
+        - [ ] Open `README.md`
+        - [ ] Go to line 42
+        - [ ] Change `contibution` to `contribution`
+        - [ ] Save the file
 
   - type: textarea
     id: acceptance-criteria
@@ -208,11 +166,11 @@ body:
         - [ ] Sign each commit using `-s -S`
         - [ ] Push your branch and open a pull request
 
-        Read [Workflow Guide](docs/training/workflow.md) for step-by-step workflow guidance.  
+        Read [Workflow Guide](manual/training/workflow.md) for step-by-step workflow guidance.  
         Read [README.md](README.md) for setup instructions.
 
-        ❗ Pull requests **cannot be merged** without `S` and `s` signed commits.  
-        See the [Signing Guide](docs/training/signing.md).
+        ❗ Pull requests **cannot be merged** without signed commits (use `-s -S`).  
+        See the [Signing Guide](manual/training/signing.md).
     validations:
       required: true
 
@@ -225,6 +183,6 @@ body:
         If you need help, reach out to the @hiero-ledger/hiero-sdk-good-first-issue-support team.
 
         You can also join our community on Discord:
-        [Hiero-SDK-JavaScript](https://discord.com/channels/905194001349627914/1337424839761465364)
+        [Hiero-SDK-JavaScript](https://discord.com/channels/905194001349627914/1337424656138899537)
 
         Maintainers are happy to help first-time contributors succeed!    

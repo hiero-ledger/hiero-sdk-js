@@ -21,7 +21,7 @@ body:
         while still having clear goals and boundaries.
 
         > Maintainers can read more about:
-        > [Intermediate Issues](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/docs/maintainers/guidelines-intermediate-issues.md)
+        > [Intermediate Issues](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/manual/maintainers/guidelines-intermediate-issues.md)
         ---
 
   - type: textarea
@@ -31,7 +31,8 @@ body:
       description: Who is this issue for?
       value: |
         This issue is a good fit for contributors who are already familiar with the
-        Hiero JS SDK and feel comfortable navigating the codebase.
+        Hiero JS SDK and feel comfortable navigating the codebase. We strongly recommend
+        completing two Beginner Issues before tackling an Intermediate Issue.
 
         Intermediate Issues often involve:
         - Exploring existing implementations  
@@ -184,30 +185,6 @@ body:
       required: true
 
   - type: textarea
-    id: contribution_steps
-    attributes:
-      label: 📋 Contribution Guide
-      description: Contribution workflow for intermediate contributors
-      value: |
-        To help your contribution go as smoothly as possible, we recommend following these steps:
-
-        - [ ] Comment `/assign` to request the issue
-        - [ ] Wait for assignment
-        - [ ] Fork the repository and create a branch
-        - [ ] Set up the project using the instructions in `README.md`
-        - [ ] Make the requested changes
-        - [ ] Sign each commit using `-s -S`
-        - [ ] Push your branch and open a pull request
-
-        Read [Workflow Guide](docs/training/workflow.md) for step-by-step workflow guidance.  
-        Read [README.md](README.md) for setup instructions.
-
-        ❗ Pull requests **cannot be merged** without `S` and `s` signed commits.  
-        See the [Signing Guide](docs/training/signing.md).
-    validations:
-      required: true
-
-  - type: textarea
     id: additional-info
     attributes:
       label: 📚 Additional Context or Resources
@@ -216,6 +193,6 @@ body:
       value: |
         If you have questions, the community is happy to help:
 
-        https://discord.com/channels/905194001349627914/1337424839761465364
+        https://discord.com/channels/905194001349627914/1337424656138899537
     validations:
       required: false

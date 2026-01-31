@@ -140,7 +140,7 @@ The goal is to make the path from “open the issue” to “open a PR” feel s
 **Title:** Fix typo in README (“mantainer” → “maintainer”)
 
 **Description:**  
-In `.README.md` at line 96, there is a spelling mistake.
+In `README.md` at line 96, there is a spelling mistake.
 
 Current text:  
 `mantainer guide`
@@ -151,7 +151,7 @@ Should be:
 This is a direct text replacement only.
 
 **Files to Change**
-- `.README.md`
+- `README.md`
 
 **Acceptance Criteria**
 - [ ] The text is corrected  

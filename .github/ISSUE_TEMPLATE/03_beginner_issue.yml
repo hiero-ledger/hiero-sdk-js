@@ -18,7 +18,7 @@ body:
         and deepen their understanding of the **Hiero JS SDK** codebase.
 
         > Maintainers can read more about:
-        > [Beginner Issues](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/docs/maintainers/guidelines-beginner-issues.md)
+        > [Beginner Issues](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/manual/maintainers/guidelines-beginner-issues.md)
         ---
 
   - type: textarea
@@ -28,7 +28,8 @@ body:
       description: Who is this issue for?
       value: |
         This issue is a great fit for contributors who are ready to explore the Hiero JavaScript
-        codebase a little more and take on slightly more independent work.
+        codebase a little more and take on slightly more independent work. We strongly recommend
+        completing a Good First Issue before tackling a Beginner Issue.
 
         Beginner Issues often involve reading existing JavaScript code, understanding how
         different parts of the SDK fit together, and making small, thoughtful updates
@@ -83,19 +84,12 @@ body:
         <!-- Example (hidden in submission) -->
         ## 👾 Description of the Issue — Example (JavaScript)
 
-        The `AccountId` class located in:
+        The `TokenUpdateTransaction` class in `src/token/TokenUpdateTransaction.js`
+        has a private `_tokenMemo` property that stores the memo for a token update,
+        but there is no public getter to retrieve its current value.
 
-        ```
-        src/account/AccountId.js
-        ```
-
-        currently throws a generic error message when parsing fails in the
-        `fromString()` method. When developers provide an invalid account ID
-        string, the error message doesn't clearly explain what formats are
-        accepted or what went wrong.
-
-        Improving these error messages would make debugging and development
-        easier for developers using the SDK.
+        Adding a `get tokenMemo()` getter would allow developers to inspect the
+        memo value after setting it, which is useful for validation and debugging.
 
   - type: textarea
     id: solution
@@ -117,23 +111,13 @@ body:
         <!-- Example (hidden in submission) -->
         ## 💡 Proposed Solution — Example (JavaScript)
 
-        Improve the error messages in the `fromString()` method in `AccountId`
-        to provide clear, actionable feedback when parsing fails.
+        Add a `get tokenMemo()` getter to `TokenUpdateTransaction` and a unit test
+        to verify it works correctly.
 
         The changes should:
-        - Preserve existing behavior for valid inputs
-        - Not change the public API
-        - Add specific error messages explaining what formats are accepted
-        - Help developers understand what went wrong
-
-        Example improved error message:
-
-        ```javascript
-        throw new Error(
-            `Invalid AccountId format: "${text}". ` +
-            `Expected formats: "0.0.123", "0x...", or alias key`
-        );
-        ```
+        - Add a getter that returns the `_tokenMemo` property
+        - Follow the existing getter pattern used in the class
+        - Add a unit test that sets a memo and verifies the getter returns it
 
   - type: textarea
     id: implementation
@@ -156,20 +140,34 @@ body:
         <!-- Example (hidden in submission) -->
         ### 👩‍💻 Implementation — Example (JavaScript)
 
-        To implement this improvement:
+        **Step 1: Add the getter**
 
-        - [ ] Open the `AccountId` class in `src/account/AccountId.js`
-        - [ ] Locate the `fromString()` static method (around line 44-100)
-        - [ ] Review the current error handling and identify places where
-              generic errors are thrown
-        - [ ] Update error messages to be more descriptive and helpful:
-              - Explain which formats are valid
-              - Show what was provided
-              - Suggest how to fix the issue
-        - [ ] Review how other ID classes (like `TokenId`, `TopicId`) handle
-              similar parsing errors for consistency
-        - [ ] Update or extend existing unit tests to verify error messages
-        - [ ] Build the SDK and ensure all tests pass
+        - [ ] Open `src/token/TokenUpdateTransaction.js`
+        - [ ] Find where other getters are defined (look for `get tokenId()` as a reference)
+        - [ ] Add a new getter following the same pattern:
+          ```javascript
+          get tokenMemo() {
+              return this._tokenMemo;
+          }
+          ```
+
+        **Step 2: Add a unit test**
+
+        - [ ] Open `test/unit/TokenUpdateTransaction.js`
+        - [ ] Add a test that verifies the getter:
+          ```javascript
+          it("should return the token memo", function () {
+              const memo = "test memo";
+              const transaction = new TokenUpdateTransaction()
+                  .setTokenMemo(memo);
+
+              expect(transaction.tokenMemo).to.equal(memo);
+          });
+          ```
+
+        **Step 3: Verify**
+
+        - [ ] Run `npm test` to ensure all tests pass
 
   - type: textarea
     id: acceptance-criteria
@@ -202,11 +200,11 @@ body:
         - [ ] Sign each commit using `-s -S`
         - [ ] Push your branch and open a pull request
 
-        Read [Workflow Guide](docs/training/workflow.md) for step-by-step workflow guidance.  
+        Read [Workflow Guide](manual/training/workflow.md) for step-by-step workflow guidance.  
         Read [README.md](README.md) for setup instructions.
 
-        ❗ Pull requests **cannot be merged** without `S` and `s` signed commits.  
-        See the [Signing Guide](docs/training/signing.md).
+        ❗ Pull requests **cannot be merged** without signed commits (use `-s -S`).  
+        See the [Signing Guide](manual/training/signing.md).
     validations:
       required: true
 
@@ -219,7 +217,7 @@ body:
         If you have questions while working on this issue, feel free to ask!
 
         You can reach the community and maintainers here:
-        [Hiero-SDK-JavaScript Discord](https://discord.com/channels/905194001349627914/1337424839761465364)
+        [Hiero-SDK-JavaScript Discord](https://discord.com/channels/905194001349627914/1337424656138899537)
 
         Whether you need help finding the right file, understanding existing code,
         or confirming your approach — we’re happy to help.

@@ -93,7 +93,7 @@ Beginner Issues are usually:
 
 - ⏱ **Estimated time:** 4–8 hours  
 - 📄 **Scope:** 1–3 related files  
-- 🧠 **Challenge level:** Local reasoning and small judgment calls  
+- 🧠 **Challenge level:** Understanding immediate code context — no architectural decisions or cross-file dependencies
 
 If an issue seems likely to involve exploring many parts of the codebase or take significantly longer, it may be a better fit for a different category.
 
