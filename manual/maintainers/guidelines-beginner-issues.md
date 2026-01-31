@@ -27,7 +27,7 @@ The Beginner label simply highlights tasks that are a great next step after a Go
 Beginner Issues are a natural next step after  
 [Good First Issues](./guidelines-good-first-issues.md).
 
-They’re designed for contributors who feel comfortable with the basic contribution workflow and are ready to:
+They’re designed for contributors who are starting to feel more comfortable with the basic contribution workflow and are ready to:
 
 - Read existing code  
 - Understand local context  
