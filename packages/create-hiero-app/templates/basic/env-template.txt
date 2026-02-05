@@ -1,0 +1,15 @@
+# Hiero Network Configuration
+# Options: testnet, previewnet, mainnet, local-node
+VITE_HIERO_NETWORK=testnet
+
+# ===== OPTION 1: Direct SDK Connection (Testing/Development) =====
+# Get testnet credentials at: https://portal.hedera.com/
+VITE_OPERATOR_ID=0.0.YOUR_ACCOUNT_ID
+VITE_OPERATOR_KEY=YOUR_PRIVATE_KEY_HEX_ENCODED
+
+# ===== OPTION 2: WalletConnect (Production/User Wallets) =====
+# Get a free Project ID at: https://cloud.walletconnect.com/
+VITE_WALLETCONNECT_PROJECT_ID=YOUR_PROJECT_ID_HERE
+
+# Note: In production, NEVER expose private keys in the frontend!
+# Use WalletConnect for production apps where users connect their own wallets.
