@@ -1,0 +1,317 @@
+name: Good First Issue Template
+description: Create a Good First Issue for new contributors
+title: "[Good First Issue]: "
+labels: ["Good First Issue"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## **Thanks for creating a good first issue!** 😊
+
+        We truly appreciate your time and effort, welcome!
+        This template is designed to help you create a Good First Issue (GFI) : a small, well-scoped task that helps new contributors learn the codebase and workflow.
+        ---
+
+  - type: textarea
+    id: intro
+    attributes:
+      label: 🆕🐥 Newcomer Friendly
+      description: Who is this issue for?
+      value: |
+        This **[Good First Issue](https://github.com/hiero-ledger/hiero-sdk-js/issues?q=is%3Aissue%20state%3Aopen%20label%3A%22Good%20First%20Issue%22%20no%3Aassignee)** is a guided, well-scoped task intended for new contributors to the Hiero JavaScript SDK.
+
+        #### What you'll do
+        - ✅ understand how the repository is structured
+        - ✅ practice the standard contribution workflow
+        - ✅ submit and merge a pull request
+
+        #### Support
+        A maintainer or mentor actively monitors this issue and will help **guide it to completion**.
+
+        > [!IMPORTANT]
+        > **This issue does not require prior domain knowledge.**
+        >
+        > - No Hiero or Hedera experience needed  
+        > - No distributed ledger background required  
+        > - **Basic JavaScript/Node.js and Git are sufficient**
+
+        > [!NOTE]
+        > ⏱️ **Typical time to complete:** 30–90 minutes (once setup is done)  
+        > 🧩 **Difficulty:** Small, well-contained change  
+        > 🎓 **Best for:** New contributors
+
+        **🏁 Completion**
+        When this issue is complete, you will have:
+
+        - ✅ Solved a real issue
+        - ✅ A merged pull request in the Hiero JavaScript SDK
+        - ✅ Your name in the project history
+        - ✅ Confidence to take on larger issues next
+
+  - type: markdown
+    attributes:
+      value: |
+        > [!IMPORTANT]
+        > #### 📋 Good First Issue (GFI) Guidelines
+        > A **Good First Issue** is a small, well-scoped task that helps new contributors get familiar with the codebase and contribution workflow.
+        >
+        > **Often a good fit for Good First Issues:**
+        > - Spelling or grammar fixes
+        > - Small documentation formatting improvements
+        > - Purely structural refactors of examples
+        > - Minor, clearly described edits to JSDoc or comments
+        > - Light file moves or renames for clarity
+        > - Applying formatting/linting tools (e.g. Prettier, ESLint) in limited areas
+        >
+        > More involved tasks may be a better fit for **Beginner**, **Intermediate**, or **Advanced** issues.
+        >
+        > If you're unsure, the **Good First Issue Candidate Template** can be used.
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: 👾 Issue description
+      description: |
+        Describe the issue in a way that's easy for new contributors to understand.
+        Briefly explain why this change is useful or needed, even if the impact seems small.
+        Please avoid assuming prior knowledge of the language, codebase, or Hiero, as Good First Issues are often surfaced to new developers.
+        Links to relevant documentation or code are very welcome.
+      value: |
+        Edit here.
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Proposed Solution
+      description: |
+        Describe what a good solution would look like.
+        Keep this high-level and easy to understand. Implementation details can go in the subsequent Implementation Steps section.
+      value: |
+        Edit here.
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: 🛠️ Implementation Steps
+      description: |
+        To make this issue easy to pick up and complete, please include:
+        - Which files need to be changed or added
+        - Any functions, classes, or modules involved
+        - The complete steps to implement the solution
+        - What the final result or output should look like
+        - Links to relevant documentation or code (if helpful)
+        For good first issues, please keep this as guided and clear as possible.
+      value: |
+        Edit here.
+
+        ---
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        <!-- Complete example (hidden in submission) -->
+        <details>
+        <summary><strong>📝 Complete Example: Refactor an example to use helper functions</strong></summary>
+
+        ---
+
+        **👾 Issue Description**
+
+        The example `examples/create-account.js` demonstrates how to create an account, but all the logic is in a single `main()` function. This makes it harder for users to understand the individual steps involved.
+
+        Breaking the example into smaller, well-named functions would improve readability and help users understand each step of the process.
+
+        ---
+
+        **💡 Proposed Solution**
+
+        Refactor the monolithic `main()` function into separate helper functions:
+        - `setupClient()` - Initialize and configure the client
+        - `createAccount()` - Create the new account
+        - `displayResults()` - Show the results to the user
+
+        Each function should have a clear JSDoc comment explaining what it does.
+
+        ---
+
+        **🛠️ Implementation Steps**
+
+        - [ ] Open `examples/create-account.js` and review the current structure.
+        - [ ] Extract client setup logic into a `setupClient()` function.
+        - [ ] Extract account creation logic into a `createAccount(client, operatorKey)` function.
+        - [ ] Add JSDoc comments to each new function.
+        - [ ] Update `main()` to call these helper functions.
+        - [ ] Run the example to verify it still works: `node examples/create-account.js`.
+        - [ ] Run the linter: `pnpm lint`.
+
+        ---
+
+        </details>
+
+  - type: textarea
+    id: setup_steps
+    attributes:
+      label: 📋 Step-by-Step Setup Guide
+      description: Provide a step-by-step setup guide for new contributors
+      value: |
+        #### Suggestions:
+        - [ ] Editor: Visual Studio Code or your preferred JavaScript/Node.js editor
+        - [ ] Git: [GitHub Desktop](https://desktop.github.com/) or command-line Git
+        - [ ] Hedera Testnet account and `.env` (see [README](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/README.md) and [.env.sample](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/.env.sample))
+        - [ ] (Optional) GPG key for signed commits: see [CONTRIBUTING](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/CONTRIBUTING.md)
+
+        #### Setup the Hiero JavaScript SDK for development
+        - [ ] **Fork** the [hiero-sdk-js](https://github.com/hiero-ledger/hiero-sdk-js) repository and clone your fork locally
+        - [ ] **Connect** origin to your fork and add upstream: `git remote add upstream https://github.com/hiero-ledger/hiero-sdk-js.git`
+        - [ ] **Install** dependencies: `pnpm install` (see [README](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/README.md)); build protobufs if needed (see repo Taskfile or CONTRIBUTING)
+        - [ ] **Sync with main:** `git fetch upstream && git checkout main && git merge upstream/main`
+
+        You are set up! 🎉
+    validations:
+      required: true
+
+  - type: textarea
+    id: contribution_steps
+    attributes:
+      label: 📋 Step-by-step contribution guide
+      description: Provide a contribution workflow suitable for new contributors.
+      value: |
+        #### ✅ Get ready
+        - [ ] **Claim the issue:** comment that you'd like to work on it (or use `/assign` if the repo uses a bot)
+        - [ ] **Double check the issue:** re-read the description and any implementation steps
+        - [ ] **Ask questions early:** ask on [Discord](https://discord.com/channels/373889138199494658/616725732650909710), or tag maintainers in a comment
+        - [ ] **Sync with main:** `git fetch upstream && git merge upstream/main`
+        - [ ] 💡 Tip: Before coding, leave a short comment describing what you plan to change.
+
+        #### 🛠️ Solve the Issue
+        - [ ] **Create a branch from `main`:** e.g. `git checkout -b fix/your-issue-description`
+        - [ ] **Implement the solution** following the implementation steps in the issue
+        - [ ] **Commit:** use signed commits if required, e.g. `git commit -S -s -m "chore: your message"` (see [CONTRIBUTING](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/CONTRIBUTING.md))
+        - [ ] **Changelog:** add an entry under **[UNRELEASED]** in [CHANGELOG.md](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/CHANGELOG.md) if the project requires it
+
+        #### 🚀 Create the pull request
+        - [ ] **Push:** `git push origin your-branch-name`
+        - [ ] **Open a PR:** [hiero-sdk-js pulls](https://github.com/hiero-ledger/hiero-sdk-js/pulls)
+        - [ ] **Describe your changes** in the PR description and link the issue (e.g. "Fixes #123")
+        - [ ] **Submit the pull request** 🎉
+
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: ✅ Acceptance criteria
+      description: |
+        Edit or expand this checklist with what is required to merge a pull request for this issue.
+      value: |
+        To be able to close this issue, the following criteria must be met:
+
+        - [ ] **The issue is solved:**  I've carefully read and implemented the issue requirements
+
+        - [ ] **I did not add extra changes:**  I did not modify anything beyond what is described in the issue
+
+        - [ ] **Behavior:**  All other existing features continue to work as before
+
+        - [ ] **Checks and feedback:**  All checks pass and any requested changes have been made
+    validations:
+      required: true
+
+  - type: textarea
+    id: getting_help
+    attributes:
+      label: 🧭 Getting help if you're stuck
+      description: How to get support while working on this issue.
+      value: |
+        If questions come up, don't spend more than **20 minutes** blocked.
+
+        > [!TIP]
+        >
+        > - Comment on this issue and tag `@good_first_issue_support_team` or `@mentor_name`
+        > - Ask for help in [Discord](https://discord.com/channels/373889138199494658/616725732650909710)
+        >
+
+        ---
+
+  - type: textarea
+    id: pr_expectations
+    attributes:
+      label: 🤔 What to expect after submitting a PR
+      description: Explain what happens after a pull request is opened.
+      value: |
+        Once you open a pull request, here's what happens next.
+
+        **🤖 1. Automated checks**
+        A small set of automated checks must pass before merging (signing, changelog, tests, examples, code quality).
+        Open any failed check to see details.
+
+        ---
+
+        **🤝 2. AI feedback (CodeRabbit)**
+        CodeRabbit AI may suggest improvements or flag issues.
+        Feedback is advisory — use what's relevant and helpful.
+
+        ---
+
+        **😎 3. Team review**
+        A JavaScript SDK team member reviews your PR within **1–3 days**.
+        You may be asked to make changes or your PR may be approved.
+        Approved PRs are usually merged within **one day**.
+
+
+        **🔄 Merge conflicts (sometimes)**
+        Conflicts can happen and are normal as the SDK updates.
+        Changelog conflicts can be resolved online in the PR in the merge editor, accepting both entries.
+        Others may require rebasing onto `main`.
+
+        ---
+
+    validations:
+      required: true
+
+  - type: textarea
+    id: ai_usage_guidelines
+    attributes:
+      label: 🤖 AI usage guidelines
+      description: Guidance on using AI tools responsibly for this issue.
+      value: |
+        You're welcome to use AI tools while working on this issue.
+
+        Many contributors do — especially for:
+        - understanding unfamiliar code
+        - drafting small refactors
+        - sanity-checking approaches
+
+        **Use AI responsibly:**
+        - review suggestions carefully
+        - apply changes incrementally
+        - test as you go
+
+        If in doubt, ask — maintainers are happy to help.
+
+  - type: textarea
+    id: information
+    attributes:
+      label: 🤔 Additional Help
+      description: Provide any extra resources or context for contributors to solve this good first issue
+      value: |
+        #### First Points of Contact:
+        - [Discord](https://discord.gg/rhPPSwwmPP)
+        - Comment on the issue and tag maintainers (for JavaScript SDK questions)
+        The more you ask, the more you learn!
+
+        #### Documentation:
+        - [README](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/README.md)
+        - [CONTRIBUTING](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/CONTRIBUTING.md)
+        - [CHANGELOG](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/CHANGELOG.md)
+        - [Manual / docs](https://github.com/hiero-ledger/hiero-sdk-js/tree/main/manual) (configuration, migration, release)
+        - [Examples](https://github.com/hiero-ledger/hiero-sdk-js/tree/main/examples)
+        - [JSDoc](https://hiero-ledger.github.io/hiero-sdk-js/)

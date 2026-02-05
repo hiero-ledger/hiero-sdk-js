@@ -1,0 +1,220 @@
+name: Beginner Issue Template
+description: Create a Beginner Issue for fairly new contributors
+title: "[Beginner]: "
+labels: ["beginner"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## **Thanks for contributing!** 😊
+
+        We truly appreciate your time and effort. If this is your first open-source contribution, welcome!
+        This template is designed to help you create a Beginner-friendly issue: an easy, well-scoped task that helps fairly new contributors learn the codebase and build their skills.
+        ---
+
+  - type: textarea
+    id: intro
+    attributes:
+      label: 🐥 Beginner Friendly
+      description: Who is this issue for?
+      value: |
+        This issue is intended for contributors who have previously completed a Good First Issue in [Hiero](https://hiero.org) and are at a beginner level.
+        We recognize that gaining confidence and building skills are equally important steps in the open-source contributor journey.
+        The purpose of this issue—and others listed under [**Find a beginner issue**](https://github.com/hiero-ledger/hiero-sdk-js/issues?q=is%3Aissue%20state%3Aopen%20label%3Abeginner%20no%3Aassignee)—is to provide a supportive, low-pressure environment where you can learn, practice, and grow your contribution skills with confidence.
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        > [!IMPORTANT]
+        > ### 🐥 Beginner Issue Guidelines
+        >
+        > Beginner Issues are intended for contributors who are familiar with the project workflow and have **some programming experience** and are wanting opportunities to build skills.
+        > These issues may require **light investigation, interpretation of existing code, and some self-initiative**, but should remain **well-scoped with a clear intent**.
+        >
+        > **What we generally consider beginner issues:**
+        >
+        > - **Small, well-scoped updates to existing tests**:
+        >   - Adjusting or extending an existing test to cover a simple case
+        > - **Narrow changes or additions to `src` functionality** using common JavaScript skills, such as:
+        >   - Implementing or refining `toString()` methods
+        >   - Implementing or refining `toJSON()` methods
+        >   - JSDoc improvements, such as adding descriptions, `@param`, `@returns`, or `@example` tags
+        > - **Documentation improvements** in examples such as creating new examples or JSDoc for existing functions
+        > - **Functional improvements to existing examples**:
+        >   - Adding steps or variations to better demonstrate functionality
+        >
+        > **What we generally do NOT consider beginner issues:**
+        > - Tasks better suited for Good First Issues (purely mechanical or fully guided changes)
+        > - Creating entirely new examples or test suites
+        > - Changes to core DLT functionality (for example, `_toProtobuf` or `_fromProtobuf`)
+        > - Work that requires deep knowledge across multiple areas of the codebase
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: 👾 Description of the issue
+      description: |
+        Describe the issue in a way that is understandable and approachable to beginner contributors.
+        Assume such contributors have at most beginner-level knowledge about programming, the codebase, and Hiero.
+        It is helpful to add links to the relevant documentation and/or code sections.
+        Slightly challenge them to encourage learning and research but make sure the issue is still simple.
+      value: |
+        Edit here.
+
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Proposed Solution
+      description: |
+        Describe the steps needed to solve the issue.
+        Please break down the steps as much as possible and make sure that they are easy to follow.
+        If possible, add links to the relevant documentation and/or code sections.
+      value: |
+        Edit here.
+
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: 👩‍💻 Implementation Steps
+      description: |
+        Describe the technical steps needed to solve the issue.
+        Please break down the steps as much as possible and make sure that they are easy to follow.
+        If possible, add links to the relevant documentation and/or code.
+      value: |
+        Edit here.
+
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        <!-- Complete example (hidden in submission) -->
+        <details>
+        <summary><strong>📝 Complete Example: Implement a toJSON() method</strong></summary>
+
+        ---
+
+        **👾 Issue Description**
+
+        The `FileId` class at `src/file/FileId.js` does not implement a `toJSON()` method. This makes it less convenient to serialize file IDs when logging or debugging, as `JSON.stringify()` will not produce a meaningful output.
+
+        For example, calling `JSON.stringify(fileId)` on a `FileId` instance currently produces output similar to:
+
+        ```javascript
+        {"shard":{"low":0,"high":0,"unsigned":false},"realm":{"low":0,"high":0,"unsigned":false},"num":{"low":102,"high":0,"unsigned":false},"_checksum":null}
+        ```
+
+        This is difficult to read because the `Long` values are serialized as objects rather than numbers.
+
+        ---
+
+        **💡 Proposed Solution**
+
+        Implement a `toJSON()` method for the `FileId` class that returns a clean, readable object representation:
+
+        ```javascript
+        { shard: 0, realm: 0, num: 102 }
+        ```
+
+        ---
+
+        **🛠️ Implementation Steps**
+
+        - [ ] Locate the `FileId` class in `src/file/FileId.js`
+        - [ ] Review the existing `toString()` method to understand how file IDs are currently formatted
+        - [ ] Check whether other ID classes in the SDK (like `AccountId`, `ContractId`) implement `toJSON()` and follow a similar pattern
+        - [ ] Implement the `toJSON()` method so it:
+          - Returns an object with `shard`, `realm`, and `num` as number values
+          - Converts `Long` values to numbers using `.toNumber()` or `.toString()`
+        - [ ] Add JSDoc for the new method with `@returns` annotation
+        - [ ] Test the new method by running: `node -e "const {FileId} = require('./src'); console.log(JSON.stringify(new FileId(0,0,102)))"`
+        - [ ] Run the linter: `pnpm lint`
+
+        ---
+
+        </details>
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: ✅ Acceptance Criteria
+      description: |
+        Edit or expand the checklist on what is required to be able to merge a pull request for this issue.
+      value: |
+        - [ ] **The issue is solved:**  
+              My changes do exactly what the issue asked for.
+
+        - [ ] **I did not add extra changes:**  
+              I did not modify anything that was not mentioned in the issue description.
+
+        - [ ] **Nothing else was broken:**  
+              All existing features still work the same as before.
+
+        - [ ] **All checks pass:**  
+              The automated tests (unit and integration tests) run successfully.
+    validations:
+      required: true
+
+  - type: textarea
+    id: contribution_steps
+    attributes:
+      label: 📋 Step-by-Step Contribution Guide
+      description: Provide a contribution workflow suitable for new contributors
+      value: |
+        - [ ] **Assignment:** Comment on the issue to get assigned (or use `/assign` if the repo uses a bot)
+        - [ ] **Fork, Branch and Work on the issue:** Create a copy of the repository, create a branch for the issue and solve the problem. For instructions, please read our [CONTRIBUTING](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/CONTRIBUTING.md) file.
+        - [ ] **Install dependencies:** Run `pnpm install` to install all dependencies (see [README](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/README.md))
+        - [ ] **DCO and GPG key sign each commit:** Each commit must be signed with `-s` and `-S`. See [CONTRIBUTING](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/CONTRIBUTING.md) for details.
+        - [ ] **Add a Changelog Entry:** Your pull request may require a changelog entry under **[UNRELEASED]** in [CHANGELOG.md](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/CHANGELOG.md).
+        - [ ] **Push and Create a Pull Request:** Once your issue is resolved, your commits are signed, and you have a changelog entry (if needed), push your changes and create a pull request at [hiero-sdk-js pulls](https://github.com/hiero-ledger/hiero-sdk-js/pulls).
+        - [ ] **You did it 🎉:** A maintainer or committer will review your pull request and provide feedback. If approved, we will merge the fix in the main branch. Thanks for being part of the Hiero community as an open-source contributor ❤️
+
+        ***IMPORTANT*** Your pull request CANNOT BE MERGED until you sign your commits with `git commit -S -s -m "chore: your commit message"`.
+    validations:
+      required: true
+
+  - type: textarea
+    id: ai_usage_guidelines
+    attributes:
+      label: 🤖 AI Usage Guidelines
+      description: Guidance on using AI tools responsibly for this issue
+      value: |
+        You are welcome to use AI to help you understand and solve this issue.
+
+        Because AI tools can sometimes make mistakes, please take care to:
+
+        - Only implement what is described in this issue  
+        - Avoid changing anything else in the file  
+        - Be careful when modifying parameters or return statements, as this may affect runtime behavior  
+
+        If you're unsure, ask your mentor or the maintainers for help — they can provide expert JavaScript SDK guidance and point you to the right examples or methods.
+    validations:
+      required: false
+
+  - type: textarea
+    id: information
+    attributes:
+      label: 🤔 Additional Information
+      description: Provide any extra resources or context for contributors to solve this beginner issue
+      value: |
+        For more help, we have documentation available:
+        - [README](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/README.md)
+        - [CONTRIBUTING](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/CONTRIBUTING.md)
+        - [Manual / docs](https://github.com/hiero-ledger/hiero-sdk-js/tree/main/manual)
+        - [Examples](https://github.com/hiero-ledger/hiero-sdk-js/tree/main/examples)
+        - [JSDoc](https://hiero-ledger.github.io/hiero-sdk-js/)
+
+        Additionally, we invite you to join our community on [Discord](https://discord.gg/rhPPSwwmPP).
+
+        You can also ask for help in a comment below!
