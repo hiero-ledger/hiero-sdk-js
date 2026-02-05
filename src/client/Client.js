@@ -132,6 +132,18 @@ export default class Client {
         /** @private */
         this._defaultRegenerateTransactionId = true;
 
+        /**
+         * When enabled, allows receipt queries to fail over to other nodes
+         * if the submitting node is unresponsive. Default is false to preserve
+         * existing semantics where receipt queries are pinned to the submitting node.
+         *
+         * Tradeoff: Improved availability vs the rare case where only the submitting
+         * node may have final failure information.
+         *
+         * @private
+         */
+        this._allowReceiptNodeFailover = false;
+
         /** @private */
         this._requestTimeout = DEFAULT_REQUEST_TIMEOUT;
 
@@ -477,6 +489,32 @@ export default class Client {
      */
     setDefaultRegenerateTransactionId(defaultRegenerateTransactionId) {
         this._defaultRegenerateTransactionId = defaultRegenerateTransactionId;
+        return this;
+    }
+
+    /**
+     * @returns {boolean}
+     */
+    get allowReceiptNodeFailover() {
+        return this._allowReceiptNodeFailover;
+    }
+
+    /**
+     * Enable or disable receipt query failover to other nodes when the submitting node
+     * is unresponsive. When enabled, receipt queries will start with the submitting node
+     * but can fail over to other nodes in the network if needed.
+     *
+     * Default is `false` to preserve existing behavior where receipt queries are pinned
+     * to the submitting node only.
+     *
+     * **Tradeoff**: Enabling this improves availability for high-throughput/relay use cases,
+     * but in rare cases only the submitting node may have the final failure information.
+     *
+     * @param {boolean} allowReceiptNodeFailover
+     * @returns {this}
+     */
+    setAllowReceiptNodeFailover(allowReceiptNodeFailover) {
+        this._allowReceiptNodeFailover = allowReceiptNodeFailover;
         return this;
     }
 
