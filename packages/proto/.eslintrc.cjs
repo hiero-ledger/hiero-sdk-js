@@ -1,5 +1,6 @@
 module.exports = {
     root: true,
+    ignorePatterns: ["scripts/**/*.js"],
     env: {
         browser: true,
         es6: true,
