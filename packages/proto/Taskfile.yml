@@ -56,7 +56,7 @@ tasks:
 
     delete:submodule:
         cmds:
-            - find src/services -mindepth 1 -delete
+            - npx -y rimraf --glob "src/services/*" "src/services/.[!.]*" "src/services/..?*"
             - echo "Submodule contents removed successfully, folder retained."
 
     install:
