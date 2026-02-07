@@ -1,15 +1,29 @@
 # Solo Quick Reference Card
 
+> **⚠️ Platform Requirements:** Solo can only run on **macOS** or **Linux**. Windows users must use WSL2.
+> 
+> **RAM Requirements:**
+> - Single node: Minimum **12 GB RAM**
+> - Dual node: Minimum **24 GB RAM** (required for dynamic address book tests)
+>
+> 📚 [Official Solo Documentation](https://solo.hiero.org/)
+
 ## Essential Commands
 
 ```bash
-# Setup Solo (first time or fresh start)
+# Setup Solo - single node (default, requires 12 GB RAM)
 task solo:setup
+
+# Setup Solo - dual node (requires 24 GB RAM, needed for DAB tests)
+task solo:setup:dual-node
 
 # Setup with custom versions
 task solo:setup -- --consensus-node-version v0.70.0
 task solo:setup -- --mirror-node-version v0.146.0
 task solo:setup -- --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
+
+# Dual node with custom versions
+task solo:setup:dual-node -- --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
 
 # Setup with local build (overrides consensus-node-version)
 task solo:setup -- --local-build-path ../hiero-consensus-node/hedera-node/data
@@ -35,19 +49,20 @@ task solo:teardown
 
 -   **Consensus Node:** v0.69.1 (or use `--local-build-path` for local builds)
 -   **Mirror Node:** v0.145.2
+-   **Default Nodes:** 1 node (use `task solo:setup:dual-node` for 2 nodes)
 
 Override with `--consensus-node-version` and/or `--mirror-node-version` flags.  
 Use `--local-build-path` for testing with a local Hiero consensus node build.
 
 ## Service Endpoints
 
-| Service     | Endpoint          |
-| ----------- | ----------------- |
-| Node 1      | `localhost:50211` |
-| Node 2      | `localhost:51211` |
-| Mirror REST | `localhost:5551`  |
-| Mirror Web3 | `localhost:8545`  |
-| Mirror gRPC | `localhost:5600`  |
+| Service     | Endpoint          | Availability      |
+| ----------- | ----------------- | ----------------- |
+| Node 1      | `localhost:50211` | Always            |
+| Node 2      | `localhost:51211` | Dual-node only    |
+| Mirror REST | `localhost:5551`  | Always            |
+| Mirror Web3 | `localhost:8545`  | Always            |
+| Mirror gRPC | `localhost:5600`  | Always            |
 
 ## Environment Variables
 
@@ -122,19 +137,39 @@ brew install kind kubectl
 
 ## First Time Setup Workflow
 
+### Single Node Setup (Default, 12 GB RAM)
+
 ```bash
 # 1. Install project dependencies (REQUIRED FIRST!)
 task install
 
 # 2. Setup Solo (takes ~5-10 minutes)
-# Use defaults (consensus: v0.69.1, mirror: v0.145.2)
 task solo:setup
 
-# Or with custom versions
-task solo:setup -- --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
+# 3. Verify setup
+task solo:status
+cat .env
 
-# 3. Configure hosts for dynamic address book tests
-# REQUIRED if you plan to run dynamic address book tests
+# 4. Run tests
+task test:integration
+
+# 5. Done! Teardown when finished
+task solo:teardown
+```
+
+### Dual Node Setup (For DAB Tests, 24 GB RAM)
+
+```bash
+# 1. Install project dependencies (REQUIRED FIRST!)
+task install
+
+# 2. Setup Solo with dual nodes (takes ~10-15 minutes)
+task solo:setup:dual-node
+
+# Or with custom versions
+task solo:setup:dual-node -- --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
+
+# 3. Configure hosts for dynamic address book tests (REQUIRED for DAB tests)
 echo "127.0.0.1 network-node1-svc.solo.svc.cluster.local" | sudo tee -a /etc/hosts
 echo "127.0.0.1 envoy-proxy-node1-svc.solo.svc.cluster.local" | sudo tee -a /etc/hosts
 echo "127.0.0.1 network-node2-svc.solo.svc.cluster.local" | sudo tee -a /etc/hosts
@@ -153,8 +188,8 @@ task solo:teardown
 
 **Notes:**
 
--   You must run `task install` before `task solo:setup` to install Solo as a dependency.
--   The `/etc/hosts` configuration is required for dynamic address book tests to pass.
+-   You must run `task install` before setup to install Solo as a dependency.
+-   The `/etc/hosts` configuration is only required for dynamic address book tests with dual-node setup.
 
 ## Daily Development Workflow
 

@@ -192,7 +192,15 @@ For detailed information on configuring the SDK, including environment variables
 
 ## Local Development Setup
 
-For contributors and developers who want to run integration tests locally, we provide **Solo** - the official Hiero local network solution. Solo provides a production-like Kubernetes-based environment with multiple consensus nodes and mirror node services.
+For contributors and developers who want to run integration tests locally, we provide **[Solo](https://solo.hiero.org/)** - the official Hiero local network solution. Solo provides a production-like Kubernetes-based environment with consensus nodes and mirror node services.
+
+> **Platform Requirements:** Solo can only run on **macOS** or **Linux**. Windows users must use WSL2.
+> 
+> **RAM Requirements:**
+> - Single node setup: Minimum **12 GB RAM**
+> - Dual node setup: Minimum **24 GB RAM** (required for dynamic address book tests)
+>
+> For complete system requirements, see the [official Solo documentation](https://solo.hiero.org/latest/docs/step-by-step-guide/#prerequisites).
 
 ### Quick Setup
 
@@ -205,12 +213,16 @@ For contributors and developers who want to run integration tests locally, we pr
 
 2. **Set up Solo local network:**
    ```bash
+   # Single node setup (default, requires 12 GB RAM)
    task solo:setup
+   
+   # OR dual node setup (requires 24 GB RAM, needed for DAB tests)
+   task solo:setup:dual-node
    ```
    
    This will automatically:
    - Create a local Kubernetes cluster with Kind
-   - Deploy a 2-node consensus network (default: v0.69.1)
+   - Deploy a consensus network (default: v0.69.1)
    - Deploy mirror node services (default: v0.145.2)
    - Create a dedicated ECDSA test account
    - Generate a `.env` file with all necessary credentials
@@ -226,13 +238,16 @@ For contributors and developers who want to run integration tests locally, we pr
    # Both custom versions
    task solo:setup -- --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
    
+   # Dual node with custom versions
+   task solo:setup:dual-node -- --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
+   
    # Use local build (overrides consensus-node-version)
    task solo:setup -- --local-build-path ../hiero-consensus-node/hedera-node/data
    ```
 
 3. **(Required for dynamic address book tests) Configure hosts:**
    
-   Before running dynamic address book tests, add Kubernetes service names to your `/etc/hosts` file:
+   Before running dynamic address book tests with dual-node setup, add Kubernetes service names to your `/etc/hosts` file:
    
    ```bash
    echo "127.0.0.1 network-node1-svc.solo.svc.cluster.local" | sudo tee -a /etc/hosts
@@ -241,7 +256,7 @@ For contributors and developers who want to run integration tests locally, we pr
    echo "127.0.0.1 envoy-proxy-node2-svc.solo.svc.cluster.local" | sudo tee -a /etc/hosts
    ```
    
-   **Note:** This is required for dynamic address book tests to pass. Skip if you're only running other integration tests.
+   **Note:** This is only required for dynamic address book tests with dual-node setup. Skip if you're running single-node or other integration tests.
 
 4. **Run integration tests:**
    ```bash
@@ -302,13 +317,17 @@ task test:integration:dual-mode
 
 #### Running Dynamic Address Book Tests
 
-Dynamic address book tests require the `/etc/hosts` configuration described in step 3 of the setup. These tests validate that the SDK can correctly handle node address changes and reconnections using Kubernetes service names.
+Dynamic address book (DAB) tests require:
+1. **Dual-node setup**: Run `task solo:setup:dual-node` (requires 24 GB RAM)
+2. **`/etc/hosts` configuration**: See step 3 in the setup section above
+
+These tests validate that the SDK can correctly handle node address changes and reconnections using Kubernetes service names.
 
 **Note:** All integration tests should pass reliably with the Solo setup. If you encounter failures:
 1. Verify Solo is running: `task solo:status`
-2. For dynamic address book test failures, ensure `/etc/hosts` is configured (see setup step 3)
+2. For dynamic address book test failures, ensure you're using dual-node setup and `/etc/hosts` is configured
 3. Check the troubleshooting section in the [Solo Setup Guide](./manual/SOLO_SETUP.md#troubleshooting)
-4. Try a fresh setup: `task solo:teardown && task solo:setup`
+4. Try a fresh setup: `task solo:teardown && task solo:setup` (or `task solo:setup:dual-node` for DAB tests)
 
 ## Contributing
 

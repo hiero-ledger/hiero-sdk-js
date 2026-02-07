@@ -625,28 +625,29 @@ const buildAirdropToken = (
 
                     isApproved
                         ? transaction.addApprovedTokenTransferWithDecimals(
-                              tokenId,
-                              accountId,
-                              amount,
-                              decimals,
-                          )
-                        : transaction.addTokenTransfer(
-                              tokenId,
-                              accountId,
-                              amount,
-                          );
+                            tokenId,
+                            accountId,
+                            amount,
+                            decimals,
+                        )
+                        : transaction.addTokenTransferWithDecimals(
+                            tokenId,
+                            accountId,
+                            amount,
+                            decimals,
+                        );
                 } else {
                     isApproved
                         ? transaction.addApprovedTokenTransfer(
-                              tokenId,
-                              accountId,
-                              amount,
-                          )
+                            tokenId,
+                            accountId,
+                            amount,
+                        )
                         : transaction.addTokenTransfer(
-                              tokenId,
-                              accountId,
-                              amount,
-                          );
+                            tokenId,
+                            accountId,
+                            amount,
+                        );
                 }
             } else {
                 // NFT airdrop transfer
@@ -663,15 +664,15 @@ const buildAirdropToken = (
 
                 isApproved
                     ? transaction.addApprovedNftTransfer(
-                          nftId,
-                          senderAccountId,
-                          receiverAccountId,
-                      )
+                        nftId,
+                        senderAccountId,
+                        receiverAccountId,
+                    )
                     : transaction.addNftTransfer(
-                          nftId,
-                          senderAccountId,
-                          receiverAccountId,
-                      );
+                        nftId,
+                        senderAccountId,
+                        receiverAccountId,
+                    );
             }
         }
     }
