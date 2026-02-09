@@ -137,7 +137,11 @@ console.log('  - Updating import paths...');
  * @param {string} file - File to update
  */
 function updateImportsInFile(file) {
-    const content = fs.readFileSync(file, 'utf8');
+    let content = fs.readFileSync(file, 'utf8');
+    
+    // Normalize to LF line endings (in case Windows added CRLF)
+    content = content.replace(/\r\n/g, '\n');
+    
     let updatedContent = content;
     
     // Find all import statements that reference local proto files (not google/*)
@@ -187,7 +191,8 @@ function updateImportsInFile(file) {
     }
     
     // Replace the original file with the updated content
-    fs.writeFileSync(file, updatedContent, 'utf8');
+    // Ensure LF line endings are preserved on all platforms
+    fs.writeFileSync(file, updatedContent, { encoding: 'utf8', flag: 'w' });
 }
 
 // Process all proto files

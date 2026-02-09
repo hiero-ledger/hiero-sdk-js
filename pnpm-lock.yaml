@@ -15199,7 +15199,7 @@ snapshots:
       debug: 4.4.1(supports-color@8.1.1)
       forge-light: 1.1.4
       js-base64: 3.7.7
-      react-native-get-random-values: 1.11.0(react-native@0.78.3(@babel/core@7.26.10)(@babel/preset-env@7.22.15(@babel/core@7.26.10))(@types/react@19.0.0)(react@19.0.0))
+      react-native-get-random-values: 1.11.0(react-native@0.82.1(@babel/core@7.26.10)(react@19.2.1))
       spark-md5: 3.0.2
       strip-ansi: 7.1.2
       tweetnacl: 1.0.3
@@ -26596,7 +26596,7 @@ snapshots:
 
   spdy-transport@3.0.0:
     dependencies:
-      debug: 4.4.3
+      debug: 4.4.1(supports-color@8.1.1)
       detect-node: 2.1.0
       hpack.js: 2.1.6
       obuf: 1.1.2
