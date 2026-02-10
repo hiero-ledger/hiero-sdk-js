@@ -61,21 +61,8 @@ jobs:
       - name: Build @hiero-ledger/sdk
         run: task -v build
 
-      - name: Upload build artifacts
-        if: matrix.node == '22'
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: sdk-build-${{ github.sha }}
-          path: |
-            lib/
-            dist/
-            packages/proto/lib/
-            packages/cryptography/lib/
-          retention-days: 1
-
   test:
     name: Test using Node ${{ matrix.node }}
-    needs: build
     runs-on: hiero-client-sdk-linux-large
     strategy:
       matrix:
@@ -108,13 +95,8 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: pnpm
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        with:
-          name: sdk-build-${{ github.sha }}
-
       - name: Install dependencies
-        run: pnpm install
+        run: task install
 
       - name: Install Playwright Dependencies
         id: playwright-deps
@@ -183,7 +165,6 @@ jobs:
 
   dab-tests:
     name: DAB Tests using Node ${{ matrix.node }}
-    needs: build
     runs-on: hiero-client-sdk-linux-medium
     strategy:
       matrix:
@@ -216,13 +197,8 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: pnpm
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        with:
-          name: sdk-build-${{ github.sha }}
-
       - name: Install dependencies
-        run: pnpm install
+        run: task install
 
       - name: Install Playwright Dependencies
         id: playwright-deps
@@ -254,7 +230,6 @@ jobs:
 
   examples:
     name: Run examples using Node ${{ matrix.node }}
-    needs: build
     runs-on: hiero-client-sdk-linux-medium
     strategy:
       matrix:
@@ -286,13 +261,8 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: pnpm
 
-      - name: Download build artifacts
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
-        with:
-          name: sdk-build-${{ github.sha }}
-
-      - name: Install dependencies
-        run: pnpm install
+      - name: Install dependencies and build SDK
+        run: task build
 
       - name: Prepare Hiero Solo
         id: solo
