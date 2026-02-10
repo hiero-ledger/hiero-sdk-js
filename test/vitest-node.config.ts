@@ -6,6 +6,13 @@ export default defineConfig({
         watch: false,
         globals: true,
         environment: "node",
+        pool: "threads",
+        poolOptions: {
+            threads: {
+                maxThreads: 8,
+                minThreads: 8,
+            },
+        },
         include: ["test/unit/**/*.js"],
         exclude: ["test/unit/Mocker.js", "test/unit/browser/*"],
         testTimeout: 120000,
