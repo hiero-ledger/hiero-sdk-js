@@ -8,6 +8,8 @@ import {
     TopicMessageSubmitTransaction,
     CustomFeeLimit,
     AccountId,
+    TopicInfoQuery,
+    TopicInfo,
 } from "@hiero-ledger/sdk";
 import Long from "long";
 
@@ -17,10 +19,11 @@ import {
     TopicUpdateParams,
     TopicDeleteParams,
     TopicSubmitMessageParams,
+    GetTopicInfoParams,
 } from "../params/topic";
 
 import { sdk } from "../sdk_data";
-import { TopicResponse } from "../response/topic";
+import { TopicResponse, TopicInfoQueryResponse } from "../response/topic";
 
 import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";
 import { getKeyFromString } from "../utils/key";
@@ -354,4 +357,82 @@ export const submitTopicMessage = async (
     return {
         status: receipt.status.toString(),
     };
+};
+
+// Helper function to map TopicInfo to TopicInfoQueryResponse
+const mapTopicInfoResponse = (info: TopicInfo): TopicInfoQueryResponse => {
+    // Helper function to serialize custom fees
+    const serializeCustomFees = (customFees: CustomFixedFee[]): any[] => {
+        if (!customFees || customFees.length === 0) {
+            return [];
+        }
+        return customFees.map((fee) => {
+            return {
+                feeCollectorAccountId: fee.feeCollectorAccountId?.toString(),
+                allCollectorsAreExempt: fee.allCollectorsAreExempt,
+                fixedFee: {
+                    amount: fee.amount?.toString(),
+                    denominatingTokenId:
+                        fee.denominatingTokenId?.toString() || null,
+                },
+            };
+        });
+    };
+
+    return {
+        topicId: info.topicId?.toString(),
+        topicMemo: info.topicMemo,
+        runningHash:
+            info.runningHash && info.runningHash.length > 0
+                ? Buffer.from(info.runningHash).toString("hex")
+                : undefined,
+        sequenceNumber: info.sequenceNumber?.toString(),
+        expirationTime: info.expirationTime?.seconds.toString(),
+        adminKey: info.adminKey?.toString(),
+        submitKey: info.submitKey?.toString(),
+        feeScheduleKey: info.feeScheduleKey?.toString(),
+        feeExemptKeys:
+            info.feeExemptKeys && info.feeExemptKeys.length > 0
+                ? info.feeExemptKeys.map((key) => key.toString())
+                : undefined,
+        autoRenewPeriod: info.autoRenewPeriod?.seconds.toString(),
+        autoRenewAccountId: info.autoRenewAccountId?.toString(),
+        customFees: serializeCustomFees(info.customFees),
+        ledgerId: info.ledgerId?.toString(),
+    };
+};
+
+export const getTopicInfo = async ({
+    topicId,
+    queryPayment,
+    maxQueryPayment,
+    getCost,
+    sessionId,
+}: GetTopicInfoParams): Promise<TopicInfoQueryResponse> => {
+    const client = sdk.getClient(sessionId);
+    const query = new TopicInfoQuery().setGrpcDeadline(DEFAULT_GRPC_DEADLINE);
+
+    if (topicId != null) {
+        query.setTopicId(topicId);
+    }
+
+    if (queryPayment != null) {
+        query.setQueryPayment(Hbar.fromTinybars(queryPayment));
+    }
+
+    if (maxQueryPayment != null) {
+        query.setMaxQueryPayment(Hbar.fromTinybars(maxQueryPayment));
+    }
+
+    if (getCost) {
+        const cost = await query.getCost(client);
+
+        return {
+            cost: cost.toTinybars().toString(),
+        };
+    }
+
+    const response = await query.execute(client);
+
+    return mapTopicInfoResponse(response);
 };
