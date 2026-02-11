@@ -67,7 +67,7 @@
         "crypto-js": "4.2.0",
         "forge-light": "1.1.4",
         "js-base64": "3.7.7",
-        "react-native-get-random-values": "1.11.0",
+        "react-native-get-random-values": "2.0.0",
         "spark-md5": "3.0.2",
         "tweetnacl": "1.0.3",
         "utf8": "3.0.0",
