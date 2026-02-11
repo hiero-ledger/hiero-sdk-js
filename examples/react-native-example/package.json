@@ -15,14 +15,14 @@
         "@hiero-ledger/sdk": "workspace:*",
         "expo": "~54.0.11",
         "expo-status-bar": "~3.0.6",
-        "react": "19.0.0",
+        "react": "19.2.4",
         "react-dom": "19.0.0",
         "react-native": "~0.78.0",
         "react-native-get-random-values": "^2.0.0"
     },
     "devDependencies": {
         "@babel/core": "^7.23.3",
-        "@types/react": "19.0.0",
+        "@types/react": "19.2.14",
         "react-native-dotenv": "^3.4.9",
         "typescript": "^5.7.2"
     },
