@@ -6,12 +6,6 @@ on:
         description: "Existing Tag to Publish (eg: v3.7.0)"
         type: string
         required: true
-      dual-publish-enabled:
-        # Set default to true when the dual-publishing period is active
-        description: "Dual Publish Enabled"
-        type: boolean
-        required: false
-        default: true
       dry-run-enabled:
         description: "Dry Run Enabled"
         type: boolean
@@ -33,17 +27,11 @@ env:
   HIERO_PROTO_PKG_NAME: "@hiero-ledger/proto"
   HIERO_CRYPTO_PKG_NAME: "@hiero-ledger/cryptography"
   HIERO_SDK_PKG_NAME: "@hiero-ledger/sdk"
-  HASHGRAPH_PROTO_PKG_NAME: "@hashgraph/proto"
-  HASHGRAPH_CRYPTO_PKG_NAME: "@hashgraph/cryptography"
-  HASHGRAPH_SDK_PKG_NAME: "@hashgraph/sdk"
 
 jobs:
   validate-release:
     name: Validate Release
     runs-on: hiero-client-sdk-linux-medium
-    env:
-      # Set the default to 'true' when the dual-publishing period is active
-      DUAL_PUBLISH_ENABLED: ${{ inputs.dual-publish-enabled || github.event_name == 'push' }}
     outputs:
       # Project tag
       tag: ${{ steps.tag.outputs.name }}
@@ -53,21 +41,18 @@ jobs:
       sdk-prerelease: ${{ steps.tag.outputs.prerelease }}
       sdk-type: ${{ steps.tag.outputs.type }}
       hiero-sdk-publish-required: ${{ steps.hiero-sdk-required.outputs.publish-required }}
-      hashgraph-sdk-publish-required: ${{ steps.sdk-required.outputs.publish-required }}
 
       # proto sub-package
       proto-version: ${{ steps.npm-package.outputs.proto-version }}
       proto-prerelease: ${{ steps.proto-package.outputs.prerelease }}
       proto-type: ${{ steps.proto-package.outputs.type }}
       hiero-proto-publish-required: ${{ steps.hiero-proto-required.outputs.publish-required }}
-      hashgraph-proto-publish-required: ${{ steps.proto-required.outputs.publish-required }}
 
       # crypto sub-package
       crypto-version: ${{ steps.npm-package.outputs.crypto-version }}
       crypto-prerelease: ${{ steps.crypto-package.outputs.prerelease }}
       crypto-type: ${{ steps.crypto-package.outputs.type }}
       hiero-crypto-publish-required: ${{ steps.hiero-crypto-required.outputs.publish-required }}
-      hashgraph-crypto-publish-required: ${{ steps.crypto-required.outputs.publish-required }}
 
     steps:
       - name: Harden Runner
@@ -112,7 +97,6 @@ jobs:
 
       - name: Hiero Proto Subpackage Publish Required
         id: hiero-proto-required
-        if: ${{ env.DUAL_PUBLISH_ENABLED == 'true' }}
         run: |
           PUBLISH_REQUIRED="false"
           if ! curl -sSLf "https://registry.npmjs.org/${{ env.HIERO_PROTO_PKG_NAME }}/${{ steps.npm-package.outputs.proto-version }}" >/dev/null 2>&1; then
@@ -121,19 +105,8 @@ jobs:
 
           echo "publish-required=${PUBLISH_REQUIRED}" >>"${GITHUB_OUTPUT}"
 
-      - name: Proto Subpackage Publish Required
-        id: proto-required
-        run: |
-          PUBLISH_REQUIRED="false"
-          if ! curl -sSLf "https://registry.npmjs.org/${{ env.HASHGRAPH_PROTO_PKG_NAME }}/${{ steps.npm-package.outputs.proto-version }}" >/dev/null 2>&1; then
-            PUBLISH_REQUIRED="true"
-          fi
-
-          echo "publish-required=${PUBLISH_REQUIRED}" >>"${GITHUB_OUTPUT}"
-
       - name: Hiero Crypto Subpackage Publish Required
         id: hiero-crypto-required
-        if: ${{ env.DUAL_PUBLISH_ENABLED == 'true' }}
         run: |
           PUBLISH_REQUIRED="false"
           if ! curl -sSLf "https://registry.npmjs.org/${{ env.HIERO_CRYPTO_PKG_NAME }}/${{ steps.npm-package.outputs.crypto-version }}" >/dev/null 2>&1; then
@@ -142,32 +115,11 @@ jobs:
 
           echo "publish-required=${PUBLISH_REQUIRED}" >>"${GITHUB_OUTPUT}"
 
-      - name: Crypto Subpackage Publish Required
-        id: crypto-required
-        run: |
-          PUBLISH_REQUIRED="false"
-          if ! curl -sSLf "https://registry.npmjs.org/${{ env.HASHGRAPH_CRYPTO_PKG_NAME }}/${{ steps.npm-package.outputs.crypto-version }}" >/dev/null 2>&1; then
-            PUBLISH_REQUIRED="true"
-          fi
-
-          echo "publish-required=${PUBLISH_REQUIRED}" >>"${GITHUB_OUTPUT}"
-
       - name: Hiero SDK Publish Required
         id: hiero-sdk-required
-        if: ${{ env.DUAL_PUBLISH_ENABLED == 'true' }}
         run: |
           PUBLISH_REQUIRED="false"
           if ! curl -sSLf "https://registry.npmjs.org/${{ env.HIERO_SDK_PKG_NAME }}/${{ steps.npm-package.outputs.sdk-version }}" >/dev/null 2>&1; then
-            PUBLISH_REQUIRED="true"
-          fi
-
-          echo "publish-required=${PUBLISH_REQUIRED}" >>"${GITHUB_OUTPUT}"
-
-      - name: SDK Publish Required
-        id: sdk-required
-        run: |
-          PUBLISH_REQUIRED="false"
-          if ! curl -sSLf "https://registry.npmjs.org/${{ env.HASHGRAPH_SDK_PKG_NAME }}/${{ steps.npm-package.outputs.sdk-version }}" >/dev/null 2>&1; then
             PUBLISH_REQUIRED="true"
           fi
 
@@ -179,11 +131,8 @@ jobs:
           echo "| Package | Version | Publish Required |" >> "${GITHUB_STEP_SUMMARY}"
           echo "|---------|---------|------------------|" >> "${GITHUB_STEP_SUMMARY}"
           echo "| ${{ env.HIERO_SDK_PKG_NAME }} | ${{ steps.npm-package.outputs.sdk-version }} | ${{ steps.hiero-sdk-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
-          echo "| ${{ env.HASHGRAPH_SDK_PKG_NAME }} | ${{ steps.npm-package.outputs.sdk-version }} | ${{ steps.sdk-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
           echo "| ${{ env.HIERO_PROTO_PKG_NAME }} | ${{ steps.npm-package.outputs.proto-version }} | ${{ steps.hiero-proto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
-          echo "| ${{ env.HASHGRAPH_PROTO_PKG_NAME }} | ${{ steps.npm-package.outputs.proto-version }} | ${{ steps.proto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
           echo "| ${{ env.HIERO_CRYPTO_PKG_NAME }} | ${{ steps.npm-package.outputs.crypto-version }} | ${{ steps.hiero-crypto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
-          echo "| ${{ env.HASHGRAPH_CRYPTO_PKG_NAME }} | ${{ steps.npm-package.outputs.crypto-version }} | ${{ steps.crypto-required.outputs.publish-required }} |" >> "${GITHUB_STEP_SUMMARY}"
 
       - name: Extract SDK Tag Information
         id: tag
@@ -360,9 +309,7 @@ jobs:
 
       - name: Calculate Proto Subpackage Publish Arguments
         id: proto-publish-args
-        if: ${{ (needs.validate-release.outputs.hashgraph-proto-publish-required == 'true' ||
-          needs.validate-release.outputs.hiero-proto-publish-required == 'true') &&
-          !cancelled() && !failure() }}
+        if: ${{ needs.validate-release.outputs.hiero-proto-publish-required == 'true' && !cancelled() && !failure() }}
         run: |
           PUBLISH_ARGS="--access public --no-git-checks"
           [[ "${DRY_RUN_ENABLED}" == "true" ]] && PUBLISH_ARGS="${PUBLISH_ARGS} --dry-run"
@@ -373,9 +320,7 @@ jobs:
 
       - name: Calculate Crypto Subpackage Publish Arguments
         id: crypto-publish-args
-        if: ${{ (needs.validate-release.outputs.hashgraph-crypto-publish-required == 'true' ||
-          needs.validate-release.outputs.hiero-crypto-publish-required == 'true') &&
-          !cancelled() && !failure() }}
+        if: ${{ needs.validate-release.outputs.hiero-crypto-publish-required == 'true' && !cancelled() && !failure() }}
         run: |
           PUBLISH_ARGS="--access public --no-git-checks"
           [[ "${DRY_RUN_ENABLED}" == "true" ]] && PUBLISH_ARGS="${PUBLISH_ARGS} --dry-run"
@@ -386,9 +331,7 @@ jobs:
 
       - name: Calculate SDK Publish Arguments
         id: sdk-publish-args
-        if: ${{ (needs.validate-release.outputs.hashgraph-sdk-publish-required == 'true' ||
-          needs.validate-release.outputs.hiero-sdk-publish-required == 'true') &&
-          !cancelled() && !failure() }}
+        if: ${{ needs.validate-release.outputs.hiero-sdk-publish-required == 'true' && !cancelled() && !failure() }}
         run: |
           PUBLISH_ARGS="--access public --no-git-checks"
           [[ "${DRY_RUN_ENABLED}" == "true" ]] && PUBLISH_ARGS="${PUBLISH_ARGS} --dry-run"
@@ -400,8 +343,6 @@ jobs:
     name: Build Release Package
     runs-on: hiero-client-sdk-linux-large
     env:
-      # Set the default to 'true' when the dual-publishing period is active
-      DUAL_PUBLISH_ENABLED: ${{ inputs.dual-publish-enabled || github.event_name == 'push' }}
       DRY_RUN_ENABLED: ${{ inputs.dry-run-enabled || 'false'}}
     needs:
       - validate-release
@@ -410,9 +351,6 @@ jobs:
       hiero-proto-pkg-name: ${{ steps.set-package-names.outputs.hl-proto-pkg-name || '' }}
       hiero-crypto-pkg-name: ${{ steps.set-package-names.outputs.hl-crypto-pkg-name || '' }}
       hiero-sdk-pkg-name: ${{ steps.set-package-names.outputs.hl-sdk-pkg-name || '' }}
-      hashgraph-proto-pkg-name: ${{ steps.set-package-names.outputs.hg-proto-pkg-name || '' }}
-      hashgraph-crypto-pkg-name: ${{ steps.set-package-names.outputs.hg-crypto-pkg-name || '' }}
-      hashgraph-sdk-pkg-name: ${{ steps.set-package-names.outputs.hg-sdk-pkg-name || '' }}
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
@@ -458,17 +396,11 @@ jobs:
           HL_PROTO_PKG_NAME="${{ env.HIERO_PROTO_PKG_NAME }}-${{ needs.validate-release.outputs.proto-version }}.tgz"
           HL_CRYPTO_PKG_NAME="${{ env.HIERO_CRYPTO_PKG_NAME }}-${{ needs.validate-release.outputs.crypto-version }}.tgz"
           HL_SDK_PKG_NAME="${{ env.HIERO_SDK_PKG_NAME }}-${{ needs.validate-release.outputs.sdk-version }}.tgz"
-          HG_PROTO_PKG_NAME="${{ env.HASHGRAPH_PROTO_PKG_NAME }}-${{ needs.validate-release.outputs.proto-version }}.tgz"
-          HG_CRYPTO_PKG_NAME="${{ env.HASHGRAPH_CRYPTO_PKG_NAME }}-${{ needs.validate-release.outputs.crypto-version }}.tgz"
-          HG_SDK_PKG_NAME="${{ env.HASHGRAPH_SDK_PKG_NAME }}-${{ needs.validate-release.outputs.sdk-version }}.tgz"
           
           echo "::group::Expected Package Names"
           echo "hl-proto-pkg-name=$(clean_pkg_name ${HL_PROTO_PKG_NAME})"  | tee -a "${GITHUB_OUTPUT}"
           echo "hl-crypto-pkg-name=$(clean_pkg_name ${HL_CRYPTO_PKG_NAME})"  | tee -a "${GITHUB_OUTPUT}"
           echo "hl-sdk-pkg-name=$(clean_pkg_name ${HL_SDK_PKG_NAME})"  | tee -a "${GITHUB_OUTPUT}"
-          echo "hg-proto-pkg-name=$(clean_pkg_name ${HG_PROTO_PKG_NAME})"  | tee -a "${GITHUB_OUTPUT}"
-          echo "hg-crypto-pkg-name=$(clean_pkg_name ${HG_CRYPTO_PKG_NAME})"  | tee -a "${GITHUB_OUTPUT}"
-          echo "hg-sdk-pkg-name=$(clean_pkg_name ${HG_SDK_PKG_NAME})"  | tee -a "${GITHUB_OUTPUT}"
           echo "::endgroup::"
 
       - name: Build Proto Release Package (${{ env.HIERO_PROTO_PKG_NAME }})
@@ -512,77 +444,6 @@ jobs:
           path: ./${{ steps.set-package-names.outputs.hl-sdk-pkg-name }}
           if-no-files-found: error
 
-      - name: Update Files for Dual Publish
-        if: ${{ env.DUAL_PUBLISH_ENABLED == 'true' }}
-        run: |
-          echo "::group::Update package.json files for dual publish"
-          files=("package.json" "packages/proto/package.json" "packages/cryptography/package.json")
-          for file in "${files[@]}"; do
-            if [[ -f "$file" ]]; then
-              cp "$file" "$file.tmp"
-              jq '.name |= sub("@hiero-ledger";"@hashgraph")' "$file.tmp" > "$file"
-            else
-              echo "::warning::File $file does not exist, skipping update."
-            fi
-          done
-          
-          find . -type f -name "*.js" -exec sed -i "s/\b@hiero-ledger\/proto\b/@hashgraph\/proto/g" {} +
-          find . -type f -name "*.js" -exec sed -i "s/\b@hiero-ledger\/cryptography\b/@hashgraph\/cryptography/g" {} +
-          find . -type f -name "*.js" -exec sed -i "s/\b@hiero-ledger\/sdk\b/@hashgraph\/sdk/g" {} +
-          echo "::endgroup::"
-
-      - name: Run safety checks
-        run: task -v build
-
-      - name: Build Proto Release Package (${{ env.HASHGRAPH_PROTO_PKG_NAME }})
-        if: ${{ needs.validate-release.outputs.hashgraph-proto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
-        run: |
-          task -v pack -- "${{ steps.set-package-names.outputs.hg-proto-pkg-name }}"
-        working-directory: packages/proto
-
-      - name: Upload HG Proto Package Artifact
-        if: ${{ needs.validate-release.outputs.hashgraph-proto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-        with:
-          name: hg-proto-package
-          path: packages/proto/${{ steps.set-package-names.outputs.hg-proto-pkg-name }}
-          if-no-files-found: error
-
-      - name: Build Cryptography Release Package (${{ env.HASHGRAPH_CRYPTO_PKG_NAME }})
-        if: ${{ needs.validate-release.outputs.hashgraph-crypto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
-        run: |
-          task -v pack -- "${{ steps.set-package-names.outputs.hg-crypto-pkg-name }}"
-        working-directory: packages/cryptography
-
-      - name: Upload HG Crypto Package Artifact
-        if: ${{ needs.validate-release.outputs.hashgraph-crypto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-        with:
-          name: hg-crypto-package
-          path: packages/cryptography/${{ steps.set-package-names.outputs.hg-crypto-pkg-name }}
-          if-no-files-found: error
-
-      - name: Build SDK Release Package (${{ env.HASHGRAPH_SDK_PKG_NAME }})
-        if: ${{ needs.validate-release.outputs.hashgraph-sdk-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
-        run: |
-          task -v pack -- "${{ steps.set-package-names.outputs.hg-sdk-pkg-name }}"
-
-      - name: Upload HG SDK Package Artifact
-        if: ${{ needs.validate-release.outputs.hashgraph-sdk-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
-        with:
-          name: hg-sdk-package
-          path: ./${{ steps.set-package-names.outputs.hg-sdk-pkg-name }}
-          if-no-files-found: error
-
-      - name: Reset workspace
-        if: ${{ env.DUAL_PUBLISH_ENABLED == 'true' }}
-        run: |
-          echo "::group::Reset workspace"
-          git reset --hard
-          git clean -fdx
-          echo "::endgroup::"
-
       - name: Generate Github Release
         uses: step-security/release-action@03a57407052f15d1537fd5469a6fbbc536aba326 # v1.20.0
         if: ${{ env.DRY_RUN_ENABLED != 'true' }}
@@ -600,9 +461,6 @@ jobs:
       - calculate-release-args
       - build-release-package
       - validate-release
-    env:
-      # Set the default to 'true' when the dual-publishing period is active
-      DUAL_PUBLISH_ENABLED: ${{ inputs.dual-publish-enabled || github.event_name == 'push' }}
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
@@ -629,19 +487,12 @@ jobs:
       - name: Install NPM latest
         run: npm install -g npm@11.7.0
 
-      # Publish proto artifacts
+      # Publish proto artifact
       - name: Download HL Proto Package Artifact
         if: ${{ needs.validate-release.outputs.hiero-proto-publish-required == 'true' }}
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: hl-proto-package
-          path: packages/proto
-
-      - name: Download HG Proto Package Artifact
-        if: ${{ needs.validate-release.outputs.hashgraph-proto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
-        with:
-          name: hg-proto-package
           path: packages/proto
 
       - name: Publish Proto Release (${{ env.HIERO_PROTO_PKG_NAME }})
@@ -650,25 +501,12 @@ jobs:
           task -v publish TARBALL="${{ needs.build-release-package.outputs.hiero-proto-pkg-name }}" -- ${{ needs.calculate-release-args.outputs.proto-publish-args }}
         working-directory: packages/proto
 
-      - name: Publish Proto Release (${{ env.HASHGRAPH_PROTO_PKG_NAME }})
-        if: ${{ needs.validate-release.outputs.hashgraph-proto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
-        run: |
-          task -v publish TARBALL="${{ needs.build-release-package.outputs.hashgraph-proto-pkg-name }}" -- ${{ needs.calculate-release-args.outputs.proto-publish-args }}
-        working-directory: packages/proto
-
-      # Publish cryptography artifacts
+      # Publish cryptography artifact
       - name: Download HL Crypto Package Artifact
         if: ${{ needs.validate-release.outputs.hiero-crypto-publish-required == 'true' }}
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: hl-crypto-package
-          path: packages/cryptography
-
-      - name: Download HG Crypto Package Artifact
-        if: ${{ needs.validate-release.outputs.hashgraph-crypto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
-        with:
-          name: hg-crypto-package
           path: packages/cryptography
 
       - name: Publish Cryptography Release (${{ env.HIERO_CRYPTO_PKG_NAME }})
@@ -677,31 +515,14 @@ jobs:
           task -v publish TARBALL="${{ needs.build-release-package.outputs.hiero-crypto-pkg-name }}" -- ${{ needs.calculate-release-args.outputs.crypto-publish-args }}
         working-directory: packages/cryptography
 
-      - name: Publish Cryptography Release (${{ env.HASHGRAPH_CRYPTO_PKG_NAME }})
-        if: ${{ needs.validate-release.outputs.hashgraph-crypto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
-        run: |
-          task -v publish TARBALL="${{ needs.build-release-package.outputs.hashgraph-crypto-pkg-name }}" -- ${{ needs.calculate-release-args.outputs.crypto-publish-args }}
-        working-directory: packages/cryptography
-
-      # Publish SDK artifacts
+      # Publish SDK artifact
       - name: Download HL SDK Package Artifact
         if: ${{ needs.validate-release.outputs.hiero-sdk-publish-required == 'true' }}
         uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
         with:
           name: hl-sdk-package
 
-      - name: Download HG SDK Package Artifact
-        if: ${{ needs.validate-release.outputs.hashgraph-sdk-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
-        with:
-          name: hg-sdk-package
-
       - name: Publish SDK Release (${{ env.HIERO_SDK_PKG_NAME }})
         if: ${{ needs.validate-release.outputs.hiero-sdk-publish-required == 'true' }}
         run: |
           task -v publish TARBALL="${{ needs.build-release-package.outputs.hiero-sdk-pkg-name }}" -- ${{ needs.calculate-release-args.outputs.sdk-publish-args }}
-
-      - name: Publish SDK Release (${{ env.HASHGRAPH_SDK_PKG_NAME }})
-        if: ${{ needs.validate-release.outputs.hashgraph-sdk-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
-        run: |
-          task -v publish TARBALL="${{ needs.build-release-package.outputs.hashgraph-sdk-pkg-name }}" -- ${{ needs.calculate-release-args.outputs.sdk-publish-args }}
