@@ -35,6 +35,7 @@ module.exports = {
         "@typescript-eslint/no-empty-function": "off",
         "no-irregular-whitespace": "off",
         "no-process-exit": "off",
+        "deprecation/deprecation": "off",
 
         // allow import syntax as we compile that away with babel for node
         "n/no-unsupported-features/es-syntax": [
