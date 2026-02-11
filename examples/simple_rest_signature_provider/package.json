@@ -29,7 +29,7 @@
         "@types/utf8": "^3.0.1",
         "@typescript-eslint/eslint-plugin": "^5.62.0",
         "@typescript-eslint/parser": "^5.62.0",
-        "axios": "^1.12.0",
+        "axios": "^1.13.5",
         "babel-plugin-dynamic-import-node": "^2.3.3",
         "babel-plugin-module-rewrite": "^0.2.0",
         "dotenv": "^17.2.3",
