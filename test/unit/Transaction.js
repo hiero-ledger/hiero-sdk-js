@@ -20,6 +20,9 @@ import BigNumber from "bignumber.js";
 import SignatureMap from "../../src/transaction/SignatureMap.js";
 import SignableNodeTransactionBodyBytes from "../../src/transaction/SignableNodeTransactionBodyBytes.js";
 
+const HEX_BYTES_VALID_START_YEAR_2125 =
+    "0acc012ac9010a5f0a0d0a0608808fb19c12120318d209120218031880c2d72f2202087832235472616e73616374696f6e20776974682076616c6964537461727420696e2032313235721c0a1a0a0b0a0318d20910ffa7d6b9070a0b0a0318ae2c1080a8d6b90712660a640a205afd59dfc4401b63272c050535457495841ba2d414891cb8609549d3f08ef6671a40a82b1257b5476a98c65fe73e802150e9526eed77c11b377da642893e0004db096c258636a47327d986084a5044409220d68dde2ea34b1b1b097b39129d83d302";
+
 describe("Transaction", function () {
     it("toBytes", async function () {
         const key = PrivateKey.fromStringDer(
@@ -84,6 +87,34 @@ describe("Transaction", function () {
                 .toTinybars()
                 .toString(),
         ).to.be.equal(new Hbar(1).toTinybars().toString());
+    });
+
+    describe("fromBytes with 64-bit validStart (e.g. year 2125 in seconds)", function () {
+        it("decodes hex bytes without throwing", function () {
+            const bytes = hex.decode(HEX_BYTES_VALID_START_YEAR_2125);
+            expect(() => Transaction.fromBytes(bytes)).to.not.throw();
+        });
+
+        it("decoded transaction has transactionId and validStart", function () {
+            const bytes = hex.decode(HEX_BYTES_VALID_START_YEAR_2125);
+            const tx = Transaction.fromBytes(bytes);
+            expect(tx.transactionId).to.not.be.undefined;
+            expect(tx.transactionId.validStart).to.not.be.undefined;
+        });
+
+        it("validStart toDate() decodes to year 2125 (seconds > 2^31-1)", function () {
+            const bytes = hex.decode(HEX_BYTES_VALID_START_YEAR_2125);
+            const tx = Transaction.fromBytes(bytes);
+            const d = tx.transactionId.validStart.toDate();
+            expect(d.getUTCFullYear()).to.equal(2125);
+        });
+
+        it("round-trip toBytes has consistent length", function () {
+            const bytes = hex.decode(HEX_BYTES_VALID_START_YEAR_2125);
+            const tx = Transaction.fromBytes(bytes);
+            const reencoded = tx.toBytes();
+            expect(reencoded.length).to.be.greaterThan(0);
+        });
     });
 
     it("sign", async function () {

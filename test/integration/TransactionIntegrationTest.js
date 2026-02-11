@@ -28,11 +28,22 @@ import {
     createFungibleToken,
     createAccount,
 } from "./utils/Fixtures.js";
+import NodeClient from "../../src/client/NodeClient.js";
 
 describe("TransactionIntegration", function () {
+    let env;
+    let client;
+    let operatorId;
+    let operatorKey;
+
+    beforeEach(async function () {
+        env = await IntegrationTestEnv.new();
+        client = env.client;
+        operatorId = env.operatorId;
+        operatorKey = env.operatorKey;
+    });
+
     it("should be executable", async function () {
-        const env = await IntegrationTestEnv.new();
-        const operatorId = env.operatorId;
         expect(operatorId).to.not.be.null;
 
         const key = PrivateKey.generateECDSA();
@@ -41,84 +52,73 @@ describe("TransactionIntegration", function () {
             .setKeyWithoutAlias(key)
             .setInitialBalance(new Hbar(1));
 
-        await accountCreateTx
-            .freezeWith(env.client)
-            .signWithOperator(env.client);
+        await accountCreateTx.freezeWith(client).signWithOperator(client);
 
         const expectedHash = await accountCreateTx.getTransactionHash();
 
-        const response = await accountCreateTx.execute(env.client);
+        const response = await accountCreateTx.execute(client);
 
-        const record = await response.getRecord(env.client);
+        const record = await response.getRecord(client);
 
         expect(hex.encode(expectedHash)).to.be.equal(
             hex.encode(record.transactionHash),
         );
 
-        const receipt = await response.getReceipt(env.client);
+        const receipt = await response.getReceipt(client);
         const accountId = receipt.accountId;
 
         expect(accountId).to.not.be.null;
 
-        await deleteAccount(env.client, key, (transaction) => {
+        await deleteAccount(client, key, (transaction) => {
             transaction
                 .setAccountId(accountId)
                 .setTransferAccountId(operatorId);
         });
-
-        await env.close();
     });
 
     it("signs on demand", async function () {
-        const env = await IntegrationTestEnv.new();
-        env.client.setSignOnDemand(true);
+        client.setSignOnDemand(true);
 
         const fileId = (
             await (
                 await new FileCreateTransaction()
                     .setContents("test")
-                    .execute(env.client)
-            ).getReceipt(env.client)
+                    .execute(client)
+            ).getReceipt(client)
         ).fileId;
 
         expect(fileId.num).to.not.be.equal(0);
-
-        await env.close();
     });
 
     it("signs correctly", async function () {
-        const env = await IntegrationTestEnv.new();
         const key = PrivateKey.generateED25519();
 
-        await createFungibleToken(env.client, async (transaction) => {
+        await createFungibleToken(client, async (transaction) => {
             await (
                 await transaction
                     .setAdminKey(key.publicKey)
-                    .freezeWith(env.client)
+                    .freezeWith(client)
                     .sign(key)
-            ).signWithOperator(env.client);
+            ).signWithOperator(client);
             expect(
                 transaction._signedTransactions.list[0].sigMap.sigPair.length,
             ).to.eql(2);
         });
 
-        await createFungibleToken(env.client, async (transaction) => {
+        await createFungibleToken(client, async (transaction) => {
             await (
                 await transaction
                     .setAdminKey(key.publicKey)
-                    .freezeWith(env.client)
+                    .freezeWith(client)
                     .sign(key)
-            ).signWithOperator(env.client);
+            ).signWithOperator(client);
             expect(
                 transaction._signedTransactions.list[0].sigMap.sigPair.length,
             ).to.eql(2);
         });
-
-        await env.close();
     });
 
     it("issue-327", async function () {
-        const env = await IntegrationTestEnv.new();
         const privateKey1 = PrivateKey.generateED25519();
         const privateKey2 = PrivateKey.generateED25519();
         const privateKey3 = PrivateKey.generateED25519();
@@ -128,16 +128,13 @@ describe("TransactionIntegration", function () {
         const publicKey3 = privateKey3.publicKey;
         const publicKey4 = privateKey4.publicKey;
 
-        const nodeAccountId = Object.values(env.client.network)[0];
+        const nodeAccountId = Object.values(client.network)[0];
 
         const transaction = new TransferTransaction()
             .setNodeAccountIds([nodeAccountId])
-            .addHbarTransfer(
-                env.client.operatorAccountId,
-                new Hbar(1).negated(),
-            )
+            .addHbarTransfer(client.operatorAccountId, new Hbar(1).negated())
             .addHbarTransfer(new AccountId(3), new Hbar(1))
-            .freezeWith(env.client);
+            .freezeWith(client);
 
         const signature1 = privateKey1.signTransaction(transaction);
         const signature2 = privateKey2.signTransaction(transaction);
@@ -169,24 +166,15 @@ describe("TransactionIntegration", function () {
         expect(publicKey2Signature).to.be.not.null;
         expect(publicKey3Signature).to.be.not.null;
         expect(publicKey4Signature).to.be.null;
-
-        await env.close();
     });
 
     describe("HIP-745 - create incomplete transaction", function () {
-        let env, operatorId, recipientKey, recipientId, client, wallet;
+        let recipientKey, recipientId, wallet;
 
         beforeEach(async function () {
-            env = await IntegrationTestEnv.new();
-            operatorId = env.operatorId;
             recipientKey = PrivateKey.generateECDSA();
             recipientId = recipientKey.publicKey.toAccountId(0, 0);
-            client = env.client;
             wallet = env.wallet;
-        });
-
-        afterEach(function () {
-            client.close();
         });
 
         /** @description: example serialize-deserialize-1.js */
@@ -769,24 +757,83 @@ describe("TransactionIntegration", function () {
         });
     });
 
+    describe("HIP-1300", function () {
+        const MAXIMUM_TRANSACTION_SIZE = 130000;
+
+        it("should create a transaction with more than 6kbs of data with signatures", async function () {
+            const client = NodeClient.forLocalNode();
+            client.setOperator(env.genesisOperatorId, env.genesisOperatorKey);
+
+            let transaction = new AccountCreateTransaction()
+                .setKeyWithoutAlias(PrivateKey.generate())
+                .freezeWith(client);
+
+            while ((await transaction.size) < MAXIMUM_TRANSACTION_SIZE) {
+                transaction = await transaction.sign(PrivateKey.generate());
+            }
+
+            await (await transaction.execute(client)).getReceipt(client);
+        });
+
+        it("should create a transaction with more than 6kbs of data in a file", async function () {
+            const client = NodeClient.forLocalNode();
+            client.setOperator(env.genesisOperatorId, env.genesisOperatorKey);
+            const file = await new FileCreateTransaction()
+                .setContents(new Uint8Array(1024 * 10).fill(1))
+                .freezeWith(client);
+            await (await file.execute(client)).getReceipt(client);
+        });
+
+        it("should not create a transaction with more than 6kbs of data in a file if normal account is used", async function () {
+            let transaction = new FileCreateTransaction()
+                .setContents(new Uint8Array(1024 * 10).fill(1))
+                .freezeWith(client);
+
+            let err;
+            try {
+                await (await transaction.execute(client)).getReceipt(client);
+            } catch (error) {
+                err = error.status.toString().includes("TRANSACTION_OVERSIZE");
+            }
+
+            expect(err).to.be.true;
+        });
+
+        it("should not create a transaction with more than 6kbs of data with signatures without system account", async function () {
+            const regularUserKey = PrivateKey.generate();
+
+            let transaction = new AccountCreateTransaction()
+                .setKeyWithoutAlias(regularUserKey)
+                .freezeWith(client);
+
+            while ((await transaction.size) < MAXIMUM_TRANSACTION_SIZE) {
+                transaction = await transaction.sign(PrivateKey.generate());
+            }
+
+            let err;
+            try {
+                await (await transaction.execute(client)).getReceipt(client);
+            } catch (error) {
+                err = error.status.toString().includes("TRANSACTION_OVERSIZE");
+            }
+
+            expect(err).to.be.true;
+        });
+    });
+
     describe("Transaction Signature Manipulation Flow", function () {
-        let env, user1Key, user2Key, createdAccountId, keyList;
+        let user1Key, user2Key, createdAccountId, keyList;
 
         // Setting up the environment and creating a new account with a key list
         beforeAll(async function () {
-            env = await IntegrationTestEnv.new();
-
             user1Key = PrivateKey.generate();
             user2Key = PrivateKey.generate();
             keyList = new KeyList([user1Key.publicKey, user2Key.publicKey]);
 
             // Create account
-            const { accountId } = await createAccount(
-                env.client,
-                (transaction) => {
-                    transaction.setKeyWithoutAlias(keyList);
-                },
-            );
+            const { accountId } = await createAccount(client, (transaction) => {
+                transaction.setKeyWithoutAlias(keyList);
+            });
 
             createdAccountId = accountId;
             expect(createdAccountId).to.exist;
@@ -803,7 +850,7 @@ describe("TransactionIntegration", function () {
                     new AccountId(4),
                     new AccountId(5),
                 ])
-                .freezeWith(env.client);
+                .freezeWith(client);
 
             // Step 2: Serialize and sign the transaction
             const transferTransactionBytes = transferTransaction.toBytes();
@@ -839,8 +886,8 @@ describe("TransactionIntegration", function () {
             expect(getSignaturesNumberPerNode()).to.be.equal(2);
 
             // Step 6: Execute the signed transaction
-            const result = await signedTransaction.execute(env.client);
-            const receipt = await result.getReceipt(env.client);
+            const result = await signedTransaction.execute(client);
+            const receipt = await result.getReceipt(client);
 
             // Step 7: Verify the transaction status
             expect(receipt.status).to.be.equal(Status.Success);
@@ -857,7 +904,7 @@ describe("TransactionIntegration", function () {
                     new AccountId(4),
                     new AccountId(5),
                 ])
-                .freezeWith(env.client);
+                .freezeWith(client);
 
             // Step 2: Serialize and sign the transaction
             const transferTransactionBytes = transferTransaction.toBytes();
@@ -888,8 +935,8 @@ describe("TransactionIntegration", function () {
 
             // Step 5: Try to execute the transaction without any signatures and expect it to fail
             try {
-                const result = await signedTransaction.execute(env.client);
-                await result.getReceipt(env.client);
+                const result = await signedTransaction.execute(client);
+                await result.getReceipt(client);
 
                 // If we get here, the transaction did not fail as expected
                 throw new Error(
@@ -903,25 +950,11 @@ describe("TransactionIntegration", function () {
     });
 
     describe("Transaction flows", function () {
-        let env, operatorId, operatorKey, client;
-
-        // Setting up the environment and creating a new account with a key list
-        beforeAll(async function () {
-            env = await IntegrationTestEnv.new();
-
-            operatorId = env.operatorId;
-            operatorKey = env.operatorKey;
-            client = env.client;
-        });
-
         it("Creating, Signing, and Submitting a Transaction Using the Client with a Known Address Book", async function () {
-            // For simplicity, sending back to the operator
-            const recipientAccountId = env.operatorId;
-
             // Create, sign, and execute the transfer transaction
             const transferTx = await new TransferTransaction()
                 .addHbarTransfer(operatorId, Hbar.fromTinybars(-1)) // Sender
-                .addHbarTransfer(recipientAccountId, Hbar.fromTinybars(1)) // Recipient
+                .addHbarTransfer(operatorId, Hbar.fromTinybars(1)) // Recipient
                 .freezeWith(client)
                 .sign(operatorKey);
 
@@ -940,12 +973,9 @@ describe("TransactionIntegration", function () {
 
         it(`Creating, Signing, and Submitting a Transaction Using the Client with a Known Address Book.
           In Addition, Serialize and Deserialize the Signed Transaction`, async function () {
-            // For simplicity, sending back to the operator
-            const recipientAccountId = env.operatorId;
-
             const transaction = new TransferTransaction()
                 .addHbarTransfer(operatorId, Hbar.fromTinybars(-1)) // Sender
-                .addHbarTransfer(recipientAccountId, Hbar.fromTinybars(1)) // Recipient
+                .addHbarTransfer(operatorId, Hbar.fromTinybars(1)) // Recipient
                 .freezeWith(client);
 
             // Sign the transaction
@@ -969,13 +999,10 @@ describe("TransactionIntegration", function () {
         });
 
         it("Creating, Signing, and Executing a Transaction with a Non-Existent Node Account ID", async function () {
-            // For simplicity, sending back to the operator
-            const recipientAccountId = env.operatorId;
-
             // Create a transfer transaction and point it to an unknown node account ID (10000)
             const signTransferTransaction = await new TransferTransaction()
                 .addHbarTransfer(operatorId, Hbar.fromTinybars(-1))
-                .addHbarTransfer(recipientAccountId, Hbar.fromTinybars(1))
+                .addHbarTransfer(operatorId, Hbar.fromTinybars(1))
                 .setNodeAccountIds([
                     new AccountId(10000),
                     new AccountId(10001),
@@ -995,12 +1022,9 @@ describe("TransactionIntegration", function () {
         });
 
         it("Creating, Signing, and Executing a Transaction with a Non-Existent Node Account ID and an Existent one", async function () {
-            // For simplicity, sending back to the operator
-            const recipientAccountId = env.operatorId;
-
             const signTransferTransaction = await new TransferTransaction()
                 .addHbarTransfer(operatorId, Hbar.fromTinybars(-1))
-                .addHbarTransfer(recipientAccountId, Hbar.fromTinybars(1))
+                .addHbarTransfer(operatorId, Hbar.fromTinybars(1))
                 .setNodeAccountIds([new AccountId(10000), new AccountId(3)])
                 .freezeWith(client)
                 .sign(operatorKey);
@@ -1054,7 +1078,7 @@ describe("TransactionIntegration", function () {
     });
 
     describe("HSM signing of signable transaction body bytes integration tests", function () {
-        let env, client, senderId, senderKey, receiverId;
+        let senderId, senderKey, receiverId;
 
         const bigContents = Array(1000)
             .fill("Lorem ipsum dolor sit amet. ")
@@ -1074,9 +1098,6 @@ describe("TransactionIntegration", function () {
         }
 
         beforeAll(async function () {
-            env = await IntegrationTestEnv.new();
-            client = env.client;
-
             // Create test accounts
             senderKey = PrivateKey.generateECDSA();
             const receiverKey = PrivateKey.generateECDSA();
@@ -1100,10 +1121,6 @@ describe("TransactionIntegration", function () {
                         .execute(client)
                 ).getReceipt(client)
             ).accountId;
-        });
-
-        afterAll(async function () {
-            await env.close();
         });
 
         it("should accept external HSM signature for the transaction body bytes for a single-node transfer transaction", async function () {
@@ -1267,5 +1284,9 @@ describe("TransactionIntegration", function () {
 
             expect(contents.length).to.be.greaterThan(0);
         });
+    });
+
+    afterAll(async function () {
+        await env.close();
     });
 });

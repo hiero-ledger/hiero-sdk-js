@@ -767,7 +767,9 @@ export default class Executable {
                         );
                     }
 
-                    client._network.increaseBackoff(node);
+                    if (node.isHealthy()) {
+                        client._network.increaseBackoff(node);
+                    }
                     continue;
                 }
 
@@ -800,6 +802,43 @@ export default class Executable {
             // Determine by the executing state what we should do
             switch (shouldRetry) {
                 case ExecutionState.Retry:
+                    // Special handling for INVALID_NODE_ACCOUNT: mark node as unusable
+                    // and update network to get latest node account IDs
+                    if (status === Status.InvalidNodeAccount) {
+                        if (this._logger) {
+                            this._logger.debug(
+                                `[${this._getLogId()}] node with accountId: ${node.accountId.toString()} and proxy IP: ${node.address.toString()} has invalid node account ID, marking as unhealthy and updating network`,
+                            );
+                        }
+
+                        // Mark the node as unusable by increasing its backoff and removing it from the healthy nodes list
+                        client._network.increaseBackoff(node);
+
+                        // Initiate addressbook query and update the client's network
+                        // This will make the SDK client have the latest node account IDs for subsequent transactions
+                        try {
+                            if (client.mirrorNetwork.length > 0) {
+                                await client.updateNetwork();
+                            } else {
+                                if (this._logger) {
+                                    this._logger.warn(
+                                        "Cannot update address book: no mirror network configured. Retrying with existing network configuration.",
+                                    );
+                                }
+                            }
+                        } catch (error) {
+                            if (this._logger) {
+                                const errorMessage =
+                                    error instanceof Error
+                                        ? error.message
+                                        : String(error);
+                                this._logger.trace(
+                                    `failed to update client address book after INVALID_NODE_ACCOUNT_ID: ${errorMessage}`,
+                                );
+                            }
+                        }
+                    }
+
                     await delayForAttempt(
                         isLocalNode,
                         attempt,

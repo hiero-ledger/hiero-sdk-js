@@ -8,9 +8,10 @@
     },
     "author": "",
     "license": "ISC",
+    "repository": "https://github.com/hiero-ledger/hiero-sdk-js",
     "dependencies": {
-        "@hiero-ledger/sdk": "link:..",
-        "chai": "^4.3.6",
-        "mocha": "~10.6.0"
+        "@hiero-ledger/sdk": "2.79.0",
+        "chai": "4.3.6",
+        "mocha": "10.6.0"
     }
 }

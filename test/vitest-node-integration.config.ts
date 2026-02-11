@@ -19,6 +19,7 @@ export default defineConfig({
             "test/integration/resources/*",
             "test/integration/utils/*",
             "test/integration/contents.js",
+            "test/integration/dual-mode/**/*.js",
         ],
         hookTimeout: 120000,
         testTimeout: 120000,
