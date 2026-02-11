@@ -13,3 +13,7 @@ export interface FileInfoQueryResponse {
     readonly ledgerId?: string;
     readonly cost?: string;
 }
+
+export interface FileContentsResponse {
+    readonly contents: string;
+}
