@@ -16,7 +16,7 @@
     "@hiero-ledger/cryptography": "workspace:*",
     "@hiero-ledger/sdk": "workspace:*",
     "@mui/material": "^7.1.1",
-    "next": "15.4.10",
+    "next": "16.1.6",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
