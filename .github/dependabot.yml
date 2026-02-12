@@ -9,51 +9,7 @@ updates:
       directory: "/"
       schedule:
           interval: monthly
-      open-pull-requests-limit: 10
-      versioning-strategy: increase
-      ignore:
-          # For all packages, ignore all minor & patch updates
-          - dependency-name: "*"
-            update-types:
-                ["version-update:semver-minor", "version-update:semver-patch"]
-    - package-ecosystem: npm
-      directory: "packages/cryptography"
-      schedule:
-          interval: monthly
-      open-pull-requests-limit: 10
-      versioning-strategy: increase
-      ignore:
-          # For all packages, ignore all minor & patch updates
-          - dependency-name: "*"
-            update-types:
-                ["version-update:semver-minor", "version-update:semver-patch"]
-    - package-ecosystem: npm
-      directory: "packages/proto"
-      schedule:
-          interval: monthly
-      open-pull-requests-limit: 10
-      versioning-strategy: increase
-      ignore:
-          # For all packages, ignore all minor & patch updates
-          - dependency-name: "*"
-            update-types:
-                ["version-update:semver-minor", "version-update:semver-patch"]
-    - package-ecosystem: npm
-      directory: "/examples"
-      schedule:
-          interval: monthly
-      open-pull-requests-limit: 5
-      versioning-strategy: increase
-      ignore:
-          # For all packages, ignore all minor & patch updates
-          - dependency-name: "*"
-            update-types:
-                ["version-update:semver-minor", "version-update:semver-patch"]
-    - package-ecosystem: npm
-      directory: "/examples/react-native-example"
-      schedule:
-          interval: monthly
-      open-pull-requests-limit: 5
+      open-pull-requests-limit: 40
       versioning-strategy: increase
       ignore:
           # For all packages, ignore all minor & patch updates
