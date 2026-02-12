@@ -1,6 +1,6 @@
 import fs from "fs";
 import path from "path";
-import { spawnSync } from "child_process";
+import { spawn } from "child_process";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -22,19 +22,66 @@ const excludedJSFile = [
     "node-client-async-testnet.js",
 ];
 const cmd = process.env.NODE_COMMAND;
+const concurrency = Math.max(1, parseInt(process.env.EXAMPLES_CONCURRENCY || "4", 10));
+
+function runExample(examplePath, file) {
+    return new Promise((resolve, reject) => {
+        const child = spawn(cmd, [examplePath], {
+            stdio: "ignore",
+        });
+        child.on("close", (code) => {
+            resolve({ file, code });
+        });
+        child.on("error", reject);
+    });
+}
+
+async function runInParallel(examples, maxConcurrency) {
+    let completed = 0;
+    let failed = 0;
+    const total = examples.length;
+    let nextIndex = 0;
+
+    async function worker() {
+        while (true) {
+            const index = nextIndex++;
+            if (index >= total) break;
+            const file = examples[index];
+            const examplePath = path.join(examplesDirectory, file);
+            console.log(`\n⏳ ${index + 1}/${total}. Running ${file}...`);
+            const { file: f, code } = await runExample(examplePath, file);
+            if (code === 0) {
+                completed += 1;
+                console.log(`✅ ${f} completed.`);
+            } else {
+                failed += 1;
+                console.log(`❌ ${f} failed with code ${code}.`);
+            }
+        }
+    }
+
+    const workers = Math.min(maxConcurrency, total);
+    await Promise.all(Array.from({ length: workers }, () => worker()));
+
+    console.log(
+        `\nTotal: [${total}] \n✅ Completed: [${completed}] \n❌ Failed: [${failed}] ${
+            failed === 0 ? " \nGreat job! 🎉" : ""
+        } `,
+    );
+    if (failed > 0) {
+        process.exit(1);
+    }
+}
 
 fs.readdir(examplesDirectory, (err, files) => {
     if (err) {
         console.error("Error reading directory:", err);
-        return;
+        process.exit(1);
     }
 
     if (cmd === undefined) {
         throw new Error("Environment variable NODE_COMMAND is required.");
     }
-
-    let completed = 0;
-    let failed = 0;
 
     const isPathStartsWith = (
         /** @type {string} */ file,
@@ -50,28 +97,7 @@ fs.readdir(examplesDirectory, (err, files) => {
             ),
     );
 
-    const total = examples.length;
+    console.log(`Running ${examples.length} examples with concurrency ${concurrency}...\n`);
 
-    examples.forEach((file, index) => {
-        console.log(`\n⏳ ${index + 1}. Running ${file}...`);
-        const examplePath = path.join(examplesDirectory, file);
-
-        const result = spawnSync(cmd, [examplePath], {
-            stdio: "ignore",
-        });
-
-        if (result.status === 0) {
-            completed += 1;
-            console.log(`✅ Successfully executed.`);
-        } else {
-            failed += 1;
-            throw new Error("Task failed");
-        }
-    });
-
-    console.log(
-        `\nTotal: [${total}] \n✅ Completed: [${completed}] \n❌ Failed: [${failed}] ${
-            failed === 0 ? " \nGreat job! 🎉" : ""
-        } `,
-    );
+    runInParallel(examples, concurrency);
 });
