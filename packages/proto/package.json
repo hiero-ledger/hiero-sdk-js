@@ -44,7 +44,7 @@
     "@babel/plugin-syntax-dynamic-import": "7.8.3",
     "@babel/plugin-transform-modules-commonjs": "7.20.11",
     "@babel/plugin-transform-runtime": "7.25.9",
-    "@types/node": "24.0.8",
+    "@types/node": "25.2.3",
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
     "babel-plugin-dynamic-import-node": "2.3.3",
