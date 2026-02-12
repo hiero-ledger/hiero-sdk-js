@@ -102,7 +102,7 @@
         "@rollup/plugin-replace": "6.0.2",
         "@rollup/plugin-terser": "0.4.4",
         "@types/crypto-js": "4.2.0",
-        "@types/node": "24.0.8",
+        "@types/node": "25.2.3",
         "@types/utf8": "3.0.1",
         "@typescript-eslint/eslint-plugin": "5.48.2",
         "@typescript-eslint/parser": "5.62.0",
