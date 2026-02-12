@@ -22,5 +22,5 @@ message LambdaSStoreTransactionBody {
   /**
    * The updates to the storage of the lambda.
    */
-  repeated LambdaStorageUpdate storage_updates = 2;
+  repeated EvmHookStorageUpdate storage_updates = 2;
 }

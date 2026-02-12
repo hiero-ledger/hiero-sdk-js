@@ -2,6 +2,8 @@
 
 import AccountId from "./account/AccountId.js";
 import Hbar from "./Hbar.js";
+import FungibleHookCall from "./hooks/FungibleHookCall.js";
+import FungibleHookType from "./hooks/FungibleHookType.js";
 
 /**
  * @typedef {object} TransferJSON
@@ -31,6 +33,7 @@ export default class Transfer {
      * @param {AccountId | string} props.accountId
      * @param {number | string | Long | BigNumber | Hbar} props.amount
      * @param {boolean} props.isApproved
+     * @param {FungibleHookCall} [props.hookCall]
      */
     constructor(props) {
         /**
@@ -52,6 +55,7 @@ export default class Transfer {
                 : new Hbar(props.amount);
 
         this.isApproved = props.isApproved;
+        this.hookCall = props.hookCall;
     }
 
     /**
@@ -63,6 +67,19 @@ export default class Transfer {
         const transfers = [];
 
         for (const transfer of accountAmounts) {
+            let hookCall = undefined;
+            if (transfer.preTxAllowanceHook != null) {
+                hookCall = FungibleHookCall._fromProtobufWithType(
+                    transfer.preTxAllowanceHook,
+                    FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
+                );
+            } else if (transfer.prePostTxAllowanceHook != null) {
+                hookCall = FungibleHookCall._fromProtobufWithType(
+                    transfer.prePostTxAllowanceHook,
+                    FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK,
+                );
+            }
+
             transfers.push(
                 new Transfer({
                     accountId: AccountId._fromProtobuf(
@@ -74,6 +91,7 @@ export default class Transfer {
                         transfer.amount != null ? transfer.amount : 0,
                     ),
                     isApproved: /** @type {boolean} */ (transfer.isApproval),
+                    hookCall,
                 }),
             );
         }
@@ -86,11 +104,25 @@ export default class Transfer {
      * @returns {HieroProto.proto.IAccountAmount}
      */
     _toProtobuf() {
-        return {
+        /** @type {HieroProto.proto.IAccountAmount} */
+        const result = {
             accountID: this.accountId._toProtobuf(),
             amount: this.amount.toTinybars(),
             isApproval: this.isApproved,
         };
+
+        if (this.hookCall != null) {
+            switch (this.hookCall.type) {
+                case FungibleHookType.PRE_TX_ALLOWANCE_HOOK:
+                    result.preTxAllowanceHook = this.hookCall._toProtobuf();
+                    break;
+                case FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK:
+                    result.prePostTxAllowanceHook = this.hookCall._toProtobuf();
+                    break;
+            }
+        }
+
+        return result;
     }
 
     /**

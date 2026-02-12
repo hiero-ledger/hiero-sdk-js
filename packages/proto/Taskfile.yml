@@ -19,7 +19,7 @@ tasks:
 
     install:submodules:
         vars:
-            commit: "20f39f28061087e08f013d4b96b38ed732a9cc55" # 0.68.1
+            commit: "d79545624483b7cd6d77eda348f05132810ae0ae" # v0.70.0-rc.1
         cmds:
             - git submodule update --init --recursive --remote
             - |
