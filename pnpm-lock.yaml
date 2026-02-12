@@ -160,8 +160,8 @@ importers:
         specifier: 10.1.3
         version: 10.1.3
       chromedriver:
-        specifier: 143.0.3
-        version: 143.0.3(debug@4.4.1)
+        specifier: 145.0.1
+        version: 145.0.1(debug@4.4.1)
       codecov:
         specifier: 3.8.3
         version: 3.8.3
@@ -645,8 +645,8 @@ importers:
         specifier: 10.1.3
         version: 10.1.3
       chromedriver:
-        specifier: 142.0.0
-        version: 142.0.0(debug@4.4.1)
+        specifier: 145.0.1
+        version: 145.0.1(debug@4.4.1)
       codecov:
         specifier: 3.8.3
         version: 3.8.3
@@ -4187,6 +4187,9 @@ packages:
   '@types/node@25.0.7':
     resolution: {integrity: sha512-C/er7DlIZgRJO7WtTdYovjIFzGsz0I95UlMyR9anTb4aCpBSRWe5Jc1/RvLKUfzmOxHPGjSE5+63HgLtndxU4w==}
 
+  '@types/node@25.2.3':
+    resolution: {integrity: sha512-m0jEgYlYz+mDJZ2+F4v8D1AyQb+QzsNqRuI7xg1VQX/KlKS0qT9r1Mo16yo5F/MtifXFgaofIFsdFMox2SxIbQ==}
+
   '@types/parse-json@4.0.2':
     resolution: {integrity: sha512-dISoDXWWQwUquiKsyZ4Ng+HX2KsPL7LyHKHQwgGFEA3IaKac4Obd+h2a/a6waisAoepJlBcx9paWqjA8/HVjCw==}
 
@@ -5640,13 +5643,8 @@ packages:
     resolution: {integrity: sha512-rNjApaLzuwaOTjCiT8lSDdGN1APCiqkChLMJxJPWLunPAt5fy8xgU9/jNOchV84wfIxrA0lRQB7oCT8jrn/wrQ==}
     engines: {node: '>=6.0'}
 
-  chromedriver@142.0.0:
-    resolution: {integrity: sha512-BlMMPFOKAOYOT23tjtAjvci57gyYcasKqd/3yGKOjGMEbFZa5kfwoNcUzwL/5ugZ932MJX1fW/j8zk5KD5mHBw==}
-    engines: {node: '>=20'}
-    hasBin: true
-
-  chromedriver@143.0.3:
-    resolution: {integrity: sha512-esuTb/QVB3s5A0o/286CBh1Xaxvebp2q7+lQZOiXjQlBxXxhvYz7xySCY+5c9Ku6DJoEbK5yoG96fu5R9jPQWQ==}
+  chromedriver@145.0.1:
+    resolution: {integrity: sha512-v1OnzdHz8u7fyEX9t7hm5gR5zfEO4vkdt1OVvttLvo40dh0KKImDp8iyQxCFeEayHp5VATtG+hcSvsF4lZSSXw==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -8666,6 +8664,10 @@ packages:
 
   lru-cache@11.2.4:
     resolution: {integrity: sha512-B5Y16Jr9LB9dHVkh6ZevG+vAbOsNOYCX+sXvFWFu7B3Iz5mijW3zdbMyhsh8ANd2mSWBYdJgnqi+mL7/LrOPYg==}
+    engines: {node: 20 || >=22}
+
+  lru-cache@11.2.6:
+    resolution: {integrity: sha512-ESL2CrkS/2wTPfuend7Zhkzo2u0daGJ/A2VucJOgQ/C48S/zB8MMeMHSGKYpXhIjbPxfuezITkaBH1wqv00DDQ==}
     engines: {node: 20 || >=22}
 
   lru-cache@5.1.1:
@@ -12283,7 +12285,7 @@ snapshots:
       '@csstools/css-color-parser': 3.1.0(@csstools/css-parser-algorithms@3.0.5(@csstools/css-tokenizer@3.0.4))(@csstools/css-tokenizer@3.0.4)
       '@csstools/css-parser-algorithms': 3.0.5(@csstools/css-tokenizer@3.0.4)
       '@csstools/css-tokenizer': 3.0.4
-      lru-cache: 11.2.4
+      lru-cache: 11.2.6
 
   '@asamuzakjp/dom-selector@6.7.6':
     dependencies:
@@ -15459,7 +15461,7 @@ snapshots:
   '@jest/console@28.1.3':
     dependencies:
       '@jest/types': 28.1.3
-      '@types/node': 25.0.7
+      '@types/node': 25.2.3
       chalk: 4.1.2
       jest-message-util: 28.1.3
       jest-util: 28.1.3
@@ -15510,7 +15512,7 @@ snapshots:
     dependencies:
       '@jest/fake-timers': 27.5.1
       '@jest/types': 27.5.1
-      '@types/node': 25.0.7
+      '@types/node': 25.2.3
       jest-mock: 27.5.1
 
   '@jest/environment@29.7.0':
@@ -15524,7 +15526,7 @@ snapshots:
     dependencies:
       '@jest/types': 27.5.1
       '@sinonjs/fake-timers': 8.1.0
-      '@types/node': 25.0.7
+      '@types/node': 25.2.3
       jest-message-util: 27.5.1
       jest-mock: 27.5.1
       jest-util: 27.5.1
@@ -17038,6 +17040,10 @@ snapshots:
     dependencies:
       undici-types: 7.16.0
 
+  '@types/node@25.2.3':
+    dependencies:
+      undici-types: 7.16.0
+
   '@types/parse-json@4.0.2': {}
 
   '@types/prettier@2.7.3': {}
@@ -17064,7 +17070,7 @@ snapshots:
 
   '@types/resolve@1.17.1':
     dependencies:
-      '@types/node': 25.0.7
+      '@types/node': 25.2.3
 
   '@types/resolve@1.20.2': {}
 
@@ -17129,7 +17135,7 @@ snapshots:
 
   '@types/yauzl@2.10.3':
     dependencies:
-      '@types/node': 25.0.7
+      '@types/node': 25.2.3
     optional: true
 
   '@typescript-eslint/eslint-plugin@5.48.2(@typescript-eslint/parser@5.48.2(eslint@8.52.0)(typescript@5.8.2))(eslint@8.52.0)(typescript@5.8.2)':
@@ -19116,20 +19122,7 @@ snapshots:
 
   chrome-trace-event@1.0.4: {}
 
-  chromedriver@142.0.0(debug@4.4.1):
-    dependencies:
-      '@testim/chrome-version': 1.1.4
-      axios: 1.13.5(debug@4.4.1)
-      compare-versions: 6.1.1
-      extract-zip: 2.0.1
-      proxy-agent: 6.5.0
-      proxy-from-env: 1.1.0
-      tcp-port-used: 1.0.2
-    transitivePeerDependencies:
-      - debug
-      - supports-color
-
-  chromedriver@143.0.3(debug@4.4.1):
+  chromedriver@145.0.1(debug@4.4.1):
     dependencies:
       '@testim/chrome-version': 1.1.4
       axios: 1.13.5(debug@4.4.1)
@@ -22377,7 +22370,7 @@ snapshots:
       '@jest/environment': 27.5.1
       '@jest/test-result': 27.5.1
       '@jest/types': 27.5.1
-      '@types/node': 25.0.7
+      '@types/node': 25.2.3
       chalk: 4.1.2
       co: 4.6.0
       dedent: 0.7.0
@@ -22473,7 +22466,7 @@ snapshots:
       '@jest/environment': 27.5.1
       '@jest/fake-timers': 27.5.1
       '@jest/types': 27.5.1
-      '@types/node': 25.0.7
+      '@types/node': 25.2.3
       jest-mock: 27.5.1
       jest-util: 27.5.1
       jsdom: 16.7.0
@@ -22488,7 +22481,7 @@ snapshots:
       '@jest/environment': 27.5.1
       '@jest/fake-timers': 27.5.1
       '@jest/types': 27.5.1
-      '@types/node': 25.0.7
+      '@types/node': 25.2.3
       jest-mock: 27.5.1
       jest-util: 27.5.1
 
@@ -22544,7 +22537,7 @@ snapshots:
       '@jest/source-map': 27.5.1
       '@jest/test-result': 27.5.1
       '@jest/types': 27.5.1
-      '@types/node': 25.0.7
+      '@types/node': 25.2.3
       chalk: 4.1.2
       co: 4.6.0
       expect: 27.5.1
@@ -22611,7 +22604,7 @@ snapshots:
   jest-mock@27.5.1:
     dependencies:
       '@jest/types': 27.5.1
-      '@types/node': 25.0.7
+      '@types/node': 25.2.3
 
   jest-mock@29.7.0:
     dependencies:
@@ -22817,7 +22810,7 @@ snapshots:
 
   jest-worker@26.6.2:
     dependencies:
-      '@types/node': 25.0.7
+      '@types/node': 25.2.3
       merge-stream: 2.0.0
       supports-color: 7.2.0
 
@@ -23284,6 +23277,8 @@ snapshots:
   lru-cache@10.4.3: {}
 
   lru-cache@11.2.4: {}
+
+  lru-cache@11.2.6: {}
 
   lru-cache@5.1.1:
     dependencies:
@@ -24426,7 +24421,7 @@ snapshots:
 
   path-scurry@2.0.1:
     dependencies:
-      lru-cache: 11.2.4
+      lru-cache: 11.2.6
       minipass: 7.1.2
 
   path-to-regexp@0.1.12: {}
