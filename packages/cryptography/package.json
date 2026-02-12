@@ -59,7 +59,7 @@
         "last 1 Firefox versions"
     ],
     "dependencies": {
-        "@noble/curves": "1.8.1",
+        "@noble/curves": "2.0.1",
         "asn1js": "3.0.6",
         "bignumber.js": "9.1.1",
         "bn.js": "5.2.1",
