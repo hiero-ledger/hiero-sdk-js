@@ -65,6 +65,16 @@ $ npm install -g pnpm
 # with homebrew
 $ brew install pnpm
 ```
+### Windows 
+Enable the long paths in Windows:
+
+1. Go to ```Run``` app and type ```regedit```
+2. Navigate to ```HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\FileSystem```
+3. On the right search for ```LongPathsEnabled``` entry
+4. Set this to ```Enabled``` or ```1```
+5. Open Git Bash as an Administrator and run ```git config --system core.longpaths true```
+6. In Git Bash Run ```git config core.autocrlf false```
+7. FInally, in Git Bash run ```git config core.eol lf```
 
 After downloading the repo run:
 
