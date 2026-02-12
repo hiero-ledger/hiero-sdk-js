@@ -29,10 +29,16 @@ tasks:
             - build
 
     "solo:setup":
-        desc: "Setup Solo local network for development and integration testing"
+        desc: "Setup Solo local network with single node (default)"
         cmds:
             - chmod +x ./scripts/setup-solo.sh
             - ./scripts/setup-solo.sh {{.CLI_ARGS}}
+
+    "solo:setup:dual-node":
+        desc: "Setup Solo local network with two nodes (required for dynamic address book tests)"
+        cmds:
+            - chmod +x ./scripts/setup-solo.sh
+            - ./scripts/setup-solo.sh --num-nodes 2 {{.CLI_ARGS}}
 
     "solo:teardown":
         desc: "Teardown Solo local network and cleanup resources"

@@ -93,7 +93,7 @@ export default class Timestamp {
      */
     toDate() {
         return new Date(
-            this.seconds.toInt() * 1000 +
+            this.seconds.toNumber() * 1000 +
                 Math.floor(this.nanos.toInt() / 1000000),
         );
     }
@@ -127,7 +127,7 @@ export default class Timestamp {
     static _fromProtobuf(timestamp) {
         return new Timestamp(
             timestamp.seconds instanceof Long
-                ? timestamp.seconds.toInt()
+                ? timestamp.seconds
                 : timestamp.seconds != null
                 ? timestamp.seconds
                 : 0,
