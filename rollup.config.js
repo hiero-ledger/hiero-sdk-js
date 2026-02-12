@@ -9,6 +9,12 @@ import { nodeResolve } from "@rollup/plugin-node-resolve";
 import terser from "@rollup/plugin-terser";
 import replace from "@rollup/plugin-replace";
 
+// Terser options for Windows compatibility
+// Windows has issues with worker threads in some environments
+const terserOptions = {
+    maxWorkers: process.platform === "win32" ? 1 : undefined,
+};
+
 // Read package.json version
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(
@@ -120,7 +126,7 @@ export default [
                 preventAssignment: true,
                 __SDK_VERSION__: JSON.stringify(pkg.version),
             }),
-            terser(),
+            terser(terserOptions),
         ],
         output: {
             dir: "lib/",
@@ -132,13 +138,13 @@ export default [
     {
         input: "src/native.js",
         plugins: [
-            terser(),
             json(),
             replace({
                 preventAssignment: true,
                 __SDK_VERSION__: JSON.stringify(pkg.version),
             }),
             alias(nativeAliases),
+            terser(terserOptions),
         ],
         output: {
             dir: "lib/",
@@ -150,12 +156,12 @@ export default [
     {
         input: "src/index.js",
         plugins: [
-            terser(),
             json(),
             replace({
                 preventAssignment: true,
                 __SDK_VERSION__: JSON.stringify(pkg.version),
             }),
+            terser(terserOptions),
         ],
         output: {
             dir: "lib/",
@@ -186,7 +192,7 @@ export default [
             file: "dist/umd.js",
             format: "umd",
             name: "sdk",
-            sourceMap: true,
+            sourcemap: true,
         },
         context: "window",
     },
@@ -207,12 +213,12 @@ export default [
                 transformMixedEsModules: true,
             }),
             json(),
-            terser(),
+            terser(terserOptions),
         ],
         output: {
             format: "umd",
             name: "sdk",
-            sourceMap: true,
+            sourcemap: true,
             file: "dist/umd.min.js",
         },
         context: "window",
