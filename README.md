@@ -70,6 +70,7 @@ $ brew install pnpm
 >[!Note]
 > Long paths must be enabled in Windows 
 > Git must support long paths
+> A link for this can be found [Windows-Long-Path](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry)
 
 After downloading the repo run:
 
