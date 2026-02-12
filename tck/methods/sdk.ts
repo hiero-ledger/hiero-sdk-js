@@ -55,8 +55,13 @@ export default {
         if (nodeIp && nodeAccountId && mirrorNetworkIp) {
             const node = { [nodeIp]: AccountId.fromString(nodeAccountId) };
             client = Client.forNetwork(node);
+            // Set mirror network for custom network configuration
+            client.setMirrorNetwork([mirrorNetworkIp]);
         } else {
             client = Client.forTestnet();
+            // Explicitly set mirror network to ensure it's configured for AddressBookQuery
+            // This matches the pattern used in integration tests
+            client.setMirrorNetwork("testnet");
         }
 
         client.setOperator(operatorAccountId, operatorPrivateKey);
