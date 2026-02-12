@@ -7,8 +7,8 @@
  * Direct port of flatten-protos.sh to Node.js with identical behavior
  */
 
-const fs = require('fs');
-const path = require('path');
+import fs from 'fs';
+import path from 'path';
 
 const PROTO_DIR = 'src/proto';
 const TEMP_DIR = 'src/proto_temp';
