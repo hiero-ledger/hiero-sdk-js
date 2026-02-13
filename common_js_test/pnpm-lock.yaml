@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@hiero-ledger/sdk':
-        specifier: 2.79.0
-        version: 2.79.0(bn.js@5.2.2)(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))
+        specifier: 2.80.0
+        version: 2.80.0(bn.js@5.2.2)(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))
       chai:
         specifier: 4.3.6
         version: 4.3.6
@@ -237,8 +237,8 @@ packages:
     engines: {node: '>=6'}
     hasBin: true
 
-  '@hiero-ledger/cryptography@1.15.0':
-    resolution: {integrity: sha512-KLbueVfPuTotZfGT+HxcA3zz455eIZW/dBGxkpj9MEp+J2pruR9TyWzenozkuFAzvQ+ouJexE8OmtJMwV5XBBg==}
+  '@hiero-ledger/cryptography@1.16.0-beta.3':
+    resolution: {integrity: sha512-7+R/HKGq6LiqUZ1agn52sQS6J3+VXBWvqIMUCIU1EVdbEPQDPoVPJYEd7dDreBCLIcjBRcHVjDc9wbi+ar2rsA==}
     engines: {node: '>=12.0.0'}
     peerDependencies:
       expo-crypto: '*'
@@ -246,8 +246,8 @@ packages:
       expo-crypto:
         optional: true
 
-  '@hiero-ledger/proto@2.25.0':
-    resolution: {integrity: sha512-yZ9gb/2FMUSvH+txR1g1Z/03vbl4T11H8qw1NQyIuKhXe4PE8Ct8iHAL62aS0BN+OcR6CaF2wkfkQa16kgIkSA==}
+  '@hiero-ledger/proto@2.26.0-beta.3':
+    resolution: {integrity: sha512-2UhTKX2RbL2LC8XcgetFa4iS5d8cELY/8PmFolj750z4CoQu2YOchZTqNTdI431qR9uAx3aBVSf+mx/YBYIUNA==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       ansi-regex: 6.2.2
@@ -256,8 +256,8 @@ packages:
       protobufjs: 7.5.4
       strip-ansi: 7.1.2
 
-  '@hiero-ledger/sdk@2.79.0':
-    resolution: {integrity: sha512-9x0yp7VSwSMMjAypWuAMj39D3k09ArrKMCBBJT6fBi7R3ZtSdDTJNrjZRBgR/afMi6N0gGEkqg61rx9eg77L+Q==}
+  '@hiero-ledger/sdk@2.80.0':
+    resolution: {integrity: sha512-9FHNPduWl27eNI2Gns0O6GJTqcEJ11lBTML84A7D8albCErVXaUVsnRrASafH+Xfq1dqK5dwsNHRwu8WtM3zVQ==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       bn.js: 5.2.1
@@ -885,7 +885,7 @@ packages:
 
   glob@7.2.3:
     resolution: {integrity: sha512-nFR0zLpU2YCaRxwoCJvL6UvCH2JFyFVIvwTLsIf21AuHlMskA1hhTdk+LlYJtOlYt9v6dvszD2BGRqBL+iQK9Q==}
-    deprecated: Glob versions prior to v9 are no longer supported
+    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   glob@8.1.0:
     resolution: {integrity: sha512-r8hpEjiQEYlF2QU0df3dS+nxxSIreXQS1qRhMJM0Q5NDdR386C7jb7Hwwod8Fgiuex+k0GFjgft18yvxm5XoCQ==}
@@ -2020,7 +2020,7 @@ snapshots:
       protobufjs: 7.5.4
       yargs: 17.7.2
 
-  '@hiero-ledger/cryptography@1.15.0(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))':
+  '@hiero-ledger/cryptography@1.16.0-beta.3(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))':
     dependencies:
       '@noble/curves': 1.8.1
       ansi-regex: 6.2.2
@@ -2042,7 +2042,7 @@ snapshots:
       - react-native
       - supports-color
 
-  '@hiero-ledger/proto@2.25.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@7.5.4)(strip-ansi@7.1.2)':
+  '@hiero-ledger/proto@2.26.0-beta.3(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@7.5.4)(strip-ansi@7.1.2)':
     dependencies:
       ansi-regex: 6.2.2
       ansi-styles: 6.2.3
@@ -2051,15 +2051,15 @@ snapshots:
       protobufjs: 7.5.4
       strip-ansi: 7.1.2
 
-  '@hiero-ledger/sdk@2.79.0(bn.js@5.2.2)(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))':
+  '@hiero-ledger/sdk@2.80.0(bn.js@5.2.2)(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))':
     dependencies:
       '@ethersproject/abi': 5.8.0
       '@ethersproject/bignumber': 5.8.0
       '@ethersproject/bytes': 5.8.0
       '@ethersproject/rlp': 5.8.0
       '@grpc/grpc-js': 1.12.6
-      '@hiero-ledger/cryptography': 1.15.0(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))
-      '@hiero-ledger/proto': 2.25.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@7.5.4)(strip-ansi@7.1.2)
+      '@hiero-ledger/cryptography': 1.16.0-beta.3(react-native@0.82.1(@babel/core@7.28.5)(react@19.2.1))
+      '@hiero-ledger/proto': 2.26.0-beta.3(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@7.5.4)(strip-ansi@7.1.2)
       ansi-regex: 6.2.2
       ansi-styles: 6.2.3
       bignumber.js: 9.1.1
