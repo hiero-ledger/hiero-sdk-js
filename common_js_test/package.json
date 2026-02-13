@@ -12,6 +12,6 @@
     "dependencies": {
         "@hiero-ledger/sdk": "2.79.0",
         "chai": "4.3.6",
-        "mocha": "10.6.0"
+        "mocha": "10.8.2"
     }
 }
