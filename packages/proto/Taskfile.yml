@@ -19,7 +19,7 @@ tasks:
 
     install:submodules:
         vars:
-            commit: "20f39f28061087e08f013d4b96b38ed732a9cc55" # 0.68.1
+            branch: "feature/hedera-evm-pectra-support"
         cmds:
             - git submodule update --init --recursive --remote
             - |
@@ -28,7 +28,7 @@ tasks:
                 if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
                     git fetch --unshallow --tags
                 fi &&
-                git checkout {{.commit}}
+                git checkout {{.branch}}
                 )
 
     move:protobufs:
@@ -127,8 +127,9 @@ tasks:
             latest_tag:
                 sh: git ls-remote --tags https://github.com/hiero-ledger/hiero-consensus-node.git | awk '{print $2}' | grep -E 'refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1 | sed 's#refs/tags/##'
             proto: "{{.proto | default .latest_tag}}"
+            branch: "{{.branch | default \"feature/hedera-evm-pectra-support\"}}"
         cmds:
-            - echo "Protobuf version set to {{.proto}}"
+            - echo "Protobuf version set to {{.proto}} (branch {{.branch}})"
             - git submodule update --init --recursive --remote
             - |
                 (
@@ -136,13 +137,13 @@ tasks:
                 if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
                     git fetch --unshallow --tags
                 fi &&
-                git checkout {{.stag}}
+                git checkout {{.branch}}
                 )
             - task "move:protobufs"
             - task "flatten:protobufs"
             - pnpm i
             - task "build:standalone"
-            - echo "Successfully updated protobufs to {{.proto}}"
+            - echo "Successfully updated protobufs to {{.proto}} (branch {{.branch}})"
 
     pack:
         preconditions:
