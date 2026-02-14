@@ -302,8 +302,6 @@ export const buildSubmitTopicMessage = (
 
     if (message != null) {
         transaction.setMessage(message);
-    } else {
-        throw new Error("Message is required");
     }
 
     if (maxChunks != null) {
