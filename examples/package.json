@@ -17,21 +17,21 @@
         "@ethersproject/abi": "^5.8.0",
         "@hiero-ledger/sdk": "link:..",
         "@noble/hashes": "^1.7.1",
-        "axios": "^1.12.0",
-        "dotenv": "^16.3.1"
+        "axios": "^1.13.5",
+        "dotenv": "^17.2.3"
     },
     "devDependencies": {
-        "@types/node": "^20.8.10",
+        "@types/node": "^25.0.3",
         "@typescript-eslint/eslint-plugin": "^5.62.0",
         "@typescript-eslint/parser": "^5.62.0",
-        "dpdm": "3.13.1",
+        "dpdm": "4.0.1",
         "eslint": "^8.49.0",
-        "eslint-plugin-compat": "^4.2.0",
+        "eslint-plugin-compat": "^6.0.2",
         "eslint-plugin-import": "^2.28.1",
-        "eslint-plugin-jsdoc": "^46.8.2",
+        "eslint-plugin-jsdoc": "^61.5.0",
         "eslint-plugin-node": "^11.1.0",
         "npm-run-all": "^4.1.5",
-        "nyc": "^15.1.0",
+        "nyc": "^17.1.0",
         "prettier": "^3.0.3",
         "typedoc": "^0.25.1",
         "typescript": "^5.7.2"

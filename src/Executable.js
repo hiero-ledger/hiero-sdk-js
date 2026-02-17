@@ -767,7 +767,9 @@ export default class Executable {
                         );
                     }
 
-                    client._network.increaseBackoff(node);
+                    if (node.isHealthy()) {
+                        client._network.increaseBackoff(node);
+                    }
                     continue;
                 }
 

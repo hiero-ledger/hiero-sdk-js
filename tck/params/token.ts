@@ -1,4 +1,4 @@
-import { BaseTransactionParams } from "./base";
+import { BaseParams, BaseTransactionParams } from "./base";
 
 import {
     CustomFixedFee,
@@ -136,4 +136,18 @@ export interface RejectTokenParams extends BaseTransactionParams {
     readonly tokenIds?: string[];
     readonly nftIds?: string[];
     readonly serialNumbers?: string[];
+}
+
+export interface GetTokenInfoParams extends BaseParams {
+    readonly tokenId?: string;
+    readonly queryPayment?: string;
+    readonly maxQueryPayment?: string;
+    readonly getCost?: boolean;
+}
+
+export interface GetTokenNftInfoParams extends BaseParams {
+    readonly nftId?: string;
+    readonly queryPayment?: string;
+    readonly maxQueryPayment?: string;
+    readonly getCost?: boolean;
 }

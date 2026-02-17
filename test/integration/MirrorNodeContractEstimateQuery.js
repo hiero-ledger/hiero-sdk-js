@@ -10,8 +10,7 @@ import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 /**
  * Temporary skip this test until Solo is updated to support these queries
  */
-// eslint-disable-next-line vitest/no-disabled-tests
-describe.skip("MirrorNodeContractCallQuery", function () {
+describe("MirrorNodeContractCallQuery", function () {
     let env;
 
     beforeEach(async function () {

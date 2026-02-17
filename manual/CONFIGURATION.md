@@ -101,22 +101,30 @@ This example behaves the same way as the React Native example.
 
 ## Which network to use?
 
--   The maintainers of this repository use `hiero-local-node` when running integration tests. Running integration tests on testnet costs far too much HBARs making it unsustainable.
+-   The maintainers of this repository use **Solo** (the official Hiero local network solution) when running integration tests. Running integration tests on testnet costs far too much HBARs making it unsustainable.
 -   When running the examples, you can use any network of your choice. These examples are designed to demonstrate how a feature is intended to work and are optimized to function on any network you prefer.
 -   Unit tests do not require environment variables.
+
+See the [Solo Setup Guide](./SOLO_SETUP.md) for detailed instructions on setting up your local development environment.
 
 ## How to get my account keys and IDs?
 
 ### Local network
 
-If you have followed our best practices, such as using hedera-local-node for running integration tests, you can retrieve account keys and IDs when starting the local node. Upon startup, the local node generates accounts and displays their details.
+If you have followed our best practices and set up Solo using `task solo:setup`, the account keys and IDs are **automatically generated and configured** in your `.env` file. You don't need to manually copy or configure anything.
 
-You can copy one of these accounts and use its key and ID for the following:
+The automated setup creates:
 
--   `OPERATOR_KEY` and `OPERATOR_ID`
--   `ALICE_ID` and `ALICE_KEY`
--   `BOB_ID` and `BOB_KEY`
--   `TREASURY_ID` and `TREASURY_KEY`
+-   `OPERATOR_KEY` and `OPERATOR_ID` - A dedicated ECDSA test account for regular integration tests
+-   `GENESIS_OPERATOR_ID` and `GENESIS_OPERATOR_KEY` - The genesis account (only for genesis-specific tests)
+
+For additional test accounts (Alice, Bob, Treasury, etc.), you can create them manually using Solo CLI:
+
+```bash
+npx solo ledger account create --generate-ecdsa-key --deployment-name solo-deployment --dev
+```
+
+See the [Solo Setup Guide](./SOLO_SETUP.md) for more details.
 
 ### Testnet and previewnet
 
@@ -125,10 +133,13 @@ To run the examples on the testnet, you can obtain your account keys and IDs fro
 ## Possible configuration issues
 
 -   The most common issue occurs when users mistakenly use an ED25519 key instead of an ECDSA key, or vice versa. Please verify that you are using the correct key type.
--   Running unit tests while the local-node is active can disrupt multiple tests. Ensure the node is not running when executing tests.
+-   If you're using Solo for local development, ensure the cluster is running before running tests. Check with `task solo:status`.
 -   Occasionally, some tests may fail unexpectedly. However, rerunning them usually resolves the issue.
--   If local-node has been inactive for a while, it might enter sleep mode. Restarting it is often necessary to rerun tests. This is not an SDK-related issue but is a frequently encountered scenario.
+-   If you encounter network connectivity issues with Solo, try tearing down and setting up again: `task solo:teardown && task solo:setup`.
 -   Always use the `task install` command to install dependencies. Avoid manual installation with npm or yarn, as it can lead to configuration problems.
+-   Make sure Docker is running before starting Solo.
+
+For more troubleshooting help, see the [Solo Setup Guide](./SOLO_SETUP.md#troubleshooting).
 
 ## Should I have multiple .env files like .env.local, .env.production, .envdevelopment etc?
 

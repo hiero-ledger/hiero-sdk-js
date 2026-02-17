@@ -3,7 +3,10 @@ import {
     FileAppendTransaction,
     FileUpdateTransaction,
     FileDeleteTransaction,
+    FileInfoQuery,
+    Hbar,
     Timestamp,
+    FileContentsQuery,
 } from "@hiero-ledger/sdk";
 import Long from "long";
 
@@ -12,12 +15,19 @@ import {
     FileCreateParams,
     FileAppendParams,
     FileDeleteParams,
+    GetFileInfoParams,
+    GetFileContentsParams,
 } from "../params/file";
 
 import { sdk } from "../sdk_data";
-import { FileResponse } from "../response/file";
+import {
+    FileInfoQueryResponse,
+    FileResponse,
+    FileContentsResponse,
+} from "../response/file";
 
 import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";
+import { mapFileInfoResponse } from "../utils/helpers/file";
 import { getKeyFromString } from "../utils/key";
 
 export const createFile = async ({
@@ -192,5 +202,75 @@ export const deleteFile = async ({
 
     return {
         status: receipt.status.toString(),
+    };
+};
+
+export const getFileInfo = async ({
+    fileId,
+    queryPayment,
+    maxQueryPayment,
+    getCost,
+    sessionId,
+}: GetFileInfoParams): Promise<FileInfoQueryResponse> => {
+    const client = sdk.getClient(sessionId);
+    const query = new FileInfoQuery().setGrpcDeadline(DEFAULT_GRPC_DEADLINE);
+
+    if (fileId != null) {
+        query.setFileId(fileId);
+    }
+
+    if (queryPayment != null) {
+        query.setQueryPayment(Hbar.fromTinybars(queryPayment));
+    }
+
+    if (maxQueryPayment != null) {
+        query.setMaxQueryPayment(Hbar.fromTinybars(maxQueryPayment));
+    }
+
+    if (getCost) {
+        const cost = await query.getCost(client);
+
+        return {
+            cost: cost.toTinybars().toString(),
+        };
+    }
+
+    const response = await query.execute(client);
+
+    return mapFileInfoResponse(response);
+};
+
+export const getFileContents = async ({
+    fileId,
+    queryPayment,
+    maxQueryPayment,
+    sessionId,
+}: GetFileContentsParams): Promise<FileContentsResponse> => {
+    const client = sdk.getClient(sessionId);
+    const query = new FileContentsQuery().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+
+    if (fileId != null) {
+        query.setFileId(fileId);
+    }
+
+    if (queryPayment != null) {
+        query.setQueryPayment(Hbar.fromTinybars(queryPayment));
+    }
+
+    if (maxQueryPayment != null) {
+        query.setMaxQueryPayment(Hbar.fromTinybars(maxQueryPayment));
+    }
+
+    const response = await query.execute(client);
+
+    // Convert Uint8Array to string
+    // Using TextDecoder to properly handle all byte sequences
+    const decoder = new TextDecoder("utf-8", { fatal: false });
+    const contents = decoder.decode(response);
+
+    return {
+        contents,
     };
 };

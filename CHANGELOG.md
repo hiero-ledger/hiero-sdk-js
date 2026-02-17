@@ -5,11 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# 2.80.0
+
+### Fixed
+- Fixed an integer overflow issue where `validStart` and `expirationTime` (Unix seconds stored as 64-bit values) were incorrectly converted using `Long.toInt()`, causing dates beyond `2^32−1` seconds (e.g., year 2125) to decode incorrectly (e.g., as 1988). `ExchangeRate` and `ExpirationTime` now correctly use 64-bit values. [#3641](https://github.com/hiero-ledger/hiero-sdk-js/pull/3641)
+- Resolved a race condition in node health handling where concurrent failures could repeatedly increase backoff and mark a node unhealthy for an excessive duration. Backoff is now only increased when the node is healthy, preventing runaway backoff under high concurrency. [#3647](https://github.com/hiero-ledger/hiero-sdk-js/pull/3647)
+
+# 2.80.0-beta.1
+
+### Changed
+- Switched to **pnpm workspaces** for local development library linking, replacing the unsupported `yalc`. This improves maintainability and contributor development experience. ([#3610](https://github.com/hiero-ledger/hiero-sdk-js/pull/3610))
+- Improved contributor experience by integrating **solo** as a development dependency with predefined start scripts and supporting documentation. ([#3614](https://github.com/hiero-ledger/hiero-sdk-js/pull/3614))
+
+# 2.79.0
+
+### Addded 
+
+- Tests for HIP-1300
+
 # 2.79.0-beta.13
 
 ### Added
 
-- Support for Ethereum type 4 transaction
+- Support for Ethereum type 4 transaction (currently not supported in consensus node)
 
 # 2.79.0-beta.12
 

@@ -1,11 +1,13 @@
 import { defineConfig } from "vitest/config";
-
+import dotenv from "dotenv";
 import path from "path";
 import fs from "fs";
 
 const pkg = JSON.parse(
     fs.readFileSync(path.resolve(__dirname, "../package.json"), "utf-8"),
 );
+// Load environment variables from .env file
+dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 /** @type {import("vitest").UserConfig} */
 export default defineConfig({
@@ -13,7 +15,6 @@ export default defineConfig({
         environment: "jsdom",
         watch: false,
         globals: true,
-
         browser: {
             screenshotFailures: false,
             headless: true,
@@ -56,6 +57,12 @@ export default defineConfig({
         "import.meta.env.VITE_HEDERA_NETWORK": JSON.stringify(
             process.env.HEDERA_NETWORK || "",
         ),
+        "import.meta.env.VITE_GENESIS_OPERATOR_ID": JSON.stringify(
+            process.env.GENESIS_OPERATOR_ID || "",
+        ),
+        "import.meta.env.VITE_GENESIS_OPERATOR_KEY": JSON.stringify(
+            process.env.GENESIS_OPERATOR_KEY || "",
+        ),
     },
     resolve: {
         alias: {
@@ -64,6 +71,8 @@ export default defineConfig({
             // will take care of this
             "../../src/index.js": "../../src/browser.js",
             "../src/index.js": "../src/browser.js",
+            // Redirect proto package to use ESM version in browser mode
+            "@hiero-ledger/proto": "/packages/proto/src/index.js",
             // TODO: extract `encoding/hex.js` etc into a variable and call a function to generate
             // all the prefixes.
             "../../../src/encoding/hex.js":
@@ -81,6 +90,8 @@ export default defineConfig({
             "../cryptography/sha384.js": "../cryptography/sha384.browser.js",
             "./client/NodeIntegrationTestEnv.js":
                 "./client/WebIntegrationTestEnv.js",
+            "../client/NodeIntegrationTestEnv.js":
+                "../client/WebIntegrationTestEnv.js",
             "../integration/client/NodeIntegrationTestEnv.js":
                 "../integration/client/WebIntegrationTestEnv.js",
             "../../src/client/NodeClient.js": "../../src/client/WebClient.js",

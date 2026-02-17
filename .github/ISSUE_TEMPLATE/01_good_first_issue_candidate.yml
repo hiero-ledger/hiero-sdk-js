@@ -1,0 +1,186 @@
+name: Good First Issue Candidate Template
+description: Propose a potential Good First Issue (Candidate)
+title: "[Good First Issue Candidate]: "
+labels: ["Good First Issue Candidate"]
+assignees: []
+
+body:
+  - type: textarea
+    id: intro-gfi-candidate
+    attributes:
+      label: ⚠️ Good First Issue — Candidate
+      value: |
+        > This issue is not yet a confirmed Good First Issue.
+        > It is being evaluated for suitability and may require
+        > clarification or refinement before it is ready to be picked up.
+        >
+        > Please wait for maintainer confirmation before starting work, so we can make sure the issue is fully ready.
+        >
+        > Maintainers can read more about:
+        > - [Good First Issues](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/manual/maintainers/guidelines-good-first-issues.md)
+        > - [Good First Issue Candidates](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/manual/maintainers/guidelines-good-first-issue-candidates.md)
+
+  - type: textarea
+    id: intro
+    attributes:
+      label: 🆕🐥 First-Time Friendly
+      description: Who is this issue for?
+      value: |
+        This issue is especially welcoming for people who are new to contributing to the **Hiero JS SDK**.
+
+        We know that opening your first pull request can feel like a big step.  
+        Issues labeled **Good First Issue** are designed to make that experience easier, clearer, and more comfortable.
+
+        No prior knowledge of Hiero, Hedera, or distributed ledger technology is required.  
+        Just a basic familiarity with JavaScript and Git is more than enough to get started.
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        > [!IMPORTANT]
+        > ### 📋 About Good First Issues
+        >
+        > Good First Issues are designed to make getting started as smooth and stress-free
+        > as possible.
+        >
+        > They usually focus on:
+        > - Small, clearly scoped changes  
+        > - Straightforward updates to existing code or docs  
+        > - Simple refactors or clarity improvements  
+        >
+        > Other kinds of contributions — like larger features, deeper technical changes,
+        > or design-focused work — are just as valuable and often use the beginner, intermediate, or advanced labels.
+
+  - type: textarea
+    id: issue
+    attributes:
+      label: 👾 Description of the Issue
+      description: |
+        Describe the issue in a way that’s easy for new contributors to understand.
+
+        Aim to keep the explanation clear and accessible for people who are new to the codebase and Hiero.
+        Links to relevant files or examples are always helpful.
+      value: |
+        Edit here. An example is provided below.
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        <!-- Example (hidden in submission) -->
+        ## 👾 Description of the Issue — Example
+
+        The file `README.md` contains a typo on line 42.
+
+        **Current text:**
+        > "See the contibution guide for more details."
+
+        **Should be:**
+        > "See the contribution guide for more details."
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Proposed Solution
+      description: |
+        Describe the solution at a high level.
+        Focus on *what* should be done, not *why* or alternative approaches.
+      value: |
+        Edit here. Example provided below.
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        <!-- Example (hidden in submission) -->
+        ## 💡 Proposed Solution — Example
+
+        Fix the typo in `README.md` by changing "contibution" to "contribution".
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: 👩‍💻 Implementation Steps (End-to-End)
+      description: |
+        Please write out the end-to-end process for completing this issue from start to finish.
+
+        The steps should clearly describe:
+        - Where to begin  
+        - Which files to open  
+        - What to change  
+        - How to make the change (e.g. what code to add, remove, or update)  
+        - What the final result should look like  
+
+        Clear, connected instructions help make the contribution experience smoother
+        and more enjoyable for everyone.
+      value: |
+        Edit here. An example is provided below.
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        <!-- Example (hidden in submission) -->
+        ### 👩‍💻 Implementation — Example
+
+        - [ ] Open `README.md`
+        - [ ] Go to line 42
+        - [ ] Change `contibution` to `contribution`
+        - [ ] Save the file
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: ✅ Acceptance Criteria
+      description: Checklist required for completing this issue
+      value: |
+        To merge a pull request for this issue:
+
+        - [ ] **Scope:** Changes are limited to this issue
+        - [ ] **Behavior:** No SDK behavior or public API changes
+        - [ ] **Tests:** Existing CI checks pass
+        - [ ] **Review:** All code review feedback addressed
+    validations:
+      required: true
+
+  - type: textarea
+    id: contribution_steps
+    attributes:
+      label: 📋 Step-by-Step Contribution Guide
+      description: Contribution workflow for new contributors
+      value: |
+        To help your first contribution go as smoothly as possible, we recommend following these steps:
+
+        - [ ] Comment `/assign` to request the issue
+        - [ ] Wait for assignment
+        - [ ] Fork the repository and create a branch
+        - [ ] Set up the project by following the instructions in `README.md`
+        - [ ] Make the requested changes
+        - [ ] Sign each commit using `-s -S`
+        - [ ] Push your branch and open a pull request
+
+        Read [Workflow Guide](manual/training/workflow.md) for step-by-step workflow guidance.  
+        Read [README.md](README.md) for setup instructions.
+
+        ❗ Pull requests **cannot be merged** without signed commits (use `-s -S`).  
+        See the [Signing Guide](manual/training/signing.md).
+    validations:
+      required: true
+
+  - type: textarea
+    id: information
+    attributes:
+      label: 🤔 Additional Information
+      description: Extra context or resources for contributors
+      value: |
+        If you need help, reach out to the @hiero-ledger/hiero-sdk-good-first-issue-support team.
+
+        You can also join our community on Discord:
+        [Hiero-SDK-JavaScript](https://discord.com/channels/905194001349627914/1337424656138899537)
+
+        Maintainers are happy to help first-time contributors succeed!

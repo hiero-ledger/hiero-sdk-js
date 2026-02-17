@@ -28,6 +28,42 @@ tasks:
         deps:
             - build
 
+    "solo:setup":
+        desc: "Setup Solo local network with single node (default)"
+        cmds:
+            - chmod +x ./scripts/setup-solo.sh
+            - ./scripts/setup-solo.sh {{.CLI_ARGS}}
+
+    "solo:setup:dual-node":
+        desc: "Setup Solo local network with two nodes (required for dynamic address book tests)"
+        cmds:
+            - chmod +x ./scripts/setup-solo.sh
+            - ./scripts/setup-solo.sh --num-nodes 2 {{.CLI_ARGS}}
+
+    "solo:teardown":
+        desc: "Teardown Solo local network and cleanup resources"
+        cmds:
+            - chmod +x ./scripts/teardown-solo.sh
+            - ./scripts/teardown-solo.sh
+
+    "solo:status":
+        desc: "Check Solo cluster status"
+        cmds:
+            - |
+              echo "Checking Solo cluster status..."
+              if kind get clusters 2>/dev/null | grep -q "^solo-cluster$"; then
+                echo "✓ Kind cluster 'solo-cluster' is running"
+                kubectl get pods -n solo-e2e 2>/dev/null || echo "✗ Namespace 'solo-e2e' not found"
+              else
+                echo "✗ Kind cluster 'solo-cluster' not found"
+                echo "Run 'task solo:setup' to create it"
+              fi
+
+    "solo:logs":
+        desc: "View logs from Solo services"
+        cmds:
+            - kubectl logs -n solo-e2e -l app=network-node --tail=100 -f
+
     "run:examples":
         cmds:
             - task: "examples:run-examples"
@@ -42,33 +78,25 @@ tasks:
               --validation.invalidLink
               --entryPoints src/index.js src/browser.js src/native.js
 
-    "yalc:install":
-        cmds:
-            - npm install -g yalc
-
-    "yalc:add":
-        cmds:
-            - npx yalc add @hiero-ledger/proto --pure
-            - npx yalc add @hiero-ledger/cryptography --pure
-
-    "yalc:remove":
-        cmds:
-            - npx yalc remove @hiero-ledger/proto
-            - npx yalc remove @hiero-ledger/cryptography
-
     install:
         deps:
-            - "yalc:install"
             - "proto:build"
             - "cryptography:build"
         cmds:
-            - task: "yalc:add"
-            - pnpm i --no-frozen-lockfile
+            - pnpm i
 
     build:
         cmds:
             - task: build:prep
             - task: build:compile
+
+    "build:dev":
+        desc: "Build and globally link @hiero-ledger/sdk (and subpackages) for local dev"
+        cmds:
+            - task: "proto:build:dev"
+            - task: "cryptography:build:dev"
+            - task: build
+            - ./scripts/link-sdk-global.sh
 
     "build:prep":
         cmds:
@@ -81,17 +109,19 @@ tasks:
         cmds:
             - npx babel src -d lib --out-file-extension .cjs
             - npx rollup -c
-            - npx yalc publish
 
     clean:
         deps:
             - "examples:clean"
-            - "cryptography:clean"
-            - "proto:clean"
             - "simple_rest_signature_provider:clean"
             - "common_js_test:clean"
         cmds:
-            - rm -rf node_modules .yalc
+            # Remove in reverse dependency order to avoid re-linking
+            - |
+                pnpm list --global --depth 0 2>/dev/null | grep -q "@hiero-ledger/sdk" && pnpm remove --global @hiero-ledger/sdk 2>/dev/null || true
+            - task: "cryptography:clean"
+            - task: "proto:clean"
+            - rm -rf node_modules
 
     format:
         cmds:
@@ -178,9 +208,7 @@ tasks:
         deps:
             - "proto:update"
         cmds:
-            - npx yalc add @hiero-ledger/proto
-            # Remove proto so on `task build` we fix the link
-            - rm -rf ./node_modules/@hiero-ledger/proto
+            - pnpm install
 
     "update:addressbooks":
         cmds:
@@ -198,7 +226,6 @@ tasks:
         deps:
             - "build"
         cmds:
-            - task: "yalc:remove"
             - pnpm pack --out {{.CLI_ARGS}}
             - ls -lh {{.CLI_ARGS}}
 

@@ -19,12 +19,11 @@ export default class IntegrationTestEnv extends BaseIntegrationTestEnv {
             client: Client,
             wallet: Wallet,
             env: {
-                OPERATOR_ID: import.meta.env.VITE_OPERATOR_ID || "0.0.2",
-                OPERATOR_KEY:
-                    import.meta.env.VITE_OPERATOR_KEY ||
-                    "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137",
-                HEDERA_NETWORK:
-                    import.meta.env.VITE_HEDERA_NETWORK || "local-node",
+                OPERATOR_ID: import.meta.env.VITE_OPERATOR_ID,
+                OPERATOR_KEY: import.meta.env.VITE_OPERATOR_KEY,
+                HEDERA_NETWORK: import.meta.env.VITE_HEDERA_NETWORK,
+                GENESIS_OPERATOR_ID: import.meta.env.VITE_GENESIS_OPERATOR_ID,
+                GENESIS_OPERATOR_KEY: import.meta.env.VITE_GENESIS_OPERATOR_KEY,
             },
             nodeAccountIds: options.nodeAccountIds,
             balance: options.balance,

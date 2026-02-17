@@ -1,0 +1,39 @@
+name: Feature
+description: Suggest an idea for this project
+labels: [ enhancement ]
+type: Feature
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Thanks for submitting a feature request!
+
+        Before submitting:
+        * Try searching the existing issues and discussions to see if something similar has been discussed previously
+        * Try opening a GitHub discussion first to gather feedback and reach consensus
+        * If this is a major enhancement, please open a [Hiero Improvement Proposal](https://github.com/hiero-ledger/hiero-improvement-proposals)
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is the problem you are trying to solve?
+      placeholder: I'm always frustrated when ...
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solution
+      description: What solution do you propose to solve the problem?
+      placeholder: |
+        - Add a config property
+        - Change the schema
+        - ...
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives
+      description: What alternative solutions have you considered?
+      

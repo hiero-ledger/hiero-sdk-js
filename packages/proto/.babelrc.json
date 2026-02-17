@@ -1,14 +1,14 @@
 {
-    // "presets": ["minify"],
-    "plugins": [
-        "@babel/plugin-transform-modules-commonjs",
-        "@babel/plugin-syntax-dynamic-import",
-        [
-            "babel-plugin-dynamic-import-node",
-            {
-                "noInterop": true
-            }
-        ]
-    ],
-    "comments": false
+  // "presets": ["minify"],
+  "plugins": [
+    "@babel/plugin-transform-modules-commonjs",
+    "@babel/plugin-syntax-dynamic-import",
+    [
+      "babel-plugin-dynamic-import-node",
+      {
+        "noInterop": true
+      }
+    ]
+  ],
+  "comments": false
 }

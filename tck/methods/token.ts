@@ -23,6 +23,9 @@ import {
     PendingAirdropId,
     TokenRejectTransaction,
     TokenCancelAirdropTransaction,
+    TokenInfoQuery,
+    TokenNftInfoQuery,
+    Hbar,
 } from "@hiero-ledger/sdk";
 import Long from "long";
 
@@ -35,6 +38,8 @@ import {
     configureTokenManagementTransaction,
     createCustomFees,
     executeTokenManagementTransaction,
+    mapTokenInfoResponse,
+    mapTokenNftInfoResponse,
 } from "../utils/helpers/token";
 
 import { applyCommonTransactionParams } from "../params/common-tx-params";
@@ -54,12 +59,16 @@ import {
     AirdropCancelTokenParams,
     AirdropClaimTokenParams,
     RejectTokenParams,
+    GetTokenInfoParams,
+    GetTokenNftInfoParams,
 } from "../params/token";
 
 import {
     TokenResponse,
     TokenBurnResponse,
     TokenMintResponse,
+    TokenInfoQueryResponse,
+    TokenNftInfoQueryResponse,
 } from "../response/token";
 
 // buildCreateToken builds a TokenCreateTransaction from parameters
@@ -616,28 +625,29 @@ const buildAirdropToken = (
 
                     isApproved
                         ? transaction.addApprovedTokenTransferWithDecimals(
-                              tokenId,
-                              accountId,
-                              amount,
-                              decimals,
-                          )
-                        : transaction.addTokenTransfer(
-                              tokenId,
-                              accountId,
-                              amount,
-                          );
+                            tokenId,
+                            accountId,
+                            amount,
+                            decimals,
+                        )
+                        : transaction.addTokenTransferWithDecimals(
+                            tokenId,
+                            accountId,
+                            amount,
+                            decimals,
+                        );
                 } else {
                     isApproved
                         ? transaction.addApprovedTokenTransfer(
-                              tokenId,
-                              accountId,
-                              amount,
-                          )
+                            tokenId,
+                            accountId,
+                            amount,
+                        )
                         : transaction.addTokenTransfer(
-                              tokenId,
-                              accountId,
-                              amount,
-                          );
+                            tokenId,
+                            accountId,
+                            amount,
+                        );
                 }
             } else {
                 // NFT airdrop transfer
@@ -654,15 +664,15 @@ const buildAirdropToken = (
 
                 isApproved
                     ? transaction.addApprovedNftTransfer(
-                          nftId,
-                          senderAccountId,
-                          receiverAccountId,
-                      )
+                        nftId,
+                        senderAccountId,
+                        receiverAccountId,
+                    )
                     : transaction.addNftTransfer(
-                          nftId,
-                          senderAccountId,
-                          receiverAccountId,
-                      );
+                        nftId,
+                        senderAccountId,
+                        receiverAccountId,
+                    );
             }
         }
     }
@@ -859,4 +869,81 @@ export const cancelAirdrop = async ({
     return {
         status: receipt.status.toString(),
     };
+};
+
+export const getTokenInfo = async ({
+    tokenId,
+    queryPayment,
+    maxQueryPayment,
+    getCost,
+    sessionId,
+}: GetTokenInfoParams): Promise<TokenInfoQueryResponse> => {
+    const client = sdk.getClient(sessionId);
+    const query = new TokenInfoQuery().setGrpcDeadline(DEFAULT_GRPC_DEADLINE);
+
+    if (tokenId != null) {
+        query.setTokenId(tokenId);
+    }
+
+    if (queryPayment != null) {
+        query.setQueryPayment(Hbar.fromTinybars(queryPayment));
+    }
+
+    if (maxQueryPayment != null) {
+        query.setMaxQueryPayment(Hbar.fromTinybars(maxQueryPayment));
+    }
+
+    if (getCost) {
+        const cost = await query.getCost(client);
+
+        return {
+            cost: cost.toTinybars().toString(),
+        };
+    }
+
+    const response = await query.execute(client);
+
+    return mapTokenInfoResponse(response);
+};
+
+export const getTokenNftInfo = async ({
+    nftId,
+    queryPayment,
+    maxQueryPayment,
+    getCost,
+    sessionId,
+}: GetTokenNftInfoParams): Promise<TokenNftInfoQueryResponse> => {
+    const client = sdk.getClient(sessionId);
+    const query = new TokenNftInfoQuery().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+
+    if (nftId != null) {
+        query.setNftId(nftId);
+    }
+
+    if (queryPayment != null) {
+        query.setQueryPayment(Hbar.fromTinybars(queryPayment));
+    }
+
+    if (maxQueryPayment != null) {
+        query.setMaxQueryPayment(Hbar.fromTinybars(maxQueryPayment));
+    }
+
+    if (getCost) {
+        const cost = await query.getCost(client);
+
+        return {
+            cost: cost.toTinybars().toString(),
+        };
+    }
+
+    const response = await query.execute(client);
+
+    // TokenNftInfoQuery returns an array, but for a single NFT query, we return the first result
+    if (response && response.length > 0) {
+        return mapTokenNftInfoResponse(response[0]);
+    }
+
+    throw new Error("No NFT info returned");
 };

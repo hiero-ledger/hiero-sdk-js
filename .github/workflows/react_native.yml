@@ -26,15 +26,15 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
         with:
           egress-policy: audit
 
       - name: Checkout Code
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Setup Java
-        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           distribution: "zulu"
           java-version: "8"
@@ -45,7 +45,7 @@ jobs:
           version: 3.35.1
 
       - name: Setup Node
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: "22"
 
@@ -54,14 +54,14 @@ jobs:
         with:
           version: 9.15.5
 
-      - name: Install Yarn
-        run: npm install -g yarn
-
       - name: Build @hiero-ledger/sdk
         run: task build
 
       - name: Install detox
         run: npm install -g detox-cli
+
+      - name: Install React Native example deps
+        run: pnpm install --filter react-native-example
 
       - name: AVD
         run: |
@@ -73,10 +73,7 @@ jobs:
 
       - name: Build
         working-directory: examples/react-native-example
-        run: |
-          ../../node_modules/.bin/yalc add "@hiero-ledger/sdk"
-          yarn
-          detox build --configuration android
+        run: detox build --configuration android
 
       - name: Test
         working-directory: examples/react-native-example
@@ -87,15 +84,15 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
         with:
           egress-policy: audit
 
       - name: Checkout Code
-        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Setup Java
-        uses: actions/setup-java@dded0888837ed1f317902acf8a20df0ad188d165 # v5.0.0
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5.2.0
         with:
           distribution: "zulu"
           java-version: "8"
@@ -106,7 +103,7 @@ jobs:
           version: 3.7.0
 
       - name: Setup Node
-        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: "22"
 
@@ -116,25 +113,22 @@ jobs:
         with:
           version: 9.15.5
 
-      - name: Install Yarn
-        run: npm install -g yarn
-
       - name: Build @hiero-ledger/sdk
         run: task build
 
       - name: Install detox
         run: npm install -g detox-cli
 
+      - name: Install React Native example deps
+        run: pnpm install --filter react-native-example
+
       - name: Build
         working-directory: examples/react-native-example
         run: |
           brew tap wix/brew
           brew install applesimutils
-          yalc add "@hiero-ledger/sdk"
-          yarn
           detox build --configuration ios
 
       - name: Test
-        working-directory: examples/react-native
-        run: |
-          detox test --configuration ios
+        working-directory: examples/react-native-example
+        run: detox test --configuration ios

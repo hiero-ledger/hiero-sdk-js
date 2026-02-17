@@ -1,3 +1,9 @@
+/**
+ * Example demonstrating token lifecycle operations:
+ * Creating accounts, tokens, associating them, transferring tokens,
+ * wiping balances, and cleaning up resources.
+ */
+
 import {
     AccountCreateTransaction,
     AccountDeleteTransaction,
@@ -43,6 +49,7 @@ async function main() {
     console.log(`public key = ${newKey.publicKey.toString()}`);
 
     try {
+        // Create a new account with the generated public key and initial balance
         let transaction = await new AccountCreateTransaction()
             .setKeyWithoutAlias(newKey.publicKey)
             .setInitialBalance(new Hbar(2))
@@ -55,6 +62,8 @@ async function main() {
 
         console.log(`account id = ${newAccountId.toString()}`);
 
+        // Create a new fungible token with 3 decimals and various control keys
+        // The treasury account (operator) will initially hold the total supply
         let tokenCreateTransaction = await new TokenCreateTransaction()
             .setNodeAccountIds([resp.nodeId])
             .setTokenName("ffff")
@@ -76,6 +85,8 @@ async function main() {
         const tokenId = (await resp.getReceiptWithSigner(wallet)).tokenId;
         console.log(`token id = ${tokenId.toString()}`);
 
+        // Associate the token with the new account so it can hold/receive the token
+        // Both the account owner and operator must sign this transaction
         await (
             await (
                 await (
@@ -94,6 +105,8 @@ async function main() {
             `Associated account ${newAccountId.toString()} with token ${tokenId.toString()}`,
         );
 
+        // Grant KYC permission to the account for this token
+        // Required because the token has a KYC key defined
         await (
             await (
                 await (
@@ -110,6 +123,8 @@ async function main() {
             `Granted KYC for account ${newAccountId.toString()} on token ${tokenId.toString()}`,
         );
 
+        // Transfer 10 tokens from the treasury (operator) to the new account
+        // Negative amount debits the sender, positive amount credits the receiver
         await (
             await (
                 await (
@@ -128,6 +143,8 @@ async function main() {
                 .toString()} to account ${newAccountId.toString()} on token ${tokenId.toString()}`,
         );
 
+        // Wipe the tokens from the account, removing them from circulation
+        // Requires the wipe key to authorize this operation
         await (
             await (
                 await (
@@ -143,6 +160,8 @@ async function main() {
 
         console.log(`Wiped balance of account ${newAccountId.toString()}`);
 
+        // Delete the token, permanently removing it from the network
+        // Requires the admin key to authorize
         await (
             await (
                 await (
@@ -156,6 +175,8 @@ async function main() {
 
         console.log(`Deleted token ${tokenId.toString()}`);
 
+        // Delete the account and transfer remaining balance to the operator
+        // Requires signature from both the account being deleted and the operator
         await (
             await (
                 await (

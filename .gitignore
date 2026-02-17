@@ -15,16 +15,15 @@ test/lib/
 # generated documentation
 docs/
 
-# local environment (for examples)
+# local environment (for examples and Solo)
 .env
+.env.backup
+account_create_output_ecdsa.txt
 
 # instabul (code coverage)
 .nyc_output/
 .coverage/
 coverage/
-
-.yalc
-yalc.lock
 
 examples/address-book.proto.bin
 
