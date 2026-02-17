@@ -79,11 +79,11 @@ tasks:
               --entryPoints src/index.js src/browser.js src/native.js
 
     install:
-        deps:
-            - "proto:build"
-            - "cryptography:build"
+        desc: "Install deps then build proto and cryptography (pnpm i first so protobufjs-cli is available)"
         cmds:
             - pnpm i
+            - task proto:build
+            - task cryptography:build
 
     build:
         cmds:
