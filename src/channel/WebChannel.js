@@ -54,6 +54,7 @@ export default class WebChannel extends Channel {
                         HttpStatus._fromValue(response.status)
                     );
                     callback(error, null);
+                    return;
                 }
 
                 // Check headers for gRPC errors
@@ -65,6 +66,7 @@ export default class WebChannel extends Channel {
                     );
                     error.message = grpcMessage;
                     callback(error, null);
+                    return;
                 }
  
 

@@ -57,6 +57,7 @@ export default class NativeChannel extends Channel {
                         HttpStatus._fromValue(response.status),
                     );
                     callback(error, null);
+                    return;
                 }
     
                 const blob = await response.blob();
