@@ -120,7 +120,7 @@
         "eslint-plugin-deprecation": "3.0.0",
         "eslint-plugin-ie11": "1.0.0",
         "eslint-plugin-import": "2.28.1",
-        "eslint-plugin-jsdoc": "61.1.11",
+        "eslint-plugin-jsdoc": "62.5.5",
         "eslint-plugin-n": "17.16.1",
         "eslint-plugin-vitest": "0.3.25",
         "geckodriver": "6.0.1",
