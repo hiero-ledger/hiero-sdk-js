@@ -114,7 +114,7 @@
         "chromedriver": "145.0.1",
         "codecov": "3.8.3",
         "dotenv": "17.2.3",
-        "dpdm": "3.11.0",
+        "dpdm": "4.0.1",
         "eslint": "8.57.1",
         "eslint-plugin-compat": "6.0.2",
         "eslint-plugin-deprecation": "3.0.0",
