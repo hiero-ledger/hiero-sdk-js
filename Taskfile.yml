@@ -80,6 +80,7 @@ tasks:
 
     install:
         deps:
+            - "proto:build"
             - "cryptography:build"
         cmds:
             - pnpm i
@@ -218,6 +219,7 @@ tasks:
         desc: "Update address books and build (does not update protos; use task update:proto when needed)"
         cmds:
             - task: update:addressbooks
+            - task: update:proto
             - task: build
 
     pack:
