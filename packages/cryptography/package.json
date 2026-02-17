@@ -117,7 +117,7 @@
         "prettier": "3.5.3",
         "typescript": "5.8.2",
         "vite": "7.3.1",
-        "vitest": "3.1.2"
+        "vitest": "4.0.18"
     },
     "publishConfig": {
         "access": "public",
