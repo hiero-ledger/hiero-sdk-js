@@ -148,8 +148,8 @@ importers:
         specifier: 3.2.4
         version: 3.2.4(msw@2.10.2(@types/node@24.0.8)(typescript@5.7.2))(playwright@1.55.1)(vite@7.3.1(@types/node@24.0.8)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2))(vitest@3.2.4)
       '@vitest/coverage-v8':
-        specifier: 3.2.4
-        version: 3.2.4(@vitest/browser@3.2.4)(vitest@3.2.4)
+        specifier: 4.0.18
+        version: 4.0.18(@vitest/browser@3.2.4)(vitest@3.2.4)
       babel-plugin-dynamic-import-node:
         specifier: 2.3.3
         version: 2.3.3
@@ -633,8 +633,8 @@ importers:
         specifier: 3.1.2
         version: 3.1.2(msw@2.10.2(@types/node@24.0.10)(typescript@5.8.2))(playwright@1.55.1)(vite@7.3.1(@types/node@24.0.10)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2))(vitest@3.1.2)
       '@vitest/coverage-v8':
-        specifier: 3.1.2
-        version: 3.1.2(@vitest/browser@3.1.2)(vitest@3.1.2)
+        specifier: 4.0.18
+        version: 4.0.18(@vitest/browser@3.1.2)(vitest@3.1.2)
       babel-plugin-dynamic-import-node:
         specifier: 2.3.3
         version: 2.3.3
@@ -1049,11 +1049,6 @@ packages:
 
   '@babel/parser@7.28.5':
     resolution: {integrity: sha512-KKBU1VGYR7ORr3At5HAtUQ+TV3SzRCXmA/8OdDZiLDBIZxVyzXuztPjfLd3BV1PRAQGCMWWSHYhL0F8d5uHBDQ==}
-    engines: {node: '>=6.0.0'}
-    hasBin: true
-
-  '@babel/parser@7.28.6':
-    resolution: {integrity: sha512-TeR9zWR18BvbfPmGbLampPMW+uW1NZnJlRuuHso8i87QZNq2JRF9i6RgxRqtEq+wQGsS19NNTWr2duhnE49mfQ==}
     engines: {node: '>=6.0.0'}
     hasBin: true
 
@@ -4657,20 +4652,11 @@ packages:
       webdriverio:
         optional: true
 
-  '@vitest/coverage-v8@3.1.2':
-    resolution: {integrity: sha512-XDdaDOeaTMAMYW7N63AqoK32sYUWbXnTkC6tEbVcu3RlU1bB9of32T+PGf8KZvxqLNqeXhafDFqCkwpf2+dyaQ==}
+  '@vitest/coverage-v8@4.0.18':
+    resolution: {integrity: sha512-7i+N2i0+ME+2JFZhfuz7Tg/FqKtilHjGyGvoHYQ6iLV0zahbsJ9sljC9OcFcPDbhYKCet+sG8SsVqlyGvPflZg==}
     peerDependencies:
-      '@vitest/browser': 3.1.2
-      vitest: 3.1.2
-    peerDependenciesMeta:
-      '@vitest/browser':
-        optional: true
-
-  '@vitest/coverage-v8@3.2.4':
-    resolution: {integrity: sha512-EyF9SXU6kS5Ku/U82E259WSnvg6c8KTjppUncuNdm5QHpe17mwREHnjDzozC8x9MZ0xfBUFSaLkRv4TMA75ALQ==}
-    peerDependencies:
-      '@vitest/browser': 3.2.4
-      vitest: 3.2.4
+      '@vitest/browser': 4.0.18
+      vitest: 4.0.18
     peerDependenciesMeta:
       '@vitest/browser':
         optional: true
@@ -4709,6 +4695,9 @@ packages:
   '@vitest/pretty-format@3.2.4':
     resolution: {integrity: sha512-IVNZik8IVRJRTr9fxlitMKeJeXFFFN0JaB9PHPGQ8NKQbGpfjlTx9zO4RefN8gp7eqjNy8nyK3NZmBzOPeIxtA==}
 
+  '@vitest/pretty-format@4.0.18':
+    resolution: {integrity: sha512-P24GK3GulZWC5tz87ux0m8OADrQIUVDPIjjj65vBXYG17ZeU3qD7r+MNZ1RNv4l8CGU2vtTRqixrOi9fYk/yKw==}
+
   '@vitest/runner@3.1.2':
     resolution: {integrity: sha512-bhLib9l4xb4sUMPXnThbnhX2Yi8OutBMA8Yahxa7yavQsFDtwY/jrUZwpKp2XH9DhRFJIeytlyGpXCqZ65nR+g==}
 
@@ -4732,6 +4721,9 @@ packages:
 
   '@vitest/utils@3.2.4':
     resolution: {integrity: sha512-fB2V0JFrQSMsCo9HiSq3Ezpdv4iYaXRG1Sx8edX3MwxfyNn83mKiGzOcH+Fkxt4MHxr3y42fQi1oeAInqgX2QA==}
+
+  '@vitest/utils@4.0.18':
+    resolution: {integrity: sha512-msMRKLMVLWygpK3u2Hybgi4MNjcYJvwTb0Ru09+fOyCXIgT5raYP041DRRdiJiI3k/2U6SEbAETB3YtBrUkCFA==}
 
   '@wdio/logger@9.18.0':
     resolution: {integrity: sha512-HdzDrRs+ywAqbXGKqe1i/bLtCv47plz4TvsHFH3j729OooT5VH38ctFn5aLXgECmiAKDkmH/A6kOq2Zh5DIxww==}
@@ -5054,8 +5046,8 @@ packages:
     resolution: {integrity: sha512-6t10qk83GOG8p0vKmaCr8eiilZwO171AvbROMtvvNiwrTly62t+7XkA8RdIIVbpMhCASAsxgAzdRSwh6nw/5Dg==}
     engines: {node: '>=4'}
 
-  ast-v8-to-istanbul@0.3.10:
-    resolution: {integrity: sha512-p4K7vMz2ZSk3wN8l5o3y2bJAoZXT3VuJI5OLTATY/01CYWumWvwkUw0SqDBnNq6IiTO3qDa1eSQDibAV8g7XOQ==}
+  ast-v8-to-istanbul@0.3.11:
+    resolution: {integrity: sha512-Qya9fkoofMjCBNVdWINMjB5KZvkYfaO9/anwkWnjxibpWUxo5iHl2sOdP7/uAqaRuUYuoo8rDwnbaaKVFxoUvw==}
 
   async-function@1.0.0:
     resolution: {integrity: sha512-hsU18Ae8CDTR6Kgu9DYf0EbCr/a5iGL0rytQDobUcdpYOKokk8LEjVphnXkDkgpi0wYVsqrXuP0bZxJaTqdgoA==}
@@ -8032,10 +8024,6 @@ packages:
     resolution: {integrity: sha512-n3s8EwkdFIJCG3BPKBYvskgXGoy88ARzvegkitk60NxRdwltLOTaH7CUiMRXvwYorl0Q712iEjcWB+fK/MrWVw==}
     engines: {node: '>=10'}
 
-  istanbul-lib-source-maps@5.0.6:
-    resolution: {integrity: sha512-yg2d+Em4KizZC5niWhQaIomgf5WlL4vOOjZ5xGCmF8SnPE/mDWWXgvRExdcpCgh9lLRRa1/fSYp2ymmbJ1pI+A==}
-    engines: {node: '>=10'}
-
   istanbul-reports@3.2.0:
     resolution: {integrity: sha512-HGYWWS/ehqTV3xN10i23tkPkpH46MLCIMFNCaaKNavAXTF1RkqxawEPtnjnGZ6XKSInBKkiOA5BKS+aZiY3AvA==}
     engines: {node: '>=8'}
@@ -8289,6 +8277,9 @@ packages:
 
   js-sha3@0.8.0:
     resolution: {integrity: sha512-gF1cRrHhIzNfToc802P800N8PpXS+evLLXfsVpowqmAFR9uwbi89WvXg2QspOmXL8QL86J4T1EpFu+yUkwJY3Q==}
+
+  js-tokens@10.0.0:
+    resolution: {integrity: sha512-lM/UBzQmfJRo9ABXbPWemivdCW8V2G8FHaHdypQaIy523snUjog0W71ayWXTjiR+ixeMyVHN2XcpnTd/liPg/Q==}
 
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
@@ -8692,8 +8683,8 @@ packages:
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
 
-  magicast@0.3.5:
-    resolution: {integrity: sha512-L0WhttDl+2BOsybvEOLK7fW3UA0OQ0IQ2d6Zl2x/a6vVRs3bAY0ECOSHHeL5jD+SbOpOCUEi0y1DgHEn9Qn1AQ==}
+  magicast@0.5.2:
+    resolution: {integrity: sha512-E3ZJh4J3S9KfwdjZhe2afj6R9lGIN5Pher1pF39UGrXRqq/VDaGVIGN13BjHd2u8B61hArAGOnso7nBOouW3TQ==}
 
   make-dir@2.1.0:
     resolution: {integrity: sha512-LS9X+dc8KLxXCb8dni79fLIIUA5VyZoyjSMCwTluaXA0o27cCK0bhXkpgw+sTXVpPy/lSO57ilRixqk0vDmtRA==}
@@ -9250,6 +9241,9 @@ packages:
 
   obuf@1.1.2:
     resolution: {integrity: sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==}
+
+  obug@2.1.1:
+    resolution: {integrity: sha512-uTqF9MuPraAQ+IsnPf366RG4cP9RtUi7MLO1N3KEc+wb0a6yKpeL0lmk2IB1jY5KHPAlTc6T/JRdC/YqxHNwkQ==}
 
   on-exit-leak-free@2.1.2:
     resolution: {integrity: sha512-0eJJY6hXLGf1udHwfNftBqH+g73EU4B504nZeKpz1sYRKafAghwxEJunB2O7rDZkL4PGfsMVnTXZ2EjibbqcsA==}
@@ -11313,6 +11307,10 @@ packages:
     resolution: {integrity: sha512-op4nsTR47R6p0vMUUoYl/a+ljLFVtlfaXkLQmqfLR1qHma1h/ysYk4hEXZ880bf2CYgTskvTa/e196Vd5dDQXw==}
     engines: {node: '>=14.0.0'}
 
+  tinyrainbow@3.0.3:
+    resolution: {integrity: sha512-PSkbLUoxOFRzJYjjxHJt9xro7D+iilgMX/C9lawzVuYiIdcihh9DXmVibBe8lmcFrRi/VzlPjBxbN7rH24q8/Q==}
+    engines: {node: '>=14.0.0'}
+
   tinyspy@3.0.2:
     resolution: {integrity: sha512-n1cw8k1k0x4pgA2+9XrOkFydTerNcJ1zWCO5Nn9scWHTD+5tp8dghT2x1uduQePZTZgd3Tupf+x9BxJjeJi77Q==}
     engines: {node: '>=14.0.0'}
@@ -12732,10 +12730,6 @@ snapshots:
   '@babel/parser@7.28.5':
     dependencies:
       '@babel/types': 7.28.5
-
-  '@babel/parser@7.28.6':
-    dependencies:
-      '@babel/types': 7.28.6
 
   '@babel/parser@7.29.0':
     dependencies:
@@ -17905,46 +17899,37 @@ snapshots:
       - utf-8-validate
       - vite
 
-  '@vitest/coverage-v8@3.1.2(@vitest/browser@3.1.2)(vitest@3.1.2)':
+  '@vitest/coverage-v8@4.0.18(@vitest/browser@3.1.2)(vitest@3.1.2)':
     dependencies:
-      '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 1.0.2
-      debug: 4.4.1(supports-color@8.1.1)
+      '@vitest/utils': 4.0.18
+      ast-v8-to-istanbul: 0.3.11
       istanbul-lib-coverage: 3.2.2
       istanbul-lib-report: 3.0.1
-      istanbul-lib-source-maps: 5.0.6
       istanbul-reports: 3.2.0
-      magic-string: 0.30.21
-      magicast: 0.3.5
+      magicast: 0.5.2
+      obug: 2.1.1
       std-env: 3.10.0
-      test-exclude: 7.0.1
-      tinyrainbow: 2.0.0
+      tinyrainbow: 3.0.3
       vitest: 3.1.2(@types/node@24.0.10)(@vitest/browser@3.1.2)(jiti@2.6.1)(jsdom@28.1.0)(lightningcss@1.30.2)(msw@2.10.2(@types/node@24.0.10)(typescript@5.8.2))(terser@5.44.1)(yaml@2.8.2)
     optionalDependencies:
       '@vitest/browser': 3.1.2(msw@2.10.2(@types/node@24.0.10)(typescript@5.8.2))(playwright@1.55.1)(vite@7.3.1(@types/node@24.0.10)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2))(vitest@3.1.2)
-    transitivePeerDependencies:
-      - supports-color
 
-  '@vitest/coverage-v8@3.2.4(@vitest/browser@3.2.4)(vitest@3.2.4)':
+  '@vitest/coverage-v8@4.0.18(@vitest/browser@3.2.4)(vitest@3.2.4)':
     dependencies:
-      '@ampproject/remapping': 2.3.0
       '@bcoe/v8-coverage': 1.0.2
-      ast-v8-to-istanbul: 0.3.10
-      debug: 4.4.1(supports-color@8.1.1)
+      '@vitest/utils': 4.0.18
+      ast-v8-to-istanbul: 0.3.11
       istanbul-lib-coverage: 3.2.2
       istanbul-lib-report: 3.0.1
-      istanbul-lib-source-maps: 5.0.6
       istanbul-reports: 3.2.0
-      magic-string: 0.30.21
-      magicast: 0.3.5
+      magicast: 0.5.2
+      obug: 2.1.1
       std-env: 3.10.0
-      test-exclude: 7.0.1
-      tinyrainbow: 2.0.0
+      tinyrainbow: 3.0.3
       vitest: 3.2.4(@types/node@24.0.8)(@vitest/browser@3.2.4)(jiti@2.6.1)(jsdom@28.1.0)(lightningcss@1.30.2)(msw@2.10.2(@types/node@24.0.8)(typescript@5.7.2))(terser@5.44.1)(yaml@2.8.2)
     optionalDependencies:
       '@vitest/browser': 3.2.4(msw@2.10.2(@types/node@24.0.8)(typescript@5.7.2))(playwright@1.55.1)(vite@7.3.1(@types/node@24.0.8)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.1)(yaml@2.8.2))(vitest@3.2.4)
-    transitivePeerDependencies:
-      - supports-color
 
   '@vitest/expect@3.1.2':
     dependencies:
@@ -17996,6 +17981,10 @@ snapshots:
     dependencies:
       tinyrainbow: 2.0.0
 
+  '@vitest/pretty-format@4.0.18':
+    dependencies:
+      tinyrainbow: 3.0.3
+
   '@vitest/runner@3.1.2':
     dependencies:
       '@vitest/utils': 3.1.2
@@ -18038,6 +18027,11 @@ snapshots:
       '@vitest/pretty-format': 3.2.4
       loupe: 3.2.1
       tinyrainbow: 2.0.0
+
+  '@vitest/utils@4.0.18':
+    dependencies:
+      '@vitest/pretty-format': 4.0.18
+      tinyrainbow: 3.0.3
 
   '@wdio/logger@9.18.0':
     dependencies:
@@ -18392,11 +18386,11 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  ast-v8-to-istanbul@0.3.10:
+  ast-v8-to-istanbul@0.3.11:
     dependencies:
       '@jridgewell/trace-mapping': 0.3.31
       estree-walker: 3.0.3
-      js-tokens: 9.0.1
+      js-tokens: 10.0.0
 
   async-function@1.0.0: {}
 
@@ -22410,14 +22404,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  istanbul-lib-source-maps@5.0.6:
-    dependencies:
-      '@jridgewell/trace-mapping': 0.3.31
-      debug: 4.4.1(supports-color@8.1.1)
-      istanbul-lib-coverage: 3.2.2
-    transitivePeerDependencies:
-      - supports-color
-
   istanbul-reports@3.2.0:
     dependencies:
       html-escaper: 2.0.2
@@ -22953,6 +22939,8 @@ snapshots:
 
   js-sha3@0.8.0: {}
 
+  js-tokens@10.0.0: {}
+
   js-tokens@4.0.0: {}
 
   js-tokens@9.0.1: {}
@@ -23385,10 +23373,10 @@ snapshots:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  magicast@0.3.5:
+  magicast@0.5.2:
     dependencies:
-      '@babel/parser': 7.28.6
-      '@babel/types': 7.28.6
+      '@babel/parser': 7.29.0
+      '@babel/types': 7.29.0
       source-map-js: 1.2.1
 
   make-dir@2.1.0:
@@ -24214,6 +24202,8 @@ snapshots:
       es-object-atoms: 1.1.1
 
   obuf@1.1.2: {}
+
+  obug@2.1.1: {}
 
   on-exit-leak-free@2.1.2: {}
 
@@ -26786,6 +26776,8 @@ snapshots:
   tinypool@1.1.1: {}
 
   tinyrainbow@2.0.0: {}
+
+  tinyrainbow@3.0.3: {}
 
   tinyspy@3.0.2: {}
 
