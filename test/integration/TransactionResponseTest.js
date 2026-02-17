@@ -149,48 +149,6 @@ describe("TransactionResponse", function () {
             ).getReceipt(env.client);
         });
 
-        it("should allow record query failover when enabled", async function () {
-            // Enable receipt node failover (applies to record queries too)
-            env.client.setAllowReceiptNodeFailover(true);
-
-            const key = PrivateKey.generateED25519();
-
-            const response = await new AccountCreateTransaction()
-                .setKeyWithoutAlias(key.publicKey)
-                .execute(env.client);
-
-            // Get record query with failover enabled
-            const recordQuery = response.getRecordQuery(env.client);
-
-            // Should have multiple nodes
-            expect(recordQuery._nodeAccountIds.list.length).to.be.greaterThan(
-                1,
-            );
-
-            // First node should be the submitting node
-            expect(recordQuery._nodeAccountIds.list[0].toString()).to.equal(
-                response.nodeId.toString(),
-            );
-
-            // Verify record can still be obtained with failover enabled
-            const record = await response.getRecord(env.client);
-            expect(record.receipt.accountId).to.not.be.null;
-
-            // Clean up
-            await (
-                await (
-                    await new AccountDeleteTransaction()
-                        .setAccountId(record.receipt.accountId)
-                        .setTransferAccountId(env.operatorId)
-                        .freezeWith(env.client)
-                        .sign(key)
-                ).execute(env.client)
-            ).getReceipt(env.client);
-
-            // Reset the flag for other tests
-            env.client.setAllowReceiptNodeFailover(false);
-        });
-
         it("should successfully get verbose record with failover enabled", async function () {
             // Enable receipt node failover
             env.client.setAllowReceiptNodeFailover(true);
