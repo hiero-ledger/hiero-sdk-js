@@ -80,7 +80,6 @@ tasks:
 
     install:
         deps:
-            - "proto:build"
             - "cryptography:build"
         cmds:
             - pnpm i
@@ -205,6 +204,7 @@ tasks:
             - npx vitest --poolOptions.threads.singleThread --config=test/vitest-browser-integration-dual-mode.config.ts
 
     "update:proto":
+        desc: "Fetch protos from submodule at tag, regenerate JS (run only when bumping proto version)"
         deps:
             - "proto:update"
         cmds:
@@ -215,9 +215,9 @@ tasks:
             - node ./scripts/update-address-books.js
 
     update:
+        desc: "Update address books and build (does not update protos; use task update:proto when needed)"
         cmds:
             - task: update:addressbooks
-            - task: update:proto
             - task: build
 
     pack:
