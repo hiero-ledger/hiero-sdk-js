@@ -201,8 +201,8 @@ tasks:
 
     "test:integration:dual-mode":
         cmds:
-            - npx vitest --poolOptions.threads.singleThread --config=test/vitest-node-integration-dual-mode.config.ts
-            - npx vitest --poolOptions.threads.singleThread --config=test/vitest-browser-integration-dual-mode.config.ts
+            - npx vitest --maxWorkers=1 --config=test/vitest-node-integration-dual-mode.config.ts
+            - npx vitest --maxWorkers=1 --config=test/vitest-browser-integration-dual-mode.config.ts
 
     "update:proto":
         desc: "Fetch protos from submodule at tag, regenerate JS (run only when bumping proto version)"

@@ -65,6 +65,14 @@ $ npm install -g pnpm
 # with homebrew
 $ brew install pnpm
 ```
+### Windows 
+
+>[!Note]
+> Long paths must be enabled. Link to official documentation: [Windows-Long-Path](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry)
+>
+> Git must support long paths
+>
+> LF line endings must be enforced.
 
 After downloading the repo run:
 
