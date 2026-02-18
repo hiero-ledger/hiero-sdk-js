@@ -32,32 +32,6 @@ jobs:
         node: [ "22", "24" ]
 
     steps:
-      - name: Debug runner persistence (build)
-        run: |
-          echo "=== 1) Per-machine: same runner? ==="
-          echo "Runner name: $RUNNER_NAME"
-          echo "Runner OS: $RUNNER_OS"
-          echo "Host: $(hostname)"
-          echo "User: $(whoami)"
-          echo "Work dir: $GITHUB_WORKSPACE"
-          echo ""
-          echo "=== 2) Sentinel: does filesystem persist? ==="
-          SENTINEL="$HOME/.cache/runner-sentinel-build.txt"
-          if [[ -f "$SENTINEL" ]]; then
-            echo "Found sentinel: $(cat "$SENTINEL")"
-          else
-            echo "No sentinel (fresh machine or cleaned home)"
-          fi
-          mkdir -p "$(dirname "$SENTINEL")"
-          date -Is > "$SENTINEL"
-          echo ""
-          echo "=== 3) Container or VM? ==="
-          if [[ -f /.dockerenv ]] || grep -qa container= /proc/1/environ 2>/dev/null; then
-            echo "Looks like a container"
-          else
-            echo "Looks like a VM/bare-metal"
-          fi
-
       - name: Harden Runner
         uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
         with:
@@ -95,32 +69,6 @@ jobs:
         node: [ "22" ]
 
     steps:
-      - name: Debug runner persistence (test)
-        run: |
-          echo "=== 1) Per-machine: same runner? ==="
-          echo "Runner name: $RUNNER_NAME"
-          echo "Runner OS: $RUNNER_OS"
-          echo "Host: $(hostname)"
-          echo "User: $(whoami)"
-          echo "Work dir: $GITHUB_WORKSPACE"
-          echo ""
-          echo "=== 2) Sentinel: does filesystem persist? ==="
-          SENTINEL="$HOME/.cache/runner-sentinel-test.txt"
-          if [[ -f "$SENTINEL" ]]; then
-            echo "Found sentinel: $(cat "$SENTINEL")"
-          else
-            echo "No sentinel (fresh machine or cleaned home)"
-          fi
-          mkdir -p "$(dirname "$SENTINEL")"
-          date -Is > "$SENTINEL"
-          echo ""
-          echo "=== 3) Container or VM? ==="
-          if [[ -f /.dockerenv ]] || grep -qa container= /proc/1/environ 2>/dev/null; then
-            echo "Looks like a container"
-          else
-            echo "Looks like a VM/bare-metal"
-          fi
-
       - name: Harden Runner
         uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
         with:
