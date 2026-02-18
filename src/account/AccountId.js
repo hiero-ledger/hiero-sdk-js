@@ -189,7 +189,7 @@ export default class AccountId {
 
         /* eslint-disable */
         const response = await fetch(url);
-        const data = await response.json();
+        const data = /** @type {{ account: string }} */ (await response.json());
         const mirrorAccountId = data.account;
 
         this.num = Long.fromString(
@@ -219,7 +219,7 @@ export default class AccountId {
 
         /* eslint-disable */
         const response = await fetch(url);
-        const data = await response.json();
+        const data = /** @type {{ evm_address: string }} */ (await response.json());
         const mirrorAccountId = data.evm_address;
 
         this.evmAddress = EvmAddress.fromString(mirrorAccountId);

@@ -143,5 +143,10 @@
     },
     "resolutions": {
         "bn.js": "5.2.1"
+    },
+    "pnpm": {
+        "overrides": {
+            "dpdm>chalk": "4.1.2"
+        }
     }
 }
