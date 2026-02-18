@@ -126,6 +126,7 @@ describe("HookStore", function () {
                 await (
                     await new HookStoreTransaction()
                         .setHookId(transactionHookId)
+                        .setMaxTransactionFee(new Hbar(100))
                         .setStorageUpdates(Array(256).fill(storageSlot))
                         .freezeWith(env.client)
                         .sign(accountKey)
