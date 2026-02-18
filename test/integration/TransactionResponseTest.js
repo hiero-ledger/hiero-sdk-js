@@ -116,6 +116,72 @@ describe("TransactionResponse", function () {
         expect(receipt.nextExchangeRate).to.not.be.null;
     });
 
+    describe("record node failover", function () {
+        it("should pin record query to submitting node by default", async function () {
+            const key = PrivateKey.generateED25519();
+
+            const response = await new AccountCreateTransaction()
+                .setKeyWithoutAlias(key.publicKey)
+                .execute(env.client);
+
+            // Get record query without passing client (default behavior)
+            const recordQuery = response.getRecordQuery();
+
+            // Should be pinned to submitting node only
+            expect(recordQuery._nodeAccountIds.list).to.have.lengthOf(1);
+            expect(recordQuery._nodeAccountIds.list[0].toString()).to.equal(
+                response.nodeId.toString(),
+            );
+
+            // Verify record can still be obtained
+            const record = await response.getRecord(env.client);
+            expect(record.receipt.accountId).to.not.be.null;
+
+            // Clean up
+            await (
+                await (
+                    await new AccountDeleteTransaction()
+                        .setAccountId(record.receipt.accountId)
+                        .setTransferAccountId(env.operatorId)
+                        .freezeWith(env.client)
+                        .sign(key)
+                ).execute(env.client)
+            ).getReceipt(env.client);
+        });
+
+        it("should successfully get verbose record with failover enabled", async function () {
+            // Enable receipt node failover
+            env.client.setAllowReceiptNodeFailover(true);
+
+            const key = PrivateKey.generateED25519();
+
+            // Execute transaction
+            const response = await new AccountCreateTransaction()
+                .setKeyWithoutAlias(key.publicKey)
+                .execute(env.client);
+
+            // Get the verbose record - should succeed with failover enabled
+            const record = await response.getVerboseRecord(env.client);
+
+            expect(record.receipt.accountId).to.not.be.null;
+            expect(record.receipt.status.toString()).to.equal("SUCCESS");
+
+            // Clean up
+            await (
+                await (
+                    await new AccountDeleteTransaction()
+                        .setAccountId(record.receipt.accountId)
+                        .setTransferAccountId(env.operatorId)
+                        .freezeWith(env.client)
+                        .sign(key)
+                ).execute(env.client)
+            ).getReceipt(env.client);
+
+            // Reset the flag for other tests
+            env.client.setAllowReceiptNodeFailover(false);
+        });
+    });
+
     afterAll(async function () {
         await env.close();
     });
