@@ -5,12 +5,12 @@
     "dependencies": {
         "@hiero-ledger/sdk": "link:../..",
         "@testing-library/jest-dom": "^6.9.1",
-        "@testing-library/react": "^13.4.0",
-        "@testing-library/user-event": "^13.5.0",
+        "@testing-library/react": "^16.3.2",
+        "@testing-library/user-event": "^14.6.1",
         "react": "^19.2.4",
-        "react-dom": "^18.3.1",
+        "react-dom": "^19.2.4",
         "react-scripts": "5.0.1",
-        "web-vitals": "^2.1.4"
+        "web-vitals": "^5.1.0"
     },
     "scripts": {
         "start": "react-scripts start",
