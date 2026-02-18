@@ -73,7 +73,7 @@
     "ansi-regex": "6.2.2",
     "ansi-styles": "6.2.3",
     "debug": "4.4.1",
-    "protobufjs": "7.5.4",
+    "protobufjs": "8.0.0",
     "strip-ansi": "7.1.2"
   },
   "publishConfig": {
