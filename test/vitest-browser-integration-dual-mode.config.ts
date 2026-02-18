@@ -36,7 +36,7 @@ export default defineConfig({
         testTimeout: 120000,
         coverage: {
             include: ["src/**/*.js"],
-            provider: "v8",
+            provider: "istanbul",
             reporter: ["text-summary", "lcov"],
             reportsDirectory: "./coverage",
         },

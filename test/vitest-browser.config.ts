@@ -23,7 +23,7 @@ export default defineConfig({
         fileParallelism: false,
         coverage: {
             include: ["src/**/*.js"],
-            provider: "v8",
+            provider: "istanbul",
             reporter: ["text-summary", "lcov"],
             reportsDirectory: "./coverage",
         },

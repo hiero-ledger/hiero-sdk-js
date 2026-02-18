@@ -12,7 +12,7 @@ export default defineConfig({
         include: ["test/unit/**/*.js"],
         exclude: ["test/unit/keystore.js"],
         coverage: {
-            provider: "v8",
+            provider: "istanbul",
             include: ["src/**/*.js"],
             reporter: ["text-summary", "lcov"],
             reportsDirectory: "./coverage",

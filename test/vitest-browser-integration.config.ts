@@ -41,7 +41,7 @@ export default defineConfig({
         minWorkers: 4,
         coverage: {
             include: ["src/**/*.js"],
-            provider: "v8",
+            provider: "istanbul",
             reporter: ["text-summary", "lcov"],
             reportsDirectory: "./coverage",
         },
