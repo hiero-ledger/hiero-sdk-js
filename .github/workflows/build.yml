@@ -111,8 +111,8 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@fbca3e7a99ce9aa8a250563a81187abe115e0dad # v0.16
         with:
           installMirrorNode: true
-          hieroVersion: v0.70.0-rc.1
-          mirrorNodeVersion: v0.138.0
+          hieroVersion: v0.71.0
+          mirrorNodeVersion: v0.142.0
           grpcProxyPort: 8080
 
       - name: Set Operator Account
@@ -221,7 +221,7 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@fbca3e7a99ce9aa8a250563a81187abe115e0dad # 0.16.0
         with:
           installMirrorNode: true
-          hieroVersion: v0.69.1
+          hieroVersion: v0.71.0
           mirrorNodeVersion: v0.142.0
           grpcProxyPort: 8080
           dualMode: true
@@ -281,8 +281,8 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@fbca3e7a99ce9aa8a250563a81187abe115e0dad # v0.16
         with:
           installMirrorNode: true
-          hieroVersion: v0.70.0-rc.1
-          mirrorNodeVersion: v0.138.0
+          hieroVersion: v0.71.0
+          mirrorNodeVersion: v0.142.0
           grpcProxyPort: 8080
 
       - name: Set Operator Account
