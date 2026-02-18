@@ -21,7 +21,7 @@
         "dotenv": "^17.2.3"
     },
     "devDependencies": {
-        "@types/node": "^25.0.3",
+        "@types/node": "^25.2.3",
         "@typescript-eslint/eslint-plugin": "^5.62.0",
         "@typescript-eslint/parser": "^5.62.0",
         "dpdm": "4.0.1",

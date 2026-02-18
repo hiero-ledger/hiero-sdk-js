@@ -122,7 +122,7 @@ export default class ContractId extends Key {
 
         /* eslint-disable */
         const response = await fetch(url);
-        const data = await response.json();
+        const data = /** @type {{ contract_id: string }} */ (await response.json());
         const mirrorAccountId = data.contract_id;
 
         this.num = Long.fromString(
