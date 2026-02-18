@@ -133,6 +133,12 @@ class HookCreationDetails {
      * @returns {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.IHookCreationDetails}
      */
     _toProtobuf() {
+        if (this._extensionPoint == null) {
+            throw new Error(
+                "extensionPoint is required for HookCreationDetails",
+            );
+        }
+
         return {
             extensionPoint:
                 /** @type {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.HookExtensionPoint} */ (

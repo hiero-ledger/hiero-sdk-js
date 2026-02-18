@@ -490,7 +490,7 @@ describe("AccountCreateTransaction", function () {
                 const adminKey = PrivateKey.generateED25519().publicKey;
                 const hook = new HookCreationDetails({
                     extensionPoint: 1,
-                    key: adminKey,
+                    adminKey,
                 });
 
                 const tx = new AccountCreateTransaction();
@@ -527,7 +527,7 @@ describe("AccountCreateTransaction", function () {
                     extensionPoint: 1,
                     hookId,
                     evmHook: evmHook,
-                    key: adminKey,
+                    adminKey,
                 });
 
                 const tx = new AccountCreateTransaction();
@@ -589,7 +589,7 @@ describe("AccountCreateTransaction", function () {
                     extensionPoint: 1,
                     hookId,
                     evmHook: evmHook,
-                    key: adminKey,
+                    adminKey,
                 });
 
                 const tx = new AccountCreateTransaction({

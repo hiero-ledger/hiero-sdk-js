@@ -493,7 +493,7 @@ describe("ContractUpdateTransaction", function () {
                 const adminKey = PrivateKey.generateED25519().publicKey;
                 const hook = new HookCreationDetails({
                     extensionPoint: 1,
-                    key: adminKey,
+                    adminKey,
                 });
 
                 const tx = new ContractUpdateTransaction();
@@ -530,7 +530,7 @@ describe("ContractUpdateTransaction", function () {
                     extensionPoint: 1,
                     hookId,
                     evmHook: evmHook,
-                    key: adminKey,
+                    adminKey,
                 });
 
                 const tx = new ContractUpdateTransaction();
@@ -610,7 +610,7 @@ describe("ContractUpdateTransaction", function () {
                     extensionPoint: 1,
                     hookId,
                     evmHook: evmHook,
-                    key: adminKey,
+                    adminKey,
                 });
 
                 const tx = new ContractUpdateTransaction({

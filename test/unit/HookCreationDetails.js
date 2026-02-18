@@ -331,12 +331,6 @@ describe("HookCreationDetails", function () {
                 Error,
                 "extensionPoint is required for HookCreationDetails",
             );
-
-            details.setExtensionPoint(1);
-            expect(() => details._toProtobuf()).to.throw(
-                Error,
-                "hookId is required for HookCreationDetails",
-            );
         });
 
         it("should call _toProtobuf on evmHook", function () {

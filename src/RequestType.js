@@ -219,6 +219,8 @@ export default class RequestType {
                 return "HookDispatch";
             case RequestType.HookStore:
                 return "HookStore";
+            case RequestType.LedgerIdPublication:
+                return "LedgerIdPublication";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -427,6 +429,8 @@ export default class RequestType {
                 return RequestType.HookDispatch;
             case 111:
                 return RequestType.HookStore;
+            case 112:
+                return RequestType.LedgerIdPublication;
         }
 
         throw new Error(
@@ -945,3 +949,8 @@ RequestType.HookDispatch = new RequestType(110);
  * Update one or more storage slots in an EVM hook.
  */
 RequestType.HookStore = new RequestType(111);
+
+/**
+ * (Internal-only) Publish a new ledger id and chain-of-trust key.
+ */
+RequestType.LedgerIdPublication = new RequestType(112);
