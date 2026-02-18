@@ -27,7 +27,7 @@
         "typescript": "^5.7.2"
     },
     "peerDependencies": {
-        "protobufjs": "7.5.4"
+        "protobufjs": "8.0.0"
     },
     "private": true
 }
