@@ -1,4 +1,5 @@
 import { defineConfig } from "vitest/config";
+import { playwright } from "@vitest/browser-playwright";
 import dotenv from "dotenv";
 import path from "path";
 import fs from "fs";
@@ -19,7 +20,7 @@ export default defineConfig({
         browser: {
             screenshotFailures: false,
             headless: true,
-            provider: "playwright",
+            provider: playwright(),
             enabled: true,
             instances: [{ browser: "chromium" }],
         },
@@ -36,7 +37,7 @@ export default defineConfig({
         testTimeout: 120000,
         coverage: {
             include: ["src/**/*.js"],
-            provider: "v8",
+            provider: "istanbul",
             reporter: ["text-summary", "lcov"],
             reportsDirectory: "./coverage",
         },
