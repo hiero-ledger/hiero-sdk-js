@@ -95,6 +95,7 @@
         "@typescript-eslint/eslint-plugin": "5.48.2",
         "@typescript-eslint/parser": "5.48.2",
         "@vitest/browser": "3.1.2",
+        "@vitest/browser-playwright": "4.0.18",
         "@vitest/coverage-v8": "4.0.18",
         "babel-plugin-dynamic-import-node": "2.3.3",
         "babel-plugin-module-rewrite": "0.2.0",
