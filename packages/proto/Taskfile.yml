@@ -43,8 +43,7 @@ tasks:
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/event/* src/proto/
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/state/* src/proto/
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/block/stream/chain_of_trust_proof.proto src/proto/
-            - chmod +x scripts/remove-duplicate-protobuf.sh
-            - ./scripts/remove-duplicate-protobuf.sh
+            - node scripts/remove-duplicate-protobuf.js
             - echo "Protobufs moved successfully!"
             - task "delete:submodule"
 
@@ -53,12 +52,11 @@ tasks:
             - "move:protobufs"
         desc: "Flatten proto directory structure to src/proto/* and fix imports"
         cmds:
-            - chmod +x scripts/flatten-protos.sh
-            - ./scripts/flatten-protos.sh
+            - node scripts/flatten-protos.js
 
     delete:submodule:
         cmds:
-            - find src/services -mindepth 1 -delete
+            - npx -y rimraf --glob "src/services/*" "src/services/.[!.]*" "src/services/..?*"
             - echo "Submodule contents removed successfully, folder retained."
 
     install:
@@ -84,9 +82,9 @@ tasks:
 
     build:standalone:
         cmds:
-            - npx pbjs -r hashgraph -t static-module -w es6 -p=src/proto --force-long --no-beautify --no-convert --no-delimited --no-verify -o src/proto.js src/proto/**/*.proto
+            - npx pbjs -r hashgraph -t static-module -w es6 -p=src/proto --force-long --no-beautify --no-convert --no-delimited --no-verify -o src/proto.js src/proto/*.proto
             - npx pbts -n hashgraph -o src/proto.d.ts src/proto.js
-            - perl -pi -e 's#(?<!api\.)proto\.#hashgraph.proto.#g' src/proto.d.ts
+            - node scripts/fix-proto-namespaces.js
             - task: format
             - task: lint
             - npx babel src -d lib

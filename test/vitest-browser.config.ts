@@ -1,4 +1,6 @@
 import { defineConfig } from "vitest/config";
+import { playwright } from "@vitest/browser-playwright";
+
 export default defineConfig({
     test: {
         watch: false,
@@ -6,7 +8,7 @@ export default defineConfig({
         browser: {
             screenshotFailures: false,
             headless: true,
-            provider: "playwright",
+            provider: playwright(),
             enabled: true,
             instances: [{ browser: "chromium" }],
             isolate: false,
@@ -23,7 +25,7 @@ export default defineConfig({
         fileParallelism: false,
         coverage: {
             include: ["src/**/*.js"],
-            provider: "v8",
+            provider: "istanbul",
             reporter: ["text-summary", "lcov"],
             reportsDirectory: "./coverage",
         },
