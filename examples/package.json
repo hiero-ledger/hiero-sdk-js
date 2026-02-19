@@ -25,7 +25,7 @@
         "@typescript-eslint/eslint-plugin": "^5.62.0",
         "@typescript-eslint/parser": "^5.62.0",
         "dpdm": "4.0.1",
-        "eslint": "^8.49.0",
+        "eslint": "^10.0.0",
         "eslint-plugin-compat": "^6.1.0",
         "eslint-plugin-import": "^2.28.1",
         "eslint-plugin-jsdoc": "^62.5.5",
