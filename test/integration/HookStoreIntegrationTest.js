@@ -113,7 +113,7 @@ describe("HookStore", function () {
         expect(receipt.status).toEqual(Status.Success);
     });
 
-    it("should fail with TOO_MANY_LAMBDA_STORAGE_UPDATES when updating more than 256 storage slots", async function () {
+    it("should fail with TOO_MANY_EVM_HOOK_STORAGE_UPDATES when updating more than 256 storage slots", async function () {
         // Create a storage slot
         const storageSlot = new EvmHookStorageSlot({
             key: new Uint8Array([0x01, 0x02, 0x03, 0x04]),
@@ -135,7 +135,7 @@ describe("HookStore", function () {
         } catch (err) {
             error = err.status
                 .toString()
-                .includes(Status.TooManyLambdaStorageUpdates.toString());
+                .includes(Status.TooManyEvmHookStorageUpdates.toString());
         }
 
         expect(error).toBe(true);

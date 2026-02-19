@@ -525,7 +525,7 @@ describe("ContractUpdate", function () {
             receipt = await response.getReceipt(env.client);
             let contract = receipt.contractId;
 
-            // When: ContractUpdateTransaction adds a lambda EVM hook with initial storage updates
+            // When: ContractUpdateTransaction adds an EVM hook with initial storage updates
             const evmHook = new EvmHook({
                 contractId: hookContractId,
                 storageUpdates: [
