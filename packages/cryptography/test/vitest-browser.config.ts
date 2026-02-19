@@ -5,6 +5,13 @@ export default defineConfig({
     test: {
         watch: false,
         globals: true,
+        pool: "threads",
+        poolOptions: {
+            threads: {
+                maxThreads: 8,
+                minThreads: 8,
+            },
+        },
         browser: {
             headless: true,
             provider: playwright(),

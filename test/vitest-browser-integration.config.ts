@@ -38,8 +38,13 @@ export default defineConfig({
         ],
         hookTimeout: 120000,
         testTimeout: 120000,
-        maxWorkers: 4,
-        minWorkers: 4,
+        pool: "threads",
+        poolOptions: {
+            threads: {
+                maxThreads: 8,
+                minThreads: 8,
+            },
+        },
         coverage: {
             include: ["src/**/*.js"],
             provider: "istanbul",

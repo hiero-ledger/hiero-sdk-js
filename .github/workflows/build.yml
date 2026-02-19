@@ -69,10 +69,10 @@ jobs:
         node: [ "22" ]
 
     steps:
-      -  name: Harden Runner
-         uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
-         with:
-           egress-policy: audit
+      - name: Harden Runner
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
 
       - name: Checkout Code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -95,16 +95,14 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: pnpm
 
-      - name: Build @hiero-ledger/sdk
-        id: build-sdk
-        run: task build
+      - name: Install dependencies
+        run: task install
 
       - name: Install Playwright Dependencies
         id: playwright-deps
-        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
         run: |
-            sudo npx playwright install-deps
-            npx playwright install
+          sudo npx playwright install-deps
+          npx playwright install
 
       - name: Prepare Hiero Solo
         id: solo
@@ -124,7 +122,6 @@ jobs:
           echo "HEDERA_NETWORK=local-node" >> $GITHUB_ENV
 
       - name: Run Hedera SDK Integration Tests
-        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
         run: ${{ env.CG_EXEC }} task test:integration:codecov
 
       - name: Upload coverage to Codecov
@@ -136,18 +133,14 @@ jobs:
 
       - name: Build @hiero-ledger/cryptography
         working-directory: packages/cryptography
-        if: ${{ steps.build-sdk.conclusion == 'success' && steps.stop-local-node.conclusion == 'success' && !cancelled() && always() }}
         run: ${{ env.CG_EXEC }} task build
-
 
       - name: Browser Unit Test @hiero-ledger/cryptography
         working-directory: packages/cryptography
-        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
         run: ${{ env.CG_EXEC }} task test:unit:browser
 
       - name: Codecov @hiero-ledger/cryptography
         working-directory: packages/cryptography
-        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
         run: ${{ env.CG_EXEC }} task test:unit:codecov
 
       - name: Upload @hashgraph/cryptography coverage to Codecov
@@ -158,11 +151,10 @@ jobs:
           fail_ci_if_error: false
 
       - name: Browser Unit Test @hiero-ledger/sdk
-        if: ${{ steps.build-sdk.conclusion == 'success' && steps.playwright-deps.conclusion == 'success' && !cancelled() && always() }}
+        if: ${{ steps.playwright-deps.conclusion == 'success' && !cancelled() && always() }}
         run: ${{ env.CG_EXEC }} task test:unit:browser
 
       - name: Codecov @hiero-ledger/sdk
-        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
         run: ${{ env.CG_EXEC }} task test:unit:codecov
 
       - name: Upload @hashgraph/sdk coverage to Codecov
@@ -205,16 +197,14 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: pnpm
 
-      - name: Build @hashgraph/sdk
-        id: build-sdk
-        run: task build
+      - name: Install dependencies
+        run: task install
 
       - name: Install Playwright Dependencies
         id: playwright-deps
-        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
         run: |
-            sudo npx playwright install-deps
-            npx playwright install
+          sudo npx playwright install-deps
+          npx playwright install
 
       - name: Prepare Hiero Solo
         id: solo
@@ -236,7 +226,6 @@ jobs:
           echo "HEDERA_NETWORK=local-node" >> $GITHUB_ENV
 
       - name: Run DAB Integration Tests
-        if: ${{ steps.build-sdk.conclusion == 'success' && !cancelled() && always() }}
         run: task test:integration:dual-mode
 
   examples:
@@ -272,8 +261,7 @@ jobs:
           node-version: ${{ matrix.node }}
           cache: pnpm
 
-      - name: Build @hiero-ledger/sdk
-        id: build-sdk
+      - name: Install dependencies and build SDK
         run: task build
 
       - name: Prepare Hiero Solo
@@ -293,7 +281,7 @@ jobs:
           echo "GENESIS_OPERATOR_ID=0.0.2" >> $GITHUB_ENV
           echo "HEDERA_NETWORK=local-node" >> $GITHUB_ENV
 
-      - name: Install dependencies
+      - name: Install examples dependencies
         run: |
           cd examples
           pnpm i

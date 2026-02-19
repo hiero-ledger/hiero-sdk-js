@@ -79,11 +79,11 @@ tasks:
               --entryPoints src/index.js src/browser.js src/native.js
 
     install:
-        deps:
-            - "proto:build"
-            - "cryptography:build"
+        desc: "Install deps then build proto and cryptography (pnpm i first so protobufjs-cli is available)"
         cmds:
             - pnpm i
+            - task proto:build
+            - task cryptography:build
 
     build:
         cmds:
@@ -205,6 +205,7 @@ tasks:
             - npx vitest --maxWorkers=1 --config=test/vitest-browser-integration-dual-mode.config.ts
 
     "update:proto":
+        desc: "Fetch protos from submodule at tag, regenerate JS (run only when bumping proto version)"
         deps:
             - "proto:update"
         cmds:
@@ -215,6 +216,7 @@ tasks:
             - node ./scripts/update-address-books.js
 
     update:
+        desc: "Update address books and build (does not update protos; use task update:proto when needed)"
         cmds:
             - task: update:addressbooks
             - task: update:proto
