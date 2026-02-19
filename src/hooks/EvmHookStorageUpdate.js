@@ -3,7 +3,7 @@ import EvmHookMappingEntry from "./EvmHookMappingEntry.js";
 /**
  *
  * @abstract
- * Specifies a key/value pair in the storage of a lambda, either by the explicit storage
+ * Specifies a key/value pair in the storage of a EVM hook, either by the explicit storage
  * slot contents; or by a combination of a Solidity mapping's slot key and the key into
  * that mapping.
  */
@@ -39,7 +39,7 @@ class EvmHookStorageUpdate {
 }
 
 /**
- * A slot in the storage of a lambda EVM hook.
+ * A slot in the storage of a EVM hook.
  */
 class EvmHookStorageSlot extends EvmHookStorageUpdate {
     /**

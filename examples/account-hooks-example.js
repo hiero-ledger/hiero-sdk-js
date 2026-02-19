@@ -9,7 +9,7 @@ import {
     Client,
     AccountId,
     HookCreationDetails,
-    LambdaEvmHook,
+    EvmHook,
     HookExtensionPoint,
     Long,
 } from "@hiero-ledger/sdk";
@@ -69,21 +69,21 @@ async function main() {
          * Step 2: Demonstrate creating an account with hooks.
          */
         console.log("\n=== Creating Account with Hooks ===");
-        console.log("Creating account with lambda EVM hook...");
+        console.log("Creating account with EVM hook...");
 
         const accountKey = PrivateKey.generate();
         const accountPublicKey = accountKey.publicKey;
 
-        // Create a lambda EVM hook
-        const lambdaHook = new LambdaEvmHook({ contractId });
+        // Create a EVM hook
+        const evmHook = new EvmHook({ contractId });
 
         // Create hook creation details
         const adminKey = client.operatorPublicKey;
         const hookWithId1002 = new HookCreationDetails({
             extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
             hookId: Long.fromInt(1002),
-            hook: lambdaHook,
-            key: adminKey,
+            evmHook: evmHook,
+            adminKey: adminKey,
         });
 
         let { accountId } = await (
@@ -99,7 +99,7 @@ async function main() {
         ).getReceipt(client);
 
         console.log(`account id = ${accountId.toString()}`);
-        console.log("Successfully created account with lambda hook!");
+        console.log("Successfully created account with EVM hook!");
 
         /*
          * Step 3: Demonstrate adding hooks to an existing account.
@@ -107,21 +107,21 @@ async function main() {
         console.log("\n=== Adding Hooks to Existing Account ===");
         console.log("Adding hooks to existing account...");
 
-        // Create basic lambda hooks with no storage updates
-        const basicHook = new LambdaEvmHook({ contractId });
+        // Create basic hooks with no storage updates
+        const basicHook = new EvmHook({ contractId });
         const hookWithId1 = new HookCreationDetails({
             extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
             hookId: Long.fromInt(1),
-            hook: basicHook,
-            key: adminKey,
+            evmHook: basicHook,
+            adminKey: adminKey,
         });
 
-        const basicHook2 = new LambdaEvmHook({ contractId });
+        const basicHook2 = new EvmHook({ contractId });
         const hookWithId2 = new HookCreationDetails({
             extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
             hookId: Long.fromInt(2),
-            hook: basicHook2,
-            key: adminKey,
+            evmHook: basicHook2,
+            adminKey: adminKey,
         });
 
         try {

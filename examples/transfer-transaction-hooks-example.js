@@ -19,7 +19,7 @@ import {
     ContractCreateTransaction,
     HookExtensionPoint,
     HookCreationDetails,
-    LambdaEvmHook,
+    EvmHook,
     AccountCreateTransaction,
 } from "@hiero-ledger/sdk";
 
@@ -73,7 +73,7 @@ async function main() {
         const hookDetails = new HookCreationDetails({
             extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
             hookId: hookId,
-            hook: new LambdaEvmHook({ contractId: hookContractId }),
+            evmHook: new EvmHook({ contractId: hookContractId }),
         });
 
         const senderPrivateKey = PrivateKey.generateECDSA();

@@ -424,7 +424,7 @@ export default class RequestType {
             case 108:
                 return RequestType.AtomicBatch;
             case 109:
-                return RequestType.LambdaSStore;
+                return RequestType.HookStore;
             case 110:
                 return RequestType.HookDispatch;
             case 111:

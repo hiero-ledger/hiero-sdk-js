@@ -38,10 +38,10 @@ async function main() {
     const client = Client.forName(network).setOperator(operatorId, operatorKey);
 
     try {
-        console.log("Lambda SStore Example Start!");
+        console.log("EVM Hook Store Example Start!");
 
         /*
-         * Step 1: Set up prerequisites - create hook contract and account with lambda hook
+         * Step 1: Set up prerequisites - create hook contract and account with EVM hook
          */
         console.log("Setting up prerequisites...");
 
@@ -66,8 +66,8 @@ async function main() {
 
         console.log("Hook contract created with ID:", contractId.toString());
 
-        // Create account with lambda hook
-        console.log("Creating account with lambda hook...");
+        // Create account with EVM hook
+        console.log("Creating account with EVM hook...");
         const accountKey = PrivateKey.generate();
         const accountPublicKey = accountKey.publicKey;
 
@@ -96,12 +96,12 @@ async function main() {
         ).getReceipt(client);
 
         console.log(`account id = ${accountId.toString()}`);
-        console.log("Successfully created account with lambda hook!");
+        console.log("Successfully created account with EVM hook!");
 
         /*
-         * Step 2: Demonstrate LambdaSStoreTransaction - the core functionality.
+         * Step 2: Demonstrate EVM Hook Store Transaction - the core functionality.
          */
-        console.log("\n=== LambdaSStoreTransaction Example ===");
+        console.log("\n=== EVM Hook Store Transaction Example ===");
 
         const storageKey = new Uint8Array(1);
         storageKey.fill(1); // Fill with byte value 1
@@ -142,7 +142,7 @@ async function main() {
         console.log("Transaction completed successfully!");
         console.log("Receipt status:", hookStoreResponse.status.toString());
 
-        console.log("\nLambda SStore Example Complete!");
+        console.log("\nEVM Hook Store Example Complete!");
     } catch (error) {
         console.error("Error occurred:", error);
     }

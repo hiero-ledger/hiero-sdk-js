@@ -7,7 +7,7 @@ import {
     Client,
     AccountId,
     HookCreationDetails,
-    LambdaEvmHook,
+    EvmHook,
     HookExtensionPoint,
     Long,
     Hbar,
@@ -71,19 +71,19 @@ async function main() {
          * Step 2: Demonstrate creating a contract with hooks.
          */
         console.log("\n=== Creating Contract with Hooks ===");
-        console.log("Creating contract with lambda EVM hook...");
+        console.log("Creating contract with EVM hook...");
 
         const simpleContractBytecodeHex = fs.readFileSync(
             "./contracts/HelloWorld.bytecode.txt",
             "utf8",
         );
 
-        // Build a basic lambda EVM hook (no admin key, no storage updates)
-        const lambdaHook = new LambdaEvmHook({ contractId: hookContractId });
+        // Build a basic EVM hook (no admin key, no storage updates)
+        const evmHook = new EvmHook({ contractId: hookContractId });
         const hookWithId1 = new HookCreationDetails({
             extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
             hookId: Long.fromInt(1),
-            hook: lambdaHook,
+            evmHook: evmHook,
         });
 
         let { contractId: contractWithHooksId } = await (
@@ -103,7 +103,7 @@ async function main() {
             "Created contract with ID:",
             contractWithHooksId.toString(),
         );
-        console.log("Successfully created contract with basic lambda hook!");
+        console.log("Successfully created contract with basic evm hook!");
 
         /*
          * Step 3: Demonstrate adding hooks to an existing contract.
@@ -113,13 +113,13 @@ async function main() {
 
         const adminKey = client.operatorPublicKey;
 
-        // Hook 3: Basic lambda hook with no storage updates (using ID 3 to avoid conflict with existing hook 1)
-        const basicHook = new LambdaEvmHook({ contractId: hookContractId });
+        // Hook 3: Basic EVM hook with no storage updates (using ID 3 to avoid conflict with existing hook 1)
+        const basicHook = new EvmHook({ contractId: hookContractId });
         const hookWithId3 = new HookCreationDetails({
             extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
             hookId: Long.fromInt(3),
-            hook: basicHook,
-            key: adminKey,
+            evmHook: basicHook,
+            adminKey: adminKey,
         });
 
         try {
