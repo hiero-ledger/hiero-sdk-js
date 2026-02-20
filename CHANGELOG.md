@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# 2.81.0-beta.1
+
+### Added
+
+- HIP-1195 support. [#3535](https://github.com/hiero-ledger/hiero-sdk-js/pull/3535)  - *Released but not supported on Testnet yet*
+- Allow multiple nodes on getRecord/getReceipt. [#3741](https://github.com/hiero-ledger/hiero-sdk-js/pull/3741)
+- TCK: implement FileContentsResponse endpoint. [#3633](https://github.com/hiero-ledger/hiero-sdk-js/pull/3633)
+- TCK: implement AddressBookQuery endpoint. [#3624](https://github.com/hiero-ledger/hiero-sdk-js/pull/3624)
+
+### Changed
+
+- TCK: update token info query to match the Java response. [#3694](https://github.com/hiero-ledger/hiero-sdk-js/pull/3694)
+- TCK: update airdrop method. [#3685](https://github.com/hiero-ledger/hiero-sdk-js/pull/3685)
+
 # 2.80.0
 
 ### Fixed
