@@ -73,6 +73,23 @@ export { default as FeeDataType } from "./FeeDataType.js";
 export { default as FeeSchedule } from "./FeeSchedule.js";
 export { default as FeeSchedules } from "./FeeSchedules.js";
 export { default as FileAppendTransaction } from "./file/FileAppendTransaction.js";
+export { default as HookCreationDetails } from "./hooks/HookCreationDetails.js";
+export { default as EvmHook } from "./hooks/EvmHook.js";
+export { HookExtensionPoint } from "./hooks/HookExtensionPoint.js";
+export { default as FungibleHookCall } from "./hooks/FungibleHookCall.js";
+export { default as NftHookCall } from "./hooks/NftHookCall.js";
+export { default as EvmHookCall } from "./hooks/EvmHookCall.js";
+export { default as FungibleHookType } from "./hooks/FungibleHookType.js";
+export { default as NftHookType } from "./hooks/NftHookType.js";
+export { default as HookId } from "./hooks/HookId.js";
+export { default as HookEntityId } from "./hooks/HookEntityId.js";
+export { default as HookStoreTransaction } from "./hooks/HookStoreTransaction.js";
+export {
+    EvmHookStorageUpdate,
+    EvmHookStorageSlot,
+    EvmHookMappingEntries,
+} from "./hooks/EvmHookStorageUpdate.js";
+export { default as EvmHookMappingEntry } from "./hooks/EvmHookMappingEntry.js";
 export { default as FileContentsQuery } from "./file/FileContentsQuery.js";
 export { default as FileCreateTransaction } from "./file/FileCreateTransaction.js";
 export { default as FileDeleteTransaction } from "./file/FileDeleteTransaction.js";
