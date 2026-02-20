@@ -2723,7 +2723,9 @@ Status.ExistingAutomaticAssociationsExceedGivenLimit = new Status(263);
 /**
  * Cannot set the number of automatic associations for an account more than the maximum allowed token associations <tt>tokens.maxPerAccount</tt>.
  */
-Status.RequestedNumAutomaticAssociationsExceedsAssociationLimit = new Status(264);
+Status.RequestedNumAutomaticAssociationsExceedsAssociationLimit = new Status(
+    264,
+);
 
 /**
  * Token is paused. This Token cannot be a part of any kind of Transaction until unpaused.
@@ -3559,4 +3561,3 @@ Status.TransferToFeeCollectionAccountNotAllowed = new Status(527);
  * The number of hook invocations exceeds the maximum allowed per transaction.
  */
 Status.TooManyHookInvocations = new Status(528);
-
