@@ -25,9 +25,7 @@ describe("TransactionResponse", function () {
             const response = new TransactionResponse({
                 nodeId: AccountId.fromString("0.0.3"),
                 transactionHash: Uint8Array.of(1, 2, 3),
-                transactionId: TransactionId.fromString(
-                    "0.0.12@13.000000014",
-                ),
+                transactionId: TransactionId.fromString("0.0.12@13.000000014"),
             });
 
             const receiptQuery = response.getReceiptQuery();
@@ -48,9 +46,7 @@ describe("TransactionResponse", function () {
             const response = new TransactionResponse({
                 nodeId: AccountId.fromString("0.0.3"),
                 transactionHash: Uint8Array.of(1, 2, 3),
-                transactionId: TransactionId.fromString(
-                    "0.0.12@13.000000014",
-                ),
+                transactionId: TransactionId.fromString("0.0.12@13.000000014"),
             });
 
             const receiptQuery = response.getReceiptQuery(client);
@@ -73,9 +69,7 @@ describe("TransactionResponse", function () {
             const response = new TransactionResponse({
                 nodeId: AccountId.fromString("0.0.3"),
                 transactionHash: Uint8Array.of(1, 2, 3),
-                transactionId: TransactionId.fromString(
-                    "0.0.12@13.000000014",
-                ),
+                transactionId: TransactionId.fromString("0.0.12@13.000000014"),
             });
 
             const receiptQuery = response.getReceiptQuery(client);
@@ -108,9 +102,7 @@ describe("TransactionResponse", function () {
                         ? AccountId.fromString(testnetNodeId)
                         : testnetNodeId,
                 transactionHash: Uint8Array.of(1, 2, 3),
-                transactionId: TransactionId.fromString(
-                    "0.0.12@13.000000014",
-                ),
+                transactionId: TransactionId.fromString("0.0.12@13.000000014"),
             });
 
             const receiptQuery = response.getReceiptQuery(client);
@@ -163,9 +155,7 @@ describe("TransactionResponse", function () {
             const response = new TransactionResponse({
                 nodeId: customNodeId,
                 transactionHash: Uint8Array.of(1, 2, 3),
-                transactionId: TransactionId.fromString(
-                    "0.0.12@13.000000014",
-                ),
+                transactionId: TransactionId.fromString("0.0.12@13.000000014"),
             });
 
             const receiptQuery = response.getReceiptQuery(client);
@@ -199,9 +189,7 @@ describe("TransactionResponse", function () {
             const response = new TransactionResponse({
                 nodeId: AccountId.fromString("0.0.3"),
                 transactionHash: Uint8Array.of(1, 2, 3),
-                transactionId: TransactionId.fromString(
-                    "0.0.12@13.000000014",
-                ),
+                transactionId: TransactionId.fromString("0.0.12@13.000000014"),
                 transactionNodeAccountIds: txNodes,
             });
 
@@ -233,9 +221,7 @@ describe("TransactionResponse", function () {
             const response = new TransactionResponse({
                 nodeId: AccountId.fromString("0.0.3"),
                 transactionHash: Uint8Array.of(1, 2, 3),
-                transactionId: TransactionId.fromString(
-                    "0.0.12@13.000000014",
-                ),
+                transactionId: TransactionId.fromString("0.0.12@13.000000014"),
                 // No transactionNodeAccountIds provided
             });
 
@@ -260,9 +246,7 @@ describe("TransactionResponse", function () {
             const response = new TransactionResponse({
                 nodeId: AccountId.fromString("0.0.3"),
                 transactionHash: Uint8Array.of(1, 2, 3),
-                transactionId: TransactionId.fromString(
-                    "0.0.12@13.000000014",
-                ),
+                transactionId: TransactionId.fromString("0.0.12@13.000000014"),
             });
 
             const recordQuery = response.getRecordQuery();
@@ -283,9 +267,7 @@ describe("TransactionResponse", function () {
             const response = new TransactionResponse({
                 nodeId: AccountId.fromString("0.0.3"),
                 transactionHash: Uint8Array.of(1, 2, 3),
-                transactionId: TransactionId.fromString(
-                    "0.0.12@13.000000014",
-                ),
+                transactionId: TransactionId.fromString("0.0.12@13.000000014"),
             });
 
             const recordQuery = response.getRecordQuery(client);
@@ -308,9 +290,7 @@ describe("TransactionResponse", function () {
             const response = new TransactionResponse({
                 nodeId: AccountId.fromString("0.0.3"),
                 transactionHash: Uint8Array.of(1, 2, 3),
-                transactionId: TransactionId.fromString(
-                    "0.0.12@13.000000014",
-                ),
+                transactionId: TransactionId.fromString("0.0.12@13.000000014"),
             });
 
             const recordQuery = response.getRecordQuery(client);
@@ -344,9 +324,7 @@ describe("TransactionResponse", function () {
             const response = new TransactionResponse({
                 nodeId: AccountId.fromString("0.0.3"),
                 transactionHash: Uint8Array.of(1, 2, 3),
-                transactionId: TransactionId.fromString(
-                    "0.0.12@13.000000014",
-                ),
+                transactionId: TransactionId.fromString("0.0.12@13.000000014"),
                 transactionNodeAccountIds: txNodes,
             });
 
@@ -384,9 +362,7 @@ describe("TransactionResponse", function () {
                         ? AccountId.fromString(testnetNodeId)
                         : testnetNodeId,
                 transactionHash: Uint8Array.of(1, 2, 3),
-                transactionId: TransactionId.fromString(
-                    "0.0.12@13.000000014",
-                ),
+                transactionId: TransactionId.fromString("0.0.12@13.000000014"),
             });
 
             const recordQuery = response.getRecordQuery(client);
