@@ -34,7 +34,7 @@ async function main() {
                 .toString()} balance = ${balance.hbars.toString()}`,
         );
     } catch (error) {
-        console.error(Error);
+        console.error(error);
     }
 
     provider.close();
