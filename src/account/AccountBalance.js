@@ -39,9 +39,9 @@ export default class AccountBalance {
          */
         this.hbars = props.hbars;
 
-        this.tokens = props.tokens;
+        this.tokens = props.tokens || new TokenBalanceMap();
 
-        this.tokenDecimals = props.tokenDecimals;
+        this.tokenDecimals = props.tokenDecimals || new TokenDecimalMap();
 
         Object.freeze(this);
     }
@@ -98,17 +98,11 @@ export default class AccountBalance {
         /** @type {HieroProto.proto.ITokenBalance[]} */
         const list = [];
 
-        // eslint-disable-next-line deprecation/deprecation
-        for (const [key, value] of this.tokens != null ? this.tokens : []) {
+        for (const [key, value] of this.tokens) {
             list.push({
                 tokenId: key._toProtobuf(),
                 balance: value,
-                decimals:
-                    // eslint-disable-next-line deprecation/deprecation
-                    this.tokenDecimals != null
-                        ? // eslint-disable-next-line deprecation/deprecation
-                          this.tokenDecimals.get(key)
-                        : null,
+                decimals: this.tokenDecimals.get(key),
             });
         }
 
@@ -139,11 +133,9 @@ export default class AccountBalance {
      */
     toJSON() {
         const tokens = [];
-        // eslint-disable-next-line deprecation/deprecation
-        for (const [key, value] of this.tokens != null ? this.tokens : []) {
-            const decimals =
-                // eslint-disable-next-line deprecation/deprecation
-                this.tokenDecimals != null ? this.tokenDecimals.get(key) : null;
+        
+        for (const [key, value] of this.tokens) {
+            const decimals = this.tokenDecimals.get(key);
 
             tokens.push({
                 tokenId: key.toString(),

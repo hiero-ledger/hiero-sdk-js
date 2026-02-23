@@ -11,7 +11,7 @@
 > The JavaScript SDK for interacting with a Hiero based network
 
 > [!NOTE]  
-> The project has been transfered from the https://github.com/hashgraph org and therefore the namespace is at several locations still based on `hashgraph` and `hedera`.
+> The project has been transferred from the https://github.com/hashgraph org and therefore the namespace is at several locations still based on `hashgraph` and `hedera`.
 > We are working activly on migration the namespace fully to hiero.
 
 ## Install

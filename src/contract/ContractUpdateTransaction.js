@@ -54,6 +54,8 @@ export default class ContractUpdateTransaction extends Transaction {
      * @param {Long | number} [props.stakedNodeId]
      * @param {boolean} [props.declineStakingReward]
      * @param {AccountId} [props.autoRenewAccountId]
+     * @param {import("../hooks/HookCreationDetails.js").default[]} [props.hooksToBeCreated]
+     * @param {Long[]} [props.hooksToBeDeleted]
      */
     constructor(props = {}) {
         super();
@@ -129,6 +131,18 @@ export default class ContractUpdateTransaction extends Transaction {
          */
         this._autoRenewAccountId = null;
 
+        /**
+         * @private
+         * @type {import("../hooks/HookCreationDetails.js").default[]}
+         */
+        this._hooksToBeCreated = [];
+
+        /**
+         * @private
+         * @type {Long[]}
+         */
+        this._hooksToBeDeleted = [];
+
         if (props.contractId != null) {
             this.setContractId(props.contractId);
         }
@@ -178,6 +192,14 @@ export default class ContractUpdateTransaction extends Transaction {
 
         if (props.autoRenewAccountId != null) {
             this.setAutoRenewAccountId(props.autoRenewAccountId);
+        }
+
+        if (props.hooksToBeCreated != null) {
+            this.setHooksToCreate(props.hooksToBeCreated);
+        }
+
+        if (props.hooksToBeDeleted != null) {
+            this.setHooksToDelete(props.hooksToBeDeleted);
         }
     }
 
@@ -573,6 +595,57 @@ export default class ContractUpdateTransaction extends Transaction {
     }
 
     /**
+     * @param {import("../hooks/HookCreationDetails.js").default} hook
+     * @returns {this}
+     */
+    addHookToCreate(hook) {
+        this._hooksToBeCreated.push(hook);
+        return this;
+    }
+
+    /**
+     * @param {import("../hooks/HookCreationDetails.js").default[]} hooks
+     * @returns {this}
+     */
+    setHooksToCreate(hooks) {
+        this._hooksToBeCreated = hooks;
+        return this;
+    }
+
+    /**
+     * @returns {import("../hooks/HookCreationDetails.js").default[]}
+     */
+    get hooksToCreate() {
+        return this._hooksToBeCreated;
+    }
+
+    /**
+     *
+     * @param {Long} hook
+     * @returns {this}
+     */
+    addHookToDelete(hook) {
+        this._hooksToBeDeleted.push(hook);
+        return this;
+    }
+
+    /**
+     * @param {Long[]} hookIds
+     * @returns {this}
+     */
+    setHooksToDelete(hookIds) {
+        this._hooksToBeDeleted = hookIds;
+        return this;
+    }
+
+    /**
+     * @returns {Long[]}
+     */
+    get hooksToDelete() {
+        return this._hooksToBeDeleted;
+    }
+
+    /**
      * @override
      * @internal
      * @param {Channel} channel
@@ -646,6 +719,13 @@ export default class ContractUpdateTransaction extends Transaction {
                     ? this._autoRenewAccountId.toString() == "0.0.0"
                         ? Proto.proto.AccountID.create()
                         : this._autoRenewAccountId._toProtobuf()
+                    : null,
+
+            hookIdsToDelete:
+                this._hooksToBeDeleted != null ? this._hooksToBeDeleted : null,
+            hookCreationDetails:
+                this._hooksToBeCreated != null
+                    ? this._hooksToBeCreated.map((hook) => hook._toProtobuf())
                     : null,
         };
     }
