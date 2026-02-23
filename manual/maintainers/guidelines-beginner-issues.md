@@ -73,7 +73,8 @@ Here are some examples of changes that often work well as Beginner Issues:
 - Adding or adjusting unit tests based on existing examples  
 - Improving error messages or documentation wording  
 - Small feature tweaks with clearly described behavior  
-- Cleaning up minor inconsistencies in a localized area  
+- Cleaning up minor inconsistencies in a localized area 
+- Small code refactors in a localized area 
 
 ### Less Ideal Fits
 Some tasks are better suited for more experienced contributors, such as:
