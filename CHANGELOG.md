@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Support for string IDs (AccountId, TokenId, NftId) in TransferTransaction hook methods: `addHbarTransferWithHook`, `addNftTransferWithHook`, `addTokenTransferWithHook`. [#3773](https://github.com/hiero-ledger/hiero-sdk-js/pull/3773)
 - HIP-1195 support. [#3535](https://github.com/hiero-ledger/hiero-sdk-js/pull/3535)  - *Released but not supported on Testnet yet*
 - Allow multiple nodes on getRecord/getReceipt. [#3741](https://github.com/hiero-ledger/hiero-sdk-js/pull/3741)
 
