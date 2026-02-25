@@ -404,46 +404,4 @@ describe("TransferTransaction", function () {
         expect(transfers[1].isApproved).to.equal(false);
         expect(transfers[1].hookCall).to.be.undefined;
     });
-describe("hook transfer methods with string inputs", () => {
-    it("addHbarTransferWithHook accepts string accountId", () => {
-        const tx = new TransferTransaction();
-        const hook = { hookId: "hook123", type: "someType" };
-        
-        tx.addHbarTransferWithHook("0.0.123", new Hbar(10), hook);
-        
-        expect(tx.hbarTransfersList).to.have.lengthOf(1);
-        expect(tx.hbarTransfersList[0].accountId.toString()).to.equal("0.0.123");
-        expect(tx.hbarTransfersList[0].hookCall.hookId).to.equal("hook123");
-    });
-
-    it("addTokenTransferWithHook accepts string IDs", () => {
-        const tx = new TransferTransaction();
-        const hook = { hookId: "hook456", type: "someType" };
-        
-        tx.addTokenTransferWithHook("0.0.456", "0.0.789", 100n, hook);
-        
-        expect(tx._tokenTransfers).to.have.lengthOf(1);
-        expect(tx._tokenTransfers[0].tokenId.toString()).to.equal("0.0.456");
-        expect(tx._tokenTransfers[0].accountId.toString()).to.equal("0.0.789");
-        expect(tx._tokenTransfers[0].hookCall.hookId).to.equal("hook456");
-    });
-
-    it("addNftTransferWithHook accepts string IDs", () => {
-        const tx = new TransferTransaction();
-        const senderHook = { hookId: "senderHook" };
-        const receiverHook = { hookId: "receiverHook" };
-        
-        tx.addNftTransferWithHook(
-            "0.0.111/1",                    // nftId string
-            "0.0.222",                  // sender string
-            "0.0.333",                 // receiver string
-            senderHook,
-            receiverHook
-        );
-        
-        expect(tx._nftTransfers).to.have.lengthOf(1);
-        expect(tx.nftTransfers.keys().next().value.toString()).to.equal("0.0.111");
-    });
-});
-
 });

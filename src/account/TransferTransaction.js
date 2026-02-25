@@ -31,7 +31,8 @@ import FungibleHookCall from "../hooks/FungibleHookCall.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
- * @typedef {import("../client/Client.js").default<Channel, import("../channel/MirrorChannel.js").default>} Client
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../Timestamp.js").default} Timestamp
  * @typedef {import("../hooks/NftHookCall.js").default} NftHookCall
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
@@ -350,21 +351,11 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
         senderHookCall,
         receiverHookCall,
     ) {
-        const nft = nftId instanceof NftId ? nftId : NftId.fromString(nftId);
-        const senderId =
-            sender instanceof AccountId
-                ? sender.clone()
-                : AccountId.fromString(sender);
-        const receiverId =
-            receiver instanceof AccountId
-                ? receiver.clone()
-                : AccountId.fromString(receiver);
-
         return this._addNftTransfer(
             false,
-            nft,
-            senderId,
-            receiverId,
+            nftId,
+            sender,
+            receiver,
             undefined, // receiver
             senderHookCall,
             receiverHookCall,
@@ -374,20 +365,11 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
     /**
      * @param {TokenId | string} tokenId
      * @param {AccountId | string} accountId
-     * @param {Long} amount
+     * @param {number | bigint | Long | BigNumber} amount
      * @param {FungibleHookCall} hook
      * @returns {TransferTransaction}
      */
     addTokenTransferWithHook(tokenId, accountId, amount, hook) {
-        const token =
-            tokenId instanceof TokenId
-                ? tokenId.clone()
-                : TokenId.fromString(tokenId);
-        const account =
-            accountId instanceof AccountId
-                ? accountId.clone()
-                : AccountId.fromString(accountId);
-
         const fungibleHook = new FungibleHookCall({
             hookId: hook.hookId != null ? hook.hookId : undefined,
             evmHookCall:
@@ -399,8 +381,8 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
         const expectedDecimals = null; // we don't expect decimals here, adding comment for clarity
 
         return this._addTokenTransfer(
-            token,
-            account,
+            tokenId,
+            accountId,
             amount,
             isApproved,
             expectedDecimals,
@@ -462,5 +444,5 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
 
 TRANSACTION_REGISTRY.set(
     "cryptoTransfer",
-    TransferTransaction._fromProtobuf.bind(TransferTransaction),
+    TransferTransaction._fromProtobuf.bind(null),
 );
