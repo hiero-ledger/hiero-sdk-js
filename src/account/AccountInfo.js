@@ -41,6 +41,7 @@ import LedgerId from "../LedgerId.js";
  * @property {?string} ledgerId
  * @property {?string} ethereumNonce
  * @property {?StakingInfoJson} stakingInfo
+ * @property {?string} delegationAddress
  */
 
 /**
@@ -74,6 +75,7 @@ export default class AccountInfo {
      * @param {TokenNftAllowance[]} props.nftAllowances
      * @param {?Long} props.ethereumNonce
      * @param {?StakingInfo} props.stakingInfo
+     * @param {?Uint8Array} props.delegationAddress
      */
     constructor(props) {
         /**
@@ -217,6 +219,11 @@ export default class AccountInfo {
          */
         this.stakingInfo = props.stakingInfo;
 
+        /**
+         *
+         */
+        this.delegationAddress = props.delegationAddress;
+
         Object.freeze(this);
     }
 
@@ -316,6 +323,8 @@ export default class AccountInfo {
                 info.stakingInfo != null
                     ? StakingInfo._fromProtobuf(info.stakingInfo)
                     : null,
+            delegationAddress:
+                info.delegationAddress != null ? info.delegationAddress : null,
         });
     }
 
@@ -364,6 +373,7 @@ export default class AccountInfo {
                 this.stakingInfo != null
                     ? this.stakingInfo._toProtobuf()
                     : null,
+            delegationAddress: this.delegationAddress,
         };
     }
 
@@ -428,6 +438,10 @@ export default class AccountInfo {
                     : null,
             stakingInfo:
                 this.stakingInfo != null ? this.stakingInfo.toJSON() : null,
+            delegationAddress:
+                this.delegationAddress != null
+                    ? Buffer.from(this.delegationAddress).toString("hex")
+                    : null,
         };
     }
 }
