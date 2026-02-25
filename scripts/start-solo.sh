@@ -1,37 +1,26 @@
 #!/usr/bin/env bash
 #
-# Setup Solo local network for hiero-sdk-js development and integration testing
+# Start Solo services for hiero-sdk-js
 #
 # This script:
-# 1. Creates a Kind Kubernetes cluster
-# 2. Initializes Solo
-# 3. Deploys a consensus network (1 or 2 nodes)
-# 4. Deploys mirror node services
-# 5. Sets up port forwarding
-# 6. Creates a dedicated ECDSA test account
-# 7. Generates .env file with account credentials
+# 1. Generates consensus keys (if needed)
+# 2. Deploys and starts consensus network
+# 3. Deploys mirror node services
+# 4. Sets up port forwarding
+# 5. Creates test account
+# 6. Generates .env file
 #
-# System Requirements:
-#   - macOS or Linux (Solo does not support Windows except via WSL2)
-#   - Single node: Minimum 12 GB RAM
-#   - Dual node:  Minimum 24 GB RAM (required for dynamic address book tests)
+# Prerequisites:
+#   Must run init-solo.sh first to create cluster and deployment
 #
 # Usage:
-#   ./setup-solo.sh [options]
+#   ./start-solo.sh [options]
 #
 # Options:
-#   --num-nodes <number>                 Number of consensus nodes (default: 1)
 #   --consensus-node-version <version>   Consensus node version (default: v0.69.1)
 #   --mirror-node-version <version>      Mirror node version (default: v0.145.2)
 #   --local-build-path <path>            Path to local build (overrides consensus-node-version)
 #   -h, --help                           Show this help message
-#
-# Examples:
-#   ./setup-solo.sh                                    # Single node (default)
-#   ./setup-solo.sh --num-nodes 2                      # Two nodes (for DAB tests)
-#   ./setup-solo.sh --consensus-node-version v0.70.0
-#   ./setup-solo.sh --num-nodes 2 --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
-#   ./setup-solo.sh --local-build-path ../hiero-consensus-node/hedera-node/data
 #
 
 set -e  # Exit on any error
@@ -47,44 +36,32 @@ NC='\033[0m' # No Color
 # Default configuration
 DEFAULT_CONSENSUS_NODE_VERSION=v0.69.1
 DEFAULT_MIRROR_NODE_VERSION=v0.145.2
-DEFAULT_NUM_NODES=1
 
 # Parse command line arguments
 show_help() {
-    echo "Usage: ./setup-solo.sh [options]"
+    echo "Usage: ./start-solo.sh [options]"
     echo ""
     echo "Options:"
-    echo "  --num-nodes <number>                 Number of consensus nodes (default: ${DEFAULT_NUM_NODES})"
     echo "  --consensus-node-version <version>   Consensus node version (default: ${DEFAULT_CONSENSUS_NODE_VERSION})"
     echo "  --mirror-node-version <version>      Mirror node version (default: ${DEFAULT_MIRROR_NODE_VERSION})"
     echo "  --local-build-path <path>            Path to local build (overrides consensus-node-version)"
-    echo "  --clean-previous                     Full cleanup: delete cluster and Solo config (slower but complete)"
     echo "  -h, --help                           Show this help message"
     echo ""
     echo "Examples:"
-    echo "  ./setup-solo.sh                                    # Single node (default)"
-    echo "  ./setup-solo.sh --num-nodes 2                      # Two nodes (for DAB tests)"
-    echo "  ./setup-solo.sh --consensus-node-version v0.70.0"
-    echo "  ./setup-solo.sh --num-nodes 2 --consensus-node-version v0.70.0 --mirror-node-version v0.146.0"
-    echo "  ./setup-solo.sh --local-build-path ../hiero-consensus-node/hedera-node/data"
-    echo "  ./setup-solo.sh --clean-previous                   # Full cleanup before setup (deletes cluster)"
+    echo "  ./start-solo.sh"
+    echo "  ./start-solo.sh --consensus-node-version v0.70.0"
+    echo "  ./start-solo.sh --local-build-path ../hiero-consensus-node/hedera-node/data"
     exit 0
 }
 
 # Initialize with defaults
-NUM_NODES=${DEFAULT_NUM_NODES}
 CONSENSUS_VERSION=${DEFAULT_CONSENSUS_NODE_VERSION}
 MIRROR_VERSION=${DEFAULT_MIRROR_NODE_VERSION}
 LOCAL_BUILD_PATH=""
-CLEAN_PREVIOUS=false
 
 # Parse arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --num-nodes)
-            NUM_NODES="$2"
-            shift 2
-            ;;
         --consensus-node-version)
             CONSENSUS_VERSION="$2"
             shift 2
@@ -97,16 +74,12 @@ while [[ $# -gt 0 ]]; do
             LOCAL_BUILD_PATH="$2"
             shift 2
             ;;
-        --clean-previous)
-            CLEAN_PREVIOUS=true
-            shift
-            ;;
         -h|--help)
             show_help
             ;;
         *)
             echo "Unknown option: $1"
-            echo "Run './setup-solo.sh --help' for usage information"
+            echo "Run './start-solo.sh --help' for usage information"
             exit 1
             ;;
     esac
@@ -115,7 +88,6 @@ done
 # Configuration
 export SOLO_CLUSTER_NAME=solo-cluster
 export SOLO_NAMESPACE=solo
-export SOLO_CLUSTER_SETUP_NAMESPACE=solo-cluster-setup
 export SOLO_DEPLOYMENT=solo-deployment
 
 # Only set CONSENSUS_NODE_VERSION if not using local build
@@ -128,9 +100,6 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ENV_FILE="${PROJECT_ROOT}/.env"
 HBAR_AMOUNT=10000000
-
-# Check if running from project root or scripts directory
-cd "${PROJECT_ROOT}"
 
 echo_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
@@ -148,183 +117,50 @@ echo_warning() {
     echo -e "${YELLOW}[WARNING]${NC} $1"
 }
 
-# Check for required dependencies
-check_dependencies() {
-    echo_info "Checking dependencies..."
-    
-    local missing_deps=()
-    
-    if ! command -v kind &> /dev/null; then
-        missing_deps+=("kind")
-    fi
-    
-    if ! command -v kubectl &> /dev/null; then
-        missing_deps+=("kubectl")
-    fi
-    
-    if ! command -v npx &> /dev/null; then
-        missing_deps+=("npx")
-    fi
-    
-    if [ ${#missing_deps[@]} -ne 0 ]; then
-        echo_error "Missing required dependencies: ${missing_deps[*]}"
-        echo_info "Please install:"
-        for dep in "${missing_deps[@]}"; do
-            case $dep in
-                kind)
-                    echo "  - kind: https://kind.sigs.k8s.io/docs/user/quick-start/#installation"
-                    ;;
-                kubectl)
-                    echo "  - kubectl: https://kubernetes.io/docs/tasks/tools/"
-                    ;;
-                npx)
-                    echo "  - npx: comes with Node.js (npm install -g npx)"
-                    ;;
-            esac
-        done
-        exit 1
-    fi
-    
-    # Check if Solo is installed
-    echo_info "Checking if Solo is installed..."
-    if ! npx solo --version &> /dev/null; then
-        echo_error "Solo is not installed as a project dependency"
-        echo_info "Please run 'task install' or 'pnpm install' first to install project dependencies including Solo"
-        exit 1
-    fi
-    
-    echo_success "All dependencies are installed"
-}
-
-# Clean up previous state
-cleanup_previous() {
-    echo_info "Cleaning up previous Solo state..."
-    
-    if kind get clusters 2>/dev/null | grep -q "^${SOLO_CLUSTER_NAME}$"; then
-        echo_info "Deleting existing cluster: ${SOLO_CLUSTER_NAME}"
-        kind delete cluster --name "${SOLO_CLUSTER_NAME}" || true
-    fi
-    
-    if [ -d ~/.solo ]; then
-        echo_info "Removing ~/.solo directory"
-        rm -rf ~/.solo
-    fi
-    
-    echo_success "Cleanup complete"
-}
-
-# Soft cleanup - destroy services only
-soft_cleanup_previous() {
-    echo_info "Destroying previous Solo services (keeping cluster and images)..."
+# Check prerequisites
+check_prerequisites() {
+    echo_info "Checking prerequisites..."
     
     # Check if cluster exists
     if ! kind get clusters 2>/dev/null | grep -q "^${SOLO_CLUSTER_NAME}$"; then
-        echo_info "No existing cluster found, skipping soft cleanup"
-        return
+        echo_error "Kind cluster '${SOLO_CLUSTER_NAME}' not found"
+        echo_info "Please run 'task solo:init' first to create the cluster and deployment"
+        exit 1
     fi
     
-    # Stop port forwarding
-    if pgrep -f "kubectl port-forward.*${SOLO_NAMESPACE}" > /dev/null; then
-        echo_info "Stopping port forwarding processes..."
-        pkill -f "kubectl port-forward.*${SOLO_NAMESPACE}" || true
-        sleep 2
+    # Check if Solo is initialized
+    if [ ! -d ~/.solo ]; then
+        echo_error "Solo not initialized"
+        echo_info "Please run 'task solo:init' first"
+        exit 1
     fi
     
-    # Destroy mirror node
-    echo_info "Destroying mirror node..."
-    if npx solo mirror node destroy --deployment "${SOLO_DEPLOYMENT}" --force --dev 2>/dev/null; then
-        echo_success "Mirror node destroyed"
-    else
-        echo_info "Mirror node not found or already destroyed"
+    # Check if cluster-ref exists in local-config.yaml
+    # Note: deployment config may be removed by solo:stop, but cluster-ref persists
+    if [ ! -f ~/.solo/local-config.yaml ] || ! grep -q "${SOLO_CLUSTER_NAME}:" ~/.solo/local-config.yaml 2>/dev/null; then
+        echo_error "Cluster reference '${SOLO_CLUSTER_NAME}' not found"
+        echo_info "Please run 'task solo:init' first"
+        exit 1
     fi
     
-    # Destroy the consensus network
-    echo_info "Destroying consensus network..."
-    if npx solo consensus network destroy --deployment "${SOLO_DEPLOYMENT}" --force --dev 2>/dev/null; then
-        echo_success "Consensus network destroyed"
-    else
-        echo_info "Consensus network not found or already destroyed"
-    fi
-    
-    echo_success "Soft cleanup complete"
+    echo_success "Prerequisites met"
 }
 
-# Create Kind cluster and initialize Solo (only if cluster doesn't exist)
-initialize_solo() {
-    local cluster_existed=false
-    local solo_existed=false
-    
-    # Check if cluster already exists
-    if kind get clusters 2>/dev/null | grep -q "^${SOLO_CLUSTER_NAME}$"; then
-        echo_info "Kind cluster already exists, skipping creation"
-        cluster_existed=true
-    else
-        echo_info "Creating Kind cluster: ${SOLO_CLUSTER_NAME}..."
-        kind create cluster -n "${SOLO_CLUSTER_NAME}"
-        echo_success "Cluster created"
+# Get number of nodes from deployment config
+get_num_nodes() {
+    # Try to determine from existing deployment or default to 1
+    # For now, we'll check the namespace for existing nodes
+    local node_count=1
+    if kubectl get pods -n "${SOLO_NAMESPACE}" 2>/dev/null | grep -q "network-node2"; then
+        node_count=2
     fi
-    
-    # Check if Solo is already initialized
-    if [ -d ~/.solo ]; then
-        echo_info "Solo already initialized, skipping initialization"
-        solo_existed=true
-    else
-        echo_info "Initializing Solo..."
-        npx solo init
-        echo_success "Solo initialized"
-    fi
-    
-    # Return whether setup already existed (both cluster and solo config)
-    if [ "$cluster_existed" = true ] && [ "$solo_existed" = true ]; then
-        return 0  # Already existed
-    else
-        return 1  # Was created new
-    fi
+    echo "$node_count"
 }
 
-# Setup Solo deployment (only if not already configured)
-setup_deployment() {
-    echo_info "Setting up Solo deployment..."
-    
-    # Check if deployment already exists
-    if npx solo deployment config list --dev 2>/dev/null | grep -q "${SOLO_DEPLOYMENT}"; then
-        echo_info "Deployment '${SOLO_DEPLOYMENT}' already exists, skipping deployment setup"
-        return 0
-    fi
-    
-    # Connect to cluster
-    echo_info "Connecting to cluster..."
-    npx solo cluster-ref config connect \
-        --cluster-ref "${SOLO_CLUSTER_NAME}" \
-        --context "kind-${SOLO_CLUSTER_NAME}" \
-        --dev
-    
-    # Create deployment
-    echo_info "Creating deployment: ${SOLO_DEPLOYMENT}..."
-    npx solo deployment config create \
-        --deployment "${SOLO_DEPLOYMENT}" \
-        --namespace "${SOLO_NAMESPACE}" \
-        --dev
-    
-    # Add cluster to deployment
-    echo_info "Attaching cluster to deployment (${NUM_NODES} node(s))..."
-    npx solo deployment cluster attach \
-        --deployment "${SOLO_DEPLOYMENT}" \
-        --cluster-ref "${SOLO_CLUSTER_NAME}" \
-        --num-consensus-nodes "${NUM_NODES}" \
-        --dev
-    
-    # Setup cluster
-    echo_info "Setting up cluster..."
-    npx solo cluster-ref config setup \
-        --cluster-ref "${SOLO_CLUSTER_NAME}" \
-        --dev
-    
-    echo_success "Deployment setup complete"
-}
-
-# Generate and deploy network
+# Deploy network
 deploy_network() {
+    local NUM_NODES=$(get_num_nodes)
+    
     # Generate node ID list (node1 or node1,node2)
     local node_ids=""
     for ((i=1; i<=NUM_NODES; i++)); do
@@ -335,7 +171,53 @@ deploy_network() {
         fi
     done
     
-    # Check if consensus keys already exist
+    # FIRST: Check if deployment configuration exists in Kubernetes
+    # The namespace may exist but be empty after solo:stop
+    # This MUST happen before any other operations
+    if ! kubectl get configmap solo-remote-config -n "${SOLO_NAMESPACE}" &> /dev/null; then
+        echo_warning "Deployment configuration missing, recreating..."
+        
+        # If deployment exists in local config but remote config is missing,
+        # we need to delete it from local config first to avoid Solo trying to read the missing remote config
+        if [ -f ~/.solo/local-config.yaml ] && grep -q "name: ${SOLO_DEPLOYMENT}" ~/.solo/local-config.yaml 2>/dev/null; then
+            echo_info "Removing stale deployment from local config..."
+            npx solo deployment config delete \
+                --deployment "${SOLO_DEPLOYMENT}" \
+                --dev 2>/dev/null || true
+        fi
+        
+        # Reconnect to cluster
+        echo_info "Reconnecting to cluster..."
+        npx solo cluster-ref config connect \
+            --cluster-ref "${SOLO_CLUSTER_NAME}" \
+            --context "kind-${SOLO_CLUSTER_NAME}" \
+            --dev
+        
+        # Recreate deployment config
+        echo_info "Creating deployment: ${SOLO_DEPLOYMENT}..."
+        npx solo deployment config create \
+            --deployment "${SOLO_DEPLOYMENT}" \
+            --namespace "${SOLO_NAMESPACE}" \
+            --dev
+        
+        # Attach cluster to deployment (creates remote config)
+        echo_info "Attaching cluster to deployment (${NUM_NODES} node(s))..."
+        npx solo deployment cluster attach \
+            --deployment "${SOLO_DEPLOYMENT}" \
+            --cluster-ref "${SOLO_CLUSTER_NAME}" \
+            --num-consensus-nodes "${NUM_NODES}" \
+            --dev
+        
+        # Re-setup cluster
+        echo_info "Setting up cluster..."
+        npx solo cluster-ref config setup \
+            --cluster-ref "${SOLO_CLUSTER_NAME}" \
+            --dev
+        
+        echo_success "Deployment configuration recreated"
+    fi
+    
+    # NOW: Check if consensus keys already exist (after namespace is guaranteed to exist)
     echo_info "Checking consensus keys..."
     if kubectl get secret -n "${SOLO_NAMESPACE}" 2>/dev/null | grep -q "node1-.*-key"; then
         echo_info "Consensus keys already exist, skipping key generation"
@@ -393,6 +275,8 @@ deploy_mirror() {
 
 # Setup port forwarding
 setup_port_forwarding() {
+    local NUM_NODES=$(get_num_nodes)
+    
     echo_info "Setting up port forwarding..."
     
     # Kill any existing port-forward processes
@@ -533,7 +417,7 @@ EOF
 # Main execution
 main() {
     echo_info "======================================"
-    echo_info "Solo Setup for hiero-sdk-js"
+    echo_info "Solo Services Start"
     echo_info "======================================"
     echo ""
     echo_info "Configuration:"
@@ -545,37 +429,7 @@ main() {
     echo_info "  - Mirror Node Version: ${MIRROR_NODE_VERSION}"
     echo ""
     
-    check_dependencies
-    
-    # Determine if we're doing a clean start
-    local setup_mode="Fast restart"
-    
-    # Choose cleanup strategy based on --clean-previous flag
-    if [ "${CLEAN_PREVIOUS}" = true ]; then
-        cleanup_previous  # Full cleanup: delete cluster and Solo config
-        setup_mode="Fresh install"
-    else
-        soft_cleanup_previous  # Default: only destroy services, keep cluster
-        # Check if cluster exists to determine message
-        if kind get clusters 2>/dev/null | grep -q "^${SOLO_CLUSTER_NAME}$"; then
-            setup_mode="Fast restart (reusing cluster)"
-        else
-            setup_mode="Initial setup"
-        fi
-    fi
-    
-    echo_info "Setup mode: ${setup_mode}"
-    echo ""
-    
-    # Initialize cluster and Solo (will detect if already exists)
-    initialize_solo
-    CLUSTER_EXISTED=$?
-    
-    # Only setup deployment if it doesn't already exist
-    # This prevents errors when reusing existing cluster/config
-    setup_deployment
-    
-    # Always deploy network and services (soft cleanup destroys these)
+    check_prerequisites
     deploy_network
     deploy_mirror
     setup_port_forwarding
@@ -584,36 +438,17 @@ main() {
     
     echo ""
     echo_success "======================================"
-    echo_success "Solo cluster setup complete!"
+    echo_success "Solo services started!"
     echo_success "======================================"
     echo ""
-    echo_info "Your local Hiero network is now running with:"
-    if [[ -n "${LOCAL_BUILD_PATH}" ]]; then
-        echo_info "  - Local build from: ${LOCAL_BUILD_PATH}"
-    else
-        echo_info "  - Consensus Node Version: ${CONSENSUS_NODE_VERSION}"
-    fi
-    echo_info "  - Mirror Node Version: ${MIRROR_NODE_VERSION}"
-    echo_info "  - 2 consensus nodes"
-    echo_info "  - Mirror node services"
-    echo_info "  - Dedicated ECDSA test account: ${OPERATOR_ID}"
+    echo_info "Your local Hiero network is now running"
+    echo_info "Test account: ${OPERATOR_ID}"
     echo ""
-    echo_info "Environment variables have been written to: ${ENV_FILE}"
-    echo ""
-    echo_info "To run integration tests:"
-    echo_info "  npm run test:integration"
-    echo ""
-    echo_info "To stop services (fast, keeps cluster/images):"
-    echo_info "  task solo:stop"
-    echo ""
-    echo_info "To restart quickly (soft cleanup):"
-    echo_info "  task solo:setup"
-    echo ""
-    echo_info "To fully tear down the cluster:"
-    echo_info "  task solo:teardown"
+    echo_info "To stop services: task solo:stop"
+    echo_info "To restart:       task solo:start"
+    echo_info "To teardown:      task solo:teardown"
     echo ""
 }
 
 # Run main function
 main "$@"
-

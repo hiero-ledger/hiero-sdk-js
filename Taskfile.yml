@@ -28,20 +28,26 @@ tasks:
         deps:
             - build
 
-    "solo:setup":
-        desc: "Setup Solo local network with single node (default)"
+    "solo:init":
+        desc: "Initialize Solo infrastructure (one-time: cluster, config, deployment)"
         cmds:
-            - chmod +x ./scripts/setup-solo.sh
-            - ./scripts/setup-solo.sh {{.CLI_ARGS}}
+            - chmod +x ./scripts/init-solo.sh
+            - ./scripts/init-solo.sh {{.CLI_ARGS}}
 
-    "solo:setup:dual-node":
-        desc: "Setup Solo local network with two nodes (required for dynamic address book tests)"
+    "solo:start":
+        desc: "Start Solo services (network, mirror node, port forwarding)"
         cmds:
-            - chmod +x ./scripts/setup-solo.sh
-            - ./scripts/setup-solo.sh --num-nodes 2 {{.CLI_ARGS}}
+            - chmod +x ./scripts/start-solo.sh
+            - ./scripts/start-solo.sh {{.CLI_ARGS}}
+
+    "solo:stop":
+        desc: "Stop Solo services (keeps cluster and images for fast restart)"
+        cmds:
+            - chmod +x ./scripts/stop-solo.sh
+            - ./scripts/stop-solo.sh
 
     "solo:teardown":
-        desc: "Teardown Solo local network and cleanup resources"
+        desc: "Complete teardown (removes cluster, config, everything)"
         cmds:
             - chmod +x ./scripts/teardown-solo.sh
             - ./scripts/teardown-solo.sh
@@ -53,16 +59,16 @@ tasks:
               echo "Checking Solo cluster status..."
               if kind get clusters 2>/dev/null | grep -q "^solo-cluster$"; then
                 echo "✓ Kind cluster 'solo-cluster' is running"
-                kubectl get pods -n solo-e2e 2>/dev/null || echo "✗ Namespace 'solo-e2e' not found"
+                kubectl get pods -n solo 2>/dev/null || echo "✗ Namespace 'solo' not found"
               else
                 echo "✗ Kind cluster 'solo-cluster' not found"
-                echo "Run 'task solo:setup' to create it"
+                echo "Run 'task solo:init' then 'task solo:start' to create it"
               fi
 
     "solo:logs":
         desc: "View logs from Solo services"
         cmds:
-            - kubectl logs -n solo-e2e -l app=network-node --tail=100 -f
+            - kubectl logs -n solo -l app=network-node --tail=100 -f
 
     "run:examples":
         cmds:

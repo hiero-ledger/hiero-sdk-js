@@ -219,41 +219,52 @@ For contributors and developers who want to run integration tests locally, we pr
    
    **Important:** This installs Solo and all project dependencies. Must be run before setup.
 
-2. **Set up Solo local network:**
+2. **Initialize Solo infrastructure (one-time):**
    ```bash
    # Single node setup (default, requires 12 GB RAM)
-   task solo:setup
+   task solo:init
    
    # OR dual node setup (requires 24 GB RAM, needed for DAB tests)
-   task solo:setup:dual-node
+   task solo:init -- --num-nodes 2
+   ```
+   
+   This will create:
+   - A local Kubernetes cluster with Kind
+   - Solo configuration and deployment
+   - Namespace and required ConfigMaps
+   
+   **This is a ONE-TIME operation.** Takes ~1 minute.
+
+3. **Start Solo services:**
+   ```bash
+   task solo:start
    ```
    
    This will automatically:
-   - Create a local Kubernetes cluster with Kind
    - Deploy a consensus network (default: v0.69.1)
    - Deploy mirror node services (default: v0.145.2)
+   - Set up port forwarding
    - Create a dedicated ECDSA test account
    - Generate a `.env` file with all necessary credentials
+   
+   Takes 8 minutes initially and then about 5 minutes on consecutive runs.
 
    **Optional:** Specify custom versions or use local build:
    ```bash
    # Custom consensus node version
-   task solo:setup -- --consensus-node-version v0.70.0
+   task solo:start -- --consensus-node-version v0.70.0
    
    # Custom mirror node version
-   task solo:setup -- --mirror-node-version v0.146.0
+   task solo:start -- --mirror-node-version v0.146.0
    
    # Both custom versions
-   task solo:setup -- --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
-   
-   # Dual node with custom versions
-   task solo:setup:dual-node -- --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
+   task solo:start -- --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
    
    # Use local build (overrides consensus-node-version)
-   task solo:setup -- --local-build-path ../hiero-consensus-node/hedera-node/data
+   task solo:start -- --local-build-path ../hiero-consensus-node/hedera-node/data
    ```
 
-3. **(Required for dynamic address book tests) Configure hosts:**
+4. **(Required for dynamic address book tests) Configure hosts:**
    
    Before running dynamic address book tests with dual-node setup, add Kubernetes service names to your `/etc/hosts` file:
    
@@ -266,15 +277,37 @@ For contributors and developers who want to run integration tests locally, we pr
    
    **Note:** This is only required for dynamic address book tests with dual-node setup. Skip if you're running single-node or other integration tests.
 
-4. **Run integration tests:**
+5. **Run integration tests:**
    ```bash
    task test:integration
    ```
 
-5. **Teardown when done:**
+6. **Stop services when done:**
    ```bash
+   # Stop services (keeps cluster for fast restart)
+   task solo:stop
+   
+   # OR complete teardown (removes everything)
    task solo:teardown
    ```
+
+### Daily Development Workflow
+
+After initial setup, use this workflow for day-to-day development:
+
+```bash
+# Morning - Start services (~8 minutes)
+task solo:start
+
+# Work on your code and run tests
+task test:integration
+
+# End of day - Stop services (~5 seconds)
+task solo:stop
+
+# Next day - Quick restart (~5 minutes)
+task solo:start
+```
 
 For detailed setup instructions, troubleshooting, and advanced usage, see the [Solo Setup Guide](./manual/SOLO_SETUP.md).
 
@@ -326,8 +359,8 @@ task test:integration:dual-mode
 #### Running Dynamic Address Book Tests
 
 Dynamic address book (DAB) tests require:
-1. **Dual-node setup**: Run `task solo:setup:dual-node` (requires 24 GB RAM)
-2. **`/etc/hosts` configuration**: See step 3 in the setup section above
+1. **Dual-node setup**: Run `task solo:init -- --num-nodes 2` then `task solo:start` (requires 24 GB RAM)
+2. **`/etc/hosts` configuration**: See step 4 in the setup section above
 
 These tests validate that the SDK can correctly handle node address changes and reconnections using Kubernetes service names.
 
@@ -335,7 +368,8 @@ These tests validate that the SDK can correctly handle node address changes and 
 1. Verify Solo is running: `task solo:status`
 2. For dynamic address book test failures, ensure you're using dual-node setup and `/etc/hosts` is configured
 3. Check the troubleshooting section in the [Solo Setup Guide](./manual/SOLO_SETUP.md#troubleshooting)
-4. Try a fresh setup: `task solo:teardown && task solo:setup` (or `task solo:setup:dual-node` for DAB tests)
+4. Try a fresh restart: `task solo:stop && task solo:start`
+5. If issues persist, try complete reset: `task solo:teardown && task solo:init [--num-nodes 2] && task solo:start`
 
 ## Contributing
 
