@@ -28,8 +28,26 @@ describe("PendingAirdropId", function () {
         expect(pendingAirdropId.receiverId).to.eql(receiverId);
     });
 
+    it("should populate PendingAirdropId from constructor with strings", function () {
+        const pendingAirdropId = new PendingAirdropId({
+            nftId: nftId.toString(),
+            senderId: senderId.toString(),
+            receiverId: receiverId.toString(),
+        });
+
+        expect(pendingAirdropId.nftId).to.eql(nftId);
+        expect(pendingAirdropId.senderId).to.eql(senderId);
+        expect(pendingAirdropId.receiverId).to.eql(receiverId);
+    });
+
     it("should set nftId", function () {
         const pendingAirdropId = new PendingAirdropId().setNftId(nftId);
+        expect(pendingAirdropId.nftId).to.eql(nftId);
+        expect(pendingAirdropId.tokenId).to.eql(null);
+    });
+
+    it("should set nftId with string", function () {
+        const pendingAirdropId = new PendingAirdropId().setNftId(nftId.toString());
         expect(pendingAirdropId.nftId).to.eql(nftId);
         expect(pendingAirdropId.tokenId).to.eql(null);
     });
@@ -40,8 +58,19 @@ describe("PendingAirdropId", function () {
         expect(pendingAirdropId.nftId).to.eql(null);
     });
 
+    it("should set tokenId with string", function () {
+        const pendingAirdropId = new PendingAirdropId().setTokenId(tokenId.toString());
+        expect(pendingAirdropId.tokenId).to.eql(tokenId);
+        expect(pendingAirdropId.nftId).to.eql(null);
+    });
+
     it("should set senderId", function () {
         const pendingAirdropId = new PendingAirdropId().setSenderid(senderId);
+        expect(pendingAirdropId.senderId).to.eql(senderId);
+    });
+
+    it("should set senderId with string", function () {
+        const pendingAirdropId = new PendingAirdropId().setSenderid(senderId.toString());
         expect(pendingAirdropId.senderId).to.eql(senderId);
     });
 
@@ -50,6 +79,21 @@ describe("PendingAirdropId", function () {
             receiverId,
         );
         expect(pendingAirdropId.receiverId).to.eql(receiverId);
+    });
+
+    it("should set receiverId with string", function () {
+        const pendingAirdropId = new PendingAirdropId().setReceiverId(
+            receiverId.toString(),
+        );
+        expect(pendingAirdropId.receiverId).to.eql(receiverId);
+    });
+
+    it("should initialize tokenId from constructor string", function () {
+        const pendingAirdropId = new PendingAirdropId({
+            tokenId: tokenId.toString(),
+        });
+        expect(pendingAirdropId.tokenId).to.eql(tokenId);
+        expect(pendingAirdropId.nftId).to.eql(null);
     });
 
     it("should not be able to call fromBytes", async function () {
