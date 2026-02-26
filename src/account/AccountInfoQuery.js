@@ -19,7 +19,8 @@ import Hbar from "../Hbar.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  */
 
 /**
@@ -106,7 +107,7 @@ export default class AccountInfoQuery extends Query {
 
     /**
      * @override
-     * @param {import("../client/Client.js").default<Channel, *>} client
+     * @param {Client} client
      * @returns {Promise<Hbar>}
      */
     async getCost(client) {
@@ -133,19 +134,16 @@ export default class AccountInfoQuery extends Query {
      * @override
      * @internal
      * @param {HieroProto.proto.IResponse} response
-     * @param {AccountId} nodeAccountId
-     * @param {HieroProto.proto.IQuery} request
      * @returns {Promise<AccountInfo>}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _mapResponse(response, nodeAccountId, request) {
+    _mapResponse(response) {
         const info = /** @type {HieroProto.proto.ICryptoGetInfoResponse} */ (
             response.cryptoGetInfo
         );
 
         return Promise.resolve(
             AccountInfo._fromProtobuf(
-                /** @type {HieroProto.proto.CryptoGetInfoResponse.IAccountInfo} */ (
+                /** @type {HieroProto.proto.CryptoGetInfoResponse.IAccountInfo} */(
                     info.accountInfo
                 ),
             ),
@@ -176,12 +174,14 @@ export default class AccountInfoQuery extends Query {
     _getLogId() {
         const timestamp =
             this._paymentTransactionId != null &&
-            this._paymentTransactionId.validStart != null
+                this._paymentTransactionId.validStart != null
                 ? this._paymentTransactionId.validStart
                 : this._timestamp;
         return `AccountInfoQuery:${timestamp.toString()}`;
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/unbound-method
-QUERY_REGISTRY.set("cryptoGetInfo", AccountInfoQuery._fromProtobuf);
+QUERY_REGISTRY.set(
+    "cryptoGetInfo",
+    AccountInfoQuery._fromProtobuf.bind(null),
+);
