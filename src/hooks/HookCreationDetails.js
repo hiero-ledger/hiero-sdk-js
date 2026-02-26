@@ -1,5 +1,13 @@
 import Long from "long";
-import HookExtensionPoint from "./HookExtensionPoint.js";
+
+/**
+ * @typedef {import("./HookExtensionPoint.js").default} HookExtensionPoint
+ * @typedef {import("./EvmHook.js").default} EvmHook
+ * @typedef {import("../Key.js").default} Key
+ * @namespace proto
+ * @typedef {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.IHookCreationDetails} com.hedera.hapi.node.hooks.IHookCreationDetails
+ * @typedef {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.HookExtensionPoint} com.hedera.hapi.node.hooks.HookExtensionPoint
+ */
 
 /**
  * The details of a hook's creation.
@@ -10,8 +18,8 @@ class HookCreationDetails {
      * @param {object} props
      * @param {HookExtensionPoint} [props.extensionPoint]
      * @param {Long | number} [props.hookId]
-     * @param {import("./EvmHook.js").default} [props.evmHook]
-     * @param {import("../Key.js").default} [props.adminKey]
+     * @param {EvmHook} [props.evmHook]
+     * @param {Key} [props.adminKey]
      */
     constructor(props = {}) {
         /**
@@ -28,13 +36,13 @@ class HookCreationDetails {
 
         /**
          * @private
-         * @type {import("./EvmHook.js").default | null}
+         * @type {EvmHook | null}
          */
         this._evmHook = null;
 
         /**
          * @private
-         * @type {import("../Key.js").default | null}
+         * @type {Key | null}
          */
         this._adminKey = null;
 
@@ -78,7 +86,7 @@ class HookCreationDetails {
 
     /**
      *
-     * @param {import("./EvmHook.js").default} evmHook
+     * @param {EvmHook} evmHook
      * @returns {this}
      */
     setEvmHook(evmHook) {
@@ -88,7 +96,7 @@ class HookCreationDetails {
 
     /**
      *
-     * @param {import("../Key.js").default} adminKey
+     * @param {Key} adminKey
      * @returns {this}
      */
     setAdminKey(adminKey) {
@@ -114,7 +122,7 @@ class HookCreationDetails {
 
     /**
      *
-     * @returns {import("./EvmHook.js").default | null}
+     * @returns {EvmHook | null}
      */
     get evmHook() {
         return this._evmHook;
@@ -122,7 +130,7 @@ class HookCreationDetails {
 
     /**
      *
-     * @returns {import("../Key.js").default | null}
+     * @returns {Key | null}
      */
     get adminKey() {
         return this._adminKey;
@@ -130,7 +138,7 @@ class HookCreationDetails {
 
     /**
      *
-     * @returns {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.IHookCreationDetails}
+     * @returns {com.hedera.hapi.node.hooks.IHookCreationDetails}
      */
     _toProtobuf() {
         if (this._extensionPoint == null) {
@@ -141,7 +149,7 @@ class HookCreationDetails {
 
         return {
             extensionPoint:
-                /** @type {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.HookExtensionPoint} */ (
+                /** @type {com.hedera.hapi.node.hooks.HookExtensionPoint} */ (
                     this._extensionPoint
                 ),
             hookId: this._hookId,
