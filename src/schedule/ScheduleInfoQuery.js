@@ -19,7 +19,7 @@ import Hbar from "../Hbar.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../client/Client.js").default<any, any>} Client
  * @typedef {import("../account/AccountId.js").default} AccountId
  */
 
