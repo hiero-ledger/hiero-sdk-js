@@ -56,6 +56,24 @@ const DEFAULT_TRANSACTION_VALID_DURATION = 120;
 // This value can be overriden using `setChunkSize` when preparing to submit a messsage via `TopicMessageSubmitTransaction`.
 export const CHUNK_SIZE = 1024;
 
+/** Transaction types that support high-volume throttles; used to emit a warning when setHighVolume(true) is used. */
+const HIGH_VOLUME_CAPABLE_TRANSACTION_NAMES = new Set([
+    "AbstractTokenTransferTransaction",
+    "TransferTransaction",
+    "TokenAirdropTransaction",
+    "AccountCreateTransaction",
+    "AccountAllowanceApproveTransaction",
+    "TokenMintTransaction",
+    "FileAppendTransaction",
+    "AirdropPendingTransaction",
+    "TokenCreateTransaction",
+    "ContractCreateTransaction",
+    "FileCreateTransaction",
+    "ScheduleCreateTransaction",
+    "TokenAssociateTransaction",
+    "TopicCreateTransaction",
+]);
+
 /**
  * @type {Map<NonNullable<HieroProto.proto.TransactionBody["data"]>, (transactions: HieroProto.proto.ITransaction[], signedTransactions: HieroProto.proto.ISignedTransaction[], transactionIds: TransactionId[], nodeIds: AccountId[], bodies: HieroProto.proto.TransactionBody[]) => Transaction>}
  */
@@ -209,6 +227,17 @@ export default class Transaction extends Executable {
          * @type {boolean}
          */
         this._isThrottled = false;
+
+        /**
+         * Whether to use high-volume throttles for this transaction.
+         * When true, enables high-volume throttles and pricing for entity creation.
+         * Only affects supported transaction types; otherwise, it is ignored.
+         * Undefined for transaction types that do not support high-volume.
+         *
+         * @private
+         * @type {boolean | undefined}
+         */
+        this._highVolume = undefined;
     }
 
     /**
@@ -532,6 +561,7 @@ export default class Transaction extends Executable {
             body.batchKey != null ? Key._fromProtobufKey(body?.batchKey) : null;
 
         transaction._transactionMemo = body.memo != null ? body.memo : "";
+        transaction._highVolume = body.highVolume ?? false;
 
         // Loop over a single row of `signedTransactions` and add all the public
         // keys to the `signerPublicKeys` set, and `publicKeys` list with
@@ -699,6 +729,37 @@ export default class Transaction extends Executable {
         this._transactionMemo = transactionMemo;
 
         return this;
+    }
+
+    /**
+     * Set whether to use high-volume throttles for this transaction.
+     * When true, enables high-volume throttles and pricing for entity creation.
+     * Only affects supported transaction types; otherwise, it is ignored.
+     *
+     * @param {boolean} highVolume
+     * @returns {this}
+     */
+    setHighVolume(highVolume) {
+        this._requireNotFrozen();
+        if (
+            highVolume &&
+            !HIGH_VOLUME_CAPABLE_TRANSACTION_NAMES.has(this.constructor.name)
+        ) {
+            console.warn(
+                `[${this.constructor.name}] High-volume throttles are not supported for this transaction type. The flag will be ignored by the network. Supported types: TopicCreate, ContractCreate, ApproveAllowance, AccountCreate, Transfer, FileCreate, FileAppend, ScheduleCreate, TokenAirdrop, TokenAssociate, TokenCreate, TokenClaimAirdrop, TokenMint.`,
+            );
+        }
+        this._highVolume = highVolume;
+        return this;
+    }
+
+    /**
+     * Get whether high-volume throttles are enabled for this transaction.
+     *
+     * @returns {boolean}
+     */
+    get highVolume() {
+        return this._highVolume ?? false;
     }
 
     /**
@@ -2104,7 +2165,7 @@ export default class Transaction extends Executable {
      * @returns {HieroProto.proto.ITransactionBody}
      */
     _makeTransactionBody(nodeId) {
-        return {
+        const body = {
             [this._getTransactionDataCase()]: this._makeTransactionData(),
             transactionFee:
                 this._maxTransactionFee != null
@@ -2126,7 +2187,9 @@ export default class Transaction extends Executable {
                       )
                     : null,
             batchKey: this.batchKey?._toProtobufKey(),
+            highVolume: this.highVolume,
         };
+        return body;
     }
 
     /**
