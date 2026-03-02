@@ -28,42 +28,38 @@ tasks:
         deps:
             - build
 
-    "solo:init":
-        desc: "Initialize Solo infrastructure (one-time: cluster, config, deployment)"
+    "solo:setup":
+        desc: "Set up and start Solo services (cluster, network, mirror node, account, port forwarding)"
         cmds:
-            - chmod +x ./scripts/init-solo.sh
-            - ./scripts/init-solo.sh {{.CLI_ARGS}}
+            - node ./scripts/solo-setup.js {{.CLI_ARGS}}
 
-    "solo:start":
-        desc: "Start Solo services (network, mirror node, port forwarding)"
+    "solo:resume":
+        desc: "Resume Solo services (start nodes, add mirror node, re-enable port forwarding)"
         cmds:
-            - chmod +x ./scripts/start-solo.sh
-            - ./scripts/start-solo.sh {{.CLI_ARGS}}
+            - node ./scripts/solo-resume.js {{.CLI_ARGS}}
 
-    "solo:stop":
-        desc: "Stop Solo services (keeps cluster and images for fast restart)"
+    "solo:pause":
+        desc: "Pause Solo services (destroy mirror node, stop consensus nodes, remove port forwarding)"
         cmds:
-            - chmod +x ./scripts/stop-solo.sh
-            - ./scripts/stop-solo.sh
+            - node ./scripts/solo-pause.js {{.CLI_ARGS}}
 
     "solo:teardown":
-        desc: "Complete teardown (removes cluster, config, everything)"
+        desc: "Complete teardown (removes cluster and Solo config)"
         cmds:
-            - chmod +x ./scripts/teardown-solo.sh
-            - ./scripts/teardown-solo.sh
+            - node ./scripts/solo-teardown.js {{.CLI_ARGS}}
 
     "solo:status":
         desc: "Check Solo cluster status"
         cmds:
             - |
-              echo "Checking Solo cluster status..."
-              if kind get clusters 2>/dev/null | grep -q "^solo-cluster$"; then
-                echo "✓ Kind cluster 'solo-cluster' is running"
-                kubectl get pods -n solo 2>/dev/null || echo "✗ Namespace 'solo' not found"
-              else
-                echo "✗ Kind cluster 'solo-cluster' not found"
-                echo "Run 'task solo:init' then 'task solo:start' to create it"
-              fi
+                echo "Checking Solo cluster status..."
+                if kind get clusters 2>/dev/null | grep -q "^solo-cluster$"; then
+                  echo "✓ Kind cluster 'solo-cluster' is running"
+                  kubectl get pods -n solo 2>/dev/null || echo "✗ Namespace 'solo' not found"
+                else
+                  echo "✗ Kind cluster 'solo-cluster' not found"
+                  echo "Run 'task solo:setup' to create and start it"
+                fi
 
     "solo:logs":
         desc: "View logs from Solo services"
@@ -189,8 +185,8 @@ tasks:
 
     "test:integration":
         deps:
-            - "test:integration:node"
             - "test:integration:browser"
+            - "test:integration:node"
 
     "test:integration:node":
         cmds:
@@ -201,6 +197,7 @@ tasks:
             - npx vitest --config=test/vitest-browser-integration.config.ts
 
     "test:integration:codecov":
+        parallel: true
         cmds:
             - npx vitest --coverage --config=test/vitest-node-integration.config.ts
             - npx vitest --coverage --config=test/vitest-browser-integration.config.ts
