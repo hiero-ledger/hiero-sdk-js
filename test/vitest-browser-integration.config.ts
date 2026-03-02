@@ -3,6 +3,7 @@ import { playwright } from "@vitest/browser-playwright";
 import dotenv from "dotenv";
 import path from "path";
 import fs from "fs";
+import CustomSequencer from "./custom-sequencer.js";
 
 const pkg = JSON.parse(
     fs.readFileSync(path.resolve(__dirname, "../package.json"), "utf-8"),
@@ -13,6 +14,9 @@ dotenv.config({ path: path.resolve(__dirname, "../.env") });
 /** @type {import("vitest").UserConfig} */
 export default defineConfig({
     test: {
+        sequence: {
+            sequencer: CustomSequencer,
+        },
         environment: "jsdom",
         watch: false,
         globals: true,
@@ -36,20 +40,14 @@ export default defineConfig({
             "test/integration/ClientIntegrationTest.js",
             "test/integration/dual-mode/**/*.js",
         ],
+        isolate: false,
         hookTimeout: 120000,
         testTimeout: 120000,
-        pool: "threads",
-        poolOptions: {
-            threads: {
-                maxThreads: 8,
-                minThreads: 8,
-            },
-        },
         coverage: {
             include: ["src/**/*.js"],
             provider: "istanbul",
             reporter: ["text-summary", "lcov"],
-            reportsDirectory: "./coverage",
+            reportsDirectory: "./coverage/browser-integration",
         },
     },
     define: {

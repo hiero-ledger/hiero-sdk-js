@@ -21,19 +21,11 @@ export default defineConfig({
         ],
         testTimeout: 120000,
         retry: 1,
-        pool: "threads",
-        poolOptions: {
-            threads: {
-                maxThreads: 8,
-                minThreads: 8,
-            },
-        },
-        fileParallelism: false,
         coverage: {
             include: ["src/**/*.js"],
             provider: "istanbul",
             reporter: ["text-summary", "lcov"],
-            reportsDirectory: "./coverage",
+            reportsDirectory: "./coverage/browser",
         },
     },
     resolve: {

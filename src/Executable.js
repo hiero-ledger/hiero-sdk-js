@@ -503,7 +503,9 @@ export default class Executable {
     async execute(client, requestTimeout) {
         // we check if its local node then backoff mechanism should be disabled
         // and we increase the retry attempts
-        const isLocalNode = client.network["127.0.0.1:50211"] != null;
+        const isLocalNode =
+            client.network["127.0.0.1:50211"] != null ||
+            client.network["localhost:8080"] != null;
 
         if (this.isBatchedAndNotBatchTransaction()) {
             throw new Error(

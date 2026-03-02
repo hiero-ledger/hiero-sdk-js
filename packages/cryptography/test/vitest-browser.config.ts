@@ -5,13 +5,7 @@ export default defineConfig({
     test: {
         watch: false,
         globals: true,
-        pool: "threads",
-        poolOptions: {
-            threads: {
-                maxThreads: 8,
-                minThreads: 8,
-            },
-        },
+        isolate: false,
         browser: {
             headless: true,
             provider: playwright(),
@@ -24,7 +18,7 @@ export default defineConfig({
             provider: "istanbul",
             include: ["src/**/*.js"],
             reporter: ["text-summary", "lcov"],
-            reportsDirectory: "./coverage",
+            reportsDirectory: "./coverage/browser",
         },
     },
     resolve: {

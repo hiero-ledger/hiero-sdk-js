@@ -6,13 +6,7 @@ export default defineConfig({
         watch: false,
         globals: true,
         environment: "node",
-        pool: "threads",
-        poolOptions: {
-            threads: {
-                maxThreads: 8,
-                minThreads: 8,
-            },
-        },
+        isolate: false,
         include: ["test/unit/**/*.js"],
         exclude: [
             "test/unit/keystore.js",
@@ -23,7 +17,7 @@ export default defineConfig({
             provider: "v8",
             include: ["src/**/*.js"],
             reporter: ["text-summary", "lcov"],
-            reportsDirectory: "./coverage",
+            reportsDirectory: "./coverage/node",
         },
     },
 });

@@ -13,6 +13,7 @@ export default defineConfig({
         watch: false,
         globals: true,
         environment: "node",
+        fileParallelism: false,
         include: ["test/integration/dual-mode/**/*.js"],
         exclude: [
             "test/integration/client/*",
@@ -26,9 +27,9 @@ export default defineConfig({
         testTimeout: 120000,
         coverage: {
             include: ["src/**/*.js"],
-            provider: "v8",
+            provider: "istanbul",
             reporter: ["text-summary", "lcov"],
-            reportsDirectory: "./coverage",
+            reportsDirectory: "./coverage/node-integration-dual-mode",
         },
     },
     define: {
