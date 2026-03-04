@@ -204,8 +204,8 @@ tasks:
 
     "test:integration:codecov":
         deps:
-            - npx vitest --coverage --config=test/vitest-node-integration.config.ts
-            - npx vitest --coverage --config=test/vitest-browser-integration.config.ts
+            - test:integration:node:codecov
+            - test:integration:browser:codecov
 
     "test:integration:dual-mode":
         cmds:
