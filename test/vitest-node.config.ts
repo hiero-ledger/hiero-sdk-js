@@ -13,7 +13,7 @@ export default defineConfig({
         isolate: false,
         coverage: {
             include: ["src/**/*.js"],
-            provider: "istanbul",
+            provider: "v8",
             reporter: ["text-summary", "lcov"],
             reportsDirectory: "./coverage/node",
         },

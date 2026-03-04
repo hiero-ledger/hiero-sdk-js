@@ -7,6 +7,7 @@ export default defineConfig({
         globals: true,
         pool: "threads",
         isolate: false,
+        environment: "jsdom",
         browser: {
             screenshotFailures: false,
             headless: true,
@@ -24,7 +25,7 @@ export default defineConfig({
         retry: 1,
         coverage: {
             include: ["src/**/*.js"],
-            provider: "istanbul",
+            provider: "v8",
             reporter: ["text-summary", "lcov"],
             reportsDirectory: "./coverage/browser",
         },
