@@ -5,13 +5,14 @@ export default defineConfig({
     test: {
         watch: false,
         globals: true,
+        pool: "threads",
+        isolate: false,
         browser: {
             screenshotFailures: false,
             headless: true,
             provider: playwright(),
             enabled: true,
             instances: [{ browser: "chromium" }],
-            isolate: false,
         },
         include: ["test/unit/**/*.js"],
         exclude: [

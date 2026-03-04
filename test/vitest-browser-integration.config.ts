@@ -17,6 +17,9 @@ export default defineConfig({
         sequence: {
             sequencer: CustomSequencer,
         },
+        pool: "threads",
+        isolate: false,
+        fileParallelism: false,
         environment: "jsdom",
         watch: false,
         globals: true,
@@ -40,7 +43,6 @@ export default defineConfig({
             "test/integration/ClientIntegrationTest.js",
             "test/integration/dual-mode/**/*.js",
         ],
-        isolate: false,
         hookTimeout: 120000,
         testTimeout: 120000,
         coverage: {

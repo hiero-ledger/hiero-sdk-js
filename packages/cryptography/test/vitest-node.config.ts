@@ -6,6 +6,7 @@ export default defineConfig({
         watch: false,
         globals: true,
         environment: "node",
+        pool: "threads",
         isolate: false,
         include: ["test/unit/**/*.js"],
         exclude: [

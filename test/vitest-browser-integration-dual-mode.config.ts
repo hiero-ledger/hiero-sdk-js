@@ -17,6 +17,8 @@ export default defineConfig({
         watch: false,
         globals: true,
         fileParallelism: false,
+        pool: "threads",
+        isolate: false,
         browser: {
             screenshotFailures: false,
             headless: true,

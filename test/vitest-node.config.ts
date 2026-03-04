@@ -9,6 +9,7 @@ export default defineConfig({
         include: ["test/unit/**/*.js"],
         exclude: ["test/unit/Mocker.js", "test/unit/browser/*"],
         testTimeout: 120000,
+        pool: "threads",
         isolate: false,
         coverage: {
             include: ["src/**/*.js"],
