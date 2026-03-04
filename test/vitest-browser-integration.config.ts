@@ -19,7 +19,6 @@ export default defineConfig({
         },
         pool: "threads",
         isolate: false,
-        fileParallelism: false,
         environment: "jsdom",
         watch: false,
         globals: true,
