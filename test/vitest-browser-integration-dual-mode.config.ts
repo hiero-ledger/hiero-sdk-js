@@ -16,7 +16,9 @@ export default defineConfig({
         environment: "jsdom",
         watch: false,
         globals: true,
-
+        fileParallelism: false,
+        pool: "threads",
+        isolate: false,
         browser: {
             screenshotFailures: false,
             headless: true,
@@ -37,9 +39,9 @@ export default defineConfig({
         testTimeout: 120000,
         coverage: {
             include: ["src/**/*.js"],
-            provider: "istanbul",
+            provider: "v8",
             reporter: ["text-summary", "lcov"],
-            reportsDirectory: "./coverage",
+            reportsDirectory: "./coverage/browser-integration-dual-mode",
         },
     },
     define: {
