@@ -348,11 +348,10 @@ These tests validate that the SDK can correctly handle node address changes and 
 
 **Note:** All integration tests should pass reliably with the Solo setup. If you encounter failures:
 
-1. Verify Solo is running: `task solo:status`
+1. Verify Solo services are running: `task solo:status`
 2. For dynamic address book test failures, ensure you're using dual-node setup and `/etc/hosts` is configured
 3. Check the troubleshooting section in the [Solo Setup Guide](./manual/SOLO_SETUP.md#troubleshooting)
-4. Try a fresh restart: `task solo:pause && task solo:resume`
-5. If issues persist, try complete reset: `task solo:teardown && task solo:setup [-- --num-nodes 2]`
+4. Try a complete reset: `task solo:teardown && task solo:setup`
 
 ## Contributing
 
