@@ -6,7 +6,6 @@ import TokenBalanceMap from "../../src/account/TokenBalanceMap.js";
 import TokenDecimalMap from "../../src/account/TokenDecimalMap.js";
 
 describe("AccountBalance normalization", () => {
-
     it("handles null tokens and tokenDecimals safely", () => {
         const balance = new AccountBalance({
             hbars: Hbar.fromTinybars(1000),
@@ -113,5 +112,4 @@ describe("AccountBalance normalization", () => {
 
         expect(decoded).toBeInstanceOf(AccountBalance);
     });
-
 });
