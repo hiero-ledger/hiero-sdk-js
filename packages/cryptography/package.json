@@ -62,7 +62,7 @@
         "@noble/curves": "1.8.1",
         "asn1js": "3.0.6",
         "bignumber.js": "9.1.1",
-        "bn.js": "5.2.1",
+        "bn.js": "5.2.3",
         "buffer": "6.0.3",
         "crypto-js": "4.2.0",
         "forge-light": "1.1.4",
