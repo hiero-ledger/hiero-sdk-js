@@ -7,6 +7,8 @@ import {
     Hbar,
     HbarUnit,
     PrivateKey,
+    TopicId,
+    TopicMessageSubmitTransaction,
     Timestamp,
     Transaction,
     TransactionId,
@@ -238,6 +240,234 @@ describe("Transaction", function () {
                 "transaction successfully built from invalid bytes",
             );
         }
+    });
+
+    it("fromBytes succeeds for a valid multi-node transaction list", function () {
+        const nodeAccountId1 = new AccountId(3);
+        const nodeAccountId2 = new AccountId(4);
+        const sender = new AccountId(10);
+        const receiver = new AccountId(11);
+
+        const transaction = new TransferTransaction()
+            .setNodeAccountIds([nodeAccountId1, nodeAccountId2])
+            .setTransactionId(
+                TransactionId.withValidStart(
+                    sender,
+                    new Timestamp(1700002000, 123),
+                ),
+            )
+            .addHbarTransfer(sender, new Hbar(-1))
+            .addHbarTransfer(receiver, new Hbar(1))
+            .freeze();
+
+        const bytes = transaction.toBytes();
+
+        expect(() => Transaction.fromBytes(bytes)).to.not.throw();
+
+        const decoded = Transaction.fromBytes(bytes);
+        expect(decoded.nodeAccountIds.length).to.be.equal(2);
+        expect(decoded.nodeAccountIds[0].toString()).to.be.equal(
+            nodeAccountId1.toString(),
+        );
+        expect(decoded.nodeAccountIds[1].toString()).to.be.equal(
+            nodeAccountId2.toString(),
+        );
+    });
+
+    it("fromBytes fails for non-chunked TransactionList with multiple transaction IDs and one node", function () {
+        const nodeAccountId = new AccountId(3);
+        const payerAccountId = new AccountId(201);
+        const receiverA = new AccountId(202);
+        const receiverB = new AccountId(9999);
+
+        const transactionA = new TransferTransaction()
+            .setNodeAccountIds([nodeAccountId])
+            .setTransactionId(
+                TransactionId.fromString("0.0.201@1700000010.000000001"),
+            )
+            .addHbarTransfer(payerAccountId, new Hbar(-1))
+            .addHbarTransfer(receiverA, new Hbar(1))
+            .freeze();
+
+        const transactionB = new TransferTransaction()
+            .setNodeAccountIds([nodeAccountId])
+            .setTransactionId(
+                TransactionId.fromString("0.0.201@1700000011.000000001"),
+            )
+            .addHbarTransfer(payerAccountId, new Hbar(-2))
+            .addHbarTransfer(receiverB, new Hbar(2))
+            .freeze();
+
+        const listA = HieroProto.proto.TransactionList.decode(
+            transactionA.toBytes(),
+        ).transactionList;
+        const listB = HieroProto.proto.TransactionList.decode(
+            transactionB.toBytes(),
+        ).transactionList;
+
+        const mixedBytes = HieroProto.proto.TransactionList.encode({
+            transactionList: [listA[0], listB[0]],
+        }).finish();
+
+        expect(() => Transaction.fromBytes(mixedBytes)).to.throw(
+            "failed to validate transaction bodies",
+        );
+    });
+
+    it("fromBytes fails for non-chunked TransactionList with duplicate txID-node pair and mismatched body", function () {
+        const nodeAccountId = new AccountId(3);
+        const payerAccountId = new AccountId(201);
+        const receiverA = new AccountId(202);
+        const receiverB = new AccountId(9999);
+        const sharedTxId = TransactionId.fromString(
+            "0.0.201@1700000010.000000001",
+        );
+
+        const transactionA = new TransferTransaction()
+            .setNodeAccountIds([nodeAccountId])
+            .setTransactionId(sharedTxId)
+            .addHbarTransfer(payerAccountId, new Hbar(-1))
+            .addHbarTransfer(receiverA, new Hbar(1))
+            .freeze();
+
+        const transactionB = new TransferTransaction()
+            .setNodeAccountIds([nodeAccountId])
+            .setTransactionId(sharedTxId)
+            .addHbarTransfer(payerAccountId, new Hbar(-2))
+            .addHbarTransfer(receiverB, new Hbar(2))
+            .freeze();
+
+        const listA = HieroProto.proto.TransactionList.decode(
+            transactionA.toBytes(),
+        ).transactionList;
+        const listB = HieroProto.proto.TransactionList.decode(
+            transactionB.toBytes(),
+        ).transactionList;
+
+        const mixedBytes = HieroProto.proto.TransactionList.encode({
+            transactionList: [listA[0], listB[0]],
+        }).finish();
+
+        expect(() => Transaction.fromBytes(mixedBytes)).to.throw(
+            "failed to validate transaction bodies",
+        );
+    });
+
+    it("sign fails when signed transaction list is inconsistent", async function () {
+        const nodeAccountId = new AccountId(3);
+        const payerAccountId = new AccountId(201);
+        const receiverA = new AccountId(202);
+        const receiverB = new AccountId(9999);
+        const sharedTxId = TransactionId.fromString(
+            "0.0.201@1700000010.000000001",
+        );
+
+        const transactionA = new TransferTransaction()
+            .setNodeAccountIds([nodeAccountId])
+            .setTransactionId(sharedTxId)
+            .addHbarTransfer(payerAccountId, new Hbar(-1))
+            .addHbarTransfer(receiverA, new Hbar(1))
+            .freeze();
+
+        const transactionB = new TransferTransaction()
+            .setNodeAccountIds([nodeAccountId])
+            .setTransactionId(sharedTxId)
+            .addHbarTransfer(payerAccountId, new Hbar(-2))
+            .addHbarTransfer(receiverB, new Hbar(2))
+            .freeze();
+
+        const parsed = Transaction.fromBytes(transactionA.toBytes());
+        const parsedList = HieroProto.proto.TransactionList.decode(
+            parsed.toBytes(),
+        ).transactionList;
+        const hiddenList = HieroProto.proto.TransactionList.decode(
+            transactionB.toBytes(),
+        ).transactionList;
+
+        parsed._signedTransactions.setList([
+            HieroProto.proto.SignedTransaction.decode(
+                parsedList[0].signedTransactionBytes,
+            ),
+            HieroProto.proto.SignedTransaction.decode(
+                hiddenList[0].signedTransactionBytes,
+            ),
+        ]);
+
+        let err = false;
+
+        try {
+            await parsed.sign(PrivateKey.generateED25519());
+        } catch (error) {
+            err =
+                error.toString() ===
+                "Error: failed to validate transaction bodies";
+        }
+
+        if (!err) {
+            throw new Error(
+                "transaction was signed from invalid signed transaction list",
+            );
+        }
+    });
+
+    it("fromBytes succeeds for chunked file append with one node and multiple transaction IDs", function () {
+        const nodeAccountId = new AccountId(3);
+        const contents = Array(30).fill("chunk").join("");
+
+        const transaction = new FileAppendTransaction()
+            .setFileId(new FileId(1, 2, 3))
+            .setChunkSize(16)
+            .setContents(contents)
+            .setNodeAccountIds([nodeAccountId])
+            .setTransactionId(
+                TransactionId.withValidStart(
+                    new AccountId(9),
+                    new Timestamp(10, 11),
+                ),
+            )
+            .freeze();
+
+        const bytes = transaction.toBytes();
+        const rawList = HieroProto.proto.TransactionList.decode(
+            bytes,
+        ).transactionList;
+        expect(rawList.length).to.be.greaterThan(1);
+
+        expect(() => Transaction.fromBytes(bytes)).to.not.throw();
+        const decoded = Transaction.fromBytes(bytes);
+        expect(decoded).to.be.instanceOf(FileAppendTransaction);
+        expect(decoded.nodeAccountIds.length).to.be.equal(1);
+        expect(decoded._transactionIds.length).to.be.greaterThan(1);
+    });
+
+    it("fromBytes succeeds for chunked submit message with one node and multiple transaction IDs", function () {
+        const nodeAccountId = new AccountId(3);
+        const message = Array(50).fill("message").join("");
+
+        const transaction = new TopicMessageSubmitTransaction()
+            .setTopicId(new TopicId(1, 2, 3))
+            .setChunkSize(32)
+            .setMessage(message)
+            .setNodeAccountIds([nodeAccountId])
+            .setTransactionId(
+                TransactionId.withValidStart(
+                    new AccountId(9),
+                    new Timestamp(10, 11),
+                ),
+            )
+            .freeze();
+
+        const bytes = transaction.toBytes();
+        const rawList = HieroProto.proto.TransactionList.decode(
+            bytes,
+        ).transactionList;
+        expect(rawList.length).to.be.greaterThan(1);
+
+        expect(() => Transaction.fromBytes(bytes)).to.not.throw();
+        const decoded = Transaction.fromBytes(bytes);
+        expect(decoded).to.be.instanceOf(TopicMessageSubmitTransaction);
+        expect(decoded.nodeAccountIds.length).to.be.equal(1);
+        expect(decoded._transactionIds.length).to.be.greaterThan(1);
     });
 
     describe("balance must be the same before and after serialization/deserialization", function () {
