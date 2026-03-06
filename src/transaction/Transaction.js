@@ -57,6 +57,17 @@ const DEFAULT_TRANSACTION_VALID_DURATION = 120;
 export const CHUNK_SIZE = 1024;
 
 /**
+ * @param {NonNullable<HieroProto.proto.TransactionBody["data"]>} transactionDataCase
+ * @returns {boolean}
+ */
+function isMultiTransactionIdType(transactionDataCase) {
+    return (
+        transactionDataCase === "fileAppend" ||
+        transactionDataCase === "consensusSubmitMessage"
+    );
+}
+
+/**
  * @type {Map<NonNullable<HieroProto.proto.TransactionBody["data"]>, (transactions: HieroProto.proto.ITransaction[], signedTransactions: HieroProto.proto.ISignedTransaction[], transactionIds: TransactionId[], nodeIds: AccountId[], bodies: HieroProto.proto.TransactionBody[]) => Transaction>}
  */
 export const TRANSACTION_REGISTRY = new Map();
@@ -470,19 +481,101 @@ export default class Transaction extends Executable {
         bodies,
     ) {
         const body = bodies[0];
+        const transactionDataCase = transaction._getTransactionDataCase();
+        const ignoredFields = new Set();
+        ignoredFields.add("nodeAccountID");
 
-        // "row" of the 2-D `bodies` array has all the same contents except for `nodeAccountID`
-        for (let i = 0; i < transactionIds.length; i++) {
-            for (let j = 0; j < nodeIds.length - 1; j++) {
+        // Validate list shape and consistency by (transactionID, nodeAccountID)
+        // pairs when IDs are present in all bodies. This prevents hidden intents
+        // from being embedded in duplicate entries while still allowing
+        // legitimate chunked transaction lists.
+        //
+        // Some direct `_fromProtobuf()` unit tests use bodies without IDs; for
+        // those cases we keep the previous row-based validation fallback.
+        if (transactionIds.length > 0) {
+            const hasAllBodyIdentifiers = bodies.every(
+                (parsedBody) =>
+                    parsedBody.transactionID != null &&
+                    parsedBody.nodeAccountID != null,
+            );
+
+            if (hasAllBodyIdentifiers) {
+                /** @type {Map<string, HieroProto.proto.ITransactionBody>} */
+                const referenceBodyByTransactionId = new Map();
+                /** @type {Map<string, Set<string>>} */
+                const nodeIdSetByTransactionId = new Map();
+
+                for (const parsedBody of bodies) {
+                    const transactionId = TransactionId._fromProtobuf(
+                        /** @type {HieroProto.proto.ITransactionID} */ (
+                            parsedBody.transactionID
+                        ),
+                    ).toString();
+                    const nodeId = AccountId._fromProtobuf(
+                        /** @type {HieroProto.proto.IAccountID} */ (
+                            parsedBody.nodeAccountID
+                        ),
+                    ).toString();
+
+                    let nodeIdSet = nodeIdSetByTransactionId.get(transactionId);
+                    if (nodeIdSet == null) {
+                        nodeIdSet = new Set();
+                        nodeIdSetByTransactionId.set(transactionId, nodeIdSet);
+                    }
+
+                    // Duplicate (transactionID, nodeAccountID) entries are invalid.
+                    if (nodeIdSet.has(nodeId)) {
+                        throw new Error("failed to validate transaction bodies");
+                    }
+
+                    nodeIdSet.add(nodeId);
+
+                    const referenceBody =
+                        referenceBodyByTransactionId.get(transactionId);
+                    if (referenceBody == null) {
+                        referenceBodyByTransactionId.set(
+                            transactionId,
+                            parsedBody,
+                        );
+                    } else if (
+                        !util.compare(referenceBody, parsedBody, ignoredFields)
+                    ) {
+                        throw new Error("failed to validate transaction bodies");
+                    }
+                }
+
+                // Non-chunked transactions must represent exactly one logical
+                // transaction ID.
                 if (
-                    !util.compare(
-                        bodies[i * nodeIds.length + j],
-                        bodies[i * nodeIds.length + j + 1],
-                        // eslint-disable-next-line ie11/no-collection-args
-                        new Set(["nodeAccountID"]),
-                    )
+                    !isMultiTransactionIdType(transactionDataCase) &&
+                    referenceBodyByTransactionId.size !== 1
                 ) {
                     throw new Error("failed to validate transaction bodies");
+                }
+
+                // Every logical transaction must include one entry per parsed node.
+                for (const nodeIdSet of nodeIdSetByTransactionId.values()) {
+                    if (nodeIdSet.size !== nodeIds.length) {
+                        throw new Error("failed to validate transaction bodies");
+                    }
+                }
+            } else {
+                // Legacy fallback: compare each row in the flattened 2-D body
+                // layout, ignoring nodeAccountID differences.
+                for (let i = 0; i < transactionIds.length; i++) {
+                    for (let j = 0; j < nodeIds.length - 1; j++) {
+                        if (
+                            !util.compare(
+                                bodies[i * nodeIds.length + j],
+                                bodies[i * nodeIds.length + j + 1],
+                                ignoredFields,
+                            )
+                        ) {
+                            throw new Error(
+                                "failed to validate transaction bodies",
+                            );
+                        }
+                    }
                 }
             }
         }
