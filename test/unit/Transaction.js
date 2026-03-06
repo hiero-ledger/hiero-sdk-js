@@ -353,6 +353,63 @@ describe("Transaction", function () {
         );
     });
 
+    it("sign fails when signed transaction list is inconsistent", async function () {
+        const nodeAccountId = new AccountId(3);
+        const payerAccountId = new AccountId(201);
+        const receiverA = new AccountId(202);
+        const receiverB = new AccountId(9999);
+        const sharedTxId = TransactionId.fromString(
+            "0.0.201@1700000010.000000001",
+        );
+
+        const transactionA = new TransferTransaction()
+            .setNodeAccountIds([nodeAccountId])
+            .setTransactionId(sharedTxId)
+            .addHbarTransfer(payerAccountId, new Hbar(-1))
+            .addHbarTransfer(receiverA, new Hbar(1))
+            .freeze();
+
+        const transactionB = new TransferTransaction()
+            .setNodeAccountIds([nodeAccountId])
+            .setTransactionId(sharedTxId)
+            .addHbarTransfer(payerAccountId, new Hbar(-2))
+            .addHbarTransfer(receiverB, new Hbar(2))
+            .freeze();
+
+        const parsed = Transaction.fromBytes(transactionA.toBytes());
+        const parsedList = HieroProto.proto.TransactionList.decode(
+            parsed.toBytes(),
+        ).transactionList;
+        const hiddenList = HieroProto.proto.TransactionList.decode(
+            transactionB.toBytes(),
+        ).transactionList;
+
+        parsed._signedTransactions.setList([
+            HieroProto.proto.SignedTransaction.decode(
+                parsedList[0].signedTransactionBytes,
+            ),
+            HieroProto.proto.SignedTransaction.decode(
+                hiddenList[0].signedTransactionBytes,
+            ),
+        ]);
+
+        let err = false;
+
+        try {
+            await parsed.sign(PrivateKey.generateED25519());
+        } catch (error) {
+            err =
+                error.toString() ===
+                "Error: failed to validate transaction bodies";
+        }
+
+        if (!err) {
+            throw new Error(
+                "transaction was signed from invalid signed transaction list",
+            );
+        }
+    });
+
     it("fromBytes succeeds for chunked file append with one node and multiple transaction IDs", function () {
         const nodeAccountId = new AccountId(3);
         const contents = Array(30).fill("chunk").join("");
