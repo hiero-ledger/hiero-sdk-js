@@ -16,7 +16,7 @@
     "dependencies": {
         "@ethersproject/abi": "^5.8.0",
         "@hiero-ledger/sdk": "link:..",
-        "@noble/hashes": "^1.7.1",
+        "@noble/hashes": "^2.0.1",
         "axios": "^1.13.5",
         "dotenv": "^17.2.3"
     },
