@@ -203,11 +203,11 @@ body:
         - [ ] Include tests and/or example updates where appropriate
         - [ ] Address all code review feedback
 
-        Read [Workflow Guide](manual/training/workflow.md) for step-by-step workflow guidance.  
+        Read [Workflow Guide](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/manual/training/workflow.md) for step-by-step workflow guidance.  
         Read [README.md](README.md) for setup instructions.
 
         ❗ Pull requests **cannot be merged** without signed commits (use `-s -S`).  
-        See the [Signing Guide](manual/training/signing.md).
+        See the [Signing Guide](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/manual/training/signing.md).
     validations:
       required: true
 
