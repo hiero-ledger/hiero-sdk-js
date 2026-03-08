@@ -25,7 +25,8 @@ import AccountId from "../account/AccountId.js";
 /**
  * @typedef {import("../PublicKey.js").default} PublicKey
  * @typedef {import("../channel/Channel.js").default} Channel
- * @typedef {import("../client/Client.js").default<Channel, *>} Client
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../transaction/TransactionResponse.js").default} TransactionResponse
  * @typedef {import("../schedule/ScheduleCreateTransaction.js").default} ScheduleCreateTransaction
  */
@@ -338,7 +339,7 @@ export default class FileAppendTransaction extends Transaction {
      * Will use the `Client`, if available, to generate a default Transaction ID and select 1/3
      * nodes to prepare this transaction for.
      *
-     * @param {?import("../client/Client.js").default<Channel, *>} client
+     * @param {?Client} client
      * @returns {this}
      */
     freezeWith(client) {
