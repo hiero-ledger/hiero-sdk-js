@@ -13,7 +13,6 @@ defaults:
     shell: bash
 
 permissions:
-  contents: read
   statuses: write
 
 concurrency:

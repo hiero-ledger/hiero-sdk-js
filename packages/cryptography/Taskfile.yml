@@ -85,14 +85,19 @@ tasks:
     "test:unit:node":
         cmds:
             - npx vitest --config=test/vitest-node.config.ts
-
-    "test:unit:codecov":
-        cmds:
-            - npx vitest --coverage --config=test/vitest-node.config.ts
-
     "test:unit:browser":
         cmds:
             - npx vitest --config=test/vitest-browser.config.ts
+    "test:unit:node:codecov":
+        cmds:
+            - npx vitest --coverage --config=test/vitest-node.config.ts
+    "test:unit:browser:codecov":
+        cmds:
+            - npx vitest --coverage --config=test/vitest-browser.config.ts
+    "test:unit:codecov":
+        deps:
+            - test:unit:node:codecov
+            - test:unit:browser:codecov
 
     update:
         cmds:

@@ -124,44 +124,29 @@ jobs:
       - name: Run Hedera SDK Integration Tests
         run: ${{ env.CG_EXEC }} task test:integration:codecov
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/lcov.info
-          fail_ci_if_error: false
-
       - name: Build @hiero-ledger/cryptography
         working-directory: packages/cryptography
         run: ${{ env.CG_EXEC }} task build
 
-      - name: Browser Unit Test @hiero-ledger/cryptography
-        working-directory: packages/cryptography
-        run: ${{ env.CG_EXEC }} task test:unit:browser
-
-      - name: Codecov @hiero-ledger/cryptography
+      - name: Unit Coverage @hiero-ledger/cryptography
         working-directory: packages/cryptography
         run: ${{ env.CG_EXEC }} task test:unit:codecov
 
-      - name: Upload @hashgraph/cryptography coverage to Codecov
-        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./packages/cryptography/coverage/lcov.info
-          fail_ci_if_error: false
-
-      - name: Browser Unit Test @hiero-ledger/sdk
-        if: ${{ steps.playwright-deps.conclusion == 'success' && !cancelled() && always() }}
-        run: ${{ env.CG_EXEC }} task test:unit:browser
-
-      - name: Codecov @hiero-ledger/sdk
+      - name: Test Unit Coverage @hiero-ledger/sdk
         run: ${{ env.CG_EXEC }} task test:unit:codecov
 
-      - name: Upload @hashgraph/sdk coverage to Codecov
-        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
+      - name: Upload Test Coverage Artifacts
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
+          name: coverage-test
+          if-no-files-found: error
+          path: |
+            ./coverage/node-integration/lcov.info
+            ./coverage/browser-integration/lcov.info
+            ./packages/cryptography/coverage/node/lcov.info
+            ./packages/cryptography/coverage/browser/lcov.info
+            ./coverage/node/lcov.info
+            ./coverage/browser/lcov.info
 
   dab-tests:
     name: DAB Tests using Node ${{ matrix.node }}
@@ -225,8 +210,62 @@ jobs:
           echo "GENESIS_OPERATOR_ID=0.0.2" >> $GITHUB_ENV
           echo "HEDERA_NETWORK=local-node" >> $GITHUB_ENV
 
-      - name: Run DAB Integration Tests
-        run: task test:integration:dual-mode
+      - name: Run DAB Integration Coverage
+        run: task test:integration:dual-mode:codecov
+
+      - name: Upload DAB Coverage Artifacts
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: coverage-dab
+          if-no-files-found: error
+          path: |
+            ./coverage/node-integration-dual-mode/lcov.info
+            ./coverage/browser-integration-dual-mode/lcov.info
+
+  coverage-upload:
+    name: Upload Coverage to Codecov
+    runs-on: hiero-client-sdk-linux-medium
+    needs:
+      - test
+      - dab-tests
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          submodules: recursive
+
+      - name: Download Test Coverage Artifacts
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: coverage-test
+          path: .
+
+      - name: Download DAB Coverage Artifacts
+        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        with:
+          name: coverage-dab
+          path: .
+
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: >-
+            ./coverage/node-integration/lcov.info,
+            ./coverage/browser-integration/lcov.info,
+            ./packages/cryptography/coverage/node/lcov.info,
+            ./packages/cryptography/coverage/browser/lcov.info,
+            ./coverage/node/lcov.info,
+            ./coverage/browser/lcov.info,
+            ./coverage/node-integration-dual-mode/lcov.info,
+            ./coverage/browser-integration-dual-mode/lcov.info
+          fail_ci_if_error: true
 
   examples:
     name: Run examples using Node ${{ matrix.node }}

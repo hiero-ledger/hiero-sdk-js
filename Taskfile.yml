@@ -29,40 +29,42 @@ tasks:
             - build
 
     "solo:setup":
-        desc: "Setup Solo local network with single node (default)"
+        desc: "Set up and start Solo services (cluster, network, mirror node, account, port forwarding)"
         cmds:
-            - chmod +x ./scripts/setup-solo.sh
-            - ./scripts/setup-solo.sh {{.CLI_ARGS}}
+            - node ./scripts/solo-setup.js {{.CLI_ARGS}}
 
-    "solo:setup:dual-node":
-        desc: "Setup Solo local network with two nodes (required for dynamic address book tests)"
+    "solo:resume":
+        desc: "Resume Solo services (start nodes, add mirror node, re-enable port forwarding)"
         cmds:
-            - chmod +x ./scripts/setup-solo.sh
-            - ./scripts/setup-solo.sh --num-nodes 2 {{.CLI_ARGS}}
+            - node ./scripts/solo-resume.js {{.CLI_ARGS}}
+
+    "solo:pause":
+        desc: "Pause Solo services (destroy mirror node, stop consensus nodes, remove port forwarding)"
+        cmds:
+            - node ./scripts/solo-pause.js {{.CLI_ARGS}}
 
     "solo:teardown":
-        desc: "Teardown Solo local network and cleanup resources"
+        desc: "Complete teardown (removes cluster and Solo config)"
         cmds:
-            - chmod +x ./scripts/teardown-solo.sh
-            - ./scripts/teardown-solo.sh
+            - node ./scripts/solo-teardown.js {{.CLI_ARGS}}
 
     "solo:status":
         desc: "Check Solo cluster status"
         cmds:
             - |
-              echo "Checking Solo cluster status..."
-              if kind get clusters 2>/dev/null | grep -q "^solo-cluster$"; then
-                echo "✓ Kind cluster 'solo-cluster' is running"
-                kubectl get pods -n solo-e2e 2>/dev/null || echo "✗ Namespace 'solo-e2e' not found"
-              else
-                echo "✗ Kind cluster 'solo-cluster' not found"
-                echo "Run 'task solo:setup' to create it"
-              fi
+                echo "Checking Solo cluster status..."
+                if kind get clusters 2>/dev/null | grep -q "^solo-cluster$"; then
+                  echo "✓ Kind cluster 'solo-cluster' is running"
+                  kubectl get pods -n solo 2>/dev/null || echo "✗ Namespace 'solo' not found"
+                else
+                  echo "✗ Kind cluster 'solo-cluster' not found"
+                  echo "Run 'task solo:setup' to create and start it"
+                fi
 
     "solo:logs":
         desc: "View logs from Solo services"
         cmds:
-            - kubectl logs -n solo-e2e -l app=network-node --tail=100 -f
+            - kubectl logs -n solo -l app=network-node --tail=100 -f
 
     "run:examples":
         cmds:
@@ -172,10 +174,16 @@ tasks:
     "test:unit:node":
         cmds:
             - npx vitest --config=test/vitest-node.config.ts
-
-    "test:unit:codecov":
+    "test:unit:node:codecov":
         cmds:
             - npx vitest --coverage --config=test/vitest-node.config.ts
+    "test:unit:browser:codecov":
+        cmds:
+            - npx vitest --coverage --config=test/vitest-browser.config.ts
+    "test:unit:codecov":
+        deps:
+            - test:unit:node:codecov
+            - test:unit:browser:codecov
 
     "test:unit:browser":
         cmds:
@@ -183,8 +191,8 @@ tasks:
 
     "test:integration":
         deps:
-            - "test:integration:node"
             - "test:integration:browser"
+            - "test:integration:node"
 
     "test:integration:node":
         cmds:
@@ -193,16 +201,27 @@ tasks:
     "test:integration:browser":
         cmds:
             - npx vitest --config=test/vitest-browser-integration.config.ts
-
-    "test:integration:codecov":
+    "test:integration:node:codecov":
         cmds:
             - npx vitest --coverage --config=test/vitest-node-integration.config.ts
+    "test:integration:browser:codecov":
+        cmds:
             - npx vitest --coverage --config=test/vitest-browser-integration.config.ts
+
+    "test:integration:codecov":
+        deps:
+            - test:integration:node:codecov
+            - test:integration:browser:codecov
 
     "test:integration:dual-mode":
         cmds:
             - npx vitest --maxWorkers=1 --config=test/vitest-node-integration-dual-mode.config.ts
             - npx vitest --maxWorkers=1 --config=test/vitest-browser-integration-dual-mode.config.ts
+            
+    "test:integration:dual-mode:codecov":
+        cmds:
+            - npx vitest --coverage --maxWorkers=1 --config=test/vitest-node-integration-dual-mode.config.ts
+            - npx vitest --coverage --maxWorkers=1 --config=test/vitest-browser-integration-dual-mode.config.ts
 
     "update:proto":
         desc: "Fetch protos from submodule at tag, regenerate JS (run only when bumping proto version)"

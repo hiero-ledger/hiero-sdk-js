@@ -2,6 +2,7 @@ import { defineConfig } from "vitest/config";
 
 import path from "path";
 import fs from "fs";
+import CustomSequencer from "./custom-sequencer.js";
 
 const pkg = JSON.parse(
     fs.readFileSync(path.resolve(__dirname, "../package.json"), "utf-8"),
@@ -10,6 +11,11 @@ const pkg = JSON.parse(
 /** @type {import("vitest").UserConfig} */
 export default defineConfig({
     test: {
+        sequence: {
+            sequencer: CustomSequencer,
+        },
+        pool: "threads",
+        isolate: false,
         watch: false,
         globals: true,
         environment: "node",
@@ -23,18 +29,11 @@ export default defineConfig({
         ],
         hookTimeout: 120000,
         testTimeout: 120000,
-        pool: "threads",
-        poolOptions: {
-            threads: {
-                maxThreads: 8,
-                minThreads: 8,
-            },
-        },
         coverage: {
             include: ["src/**/*.js"],
             provider: "v8",
             reporter: ["text-summary", "lcov"],
-            reportsDirectory: "./coverage",
+            reportsDirectory: "./coverage/node-integration",
         },
     },
     define: {
