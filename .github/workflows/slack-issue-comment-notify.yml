@@ -28,12 +28,10 @@ jobs:
 
       - name: Prepare comment body
         id: comment
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
-          BODY=$(cat <<'EOFBODY'
-          ${{ github.event.comment.body }}
-          EOFBODY
-          )
-          BODY=$(echo "$BODY" | sed 's/^[[:space:]]*//')
+          BODY=$(echo "$COMMENT_BODY" | sed 's/^[[:space:]]*//')
           if [ -z "$BODY" ]; then
             BODY="_Empty comment._"
           elif [ ${#BODY} -gt 300 ]; then

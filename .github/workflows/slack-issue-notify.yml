@@ -27,12 +27,10 @@ jobs:
 
       - name: Prepare issue description
         id: desc
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
         run: |
-          DESC=$(cat <<'EOFBODY'
-          ${{ github.event.issue.body }}
-          EOFBODY
-          )
-          DESC=$(echo "$DESC" | sed 's/^[[:space:]]*//')
+          DESC=$(echo "$ISSUE_BODY" | sed 's/^[[:space:]]*//')
           if [ -z "$DESC" ]; then
             DESC="_No description provided._"
           elif [ ${#DESC} -gt 300 ]; then
@@ -46,12 +44,10 @@ jobs:
 
       - name: Prepare labels
         id: labels
+        env:
+          ISSUE_LABELS: ${{ join(github.event.issue.labels.*.name, ', ') }}
         run: |
-          LABELS=$(cat <<'EOFLAB'
-          ${{ join(github.event.issue.labels.*.name, ', ') }}
-          EOFLAB
-          )
-          LABELS=$(echo "$LABELS" | sed 's/^[[:space:]]*//')
+          LABELS=$(echo "$ISSUE_LABELS" | sed 's/^[[:space:]]*//')
           if [ -z "$LABELS" ]; then
             LABELS="_None_"
           fi
