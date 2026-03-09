@@ -408,8 +408,8 @@ importers:
         specifier: ~54.0.11
         version: 54.0.31(@babel/core@7.26.10)(graphql@16.12.0)(react-native@0.78.3(@babel/core@7.26.10)(@babel/preset-env@7.22.15(@babel/core@7.26.10))(@types/react@19.2.14)(react@19.2.4))(react@19.2.4)
       expo-status-bar:
-        specifier: ~3.0.6
-        version: 3.0.9(react-native@0.78.3(@babel/core@7.26.10)(@babel/preset-env@7.22.15(@babel/core@7.26.10))(@types/react@19.2.14)(react@19.2.4))(react@19.2.4)
+        specifier: ~55.0.4
+        version: 55.0.4(react-native@0.78.3(@babel/core@7.26.10)(@babel/preset-env@7.22.15(@babel/core@7.26.10))(@types/react@19.2.14)(react@19.2.4))(react@19.2.4)
       protobufjs:
         specifier: 8.0.0
         version: 8.0.0
@@ -6825,8 +6825,8 @@ packages:
     resolution: {integrity: sha512-IGR++flYH70rhLyeXF0Phle56/k4cee87WeQ4mamS+MkVAVP+dDlOHf2nN06Z9Y2KhU0Gp1k+y61KkghF7HdhA==}
     engines: {node: '>=20.16.0'}
 
-  expo-status-bar@3.0.9:
-    resolution: {integrity: sha512-xyYyVg6V1/SSOZWh4Ni3U129XHCnFHBTcUo0dhWtFDrZbNp/duw5AGsQfb2sVeU0gxWHXSY1+5F0jnKYC7WuOw==}
+  expo-status-bar@55.0.4:
+    resolution: {integrity: sha512-BPDjUXKqv1F9j2YNGLRZfkBEZXIEEpqj+t81y4c+4fdSN3Pos7goIHXgcl2ozbKQLgKRZQyNZQtbUgh5UjHYUQ==}
     peerDependencies:
       react: '*'
       react-native: '*'
@@ -21001,7 +21001,7 @@ snapshots:
 
   expo-server@1.0.5: {}
 
-  expo-status-bar@3.0.9(react-native@0.78.3(@babel/core@7.26.10)(@babel/preset-env@7.22.15(@babel/core@7.26.10))(@types/react@19.2.14)(react@19.2.4))(react@19.2.4):
+  expo-status-bar@55.0.4(react-native@0.78.3(@babel/core@7.26.10)(@babel/preset-env@7.22.15(@babel/core@7.26.10))(@types/react@19.2.14)(react@19.2.4))(react@19.2.4):
     dependencies:
       react: 19.2.4
       react-native: 0.78.3(@babel/core@7.26.10)(@babel/preset-env@7.22.15(@babel/core@7.26.10))(@types/react@19.2.14)(react@19.2.4)
