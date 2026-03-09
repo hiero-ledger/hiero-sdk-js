@@ -13,7 +13,6 @@ import TokenNftTransfer from "../token/TokenNftTransfer.js";
 import NftId from "../token/NftId.js";
 import AbstractTokenTransferTransaction from "../token/AbstractTokenTransferTransaction.js";
 import FungibleHookCall from "../hooks/FungibleHookCall.js";
-import NftHookCall from "../hooks/NftHookCall.js";
 
 /**
  * @typedef {import("../long.js").LongObject} LongObject
@@ -32,7 +31,10 @@ import NftHookCall from "../hooks/NftHookCall.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
+ * @typedef {import("../Timestamp.js").default} Timestamp
+ * @typedef {import("../hooks/NftHookCall.js").default} NftHookCall
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  */
 
@@ -315,9 +317,8 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
     }
 
     /**
-     *
-     * @param {AccountId} accountId
-     * @param {Long} amount
+     * @param {AccountId | string} accountId
+     * @param {number | string | Long | LongObject | BigNumber | Hbar} amount
      * @param {FungibleHookCall} hook
      * @returns {TransferTransaction}
      */
@@ -336,10 +337,9 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
     }
 
     /**
-     *
-     * @param {NftId} nftId
-     * @param {AccountId} sender
-     * @param {AccountId} receiver
+     * @param {NftId | string} nftId
+     * @param {AccountId | string} sender
+     * @param {AccountId | string} receiver
      * @param {NftHookCall} senderHookCall
      * @param {NftHookCall} receiverHookCall
      * @returns {TransferTransaction}
@@ -363,10 +363,9 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
     }
 
     /**
-     *
-     * @param {TokenId} tokenId
-     * @param {AccountId} accountId
-     * @param {Long} amount
+     * @param {TokenId | string} tokenId
+     * @param {AccountId | string} accountId
+     * @param {number | bigint | Long | BigNumber} amount
      * @param {FungibleHookCall} hook
      * @returns {TransferTransaction}
      */
@@ -379,7 +378,7 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
         });
 
         const isApproved = false; // this is not approved transfer, adding comment for clarity
-        const expectedDecimals = null; // we don't expect  decimals here, adding comment for clarity
+        const expectedDecimals = null; // we don't expect decimals here, adding comment for clarity
 
         return this._addTokenTransfer(
             tokenId,
@@ -390,6 +389,7 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
             fungibleHook,
         );
     }
+
     /**
      * @override
      * @internal
@@ -431,10 +431,11 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
     }
 
     /**
+     * @override
      * @returns {string}
      */
     _getLogId() {
-        const timestamp = /** @type {import("../Timestamp.js").default} */ (
+        const timestamp = /** @type {Timestamp} */ (
             this._transactionIds.current.validStart
         );
         return `TransferTransaction:${timestamp.toString()}`;
@@ -443,6 +444,5 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
 
 TRANSACTION_REGISTRY.set(
     "cryptoTransfer",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    TransferTransaction._fromProtobuf,
+    TransferTransaction._fromProtobuf.bind(null),
 );

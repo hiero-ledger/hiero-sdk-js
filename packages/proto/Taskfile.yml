@@ -60,6 +60,7 @@ tasks:
             - echo "Submodule contents removed successfully, folder retained."
 
     install:
+        desc: "Fetch protobufs from submodule, move, flatten (run only when updating protos; normal build uses committed files)"
         deps:
             - "install:submodules"
         cmds:
@@ -68,8 +69,7 @@ tasks:
             - pnpm i
 
     build:
-        deps:
-            - install
+        desc: "Compile committed protos to JS/TS (no download)"
         cmds:
             - task "build:standalone"
 
@@ -82,8 +82,8 @@ tasks:
 
     build:standalone:
         cmds:
-            - npx pbjs -r hashgraph -t static-module -w es6 -p=src/proto --force-long --no-beautify --no-convert --no-delimited --no-verify -o src/proto.js src/proto/*.proto
-            - npx pbts -n hashgraph -o src/proto.d.ts src/proto.js
+            - pnpm exec pbjs -r hashgraph -t static-module -w es6 -p=src/proto --force-long --no-beautify --no-convert --no-delimited --no-verify -o src/proto.js src/proto/**/*.proto
+            - pnpm exec pbts -n hashgraph -o src/proto.d.ts src/proto.js
             - node scripts/fix-proto-namespaces.js
             - task: format
             - task: lint
@@ -123,6 +123,7 @@ tasks:
             - build
 
     update:
+        desc: "Update protobufs: fetch from submodule at given tag, move, flatten, regenerate JS. Use when bumping proto tag (e.g. task proto:update -- v0.68.2)"
         vars:
             latest_tag:
                 sh: git ls-remote --tags https://github.com/hiero-ledger/hiero-consensus-node.git | awk '{print $2}' | grep -E 'refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1 | sed 's#refs/tags/##'
@@ -136,7 +137,7 @@ tasks:
                 if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
                     git fetch --unshallow --tags
                 fi &&
-                git checkout {{.stag}}
+                git checkout {{.proto}}
                 )
             - task "move:protobufs"
             - task "flatten:protobufs"

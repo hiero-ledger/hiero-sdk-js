@@ -5,13 +5,15 @@ export default defineConfig({
     test: {
         watch: false,
         globals: true,
+        pool: "threads",
+        isolate: false,
+        environment: "jsdom",
         browser: {
             screenshotFailures: false,
             headless: true,
             provider: playwright(),
             enabled: true,
             instances: [{ browser: "chromium" }],
-            isolate: false,
         },
         include: ["test/unit/**/*.js"],
         exclude: [
@@ -21,13 +23,11 @@ export default defineConfig({
         ],
         testTimeout: 120000,
         retry: 1,
-        maxWorkers: 4,
-        fileParallelism: false,
         coverage: {
             include: ["src/**/*.js"],
-            provider: "istanbul",
+            provider: "v8",
             reporter: ["text-summary", "lcov"],
-            reportsDirectory: "./coverage",
+            reportsDirectory: "./coverage/browser",
         },
     },
     resolve: {
