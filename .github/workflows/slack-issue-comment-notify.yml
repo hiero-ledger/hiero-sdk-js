@@ -1,0 +1,82 @@
+name: 'Slack Issue Comment Notification'
+on:
+  issue_comment:
+    types:
+      - created
+
+env:
+  js-sdk-channel-id: C0958RN2ZTR
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  notify-slack:
+    name: Notify Slack
+    if: ${{ !github.event.issue.pull_request }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        with:
+          egress-policy: audit
+
+      - name: Prepare comment body
+        id: comment
+        run: |
+          BODY=$(cat <<'EOFBODY'
+          ${{ github.event.comment.body }}
+          EOFBODY
+          )
+          BODY=$(echo "$BODY" | sed 's/^[[:space:]]*//')
+          if [ -z "$BODY" ]; then
+            BODY="_Empty comment._"
+          elif [ ${#BODY} -gt 300 ]; then
+            BODY="${BODY:0:300}..."
+          fi
+          {
+            echo "text<<EOFMULTI"
+            echo "$BODY"
+            echo "EOFMULTI"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Send Slack Notification
+        uses: slackapi/slack-github-action@b0fa283ad8fea605de13dc3f449259339835fc52 # v2.1.0
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          payload: |
+            {
+              "channel": "${{ env.js-sdk-channel-id }}",
+              "text": "New comment on issue <${{ github.event.issue.html_url }}|#${{ github.event.issue.number }}: ${{ github.event.issue.title }}>",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":speech_balloon: *New Comment on Issue*\n*<${{ github.event.comment.html_url }}|#${{ github.event.issue.number }}: ${{ github.event.issue.title }}>*"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Author:*\n${{ github.event.comment.user.login }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Comment:*\n${{ steps.comment.outputs.text }}"
+                  }
+                }
+              ]
+            }
