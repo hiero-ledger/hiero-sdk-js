@@ -19,27 +19,41 @@ export default class PendingAirdropId {
     /**
      *
      * @param {object} props
-     * @param {AccountId} [props.senderId]
-     * @param {AccountId} [props.receiverId]
-     * @param {TokenId?} [props.tokenId]
-     * @param {NftId?} [props.nftId]
+     * @param {AccountId | string} [props.senderId]
+     * @param {AccountId | string} [props.receiverId]
+     * @param {TokenId | string | null} [props.tokenId]
+     * @param {NftId | string | null} [props.nftId]
      */
+
     constructor(props = {}) {
         this._senderId = null;
         this._receiverId = null;
         this._tokenId = null;
         this._nftId = null;
 
-        if (props.receiverId) {
-            this._receiverId = props.receiverId;
+        if (props.receiverId != null) {
+            this._receiverId =
+                typeof props.receiverId === "string"
+                    ? AccountId.fromString(props.receiverId)
+                    : props.receiverId;
         }
-        if (props.senderId) {
-            this._senderId = props.senderId;
+        if (props.senderId != null) {
+            this._senderId =
+                typeof props.senderId === "string"
+                    ? AccountId.fromString(props.senderId)
+                    : props.senderId;
         }
-        if (props.tokenId) {
-            this._tokenId = new TokenId(props.tokenId);
-        } else if (props.nftId) {
-            this._nftId = new NftId(props.nftId?.tokenId, props.nftId?.serial);
+
+        if (props.tokenId != null) {
+            this._tokenId =
+                typeof props.tokenId === "string"
+                    ? TokenId.fromString(props.tokenId)
+                    : new TokenId(props.tokenId);
+        } else if (props.nftId != null) {
+            this._nftId =
+                typeof props.nftId === "string"
+                    ? NftId.fromString(props.nftId)
+                    : new NftId(props.nftId?.tokenId, props.nftId?.serial);
         }
     }
 
@@ -78,40 +92,48 @@ export default class PendingAirdropId {
 
     /**
      *
-     * @param {AccountId} senderId
+     * @param {AccountId | string} senderId
      * @returns {this}
      */
     setSenderid(senderId) {
-        this._senderId = senderId;
+        this._senderId =
+            typeof senderId === "string"
+                ? AccountId.fromString(senderId)
+                : senderId;
         return this;
     }
 
     /**
-     * @param {AccountId} receiverId
+     * @param {AccountId | string} receiverId
      * @returns {this}
      */
     setReceiverId(receiverId) {
-        this._receiverId = receiverId;
+        this._receiverId =
+            typeof receiverId === "string"
+                ? AccountId.fromString(receiverId)
+                : receiverId;
         return this;
     }
 
     /**
-     * @param {TokenId} tokenId
+     * @param {TokenId | string} tokenId
      * @returns {this}
      */
     setTokenId(tokenId) {
         this._nftId = null;
-        this._tokenId = tokenId;
+        this._tokenId =
+            typeof tokenId === "string" ? TokenId.fromString(tokenId) : tokenId;
         return this;
     }
 
     /**
-     * @param {NftId} nftId
+     * @param {NftId | string} nftId
      * @returns {this}
      */
     setNftId(nftId) {
         this._tokenId = null;
-        this._nftId = nftId;
+        this._nftId =
+            typeof nftId === "string" ? NftId.fromString(nftId) : nftId;
         return this;
     }
 
@@ -148,7 +170,7 @@ export default class PendingAirdropId {
      */
     toBytes() {
         return {
-            senderId: this.senderId?._toProtobuf(),
+            senderId: this._senderId?._toProtobuf(),
             receiverId: this._receiverId?._toProtobuf(),
             fungibleTokenType: this._tokenId?._toProtobuf(),
             nonFungibleToken: this._nftId?._toProtobuf(),
