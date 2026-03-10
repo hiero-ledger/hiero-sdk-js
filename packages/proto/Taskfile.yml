@@ -19,7 +19,7 @@ tasks:
 
     install:submodules:
         vars:
-            commit: "036172c8fbc1c20454889996ac2bb3b181e0251f" # v0.71.0
+            commit: "a48c7b5c57334fe020f82c54d05a363a9a4d997d" # v0.73.0-chunkify-preview-alpha.2
         cmds:
             - git submodule update --init --recursive --remote
             - |
@@ -42,7 +42,6 @@ tasks:
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/streams src/proto/
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/event/* src/proto/
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/state/* src/proto/
-            - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/block/stream/chain_of_trust_proof.proto src/proto/
             - node scripts/remove-duplicate-protobuf.js
             - echo "Protobufs moved successfully!"
             - task "delete:submodule"
