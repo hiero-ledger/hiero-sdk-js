@@ -22,20 +22,39 @@ const excludedJSFile = [
     "node-client-async-testnet.js",
 ];
 const cmd = process.env.NODE_COMMAND;
-const concurrency = Math.max(1, parseInt(process.env.EXAMPLES_CONCURRENCY || "4", 10));
+const concurrency = Math.max(
+    1,
+    parseInt(process.env.EXAMPLES_CONCURRENCY || "4", 10),
+);
 
+/**
+ * @typedef {object} ExampleRunResult
+ * @property {string} file
+ * @property {number} code
+ */
+
+/**
+ * @param {string} examplePath
+ * @param {string} file
+ * @returns {Promise<ExampleRunResult>}
+ */
 function runExample(examplePath, file) {
     return new Promise((resolve, reject) => {
         const child = spawn(cmd, [examplePath], {
             stdio: "ignore",
         });
         child.on("close", (code) => {
-            resolve({ file, code });
+            resolve({ file, code: code ?? -1 });
         });
         child.on("error", reject);
     });
 }
 
+/**
+ * @param {string[]} examples
+ * @param {number} maxConcurrency
+ * @returns {Promise<void>}
+ */
 async function runInParallel(examples, maxConcurrency) {
     let completed = 0;
     let failed = 0;
@@ -43,9 +62,7 @@ async function runInParallel(examples, maxConcurrency) {
     let nextIndex = 0;
 
     async function worker() {
-        while (true) {
-            const index = nextIndex++;
-            if (index >= total) break;
+        for (let index = nextIndex++; index < total; index = nextIndex++) {
             const file = examples[index];
             const examplePath = path.join(examplesDirectory, file);
             console.log(`\n⏳ ${index + 1}/${total}. Running ${file}...`);
@@ -73,6 +90,11 @@ async function runInParallel(examples, maxConcurrency) {
     }
 }
 
+/**
+ * @param {NodeJS.ErrnoException | null} err
+ * @param {string[]} files
+ * @returns {void}
+ */
 fs.readdir(examplesDirectory, (err, files) => {
     if (err) {
         console.error("Error reading directory:", err);
@@ -97,7 +119,9 @@ fs.readdir(examplesDirectory, (err, files) => {
             ),
     );
 
-    console.log(`Running ${examples.length} examples with concurrency ${concurrency}...\n`);
+    console.log(
+        `Running ${examples.length} examples with concurrency ${concurrency}...\n`,
+    );
 
-    runInParallel(examples, concurrency);
+    void runInParallel(examples, concurrency);
 });
