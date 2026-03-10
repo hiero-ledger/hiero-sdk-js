@@ -32,28 +32,16 @@ export default class PendingAirdropId {
         this._nftId = null;
 
         if (props.receiverId != null) {
-            this._receiverId =
-                typeof props.receiverId === "string"
-                    ? AccountId.fromString(props.receiverId)
-                    : props.receiverId;
+            this.setReceiverId(props.receiverId);
         }
         if (props.senderId != null) {
-            this._senderId =
-                typeof props.senderId === "string"
-                    ? AccountId.fromString(props.senderId)
-                    : props.senderId;
+            this.setSenderid(props.senderId);
         }
 
         if (props.tokenId != null) {
-            this._tokenId =
-                typeof props.tokenId === "string"
-                    ? TokenId.fromString(props.tokenId)
-                    : new TokenId(props.tokenId);
+            this.setTokenId(props.tokenId);
         } else if (props.nftId != null) {
-            this._nftId =
-                typeof props.nftId === "string"
-                    ? NftId.fromString(props.nftId)
-                    : new NftId(props.nftId?.tokenId, props.nftId?.serial);
+            this.setNftId(props.nftId);
         }
     }
 
