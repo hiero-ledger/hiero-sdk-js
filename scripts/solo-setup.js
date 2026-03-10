@@ -41,7 +41,10 @@ function showHelp() {
         `  --mirror-node-version <version>      Mirror node version (default: ${DEFAULT_MIRROR_NODE_VERSION})`,
     );
     console.log(
-        "  --local-build-path <path>            Path to local build (overrides consensus-node-version)",
+        "  --local-build-path <path>            Path to local build (overrides consensus-node-version for node setup)",
+    );
+    console.log(
+        "  --block-node-release-tag <version>   Optional block node Helm chart version (maps to --chart-version)",
     );
     console.log(
         "  -h, --help                           Show this help message",
@@ -61,6 +64,9 @@ function showHelp() {
     console.log(
         "  ./scripts/solo-setup.js --local-build-path ../hiero-consensus-node/hedera-node/data",
     );
+    console.log(
+        "  ./scripts/solo-setup.js --consensus-node-version v0.70.0 --block-node-release-tag v0.18.0",
+    );
 }
 
 function parseArgs(argv) {
@@ -68,6 +74,7 @@ function parseArgs(argv) {
     let consensusVersion = DEFAULT_CONSENSUS_NODE_VERSION;
     let mirrorVersion = DEFAULT_MIRROR_NODE_VERSION;
     let localBuildPath = "";
+    let blockNodeReleaseTag = process.env.BLOCK_NODE_RELEASE_TAG || "";
 
     for (let index = 0; index < argv.length; index += 1) {
         const argument = argv[index];
@@ -105,6 +112,15 @@ function parseArgs(argv) {
                 throw new Error("Missing value for --local-build-path");
             }
             localBuildPath = value;
+            continue;
+        }
+
+        if (argument.startsWith("--block-node-release-tag=")) {
+            const value = argument.slice("--block-node-release-tag=".length);
+            if (!value) {
+                throw new Error("Missing value for --block-node-release-tag");
+            }
+            blockNodeReleaseTag = value;
             continue;
         }
 
@@ -147,6 +163,17 @@ function parseArgs(argv) {
                 index += 1;
                 break;
             }
+            case "--block-node-release-tag": {
+                const value = argv[index + 1];
+                if (!value) {
+                    throw new Error(
+                        "Missing value for --block-node-release-tag",
+                    );
+                }
+                blockNodeReleaseTag = value;
+                index += 1;
+                break;
+            }
             case "-h":
             case "--help":
                 showHelp();
@@ -164,21 +191,24 @@ function parseArgs(argv) {
         consensusVersion,
         mirrorVersion,
         localBuildPath,
+        blockNodeReleaseTag,
     };
 }
 
-function setEnvironment({ consensusVersion, mirrorVersion, localBuildPath }) {
+function setEnvironment({
+    consensusVersion,
+    mirrorVersion,
+    blockNodeReleaseTag,
+}) {
     process.env.SOLO_CLUSTER_NAME = SOLO_CLUSTER_NAME;
     process.env.SOLO_NAMESPACE = SOLO_NAMESPACE;
     process.env.SOLO_CLUSTER_SETUP_NAMESPACE = SOLO_CLUSTER_SETUP_NAMESPACE;
     process.env.SOLO_DEPLOYMENT = SOLO_DEPLOYMENT;
     process.env.MIRROR_NODE_VERSION = mirrorVersion;
-
-    if (localBuildPath) {
-        delete process.env.CONSENSUS_NODE_VERSION;
-    } else {
-        process.env.CONSENSUS_NODE_VERSION = consensusVersion;
+    if (blockNodeReleaseTag) {
+        process.env.BLOCK_NODE_RELEASE_TAG = blockNodeReleaseTag;
     }
+    process.env.CONSENSUS_NODE_VERSION = consensusVersion;
 }
 
 async function checkDependencies() {
@@ -379,10 +409,56 @@ async function ensureDeploymentConfig(numNodes) {
     await setupDeployment(numNodes);
 }
 
-async function deployNetwork({ numNodes, localBuildPath }) {
+async function deployBlockNode({
+    consensusVersion,
+    localBuildPath,
+    blockNodeReleaseTag,
+}) {
+    const blockNodeArgs = [
+        "solo",
+        "block",
+        "node",
+        "add",
+        "--deployment",
+        SOLO_DEPLOYMENT,
+        "--cluster-ref",
+        SOLO_CLUSTER_NAME,
+    ];
+
+    if (!localBuildPath) {
+        blockNodeArgs.push("--release-tag", consensusVersion);
+        log.info(`Deploying block node (release tag: ${consensusVersion})...`);
+    } else {
+        log.info(
+            "Deploying block node (release tag omitted for local build)...",
+        );
+    }
+
+    if (blockNodeReleaseTag) {
+        blockNodeArgs.push("--chart-version", blockNodeReleaseTag);
+        log.info(`Using block node chart version: ${blockNodeReleaseTag}`);
+    }
+
+    await runCommand("npx", blockNodeArgs);
+
+    log.success("Block node deployed");
+}
+
+async function deployNetwork({
+    numNodes,
+    localBuildPath,
+    consensusVersion,
+    blockNodeReleaseTag,
+}) {
     await ensureDeploymentConfig(numNodes);
 
     const nodeIds = createNodeIdList(numNodes);
+
+    await deployBlockNode({
+        consensusVersion,
+        localBuildPath,
+        blockNodeReleaseTag,
+    });
 
     log.info("Checking consensus keys...");
     const secretResult = await runCommand(
@@ -491,10 +567,15 @@ async function deployMirror() {
 }
 
 async function main() {
-    const { numNodes, consensusVersion, mirrorVersion, localBuildPath } =
-        parseArgs(process.argv.slice(2));
+    const {
+        numNodes,
+        consensusVersion,
+        mirrorVersion,
+        localBuildPath,
+        blockNodeReleaseTag,
+    } = parseArgs(process.argv.slice(2));
 
-    setEnvironment({ consensusVersion, mirrorVersion, localBuildPath });
+    setEnvironment({ consensusVersion, mirrorVersion, blockNodeReleaseTag });
 
     log.info("======================================");
     log.info("Solo Setup for hiero-sdk-js");
@@ -509,13 +590,26 @@ async function main() {
         );
     }
     log.info(`  - Mirror Node Version: ${process.env.MIRROR_NODE_VERSION}`);
+    if (localBuildPath) {
+        log.info("  - Block Node Release Tag: <omitted (local build mode)>");
+    } else {
+        log.info(`  - Block Node Release Tag: ${consensusVersion}`);
+    }
+    if (blockNodeReleaseTag) {
+        log.info(`  - Block Node Chart Version: ${blockNodeReleaseTag}`);
+    }
     log.info(`  - Consensus Nodes: ${numNodes}`);
     console.log("");
 
     await checkDependencies();
     await initializeSolo();
     await setupDeployment(numNodes);
-    await deployNetwork({ numNodes, localBuildPath });
+    await deployNetwork({
+        numNodes,
+        localBuildPath,
+        consensusVersion,
+        blockNodeReleaseTag,
+    });
     await deployMirror();
     await setupPortForwarding({
         numNodes,
