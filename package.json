@@ -70,7 +70,7 @@
         "ansi-regex": "6.2.2",
         "ansi-styles": "6.2.3",
         "bignumber.js": "9.1.1",
-        "bn.js": "5.1.1",
+        "bn.js": "5.2.3",
         "crypto-js": "4.2.0",
         "debug": "4.4.1",
         "js-base64": "3.7.4",
@@ -130,7 +130,7 @@
         "msw": "2.10.2",
         "npm-run-all": "4.1.5",
         "npx": "10.2.2",
-        "nyc": "17.1.0",
+        "nyc": "18.0.0",
         "playwright": "1.55.1",
         "prettier": "3.0.3",
         "rollup": "4.59.0",
@@ -141,9 +141,9 @@
         "vitest": "4.0.18"
     },
     "peerDependencies": {
-        "bn.js": "5.2.1"
+        "bn.js": "5.2.3"
     },
     "resolutions": {
-        "bn.js": "5.2.1"
+        "bn.js": "5.2.3"
     }
 }
