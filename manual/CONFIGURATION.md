@@ -46,6 +46,7 @@ The JS SDK package supports loading of configuration from an `.env` file or via 
 | setDefaultRegenerateTransactionId | true                                                       |
 | setSignOnDemand                   | false                                                      |
 | setDefaultMaxQueryPayment         | 1 Hbar                                                     |
+| setAllowReceiptNodeFailover       | false                                                      |
 | setMinBackoff                     | 250 (milliseconds)                                         |
 | setMaxBackoff                     | 8000 (milliseconds)                                        |
 | setNetworkUpdatePeriod            | 1 day                                                      |
@@ -249,6 +250,31 @@ client.setSignOnDemand(true);
 ## Query Settings
 
 -   `setDefaultMaxQueryPayment` - Same as `setDefaultMaxTransactionFee` but for queries.
+
+-   `setAllowReceiptNodeFailover` - Configure receipt query node failover behavior. By default, receipt queries are pinned exclusively to the node that submitted the transaction. When enabled, receipt queries can fail over to other nodes while still prioritizing the submitting node first.
+
+```javascript
+const client = Client.forTestnet();
+client.setAllowReceiptNodeFailover(true); // Enable receipt query failover
+```
+
+When failover is disabled (default):
+- Receipt queries will only be sent to the node that originally processed the transaction
+- If that node is unavailable or slow to respond, the query will retry only on that same node
+- This ensures consistency but may result in delays if the submitting node is experiencing issues
+
+When failover is enabled:
+- Receipt queries start with the submitting node (to maximize consistency)
+- If the submitting node fails or is unavailable, the query can fail over to other nodes in the network
+- The node list respects the transaction's configured nodes if specified, otherwise uses the client's network nodes
+- Duplicate nodes are automatically filtered out
+
+This setting is particularly useful in scenarios where:
+- You need higher availability for receipt retrieval
+- The submitting node may be temporarily unavailable
+- You're willing to trade some consistency guarantees for improved reliability
+
+**Note**: This setting affects both `getReceipt()` and `getRecord()` queries on transaction responses. The getter `client.allowReceiptNodeFailover` can be used to check the current setting.
 
 ## Retry and Timeout Settings
 

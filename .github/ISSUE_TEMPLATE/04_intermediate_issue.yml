@@ -1,0 +1,198 @@
+name: Intermediate Issue Template
+description: Create a well-documented issue for contributors with some familiarity with the codebase (JavaScript)
+title: "[Intermediate]: "
+labels: ["intermediate"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## **Thanks for contributing!** 😊
+
+        We truly appreciate your time and effort.
+
+        This template is here to help you create an **Intermediate-level issue** for
+        contributors who are comfortable with the basics and ready to take on a bit
+        more ownership in the **Hiero JS SDK** codebase.
+
+        These issues usually involve a mix of exploration, reasoning, and implementation,
+        while still having clear goals and boundaries.
+
+        > Maintainers can read more about:
+        > [Intermediate Issues](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/manual/maintainers/guidelines-intermediate-issues.md)
+        ---
+
+  - type: textarea
+    id: intro
+    attributes:
+      label: 🧩 Intermediate Friendly
+      description: Who is this issue for?
+      value: |
+        This issue is a good fit for contributors who are already familiar with the
+        Hiero JS SDK and feel comfortable navigating the codebase. We strongly recommend
+        completing two Beginner Issues before tackling an Intermediate Issue.
+
+        Intermediate Issues often involve:
+        - Exploring existing implementations  
+        - Understanding how different components work together  
+        - Making thoughtful changes that follow established patterns  
+
+        The goal is to support deeper problem-solving while keeping the task clear,
+        focused, and enjoyable to work on.
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        > [!IMPORTANT]
+        > ### 🧭 About Intermediate Issues
+        >
+        > Intermediate Issues are a great next step for contributors who enjoy
+        > digging into the codebase and reasoning about how things work.
+        >
+        > These issues often:
+        > - Involve multiple related files or components  
+        > - Encourage investigation and understanding of existing behavior  
+        > - Leave room for thoughtful implementation choices  
+        > - Stay focused on a clearly defined goal  
+        >
+        > Other kinds of contributions — from beginner-friendly tasks to large
+        > system-level changes — are just as valuable and use different labels.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🐞 Problem Description
+      description: |
+        Describe the problem clearly and precisely.
+
+        Try to explain:
+        - What is missing, unclear, or not working as expected  
+        - Where it lives in the codebase  
+        - Why it matters to users or contributors  
+      value: |
+        Describe the problem here.
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        <!-- Example (hidden in submission) -->
+        ## 🐞 Problem – Example (JavaScript)
+
+        Several query classes in the SDK expose similar configuration methods,
+        but `TransactionReceiptQuery` is missing validation that is present
+        in other query implementations.
+
+        For example, other query classes validate that a transaction ID has
+        been set before executing the query, but `TransactionReceiptQuery`
+        does not currently perform this check.
+
+        This can lead to unclear runtime errors when the query is executed
+        without a transaction ID.
+
+        Relevant files:
+        - `src/transaction/TransactionReceiptQuery.js`
+        - `src/transaction/TransactionRecordQuery.js`
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Expected Outcome
+      description: |
+        Describe what a good solution would look like.
+
+        While contributors can make reasonable implementation choices, this section
+        should clearly explain the desired behavior and constraints, including:
+        - What should change  
+        - What should stay the same  
+        - Any important constraints, conventions, or goals  
+      value: |
+        Describe the expected outcome here.
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        <!-- Example (hidden in submission) -->
+        ## 💡 Expected Outcome – Example (JavaScript)
+
+        Ensure that `TransactionReceiptQuery` validates that a transaction ID
+        has been set before execution.
+
+        The change should:
+        - Match the validation behavior used in similar query classes  
+          (for example, `TransactionRecordQuery`)
+        - Produce a **clear and actionable error message**, meaning:
+          - The error explains *what is missing*
+          - The error helps the user understand *how to fix it*
+        - Avoid changing the public API
+        - Not affect successful execution paths
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: 🧠 Implementation Notes
+      description: |
+        Share helpful technical context to guide implementation.
+
+        This section is optional but recommended for Intermediate issues.
+
+        For example:
+        - Which files or modules are likely involved  
+        - Similar patterns elsewhere in the codebase  
+        - Things to be careful about  
+        - Known edge cases or constraints  
+      value: |
+        Add implementation notes here.
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        <!-- Example (hidden in submission) -->
+        ## 🧠 Implementation Notes – Example (JavaScript)
+
+        Suggested approach:
+
+        - Review other query classes that require a transaction ID
+          (for example, `TransactionRecordQuery`)
+        - Identify where validation is performed before execution
+        - Add a similar validation step to `TransactionReceiptQuery`
+        - Ensure the error message format matches existing patterns
+        - Add or update a unit test to cover the missing-transaction-ID case
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: ✅ Acceptance Criteria
+      description: Define what “done” looks like for this issue
+      value: |
+        To help get this change merged smoothly:
+
+        - [ ] Address the problem described above  
+        - [ ] Follow existing project conventions  
+        - [ ] Avoid breaking public APIs  
+        - [ ] Include tests and/or example updates where appropriate  
+        - [ ] Pass all CI checks  
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: 📚 Additional Context or Resources
+      description: |
+        Add any links, references, or extra notes that may help.
+      value: |
+        If you have questions, the community is happy to help:
+
+        https://discord.com/channels/905194001349627914/1337424656138899537
+    validations:
+      required: false

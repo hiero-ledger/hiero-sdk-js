@@ -1,0 +1,214 @@
+name: Advanced Issue Template
+description: Create a high-impact issue for experienced contributors with deep familiarity with the codebase (JavaScript)
+title: "[Advanced]: "
+labels: ["advanced"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## **Thanks for contributing!** 🚀
+
+        We really appreciate your interest in working on an **Advanced issue**.
+
+        This template is for larger, more impactful tasks that shape how the
+        **Hiero JS SDK** evolves over time. These issues often involve deeper
+        design thinking, broader context, and long-term considerations.
+
+        They’re a great fit for contributors who enjoy tackling complex problems
+        and helping guide the direction of the project.
+
+        > Maintainers can read more about:
+        > [Advanced Issues](https://github.com/hiero-ledger/hiero-sdk-js/blob/main/manual/maintainers/guidelines-advanced-issues.md)
+        ---
+
+  - type: textarea
+    id: intro
+    attributes:
+      label: 🧠 Advanced
+      description: Who is this issue for?
+      value: |
+        This issue is well-suited for contributors who are very familiar with the
+        Hiero JS SDK and enjoy working with its core abstractions and design patterns.
+
+        Advanced Issues often involve:
+        - Exploring and shaping SDK architecture  
+        - Reasoning about trade-offs and long-term impact  
+        - Working across multiple modules or systems  
+        - Updating tests, examples, and documentation alongside code  
+
+        The goal is to support thoughtful, high-impact contributions in a clear
+        and collaborative way.
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        > [!IMPORTANT]
+        > ### 🧭 About Advanced Issues
+        >
+        > Advanced Issues usually focus on larger changes that influence how the
+        > SDK works as a whole.
+        >
+        > These issues often:
+        > - Touch core abstractions or shared utilities  
+        > - Span multiple parts of the codebase  
+        > - Involve design decisions and trade-offs  
+        > - Consider long-term maintainability and compatibility  
+        >
+        > Smaller fixes, focused refactors, and onboarding-friendly tasks are just
+        > as valuable and often use different labels.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 🐞 Problem Description
+      description: |
+        Describe the problem in detail.
+
+        Try to explain:
+        - What the current behavior is  
+        - Why it could be improved  
+        - Which parts of the SDK are involved  
+        - Any important context or background  
+      value: |
+        Describe the problem here.
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        <!-- Example for Problem (hidden in submission) -->
+        ## 🐞 Problem – Example (JavaScript)
+
+        The current transaction execution flow in the JavaScript SDK tightly couples
+        transaction submission, receipt polling, record retrieval, and retry logic
+        into a single execution path.
+
+        This coupling makes it difficult to:
+        - customize retry behavior
+        - extend execution semantics for scheduled transactions
+        - introduce mirror-node-backed execution strategies
+        - test individual execution stages in isolation
+
+        Several planned SDK enhancements would benefit from a clearer
+        separation of concerns in this area.
+
+        Relevant areas:
+        - `src/transaction/`
+        - `src/query/`
+        - `src/Executable.js`
+        - `src/client/`
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 💡 Proposed / Expected Outcome
+      description: |
+        Describe the intended direction or design.
+
+        Helpful things to include:
+        - The overall approach  
+        - Any new or updated abstractions  
+        - Important constraints (e.g. compatibility, performance)  
+        - Alternatives considered, if relevant  
+      value: |
+        Describe the proposed solution here.
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        <!-- Example for Solution (hidden in submission) -->
+        ## 💡 Proposed Solution – Example (JavaScript)
+
+        Introduce a dedicated **transaction execution pipeline** abstraction
+        that separates the following concerns:
+
+        - transaction submission
+        - receipt polling
+        - record retrieval
+        - retry and timeout logic
+
+        The new design should:
+        - preserve existing public APIs
+        - allow advanced users to override or extend execution behavior
+        - make individual execution stages independently testable
+
+        Existing transaction execution logic should be refactored
+        to use the new pipeline internally.
+
+  - type: textarea
+    id: implementation
+    attributes:
+      label: 🧠 Implementation & Design Notes
+      description: |
+        Share detailed technical guidance to support implementation.
+
+        You might include:
+        - Key modules or classes involved  
+        - Suggested refactoring approach  
+        - Migration or compatibility considerations  
+        - Testing strategy  
+        - Performance, concurrency, or security notes  
+      value: |
+        Add detailed implementation notes here.
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        <!-- Example for Implementation Notes (hidden in submission) -->
+        ## 🧠 Implementation Notes – Example (JavaScript)
+
+        Suggested approach:
+
+        - Review the current execution flow in `src/Executable.js` and
+          `src/transaction/Transaction.js`
+        - Design a new execution pipeline abstraction that separates concerns
+        - Refactor existing transaction execution code to delegate
+          to the new pipeline
+        - Preserve existing public APIs and default behavior
+        - Add focused unit tests for each pipeline stage
+        - Update at least one example to demonstrate extensibility
+
+        Care must be taken to preserve timeout semantics and retry behavior
+        relied upon by existing SDK users.
+
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: ✅ Acceptance Criteria
+      description: Define what “done” looks like for this issue
+      value: |
+        A pull request for this issue should:
+
+        - [ ] Address the problem and goals described above  
+        - [ ] Maintain backwards compatibility unless discussed otherwise  
+        - [ ] Follow existing architectural and JavaScript conventions  
+        - [ ] Include comprehensive tests  
+        - [ ] Update relevant examples and documentation  
+        - [ ] Pass all CI checks  
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: 📚 Additional Context, Links, or Prior Art
+      description: |
+        Add any references that may help:
+        - design documents  
+        - prior discussions  
+        - related issues or pull requests  
+        - external resources  
+      value: |
+        Optional.
+    validations:
+      required: false

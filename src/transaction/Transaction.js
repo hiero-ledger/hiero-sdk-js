@@ -2056,6 +2056,9 @@ export default class Transaction extends Executable {
             transactionId,
             transaction: this,
             logger: this._logger,
+            transactionNodeAccountIds: !this._nodeAccountIds.isEmpty
+                ? this._nodeAccountIds.list
+                : undefined,
         });
     }
 

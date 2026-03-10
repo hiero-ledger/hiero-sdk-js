@@ -1,0 +1,73 @@
+name: Bug report
+description: Create a report to help us improve
+labels: [ bug ]
+type: Bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Thanks for submitting a bug report!
+
+        Before submitting:
+        1. Try searching the existing issues and discussions to see if your issue has already been reported
+        2. Try asking on [Discord's hiero-general channel](discord.hiero.org)
+        3. If you're reporting a security vulnerability, please disclose responsibly via our [bug bounty program](https://hedera.com/bounty)
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened and what you did you expect to happen?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Steps to reproduce the behavior
+      placeholder: |
+        1. Run the program
+        2. Click on '...'
+        3. Scroll down to '...'
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Attach any logs or screenshots relevent to the problem.
+      placeholder: |
+        ![Screenshot](bug.png)
+
+        ```bash
+        2021-06-29T13:50:45.008-0600 INFO thread-1 Some logs
+        ```
+  - type: dropdown
+    id: network
+    attributes:
+      description: Which network(s) did the issue occur on?
+      label: Hedera network
+      multiple: true
+      options:
+        - mainnet
+        - testnet
+        - previewnet
+        - other
+  - type: input
+    id: version
+    attributes:
+      description: What version of the software are you using?
+      label: Version
+      placeholder: v0.1.0
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      description: Which OS did the issue occur on?
+      label: Operating system
+      options:
+        - Linux
+        - macOS
+        - Windows
+        - Other
+        

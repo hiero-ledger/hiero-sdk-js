@@ -11,8 +11,8 @@
 > The JavaScript SDK for interacting with a Hiero based network
 
 > [!NOTE]  
-> The project has been transfered from the https://github.com/hashgraph org and therefore the namespace is at several locations still based on `hashgraph` and `hedera`.
-> We are working activly on migration the namespace fully to hiero.
+> The project has been transferred from the [https://github.com/hashgraph](https://github.com/hashgraph) org and therefore the namespace is at several locations still based on `hashgraph` and `hedera`.
+> We are working actively on migrating the namespace fully to hiero.
 
 ## Install
 
@@ -66,6 +66,15 @@ $ npm install -g pnpm
 $ brew install pnpm
 ```
 
+### Windows
+
+> [!Note]
+> Long paths must be enabled. Link to official documentation: [Windows-Long-Path](https://learn.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=registry)
+>
+> Git must support long paths
+>
+> LF line endings must be enforced.
+
 After downloading the repo run:
 
 1. `task install`
@@ -87,9 +96,10 @@ task build:dev
 ```
 
 This command:
-- Builds all packages (`proto`, `cryptography`, and the main SDK)
-- Creates global symlinks for all three packages
-- Allows you to use the local SDK in any other project on your machine
+
+-   Builds all packages (`proto`, `cryptography`, and the main SDK)
+-   Creates global symlinks for all three packages
+-   Allows you to use the local SDK in any other project on your machine
 
 #### Use in Another Project
 
@@ -192,76 +202,103 @@ For detailed information on configuring the SDK, including environment variables
 
 ## Local Development Setup
 
-For contributors and developers who want to run integration tests locally, we provide **Solo** - the official Hiero local network solution. Solo provides a production-like Kubernetes-based environment with multiple consensus nodes and mirror node services.
+For contributors and developers who want to run integration tests locally, we provide **[Solo](https://solo.hiero.org/)** - the official Hiero local network solution. Solo provides a production-like Kubernetes-based environment with consensus nodes and mirror node services.
+
+> **Platform Requirements:** Solo can only run on **macOS** or **Linux**. Windows users must use WSL2.
+>
+> **RAM Requirements:**
+>
+> -   Single node setup: Minimum **12 GB RAM**
+> -   Dual node setup: Minimum **24 GB RAM** (required for dynamic address book tests)
+>
+> For complete system requirements, see the [official Solo documentation](https://solo.hiero.org/latest/docs/step-by-step-guide/#prerequisites).
 
 ### Quick Setup
 
 1. **Install dependencies:**
-   ```bash
-   task install
-   ```
-   
-   **Important:** This installs Solo and all project dependencies. Must be run before setup.
 
-2. **Set up Solo local network:**
-   ```bash
-   task solo:setup
-   ```
-   
-   This will automatically:
-   - Create a local Kubernetes cluster with Kind
-   - Deploy a 2-node consensus network (default: v0.69.1)
-   - Deploy mirror node services (default: v0.145.2)
-   - Create a dedicated ECDSA test account
-   - Generate a `.env` file with all necessary credentials
+    ```bash
+    task install
+    ```
 
-   **Optional:** Specify custom versions or use local build:
-   ```bash
-   # Custom consensus node version
-   task solo:setup -- --consensus-node-version v0.70.0
-   
-   # Custom mirror node version
-   task solo:setup -- --mirror-node-version v0.146.0
-   
-   # Both custom versions
-   task solo:setup -- --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
-   
-   # Use local build (overrides consensus-node-version)
-   task solo:setup -- --local-build-path ../hiero-consensus-node/hedera-node/data
-   ```
+2. **Run Solo setup (cluster + services):**
+
+    ```bash
+    # Single node setup (default, requires 12 GB RAM)
+    task solo:setup
+
+    # Dual node setup (requires 24 GB RAM, needed for DAB tests)
+    task solo:setup -- --num-nodes 2
+    ```
+
+    `solo:setup` is the only command that accepts initial version/build arguments:
+
+    ```bash
+    task solo:setup -- --consensus-node-version v0.70.0
+    task solo:setup -- --mirror-node-version v0.146.0
+    task solo:setup -- --consensus-node-version v0.70.0 --mirror-node-version v0.146.0
+    task solo:setup -- --local-build-path ../hiero-consensus-node/hedera-node/data
+    ```
+
+    Typical timing:
+
+    - First setup: ~10 minutes (image pulls + deployment)
+    - Resume after pause: ~4 minutes
 
 3. **(Required for dynamic address book tests) Configure hosts:**
-   
-   Before running dynamic address book tests, add Kubernetes service names to your `/etc/hosts` file:
-   
-   ```bash
-   echo "127.0.0.1 network-node1-svc.solo.svc.cluster.local" | sudo tee -a /etc/hosts
-   echo "127.0.0.1 envoy-proxy-node1-svc.solo.svc.cluster.local" | sudo tee -a /etc/hosts
-   echo "127.0.0.1 network-node2-svc.solo.svc.cluster.local" | sudo tee -a /etc/hosts
-   echo "127.0.0.1 envoy-proxy-node2-svc.solo.svc.cluster.local" | sudo tee -a /etc/hosts
-   ```
-   
-   **Note:** This is required for dynamic address book tests to pass. Skip if you're only running other integration tests.
+
+    Before running dynamic address book tests with dual-node setup, add Kubernetes service names to your `/etc/hosts` file:
+
+    ```bash
+    echo "127.0.0.1 network-node1-svc.solo.svc.cluster.local" | sudo tee -a /etc/hosts
+    echo "127.0.0.1 envoy-proxy-node1-svc.solo.svc.cluster.local" | sudo tee -a /etc/hosts
+    echo "127.0.0.1 network-node2-svc.solo.svc.cluster.local" | sudo tee -a /etc/hosts
+    echo "127.0.0.1 envoy-proxy-node2-svc.solo.svc.cluster.local" | sudo tee -a /etc/hosts
+    ```
+
+    **Note:** This is only required for dynamic address book tests with dual-node setup. Skip if you're running single-node or other integration tests.
 
 4. **Run integration tests:**
-   ```bash
-   task test:integration
-   ```
 
-5. **Teardown when done:**
-   ```bash
-   task solo:teardown
-   ```
+    ```bash
+    task test:integration
+    ```
+
+5. **Pause or fully tear down when done:**
+
+    ```bash
+    # Pause: destroys mirror node, stops consensus node, stops cluster
+    task solo:pause
+
+    # Complete teardown: removes everything
+    task solo:teardown
+    ```
+
+### Daily Development Workflow
+
+After initial setup, use this workflow for day-to-day development:
+
+```bash
+# Morning - Resume services (~4 minutes)
+task solo:resume
+
+# Work on your code and run tests
+task test:integration
+
+# End of day - Pause services
+task solo:pause
+```
 
 For detailed setup instructions, troubleshooting, and advanced usage, see the [Solo Setup Guide](./manual/SOLO_SETUP.md).
 
 ### Prerequisites
 
 Before setting up Solo, ensure you have:
-- Docker Desktop (or Docker Engine)
-- Kind (Kubernetes in Docker)
-- kubectl
-- Node.js v18+ (comes with npm/npx)
+
+-   Docker Desktop (or Docker Engine)
+-   Kind (Kubernetes in Docker)
+-   kubectl
+-   Node.js v18+ (comes with npm/npx)
 
 See the [Solo Setup Guide](./manual/SOLO_SETUP.md#prerequisites) for installation instructions.
 
@@ -302,13 +339,19 @@ task test:integration:dual-mode
 
 #### Running Dynamic Address Book Tests
 
-Dynamic address book tests require the `/etc/hosts` configuration described in step 3 of the setup. These tests validate that the SDK can correctly handle node address changes and reconnections using Kubernetes service names.
+Dynamic address book (DAB) tests require:
+
+1. **Dual-node setup**: Run `task solo:setup -- --num-nodes 2` (requires 24 GB RAM)
+2. **`/etc/hosts` configuration**: See step 4 in the setup section above
+
+These tests validate that the SDK can correctly handle node address changes and reconnections using Kubernetes service names.
 
 **Note:** All integration tests should pass reliably with the Solo setup. If you encounter failures:
-1. Verify Solo is running: `task solo:status`
-2. For dynamic address book test failures, ensure `/etc/hosts` is configured (see setup step 3)
+
+1. Verify Solo services are running: `task solo:status`
+2. For dynamic address book test failures, ensure you're using dual-node setup and `/etc/hosts` is configured
 3. Check the troubleshooting section in the [Solo Setup Guide](./manual/SOLO_SETUP.md#troubleshooting)
-4. Try a fresh setup: `task solo:teardown && task solo:setup`
+4. Try a complete reset: `task solo:teardown && task solo:setup`
 
 ## Contributing
 

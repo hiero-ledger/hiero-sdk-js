@@ -1,4 +1,5 @@
 import { defineConfig } from "vitest/config";
+import { playwright } from "@vitest/browser-playwright";
 import dotenv from "dotenv";
 import path from "path";
 import fs from "fs";
@@ -15,11 +16,13 @@ export default defineConfig({
         environment: "jsdom",
         watch: false,
         globals: true,
-
+        fileParallelism: false,
+        pool: "threads",
+        isolate: false,
         browser: {
             screenshotFailures: false,
             headless: true,
-            provider: "playwright",
+            provider: playwright(),
             enabled: true,
             instances: [{ browser: "chromium" }],
         },
@@ -38,7 +41,7 @@ export default defineConfig({
             include: ["src/**/*.js"],
             provider: "v8",
             reporter: ["text-summary", "lcov"],
-            reportsDirectory: "./coverage",
+            reportsDirectory: "./coverage/browser-integration-dual-mode",
         },
     },
     define: {

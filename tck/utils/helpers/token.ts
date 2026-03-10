@@ -158,9 +158,22 @@ export const mapTokenInfoResponse = (
     // Helper function to convert pause status
     const getPauseStatusString = (pauseStatus: boolean | null): string => {
         if (pauseStatus === null) {
-            return "NOT_APPLICABLE";
+            return null;
         }
-        return pauseStatus ? "PAUSED" : "UNPAUSED";
+        return pauseStatus ? "true" : "false";
+    };
+    // Helper to format AccountId as { realm, shard, num }
+    const formatAccountId = (
+        accountId: AccountId | null | undefined,
+    ): { realm: string; shard: string; num: string } | null => {
+        if (!accountId) {
+            return null;
+        }
+        return {
+            realm: accountId.realm.toString(),
+            shard: accountId.shard.toString(),
+            num: accountId.num.toString(),
+        };
     };
 
     // Helper function to serialize custom fees
@@ -169,7 +182,7 @@ export const mapTokenInfoResponse = (
             if (fee instanceof CustomFixedFee) {
                 return {
                     feeCollectorAccountId:
-                        fee.feeCollectorAccountId?.toString(),
+                        formatAccountId(fee.feeCollectorAccountId),
                     allCollectorsAreExempt: fee.allCollectorsAreExempt,
                     fixedFee: {
                         amount: fee.amount?.toString(),
@@ -180,7 +193,7 @@ export const mapTokenInfoResponse = (
             } else if (fee instanceof CustomFractionalFee) {
                 return {
                     feeCollectorAccountId:
-                        fee.feeCollectorAccountId?.toString(),
+                        formatAccountId(fee.feeCollectorAccountId),
                     allCollectorsAreExempt: fee.allCollectorsAreExempt,
                     fractionalFee: {
                         numerator: fee.numerator.toString(),
@@ -195,18 +208,18 @@ export const mapTokenInfoResponse = (
             } else if (fee instanceof CustomRoyaltyFee) {
                 const result: any = {
                     feeCollectorAccountId:
-                        fee.feeCollectorAccountId?.toString(),
+                        formatAccountId(fee.feeCollectorAccountId),
                     allCollectorsAreExempt: fee.allCollectorsAreExempt,
                     royaltyFee: {
                         numerator: fee.numerator.toString(),
                         denominator: fee.denominator.toString(),
                         fallbackFee: fee.fallbackFee
                             ? {
-                                  amount: fee.fallbackFee.amount?.toString(),
-                                  denominatingTokenId:
-                                      fee.fallbackFee.denominatingTokenId?.toString() ||
-                                      null,
-                              }
+                                amount: fee.fallbackFee.amount?.toString(),
+                                denominatingTokenId:
+                                    fee.fallbackFee.denominatingTokenId?.toString() ||
+                                    null,
+                            }
                             : null,
                     },
                 };
@@ -223,14 +236,14 @@ export const mapTokenInfoResponse = (
         decimals: info.decimals,
         totalSupply: info.totalSupply?.toString(),
         treasuryAccountId: info.treasuryAccountId?.toString(),
-        adminKey: info.adminKey?.toString(),
-        kycKey: info.kycKey?.toString(),
-        freezeKey: info.freezeKey?.toString(),
-        pauseKey: info.pauseKey?.toString(),
-        wipeKey: info.wipeKey?.toString(),
-        supplyKey: info.supplyKey?.toString(),
-        feeScheduleKey: info.feeScheduleKey?.toString(),
-        metadataKey: info.metadataKey?.toString(),
+        adminKey: info.adminKey?.toString() ?? "",
+        kycKey: info.kycKey?.toString() ?? "",
+        freezeKey: info.freezeKey?.toString() ?? "",
+        pauseKey: info.pauseKey?.toString() ?? "",
+        wipeKey: info.wipeKey?.toString() ?? "",
+        supplyKey: info.supplyKey?.toString() ?? "",
+        feeScheduleKey: info.feeScheduleKey?.toString() ?? "",
+        metadataKey: info.metadataKey?.toString() ?? "",
         defaultFreezeStatus: info.defaultFreezeStatus,
         defaultKycStatus: info.defaultKycStatus,
         pauseStatus: getPauseStatusString(info.pauseStatus),

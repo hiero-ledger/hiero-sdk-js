@@ -43,6 +43,7 @@ export default class TransactionResponse {
      * @param {TransactionId} props.transactionId
      * @param {Transaction} [props.transaction]
      * @param {Logger | null} [props.logger]
+     * @param {AccountId[]} [props.transactionNodeAccountIds]
      */
     constructor(props) {
         /** @readonly */
@@ -56,6 +57,14 @@ export default class TransactionResponse {
         this.transaction = props.transaction;
 
         this.logger = props.logger;
+
+        /**
+         * The node account IDs that were configured on the transaction.
+         * Used for receipt query failover when allowReceiptNodeFailover is enabled.
+         * @internal
+         * @type {AccountId[] | undefined}
+         */
+        this.transactionNodeAccountIds = props.transactionNodeAccountIds;
     }
 
     /**
@@ -77,7 +86,7 @@ export default class TransactionResponse {
     async getReceipt(client) {
         let receipt;
         try {
-            receipt = await this.getReceiptQuery().execute(client);
+            receipt = await this.getReceiptQuery(client).execute(client);
         } catch (err) {
             if (
                 err instanceof ReceiptStatusError &&
@@ -113,7 +122,7 @@ export default class TransactionResponse {
     async getRecord(client) {
         await this.getReceipt(client);
 
-        return this.getRecordQuery().execute(client);
+        return this.getRecordQuery(client).execute(client);
     }
 
     /**
@@ -125,10 +134,10 @@ export default class TransactionResponse {
     async getVerboseRecord(client) {
         try {
             // The receipt needs to be called in order to wait for transaction to be included in the consensus. Otherwise we are going to get "DUPLICATE_TRANSACTION".
-            await this.getReceiptQuery().execute(client);
-            return this.getRecordQuery().execute(client);
+            await this.getReceiptQuery(client).execute(client);
+            return this.getRecordQuery(client).execute(client);
         } catch (e) {
-            return this.getRecordQuery().execute(client);
+            return this.getRecordQuery(client).execute(client);
         }
     }
 
@@ -161,21 +170,97 @@ export default class TransactionResponse {
     }
 
     /**
+     * Create a receipt query for this transaction.
+     *
+     * By default, the query is pinned to the submitting node only. If the client has
+     * `allowReceiptNodeFailover` enabled, the query can fail over to other nodes while
+     * still starting with the submitting node first.
+     *
+     * When failover is enabled, the node list is determined by:
+     * 1. Transaction's configured nodes (if transaction had specific nodes set), or
+     * 2. Client's network nodes (as fallback)
+     *
+     * @param {Client} [client] - Optional client to enable failover behavior
      * @returns {TransactionReceiptQuery}
      */
-    getReceiptQuery() {
-        return new TransactionReceiptQuery()
-            .setTransactionId(this.transactionId)
-            .setNodeAccountIds([this.nodeId]);
+    getReceiptQuery(client) {
+        const query = new TransactionReceiptQuery().setTransactionId(
+            this.transactionId,
+        );
+
+        // If client is provided and failover is enabled, construct a node list
+        // that starts with the submitting node followed by other nodes
+        if (client != null && client.allowReceiptNodeFailover) {
+            // Use transaction's configured nodes if available, otherwise use client network
+            const availableNodes =
+                this.transactionNodeAccountIds != null &&
+                this.transactionNodeAccountIds.length > 0
+                    ? this.transactionNodeAccountIds
+                    : client._network.getNodeAccountIdsForExecute();
+
+            // Build node list: [submittedNode, ...otherNodes] without duplicates
+            const nodeList = [this.nodeId];
+            for (const node of availableNodes) {
+                // Only add if it's not the submitting node (avoid duplicates)
+                if (!node.equals(this.nodeId)) {
+                    nodeList.push(node);
+                }
+            }
+
+            query.setNodeAccountIds(nodeList);
+        } else {
+            // Default behavior: pin to submitting node only
+            query.setNodeAccountIds([this.nodeId]);
+        }
+
+        return query;
     }
 
     /**
+     * Create a record query for this transaction.
+     *
+     * By default, the query is pinned to the submitting node only. If the client has
+     * `allowReceiptNodeFailover` enabled, the query can fail over to other nodes while
+     * still starting with the submitting node first.
+     *
+     * When failover is enabled, the node list is determined by:
+     * 1. Transaction's configured nodes (if transaction had specific nodes set), or
+     * 2. Client's network nodes (as fallback)
+     *
+     * @param {Client} [client] - Optional client to enable failover behavior
      * @returns {TransactionRecordQuery}
      */
-    getRecordQuery() {
-        return new TransactionRecordQuery()
-            .setTransactionId(this.transactionId)
-            .setNodeAccountIds([this.nodeId]);
+    getRecordQuery(client) {
+        const query = new TransactionRecordQuery().setTransactionId(
+            this.transactionId,
+        );
+
+        // If client is provided and failover is enabled, construct a node list
+        // that starts with the submitting node followed by other nodes
+        if (client != null && client.allowReceiptNodeFailover) {
+            // Use transaction's configured nodes if available, otherwise use client network
+            const availableNodes =
+                this.transactionNodeAccountIds != null &&
+                this.transactionNodeAccountIds.length > 0
+                    ? this.transactionNodeAccountIds
+                    : client._network.getNodeAccountIdsForExecute();
+
+            // Build node list: [submittedNode, ...otherNodes] without duplicates
+            const nodeList = [this.nodeId];
+            for (const node of availableNodes) {
+                // Only add if it's not the submitting node (avoid duplicates)
+                if (!node.equals(this.nodeId)) {
+                    nodeList.push(node);
+                }
+            }
+
+            query.setNodeAccountIds(nodeList);
+        } else {
+            // Default behavior: pin to submitting node only
+            query.setNodeAccountIds([this.nodeId]);
+        }
+
+        return query;
     }
 
     /**

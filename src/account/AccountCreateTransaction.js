@@ -40,6 +40,7 @@ export default class AccountCreateTransaction extends Transaction {
      * @param {boolean} [props.declineStakingReward]
      * @param {EvmAddress} [props.delegationAddress]
      * @param {EvmAddress} [props.alias]
+     * @param {import("../hooks/HookCreationDetails.js").default[]} [props.hooks]
      */
     constructor(props = {}) {
         super();
@@ -127,6 +128,15 @@ export default class AccountCreateTransaction extends Transaction {
          * @type {?EvmAddress}
          */
         this._delegationAddress = null;
+         * @type {import("../hooks/HookCreationDetails.js").default[]}
+         */
+        this._hooks = [];
+
+        if (props.hooks != null) {
+            props.hooks.forEach((hook) => {
+                this.addHook(hook);
+            });
+        }
 
         if (props.key != null) {
             this.setKeyWithoutAlias(props.key);
@@ -684,12 +694,38 @@ export default class AccountCreateTransaction extends Transaction {
                     : null,
             stakedNodeId: this.stakedNodeId,
             declineReward: this.declineStakingRewards,
+            hookCreationDetails: this._hooks.map((hook) => hook._toProtobuf()),
             alias,
             delegationAddress:
                 this._delegationAddress != null
                     ? this._delegationAddress.toBytes()
                     : null,
         };
+    }
+
+    /**
+     * @param {import("../hooks/HookCreationDetails.js").default} hook
+     * @returns {this}
+     */
+    addHook(hook) {
+        this._hooks.push(hook);
+        return this;
+    }
+
+    /**
+     * @param {import("../hooks/HookCreationDetails.js").default[]} hooks
+     * @returns {this}
+     */
+    setHooks(hooks) {
+        this._hooks = hooks;
+        return this;
+    }
+
+    /**
+     * @returns {import("../hooks/HookCreationDetails.js").default[]}
+     */
+    get hooks() {
+        return this._hooks;
     }
 
     /**

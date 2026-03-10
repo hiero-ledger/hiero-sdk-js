@@ -1,6 +1,6 @@
 # Contributing to the Hiero SDK for JavaScript
 
-Thank you for your interest in contributing the Hiero SDK for JavaScript!
+Thank you for your interest in contributing to the Hiero SDK for JavaScript!
 
 We appreciate your interest in helping us and the rest of our community. We welcome bug reports, feature requests, and code contributions.
 
@@ -54,7 +54,13 @@ Please ensure that your bug report contains the following:
 
 ### Running Integration Tests
 
-To run integration tests locally, you need to set up Solo (the official Hiero local network):
+To run integration tests locally, you need to set up [Solo](https://solo.hiero.org/) (the official Hiero local network).
+
+**System Requirements:**
+- **Platform:** macOS or Linux only (Windows users must use WSL2)
+- **RAM:** Minimum 12 GB for single node, 24 GB for dual node (required for DAB tests)
+
+For complete system requirements, see the [official Solo documentation](https://solo.hiero.org/latest/docs/step-by-step-guide/#prerequisites).
 
 1. **Install dependencies:**
    ```bash
@@ -63,11 +69,15 @@ To run integration tests locally, you need to set up Solo (the official Hiero lo
 
 2. **Setup Solo local network:**
    ```bash
+   # Single node setup (default, requires 12 GB RAM)
    task solo:setup
+   
+   # OR dual node setup (requires 24 GB RAM, needed for DAB tests)
+   task solo:setup:dual-node
    ```
    
    This will automatically create a local Kubernetes-based network with:
-   - 2 consensus nodes
+   - Consensus node(s)
    - Mirror node services
    - A dedicated ECDSA test account
    - Auto-generated `.env` file
@@ -90,7 +100,7 @@ For detailed setup instructions and troubleshooting, see the [Solo Setup Guide](
 
 Feature requests are also submitted through the [Issues][issues] page.
 
-As with Bug Reports, please do a search of the open requests first before submitting a new one to avoid duplicates. If you do find a a feature request that represents your suggestion, please give it a +1.
+As with Bug Reports, please do a search of the open requests first before submitting a new one to avoid duplicates. If you do find a feature request that represents your suggestion, please give it a +1.
 
 **NOTE:** If you intend to implement this feature, please submit the feature request _before_ working on any code changes. This will allow members on the SDK team to assess the idea, discuss the design with you and ensure that it makes sense to include such a feature in the SDK.
 
@@ -101,9 +111,9 @@ Feature requests are labeled as [enhancements][label-enhancement].
 Open an [issue][issues] with the following:
 
 -   A short, descriptive title. Other community members should be able to understand the nature of the issue by reading this title.
--   A detailed description of the the proposed feature. Explain why you believe it should be added to the SDK. Illustrative example code may also be provided to help explain how the feature should work.
+-   A detailed description of the proposed feature. Explain why you believe it should be added to the SDK. Illustrative example code may also be provided to help explain how the feature should work.
 -   [Markdown][markdown] formatting as appropriate to make the request easier to read.
--   If you plan to implement this feature yourself, please let us know that you'd like to the issue to be assigned to you.
+-   If you plan to implement this feature yourself, please let us know that you'd like the issue to be assigned to you.
 
 ## Code Contributions
 
@@ -113,7 +123,7 @@ Code contributions to the SDK are handled using [Pull Requests][pull-requests]. 
 
     Any code you submit will be released under this license.
 
--   For anything other than small or quick changes, you should always start by reviewing the [Issues][issues] page to ensure that the nobody else is already working on the same issue.
+-   For anything other than small or quick changes, you should always start by reviewing the [Issues][issues] page to ensure that nobody else is already working on the same issue.
 
     If you're working on a bug fix, check to see whether the bug has already been reported. If it has but no one is assigned to it, ask one of the maintainers to assign it to you before beginning work. If you're confident the bug hasn't been reported yet, create a new [Bug Report](#bug-reports) and ask us to assign it to you.
 
@@ -139,7 +149,7 @@ To contribute, please fork the GitHub repository and submit a pull request to th
 
 ### Getting Your Pull Request Merged
 
-All Pull Requests must be approved by at least one member of the SDK team before it can be merged in. The members only have limited bandwidth to review Pull Requests so it's not unusual for a Pull Request to go unreviewed for a few days, especially if it's a large or complex one. After a couple of weeks, if you haven't received any feedback regarding your Pull Request from the SDK team, feel free to contact us on [Discord](https://discord.com/channels/373889138199494658) to ask for a review.
+All Pull Requests must be approved by at least one member of the SDK team before it can be merged. The members only have limited bandwidth to review Pull Requests so it's not unusual for a Pull Request to go unreviewed for a few days, especially if it's a large or complex one. After a couple of weeks, if you haven't received any feedback regarding your Pull Request from the SDK team, feel free to contact us on [Discord](https://discord.com/channels/373889138199494658) to ask for a review.
 
 ## Getting in Contact
 

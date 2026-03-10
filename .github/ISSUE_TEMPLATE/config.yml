@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+
+contact_links:
+  - name: 💬 Ask a Question
+    url: https://discord.com/channels/905194001349627914/1337424656138899537
+    about: Get help from the Hiero JS SDK community on Discord
+
+  - name: 📖 Contribution Guide
+    url: https://github.com/hiero-ledger/hiero-sdk-js/blob/main/README.md
+    about: Learn how to get started with contributing
+    

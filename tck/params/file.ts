@@ -32,3 +32,9 @@ export interface GetFileInfoParams extends BaseParams {
     readonly maxQueryPayment?: string;
     readonly getCost?: boolean;
 }
+
+export interface GetFileContentsParams extends BaseParams {
+    readonly fileId: string;
+    readonly queryPayment?: string;
+    readonly maxQueryPayment?: string;
+}

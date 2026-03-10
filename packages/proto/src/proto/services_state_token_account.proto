@@ -478,7 +478,7 @@ message Account {
     int64 first_hook_id = 37;
 
     /**
-     * The number of storage slots in use by this account's lambdas.
+     * The number of storage slots in use by this account's EVM hooks.
      */
     uint64 number_lambda_storage_slots = 38;
 
@@ -488,6 +488,7 @@ message Account {
      * result in the code of the authorized contract being executed.
      */
     bytes delegation_address = 39;
+    uint64 number_evm_hook_storage_slots = 38;
 }
 
 /**
