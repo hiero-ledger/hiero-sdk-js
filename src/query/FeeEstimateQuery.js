@@ -428,7 +428,9 @@ export default class FeeEstimateQuery {
                 if (response.status === 400) {
                     // 400 = malformed transaction (INVALID_ARGUMENT). Do not retry.
                     throw new Error(
-                        `HTTP 400 Bad Request${errorDetail ? `: ${errorDetail}` : ""}`,
+                        `HTTP 400 Bad Request${
+                            errorDetail ? `: ${errorDetail}` : ""
+                        }`,
                     );
                 }
 
@@ -438,7 +440,9 @@ export default class FeeEstimateQuery {
                     response.status === 504
                 ) {
                     lastError = new Error(
-                        `HTTP ${response.status}${errorDetail ? `: ${errorDetail}` : ""}`,
+                        `HTTP ${response.status}${
+                            errorDetail ? `: ${errorDetail}` : ""
+                        }`,
                     );
                     if (attempt < MAX_ATTEMPTS) {
                         await sleep(backoff);
@@ -449,7 +453,9 @@ export default class FeeEstimateQuery {
                 }
 
                 throw new Error(
-                    `HTTP ${response.status}${errorDetail ? `: ${errorDetail}` : ""}`,
+                    `HTTP ${response.status}${
+                        errorDetail ? `: ${errorDetail}` : ""
+                    }`,
                 );
             } catch (err) {
                 if (
