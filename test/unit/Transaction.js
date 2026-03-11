@@ -440,6 +440,30 @@ describe("Transaction", function () {
         expect(decoded._transactionIds.length).to.be.greaterThan(1);
     });
 
+    it("fromBytes succeeds for incomplete chunked file append with transaction IDs and no node IDs", function () {
+        const contents = new Uint8Array(5000).fill(1);
+        const transactionId = TransactionId.withValidStart(
+            new AccountId(9),
+            new Timestamp(10, 11),
+        );
+
+        const transaction = new FileAppendTransaction()
+            .setTransactionId(transactionId)
+            .setChunkSize(1024)
+            .setContents(contents);
+
+        const bytes = transaction.toBytes();
+
+        expect(() => FileAppendTransaction.fromBytes(bytes)).to.not.throw();
+        const decoded = FileAppendTransaction.fromBytes(bytes);
+
+        expect(decoded.transactionId.toString()).to.be.equal(
+            transactionId.toString(),
+        );
+        expect(decoded.nodeAccountIds).to.be.null;
+        expect(decoded._transactionIds.length).to.be.greaterThan(1);
+    });
+
     it("fromBytes succeeds for chunked submit message with one node and multiple transaction IDs", function () {
         const nodeAccountId = new AccountId(3);
         const message = Array(50).fill("message").join("");
