@@ -30,7 +30,8 @@ import SignableNodeTransactionBodyBytes from "./SignableNodeTransactionBodyBytes
  * @typedef {import("../schedule/ScheduleCreateTransaction.js").default} ScheduleCreateTransaction
  * @typedef {import("../PrivateKey.js").default} PrivateKey
  * @typedef {import("../channel/Channel.js").default} Channel
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../Signer.js").Signer} Signer
  */
 
@@ -438,7 +439,7 @@ export default class Transaction extends Executable {
      * @description Batchify method is used to mark a transaction as part of a batch transaction or make it so-called inner transaction.
      * The Transaction will be frozen and signed by the operator of the client.
      *
-     * @param {import("../client/Client.js").default<Channel, *>} client
+     * @param {Client} client
      * @param {Key} batchKey
      * @returns {Promise<this>}
      */
@@ -1706,7 +1707,7 @@ export default class Transaction extends Executable {
      *
      * @override
      * @protected
-     * @param {import("../client/Client.js").default<Channel, *>} client
+     * @param {Client} client
      * @returns {Promise<void>}
      */
     async _beforeExecute(client) {

@@ -4,7 +4,9 @@ import TokenDissociateTransaction from "../token/TokenDissociateTransaction.js";
 
 /**
  * @typedef {import("../PrivateKey.js").default} PrivateKey
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../Signer.js").default} Signer
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  * @typedef {import("../transaction/Transaction.js").default} Transaction
