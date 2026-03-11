@@ -403,7 +403,7 @@ export default class FileAppendTransaction extends Transaction {
     }
 
     /**
-     * @param {import("../client/Client.js").default<Channel, *>} client
+     * @param {Client} client
      * @param {number=} requestTimeout
      * @returns {Promise<TransactionResponse>}
      */
@@ -412,7 +412,7 @@ export default class FileAppendTransaction extends Transaction {
     }
 
     /**
-     * @param {import("../client/Client.js").default<Channel, *>} client
+     * @param {Client} client
      * @param {number=} requestTimeout
      * @returns {Promise<TransactionResponse[]>}
      */
