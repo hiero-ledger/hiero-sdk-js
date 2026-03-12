@@ -8,6 +8,7 @@ import Timestamp from "../Timestamp.js";
 import Duration from "../Duration.js";
 import Long from "long";
 import Key from "../Key.js";
+import EvmAddress from "../EvmAddress.js";
 
 /**
  * @namespace proto
@@ -45,6 +46,7 @@ export default class AccountUpdateTransaction extends Transaction {
      * @param {AccountId | string} [props.stakedAccountId]
      * @param {Long | number} [props.stakedNodeId]
      * @param {?boolean} [props.declineStakingReward]
+     * @param {EvmAddress} [props.delegationAddress]
      * @param {import("../hooks/HookCreationDetails.js").default[]} [props.hooksToBeCreated]
      * @param {Long[]} [props.hooksToBeDeleted]
      */
@@ -125,6 +127,9 @@ export default class AccountUpdateTransaction extends Transaction {
 
         /**
          * @private
+         * @type {?EvmAddress}
+         */
+        this._delegationAddress = null;
          * @type {import("../hooks/HookCreationDetails.js").default[]}
          */
         this._hooksToBeCreated = [];
@@ -182,6 +187,8 @@ export default class AccountUpdateTransaction extends Transaction {
             this.setDeclineStakingReward(props.declineStakingReward);
         }
 
+        if (props.delegationAddress != null) {
+            this.setDelegationAddress(props.delegationAddress);
         if (props.hooksToBeCreated != null) {
             this.setHooksToCreate(props.hooksToBeCreated);
         }
@@ -281,6 +288,10 @@ export default class AccountUpdateTransaction extends Transaction {
                         ? Object.hasOwn(update.declineReward, "value")
                             ? update.declineReward.value
                             : undefined
+                        : undefined,
+                delegationAddress:
+                    update.delegationAddress != null
+                        ? EvmAddress.fromBytes(update.delegationAddress)
                         : undefined,
             }),
             transactions,
@@ -557,6 +568,21 @@ export default class AccountUpdateTransaction extends Transaction {
     }
 
     /**
+     * @returns {?EvmAddress}
+     */
+    get delegationAddress() {
+        return this._delegationAddress;
+    }
+
+    /**
+     * @param {EvmAddress} delegationAddress
+     * @returns {this}
+     */
+    setDelegationAddress(delegationAddress) {
+        this._requireNotFrozen();
+        this._delegationAddress = delegationAddress;
+    }
+      
      * @param {import("../hooks/HookCreationDetails.js").default} hook
      * @returns {this}
      */
@@ -686,6 +712,10 @@ export default class AccountUpdateTransaction extends Transaction {
             declineReward:
                 this.declineStakingRewards != null
                     ? { value: this.declineStakingRewards }
+                    : null,
+            delegationAddress:
+                this._delegationAddress != null
+                    ? this._delegationAddress.toBytes()
                     : null,
 
             hookIdsToDelete: this._hooksToBeDeleted,
