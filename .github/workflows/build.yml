@@ -196,7 +196,7 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@4d42a74e8e644a2753f3bb7a2afa429305375b14 # 0.17.0
         with:
           installMirrorNode: true
-          hieroVersion: v0.73.0-pectra-preview-alpha.2
+          hieroVersion: v0.71.0
           mirrorNodeVersion: v0.142.0
           grpcProxyPort: 8080
           dualMode: true
