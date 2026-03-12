@@ -381,6 +381,7 @@ export const contractInfoQuery = async ({
     contractId,
     queryPayment,
     maxQueryPayment,
+    getCost,
     sessionId,
 }: ContractInfoQueryParams): Promise<ContractInfoQueryResponse> => {
     const client = sdk.getClient(sessionId);
@@ -400,38 +401,45 @@ export const contractInfoQuery = async ({
         query.setMaxQueryPayment(Hbar.fromTinybars(maxQueryPayment));
     }
 
+    if (getCost) {
+        const cost = await query.getCost(client);
+        return {
+            cost: cost.toTinybars().toString(),
+        };
+    }
+
     const result = await query.execute(client);
 
     return {
         contractId: result.contractId?.toString(),
         accountId: result.accountId?.toString(),
-        contractAccountId: result.contractAccountId || undefined,
+        contractAccountId: result.contractAccountId,
         adminKey: result.adminKey?.toString(),
         expirationTime: result.expirationTime?.toString(),
         autoRenewPeriod: result.autoRenewPeriod?.seconds?.toString(),
         autoRenewAccountId: result.autoRenewAccountId?.toString(),
         storage: result.storage?.toString(),
-        contractMemo: result.contractMemo || undefined,
+        contractMemo: result.contractMemo,
         balance: result.balance?.toTinybars().toString(),
         isDeleted: result.isDeleted,
         maxAutomaticTokenAssociations:
             result.maxAutomaticTokenAssociations?.toString(),
         ledgerId: result.ledgerId?.toString(),
-        stakingInfo: result.stakingInfo
-            ? {
-                  declineStakingReward: result.stakingInfo.declineStakingReward,
-                  stakePeriodStart:
-                      result.stakingInfo.stakePeriodStart?.toString(),
-                  pendingReward: result.stakingInfo.pendingReward
-                      ?.toTinybars()
-                      .toString(),
-                  stakedToMe: result.stakingInfo.stakedToMe
-                      ?.toTinybars()
-                      .toString(),
-                  stakedAccountId:
-                      result.stakingInfo.stakedAccountId?.toString(),
-                  stakedNodeId: result.stakingInfo.stakedNodeId?.toString(),
-              }
-            : undefined,
+        stakingInfo: {
+            declineStakingReward:
+                result.stakingInfo?.declineStakingReward,
+            stakePeriodStart:
+                result.stakingInfo?.stakePeriodStart?.toString(),
+            pendingReward: result.stakingInfo?.pendingReward
+                ?.toTinybars()
+                .toString(),
+            stakedToMe: result.stakingInfo?.stakedToMe
+                ?.toTinybars()
+                .toString(),
+            stakedAccountId:
+                result.stakingInfo?.stakedAccountId?.toString(),
+            stakedNodeId:
+                result.stakingInfo?.stakedNodeId?.toString(),
+        },
     };
 };

@@ -21,6 +21,7 @@ export interface ContractByteCodeQueryResponse {
 }
 
 export interface ContractInfoQueryResponse {
+    readonly cost?: string;
     readonly contractId?: string;
     readonly accountId?: string;
     readonly contractAccountId?: string;
