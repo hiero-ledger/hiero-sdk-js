@@ -381,7 +381,6 @@ export const contractInfoQuery = async ({
     contractId,
     queryPayment,
     maxQueryPayment,
-    getCost,
     sessionId,
 }: ContractInfoQueryParams): Promise<ContractInfoQueryResponse> => {
     const client = sdk.getClient(sessionId);
@@ -399,13 +398,6 @@ export const contractInfoQuery = async ({
 
     if (maxQueryPayment != null) {
         query.setMaxQueryPayment(Hbar.fromTinybars(maxQueryPayment));
-    }
-
-    if (getCost) {
-        const cost = await query.getCost(client);
-        return {
-            cost: cost.toTinybars().toString(),
-        };
     }
 
     const result = await query.execute(client);
