@@ -69,73 +69,6 @@ function isMultiTransactionIdType(transactionDataCase) {
 }
 
 /**
- * Validate transaction list shape and consistency.
- *
- * @param {NonNullable<HieroProto.proto.TransactionBody["data"]>} transactionDataCase
- * @param {TransactionId[]} transactionIds
- * @param {AccountId[]} nodeIds
- * @param {HieroProto.proto.ITransactionBody[]} bodies
- * @returns {void}
- */
-function validateTransactionBodies(
-    transactionDataCase,
-    transactionIds,
-    nodeIds,
-    bodies,
-) {
-    if (transactionIds.length === 0 || bodies.length === 0) {
-        return;
-    }
-
-    const transactionCount = transactionIds.length;
-    const nodeCount = nodeIds.length;
-
-    if (nodeCount === 0) {
-        if (
-            bodies.length !== transactionCount ||
-            (!isMultiTransactionIdType(transactionDataCase) &&
-                transactionCount !== 1)
-        ) {
-            throw new Error("failed to validate transaction bodies");
-        }
-
-        return;
-    }
-
-    if (
-        bodies.length !== transactionCount * nodeCount ||
-        (!isMultiTransactionIdType(transactionDataCase) &&
-            transactionCount !== 1)
-    ) {
-        throw new Error("failed to validate transaction bodies");
-    }
-
-    const ignoredFields = new Set();
-    ignoredFields.add("nodeAccountID");
-
-    for (
-        let transactionIndex = 0;
-        transactionIndex < transactionCount;
-        transactionIndex++
-    ) {
-        const rowStart = transactionIndex * nodeCount;
-        const referenceBody = bodies[rowStart];
-
-        for (let nodeIndex = 1; nodeIndex < nodeCount; nodeIndex++) {
-            if (
-                !util.compare(
-                    referenceBody,
-                    bodies[rowStart + nodeIndex],
-                    ignoredFields,
-                )
-            ) {
-                throw new Error("failed to validate transaction bodies");
-            }
-        }
-    }
-}
-
-/**
  * @type {Map<NonNullable<HieroProto.proto.TransactionBody["data"]>, (transactions: HieroProto.proto.ITransaction[], signedTransactions: HieroProto.proto.ISignedTransaction[], transactionIds: TransactionId[], nodeIds: AccountId[], bodies: HieroProto.proto.TransactionBody[]) => Transaction>}
  */
 export const TRANSACTION_REGISTRY = new Map();
@@ -528,6 +461,82 @@ export default class Transaction extends Executable {
     }
 
     /**
+     * Validate transaction list shape and consistency.
+     *
+     * @private
+     * @param {NonNullable<HieroProto.proto.TransactionBody["data"]>} transactionDataCase
+     * @param {TransactionId[]} transactionIds
+     * @param {AccountId[]} nodeIds
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
+     * @returns {void}
+     */
+    static _validateTransactionBodies(
+        transactionDataCase,
+        transactionIds,
+        nodeIds,
+        bodies,
+    ) {
+        const hasNoTransactionIds = transactionIds.length === 0;
+        const hasNoBodies = bodies.length === 0;
+
+        if (hasNoTransactionIds || hasNoBodies) {
+            return;
+        }
+
+        const transactionCount = transactionIds.length;
+        const nodeCount = nodeIds.length;
+        const isChunkedTransactionType =
+            isMultiTransactionIdType(transactionDataCase);
+        const hasInvalidLogicalTransactionCount =
+            !isChunkedTransactionType && transactionCount !== 1;
+
+        if (nodeCount === 0) {
+            const hasUnexpectedBodyCountWithoutNodes =
+                bodies.length !== transactionCount;
+
+            if (
+                hasUnexpectedBodyCountWithoutNodes ||
+                hasInvalidLogicalTransactionCount
+            ) {
+                throw new Error("failed to validate transaction bodies");
+            }
+
+            return;
+        }
+
+        const expectedBodyCount = transactionCount * nodeCount;
+        const hasUnexpectedBodyCount = bodies.length !== expectedBodyCount;
+
+        if (hasUnexpectedBodyCount || hasInvalidLogicalTransactionCount) {
+            throw new Error("failed to validate transaction bodies");
+        }
+
+        const ignoredFields = new Set();
+        ignoredFields.add("nodeAccountID");
+
+        for (
+            let transactionIndex = 0;
+            transactionIndex < transactionCount;
+            transactionIndex++
+        ) {
+            const rowStart = transactionIndex * nodeCount;
+            const referenceBody = bodies[rowStart];
+
+            for (let nodeIndex = 1; nodeIndex < nodeCount; nodeIndex++) {
+                if (
+                    !util.compare(
+                        referenceBody,
+                        bodies[rowStart + nodeIndex],
+                        ignoredFields,
+                    )
+                ) {
+                    throw new Error("failed to validate transaction bodies");
+                }
+            }
+        }
+    }
+
+    /**
      * This method is called by each `*Transaction._fromProtobuf()` method. It does
      * all the finalization before the user gets hold of a complete `Transaction`
      *
@@ -549,7 +558,7 @@ export default class Transaction extends Executable {
         bodies,
     ) {
         const body = bodies[0];
-        validateTransactionBodies(
+        Transaction._validateTransactionBodies(
             transaction._getTransactionDataCase(),
             transactionIds,
             nodeIds,
@@ -888,7 +897,7 @@ export default class Transaction extends Executable {
             );
         }
 
-        validateTransactionBodies(
+        Transaction._validateTransactionBodies(
             this._getTransactionDataCase(),
             this._transactionIds.list,
             this._nodeAccountIds.list,
