@@ -58,6 +58,17 @@ const DEFAULT_TRANSACTION_VALID_DURATION = 120;
 export const CHUNK_SIZE = 1024;
 
 /**
+ * @param {NonNullable<HieroProto.proto.TransactionBody["data"]>} transactionDataCase
+ * @returns {boolean}
+ */
+function isMultiTransactionIdType(transactionDataCase) {
+    return (
+        transactionDataCase === "fileAppend" ||
+        transactionDataCase === "consensusSubmitMessage"
+    );
+}
+
+/**
  * @type {Map<NonNullable<HieroProto.proto.TransactionBody["data"]>, (transactions: HieroProto.proto.ITransaction[], signedTransactions: HieroProto.proto.ISignedTransaction[], transactionIds: TransactionId[], nodeIds: AccountId[], bodies: HieroProto.proto.TransactionBody[]) => Transaction>}
  */
 export const TRANSACTION_REGISTRY = new Map();
@@ -450,6 +461,82 @@ export default class Transaction extends Executable {
     }
 
     /**
+     * Validate transaction list shape and consistency.
+     *
+     * @private
+     * @param {NonNullable<HieroProto.proto.TransactionBody["data"]>} transactionDataCase
+     * @param {TransactionId[]} transactionIds
+     * @param {AccountId[]} nodeIds
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
+     * @returns {void}
+     */
+    static _validateTransactionBodies(
+        transactionDataCase,
+        transactionIds,
+        nodeIds,
+        bodies,
+    ) {
+        const hasNoTransactionIds = transactionIds.length === 0;
+        const hasNoBodies = bodies.length === 0;
+
+        if (hasNoTransactionIds || hasNoBodies) {
+            return;
+        }
+
+        const transactionCount = transactionIds.length;
+        const nodeCount = nodeIds.length;
+        const isChunkedTransactionType =
+            isMultiTransactionIdType(transactionDataCase);
+        const hasInvalidLogicalTransactionCount =
+            !isChunkedTransactionType && transactionCount !== 1;
+
+        if (nodeCount === 0) {
+            const hasUnexpectedBodyCountWithoutNodes =
+                bodies.length !== transactionCount;
+
+            if (
+                hasUnexpectedBodyCountWithoutNodes ||
+                hasInvalidLogicalTransactionCount
+            ) {
+                throw new Error("failed to validate transaction bodies");
+            }
+
+            return;
+        }
+
+        const expectedBodyCount = transactionCount * nodeCount;
+        const hasUnexpectedBodyCount = bodies.length !== expectedBodyCount;
+
+        if (hasUnexpectedBodyCount || hasInvalidLogicalTransactionCount) {
+            throw new Error("failed to validate transaction bodies");
+        }
+
+        const ignoredFields = new Set();
+        ignoredFields.add("nodeAccountID");
+
+        for (
+            let transactionIndex = 0;
+            transactionIndex < transactionCount;
+            transactionIndex++
+        ) {
+            const rowStart = transactionIndex * nodeCount;
+            const referenceBody = bodies[rowStart];
+
+            for (let nodeIndex = 1; nodeIndex < nodeCount; nodeIndex++) {
+                if (
+                    !util.compare(
+                        referenceBody,
+                        bodies[rowStart + nodeIndex],
+                        ignoredFields,
+                    )
+                ) {
+                    throw new Error("failed to validate transaction bodies");
+                }
+            }
+        }
+    }
+
+    /**
      * This method is called by each `*Transaction._fromProtobuf()` method. It does
      * all the finalization before the user gets hold of a complete `Transaction`
      *
@@ -471,22 +558,12 @@ export default class Transaction extends Executable {
         bodies,
     ) {
         const body = bodies[0];
-
-        // "row" of the 2-D `bodies` array has all the same contents except for `nodeAccountID`
-        for (let i = 0; i < transactionIds.length; i++) {
-            for (let j = 0; j < nodeIds.length - 1; j++) {
-                if (
-                    !util.compare(
-                        bodies[i * nodeIds.length + j],
-                        bodies[i * nodeIds.length + j + 1],
-                        // eslint-disable-next-line ie11/no-collection-args
-                        new Set(["nodeAccountID"]),
-                    )
-                ) {
-                    throw new Error("failed to validate transaction bodies");
-                }
-            }
-        }
+        Transaction._validateTransactionBodies(
+            transaction._getTransactionDataCase(),
+            transactionIds,
+            nodeIds,
+            bodies,
+        );
 
         // Remove node account IDs of 0
         // _IIRC_ this was initial due to some funny behavior with `ScheduleCreateTransaction`
@@ -792,6 +869,43 @@ export default class Transaction extends Executable {
     }
 
     /**
+     * Defense-in-depth validation before adding signatures.
+     *
+     * @private
+     * @returns {void}
+     */
+    _validateSignedTransactionBodies() {
+        if (
+            this._transactionIds.length === 0 ||
+            this._signedTransactions.length === 0
+        ) {
+            return;
+        }
+
+        /** @type {HieroProto.proto.ITransactionBody[]} */
+        const bodies = [];
+
+        for (const signedTransaction of this._signedTransactions.list) {
+            if (signedTransaction.bodyBytes == null) {
+                throw new Error("failed to validate transaction bodies");
+            }
+
+            bodies.push(
+                HieroProto.proto.TransactionBody.decode(
+                    /** @type {Uint8Array} */ (signedTransaction.bodyBytes),
+                ),
+            );
+        }
+
+        Transaction._validateTransactionBodies(
+            this._getTransactionDataCase(),
+            this._transactionIds.list,
+            this._nodeAccountIds.list,
+            bodies,
+        );
+    }
+
+    /**
      * Sign the transaction with the public key and signer function
      *
      * If sign on demand is enabled no signing will be done immediately, instead
@@ -821,6 +935,8 @@ export default class Transaction extends Executable {
             // this public key has already signed this transaction
             return this;
         }
+
+        this._validateSignedTransactionBodies();
 
         // If we add a new signer, then we need to re-create all transactions
         this._transactions.clear();
