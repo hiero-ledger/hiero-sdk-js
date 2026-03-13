@@ -7,6 +7,7 @@ import {
     Timestamp,
     Transaction,
     TransactionId,
+    TransferTransaction,
     PublicKey,
     PrivateKey,
 } from "../../src/index.js";
@@ -201,6 +202,85 @@ describe("Transaction legacy", function () {
                 "transaction successfully built from invalid bytes",
             );
         }
+    });
+
+    it("fromBytes fails for non-chunked TransactionList with multiple transaction IDs and one node", function () {
+        const nodeAccountId = new AccountId(3);
+        const payerAccountId = new AccountId(201);
+        const receiverA = new AccountId(202);
+        const receiverB = new AccountId(9999);
+
+        const transactionA = new TransferTransaction()
+            .setNodeAccountIds([nodeAccountId])
+            .setTransactionId(
+                TransactionId.fromString("0.0.201@1700000010.000000001"),
+            )
+            .addHbarTransfer(payerAccountId, new Hbar(-1))
+            .addHbarTransfer(receiverA, new Hbar(1))
+            .freeze();
+
+        const transactionB = new TransferTransaction()
+            .setNodeAccountIds([nodeAccountId])
+            .setTransactionId(
+                TransactionId.fromString("0.0.201@1700000011.000000001"),
+            )
+            .addHbarTransfer(payerAccountId, new Hbar(-2))
+            .addHbarTransfer(receiverB, new Hbar(2))
+            .freeze();
+
+        const listA = HashgraphProto.proto.TransactionList.decode(
+            transactionA.toBytes(),
+        ).transactionList;
+        const listB = HashgraphProto.proto.TransactionList.decode(
+            transactionB.toBytes(),
+        ).transactionList;
+
+        const mixedBytes = HashgraphProto.proto.TransactionList.encode({
+            transactionList: [listA[0], listB[0]],
+        }).finish();
+
+        expect(() => Transaction.fromBytes(mixedBytes)).to.throw(
+            "failed to validate transaction bodies",
+        );
+    });
+
+    it("fromBytes fails for non-chunked TransactionList with duplicate txID-node pair and mismatched body", function () {
+        const nodeAccountId = new AccountId(3);
+        const payerAccountId = new AccountId(201);
+        const receiverA = new AccountId(202);
+        const receiverB = new AccountId(9999);
+        const sharedTxId = TransactionId.fromString(
+            "0.0.201@1700000010.000000001",
+        );
+
+        const transactionA = new TransferTransaction()
+            .setNodeAccountIds([nodeAccountId])
+            .setTransactionId(sharedTxId)
+            .addHbarTransfer(payerAccountId, new Hbar(-1))
+            .addHbarTransfer(receiverA, new Hbar(1))
+            .freeze();
+
+        const transactionB = new TransferTransaction()
+            .setNodeAccountIds([nodeAccountId])
+            .setTransactionId(sharedTxId)
+            .addHbarTransfer(payerAccountId, new Hbar(-2))
+            .addHbarTransfer(receiverB, new Hbar(2))
+            .freeze();
+
+        const listA = HashgraphProto.proto.TransactionList.decode(
+            transactionA.toBytes(),
+        ).transactionList;
+        const listB = HashgraphProto.proto.TransactionList.decode(
+            transactionB.toBytes(),
+        ).transactionList;
+
+        const mixedBytes = HashgraphProto.proto.TransactionList.encode({
+            transactionList: [listA[0], listB[0]],
+        }).finish();
+
+        expect(() => Transaction.fromBytes(mixedBytes)).to.throw(
+            "failed to validate transaction bodies",
+        );
     });
 
     describe("balance must be the same before and after serialization/deserialization", function () {

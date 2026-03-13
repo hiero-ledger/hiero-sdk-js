@@ -133,7 +133,7 @@ export default class AccountBalance {
      */
     toJSON() {
         const tokens = [];
-        
+
         for (const [key, value] of this.tokens) {
             const decimals = this.tokenDecimals.get(key);
 
