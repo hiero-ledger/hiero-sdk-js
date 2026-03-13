@@ -104,14 +104,118 @@ jobs:
           sudo npx playwright install-deps
           npx playwright install
 
-      - name: Prepare Hiero Solo
-        id: solo
-        uses: hiero-ledger/hiero-solo-action@4d42a74e8e644a2753f3bb7a2afa429305375b14 # v0.16
+      - name: Check Docker Resources
+        run: |
+          read cpus mem <<<"$(docker info --format '{{.NCPU}} {{.MemTotal}}')"
+          mem_gb=$(awk -v m="$mem" 'BEGIN{printf "%.1f", m/1000000000}')
+          echo "CPU cores: $cpus"
+          echo "Memory: ${mem_gb} GB"
+
+      - name: Setup Kind
+        uses: helm/kind-action@a1b0e391336a6ee6713a0583f8c6240d70863de3
         with:
-          installMirrorNode: true
-          hieroVersion: v0.69.1
-          mirrorNodeVersion: v0.138.0
-          grpcProxyPort: 8080
+          install_only: true
+          node_image: kindest/node:v1.31.4@sha256:2cb39f7295fe7eafee0842b1052a599a4fb0f8bcf3f83d96c7f4864c357c6c30
+          version: v0.26.0
+          kubectl_version: v1.31.4
+          verbosity: 3
+          wait: 120s
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.12.0
+
+      - name: Install Solo CLI
+        run: |
+          set -euo pipefail
+          npm install -g @hashgraph/solo@0.61.0
+          solo --version
+          kind --version
+
+      - name: Deploy Solo
+        id: solo
+        env:
+          SOLO_CLUSTER_NAME: solo
+          SOLO_NAMESPACE: solo
+          SOLO_CLUSTER_SETUP_NAMESPACE: solo-cluster
+          SOLO_DEPLOYMENT: solo-deployment
+        run: |
+          set -euo pipefail
+          kind create cluster -n "${SOLO_CLUSTER_NAME}"
+
+          timeout_command=()
+          if command -v timeout >/dev/null 2>&1; then
+            timeout_command=(timeout --preserve-status 40m)
+          elif command -v gtimeout >/dev/null 2>&1; then
+            timeout_command=(gtimeout --preserve-status 40m)
+          fi
+
+          TEST_EXIT_CODE=0
+          set +e
+          "${timeout_command[@]}" solo one-shot single deploy --deployment "${SOLO_DEPLOYMENT}" --dev 2>&1 | tee solo-deploy.log
+          TEST_EXIT_CODE=${PIPESTATUS[0]}
+          set -e
+          echo "deployExitCode=${TEST_EXIT_CODE}" >> "${GITHUB_OUTPUT}"
+
+          if [[ "${TEST_EXIT_CODE}" -ne 0 ]]; then
+            echo "Solo deploy failed with exit code ${TEST_EXIT_CODE}. Continuing to upload logs."
+            exit 0
+          fi
+
+          solo ledger account create --deployment "${SOLO_DEPLOYMENT}" --dev | tee solo-account-ed25519.log
+          account_id="$(grep -Eo 'accountId[:[:space:]]+[0-9]+\.[0-9]+\.[0-9]+' solo-account-ed25519.log | tail -n1 | awk '{print $2}')"
+          if [[ -z "${account_id}" ]]; then
+            account_id="$(grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' solo-account-ed25519.log | tail -n1)"
+          fi
+          if [[ -z "${account_id}" ]]; then
+            echo "Failed to parse ED25519 account ID from Solo output" >&2
+            exit 1
+          fi
+
+          solo ledger account update --account-id "${account_id}" --hbar-amount 100 --deployment "${SOLO_DEPLOYMENT}" --dev
+
+          encoded_key=""
+          for _ in {1..30}; do
+            encoded_key="$(kubectl get secret "account-key-${account_id}" -n "${SOLO_NAMESPACE}" -o jsonpath='{.data.privateKey}' 2>/dev/null || true)"
+            if [[ -n "${encoded_key}" ]]; then
+              break
+            fi
+            sleep 2
+          done
+          if [[ -z "${encoded_key}" ]]; then
+            echo "Failed to fetch private key secret for ${account_id}" >&2
+            exit 1
+          fi
+
+          private_key="$(echo "${encoded_key}" | base64 --decode)"
+          if [[ -z "${private_key}" ]]; then
+            echo "Failed to decode private key for ${account_id}" >&2
+            exit 1
+          fi
+
+          {
+            echo "ed25519AccountId=${account_id}"
+            echo "ed25519PrivateKey=${private_key}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Upload Solo Debug Logs (Test)
+        if: ${{ always() && !cancelled() }}
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: solo-debug-test
+          path: |
+            ./solo-deploy.log
+            ./solo-account-ed25519.log
+            ~/.solo/logs/*
+          overwrite: true
+          if-no-files-found: warn
+
+      - name: Fail if Solo Deploy Failed (Test)
+        if: ${{ steps.solo.outputs.deployExitCode != '0' }}
+        run: |
+          echo "Solo deployment failed with exit code ${{ steps.solo.outputs.deployExitCode }}"
+          exit 1
 
       - name: Set Operator Account
         run: |
@@ -191,16 +295,118 @@ jobs:
           sudo npx playwright install-deps
           npx playwright install
 
-      - name: Prepare Hiero Solo
-        id: solo
-        uses: hiero-ledger/hiero-solo-action@4d42a74e8e644a2753f3bb7a2afa429305375b14 # 0.17.0
+      - name: Check Docker Resources
+        run: |
+          read cpus mem <<<"$(docker info --format '{{.NCPU}} {{.MemTotal}}')"
+          mem_gb=$(awk -v m="$mem" 'BEGIN{printf "%.1f", m/1000000000}')
+          echo "CPU cores: $cpus"
+          echo "Memory: ${mem_gb} GB"
+
+      - name: Setup Kind
+        uses: helm/kind-action@a1b0e391336a6ee6713a0583f8c6240d70863de3
         with:
-          installMirrorNode: true
-          hieroVersion: v0.69.1
-          mirrorNodeVersion: v0.142.0
-          grpcProxyPort: 8080
-          dualMode: true
-          dualModeGrpcProxyPort: 8081
+          install_only: true
+          node_image: kindest/node:v1.31.4@sha256:2cb39f7295fe7eafee0842b1052a599a4fb0f8bcf3f83d96c7f4864c357c6c30
+          version: v0.26.0
+          kubectl_version: v1.31.4
+          verbosity: 3
+          wait: 120s
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.12.0
+
+      - name: Install Solo CLI
+        run: |
+          set -euo pipefail
+          npm install -g @hashgraph/solo@0.61.0
+          solo --version
+          kind --version
+
+      - name: Deploy Solo
+        id: solo
+        env:
+          SOLO_CLUSTER_NAME: solo
+          SOLO_NAMESPACE: solo
+          SOLO_CLUSTER_SETUP_NAMESPACE: solo-cluster
+          SOLO_DEPLOYMENT: solo-deployment
+        run: |
+          set -euo pipefail
+          kind create cluster -n "${SOLO_CLUSTER_NAME}"
+
+          timeout_command=()
+          if command -v timeout >/dev/null 2>&1; then
+            timeout_command=(timeout --preserve-status 40m)
+          elif command -v gtimeout >/dev/null 2>&1; then
+            timeout_command=(gtimeout --preserve-status 40m)
+          fi
+
+          TEST_EXIT_CODE=0
+          set +e
+          "${timeout_command[@]}" solo one-shot single deploy --deployment "${SOLO_DEPLOYMENT}" --num-consensus-nodes 2 --dev 2>&1 | tee solo-deploy.log
+          TEST_EXIT_CODE=${PIPESTATUS[0]}
+          set -e
+          echo "deployExitCode=${TEST_EXIT_CODE}" >> "${GITHUB_OUTPUT}"
+
+          if [[ "${TEST_EXIT_CODE}" -ne 0 ]]; then
+            echo "Solo deploy failed with exit code ${TEST_EXIT_CODE}. Continuing to upload logs."
+            exit 0
+          fi
+
+          solo ledger account create --deployment "${SOLO_DEPLOYMENT}" --dev | tee solo-account-ed25519.log
+          account_id="$(grep -Eo 'accountId[:[:space:]]+[0-9]+\.[0-9]+\.[0-9]+' solo-account-ed25519.log | tail -n1 | awk '{print $2}')"
+          if [[ -z "${account_id}" ]]; then
+            account_id="$(grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' solo-account-ed25519.log | tail -n1)"
+          fi
+          if [[ -z "${account_id}" ]]; then
+            echo "Failed to parse ED25519 account ID from Solo output" >&2
+            exit 1
+          fi
+
+          solo ledger account update --account-id "${account_id}" --hbar-amount 100 --deployment "${SOLO_DEPLOYMENT}" --dev
+
+          encoded_key=""
+          for _ in {1..30}; do
+            encoded_key="$(kubectl get secret "account-key-${account_id}" -n "${SOLO_NAMESPACE}" -o jsonpath='{.data.privateKey}' 2>/dev/null || true)"
+            if [[ -n "${encoded_key}" ]]; then
+              break
+            fi
+            sleep 2
+          done
+          if [[ -z "${encoded_key}" ]]; then
+            echo "Failed to fetch private key secret for ${account_id}" >&2
+            exit 1
+          fi
+
+          private_key="$(echo "${encoded_key}" | base64 --decode)"
+          if [[ -z "${private_key}" ]]; then
+            echo "Failed to decode private key for ${account_id}" >&2
+            exit 1
+          fi
+
+          {
+            echo "ed25519AccountId=${account_id}"
+            echo "ed25519PrivateKey=${private_key}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Upload Solo Debug Logs (DAB)
+        if: ${{ always() && !cancelled() }}
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: solo-debug-dab
+          path: |
+            ./solo-deploy.log
+            ./solo-account-ed25519.log
+            ~/.solo/logs/*
+          overwrite: true
+          if-no-files-found: warn
+
+      - name: Fail if Solo Deploy Failed (DAB)
+        if: ${{ steps.solo.outputs.deployExitCode != '0' }}
+        run: |
+          echo "Solo deployment failed with exit code ${{ steps.solo.outputs.deployExitCode }}"
+          exit 1
 
       - name: Set Operator Account
         run: |
@@ -303,14 +509,118 @@ jobs:
       - name: Install dependencies and build SDK
         run: task build
 
-      - name: Prepare Hiero Solo
-        id: solo
-        uses: hiero-ledger/hiero-solo-action@4d42a74e8e644a2753f3bb7a2afa429305375b14 # v0.16
+      - name: Check Docker Resources
+        run: |
+          read cpus mem <<<"$(docker info --format '{{.NCPU}} {{.MemTotal}}')"
+          mem_gb=$(awk -v m="$mem" 'BEGIN{printf "%.1f", m/1000000000}')
+          echo "CPU cores: $cpus"
+          echo "Memory: ${mem_gb} GB"
+
+      - name: Setup Kind
+        uses: helm/kind-action@a1b0e391336a6ee6713a0583f8c6240d70863de3
         with:
-          installMirrorNode: true
-          hieroVersion: v0.69.1
-          mirrorNodeVersion: v0.138.0
-          grpcProxyPort: 8080
+          install_only: true
+          node_image: kindest/node:v1.31.4@sha256:2cb39f7295fe7eafee0842b1052a599a4fb0f8bcf3f83d96c7f4864c357c6c30
+          version: v0.26.0
+          kubectl_version: v1.31.4
+          verbosity: 3
+          wait: 120s
+
+      - name: Set up Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22.12.0
+
+      - name: Install Solo CLI
+        run: |
+          set -euo pipefail
+          npm install -g @hashgraph/solo@0.61.0
+          solo --version
+          kind --version
+
+      - name: Deploy Solo
+        id: solo
+        env:
+          SOLO_CLUSTER_NAME: solo
+          SOLO_NAMESPACE: solo
+          SOLO_CLUSTER_SETUP_NAMESPACE: solo-cluster
+          SOLO_DEPLOYMENT: solo-deployment
+        run: |
+          set -euo pipefail
+          kind create cluster -n "${SOLO_CLUSTER_NAME}"
+
+          timeout_command=()
+          if command -v timeout >/dev/null 2>&1; then
+            timeout_command=(timeout --preserve-status 40m)
+          elif command -v gtimeout >/dev/null 2>&1; then
+            timeout_command=(gtimeout --preserve-status 40m)
+          fi
+
+          TEST_EXIT_CODE=0
+          set +e
+          "${timeout_command[@]}" solo one-shot single deploy --deployment "${SOLO_DEPLOYMENT}" --dev 2>&1 | tee solo-deploy.log
+          TEST_EXIT_CODE=${PIPESTATUS[0]}
+          set -e
+          echo "deployExitCode=${TEST_EXIT_CODE}" >> "${GITHUB_OUTPUT}"
+
+          if [[ "${TEST_EXIT_CODE}" -ne 0 ]]; then
+            echo "Solo deploy failed with exit code ${TEST_EXIT_CODE}. Continuing to upload logs."
+            exit 0
+          fi
+
+          solo ledger account create --generate-ecdsa-key --deployment "${SOLO_DEPLOYMENT}" --dev | tee solo-account-ecdsa.log
+          account_id="$(grep -Eo 'accountId[:[:space:]]+[0-9]+\.[0-9]+\.[0-9]+' solo-account-ecdsa.log | tail -n1 | awk '{print $2}')"
+          if [[ -z "${account_id}" ]]; then
+            account_id="$(grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' solo-account-ecdsa.log | tail -n1)"
+          fi
+          if [[ -z "${account_id}" ]]; then
+            echo "Failed to parse ECDSA account ID from Solo output" >&2
+            exit 1
+          fi
+
+          solo ledger account update --account-id "${account_id}" --hbar-amount 100 --deployment "${SOLO_DEPLOYMENT}" --dev
+
+          encoded_key=""
+          for _ in {1..30}; do
+            encoded_key="$(kubectl get secret "account-key-${account_id}" -n "${SOLO_NAMESPACE}" -o jsonpath='{.data.privateKey}' 2>/dev/null || true)"
+            if [[ -n "${encoded_key}" ]]; then
+              break
+            fi
+            sleep 2
+          done
+          if [[ -z "${encoded_key}" ]]; then
+            echo "Failed to fetch private key secret for ${account_id}" >&2
+            exit 1
+          fi
+
+          private_key="$(echo "${encoded_key}" | base64 --decode)"
+          if [[ -z "${private_key}" ]]; then
+            echo "Failed to decode private key for ${account_id}" >&2
+            exit 1
+          fi
+
+          {
+            echo "ecdsaAccountId=${account_id}"
+            echo "ecdsaPrivateKey=${private_key}"
+          } >> "${GITHUB_OUTPUT}"
+
+      - name: Upload Solo Debug Logs (Examples)
+        if: ${{ always() && !cancelled() }}
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        with:
+          name: solo-debug-examples
+          path: |
+            ./solo-deploy.log
+            ./solo-account-ecdsa.log
+            ~/.solo/logs/*
+          overwrite: true
+          if-no-files-found: warn
+
+      - name: Fail if Solo Deploy Failed (Examples)
+        if: ${{ steps.solo.outputs.deployExitCode != '0' }}
+        run: |
+          echo "Solo deployment failed with exit code ${{ steps.solo.outputs.deployExitCode }}"
+          exit 1
 
       - name: Set Operator Account
         run: |
