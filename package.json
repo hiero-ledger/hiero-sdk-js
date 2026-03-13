@@ -69,7 +69,7 @@
         "@hiero-ledger/proto": "workspace:*",
         "ansi-regex": "6.2.2",
         "ansi-styles": "6.2.3",
-        "bignumber.js": "9.1.1",
+        "bignumber.js": "10.0.2",
         "bn.js": "5.2.3",
         "crypto-js": "4.2.0",
         "debug": "4.4.1",
