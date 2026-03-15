@@ -42,7 +42,7 @@ tasks:
 
     "lint:dpdm":
         cmds:
-            - ./node_modules/.bin/dpdm src/index.js --circular true --tree false --warning false > /dev/null
+            - ./node_modules/.bin/dpdm *.js --circular true --tree false --warning false > /dev/null
 
     "lint:format":
         cmds:
