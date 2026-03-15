@@ -69,8 +69,6 @@
         "@hiero-ledger/proto": "workspace:*",
         "ansi-regex": "6.2.2",
         "ansi-styles": "6.2.3",
-        "bignumber.js": "9.1.1",
-        "bn.js": "5.2.3",
         "crypto-js": "4.2.0",
         "debug": "4.4.1",
         "js-base64": "3.7.4",
@@ -140,10 +138,6 @@
         "vite": "7.3.1",
         "vitest": "4.0.18"
     },
-    "peerDependencies": {
-        "bn.js": "5.2.3"
-    },
-    "resolutions": {
-        "bn.js": "5.2.3"
-    }
+    "peerDependencies": {},
+    "resolutions": {}
 }

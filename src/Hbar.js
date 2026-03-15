@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import BigNumber from "bignumber.js";
+import BigNumber from "./BigNumberCompat.js";
 import { valueToLong } from "./long.js";
 import HbarUnit from "./HbarUnit.js";
 
@@ -21,7 +21,7 @@ export default class Hbar {
      */
     constructor(amount, unit = HbarUnit.Hbar) {
         if (unit === HbarUnit.Tinybar) {
-            this._valueInTinybar = valueToLong(amount);
+            this._valueInTinybar = new BigNumber(valueToLong(amount));
         } else {
             /** @type {BigNumber} */
             let bigAmount;

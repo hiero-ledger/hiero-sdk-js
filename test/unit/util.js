@@ -1,4 +1,4 @@
-import BigNumber from "bignumber.js";
+import BigNumber from "../../src/BigNumberCompat.js";
 import Long from "long";
 import * as util from "../../src/util.js";
 

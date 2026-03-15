@@ -6,7 +6,7 @@ import {
     AssessedCustomFee,
 } from "../../src/index.js";
 import Long from "long";
-import BigNumber from "bignumber.js";
+import BigNumber from "../../src/BigNumberCompat.js";
 
 describe("CustomFeeLimit", function () {
     it("should set the correct account id", function () {

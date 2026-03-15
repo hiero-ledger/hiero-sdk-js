@@ -1,6 +1,6 @@
 import TokenTransfer from "../../src/token/TokenTransfer.js";
 import Long from "long";
-import BigNumber from "bignumber.js";
+import BigNumber from "../../src/BigNumberCompat.js";
 
 describe("TokenTransfer", function () {
     describe("_fromProtobuf with optional parameters", function () {

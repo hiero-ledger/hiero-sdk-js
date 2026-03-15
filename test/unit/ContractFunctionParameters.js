@@ -1,7 +1,7 @@
 import { ContractFunctionParameters } from "../../src/index.js";
 import * as hex from "../../src/encoding/hex.js";
 
-import BigNumber from "bignumber.js";
+import BigNumber from "../../src/BigNumberCompat.js";
 
 const int32 = 16909060;
 

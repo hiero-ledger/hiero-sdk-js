@@ -7,7 +7,7 @@ import {
     Transaction,
 } from "../../src/index.js";
 import Long from "long";
-import BigNumber from "bignumber.js";
+import BigNumber from "../../src/BigNumberCompat.js";
 
 describe("TokenMintTransaction", function () {
     const tokenId = new TokenId(1, 2, 3);

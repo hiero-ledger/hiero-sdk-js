@@ -7,7 +7,7 @@ import ContractFunctionSelector, {
 import * as utf8 from "../encoding/utf8.js";
 import * as hex from "../encoding/hex.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import BigNumber from "bignumber.js";
+import BigNumber from "../BigNumberCompat.js";
 import * as util from "../util.js";
 import { defaultAbiCoder } from "@ethersproject/abi";
 import { arrayify } from "@ethersproject/bytes";
@@ -1356,7 +1356,7 @@ export default class ContractFunctionParameters {
 
     /**
      * @internal
-     * @param {string | boolean | number | Uint8Array | BigNumber | string[] | boolean[] | number[] | Uint8Array[] | BigNumber[]} param
+     * @param {string | boolean | number | bigint | Uint8Array | BigNumber | string[] | boolean[] | number[] | bigint[] | Uint8Array[] | BigNumber[]} param
      * @param {boolean} dynamic
      * @returns {ContractFunctionParameters}
      */

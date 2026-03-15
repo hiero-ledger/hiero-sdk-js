@@ -15,7 +15,7 @@ import * as hex from "../../src/encoding/hex.js";
 import Client from "../../src/client/NodeClient.js";
 import * as HashgraphProto from "@hiero-ledger/proto";
 import Long from "long";
-import BigNumber from "bignumber.js";
+import BigNumber from "../../src/BigNumberCompat.js";
 import sinon from "sinon";
 
 describe("Transaction legacy", function () {

@@ -12,7 +12,7 @@ import {
 import { wait } from "../../src/util.js";
 import { REQUIRE_ARRAY_ERROR } from "../../src/util.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
-import BigNumber from "bignumber.js";
+import BigNumber from "../../../src/BigNumberCompat.js";
 import Long from "long";
 
 const EXTREMUM = {

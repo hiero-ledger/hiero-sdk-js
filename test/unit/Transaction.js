@@ -18,7 +18,7 @@ import * as hex from "../../src/encoding/hex.js";
 import Client from "../../src/client/NodeClient.js";
 import * as HieroProto from "@hiero-ledger/proto";
 import Long from "long";
-import BigNumber from "bignumber.js";
+import BigNumber from "../../src/BigNumberCompat.js";
 import SignatureMap from "../../src/transaction/SignatureMap.js";
 import SignableNodeTransactionBodyBytes from "../../src/transaction/SignableNodeTransactionBodyBytes.js";
 

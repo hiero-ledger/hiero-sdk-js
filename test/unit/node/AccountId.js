@@ -1,6 +1,6 @@
 import { proto } from "@hiero-ledger/proto";
 
-import BigNumber from "bignumber.js";
+import BigNumber from "../../src/BigNumberCompat.js";
 import EvmAddress from "../../../src/EvmAddress.js";
 import {
     AccountId,

@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import BigNumber from "bignumber.js";
 import Long from "long";
 
 /**
@@ -16,7 +15,7 @@ export const REQUIRE_UINT8ARRAY_ERROR = "This value must be a Uint8Array.";
 export const REQUIRE_STRING_OR_UINT8ARRAY_ERROR =
     "This value must be a string or Uint8Array.";
 export const REQUIRE_NUMBER_ERROR = "This value must be a Number.";
-export const REQUIRE_BIGNUMBER_ERROR = "This value must be a BigNumber.";
+export const REQUIRE_BIGNUMBER_ERROR = "This value must be a BigNumber or bigint.";
 export const REQUIRE_ARRAY_ERROR = "The provided variable must be an Array.";
 export const REQUIRE_LONG_ERROR = "This value must be a Long.";
 
@@ -24,9 +23,9 @@ export const REQUIRE_TYPE_ERROR =
     "The provided variables are not matching types.";
 
 export const FUNCTION_CONVERT_TO_BIGNUMBER_ERROR =
-    "This value must be a String, Number, or BigNumber to be converted.";
+    "This value must be a String, Number, bigint, or BigNumber-like to be converted.";
 export const FUNCTION_CONVERT_TO_NUMBER_ERROR =
-    "This value must be a String, Number, or BigNumber to be converted.";
+    "This value must be a String, Number, bigint, or BigNumber-like to be converted.";
 export const FUNCTION_CONVERT_TO_NUMBER_PARSE_ERROR =
     "Unable to parse given variable. Returns NaN.";
 
@@ -77,13 +76,20 @@ export function isNumber(variable) {
 }
 
 /**
- * Takes any param and returns true if param is not null and of type BigNumber.
+ * Returns true if the value is a native bigint or a BigNumber-like object
+ * (duck-typed by presence of a `toFixed` method, for backward compatibility).
  *
  * @param {any | null | undefined} variable
  * @returns {boolean}
  */
 export function isBigNumber(variable) {
-    return isNonNull(variable) && variable instanceof BigNumber;
+    if (!isNonNull(variable)) return false;
+    if (typeof variable === "bigint") return true;
+    // Duck-type BigNumber-like objects for backward compat
+    return (
+        typeof variable === "object" &&
+        typeof variable.toFixed === "function"
+    );
 }
 
 /**
@@ -180,18 +186,22 @@ export function requireType(variable, type) {
 }
 
 /**
- * Takes any param and throws custom error if non BigNumber.
+ * Takes any param and throws custom error if it cannot be converted to bigint.
+ * Accepts native bigint or BigNumber-like objects (backward compat).
  *
  * @param {any | null | undefined} variable
- * @returns {BigNumber}
+ * @returns {bigint}
  */
 export function requireBigNumber(variable) {
-    if (!isBigNumber(requireNonNull(variable))) {
+    requireNonNull(variable);
+    if (!isBigNumber(variable)) {
         throw new Error(REQUIRE_BIGNUMBER_ERROR);
-    } else {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return /** @type {BigNumber} */ (variable);
     }
+    if (typeof variable === "bigint") return variable;
+    if (typeof variable === "object" && typeof variable.toFixed === "function") {
+        return BigInt(variable.toFixed());
+    }
+    return BigInt(variable.toString());
 }
 
 /**
@@ -272,62 +282,92 @@ export function requireStringOrUint8Array(variable) {
 //Conversions
 
 /**
- * Converts number or string to BigNumber.
+ * Converts a numeric value to native bigint.
+ * Accepts bigint, number, string, Long, or BigNumber-like objects (duck-typed).
  *
  * @param {any | null | undefined} variable
- * @returns {BigNumber}
+ * @returns {bigint}
  */
-export function convertToBigNumber(variable) {
+export function convertToBigInt(variable) {
     requireNonNull(variable);
+    if (typeof variable === "bigint") {
+        return variable;
+    }
+    if (typeof variable === "number") {
+        return BigInt(Math.trunc(variable));
+    }
+    if (isString(variable) || isLong(variable)) {
+        return BigInt(variable.toString());
+    }
+    // Duck-type BigNumber-like objects (toFixed returns integer string)
     if (
-        isBigNumber(variable) ||
-        isString(variable) ||
-        isNumber(variable) ||
-        isLong(variable)
+        typeof variable === "object" &&
+        variable !== null &&
+        typeof variable.toFixed === "function"
     ) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        return new BigNumber(variable);
+        return BigInt(variable.toFixed());
     }
     throw new Error(FUNCTION_CONVERT_TO_BIGNUMBER_ERROR);
 }
 
 /**
- * Converts amount (number, Long, BigNumber, or bigint) to Long.
- * This utility ensures consistent amount handling across the SDK.
+ * Converts number or string to bigint.
+ * Kept for backward compatibility — use convertToBigInt instead.
  *
- * @param {number | Long | BigNumber | bigint} amount
+ * @param {any | null | undefined} variable
+ * @returns {bigint}
+ */
+export function convertToBigNumber(variable) {
+    return convertToBigInt(variable);
+}
+
+/**
+ * Converts amount (number, Long, bigint, or BigNumber-like) to Long.
+ *
+ * @param {number | Long | bigint | object} amount
  * @returns {Long}
  */
 export function convertAmountToLong(amount) {
     requireNonNull(amount);
 
-    // Preserve exact original behavior for existing types
     if (Long.isLong(amount)) {
-        return amount;
+        return /** @type {Long} */ (amount);
     } else if (typeof amount === "number") {
         return Long.fromNumber(amount);
-    } else if (BigNumber.isBigNumber(amount)) {
-        return Long.fromValue(
-            amount.integerValue(BigNumber.ROUND_DOWN).toString(),
-        );
     } else if (typeof amount === "bigint") {
         return Long.fromValue(amount.toString());
+    } else if (
+        typeof amount === "object" &&
+        amount !== null &&
+        typeof /** @type {any} */ (amount).toFixed === "function"
+    ) {
+        // BigNumber-like: use toFixed to get integer string
+        return Long.fromValue(/** @type {any} */ (amount).toFixed());
     } else {
-        // Handle other types that can be converted to string
         return Long.fromValue(String(amount));
     }
 }
+
 /**
- * Converts Array of Numbers or Strings to Array of BigNumbers.
+ * Converts an array of numeric values to an array of bigint.
+ * Kept for backward compatibility — use convertToBigIntArray instead.
  *
  * @param {any | null | undefined} variable
- * @returns {Array<BigNumber>}
+ * @returns {Array<bigint>}
  */
 export function convertToBigNumberArray(variable) {
+    return convertToBigIntArray(variable);
+}
+
+/**
+ * Converts an array of numeric values to an array of bigint.
+ *
+ * @param {any | null | undefined} variable
+ * @returns {Array<bigint>}
+ */
+export function convertToBigIntArray(variable) {
     if (variable instanceof Array) {
-        return /** @type {Array<BigNumber>} */ (
-            variable.map(convertToBigNumber)
-        );
+        return variable.map(convertToBigInt);
     } else {
         throw new Error(REQUIRE_ARRAY_ERROR);
     }
