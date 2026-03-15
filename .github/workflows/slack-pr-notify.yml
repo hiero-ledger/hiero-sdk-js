@@ -8,6 +8,9 @@ defaults:
   run:
     shell: bash
 
+env:
+  js-sdk-channel-id: C0958RN2ZTR
+
 permissions:
   contents: read
   pull-requests: read
@@ -29,7 +32,7 @@ jobs:
           token: ${{ secrets.SLACK_BOT_TOKEN }}
           payload: |
             {
-              "channel": "C0958RN2ZTR",
+              "channel": "${{ env.js-sdk-channel-id }}",
               "text": "New PR opened: <${{ github.event.pull_request.html_url }}|${{ github.event.pull_request.title }}>",
               "blocks": [
                 {
