@@ -1,11 +1,19 @@
 import {
-    NodeCreateTransaction,
     AccountCreateTransaction,
-    PrivateKey,
+    BlockNodeApi,
+    BlockNodeServiceEndpoint,
     Hbar,
+    NodeCreateTransaction,
+    NodeUpdateTransaction,
+    PrivateKey,
     ServiceEndpoint,
+    Status,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import {
+    createRegisteredNode,
+    deleteRegisteredNode,
+} from "./utils/RegisteredNodes.js";
 
 // eslint-disable-next-line vitest/no-disabled-tests
 describe("NodeCreateTransaction", function () {
@@ -17,64 +25,95 @@ describe("NodeCreateTransaction", function () {
         env = await IntegrationTestEnv.new();
     });
 
-    it("should create and update a network node", async function () {
-        // Set the operator to be genesis operator
-
+    it("Given an existing registered node, when a NodeCreateTransaction is executed with the registered node's ID in associatedRegisteredNodes, then the consensus node is created with the association", async function () {
         env.client.setOperator(env.genesisOperatorId, env.genesisOperatorKey);
 
-        // The account of the new node
+        let registeredNodeId = null;
+        let registeredNodeAdminKey = null;
+        let createdNodeId = null;
+        const nodeAdminKey = PrivateKey.generateED25519();
 
-        // Create a new account id for the new node
-        const accountCreateTx = await new AccountCreateTransaction()
-            .setKeyWithoutAlias(PrivateKey.generateED25519())
-            .setInitialBalance(new Hbar(1))
-            .execute(env.client);
-        const accountCreateReceipt = await accountCreateTx.getReceipt(
-            env.client,
-        );
-        const accountId = accountCreateReceipt.accountId;
+        try {
+            registeredNodeAdminKey = PrivateKey.generateED25519();
+            const registeredNodeReceipt = await createRegisteredNode(
+                env.client,
+                registeredNodeAdminKey,
+                [
+                    new BlockNodeServiceEndpoint()
+                        .setDomainName("node-create.association.example")
+                        .setPort(443)
+                        .setRequiresTls(true)
+                        .setEndpointApis([BlockNodeApi.Publish]),
+                ],
+                "NodeCreate association target",
+            );
 
-        const description = "test";
+            expect(registeredNodeReceipt.status).to.equal(Status.Success);
+            registeredNodeId = registeredNodeReceipt.registeredNodeId;
 
-        // Create endpoints
-        const endpoint = new ServiceEndpoint()
-            .setDomainName("tests.com")
-            .setPort(1234);
-        const endpoint2 = new ServiceEndpoint()
-            .setDomainName("test.com")
-            .setPort(123);
+            const accountCreateTx = await new AccountCreateTransaction()
+                .setKeyWithoutAlias(PrivateKey.generateED25519())
+                .setInitialBalance(new Hbar(1))
+                .execute(env.client);
+            const accountCreateReceipt = await accountCreateTx.getReceipt(
+                env.client,
+            );
+            const accountId = accountCreateReceipt.accountId;
 
-        // Set up grpcWebProxyEndpoint address
-        const grpcWebProxyEndpoint = new ServiceEndpoint()
-            .setDomainName("test.com")
-            .setPort(12345);
+            const endpoint = new ServiceEndpoint()
+                .setDomainName("tests.com")
+                .setPort(1234);
+            const endpoint2 = new ServiceEndpoint()
+                .setDomainName("test.com")
+                .setPort(123);
+            const grpcWebProxyEndpoint = new ServiceEndpoint()
+                .setDomainName("test.com")
+                .setPort(12345);
 
-        // Convert hex string to byte array
-        const validGossipCert = new Uint8Array(
-            validGossipCertDER
-                .match(/.{1,2}/g)
-                .map((byte) => parseInt(byte, 16)),
-        );
+            const validGossipCert = new Uint8Array(
+                validGossipCertDER
+                    .match(/.{1,2}/g)
+                    .map((byte) => parseInt(byte, 16)),
+            );
 
-        // Generate admin key
-        const adminKey = PrivateKey.generateED25519();
-        // Create the node
+            const response = await new NodeCreateTransaction()
+                .setAccountId(accountId)
+                .setAdminKey(nodeAdminKey.publicKey)
+                .setDescription("test")
+                .setGossipCaCertificate(validGossipCert)
+                .setGossipEndpoints([endpoint, endpoint2])
+                .setServiceEndpoints([endpoint, endpoint2])
+                .setAssociatedRegisteredNodes([registeredNodeId])
+                .setDeclineReward(true)
+                .setGrpcWebProxyEndpoint(grpcWebProxyEndpoint)
+                .execute(env.client);
+            const receipt = await response.getReceipt(env.client);
 
-        await (
-            await (
-                await new NodeCreateTransaction()
-                    .setAccountId(accountId)
-                    .setAdminKey(adminKey)
-                    .setDescription(description)
-                    .setGossipCaCertificate(validGossipCert)
-                    .setGossipEndpoints([endpoint, endpoint2])
-                    .setServiceEndpoints([endpoint, endpoint2])
-                    .setDeclineReward(true)
-                    .setGrpcWebProxyEndpoint(grpcWebProxyEndpoint)
-                    .freezeWith(env.client)
-                    .sign(adminKey)
-            ).execute(env.client)
-        ).getReceipt(env.client);
+            expect(receipt.status).to.equal(Status.Success);
+            expect(receipt.nodeId).to.not.be.null;
+            createdNodeId = receipt.nodeId;
+        } finally {
+            if (createdNodeId != null) {
+                const clearAssociationTx = await new NodeUpdateTransaction()
+                    .setNodeId(createdNodeId)
+                    .clearAssociatedRegisteredNodes()
+                    .freezeWith(env.client);
+
+                await clearAssociationTx.sign(nodeAdminKey);
+                await (
+                    await clearAssociationTx.execute(env.client)
+                ).getReceipt(env.client);
+            }
+
+            if (registeredNodeId != null && registeredNodeAdminKey != null) {
+                const deleteReceipt = await deleteRegisteredNode(
+                    env.client,
+                    registeredNodeId,
+                    registeredNodeAdminKey,
+                );
+                expect(deleteReceipt.status).to.equal(Status.Success);
+            }
+        }
     });
 
     afterAll(async function () {

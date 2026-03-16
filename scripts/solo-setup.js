@@ -43,6 +43,9 @@ function showHelp() {
         `  --mirror-node-version <version>      Mirror node version (default: ${DEFAULT_MIRROR_NODE_VERSION})`,
     );
     console.log(
+        "  --mirror-node-chart-dir <path>       Mirror node local chart directory path (omits --mirror-node-version when present)",
+    );
+    console.log(
         "  --local-build-path <path>            Path to local build (overrides consensus-node-version for node setup)",
     );
     console.log(
@@ -67,6 +70,9 @@ function showHelp() {
         "  ./scripts/solo-setup.js --local-build-path ../hiero-consensus-node/hedera-node/data",
     );
     console.log(
+        "  ./scripts/solo-setup.js --mirror-node-chart-dir ~/hiero-mirror-node/charts",
+    );
+    console.log(
         "  ./scripts/solo-setup.js --consensus-node-version v0.70.0 --block-node-release-tag v0.18.0",
     );
 }
@@ -75,6 +81,7 @@ function parseArgs(argv) {
     let numNodes = DEFAULT_NUM_NODES;
     let consensusVersion = DEFAULT_CONSENSUS_NODE_VERSION;
     let mirrorVersion = DEFAULT_MIRROR_NODE_VERSION;
+    let mirrorNodeChartDir = "";
     let localBuildPath = "";
     let blockNodeReleaseTag = process.env.BLOCK_NODE_RELEASE_TAG || "";
 
@@ -105,6 +112,15 @@ function parseArgs(argv) {
                 throw new Error("Missing value for --mirror-node-version");
             }
             mirrorVersion = value;
+            continue;
+        }
+
+        if (argument.startsWith("--mirror-node-chart-dir=")) {
+            const value = argument.slice("--mirror-node-chart-dir=".length);
+            if (!value) {
+                throw new Error("Missing value for --mirror-node-chart-dir");
+            }
+            mirrorNodeChartDir = value;
             continue;
         }
 
@@ -156,6 +172,17 @@ function parseArgs(argv) {
                 index += 1;
                 break;
             }
+            case "--mirror-node-chart-dir": {
+                const value = argv[index + 1];
+                if (!value) {
+                    throw new Error(
+                        "Missing value for --mirror-node-chart-dir",
+                    );
+                }
+                mirrorNodeChartDir = value;
+                index += 1;
+                break;
+            }
             case "--local-build-path": {
                 const value = argv[index + 1];
                 if (!value) {
@@ -192,6 +219,7 @@ function parseArgs(argv) {
         numNodes,
         consensusVersion,
         mirrorVersion,
+        mirrorNodeChartDir,
         localBuildPath,
         blockNodeReleaseTag,
     };
@@ -200,13 +228,18 @@ function parseArgs(argv) {
 function setEnvironment({
     consensusVersion,
     mirrorVersion,
+    mirrorNodeChartDir,
     blockNodeReleaseTag,
 }) {
     process.env.SOLO_CLUSTER_NAME = SOLO_CLUSTER_NAME;
     process.env.SOLO_NAMESPACE = SOLO_NAMESPACE;
     process.env.SOLO_CLUSTER_SETUP_NAMESPACE = SOLO_CLUSTER_SETUP_NAMESPACE;
     process.env.SOLO_DEPLOYMENT = SOLO_DEPLOYMENT;
-    process.env.MIRROR_NODE_VERSION = mirrorVersion;
+    if (mirrorNodeChartDir) {
+        delete process.env.MIRROR_NODE_VERSION;
+    } else {
+        process.env.MIRROR_NODE_VERSION = mirrorVersion;
+    }
     if (blockNodeReleaseTag) {
         process.env.BLOCK_NODE_RELEASE_TAG = blockNodeReleaseTag;
     }
@@ -544,9 +577,23 @@ async function deployMirror() {
         SOLO_DEPLOYMENT,
         "--cluster-ref",
         SOLO_CLUSTER_NAME,
-        "--pinger",
-        "--dev",
     ]);
+
+    if (mirrorNodeChartDir) {
+        mirrorNodeArgs.push("--mirror-node-chart-dir", mirrorNodeChartDir);
+        log.info(
+            `Deploying mirror node services from local chart dir: ${mirrorNodeChartDir}`,
+        );
+    } else {
+        mirrorNodeArgs.push("--mirror-node-version", mirrorVersion);
+        log.info(
+            `Deploying mirror node services (version: ${mirrorVersion})...`,
+        );
+    }
+
+    mirrorNodeArgs.push("--pinger", "--dev");
+
+    await runCommand("npx", mirrorNodeArgs);
 
     log.success("Mirror node deployed");
 }
@@ -556,11 +603,17 @@ async function main() {
         numNodes,
         consensusVersion,
         mirrorVersion,
+        mirrorNodeChartDir,
         localBuildPath,
         blockNodeReleaseTag,
     } = parseArgs(process.argv.slice(2));
 
-    setEnvironment({ consensusVersion, mirrorVersion, blockNodeReleaseTag });
+    setEnvironment({
+        consensusVersion,
+        mirrorVersion,
+        mirrorNodeChartDir,
+        blockNodeReleaseTag,
+    });
 
     log.info("======================================");
     log.info("Solo Setup for hiero-sdk-js");
@@ -574,7 +627,14 @@ async function main() {
             `  - Consensus Node Version: ${process.env.CONSENSUS_NODE_VERSION}`,
         );
     }
-    log.info(`  - Mirror Node Version: ${process.env.MIRROR_NODE_VERSION}`);
+    if (mirrorNodeChartDir) {
+        log.info(
+            "  - Mirror Node Version: <omitted (local mirror chart mode)>",
+        );
+        log.info(`  - Mirror Node Chart Dir: ${mirrorNodeChartDir}`);
+    } else {
+        log.info(`  - Mirror Node Version: ${process.env.MIRROR_NODE_VERSION}`);
+    }
     if (localBuildPath) {
         log.info("  - Block Node Release Tag: <omitted (local build mode)>");
     } else {
@@ -595,7 +655,7 @@ async function main() {
         consensusVersion,
         blockNodeReleaseTag,
     });
-    await deployMirror();
+    await deployMirror({ mirrorVersion, mirrorNodeChartDir });
     await setupPortForwarding({
         numNodes,
         namespace: SOLO_NAMESPACE,
@@ -631,7 +691,14 @@ async function main() {
             `  - Consensus Node Version: ${process.env.CONSENSUS_NODE_VERSION}`,
         );
     }
-    log.info(`  - Mirror Node Version: ${process.env.MIRROR_NODE_VERSION}`);
+    if (mirrorNodeChartDir) {
+        log.info(
+            "  - Mirror Node Version: <omitted (local mirror chart mode)>",
+        );
+        log.info(`  - Mirror Node Chart Dir: ${mirrorNodeChartDir}`);
+    } else {
+        log.info(`  - Mirror Node Version: ${process.env.MIRROR_NODE_VERSION}`);
+    }
     log.info(`  - ${numNodes} consensus node(s)`);
     log.info("  - Mirror node services");
     log.info(`  - Dedicated ECDSA test account: ${account.accountId}`);

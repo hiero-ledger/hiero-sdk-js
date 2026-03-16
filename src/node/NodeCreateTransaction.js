@@ -6,6 +6,7 @@ import Transaction, {
     TRANSACTION_REGISTRY,
 } from "../transaction/Transaction.js";
 import ServiceEndpoint from "./ServiceEndpoint.js";
+import Long from "long";
 
 const DESCRIPTION_MAX_LENGTH = 100;
 const GOSSIP_ENDPOINTS_MAX_LENGTH = 10;
@@ -32,6 +33,24 @@ const SERVICE_ENDPOINTS_MAX_LENGTH = 8;
  */
 
 /**
+ * @param {Long | number} registeredNodeId
+ * @returns {Long}
+ */
+function _toAssociatedRegisteredNodeId(registeredNodeId) {
+    const longRegisteredNodeId = Long.isLong(registeredNodeId)
+        ? registeredNodeId
+        : Long.fromValue(registeredNodeId);
+
+    if (longRegisteredNodeId.toNumber() < 0) {
+        throw new Error(
+            "NodeCreateTransaction: associated registered node IDs must be positive.",
+        );
+    }
+
+    return longRegisteredNodeId;
+}
+
+/**
  * A transaction to create a new consensus node in the network.
  */
 export default class NodeCreateTransaction extends Transaction {
@@ -46,6 +65,7 @@ export default class NodeCreateTransaction extends Transaction {
      * @param {ServiceEndpoint} [props.grpcWebProxyEndpoint]
      * @param {Key} [props.adminKey]
      * @param {boolean} [props.declineReward]
+     * @param {Array<Long | number>} [props.associatedRegisteredNodes]
      */
     constructor(props) {
         super();
@@ -122,6 +142,18 @@ export default class NodeCreateTransaction extends Transaction {
          */
         this._declineReward =
             props?.declineReward != null ? props.declineReward : null;
+
+        /**
+         * @private
+         * @type {Array<Long>}
+         * @description Registered node identifiers associated with this consensus node.
+         */
+        this._associatedRegisteredNodes =
+            props?.associatedRegisteredNodes != null
+                ? props.associatedRegisteredNodes.map(
+                      _toAssociatedRegisteredNodeId,
+                  )
+                : [];
     }
 
     /**
@@ -182,6 +214,12 @@ export default class NodeCreateTransaction extends Transaction {
                 declineReward:
                     nodeCreate.declineReward != null
                         ? nodeCreate.declineReward
+                        : undefined,
+                associatedRegisteredNodes:
+                    nodeCreate.associatedRegisteredNode != null
+                        ? nodeCreate.associatedRegisteredNode.map(
+                              _toAssociatedRegisteredNodeId,
+                          )
                         : undefined,
                 grpcWebProxyEndpoint:
                     nodeCreate.grpcProxyEndpoint != null
@@ -433,6 +471,37 @@ export default class NodeCreateTransaction extends Transaction {
     }
 
     /**
+     * @param {Array<Long | number>} registeredNodeIds
+     * @returns {NodeCreateTransaction}
+     */
+    setAssociatedRegisteredNodes(registeredNodeIds) {
+        this._requireNotFrozen();
+        this._associatedRegisteredNodes = registeredNodeIds.map(
+            _toAssociatedRegisteredNodeId,
+        );
+        return this;
+    }
+
+    /**
+     * @param {Long | number} registeredNodeId
+     * @returns {NodeCreateTransaction}
+     */
+    addAssociatedRegisteredNode(registeredNodeId) {
+        this._requireNotFrozen();
+        this._associatedRegisteredNodes.push(
+            _toAssociatedRegisteredNodeId(registeredNodeId),
+        );
+        return this;
+    }
+
+    /**
+     * @returns {Array<Long>}
+     */
+    get associatedRegisteredNodes() {
+        return this._associatedRegisteredNodes;
+    }
+
+    /**
      * @override
      * @internal
      * @param {Channel} channel
@@ -488,6 +557,7 @@ export default class NodeCreateTransaction extends Transaction {
                 this._adminKey != null ? this._adminKey._toProtobufKey() : null,
             declineReward:
                 this._declineReward != null ? this._declineReward : null,
+            associatedRegisteredNode: this._associatedRegisteredNodes,
             grpcProxyEndpoint:
                 this._grpcWebProxyEndpoint != null
                     ? this._grpcWebProxyEndpoint._toProtobuf()

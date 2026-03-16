@@ -425,4 +425,59 @@ describe("Client", function () {
             );
         });
     });
+
+    describe("mirrorRestJavaApiBaseUrl", function () {
+        it("should return correct URL for HTTPS port 443", function () {
+            const client = Client.forTestnet();
+            const mirrorRestJavaApiBaseUrl = client.mirrorRestJavaApiBaseUrl;
+
+            expect(mirrorRestJavaApiBaseUrl).to.equal(
+                "https://testnet.mirrornode.hedera.com:443/api/v1",
+            );
+        });
+
+        it("should return correct URL for localhost with custom port", function () {
+            const client = new NodeClient({
+                scheduleNetworkUpdate: false,
+            });
+
+            client._mirrorNetwork.setNetwork(["localhost:5600"]);
+
+            const mirrorRestJavaApiBaseUrl =
+                client.mirrorRestJavaApiBaseUrl;
+
+            expect(mirrorRestJavaApiBaseUrl).to.equal(
+                "http://localhost:8084/api/v1",
+            );
+        });
+
+        it("should return correct URL for 127.0.0.1 with custom port", function () {
+            const client = new NodeClient({
+                scheduleNetworkUpdate: false,
+            });
+
+            client._mirrorNetwork.setNetwork(["127.0.0.1:5600"]);
+
+            const mirrorRestJavaApiBaseUrl =
+                client.mirrorRestJavaApiBaseUrl;
+
+            expect(mirrorRestJavaApiBaseUrl).to.equal(
+                "http://127.0.0.1:8084/api/v1",
+            );
+        });
+
+        it("should throw error when mirror network is empty", function () {
+            const client = new NodeClient({
+                scheduleNetworkUpdate: false,
+            });
+
+            client._mirrorNetwork.setNetwork([]);
+
+            expect(() => {
+                client.mirrorRestJavaApiBaseUrl;
+            }).to.throw(
+                "Client has no mirror network configured or no healthy mirror nodes are available",
+            );
+        });
+    });
 });
