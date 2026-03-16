@@ -428,9 +428,8 @@ describe("Transaction", function () {
             .freeze();
 
         const bytes = transaction.toBytes();
-        const rawList = HieroProto.proto.TransactionList.decode(
-            bytes,
-        ).transactionList;
+        const rawList =
+            HieroProto.proto.TransactionList.decode(bytes).transactionList;
         expect(rawList.length).to.be.greaterThan(1);
 
         expect(() => Transaction.fromBytes(bytes)).to.not.throw();
@@ -482,9 +481,8 @@ describe("Transaction", function () {
             .freeze();
 
         const bytes = transaction.toBytes();
-        const rawList = HieroProto.proto.TransactionList.decode(
-            bytes,
-        ).transactionList;
+        const rawList =
+            HieroProto.proto.TransactionList.decode(bytes).transactionList;
         expect(rawList.length).to.be.greaterThan(1);
 
         expect(() => Transaction.fromBytes(bytes)).to.not.throw();
