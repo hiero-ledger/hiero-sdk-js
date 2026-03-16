@@ -8,7 +8,9 @@ import * as hex from "../encoding/hex.js";
 import * as utf8 from "../encoding/utf8.js";
 import * as util from "../util.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { ParamType, defaultAbiCoder } from "@ethersproject/abi";
+import { AbiCoder, ParamType } from "ethers";
+
+const defaultAbiCoder = AbiCoder.defaultAbiCoder();
 import Long from "long";
 import ContractNonceInfo from "./ContractNonceInfo.js";
 
@@ -1000,10 +1002,53 @@ export default class ContractFunctionResult {
     /**
      * @description Decode the data according to the array of types, each of which may be a string or ParamType.
      * @param {Array<string | ParamType>} types
-     * @returns {string | any}
+     * @returns {Array<string | number | BigNumber>}
      */
     getResult(types) {
-        return defaultAbiCoder.decode(types, this.bytes);
+        const decoded = defaultAbiCoder.decode(types, this.bytes);
+        /** @type {Array<string | number | BigNumber>} */
+        const result = [];
+        for (let i = 0; i < decoded.length; i++) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+            result.push(this._convertEthersValue(decoded[i], types[i]));
+        }
+        return result;
+    }
+
+    /**
+     * Convert ethers v6 bigint values to maintain backward compatibility.
+     * Integer types ≤32 bits are converted to Number, >32 bits to BigNumber.
+     * Arrays are recursively converted.
+     * @param {*} value
+     * @param {string | ParamType} type
+     * @returns {string | number | BigNumber}
+     * @private
+     */
+    _convertEthersValue(value, type) {
+        const typeStr =
+            typeof type === "string" ? type : type.type || String(type);
+
+        if (Array.isArray(value)) {
+            const baseType = typeStr.replace(/\[]$/, "");
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            // @ts-ignore -- recursive array conversion
+            return value.map((v) => this._convertEthersValue(v, baseType));
+        }
+
+        if (typeof value !== "bigint") {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            return value;
+        }
+
+        const match = typeStr.match(/^u?int(\d+)?$/);
+        if (match) {
+            const bits = match[1] ? parseInt(match[1], 10) : 256;
+            if (bits <= 32) {
+                return Number(value);
+            }
+        }
+
+        return new BigNumber(value.toString());
     }
 
     /**
