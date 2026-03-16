@@ -24,6 +24,7 @@ const SERVICE_ENDPOINTS_MAX_LENGTH = 8;
 /**
  * @namespace com.hedera.hapi.node.addressbook
  * @typedef {import("@hiero-ledger/proto").com.hedera.hapi.node.addressbook.INodeUpdateTransactionBody} INodeUpdateTransactionBody
+ * @typedef {import("@hiero-ledger/proto").com.hedera.hapi.node.addressbook.IAssociatedRegisteredNodeList} IAssociatedRegisteredNodeList
  */
 
 /**
@@ -31,6 +32,24 @@ const SERVICE_ENDPOINTS_MAX_LENGTH = 8;
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  * @typedef {import("../client/Client.js").default<*, *>} Client
  */
+
+/**
+ * @param {Long | number} registeredNodeId
+ * @returns {Long}
+ */
+function _toAssociatedRegisteredNodeId(registeredNodeId) {
+    const longRegisteredNodeId = Long.isLong(registeredNodeId)
+        ? registeredNodeId
+        : Long.fromValue(registeredNodeId);
+
+    if (longRegisteredNodeId.toNumber() < 0) {
+        throw new Error(
+            "NodeUpdateTransaction: associated registered node IDs must be positive.",
+        );
+    }
+
+    return longRegisteredNodeId;
+}
 
 /**
  * @description A transaction to update a consensus node in the network.
@@ -48,6 +67,7 @@ export default class NodeUpdateTransaction extends Transaction {
      * @param {ServiceEndpoint} [props.grpcWebProxyEndpoint]
      * @param {Key} [props.adminKey]
      * @param {boolean} [props.declineReward]
+     * @param {?Array<Long | number>} [props.associatedRegisteredNodes]
      */
     constructor(props) {
         super();
@@ -131,6 +151,19 @@ export default class NodeUpdateTransaction extends Transaction {
          */
         this._declineReward =
             props?.declineReward != null ? props.declineReward : null;
+
+        /**
+         * @private
+         * @type {?Array<Long>}
+         * @description Registered node identifiers associated with this consensus node.
+         * `null` leaves associations unchanged, `[]` clears them, and a non-empty array replaces them.
+         */
+        this._associatedRegisteredNodes =
+            props?.associatedRegisteredNodes != null
+                ? props.associatedRegisteredNodes.map(
+                      _toAssociatedRegisteredNodeId,
+                  )
+                : null;
     }
 
     /**
@@ -205,6 +238,15 @@ export default class NodeUpdateTransaction extends Transaction {
                 declineReward:
                     nodeUpdate.declineReward?.value != null
                         ? nodeUpdate.declineReward.value
+                        : undefined,
+                associatedRegisteredNodes:
+                    nodeUpdate.associatedRegisteredNodeList != null
+                        ? nodeUpdate.associatedRegisteredNodeList
+                              .associatedRegisteredNode != null
+                            ? nodeUpdate.associatedRegisteredNodeList.associatedRegisteredNode.map(
+                                  _toAssociatedRegisteredNodeId,
+                              )
+                            : []
                         : undefined,
             }),
             transactions,
@@ -497,6 +539,51 @@ export default class NodeUpdateTransaction extends Transaction {
     }
 
     /**
+     * @param {Array<Long | number>} registeredNodeIds
+     * @returns {NodeUpdateTransaction}
+     */
+    setAssociatedRegisteredNodes(registeredNodeIds) {
+        this._requireNotFrozen();
+        this._associatedRegisteredNodes = registeredNodeIds.map(
+            _toAssociatedRegisteredNodeId,
+        );
+        return this;
+    }
+
+    /**
+     * @param {Long | number} registeredNodeId
+     * @returns {NodeUpdateTransaction}
+     */
+    addAssociatedRegisteredNode(registeredNodeId) {
+        this._requireNotFrozen();
+
+        if (this._associatedRegisteredNodes == null) {
+            this._associatedRegisteredNodes = [];
+        }
+
+        this._associatedRegisteredNodes.push(
+            _toAssociatedRegisteredNodeId(registeredNodeId),
+        );
+        return this;
+    }
+
+    /**
+     * @returns {NodeUpdateTransaction}
+     */
+    clearAssociatedRegisteredNodes() {
+        this._requireNotFrozen();
+        this._associatedRegisteredNodes = [];
+        return this;
+    }
+
+    /**
+     * @returns {?Array<Long>}
+     */
+    get associatedRegisteredNodes() {
+        return this._associatedRegisteredNodes;
+    }
+
+    /**
      * @description Deletes the gRPC proxy endpoint and sets it to null in the mirror node, effectively removing it from the network state.
      * @returns {NodeUpdateTransaction}
      */
@@ -546,6 +633,14 @@ export default class NodeUpdateTransaction extends Transaction {
      * @returns {INodeUpdateTransactionBody}
      */
     _makeTransactionData() {
+        /** @type {?IAssociatedRegisteredNodeList} */
+        const associatedRegisteredNodeList =
+            this._associatedRegisteredNodes != null
+                ? {
+                      associatedRegisteredNode: this._associatedRegisteredNodes,
+                  }
+                : null;
+
         return {
             accountId:
                 this._accountId != null ? this._accountId._toProtobuf() : null,
@@ -589,6 +684,7 @@ export default class NodeUpdateTransaction extends Transaction {
                 this._declineReward != null
                     ? { value: this._declineReward }
                     : null,
+            associatedRegisteredNodeList,
         };
     }
 
