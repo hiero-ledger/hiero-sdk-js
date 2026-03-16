@@ -1,6 +1,4 @@
-import { keccak256 } from "./keccak.js";
-import * as hex from "../encoding/hex.js";
-import { secp256k1 } from "@noble/curves/secp256k1";
+import { secp256k1 } from "@noble/curves/secp256k1.js";
 import { equalBytes } from "./utils.js";
 
 /**
@@ -11,7 +9,7 @@ import { equalBytes } from "./utils.js";
  * @returns {KeyPair}
  */
 export function generate() {
-    const privateKey = secp256k1.utils.randomPrivateKey();
+    const privateKey = secp256k1.utils.randomSecretKey();
     const publicKey = secp256k1.getPublicKey(privateKey, true);
 
     return {
@@ -59,11 +57,7 @@ export function getFullPublicKey(data) {
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function sign(keydata, message) {
-    const msg = hex.encode(message);
-    const data = hex.decode(keccak256(`0x${msg}`));
-    const signature = secp256k1.sign(data, keydata);
-
-    return signature.toCompactRawBytes();
+    return secp256k1.sign(message, keydata);
 }
 
 /**
@@ -74,13 +68,7 @@ export function sign(keydata, message) {
  */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function verify(keydata, message, signature) {
-    const msg = hex.encode(message);
-    const data = hex.decode(keccak256(`0x${msg}`));
-
-    const r = BigInt("0x" + hex.encode(signature.subarray(0, 32)));
-    const s = BigInt("0x" + hex.encode(signature.subarray(32, 64)));
-
-    return secp256k1.verify({ r, s }, data, keydata);
+    return secp256k1.verify(signature, message, keydata);
 }
 
 /**
@@ -90,19 +78,22 @@ export function verify(keydata, message, signature) {
  * @returns {number} Recovery ID (0–3), or -1
  */
 export function getRecoveryId(privateKey, signature, message) {
-    const expectedPubKey = secp256k1.getPublicKey(privateKey, false);
-    const hash = hex.decode(keccak256(`0x${hex.encode(message)}`));
+    const expectedPubKey = secp256k1.getPublicKey(privateKey, true);
 
     for (let recovery = 0; recovery < 4; recovery++) {
         try {
-            const sig =
-                secp256k1.Signature.fromCompact(signature).addRecoveryBit(
-                    recovery,
-                );
+            // Construct 65-byte recovered signature: [recovery_bit, ...r_32, ...s_32]
+            const recoveredSig = new Uint8Array(65);
+            recoveredSig[0] = recovery;
+            recoveredSig.set(signature, 1);
 
-            const recovered = sig.recoverPublicKey(hash).toRawBytes(false);
+            // secp256k1.recoverPublicKey handles SHA-256 hashing internally
+            const recoveredPubKey = secp256k1.recoverPublicKey(
+                recoveredSig,
+                message,
+            );
 
-            if (equalBytes(recovered, expectedPubKey)) {
+            if (equalBytes(recoveredPubKey, expectedPubKey)) {
                 return recovery;
             }
         } catch {
