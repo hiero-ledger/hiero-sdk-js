@@ -382,26 +382,17 @@ describe("TransferTransaction", function () {
             .addHbarTransfer(accountId1, amount.negated())
             .addHbarTransfer(accountId2, amount);
 
-        const transfers = tx.hbarTransfersList;
-
-        expect(transfers).to.have.lengthOf(2);
-
-        expect(transfers[0].accountId.toString()).to.equal(
-            accountId1.toString(),
-        );
-        expect(transfers[0].amount.toTinybars().toString()).to.equal(
-            amount.negated().toTinybars().toString(),
-        );
-        expect(transfers[0].isApproved).to.equal(false);
-        expect(transfers[0].hookCall).to.be.undefined;
-
-        expect(transfers[1].accountId.toString()).to.equal(
-            accountId2.toString(),
-        );
-        expect(transfers[1].amount.toTinybars().toString()).to.equal(
-            amount.toTinybars().toString(),
-        );
-        expect(transfers[1].isApproved).to.equal(false);
-        expect(transfers[1].hookCall).to.be.undefined;
+        expect(tx.hbarTransfersList).to.deep.equal([
+            {
+                accountId: accountId1,
+                amount: amount.negated(),
+                isApproved: false,
+            },
+            {
+                accountId: accountId2,
+                amount: amount,
+                isApproved: false,
+            },
+        ]);
     });
 });
