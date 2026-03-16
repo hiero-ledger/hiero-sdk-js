@@ -60,32 +60,33 @@ message HookCreationDetails {
    */
   oneof hook {
     /**
-     * A general-purpose hook programmed in EVM bytecode that may access state
-     * or interact with external contracts.
+     * A hook programmed in EVM bytecode that may access state or interact with
+     * external contracts.
      */
-    EvmHook evm_hook = 3;
+    LambdaEvmHook lambda_evm_hook = 3;
   }
 
   /**
    * If set, a key that that can be used to remove or replace the hook; or (if
-   * applicable, as with an EVM hook) do transactions that customize the hook.
+   * applicable, as with a lambda EVM hook) perform transactions that customize
+   * the hook.
    */
   proto.Key admin_key = 4;
 }
 
 /**
- * Definition of a general-purpose EVM hook.
+ * Definition of a lambda EVM hook.
  */
-message EvmHook {
+message LambdaEvmHook {
   /**
    * The specification for the hook.
    */
   EvmHookSpec spec = 1;
 
   /**
-   * Initial storage updates for the hook, if any.
+   * Initial storage updates for the lambda, if any.
    */
-  repeated EvmHookStorageUpdate storage_updates = 2;
+  repeated LambdaStorageUpdate storage_updates = 2;
 }
 
 /**
@@ -104,20 +105,20 @@ message EvmHookSpec {
 }
 
 /**
- * Specifies a key/value pair in the storage of an EVM hook, either by the explicit storage
+ * Specifies a key/value pair in the storage of a lambda, either by the explicit storage
  * slot contents; or by a combination of a Solidity mapping's slot key and the key into
  * that mapping.
  */
-message EvmHookStorageUpdate {
+message LambdaStorageUpdate {
   oneof update {
     /**
      * An explicit storage slot update.
      */
-    EvmHookStorageSlot storage_slot = 1;
+    LambdaStorageSlot storage_slot = 1;
     /**
      * Implicit storage slot updates specified as Solidity mapping entries.
      */
-    EvmHookMappingEntries mapping_entries = 2;
+    LambdaMappingEntries mapping_entries = 2;
   }
 }
 
@@ -133,7 +134,7 @@ message EvmHookStorageUpdate {
  * stream consumer following the metaprotocol would have to invert the Keccak256
  * hash to determine which mapping entry was being updated, which is not possible.
  */
-message EvmHookMappingEntries {
+message LambdaMappingEntries {
   /**
    * The slot that corresponds to the Solidity mapping itself. Must use a
    * minimal byte representation (no leading zeros).
@@ -143,20 +144,20 @@ message EvmHookMappingEntries {
   /**
    * The entries in the mapping at the given slot.
    */
-  repeated EvmHookMappingEntry entries = 2;
+  repeated LambdaMappingEntry entries = 2;
 }
 
 /**
  * An entry in a Solidity mapping. Very helpful for protocols that apply
- * `HookStore` to manage the entries of a hook contract's mapping instead
+ * `LambdaSStore` to manage the entries of a hook contract's mapping instead
  * its raw storage slots.
  * <p>
  * This is especially attractive when the mapping value itself fits in a single
  * word; for more complicated value storage layouts it becomes necessary to
- * combine the mapping update with additional `EvmHookStorageSlot` updates that
+ * combine the mapping update with additional `LambdaStorageSlot` updates that
  * specify the complete storage slots of the value type.
  */
-message EvmHookMappingEntry {
+message LambdaMappingEntry {
   oneof entry_key {
     /**
      * The explicit bytes of the mapping entry. Must use a minimal byte representation;
@@ -180,9 +181,9 @@ message EvmHookMappingEntry {
 }
 
 /**
- * A slot in the storage of an EVM hook.
+ * A slot in the storage of a lambda EVM hook.
  */
-message EvmHookStorageSlot {
+message LambdaStorageSlot {
   /**
    * The key of the slot. Must use a minimal byte representation (no
    * leading zeros); may not exceed 32 bytes in length.
