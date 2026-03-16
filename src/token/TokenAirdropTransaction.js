@@ -137,7 +137,6 @@ export default class TokenAirdropTransaction extends AbstractTokenTransferTransa
             amount,
             true,
             expectedDecimals,
-            undefined,
         );
         return this;
     }

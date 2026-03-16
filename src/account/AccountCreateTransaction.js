@@ -17,7 +17,8 @@ import PublicKey from "../PublicKey.js";
 /**
  * @typedef {import("bignumber.js").default} BigNumber
  * @typedef {import("../channel/Channel.js").default} Channel
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../Timestamp.js").default} Timestamp
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  */
@@ -39,7 +40,6 @@ export default class AccountCreateTransaction extends Transaction {
      * @param {Long | number} [props.stakedNodeId]
      * @param {boolean} [props.declineStakingReward]
      * @param {EvmAddress} [props.alias]
-     * @param {import("../hooks/HookCreationDetails.js").default[]} [props.hooks]
      */
     constructor(props = {}) {
         super();
@@ -121,18 +121,6 @@ export default class AccountCreateTransaction extends Transaction {
          * @type {?EvmAddress}
          */
         this._alias = null;
-
-        /**
-         * @private
-         * @type {import("../hooks/HookCreationDetails.js").default[]}
-         */
-        this._hooks = [];
-
-        if (props.hooks != null) {
-            props.hooks.forEach((hook) => {
-                this.addHook(hook);
-            });
-        }
 
         if (props.key != null) {
             this.setKeyWithoutAlias(props.key);
@@ -665,34 +653,8 @@ export default class AccountCreateTransaction extends Transaction {
                     : null,
             stakedNodeId: this.stakedNodeId,
             declineReward: this.declineStakingRewards,
-            hookCreationDetails: this._hooks.map((hook) => hook._toProtobuf()),
             alias,
         };
-    }
-
-    /**
-     * @param {import("../hooks/HookCreationDetails.js").default} hook
-     * @returns {this}
-     */
-    addHook(hook) {
-        this._hooks.push(hook);
-        return this;
-    }
-
-    /**
-     * @param {import("../hooks/HookCreationDetails.js").default[]} hooks
-     * @returns {this}
-     */
-    setHooks(hooks) {
-        this._hooks = hooks;
-        return this;
-    }
-
-    /**
-     * @returns {import("../hooks/HookCreationDetails.js").default[]}
-     */
-    get hooks() {
-        return this._hooks;
     }
 
     /**

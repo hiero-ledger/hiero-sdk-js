@@ -71,4 +71,73 @@ describe("PendingAirdropId", function () {
 
         expect(error).to.eql(true);
     });
+
+    it("should accept string inputs in constructor", function () {
+        const pendingAirdropId = new PendingAirdropId({
+            senderId: "0.0.1",
+            receiverId: "0.0.2",
+            tokenId: "0.0.1",
+        });
+
+        expect(pendingAirdropId.senderId.toString()).to.eql(
+            senderId.toString(),
+        );
+        expect(pendingAirdropId.receiverId.toString()).to.eql(
+            receiverId.toString(),
+        );
+        expect(pendingAirdropId.tokenId.toString()).to.eql(tokenId.toString());
+    });
+
+    it("should accept string nftId in constructor", function () {
+        const pendingAirdropId = new PendingAirdropId({
+            senderId: "0.0.1",
+            receiverId: "0.0.2",
+            nftId: "0.0.1/0",
+        });
+
+        expect(pendingAirdropId.nftId.toString()).to.eql(nftId.toString());
+        expect(pendingAirdropId.tokenId).to.eql(null);
+    });
+
+    it("should enforce mutual exclusivity in constructor", function () {
+        const pendingAirdropId = new PendingAirdropId({
+            tokenId: "0.0.1",
+            nftId: "0.0.1/0",
+        });
+
+        expect(pendingAirdropId.tokenId.toString()).to.eql(tokenId.toString());
+        expect(pendingAirdropId.nftId).to.eql(null);
+    });
+
+    it("should set senderId from string", function () {
+        const pendingAirdropId = new PendingAirdropId().setSenderid("0.0.1");
+        expect(pendingAirdropId.senderId.toString()).to.eql(
+            senderId.toString(),
+        );
+    });
+
+    it("should set receiverId from string", function () {
+        const pendingAirdropId = new PendingAirdropId().setReceiverId("0.0.2");
+        expect(pendingAirdropId.receiverId.toString()).to.eql(
+            receiverId.toString(),
+        );
+    });
+
+    it("should set tokenId from string and clear nftId", function () {
+        const pendingAirdropId = new PendingAirdropId()
+            .setNftId(nftId)
+            .setTokenId("0.0.1");
+
+        expect(pendingAirdropId.tokenId.toString()).to.eql(tokenId.toString());
+        expect(pendingAirdropId.nftId).to.eql(null);
+    });
+
+    it("should set nftId from string and clear tokenId", function () {
+        const pendingAirdropId = new PendingAirdropId()
+            .setTokenId(tokenId)
+            .setNftId("0.0.1/0");
+
+        expect(pendingAirdropId.nftId.toString()).to.eql(nftId.toString());
+        expect(pendingAirdropId.tokenId).to.eql(null);
+    });
 });
