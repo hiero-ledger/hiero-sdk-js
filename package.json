@@ -60,10 +60,7 @@
         "not ie > 0"
     ],
     "dependencies": {
-        "@ethersproject/abi": "5.8.0",
-        "@ethersproject/bignumber": "5.8.0",
-        "@ethersproject/bytes": "5.8.0",
-        "@ethersproject/rlp": "5.8.0",
+        "ethers": "6.16.0",
         "@grpc/grpc-js": "1.12.6",
         "@hiero-ledger/cryptography": "workspace:*",
         "@hiero-ledger/proto": "workspace:*",
