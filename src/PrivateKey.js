@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import { hexlify } from "@ethersproject/bytes";
+import { hexlify } from "ethers";
 import { PrivateKey as PrivateKeyCrypto } from "@hiero-ledger/cryptography";
 import { proto } from "@hiero-ledger/proto";
 import Mnemonic from "./Mnemonic.js";

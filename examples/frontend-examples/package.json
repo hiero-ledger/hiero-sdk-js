@@ -12,7 +12,7 @@
     "@base-ui-components/react": "^1.0.0-beta.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
-    "@ethersproject/rlp": "^5.8.0",
+    "ethers": "^6.16.0",
     "@hiero-ledger/cryptography": "workspace:*",
     "@hiero-ledger/sdk": "workspace:*",
     "@mui/material": "^7.1.1",
