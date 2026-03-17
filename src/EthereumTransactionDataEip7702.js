@@ -1,4 +1,4 @@
-import * as rlp from "@ethersproject/rlp";
+import { decodeRlp, encodeRlp } from "ethers";
 import * as hex from "./encoding/hex.js";
 import EthereumTransactionData from "./EthereumTransactionData.js";
 import CACHE from "./Cache.js";
@@ -66,7 +66,7 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const decoded = /** @type {string[]} */ (rlp.decode(bytes.subarray(1)));
+        const decoded = /** @type {string[]} */ (decodeRlp(bytes.subarray(1)));
 
         if (!Array.isArray(decoded)) {
             throw new Error("ethereum data is not a list");
@@ -132,7 +132,7 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
      * @returns {Uint8Array}
      */
     toBytes() {
-        const encoded = rlp.encode([
+        const encoded = encodeRlp([
             this.chainId,
             this.nonce,
             this.maxPriorityGas,

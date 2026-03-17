@@ -18,7 +18,7 @@ import {
     SMART_CONTRACT_BYTECODE,
     SMART_CONTRACT_BYTECODE_JUMBO,
 } from "./contents.js";
-import * as rlp from "@ethersproject/rlp";
+import { encodeRlp } from "ethers";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import * as hex from "../../src/encoding/hex.js";
 
@@ -104,19 +104,17 @@ describe("EthereumTransactionIntegrationTest", function () {
             ._build("setMessage");
         const accessList = [];
 
-        const encoded = rlp
-            .encode([
-                chainId,
-                nonce,
-                maxPriorityGas,
-                maxGas,
-                gasLimit,
-                to,
-                value,
-                callData,
-                accessList,
-            ])
-            .substring(2);
+        const encoded = encodeRlp([
+            chainId,
+            nonce,
+            maxPriorityGas,
+            maxGas,
+            gasLimit,
+            to,
+            value,
+            callData,
+            accessList,
+        ]).substring(2);
         expect(typeof encoded).to.equal("string");
 
         const privateKey = PrivateKey.generateECDSA();
@@ -155,22 +153,20 @@ describe("EthereumTransactionIntegrationTest", function () {
         // For `recoveryId` values 1–3, we safely encode them as a single-byte Uint8Array.
         const v = new Uint8Array(recoveryId === 0 ? [] : [recoveryId]);
 
-        const data = rlp
-            .encode([
-                chainId,
-                nonce,
-                maxPriorityGas,
-                maxGas,
-                gasLimit,
-                to,
-                value,
-                callData,
-                accessList,
-                v,
-                r,
-                s,
-            ])
-            .substring(2);
+        const data = encodeRlp([
+            chainId,
+            nonce,
+            maxPriorityGas,
+            maxGas,
+            gasLimit,
+            to,
+            value,
+            callData,
+            accessList,
+            v,
+            r,
+            s,
+        ]).substring(2);
         expect(typeof data).to.equal("string");
 
         const ethereumData = hex.decode(type + data);
@@ -263,19 +259,17 @@ describe("EthereumTransactionIntegrationTest", function () {
             ._build("test");
         const accessList = [];
 
-        const encoded = rlp
-            .encode([
-                chainId,
-                nonce,
-                maxPriorityGas,
-                maxGas,
-                gasLimit,
-                to,
-                value,
-                callData,
-                accessList,
-            ])
-            .substring(2);
+        const encoded = encodeRlp([
+            chainId,
+            nonce,
+            maxPriorityGas,
+            maxGas,
+            gasLimit,
+            to,
+            value,
+            callData,
+            accessList,
+        ]).substring(2);
         expect(typeof encoded).to.equal("string");
 
         const privateKey = PrivateKey.generateECDSA();
@@ -314,22 +308,20 @@ describe("EthereumTransactionIntegrationTest", function () {
         // For `recoveryId` values 1–3, we safely encode them as a single-byte Uint8Array.
         const v = new Uint8Array(recoveryId === 0 ? [] : [recoveryId]);
 
-        const data = rlp
-            .encode([
-                chainId,
-                nonce,
-                maxPriorityGas,
-                maxGas,
-                gasLimit,
-                to,
-                value,
-                callData,
-                accessList,
-                v,
-                r,
-                s,
-            ])
-            .substring(2);
+        const data = encodeRlp([
+            chainId,
+            nonce,
+            maxPriorityGas,
+            maxGas,
+            gasLimit,
+            to,
+            value,
+            callData,
+            accessList,
+            v,
+            r,
+            s,
+        ]).substring(2);
         expect(typeof data).to.equal("string");
 
         const ethereumData = hex.decode(type + data);
