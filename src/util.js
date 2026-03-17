@@ -284,6 +284,7 @@ export function convertToBigNumber(variable) {
         return new BigNumber(variable);
     }
     if (isLong(variable)) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument
         return new BigNumber(variable.toString());
     }
     throw new Error(FUNCTION_CONVERT_TO_BIGNUMBER_ERROR);
