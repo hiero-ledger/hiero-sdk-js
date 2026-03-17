@@ -71,7 +71,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
         with:
           egress-policy: audit
 
@@ -305,7 +305,7 @@ jobs:
     runs-on: hiero-client-sdk-linux-medium
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
         with:
           egress-policy: audit
 
@@ -348,7 +348,7 @@ jobs:
       sdk-publish-args: ${{ steps.sdk-publish-args.outputs.args }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
         with:
           egress-policy: audit
 
@@ -415,7 +415,7 @@ jobs:
       hashgraph-sdk-pkg-name: ${{ steps.set-package-names.outputs.hg-sdk-pkg-name || '' }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
         with:
           egress-policy: audit
 
@@ -479,7 +479,7 @@ jobs:
 
       - name: Upload HL Proto Package Artifact
         if: ${{ needs.validate-release.outputs.hiero-proto-publish-required == 'true' }}
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: hl-proto-package
           path: packages/proto/${{ steps.set-package-names.outputs.hl-proto-pkg-name }}
@@ -493,7 +493,7 @@ jobs:
 
       - name: Upload HL Crypto Package Artifact
         if: ${{ needs.validate-release.outputs.hiero-crypto-publish-required == 'true' }}
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: hl-crypto-package
           path: packages/cryptography/${{ steps.set-package-names.outputs.hl-crypto-pkg-name }}
@@ -506,7 +506,7 @@ jobs:
 
       - name: Upload HL SDK Package Artifact
         if: ${{ needs.validate-release.outputs.hiero-sdk-publish-required == 'true' }}
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: hl-sdk-package
           path: ./${{ steps.set-package-names.outputs.hl-sdk-pkg-name }}
@@ -542,7 +542,7 @@ jobs:
 
       - name: Upload HG Proto Package Artifact
         if: ${{ needs.validate-release.outputs.hashgraph-proto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: hg-proto-package
           path: packages/proto/${{ steps.set-package-names.outputs.hg-proto-pkg-name }}
@@ -556,7 +556,7 @@ jobs:
 
       - name: Upload HG Crypto Package Artifact
         if: ${{ needs.validate-release.outputs.hashgraph-crypto-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: hg-crypto-package
           path: packages/cryptography/${{ steps.set-package-names.outputs.hg-crypto-pkg-name }}
@@ -569,7 +569,7 @@ jobs:
 
       - name: Upload HG SDK Package Artifact
         if: ${{ needs.validate-release.outputs.hashgraph-sdk-publish-required == 'true' && env.DUAL_PUBLISH_ENABLED == 'true' }}
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
         with:
           name: hg-sdk-package
           path: ./${{ steps.set-package-names.outputs.hg-sdk-pkg-name }}
@@ -605,7 +605,7 @@ jobs:
       DUAL_PUBLISH_ENABLED: ${{ inputs.dual-publish-enabled || github.event_name == 'push' }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        uses: step-security/harden-runner@58077d3c7e43986b6b15fba718e8ea69e387dfcc # v2.15.1
         with:
           egress-policy: audit
 
