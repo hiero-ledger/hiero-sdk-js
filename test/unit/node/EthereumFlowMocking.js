@@ -1,5 +1,5 @@
 import * as hex from "../../../src/encoding/hex.js";
-import * as rlp from "@ethersproject/rlp";
+import { decodeRlp, encodeRlp } from "ethers";
 import { proto } from "@hiero-ledger/proto";
 import Mocker from "../Mocker.js";
 import { EthereumFlow, FileId } from "../../../src/index.js";
@@ -97,12 +97,12 @@ describe("EthereumFlowMocking", function () {
     });
 
     it("extracts the calldata if it's too large", async function () {
-        const decoded = rlp.decode(bytes);
+        const decoded = decodeRlp(bytes);
         const longCallData = "0x" + "00".repeat(133121);
         decoded[5] = longCallData;
-        const encoded = hex.decode(rlp.encode(decoded));
+        const encoded = hex.decode(encodeRlp(decoded));
         decoded[5] = "0x";
-        const encodedWithoutCallData = hex.decode(rlp.encode(decoded));
+        const encodedWithoutCallData = hex.decode(encodeRlp(decoded));
 
         ({ client, servers } = await Mocker.withResponses([
             [
@@ -196,12 +196,12 @@ describe("EthereumFlowMocking", function () {
     });
 
     it("extracts the calldata if it's too large and try to deploy it by chunks, but thrown", async function () {
-        const decoded = rlp.decode(bytes);
+        const decoded = decodeRlp(bytes);
         const longCallData = "0x" + "00".repeat(7000);
         decoded[5] = longCallData;
-        const encoded = hex.decode(rlp.encode(decoded));
+        const encoded = hex.decode(encodeRlp(decoded));
         decoded[5] = "0x";
-        const encodedWithoutCallData = hex.decode(rlp.encode(decoded));
+        const encodedWithoutCallData = hex.decode(encodeRlp(decoded));
 
         ({ client, servers } = await Mocker.withResponses([
             [
@@ -347,12 +347,12 @@ describe("EthereumFlowMocking", function () {
     });
 
     it("extracts the calldata if it's too large and deploy it by the right amount of chunks", async function () {
-        const decoded = rlp.decode(bytes);
+        const decoded = decodeRlp(bytes);
         const longCallData = "0x" + "00".repeat(133121);
         decoded[5] = longCallData;
-        const encoded = hex.decode(rlp.encode(decoded));
+        const encoded = hex.decode(encodeRlp(decoded));
         decoded[5] = "0x";
-        const encodedWithoutCallData = hex.decode(rlp.encode(decoded));
+        const encodedWithoutCallData = hex.decode(encodeRlp(decoded));
 
         ({ client, servers } = await Mocker.withResponses([
             [
