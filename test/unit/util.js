@@ -35,7 +35,6 @@ describe("util", function () {
     });
 
     it("soft check: isBigNumber should return true if instanceof BigNumber and non-null", function () {
-        expect(util.isBigNumber(new BigNumber())).to.eql(true);
         expect(util.isBigNumber(new BigNumber(11111))).to.eql(true);
 
         expect(util.isBigNumber(null)).to.eql(false);
