@@ -1,8 +1,8 @@
 import * as hmac from "./hmac.js";
-import { secp256k1 } from "@noble/curves/secp256k1";
-import { bytesToNumberBE, numberToBytesBE } from "@noble/curves/abstract/utils";
+import { secp256k1 } from "@noble/curves/secp256k1.js";
+import { bytesToNumberBE, numberToBytesBE } from "@noble/curves/utils.js";
 
-const N = secp256k1.CURVE.n;
+const N = secp256k1.Point.CURVE().n;
 const HARDENED_BIT = 0x80000000;
 
 /**
