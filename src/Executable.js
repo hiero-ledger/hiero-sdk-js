@@ -348,6 +348,45 @@ export default class Executable {
     }
 
     /**
+     * Runs _execute() and races it against the gRPC deadline timer (if set).
+     * The timer is always cleared afterwards so it never leaks into the event loop.
+     *
+     * @param {import("./channel/Channel.js").default} channel
+     * @param {RequestT} request
+     * @returns {Promise<ResponseT>}
+     */
+    async _executeWithDeadline(channel, request) {
+        // Without a deadline, just execute directly — no timer needed.
+        if (this._grpcDeadline == null) {
+            return this._execute(channel, request);
+        }
+
+        // Create a timer that rejects after the deadline, and keep its ID so
+        // we can cancel it once the gRPC call finishes (win or lose).
+        let deadlineTimer;
+        const deadlinePromise = new Promise((_, reject) => {
+            // eslint-disable-next-line ie11/no-loop-func
+            deadlineTimer = setTimeout(
+                // eslint-disable-next-line ie11/no-loop-func
+                () => reject(new GrpcServiceError(GrpcStatus.DeadlineExceeded)),
+                /** @type {number} */ (this._grpcDeadline),
+            );
+        });
+
+        try {
+            // Whichever settles first wins: the real response or the deadline error.
+            return await Promise.race([
+                this._execute(channel, request),
+                deadlinePromise,
+            ]);
+        } finally {
+            // Always cancel the timer — prevents it from keeping the process alive
+            // after a successful call (the original timer-leak bug).
+            clearTimeout(deadlineTimer);
+        }
+    }
+
+    /**
      * Return the current transaction ID for the request. All requests which are
      * use the same transaction ID for each node, but the catch is that `Transaction`
      * implicitly supports chunked transactions. Meaning there could be multiple
@@ -707,29 +746,6 @@ export default class Executable {
             this._nodeAccountIds.advance();
 
             try {
-                // Race the execution promise against the grpc timeout to prevent grpc connections
-                // from blocking this request
-                const promises = [];
-
-                // If a grpc deadline is set, we should race it, otherwise the only thing in the
-                // list of promises will be the execution promise.
-                if (this._grpcDeadline != null) {
-                    promises.push(
-                        // eslint-disable-next-line ie11/no-loop-func
-                        new Promise((_, reject) =>
-                            setTimeout(
-                                // eslint-disable-next-line ie11/no-loop-func
-                                () =>
-                                    reject(
-                                        new GrpcServiceError(
-                                            GrpcStatus.DeadlineExceeded,
-                                        ),
-                                    ),
-                                /** @type {number=} */ (this._grpcDeadline),
-                            ),
-                        ),
-                    );
-                }
                 if (this._logger) {
                     this._logger.trace(
                         `[${this._getLogId()}] sending protobuf ${hex.encode(
@@ -738,10 +754,9 @@ export default class Executable {
                     );
                 }
 
-                promises.push(this._execute(channel, request));
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 response = /** @type {ResponseT} */ (
-                    await Promise.race(promises)
+                    await this._executeWithDeadline(channel, request)
                 );
             } catch (err) {
                 // If we received a grpc status error we need to determine if
