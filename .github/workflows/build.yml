@@ -312,7 +312,7 @@ jobs:
           installMirrorNode: true
           soloVersion: v0.61.0
           hieroVersion: v0.71.0
-          mirrorNodeVersion: v0.142.
+          mirrorNodeVersion: v0.142.0
           grpcProxyPort: 8080
 
       - name: Set Operator Account
