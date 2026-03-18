@@ -27,8 +27,8 @@ importers:
         specifier: 6.2.3
         version: 6.2.3
       bignumber.js:
-        specifier: 9.1.1
-        version: 9.1.1
+        specifier: 10.0.2
+        version: 10.0.2
       bn.js:
         specifier: 5.2.3
         version: 5.2.3
@@ -554,8 +554,8 @@ importers:
         specifier: 3.0.6
         version: 3.0.6
       bignumber.js:
-        specifier: 9.1.1
-        version: 9.1.1
+        specifier: 10.0.2
+        version: 10.0.2
       bn.js:
         specifier: 5.2.3
         version: 5.2.3
@@ -5328,6 +5328,9 @@ packages:
 
   big.js@5.2.2:
     resolution: {integrity: sha512-vyL2OymJxmarO8gxMr0mhChsO9QGwhynfuu4+MHTAW6czfq9humCB7rKpUjDd9YUiDPU4mzpyupFSvOClAwbmQ==}
+
+  bignumber.js@10.0.2:
+    resolution: {integrity: sha512-E8Wp9O06QA6lneJ4aRUXKYf/1GIomqUEmUMwtIOMtDxf1U52ffJY+y7JBk/8wRafA8qOIqLnXQGqonYXZdBnFQ==}
 
   bignumber.js@9.1.1:
     resolution: {integrity: sha512-pHm4LsMJ6lzgNGVfZHjMoO8sdoRhOzOH4MLmY65Jg70bpxCKu5iOHNJyfF6OyvYw7t8Fpf35RuzUyqnQsj8Vig==}
@@ -18814,6 +18817,8 @@ snapshots:
   big-integer@1.6.52: {}
 
   big.js@5.2.2: {}
+
+  bignumber.js@10.0.2: {}
 
   bignumber.js@9.1.1: {}
 
