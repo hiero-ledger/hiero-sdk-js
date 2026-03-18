@@ -23,7 +23,7 @@ import {
     Client,
     Status,
 } from "@hiero-ledger/sdk";
-import * as rlp from "@ethersproject/rlp";
+import { encodeRlp } from "ethers";
 import * as hex from "@/app/util/hex.js";
 
 const JumboPage = () => {
@@ -96,19 +96,17 @@ const JumboPage = () => {
         const accessList = [];
 
         // Encode transaction data
-        const encoded = rlp
-            .encode([
-                chainId,
-                nonce,
-                maxPriorityGas,
-                maxGas,
-                gasLimit,
-                to,
-                value,
-                callData,
-                accessList,
-            ])
-            .substring(2);
+        const encoded = encodeRlp([
+            chainId,
+            nonce,
+            maxPriorityGas,
+            maxGas,
+            gasLimit,
+            to,
+            value,
+            callData,
+            accessList,
+        ]).substring(2);
 
         // Sign the transaction
         const message = hex.decode(type + encoded);
@@ -122,22 +120,20 @@ const JumboPage = () => {
         const v = new Uint8Array(recoveryId === 0 ? [] : [recoveryId]);
 
         // Create final signed transaction
-        const data = rlp
-            .encode([
-                chainId,
-                nonce,
-                maxPriorityGas,
-                maxGas,
-                gasLimit,
-                to,
-                value,
-                callData,
-                accessList,
-                v,
-                r,
-                s,
-            ])
-            .substring(2);
+        const data = encodeRlp([
+            chainId,
+            nonce,
+            maxPriorityGas,
+            maxGas,
+            gasLimit,
+            to,
+            value,
+            callData,
+            accessList,
+            v,
+            r,
+            s,
+        ]).substring(2);
 
         const ethereumData = hex.decode(type + data);
 

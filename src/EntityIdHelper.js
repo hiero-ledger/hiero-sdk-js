@@ -7,7 +7,7 @@ import * as util from "./util.js";
 import base32 from "./base32.js";
 import * as HieroProto from "@hiero-ledger/proto";
 import PublicKey from "./PublicKey.js";
-import { arrayify } from "@ethersproject/bytes";
+import { getBytes } from "ethers";
 import EvmAddress from "./EvmAddress.js";
 
 /**
@@ -586,7 +586,7 @@ export function publicKeyToAlias(publicKey) {
             publicKey = `0x${publicKey}`;
         }
 
-        const bytes = arrayify(publicKey);
+        const bytes = getBytes(publicKey);
         if (!bytes) {
             return null;
         }
@@ -612,8 +612,8 @@ export function publicKeyToAlias(publicKey) {
         publicKeyHex = `0x${publicKeyHex}`;
     }
 
-    const leadingBytes = arrayify(leadingHex);
-    const publicKeyBytes = arrayify(publicKeyHex);
+    const leadingBytes = getBytes(leadingHex);
+    const publicKeyBytes = getBytes(publicKeyHex);
     const publicKeyInBytes = appendBuffer(leadingBytes, publicKeyBytes);
     const alias = base32.encode(publicKeyInBytes);
     return alias;

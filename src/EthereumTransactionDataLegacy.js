@@ -1,4 +1,4 @@
-import * as rlp from "@ethersproject/rlp";
+import { decodeRlp, encodeRlp } from "ethers";
 import * as hex from "./encoding/hex.js";
 import EthereumTransactionData from "./EthereumTransactionData.js";
 import CACHE from "./Cache.js";
@@ -53,7 +53,7 @@ export default class EthereumTransactionDataLegacy extends EthereumTransactionDa
         }
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const decoded = /** @type {string[]} */ (rlp.decode(bytes));
+        const decoded = /** @type {string[]} */ (decodeRlp(bytes));
 
         if (decoded.length != 9) {
             throw new Error("invalid ethereum transaction data");
@@ -77,7 +77,7 @@ export default class EthereumTransactionDataLegacy extends EthereumTransactionDa
      */
     toBytes() {
         return hex.decode(
-            rlp.encode([
+            encodeRlp([
                 this.nonce,
                 this.gasPrice,
                 this.gasLimit,
