@@ -375,10 +375,13 @@ export default class Executable {
 
         try {
             // Whichever settles first wins: the real response or the deadline error.
-            return await Promise.race([
-                this._execute(channel, request),
-                deadlinePromise,
-            ]);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            return /** @type {Promise<ResponseT>} */ (
+                await Promise.race([
+                    this._execute(channel, request),
+                    deadlinePromise,
+                ])
+            );
         } finally {
             // Always cancel the timer — prevents it from keeping the process alive
             // after a successful call (the original timer-leak bug).
