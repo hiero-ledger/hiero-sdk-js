@@ -182,7 +182,7 @@ export default class TransactionRecordQuery extends Query {
      * @param {HieroProto.proto.IResponse} response
      * @returns {[Status, ExecutionState]}
      */
-    _shouldRetry(request, response) {
+    _getStatusAndExecutionState(request, response) {
         const { nodeTransactionPrecheckCode } =
             this._mapResponseHeader(response);
 

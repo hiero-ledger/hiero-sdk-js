@@ -181,6 +181,7 @@ export default class AddressBookQuery extends Query {
      * @param {number=} requestTimeout
      */
     _makeServerStreamRequest(client, resolve, reject, requestTimeout) {
+        const maxAttempts = this._maxAttempts ?? client.maxAttempts;
         const request =
             HieroProto.com.hedera.mirror.api.proto.AddressBookQuery.encode({
                 fileId:
@@ -210,7 +211,7 @@ export default class AddressBookQuery extends Query {
                     const message =
                         error instanceof Error ? error.message : error.details;
                     if (
-                        this._attempt < this._maxAttempts &&
+                        this._attempt < maxAttempts &&
                         !client.isClientShutDown &&
                         this._retryHandler(error)
                     ) {
@@ -218,7 +219,7 @@ export default class AddressBookQuery extends Query {
                             250 * 2 ** this._attempt,
                             this._maxBackoff,
                         );
-                        if (this._attempt >= this._maxAttempts) {
+                        if (this._attempt >= maxAttempts) {
                             console.warn(
                                 `Error getting nodes from mirror for file ${
                                     this._fileId != null
