@@ -550,7 +550,7 @@ export default class Executable {
      * @param {number=} requestTimeout
      * @returns {Promise<void>}
      */
-    async setupExecution(client, requestTimeout) {
+    async _setupExecution(client, requestTimeout) {
         if (this.isBatchedAndNotBatchTransaction()) {
             throw new Error(
                 "Cannot execute batchified transaction outside of BatchTransaction",
@@ -617,34 +617,26 @@ export default class Executable {
      * @template {Channel} ChannelT
      * @template {MirrorChannel} MirrorChannelT
      * @param {import("./client/Client.js").default<ChannelT, MirrorChannelT>} client
-     * @returns {{ currentNode: Node, requestedNodeAccountId: AccountId } | null}
+     * @returns {Node}
      */
-    _getExecutionTarget(client) {
-        /** @type {AccountId} */
-        let requestedNodeAccountId;
+    _getExecutionNode(client) {
         /** @type {Node} */
         let currentNode;
 
         if (this._nodeAccountIds.isEmpty) {
             currentNode = client._network.getNode();
-            requestedNodeAccountId = currentNode.accountId;
-            this._nodeAccountIds.setList([requestedNodeAccountId]);
+            this._nodeAccountIds.setList([currentNode.accountId]);
         } else {
-            requestedNodeAccountId = this._nodeAccountIds.current;
-            currentNode = client._network.getNode(requestedNodeAccountId);
+            currentNode = client._network.getNode(this._nodeAccountIds.current);
         }
 
         if (currentNode == null) {
             throw new Error(
-                `NodeAccountId not recognized: ${requestedNodeAccountId.toString()}`,
+                `NodeAccountId not recognized: ${this._nodeAccountIds.current.toString()}`,
             );
         }
 
-        if (this._shouldSkipAttemptForNodeAccountId(requestedNodeAccountId)) {
-            return null;
-        }
-
-        return { currentNode, requestedNodeAccountId };
+        return currentNode;
     }
 
     /**
@@ -809,7 +801,7 @@ export default class Executable {
      * @returns {Promise<OutputT>}
      */
     async execute(client, requestTimeout) {
-        await this.setupExecution(client, requestTimeout);
+        await this._setupExecution(client, requestTimeout);
         const isLocalNode = client.isLocalNetwork;
 
         // Checks if has a valid nodes to which the TX can be sent
@@ -830,17 +822,25 @@ export default class Executable {
         ) {
             this._throwIfRequestTimedOut(requestStartTime);
 
-            const executionTarget = this._getExecutionTarget(client);
+            if (
+                this._shouldSkipAttemptForNodeAccountId(
+                    this._nodeAccountIds.current,
+                )
+            ) {
+                continue;
+            }
 
-            if (executionTarget == null) {
+            const executionNode = this._getExecutionNode(client);
+
+            if (executionNode == null) {
                 continue;
             }
 
             this._logger?.debug(
-                `[${this._getLogId()}] Node AccountID: ${executionTarget.requestedNodeAccountId.toString()}, IP: ${executionTarget.currentNode.address.toString()}`,
+                `[${this._getLogId()}] Node AccountID: ${executionNode.accountId.toString()}, IP: ${executionNode.address.toString()}`,
             );
 
-            const channel = executionTarget.currentNode.getChannel();
+            const channel = executionNode.getChannel();
 
             // Set the gRPC deadline on the channel if this query has a custom deadline
             if (this._grpcDeadline != null) {
@@ -849,9 +849,9 @@ export default class Executable {
 
             const request = await this._makeRequestAsync();
 
-            if (!executionTarget.currentNode.isHealthy()) {
+            if (!executionNode.isHealthy()) {
                 await this._handleUnhealthyNode(
-                    executionTarget.currentNode,
+                    executionNode,
                     request,
                     attempt,
                     isLocalNode,
@@ -890,13 +890,11 @@ export default class Executable {
                     // Increase the backoff for the particular node and remove it from
                     // the healthy node list
                     this._logger?.debug(
-                        `[${this._getLogId()}] node with accountId: ${executionTarget.requestedNodeAccountId.toString()} and proxy IP: ${executionTarget.currentNode.address.toString()} is unhealthy`,
+                        `[${this._getLogId()}] node with accountId: ${executionNode.accountId.toString()} and proxy IP: ${executionNode.address.toString()} is unhealthy`,
                     );
 
-                    if (executionTarget.currentNode.isHealthy()) {
-                        client._network.increaseBackoff(
-                            executionTarget.currentNode,
-                        );
+                    if (executionNode.isHealthy()) {
+                        client._network.increaseBackoff(executionNode);
                     }
                     continue;
                 }
@@ -912,7 +910,7 @@ export default class Executable {
 
             // If we didn't receive an error we should decrease the current nodes backoff
             // in case it is a recovering node
-            client._network.decreaseBackoff(executionTarget.currentNode);
+            client._network.decreaseBackoff(executionNode);
 
             // Determine what execution state we're in by the response
             // For transactions this would be as simple as checking the response status is `OK`
@@ -937,8 +935,8 @@ export default class Executable {
                     if (status === Status.InvalidNodeAccount) {
                         await this._handleInvalidNodeAccountId(
                             client,
-                            executionTarget.currentNode,
-                            executionTarget.requestedNodeAccountId,
+                            executionNode,
+                            executionNode.accountId,
                         );
                     }
 
@@ -952,14 +950,14 @@ export default class Executable {
                 case ExecutionState.Finished:
                     return this._mapResponse(
                         response,
-                        executionTarget.requestedNodeAccountId,
+                        executionNode.accountId,
                         request,
                     );
                 case ExecutionState.Error:
                     throw this._mapStatusError(
                         request,
                         response,
-                        executionTarget.requestedNodeAccountId,
+                        executionNode.accountId,
                     );
                 default:
                     throw new Error(
