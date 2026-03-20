@@ -111,11 +111,11 @@ export default class AddressBookQueryWeb extends Query {
                     // if the message matches the right regex.
                     switch (error.code) {
                         // INTERNAL
-                        // eslint-disable-next-line no-fallthrough
+
                         case 13:
                             return RST_STREAM.test(error.details.toString());
                         // NOT_FOUND
-                        // eslint-disable-next-line no-fallthrough
+
                         case 5:
                         // RESOURCE_EXHAUSTED
                         // eslint-disable-next-line no-fallthrough
@@ -336,7 +336,6 @@ export default class AddressBookQueryWeb extends Query {
                         }
 
                         // Wait before next attempt
-                        // eslint-disable-next-line ie11/no-loop-func
                         await new Promise((resolve) =>
                             setTimeout(resolve, delay),
                         );

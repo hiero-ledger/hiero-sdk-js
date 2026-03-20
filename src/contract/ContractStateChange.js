@@ -69,7 +69,6 @@ export default class ContractStateChange {
      * @returns {Uint8Array}
      */
     toBytes() {
-        // eslint-disable-next-line deprecation/deprecation
         return HieroProto.proto.ContractStateChange.encode(
             this._toProtobuf(),
         ).finish();

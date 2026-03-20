@@ -101,7 +101,7 @@ export default class ManagedNode {
      * @abstract
      * @returns {string}
      */
-    // eslint-disable-next-line jsdoc/require-returns-check
+
     getKey() {
         throw new Error("not implemented");
     }

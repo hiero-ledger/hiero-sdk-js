@@ -22,7 +22,6 @@ export default class MirrorNetwork extends ManagedNetwork {
      * @param {string[]} network
      */
     setNetwork(network) {
-        // eslint-disable-next-line ie11/no-collection-args
         this._setNetwork(new Map(network.map((address) => [address, address])));
     }
 
@@ -35,7 +34,6 @@ export default class MirrorNetwork extends ManagedNetwork {
          */
         var n = [];
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         for (const node of this._nodes) {
             n.push(node.address.toString());
         }

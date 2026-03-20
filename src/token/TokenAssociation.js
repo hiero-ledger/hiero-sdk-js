@@ -85,7 +85,7 @@ export default class TokenAssociation {
      * @param {HieroProto.proto.ITokenAssociation} association
      * @returns {TokenAssociation}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     static _fromProtobuf(association) {
         return new TokenAssociation({
             accountId:

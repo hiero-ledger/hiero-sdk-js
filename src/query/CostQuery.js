@@ -124,7 +124,7 @@ export default class CostQuery extends QueryBase {
      * @param {HieroProto.proto.IResponse} response
      * @returns {[Status, ExecutionState]}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     _shouldRetry(request, response) {
         return this._query._shouldRetry(request, response);
     }
@@ -137,7 +137,7 @@ export default class CostQuery extends QueryBase {
      * @param {AccountId} nodeId
      * @returns {Error}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     _mapStatusError(request, response, nodeId) {
         return this._query._mapStatusError(request, response, nodeId);
     }

@@ -317,10 +317,7 @@ export default class NodeClient extends Client {
                 break;
 
             default:
-                throw new Error(
-                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                    `unknown network: ${name}`,
-                );
+                throw new Error(`unknown network: ${name}`);
         }
         return this;
     }

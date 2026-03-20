@@ -1009,7 +1009,6 @@ export default class ContractFunctionResult {
         /** @type {Array<string | number | BigNumber>} */
         const result = [];
         for (let i = 0; i < decoded.length; i++) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             result.push(this._convertEthersValue(decoded[i], types[i]));
         }
         return result;
@@ -1030,7 +1029,7 @@ export default class ContractFunctionResult {
 
         if (Array.isArray(value)) {
             const baseType = typeStr.replace(/\[]$/, "");
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+
             // @ts-ignore -- recursive array conversion
             return value.map((v) => this._convertEthersValue(v, baseType));
         }

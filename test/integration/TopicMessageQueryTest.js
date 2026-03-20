@@ -35,7 +35,7 @@ describe("TopicMessageQuery", function () {
         new TopicMessageQuery()
             .setTopicId(topicId)
             .setLimit(1)
-            // eslint-disable-next-line no-unused-vars
+             
             .subscribe(env.client, (topic, _) => {
                 finished = true;
                 expectedContents = new TextDecoder().decode(topic.contents);

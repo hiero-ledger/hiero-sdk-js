@@ -58,7 +58,6 @@ export default class EthereumTransactionDataEip2930 extends EthereumTransactionD
             throw new Error("empty bytes");
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const decoded = /** @type {string[]} */ (decodeRlp(bytes.subarray(1)));
 
         if (!Array.isArray(decoded)) {

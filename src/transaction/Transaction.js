@@ -1813,7 +1813,7 @@ export default class Transaction extends Executable {
     /**
      * @param {Client} client
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _validateChecksums(client) {
         // Do nothing
     }
@@ -2057,7 +2057,7 @@ export default class Transaction extends Executable {
      * @param {HieroProto.proto.ITransactionResponse} response
      * @returns {[Status, ExecutionState]}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     _shouldRetry(request, response) {
         const { nodeTransactionPrecheckCode } = response;
 
@@ -2113,7 +2113,7 @@ export default class Transaction extends Executable {
      * @param {AccountId} nodeId
      * @returns {Error}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     _mapStatusError(request, response, nodeId) {
         const { nodeTransactionPrecheckCode } = response;
 
@@ -2125,7 +2125,7 @@ export default class Transaction extends Executable {
         if (this._logger) {
             this._logger.info(
                 // @ts-ignore
-                `Transaction Error Info: ${status.toString()}, ${this.transactionId.toString()}`, // eslint-disable-line @typescript-eslint/restrict-template-expressions
+                `Transaction Error Info: ${status.toString()}, ${this.transactionId.toString()}`,
             );
         }
 

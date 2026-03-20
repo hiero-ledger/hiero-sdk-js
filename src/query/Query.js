@@ -221,7 +221,7 @@ export default class Query extends QueryBase {
      *
      * @param {Client} client
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _validateChecksums(client) {
         // Shouldn't we be checking `paymentTransactionId` here sine it contains an `accountId`?
         // Do nothing
@@ -453,7 +453,7 @@ export default class Query extends QueryBase {
      * @param {HieroProto.proto.IResponse} response
      * @returns {[Status, ExecutionState]}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     _shouldRetry(request, response) {
         const { nodeTransactionPrecheckCode } =
             this._mapResponseHeader(response);
@@ -490,7 +490,7 @@ export default class Query extends QueryBase {
      * @param {AccountId} nodeId
      * @returns {Error}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     _mapStatusError(request, response, nodeId) {
         const { nodeTransactionPrecheckCode } =
             this._mapResponseHeader(response);

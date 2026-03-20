@@ -173,7 +173,6 @@ export default class ContractId extends Key {
      * @returns {ContractId}
      */
     static fromSolidityAddress(address) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         if (isLongZeroAddress(hex.decode(address))) {
             return new ContractId(
                 ...EntityIdHelper.fromSolidityAddress(address),

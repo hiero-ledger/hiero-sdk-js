@@ -39,7 +39,7 @@ describe("TopicMessage", function () {
             .setCompletionHandler(() => {
                 finished = true;
             })
-            // eslint-disable-next-line no-unused-vars
+             
             .subscribe(env.client, (_) => {
                 // Do nothing
             });
@@ -95,7 +95,7 @@ describe("TopicMessage", function () {
             .setCompletionHandler(() => {
                 finished = true;
             })
-            // eslint-disable-next-line no-unused-vars
+             
             .subscribe(env.client, (_) => {
                 // Do nothing
             });

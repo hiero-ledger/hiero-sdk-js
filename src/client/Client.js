@@ -922,7 +922,7 @@ export default class Client {
      */
     _scheduleNetworkUpdate() {
         // This is the automatic network update promise that _eventually_ completes
-        // eslint-disable-next-line @typescript-eslint/no-floating-promises,@typescript-eslint/no-misused-promises
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         this._timer = setTimeout(async () => {
             await this.updateNetwork();
 

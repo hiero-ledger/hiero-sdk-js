@@ -65,7 +65,6 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
             throw new Error("empty bytes");
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         const decoded = /** @type {string[]} */ (decodeRlp(bytes.subarray(1)));
 
         if (!Array.isArray(decoded)) {
@@ -82,7 +81,7 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
             throw new Error("authorization list must be an array");
         }
         // @ts-ignore
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+
         const authorizationList = /** @type {string[]} */ (decoded[9]).map(
             (authTuple) => {
                 if (!Array.isArray(authTuple) || authTuple.length !== 6) {
