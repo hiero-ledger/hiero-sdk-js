@@ -758,14 +758,16 @@ export default class Executable {
         // Race the execution promise against the grpc timeout to prevent grpc connections
         // from blocking this request
         const promises = [];
+        /** @type {ReturnType<typeof setTimeout> | null} */
+        let deadlineTimer = null;
 
         // If a grpc deadline is set, we should race it, otherwise the only thing in the
         // list of promises will be the execution promise.
         if (this._grpcDeadline != null) {
             promises.push(
                 // eslint-disable-next-line ie11/no-loop-func
-                new Promise((_, reject) =>
-                    setTimeout(
+                new Promise((_, reject) => {
+                    deadlineTimer = setTimeout(
                         // eslint-disable-next-line ie11/no-loop-func
                         () =>
                             reject(
@@ -774,8 +776,8 @@ export default class Executable {
                                 ),
                             ),
                         /** @type {number=} */ (this._grpcDeadline),
-                    ),
-                ),
+                    );
+                }),
             );
         }
 
@@ -787,8 +789,14 @@ export default class Executable {
 
         promises.push(this._execute(channel, request));
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return
-        return /** @type {ResponseT} */ (await Promise.race(promises));
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return
+            return /** @type {ResponseT} */ (await Promise.race(promises));
+        } finally {
+            if (deadlineTimer != null) {
+                clearTimeout(deadlineTimer);
+            }
+        }
     }
 
     /**

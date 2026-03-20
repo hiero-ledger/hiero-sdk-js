@@ -1,3 +1,5 @@
+/* global globalThis */
+
 import { vi } from "vitest";
 import Executable, { RST_STREAM } from "../../src/Executable.js";
 import AccountId from "../../src/account/AccountId.js";
@@ -27,7 +29,7 @@ describe("Executable", function () {
         );
     });
 
-    it("setupExecution initializes execution settings from the client", async function () {
+    it("_setupExecution initializes execution settings from the client", async function () {
         const executable = new Executable();
         const logger = { trace() {}, debug() {}, warn() {} };
         let beforeExecuteCalled = false;
@@ -36,7 +38,7 @@ describe("Executable", function () {
             beforeExecuteCalled = true;
         };
 
-        await executable.setupExecution(
+        await executable._setupExecution(
             {
                 _logger: logger,
                 requestTimeout: 15000,
@@ -72,11 +74,11 @@ describe("Executable", function () {
         }
     });
 
-    it("_getExecutionTarget returns the network node and requested account ID", function () {
+    it("_getExecutionNode returns the network node and seeds nodeAccountIds when empty", function () {
         const executable = new Executable();
         const currentNode = { accountId: new AccountId(3) };
 
-        const result = executable._getExecutionTarget({
+        const result = executable._getExecutionNode({
             _network: {
                 getNode() {
                     return currentNode;
@@ -84,18 +86,17 @@ describe("Executable", function () {
             },
         });
 
-        expect(result.currentNode).to.equal(currentNode);
-        expect(result.requestedNodeAccountId.toString()).to.equal("0.0.3");
+        expect(result).to.equal(currentNode);
+        expect(executable._nodeAccountIds.current.toString()).to.equal("0.0.3");
     });
 
-    it("_getExecutionTarget preserves the requested node account ID when the network falls back", function () {
+    it("_getExecutionNode returns the resolved network node when nodeAccountIds are already set", function () {
         const executable = new Executable();
-        const requestedNodeAccountId = new AccountId(111);
         const currentNode = { accountId: new AccountId(3) };
 
-        executable._nodeAccountIds.setList([requestedNodeAccountId]);
+        executable._nodeAccountIds.setList([new AccountId(111)]);
 
-        const result = executable._getExecutionTarget({
+        const result = executable._getExecutionNode({
             _network: {
                 getNode() {
                     return currentNode;
@@ -103,38 +104,10 @@ describe("Executable", function () {
             },
         });
 
-        expect(result.currentNode).to.equal(currentNode);
-        expect(result.requestedNodeAccountId.toString()).to.equal("0.0.111");
-    });
-
-    it("_getExecutionTarget returns null when the requested node account ID should be skipped", function () {
-        const executable = new Executable();
-
-        executable._nodeAccountIds.setList([
-            new AccountId(3),
-            new AccountId(4),
-        ]);
-        executable.transactionNodeIds = ["0.0.111"];
-
-        const originalError = console.error;
-        console.error = () => {};
-
-        try {
-            const result = executable._getExecutionTarget({
-                _network: {
-                    getNode() {
-                        return { accountId: new AccountId(3) };
-                    },
-                },
-            });
-
-            expect(result).to.equal(null);
-            expect(executable._nodeAccountIds.current.toString()).to.equal(
-                "0.0.4",
-            );
-        } finally {
-            console.error = originalError;
-        }
+        expect(result).to.equal(currentNode);
+        expect(executable._nodeAccountIds.current.toString()).to.equal(
+            "0.0.111",
+        );
     });
 
     it("_shouldSkipAttemptForNodeAccountId advances when the node is not in transactionNodeIds", function () {
@@ -230,10 +203,17 @@ describe("Executable", function () {
             .false;
     });
 
-    it("_executeRequestWithGrpcDeadline returns the execution response", async function () {
+    it("_executeRequestWithGrpcDeadline returns the execution response and clears the deadline timer", async function () {
         const executable = new Executable();
         const trace = vi.fn();
         const response = { ok: true };
+        const deadlineTimer = { id: "deadline" };
+        const setTimeoutSpy = vi
+            .spyOn(globalThis, "setTimeout")
+            .mockImplementation(() => deadlineTimer);
+        const clearTimeoutSpy = vi
+            .spyOn(globalThis, "clearTimeout")
+            .mockImplementation(() => {});
 
         executable._logger = {
             trace,
@@ -243,18 +223,26 @@ describe("Executable", function () {
             error() {},
             fatal() {},
         };
+        executable._grpcDeadline = 1000;
         executable._getLogId = () => "trace.log";
         executable._requestToBytes = () => new Uint8Array([1, 2, 3]);
         executable._execute = vi.fn().mockResolvedValue(response);
 
-        const result = await executable._executeRequestWithGrpcDeadline(
-            {},
-            { request: true },
-        );
+        try {
+            const result = await executable._executeRequestWithGrpcDeadline(
+                {},
+                { request: true },
+            );
 
-        expect(result).to.equal(response);
-        expect(trace).toHaveBeenCalledWith(
-            "[trace.log] sending protobuf 010203",
-        );
+            expect(result).to.equal(response);
+            expect(trace).toHaveBeenCalledWith(
+                "[trace.log] sending protobuf 010203",
+            );
+            expect(setTimeoutSpy).toHaveBeenCalledOnce();
+            expect(clearTimeoutSpy).toHaveBeenCalledWith(deadlineTimer);
+        } finally {
+            setTimeoutSpy.mockRestore();
+            clearTimeoutSpy.mockRestore();
+        }
     });
 });
