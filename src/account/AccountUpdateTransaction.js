@@ -22,7 +22,8 @@ import Key from "../Key.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  */
 
@@ -44,8 +45,6 @@ export default class AccountUpdateTransaction extends Transaction {
      * @param {AccountId | string} [props.stakedAccountId]
      * @param {Long | number} [props.stakedNodeId]
      * @param {?boolean} [props.declineStakingReward]
-     * @param {import("../hooks/HookCreationDetails.js").default[]} [props.hooksToBeCreated]
-     * @param {Long[]} [props.hooksToBeDeleted]
      */
     constructor(props = {}) {
         super();
@@ -122,18 +121,6 @@ export default class AccountUpdateTransaction extends Transaction {
          */
         this._declineStakingReward = null;
 
-        /**
-         * @private
-         * @type {import("../hooks/HookCreationDetails.js").default[]}
-         */
-        this._hooksToBeCreated = [];
-
-        /**
-         * @private
-         * @type {Long[]}
-         */
-        this._hooksToBeDeleted = [];
-
         if (props.accountId != null) {
             this.setAccountId(props.accountId);
         }
@@ -179,14 +166,6 @@ export default class AccountUpdateTransaction extends Transaction {
 
         if (props.declineStakingReward != null) {
             this.setDeclineStakingReward(props.declineStakingReward);
-        }
-
-        if (props.hooksToBeCreated != null) {
-            this.setHooksToCreate(props.hooksToBeCreated);
-        }
-
-        if (props.hooksToBeDeleted != null) {
-            this.setHooksToDelete(props.hooksToBeDeleted);
         }
     }
 
@@ -556,57 +535,6 @@ export default class AccountUpdateTransaction extends Transaction {
     }
 
     /**
-     * @param {import("../hooks/HookCreationDetails.js").default} hook
-     * @returns {this}
-     */
-    addHookToCreate(hook) {
-        this._hooksToBeCreated.push(hook);
-        return this;
-    }
-
-    /**
-     * @param {import("../hooks/HookCreationDetails.js").default[]} hooks
-     * @returns {this}
-     */
-    setHooksToCreate(hooks) {
-        this._hooksToBeCreated = hooks;
-        return this;
-    }
-
-    /**
-     * @returns {import("../hooks/HookCreationDetails.js").default[]}
-     */
-    get hooksToCreate() {
-        return this._hooksToBeCreated;
-    }
-
-    /**
-     *
-     * @param {Long} hook
-     * @returns {this}
-     */
-    addHookToDelete(hook) {
-        this._hooksToBeDeleted.push(hook);
-        return this;
-    }
-
-    /**
-     * @param {Long[]} hookIds
-     * @returns {this}
-     */
-    setHooksToDelete(hookIds) {
-        this._hooksToBeDeleted = hookIds;
-        return this;
-    }
-
-    /**
-     * @returns {Long[]}
-     */
-    get hooksToDelete() {
-        return this._hooksToBeDeleted;
-    }
-
-    /**
      * @param {Client} client
      */
     _validateChecksums(client) {
@@ -686,11 +614,6 @@ export default class AccountUpdateTransaction extends Transaction {
                 this.declineStakingRewards != null
                     ? { value: this.declineStakingRewards }
                     : null,
-
-            hookIdsToDelete: this._hooksToBeDeleted,
-            hookCreationDetails: this._hooksToBeCreated.map((hook) =>
-                hook._toProtobuf(),
-            ),
         };
     }
 

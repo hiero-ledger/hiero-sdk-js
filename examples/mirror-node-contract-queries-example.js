@@ -1,4 +1,4 @@
-import ABI from "@ethersproject/abi";
+import { AbiCoder } from "ethers";
 import {
     PrivateKey,
     MirrorNodeContractCallQuery,
@@ -83,7 +83,7 @@ async function main() {
     /**
      * @type {string[]}
      */
-    const decodedSimulationResult = ABI.defaultAbiCoder
+    const decodedSimulationResult = AbiCoder.defaultAbiCoder()
         .decode(["string"], simulationResult)
         .concat();
 

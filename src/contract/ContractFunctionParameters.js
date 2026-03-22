@@ -9,8 +9,9 @@ import * as hex from "../encoding/hex.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import BigNumber from "bignumber.js";
 import * as util from "../util.js";
-import { defaultAbiCoder } from "@ethersproject/abi";
-import { arrayify } from "@ethersproject/bytes";
+import { AbiCoder, getBytes } from "ethers";
+
+const defaultAbiCoder = AbiCoder.defaultAbiCoder();
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import EvmAddress from "../EvmAddress.js";
@@ -1704,7 +1705,7 @@ function argumentToBytes(param, ty) {
             );
 
             // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            const dataToArrayify = arrayify(encodedData);
+            const dataToArrayify = getBytes(encodedData);
             return dataToArrayify;
         }
         case ArgumentType.address:
