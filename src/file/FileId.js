@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import * as EntityIdHelper from "../EntityIdHelper.js";
-import * as HieroProto from "@hiero-ledger/proto";
-import Long from "long";
-import EvmAddress from "../EvmAddress.js";
-import * as util from "../util.js";
+import * as EntityIdHelper from '../EntityIdHelper.js';
+import * as HieroProto from '@hiero-ledger/proto';
+import Long from 'long';
+import EvmAddress from '../EvmAddress.js';
+import * as util from '../util.js';
 
 /**
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import('../client/Client.js').default<import('../channel/Channel.js').default, import('../channel/MirrorChannel.js').default>} Client
  */
 
 /**
@@ -15,7 +15,7 @@ import * as util from "../util.js";
  */
 export default class FileId {
     /**
-     * @param {number | Long | import("../EntityIdHelper").IEntityId} props
+     * @param {number | Long | import('../EntityIdHelper').IEntityId} props
      * @param {(number | Long)=} realm
      * @param {(number | Long)=} num
      */
@@ -93,15 +93,6 @@ export default class FileId {
     }
 
     /**
-     * @deprecated - Use `validateChecksum` instead
-     * @param {Client} client
-     */
-    validate(client) {
-        console.warn("Deprecated: Use `validateChecksum` instead");
-        this.validateChecksum(client);
-    }
-
-    /**
      * @param {Client} client
      */
     validateChecksum(client) {
@@ -118,130 +109,3 @@ export default class FileId {
      * @param {Uint8Array} bytes
      * @returns {FileId}
      */
-    static fromBytes(bytes) {
-        return FileId._fromProtobuf(HieroProto.proto.FileID.decode(bytes));
-    }
-
-    /**
-     * @param {string} address
-     * @deprecated - Use `fromEvmAddress` instead
-     * @returns {FileId}
-     */
-    static fromSolidityAddress(address) {
-        const [shard, realm, file] =
-            EntityIdHelper.fromSolidityAddress(address);
-        return new FileId(shard, realm, file);
-    }
-
-    /**
-     * @param {number} shard
-     * @param {number} realm
-     * @param {string} address
-     * @returns {FileId}
-     */
-    static fromEvmAddress(shard, realm, address) {
-        const addressBytes = EvmAddress.fromString(address).toBytes();
-        const isLongZero = util.isLongZeroAddress(addressBytes);
-
-        if (!isLongZero) {
-            throw new Error(
-                "FileId.fromEvmAddress does not support non-long-zero addresses",
-            );
-        }
-
-        const [shardLong, realmLong, fileLong] = EntityIdHelper.fromEvmAddress(
-            shard,
-            realm,
-            address,
-        );
-        return new FileId(shardLong, realmLong, fileLong);
-    }
-
-    /**
-     * @deprecated - Use `toEvmAddress` instead
-     * @returns {string} solidity address
-     */
-    toSolidityAddress() {
-        return EntityIdHelper.toSolidityAddress([
-            this.shard,
-            this.realm,
-            this.num,
-        ]);
-    }
-
-    /**
-     * @returns {string} EVM-compatible address representation of the entity
-     */
-    toEvmAddress() {
-        return EntityIdHelper.toEvmAddress(this.num);
-    }
-
-    /**
-     * @internal
-     * @returns {HieroProto.proto.IFileID}
-     */
-    _toProtobuf() {
-        return {
-            fileNum: this.num,
-            shardNum: this.shard,
-            realmNum: this.realm,
-        };
-    }
-
-    /**
-     * @returns {string}
-     */
-    toString() {
-        return `${this.shard.toString()}.${this.realm.toString()}.${this.num.toString()}`;
-    }
-
-    /**
-     * @param {Client} client
-     * @returns {string}
-     */
-    toStringWithChecksum(client) {
-        return EntityIdHelper.toStringWithChecksum(this.toString(), client);
-    }
-
-    /**
-     * @returns {Uint8Array}
-     */
-    toBytes() {
-        return HieroProto.proto.FileID.encode(this._toProtobuf()).finish();
-    }
-
-    /**
-     * @returns {FileId}
-     */
-    clone() {
-        const id = new FileId(this);
-        id._checksum = this._checksum;
-        return id;
-    }
-
-    /**
-     * @param {FileId} other
-     * @returns {number}
-     */
-    compare(other) {
-        return EntityIdHelper.compare(
-            [this.shard, this.realm, this.num],
-            [other.shard, other.realm, other.num],
-        );
-    }
-}
-
-/**
- * The public node address book for the current network.
- */
-FileId.ADDRESS_BOOK = new FileId(102);
-
-/**
- * The current fee schedule for the network.
- */
-FileId.FEE_SCHEDULE = new FileId(111);
-
-/**
- * The current exchange rate of HBAR to USD.
- */
-FileId.EXCHANGE_RATES = new FileId(112);
