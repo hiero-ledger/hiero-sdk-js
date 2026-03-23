@@ -13,7 +13,9 @@ import Long from "long";
  * @typedef {import("../Executable.js").ExecutionState} ExecutionState
  * @typedef {import("../client/Client.js").ClientOperator} ClientOperator
  * @typedef {import("../PublicKey.js").default} PublicKey
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../logger/Logger.js").default} Logger
  */
 

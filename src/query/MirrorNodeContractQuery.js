@@ -3,7 +3,9 @@ import ContractFunctionParameters from "../contract/ContractFunctionParameters.j
 /**
  * @typedef {import("../contract/ContractId").default} ContractId
  * @typedef {import("../account/AccountId").default} AccountId
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  *
  */
 

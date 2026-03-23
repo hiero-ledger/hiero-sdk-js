@@ -17,7 +17,9 @@ import TokenReference from "../token/TokenReference.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  * @typedef {import("../token/TokenId.js").default} TokenId
  * @typedef {import("../token/NftId.js").default} NftId
