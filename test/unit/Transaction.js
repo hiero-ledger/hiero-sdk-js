@@ -439,6 +439,59 @@ describe("Transaction", function () {
         expect(decoded._transactionIds.length).to.be.greaterThan(1);
     });
 
+    it("fromBytes and sign succeed for valid chunked file append with multiple nodes and transaction groups", async function () {
+        const nodeAccountIds = [new AccountId(3), new AccountId(4)];
+        const key = PrivateKey.generateED25519();
+        const contents = Array(40).fill("chunk").join("");
+
+        const transaction = new FileAppendTransaction()
+            .setFileId(new FileId(1, 2, 3))
+            .setChunkSize(16)
+            .setContents(contents)
+            .setNodeAccountIds(nodeAccountIds)
+            .setTransactionId(
+                TransactionId.withValidStart(
+                    new AccountId(9),
+                    new Timestamp(10, 11),
+                ),
+            )
+            .freeze();
+
+        const bytes = transaction.toBytes();
+        const rawList =
+            HieroProto.proto.TransactionList.decode(bytes).transactionList;
+        expect(rawList.length).to.be.greaterThan(nodeAccountIds.length);
+
+        const decoded = Transaction.fromBytes(bytes);
+        expect(decoded).to.be.instanceOf(FileAppendTransaction);
+        expect(decoded.nodeAccountIds.length).to.be.equal(
+            nodeAccountIds.length,
+        );
+        expect(decoded._transactionIds.length).to.be.greaterThan(1);
+
+        await decoded.sign(key);
+
+        const signedList = HieroProto.proto.TransactionList.decode(
+            decoded.toBytes(),
+        ).transactionList;
+        const publicKeyPrefix = hex.encode(key.publicKey.toBytesRaw());
+
+        expect(signedList.length).to.be.equal(rawList.length);
+
+        for (const signedTransactionBytes of signedList) {
+            const signedTransaction = HieroProto.proto.SignedTransaction.decode(
+                signedTransactionBytes.signedTransactionBytes,
+            );
+            const signedByKey =
+                signedTransaction.sigMap?.sigPair?.some(
+                    (pair) =>
+                        hex.encode(pair.pubKeyPrefix) === publicKeyPrefix,
+                ) ?? false;
+
+            expect(signedByKey).to.be.true;
+        }
+    });
+
     it("fromBytes succeeds for incomplete chunked file append with transaction IDs and no node IDs", function () {
         const contents = new Uint8Array(5000).fill(1);
         const transactionId = TransactionId.withValidStart(
@@ -528,6 +581,59 @@ describe("Transaction", function () {
         expect(decoded).to.be.instanceOf(TopicMessageSubmitTransaction);
         expect(decoded.nodeAccountIds.length).to.be.equal(1);
         expect(decoded._transactionIds.length).to.be.greaterThan(1);
+    });
+
+    it("fromBytes and sign succeed for valid chunked submit message with multiple nodes and transaction groups", async function () {
+        const nodeAccountIds = [new AccountId(3), new AccountId(4)];
+        const key = PrivateKey.generateED25519();
+        const message = Array(80).fill("message").join("");
+
+        const transaction = new TopicMessageSubmitTransaction()
+            .setTopicId(new TopicId(1, 2, 3))
+            .setChunkSize(32)
+            .setMessage(message)
+            .setNodeAccountIds(nodeAccountIds)
+            .setTransactionId(
+                TransactionId.withValidStart(
+                    new AccountId(9),
+                    new Timestamp(10, 11),
+                ),
+            )
+            .freeze();
+
+        const bytes = transaction.toBytes();
+        const rawList =
+            HieroProto.proto.TransactionList.decode(bytes).transactionList;
+        expect(rawList.length).to.be.greaterThan(nodeAccountIds.length);
+
+        const decoded = Transaction.fromBytes(bytes);
+        expect(decoded).to.be.instanceOf(TopicMessageSubmitTransaction);
+        expect(decoded.nodeAccountIds.length).to.be.equal(
+            nodeAccountIds.length,
+        );
+        expect(decoded._transactionIds.length).to.be.greaterThan(1);
+
+        await decoded.sign(key);
+
+        const signedList = HieroProto.proto.TransactionList.decode(
+            decoded.toBytes(),
+        ).transactionList;
+        const publicKeyPrefix = hex.encode(key.publicKey.toBytesRaw());
+
+        expect(signedList.length).to.be.equal(rawList.length);
+
+        for (const signedTransactionBytes of signedList) {
+            const signedTransaction = HieroProto.proto.SignedTransaction.decode(
+                signedTransactionBytes.signedTransactionBytes,
+            );
+            const signedByKey =
+                signedTransaction.sigMap?.sigPair?.some(
+                    (pair) =>
+                        hex.encode(pair.pubKeyPrefix) === publicKeyPrefix,
+                ) ?? false;
+
+            expect(signedByKey).to.be.true;
+        }
     });
 
     it("fromBytes fails for chunked submit message with a different transaction type in another group", function () {
