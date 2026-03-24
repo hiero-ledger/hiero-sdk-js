@@ -1,20 +1,5 @@
-/**
- * Theme constants for the Hiero SDK React Native Example.
- *
- * Defines the color palette and font families used throughout the app.
- * Colors support both light and dark modes automatically.
- *
- * The theme follows Expo's recommended pattern of exporting
- * a Colors object keyed by 'light' and 'dark', consumed by
- * the useThemeColor hook.
- */
-
 import { Platform } from 'react-native';
 
-/**
- * Hiero brand colors — used for primary accents.
- * These provide a consistent visual identity across the app.
- */
 export const HieroColors = {
   /** Primary teal — used for interactive elements and branding */
   primary: '#0a7ea4',
@@ -24,10 +9,6 @@ export const HieroColors = {
   primaryLight: '#e6f4fa',
 };
 
-/**
- * Status colors — used for connection states, results, and errors.
- * These are consistent across light and dark themes.
- */
 export const StatusColors = {
   /** Green — connected, success */
   success: '#34C759',

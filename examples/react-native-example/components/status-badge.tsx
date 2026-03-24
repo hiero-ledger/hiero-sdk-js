@@ -4,20 +4,11 @@ import { ThemedView } from '@/components/themed-view';
 import { ThemedText } from '@/components/themed-text';
 import { StatusColors } from '@/constants/theme';
 
-/**
- * Status type used to determine the badge color.
- */
 type StatusType = 'success' | 'warning' | 'error';
 
-/**
- * Props for the StatusBadge component.
- */
 interface StatusBadgeProps {
-  /** The status to display */
   status: StatusType;
-  /** The label text next to the status dot */
   label: string;
-  /** Optional additional styles for the container */
   style?: ViewStyle;
 }
 

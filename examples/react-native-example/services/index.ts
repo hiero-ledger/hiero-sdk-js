@@ -1,16 +1,3 @@
-/**
- * Services barrel export.
- *
- * Re-exports all SDK service functions and types from a single entry point.
- * UI components import from '@/services' instead of individual files.
- *
- * Example usage in a screen:
- * ```tsx
- * import { initClient, createAccount } from '@/services';
- * import type { NetworkConfig, SDKResult, AccountInfo } from '@/services';
- * ```
- */
-
 export {
   initClient,
   createAccount,

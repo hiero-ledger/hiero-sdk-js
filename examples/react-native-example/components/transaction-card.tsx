@@ -11,35 +11,19 @@ import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
-/**
- * A single input field configuration for a TransactionCard.
- */
 interface InputField {
-  /** Unique key for this field */
   key: string;
-  /** Label shown above the input */
   label: string;
-  /** Placeholder text inside the input */
   placeholder: string;
-  /** Optional keyboard type (default: 'default') */
   keyboardType?: 'default' | 'numeric' | 'decimal-pad';
 }
 
-/**
- * Props for the TransactionCard component.
- */
 interface TransactionCardProps {
-  /** Card title (e.g., "Create Account") */
   title: string;
-  /** Short description of what this operation does */
   description: string;
-  /** Button label (e.g., "Create", "Query", "Transfer") */
   buttonLabel: string;
-  /** Optional input fields — omit for operations with no user input */
   inputs?: InputField[];
-  /** Callback when the action button is pressed. Return a result string on success, or throw on error. */
   onExecute: (values: Record<string, string>) => Promise<string>;
-  /** Whether the SDK client is connected (disables button if not) */
   isConnected: boolean;
 }
 
