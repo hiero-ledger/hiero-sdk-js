@@ -1,41 +1,83 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * Theme constants for the Hiero SDK React Native Example.
+ *
+ * Defines the color palette and font families used throughout the app.
+ * Colors support both light and dark modes automatically.
+ *
+ * The theme follows Expo's recommended pattern of exporting
+ * a Colors object keyed by 'light' and 'dark', consumed by
+ * the useThemeColor hook.
  */
 
 import { Platform } from 'react-native';
 
-const tintColorLight = '#0a7ea4';
-const tintColorDark = '#fff';
+/**
+ * Hiero brand colors — used for primary accents.
+ * These provide a consistent visual identity across the app.
+ */
+export const HieroColors = {
+  /** Primary teal — used for interactive elements and branding */
+  primary: '#0a7ea4',
+  /** Darker teal — used for headers and emphasis */
+  primaryDark: '#065a75',
+  /** Light teal — used for subtle backgrounds */
+  primaryLight: '#e6f4fa',
+};
 
+/**
+ * Status colors — used for connection states, results, and errors.
+ * These are consistent across light and dark themes.
+ */
+export const StatusColors = {
+  /** Green — connected, success */
+  success: '#34C759',
+  successBg: 'rgba(52, 199, 89, 0.08)',
+  successBorder: 'rgba(52, 199, 89, 0.25)',
+
+  /** Orange — disconnected, warning */
+  warning: '#FF9500',
+  warningBg: 'rgba(255, 149, 0, 0.06)',
+  warningBorder: 'rgba(255, 149, 0, 0.3)',
+
+  /** Red — not configured, error */
+  error: '#FF3B30',
+  errorBg: 'rgba(255, 59, 48, 0.06)',
+  errorBorder: 'rgba(255, 59, 48, 0.3)',
+};
+
+/**
+ * Theme colors for light and dark mode.
+ * Consumed by the useThemeColor hook via Colors[colorScheme][key].
+ */
 export const Colors = {
   light: {
     text: '#11181C',
     background: '#fff',
-    tint: tintColorLight,
+    tint: HieroColors.primary,
     icon: '#687076',
     tabIconDefault: '#687076',
-    tabIconSelected: tintColorLight,
+    tabIconSelected: HieroColors.primary,
+    cardBorder: 'rgba(0,0,0,0.08)',
   },
   dark: {
     text: '#ECEDEE',
     background: '#151718',
-    tint: tintColorDark,
+    tint: '#fff',
     icon: '#9BA1A6',
     tabIconDefault: '#9BA1A6',
-    tabIconSelected: tintColorDark,
+    tabIconSelected: '#fff',
+    cardBorder: 'rgba(255,255,255,0.1)',
   },
 };
 
+/**
+ * Platform-specific font families.
+ */
 export const Fonts = Platform.select({
   ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
     sans: 'system-ui',
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
     serif: 'ui-serif',
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
     rounded: 'ui-rounded',
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
     mono: 'ui-monospace',
   },
   default: {

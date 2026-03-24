@@ -1,98 +1,320 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useState, useCallback, useEffect } from 'react';
+import {
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  RefreshControl,
+} from 'react-native';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { useHiero } from '@/hooks/use-hiero';
+import { useNetworkConfig } from '@/hooks/use-network-config';
+import { useThemeColor } from '@/hooks/use-theme-color';
+import { StatusBadge } from '@/components/status-badge';
+import { getAccountBalance } from '@/services';
 
+/**
+ * Home screen — the main dashboard for the Hiero SDK Example.
+ *
+ * This screen shows:
+ * 1. Connection status (not configured / disconnected / connected)
+ * 2. A "Connect" or "Disconnect" button to manage the SDK client
+ * 3. The operator&apos;s account ID and current HBAR balance (when connected)
+ * 4. Pull-to-refresh to update the balance
+ *
+ * It uses:
+ * - useHiero() context to access the shared SDK client
+ * - useNetworkConfig() to read the saved credentials
+ * - getAccountBalance() from the service layer to query the balance
+ */
 export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+  const { client, isConnected, isConnecting, connectionError, activeConfig, connect, disconnect } =
+    useHiero();
+  const { config } = useNetworkConfig();
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+  const [balance, setBalance] = useState<string | null>(null);
+  const [isLoadingBalance, setIsLoadingBalance] = useState(false);
+  const [balanceError, setBalanceError] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Theme-aware colors
+  const tintColor = useThemeColor({}, 'tint');
+  const iconColor = useThemeColor({}, 'icon');
+
+  /** Check if the user has configured their credentials */
+  const isConfigured = config.operatorId.trim() !== '' && config.operatorKey.trim() !== '';
+
+  /** Determine connection status for the StatusBadge */
+  const statusType = isConnected ? 'success' : isConfigured ? 'warning' : 'error';
+  const statusLabel = isConnected ? 'Connected' : isConfigured ? 'Disconnected' : 'Not Configured';
+
+  /**
+   * Fetches the operator&apos;s HBAR balance from the network.
+   * Uses the getAccountBalance() service function.
+   */
+  const fetchBalance = useCallback(async () => {
+    if (!client || !activeConfig) return;
+
+    setIsLoadingBalance(true);
+    setBalanceError(null);
+
+    const result = await getAccountBalance(client, activeConfig.operatorId);
+
+    if (result.success) {
+      setBalance(result.data.balance);
+    } else {
+      setBalanceError(result.error);
+    }
+
+    setIsLoadingBalance(false);
+  }, [client, activeConfig]);
+
+  /**
+   * Auto-fetch balance when the client connects.
+   * useEffect watches for changes to client/activeConfig — when
+   * connect() sets these values, the balance is fetched automatically.
+   */
+  useEffect(() => {
+    if (client && activeConfig) {
+      fetchBalance();
+    }
+  }, [client, activeConfig, fetchBalance]);
+
+  /** Handle the Connect button press — simply calls connect() from context */
+  const handleConnect = () => {
+    connect(config);
+    // Balance fetch is triggered automatically by the useEffect above
+    // when the client state updates after connect() completes
+  };
+
+  /** Handle pull-to-refresh */
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    await fetchBalance();
+    setIsRefreshing(false);
+  }, [fetchBalance]);
+
+  /** Handle disconnect */
+  const handleDisconnect = () => {
+    disconnect();
+    setBalance(null);
+    setBalanceError(null);
+  };
+
+  return (
+    <ThemedView style={styles.container}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={
+          isConnected ? (
+            <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+          ) : undefined
+        }>
+        {/* Header */}
+        <ThemedView style={styles.header}>
+          <ThemedText type="title">Hiero SDK</ThemedText>
+          <ThemedText style={[styles.subtitle, { color: iconColor }]}>
+            React Native Example
+          </ThemedText>
+        </ThemedView>
+
+        {/* Connection Status Card */}
+        <ThemedView
+          style={[
+            styles.card,
+            styles.statusCard,
+            isConnected && styles.statusCardConnected,
+          ]}>
+          <StatusBadge status={statusType} label={statusLabel} />
+
+          {isConnected && activeConfig && (
+            <ThemedView style={styles.statusDetails}>
+              <ThemedText style={[styles.detailLabel, { color: iconColor }]}>
+                Network
+              </ThemedText>
+              <ThemedText type="defaultSemiBold">
+                {activeConfig.network.charAt(0).toUpperCase() + activeConfig.network.slice(1)}
+              </ThemedText>
+
+              <ThemedText style={[styles.detailLabel, { color: iconColor, marginTop: 8 }]}>
+                Operator Account
+              </ThemedText>
+              <ThemedText type="defaultSemiBold">{activeConfig.operatorId}</ThemedText>
+            </ThemedView>
+          )}
+
+          {!isConfigured && (
+            <ThemedText style={styles.statusHint}>
+              Go to the Settings tab to configure your operator credentials.
+            </ThemedText>
+          )}
+        </ThemedView>
+
+        {/* Error display */}
+        {connectionError && (
+          <ThemedView style={[styles.card, styles.errorCard]}>
+            <ThemedText type="defaultSemiBold" style={styles.errorTitle}>
+              Connection Error
+            </ThemedText>
+            <ThemedText style={styles.errorText}>{connectionError}</ThemedText>
+          </ThemedView>
+        )}
+
+        {/* Balance Card */}
+        {isConnected && (
+          <ThemedView style={styles.card}>
+            <ThemedText type="defaultSemiBold">Account Balance</ThemedText>
+            {isLoadingBalance ? (
+              <ActivityIndicator style={styles.balanceLoader} color={tintColor} />
+            ) : balanceError ? (
+              <ThemedView style={styles.balanceErrorContainer}>
+                <ThemedText style={styles.errorText}>{balanceError}</ThemedText>
+                <TouchableOpacity onPress={fetchBalance}>
+                  <ThemedText style={[styles.retryText, { color: tintColor }]}>
+                    Tap to retry
+                  </ThemedText>
+                </TouchableOpacity>
+              </ThemedView>
+            ) : (
+              <ThemedText style={styles.balanceText}>{balance ?? 'Loading...'}</ThemedText>
+            )}
+            {!isLoadingBalance && !balanceError && (
+              <ThemedText style={[styles.balanceHint, { color: iconColor }]}>
+                Pull down to refresh
+              </ThemedText>
+            )}
+          </ThemedView>
+        )}
+
+        {/* Connect / Disconnect Button */}
+        {isConfigured && (
+          <TouchableOpacity
+            style={[
+              styles.connectButton,
+              {
+                backgroundColor: isConnected ? 'transparent' : tintColor,
+                borderColor: isConnected ? '#FF3B30' : tintColor,
+                borderWidth: isConnected ? 1 : 0,
+              },
+            ]}
+            onPress={isConnected ? handleDisconnect : handleConnect}
+            disabled={isConnecting}
+            activeOpacity={0.8}>
+            {isConnecting ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <ThemedText
+                style={[
+                  styles.connectButtonText,
+                  { color: isConnected ? '#FF3B30' : '#fff' },
+                ]}>
+                {isConnected ? 'Disconnect' : 'Connect to Network'}
+              </ThemedText>
+            )}
+          </TouchableOpacity>
+        )}
+
+        {/* Getting Started Card (when not connected) */}
+        {!isConnected && (
+          <ThemedView style={styles.card}>
+            <ThemedText type="defaultSemiBold">Getting Started</ThemedText>
+            <ThemedText>
+              1. Go to Settings and enter your testnet credentials{'\n'}
+              2. Tap &quot;Connect to Network&quot; above{'\n'}
+              3. Navigate to Transactions to try SDK operations{'\n'}
+              4. Pull down on this screen to refresh your balance
+            </ThemedText>
+          </ThemedView>
+        )}
+      </ScrollView>
+    </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
   },
-  stepContainer: {
-    gap: 8,
+  content: {
+    padding: 24,
+    paddingTop: 80,
+    paddingBottom: 40,
+    gap: 16,
+  },
+  header: {
+    gap: 2,
     marginBottom: 8,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  subtitle: {
+    fontSize: 17,
+  },
+  card: {
+    gap: 8,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.08)',
+  },
+  statusCard: {
+    borderColor: 'rgba(255, 149, 0, 0.2)',
+  },
+  statusCardConnected: {
+    borderColor: 'rgba(52, 199, 89, 0.25)',
+    backgroundColor: 'rgba(52, 199, 89, 0.04)',
+  },
+  statusDetails: {
+    marginTop: 4,
+    paddingTop: 10,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(0,0,0,0.08)',
+  },
+  statusHint: {
+    fontSize: 14,
+    opacity: 0.7,
+    marginTop: 4,
+  },
+  detailLabel: {
+    fontSize: 13,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  errorCard: {
+    borderColor: 'rgba(255, 59, 48, 0.3)',
+    backgroundColor: 'rgba(255, 59, 48, 0.06)',
+  },
+  errorTitle: {
+    color: '#FF3B30',
+  },
+  errorText: {
+    color: '#FF3B30',
+    fontSize: 14,
+  },
+  balanceText: {
+    fontSize: 28,
+    fontWeight: '700',
+  },
+  balanceLoader: {
+    marginVertical: 8,
+  },
+  balanceErrorContainer: {
+    gap: 6,
+  },
+  retryText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  balanceHint: {
+    fontSize: 13,
+  },
+  connectButton: {
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  connectButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
