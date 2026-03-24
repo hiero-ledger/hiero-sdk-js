@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   RefreshControl,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -42,6 +43,7 @@ export default function HomeScreen() {
   // Theme-aware colors
   const tintColor = useThemeColor({}, 'tint');
   const iconColor = useThemeColor({}, 'icon');
+  const backgroundColor = useThemeColor({}, 'background');
 
   /** Check if the user has configured their credentials */
   const isConfigured = config.operatorId.trim() !== '' && config.operatorKey.trim() !== '';
@@ -104,7 +106,7 @@ export default function HomeScreen() {
   };
 
   return (
-    <ThemedView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
       <ScrollView
         contentContainerStyle={styles.content}
         refreshControl={
@@ -229,7 +231,7 @@ export default function HomeScreen() {
           </ThemedView>
         )}
       </ScrollView>
-    </ThemedView>
+    </SafeAreaView>
   );
 }
 
@@ -239,7 +241,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 24,
-    paddingTop: 80,
+    paddingTop: 16,
     paddingBottom: 40,
     gap: 16,
   },
@@ -294,6 +296,7 @@ const styles = StyleSheet.create({
   balanceText: {
     fontSize: 28,
     fontWeight: '700',
+    lineHeight: 34,
   },
   balanceLoader: {
     marginVertical: 8,

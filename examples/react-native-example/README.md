@@ -19,7 +19,7 @@ mobile application. Built with **Expo SDK 54** and **expo-router**.
 
 ### Prerequisites
 
-- Node.js ≥ 18
+- Node.js ≥ 20
 - iOS Simulator (Xcode) or Android Emulator (Android Studio)
 - A free Hedera testnet account from [portal.hedera.com](https://portal.hedera.com/register)
 

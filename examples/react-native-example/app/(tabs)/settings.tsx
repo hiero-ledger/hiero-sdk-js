@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -38,6 +39,7 @@ export default function SettingsScreen() {
   const textColor = useThemeColor({}, 'text');
   const tintColor = useThemeColor({}, 'tint');
   const iconColor = useThemeColor({}, 'icon');
+  const backgroundColor = useThemeColor({}, 'background');
 
   // Populate form fields when saved config loads from AsyncStorage
   useEffect(() => {
@@ -102,14 +104,14 @@ export default function SettingsScreen() {
 
   if (isLoading) {
     return (
-      <ThemedView style={styles.container}>
+      <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
         <ThemedText>Loading configuration...</ThemedText>
-      </ThemedView>
+      </SafeAreaView>
     );
   }
 
   return (
-    <ThemedView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}>
@@ -256,7 +258,7 @@ export default function SettingsScreen() {
           </ThemedView>
         </ScrollView>
       </KeyboardAvoidingView>
-    </ThemedView>
+    </SafeAreaView>
   );
 }
 
@@ -269,7 +271,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 24,
-    paddingTop: 80,
+    paddingTop: 16,
     paddingBottom: 40,
     gap: 20,
   },

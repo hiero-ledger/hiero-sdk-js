@@ -1,4 +1,5 @@
 import { StyleSheet, ScrollView } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -34,9 +35,10 @@ import {
 export default function TransactionsScreen() {
   const { client, isConnected } = useHiero();
   const iconColor = useThemeColor({}, 'icon');
+  const backgroundColor = useThemeColor({}, 'background');
 
   return (
-    <ThemedView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor }]} edges={['top']}>
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled">
@@ -262,7 +264,7 @@ export default function TransactionsScreen() {
           }}
         />
       </ScrollView>
-    </ThemedView>
+    </SafeAreaView>
   );
 }
 
@@ -272,7 +274,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 24,
-    paddingTop: 80,
+    paddingTop: 16,
     paddingBottom: 40,
     gap: 20,
   },
