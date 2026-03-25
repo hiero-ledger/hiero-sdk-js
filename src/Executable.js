@@ -595,25 +595,6 @@ export default class Executable {
 
     /**
      * @private
-     * @param {number} executeOperationStartTime
-     * @returns {void}
-     */
-    _throwIfRequestTimedOut(executeOperationStartTime) {
-        if (
-            this._requestTimeout != null &&
-            executeOperationStartTime + this._requestTimeout <= Date.now()
-        ) {
-            throw new MaxAttemptsOrTimeoutError(
-                "timeout exceeded",
-                this._nodeAccountIds.isEmpty
-                    ? "No node account ID set"
-                    : this._nodeAccountIds.current.toString(),
-            );
-        }
-    }
-
-    /**
-     * @private
      * @template {Channel} ChannelT
      * @template {MirrorChannel} MirrorChannelT
      * @param {import("./client/Client.js").default<ChannelT, MirrorChannelT>} client
@@ -828,7 +809,17 @@ export default class Executable {
             attempt <= /** @type {number} */ (this._maxAttempts);
             attempt += 1
         ) {
-            this._throwIfRequestTimedOut(requestStartTime);
+            if (
+                this._requestTimeout != null &&
+                requestStartTime + this._requestTimeout <= Date.now()
+            ) {
+                throw new MaxAttemptsOrTimeoutError(
+                    "timeout exceeded",
+                    this._nodeAccountIds.isEmpty
+                        ? "No node account ID set"
+                        : this._nodeAccountIds.current.toString(),
+                );
+            }
 
             if (
                 this._shouldSkipAttemptForNodeAccountId(
@@ -839,10 +830,6 @@ export default class Executable {
             }
 
             const executionNode = this._getExecutionNode(client);
-
-            if (executionNode == null) {
-                continue;
-            }
 
             this._logger?.debug(
                 `[${this._getLogId()}] Node AccountID: ${executionNode.accountId.toString()}, IP: ${executionNode.address.toString()}`,
@@ -934,7 +921,7 @@ export default class Executable {
                 status.toString() !== Status.Success.toString();
 
             if (isError) {
-                persistentError = status;
+                persistentError = new Error(status.toString());
             }
 
             // Determine by the executing state what we should do
