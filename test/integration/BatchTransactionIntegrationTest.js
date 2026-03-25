@@ -20,7 +20,7 @@ import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 
 const retryCountMap = new Map();
 
-// eslint-disable-next-line vitest/no-disabled-tests
+ 
 describe("BatchTransaction", function () {
     let env;
 

@@ -272,7 +272,6 @@ export default class AccountId {
      * @returns {AccountId}
      */
     static fromSolidityAddress(address) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         if (isLongZeroAddress(hex.decode(address))) {
             return new AccountId(
                 ...EntityIdHelper.fromSolidityAddress(address),

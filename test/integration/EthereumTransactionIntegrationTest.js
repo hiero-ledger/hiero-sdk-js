@@ -32,7 +32,7 @@ import * as hex from "../../src/encoding/hex.js";
  * The test suite will be skipped until the problem is investigated and fixed.
  */
 
-// eslint-disable-next-line vitest/no-disabled-tests
+ 
 describe("EthereumTransactionIntegrationTest", function () {
     let env, operatorKey, wallet, contractAddress, operatorId;
 

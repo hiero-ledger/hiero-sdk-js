@@ -1698,13 +1698,11 @@ function argumentToBytes(param, ty) {
                     paramToHex.slice(0, 1) + "0x" + paramToHex.slice(1);
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
             const encodedData = defaultAbiCoder.encode(
                 [solidityTypeToString(ty)],
                 [paramToHex],
             );
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             const dataToArrayify = getBytes(encodedData);
             return dataToArrayify;
         }
@@ -1727,7 +1725,7 @@ function argumentToBytes(param, ty) {
         case ArgumentType.string: {
             // If value is of type string, encode it in UTF-8 format and conver it to Uint8Array
             // Required because JS Strings are UTF-16
-            // eslint-disable-next-line no-case-declarations
+
             par =
                 param instanceof Uint8Array
                     ? param

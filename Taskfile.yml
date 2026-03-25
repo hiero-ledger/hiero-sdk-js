@@ -151,7 +151,8 @@ tasks:
 
     "lint:js":
         cmds:
-            - npx eslint --fix "src/**/*.js" "test/integration/**/*.js" "test/unit/**/*.js"
+            - npx eslint --fix "src/**/*.js"
+            - cd test && npx eslint --fix "integration/**/*.js"
 
     "test:release":
         cmds:
@@ -217,7 +218,6 @@ tasks:
         cmds:
             - npx vitest --maxWorkers=1 --config=test/vitest-node-integration-dual-mode.config.ts
             - npx vitest --maxWorkers=1 --config=test/vitest-browser-integration-dual-mode.config.ts
-            
     "test:integration:dual-mode:codecov":
         cmds:
             - npx vitest --coverage --maxWorkers=1 --config=test/vitest-node-integration-dual-mode.config.ts

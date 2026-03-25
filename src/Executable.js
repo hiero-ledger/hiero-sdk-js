@@ -715,10 +715,8 @@ export default class Executable {
                 // list of promises will be the execution promise.
                 if (this._grpcDeadline != null) {
                     promises.push(
-                        // eslint-disable-next-line ie11/no-loop-func
                         new Promise((_, reject) =>
                             setTimeout(
-                                // eslint-disable-next-line ie11/no-loop-func
                                 () =>
                                     reject(
                                         new GrpcServiceError(

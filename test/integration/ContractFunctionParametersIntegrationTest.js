@@ -555,7 +555,7 @@ describe("ContractFunctionParameters", function () {
                 const contractParams = new ContractFunctionParameters()[
                     `addInt${bitSize}Array`
                 ](
-                    // eslint-disable-next-line no-loss-of-precision
+                     
                     [],
                 );
 
@@ -843,7 +843,7 @@ describe("ContractFunctionParameters", function () {
                 const contractParams = new ContractFunctionParameters()[
                     `addUint${bitSize}Array`
                 ](
-                    // eslint-disable-next-line no-loss-of-precision
+                     
                     [],
                 );
 
@@ -980,7 +980,7 @@ describe("ContractFunctionParameters", function () {
 
     it("should return the right zero uint256 value", async function () {
         const contractParams = new ContractFunctionParameters().addUint256(
-            // eslint-disable-next-line no-loss-of-precision
+             
             0,
         );
         const contractQuery = new ContractCallQuery()
@@ -998,14 +998,14 @@ describe("ContractFunctionParameters", function () {
         const txResponse = await contractQuery.execute(env.client);
 
         expect(txResponse.getUint256(0).toNumber()).to.be.equal(
-            // eslint-disable-next-line no-loss-of-precision
+             
             0,
         );
     });
 
     it("should return the right 20 decimal uint256 value", async function () {
         const contractParams = new ContractFunctionParameters().addUint256(
-            // eslint-disable-next-line no-loss-of-precision
+             
             5000000000000000000000,
         );
         const contractQuery = new ContractCallQuery()
@@ -1023,14 +1023,14 @@ describe("ContractFunctionParameters", function () {
         const txResponse = await contractQuery.execute(env.client);
 
         expect(txResponse.getUint256(0).toNumber()).to.be.equal(
-            // eslint-disable-next-line no-loss-of-precision
+             
             5000000000000000000000,
         );
     });
 
     it("should return the again right uint256 value", async function () {
         const contractParams = new ContractFunctionParameters().addUint256(
-            // eslint-disable-next-line no-loss-of-precision
+             
             50,
         );
         const contractQuery = new ContractCallQuery()
@@ -1048,7 +1048,7 @@ describe("ContractFunctionParameters", function () {
         const txResponse = await contractQuery.execute(env.client);
 
         expect(txResponse.getUint256(0).toNumber()).to.be.equal(
-            // eslint-disable-next-line no-loss-of-precision
+             
             50,
         );
     });

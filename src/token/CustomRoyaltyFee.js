@@ -113,7 +113,7 @@ export default class CustomRoyalyFee extends CustomFee {
      * @param {HieroProto.proto.ICustomFee} info
      * @returns {CustomFee}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     static _fromProtobuf(info) {
         const fee = /** @type {HieroProto.proto.IRoyaltyFee} */ (
             info.royaltyFee

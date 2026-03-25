@@ -67,7 +67,8 @@ tasks:
 
     "lint:js":
         cmds:
-            - npx eslint --fix "src/**/*.js" "test/unit/**/*.js"
+            - npx eslint --fix "src/**/*.js"
+            - npx eslint --fix "test/unit/**/*.js"
 
     "test:release":
         cmds:
