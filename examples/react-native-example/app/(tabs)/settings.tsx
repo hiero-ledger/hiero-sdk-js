@@ -16,6 +16,84 @@ import { useNetworkConfig } from '@/hooks/use-network-config';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import type { NetworkConfig } from '@/services';
 
+function NetworkSelectorGroup({
+  network,
+  setNetwork,
+  iconColor,
+  tintColor,
+}: {
+  network: 'testnet' | 'previewnet';
+  setNetwork: (network: 'testnet' | 'previewnet') => void;
+  iconColor: string;
+  tintColor: string;
+}) {
+  return (
+    <ThemedView style={styles.fieldGroup}>
+      <ThemedText type="defaultSemiBold">Network</ThemedText>
+      <ThemedText style={[styles.fieldHint, { color: iconColor }]}>
+        Choose which Hiero network to connect to
+      </ThemedText>
+      <ThemedView style={styles.networkSelector}>
+        <TouchableOpacity
+          style={[
+            styles.networkOption,
+            { borderColor: iconColor },
+            network === 'testnet' && { borderColor: tintColor, backgroundColor: `${tintColor}18` },
+          ]}
+          onPress={() => setNetwork('testnet')}
+          activeOpacity={0.7}>
+          <ThemedView style={styles.radioRow}>
+            <ThemedView
+              style={[
+                styles.radio,
+                { borderColor: iconColor },
+                network === 'testnet' && { borderColor: tintColor },
+              ]}>
+              {network === 'testnet' && (
+                <ThemedView style={[styles.radioFill, { backgroundColor: tintColor }]} />
+              )}
+            </ThemedView>
+            <ThemedView>
+              <ThemedText type="defaultSemiBold">Testnet</ThemedText>
+              <ThemedText style={[styles.networkHint, { color: iconColor }]}>
+                Recommended for development
+              </ThemedText>
+            </ThemedView>
+          </ThemedView>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[
+            styles.networkOption,
+            { borderColor: iconColor },
+            network === 'previewnet' && { borderColor: tintColor, backgroundColor: `${tintColor}18` },
+          ]}
+          onPress={() => setNetwork('previewnet')}
+          activeOpacity={0.7}>
+          <ThemedView style={styles.radioRow}>
+            <ThemedView
+              style={[
+                styles.radio,
+                { borderColor: iconColor },
+                network === 'previewnet' && { borderColor: tintColor },
+              ]}>
+              {network === 'previewnet' && (
+                <ThemedView style={[styles.radioFill, { backgroundColor: tintColor }]} />
+              )}
+            </ThemedView>
+            <ThemedView>
+              <ThemedText type="defaultSemiBold">Previewnet</ThemedText>
+              <ThemedText style={[styles.networkHint, { color: iconColor }]}>
+                Preview upcoming features
+              </ThemedText>
+            </ThemedView>
+          </ThemedView>
+        </TouchableOpacity>
+      </ThemedView>
+    </ThemedView>
+  );
+}
+
 /**
  * Settings screen — configure network credentials for the Hiero SDK.
  *
@@ -172,69 +250,12 @@ export default function SettingsScreen() {
           </ThemedView>
 
           {/* Network selector */}
-          <ThemedView style={styles.fieldGroup}>
-            <ThemedText type="defaultSemiBold">Network</ThemedText>
-            <ThemedText style={[styles.fieldHint, { color: iconColor }]}>
-              Choose which Hiero network to connect to
-            </ThemedText>
-            <ThemedView style={styles.networkSelector}>
-              <TouchableOpacity
-                style={[
-                  styles.networkOption,
-                  { borderColor: iconColor },
-                  network === 'testnet' && { borderColor: tintColor, backgroundColor: `${tintColor}18` },
-                ]}
-                onPress={() => setNetwork('testnet')}
-                activeOpacity={0.7}>
-                <ThemedView style={styles.radioRow}>
-                  <ThemedView
-                    style={[
-                      styles.radio,
-                      { borderColor: iconColor },
-                      network === 'testnet' && { borderColor: tintColor },
-                    ]}>
-                    {network === 'testnet' && (
-                      <ThemedView style={[styles.radioFill, { backgroundColor: tintColor }]} />
-                    )}
-                  </ThemedView>
-                  <ThemedView>
-                    <ThemedText type="defaultSemiBold">Testnet</ThemedText>
-                    <ThemedText style={[styles.networkHint, { color: iconColor }]}>
-                      Recommended for development
-                    </ThemedText>
-                  </ThemedView>
-                </ThemedView>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.networkOption,
-                  { borderColor: iconColor },
-                  network === 'previewnet' && { borderColor: tintColor, backgroundColor: `${tintColor}18` },
-                ]}
-                onPress={() => setNetwork('previewnet')}
-                activeOpacity={0.7}>
-                <ThemedView style={styles.radioRow}>
-                  <ThemedView
-                    style={[
-                      styles.radio,
-                      { borderColor: iconColor },
-                      network === 'previewnet' && { borderColor: tintColor },
-                    ]}>
-                    {network === 'previewnet' && (
-                      <ThemedView style={[styles.radioFill, { backgroundColor: tintColor }]} />
-                    )}
-                  </ThemedView>
-                  <ThemedView>
-                    <ThemedText type="defaultSemiBold">Previewnet</ThemedText>
-                    <ThemedText style={[styles.networkHint, { color: iconColor }]}>
-                      Preview upcoming features
-                    </ThemedText>
-                  </ThemedView>
-                </ThemedView>
-              </TouchableOpacity>
-            </ThemedView>
-          </ThemedView>
+          <NetworkSelectorGroup
+            network={network}
+            setNetwork={setNetwork}
+            iconColor={iconColor}
+            tintColor={tintColor}
+          />
 
           {/* Action buttons */}
           <ThemedView style={styles.actionGroup}>

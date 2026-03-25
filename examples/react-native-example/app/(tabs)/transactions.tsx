@@ -15,6 +15,18 @@ import {
   transferToken,
 } from '@/services';
 
+function requireField(value: string | undefined, errorMsg: string): string {
+  const trimmed = String(value || '').trim();
+  if (!trimmed) throw new Error(errorMsg);
+  return trimmed;
+}
+
+function requirePositiveInt(value: string | undefined, errorMsg: string): number {
+  const num = parseInt(String(value || ''), 10);
+  if (isNaN(num) || num <= 0) throw new Error(errorMsg);
+  return num;
+}
+
 const handleCreateAccount = async (client: Client) => {
   const result = await createAccount(client);
   if (!result.success) throw new Error(result.error);
@@ -26,8 +38,7 @@ const handleCreateAccount = async (client: Client) => {
 };
 
 const handleQueryBalance = async (client: Client, values: Record<string, string>) => {
-  const accountId = String(values.accountId || '').trim();
-  if (!accountId) throw new Error('Please enter an Account ID');
+  const accountId = requireField(values.accountId, 'Please enter an Account ID');
   const result = await getAccountBalance(client, accountId);
   if (!result.success) throw new Error(result.error);
   return [
@@ -37,10 +48,11 @@ const handleQueryBalance = async (client: Client, values: Record<string, string>
 };
 
 const handleTransferHbar = async (client: Client, values: Record<string, string>) => {
-  const toAccountId = String(values.toAccountId || '').trim();
-  const amount = parseFloat(String(values.amount || ''));
-  if (!toAccountId) throw new Error('Please enter a recipient Account ID');
+  const toAccountId = requireField(values.toAccountId, 'Please enter a recipient Account ID');
+  const amountStr = String(values.amount || '');
+  const amount = parseFloat(amountStr);
   if (isNaN(amount) || amount <= 0) throw new Error('Please enter a valid amount');
+  
   const result = await transferHbar(client, toAccountId, amount);
   if (!result.success) throw new Error(result.error);
   return [
@@ -51,12 +63,10 @@ const handleTransferHbar = async (client: Client, values: Record<string, string>
 };
 
 const handleCreateToken = async (client: Client, values: Record<string, string>) => {
-  const name = String(values.name || '').trim();
-  const symbol = String(values.symbol || '').trim();
-  const supply = parseInt(String(values.supply || ''), 10);
-  if (!name) throw new Error('Please enter a token name');
-  if (!symbol) throw new Error('Please enter a token symbol');
-  if (isNaN(supply) || supply <= 0) throw new Error('Please enter a valid initial supply');
+  const name = requireField(values.name, 'Please enter a token name');
+  const symbol = requireField(values.symbol, 'Please enter a token symbol');
+  const supply = requirePositiveInt(values.supply, 'Please enter a valid initial supply');
+  
   const result = await createFungibleToken(client, name, symbol, supply);
   if (!result.success) throw new Error(result.error);
   return [
@@ -67,12 +77,10 @@ const handleCreateToken = async (client: Client, values: Record<string, string>)
 };
 
 const handleTransferToken = async (client: Client, values: Record<string, string>) => {
-  const tokenId = String(values.tokenId || '').trim();
-  const toAccountId = String(values.toAccountId || '').trim();
-  const amount = parseInt(String(values.amount || ''), 10);
-  if (!tokenId) throw new Error('Please enter a Token ID');
-  if (!toAccountId) throw new Error('Please enter a recipient Account ID');
-  if (isNaN(amount) || amount <= 0) throw new Error('Please enter a valid amount');
+  const tokenId = requireField(values.tokenId, 'Please enter a Token ID');
+  const toAccountId = requireField(values.toAccountId, 'Please enter a recipient Account ID');
+  const amount = requirePositiveInt(values.amount, 'Please enter a valid amount');
+  
   const result = await transferToken(client, tokenId, toAccountId, amount);
   if (!result.success) throw new Error(result.error);
   return [
@@ -81,6 +89,84 @@ const handleTransferToken = async (client: Client, values: Record<string, string
     { label: 'Transferred', value: `${amount} of token ${result.data.tokenId} to ${toAccountId}` },
   ];
 };
+
+function TransactionCardsList({ client, isConnected }: { client: Client | null; isConnected: boolean }) {
+  return (
+    <>
+      <TransactionCard
+        title="Create Account"
+        description="Generates a new ED25519 key pair and creates a Hiero account with an initial balance of 10 HBAR funded by the operator."
+        buttonLabel="Create Account"
+        isConnected={isConnected}
+        onExecute={async () => {
+          if (!client) throw new Error('Client not connected');
+          return handleCreateAccount(client);
+        }}
+      />
+
+      <TransactionCard
+        title="Query Balance"
+        description="Queries the HBAR balance of any account on the network. This is a free operation — no transaction fees are charged."
+        buttonLabel="Query Balance"
+        isConnected={isConnected}
+        inputs={[
+          { key: 'accountId', label: 'Account ID', placeholder: '0.0.12345' },
+        ]}
+        onExecute={async (values) => {
+          if (!client) throw new Error('Client not connected');
+          return handleQueryBalance(client, values);
+        }}
+      />
+
+      <TransactionCard
+        title="Transfer HBAR"
+        description="Transfers HBAR from the operator account to another account using the double-entry accounting model (debit sender, credit receiver)."
+        buttonLabel="Send HBAR"
+        isConnected={isConnected}
+        inputs={[
+          { key: 'toAccountId', label: 'Recipient Account ID', placeholder: '0.0.12345' },
+          { key: 'amount', label: 'Amount (HBAR)', placeholder: '1', keyboardType: 'decimal-pad' },
+        ]}
+        onExecute={async (values) => {
+          if (!client) throw new Error('Client not connected');
+          return handleTransferHbar(client, values);
+        }}
+      />
+
+      <TransactionCard
+        title="Create Token"
+        description="Creates a new fungible token using the Hiero Token Service (HTS). The operator becomes the treasury and admin. No smart contracts needed!"
+        buttonLabel="Create Token"
+        isConnected={isConnected}
+        inputs={[
+          { key: 'name', label: 'Token Name', placeholder: 'My Demo Token' },
+          { key: 'symbol', label: 'Token Symbol', placeholder: 'MDT' },
+          { key: 'supply', label: 'Initial Supply', placeholder: '1000', keyboardType: 'numeric' },
+        ]}
+        onExecute={async (values) => {
+          if (!client) throw new Error('Client not connected');
+          return handleCreateToken(client, values);
+        }}
+      />
+
+      <TransactionCard
+        title="Transfer Token"
+        description={"Transfers fungible tokens from the operator to another account. Note: Recipients MUST associate the token before receiving it (see https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/associate-tokens-to-an-account).\n\nIn this demo, manual TokenAssociateTransaction is skipped because we enabled auto-association during account creation."}
+        buttonLabel="Transfer Tokens"
+        isConnected={isConnected}
+        inputs={[
+          { key: 'tokenId', label: 'Token ID', placeholder: '0.0.12345' },
+          { key: 'toAccountId', label: 'Recipient Account ID', placeholder: '0.0.12345' },
+          { key: 'amount', label: 'Amount', placeholder: '10', keyboardType: 'numeric' },
+        ]}
+        onExecute={async (values) => {
+          if (!client) throw new Error('Client not connected');
+          return handleTransferToken(client, values);
+        }}
+      />
+    </>
+  );
+}
 
 /**
  * Transactions screen — demonstrates core Hiero SDK operations.
@@ -128,121 +214,7 @@ export default function TransactionsScreen() {
           </ThemedView>
         ) : null}
 
-        {/* ─── Card 1: Create Account ─────────────────────────── */}
-        <TransactionCard
-          title="Create Account"
-          description="Generates a new ED25519 key pair and creates a Hiero account with an initial balance of 10 HBAR funded by the operator."
-          buttonLabel="Create Account"
-          isConnected={isConnected}
-          onExecute={async () => {
-            if (!client) throw new Error('Client not connected');
-            return handleCreateAccount(client);
-          }}
-        />
-
-        {/* ─── Card 2: Query Balance ─────────────────────────── */}
-        <TransactionCard
-          title="Query Balance"
-          description="Queries the HBAR balance of any account on the network. This is a free operation — no transaction fees are charged."
-          buttonLabel="Query Balance"
-          isConnected={isConnected}
-          inputs={[
-            {
-              key: 'accountId',
-              label: 'Account ID',
-              placeholder: '0.0.12345',
-            },
-          ]}
-          onExecute={async (values) => {
-            if (!client) throw new Error('Client not connected');
-            return handleQueryBalance(client, values);
-          }}
-        />
-
-        {/* ─── Card 3: Transfer HBAR ─────────────────────────── */}
-        <TransactionCard
-          title="Transfer HBAR"
-          description="Transfers HBAR from the operator account to another account using the double-entry accounting model (debit sender, credit receiver)."
-          buttonLabel="Send HBAR"
-          isConnected={isConnected}
-          inputs={[
-            {
-              key: 'toAccountId',
-              label: 'Recipient Account ID',
-              placeholder: '0.0.12345',
-            },
-            {
-              key: 'amount',
-              label: 'Amount (HBAR)',
-              placeholder: '1',
-              keyboardType: 'decimal-pad',
-            },
-          ]}
-          onExecute={async (values) => {
-            if (!client) throw new Error('Client not connected');
-            return handleTransferHbar(client, values);
-          }}
-        />
-
-        {/* ─── Card 4: Create Fungible Token ─────────────────── */}
-        <TransactionCard
-          title="Create Token"
-          description="Creates a new fungible token using the Hiero Token Service (HTS). The operator becomes the treasury and admin. No smart contracts needed!"
-          buttonLabel="Create Token"
-          isConnected={isConnected}
-          inputs={[
-            {
-              key: 'name',
-              label: 'Token Name',
-              placeholder: 'My Demo Token',
-            },
-            {
-              key: 'symbol',
-              label: 'Token Symbol',
-              placeholder: 'MDT',
-            },
-            {
-              key: 'supply',
-              label: 'Initial Supply',
-              placeholder: '1000',
-              keyboardType: 'numeric',
-            },
-          ]}
-          onExecute={async (values) => {
-            if (!client) throw new Error('Client not connected');
-            return handleCreateToken(client, values);
-          }}
-        />
-
-        {/* ─── Card 5: Transfer Token ────────────────────────── */}
-        <TransactionCard
-          title="Transfer Token"
-          description={"Transfers fungible tokens from the operator to another account. Note: Recipients MUST associate the token before receiving it (see https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/associate-tokens-to-an-account).\n\nIn this demo, manual TokenAssociateTransaction is skipped because we enabled auto-association during account creation."}
-          buttonLabel="Transfer Tokens"
-          isConnected={isConnected}
-          inputs={[
-            {
-              key: 'tokenId',
-              label: 'Token ID',
-              placeholder: '0.0.12345',
-            },
-            {
-              key: 'toAccountId',
-              label: 'Recipient Account ID',
-              placeholder: '0.0.12345',
-            },
-            {
-              key: 'amount',
-              label: 'Amount',
-              placeholder: '10',
-              keyboardType: 'numeric',
-            },
-          ]}
-          onExecute={async (values) => {
-            if (!client) throw new Error('Client not connected');
-            return handleTransferToken(client, values);
-          }}
-        />
+        <TransactionCardsList client={client} isConnected={isConnected} />
       </ScrollView>
     </SafeAreaView>
   );
