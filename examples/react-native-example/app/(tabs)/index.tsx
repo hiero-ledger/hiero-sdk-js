@@ -15,6 +15,7 @@ import { useNetworkConfig } from '@/hooks/use-network-config';
 import { useThemeColor } from '@/hooks/use-theme-color';
 import { StatusBadge } from '@/components/status-badge';
 import { getAccountBalance } from '@/services';
+import { HieroColors } from '@/constants/theme';
 
 /**
  * Home screen — the main dashboard for the Hiero SDK Example.
@@ -116,7 +117,7 @@ export default function HomeScreen() {
         }>
         {/* Header */}
         <ThemedView style={styles.header}>
-          <ThemedText type="title">Hiero SDK</ThemedText>
+          <ThemedText style={{ color: HieroColors.primary }} type="title">Hiero Ledger</ThemedText>
           <ThemedText style={[styles.subtitle, { color: iconColor }]}>
             React Native Example
           </ThemedText>
@@ -240,6 +241,8 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   content: {
+    flexGrow: 1,
+    justifyContent: 'center',
     padding: 24,
     paddingTop: 16,
     paddingBottom: 40,

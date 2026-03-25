@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "react-native-example",
-    "slug": "react-native-example",
+    "name": "Hiero Ledger",
+    "slug": "hiero-ledger",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/hiero-icon.svg",
-    "scheme": "reactnativeexample",
+    "scheme": "hieroledger",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
