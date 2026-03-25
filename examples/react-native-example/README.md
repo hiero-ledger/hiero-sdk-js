@@ -33,22 +33,7 @@ npm install
 
 ### 2. Configure credentials
 
-Copy the environment template and fill in your testnet credentials:
-
-```bash
-cp .env.example .env
-```
-
-Edit `.env` with your operator details:
-
-```env
-EXPO_PUBLIC_OPERATOR_ID=0.0.12345
-EXPO_PUBLIC_OPERATOR_KEY=302e020100300506032b6570...
-EXPO_PUBLIC_HEDERA_NETWORK=testnet
-```
-
-> **Tip:** You can also configure credentials in the app's Settings tab at
-> runtime. The `.env` values are used as defaults.
+Once the app is running, navigate to the **Settings** tab within the application to enter your Hedera testnet Operator Account ID and Private Key. The SDK operations will use these credentials securely from local storage.
 
 ### 3. Run the app
 
@@ -98,7 +83,6 @@ react-native-example/
 ├── constants/
 │   └── theme.ts                  # Colors, brand palette, status colors
 │
-├── .env.example                  # Environment variable template
 └── package.json
 ```
 
@@ -186,7 +170,7 @@ if (transfer.success) {
 | Problem | Solution |
 |---------|----------|
 | `Cannot find module '@hiero-ledger/sdk'` | Run `npm install` from `examples/react-native-example` |
-| Blank screen on launch | Ensure you have a valid `.env` or configure in Settings tab |
+| Blank screen on launch | Ensure you have configured your credentials in the Settings tab |
 | Transaction fails with `INVALID_SIGNATURE` | Check that your operator key matches the account ID |
 | `INSUFFICIENT_PAYER_BALANCE` | Your testnet account may need refunding at [portal.hedera.com](https://portal.hedera.com) |
 

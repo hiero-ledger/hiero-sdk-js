@@ -409,7 +409,6 @@ function SettingsForm(props: any) {
  * Settings screen — configure network credentials for the Hiero SDK.
  *
  * The config is stored via AsyncStorage through the useNetworkConfig hook.
- * On first launch, it falls back to values from .env (EXPO_PUBLIC_* vars).
  */
 export default function SettingsScreen() {
   const { config, isLoading, saveConfig, clearConfig } = useNetworkConfig();

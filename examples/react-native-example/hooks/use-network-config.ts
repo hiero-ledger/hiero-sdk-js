@@ -22,13 +22,12 @@ const STORAGE_KEY = 'hiero_network_config';
 
 /**
  * Default config values — used when no saved config exists.
- * Tries to read from Expo environment variables (set in .env file),
- * falling back to empty strings if not configured.
+ * Requires the user to manually configure these settings in the app.
  */
 const DEFAULT_CONFIG: NetworkConfig = {
-  operatorId: process.env.EXPO_PUBLIC_OPERATOR_ID ?? '',
-  operatorKey: process.env.EXPO_PUBLIC_OPERATOR_KEY ?? '',
-  network: (process.env.EXPO_PUBLIC_HEDERA_NETWORK as 'testnet' | 'previewnet') ?? 'testnet',
+  operatorId: '',
+  operatorKey: '',
+  network: 'testnet',
 };
 
 export function useNetworkConfig() {
