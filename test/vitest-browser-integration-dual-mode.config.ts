@@ -67,6 +67,7 @@ export default defineConfig({
             // redirect src/ to src/browser
             // note that this is NOT needed when consuming this package as the browser field in package.json
             // will take care of this
+            "../../../src/index.js": "../../../src/browser.js",
             "../../src/index.js": "../../src/browser.js",
             "../src/index.js": "../src/browser.js",
             // Redirect proto package to use ESM version in browser mode
