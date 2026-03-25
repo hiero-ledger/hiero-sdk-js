@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   keyInput: {
-    fontFamily: Platform.select({ ios: 'Menlo', default: 'monospace' }),
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
     fontSize: 13,
   },
   networkSelector: {
