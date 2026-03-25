@@ -15,6 +15,115 @@ import { ThemedView } from '@/components/themed-view';
 import { useNetworkConfig } from '@/hooks/use-network-config';
 import { useThemeColor } from '@/hooks/use-theme-color';
 
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  content: {
+    padding: 24,
+    paddingTop: 16,
+    paddingBottom: 40,
+    gap: 20,
+  },
+  header: {
+    gap: 4,
+    marginBottom: 4,
+  },
+  subtitle: {
+    opacity: 0.7,
+    fontSize: 15,
+  },
+  card: {
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.08)',
+  },
+  infoCard: {
+    gap: 6,
+    borderColor: 'rgba(10, 126, 164, 0.2)',
+    backgroundColor: 'rgba(10, 126, 164, 0.05)',
+  },
+  infoText: {
+    fontSize: 14,
+    lineHeight: 20,
+  },
+  fieldGroup: {
+    gap: 6,
+  },
+  fieldHint: {
+    fontSize: 13,
+  },
+  input: {
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    fontSize: 15,
+  },
+  keyInput: {
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    fontSize: 13,
+  },
+  networkSelector: {
+    gap: 10,
+    marginTop: 2,
+  },
+  networkOption: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 14,
+  },
+  radioRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  radio: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    borderWidth: 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  radioFill: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+  },
+  networkHint: {
+    fontSize: 13,
+    marginTop: 1,
+  },
+  actionGroup: {
+    gap: 12,
+    marginTop: 8,
+  },
+  button: {
+    paddingVertical: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  saveButton: {
+    // backgroundColor set dynamically via tintColor
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  clearButton: {
+    borderWidth: 1,
+  },
+  clearButtonText: {
+    fontSize: 15,
+  },
+});
+
 function NetworkSelectorGroup({
   network,
   setNetwork,
@@ -204,16 +313,17 @@ function ActionButtonGroup({
   );
 }
 
-function useSettingsActions({
-  operatorId,
-  operatorKey,
-  network,
-  saveConfig,
-  clearConfig,
-  setOperatorId,
-  setOperatorKey,
-  setNetwork,
-}: any) {
+function useSettingsActions(props: any) {
+  const {
+    operatorId,
+    operatorKey,
+    network,
+    saveConfig,
+    clearConfig,
+    setOperatorId,
+    setOperatorKey,
+    setNetwork,
+  } = props;
   const [isSaved, setIsSaved] = useState(false);
 
   const handleSave = async () => {
@@ -263,6 +373,38 @@ function useSettingsActions({
   return { isSaved, handleSave, handleClear };
 }
 
+function SettingsForm(props: any) {
+  const { operatorId, setOperatorId, operatorKey, setOperatorKey, network, setNetwork, textColor, tintColor, iconColor, isSaved, handleSave, handleClear } = props;
+  return (
+    <ScrollView
+      contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="handled">
+      <SettingsHeader />
+      <OperatorInputGroup
+        operatorId={operatorId}
+        setOperatorId={setOperatorId}
+        operatorKey={operatorKey}
+        setOperatorKey={setOperatorKey}
+        textColor={textColor}
+        iconColor={iconColor}
+      />
+      <NetworkSelectorGroup
+        network={network}
+        setNetwork={setNetwork}
+        iconColor={iconColor}
+        tintColor={tintColor}
+      />
+      <ActionButtonGroup
+        onSave={handleSave}
+        onClear={handleClear}
+        isSaved={isSaved}
+        tintColor={tintColor}
+        iconColor={iconColor}
+      />
+    </ScrollView>
+  );
+}
+
 /**
  * Settings screen — configure network credentials for the Hiero SDK.
  *
@@ -281,7 +423,14 @@ export default function SettingsScreen() {
   const backgroundColor = useThemeColor({}, 'background');
 
   const { isSaved, handleSave, handleClear } = useSettingsActions({
-    operatorId, operatorKey, network, saveConfig, clearConfig, setOperatorId, setOperatorKey, setNetwork
+    operatorId,
+    operatorKey,
+    network,
+    saveConfig,
+    clearConfig,
+    setOperatorId,
+    setOperatorKey,
+    setNetwork,
   });
 
   useEffect(() => {
@@ -305,146 +454,23 @@ export default function SettingsScreen() {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={styles.keyboardView}>
-        <ScrollView
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled">
-          
-          <SettingsHeader />
-
-          <OperatorInputGroup
-            operatorId={operatorId}
-            setOperatorId={setOperatorId}
-            operatorKey={operatorKey}
-            setOperatorKey={setOperatorKey}
-            textColor={textColor}
-            iconColor={iconColor}
-          />
-
-          <NetworkSelectorGroup
-            network={network}
-            setNetwork={setNetwork}
-            iconColor={iconColor}
-            tintColor={tintColor}
-          />
-
-          <ActionButtonGroup
-            onSave={handleSave}
-            onClear={handleClear}
-            isSaved={isSaved}
-            tintColor={tintColor}
-            iconColor={iconColor}
-          />
-        </ScrollView>
+        <SettingsForm
+          operatorId={operatorId}
+          setOperatorId={setOperatorId}
+          operatorKey={operatorKey}
+          setOperatorKey={setOperatorKey}
+          network={network}
+          setNetwork={setNetwork}
+          textColor={textColor}
+          tintColor={tintColor}
+          iconColor={iconColor}
+          isSaved={isSaved}
+          handleSave={handleSave}
+          handleClear={handleClear}
+        />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  keyboardView: {
-    flex: 1,
-  },
-  content: {
-    padding: 24,
-    paddingTop: 16,
-    paddingBottom: 40,
-    gap: 20,
-  },
-  header: {
-    gap: 4,
-    marginBottom: 4,
-  },
-  subtitle: {
-    opacity: 0.7,
-    fontSize: 15,
-  },
-  card: {
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.08)',
-  },
-  infoCard: {
-    gap: 6,
-    borderColor: 'rgba(10, 126, 164, 0.2)',
-    backgroundColor: 'rgba(10, 126, 164, 0.05)',
-  },
-  infoText: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  fieldGroup: {
-    gap: 6,
-  },
-  fieldHint: {
-    fontSize: 13,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    fontSize: 15,
-  },
-  keyInput: {
-    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    fontSize: 13,
-  },
-  networkSelector: {
-    gap: 10,
-    marginTop: 2,
-  },
-  networkOption: {
-    borderWidth: 1,
-    borderRadius: 10,
-    padding: 14,
-  },
-  radioRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  radio: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
-    borderWidth: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  radioFill: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-  },
-  networkHint: {
-    fontSize: 13,
-    marginTop: 1,
-  },
-  actionGroup: {
-    gap: 12,
-    marginTop: 8,
-  },
-  button: {
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  saveButton: {
-    // backgroundColor set dynamically via tintColor
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  clearButton: {
-    borderWidth: 1,
-  },
-  clearButtonText: {
-    fontSize: 15,
-  },
-});
+
