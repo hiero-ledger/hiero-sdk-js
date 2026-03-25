@@ -7,6 +7,7 @@ import {
   RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from 'expo-router';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -34,7 +35,13 @@ import { HieroColors } from '@/constants/theme';
 export default function HomeScreen() {
   const { client, isConnected, isConnecting, connectionError, activeConfig, connect, disconnect } =
     useHiero();
-  const { config } = useNetworkConfig();
+  const { config, loadConfig } = useNetworkConfig();
+
+  useFocusEffect(
+    useCallback(() => {
+      loadConfig();
+    }, [loadConfig])
+  );
 
   const [balance, setBalance] = useState<string | null>(null);
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);

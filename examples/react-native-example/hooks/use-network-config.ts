@@ -34,23 +34,27 @@ export function useNetworkConfig() {
   const [config, setConfig] = useState<NetworkConfig>(DEFAULT_CONFIG);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Load saved config from AsyncStorage on mount
-  useEffect(() => {
-    async function loadConfig() {
-      try {
-        const stored = await AsyncStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          const parsed = JSON.parse(stored) as NetworkConfig;
-          setConfig(parsed);
-        }
-      } catch (error) {
-        console.warn('Failed to load saved config:', error);
-      } finally {
-        setIsLoading(false);
+  // Load config from AsyncStorage
+  const loadConfig = useCallback(async () => {
+    try {
+      const stored = await AsyncStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored) as NetworkConfig;
+        setConfig(parsed);
+      } else {
+        setConfig(DEFAULT_CONFIG);
       }
+    } catch (error) {
+      console.warn('Failed to load saved config:', error);
+    } finally {
+      setIsLoading(false);
     }
-    loadConfig();
   }, []);
+
+  // Load saved config on mount
+  useEffect(() => {
+    loadConfig();
+  }, [loadConfig]);
 
   // Save config to AsyncStorage
   const saveConfig = useCallback(async (newConfig: NetworkConfig) => {
@@ -76,5 +80,5 @@ export function useNetworkConfig() {
     }
   }, []);
 
-  return { config, isLoading, saveConfig, clearConfig };
+  return { config, isLoading, saveConfig, clearConfig, loadConfig };
 }
