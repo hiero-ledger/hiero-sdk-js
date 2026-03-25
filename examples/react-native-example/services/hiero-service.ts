@@ -29,7 +29,6 @@ import {
   AccountBalanceQuery,
   TransferTransaction,
   TokenCreateTransaction,
-  TokenAssociateTransaction,
 } from '@hiero-ledger/sdk';
 
 import type {
@@ -122,7 +121,8 @@ export async function createAccount(client: Client): Promise<SDKResult<AccountIn
     // - setInitialBalance: transfers HBAR from operator to the new account
     const transaction = new AccountCreateTransaction()
       .setKeyWithoutAlias(newKey.publicKey)
-      .setInitialBalance(new Hbar(10));
+      .setInitialBalance(new Hbar(10))
+      .setMaxAutomaticTokenAssociations(100);
 
     // Step 3: Execute the transaction — the operator's key signs automatically
     const response = await transaction.execute(client);
@@ -323,14 +323,14 @@ export async function createFungibleToken(
  * Transfers fungible tokens from the operator to another account.
  *
  * How it works:
- * 1. First associates the token with the recipient account (if needed)
- * 2. Then transfers the specified amount using TransferTransaction
- * 3. Uses the same double-entry model as HBAR transfers
+ * 1. Transfers the specified amount using TransferTransaction
+ * 2. Uses the same double-entry model as HBAR transfers
  *
  * Key concepts:
- * - Tokens must be associated with an account before it can receive them
- * - TokenAssociateTransaction links a token ID to an account
- * - The recipient must sign the association (here we use the provided key)
+ * - IMPORTANT: Tokens MUST be associated with an account before it can receive them!
+ *   See: https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/associate-tokens-to-an-account
+ * - In this demo, manual association is skipped because we explicitly enabled
+ *   `maxAutomaticTokenAssociations` during account creation.
  * - addTokenTransfer() works like addHbarTransfer() but for tokens
  * - Negative amount = sending, positive amount = receiving
  *
@@ -346,30 +346,12 @@ export async function transferToken(
   tokenId: string,
   toAccountId: string,
   amount: number,
-  recipientKey?: string,
 ): Promise<SDKResult<TokenTransferResult>> {
   try {
     const operatorId = client.operatorAccountId!;
     const recipientId = AccountId.fromString(toAccountId);
 
-    // Step 1: Associate the token with the recipient account
-    // This is required before the account can hold this token type.
-    // The recipient's private key must sign this transaction.
-    if (recipientKey) {
-      const key = PrivateKey.fromStringDer(recipientKey);
-
-      const associateTx = await new TokenAssociateTransaction()
-        .setAccountId(recipientId)
-        .setTokenIds([tokenId])
-        .freezeWith(client);
-
-      // The recipient must sign the association transaction
-      const signedTx = await associateTx.sign(key);
-      const associateResponse = await signedTx.execute(client);
-      await associateResponse.getReceipt(client);
-    }
-
-    // Step 2: Transfer tokens using the double-entry model
+    // Transfer tokens using the double-entry model
     // Debit the operator's token balance, credit the recipient
     const transferTx = new TransferTransaction()
       .addTokenTransfer(tokenId, operatorId, -amount)

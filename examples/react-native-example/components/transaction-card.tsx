@@ -5,11 +5,22 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Platform,
+  View,
 } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useThemeColor } from '@/hooks/use-theme-color';
+import { IconSymbol } from '@/components/ui/icon-symbol';
+
+export interface ResultItem {
+  label?: string;
+  value: string;
+  copyable?: boolean;
+}
+
+export type TransactionResult = string | ResultItem[];
 
 interface InputField {
   key: string;
@@ -23,28 +34,47 @@ interface TransactionCardProps {
   description: string;
   buttonLabel: string;
   inputs?: InputField[];
-  onExecute: (values: Record<string, string>) => Promise<string>;
+  onExecute: (values: Record<string, string>) => Promise<TransactionResult>;
   isConnected: boolean;
+}
+
+function CopyBox({ label, value, copyable }: ResultItem) {
+  const iconColor = useThemeColor({}, 'icon');
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    if (!copyable) return;
+    await Clipboard.setStringAsync(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <View style={styles.copyBoxContainer}>
+      {label && <ThemedText style={styles.copyBoxLabel}>{label}</ThemedText>}
+      <TouchableOpacity 
+        style={[styles.copyBox, copyable && styles.copyBoxInteractive]} 
+        onPress={handleCopy}
+        activeOpacity={copyable ? 0.7 : 1}
+        disabled={!copyable}
+      >
+        <ThemedText style={styles.copyBoxValue} numberOfLines={1} ellipsizeMode="middle">
+          {value}
+        </ThemedText>
+        {copyable && (
+          <IconSymbol 
+            name={copied ? 'checkmark' : 'doc.on.doc'} 
+            size={16} 
+            color={copied ? '#34C759' : iconColor} 
+          />
+        )}
+      </TouchableOpacity>
+    </View>
+  );
 }
 
 /**
  * Reusable card component for transaction demo operations.
- *
- * Renders a consistent UI for each SDK operation:
- * - Title and description explaining what the operation does
- * - Optional input fields for user-provided values
- * - An action button that triggers the operation
- * - Loading state while the operation executes
- * - Success or error result display
- *
- * The onExecute callback should:
- * - Return a string on success (displayed as the result)
- * - Throw an Error on failure (message displayed as the error)
- *
- * This component follows the same patterns as ThemedText/ThemedView:
- * - Uses useThemeColor for theme-aware styling
- * - Uses StyleSheet.create for performance
- * - Props are clearly typed with TypeScript interfaces
  */
 export function TransactionCard({
   title,
@@ -56,7 +86,7 @@ export function TransactionCard({
 }: TransactionCardProps) {
   const [values, setValues] = useState<Record<string, string>>({});
   const [isLoading, setIsLoading] = useState(false);
-  const [result, setResult] = useState<string | null>(null);
+  const [result, setResult] = useState<TransactionResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Theme-aware colors
@@ -71,7 +101,6 @@ export function TransactionCard({
 
   /**
    * Execute the operation and display results.
-   * onExecute returns a result string on success, or throws on error.
    */
   const handleExecute = async () => {
     setIsLoading(true);
@@ -79,8 +108,8 @@ export function TransactionCard({
     setError(null);
 
     try {
-      const resultText = await onExecute(values);
-      setResult(resultText);
+      const resultData = await onExecute(values);
+      setResult(resultData);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
     } finally {
@@ -141,9 +170,17 @@ export function TransactionCard({
       {result && (
         <ThemedView style={styles.resultContainer}>
           <ThemedText style={styles.resultLabel}>✓ Result</ThemedText>
-          <ThemedText style={styles.resultText} selectable>
-            {result}
-          </ThemedText>
+          {typeof result === 'string' ? (
+             <ThemedText style={styles.resultText} selectable>
+               {result}
+             </ThemedText>
+          ) : (
+             <View style={styles.resultItems}>
+               {result.map((item, index) => (
+                 <CopyBox key={index} {...item} />
+               ))}
+             </View>
+          )}
         </ThemedView>
       )}
 
@@ -159,7 +196,6 @@ export function TransactionCard({
     </ThemedView>
   );
 }
-
 
 const styles = StyleSheet.create({
   card: {
@@ -205,7 +241,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   resultContainer: {
-    gap: 4,
+    gap: 12,
     padding: 12,
     borderRadius: 8,
     backgroundColor: 'rgba(52, 199, 89, 0.08)',
@@ -221,6 +257,36 @@ const styles = StyleSheet.create({
     fontSize: 13,
     lineHeight: 18,
     fontFamily: Platform.select({ ios: 'Menlo', default: 'monospace' }),
+  },
+  resultItems: {
+    gap: 8,
+  },
+  copyBoxContainer: {
+    gap: 4,
+  },
+  copyBoxLabel: {
+    fontSize: 12,
+    fontWeight: '500',
+    opacity: 0.8,
+  },
+  copyBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    padding: 10,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.1)',
+  },
+  copyBoxInteractive: {
+    backgroundColor: 'rgba(255,255,255,0.5)',
+  },
+  copyBoxValue: {
+    flex: 1,
+    fontSize: 13,
+    fontFamily: Platform.select({ ios: 'Menlo', default: 'monospace' }),
+    marginRight: 8,
   },
   errorContainer: {
     gap: 4,

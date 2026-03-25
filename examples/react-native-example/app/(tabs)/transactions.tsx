@@ -19,12 +19,10 @@ const handleCreateAccount = async (client: Client) => {
   const result = await createAccount(client);
   if (!result.success) throw new Error(result.error);
   return [
-    `Account ID: ${result.data.accountId}`,
-    `Public Key: ${result.data.publicKey.substring(0, 40)}...`,
-    `Private Key: ${result.data.privateKey.substring(0, 40)}...`,
-    '',
-    '💡 Save the Account ID — you can use it in the other operations below.',
-  ].join('\n');
+    { label: 'Account ID', value: result.data.accountId, copyable: true },
+    { label: 'Public Key', value: result.data.publicKey, copyable: true },
+    { label: 'Private Key', value: result.data.privateKey, copyable: true },
+  ];
 };
 
 const handleQueryBalance = async (client: Client, values: Record<string, string>) => {
@@ -32,7 +30,10 @@ const handleQueryBalance = async (client: Client, values: Record<string, string>
   if (!accountId) throw new Error('Please enter an Account ID');
   const result = await getAccountBalance(client, accountId);
   if (!result.success) throw new Error(result.error);
-  return `Account ${result.data.accountId}\nBalance: ${result.data.balance}`;
+  return [
+    { label: 'Account ID', value: result.data.accountId, copyable: true },
+    { label: 'Balance', value: result.data.balance },
+  ];
 };
 
 const handleTransferHbar = async (client: Client, values: Record<string, string>) => {
@@ -43,10 +44,10 @@ const handleTransferHbar = async (client: Client, values: Record<string, string>
   const result = await transferHbar(client, toAccountId, amount);
   if (!result.success) throw new Error(result.error);
   return [
-    `Status: ${result.data.status}`,
-    `Transaction ID: ${result.data.transactionId}`,
-    `Sent ${amount} ℏ to ${toAccountId}`,
-  ].join('\n');
+    { label: 'Status', value: result.data.status },
+    { label: 'Transaction ID', value: result.data.transactionId, copyable: true },
+    { label: 'Transferred', value: `${amount} ℏ to ${toAccountId}` },
+  ];
 };
 
 const handleCreateToken = async (client: Client, values: Record<string, string>) => {
@@ -59,29 +60,26 @@ const handleCreateToken = async (client: Client, values: Record<string, string>)
   const result = await createFungibleToken(client, name, symbol, supply);
   if (!result.success) throw new Error(result.error);
   return [
-    `Token ID: ${result.data.tokenId}`,
-    `Name: ${result.data.name}`,
-    `Symbol: ${result.data.symbol}`,
-    '',
-    '💡 Save the Token ID — you can use it to transfer tokens below.',
-  ].join('\n');
+    { label: 'Token ID', value: result.data.tokenId, copyable: true },
+    { label: 'Name', value: result.data.name },
+    { label: 'Symbol', value: result.data.symbol },
+  ];
 };
 
 const handleTransferToken = async (client: Client, values: Record<string, string>) => {
   const tokenId = String(values.tokenId || '').trim();
   const toAccountId = String(values.toAccountId || '').trim();
   const amount = parseInt(String(values.amount || ''), 10);
-  const recipientKey = String(values.recipientKey || '').trim() || undefined;
   if (!tokenId) throw new Error('Please enter a Token ID');
   if (!toAccountId) throw new Error('Please enter a recipient Account ID');
   if (isNaN(amount) || amount <= 0) throw new Error('Please enter a valid amount');
-  const result = await transferToken(client, tokenId, toAccountId, amount, recipientKey);
+  const result = await transferToken(client, tokenId, toAccountId, amount);
   if (!result.success) throw new Error(result.error);
   return [
-    `Status: ${result.data.status}`,
-    `Transaction ID: ${result.data.transactionId}`,
-    `Transferred ${amount} of token ${result.data.tokenId} to ${toAccountId}`,
-  ].join('\n');
+    { label: 'Status', value: result.data.status },
+    { label: 'Transaction ID', value: result.data.transactionId, copyable: true },
+    { label: 'Transferred', value: `${amount} of token ${result.data.tokenId} to ${toAccountId}` },
+  ];
 };
 
 /**
@@ -219,7 +217,7 @@ export default function TransactionsScreen() {
         {/* ─── Card 5: Transfer Token ────────────────────────── */}
         <TransactionCard
           title="Transfer Token"
-          description="Transfers fungible tokens from the operator to another account. The recipient must be associated with the token first (handled automatically if a private key is provided)."
+          description={"Transfers fungible tokens from the operator to another account. Note: Recipients MUST associate the token before receiving it (see https://docs.hedera.com/hedera/sdks-and-apis/sdks/token-service/associate-tokens-to-an-account).\n\nIn this demo, manual TokenAssociateTransaction is skipped because we enabled auto-association during account creation."}
           buttonLabel="Transfer Tokens"
           isConnected={isConnected}
           inputs={[
@@ -238,11 +236,6 @@ export default function TransactionsScreen() {
               label: 'Amount',
               placeholder: '10',
               keyboardType: 'numeric',
-            },
-            {
-              key: 'recipientKey',
-              label: 'Recipient Private Key (for token association)',
-              placeholder: '302e020100300506032b6570...',
             },
           ]}
           onExecute={async (values) => {
