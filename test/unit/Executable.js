@@ -59,18 +59,33 @@ describe("Executable", function () {
         expect(beforeExecuteCalled).to.be.true;
     });
 
-    it("_throwIfRequestTimedOut throws with the current node account ID", function () {
+    it("execute throws timeout exceeded with the current node account ID", async function () {
         const executable = new Executable();
+        let nowCallCount = 0;
+        const dateNowSpy = vi
+            .spyOn(Date, "now")
+            .mockImplementation(() => (nowCallCount++ === 0 ? 1000 : 1002));
 
         executable._requestTimeout = 1;
         executable._nodeAccountIds.setList([new AccountId(3)]);
+        executable._beforeExecute = async () => {};
 
         try {
-            executable._throwIfRequestTimedOut(Date.now() - 2);
-            expect.fail("Expected request timeout error");
+            await executable.execute({
+                _logger: null,
+                requestTimeout: 15000,
+                grpcDeadline: 5000,
+                maxBackoff: 8000,
+                minBackoff: 250,
+                maxAttempts: 10,
+                isLocalNetwork: false,
+            });
+            expect.fail("Expected timeout error");
         } catch (error) {
             expect(error.message).to.equal("timeout exceeded");
             expect(error.nodeAccountId).to.equal("0.0.3");
+        } finally {
+            dateNowSpy.mockRestore();
         }
     });
 
@@ -110,7 +125,7 @@ describe("Executable", function () {
         );
     });
 
-    it("_shouldSkipAttemptForNodeAccountId advances when the node is not in transactionNodeIds", function () {
+    it("_shouldSkipAttemptForNodeAccountId returns true when the node is not in transactionNodeIds", function () {
         const executable = new Executable();
 
         executable._nodeAccountIds.setList([
@@ -129,7 +144,7 @@ describe("Executable", function () {
 
             expect(shouldSkip).to.be.true;
             expect(executable._nodeAccountIds.current.toString()).to.equal(
-                "0.0.4",
+                "0.0.3",
             );
         } finally {
             console.error = originalError;

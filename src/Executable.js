@@ -639,12 +639,6 @@ export default class Executable {
             return false;
         }
 
-        console.error(
-            `Attempting to execute a transaction against node ${nodeAccountId.toString()}, which is not included in the Client's node list. Please review your Client configuration.`,
-        );
-
-        this._nodeAccountIds.advance();
-
         return true;
     }
 
@@ -826,6 +820,11 @@ export default class Executable {
                     this._nodeAccountIds.current,
                 )
             ) {
+                console.error(
+                    `Attempting to execute a transaction against node ${this._nodeAccountIds.current.toString()}, which is not included in the Client's node list. Please review your Client configuration.`,
+                );
+
+                this._nodeAccountIds.advance();
                 continue;
             }
 
@@ -921,7 +920,7 @@ export default class Executable {
                 status.toString() !== Status.Success.toString();
 
             if (isError) {
-                persistentError = new Error(status.toString());
+                persistentError = status;
             }
 
             // Determine by the executing state what we should do
