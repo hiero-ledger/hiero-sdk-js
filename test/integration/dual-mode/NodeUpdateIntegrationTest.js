@@ -137,7 +137,7 @@ describe("Node Update Integration Tests", function () {
         }
     });
 
-    it.only("should change node account ID to the same account", async function () {
+    it("should change node account ID to the same account", async function () {
         const response = await new NodeUpdateTransaction()
             .setNodeId(1)
             .setNodeAccountIds([AccountId.fromString("0.0.3")])
