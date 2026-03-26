@@ -360,6 +360,25 @@ describe("NodeUpdateTransaction", function () {
         });
     });
 
+    describe("description serialization", function () {
+        it("should omit description when it is not set", function () {
+            const transaction = new NodeUpdateTransaction();
+
+            expect(transaction._makeTransactionData().description).to.be.null;
+        });
+
+        it("should serialize an empty string when description is cleared", function () {
+            const transaction = new NodeUpdateTransaction();
+            transaction.clearDescription();
+
+            expect(transaction._makeTransactionData().description).to.deep.equal(
+                {
+                    value: "",
+                },
+            );
+        });
+    });
+
     describe("nodeId validation", function () {
         const VALID_START = new Timestamp(1596210382, 0);
         const ACCOUNT_ID = AccountId.fromString("0.6.9");
