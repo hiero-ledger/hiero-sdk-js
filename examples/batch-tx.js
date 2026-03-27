@@ -314,7 +314,7 @@ async function executeBatchWithSetInnerTransactions(client) {
      * Step 1: Create accounts for David, Eve, and Frank
      */
     console.log("Created accounts for David, Eve, and Frank");
-    
+
     const davidKey = PrivateKey.generateECDSA();
     const david = (
         await (
@@ -372,17 +372,26 @@ async function executeBatchWithSetInnerTransactions(client) {
      */
     const davidBatchedTransfer = await new TransferTransaction()
         .addHbarTransfer(david, Hbar.from(-1, HbarUnit.Hbar))
-        .addHbarTransfer(client.getOperator().accountId, Hbar.from(1, HbarUnit.Hbar))
+        .addHbarTransfer(
+            client.getOperator().accountId,
+            Hbar.from(1, HbarUnit.Hbar),
+        )
         .batchify(davidClient, batchKey);
 
     const eveBatchedTransfer = await new TransferTransaction()
         .addHbarTransfer(eve, Hbar.from(-1, HbarUnit.Hbar))
-        .addHbarTransfer(client.getOperator().accountId, Hbar.from(1, HbarUnit.Hbar))
+        .addHbarTransfer(
+            client.getOperator().accountId,
+            Hbar.from(1, HbarUnit.Hbar),
+        )
         .batchify(eveClient, batchKey);
 
     const frankBatchedTransfer = await new TransferTransaction()
         .addHbarTransfer(frank, Hbar.from(-1, HbarUnit.Hbar))
-        .addHbarTransfer(client.getOperator().accountId, Hbar.from(1, HbarUnit.Hbar))
+        .addHbarTransfer(
+            client.getOperator().accountId,
+            Hbar.from(1, HbarUnit.Hbar),
+        )
         .batchify(frankClient, batchKey);
 
     /**

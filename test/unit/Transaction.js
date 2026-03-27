@@ -484,8 +484,7 @@ describe("Transaction", function () {
             );
             const signedByKey =
                 signedTransaction.sigMap?.sigPair?.some(
-                    (pair) =>
-                        hex.encode(pair.pubKeyPrefix) === publicKeyPrefix,
+                    (pair) => hex.encode(pair.pubKeyPrefix) === publicKeyPrefix,
                 ) ?? false;
 
             expect(signedByKey).to.be.true;
@@ -628,8 +627,7 @@ describe("Transaction", function () {
             );
             const signedByKey =
                 signedTransaction.sigMap?.sigPair?.some(
-                    (pair) =>
-                        hex.encode(pair.pubKeyPrefix) === publicKeyPrefix,
+                    (pair) => hex.encode(pair.pubKeyPrefix) === publicKeyPrefix,
                 ) ?? false;
 
             expect(signedByKey).to.be.true;
