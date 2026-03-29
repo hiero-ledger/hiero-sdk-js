@@ -485,6 +485,7 @@ export default class Transaction extends Executable {
 
         const transactionCount = transactionIds.length;
         const nodeCount = nodeIds.length;
+        const groupSize = nodeCount === 0 ? 1 : nodeCount;
         const isChunkedTransactionType =
             isMultiTransactionIdType(transactionDataCase);
         const hasInvalidLogicalTransactionCount =
@@ -504,7 +505,7 @@ export default class Transaction extends Executable {
             return;
         }
 
-        const expectedBodyCount = transactionCount * nodeCount;
+        const expectedBodyCount = transactionCount * groupSize;
         const hasUnexpectedBodyCount = bodies.length !== expectedBodyCount;
 
         if (hasUnexpectedBodyCount || hasInvalidLogicalTransactionCount) {
@@ -534,6 +535,70 @@ export default class Transaction extends Executable {
                 }
             }
         }
+
+        if (isChunkedTransactionType) {
+            Transaction._validateChunkedTransactionBodies(
+                transactionDataCase,
+                bodies,
+                groupSize,
+            );
+        }
+    }
+
+    /**
+     * Validate the invariant fields shared across chunk groups.
+     *
+     * @private
+     * @param {NonNullable<HieroProto.proto.TransactionBody["data"]>} transactionDataCase
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
+     * @param {number} groupSize
+     * @returns {void}
+     */
+    static _validateChunkedTransactionBodies(
+        transactionDataCase,
+        bodies,
+        groupSize,
+    ) {
+        const ignoredFields =
+            Transaction._getChunkedTransactionIgnoredFields(
+                transactionDataCase,
+            );
+        const referenceBody = bodies[0];
+
+        for (
+            let bodyIndex = groupSize;
+            bodyIndex < bodies.length;
+            bodyIndex += groupSize
+        ) {
+            if (
+                !util.compare(referenceBody, bodies[bodyIndex], ignoredFields)
+            ) {
+                throw new Error("failed to validate transaction bodies");
+            }
+        }
+    }
+
+    /**
+     * Return the fields that are expected to vary between chunk groups.
+     *
+     * @private
+     * @param {NonNullable<HieroProto.proto.TransactionBody["data"]>} transactionDataCase
+     * @returns {Set<string>}
+     */
+    static _getChunkedTransactionIgnoredFields(transactionDataCase) {
+        /** @type {Set<string>} */
+        const ignoredFields = new Set();
+        ignoredFields.add("nodeAccountID");
+        ignoredFields.add("transactionID");
+
+        if (transactionDataCase === "fileAppend") {
+            ignoredFields.add("contents");
+        } else if (transactionDataCase === "consensusSubmitMessage") {
+            ignoredFields.add("message");
+            ignoredFields.add("chunkInfo");
+        }
+
+        return ignoredFields;
     }
 
     /**

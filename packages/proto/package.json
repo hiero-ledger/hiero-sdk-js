@@ -1,6 +1,6 @@
 {
   "name": "@hiero-ledger/proto",
-  "version": "2.26.0-beta.3",
+  "version": "2.27.0",
   "description": "Protobufs for the Hiero SDK",
   "main": "lib/index.js",
   "browser": "src/index.js",
@@ -44,7 +44,7 @@
     "@babel/plugin-syntax-dynamic-import": "7.8.3",
     "@babel/plugin-transform-modules-commonjs": "7.20.11",
     "@babel/plugin-transform-runtime": "7.25.9",
-    "@types/node": "24.0.8",
+    "@types/node": "25.5.0",
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
     "babel-plugin-dynamic-import-node": "2.3.3",
@@ -67,7 +67,7 @@
     "replace-in-file": "8.3.0",
     "semver": "7.3.8",
     "tmp": "0.2.4",
-    "typescript": "5.7.2"
+    "typescript": "5.9.3"
   },
   "peerDependencies": {
     "ansi-regex": "6.2.2",
