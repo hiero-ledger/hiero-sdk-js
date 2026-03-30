@@ -7,7 +7,9 @@ import * as util from "../util.js";
 
 /**
  * @typedef {import("long")} Long
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  */
 
 /**
