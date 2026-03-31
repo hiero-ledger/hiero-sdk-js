@@ -25,6 +25,7 @@ import * as util from "../util.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
  * @typedef {import("../token/CustomFixedFee.js").default} CustomFixedFee
  * @typedef {import("../account/AccountId.js").default} AccountId
  * @typedef {import("../transaction/TransactionResponse.js").default} TransactionResponse
@@ -373,7 +374,7 @@ export default class TopicMessageSubmitTransaction extends Transaction {
     }
 
     /**
-     * @param {import("../client/Client.js").default<Channel, *>} client
+     * @param {import("../client/Client.js").default<Channel, MirrorChannel>} client
      * @param {number=} requestTimeout
      * @returns {Promise<TransactionResponse>}
      */
@@ -382,7 +383,7 @@ export default class TopicMessageSubmitTransaction extends Transaction {
     }
 
     /**
-     * @param {import("../client/Client.js").default<Channel, *>} client
+     * @param {import("../client/Client.js").default<Channel, MirrorChannel>} client
      * @param {number=} requestTimeout
      * @returns {Promise<TransactionResponse[]>}
      */
