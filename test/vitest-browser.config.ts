@@ -5,7 +5,6 @@ export default defineConfig({
     test: {
         watch: false,
         globals: true,
-        pool: "threads",
         isolate: false,
         environment: "jsdom",
         browser: {
