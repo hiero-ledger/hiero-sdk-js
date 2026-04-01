@@ -1,6 +1,8 @@
 import Client from "../../src/client/Client.js";
 import {
     DEFAULT_GRPC_DEADLINE,
+    DEFAULT_LOCAL_MAX_ATTEMPTS,
+    DEFAULT_MAX_ATTEMPTS,
     DEFAULT_REQUEST_TIMEOUT,
 } from "../../src/constants/ClientConstants.js";
 
@@ -9,6 +11,43 @@ describe("Client deadline configuration", function () {
         const client = new Client({ scheduleNetworkUpdate: false });
         expect(client.grpcDeadline).to.equal(DEFAULT_GRPC_DEADLINE);
         expect(client.requestTimeout).to.equal(DEFAULT_REQUEST_TIMEOUT);
+    });
+
+    it("uses local max attempts for a local-node network name", function () {
+        const client = new Client({
+            network: "local-node",
+            scheduleNetworkUpdate: false,
+        });
+
+        expect(client.maxAttempts).to.equal(DEFAULT_LOCAL_MAX_ATTEMPTS);
+    });
+
+    it("uses local max attempts for an object network with local addresses", function () {
+        const client = new Client({
+            network: {
+                "localhost:50211": "0.0.3",
+                "127.0.0.1:50212": "0.0.4",
+            },
+            scheduleNetworkUpdate: false,
+        });
+
+        expect(client.maxAttempts).to.equal(DEFAULT_LOCAL_MAX_ATTEMPTS);
+    });
+
+    it("uses default max attempts for non-local networks", function () {
+        const namedClient = new Client({
+            network: "testnet",
+            scheduleNetworkUpdate: false,
+        });
+        const objectClient = new Client({
+            network: {
+                "testnet-node00-00-grpc.hedera.com:443": "0.0.3",
+            },
+            scheduleNetworkUpdate: false,
+        });
+
+        expect(namedClient.maxAttempts).to.equal(DEFAULT_MAX_ATTEMPTS);
+        expect(objectClient.maxAttempts).to.equal(DEFAULT_MAX_ATTEMPTS);
     });
 
     it("allows setting grpcDeadline via setter to a positive value", function () {
