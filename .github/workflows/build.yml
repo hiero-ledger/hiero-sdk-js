@@ -110,7 +110,7 @@ jobs:
         with:
           installMirrorNode: true
           soloVersion: v0.65.0
-          hieroVersion: v0.71.0
+          hieroVersion: v0.72.0
           mirrorNodeVersion: v0.142.0
           grpcProxyPort: 8080
 
@@ -198,7 +198,7 @@ jobs:
         with:
           installMirrorNode: true
           soloVersion: v0.65.0
-          hieroVersion: v0.71.0
+          hieroVersion: v0.72.0
           mirrorNodeVersion: v0.142.0
           grpcProxyPort: 8080
           dualMode: true
@@ -311,7 +311,7 @@ jobs:
         with:
           installMirrorNode: true
           soloVersion: v0.65.0
-          hieroVersion: v0.71.0
+          hieroVersion: v0.72.0
           mirrorNodeVersion: v0.142.0
           grpcProxyPort: 8080
 
