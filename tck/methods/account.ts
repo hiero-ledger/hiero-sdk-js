@@ -130,6 +130,7 @@ export const createAccount = async (
     return {
         accountId: receipt.accountId?.toString(),
         status: receipt.status.toString(),
+        transactionId: txResponse.transactionId.toString(),
     };
 };
 
