@@ -1,13 +1,44 @@
-import { readFileSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { fileURLToPath } from "url";
 import path from "path";
 
 import alias from "@rollup/plugin-alias";
+import { babel } from "@rollup/plugin-babel";
 import commonjs from "@rollup/plugin-commonjs";
 import json from "@rollup/plugin-json";
 import { nodeResolve } from "@rollup/plugin-node-resolve";
 import terser from "@rollup/plugin-terser";
 import replace from "@rollup/plugin-replace";
+
+/**
+ * Rollup plugin that resolves .js imports to .ts files when the .js file
+ * doesn't exist. This enables incremental JSDoc-to-TypeScript migration.
+ */
+function resolveTypescriptExtensions() {
+    return {
+        name: "resolve-typescript-extensions",
+        resolveId(source, importer) {
+            if (!source.endsWith(".js") || !importer) return null;
+            const resolved = path.resolve(path.dirname(importer), source);
+            if (existsSync(resolved)) return null;
+            const tsPath = resolved.replace(/\.js$/, ".ts");
+            if (existsSync(tsPath)) return tsPath;
+            return null;
+        },
+    };
+}
+
+/**
+ * Shared babel plugin config for stripping TypeScript syntax in rollup builds.
+ * Uses babelrc: false to avoid picking up the CJS-specific .babelrc.json config.
+ */
+const babelPlugin = babel({
+    babelHelpers: "bundled",
+    extensions: [".js", ".ts"],
+    babelrc: false,
+    configFile: false,
+    presets: ["@babel/preset-typescript"],
+});
 
 // Terser options for Windows compatibility
 // Windows has issues with worker threads in some environments
@@ -120,12 +151,14 @@ export default [
     {
         input: "src/browser.js",
         plugins: [
+            resolveTypescriptExtensions(),
             alias(browserAliases),
             json(),
             replace({
                 preventAssignment: true,
                 __SDK_VERSION__: JSON.stringify(pkg.version),
             }),
+            babelPlugin,
             terser(terserOptions),
         ],
         output: {
@@ -133,17 +166,20 @@ export default [
             format: "esm",
             sourcemap: true,
             preserveModules: true,
+            entryFileNames: "[name].js",
         },
     },
     {
         input: "src/native.js",
         plugins: [
+            resolveTypescriptExtensions(),
             json(),
             replace({
                 preventAssignment: true,
                 __SDK_VERSION__: JSON.stringify(pkg.version),
             }),
             alias(nativeAliases),
+            babelPlugin,
             terser(terserOptions),
         ],
         output: {
@@ -151,16 +187,19 @@ export default [
             format: "esm",
             sourcemap: true,
             preserveModules: true,
+            entryFileNames: "[name].js",
         },
     },
     {
         input: "src/index.js",
         plugins: [
+            resolveTypescriptExtensions(),
             json(),
             replace({
                 preventAssignment: true,
                 __SDK_VERSION__: JSON.stringify(pkg.version),
             }),
+            babelPlugin,
             terser(terserOptions),
         ],
         output: {
@@ -168,11 +207,13 @@ export default [
             format: "esm",
             sourcemap: true,
             preserveModules: true,
+            entryFileNames: "[name].js",
         },
     },
     {
         input: "src/browser.js",
         plugins: [
+            resolveTypescriptExtensions(),
             alias(browserAliases),
             json(),
             replace({
@@ -186,6 +227,7 @@ export default [
             commonjs({
                 transformMixedEsModules: true,
             }),
+            babelPlugin,
             json(),
         ],
         output: {
@@ -199,6 +241,7 @@ export default [
     {
         input: "src/browser.js",
         plugins: [
+            resolveTypescriptExtensions(),
             alias(browserAliases),
             json(),
             replace({
@@ -212,6 +255,7 @@ export default [
             commonjs({
                 transformMixedEsModules: true,
             }),
+            babelPlugin,
             json(),
             terser(terserOptions),
         ],

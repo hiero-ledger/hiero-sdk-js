@@ -109,7 +109,7 @@ tasks:
 
     "build:compile":
         cmds:
-            - npx babel src -d lib --out-file-extension .cjs
+            - npx babel src -d lib --out-file-extension .cjs --extensions '.js,.ts'
             - npx rollup -c
 
     clean:
@@ -151,7 +151,7 @@ tasks:
 
     "lint:js":
         cmds:
-            - npx eslint --fix "src/**/*.js" "test/integration/**/*.js" "test/unit/**/*.js"
+            - npx eslint --fix "src/**/*.{js,ts}" "test/integration/**/*.js" "test/unit/**/*.js"
 
     "test:release":
         cmds:

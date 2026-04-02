@@ -28,7 +28,34 @@ module.exports = {
         warnOnUnsupportedTypeScriptVersion: false,
     },
     plugins: ["@typescript-eslint", "deprecation", "ie11"],
+    settings: {
+        // eslint-plugin-import: use the TypeScript resolver so .js imports
+        // resolve to .ts sources during incremental migration
+        "import/resolver": {
+            typescript: {
+                alwaysTryTypes: true,
+            },
+        },
+        node: {
+            tryExtensions: [".js", ".ts", ".json", ".node"],
+        },
+    },
+    overrides: [
+        {
+            files: ["*.ts"],
+            rules: {
+                // JSDoc param/returns annotations are redundant in .ts files
+                // since types are expressed natively
+                "jsdoc/require-param": "off",
+                "jsdoc/require-returns": "off",
+            },
+        },
+    ],
     rules: {
+        // Disabled: eslint-plugin-n can't resolve .js imports to .ts files
+        // during incremental migration. import/no-unresolved covers this check.
+        "n/no-missing-import": "off",
+
         // does not handle return types being annotated in a type comment
         "@typescript-eslint/explicit-function-return-type": "off",
         "@typescript-eslint/explicit-module-boundary-types": "off",
