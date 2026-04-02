@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# v2.83.0 - beta.3
+
+### Added
+- Support for Hiero Hooks [#3911](https://github.com/hiero-ledger/hiero-sdk-js/pull/3911)
+
+### Fixed
+- Add a new Logger constructor overload that accepts an options object (LoggerOptions) with a silent flag, which creates a no-op pino logger (enabled: false) without spawning a pino-pretty worker thread
+- The legacy positional-arguments constructor (new Logger(level, logFile, sync, ...)) remains fully intact — no breaking changes. Add JSDoc @overload annotations for both constructor signatures
+
 # v2.82.0
 
 ### Added

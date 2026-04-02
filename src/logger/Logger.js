@@ -17,21 +17,90 @@ import LogLevel from "./LogLevel.js";
  */
 export default class Logger {
     /**
-     * @param {LogLevel} level
-     * @param {string} logFile the file to log to, if empty, logs to console
-     * @param {boolean} sync perform writes synchronously (similar to console.log)
-     * @param {boolean} fsync perform a fsyncSync every time a write is completed
-     * @param {boolean} mkdir ensure directory for dest file exists when true (default false)
-     * @param {number} minLength the minimum length of the internal buffer that is required to be full before flushing
+     * @typedef {object} LoggerOptions
+     * @property {LogLevel} level the log level
+     * @property {string} [logFile] the file to log to, if empty logs to console
+     * @property {boolean} [silent] create a no-op logger without spawning a worker thread
+     * @property {boolean} [sync] perform writes synchronously (similar to console.log) (default: true)
+     * @property {boolean} [fsync] perform a fsyncSync every time a write is completed (default: true)
+     * @property {boolean} [mkdir] ensure directory for dest file exists when true (default: true)
+     * @property {number} [minLength] the minimum length of the internal buffer that is required to be full before flushing (default: 0)
+     */
+
+    /**
+     * Creates a new Logger instance.
+     *
+     * @overload
+     * @param {LoggerOptions} options the logger configuration options
+     */
+    /**
+     * Creates a new Logger instance.
+     *
+     * @overload
+     * @param {LogLevel} level the log level
+     * @param {string} [logFile] the file to log to, if empty, logs to console
+     * @param {boolean} [sync] perform writes synchronously (similar to console.log)
+     * @param {boolean} [fsync] perform a fsyncSync every time a write is completed
+     * @param {boolean} [mkdir] ensure directory for dest file exists when true (default true)
+     * @param {number} [minLength] the minimum length of the internal buffer that is required to be full before flushing
+     */
+    /**
+     * @param {LogLevel | LoggerOptions} levelOrOptions
+     * @param {string} [logFile]
+     * @param {boolean} [sync]
+     * @param {boolean} [fsync]
+     * @param {boolean} [mkdir]
+     * @param {number} [minLength]
      */
     constructor(
-        level,
+        levelOrOptions,
         logFile = "",
         sync = true,
         fsync = true,
         mkdir = true,
         minLength = 0,
     ) {
+        /** @type {LogLevel} */
+        let level;
+        /** @type {boolean} */
+        let silent;
+
+        if (
+            typeof levelOrOptions === "object" &&
+            levelOrOptions !== null &&
+            !(levelOrOptions instanceof LogLevel)
+        ) {
+            // Options object overload
+            ({
+                logFile = "",
+                silent = false,
+                sync = true,
+                fsync = true,
+                mkdir = true,
+                minLength = 0,
+            } = levelOrOptions);
+            level = levelOrOptions.level;
+        } else {
+            // Legacy positional arguments overload
+            level = levelOrOptions;
+            silent = false;
+        }
+
+        /**
+         * @private
+         * @type {LogLevel}
+         */
+        this._previousLevel = level;
+
+        if (silent) {
+            /**
+             * @private
+             * @type {import("pino").Logger}
+             */
+            this._logger = pino({ level: "silent", enabled: false });
+            return;
+        }
+
         const fileTransport = logFile
             ? pino.destination({
                   dest: logFile,
@@ -68,19 +137,9 @@ export default class Logger {
                   },
               };
 
-        /**
-         * @private
-         * @type {import("pino").Logger}
-         */
         this._logger = fileTransport
             ? pino(loggerOptions, fileTransport)
             : pino(loggerOptions);
-
-        /**
-         * @private
-         * @type {LogLevel}
-         */
-        this._previousLevel = level;
     }
 
     /**
