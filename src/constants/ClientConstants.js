@@ -10,6 +10,20 @@ import AccountId from "../account/AccountId.js";
 export const DEFAULT_GRPC_DEADLINE = 10 * 1000;
 
 /**
+ * Default maximum attempts for a single request
+ *
+ * Maximum number of times we can retry a request if it fails.
+ */
+export const DEFAULT_MAX_ATTEMPTS = 10;
+
+/**
+ * Default maximum attempts for a single request on a local network
+ *
+ * Maximum number of times we can retry a request if it fails on a local network.
+ */
+export const DEFAULT_LOCAL_MAX_ATTEMPTS = 1000;
+
+/**
  * Default request timeout in milliseconds (2 minutes)
  *
  * Maximum total time for a complete Transaction/Query operation including

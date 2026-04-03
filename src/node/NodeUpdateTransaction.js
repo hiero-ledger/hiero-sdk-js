@@ -549,9 +549,12 @@ export default class NodeUpdateTransaction extends Transaction {
         return {
             accountId:
                 this._accountId != null ? this._accountId._toProtobuf() : null,
-            description: {
-                value: this._description != null ? this._description : null,
-            },
+            description:
+                this._description != null
+                    ? {
+                          value: this._description,
+                      }
+                    : null,
             gossipEndpoint:
                 this._gossipEndpoints != null
                     ? this._gossipEndpoints.map(

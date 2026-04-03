@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# v2.83.0 - beta.3
+
+### Added
+- Support for Hiero Hooks [#3911](https://github.com/hiero-ledger/hiero-sdk-js/pull/3911)
+
+### Fixed
+- Add a new Logger constructor overload that accepts an options object (LoggerOptions) with a silent flag, which creates a no-op pino logger (enabled: false) without spawning a pino-pretty worker thread
+- The legacy positional-arguments constructor (new Logger(level, logFile, sync, ...)) remains fully intact — no breaking changes. Add JSDoc @overload annotations for both constructor signatures
+
+# v2.82.0
+
+### Added
+- String input support for `PendingAirdropId` constructor and setter methods (`setSenderId`, `setReceiverId`, `setTokenId`, `setNftId`), allowing callers to pass string representations of IDs instead of only object instances. [#3844](https://github.com/hiero-ledger/hiero-sdk-js/pull/3844)
+
+### Changed
+- Migrated from `ethers` v5 to `ethers` v6, resolving peer dependency security vulnerabilities in transitive dependencies (e.g. `elliptic`). [#3870](https://github.com/hiero-ledger/hiero-sdk-js/pull/3870)
+- Upgraded dev dependency `typescript` from 5.7.2 to 5.9.3 and `@types/node` from 24.0.8 to 25.5.0 to fix TS 5.9 `Uint8Array` generic type compatibility issues. [#3871](https://github.com/hiero-ledger/hiero-sdk-js/pull/3871)
+- Bumped `bignumber.js` from 9.1.1 to 10.0.2. Note: `BigNumber.DEBUG` has been removed upstream — invalid input now always throws instead of returning `NaN`. [#3807](https://github.com/hiero-ledger/hiero-sdk-js/pull/3807)
+
+### Fixed
+- Resolved an issue where `NodeUpdateTransaction` was clearing the node's description when the description field had not been explicitly set. [#3889](https://github.com/hiero-ledger/hiero-sdk-js/pull/3889)
+
 # 2.81.0
 
 ### Fixed

@@ -247,12 +247,12 @@ export default class AddressBookQueryWeb extends Query {
         const effectiveLimit =
             this._limit != null ? this._limit : DEFAULT_PAGE_SIZE;
         initialUrl.searchParams.append("limit", effectiveLimit.toString());
-
+        const maxAttempts = this._maxAttempts ?? client.maxAttempts;
         // Fetch all pages
         while (!isLastPage) {
             const currentUrl = nextUrl ? new URL(nextUrl, baseUrl) : initialUrl;
 
-            for (let attempt = 0; attempt <= this._maxAttempts; attempt++) {
+            for (let attempt = 0; attempt <= maxAttempts; attempt++) {
                 try {
                     // eslint-disable-next-line n/no-unsupported-features/node-builtins
                     const response = await fetch(currentUrl.toString(), {
@@ -312,7 +312,7 @@ export default class AddressBookQueryWeb extends Query {
 
                     // Check if we should retry
                     if (
-                        attempt < this._maxAttempts &&
+                        attempt < maxAttempts &&
                         !client.isClientShutDown &&
                         this._retryHandler(
                             /** @type {MirrorError | Error | null} */ (error),
@@ -344,10 +344,10 @@ export default class AddressBookQueryWeb extends Query {
                     }
 
                     // If we shouldn't retry or have exhausted attempts, reject
-                    const maxAttemptsReached = attempt >= this._maxAttempts;
+                    const maxAttemptsReached = attempt >= maxAttempts;
                     const errorMessage = maxAttemptsReached
                         ? `Failed to query address book after ${
-                              this._maxAttempts + 1
+                              maxAttempts + 1
                           } attempts. Last error: ${message}`
                         : `Failed to query address book: ${message}`;
                     reject(new Error(errorMessage));
