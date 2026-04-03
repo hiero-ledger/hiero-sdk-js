@@ -63,7 +63,7 @@ jobs:
 
   test:
     name: Test using Node ${{ matrix.node }}
-    runs-on: hiero-client-sdk-linux-large
+    runs-on: hiero-client-sdk-linux-medium
     strategy:
       matrix:
         node: [ "22" ]
@@ -109,9 +109,9 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@4d42a74e8e644a2753f3bb7a2afa429305375b14 # v0.17
         with:
           installMirrorNode: true
-          soloVersion: v0.65.0
+          soloVersion: v0.68.0
           hieroVersion: v0.72.0
-          mirrorNodeVersion: v0.142.0
+          mirrorNodeVersion: v0.151.0
           grpcProxyPort: 8080
 
       - name: Set Operator Account
@@ -197,9 +197,9 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@4d42a74e8e644a2753f3bb7a2afa429305375b14 # 0.17.0
         with:
           installMirrorNode: true
-          soloVersion: v0.65.0
+          soloVersion: v0.68.0
           hieroVersion: v0.72.0
-          mirrorNodeVersion: v0.142.0
+          mirrorNodeVersion: v0.151.0
           grpcProxyPort: 8080
           dualMode: true
           dualModeGrpcProxyPort: 8081
@@ -310,9 +310,9 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@4d42a74e8e644a2753f3bb7a2afa429305375b14 # v0.17
         with:
           installMirrorNode: true
-          soloVersion: v0.65.0
+          soloVersion: v0.68.0
           hieroVersion: v0.72.0
-          mirrorNodeVersion: v0.142.0
+          mirrorNodeVersion: v0.151.0
           grpcProxyPort: 8080
 
       - name: Set Operator Account
@@ -330,3 +330,251 @@ jobs:
 
       - name: Run all examples
         run: task run:examples
+
+  solo-smoke-test:
+    name: Solo Smoke Test
+    runs-on: hiero-client-sdk-linux-medium
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594 # v2.16.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Setup Java
+        uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654
+        with:
+          distribution: temurin
+          java-version: 25
+
+      - name: Setup Node
+        uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
+        with:
+          node-version: 24
+
+      - name: Install Helm
+        uses: azure/setup-helm@dda3372f752e03dde6b3237bc9431cdc2f7a02a2 # v5.0.0
+        with:
+          version: "4.0.5"
+
+      - name: Install WGet CLI
+        run: sudo apt-get update && sudo apt-get install -y wget
+
+      - name: Install Python
+        uses: actions/setup-python@0b93645e9fea7318ecaed2b359559ac225c90a2b # v5.3.0
+        with:
+          python-version: "3.10"
+
+      - name: Setup Kind
+        uses: helm/kind-action@ef37e7f390d99f746eb8b610417061a60e82a6cc # v1.14.0 #
+        with:
+          cluster_name: solo-e2e
+          node_image: kindest/node:v1.32.2@sha256:142f543559cc55d64e1ab9341df08e5ced84bd2e893736da8f51320f26f5950b
+          kubectl_version: v1.32.2
+          version: v0.31.0
+          install_only: true
+          verbosity: 3
+          wait: 120s
+
+      - name: Cleanup Previous Runs
+        run: |
+          rm -rf ~/.solo
+          kind delete cluster --name solo-e2e || true
+
+      - name: Install Solo
+        run: npm install -g @hashgraph/solo@0.67.0
+
+      - name: Deploy Solo Test Network
+        env:
+          SOLO_CLUSTER_NAME: solo-e2e
+          SOLO_NAMESPACE: solo
+          SOLO_CLUSTER_SETUP_NAMESPACE: solo-cluster
+          SOLO_DEPLOYMENT: solo-deployment
+          HIERO_VERSION: "v0.72.0"
+        run: |
+          # Create a Kubernetes cluster using kind
+          kind create cluster -n ${SOLO_CLUSTER_NAME}
+
+          # Initialize the Solo CLI configuration
+          solo init --dev
+
+          NUM_NODES=1
+          NODE_IDS="node1"
+
+          echo "Deploying ${NUM_NODES} consensus node(s)..."
+
+          # Connect the Solo CLI to the kind cluster using a cluster reference name
+          solo cluster-ref config connect --cluster-ref kind-${SOLO_CLUSTER_NAME} --context kind-${SOLO_CLUSTER_NAME} --dev
+          # Create deployment
+          solo deployment config create -n ${SOLO_NAMESPACE} --deployment ${SOLO_DEPLOYMENT} --dev
+
+          # Add the kind cluster to the deployment
+          solo deployment cluster attach --deployment ${SOLO_DEPLOYMENT} --cluster-ref kind-${SOLO_CLUSTER_NAME} --num-consensus-nodes ${NUM_NODES} --dev
+
+          # Generate node keys
+          solo keys consensus generate --gossip-keys --tls-keys -i ${NODE_IDS} --deployment ${SOLO_DEPLOYMENT} --dev
+
+          # Setup the Solo cluster
+          solo cluster-ref config setup -s ${SOLO_CLUSTER_NAME} --dev
+
+          # Deploy network
+          solo consensus network deploy -i ${NODE_IDS} --deployment ${SOLO_DEPLOYMENT} --release-tag ${HIERO_VERSION} --dev
+
+          # Setup and start nodes
+          solo consensus node setup -i ${NODE_IDS} --deployment ${SOLO_DEPLOYMENT} --release-tag ${HIERO_VERSION} --quiet-mode --dev
+          solo consensus node start -i ${NODE_IDS} --deployment ${SOLO_DEPLOYMENT} --dev
+
+          # Debug: List services in the solo namespace
+          echo "Listing services in namespace ${SOLO_NAMESPACE}:"
+          kubectl get svc -n ${SOLO_NAMESPACE}
+
+          # Debug: Show current user
+          echo "Current user: $(whoami)"
+
+          # Add entries to /etc/hosts for easier access (requires sudo)
+          echo "Attempting to add entries to /etc/hosts..."
+          if sudo -n true 2>/dev/null; then
+            echo "127.0.0.1 network-node1-svc.${SOLO_NAMESPACE}.svc.cluster.local" | sudo tee -a /etc/hosts
+            echo "127.0.0.1 envoy-proxy-node1-svc.${SOLO_NAMESPACE}.svc.cluster.local" | sudo tee -a /etc/hosts
+            echo "Successfully added entries to /etc/hosts"
+          else
+            echo "⚠️  No sudo access available, skipping /etc/hosts update"
+            echo "Nodes can still be accessed via localhost:50211 and localhost:50212"
+          fi
+
+          # Port forward HAProxy for node1 (only if service exists)
+          if kubectl get svc haproxy-node1-svc -n ${SOLO_NAMESPACE} >/dev/null 2>&1; then
+            kubectl port-forward svc/haproxy-node1-svc -n ${SOLO_NAMESPACE} 50211:50211 &
+          else
+            echo "HAProxy service haproxy-node1-svc not found, skipping port-forward"
+          fi
+
+          # Port forward gRPC proxy (only if service exists)
+          if kubectl get svc envoy-proxy-node1-svc -n ${SOLO_NAMESPACE} >/dev/null 2>&1; then
+            kubectl port-forward svc/envoy-proxy-node1-svc -n ${SOLO_NAMESPACE} 9998:8080 &
+          else
+            echo "gRPC proxy service envoy-proxy-node1-svc not found, skipping port-forward"
+          fi
+
+      - name: Deploy MirrorNode
+        env:
+          SOLO_CLUSTER_NAME: solo-e2e
+          SOLO_NAMESPACE: solo
+          SOLO_DEPLOYMENT: solo-deployment
+          MIRROR_NODE_VERSION: "v0.151.0"
+        run: |
+          solo mirror node add --cluster-ref kind-${SOLO_CLUSTER_NAME} --deployment ${SOLO_DEPLOYMENT} --mirror-node-version ${MIRROR_NODE_VERSION} --pinger --dev
+
+          # Debug: List services in the solo namespace
+          echo "Listing services in namespace ${SOLO_NAMESPACE}:"
+          kubectl get svc -n ${SOLO_NAMESPACE}
+
+          # Port forward mirror node REST API (only if service exists)
+          if kubectl get svc mirror-1-rest -n ${SOLO_NAMESPACE} >/dev/null 2>&1; then
+            kubectl port-forward svc/mirror-1-rest -n ${SOLO_NAMESPACE} 5551:80 &
+          else
+            echo "Mirror node service mirror-1-rest not found, skipping port-forward"
+          fi
+
+          # Port forward mirror node gRPC (only if service exists)
+          if kubectl get svc mirror-1-grpc -n ${SOLO_NAMESPACE} >/dev/null 2>&1; then
+            kubectl port-forward svc/mirror-1-grpc -n ${SOLO_NAMESPACE} 5600:5600 &
+          else
+            echo "Mirror node service mirror-1-grpc not found, skipping port-forward"
+          fi
+
+          # Port forward mirror node web3 (only if service exists)
+          if kubectl get svc mirror-1-web3 -n ${SOLO_NAMESPACE} >/dev/null 2>&1; then
+            kubectl port-forward svc/mirror-1-web3 -n ${SOLO_NAMESPACE} 8545:80 &
+          else
+            echo "Mirror node service mirror-1-web3 not found, skipping port-forward"
+          fi
+
+          # Port forward Java REST API (only if service exists)
+          if kubectl get svc mirror-1-restjava -n ${SOLO_NAMESPACE} >/dev/null 2>&1; then
+            kubectl port-forward svc/mirror-1-restjava -n ${SOLO_NAMESPACE} 8084:80 &
+          else
+            echo "Java REST API service mirror-1-restjava not found, skipping port-forward"
+          fi
+
+      - name: Create ECDSA Account
+        id: create-ecdsa
+        env:
+          SOLO_NAMESPACE: solo
+          SOLO_DEPLOYMENT: solo-deployment
+          HBAR_AMOUNT: "10000000"
+        run: |
+          echo "Creating ECDSA account..."
+
+          solo ledger account create --generate-ecdsa-key --deployment ${SOLO_DEPLOYMENT} --dev > account_create_output_ecdsa.txt
+
+          cat account_create_output_ecdsa.txt
+          JSON=$(cat account_create_output_ecdsa.txt | node scripts/extractAccountAsJson.js) || {
+            echo "Error: extractAccountAsJson.js failed"
+            exit 1
+          }
+
+          export ACCOUNT_ID=$(echo ${JSON} | jq -r '.accountId')
+          export ACCOUNT_PUBLIC_KEY=$(echo ${JSON} | jq -r '.publicKey')
+          export ACCOUNT_PRIVATE_KEY=$(kubectl get secret account-key-${ACCOUNT_ID} -n ${SOLO_NAMESPACE} -o jsonpath='{.data.privateKey}' | base64 -d | xargs)
+
+          solo ledger account update --account-id "${ACCOUNT_ID}" --hbar-amount "${HBAR_AMOUNT}" --deployment "${SOLO_DEPLOYMENT}" --dev
+
+          echo "accountId=${ACCOUNT_ID}"
+          echo "publicKey=${ACCOUNT_PUBLIC_KEY}"
+          echo "privateKey=${ACCOUNT_PRIVATE_KEY}"
+          echo "accountId=${ACCOUNT_ID}" >> ${GITHUB_OUTPUT}
+          echo "publicKey=${ACCOUNT_PUBLIC_KEY}" >> ${GITHUB_OUTPUT}
+          echo "privateKey=${ACCOUNT_PRIVATE_KEY}" >> ${GITHUB_OUTPUT}
+
+      - name: Create ED25519 Account
+        id: create-ed25519
+        env:
+          SOLO_NAMESPACE: solo
+          SOLO_DEPLOYMENT: solo-deployment
+          HBAR_AMOUNT: "10000000"
+        run: |
+          echo "Creating ED25519 account..."
+
+          solo ledger account create --deployment ${SOLO_DEPLOYMENT} --dev > account_create_output_ed25519.txt
+
+          cat account_create_output_ed25519.txt
+          JSON=$(cat account_create_output_ed25519.txt | node scripts/extractAccountAsJson.js) || {
+            echo "Error: extractAccountAsJson.js failed"
+            exit 1
+          }
+
+          export ACCOUNT_ID=$(echo ${JSON} | jq -r '.accountId')
+          export ACCOUNT_PUBLIC_KEY=$(echo ${JSON} | jq -r '.publicKey')
+          export ACCOUNT_PRIVATE_KEY=$(kubectl get secret account-key-${ACCOUNT_ID} -n ${SOLO_NAMESPACE} -o jsonpath='{.data.privateKey}' | base64 -d | xargs)
+
+          solo ledger account update --account-id "${ACCOUNT_ID}" --hbar-amount "${HBAR_AMOUNT}" --deployment "${SOLO_DEPLOYMENT}" --dev
+
+          echo "accountId=${ACCOUNT_ID}"
+          echo "publicKey=${ACCOUNT_PUBLIC_KEY}"
+          echo "privateKey=${ACCOUNT_PRIVATE_KEY}"
+          echo "accountId=${ACCOUNT_ID}" >> ${GITHUB_OUTPUT}
+          echo "publicKey=${ACCOUNT_PUBLIC_KEY}" >> ${GITHUB_OUTPUT}
+          echo "privateKey=${ACCOUNT_PRIVATE_KEY}" >> ${GITHUB_OUTPUT}
+
+      - name: Teardown Solo Network
+        if: always()
+        env:
+          SOLO_CLUSTER_NAME: solo-e2e
+          SOLO_NAMESPACE: solo
+        run: |
+          echo "Tearing down Solo network..."
+
+          # Kill any port-forward processes
+          pkill -f "kubectl port-forward.*${SOLO_NAMESPACE}" || true
+
+          # Delete the kind cluster
+          kind delete cluster --name ${SOLO_CLUSTER_NAME} || true
+
+          # Clean up Solo directory
+          rm -rf ~/.solo
+
+          echo "Teardown complete"
