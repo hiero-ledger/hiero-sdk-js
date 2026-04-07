@@ -107,6 +107,42 @@ describe("Logger", function () {
         expect(assertionCount).to.be.equal(6, "should have made 6 assertions");
     });
 
+    it("should not spawn a worker thread when constructed with silent option", function () {
+        const logger = new Logger({ level: LogLevel.Info, silent: true });
+
+        // Logger should be in silent mode with no transport worker thread
+        expect(logger.level).to.be.equal(LogLevel.Silent);
+
+        // Logging methods should be callable without errors (no-op)
+        expect(() => logger.info("test")).to.not.throw();
+        expect(() => logger.warn("test")).to.not.throw();
+        expect(() => logger.error("test")).to.not.throw();
+    });
+
+    it("should accept logFile via options object", function () {
+        const logFile = `${tmpdir()}/test_options_obj.log`;
+        fs.rmSync(logFile, { force: true });
+        const logger = new Logger({ level: LogLevel.Info, logFile });
+        logger.info("options object message");
+        const logContent = fs.readFileSync(logFile, "utf8");
+        expect(logContent).to.contain("options object message");
+    });
+
+    it("should allow setLogger to replace a silent logger", function () {
+        const logger = new Logger({ level: LogLevel.Info, silent: true });
+        expect(logger.level).to.be.equal(LogLevel.Silent);
+
+        // After setLogger, the logger should use the provided instance
+        const logFile = `${tmpdir()}/test_silent_replace.log`;
+        fs.rmSync(logFile, { force: true });
+        const realLogger = new Logger(LogLevel.Info, logFile);
+        logger.setLogger(realLogger._logger);
+
+        logger.info("post-replace message");
+        const logContent = fs.readFileSync(logFile, "utf8");
+        expect(logContent).to.contain("post-replace message");
+    });
+
     it("check that silent blocks output", function () {
         const logFile = `${tmpdir()}/test2.log`;
         fs.rmSync(logFile, { force: true });

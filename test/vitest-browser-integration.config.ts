@@ -17,7 +17,6 @@ export default defineConfig({
         sequence: {
             sequencer: CustomSequencer,
         },
-        pool: "threads",
         isolate: false,
         environment: "jsdom",
         watch: false,

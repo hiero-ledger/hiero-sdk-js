@@ -14,7 +14,6 @@ export default defineConfig({
         globals: true,
         environment: "node",
         fileParallelism: false,
-        pool: "threads",
         isolate: false,
         include: ["test/integration/dual-mode/**/*.js"],
         exclude: [
