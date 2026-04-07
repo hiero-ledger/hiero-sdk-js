@@ -1684,7 +1684,7 @@ export default class Transaction extends Executable {
         // Set the node account IDs via client
         if (this.batchKey) {
             this._nodeAccountIds.setList([NODE_ACCOUNT_BATCH_ID]);
-        } else {
+        } else if (client != null) {
             this._setNodeAccountIds(client);
         }
 
