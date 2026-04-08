@@ -9,7 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Support for Hiero Hooks [#3911](https://github.com/hiero-ledger/hiero-sdk-js/pull/3911)
-- Added tests verifying `FileAppendTransaction` default chunk size (4096 bytes) against network transaction size limits with Ed25519 signature overhead analysis
 
 ### Fixed
 - Add a new Logger constructor overload that accepts an options object (LoggerOptions) with a silent flag, which creates a no-op pino logger (enabled: false) without spawning a pino-pretty worker thread
