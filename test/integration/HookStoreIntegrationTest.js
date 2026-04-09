@@ -268,17 +268,15 @@ describe("HookStore", function () {
                 value: new Uint8Array([0x0d, 0x0e, 0x0f, 0x10]),
             });
 
-            const response = await (
-                await new HookStoreTransaction()
-                    .setHookId(contractTransactionHookId)
-                    .setStorageUpdates([newStorageSlot])
-                    .freezeWith(env.client)
-                    .sign(contractAdminKey)
-            ).execute(env.client);
-
-            const receipt = await response.getReceipt(env.client);
-
-            expect(receipt.status).toEqual(Status.Success);
+            await (
+                await (
+                    await new HookStoreTransaction()
+                        .setHookId(contractTransactionHookId)
+                        .setStorageUpdates([newStorageSlot])
+                        .freezeWith(env.client)
+                        .sign(contractAdminKey)
+                ).execute(env.client)
+            ).getReceipt(env.client);
         });
     });
 
