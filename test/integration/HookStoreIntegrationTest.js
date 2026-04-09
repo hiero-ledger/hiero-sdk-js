@@ -203,6 +203,85 @@ describe("HookStore", function () {
         expect(error).toBe(true);
     });
 
+    describe("with contractId", function () {
+        let contractWithHook;
+        let contractAdminKey;
+        let contractTransactionHookId;
+
+        beforeEach(async function () {
+            // Create contract for hook
+            const hookContractCreate = await (
+                await new ContractCreateTransaction()
+                    .setBytecode(HOOK_BYTECODE)
+                    .setGas(300_000)
+                    .setMaxTransactionFee(new Hbar(10))
+                    .execute(env.client)
+            ).getReceipt(env.client);
+            const hookContractId = hookContractCreate.contractId;
+
+            contractAdminKey = PrivateKey.generateED25519();
+            const hookIdLong = Long.fromInt(1);
+
+            const evmHook = new EvmHook({
+                contractId: hookContractId,
+                storageUpdates: [
+                    new EvmHookStorageSlot({
+                        key: new Uint8Array([0x01, 0x02, 0x03, 0x04]),
+                        value: new Uint8Array([0x05, 0x06, 0x07, 0x08]),
+                    }),
+                ],
+            });
+
+            const hookDetails = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                evmHook: evmHook,
+                hookId: hookIdLong,
+            });
+
+            // Create contract with hook and admin key
+            const contractReceipt = await (
+                await (
+                    await new ContractCreateTransaction()
+                        .setBytecode(HOOK_BYTECODE)
+                        .setGas(300_000)
+                        .setAdminKey(contractAdminKey.publicKey)
+                        .addHook(hookDetails)
+                        .setMaxTransactionFee(new Hbar(100))
+                        .freezeWith(env.client)
+                        .sign(contractAdminKey)
+                ).execute(env.client)
+            ).getReceipt(env.client);
+
+            contractWithHook = contractReceipt.contractId;
+
+            // Build HookEntityId using .setContractId()
+            contractTransactionHookId = new HookId({
+                entityId:
+                    new HookEntityId().setContractId(contractWithHook),
+                hookId: hookIdLong,
+            });
+        });
+
+        it("should update storage slots with valid signatures using contractId", async function () {
+            const newStorageSlot = new EvmHookStorageSlot({
+                key: new Uint8Array([0x09, 0x0a, 0x0b, 0x0c]),
+                value: new Uint8Array([0x0d, 0x0e, 0x0f, 0x10]),
+            });
+
+            const response = await (
+                await new HookStoreTransaction()
+                    .setHookId(contractTransactionHookId)
+                    .setStorageUpdates([newStorageSlot])
+                    .freezeWith(env.client)
+                    .sign(contractAdminKey)
+            ).execute(env.client);
+
+            const receipt = await response.getReceipt(env.client);
+
+            expect(receipt.status).toEqual(Status.Success);
+        });
+    });
+
     afterAll(async function () {
         await env.close();
     });
