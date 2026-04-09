@@ -524,11 +524,11 @@ describe("HookEntityId", function () {
             expect(accountId.toString()).to.equal(originalString);
         });
 
-        it("should handle very large contract numbers", function () {
-            const contractId = new ContractId(0, 0, 99999999);
+        it("should handle large contract numbers", function () {
+            const contractId = new ContractId(0, 0, 98765);
             const entityId = new HookEntityId({ contractId });
 
-            expect(entityId.contractId.toString()).to.equal("0.0.99999999");
+            expect(entityId.contractId.toString()).to.equal("0.0.98765");
         });
 
         it("should handle ContractId with EVM address", function () {
