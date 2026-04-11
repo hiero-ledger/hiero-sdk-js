@@ -61,6 +61,14 @@ jobs:
       - name: Build @hiero-ledger/sdk
         run: task -v build
 
+      - name: Send Slack Notification
+        uses: slackapi/slack-github-action@v1
+        with:
+          channel-id: C0AS86TL0Q2
+          slack-message: "✅ Build completed successfully"
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }} 
+
   test:
     name: Test using Node ${{ matrix.node }}
     runs-on: hiero-client-sdk-linux-large
@@ -330,3 +338,5 @@ jobs:
 
       - name: Run all examples
         run: task run:examples
+
+      
