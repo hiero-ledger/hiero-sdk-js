@@ -62,7 +62,7 @@ jobs:
         run: task -v build
 
       - name: Send Slack Notification
-        uses: slackapi/slack-github-action@v1
+        uses: slackapi/slack-github-action@af78098f536edbc4de71162a307590698245be95
         with:
           channel-id: C0AS86TL0Q2
           slack-message: "✅ Build completed successfully"
