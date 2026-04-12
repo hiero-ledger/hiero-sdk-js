@@ -67,6 +67,13 @@ export default class FileAppendTransaction extends Transaction {
         this._maxChunks = 20;
 
         /**
+         * The default chunk size in bytes for file append operations.
+         *
+         * The network limits total transaction size (SignedTransaction) to 6144 bytes.
+         * Each Ed25519 signature adds ~102 bytes of overhead (pubKeyPrefix + signature + wrapping).
+         * With 4096-byte chunks, transactions fit within the limit for up to ~19 signatures.
+         * For files requiring more signers, callers should use setChunkSize() with a smaller value.
+         *
          * @private
          * @type {number}
          */
