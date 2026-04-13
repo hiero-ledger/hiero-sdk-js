@@ -411,7 +411,7 @@ jobs:
 
       - name: Upload HL Proto Package Artifact
         if: ${{ needs.validate-release.outputs.hiero-proto-publish-required == 'true' }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: hl-proto-package
           path: packages/proto/${{ steps.set-package-names.outputs.hl-proto-pkg-name }}
@@ -425,7 +425,7 @@ jobs:
 
       - name: Upload HL Crypto Package Artifact
         if: ${{ needs.validate-release.outputs.hiero-crypto-publish-required == 'true' }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: hl-crypto-package
           path: packages/cryptography/${{ steps.set-package-names.outputs.hl-crypto-pkg-name }}
@@ -438,7 +438,7 @@ jobs:
 
       - name: Upload HL SDK Package Artifact
         if: ${{ needs.validate-release.outputs.hiero-sdk-publish-required == 'true' }}
-        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7.0.0
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: hl-sdk-package
           path: ./${{ steps.set-package-names.outputs.hl-sdk-pkg-name }}
