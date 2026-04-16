@@ -434,7 +434,7 @@ describe("EthereumTransactionIntegrationTest", function () {
         // The authorization message is: keccak(0x05 || rlp([chain_id, address, nonce]))
         const EIP_7702_MAGIC = new Uint8Array([0x05]);
         // Convert Uint8Arrays to hex strings for RLP encoding
-        const authRlpEncoded = rlp.encode([
+        const authRlpEncoded = encodeRlp([
             `0x${hex.encode(chainId)}`,
             `0x${hex.encode(contractAddressForAuthorization)}`,
             `0x${hex.encode(nonce)}`,
@@ -498,20 +498,18 @@ describe("EthereumTransactionIntegrationTest", function () {
         );
 
         // First encode without the outer transaction signature for signing
-        const encoded = rlp
-            .encode([
-                chainId, // 1. chain_id
-                nonce, // 2. nonce
-                maxPriorityGas, // 3. max_priority_fee_per_gas
-                maxGas, // 4. max_fee_per_gas
-                gasLimit, // 5. gas_limit
-                to, // 6. destination
-                value, // 7. value
-                callData, // 8. data
-                accessList, // 9. access_list
-                encodedAuthorizationList, // 10. [[chain_id, address, nonce, y_parity, r, s], ...]
-            ])
-            .substring(2);
+        const encoded = encodeRlp([
+            chainId, // 1. chain_id
+            nonce, // 2. nonce
+            maxPriorityGas, // 3. max_priority_fee_per_gas
+            maxGas, // 4. max_fee_per_gas
+            gasLimit, // 5. gas_limit
+            to, // 6. destination
+            value, // 7. value
+            callData, // 8. data
+            accessList, // 9. access_list
+            encodedAuthorizationList, // 10. [[chain_id, address, nonce, y_parity, r, s], ...]
+        ]).substring(2);
         console.log({ encoded });
         expect(typeof encoded).to.equal("string");
 
