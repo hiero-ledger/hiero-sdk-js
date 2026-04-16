@@ -173,25 +173,6 @@ message WrapsSigningState {
 }
 
 /**
- * The state of an ongoing WRAPS signature protocol.
- */
-message WrapsSigningState {
-  /**
-   * The phase of the WRAPS protocol.
-   */
-  WrapsPhase phase = 1;
-
-  /**
-   * If the network is still gathering WRAPS messages for the R2 or R3
-   * protocol phase, the next time at which nodes should stop waiting
-   * for tardy messages from R1 participants and start over.
-   * soon as it has WRAPS messages from nodes with >2/3 weight in the
-   * target roster.
-   */
-  proto.Timestamp grace_period_end_time = 2;
-}
-
-/**
  * A construction-scoped node id.
  */
 message ConstructionNodeId {
