@@ -39,6 +39,7 @@ export default class AccountCreateTransaction extends Transaction {
      * @param {AccountId | string} [props.stakedAccountId]
      * @param {Long | number} [props.stakedNodeId]
      * @param {boolean} [props.declineStakingReward]
+     * @param {EvmAddress} [props.delegationAddress]
      * @param {EvmAddress} [props.alias]
      * @param {import("../hooks/HookCreationDetails.js").default[]} [props.hooks]
      */
@@ -135,6 +136,12 @@ export default class AccountCreateTransaction extends Transaction {
             });
         }
 
+        /**
+         * @private
+         * @type {?EvmAddress}
+         */
+        this._delegationAddress = null;
+
         if (props.key != null) {
             this.setKeyWithoutAlias(props.key);
         }
@@ -176,6 +183,10 @@ export default class AccountCreateTransaction extends Transaction {
 
         if (props.declineStakingReward != null) {
             this.setDeclineStakingReward(props.declineStakingReward);
+        }
+
+        if (props.delegationAddress != null) {
+            this.setDelegationAddress(props.delegationAddress);
         }
 
         if (props.alias != null) {
@@ -254,6 +265,10 @@ export default class AccountCreateTransaction extends Transaction {
                         ? create.stakedNodeId
                         : undefined,
                 declineStakingReward: create.declineReward == true,
+                delegationAddress:
+                    create.delegationAddress != null
+                        ? EvmAddress.fromBytes(create.delegationAddress)
+                        : undefined,
                 alias,
             }),
             transactions,
@@ -269,6 +284,23 @@ export default class AccountCreateTransaction extends Transaction {
      */
     get key() {
         return this._key;
+    }
+
+    /**
+     * @returns {?EvmAddress}
+     */
+    get delegationAddress() {
+        return this._delegationAddress;
+    }
+
+    /**
+     * @param {EvmAddress} delegationAddress
+     * @returns {this}
+     */
+    setDelegationAddress(delegationAddress) {
+        this._requireNotFrozen();
+        this._delegationAddress = delegationAddress;
+        return this;
     }
 
     /**
@@ -668,6 +700,10 @@ export default class AccountCreateTransaction extends Transaction {
             declineReward: this.declineStakingRewards,
             hookCreationDetails: this._hooks.map((hook) => hook._toProtobuf()),
             alias,
+            delegationAddress:
+                this._delegationAddress != null
+                    ? this._delegationAddress.toBytes()
+                    : null,
         };
     }
 

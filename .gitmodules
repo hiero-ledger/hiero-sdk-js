@@ -1,3 +1,4 @@
 [submodule "packages/proto/src/services"]
-	path = packages/proto/src/services
-	url = https://github.com/hiero-ledger/hiero-consensus-node.git
+    path = packages/proto/src/services
+    url = https://github.com/hiero-ledger/hiero-consensus-node.git
+    branch = feature/hedera-evm-pectra-support
