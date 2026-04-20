@@ -142,5 +142,10 @@
     },
     "resolutions": {
         "bn.js": "5.2.3"
+    },
+    "pnpm": {
+        "overrides": {
+            "protobufjs": "8.0.1"
+        }
     }
 }
