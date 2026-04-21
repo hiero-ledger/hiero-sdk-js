@@ -6,6 +6,7 @@ settings:
 
 overrides:
   bn.js: 5.2.3
+  protobufjs: 8.0.1
 
 importers:
 
@@ -511,8 +512,8 @@ importers:
         specifier: ~55.0.4
         version: 55.0.4(react-native@0.78.3(@babel/core@7.26.10)(@babel/preset-env@7.22.15(@babel/core@7.26.10))(@types/react@19.2.14)(react@19.2.4))(react@19.2.4)
       protobufjs:
-        specifier: 8.0.0
-        version: 8.0.0
+        specifier: 8.0.1
+        version: 8.0.1
       react:
         specifier: 19.2.4
         version: 19.2.4
@@ -2653,7 +2654,7 @@ packages:
       ansi-regex: 6.2.2
       ansi-styles: 6.2.3
       debug: 4.4.1
-      protobufjs: 7.5.4
+      protobufjs: 8.0.1
       strip-ansi: 7.1.2
 
   '@hiero-ledger/sdk@2.79.0':
@@ -4722,9 +4723,6 @@ packages:
 
   '@types/node@25.0.7':
     resolution: {integrity: sha512-C/er7DlIZgRJO7WtTdYovjIFzGsz0I95UlMyR9anTb4aCpBSRWe5Jc1/RvLKUfzmOxHPGjSE5+63HgLtndxU4w==}
-
-  '@types/node@25.2.3':
-    resolution: {integrity: sha512-m0jEgYlYz+mDJZ2+F4v8D1AyQb+QzsNqRuI7xg1VQX/KlKS0qT9r1Mo16yo5F/MtifXFgaofIFsdFMox2SxIbQ==}
 
   '@types/node@25.5.0':
     resolution: {integrity: sha512-jp2P3tQMSxWugkCUKLRPVUpGaL5MVFwF8RDuSRztfwgN1wmqJeMSbKlnEtQqU8UrhTmzEmZdu2I6v2dpp7XIxw==}
@@ -11020,19 +11018,7 @@ packages:
     engines: {node: '>=12.0.0'}
     hasBin: true
     peerDependencies:
-      protobufjs: ^8.0.0
-
-  protobufjs@7.5.4:
-    resolution: {integrity: sha512-CvexbZtbov6jW2eXAvLukXjXUW1TzFaivC46BpWc/3BpcCysb5Vffu+B3XHMm8lVEuy2Mm4XGex8hBSg1yapPg==}
-    engines: {node: '>=12.0.0'}
-
-  protobufjs@7.5.5:
-    resolution: {integrity: sha512-3wY1AxV+VBNW8Yypfd1yQY9pXnqTAN+KwQxL8iYm3/BjKYMNg4i0owhEe26PWDOMaIrzeeF98Lqd5NGz4omiIg==}
-    engines: {node: '>=12.0.0'}
-
-  protobufjs@8.0.0:
-    resolution: {integrity: sha512-jx6+sE9h/UryaCZhsJWbJtTEy47yXoGNYI4z8ZaRncM0zBKeRqjO2JEcOUYwrYGb1WLhXM1FfMzW3annvFv0rw==}
-    engines: {node: '>=12.0.0'}
+      protobufjs: 8.0.1
 
   protobufjs@8.0.1:
     resolution: {integrity: sha512-NWWCCscLjs+cOKF/s/XVNFRW7Yih0fdH+9brffR5NZCy8k42yRdl5KlWKMVXuI1vfCoy4o1z80XR/W/QUb3V3w==}
@@ -16373,14 +16359,14 @@ snapshots:
     dependencies:
       lodash.camelcase: 4.3.0
       long: 5.3.1
-      protobufjs: 7.5.5
+      protobufjs: 8.0.1
       yargs: 17.7.2
 
   '@grpc/proto-loader@0.7.9':
     dependencies:
       lodash.camelcase: 4.3.0
       long: 5.3.1
-      protobufjs: 7.5.5
+      protobufjs: 8.0.1
       yargs: 17.7.2
 
   '@hashgraph/solo@0.52.0(@types/node@25.5.0)(bn.js@5.2.3)(react-native@0.82.1(@babel/core@7.23.3)(@types/react@19.2.14)(react@19.2.4))':
@@ -16449,13 +16435,13 @@ snapshots:
       - react-native
       - supports-color
 
-  '@hiero-ledger/proto@2.25.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@7.5.4)(strip-ansi@7.1.2)':
+  '@hiero-ledger/proto@2.25.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@8.0.1)(strip-ansi@7.1.2)':
     dependencies:
       ansi-regex: 6.2.2
       ansi-styles: 6.2.3
       debug: 4.4.1(supports-color@8.1.1)
       long: 5.3.1
-      protobufjs: 7.5.4
+      protobufjs: 8.0.1
       strip-ansi: 7.1.2
 
   '@hiero-ledger/sdk@2.79.0(bn.js@5.2.3)(react-native@0.82.1(@babel/core@7.23.3)(@types/react@19.2.14)(react@19.2.4))':
@@ -16466,7 +16452,7 @@ snapshots:
       '@ethersproject/rlp': 5.8.0
       '@grpc/grpc-js': 1.12.6
       '@hiero-ledger/cryptography': 1.15.0(react-native@0.82.1(@babel/core@7.23.3)(@types/react@19.2.14)(react@19.2.4))
-      '@hiero-ledger/proto': 2.25.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@7.5.4)(strip-ansi@7.1.2)
+      '@hiero-ledger/proto': 2.25.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@8.0.1)(strip-ansi@7.1.2)
       ansi-regex: 6.2.2
       ansi-styles: 6.2.3
       bignumber.js: 9.1.1
@@ -16477,7 +16463,7 @@ snapshots:
       long: 5.3.1
       pino: 10.1.0
       pino-pretty: 13.0.0
-      protobufjs: 7.5.4
+      protobufjs: 8.0.1
       rfc4648: 1.5.3
       strip-ansi: 7.1.2
       utf8: 3.0.0
@@ -19075,10 +19061,6 @@ snapshots:
       undici-types: 7.8.0
 
   '@types/node@25.0.7':
-    dependencies:
-      undici-types: 7.16.0
-
-  '@types/node@25.2.3':
     dependencies:
       undici-types: 7.16.0
 
@@ -28004,51 +27986,6 @@ snapshots:
       semver: 7.3.8
       tmp: 0.2.4
       uglify-js: 3.19.3
-
-  protobufjs@7.5.4:
-    dependencies:
-      '@protobufjs/aspromise': 1.1.2
-      '@protobufjs/base64': 1.1.2
-      '@protobufjs/codegen': 2.0.4
-      '@protobufjs/eventemitter': 1.1.0
-      '@protobufjs/fetch': 1.1.0
-      '@protobufjs/float': 1.0.2
-      '@protobufjs/inquire': 1.1.0
-      '@protobufjs/path': 1.1.2
-      '@protobufjs/pool': 1.1.0
-      '@protobufjs/utf8': 1.1.0
-      '@types/node': 25.5.0
-      long: 5.3.1
-
-  protobufjs@7.5.5:
-    dependencies:
-      '@protobufjs/aspromise': 1.1.2
-      '@protobufjs/base64': 1.1.2
-      '@protobufjs/codegen': 2.0.4
-      '@protobufjs/eventemitter': 1.1.0
-      '@protobufjs/fetch': 1.1.0
-      '@protobufjs/float': 1.0.2
-      '@protobufjs/inquire': 1.1.0
-      '@protobufjs/path': 1.1.2
-      '@protobufjs/pool': 1.1.0
-      '@protobufjs/utf8': 1.1.0
-      '@types/node': 25.5.0
-      long: 5.3.1
-
-  protobufjs@8.0.0:
-    dependencies:
-      '@protobufjs/aspromise': 1.1.2
-      '@protobufjs/base64': 1.1.2
-      '@protobufjs/codegen': 2.0.4
-      '@protobufjs/eventemitter': 1.1.0
-      '@protobufjs/fetch': 1.1.0
-      '@protobufjs/float': 1.0.2
-      '@protobufjs/inquire': 1.1.0
-      '@protobufjs/path': 1.1.2
-      '@protobufjs/pool': 1.1.0
-      '@protobufjs/utf8': 1.1.0
-      '@types/node': 25.2.3
-      long: 5.3.1
 
   protobufjs@8.0.1:
     dependencies:
