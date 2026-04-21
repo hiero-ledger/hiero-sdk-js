@@ -119,10 +119,10 @@ The automated setup creates:
 -   `OPERATOR_KEY` and `OPERATOR_ID` - A dedicated ECDSA test account for regular integration tests
 -   `GENESIS_OPERATOR_ID` and `GENESIS_OPERATOR_KEY` - The genesis account (only for genesis-specific tests)
 
-For additional test accounts (Alice, Bob, Treasury, etc.), you can create them manually using Solo CLI:
+For additional test accounts (Alice, Bob, Treasury, etc.), you can create them manually using the globally installed Solo CLI:
 
 ```bash
-npx solo ledger account create --generate-ecdsa-key --deployment-name solo-deployment --dev
+solo ledger account create --generate-ecdsa-key --deployment solo-deployment --dev
 ```
 
 See the [Solo Setup Guide](./SOLO_SETUP.md) for more details.
