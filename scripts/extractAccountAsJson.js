@@ -8,7 +8,7 @@
  * - Account Alias (if present)
  *
  * Usage:
- *   solo account create ... | node extractAccountAsJson.js
+ *   solo ledger account create ... | node extractAccountAsJson.js
  */
 
 import { createInterface } from "readline";
