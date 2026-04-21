@@ -1,0 +1,19 @@
+version: v2
+plugins:
+  - local: ./node_modules/.bin/protoc-gen-ts_proto
+    out: .minimal-gen
+    opt:
+      - esModuleInterop=true
+      - forceLong=bigint
+      - useOptionals=messages
+      - outputJsonMethods=false
+      - outputClientImpl=false
+      - outputServices=false
+      - outputSchema=false
+      - useDate=false
+      - importSuffix=.js
+      - snakeToCamel=keys_jsonName
+      - oneof=unions
+      - stringEnums=false
+      - unrecognizedEnum=false
+      - initializeFieldsAsUndefined=false
