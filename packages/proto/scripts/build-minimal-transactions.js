@@ -234,12 +234,6 @@ fs.mkdirSync(OUT_DIR, { recursive: true });
 
 execFileSync(TSC, ["--project", "tsconfig.minimal.json"], { stdio: "inherit" });
 
-// --- 6. Emit a top-level index.js / index.d.ts for tree-shakable named access -
-//
-// Each proto file becomes a namespace export: consumers can write
-// `import { FileAppendTransaction } from "@hiero-ledger/proto/minimal"` and
-// reach every generated message via FileAppendTransaction.TransactionList etc.
-
 const pascalCase = (name) =>
     name.split("_").map((p) => p[0].toUpperCase() + p.slice(1)).join("");
 
@@ -247,19 +241,47 @@ const emittedJs = fs.readdirSync(OUT_DIR)
     .filter((f) => f.endsWith(".js") && f !== "index.js")
     .sort();
 
-const indexLines = emittedJs.map((f) => {
+const TOP_LEVEL_DECL =
+    /^export (?:declare )?(?:const|enum|var|function|class|interface|type) ([A-Za-z_][A-Za-z0-9_]*)/;
+
+const symbolToFiles = new Map();
+for (const jsFile of emittedJs) {
+    const base = path.basename(jsFile, ".js");
+    const dts = path.join(OUT_DIR, `${base}.d.ts`);
+    if (!fs.existsSync(dts)) continue;
+    const names = new Set();
+    for (const line of fs.readFileSync(dts, "utf8").split("\n")) {
+        const m = line.match(TOP_LEVEL_DECL);
+        if (m) names.add(m[1]);
+    }
+    for (const name of names) {
+        if (!symbolToFiles.has(name)) symbolToFiles.set(name, []);
+        symbolToFiles.get(name).push(base);
+    }
+}
+
+const namespaceLines = emittedJs.map((f) => {
     const base = path.basename(f, ".js");
     return `export * as ${pascalCase(base)} from "./${base}.js";`;
 });
 
-fs.writeFileSync(
-    path.join(OUT_DIR, "index.js"),
-    "// Auto-generated. Do not edit.\n" + indexLines.join("\n") + "\n",
-);
-fs.writeFileSync(
-    path.join(OUT_DIR, "index.d.ts"),
-    "// Auto-generated. Do not edit.\n" + indexLines.join("\n") + "\n",
-);
+const flatLines = [...symbolToFiles.entries()]
+    .filter(([, files]) => files.length === 1)
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([name, [base]]) => `export { ${name} } from "./${base}.js";`);
+
+const indexBody = [
+    "// Auto-generated. Do not edit.",
+    "// Namespace re-exports (every generated module, including colliding symbols).",
+    ...namespaceLines,
+    "",
+    "// Flat re-exports for every symbol whose name is unique across modules.",
+    ...flatLines,
+    "",
+].join("\n");
+
+fs.writeFileSync(path.join(OUT_DIR, "index.js"), indexBody);
+fs.writeFileSync(path.join(OUT_DIR, "index.d.ts"), indexBody);
 
 console.log(`\n✓ Wrote ${emittedJs.length} modules + index to ${OUT_DIR}/`);
 
