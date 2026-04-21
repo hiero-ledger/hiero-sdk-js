@@ -18,7 +18,7 @@ permissions:
 jobs:
     notify-slack:
         name: Notify Slack
-        if: ${{ github.event.pull_request.merged == true && github.event.pull_request.user.login != 'dependabot[bot]' && github.event.pull_request.user.login != 'codacy-production[bot]' && github.event.pull_request.user.login != 'lfdt-bot' }}
+        if: ${{ github.event.pull_request.merged == true && github.event.pull_request.user.login != 'dependabot[bot]' && github.event.pull_request.user.login != 'codacy-production[bot]' && github.event.pull_request.user.login != 'lfdt-bot' && github.event.pull_request.user.login != 'codecov[bot]' }}
         runs-on: hiero-client-sdk-linux-medium
         steps:
             - name: Harden Runner
