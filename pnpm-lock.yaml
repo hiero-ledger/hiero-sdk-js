@@ -328,7 +328,7 @@ importers:
         version: 19.2.4(react@19.2.4)
       react-scripts:
         specifier: 5.0.1
-        version: 5.0.1(@babel/plugin-syntax-flow@7.28.6(@babel/core@7.26.10))(@babel/plugin-transform-react-jsx@7.28.6(@babel/core@7.26.10))(@types/babel__core@7.20.5)(debug@4.4.1)(eslint@8.57.1)(react@19.2.4)(type-fest@4.41.0)(typescript@5.9.3)(yaml@2.8.2)
+        version: 5.0.1(@babel/plugin-syntax-flow@7.28.6(@babel/core@7.26.10))(@babel/plugin-transform-react-jsx@7.28.6(@babel/core@7.26.10))(@types/babel__core@7.20.5)(debug@4.4.1)(eslint@9.39.2(jiti@1.21.7))(react@19.2.4)(type-fest@4.41.0)(typescript@5.9.3)(yaml@2.8.3)
       web-vitals:
         specifier: ^5.1.0
         version: 5.1.0
@@ -13212,6 +13212,11 @@ snapshots:
       '@babel/core': 7.26.10
       '@babel/helper-plugin-utils': 7.27.1
 
+  '@babel/plugin-syntax-bigint@7.8.3(@babel/core@7.23.3)':
+    dependencies:
+      '@babel/core': 7.23.3
+      '@babel/helper-plugin-utils': 7.28.6
+
   '@babel/plugin-syntax-bigint@7.8.3(@babel/core@7.26.10)':
     dependencies:
       '@babel/core': 7.26.10
@@ -16967,6 +16972,16 @@ snapshots:
       nullthrows: 1.1.1
       yargs: 17.7.2
 
+  '@react-native/codegen@0.82.1(@babel/core@7.23.3)':
+    dependencies:
+      '@babel/core': 7.23.3
+      '@babel/parser': 7.29.2
+      glob: 7.2.3
+      hermes-parser: 0.32.0
+      invariant: 2.2.4
+      nullthrows: 1.1.1
+      yargs: 17.7.2
+
   '@react-native/codegen@0.82.1(@babel/core@7.26.10)':
     dependencies:
       '@babel/core': 7.26.10
@@ -17176,6 +17191,15 @@ snapshots:
       react-native: 0.81.5(@babel/core@7.26.10)(@types/react@19.1.17)(react@19.1.0)
     optionalDependencies:
       '@types/react': 19.1.17
+
+  '@react-native/virtualized-lists@0.82.1(@types/react@19.2.14)(react-native@0.82.1(@babel/core@7.23.3)(@types/react@19.2.14)(react@19.2.4))(react@19.2.4)':
+    dependencies:
+      invariant: 2.2.4
+      nullthrows: 1.1.1
+      react: 19.2.4
+      react-native: 0.82.1(@babel/core@7.23.3)(@types/react@19.2.14)(react@19.2.4)
+    optionalDependencies:
+      '@types/react': 19.2.14
 
   '@react-native/virtualized-lists@0.82.1(@types/react@19.2.14)(react-native@0.82.1(@babel/core@7.26.10)(@types/react@19.2.14)(react@19.2.4))(react@19.2.4)':
     dependencies:
@@ -19386,6 +19410,19 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
+  babel-jest@29.7.0(@babel/core@7.23.3):
+    dependencies:
+      '@babel/core': 7.23.3
+      '@jest/transform': 29.7.0
+      '@types/babel__core': 7.20.5
+      babel-plugin-istanbul: 6.1.1
+      babel-preset-jest: 29.6.3(@babel/core@7.23.3)
+      chalk: 4.1.2
+      graceful-fs: 4.2.11
+      slash: 3.0.0
+    transitivePeerDependencies:
+      - supports-color
+
   babel-jest@29.7.0(@babel/core@7.26.10):
     dependencies:
       '@babel/core': 7.26.10
@@ -19621,6 +19658,25 @@ snapshots:
 
   babel-plugin-transform-undefined-to-void@6.9.4: {}
 
+  babel-preset-current-node-syntax@1.2.0(@babel/core@7.23.3):
+    dependencies:
+      '@babel/core': 7.23.3
+      '@babel/plugin-syntax-async-generators': 7.8.4(@babel/core@7.23.3)
+      '@babel/plugin-syntax-bigint': 7.8.3(@babel/core@7.23.3)
+      '@babel/plugin-syntax-class-properties': 7.12.13(@babel/core@7.23.3)
+      '@babel/plugin-syntax-class-static-block': 7.14.5(@babel/core@7.23.3)
+      '@babel/plugin-syntax-import-attributes': 7.27.1(@babel/core@7.23.3)
+      '@babel/plugin-syntax-import-meta': 7.10.4(@babel/core@7.23.3)
+      '@babel/plugin-syntax-json-strings': 7.8.3(@babel/core@7.23.3)
+      '@babel/plugin-syntax-logical-assignment-operators': 7.10.4(@babel/core@7.23.3)
+      '@babel/plugin-syntax-nullish-coalescing-operator': 7.8.3(@babel/core@7.23.3)
+      '@babel/plugin-syntax-numeric-separator': 7.10.4(@babel/core@7.23.3)
+      '@babel/plugin-syntax-object-rest-spread': 7.8.3(@babel/core@7.23.3)
+      '@babel/plugin-syntax-optional-catch-binding': 7.8.3(@babel/core@7.23.3)
+      '@babel/plugin-syntax-optional-chaining': 7.8.3(@babel/core@7.23.3)
+      '@babel/plugin-syntax-private-property-in-object': 7.14.5(@babel/core@7.23.3)
+      '@babel/plugin-syntax-top-level-await': 7.14.5(@babel/core@7.23.3)
+
   babel-preset-current-node-syntax@1.2.0(@babel/core@7.26.10):
     dependencies:
       '@babel/core': 7.26.10
@@ -19710,6 +19766,12 @@ snapshots:
       '@babel/core': 7.26.10
       babel-plugin-jest-hoist: 27.5.1
       babel-preset-current-node-syntax: 1.2.0(@babel/core@7.26.10)
+
+  babel-preset-jest@29.6.3(@babel/core@7.23.3):
+    dependencies:
+      '@babel/core': 7.23.3
+      babel-plugin-jest-hoist: 29.6.3
+      babel-preset-current-node-syntax: 1.2.0(@babel/core@7.23.3)
 
   babel-preset-jest@29.6.3(@babel/core@7.26.10):
     dependencies:
@@ -26972,7 +27034,7 @@ snapshots:
       '@types/react': 19.2.14
     optional: true
 
-  react-scripts@5.0.1(@babel/plugin-syntax-flow@7.28.6(@babel/core@7.26.10))(@babel/plugin-transform-react-jsx@7.28.6(@babel/core@7.26.10))(@types/babel__core@7.20.5)(debug@4.4.1)(eslint@8.57.1)(react@19.2.4)(type-fest@4.41.0)(typescript@5.9.3)(yaml@2.8.2):
+  react-scripts@5.0.1(@babel/plugin-syntax-flow@7.28.6(@babel/core@7.26.10))(@babel/plugin-transform-react-jsx@7.28.6(@babel/core@7.26.10))(@types/babel__core@7.20.5)(debug@4.4.1)(eslint@9.39.2(jiti@1.21.7))(react@19.2.4)(type-fest@4.41.0)(typescript@5.9.3)(yaml@2.8.3):
     dependencies:
       '@babel/core': 7.26.10
       '@pmmmwh/react-refresh-webpack-plugin': 0.5.17(react-refresh@0.11.0)(type-fest@4.41.0)(webpack-dev-server@4.15.2(debug@4.4.1)(webpack@5.104.1))(webpack@5.104.1)
