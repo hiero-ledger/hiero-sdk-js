@@ -328,7 +328,7 @@ importers:
         version: 19.2.4(react@19.2.4)
       react-scripts:
         specifier: 5.0.1
-        version: 5.0.1(@babel/plugin-syntax-flow@7.28.6(@babel/core@7.26.10))(@babel/plugin-transform-react-jsx@7.28.6(@babel/core@7.26.10))(@types/babel__core@7.20.5)(debug@4.4.1)(eslint@9.39.2(jiti@1.21.7))(react@19.2.4)(type-fest@4.41.0)(typescript@5.9.3)(yaml@2.8.3)
+        version: 5.0.1(@babel/plugin-syntax-flow@7.28.6(@babel/core@7.26.10))(@babel/plugin-transform-react-jsx@7.28.6(@babel/core@7.26.10))(@types/babel__core@7.20.5)(debug@4.4.1)(eslint@8.57.1)(react@19.2.4)(type-fest@4.41.0)(typescript@5.9.3)(yaml@2.8.2)
       web-vitals:
         specifier: ^5.1.0
         version: 5.1.0
@@ -814,6 +814,9 @@ importers:
 
   packages/proto:
     dependencies:
+      '@bufbuild/protobuf':
+        specifier: 2.11.0
+        version: 2.11.0
       ansi-regex:
         specifier: 6.2.2
         version: 6.2.2
@@ -845,12 +848,18 @@ importers:
       '@babel/plugin-syntax-dynamic-import':
         specifier: 7.8.3
         version: 7.8.3(@babel/core@7.23.3)
+      '@babel/plugin-transform-export-namespace-from':
+        specifier: 7.22.3
+        version: 7.22.3(@babel/core@7.23.3)
       '@babel/plugin-transform-modules-commonjs':
         specifier: 7.20.11
         version: 7.20.11(@babel/core@7.23.3)
       '@babel/plugin-transform-runtime':
         specifier: 7.25.9
         version: 7.25.9(@babel/core@7.23.3)
+      '@bufbuild/buf':
+        specifier: 1.68.2
+        version: 1.68.2
       '@types/node':
         specifier: 25.5.0
         version: 25.5.0
@@ -920,6 +929,9 @@ importers:
       tmp:
         specifier: 0.2.4
         version: 0.2.4
+      ts-proto:
+        specifier: 2.11.6
+        version: 2.11.6
       typescript:
         specifier: 5.9.3
         version: 5.9.3
@@ -1867,6 +1879,56 @@ packages:
   '@bramus/specificity@2.4.2':
     resolution: {integrity: sha512-ctxtJ/eA+t+6q2++vj5j7FYX3nRu311q1wfYH3xjlLOsczhlhxAg2FWNUXhpGvAw3BWo1xBcvOV6/YLc2r5FJw==}
     hasBin: true
+
+  '@bufbuild/buf-darwin-arm64@1.68.2':
+    resolution: {integrity: sha512-OCO5/2Rwif8BSB+iTZstYoWP+U3Shof32s9GDh8Q0U0KGOnGsifnrFUZCcmsJw65p3ekOMmlRk5rN0I7QhPCoQ==}
+    engines: {node: '>=12'}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@bufbuild/buf-darwin-x64@1.68.2':
+    resolution: {integrity: sha512-iGhapuptpH2bOxjLkIhbU9zyf81MWo96Q7jvNzsiZsFsE4PPwE02fWoP8Z49YlqS31/sPH5dzpj2DaExgTRQVQ==}
+    engines: {node: '>=12'}
+    cpu: [x64]
+    os: [darwin]
+
+  '@bufbuild/buf-linux-aarch64@1.68.2':
+    resolution: {integrity: sha512-cSvVYySP/6n6CQhj9x29u1tlnDXLgxhqk4459l/GoMymk7v2NyRbfg90q4Ed2A5kc4UE71jWP6wp7xOseYTOZA==}
+    engines: {node: '>=12'}
+    cpu: [arm64]
+    os: [linux]
+
+  '@bufbuild/buf-linux-armv7@1.68.2':
+    resolution: {integrity: sha512-0diz/+EoBd3s6jPbjYu2y6Umyg0wVvzT8LNKo6HlJ+Q5rU4ZfVrMT+tJALpWmE1nQb7evFD2cadaoVXLaFiw9A==}
+    engines: {node: '>=12'}
+    cpu: [arm]
+    os: [linux]
+
+  '@bufbuild/buf-linux-x64@1.68.2':
+    resolution: {integrity: sha512-Lqhpy+pW0CPrCb341zGnRhjadMT3LDZto7Bwx7Ivik4S0IUUKhFbmZqLkA21Xr2HucKiogUqaDIkINsll1AuFA==}
+    engines: {node: '>=12'}
+    cpu: [x64]
+    os: [linux]
+
+  '@bufbuild/buf-win32-arm64@1.68.2':
+    resolution: {integrity: sha512-p6+kYldQd6xsKTbqFsnMtt9QHFc6SlREB49rS4s4z/gMiEXMx9z2kDT5RLCPOyJK9xZImWSCuNdTQOAiFcHBtg==}
+    engines: {node: '>=12'}
+    cpu: [arm64]
+    os: [win32]
+
+  '@bufbuild/buf-win32-x64@1.68.2':
+    resolution: {integrity: sha512-RRroPdgMr73TpZvaM9BZDmoBAd4lgwN6exmE7hH7E8KvDh15McDsQ1Ft9GKWZW/tBY8FTetpI+YkBTRlKih91g==}
+    engines: {node: '>=12'}
+    cpu: [x64]
+    os: [win32]
+
+  '@bufbuild/buf@1.68.2':
+    resolution: {integrity: sha512-kUyc03x0EEubQGA93k4mJFmnybQZtgoMxZeMPoTHxur/XpwweZTe4XCbYA9qDL2DKrC/FnNV7ybGMMmlAvQoBg==}
+    engines: {node: '>=12'}
+    hasBin: true
+
+  '@bufbuild/protobuf@2.11.0':
+    resolution: {integrity: sha512-sBXGT13cpmPR5BMgHE6UEEfEaShh5Ror6rfN3yEK5si7QVrtZg8LEPQb0VVhiLRUslD2yLnXtnRzG035J/mZXQ==}
 
   '@bundled-es-modules/cookie@2.0.1':
     resolution: {integrity: sha512-8o+5fRPLNbjbdGRRmJj3h6Hh1AQJf2dk3qQ/5ZFb+PXkRNiSoMGGUKlsgLfrxneb72axVJyIYji64E2+nNfYyw==}
@@ -5770,6 +5832,10 @@ packages:
   caniuse-lite@1.0.30001780:
     resolution: {integrity: sha512-llngX0E7nQci5BPJDqoZSbuZ5Bcs9F5db7EtgfwBerX9XGtkkiO4NwfDDIRzHTTwcYC8vC7bmeUEPGrKlR/TkQ==}
 
+  case-anything@2.1.13:
+    resolution: {integrity: sha512-zlOQ80VrQ2Ue+ymH5OuM/DlDq64mEm+B9UTdHULv5osUMD6HalNTblf2b1u/m6QecjsnOkBpqVZ+XPwIVsy7Ng==}
+    engines: {node: '>=12.13'}
+
   case-sensitive-paths-webpack-plugin@2.4.0:
     resolution: {integrity: sha512-roIFONhcxog0JSSWbvVAh3OocukmSgpqOH6YpMkCvav/ySIV3JKg4Dc8vYtQjYi/UxpNE36r/9v+VqTQqgkYmw==}
     engines: {node: '>=4'}
@@ -6371,6 +6437,11 @@ packages:
     resolution: {integrity: sha512-2sJGJTaXIIaR1w4iJSNoN0hnMY7Gpc/n8D4qSCJw8QqFWXf7cuAgnEHxBpweaVcPevC2l3KpjYCx3NypQQgaJg==}
     engines: {node: '>= 0.8', npm: 1.2.8000 || >= 1.4.16}
 
+  detect-libc@1.0.3:
+    resolution: {integrity: sha512-pGjwhsmsp4kL2RTz08wcOlGN83otlqHeD/Z5T8GXZB+/YcpQ/dgo+lbU8ZsGxV0HIvqqxo9l7mqYwyYMD9bKDg==}
+    engines: {node: '>=0.10'}
+    hasBin: true
+
   detect-libc@2.1.2:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
@@ -6491,6 +6562,9 @@ packages:
   dpdm@3.15.1:
     resolution: {integrity: sha512-qa+BsZAGU3BhhQ6/Fdpd9YYYa3gdF0zMY/vW5rAj/QLJQgPbTX25h7cOe12dfRZvU0/JJP/g5LRgB6lTaVwILw==}
     hasBin: true
+
+  dprint-node@1.0.8:
+    resolution: {integrity: sha512-iVKnUtYfGrYcW1ZAlfR/F59cUVL8QIhWoBJoSjkkdua/dkWIgjZfiLMeTjiB06X0ZLkQ0M2C1VbUj/CxkIf1zg==}
 
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
@@ -11712,6 +11786,16 @@ packages:
   ts-interface-checker@0.1.13:
     resolution: {integrity: sha512-Y/arvbn+rrz3JCKl9C4kVNfTfSm2/mEp5FSz5EsZSANGPSlQrpRI5M4PKF+mJnE52jOO90PnPSc3Ur3bTQw0gA==}
 
+  ts-poet@6.12.0:
+    resolution: {integrity: sha512-xo+iRNMWqyvXpFTaOAvLPA5QAWO6TZrSUs5s4Odaya3epqofBu/fMLHEWl8jPmjhA0s9sgj9sNvF1BmaQlmQkA==}
+
+  ts-proto-descriptors@2.1.0:
+    resolution: {integrity: sha512-S5EZYEQ6L9KLFfjSRpZWDIXDV/W7tAj8uW7pLsihIxyr62EAVSiKuVPwE8iWnr849Bqa53enex1jhDUcpgquzA==}
+
+  ts-proto@2.11.6:
+    resolution: {integrity: sha512-2rPkH5W/KeXOyVUC6o06RdRabVK8zSDmQpnRz4XbRiYMHRdI12KqDjAdGW7ebxzzMNE5cw/j+ptA0WMVqZILrQ==}
+    hasBin: true
+
   tsconfig-paths@3.15.0:
     resolution: {integrity: sha512-2Ac2RgzDe/cn48GvOe3M+o82pEFewD3UPbyoUHHdKasHwJKjds4fLXWf/Ux5kATBKN20oaFGu+jbElp1pos0mg==}
 
@@ -13131,7 +13215,7 @@ snapshots:
   '@babel/plugin-syntax-bigint@7.8.3(@babel/core@7.26.10)':
     dependencies:
       '@babel/core': 7.26.10
-      '@babel/helper-plugin-utils': 7.27.1
+      '@babel/helper-plugin-utils': 7.28.6
 
   '@babel/plugin-syntax-class-properties@7.12.13(@babel/core@7.23.3)':
     dependencies:
@@ -13525,7 +13609,7 @@ snapshots:
   '@babel/plugin-transform-export-namespace-from@7.22.3(@babel/core@7.23.3)':
     dependencies:
       '@babel/core': 7.23.3
-      '@babel/helper-plugin-utils': 7.27.1
+      '@babel/helper-plugin-utils': 7.28.6
       '@babel/plugin-syntax-export-namespace-from': 7.8.3(@babel/core@7.23.3)
 
   '@babel/plugin-transform-export-namespace-from@7.27.1(@babel/core@7.23.3)':
@@ -13914,7 +13998,7 @@ snapshots:
     dependencies:
       '@babel/core': 7.26.10
       '@babel/helper-annotate-as-pure': 7.27.3
-      '@babel/helper-plugin-utils': 7.27.1
+      '@babel/helper-plugin-utils': 7.28.6
 
   '@babel/plugin-transform-regenerator@7.28.4(@babel/core@7.23.3)':
     dependencies:
@@ -14396,6 +14480,39 @@ snapshots:
   '@bramus/specificity@2.4.2':
     dependencies:
       css-tree: 3.1.0
+
+  '@bufbuild/buf-darwin-arm64@1.68.2':
+    optional: true
+
+  '@bufbuild/buf-darwin-x64@1.68.2':
+    optional: true
+
+  '@bufbuild/buf-linux-aarch64@1.68.2':
+    optional: true
+
+  '@bufbuild/buf-linux-armv7@1.68.2':
+    optional: true
+
+  '@bufbuild/buf-linux-x64@1.68.2':
+    optional: true
+
+  '@bufbuild/buf-win32-arm64@1.68.2':
+    optional: true
+
+  '@bufbuild/buf-win32-x64@1.68.2':
+    optional: true
+
+  '@bufbuild/buf@1.68.2':
+    optionalDependencies:
+      '@bufbuild/buf-darwin-arm64': 1.68.2
+      '@bufbuild/buf-darwin-x64': 1.68.2
+      '@bufbuild/buf-linux-aarch64': 1.68.2
+      '@bufbuild/buf-linux-armv7': 1.68.2
+      '@bufbuild/buf-linux-x64': 1.68.2
+      '@bufbuild/buf-win32-arm64': 1.68.2
+      '@bufbuild/buf-win32-x64': 1.68.2
+
+  '@bufbuild/protobuf@2.11.0': {}
 
   '@bundled-es-modules/cookie@2.0.1':
     dependencies:
@@ -15423,6 +15540,109 @@ snapshots:
       long: 5.3.1
       protobufjs: 8.0.1
       yargs: 17.7.2
+
+  '@hashgraph/solo@0.52.0(@types/node@25.5.0)(bn.js@5.2.3)(react-native@0.82.1(@babel/core@7.23.3)(@types/react@19.2.14)(react@19.2.4))':
+    dependencies:
+      '@hiero-ledger/sdk': 2.79.0(bn.js@5.2.3)(react-native@0.82.1(@babel/core@7.23.3)(@types/react@19.2.14)(react@19.2.4))
+      '@inquirer/prompts': 7.10.1(@types/node@25.5.0)
+      '@kubernetes/client-node': 0.22.3
+      '@listr2/prompt-adapter-inquirer': 3.0.5(@inquirer/prompts@7.10.1(@types/node@25.5.0))(@types/node@25.5.0)(listr2@9.0.5)
+      '@peculiar/x509': 1.14.2
+      adm-zip: 0.5.16
+      chalk: 5.6.2
+      class-transformer: 0.5.1
+      class-validator: 0.14.3
+      dot-object: 2.1.5
+      dotenv: 17.2.3
+      elliptic: 6.6.1
+      esm: 3.2.25
+      figlet: 1.9.4
+      got: 14.6.5
+      http-status-codes: 2.3.0
+      ip: 2.0.1
+      js-base64: 3.7.8
+      listr2: 9.0.5
+      pino: 10.1.0
+      pino-pretty: 13.1.3
+      selfsigned: 5.2.0
+      semver: 7.7.3
+      shell-quote: 1.8.3
+      source-map-support: 0.5.21
+      stream-buffers: 3.0.3
+      tar: 7.5.2
+      tsyringe-neo: 5.1.0
+      uuid: 13.0.0
+      validator: 13.15.23
+      ws: 8.18.3
+      yaml: 2.8.2
+      yargs: 18.0.0
+    transitivePeerDependencies:
+      - '@types/node'
+      - bn.js
+      - bufferutil
+      - expo-crypto
+      - react-native
+      - supports-color
+      - utf-8-validate
+
+  '@hiero-ledger/cryptography@1.15.0(react-native@0.82.1(@babel/core@7.23.3)(@types/react@19.2.14)(react@19.2.4))':
+    dependencies:
+      '@noble/curves': 1.8.1
+      ansi-regex: 6.2.2
+      ansi-styles: 6.2.3
+      asn1js: 3.0.6
+      bignumber.js: 9.1.1
+      bn.js: 5.2.3
+      buffer: 6.0.3
+      crypto-js: 4.2.0
+      debug: 4.4.1(supports-color@8.1.1)
+      forge-light: 1.1.4
+      js-base64: 3.7.7
+      react-native-get-random-values: 1.11.0(react-native@0.82.1(@babel/core@7.23.3)(@types/react@19.2.14)(react@19.2.4))
+      spark-md5: 3.0.2
+      strip-ansi: 7.1.2
+      tweetnacl: 1.0.3
+      utf8: 3.0.0
+    transitivePeerDependencies:
+      - react-native
+      - supports-color
+
+  '@hiero-ledger/proto@2.25.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@8.0.1)(strip-ansi@7.1.2)':
+    dependencies:
+      ansi-regex: 6.2.2
+      ansi-styles: 6.2.3
+      debug: 4.4.1(supports-color@8.1.1)
+      long: 5.3.1
+      protobufjs: 8.0.1
+      strip-ansi: 7.1.2
+
+  '@hiero-ledger/sdk@2.79.0(bn.js@5.2.3)(react-native@0.82.1(@babel/core@7.23.3)(@types/react@19.2.14)(react@19.2.4))':
+    dependencies:
+      '@ethersproject/abi': 5.8.0
+      '@ethersproject/bignumber': 5.8.0
+      '@ethersproject/bytes': 5.8.0
+      '@ethersproject/rlp': 5.8.0
+      '@grpc/grpc-js': 1.12.6
+      '@hiero-ledger/cryptography': 1.15.0(react-native@0.82.1(@babel/core@7.23.3)(@types/react@19.2.14)(react@19.2.4))
+      '@hiero-ledger/proto': 2.25.0(ansi-regex@6.2.2)(ansi-styles@6.2.3)(debug@4.4.1)(protobufjs@8.0.1)(strip-ansi@7.1.2)
+      ansi-regex: 6.2.2
+      ansi-styles: 6.2.3
+      bignumber.js: 9.1.1
+      bn.js: 5.2.3
+      crypto-js: 4.2.0
+      debug: 4.4.1(supports-color@8.1.1)
+      js-base64: 3.7.4
+      long: 5.3.1
+      pino: 10.1.0
+      pino-pretty: 13.0.0
+      protobufjs: 8.0.1
+      rfc4648: 1.5.3
+      strip-ansi: 7.1.2
+      utf8: 3.0.0
+    transitivePeerDependencies:
+      - expo-crypto
+      - react-native
+      - supports-color
 
   '@humanfs/core@0.19.1': {}
 
@@ -19819,6 +20039,8 @@ snapshots:
 
   caniuse-lite@1.0.30001780: {}
 
+  case-anything@2.1.13: {}
+
   case-sensitive-paths-webpack-plugin@2.4.0: {}
 
   catharsis@0.9.0:
@@ -20413,6 +20635,8 @@ snapshots:
 
   destroy@1.2.0: {}
 
+  detect-libc@1.0.3: {}
+
   detect-libc@2.1.2: {}
 
   detect-newline@3.1.0: {}
@@ -20529,6 +20753,10 @@ snapshots:
       tslib: 2.8.1
       typescript: 5.8.2
       yargs: 17.7.2
+
+  dprint-node@1.0.8:
+    dependencies:
+      detect-libc: 1.0.3
 
   dunder-proto@1.0.1:
     dependencies:
@@ -26363,6 +26591,11 @@ snapshots:
       react: 19.1.0
       react-native: 0.81.5(@babel/core@7.26.10)(@types/react@19.1.17)(react@19.1.0)
 
+  react-native-get-random-values@1.11.0(react-native@0.82.1(@babel/core@7.23.3)(@types/react@19.2.14)(react@19.2.4)):
+    dependencies:
+      fast-base64-decode: 1.0.0
+      react-native: 0.82.1(@babel/core@7.23.3)(@types/react@19.2.14)(react@19.2.4)
+
   react-native-get-random-values@2.0.0(react-native@0.78.3(@babel/core@7.26.10)(@babel/preset-env@7.22.15(@babel/core@7.26.10))(@types/react@19.2.14)(react@19.2.4)):
     dependencies:
       fast-base64-decode: 1.0.0
@@ -26599,6 +26832,54 @@ snapshots:
       - supports-color
       - utf-8-validate
 
+  react-native@0.82.1(@babel/core@7.23.3)(@types/react@19.2.14)(react@19.2.4):
+    dependencies:
+      '@jest/create-cache-key-function': 29.7.0
+      '@react-native/assets-registry': 0.82.1
+      '@react-native/codegen': 0.82.1(@babel/core@7.23.3)
+      '@react-native/community-cli-plugin': 0.82.1
+      '@react-native/gradle-plugin': 0.82.1
+      '@react-native/js-polyfills': 0.82.1
+      '@react-native/normalize-colors': 0.82.1
+      '@react-native/virtualized-lists': 0.82.1(@types/react@19.2.14)(react-native@0.82.1(@babel/core@7.23.3)(@types/react@19.2.14)(react@19.2.4))(react@19.2.4)
+      abort-controller: 3.0.0
+      anser: 1.4.10
+      ansi-regex: 5.0.1
+      babel-jest: 29.7.0(@babel/core@7.23.3)
+      babel-plugin-syntax-hermes-parser: 0.32.0
+      base64-js: 1.5.1
+      commander: 12.1.0
+      flow-enums-runtime: 0.0.6
+      glob: 7.2.3
+      hermes-compiler: 0.0.0
+      invariant: 2.2.4
+      jest-environment-node: 29.7.0
+      memoize-one: 5.2.1
+      metro-runtime: 0.83.6
+      metro-source-map: 0.83.6
+      nullthrows: 1.1.1
+      pretty-format: 29.7.0
+      promise: 8.3.0
+      react: 19.2.4
+      react-devtools-core: 6.1.5
+      react-refresh: 0.14.2
+      regenerator-runtime: 0.13.11
+      scheduler: 0.26.0
+      semver: 7.3.8
+      stacktrace-parser: 0.1.11
+      whatwg-fetch: 3.6.20
+      ws: 6.2.3
+      yargs: 17.7.2
+    optionalDependencies:
+      '@types/react': 19.2.14
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@react-native-community/cli'
+      - '@react-native/metro-config'
+      - bufferutil
+      - supports-color
+      - utf-8-validate
+
   react-native@0.82.1(@babel/core@7.26.10)(@types/react@19.2.14)(react@19.2.4):
     dependencies:
       '@jest/create-cache-key-function': 29.7.0
@@ -26691,7 +26972,7 @@ snapshots:
       '@types/react': 19.2.14
     optional: true
 
-  react-scripts@5.0.1(@babel/plugin-syntax-flow@7.28.6(@babel/core@7.26.10))(@babel/plugin-transform-react-jsx@7.28.6(@babel/core@7.26.10))(@types/babel__core@7.20.5)(debug@4.4.1)(eslint@9.39.2(jiti@1.21.7))(react@19.2.4)(type-fest@4.41.0)(typescript@5.9.3)(yaml@2.8.3):
+  react-scripts@5.0.1(@babel/plugin-syntax-flow@7.28.6(@babel/core@7.26.10))(@babel/plugin-transform-react-jsx@7.28.6(@babel/core@7.26.10))(@types/babel__core@7.20.5)(debug@4.4.1)(eslint@8.57.1)(react@19.2.4)(type-fest@4.41.0)(typescript@5.9.3)(yaml@2.8.2):
     dependencies:
       '@babel/core': 7.26.10
       '@pmmmwh/react-refresh-webpack-plugin': 0.5.17(react-refresh@0.11.0)(type-fest@4.41.0)(webpack-dev-server@4.15.2(debug@4.4.1)(webpack@5.104.1))(webpack@5.104.1)
@@ -28096,6 +28377,21 @@ snapshots:
       typescript: 5.9.3
 
   ts-interface-checker@0.1.13: {}
+
+  ts-poet@6.12.0:
+    dependencies:
+      dprint-node: 1.0.8
+
+  ts-proto-descriptors@2.1.0:
+    dependencies:
+      '@bufbuild/protobuf': 2.11.0
+
+  ts-proto@2.11.6:
+    dependencies:
+      '@bufbuild/protobuf': 2.11.0
+      case-anything: 2.1.13
+      ts-poet: 6.12.0
+      ts-proto-descriptors: 2.1.0
 
   tsconfig-paths@3.15.0:
     dependencies:
