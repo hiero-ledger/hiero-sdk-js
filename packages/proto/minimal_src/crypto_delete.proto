@@ -1,0 +1,29 @@
+/**
+ * # Crypto Delete
+ * Delete a Hedera account.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+
+/**
+ * Mark an account as deleted, transferring its current hbar balance to another account.
+ */
+message CryptoDeleteTransactionBody {
+    /**
+     * The account ID to receive any remaining hbars from the deleted account.
+     */
+    AccountID transferAccountID = 1;
+
+    /**
+     * The account ID to delete.
+     */
+    AccountID deleteAccountID = 2;
+}
+

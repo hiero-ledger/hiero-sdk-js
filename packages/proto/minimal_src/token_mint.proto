@@ -1,0 +1,36 @@
+/**
+ * # Token Mint
+ * Mint tokens to the treasury account.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+
+/**
+ * Mints tokens to the Token's treasury Account.
+ */
+message TokenMintTransactionBody {
+    /**
+     * The token for which to mint tokens.
+     */
+    TokenID token = 1;
+
+    /**
+     * Applicable to tokens of type FUNGIBLE_COMMON.
+     * The amount to mint to the Treasury Account.
+     */
+    uint64 amount = 2;
+
+    /**
+     * Applicable to tokens of type NON_FUNGIBLE_UNIQUE.
+     * A list of metadata that are being created.
+     */
+    repeated bytes metadata = 3;
+}
+

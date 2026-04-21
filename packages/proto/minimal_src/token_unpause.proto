@@ -1,0 +1,24 @@
+/**
+ * # Token Unpause
+ * Unpause a token.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+
+/**
+ * Unpauses the Token from being paused.
+ */
+message TokenUnpauseTransactionBody {
+    /**
+     * The token to be unpaused.
+     */
+    TokenID token = 1;
+}
+

@@ -1,0 +1,78 @@
+/**
+ * # Crypto Update
+ * Update a Hedera account.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "duration.proto";
+import "timestamp.proto";
+
+/**
+ * Change properties for the given account.
+ */
+message CryptoUpdateTransactionBody {
+    /**
+     * The account ID to update.
+     */
+    AccountID accountIDToUpdate = 2;
+
+    /**
+     * The new key for the account.
+     */
+    Key key = 3;
+
+    /**
+     * Use staked_id instead.
+     */
+    AccountID proxyAccountID = 4 [deprecated = true];
+
+    /**
+     * The new expiry time for the account.
+     */
+    Timestamp expirationTime = 6;
+
+    /**
+     * The new period that the account will be charged.
+     */
+    Duration autoRenewPeriod = 7;
+
+    /**
+     * If set to the sentinel value of 0.0.0, this field removes the account's receiver signature requirement.
+     */
+    bool receiverSigRequiredWrapper = 8 [deprecated = true];
+
+    /**
+     * If set, the new memo to be associated with the account.
+     */
+    string memo = 9;
+
+    /**
+     * The maximum number of tokens that this account can be automatically associated with.
+     */
+    int32 max_automatic_token_associations = 10;
+
+    oneof staked_id {
+        /**
+         * ID of the account to which this account is staking.
+         */
+        AccountID staked_account_id = 11;
+
+        /**
+         * ID of the node this account is staked to.
+         */
+        int64 staked_node_id = 12;
+    }
+
+    /**
+     * If true, the account declines receiving a staking reward.
+     */
+    bool decline_reward = 13;
+}
+

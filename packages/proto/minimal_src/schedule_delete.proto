@@ -1,0 +1,24 @@
+/**
+ * # Schedule Delete
+ * Delete a scheduled transaction.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+
+/**
+ * Marks a schedule in the network's action queue as deleted, preventing it from executing.
+ */
+message ScheduleDeleteTransactionBody {
+    /**
+     * The ID of the Scheduled Entity to be deleted.
+     */
+    ScheduleID scheduleID = 1;
+}
+

@@ -1,0 +1,55 @@
+/**
+ * # File Create
+ * Create a new file.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "timestamp.proto";
+
+/**
+ * Create a new file.
+ */
+message FileCreateTransactionBody {
+    /**
+     * The time at which this file should expire.
+     */
+    Timestamp expirationTime = 2;
+
+    /**
+     * All keys at the top level of a key list must sign to create or modify the file.
+     */
+    KeyList keys = 3;
+
+    /**
+     * The bytes that are the contents of the file.
+     */
+    bytes contents = 4;
+
+    /**
+     * Shard in which this file is created.
+     */
+    ShardID shardID = 5;
+
+    /**
+     * The realm in which this file is created.
+     */
+    RealmID realmID = 6;
+
+    /**
+     * If realmID is specified, then this the admin key for that realm.
+     */
+    Key newRealmAdminKey = 7 [deprecated = true];
+
+    /**
+     * The memo associated with the file.
+     */
+    string memo = 8;
+}
+
