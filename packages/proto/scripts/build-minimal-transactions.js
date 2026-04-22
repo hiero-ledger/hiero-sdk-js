@@ -265,8 +265,16 @@ const namespaceLines = emittedJs.map((f) => {
     return `export * as ${pascalCase(base)} from "./${base}.js";`;
 });
 
+// Names already claimed by the namespace re-exports (e.g. `Duration` when
+// emitted from `duration.js`).  A flat re-export for the same name would be
+// a duplicate ESM binding — skip these.  Users reach the message through the
+// namespace, e.g. `Duration.Duration`.
+const namespaceNames = new Set(
+    emittedJs.map((f) => pascalCase(path.basename(f, ".js"))),
+);
+
 const flatLines = [...symbolToFiles.entries()]
-    .filter(([, files]) => files.length === 1)
+    .filter(([name, files]) => files.length === 1 && !namespaceNames.has(name))
     .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
     .map(([name, [base]]) => `export { ${name} } from "./${base}.js";`);
 
