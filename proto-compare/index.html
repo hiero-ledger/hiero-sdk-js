@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>proto-compare · hiero full vs minimal</title>
+        <link rel="stylesheet" href="/src/styles.css" />
+    </head>
+    <body>
+        <header>
+            <h1>@hiero-ledger/proto <span class="muted">full vs minimal</span></h1>
+            <p class="lead">
+                Compares the legacy <code>pbjs</code>-generated package with
+                the new tree-shakeable <code>ts-proto</code> build.
+            </p>
+        </header>
+
+        <section id="bundle">
+            <h2>Bundle size</h2>
+            <p class="hint">
+                Rollup + terser output for three equivalent FileAppend
+                workloads.
+            </p>
+            <div id="bundle-results" class="results">
+                <div class="placeholder">Run <code>pnpm measure</code> to generate bundle sizes.</div>
+            </div>
+        </section>
+
+        <section id="how">
+            <h2>Why is minimal so much smaller?</h2>
+            <p class="hint">
+                Four mechanisms stack on top of each other. The first does most
+                of the work.
+            </p>
+
+            <div class="explainer">
+                <article class="card">
+                    <span class="card-num">1</span>
+                    <h3>ESM tree-shaking beats the CJS monolith</h3>
+                    <p>
+                        The full package is one CJS file with
+                        <b>all 377 Hedera message classes</b> bolted onto a
+                        single <code>exports.proto</code> object. Bundlers
+                        can&rsquo;t statically prove which classes you actually
+                        touch, so they keep every one.
+                    </p>
+                    <p>
+                        The minimal package emits
+                        <b>92 separate ESM modules</b>, one per proto.
+                        Importing <code>FileAppendTransactionBody</code> pulls
+                        in ~3 files. Rollup drops the rest at the linker stage.
+                    </p>
+                    <div class="callout good">
+                        Accounts for roughly <b>85–90%</b> of the raw saving on
+                        its own.
+                    </div>
+                </article>
+
+                <article class="card">
+                    <span class="card-num">2</span>
+                    <h3>Per-transaction proto scoping</h3>
+                    <p>
+                        Even within the messages a bundler keeps, scope
+                        matters. The full <code>basic_types.proto</code>
+                        declares <b>72 messages</b> — from <code>AccountID</code>
+                        to <code>NodeAddressBook</code> — all co-located.
+                    </p>
+                    <p>
+                        Minimal&rsquo;s <code>file_append.proto</code> declares
+                        <b>one</b> message and reaches into
+                        <code>basic_types.proto</code> only for the types it
+                        references (just <code>FileID</code>). No orphan
+                        siblings travel along.
+                    </p>
+                </article>
+
+                <article class="card">
+                    <span class="card-num">3</span>
+                    <h3>Leaner runtime library</h3>
+                    <p>
+                        Before a single message is defined, the two packages
+                        already differ by ~45 KB at the runtime layer:
+                    </p>
+                    <table class="runtime-table">
+                        <thead>
+                            <tr>
+                                <th>Full (pbjs)</th>
+                                <th>Minimal (ts-proto)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>protobufjs/minimal</code> ≈ 30 KB</td>
+                                <td><code>@bufbuild/protobuf/wire</code> ≈ 5 KB</td>
+                            </tr>
+                            <tr>
+                                <td><code>Long.js</code> ≈ 20 KB</td>
+                                <td>native <code>bigint</code> (0 KB)</td>
+                            </tr>
+                            <tr>
+                                <td>JSON + reflection + verify</td>
+                                <td>binary wire only</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </article>
+
+                <article class="card">
+                    <span class="card-num">4</span>
+                    <h3>Codegen drops everything optional</h3>
+                    <p>
+                        Each flag below removes a chunk of boilerplate from
+                        every generated message. Multiply by 377 messages and
+                        it adds up fast.
+                    </p>
+                    <ul class="flags">
+                        <li><code>outputJsonMethods=false</code> — no <code>toJSON</code>/<code>fromJSON</code></li>
+                        <li><code>outputSchema=false</code> — no runtime schema</li>
+                        <li><code>outputServices=false</code> — no gRPC stubs</li>
+                        <li><code>forceLong=bigint</code> — no <code>Long.js</code> dependency</li>
+                    </ul>
+                </article>
+            </div>
+
+            <div class="trace">
+                <h3>The three bundles, traced</h3>
+                <div class="trace-row">
+                    <div class="trace-label">Full envelope</div>
+                    <div class="trace-chain">
+                        <span class="chip big">proto.js (all 377 msgs)</span>
+                        <span class="plus">+</span>
+                        <span class="chip">protobufjs/minimal</span>
+                        <span class="plus">+</span>
+                        <span class="chip">Long.js</span>
+                        <span class="equals">=</span>
+                        <span class="chip total" data-total="fullEnvelope">—</span>
+                    </div>
+                </div>
+                <div class="trace-row">
+                    <div class="trace-label">Minimal envelope</div>
+                    <div class="trace-chain">
+                        <span class="chip">file_append_transaction.js</span>
+                        <span class="plus">+</span>
+                        <span class="chip">file_append.js</span>
+                        <span class="plus">+</span>
+                        <span class="chip">basic_types.js (shaken)</span>
+                        <span class="plus">+</span>
+                        <span class="chip">@bufbuild/wire</span>
+                        <span class="equals">=</span>
+                        <span class="chip total good" data-total="minimalEnvelope">—</span>
+                    </div>
+                </div>
+                <div class="trace-row">
+                    <div class="trace-label">Minimal body</div>
+                    <div class="trace-chain">
+                        <span class="chip">file_append.js</span>
+                        <span class="plus">+</span>
+                        <span class="chip">basic_types.js (shaken)</span>
+                        <span class="plus">+</span>
+                        <span class="chip">@bufbuild/wire</span>
+                        <span class="equals">=</span>
+                        <span class="chip total good" data-total="minimalBody">—</span>
+                    </div>
+                </div>
+                <div class="trace-row">
+                    <div class="trace-label">Full · AccountID</div>
+                    <div class="trace-chain">
+                        <span class="chip big">proto.js (all 377 msgs)</span>
+                        <span class="plus">+</span>
+                        <span class="chip">protobufjs/minimal</span>
+                        <span class="plus">+</span>
+                        <span class="chip">Long.js</span>
+                        <span class="equals">=</span>
+                        <span class="chip total" data-total="fullAccountId">—</span>
+                    </div>
+                </div>
+                <div class="trace-row">
+                    <div class="trace-label">Minimal · AccountID</div>
+                    <div class="trace-chain">
+                        <span class="chip">basic_types.js (shaken to AccountID)</span>
+                        <span class="plus">+</span>
+                        <span class="chip">@bufbuild/wire</span>
+                        <span class="equals">=</span>
+                        <span class="chip total good" data-total="minimalAccountId">—</span>
+                    </div>
+                </div>
+                <p class="hint" style="margin-top: 0.75rem; margin-bottom: 0;">
+                    The full-envelope and body-only bundles from the full
+                    package weigh the same — pbjs is a monolith, you pay for
+                    all 377 messages either way. Minimal&rsquo;s envelope costs
+                    only ~22 KB more than the body alone, because the
+                    per-transaction <code>TransactionBody</code> has a
+                    single-case <code>oneof data</code> that closes the graph.
+                </p>
+            </div>
+
+            <details class="aside">
+                <summary>Why is the gzipped saving smaller than the raw saving?</summary>
+                <p>
+                    Gzip loves repetition. The full package has 377 near-
+                    identical encoder/decoder pairs, so DEFLATE compresses it
+                    ~9× (688 KB &rarr; 78 KB). Minimal is already lean and less
+                    repetitive, so it only compresses ~3× (15.5 KB &rarr;
+                    4.8 KB). The gap narrows after gzip, but minimal stays
+                    vastly smaller on the wire.
+                </p>
+            </details>
+        </section>
+
+        <section id="bench">
+            <h2>Encode / decode throughput</h2>
+            <p class="hint">
+                Runs live in your browser. Default: 20k iterations with a 1k warm-up.
+            </p>
+            <div class="controls">
+                <label>
+                    Iterations
+                    <input id="iterations" type="number" value="20000" min="100" step="1000" />
+                </label>
+                <button id="run">Run benchmark</button>
+                <span id="status" class="status"></span>
+            </div>
+            <div id="bench-results" class="results"></div>
+        </section>
+
+        <section id="wire">
+            <h2>Wire-format diff</h2>
+            <p class="hint">
+                The same logical message encoded by each package. Bytes in red
+                are emitted by one side but not the other. proto3 says default
+                scalars (zero int64s) MUST NOT be emitted; pbjs emits them when
+                populated via <code>.create()</code>, ts-proto does not.
+            </p>
+            <div id="wire-results" class="results"></div>
+        </section>
+
+        <footer>
+            <p class="muted">
+                Workload for the benchmark and wire-diff sections: one
+                <code>FileAppendTransactionBody</code>
+                with <code>fileID=0.0.42</code> and 4-byte <code>contents</code>.
+                The bundle-size section adds a full-envelope variant that wraps
+                it in a <code>TransactionBody</code> and <code>Transaction</code>.
+            </p>
+        </footer>
+
+        <script type="module" src="/src/main.js"></script>
+    </body>
+</html>

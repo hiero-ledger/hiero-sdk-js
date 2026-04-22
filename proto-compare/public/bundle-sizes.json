@@ -1,0 +1,35 @@
+{
+  "generatedAt": "2026-04-21T21:10:43.565Z",
+  "workloads": [
+    {
+      "id": "fullEnvelope",
+      "label": "Full package · full Transaction",
+      "raw": 705601,
+      "gz": 80185
+    },
+    {
+      "id": "minimalEnvelope",
+      "label": "Minimal · per-transaction envelope",
+      "raw": 37922,
+      "gz": 7662
+    },
+    {
+      "id": "minimalBody",
+      "label": "Minimal · body only",
+      "raw": 15849,
+      "gz": 4917
+    },
+    {
+      "id": "fullAccountId",
+      "label": "Full package · just AccountID",
+      "raw": 705232,
+      "gz": 80052
+    },
+    {
+      "id": "minimalAccountId",
+      "label": "Minimal · just AccountID",
+      "raw": 15662,
+      "gz": 4861
+    }
+  ]
+}
