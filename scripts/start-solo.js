@@ -10,12 +10,15 @@ import {
     SOLO_DIR,
     SOLO_LOCAL_CONFIG_PATH,
     ENV_FILE,
+    commandExists,
     fileExists,
     directoryExists,
     localConfigContains,
     clusterExists,
     log,
     runCommand,
+    runSoloCommand,
+    SOLO_GLOBAL_INSTALL_COMMAND,
     createNodeIdList,
     setupPortForwarding,
     createTestAccount,
@@ -118,19 +121,25 @@ function setEnvironment({ consensusVersion, mirrorVersion, localBuildPath }) {
 }
 
 async function checkPrerequisites() {
+    if (!commandExists("solo")) {
+        log.error("Solo CLI is not available globally");
+        log.info(`Please run '${SOLO_GLOBAL_INSTALL_COMMAND}' and try again`);
+        process.exit(1);
+    }
+
     log.info("Checking prerequisites...");
 
     if (!(await clusterExists(SOLO_CLUSTER_NAME))) {
         log.error(`Kind cluster '${SOLO_CLUSTER_NAME}' not found`);
         log.info(
-            "Please run 'task solo:init' first to create the cluster and deployment",
+            "Please run 'task solo:setup' first to create the cluster and deployment",
         );
         process.exit(1);
     }
 
     if (!(await directoryExists(SOLO_DIR))) {
         log.error("Solo not initialized");
-        log.info("Please run 'task solo:init' first");
+        log.info("Please run 'task solo:setup' first");
         process.exit(1);
     }
 
@@ -139,7 +148,7 @@ async function checkPrerequisites() {
 
     if (!localConfigExists || !hasClusterRef) {
         log.error(`Cluster reference '${SOLO_CLUSTER_NAME}' not found`);
-        log.info("Please run 'task solo:init' first");
+        log.info("Please run 'task solo:setup' first");
         process.exit(1);
     }
 
@@ -175,10 +184,8 @@ async function deployNetwork(localBuildPath) {
 
         if (await localConfigContains(`name: ${SOLO_DEPLOYMENT}`)) {
             log.info("Removing stale deployment from local config...");
-            await runCommand(
-                "npx",
+            await runSoloCommand(
                 [
-                    "solo",
                     "deployment",
                     "config",
                     "delete",
@@ -191,8 +198,7 @@ async function deployNetwork(localBuildPath) {
         }
 
         log.info("Reconnecting to cluster...");
-        await runCommand("npx", [
-            "solo",
+        await runSoloCommand([
             "cluster-ref",
             "config",
             "connect",
@@ -204,8 +210,7 @@ async function deployNetwork(localBuildPath) {
         ]);
 
         log.info(`Creating deployment: ${SOLO_DEPLOYMENT}...`);
-        await runCommand("npx", [
-            "solo",
+        await runSoloCommand([
             "deployment",
             "config",
             "create",
@@ -217,8 +222,7 @@ async function deployNetwork(localBuildPath) {
         ]);
 
         log.info(`Attaching cluster to deployment (${numNodes} node(s))...`);
-        await runCommand("npx", [
-            "solo",
+        await runSoloCommand([
             "deployment",
             "cluster",
             "attach",
@@ -232,8 +236,7 @@ async function deployNetwork(localBuildPath) {
         ]);
 
         log.info("Setting up cluster...");
-        await runCommand("npx", [
-            "solo",
+        await runSoloCommand([
             "cluster-ref",
             "config",
             "setup",
@@ -256,8 +259,7 @@ async function deployNetwork(localBuildPath) {
         log.info("Consensus keys already exist, skipping key generation");
     } else {
         log.info("Generating consensus keys...");
-        await runCommand("npx", [
-            "solo",
+        await runSoloCommand([
             "keys",
             "consensus",
             "generate",
@@ -272,8 +274,7 @@ async function deployNetwork(localBuildPath) {
     log.info(
         `Deploying consensus network (${numNodes} node(s): ${nodeIds})...`,
     );
-    await runCommand("npx", [
-        "solo",
+    await runSoloCommand([
         "consensus",
         "network",
         "deploy",
@@ -287,8 +288,7 @@ async function deployNetwork(localBuildPath) {
     log.info("Setting up consensus nodes...");
     if (localBuildPath) {
         log.info(`Using local build path: ${localBuildPath}`);
-        await runCommand("npx", [
-            "solo",
+        await runSoloCommand([
             "consensus",
             "node",
             "setup",
@@ -304,8 +304,7 @@ async function deployNetwork(localBuildPath) {
         log.info(
             `Using consensus node version: ${process.env.CONSENSUS_NODE_VERSION}`,
         );
-        await runCommand("npx", [
-            "solo",
+        await runSoloCommand([
             "consensus",
             "node",
             "setup",
@@ -318,8 +317,7 @@ async function deployNetwork(localBuildPath) {
     }
 
     log.info("Starting consensus nodes...");
-    await runCommand("npx", [
-        "solo",
+    await runSoloCommand([
         "consensus",
         "node",
         "start",
@@ -335,8 +333,7 @@ async function deployNetwork(localBuildPath) {
 
 async function deployMirror() {
     log.info("Deploying mirror node services...");
-    await runCommand("npx", [
-        "solo",
+    await runSoloCommand([
         "mirror",
         "node",
         "add",
@@ -406,8 +403,8 @@ async function main() {
     log.info("Your local Hiero network is now running");
     log.info(`Test account: ${account.accountId}`);
     console.log("");
-    log.info("To stop services: task solo:stop");
-    log.info("To restart:       task solo:start");
+    log.info("To pause services: task solo:pause");
+    log.info("To resume:         task solo:resume");
     log.info("To teardown:      task solo:teardown");
     console.log("");
 }

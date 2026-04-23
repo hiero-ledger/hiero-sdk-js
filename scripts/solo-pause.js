@@ -6,7 +6,7 @@ import {
     SOLO_DEPLOYMENT,
     killPortForwardProcesses,
     stopKindClusterContainers,
-    runCommand,
+    runSoloCommand,
     log,
 } from "./solo-lib.js";
 
@@ -38,10 +38,8 @@ function parseArgs(argv) {
 
 async function destroyMirrorNode() {
     log.info("Destroying mirror node...");
-    const result = await runCommand(
-        "npx",
+    const result = await runSoloCommand(
         [
-            "solo",
             "mirror",
             "node",
             "destroy",
@@ -62,17 +60,8 @@ async function destroyMirrorNode() {
 
 async function stopConsensusNodes() {
     log.info("Stopping consensus nodes...");
-    const result = await runCommand(
-        "npx",
-        [
-            "solo",
-            "consensus",
-            "node",
-            "stop",
-            "--deployment",
-            deploymentName,
-            "--dev",
-        ],
+    const result = await runSoloCommand(
+        ["consensus", "node", "stop", "--deployment", deploymentName, "--dev"],
         { allowFailure: true },
     );
 
