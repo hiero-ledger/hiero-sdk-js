@@ -17,6 +17,10 @@ export default defineConfig({
         coverage: {
             provider: "v8",
             include: ["src/**/*.js"],
+            exclude: [
+                "src/SignatureMapLegacy.js",
+                "src/NodeAccountIdSignatureMapLegacy.js",
+            ],
             reporter: ["text-summary", "lcov"],
             reportsDirectory: "./coverage/node",
         },

@@ -18,6 +18,10 @@ export default defineConfig({
         coverage: {
             provider: "istanbul",
             include: ["src/**/*.js"],
+            exclude: [
+                "src/SignatureMapLegacy.js",
+                "src/NodeAccountIdSignatureMapLegacy.js",
+            ],
             reporter: ["text-summary", "lcov"],
             reportsDirectory: "./coverage/browser",
         },

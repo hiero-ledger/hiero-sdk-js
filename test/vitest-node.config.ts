@@ -12,6 +12,13 @@ export default defineConfig({
         isolate: false,
         coverage: {
             include: ["src/**/*.js"],
+            exclude: [
+                "src/transaction/SignatureMapLegacy.js",
+                "src/transaction/NodeAccountIdSignatureMapLegacy.js",
+                "src/system/SystemDeleteTransaction.js",
+                "src/system/SystemUndeleteTransaction.js",
+                "src/contract/ContractCreateFlow.js",
+            ],
             provider: "v8",
             reporter: ["text-summary", "lcov"],
             reportsDirectory: "./coverage/node",
