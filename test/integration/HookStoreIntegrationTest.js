@@ -256,8 +256,7 @@ describe("HookStore", function () {
 
             // Build HookEntityId using .setContractId()
             contractTransactionHookId = new HookId({
-                entityId:
-                    new HookEntityId().setContractId(contractWithHook),
+                entityId: new HookEntityId().setContractId(contractWithHook),
                 hookId: hookIdLong,
             });
         });

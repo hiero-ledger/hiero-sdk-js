@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package proto;
+
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+// Entry file for the shared-types module. Aggregates the types that many
+// generated transaction/query/service modules reference in common so we can
+// emit them once and have each module import the shared copies instead of
+// embedding its own duplicates.
+import "basic_types.proto";
+import "custom_fees.proto";

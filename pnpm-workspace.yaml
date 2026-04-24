@@ -4,3 +4,4 @@ packages:
     - examples/*
     - examples
     - common_js_test
+    - proto-compare

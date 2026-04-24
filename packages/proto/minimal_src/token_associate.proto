@@ -1,0 +1,29 @@
+/**
+ * # Token Associate
+ * Associate tokens with an account.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+
+/**
+ * Associates the provided account with the provided tokens.
+ */
+message TokenAssociateTransactionBody {
+    /**
+     * The account to be associated with the provided tokens.
+     */
+    AccountID account = 1;
+
+    /**
+     * The tokens to be associated with the provided account.
+     */
+    repeated TokenID tokens = 2;
+}
+

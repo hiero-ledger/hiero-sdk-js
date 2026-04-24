@@ -106,13 +106,15 @@ jobs:
 
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@4d42a74e8e644a2753f3bb7a2afa429305375b14 # v0.17
+        uses: hiero-ledger/hiero-solo-action@304c55482994ecf572ab6ea2f9a980d7e452b973 # wip: enable high transaction throttle load
         with:
           installMirrorNode: true
           soloVersion: v0.65.0
           hieroVersion: v0.72.0
           mirrorNodeVersion: v0.142.0
           grpcProxyPort: 8080
+          highThrottle: true
+
 
       - name: Set Operator Account
         run: |

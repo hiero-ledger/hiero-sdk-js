@@ -1,0 +1,23 @@
+{
+    "name": "@hiero-ledger/proto-compare",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "description": "Interactive comparison of @hiero-ledger/proto (full, pbjs) vs @hiero-ledger/proto/minimal (ts-proto)",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build && node scripts/measure-sizes.js",
+        "preview": "vite preview",
+        "measure": "node scripts/measure-sizes.js"
+    },
+    "dependencies": {
+        "@hiero-ledger/proto": "workspace:*"
+    },
+    "devDependencies": {
+        "@rollup/plugin-commonjs": "29.0.0",
+        "@rollup/plugin-node-resolve": "16.0.1",
+        "@rollup/plugin-terser": "0.4.4",
+        "rollup": "4.59.0",
+        "vite": "7.3.1"
+    }
+}

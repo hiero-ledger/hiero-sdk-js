@@ -1,0 +1,105 @@
+/**
+ * # Token Mint Transaction
+ * Transaction for minting tokens.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "duration.proto";
+import "custom_fees.proto";
+import "token_mint.proto";
+
+message Transaction {
+    // <<<pbj.java_package = "com.hedera.hapi.node.base">>> This comment is special code for setting PBJ Compiler java package
+    /**
+     * Replaced with `signedTransactionBytes`.<br/>
+     * The body of the transaction.
+     */
+    TransactionBody body = 1 [deprecated = true];
+
+    /**
+     * Replaced with `signedTransactionBytes`.<br/>
+     * The signatures on the body.
+     */
+    SignatureList sigs = 2 [deprecated = true];
+
+    /**
+     * Replaced with `signedTransactionBytes`.<br/>
+     * The signatures on the body with a newer format.
+     */
+    SignatureMap sigMap = 3 [deprecated = true];
+
+    /**
+     * Replaced with `signedTransactionBytes`.<br/>
+     * TransactionBody serialized into bytes.
+     */
+    bytes bodyBytes = 4 [deprecated = true];
+
+    /**
+     * A valid, serialized, `SignedTransaction` message.
+     * <p>
+     * This field MUST be present.
+     * This field MUST NOT exceed the current network transaction size limit
+     * (currently 6144 bytes).
+     */
+    bytes signedTransactionBytes = 5;
+}
+
+/**
+ * A transaction body for token minting.
+ */
+message TransactionBody {
+    reserved 30, 61, 62, 63, 64;
+
+    /**
+     * A transaction identifier.
+     */
+    TransactionID transactionID = 1;
+
+    /**
+     * A node account identifier.
+     */
+    AccountID nodeAccountID = 2;
+
+    /**
+     * A maximum transaction fee, in tinybar.
+     */
+    uint64 transactionFee = 3;
+
+    /**
+     * A maximum duration in which to execute this transaction.
+     */
+    Duration transactionValidDuration = 4;
+
+    /**
+     * A short description for this transaction.
+     */
+    string memo = 6;
+
+    /**
+     * The public key of the trusted batch assembler.
+     */
+    Key batch_key = 73;
+
+    oneof data {
+        /**
+         * Mint new tokens.
+         */
+        TokenMintTransactionBody tokenMint = 29;
+    }
+
+    /**
+     * A list of maximum custom fees that the users are willing to pay.
+     */
+    repeated CustomFeeLimit max_custom_fees = 1001;
+}
+
+message TransactionList {
+    repeated Transaction transaction_list = 1;
+}

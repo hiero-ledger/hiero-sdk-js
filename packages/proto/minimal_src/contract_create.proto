@@ -1,0 +1,102 @@
+/**
+ * # Smart Contract Create
+ * Create a new smart contract.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "duration.proto";
+
+/**
+ * Create a new smart contract.
+ */
+message ContractCreateTransactionBody {
+    /**
+     * The file containing the bytecode for this contract.
+     */
+    FileID fileID = 1;
+
+    /**
+     * The admin key for this contract.
+     */
+    Key adminKey = 3;
+
+    /**
+     * Gas to be used for this contract creation.
+     */
+    int64 gas = 4;
+
+    /**
+     * Initial balance to be deposited into the contract.
+     */
+    int64 initialBalance = 5;
+
+    /**
+     * If the contract requires a proxy account, specify it here.
+     */
+    AccountID proxyAccountID = 6 [deprecated = true];
+
+    /**
+     * The period that the instance will charge its account every this many seconds.
+     */
+    Duration autoRenewPeriod = 8;
+
+    /**
+     * The bytes that are the parameters to pass to the constructor.
+     */
+    bytes constructorParameters = 9;
+
+    /**
+     * The shard in which this contract is created.
+     */
+    ShardID shardID = 10;
+
+    /**
+     * The realm in which this contract is created.
+     */
+    RealmID realmID = 11;
+
+    /**
+     * If realmID is specified, then this the admin key for that realm.
+     */
+    Key newRealmAdminKey = 12 [deprecated = true];
+
+    /**
+     * The memo associated with this contract.
+     */
+    string memo = 13;
+
+    /**
+     * The maximum number of tokens that this contract can be automatically associated with.
+     */
+    int32 max_automatic_token_associations = 14;
+
+    /**
+     * An account to charge for auto-renewal of this contract.
+     */
+    AccountID auto_renew_account_id = 15;
+
+    oneof staked_id {
+        /**
+         * ID of the account to which this contract is staking.
+         */
+        AccountID staked_account_id = 16;
+
+        /**
+         * ID of the node this contract is staked to.
+         */
+        int64 staked_node_id = 17;
+    }
+
+    /**
+     * If set to the sentinel value of -1, then this contract declines receiving a staking reward.
+     */
+    bool decline_reward = 18;
+}
+

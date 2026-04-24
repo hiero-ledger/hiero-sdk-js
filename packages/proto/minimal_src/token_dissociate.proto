@@ -1,0 +1,29 @@
+/**
+ * # Token Dissociate
+ * Dissociate tokens from an account.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+
+/**
+ * Dissociates the provided account with the provided tokens.
+ */
+message TokenDissociateTransactionBody {
+    /**
+     * The account to be dissociated from the provided tokens.
+     */
+    AccountID account = 1;
+
+    /**
+     * The tokens to be dissociated from the provided account.
+     */
+    repeated TokenID tokens = 2;
+}
+

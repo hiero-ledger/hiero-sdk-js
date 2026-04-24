@@ -1,0 +1,56 @@
+/**
+ * # Consensus Update Topic
+ * Update an existing consensus topic.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+import "duration.proto";
+import "timestamp.proto";
+
+/**
+ * Update a topic.
+ */
+message ConsensusUpdateTopicTransactionBody {
+    /**
+     * The topic to update.
+     */
+    TopicID topicID = 1;
+
+    /**
+     * Short publicly visible memo about the topic.
+     */
+    string memo = 2;
+
+    /**
+     * Effective consensus timestamp at (and after) which all consensus transactions and queries will expire.
+     */
+    Timestamp expirationTime = 4;
+
+    /**
+     * Access control for updateTopic/deleteTopic.
+     */
+    Key adminKey = 6;
+
+    /**
+     * Access control for submitMessage.
+     */
+    Key submitKey = 7;
+
+    /**
+     * The amount of time to extend the topic's lifetime automatically at expiration time.
+     */
+    Duration autoRenewPeriod = 8;
+
+    /**
+     * Optional account to be used at the topic's expiration time to extend the life of the topic.
+     */
+    AccountID autoRenewAccount = 9;
+}
+

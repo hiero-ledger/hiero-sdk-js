@@ -71,6 +71,7 @@ tasks:
         desc: "Compile committed protos to JS/TS (no download)"
         cmds:
             - task "build:standalone"
+            - task "build:minimal:transactions"
 
     build:dev:
         desc: "Build and globally link @hiero-ledger/proto for local dev"
@@ -88,6 +89,14 @@ tasks:
             - task: lint
             - npx babel src -d lib
             - npx copyfiles -u 1 src/index.d.ts src/proto.d.ts lib/
+
+    build:minimal:transactions:
+        desc: "Generate individual JS files for each transaction proto file"
+        cmds:
+            - rm -rf lib/minimal
+            - node scripts/build-minimal-transactions.js
+            - npx copyfiles -u 1 "src/minimal/*.d.ts" lib/ > /dev/null
+            - npx babel src/minimal -d lib/minimal
 
     clean:
         cmds:
@@ -115,7 +124,7 @@ tasks:
 
     "lint:js":
         cmds:
-            - npx eslint --fix "src/*.js"
+            - npx eslint --fix "src/proto.js"
 
     "test:release":
         deps:

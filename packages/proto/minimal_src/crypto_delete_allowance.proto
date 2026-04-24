@@ -1,0 +1,44 @@
+/**
+ * # Crypto Delete Allowance
+ * Delete allowances for spenders to transfer HBAR or tokens.
+ */
+syntax = "proto3";
+
+package proto;
+
+// SPDX-License-Identifier: Apache-2.0
+option java_package = "com.hederahashgraph.api.proto.java";
+option java_multiple_files = true;
+
+import "basic_types.proto";
+
+/**
+ * Deletes one or more non-fungible approved allowances from an owner's account.
+ */
+message CryptoDeleteAllowanceTransactionBody {
+    /**
+     * List of NFT allowances to be deleted.
+     */
+    repeated NftRemoveAllowance nftAllowances = 1;
+}
+
+/**
+ * Nft allowance to be removed on an owner account.
+ */
+message NftRemoveAllowance {
+    /**
+     * The token that the allowance pertains to.
+     */
+    TokenID token_id = 1;
+
+    /**
+     * The account that owns the NFT.
+     */
+    AccountID owner = 2;
+
+    /**
+     * List of serial numbers to remove allowances from.
+     */
+    repeated int64 serial_numbers = 3;
+}
+
