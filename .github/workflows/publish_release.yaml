@@ -490,7 +490,7 @@ jobs:
       # Publish proto artifact
       - name: Download HL Proto Package Artifact
         if: ${{ needs.validate-release.outputs.hiero-proto-publish-required == 'true' }}
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: hl-proto-package
           path: packages/proto
@@ -504,7 +504,7 @@ jobs:
       # Publish cryptography artifact
       - name: Download HL Crypto Package Artifact
         if: ${{ needs.validate-release.outputs.hiero-crypto-publish-required == 'true' }}
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: hl-crypto-package
           path: packages/cryptography
@@ -518,7 +518,7 @@ jobs:
       # Publish SDK artifact
       - name: Download HL SDK Package Artifact
         if: ${{ needs.validate-release.outputs.hiero-sdk-publish-required == 'true' }}
-        uses: actions/download-artifact@37930b1c2abaa49bbe596cd826c3c89aef350131 # v7.0.0
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: hl-sdk-package
 
