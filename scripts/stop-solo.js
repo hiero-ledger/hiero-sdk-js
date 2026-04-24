@@ -4,10 +4,11 @@ import {
     SOLO_CLUSTER_NAME,
     SOLO_NAMESPACE,
     SOLO_DEPLOYMENT,
+    SOLO_GLOBAL_INSTALL_COMMAND,
     commandExists,
     clusterExists,
     killPortForwardProcesses,
-    runCommand,
+    runSoloCommand,
     log,
 } from "./solo-lib.js";
 
@@ -54,16 +55,15 @@ async function destroyServices() {
         return;
     }
 
-    if (!commandExists("npx")) {
-        log.error("npx not found. Please install Node.js and try again.");
+    if (!commandExists("solo")) {
+        log.error("Solo CLI is not available globally");
+        log.info(`Please run '${SOLO_GLOBAL_INSTALL_COMMAND}' and try again`);
         process.exit(1);
     }
 
     log.info("Destroying mirror node...");
-    const mirrorResult = await runCommand(
-        "npx",
+    const mirrorResult = await runSoloCommand(
         [
-            "solo",
             "mirror",
             "node",
             "destroy",
@@ -82,10 +82,8 @@ async function destroyServices() {
     }
 
     log.info("Destroying consensus network...");
-    const networkResult = await runCommand(
-        "npx",
+    const networkResult = await runSoloCommand(
         [
-            "solo",
             "consensus",
             "network",
             "destroy",
@@ -122,7 +120,7 @@ async function main() {
     console.log("");
     log.info("Infrastructure preserved (cluster, config, images)");
     console.log("");
-    log.info("To restart services: task solo:start");
+    log.info("To restart services: task solo:resume");
     log.info("To teardown all:     task solo:teardown");
     console.log("");
 }

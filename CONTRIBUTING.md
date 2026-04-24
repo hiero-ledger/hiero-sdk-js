@@ -67,27 +67,32 @@ For complete system requirements, see the [official Solo documentation](https://
    task install
    ```
 
-2. **Setup Solo local network:**
+2. **Install Solo CLI globally:**
+   ```bash
+   npm install -g @hashgraph/solo@latest
+   ```
+
+3. **Setup Solo local network:**
    ```bash
    # Single node setup (default, requires 12 GB RAM)
    task solo:setup
-   
+
    # OR dual node setup (requires 24 GB RAM, needed for DAB tests)
-   task solo:setup:dual-node
+   task solo:setup -- --num-nodes 2
    ```
-   
+
    This will automatically create a local Kubernetes-based network with:
    - Consensus node(s)
    - Mirror node services
    - A dedicated ECDSA test account
    - Auto-generated `.env` file
 
-3. **Run integration tests:**
+4. **Run integration tests:**
    ```bash
    task test:integration
    ```
 
-4. **Teardown when done:**
+5. **Teardown when done:**
    ```bash
    task solo:teardown
    ```

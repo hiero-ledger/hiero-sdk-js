@@ -138,8 +138,9 @@ export default class AccountInfoQuery extends Query {
      * @returns {Promise<AccountInfo>}
      */
     _mapResponse(response, _nodeAccountId, _request) {
-        void _nodeAccountId;
-        void _request;
+        // Removed unused parameters
+        // void _nodeAccountId;
+        // void _request;
 
         const info = /** @type {HieroProto.proto.ICryptoGetInfoResponse} */ (
             response.cryptoGetInfo
@@ -185,5 +186,8 @@ export default class AccountInfoQuery extends Query {
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/unbound-method
-QUERY_REGISTRY.set("cryptoGetInfo", AccountInfoQuery._fromProtobuf);
+QUERY_REGISTRY.set(
+    "cryptoGetInfo",
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    AccountInfoQuery._fromProtobuf,
+);

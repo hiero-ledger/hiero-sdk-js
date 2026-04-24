@@ -2123,7 +2123,7 @@ export default class Transaction extends Executable {
      * @returns {[Status, ExecutionState]}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _shouldRetry(request, response) {
+    _getStatusAndExecutionState(request, response) {
         const { nodeTransactionPrecheckCode } = response;
 
         // Get the node precheck code, and convert it into an SDK `Status`

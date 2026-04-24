@@ -21,6 +21,12 @@ import { convertAmountToLong } from "../util.js";
  */
 
 /**
+ * @typedef {import("../hooks/HookCall.js").default} HookCall
+ * @typedef {import("../hooks/FungibleHookCall.js").default} FungibleHookCall
+ * @typedef {import("../hooks/NftHookCall.js").default} NftHookCall
+ */
+
+/**
  * @typedef {object} TransferTokensInput
  * @property {TokenId | string} tokenId
  * @property {AccountId | string} accountId
@@ -106,6 +112,7 @@ export default class AbstractTokenTransferTransaction extends Transaction {
      * @param {number | Long | BigNumber | bigint} amount
      * @param {boolean} isApproved
      * @param {number | null} expectedDecimals
+     * @param {FungibleHookCall} [hookCall]
      * @returns {this}
      */
     _addTokenTransfer(
@@ -114,6 +121,7 @@ export default class AbstractTokenTransferTransaction extends Transaction {
         amount,
         isApproved,
         expectedDecimals,
+        hookCall,
     ) {
         this._requireNotFrozen();
 
@@ -140,9 +148,10 @@ export default class AbstractTokenTransferTransaction extends Transaction {
             new TokenTransfer({
                 tokenId,
                 accountId,
-                expectedDecimals: expectedDecimals,
+                expectedDecimals,
                 amount,
                 isApproved,
+                hookCall,
             }),
         );
 
@@ -165,6 +174,8 @@ export default class AbstractTokenTransferTransaction extends Transaction {
      * @param {AccountId | string | Long | number} senderAccountIdOrSerialNumber
      * @param {AccountId | string} receiverAccountIdOrSenderAccountId
      * @param {(AccountId | string)=} receiver
+     * @param {NftHookCall=} senderHookCall
+     * @param {NftHookCall=} receiverHookCall
      * @returns {this}
      */
     _addNftTransfer(
@@ -173,6 +184,8 @@ export default class AbstractTokenTransferTransaction extends Transaction {
         senderAccountIdOrSerialNumber,
         receiverAccountIdOrSenderAccountId,
         receiver,
+        senderHookCall,
+        receiverHookCall,
     ) {
         this._requireNotFrozen();
 
@@ -263,6 +276,8 @@ export default class AbstractTokenTransferTransaction extends Transaction {
                 senderAccountId,
                 receiverAccountId,
                 isApproved,
+                senderHookCall,
+                receiverHookCall,
             }),
         );
 
