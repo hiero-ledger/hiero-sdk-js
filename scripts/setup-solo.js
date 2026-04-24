@@ -11,6 +11,7 @@ import {
     SOLO_CLUSTER_SETUP_NAMESPACE,
     SOLO_DEPLOYMENT,
     SOLO_DIR,
+    SOLO_GLOBAL_INSTALL_COMMAND,
     ENV_FILE,
     commandExists,
     soloInstalled,
@@ -25,6 +26,7 @@ import {
     setupPortForwarding,
     sleep,
     runCommand,
+    runSoloCommand,
     log,
 } from "./solo-lib.js";
 
@@ -170,8 +172,8 @@ async function checkDependencies() {
         missingDependencies.push("kubectl");
     }
 
-    if (!commandExists("npx")) {
-        missingDependencies.push("npx");
+    if (!commandExists("solo")) {
+        missingDependencies.push("solo");
     }
 
     if (missingDependencies.length > 0) {
@@ -192,10 +194,8 @@ async function checkDependencies() {
                         "  - kubectl: https://kubernetes.io/docs/tasks/tools/",
                     );
                     break;
-                case "npx":
-                    console.log(
-                        "  - npx: comes with Node.js (npm install -g npx)",
-                    );
+                case "solo":
+                    console.log(`  - solo: ${SOLO_GLOBAL_INSTALL_COMMAND}`);
                     break;
                 default:
                     break;
@@ -207,10 +207,8 @@ async function checkDependencies() {
 
     log.info("Checking if Solo is installed...");
     if (!(await soloInstalled())) {
-        log.error("Solo is not installed as a project dependency");
-        log.info(
-            "Please run 'task install' or 'pnpm install' first to install project dependencies including Solo",
-        );
+        log.error("Solo CLI is not available globally");
+        log.info(`Please run '${SOLO_GLOBAL_INSTALL_COMMAND}' and try again`);
         process.exit(1);
     }
 
@@ -257,10 +255,8 @@ async function softCleanupPrevious() {
     }
 
     log.info("Destroying mirror node...");
-    const mirrorResult = await runCommand(
-        "npx",
+    const mirrorResult = await runSoloCommand(
         [
-            "solo",
             "mirror",
             "node",
             "destroy",
@@ -279,10 +275,8 @@ async function softCleanupPrevious() {
     }
 
     log.info("Destroying consensus network...");
-    const networkResult = await runCommand(
-        "npx",
+    const networkResult = await runSoloCommand(
         [
-            "solo",
             "consensus",
             "network",
             "destroy",
@@ -321,7 +315,7 @@ async function initializeSolo() {
         log.info("Solo already initialized, skipping initialization");
     } else {
         log.info("Initializing Solo...");
-        await runCommand("npx", ["solo", "init"]);
+        await runSoloCommand(["init"]);
         log.success("Solo initialized");
     }
 }
@@ -329,9 +323,8 @@ async function initializeSolo() {
 async function setupDeployment(numNodes) {
     log.info("Setting up Solo deployment...");
 
-    const deploymentList = await runCommand(
-        "npx",
-        ["solo", "deployment", "config", "list", "--dev"],
+    const deploymentList = await runSoloCommand(
+        ["deployment", "config", "list", "--dev"],
         { allowFailure: true, captureOutput: true },
     );
 
@@ -346,8 +339,7 @@ async function setupDeployment(numNodes) {
     }
 
     log.info("Connecting to cluster...");
-    await runCommand("npx", [
-        "solo",
+    await runSoloCommand([
         "cluster-ref",
         "config",
         "connect",
@@ -359,8 +351,7 @@ async function setupDeployment(numNodes) {
     ]);
 
     log.info(`Creating deployment: ${SOLO_DEPLOYMENT}...`);
-    await runCommand("npx", [
-        "solo",
+    await runSoloCommand([
         "deployment",
         "config",
         "create",
@@ -372,8 +363,7 @@ async function setupDeployment(numNodes) {
     ]);
 
     log.info(`Attaching cluster to deployment (${numNodes} node(s))...`);
-    await runCommand("npx", [
-        "solo",
+    await runSoloCommand([
         "deployment",
         "cluster",
         "attach",
@@ -387,8 +377,7 @@ async function setupDeployment(numNodes) {
     ]);
 
     log.info("Setting up cluster...");
-    await runCommand("npx", [
-        "solo",
+    await runSoloCommand([
         "cluster-ref",
         "config",
         "setup",
@@ -414,8 +403,7 @@ async function deployNetwork({ numNodes, localBuildPath }) {
         log.info("Consensus keys already exist, skipping key generation");
     } else {
         log.info("Generating consensus keys...");
-        await runCommand("npx", [
-            "solo",
+        await runSoloCommand([
             "keys",
             "consensus",
             "generate",
@@ -430,8 +418,7 @@ async function deployNetwork({ numNodes, localBuildPath }) {
     log.info(
         `Deploying consensus network (${numNodes} node(s): ${nodeIds})...`,
     );
-    await runCommand("npx", [
-        "solo",
+    await runSoloCommand([
         "consensus",
         "network",
         "deploy",
@@ -445,8 +432,7 @@ async function deployNetwork({ numNodes, localBuildPath }) {
     log.info("Setting up consensus nodes...");
     if (localBuildPath) {
         log.info(`Using local build path: ${localBuildPath}`);
-        await runCommand("npx", [
-            "solo",
+        await runSoloCommand([
             "consensus",
             "node",
             "setup",
@@ -462,8 +448,7 @@ async function deployNetwork({ numNodes, localBuildPath }) {
         log.info(
             `Using consensus node version: ${process.env.CONSENSUS_NODE_VERSION}`,
         );
-        await runCommand("npx", [
-            "solo",
+        await runSoloCommand([
             "consensus",
             "node",
             "setup",
@@ -476,8 +461,7 @@ async function deployNetwork({ numNodes, localBuildPath }) {
     }
 
     log.info("Starting consensus nodes...");
-    await runCommand("npx", [
-        "solo",
+    await runSoloCommand([
         "consensus",
         "node",
         "start",
@@ -493,8 +477,7 @@ async function deployNetwork({ numNodes, localBuildPath }) {
 
 async function deployMirror() {
     log.info("Deploying mirror node services...");
-    await runCommand("npx", [
-        "solo",
+    await runSoloCommand([
         "mirror",
         "node",
         "add",
@@ -602,11 +585,11 @@ async function main() {
     log.info("To run integration tests:");
     log.info("  npm run test:integration");
     console.log("");
-    log.info("To stop services (fast, keeps cluster/images):");
-    log.info("  task solo:stop");
+    log.info("To pause services:");
+    log.info("  task solo:pause");
     console.log("");
-    log.info("To restart quickly (soft cleanup):");
-    log.info("  task solo:start");
+    log.info("To resume services:");
+    log.info("  task solo:resume");
     console.log("");
     log.info("To fully tear down the cluster:");
     log.info("  task solo:teardown");

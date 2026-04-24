@@ -221,7 +221,15 @@ For contributors and developers who want to run integration tests locally, we pr
     task install
     ```
 
-2. **Run Solo setup (cluster + services):**
+2. **Install Solo CLI globally:**
+
+    ```bash
+    npm install -g @hashgraph/solo@latest
+    ```
+
+    `task install` does not install Solo. All local Solo workflows in this repository expect the global `solo` binary.
+
+3. **Run Solo setup (cluster + services):**
 
     ```bash
     # Single node setup (default, requires 12 GB RAM)
@@ -245,7 +253,7 @@ For contributors and developers who want to run integration tests locally, we pr
     - First setup: ~10 minutes (image pulls + deployment)
     - Resume after pause: ~4 minutes
 
-3. **(Required for dynamic address book tests) Configure hosts:**
+4. **(Required for dynamic address book tests) Configure hosts:**
 
     Before running dynamic address book tests with dual-node setup, add Kubernetes service names to your `/etc/hosts` file:
 
@@ -258,13 +266,13 @@ For contributors and developers who want to run integration tests locally, we pr
 
     **Note:** This is only required for dynamic address book tests with dual-node setup. Skip if you're running single-node or other integration tests.
 
-4. **Run integration tests:**
+5. **Run integration tests:**
 
     ```bash
     task test:integration
     ```
 
-5. **Pause or fully tear down when done:**
+6. **Pause or fully tear down when done:**
 
     ```bash
     # Pause: destroys mirror node, stops consensus node, stops cluster
@@ -298,7 +306,8 @@ Before setting up Solo, ensure you have:
 -   Docker Desktop (or Docker Engine)
 -   Kind (Kubernetes in Docker)
 -   kubectl
--   Node.js v18+ (comes with npm/npx)
+-   Node.js v18+ (comes with npm)
+-   Solo CLI installed globally: `npm install -g @hashgraph/solo@latest`
 
 See the [Solo Setup Guide](./manual/SOLO_SETUP.md#prerequisites) for installation instructions.
 
