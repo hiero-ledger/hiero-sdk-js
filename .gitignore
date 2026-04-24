@@ -30,3 +30,4 @@ examples/address-book.proto.bin
 #ds store
 .DS_Store
 sonar-metrics.json
+sonar-metrics.json
