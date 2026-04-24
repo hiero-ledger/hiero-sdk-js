@@ -217,6 +217,16 @@ export default class RequestType {
                 return "LambdaSStore";
             case RequestType.HookDispatch:
                 return "HookDispatch";
+            case RequestType.HookStore:
+                return "HookStore";
+            case RequestType.LedgerIdPublication:
+                return "LedgerIdPublication";
+            case RequestType.RegisteredNodeCreate:
+                return "RegisteredNodeCreate";
+            case RequestType.RegisteredNodeUpdate:
+                return "RegisteredNodeUpdate";
+            case RequestType.RegisteredNodeDelete:
+                return "RegisteredNodeDelete";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -423,6 +433,16 @@ export default class RequestType {
                 return RequestType.LambdaSStore;
             case 110:
                 return RequestType.HookDispatch;
+            case 111:
+                return RequestType.HookStore;
+            case 112:
+                return RequestType.LedgerIdPublication;
+            case 113:
+                return RequestType.RegisteredNodeCreate;
+            case 114:
+                return RequestType.RegisteredNodeUpdate;
+            case 115:
+                return RequestType.RegisteredNodeDelete;
         }
 
         throw new Error(
@@ -936,3 +956,28 @@ RequestType.LambdaSStore = new RequestType(109);
  * hook dispatch
  */
 RequestType.HookDispatch = new RequestType(110);
+
+/**
+ * Update one or more storage slots in an EVM hook.
+ */
+RequestType.HookStore = new RequestType(111);
+
+/**
+ * (Internal-only) Publish a new ledger id and chain-of-trust key.
+ */
+RequestType.LedgerIdPublication = new RequestType(112);
+
+/**
+ * Create a registered node
+ */
+RequestType.RegisteredNodeCreate = new RequestType(113);
+
+/**
+ * Update a registered node
+ */
+RequestType.RegisteredNodeUpdate = new RequestType(114);
+
+/**
+ * Delete a registered node
+ */
+RequestType.RegisteredNodeDelete = new RequestType(115);

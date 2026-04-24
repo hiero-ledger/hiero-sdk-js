@@ -298,6 +298,7 @@ describe("Node Update Integration Tests", function () {
         expect(testReceipt.status).to.equal(Status.Success);
         // Verify address book has been updated
         const network = client.network;
+
         const hasNewNodeAccount = Object.values(network).some(
             (accountId) => accountId.toString() === newNodeAccountID.toString(),
         );
