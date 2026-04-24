@@ -8,6 +8,7 @@ import {
     clusterExists,
     createNodeIdList,
     runCommand,
+    runSoloCommand,
     setupPortForwarding,
     sleep,
     startKindClusterContainers,
@@ -42,9 +43,9 @@ function parseArgs(argv) {
 }
 
 async function checkPrerequisites() {
-    if (!commandExists("npx") || !commandExists("kubectl")) {
+    if (!commandExists("solo") || !commandExists("kubectl")) {
         throw new Error(
-            "Missing required dependency: npx and kubectl are required",
+            "Missing required dependency: solo and kubectl are required",
         );
     }
 
@@ -183,17 +184,8 @@ async function waitForSoloNetworkPods(numNodes) {
 async function startConsensusNodesOnce(numNodes) {
     log.info("Starting consensus nodes...");
 
-    const defaultStart = await runCommand(
-        "npx",
-        [
-            "solo",
-            "consensus",
-            "node",
-            "start",
-            "--deployment",
-            deploymentName,
-            "--dev",
-        ],
+    const defaultStart = await runSoloCommand(
+        ["consensus", "node", "start", "--deployment", deploymentName, "--dev"],
         { allowFailure: true },
     );
 
@@ -207,10 +199,8 @@ async function startConsensusNodesOnce(numNodes) {
         "Consensus node start without explicit node IDs failed, retrying with explicit node IDs...",
     );
 
-    const explicitStart = await runCommand(
-        "npx",
+    const explicitStart = await runSoloCommand(
         [
-            "solo",
             "consensus",
             "node",
             "start",
@@ -258,8 +248,7 @@ async function startConsensusNodesWithRetry(numNodes) {
 
 async function addMirrorNode() {
     log.info("Adding mirror node...");
-    await runCommand("npx", [
-        "solo",
+    await runSoloCommand([
         "mirror",
         "node",
         "add",

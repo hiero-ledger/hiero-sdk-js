@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # v2.83.0 - beta.3
 
+### Security
+- Bumped `protobufjs` from 8.0.0 to 8.0.1 to address a vulnerability in the previous version. [#3941](https://github.com/hiero-ledger/hiero-sdk-js/pull/3941)
+
+# v2.83.0 - beta.2
+
+### Fixed
+- Support `accessList` to have the proper type that is required by the EIP
+
+# v2.83.0 - beta.1
+
 ### Added
 - Support for Hiero Hooks [#3911](https://github.com/hiero-ledger/hiero-sdk-js/pull/3911)
 
