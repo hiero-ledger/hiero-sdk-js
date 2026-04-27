@@ -25,6 +25,7 @@ describe("AccountCreate", function () {
         env = await IntegrationTestEnv.new();
     });
 
+    // eslint-disable-next-line vitest/no-disabled-tests
     describe.skip("AccountCreate with EVM Hook", function () {
         let contractId;
 
