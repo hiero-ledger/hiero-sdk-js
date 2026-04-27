@@ -7,7 +7,9 @@ import Long from "long";
 import CACHE from "../Cache.js";
 
 /**
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("./TransactionReceipt.js").default} TransactionReceipt
  * @typedef {import("./TransactionRecord.js").default} TransactionRecord
  */

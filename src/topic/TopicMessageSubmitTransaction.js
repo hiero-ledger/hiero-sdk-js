@@ -25,6 +25,8 @@ import * as util from "../util.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel,MirrorChannel>} Client
  * @typedef {import("../token/CustomFixedFee.js").default} CustomFixedFee
  * @typedef {import("../account/AccountId.js").default} AccountId
  * @typedef {import("../transaction/TransactionResponse.js").default} TransactionResponse
@@ -292,7 +294,7 @@ export default class TopicMessageSubmitTransaction extends Transaction {
      * Will use the `Client`, if available, to generate a default Transaction ID and select 1/3
      * nodes to prepare this transaction for.
      *
-     * @param {?import("../client/Client.js").default<Channel, *>} client
+     * @param {?Client} client
      * @returns {this}
      */
     freezeWith(client) {
@@ -373,7 +375,7 @@ export default class TopicMessageSubmitTransaction extends Transaction {
     }
 
     /**
-     * @param {import("../client/Client.js").default<Channel, *>} client
+     * @param {Client} client
      * @param {number=} requestTimeout
      * @returns {Promise<TransactionResponse>}
      */
@@ -382,7 +384,7 @@ export default class TopicMessageSubmitTransaction extends Transaction {
     }
 
     /**
-     * @param {import("../client/Client.js").default<Channel, *>} client
+     * @param {Client} client
      * @param {number=} requestTimeout
      * @returns {Promise<TransactionResponse[]>}
      */
