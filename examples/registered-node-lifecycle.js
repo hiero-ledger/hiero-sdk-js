@@ -111,19 +111,24 @@ async function waitForRegisteredNode(client, registeredNodeId) {
 
 async function main() {
     if (
-        process.env.OPERATOR_ID == null ||
-        process.env.OPERATOR_KEY == null ||
+        process.env.GENESIS_OPERATOR_ID == null ||
+        process.env.GENESIS_OPERATOR_KEY == null ||
         process.env.HEDERA_NETWORK == null
     ) {
         throw new Error(
-            "Environment variables OPERATOR_ID, OPERATOR_KEY, and HEDERA_NETWORK are required.",
+            "Environment variables GENESIS_OPERATOR_ID, GENESIS_OPERATOR_KEY, and HEDERA_NETWORK are required.",
         );
     }
 
     const network = process.env.HEDERA_NETWORK;
-    const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
-    const operatorKey = privateKeyFromEnv("OPERATOR_KEY");
-    const client = Client.forName(network).setOperator(operatorId, operatorKey);
+    const genesisOperatorId = AccountId.fromString(
+        process.env.GENESIS_OPERATOR_ID,
+    );
+    const genesisOperatorKey = privateKeyFromEnv("GENESIS_OPERATOR_KEY");
+    const client = Client.forName(network).setOperator(
+        genesisOperatorId,
+        genesisOperatorKey,
+    );
 
     const registeredNodeAdminKey = PrivateKey.generateED25519();
     let registeredNodeId = null;
