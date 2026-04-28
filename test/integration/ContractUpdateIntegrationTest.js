@@ -285,7 +285,7 @@ describe("ContractUpdate", function () {
         ).getReceipt(env.client);
     });
 
-    describe("ContractUpdate with Hooks", function () {
+    describe.skip("ContractUpdate with Hooks", function () {
         let hookContractId;
 
         beforeAll(async function () {

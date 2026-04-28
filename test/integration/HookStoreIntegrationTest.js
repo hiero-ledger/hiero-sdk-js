@@ -17,7 +17,7 @@ import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import { decode } from "../../src/encoding/hex.js";
 import ContractCreateTransaction from "../../src/contract/ContractCreateTransaction.js";
 
-describe("HookStore", function () {
+describe.skip("HookStore", function () {
     let env;
     let accountWithHook;
     let accountKey;

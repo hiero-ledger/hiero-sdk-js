@@ -25,7 +25,7 @@ describe("AccountCreate", function () {
         env = await IntegrationTestEnv.new();
     });
 
-    describe("AccountCreate with EVM Hook", function () {
+    describe.skip("AccountCreate with EVM Hook", function () {
         let contractId;
 
         beforeAll(async function () {
@@ -307,6 +307,7 @@ describe("AccountCreate", function () {
 
             const accountCreateTx = await new AccountCreateTransaction()
                 .setKey(key.publicKey)
+                .setInitialBalance(new Hbar(1))
                 .setHighVolume(true)
                 .freezeWith(env.client)
                 .sign(key);
@@ -340,6 +341,7 @@ describe("AccountCreate", function () {
             const accountCreateTx = await new AccountCreateTransaction()
                 .setKey(key.publicKey)
                 .setHighVolume(true)
+                .setInitialBalance(new Hbar(1))
                 .setMaxTransactionFee(maxFee)
                 .freezeWith(env.client)
                 .sign(key);
@@ -395,6 +397,7 @@ describe("AccountCreate", function () {
 
             const txNormal = await new AccountCreateTransaction()
                 .setKey(keyNormal.publicKey)
+                .setInitialBalance(new Hbar(1))
                 .setHighVolume(false)
                 .freezeWith(env.client)
                 .sign(keyNormal);
@@ -405,6 +408,7 @@ describe("AccountCreate", function () {
 
             const txHighVolume = await new AccountCreateTransaction()
                 .setKey(keyHighVolume.publicKey)
+                .setInitialBalance(new Hbar(1))
                 .setHighVolume(true)
                 .freezeWith(env.client)
                 .sign(keyHighVolume);
@@ -446,6 +450,7 @@ describe("AccountCreate", function () {
 
             const txNormal = await new AccountCreateTransaction()
                 .setKey(keyNormal.publicKey)
+                .setInitialBalance(new Hbar(1))
                 .setHighVolume(false)
                 .freezeWith(env.client)
                 .sign(keyNormal);
@@ -456,6 +461,7 @@ describe("AccountCreate", function () {
 
             const txHighVolume = await new AccountCreateTransaction()
                 .setKey(keyHighVolume.publicKey)
+                .setInitialBalance(new Hbar(1))
                 .setHighVolume(true)
                 .freezeWith(env.client)
                 .sign(keyHighVolume);

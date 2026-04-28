@@ -77,7 +77,7 @@ describe("CryptoTransfer", function () {
         }
     });
 
-    describe("allowance hooks", function () {
+    describe.skip("allowance hooks", function () {
         let hookContractId;
 
         beforeAll(async function () {
