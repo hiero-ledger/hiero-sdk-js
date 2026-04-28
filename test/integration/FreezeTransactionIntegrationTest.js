@@ -8,7 +8,7 @@ import {
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 
-describe.skip("FreezeTransaction", function () {
+describe("FreezeTransaction", function () {
     let client;
 
     beforeAll(async function () {
