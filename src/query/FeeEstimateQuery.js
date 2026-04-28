@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: Apache-2.0
-import Query from "./Query.js";
 import FeeEstimateMode from "./enums/FeeEstimateMode.js";
 import FeeEstimateResponse from "./FeeEstimateResponse.js";
 import NetworkFee from "./NetworkFee.js";
@@ -9,7 +8,6 @@ import * as HieroProto from "@hiero-ledger/proto";
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
- * @typedef {import("../channel/MirrorChannel.js").MirrorError} MirrorError
  * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../transaction/Transaction.js").default} Transaction
  * @typedef {import("./FeeEstimateResponse.js").FeeEstimateResponseJSON} FeeEstimateResponseJSON
@@ -39,12 +37,14 @@ const MAX_BACKOFF_MS = 8000;
  *
  * Communicates with the mirror node REST API
  * (`POST /api/v1/network/fees`) — not the consensus node gRPC API. Per
- * HIP-1261, transactions are automatically frozen if not already frozen when
- * `execute()` is called.
+ * HIP-1261 this class is modeled after {@link MirrorNodeContractQuery} (a
+ * plain class) rather than the gRPC `Query` base, since the gRPC features
+ * (node selection, query payment, transaction-id signing) do not apply.
  *
- * @augments {Query<FeeEstimateResponse>}
+ * Per HIP-1261, transactions are automatically frozen if not already frozen
+ * when `execute()` is called.
  */
-export default class FeeEstimateQuery extends Query {
+export default class FeeEstimateQuery {
     /**
      * @param {object} [props]
      * @param {typeof FeeEstimateMode.STATE | typeof FeeEstimateMode.INTRINSIC} [props.mode]
@@ -52,8 +52,6 @@ export default class FeeEstimateQuery extends Query {
      * @param {number} [props.highVolumeThrottle]
      */
     constructor(props = {}) {
-        super();
-
         /**
          * @private
          * @type {number}
