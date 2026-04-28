@@ -365,7 +365,8 @@ export default class TransactionReceipt {
             children,
             duplicates,
             registeredNodeId:
-                receipt.registeredNodeId != null
+                receipt.registeredNodeId != null &&
+                !Long.fromValue(receipt.registeredNodeId).isZero()
                     ? Long.fromValue(receipt.registeredNodeId)
                     : null,
             nodeId: receipt.nodeId != null ? receipt.nodeId : null,
