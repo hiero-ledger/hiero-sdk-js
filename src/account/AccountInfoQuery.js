@@ -3,8 +3,6 @@
 import Query, { QUERY_REGISTRY } from "../query/Query.js";
 import AccountId from "./AccountId.js";
 import AccountInfo from "./AccountInfo.js";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import Hbar from "../Hbar.js";
 
 /**
  * @namespace proto
@@ -19,7 +17,9 @@ import Hbar from "../Hbar.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
+ * @typedef {import("../Hbar.js").default} Hbar
  */
 
 /**
@@ -106,7 +106,7 @@ export default class AccountInfoQuery extends Query {
 
     /**
      * @override
-     * @param {import("../client/Client.js").default<Channel, *>} client
+     * @param {Client} client
      * @returns {Promise<Hbar>}
      */
     async getCost(client) {
@@ -133,12 +133,15 @@ export default class AccountInfoQuery extends Query {
      * @override
      * @internal
      * @param {HieroProto.proto.IResponse} response
-     * @param {AccountId} nodeAccountId
-     * @param {HieroProto.proto.IQuery} request
+     * @param {AccountId} _nodeAccountId
+     * @param {HieroProto.proto.IQuery} _request
      * @returns {Promise<AccountInfo>}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _mapResponse(response, nodeAccountId, request) {
+    _mapResponse(response, _nodeAccountId, _request) {
+        // Removed unused parameters
+        // void _nodeAccountId;
+        // void _request;
+
         const info = /** @type {HieroProto.proto.ICryptoGetInfoResponse} */ (
             response.cryptoGetInfo
         );
@@ -183,5 +186,8 @@ export default class AccountInfoQuery extends Query {
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/unbound-method
-QUERY_REGISTRY.set("cryptoGetInfo", AccountInfoQuery._fromProtobuf);
+QUERY_REGISTRY.set(
+    "cryptoGetInfo",
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    AccountInfoQuery._fromProtobuf,
+);

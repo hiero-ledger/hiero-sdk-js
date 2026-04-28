@@ -13,6 +13,8 @@ export default defineConfig({
         watch: false,
         globals: true,
         environment: "node",
+        fileParallelism: false,
+        isolate: false,
         include: ["test/integration/dual-mode/**/*.js"],
         exclude: [
             "test/integration/client/*",
@@ -28,7 +30,7 @@ export default defineConfig({
             include: ["src/**/*.js"],
             provider: "v8",
             reporter: ["text-summary", "lcov"],
-            reportsDirectory: "./coverage",
+            reportsDirectory: "./coverage/node-integration-dual-mode",
         },
     },
     define: {

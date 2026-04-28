@@ -125,8 +125,8 @@ export default class CostQuery extends QueryBase {
      * @returns {[Status, ExecutionState]}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _shouldRetry(request, response) {
-        return this._query._shouldRetry(request, response);
+    _getStatusAndExecutionState(request, response) {
+        return this._query._getStatusAndExecutionState(request, response);
     }
 
     /**

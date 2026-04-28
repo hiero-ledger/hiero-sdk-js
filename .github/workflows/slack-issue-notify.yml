@@ -1,0 +1,99 @@
+name: 'Slack Issue Notification'
+on:
+  issues:
+    types:
+      - opened
+
+env:
+  js-sdk-channel-id: C0958RN2ZTR
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+  issues: read
+
+jobs:
+  notify-slack:
+    name: Notify Slack
+    if: ${{ github.event.issue.user.login != 'dependabot[bot]' && github.event.issue.user.login != 'codacy-production[bot]' && github.event.issue.user.login != 'lfdt-bot' && github.event.issue.user.login != 'codecov[bot]' }}
+    runs-on: hiero-client-sdk-linux-medium
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
+        with:
+          egress-policy: audit
+
+      - name: Prepare issue description
+        id: desc
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: |
+          DESC=$(echo "$ISSUE_BODY" | sed 's/^[[:space:]]*//')
+          if [ -z "$DESC" ]; then
+            DESC="_No description provided._"
+          elif [ ${#DESC} -gt 300 ]; then
+            DESC="${DESC:0:300}..."
+          fi
+          {
+            echo "body<<EOFMULTI"
+            echo "$DESC"
+            echo "EOFMULTI"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Prepare labels
+        id: labels
+        env:
+          ISSUE_LABELS: ${{ join(github.event.issue.labels.*.name, ', ') }}
+        run: |
+          LABELS=$(echo "$ISSUE_LABELS" | sed 's/^[[:space:]]*//')
+          if [ -z "$LABELS" ]; then
+            LABELS="_None_"
+          fi
+          echo "list=$LABELS" >> "$GITHUB_OUTPUT"
+
+      - name: Send Slack Notification
+        uses: slackapi/slack-github-action@03ea5433c137af7c0495bc0cad1af10403fc800c # v3.0.2
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          payload: |
+            {
+              "channel": "${{ env.js-sdk-channel-id }}",
+              "text": "New issue opened: <${{ github.event.issue.html_url }}|${{ github.event.issue.title }}>",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": ":alert: *New GitHub Issue*\n*<${{ github.event.issue.html_url }}|${{ github.event.issue.title }}>*"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Author:*\n${{ github.event.issue.user.login }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Repository:*\n${{ github.repository }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Labels:*\n${{ steps.labels.outputs.list }}"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*Description:*\n${{ steps.desc.outputs.body }}"
+                  }
+                }
+              ]
+            }

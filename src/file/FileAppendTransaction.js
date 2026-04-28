@@ -25,7 +25,8 @@ import AccountId from "../account/AccountId.js";
 /**
  * @typedef {import("../PublicKey.js").default} PublicKey
  * @typedef {import("../channel/Channel.js").default} Channel
- * @typedef {import("../client/Client.js").default<Channel, *>} Client
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../transaction/TransactionResponse.js").default} TransactionResponse
  * @typedef {import("../schedule/ScheduleCreateTransaction.js").default} ScheduleCreateTransaction
  */
@@ -66,6 +67,13 @@ export default class FileAppendTransaction extends Transaction {
         this._maxChunks = 20;
 
         /**
+         * The default chunk size in bytes for file append operations.
+         *
+         * The network limits total transaction size (SignedTransaction) to 6144 bytes.
+         * Each Ed25519 signature adds ~102 bytes of overhead (pubKeyPrefix + signature + wrapping).
+         * With 4096-byte chunks, transactions fit within the limit for up to ~19 signatures.
+         * For files requiring more signers, callers should use setChunkSize() with a smaller value.
+         *
          * @private
          * @type {number}
          */
@@ -338,7 +346,7 @@ export default class FileAppendTransaction extends Transaction {
      * Will use the `Client`, if available, to generate a default Transaction ID and select 1/3
      * nodes to prepare this transaction for.
      *
-     * @param {?import("../client/Client.js").default<Channel, *>} client
+     * @param {?Client} client
      * @returns {this}
      */
     freezeWith(client) {
@@ -402,7 +410,7 @@ export default class FileAppendTransaction extends Transaction {
     }
 
     /**
-     * @param {import("../client/Client.js").default<Channel, *>} client
+     * @param {Client} client
      * @param {number=} requestTimeout
      * @returns {Promise<TransactionResponse>}
      */
@@ -411,7 +419,7 @@ export default class FileAppendTransaction extends Transaction {
     }
 
     /**
-     * @param {import("../client/Client.js").default<Channel, *>} client
+     * @param {Client} client
      * @param {number=} requestTimeout
      * @returns {Promise<TransactionResponse[]>}
      */

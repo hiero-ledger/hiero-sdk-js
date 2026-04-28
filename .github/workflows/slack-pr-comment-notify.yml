@@ -1,0 +1,38 @@
+name: 'Slack PR Comment Notification'
+on:
+  issue_comment:
+    types:
+      - created
+
+env:
+  js-sdk-channel-id: C0958RN2ZTR
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  notify-slack:
+    name: Notify Slack
+    if: ${{ github.event.issue.pull_request && github.event.comment.user.login != 'dependabot[bot]' && github.event.comment.user.login != 'codacy-production[bot]' && github.event.comment.user.login != 'lfdt-bot' && github.event.comment.user.login != 'codecov[bot]' }}
+    runs-on: hiero-client-sdk-linux-medium
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
+        with:
+          egress-policy: audit
+
+      - name: Send Slack Notification
+        uses: slackapi/slack-github-action@03ea5433c137af7c0495bc0cad1af10403fc800c # v3.0.2
+        with:
+          method: chat.postMessage
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+          payload: |
+            {
+              "channel": "${{ env.js-sdk-channel-id }}",
+              "text": ":speech_balloon: ${{ github.event.comment.user.login }} commented on ${{ github.event.issue.user.login }}'s PR <${{ github.event.issue.html_url }}|#${{ github.event.issue.number }}: ${{ github.event.issue.title }}>"
+            }

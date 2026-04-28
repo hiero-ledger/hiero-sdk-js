@@ -30,7 +30,8 @@ import SignableNodeTransactionBodyBytes from "./SignableNodeTransactionBodyBytes
  * @typedef {import("../schedule/ScheduleCreateTransaction.js").default} ScheduleCreateTransaction
  * @typedef {import("../PrivateKey.js").default} PrivateKey
  * @typedef {import("../channel/Channel.js").default} Channel
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../Signer.js").Signer} Signer
  */
 
@@ -73,6 +74,17 @@ const HIGH_VOLUME_CAPABLE_TRANSACTION_NAMES = new Set([
     "TokenAssociateTransaction",
     "TopicCreateTransaction",
 ]);
+
+/**
+ * @param {NonNullable<HieroProto.proto.TransactionBody["data"]>} transactionDataCase
+ * @returns {boolean}
+ */
+function isMultiTransactionIdType(transactionDataCase) {
+    return (
+        transactionDataCase === "fileAppend" ||
+        transactionDataCase === "consensusSubmitMessage"
+    );
+}
 
 /**
  * @type {Map<NonNullable<HieroProto.proto.TransactionBody["data"]>, (transactions: HieroProto.proto.ITransaction[], signedTransactions: HieroProto.proto.ISignedTransaction[], transactionIds: TransactionId[], nodeIds: AccountId[], bodies: HieroProto.proto.TransactionBody[]) => Transaction>}
@@ -467,7 +479,7 @@ export default class Transaction extends Executable {
      * @description Batchify method is used to mark a transaction as part of a batch transaction or make it so-called inner transaction.
      * The Transaction will be frozen and signed by the operator of the client.
      *
-     * @param {import("../client/Client.js").default<Channel, *>} client
+     * @param {Client} client
      * @param {Key} batchKey
      * @returns {Promise<this>}
      */
@@ -475,6 +487,147 @@ export default class Transaction extends Executable {
         this._requireNotFrozen();
         this.setBatchKey(batchKey);
         return await this.signWithOperator(client);
+    }
+
+    /**
+     * Validate transaction list shape and consistency.
+     *
+     * @private
+     * @param {NonNullable<HieroProto.proto.TransactionBody["data"]>} transactionDataCase
+     * @param {TransactionId[]} transactionIds
+     * @param {AccountId[]} nodeIds
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
+     * @returns {void}
+     */
+    static _validateTransactionBodies(
+        transactionDataCase,
+        transactionIds,
+        nodeIds,
+        bodies,
+    ) {
+        const hasNoTransactionIds = transactionIds.length === 0;
+        const hasNoBodies = bodies.length === 0;
+
+        if (hasNoTransactionIds || hasNoBodies) {
+            return;
+        }
+
+        const transactionCount = transactionIds.length;
+        const nodeCount = nodeIds.length;
+        const groupSize = nodeCount === 0 ? 1 : nodeCount;
+        const isChunkedTransactionType =
+            isMultiTransactionIdType(transactionDataCase);
+        const hasInvalidLogicalTransactionCount =
+            !isChunkedTransactionType && transactionCount !== 1;
+
+        if (nodeCount === 0) {
+            const hasUnexpectedBodyCountWithoutNodes =
+                bodies.length !== transactionCount;
+
+            if (
+                hasUnexpectedBodyCountWithoutNodes ||
+                hasInvalidLogicalTransactionCount
+            ) {
+                throw new Error("failed to validate transaction bodies");
+            }
+
+            return;
+        }
+
+        const expectedBodyCount = transactionCount * groupSize;
+        const hasUnexpectedBodyCount = bodies.length !== expectedBodyCount;
+
+        if (hasUnexpectedBodyCount || hasInvalidLogicalTransactionCount) {
+            throw new Error("failed to validate transaction bodies");
+        }
+
+        const ignoredFields = new Set();
+        ignoredFields.add("nodeAccountID");
+
+        for (
+            let transactionIndex = 0;
+            transactionIndex < transactionCount;
+            transactionIndex++
+        ) {
+            const rowStart = transactionIndex * nodeCount;
+            const referenceBody = bodies[rowStart];
+
+            for (let nodeIndex = 1; nodeIndex < nodeCount; nodeIndex++) {
+                if (
+                    !util.compare(
+                        referenceBody,
+                        bodies[rowStart + nodeIndex],
+                        ignoredFields,
+                    )
+                ) {
+                    throw new Error("failed to validate transaction bodies");
+                }
+            }
+        }
+
+        if (isChunkedTransactionType) {
+            Transaction._validateChunkedTransactionBodies(
+                transactionDataCase,
+                bodies,
+                groupSize,
+            );
+        }
+    }
+
+    /**
+     * Validate the invariant fields shared across chunk groups.
+     *
+     * @private
+     * @param {NonNullable<HieroProto.proto.TransactionBody["data"]>} transactionDataCase
+     * @param {HieroProto.proto.ITransactionBody[]} bodies
+     * @param {number} groupSize
+     * @returns {void}
+     */
+    static _validateChunkedTransactionBodies(
+        transactionDataCase,
+        bodies,
+        groupSize,
+    ) {
+        const ignoredFields =
+            Transaction._getChunkedTransactionIgnoredFields(
+                transactionDataCase,
+            );
+        const referenceBody = bodies[0];
+
+        for (
+            let bodyIndex = groupSize;
+            bodyIndex < bodies.length;
+            bodyIndex += groupSize
+        ) {
+            if (
+                !util.compare(referenceBody, bodies[bodyIndex], ignoredFields)
+            ) {
+                throw new Error("failed to validate transaction bodies");
+            }
+        }
+    }
+
+    /**
+     * Return the fields that are expected to vary between chunk groups.
+     *
+     * @private
+     * @param {NonNullable<HieroProto.proto.TransactionBody["data"]>} transactionDataCase
+     * @returns {Set<string>}
+     */
+    static _getChunkedTransactionIgnoredFields(transactionDataCase) {
+        /** @type {Set<string>} */
+        const ignoredFields = new Set();
+        ignoredFields.add("nodeAccountID");
+        ignoredFields.add("transactionID");
+
+        if (transactionDataCase === "fileAppend") {
+            ignoredFields.add("contents");
+        } else if (transactionDataCase === "consensusSubmitMessage") {
+            ignoredFields.add("message");
+            ignoredFields.add("chunkInfo");
+        }
+
+        return ignoredFields;
     }
 
     /**
@@ -499,22 +652,12 @@ export default class Transaction extends Executable {
         bodies,
     ) {
         const body = bodies[0];
-
-        // "row" of the 2-D `bodies` array has all the same contents except for `nodeAccountID`
-        for (let i = 0; i < transactionIds.length; i++) {
-            for (let j = 0; j < nodeIds.length - 1; j++) {
-                if (
-                    !util.compare(
-                        bodies[i * nodeIds.length + j],
-                        bodies[i * nodeIds.length + j + 1],
-                        // eslint-disable-next-line ie11/no-collection-args
-                        new Set(["nodeAccountID"]),
-                    )
-                ) {
-                    throw new Error("failed to validate transaction bodies");
-                }
-            }
-        }
+        Transaction._validateTransactionBodies(
+            transaction._getTransactionDataCase(),
+            transactionIds,
+            nodeIds,
+            bodies,
+        );
 
         // Remove node account IDs of 0
         // _IIRC_ this was initial due to some funny behavior with `ScheduleCreateTransaction`
@@ -852,6 +995,43 @@ export default class Transaction extends Executable {
     }
 
     /**
+     * Defense-in-depth validation before adding signatures.
+     *
+     * @private
+     * @returns {void}
+     */
+    _validateSignedTransactionBodies() {
+        if (
+            this._transactionIds.length === 0 ||
+            this._signedTransactions.length === 0
+        ) {
+            return;
+        }
+
+        /** @type {HieroProto.proto.ITransactionBody[]} */
+        const bodies = [];
+
+        for (const signedTransaction of this._signedTransactions.list) {
+            if (signedTransaction.bodyBytes == null) {
+                throw new Error("failed to validate transaction bodies");
+            }
+
+            bodies.push(
+                HieroProto.proto.TransactionBody.decode(
+                    /** @type {Uint8Array} */ (signedTransaction.bodyBytes),
+                ),
+            );
+        }
+
+        Transaction._validateTransactionBodies(
+            this._getTransactionDataCase(),
+            this._transactionIds.list,
+            this._nodeAccountIds.list,
+            bodies,
+        );
+    }
+
+    /**
      * Sign the transaction with the public key and signer function
      *
      * If sign on demand is enabled no signing will be done immediately, instead
@@ -881,6 +1061,8 @@ export default class Transaction extends Executable {
             // this public key has already signed this transaction
             return this;
         }
+
+        this._validateSignedTransactionBodies();
 
         // If we add a new signer, then we need to re-create all transactions
         this._transactions.clear();
@@ -1767,7 +1949,7 @@ export default class Transaction extends Executable {
      *
      * @override
      * @protected
-     * @param {import("../client/Client.js").default<Channel, *>} client
+     * @param {Client} client
      * @returns {Promise<void>}
      */
     async _beforeExecute(client) {
@@ -2002,7 +2184,7 @@ export default class Transaction extends Executable {
      * @returns {[Status, ExecutionState]}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _shouldRetry(request, response) {
+    _getStatusAndExecutionState(request, response) {
         const { nodeTransactionPrecheckCode } = response;
 
         // Get the node precheck code, and convert it into an SDK `Status`

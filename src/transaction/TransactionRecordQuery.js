@@ -15,7 +15,8 @@ const { proto } = HieroProto;
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../account/AccountId.js").default} AccountId
  */
 
@@ -181,7 +182,7 @@ export default class TransactionRecordQuery extends Query {
      * @param {HieroProto.proto.IResponse} response
      * @returns {[Status, ExecutionState]}
      */
-    _shouldRetry(request, response) {
+    _getStatusAndExecutionState(request, response) {
         const { nodeTransactionPrecheckCode } =
             this._mapResponseHeader(response);
 

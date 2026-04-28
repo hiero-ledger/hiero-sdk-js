@@ -14,6 +14,8 @@ import { convertToNumber } from "../util.js";
 import AddressBookQuery from "../network/AddressBookQuery.js";
 import {
     DEFAULT_GRPC_DEADLINE,
+    DEFAULT_LOCAL_MAX_ATTEMPTS,
+    DEFAULT_MAX_ATTEMPTS,
     DEFAULT_REQUEST_TIMEOUT,
 } from "../constants/ClientConstants.js";
 
@@ -114,8 +116,11 @@ export default class Client {
             }
         }
 
-        /** @type {number | null} */
-        this._maxAttempts = null;
+        /** @type {number} */
+        this._maxAttempts =
+            props != null && this._isLocalNetwork(props.network)
+                ? DEFAULT_LOCAL_MAX_ATTEMPTS
+                : DEFAULT_MAX_ATTEMPTS;
 
         /** @private */
         this._signOnDemand = false;
@@ -287,6 +292,32 @@ export default class Client {
      */
     get realm() {
         return this._realm;
+    }
+
+    /**
+     * @returns {boolean}
+     */
+    get isLocalNetwork() {
+        return this._isLocalNetwork();
+    }
+
+    /**
+     * @private
+     * @param {{[key: string]: (string | AccountId)} | string} [network]
+     * @returns {boolean}
+     */
+    _isLocalNetwork(network = this.network) {
+        if (typeof network === "string") {
+            return network === "local-node";
+        }
+
+        if (network == null) {
+            return false;
+        }
+
+        return Object.keys(network).some(
+            (key) => key.includes("127.0.0.1") || key.includes("localhost"),
+        );
     }
 
     /**
@@ -562,7 +593,7 @@ export default class Client {
      * @returns {number}
      */
     get maxAttempts() {
-        return this._maxAttempts != null ? this._maxAttempts : 10;
+        return this._maxAttempts;
     }
 
     /**

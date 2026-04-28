@@ -454,7 +454,7 @@ export default class Query extends QueryBase {
      * @returns {[Status, ExecutionState]}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    _shouldRetry(request, response) {
+    _getStatusAndExecutionState(request, response) {
         const { nodeTransactionPrecheckCode } =
             this._mapResponseHeader(response);
 
@@ -463,11 +463,10 @@ export default class Query extends QueryBase {
                 ? nodeTransactionPrecheckCode
                 : HieroProto.proto.ResponseCodeEnum.OK,
         );
-        if (this._logger) {
-            this._logger.debug(
-                `[${this._getLogId()}] received status ${status.toString()}`,
-            );
-        }
+
+        this._logger?.debug(
+            `[${this._getLogId()}] received status ${status.toString()}`,
+        );
 
         switch (status) {
             case Status.Busy:

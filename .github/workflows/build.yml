@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
         with:
           egress-policy: audit
 
@@ -53,7 +53,7 @@ jobs:
           version: 9.15.5
 
       - name: Setup Node
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
@@ -70,7 +70,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
         with:
           egress-policy: audit
 
@@ -90,7 +90,7 @@ jobs:
           version: 9.15.5
 
       - name: Setup Node
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
@@ -106,13 +106,13 @@ jobs:
 
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@4d42a74e8e644a2753f3bb7a2afa429305375b14 # v0.16
+        uses: hiero-ledger/hiero-solo-action@4d42a74e8e644a2753f3bb7a2afa429305375b14 # v0.17
         with:
           installMirrorNode: true
+          soloVersion: v0.65.0
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
           grpcProxyPort: 8080
-
       - name: Set Operator Account
         run: |
           echo "OPERATOR_KEY=${{ steps.solo.outputs.ed25519PrivateKey }}" >> $GITHUB_ENV
@@ -124,44 +124,29 @@ jobs:
       - name: Run Hedera SDK Integration Tests
         run: ${{ env.CG_EXEC }} task test:integration:codecov
 
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./coverage/lcov.info
-          fail_ci_if_error: false
-
       - name: Build @hiero-ledger/cryptography
         working-directory: packages/cryptography
         run: ${{ env.CG_EXEC }} task build
 
-      - name: Browser Unit Test @hiero-ledger/cryptography
-        working-directory: packages/cryptography
-        run: ${{ env.CG_EXEC }} task test:unit:browser
-
-      - name: Codecov @hiero-ledger/cryptography
+      - name: Unit Coverage @hiero-ledger/cryptography
         working-directory: packages/cryptography
         run: ${{ env.CG_EXEC }} task test:unit:codecov
 
-      - name: Upload @hashgraph/cryptography coverage to Codecov
-        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: ./packages/cryptography/coverage/lcov.info
-          fail_ci_if_error: false
-
-      - name: Browser Unit Test @hiero-ledger/sdk
-        if: ${{ steps.playwright-deps.conclusion == 'success' && !cancelled() && always() }}
-        run: ${{ env.CG_EXEC }} task test:unit:browser
-
-      - name: Codecov @hiero-ledger/sdk
+      - name: Test Unit Coverage @hiero-ledger/sdk
         run: ${{ env.CG_EXEC }} task test:unit:codecov
 
-      - name: Upload @hashgraph/sdk coverage to Codecov
-        uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5.5.2
+      - name: Upload Test Coverage Artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
+          name: coverage-test
+          if-no-files-found: error
+          path: |
+            ./coverage/node-integration/lcov.info
+            ./coverage/browser-integration/lcov.info
+            ./packages/cryptography/coverage/node/lcov.info
+            ./packages/cryptography/coverage/browser/lcov.info
+            ./coverage/node/lcov.info
+            ./coverage/browser/lcov.info
 
   dab-tests:
     name: DAB Tests using Node ${{ matrix.node }}
@@ -172,7 +157,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
         with:
           egress-policy: audit
 
@@ -192,7 +177,7 @@ jobs:
           version: 9.15.5
 
       - name: Setup Node
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
@@ -211,6 +196,7 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@4d42a74e8e644a2753f3bb7a2afa429305375b14 # 0.17.0
         with:
           installMirrorNode: true
+          soloVersion: v0.65.0
           hieroVersion: v0.73.0
           mirrorNodeVersion: 0.153.0
           grpcProxyPort: 8080
@@ -225,8 +211,62 @@ jobs:
           echo "GENESIS_OPERATOR_ID=0.0.2" >> $GITHUB_ENV
           echo "HEDERA_NETWORK=local-node" >> $GITHUB_ENV
 
-      - name: Run DAB Integration Tests
-        run: task test:integration:dual-mode
+      - name: Run DAB Integration Coverage
+        run: task test:integration:dual-mode:codecov
+
+      - name: Upload DAB Coverage Artifacts
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: coverage-dab
+          if-no-files-found: error
+          path: |
+            ./coverage/node-integration-dual-mode/lcov.info
+            ./coverage/browser-integration-dual-mode/lcov.info
+
+  coverage-upload:
+    name: Upload Coverage to Codecov
+    runs-on: hiero-client-sdk-linux-medium
+    needs:
+      - test
+      - dab-tests
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          submodules: recursive
+
+      - name: Download Test Coverage Artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: coverage-test
+          path: .
+
+      - name: Download DAB Coverage Artifacts
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: coverage-dab
+          path: .
+
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: >-
+            ./coverage/node-integration/lcov.info,
+            ./coverage/browser-integration/lcov.info,
+            ./packages/cryptography/coverage/node/lcov.info,
+            ./packages/cryptography/coverage/browser/lcov.info,
+            ./coverage/node/lcov.info,
+            ./coverage/browser/lcov.info,
+            ./coverage/node-integration-dual-mode/lcov.info,
+            ./coverage/browser-integration-dual-mode/lcov.info
+          fail_ci_if_error: true
 
   examples:
     name: Run examples using Node ${{ matrix.node }}
@@ -236,7 +276,7 @@ jobs:
         node: [ "22" ]
     steps:
       -  name: Harden Runner
-         uses: step-security/harden-runner@5ef0c079ce82195b2a36a210272d6b661572d83e # v2.14.2
+         uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
          with:
           egress-policy: audit
 
@@ -256,7 +296,7 @@ jobs:
           version: 9.15.5
 
       - name: Setup Node
-        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
@@ -266,11 +306,12 @@ jobs:
 
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@4d42a74e8e644a2753f3bb7a2afa429305375b14 # v0.16
+        uses: hiero-ledger/hiero-solo-action@4d42a74e8e644a2753f3bb7a2afa429305375b14 # v0.17
         with:
           installMirrorNode: true
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
+          soloVersion: v0.65.0
           grpcProxyPort: 8080
 
       - name: Set Operator Account
