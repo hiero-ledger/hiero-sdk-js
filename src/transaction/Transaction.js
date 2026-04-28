@@ -58,22 +58,6 @@ const DEFAULT_TRANSACTION_VALID_DURATION = 120;
 export const CHUNK_SIZE = 1024;
 
 /** Transaction types that support high-volume throttles; used to emit a warning when setHighVolume(true) is used. */
-const HIGH_VOLUME_CAPABLE_TRANSACTION_NAMES = new Set([
-    "AbstractTokenTransferTransaction",
-    "TransferTransaction",
-    "TokenAirdropTransaction",
-    "AccountCreateTransaction",
-    "AccountAllowanceApproveTransaction",
-    "TokenMintTransaction",
-    "FileAppendTransaction",
-    "AirdropPendingTransaction",
-    "TokenCreateTransaction",
-    "ContractCreateTransaction",
-    "FileCreateTransaction",
-    "ScheduleCreateTransaction",
-    "TokenAssociateTransaction",
-    "TopicCreateTransaction",
-]);
 
 /**
  * @param {NonNullable<HieroProto.proto.TransactionBody["data"]>} transactionDataCase
@@ -884,14 +868,6 @@ export default class Transaction extends Executable {
      */
     setHighVolume(highVolume) {
         this._requireNotFrozen();
-        if (
-            highVolume &&
-            !HIGH_VOLUME_CAPABLE_TRANSACTION_NAMES.has(this.constructor.name)
-        ) {
-            console.warn(
-                `[${this.constructor.name}] High-volume throttles are not supported for this transaction type. The flag will be ignored by the network. Supported types: TopicCreate, ContractCreate, ApproveAllowance, AccountCreate, Transfer, FileCreate, FileAppend, ScheduleCreate, TokenAirdrop, TokenAssociate, TokenCreate, TokenClaimAirdrop, TokenMint.`,
-            );
-        }
         this._highVolume = highVolume;
         return this;
     }
