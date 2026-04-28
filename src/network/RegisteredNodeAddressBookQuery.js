@@ -219,6 +219,7 @@ export default class RegisteredNodeAddressBookQuery extends Query {
                     // eslint-disable-next-line n/no-unsupported-features/node-builtins
                     const response = await fetch(currentUrl.toString(), {
                         method: "GET",
+                        cache: "no-store",
                         headers: {
                             Accept: "application/json",
                         },

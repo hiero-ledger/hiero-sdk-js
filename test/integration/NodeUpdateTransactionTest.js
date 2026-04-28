@@ -4,15 +4,13 @@ import {
     BlockNodeServiceEndpoint,
     NodeUpdateTransaction,
     PrivateKey,
+    RegisteredNodeCreateTransaction,
+    RegisteredNodeDeleteTransaction,
     ServiceEndpoint,
     Status,
 } from "../../src/exports.js";
 import { AddressBookQuery } from "../../src/index.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
-import {
-    createRegisteredNode,
-    deleteRegisteredNode,
-} from "./utils/RegisteredNodes.js";
 
 const getNodeAddress = async (client, nodeId) => {
     const addressBook = await new AddressBookQuery()
@@ -166,18 +164,23 @@ describe("NodeUpdateTransaction", function () {
 
         try {
             registeredNodeAdminKey = PrivateKey.generateED25519();
-            const registeredNodeReceipt = await createRegisteredNode(
-                env.client,
-                registeredNodeAdminKey,
-                [
-                    new BlockNodeServiceEndpoint()
-                        .setDomainName("associate.example.com")
-                        .setPort(443)
-                        .setRequiresTls(true)
-                        .setEndpointApis([BlockNodeApi.Publish]),
-                ],
-                "Association target registered node",
-            );
+            const registeredNodeCreateResponse = await (
+                await (
+                    await new RegisteredNodeCreateTransaction()
+                        .setAdminKey(registeredNodeAdminKey.publicKey)
+                        .setDescription("Association target registered node")
+                        .setServiceEndpoints([
+                            new BlockNodeServiceEndpoint()
+                                .setDomainName("associate.example.com")
+                                .setPort(443)
+                                .setRequiresTls(true)
+                                .setEndpointApis([BlockNodeApi.Publish]),
+                        ])
+                        .freezeWith(env.client)
+                ).sign(registeredNodeAdminKey)
+            ).execute(env.client);
+            const registeredNodeReceipt =
+                await registeredNodeCreateResponse.getReceipt(env.client);
 
             expect(registeredNodeReceipt.status).to.equal(Status.Success);
             registeredNodeId = registeredNodeReceipt.registeredNodeId;
@@ -202,7 +205,9 @@ describe("NodeUpdateTransaction", function () {
             );
 
             expect(associateReceipt.status).to.equal(Status.Success);
-            expect(associateReceipt.nodeId?.toInt()).to.equal(TARGET_NODE_ID);
+            expect(Number(associateReceipt.nodeId?.toString())).to.equal(
+                TARGET_NODE_ID,
+            );
         } finally {
             if (registeredNodeId != null) {
                 env.client.setOperator(
@@ -228,10 +233,15 @@ describe("NodeUpdateTransaction", function () {
             }
 
             if (registeredNodeId != null && registeredNodeAdminKey != null) {
-                const deleteReceipt = await deleteRegisteredNode(
+                const deleteResponse = await (
+                    await (
+                        await new RegisteredNodeDeleteTransaction()
+                            .setRegisteredNodeId(registeredNodeId)
+                            .freezeWith(env.client)
+                    ).sign(registeredNodeAdminKey)
+                ).execute(env.client);
+                const deleteReceipt = await deleteResponse.getReceipt(
                     env.client,
-                    registeredNodeId,
-                    registeredNodeAdminKey,
                 );
                 expect(deleteReceipt.status).to.equal(Status.Success);
             }

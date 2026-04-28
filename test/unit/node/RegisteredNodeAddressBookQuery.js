@@ -111,6 +111,7 @@ describe("RegisteredNodeAddressBookQuery", function () {
         expect(global.fetch.firstCall.args[0]).to.equal(
             "http://127.0.0.1:8084/api/v1/network/registered-nodes?limit=25",
         );
+        expect(global.fetch.firstCall.args[1]?.cache).to.equal("no-store");
 
         expect(addressBook.registeredNodes).to.have.length(1);
 
@@ -241,6 +242,8 @@ describe("RegisteredNodeAddressBookQuery", function () {
         expect(global.fetch.callCount).to.equal(2);
         expect(global.fetch.firstCall.args[0]).to.equal(expectedFirstUrl);
         expect(global.fetch.secondCall.args[0]).to.equal(expectedSecondUrl);
+        expect(global.fetch.firstCall.args[1]?.cache).to.equal("no-store");
+        expect(global.fetch.secondCall.args[1]?.cache).to.equal("no-store");
 
         expect(addressBook.registeredNodes).to.have.length(2);
         expect(

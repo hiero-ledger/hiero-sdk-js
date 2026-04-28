@@ -4,16 +4,14 @@ import {
     BlockNodeServiceEndpoint,
     Hbar,
     NodeCreateTransaction,
+    RegisteredNodeCreateTransaction,
+    RegisteredNodeDeleteTransaction,
     NodeUpdateTransaction,
     PrivateKey,
     ServiceEndpoint,
     Status,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
-import {
-    createRegisteredNode,
-    deleteRegisteredNode,
-} from "./utils/RegisteredNodes.js";
 
 // eslint-disable-next-line vitest/no-disabled-tests
 describe("NodeCreateTransaction", function () {
@@ -35,18 +33,25 @@ describe("NodeCreateTransaction", function () {
         env.client.setOperator(env.genesisOperatorId, env.genesisOperatorKey);
         try {
             registeredNodeAdminKey = PrivateKey.generateED25519();
-            const registeredNodeReceipt = await createRegisteredNode(
-                env.client,
-                registeredNodeAdminKey,
-                [
-                    new BlockNodeServiceEndpoint()
-                        .setDomainName("node-create.association.example")
-                        .setPort(443)
-                        .setRequiresTls(true)
-                        .setEndpointApis([BlockNodeApi.Publish]),
-                ],
-                "NodeCreate association target",
-            );
+            const registeredNodeCreateResponse = await (
+                await (
+                    await new RegisteredNodeCreateTransaction()
+                        .setAdminKey(registeredNodeAdminKey.publicKey)
+                        .setDescription("NodeCreate association target")
+                        .setServiceEndpoints([
+                            new BlockNodeServiceEndpoint()
+                                .setDomainName(
+                                    "node-create.association.example",
+                                )
+                                .setPort(443)
+                                .setRequiresTls(true)
+                                .setEndpointApis([BlockNodeApi.Publish]),
+                        ])
+                        .freezeWith(env.client)
+                ).sign(registeredNodeAdminKey)
+            ).execute(env.client);
+            const registeredNodeReceipt =
+                await registeredNodeCreateResponse.getReceipt(env.client);
 
             expect(registeredNodeReceipt.status).to.equal(Status.Success);
             registeredNodeId = registeredNodeReceipt.registeredNodeId;
@@ -127,10 +132,15 @@ describe("NodeCreateTransaction", function () {
                     registeredNodeId != null &&
                     registeredNodeAdminKey != null
                 ) {
-                    const deleteReceipt = await deleteRegisteredNode(
+                    const deleteResponse = await (
+                        await (
+                            await new RegisteredNodeDeleteTransaction()
+                                .setRegisteredNodeId(registeredNodeId)
+                                .freezeWith(env.client)
+                        ).sign(registeredNodeAdminKey)
+                    ).execute(env.client);
+                    const deleteReceipt = await deleteResponse.getReceipt(
                         env.client,
-                        registeredNodeId,
-                        registeredNodeAdminKey,
                     );
                     expect(deleteReceipt.status).to.equal(Status.Success);
                 }
