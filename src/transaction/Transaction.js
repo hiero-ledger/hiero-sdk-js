@@ -227,12 +227,11 @@ export default class Transaction extends Executable {
          * Whether to use high-volume throttles for this transaction.
          * When true, enables high-volume throttles and pricing for entity creation.
          * Only affects supported transaction types; otherwise, it is ignored.
-         * Undefined for transaction types that do not support high-volume.
          *
          * @private
-         * @type {boolean | undefined}
+         * @type {boolean}
          */
-        this._highVolume = undefined;
+        this._highVolume = false;
     }
 
     /**
@@ -877,7 +876,7 @@ export default class Transaction extends Executable {
      * @returns {boolean}
      */
     get highVolume() {
-        return this._highVolume ?? false;
+        return this._highVolume;
     }
 
     /**
