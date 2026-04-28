@@ -57,7 +57,6 @@ const DEFAULT_TRANSACTION_VALID_DURATION = 120;
 // This value can be overriden using `setChunkSize` when preparing to submit a messsage via `TopicMessageSubmitTransaction`.
 export const CHUNK_SIZE = 1024;
 
-
 /**
  * @param {NonNullable<HieroProto.proto.TransactionBody["data"]>} transactionDataCase
  * @returns {boolean}
@@ -2343,7 +2342,7 @@ export default class Transaction extends Executable {
                       )
                     : null,
             batchKey: this.batchKey?._toProtobufKey(),
-            highVolume: this.highVolume,
+            highVolume: this.highVolume ? true : null,
         };
         return body;
     }
