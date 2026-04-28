@@ -32,6 +32,7 @@ describe("RegisteredNodeTransactionIntegrationTest", function () {
     });
 
     beforeEach(function () {
+        env.client.setOperator(env.genesisOperatorId, env.genesisOperatorKey);
         registeredNodeCleanup = [];
     });
 
