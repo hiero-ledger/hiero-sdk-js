@@ -57,7 +57,6 @@ const DEFAULT_TRANSACTION_VALID_DURATION = 120;
 // This value can be overriden using `setChunkSize` when preparing to submit a messsage via `TopicMessageSubmitTransaction`.
 export const CHUNK_SIZE = 1024;
 
-/** Transaction types that support high-volume throttles; used to emit a warning when setHighVolume(true) is used. */
 
 /**
  * @param {NonNullable<HieroProto.proto.TransactionBody["data"]>} transactionDataCase
