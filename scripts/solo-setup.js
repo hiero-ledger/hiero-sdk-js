@@ -567,9 +567,10 @@ async function deployNetwork({
     log.success("Network deployed and started");
 }
 
-async function deployMirror() {
+async function deployMirror({ mirrorVersion, mirrorNodeChartDir }) {
     log.info("Deploying mirror node services...");
-    await runSoloCommand([
+    const mirrorNodeArgs = [
+        "solo",
         "mirror",
         "node",
         "add",
@@ -577,7 +578,7 @@ async function deployMirror() {
         SOLO_DEPLOYMENT,
         "--cluster-ref",
         SOLO_CLUSTER_NAME,
-    ]);
+    ];
 
     if (mirrorNodeChartDir) {
         mirrorNodeArgs.push("--mirror-node-chart-dir", mirrorNodeChartDir);

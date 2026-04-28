@@ -26,13 +26,13 @@ describe("NodeCreateTransaction", function () {
     });
 
     it("Given an existing registered node, when a NodeCreateTransaction is executed with the registered node's ID in associatedRegisteredNodes, then the consensus node is created with the association", async function () {
-        env.client.setOperator(env.genesisOperatorId, env.genesisOperatorKey);
-
         let registeredNodeId = null;
         let registeredNodeAdminKey = null;
         let createdNodeId = null;
+        let testError = null;
+        let cleanupError = null;
         const nodeAdminKey = PrivateKey.generateED25519();
-
+        env.client.setOperator(env.genesisOperatorId, env.genesisOperatorKey);
         try {
             registeredNodeAdminKey = PrivateKey.generateED25519();
             const registeredNodeReceipt = await createRegisteredNode(
@@ -51,8 +51,12 @@ describe("NodeCreateTransaction", function () {
             expect(registeredNodeReceipt.status).to.equal(Status.Success);
             registeredNodeId = registeredNodeReceipt.registeredNodeId;
 
+            env.client.setOperator(env.operatorId, env.operatorKey);
+
+            const accountKey = PrivateKey.generateED25519();
+
             const accountCreateTx = await new AccountCreateTransaction()
-                .setKeyWithoutAlias(PrivateKey.generateED25519())
+                .setKeyWithoutAlias(accountKey)
                 .setInitialBalance(new Hbar(1))
                 .execute(env.client);
             const accountCreateReceipt = await accountCreateTx.getReceipt(
@@ -76,7 +80,11 @@ describe("NodeCreateTransaction", function () {
                     .map((byte) => parseInt(byte, 16)),
             );
 
-            const response = await new NodeCreateTransaction()
+            env.client.setOperator(
+                env.genesisOperatorId,
+                env.genesisOperatorKey,
+            );
+            const nodeCreateTx = new NodeCreateTransaction()
                 .setAccountId(accountId)
                 .setAdminKey(nodeAdminKey.publicKey)
                 .setDescription("test")
@@ -86,33 +94,53 @@ describe("NodeCreateTransaction", function () {
                 .setAssociatedRegisteredNodes([registeredNodeId])
                 .setDeclineReward(true)
                 .setGrpcWebProxyEndpoint(grpcWebProxyEndpoint)
-                .execute(env.client);
+                .freezeWith(env.client);
+
+            await nodeCreateTx.sign(accountKey);
+            await nodeCreateTx.sign(nodeAdminKey);
+
+            const response = await nodeCreateTx.execute(env.client);
+
             const receipt = await response.getReceipt(env.client);
 
             expect(receipt.status).to.equal(Status.Success);
             expect(receipt.nodeId).to.not.be.null;
             createdNodeId = receipt.nodeId;
+        } catch (error) {
+            testError = error;
+            throw error;
         } finally {
-            if (createdNodeId != null) {
-                const clearAssociationTx = await new NodeUpdateTransaction()
-                    .setNodeId(createdNodeId)
-                    .clearAssociatedRegisteredNodes()
-                    .freezeWith(env.client);
+            try {
+                if (createdNodeId != null) {
+                    const clearAssociationTx = await new NodeUpdateTransaction()
+                        .setNodeId(createdNodeId)
+                        .clearAssociatedRegisteredNodes()
+                        .freezeWith(env.client);
 
-                await clearAssociationTx.sign(nodeAdminKey);
-                await (
-                    await clearAssociationTx.execute(env.client)
-                ).getReceipt(env.client);
-            }
+                    await clearAssociationTx.sign(nodeAdminKey);
+                    await (
+                        await clearAssociationTx.execute(env.client)
+                    ).getReceipt(env.client);
+                }
 
-            if (registeredNodeId != null && registeredNodeAdminKey != null) {
-                const deleteReceipt = await deleteRegisteredNode(
-                    env.client,
-                    registeredNodeId,
-                    registeredNodeAdminKey,
-                );
-                expect(deleteReceipt.status).to.equal(Status.Success);
+                if (
+                    registeredNodeId != null &&
+                    registeredNodeAdminKey != null
+                ) {
+                    const deleteReceipt = await deleteRegisteredNode(
+                        env.client,
+                        registeredNodeId,
+                        registeredNodeAdminKey,
+                    );
+                    expect(deleteReceipt.status).to.equal(Status.Success);
+                }
+            } catch (error) {
+                cleanupError = error;
             }
+        }
+
+        if (cleanupError != null && testError == null) {
+            throw cleanupError;
         }
     });
 
