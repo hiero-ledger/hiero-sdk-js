@@ -106,7 +106,7 @@ jobs:
 
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@2fbd46360a6e903b0b0f68b0b3c0e81add000137 # v0.17
+        uses: hiero-ledger/hiero-solo-action@4d42a74e8e644a2753f3bb7a2afa429305375b14 # v0.17
         with:
           installMirrorNode: true
           soloVersion: v0.69.0
@@ -195,11 +195,10 @@ jobs:
 
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@2fbd46360a6e903b0b0f68b0b3c0e81add000137 # 0.17.0
+        uses: hiero-ledger/hiero-solo-action@4d42a74e8e644a2753f3bb7a2afa429305375b14 # 0.17.0
         with:
           installMirrorNode: true
           soloVersion: v0.69.0
-          installBlockNode: true
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
           grpcProxyPort: 8080
@@ -309,7 +308,7 @@ jobs:
 
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@2fbd46360a6e903b0b0f68b0b3c0e81add000137 # v0.17
+        uses: hiero-ledger/hiero-solo-action@4d42a74e8e644a2753f3bb7a2afa429305375b14 # v0.17
         with:
           installMirrorNode: true
           soloVersion: v0.69.0
