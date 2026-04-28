@@ -183,14 +183,14 @@ describe("Transaction", function () {
             expect(body.highVolume).to.equal(true);
         });
 
-        it("setHighVolume(false) sets highVolume false in the transaction body", function () {
+        it("setHighVolume(false) omits highVolume from the transaction body", function () {
             const tx = new AccountCreateTransaction()
                 .setKey(PrivateKey.generateED25519().publicKey)
                 .setNodeAccountIds([nodeAccountId])
                 .setTransactionId(TransactionId.generate(payerId))
                 .setHighVolume(false);
             const body = tx._makeTransactionBody(nodeAccountId);
-            expect(body.highVolume).to.equal(false);
+            expect(body.highVolume).to.equal(null);
         });
 
         it("getter highVolume returns the set value", function () {
@@ -209,8 +209,8 @@ describe("Transaction", function () {
                 .setNodeAccountIds([nodeAccountId])
                 .setTransactionId(TransactionId.generate(payerId))
                 .setHighVolume(true)
-                .freeze()
-                .sign(key);
+                .freeze();
+            await tx.sign(key);
             const bytes = tx.toBytes();
             const decoded = Transaction.fromBytes(bytes);
             expect(decoded.highVolume).to.equal(true);
