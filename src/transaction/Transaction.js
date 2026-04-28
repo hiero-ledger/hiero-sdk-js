@@ -221,6 +221,16 @@ export default class Transaction extends Executable {
          * @type {boolean}
          */
         this._isThrottled = false;
+
+        /**
+         * Whether to use high-volume throttles for this transaction.
+         * When true, enables high-volume throttles and pricing for entity creation.
+         * Only affects supported transaction types; otherwise, it is ignored.
+         *
+         * @private
+         * @type {boolean}
+         */
+        this._highVolume = false;
     }
 
     /**
@@ -675,6 +685,7 @@ export default class Transaction extends Executable {
             body.batchKey != null ? Key._fromProtobufKey(body?.batchKey) : null;
 
         transaction._transactionMemo = body.memo != null ? body.memo : "";
+        transaction._highVolume = body.highVolume ?? false;
 
         // Loop over a single row of `signedTransactions` and add all the public
         // keys to the `signerPublicKeys` set, and `publicKeys` list with
@@ -842,6 +853,29 @@ export default class Transaction extends Executable {
         this._transactionMemo = transactionMemo;
 
         return this;
+    }
+
+    /**
+     * Set whether to use high-volume throttles for this transaction.
+     * When true, enables high-volume throttles and pricing for entity creation.
+     * Only affects supported transaction types; otherwise, it is ignored.
+     *
+     * @param {boolean} highVolume
+     * @returns {this}
+     */
+    setHighVolume(highVolume) {
+        this._requireNotFrozen();
+        this._highVolume = highVolume;
+        return this;
+    }
+
+    /**
+     * Get whether high-volume throttles are enabled for this transaction.
+     *
+     * @returns {boolean}
+     */
+    get highVolume() {
+        return this._highVolume;
     }
 
     /**
@@ -2286,7 +2320,7 @@ export default class Transaction extends Executable {
      * @returns {HieroProto.proto.ITransactionBody}
      */
     _makeTransactionBody(nodeId) {
-        return {
+        const body = {
             [this._getTransactionDataCase()]: this._makeTransactionData(),
             transactionFee:
                 this._maxTransactionFee != null
@@ -2308,7 +2342,9 @@ export default class Transaction extends Executable {
                       )
                     : null,
             batchKey: this.batchKey?._toProtobufKey(),
+            highVolume: this.highVolume ? true : null,
         };
+        return body;
     }
 
     /**

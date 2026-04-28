@@ -110,10 +110,9 @@ jobs:
         with:
           installMirrorNode: true
           soloVersion: v0.65.0
-          hieroVersion: v0.72.0
-          mirrorNodeVersion: v0.142.0
+          hieroVersion: v0.73.0
+          mirrorNodeVersion: v0.153.0
           grpcProxyPort: 8080
-
       - name: Set Operator Account
         run: |
           echo "OPERATOR_KEY=${{ steps.solo.outputs.ed25519PrivateKey }}" >> $GITHUB_ENV
@@ -198,8 +197,8 @@ jobs:
         with:
           installMirrorNode: true
           soloVersion: v0.65.0
-          hieroVersion: v0.72.0
-          mirrorNodeVersion: v0.142.0
+          hieroVersion: v0.73.0
+          mirrorNodeVersion: 0.153.0
           grpcProxyPort: 8080
           dualMode: true
           dualModeGrpcProxyPort: 8081
@@ -310,9 +309,9 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@4d42a74e8e644a2753f3bb7a2afa429305375b14 # v0.17
         with:
           installMirrorNode: true
+          hieroVersion: v0.73.0
+          mirrorNodeVersion: v0.153.0
           soloVersion: v0.65.0
-          hieroVersion: v0.72.0
-          mirrorNodeVersion: v0.142.0
           grpcProxyPort: 8080
 
       - name: Set Operator Account

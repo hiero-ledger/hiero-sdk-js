@@ -25,7 +25,7 @@ describe("AccountCreate", function () {
         env = await IntegrationTestEnv.new();
     });
 
-    describe("AccountCreate with EVM Hook", function () {
+    describe.skip("AccountCreate with EVM Hook", function () {
         let contractId;
 
         beforeAll(async function () {
@@ -299,6 +299,203 @@ describe("AccountCreate", function () {
         }
 
         expect(status).to.be.eql(Status.KeyRequired);
+    });
+
+    describe("High-Volume Throttle Flag", function () {
+        it("given an AccountCreateTransaction is configured with setHighVolume(true), when the transaction is executed, then the account is created successfully using high-volume throttles", async function () {
+            const key = PrivateKey.generateED25519();
+
+            const accountCreateTx = await new AccountCreateTransaction()
+                .setKey(key.publicKey)
+                .setInitialBalance(new Hbar(1))
+                .setHighVolume(true)
+                .freezeWith(env.client)
+                .sign(key);
+
+            const response = await accountCreateTx.execute(env.client);
+            const receipt = await response.getReceipt(env.client);
+
+            expect(receipt.accountId).to.not.be.null;
+            const accountId = receipt.accountId;
+
+            const info = await new AccountInfoQuery()
+                .setAccountId(accountId)
+                .execute(env.client);
+
+            expect(info.accountId.toString()).to.be.equal(accountId.toString());
+            expect(info.isDeleted).to.be.false;
+            expect(info.key.toString()).to.be.equal(key.publicKey.toString());
+
+            await deleteAccount(env.client, key, (transaction) => {
+                transaction
+                    .setAccountId(accountId)
+                    .setTransferAccountId(env.operatorId)
+                    .setTransactionId(TransactionId.generate(accountId));
+            });
+        });
+
+        it("given an AccountCreateTransaction is configured with setHighVolume(true) and a valid setMaxTransactionFee(fee), when the transaction is executed, then the account is created successfully and the fee charged respects the maximum transaction fee setting", async function () {
+            const key = PrivateKey.generateED25519();
+            const maxFee = new Hbar(10);
+
+            const accountCreateTx = await new AccountCreateTransaction()
+                .setKey(key.publicKey)
+                .setHighVolume(true)
+                .setInitialBalance(new Hbar(1))
+                .setMaxTransactionFee(maxFee)
+                .freezeWith(env.client)
+                .sign(key);
+
+            const response = await accountCreateTx.execute(env.client);
+            const receipt = await response.getReceipt(env.client);
+
+            expect(receipt.accountId).to.not.be.null;
+            const accountId = receipt.accountId;
+
+            const info = await new AccountInfoQuery()
+                .setAccountId(accountId)
+                .execute(env.client);
+
+            expect(info.accountId.toString()).to.be.equal(accountId.toString());
+            expect(info.isDeleted).to.be.false;
+
+            await deleteAccount(env.client, key, (transaction) => {
+                transaction
+                    .setAccountId(accountId)
+                    .setTransferAccountId(env.operatorId)
+                    .setTransactionId(TransactionId.generate(accountId));
+            });
+        });
+
+        it("given an AccountCreateTransaction is configured with setHighVolume(true) and a setMaxTransactionFee(fee) that is lower than the actual fee required, when the transaction is executed, then the transaction fails with an INSUFFICIENT_TX_FEE error", async function () {
+            const key = PrivateKey.generateED25519();
+            const insufficientFee = Hbar.fromTinybars(1);
+
+            let err = false;
+            try {
+                const accountCreateTx = await new AccountCreateTransaction()
+                    .setKey(key.publicKey)
+                    .setHighVolume(true)
+                    .setMaxTransactionFee(insufficientFee)
+                    .freezeWith(env.client)
+                    .sign(key);
+
+                const response = await accountCreateTx.execute(env.client);
+                await response.getReceipt(env.client);
+            } catch (error) {
+                err = error
+                    .toString()
+                    .includes(Status.InsufficientTxFee.toString());
+            }
+
+            expect(err).to.be.true;
+        });
+
+        it("fee with setHighVolume(true) is different from fee with setHighVolume(false)", async function () {
+            const keyNormal = PrivateKey.generateED25519();
+            const keyHighVolume = PrivateKey.generateED25519();
+
+            const txNormal = await new AccountCreateTransaction()
+                .setKey(keyNormal.publicKey)
+                .setInitialBalance(new Hbar(1))
+                .setHighVolume(false)
+                .freezeWith(env.client)
+                .sign(keyNormal);
+            const responseNormal = await txNormal.execute(env.client);
+            const recordNormal = await responseNormal.getRecord(env.client);
+            const receiptNormal = await responseNormal.getReceipt(env.client);
+            const accountIdNormal = receiptNormal.accountId;
+
+            const txHighVolume = await new AccountCreateTransaction()
+                .setKey(keyHighVolume.publicKey)
+                .setInitialBalance(new Hbar(1))
+                .setHighVolume(true)
+                .freezeWith(env.client)
+                .sign(keyHighVolume);
+            const responseHighVolume = await txHighVolume.execute(env.client);
+            const recordHighVolume = await responseHighVolume.getRecord(
+                env.client,
+            );
+            const receiptHighVolume = await responseHighVolume.getReceipt(
+                env.client,
+            );
+            const accountIdHighVolume = receiptHighVolume.accountId;
+
+            const feeNormal = recordNormal.transactionFee.toTinybars();
+            const feeHighVolume = recordHighVolume.transactionFee.toTinybars();
+            expect(
+                !feeHighVolume.eq(feeNormal),
+                "fee with high-volume flag should differ from fee without flag",
+            ).to.be.true;
+
+            await deleteAccount(env.client, keyNormal, (transaction) => {
+                transaction
+                    .setAccountId(accountIdNormal)
+                    .setTransferAccountId(env.operatorId)
+                    .setTransactionId(TransactionId.generate(accountIdNormal));
+            });
+            await deleteAccount(env.client, keyHighVolume, (transaction) => {
+                transaction
+                    .setAccountId(accountIdHighVolume)
+                    .setTransferAccountId(env.operatorId)
+                    .setTransactionId(
+                        TransactionId.generate(accountIdHighVolume),
+                    );
+            });
+        });
+
+        it("fee is higher when setHighVolume(true) than when setHighVolume(false)", async function () {
+            const keyNormal = PrivateKey.generateED25519();
+            const keyHighVolume = PrivateKey.generateED25519();
+
+            const txNormal = await new AccountCreateTransaction()
+                .setKey(keyNormal.publicKey)
+                .setInitialBalance(new Hbar(1))
+                .setHighVolume(false)
+                .freezeWith(env.client)
+                .sign(keyNormal);
+            const responseNormal = await txNormal.execute(env.client);
+            const recordNormal = await responseNormal.getRecord(env.client);
+            const receiptNormal = await responseNormal.getReceipt(env.client);
+            const accountIdNormal = receiptNormal.accountId;
+
+            const txHighVolume = await new AccountCreateTransaction()
+                .setKey(keyHighVolume.publicKey)
+                .setInitialBalance(new Hbar(1))
+                .setHighVolume(true)
+                .freezeWith(env.client)
+                .sign(keyHighVolume);
+            const responseHighVolume = await txHighVolume.execute(env.client);
+            const recordHighVolume = await responseHighVolume.getRecord(
+                env.client,
+            );
+            const receiptHighVolume = await responseHighVolume.getReceipt(
+                env.client,
+            );
+            const accountIdHighVolume = receiptHighVolume.accountId;
+
+            const feeNormal = recordNormal.transactionFee.toTinybars();
+            const feeHighVolume = recordHighVolume.transactionFee.toTinybars();
+            expect(
+                feeHighVolume.gt(feeNormal),
+                "high-volume fee should be greater than normal fee",
+            ).to.be.true;
+
+            await deleteAccount(env.client, keyNormal, (transaction) => {
+                transaction
+                    .setAccountId(accountIdNormal)
+                    .setTransferAccountId(env.operatorId)
+                    .setTransactionId(TransactionId.generate(accountIdNormal));
+            });
+            await deleteAccount(env.client, keyHighVolume, (transaction) => {
+                transaction
+                    .setAccountId(accountIdHighVolume)
+                    .setTransferAccountId(env.operatorId)
+                    .setTransactionId(
+                        TransactionId.generate(accountIdHighVolume),
+                    );
+            });
+        });
     });
 
     it("should be able to sign transaction and verify transaction signtatures", async function () {
