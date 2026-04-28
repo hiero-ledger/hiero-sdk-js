@@ -420,10 +420,15 @@ export default class FeeEstimateQuery {
                     return data;
                 }
 
+                // Capture the response body for diagnostics. The mirror node
+                // returns a JSON `_status.messages[].message` describing what
+                // failed; surface it so consumers can act on it.
+                const errorDetail = await readErrorDetail(response);
+
                 if (response.status === 400) {
                     // 400 = malformed transaction (INVALID_ARGUMENT). Do not retry.
                     throw new Error(
-                        `HTTP 400 Bad Request: malformed transaction body`,
+                        `HTTP 400 Bad Request${errorDetail ? `: ${errorDetail}` : ""}`,
                     );
                 }
 
@@ -433,7 +438,7 @@ export default class FeeEstimateQuery {
                     response.status === 504
                 ) {
                     lastError = new Error(
-                        `HTTP error! status: ${response.status}`,
+                        `HTTP ${response.status}${errorDetail ? `: ${errorDetail}` : ""}`,
                     );
                     if (attempt < MAX_ATTEMPTS) {
                         await sleep(backoff);
@@ -443,7 +448,9 @@ export default class FeeEstimateQuery {
                     throw lastError;
                 }
 
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(
+                    `HTTP ${response.status}${errorDetail ? `: ${errorDetail}` : ""}`,
+                );
             } catch (err) {
                 if (
                     err instanceof Error &&
@@ -485,8 +492,39 @@ function isRetryableNetworkError(err) {
     const name = err.name || "";
     const message = err.message || "";
     if (name === "AbortError" || name === "TimeoutError") return true;
-    if (message.startsWith("HTTP error! status: 5")) return true;
+    if (/^HTTP 5\d\d/.test(message)) return true;
     return /timeout|timed out|network|fetch failed|ECONN|ENETUNREACH/i.test(
         message,
     );
+}
+
+/**
+ * Read a short, human-readable error detail from the response body. Mirror
+ * node REST errors are typically JSON of the form `{"_status":{"messages":[{"message":"..."}]}}`,
+ * but plain text responses are also handled. Returns an empty string if the
+ * body is empty or unreadable.
+ *
+ * @param {Response} response
+ * @returns {Promise<string>}
+ */
+async function readErrorDetail(response) {
+    try {
+        const text = await response.text();
+        if (!text) return "";
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const parsed = /** @type {{_status?: {messages?: {message?: string}[]}}} */ (
+                JSON.parse(text)
+            );
+            const message = parsed._status?.messages?.[0]?.message;
+            if (typeof message === "string" && message.length > 0) {
+                return message;
+            }
+        } catch {
+            // not JSON — fall through to the raw text
+        }
+        return text.slice(0, 500);
+    } catch {
+        return "";
+    }
 }
