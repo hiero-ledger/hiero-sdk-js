@@ -53,6 +53,7 @@ import PendingAirdropRecord from "../token/PendingAirdropRecord.js";
  * @property {?string} prngBytes
  * @property {?number} prngNumber
  * @property {?string} evmAddress
+ * @property {?string} highVolumePricingMultiplier
  */
 
 /**
@@ -92,6 +93,7 @@ export default class TransactionRecord {
      * @param {?number} props.prngNumber
      * @param {?EvmAddress} props.evmAddress
      * @param {PendingAirdropRecord[]} props.newPendingAirdrops
+     * @param {?Long} props.highVolumePricingMultiplier
      */
     constructor(props) {
         /**
@@ -295,6 +297,14 @@ export default class TransactionRecord {
          */
         this.newPendingAirdrops = props.newPendingAirdrops;
 
+        /**
+         * The multiplier applied to the transaction fees charged for this transaction
+         * when the high volume flag is set. Scaled by 1000.
+         *
+         * @readonly
+         */
+        this.highVolumePricingMultiplier = props.highVolumePricingMultiplier;
+
         Object.freeze(this);
     }
 
@@ -422,6 +432,10 @@ export default class TransactionRecord {
                 newPendingAirdrops: this.newPendingAirdrops.map((airdrop) =>
                     airdrop.toBytes(),
                 ),
+                highVolumePricingMultiplier:
+                    this.highVolumePricingMultiplier != null
+                        ? this.highVolumePricingMultiplier
+                        : null,
             },
         };
     }
@@ -570,6 +584,10 @@ export default class TransactionRecord {
                     ? EvmAddress.fromBytes(record.evmAddress)
                     : null,
             newPendingAirdrops: newPendingAirdrops,
+            highVolumePricingMultiplier:
+                record.highVolumePricingMultiplier != null
+                    ? /** @type {Long} */ (record.highVolumePricingMultiplier)
+                    : null,
         });
     }
 
@@ -626,6 +644,10 @@ export default class TransactionRecord {
                 this.prngBytes != null ? hex.encode(this.prngBytes) : null,
             prngNumber: this.prngNumber,
             evmAddress: this.evmAddress?.toString() || null,
+            highVolumePricingMultiplier:
+                this.highVolumePricingMultiplier != null
+                    ? this.highVolumePricingMultiplier.toString()
+                    : null,
         };
     }
 
