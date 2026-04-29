@@ -18,6 +18,7 @@ import TokenTransfer from "../token/TokenTransfer.js";
 import EvmAddress from "../EvmAddress.js";
 import * as hex from "../encoding/hex.js";
 import PendingAirdropRecord from "../token/PendingAirdropRecord.js";
+import Long from "long";
 
 /**
  * @typedef {import("../token/TokenId.js").default} TokenId
@@ -53,7 +54,7 @@ import PendingAirdropRecord from "../token/PendingAirdropRecord.js";
  * @property {?string} prngBytes
  * @property {?number} prngNumber
  * @property {?string} evmAddress
- * @property {?string} highVolumePricingMultiplier
+ * @property {string} highVolumePricingMultiplier
  */
 
 /**
@@ -93,7 +94,7 @@ export default class TransactionRecord {
      * @param {?number} props.prngNumber
      * @param {?EvmAddress} props.evmAddress
      * @param {PendingAirdropRecord[]} props.newPendingAirdrops
-     * @param {?Long} props.highVolumePricingMultiplier
+     * @param {Long} props.highVolumePricingMultiplier
      */
     constructor(props) {
         /**
@@ -433,7 +434,7 @@ export default class TransactionRecord {
                     airdrop.toBytes(),
                 ),
                 highVolumePricingMultiplier:
-                    this.highVolumePricingMultiplier != null
+                    !this.highVolumePricingMultiplier.isZero()
                         ? this.highVolumePricingMultiplier
                         : null,
             },
@@ -498,6 +499,11 @@ export default class TransactionRecord {
                       PendingAirdropRecord.fromBytes(airdrop),
                   )
                 : [];
+
+        const highVolumePricingMultiplier =
+            /** @type {Long | null | undefined} */ (
+                record.highVolumePricingMultiplier
+            ) ?? Long.UZERO;
 
         return new TransactionRecord({
             receipt: TransactionReceipt._fromProtobuf({
@@ -584,10 +590,7 @@ export default class TransactionRecord {
                     ? EvmAddress.fromBytes(record.evmAddress)
                     : null,
             newPendingAirdrops: newPendingAirdrops,
-            highVolumePricingMultiplier:
-                record.highVolumePricingMultiplier != null
-                    ? /** @type {Long} */ (record.highVolumePricingMultiplier)
-                    : null,
+            highVolumePricingMultiplier,
         });
     }
 
@@ -645,9 +648,7 @@ export default class TransactionRecord {
             prngNumber: this.prngNumber,
             evmAddress: this.evmAddress?.toString() || null,
             highVolumePricingMultiplier:
-                this.highVolumePricingMultiplier != null
-                    ? this.highVolumePricingMultiplier.toString()
-                    : null,
+                this.highVolumePricingMultiplier.toString(),
         };
     }
 
