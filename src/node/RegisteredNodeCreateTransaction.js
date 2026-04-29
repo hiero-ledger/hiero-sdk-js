@@ -6,7 +6,7 @@ import Transaction, {
 } from "../transaction/Transaction.js";
 import RegisteredServiceEndpoint from "./RegisteredServiceEndpoint.js";
 
-const DESCRIPTION_MAX_LENGTH = 100;
+const DESCRIPTION_MAX_BYTES = 100;
 const SERVICE_ENDPOINTS_MAX_LENGTH = 50;
 
 /**
@@ -31,6 +31,14 @@ const SERVICE_ENDPOINTS_MAX_LENGTH = 50;
  */
 
 /**
+ * @param {string} value
+ * @returns {number}
+ */
+function utf8ByteLength(value) {
+    return new TextEncoder().encode(value).length;
+}
+
+/**
  * Creates a new registered node in the network address book.
  */
 export default class RegisteredNodeCreateTransaction extends Transaction {
@@ -47,21 +55,31 @@ export default class RegisteredNodeCreateTransaction extends Transaction {
          * @private
          * @type {?Key}
          */
-        this._adminKey = props?.adminKey != null ? props.adminKey : null;
+        this._adminKey = null;
 
         /**
          * @private
          * @type {?string}
          */
-        this._description =
-            props?.description != null ? props.description : null;
+        this._description = null;
 
         /**
          * @private
          * @type {RegisteredServiceEndpoint[]}
          */
-        this._serviceEndpoints =
-            props?.serviceEndpoints != null ? [...props.serviceEndpoints] : [];
+        this._serviceEndpoints = [];
+
+        if (props?.adminKey != null) {
+            this.setAdminKey(props.adminKey);
+        }
+
+        if (props?.description != null) {
+            this.setDescription(props.description);
+        }
+
+        if (props?.serviceEndpoints != null) {
+            this.setServiceEndpoints(props.serviceEndpoints);
+        }
     }
 
     /**
@@ -91,17 +109,17 @@ export default class RegisteredNodeCreateTransaction extends Transaction {
                 adminKey:
                     registeredNodeCreate.adminKey != null
                         ? Key._fromProtobufKey(registeredNodeCreate.adminKey)
-                        : undefined,
+                        : null,
                 description:
                     registeredNodeCreate.description != null
                         ? registeredNodeCreate.description
-                        : undefined,
+                        : null,
                 serviceEndpoints:
                     registeredNodeCreate.serviceEndpoint != null
                         ? registeredNodeCreate.serviceEndpoint.map((endpoint) =>
                               RegisteredServiceEndpoint._fromProtobuf(endpoint),
                           )
-                        : undefined,
+                        : [],
             }),
             transactions,
             signedTransactions,
@@ -117,6 +135,11 @@ export default class RegisteredNodeCreateTransaction extends Transaction {
      */
     setAdminKey(adminKey) {
         this._requireNotFrozen();
+
+        if (adminKey == null) {
+            throw new TypeError("adminKey must not be null or undefined.");
+        }
+
         this._adminKey = adminKey;
         return this;
     }
@@ -135,9 +158,13 @@ export default class RegisteredNodeCreateTransaction extends Transaction {
     setDescription(description) {
         this._requireNotFrozen();
 
-        if (description.length > DESCRIPTION_MAX_LENGTH) {
+        if (description == null) {
+            throw new TypeError("description must not be null or undefined.");
+        }
+
+        if (utf8ByteLength(description) > DESCRIPTION_MAX_BYTES) {
             throw new Error(
-                `Description must be at most ${DESCRIPTION_MAX_LENGTH} characters.`,
+                `Description must be at most ${DESCRIPTION_MAX_BYTES} bytes when encoded as UTF-8.`,
             );
         }
 
@@ -159,6 +186,12 @@ export default class RegisteredNodeCreateTransaction extends Transaction {
     setServiceEndpoints(serviceEndpoints) {
         this._requireNotFrozen();
 
+        if (serviceEndpoints == null) {
+            throw new TypeError(
+                "serviceEndpoints must not be null or undefined.",
+            );
+        }
+
         if (serviceEndpoints.length === 0) {
             throw new Error("ServiceEndpoints list must not be empty.");
         }
@@ -177,7 +210,7 @@ export default class RegisteredNodeCreateTransaction extends Transaction {
      * @returns {RegisteredServiceEndpoint[]}
      */
     get serviceEndpoints() {
-        return this._serviceEndpoints;
+        return [...this._serviceEndpoints];
     }
 
     /**
@@ -186,6 +219,12 @@ export default class RegisteredNodeCreateTransaction extends Transaction {
      */
     addServiceEndpoint(serviceEndpoint) {
         this._requireNotFrozen();
+
+        if (serviceEndpoint == null) {
+            throw new TypeError(
+                "serviceEndpoint must not be null or undefined.",
+            );
+        }
 
         if (this._serviceEndpoints.length >= SERVICE_ENDPOINTS_MAX_LENGTH) {
             throw new Error(
@@ -213,6 +252,10 @@ export default class RegisteredNodeCreateTransaction extends Transaction {
             throw new Error(
                 "RegisteredNodeCreateTransaction: 'serviceEndpoints' must not be empty before calling freeze().",
             );
+        }
+
+        for (const endpoint of this._serviceEndpoints) {
+            endpoint._validate();
         }
 
         return super.freezeWith(client);

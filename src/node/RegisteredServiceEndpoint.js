@@ -18,8 +18,28 @@ import BlockNodeApi from "./BlockNodeApi.js";
  * @property {?boolean} [requiresTls]
  */
 
+const DOMAIN_NAME_MAX_LENGTH = 250;
+const GENERAL_SERVICE_DESCRIPTION_MAX_BYTES = 100;
+const IPV4_BYTE_LENGTH = 4;
+const IPV6_BYTE_LENGTH = 16;
+const PORT_MIN = 0;
+const PORT_MAX = 65535;
+
+/**
+ * @param {string} value
+ * @returns {number}
+ */
+function utf8ByteLength(value) {
+    return new TextEncoder().encode(value).length;
+}
+
 /**
  * A service endpoint published by a registered node.
+ *
+ * Abstract base class. Use one of the concrete subclasses
+ * (`BlockNodeServiceEndpoint`, `MirrorNodeServiceEndpoint`,
+ * `RpcRelayServiceEndpoint`, `GeneralServiceEndpoint`) instead of
+ * instantiating this class directly.
  */
 export default class RegisteredServiceEndpoint {
     /**
@@ -96,10 +116,28 @@ export default class RegisteredServiceEndpoint {
     }
 
     /**
+     * Sets the IP address for this endpoint. Must be exactly 4 bytes (IPv4)
+     * or 16 bytes (IPv6) in big-endian order.
+     *
      * @param {Uint8Array} ipAddress
      * @returns {this}
+     * @throws {TypeError} If ipAddress is null/undefined.
+     * @throws {Error} If ipAddress is not 4 or 16 bytes, or if domainName is already set.
      */
     setIpAddress(ipAddress) {
+        if (ipAddress == null) {
+            throw new TypeError("ipAddress must not be null or undefined.");
+        }
+
+        if (
+            ipAddress.length !== IPV4_BYTE_LENGTH &&
+            ipAddress.length !== IPV6_BYTE_LENGTH
+        ) {
+            throw new Error(
+                `IP address must be 4 bytes (IPv4) or 16 bytes (IPv6); got ${ipAddress.length} bytes.`,
+            );
+        }
+
         if (this._domainName != null) {
             throw new Error(
                 "Cannot set IP address when domain name is already set.",
@@ -118,10 +156,24 @@ export default class RegisteredServiceEndpoint {
     }
 
     /**
+     * Sets the fully-qualified domain name for this endpoint.
+     *
      * @param {string} domainName
      * @returns {this}
+     * @throws {TypeError} If domainName is null/undefined.
+     * @throws {Error} If domainName exceeds 250 ASCII characters or if ipAddress is already set.
      */
     setDomainName(domainName) {
+        if (domainName == null) {
+            throw new TypeError("domainName must not be null or undefined.");
+        }
+
+        if (domainName.length > DOMAIN_NAME_MAX_LENGTH) {
+            throw new Error(
+                `Domain name must be at most ${DOMAIN_NAME_MAX_LENGTH} ASCII characters.`,
+            );
+        }
+
         if (this._ipAddress != null) {
             throw new Error(
                 "Cannot set domain name when IP address is already set.",
@@ -144,8 +196,10 @@ export default class RegisteredServiceEndpoint {
      * @returns {this}
      */
     setPort(port) {
-        if (!Number.isInteger(port) || port < 0 || port > 65535) {
-            throw new Error("Port must be an integer in the range [0, 65535].");
+        if (!Number.isInteger(port) || port < PORT_MIN || port > PORT_MAX) {
+            throw new Error(
+                `Port must be an integer in the range [${PORT_MIN}, ${PORT_MAX}].`,
+            );
         }
 
         this._port = port;
@@ -164,6 +218,10 @@ export default class RegisteredServiceEndpoint {
      * @returns {this}
      */
     setRequiresTls(requiresTls) {
+        if (typeof requiresTls !== "boolean") {
+            throw new TypeError("requiresTls must be a boolean.");
+        }
+
         this._requiresTls = requiresTls;
         return this;
     }
@@ -173,6 +231,23 @@ export default class RegisteredServiceEndpoint {
      */
     get requiresTls() {
         return this._requiresTls;
+    }
+
+    /**
+     * Validates that the endpoint satisfies the proto-required oneOf
+     * constraints (must have either an ipAddress or a domainName set).
+     * Called by transaction `freezeWith` for each endpoint before send.
+     *
+     * @internal
+     * @returns {void}
+     * @throws {Error} If neither ipAddress nor domainName is set.
+     */
+    _validate() {
+        if (this._ipAddress == null && this._domainName == null) {
+            throw new Error(
+                "RegisteredServiceEndpoint must have either an IP address or a domain name set.",
+            );
+        }
     }
 
     /**
@@ -259,8 +334,7 @@ export default class RegisteredServiceEndpoint {
 
 /**
  * @typedef {RegisteredServiceEndpointProps & {
- *   endpointApi?: (BlockNodeApi | number | null),
- *   endpointApis?: ((BlockNodeApi | number)[] | null),
+ *   endpointApis?: ?((BlockNodeApi | number)[]),
  * }} BlockNodeServiceEndpointProps
  */
 
@@ -284,8 +358,6 @@ export class BlockNodeServiceEndpoint extends RegisteredServiceEndpoint {
 
         if (props.endpointApis != null) {
             this.setEndpointApis(props.endpointApis);
-        } else if (props.endpointApi != null) {
-            this.setEndpointApi(props.endpointApi);
         }
     }
 
@@ -294,6 +366,10 @@ export class BlockNodeServiceEndpoint extends RegisteredServiceEndpoint {
      * @returns {this}
      */
     setEndpointApis(endpointApis) {
+        if (endpointApis == null) {
+            throw new TypeError("endpointApis must not be null or undefined.");
+        }
+
         this._endpointApis = endpointApis.map((endpointApi) =>
             endpointApi instanceof BlockNodeApi
                 ? endpointApi
@@ -303,20 +379,14 @@ export class BlockNodeServiceEndpoint extends RegisteredServiceEndpoint {
     }
 
     /**
-     * Backward-compatible shorthand for replacing the API list with one value.
-     *
-     * @param {BlockNodeApi | number} endpointApi
-     * @returns {this}
-     */
-    setEndpointApi(endpointApi) {
-        return this.setEndpointApis([endpointApi]);
-    }
-
-    /**
      * @param {BlockNodeApi | number} endpointApi
      * @returns {this}
      */
     addEndpointApi(endpointApi) {
+        if (endpointApi == null) {
+            throw new TypeError("endpointApi must not be null or undefined.");
+        }
+
         this._endpointApis.push(
             endpointApi instanceof BlockNodeApi
                 ? endpointApi
@@ -329,16 +399,7 @@ export class BlockNodeServiceEndpoint extends RegisteredServiceEndpoint {
      * @returns {BlockNodeApi[]}
      */
     get endpointApis() {
-        return this._endpointApis;
-    }
-
-    /**
-     * Backward-compatible singular view of the first configured API.
-     *
-     * @returns {?BlockNodeApi}
-     */
-    get endpointApi() {
-        return this._endpointApis.length > 0 ? this._endpointApis[0] : null;
+        return [...this._endpointApis];
     }
 
     /**
@@ -348,19 +409,16 @@ export class BlockNodeServiceEndpoint extends RegisteredServiceEndpoint {
      */
     static _fromProtobuf(endpoint) {
         return new BlockNodeServiceEndpoint({
-            ipAddress:
-                endpoint.ipAddress != null ? endpoint.ipAddress : undefined,
+            ipAddress: endpoint.ipAddress != null ? endpoint.ipAddress : null,
             domainName:
-                endpoint.domainName != null ? endpoint.domainName : undefined,
-            port: endpoint.port != null ? endpoint.port : undefined,
+                endpoint.domainName != null ? endpoint.domainName : null,
+            port: endpoint.port != null ? endpoint.port : null,
             requiresTls:
-                endpoint.requiresTls != null ? endpoint.requiresTls : undefined,
+                endpoint.requiresTls != null ? endpoint.requiresTls : null,
             endpointApis:
                 endpoint.blockNode?.endpointApi != null
-                    ? Array.isArray(endpoint.blockNode.endpointApi)
-                        ? endpoint.blockNode.endpointApi
-                        : [endpoint.blockNode.endpointApi]
-                    : undefined,
+                    ? endpoint.blockNode.endpointApi
+                    : null,
         });
     }
 
@@ -399,13 +457,12 @@ export class MirrorNodeServiceEndpoint extends RegisteredServiceEndpoint {
      */
     static _fromProtobuf(endpoint) {
         return new MirrorNodeServiceEndpoint({
-            ipAddress:
-                endpoint.ipAddress != null ? endpoint.ipAddress : undefined,
+            ipAddress: endpoint.ipAddress != null ? endpoint.ipAddress : null,
             domainName:
-                endpoint.domainName != null ? endpoint.domainName : undefined,
-            port: endpoint.port != null ? endpoint.port : undefined,
+                endpoint.domainName != null ? endpoint.domainName : null,
+            port: endpoint.port != null ? endpoint.port : null,
             requiresTls:
-                endpoint.requiresTls != null ? endpoint.requiresTls : undefined,
+                endpoint.requiresTls != null ? endpoint.requiresTls : null,
         });
     }
 
@@ -440,13 +497,12 @@ export class RpcRelayServiceEndpoint extends RegisteredServiceEndpoint {
      */
     static _fromProtobuf(endpoint) {
         return new RpcRelayServiceEndpoint({
-            ipAddress:
-                endpoint.ipAddress != null ? endpoint.ipAddress : undefined,
+            ipAddress: endpoint.ipAddress != null ? endpoint.ipAddress : null,
             domainName:
-                endpoint.domainName != null ? endpoint.domainName : undefined,
-            port: endpoint.port != null ? endpoint.port : undefined,
+                endpoint.domainName != null ? endpoint.domainName : null,
+            port: endpoint.port != null ? endpoint.port : null,
             requiresTls:
-                endpoint.requiresTls != null ? endpoint.requiresTls : undefined,
+                endpoint.requiresTls != null ? endpoint.requiresTls : null,
         });
     }
 
@@ -463,7 +519,7 @@ export class RpcRelayServiceEndpoint extends RegisteredServiceEndpoint {
 }
 
 /**
- * @typedef {RegisteredServiceEndpointProps & { description?: (string | null) }} GeneralServiceEndpointProps
+ * @typedef {RegisteredServiceEndpointProps & { description?: ?string }} GeneralServiceEndpointProps
  */
 
 /**
@@ -480,17 +536,36 @@ export class GeneralServiceEndpoint extends RegisteredServiceEndpoint {
          * @private
          * @type {?string}
          */
-        this._description =
-            props.description != null ? props.description : null;
+        this._description = null;
 
         this._setType("generalService");
+
+        if (props.description != null) {
+            this.setDescription(props.description);
+        }
     }
 
     /**
+     * Sets the description. Pass `null` to clear it.
+     *
      * @param {?string} description
      * @returns {this}
+     * @throws {Error} If description exceeds 100 UTF-8 bytes.
      */
     setDescription(description) {
+        if (description == null) {
+            this._description = null;
+            return this;
+        }
+
+        if (
+            utf8ByteLength(description) > GENERAL_SERVICE_DESCRIPTION_MAX_BYTES
+        ) {
+            throw new Error(
+                `Description must be at most ${GENERAL_SERVICE_DESCRIPTION_MAX_BYTES} bytes when encoded as UTF-8.`,
+            );
+        }
+
         this._description = description;
         return this;
     }
@@ -509,17 +584,16 @@ export class GeneralServiceEndpoint extends RegisteredServiceEndpoint {
      */
     static _fromProtobuf(endpoint) {
         return new GeneralServiceEndpoint({
-            ipAddress:
-                endpoint.ipAddress != null ? endpoint.ipAddress : undefined,
+            ipAddress: endpoint.ipAddress != null ? endpoint.ipAddress : null,
             domainName:
-                endpoint.domainName != null ? endpoint.domainName : undefined,
-            port: endpoint.port != null ? endpoint.port : undefined,
+                endpoint.domainName != null ? endpoint.domainName : null,
+            port: endpoint.port != null ? endpoint.port : null,
             requiresTls:
-                endpoint.requiresTls != null ? endpoint.requiresTls : undefined,
+                endpoint.requiresTls != null ? endpoint.requiresTls : null,
             description:
                 endpoint.generalService?.description != null
                     ? endpoint.generalService.description
-                    : undefined,
+                    : null,
         });
     }
 
@@ -532,7 +606,7 @@ export class GeneralServiceEndpoint extends RegisteredServiceEndpoint {
             ...this._toProtobufBase(),
             generalService: {
                 description:
-                    this._description != null ? this._description : undefined,
+                    this._description != null ? this._description : null,
             },
         };
     }

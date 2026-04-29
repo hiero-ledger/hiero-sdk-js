@@ -364,6 +364,11 @@ export default class TransactionReceipt {
                     : [],
             children,
             duplicates,
+            // HIP-1137: registered node IDs are assigned starting at 1, so a
+            // proto3-default value of 0 means "not assigned" — surface it as
+            // `null` rather than a fake `Long(0)`. The consensus `nodeId`
+            // field below preserves 0 because consensus node IDs are
+            // 0-indexed in the consensus address book.
             registeredNodeId:
                 receipt.registeredNodeId != null &&
                 !Long.fromValue(receipt.registeredNodeId).isZero()

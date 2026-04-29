@@ -131,12 +131,6 @@ export default class RegisteredNodeAddressBookQuery extends Query {
 
             return false;
         };
-
-        /**
-         * @private
-         * @type {RegisteredNode[]}
-         */
-        this._registeredNodes = [];
     }
 
     /**
@@ -152,24 +146,6 @@ export default class RegisteredNodeAddressBookQuery extends Query {
      */
     setLimit(limit) {
         this._limit = limit;
-        return this;
-    }
-
-    /**
-     * @param {number} attempts
-     * @returns {this}
-     */
-    setMaxAttempts(attempts) {
-        this._maxAttempts = attempts;
-        return this;
-    }
-
-    /**
-     * @param {number} backoff
-     * @returns {this}
-     */
-    setMaxBackoff(backoff) {
-        this._maxBackoff = backoff;
         return this;
     }
 
@@ -200,7 +176,8 @@ export default class RegisteredNodeAddressBookQuery extends Query {
     async _makeFetchRequest(client, resolve, reject, requestTimeout) {
         const baseUrl = client.mirrorRestJavaApiBaseUrl;
 
-        this._registeredNodes = [];
+        /** @type {RegisteredNode[]} */
+        const aggregatedNodes = [];
         let nextUrl = null;
         let isLastPage = false;
 
@@ -210,6 +187,7 @@ export default class RegisteredNodeAddressBookQuery extends Query {
         initialUrl.searchParams.append("limit", effectiveLimit.toString());
 
         const maxAttempts = this._maxAttempts ?? client.maxAttempts;
+        const maxBackoff = this._maxBackoff ?? client.maxBackoff;
 
         while (!isLastPage) {
             const currentUrl = nextUrl ? new URL(nextUrl, baseUrl) : initialUrl;
@@ -255,7 +233,7 @@ export default class RegisteredNodeAddressBookQuery extends Query {
                         }
                     }
 
-                    this._registeredNodes.push(...registeredNodes);
+                    aggregatedNodes.push(...registeredNodes);
                     nextUrl = data.links?.next ?? null;
 
                     if (nextUrl == null) {
@@ -274,10 +252,7 @@ export default class RegisteredNodeAddressBookQuery extends Query {
                             /** @type {MirrorError | Error | null} */ (error),
                         )
                     ) {
-                        const delay = Math.min(
-                            250 * 2 ** attempt,
-                            this._maxBackoff,
-                        );
+                        const delay = Math.min(250 * 2 ** attempt, maxBackoff);
 
                         if (this._logger) {
                             this._logger.debug(
@@ -308,7 +283,7 @@ export default class RegisteredNodeAddressBookQuery extends Query {
 
         resolve(
             new RegisteredNodeAddressBook({
-                registeredNodes: this._registeredNodes,
+                registeredNodes: aggregatedNodes,
             }),
         );
     }

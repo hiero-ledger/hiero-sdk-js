@@ -21,6 +21,24 @@ export default class RegisteredNode {
      * @param {RegisteredServiceEndpoint[]} props.serviceEndpoints
      */
     constructor(props) {
+        if (props == null) {
+            throw new TypeError("RegisteredNode props are required.");
+        }
+
+        if (props.registeredNodeId == null) {
+            throw new TypeError("RegisteredNode requires a registeredNodeId.");
+        }
+
+        if (props.adminKey == null) {
+            throw new TypeError("RegisteredNode requires an adminKey.");
+        }
+
+        if (props.serviceEndpoints == null) {
+            throw new TypeError(
+                "RegisteredNode requires a serviceEndpoints array.",
+            );
+        }
+
         /**
          * @readonly
          * @type {Long}
@@ -55,19 +73,20 @@ export default class RegisteredNode {
      * @returns {RegisteredNode}
      */
     static _fromProtobuf(registeredNode) {
+        if (registeredNode.adminKey == null) {
+            throw new Error(
+                "RegisteredNode protobuf did not include an adminKey.",
+            );
+        }
+
+        const decodedKey = Key._fromProtobufKey(registeredNode.adminKey);
+
         return new RegisteredNode({
             registeredNodeId:
                 registeredNode.registeredNodeId != null
                     ? registeredNode.registeredNodeId
                     : Long.ZERO,
-            adminKey:
-                registeredNode.adminKey != null
-                    ? Key._fromProtobufKey(registeredNode.adminKey)
-                    : (() => {
-                          throw new Error(
-                              "RegisteredNode protobuf did not include an adminKey.",
-                          );
-                      })(),
+            adminKey: decodedKey,
             description:
                 registeredNode.description != null
                     ? registeredNode.description

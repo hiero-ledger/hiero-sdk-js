@@ -57,7 +57,7 @@ describe("RegisteredNodeUpdateTransaction", function () {
         expect(tx2.registeredNodeId.toString()).to.equal("123");
         expect(tx.adminKey.toString()).to.equal(tx2.adminKey.toString());
         expect(tx.description).to.equal(tx2.description);
-        expect(tx2.serviceEndpoints.length).to.equal(2);
+        expect(tx2.serviceEndpoints).to.have.length(2);
         expect(tx2.serviceEndpoints[0].type).to.equal("blockNode");
         expect(tx2.serviceEndpoints[0].endpointApis).to.deep.equal([
             BlockNodeApi.Status,
@@ -65,11 +65,8 @@ describe("RegisteredNodeUpdateTransaction", function () {
         expect(tx2.serviceEndpoints[1].type).to.equal("mirrorNode");
     });
 
-    it("should clear the description", function () {
-        const tx = new RegisteredNodeUpdateTransaction().setDescription(
-            "to clear",
-        );
-        tx.clearDescription();
+    it("setDescription('') is the documented way to clear description on the network", function () {
+        const tx = new RegisteredNodeUpdateTransaction().setDescription("");
         expect(tx.description).to.equal("");
     });
 
@@ -91,5 +88,48 @@ describe("RegisteredNodeUpdateTransaction", function () {
             Long.fromNumber(456),
         );
         expect(tx.registeredNodeId.toString()).to.equal("456");
+    });
+
+    it("partial update without serviceEndpoints leaves the field unset", function () {
+        const tx = new RegisteredNodeUpdateTransaction()
+            .setRegisteredNodeId(1)
+            .setDescription("only description");
+
+        expect(tx.serviceEndpoints).to.equal(null);
+
+        // Verify the wire body does not include a serviceEndpoint replacement.
+        // eslint-disable-next-line no-underscore-dangle
+        const data = tx._makeTransactionData();
+        expect(data.serviceEndpoint).to.equal(null);
+    });
+
+    it("setServiceEndpoints with non-empty list emits a replacement on the wire", function () {
+        const tx = new RegisteredNodeUpdateTransaction()
+            .setRegisteredNodeId(1)
+            .setServiceEndpoints([
+                new MirrorNodeServiceEndpoint()
+                    .setDomainName("mirror.example.com")
+                    .setPort(5600),
+            ]);
+
+        // eslint-disable-next-line no-underscore-dangle
+        const data = tx._makeTransactionData();
+        expect(data.serviceEndpoint).to.have.length(1);
+    });
+
+    it("should reject null in setters", function () {
+        const tx = new RegisteredNodeUpdateTransaction();
+        expect(() => tx.setRegisteredNodeId(null)).to.throw(TypeError);
+        expect(() => tx.setAdminKey(null)).to.throw(TypeError);
+        expect(() => tx.setDescription(null)).to.throw(TypeError);
+        expect(() => tx.setServiceEndpoints(null)).to.throw(TypeError);
+        expect(() => tx.addServiceEndpoint(null)).to.throw(TypeError);
+    });
+
+    it("should reject empty serviceEndpoints list", function () {
+        const tx = new RegisteredNodeUpdateTransaction();
+        expect(() => tx.setServiceEndpoints([])).to.throw(
+            "ServiceEndpoints list must not be empty.",
+        );
     });
 });

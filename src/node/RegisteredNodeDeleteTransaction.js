@@ -71,7 +71,7 @@ export default class RegisteredNodeDeleteTransaction extends Transaction {
             new RegisteredNodeDeleteTransaction({
                 registeredNodeId:
                     registeredNodeDelete.registeredNodeId != null
-                        ? registeredNodeDelete.registeredNodeId
+                        ? Long.fromValue(registeredNodeDelete.registeredNodeId)
                         : undefined,
             }),
             transactions,
@@ -90,8 +90,9 @@ export default class RegisteredNodeDeleteTransaction extends Transaction {
         this._requireNotFrozen();
 
         if (registeredNodeId == null) {
-            this._registeredNodeId = null;
-            return this;
+            throw new TypeError(
+                "registeredNodeId must not be null or undefined.",
+            );
         }
 
         const longRegisteredNodeId = Long.isLong(registeredNodeId)

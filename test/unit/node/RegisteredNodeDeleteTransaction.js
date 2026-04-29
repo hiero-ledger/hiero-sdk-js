@@ -42,6 +42,11 @@ describe("RegisteredNodeDeleteTransaction", function () {
         );
     });
 
+    it("should throw TypeError when setting a null id", function () {
+        const tx = new RegisteredNodeDeleteTransaction();
+        expect(() => tx.setRegisteredNodeId(null)).to.throw(TypeError);
+    });
+
     it("should require registeredNodeId before freeze", function () {
         const nodeAccountIds = [AccountId.fromString("0.0.5005")];
         const tx = new RegisteredNodeDeleteTransaction()

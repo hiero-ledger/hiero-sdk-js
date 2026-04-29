@@ -7,7 +7,7 @@ import Transaction, {
 } from "../transaction/Transaction.js";
 import RegisteredServiceEndpoint from "./RegisteredServiceEndpoint.js";
 
-const DESCRIPTION_MAX_LENGTH = 100;
+const DESCRIPTION_MAX_BYTES = 100;
 const SERVICE_ENDPOINTS_MAX_LENGTH = 50;
 
 /**
@@ -32,7 +32,23 @@ const SERVICE_ENDPOINTS_MAX_LENGTH = 50;
  */
 
 /**
+ * @param {string} value
+ * @returns {number}
+ */
+function utf8ByteLength(value) {
+    return new TextEncoder().encode(value).length;
+}
+
+/**
  * Updates an existing registered node in the network address book.
+ *
+ * Partial-update semantics:
+ * - When `serviceEndpoints` is left unset (`null`), the existing endpoint
+ *   list is unchanged. When set to a non-empty list, it replaces the
+ *   existing list entirely.
+ * - When `description` is left unset (`null`), the existing description is
+ *   unchanged. To explicitly clear it on the network, call
+ *   `setDescription("")`.
  */
 export default class RegisteredNodeUpdateTransaction extends Transaction {
     /**
@@ -40,7 +56,7 @@ export default class RegisteredNodeUpdateTransaction extends Transaction {
      * @param {Long} [props.registeredNodeId]
      * @param {?Key} [props.adminKey]
      * @param {?string} [props.description]
-     * @param {RegisteredServiceEndpoint[]} [props.serviceEndpoints]
+     * @param {?RegisteredServiceEndpoint[]} [props.serviceEndpoints]
      */
     constructor(props) {
         super();
@@ -49,28 +65,45 @@ export default class RegisteredNodeUpdateTransaction extends Transaction {
          * @private
          * @type {?Long}
          */
-        this._registeredNodeId =
-            props?.registeredNodeId != null ? props.registeredNodeId : null;
+        this._registeredNodeId = null;
 
         /**
          * @private
          * @type {?Key}
          */
-        this._adminKey = props?.adminKey != null ? props.adminKey : null;
+        this._adminKey = null;
 
         /**
          * @private
          * @type {?string}
          */
-        this._description =
-            props?.description != null ? props.description : null;
+        this._description = null;
 
         /**
+         * Null when no replacement has been set (partial update keeps existing
+         * endpoints). A populated array when the user has explicitly called
+         * `setServiceEndpoints` or `addServiceEndpoint`.
+         *
          * @private
-         * @type {RegisteredServiceEndpoint[]}
+         * @type {?RegisteredServiceEndpoint[]}
          */
-        this._serviceEndpoints =
-            props?.serviceEndpoints != null ? [...props.serviceEndpoints] : [];
+        this._serviceEndpoints = null;
+
+        if (props?.registeredNodeId != null) {
+            this.setRegisteredNodeId(props.registeredNodeId);
+        }
+
+        if (props?.adminKey != null) {
+            this.setAdminKey(props.adminKey);
+        }
+
+        if (props?.description != null) {
+            this.setDescription(props.description);
+        }
+
+        if (props?.serviceEndpoints != null) {
+            this.setServiceEndpoints(props.serviceEndpoints);
+        }
     }
 
     /**
@@ -99,27 +132,24 @@ export default class RegisteredNodeUpdateTransaction extends Transaction {
             new RegisteredNodeUpdateTransaction({
                 registeredNodeId:
                     registeredNodeUpdate.registeredNodeId != null
-                        ? registeredNodeUpdate.registeredNodeId
+                        ? Long.fromValue(registeredNodeUpdate.registeredNodeId)
                         : undefined,
                 adminKey:
                     registeredNodeUpdate.adminKey != null
                         ? Key._fromProtobufKey(registeredNodeUpdate.adminKey)
-                        : undefined,
+                        : null,
                 description:
-                    registeredNodeUpdate.description != null
-                        ? Object.hasOwn(
-                              registeredNodeUpdate.description,
-                              "value",
-                          )
-                            ? registeredNodeUpdate.description.value
-                            : undefined
-                        : undefined,
+                    registeredNodeUpdate.description != null &&
+                    Object.hasOwn(registeredNodeUpdate.description, "value")
+                        ? registeredNodeUpdate.description.value
+                        : null,
                 serviceEndpoints:
-                    registeredNodeUpdate.serviceEndpoint != null
+                    registeredNodeUpdate.serviceEndpoint != null &&
+                    registeredNodeUpdate.serviceEndpoint.length > 0
                         ? registeredNodeUpdate.serviceEndpoint.map((endpoint) =>
                               RegisteredServiceEndpoint._fromProtobuf(endpoint),
                           )
-                        : undefined,
+                        : null,
             }),
             transactions,
             signedTransactions,
@@ -137,8 +167,9 @@ export default class RegisteredNodeUpdateTransaction extends Transaction {
         this._requireNotFrozen();
 
         if (registeredNodeId == null) {
-            this._registeredNodeId = null;
-            return this;
+            throw new TypeError(
+                "registeredNodeId must not be null or undefined.",
+            );
         }
 
         const longRegisteredNodeId = Long.isLong(registeredNodeId)
@@ -168,6 +199,11 @@ export default class RegisteredNodeUpdateTransaction extends Transaction {
      */
     setAdminKey(adminKey) {
         this._requireNotFrozen();
+
+        if (adminKey == null) {
+            throw new TypeError("adminKey must not be null or undefined.");
+        }
+
         this._adminKey = adminKey;
         return this;
     }
@@ -180,28 +216,28 @@ export default class RegisteredNodeUpdateTransaction extends Transaction {
     }
 
     /**
+     * Sets the description. To clear the description on the network, pass
+     * an empty string (`setDescription("")`). Leaving it unset (the default)
+     * means "do not change the existing description".
+     *
      * @param {string} description
      * @returns {RegisteredNodeUpdateTransaction}
      */
     setDescription(description) {
         this._requireNotFrozen();
 
-        if (description.length > DESCRIPTION_MAX_LENGTH) {
+        if (description == null) {
+            throw new TypeError("description must not be null or undefined.");
+        }
+
+        if (utf8ByteLength(description) > DESCRIPTION_MAX_BYTES) {
             throw new Error(
-                `Description must be at most ${DESCRIPTION_MAX_LENGTH} characters.`,
+                `Description must be at most ${DESCRIPTION_MAX_BYTES} bytes when encoded as UTF-8.`,
             );
         }
 
         this._description = description;
         return this;
-    }
-
-    /**
-     * @returns {void}
-     */
-    clearDescription() {
-        this._requireNotFrozen();
-        this._description = "";
     }
 
     /**
@@ -212,11 +248,20 @@ export default class RegisteredNodeUpdateTransaction extends Transaction {
     }
 
     /**
+     * Replaces the existing service endpoints. Must contain between 1 and
+     * 50 entries.
+     *
      * @param {RegisteredServiceEndpoint[]} serviceEndpoints
      * @returns {RegisteredNodeUpdateTransaction}
      */
     setServiceEndpoints(serviceEndpoints) {
         this._requireNotFrozen();
+
+        if (serviceEndpoints == null) {
+            throw new TypeError(
+                "serviceEndpoints must not be null or undefined.",
+            );
+        }
 
         if (serviceEndpoints.length === 0) {
             throw new Error("ServiceEndpoints list must not be empty.");
@@ -233,10 +278,15 @@ export default class RegisteredNodeUpdateTransaction extends Transaction {
     }
 
     /**
-     * @returns {RegisteredServiceEndpoint[]}
+     * Returns the configured service-endpoint replacement, or `null` when
+     * the existing endpoints will be left unchanged.
+     *
+     * @returns {?RegisteredServiceEndpoint[]}
      */
     get serviceEndpoints() {
-        return this._serviceEndpoints;
+        return this._serviceEndpoints != null
+            ? [...this._serviceEndpoints]
+            : null;
     }
 
     /**
@@ -245,6 +295,16 @@ export default class RegisteredNodeUpdateTransaction extends Transaction {
      */
     addServiceEndpoint(serviceEndpoint) {
         this._requireNotFrozen();
+
+        if (serviceEndpoint == null) {
+            throw new TypeError(
+                "serviceEndpoint must not be null or undefined.",
+            );
+        }
+
+        if (this._serviceEndpoints == null) {
+            this._serviceEndpoints = [];
+        }
 
         if (this._serviceEndpoints.length >= SERVICE_ENDPOINTS_MAX_LENGTH) {
             throw new Error(
@@ -266,6 +326,12 @@ export default class RegisteredNodeUpdateTransaction extends Transaction {
             throw new Error(
                 "RegisteredNodeUpdateTransaction: 'registeredNodeId' must be explicitly set before calling freeze().",
             );
+        }
+
+        if (this._serviceEndpoints != null) {
+            for (const endpoint of this._serviceEndpoints) {
+                endpoint._validate();
+            }
         }
 
         return super.freezeWith(client);
@@ -305,9 +371,15 @@ export default class RegisteredNodeUpdateTransaction extends Transaction {
                 this._adminKey != null ? this._adminKey._toProtobufKey() : null,
             description:
                 this._description != null ? { value: this._description } : null,
-            serviceEndpoint: this._serviceEndpoints.map((endpoint) =>
-                endpoint._toProtobuf(),
-            ),
+            // Per HIP-1137 + proto: only emit serviceEndpoint when the user
+            // explicitly set a replacement list. An empty/missing list means
+            // "leave existing endpoints unchanged".
+            serviceEndpoint:
+                this._serviceEndpoints != null
+                    ? this._serviceEndpoints.map((endpoint) =>
+                          endpoint._toProtobuf(),
+                      )
+                    : null,
         };
 
         return data;

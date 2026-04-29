@@ -31,7 +31,6 @@ describe("RegisteredServiceEndpoint", function () {
             BlockNodeApi.SubscribeStream,
             BlockNodeApi.Status,
         ]);
-        expect(endpoint2.endpointApi).to.equal(BlockNodeApi.SubscribeStream);
     });
 
     it("should round-trip a mirror node endpoint", function () {
@@ -92,8 +91,52 @@ describe("RegisteredServiceEndpoint", function () {
             "mirror.example.com",
         );
 
-        expect(() => endpoint.setIpAddress(Uint8Array.of(127, 0, 0, 1))).to
-            .throw;
+        expect(() =>
+            endpoint.setIpAddress(Uint8Array.of(127, 0, 0, 1)),
+        ).to.throw("Cannot set IP address when domain name is already set.");
+    });
+
+    it("should reject IP addresses that are not 4 or 16 bytes", function () {
+        const endpoint = new BlockNodeServiceEndpoint();
+
+        expect(() => endpoint.setIpAddress(Uint8Array.of(1, 2, 3))).to.throw(
+            /must be 4 bytes \(IPv4\) or 16 bytes \(IPv6\)/,
+        );
+        expect(() => endpoint.setIpAddress(new Uint8Array(8))).to.throw(
+            /must be 4 bytes \(IPv4\) or 16 bytes \(IPv6\)/,
+        );
+    });
+
+    it("should accept a 16-byte IPv6 address", function () {
+        const ipv6 = new Uint8Array(16);
+        ipv6[15] = 1;
+        const endpoint = new RpcRelayServiceEndpoint().setIpAddress(ipv6);
+        expect(endpoint.ipAddress).to.deep.equal(ipv6);
+    });
+
+    it("should reject a domain name longer than 250 ASCII chars", function () {
+        const endpoint = new MirrorNodeServiceEndpoint();
+        expect(() => endpoint.setDomainName("a".repeat(251))).to.throw(
+            /at most 250 ASCII characters/,
+        );
+    });
+
+    it("should reject null setters", function () {
+        const endpoint = new BlockNodeServiceEndpoint();
+        expect(() => endpoint.setIpAddress(null)).to.throw(TypeError);
+        expect(() => endpoint.setDomainName(null)).to.throw(TypeError);
+        expect(() => endpoint.setEndpointApis(null)).to.throw(TypeError);
+    });
+
+    it("should reject a general service description longer than 100 UTF-8 bytes", function () {
+        const endpoint = new GeneralServiceEndpoint();
+        expect(() => endpoint.setDescription("a".repeat(101))).to.throw(
+            /at most 100 bytes when encoded as UTF-8/,
+        );
+        // Multi-byte UTF-8 character: 'é' = 2 bytes; 51 of them = 102 bytes.
+        expect(() => endpoint.setDescription("é".repeat(51))).to.throw(
+            /at most 100 bytes when encoded as UTF-8/,
+        );
     });
 
     it("should validate the port range", function () {
@@ -104,5 +147,21 @@ describe("RegisteredServiceEndpoint", function () {
         expect(() => endpoint.setPort(65536)).to.throw(
             "Port must be an integer in the range [0, 65535].",
         );
+    });
+
+    it("_validate should fail when neither ipAddress nor domainName is set", function () {
+        const endpoint = new BlockNodeServiceEndpoint().setPort(443);
+        expect(() => endpoint._validate()).to.throw(
+            /must have either an IP address or a domain name set/,
+        );
+    });
+
+    it("endpointApis getter should return a defensive copy", function () {
+        const endpoint = new BlockNodeServiceEndpoint().setEndpointApis([
+            BlockNodeApi.Status,
+        ]);
+        const apis = endpoint.endpointApis;
+        apis.push(BlockNodeApi.Publish);
+        expect(endpoint.endpointApis).to.deep.equal([BlockNodeApi.Status]);
     });
 });
