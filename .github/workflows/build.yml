@@ -113,6 +113,38 @@ jobs:
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
           grpcProxyPort: 8080
+
+      # Mitigate a cold-start race in the mirror node's rest-java service.
+      # FeeEstimationService loads the simple fee schedule via
+      # @EventListener(ApplicationReadyEvent.class). On a fresh solo, that
+      # event can fire before the consensus node has produced the genesis
+      # fee-schedule block into mirror's DB, leaving the calculator null and
+      # making every FeeEstimateQuery 400 with "Unknown transaction type"
+      # until the @Scheduled refresh fires (10 minutes later by default).
+      #
+      # Workaround: wait for the fee schedule data to land in mirror's DB,
+      # then bounce the rest-java pod so its ApplicationReadyEvent re-fires
+      # against a populated DB. This matches the manual "restart solo"
+      # workaround that's been verified locally. See HIP-1261.
+      - name: Warm up mirror node fee schedule
+        run: |
+          set -euo pipefail
+          NS=solo
+          DEPLOY=mirror-1-restjava
+
+          echo "Waiting for ${DEPLOY} to be available before bounce..."
+          kubectl rollout status -n "${NS}" "deployment/${DEPLOY}" --timeout=180s
+
+          echo "Sleeping 30s to let consensus push the genesis fee schedule into mirror DB..."
+          sleep 30
+
+          echo "Restarting ${DEPLOY} so ApplicationReadyEvent re-fires with fee schedule populated..."
+          kubectl rollout restart -n "${NS}" "deployment/${DEPLOY}"
+          kubectl rollout status  -n "${NS}" "deployment/${DEPLOY}" --timeout=180s
+
+          echo "Allowing the rebooted rest-java to finish Spring context init..."
+          sleep 30
+
       - name: Set Operator Account
         run: |
           echo "OPERATOR_KEY=${{ steps.solo.outputs.ed25519PrivateKey }}" >> $GITHUB_ENV
