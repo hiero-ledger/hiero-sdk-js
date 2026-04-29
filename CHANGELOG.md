@@ -13,9 +13,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `FeeEstimateQuery` for estimating transaction fees prior to submission. [#3478](https://github.com/hiero-ledger/hiero-sdk-js/pull/3478)
 - `HookEntityId` now accepts a `ContractId`, allowing contracts to be used as hook entity owners alongside accounts. [#3930](https://github.com/hiero-ledger/hiero-sdk-js/pull/3930)
 
-### Changed
-- Refactored `topic/TopicId` to use the explicit generic `Client<Channel, MirrorChannel>` typedef instead of wildcard client typings. [#3923](https://github.com/hiero-ledger/hiero-sdk-js/pull/3923)
-
 # v2.83.0 - beta.3
 
 ### Security
