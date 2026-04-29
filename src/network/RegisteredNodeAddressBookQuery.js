@@ -5,7 +5,6 @@ import Long from "long";
 import { RST_STREAM } from "../Executable.js";
 import Key from "../Key.js";
 import PublicKey from "../PublicKey.js";
-import Query from "../query/Query.js";
 import BlockNodeApi from "../node/BlockNodeApi.js";
 import BlockNodeServiceEndpoint from "../node/BlockNodeServiceEndpoint.js";
 import GeneralServiceEndpoint from "../node/GeneralServiceEndpoint.js";
@@ -79,28 +78,47 @@ const DEFAULT_PAGE_SIZE = 25;
 /**
  * Fetch-based mirror-node query for registered nodes.
  *
- * The SDK-facing design kept this as `RegisteredNodeAddressBookQuery`. The
- * concrete transport was intentionally left open until the mirror node exposed
- * `/api/v1/network/registered-nodes`; now that endpoint exists on the Java REST
- * API, the SDK can use a shared fetch implementation for both Node and browser
- * environments.
- *
- * @augments {Query<RegisteredNodeAddressBook>}
+ * Talks to the mirror node's Java REST API at
+ * `/api/v1/network/registered-nodes`. Unlike consensus-node `Query`
+ * subclasses, this query has no payment, no node rotation, and no gRPC
+ * streaming — it is a plain HTTP client with paging and retry, so it
+ * intentionally does not extend `Query`.
  */
-export default class RegisteredNodeAddressBookQuery extends Query {
+export default class RegisteredNodeAddressBookQuery {
     /**
      * @param {object} [props]
      * @param {number} [props.limit]
      */
     constructor(props = {}) {
-        super();
-
         /**
          * Page limit for the query.
          * @private
          * @type {?number}
          */
         this._limit = null;
+
+        /**
+         * Per-instance override for max retry attempts. When `null`, the
+         * client's `maxAttempts` is used at fetch time.
+         * @private
+         * @type {?number}
+         */
+        this._maxAttempts = null;
+
+        /**
+         * Per-instance override for max retry backoff (ms). When `null`, the
+         * client's `maxBackoff` is used at fetch time.
+         * @private
+         * @type {?number}
+         */
+        this._maxBackoff = null;
+
+        /**
+         * Optional logger for retry diagnostics.
+         * @private
+         * @type {?import("../logger/Logger.js").default}
+         */
+        this._logger = null;
 
         if (props.limit != null) {
             this.setLimit(props.limit);
@@ -146,6 +164,33 @@ export default class RegisteredNodeAddressBookQuery extends Query {
      */
     setLimit(limit) {
         this._limit = limit;
+        return this;
+    }
+
+    /**
+     * @param {number} attempts
+     * @returns {this}
+     */
+    setMaxAttempts(attempts) {
+        this._maxAttempts = attempts;
+        return this;
+    }
+
+    /**
+     * @param {number} backoff
+     * @returns {this}
+     */
+    setMaxBackoff(backoff) {
+        this._maxBackoff = backoff;
+        return this;
+    }
+
+    /**
+     * @param {import("../logger/Logger.js").default} logger
+     * @returns {this}
+     */
+    setLogger(logger) {
+        this._logger = logger;
         return this;
     }
 
