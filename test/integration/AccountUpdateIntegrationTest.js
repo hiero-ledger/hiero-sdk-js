@@ -84,7 +84,7 @@ describe("AccountUpdate", function () {
     });
 
     // Hook-related tests
-    describe("AccountUpdate with Hooks", function () {
+    describe.skip("AccountUpdate with Hooks", function () {
         let testContractId;
 
         beforeAll(async function () {

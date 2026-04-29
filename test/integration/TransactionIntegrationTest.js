@@ -1106,7 +1106,7 @@ describe("TransactionIntegration", function () {
                 await (
                     await new AccountCreateTransaction()
                         .setECDSAKeyWithAlias(senderKey)
-                        .setInitialBalance(new Hbar(10))
+                        .setInitialBalance(new Hbar(100))
                         .freezeWith(client)
                         .execute(client)
                 ).getReceipt(client)

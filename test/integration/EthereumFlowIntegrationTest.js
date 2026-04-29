@@ -34,6 +34,7 @@ describe("EthereumFlowIntegrationTest", function () {
         client = env.client;
         operatorKey = env.operatorKey;
         operatorId = env.operatorId;
+        client.setDefaultMaxTransactionFee(new Hbar(100));
     });
 
     it("EthereumFlow jumbo transaction", async function () {
@@ -166,7 +167,7 @@ describe("EthereumFlowIntegrationTest", function () {
         // Create and execute EthereumFlow transaction
         const ethereumFlow = new EthereumFlow()
             .setEthereumData(ethereumData)
-            .setMaxGasAllowanceHbar(new Hbar(1));
+            .setMaxGasAllowanceHbar(new Hbar(100));
 
         const response = await ethereumFlow.execute(client);
 

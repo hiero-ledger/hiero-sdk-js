@@ -176,6 +176,7 @@ describe("EthereumTransactionIntegrationTest", function () {
             await (
                 await new EthereumTransaction()
                     .setEthereumData(ethereumData)
+                    .setMaxTransactionFee(new Hbar(10))
                     .freezeWithSigner(wallet)
             ).signWithSigner(wallet)
         ).executeWithSigner(wallet);
@@ -331,6 +332,7 @@ describe("EthereumTransactionIntegrationTest", function () {
             await (
                 await new EthereumTransaction()
                     .setEthereumData(ethereumData)
+                    .setMaxTransactionFee(new Hbar(100))
                     .freezeWithSigner(wallet)
             ).signWithSigner(wallet)
         ).executeWithSigner(wallet);
