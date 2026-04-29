@@ -513,10 +513,22 @@ async function readErrorDetail(response) {
         if (!text) return "";
         try {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const parsed = /** @type {{_status?: {messages?: {message?: string}[]}}} */ (
-                JSON.parse(text)
-            );
-            const message = parsed._status?.messages?.[0]?.message;
+            const parsed =
+                /** @type {{_status?: {messages?: {message?: string, detail?: string}[]}}} */ (
+                    JSON.parse(text)
+                );
+            const first = parsed._status?.messages?.[0];
+            // Mirror node's error envelope: `message` is the HTTP reason
+            // phrase ("Bad Request") and `detail` is the actual cause
+            // ("Unable to parse transaction", "Unknown transaction type",
+            // etc.). Prefer detail; fall back to message.
+            const detail = first?.detail;
+            const message = first?.message;
+            if (typeof detail === "string" && detail.length > 0) {
+                return typeof message === "string" && message.length > 0
+                    ? `${message}: ${detail}`
+                    : detail;
+            }
             if (typeof message === "string" && message.length > 0) {
                 return message;
             }
