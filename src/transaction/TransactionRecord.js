@@ -304,7 +304,8 @@ export default class TransactionRecord {
          *
          * @readonly
          */
-        this.highVolumePricingMultiplier = props.highVolumePricingMultiplier;
+        this.highVolumePricingMultiplier =
+            props.highVolumePricingMultiplier ?? Long.UZERO;
 
         Object.freeze(this);
     }
