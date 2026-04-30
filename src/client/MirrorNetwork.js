@@ -102,21 +102,4 @@ export default class MirrorNetwork extends ManagedNetwork {
             );
         }
     }
-
-    /**
-     * Gets the base URL for the mirror node Java REST API.
-     *
-     * @returns {string} The base URL for the mirror node Java REST API
-     * @throws {Error} When no mirror network is configured or available
-     */
-    get mirrorRestJavaApiBaseUrl() {
-        try {
-            const mirrorNode = this.getNextMirrorNode();
-            return mirrorNode.mirrorRestJavaApiBaseUrl;
-        } catch (error) {
-            throw new Error(
-                "Client has no mirror network configured or no healthy mirror nodes are available",
-            );
-        }
-    }
 }

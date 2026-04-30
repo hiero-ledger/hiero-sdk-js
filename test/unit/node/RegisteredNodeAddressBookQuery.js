@@ -128,7 +128,9 @@ describe("RegisteredNodeAddressBookQuery", function () {
         expect(blockNodeEndpoint.ipAddress).to.deep.equal(
             Uint8Array.of(127, 0, 0, 1),
         );
-        expect(blockNodeEndpoint.endpointApis.map((api) => api.toString())).to.deep.equal(
+        expect(
+            blockNodeEndpoint.endpointApis.map((api) => api.toString()),
+        ).to.deep.equal(
             [BlockNodeApi.Status, BlockNodeApi.Publish].map((api) =>
                 api.toString(),
             ),
@@ -231,12 +233,15 @@ describe("RegisteredNodeAddressBookQuery", function () {
             .setLimit(1)
             .execute(client);
 
+        // Testnet client → no local-port rewrite; mirrorRestApiBaseUrl is
+        // identical to what the deleted mirrorRestJavaApiBaseUrl getter
+        // returned for non-local hosts.
         const expectedFirstUrl = new URL(
-            `${client.mirrorRestJavaApiBaseUrl}/network/registered-nodes?limit=1`,
+            `${client.mirrorRestApiBaseUrl}/network/registered-nodes?limit=1`,
         ).toString();
         const expectedSecondUrl = new URL(
             "/api/v1/network/registered-nodes?limit=1&registerednode.id=gt:1",
-            client.mirrorRestJavaApiBaseUrl,
+            client.mirrorRestApiBaseUrl,
         ).toString();
 
         expect(global.fetch.callCount).to.equal(2);

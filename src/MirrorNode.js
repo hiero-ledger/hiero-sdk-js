@@ -66,33 +66,6 @@ export default class MirrorNode extends ManagedNode {
     }
 
     /**
-     * Gets the base URL for this mirror node's Java REST API.
-     *
-     * Local development exposes the Java REST application on `8084`, while
-     * deployed mirror-node environments typically route `/api/v1` through the
-     * normal mirror REST host and port.
-     *
-     * @returns {string} The base URL for the mirror node Java REST API
-     * @throws {Error} When the mirror node has invalid address configuration
-     */
-    get mirrorRestJavaApiBaseUrl() {
-        const host = this.address.address;
-        const port = this.address.port;
-
-        if (!host || !port) {
-            throw new Error("Mirror node has invalid address configuration");
-        }
-
-        if (host === "localhost" || host === "127.0.0.1") {
-            return `http://${host}:8084/api/v1`;
-        }
-
-        const scheme = this._getSchemeFromHostAndPort(host, port);
-
-        return `${scheme}://${host}:${port}/api/v1`;
-    }
-
-    /**
      * Determines the appropriate scheme (http/https) based on the host and port.
      *
      * @private

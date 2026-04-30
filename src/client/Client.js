@@ -345,14 +345,6 @@ export default class Client {
     }
 
     /**
-     * @returns {string}
-     * @throws {Error} When no mirror network is configured or available
-     */
-    get mirrorRestJavaApiBaseUrl() {
-        return this._mirrorNetwork.mirrorRestJavaApiBaseUrl;
-    }
-
-    /**
      * @returns {boolean}
      */
     get signOnDemand() {
