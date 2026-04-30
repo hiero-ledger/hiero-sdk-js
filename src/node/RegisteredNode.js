@@ -2,15 +2,39 @@
 
 import * as HieroProto from "@hiero-ledger/proto";
 import Long from "long";
+import * as hex from "../encoding/hex.js";
 import Key from "../Key.js";
+import PublicKey from "../PublicKey.js";
 import RegisteredServiceEndpoint from "./RegisteredServiceEndpoint.js";
 
 /**
- * @typedef {import("@hiero-ledger/proto").com.hedera.hapi.node.state.addressbook.IRegisteredNode} IStateRegisteredNode
+ * Mirror-node REST shape for an admin key. The mirror node returns one of:
+ * - `{ _type: "ED25519", key: "<hex>" }`
+ * - `{ _type: "ECDSA_SECP256K1", key: "<hex>" }`
+ * - `{ _type: "ProtobufEncoded", key: "<hex of encoded proto Key>" }`
+ *
+ * @typedef {object} MirrorNodeKeyJson
+ * @property {string} key
+ * @property {string} _type
  */
 
 /**
- * An immutable representation of a registered node.
+ * Mirror-node REST shape for a single registered node returned from the
+ * `/api/v1/network/registered-nodes` endpoint.
+ *
+ * @typedef {object} RegisteredNodeJson
+ * @property {MirrorNodeKeyJson} admin_key
+ * @property {?string} [created_timestamp]
+ * @property {?string} [description]
+ * @property {number | string | Long} registered_node_id
+ * @property {import("./RegisteredServiceEndpoint.js").RegisteredServiceEndpointJson[]} service_endpoints
+ * @property {{from: string, to: ?string}} timestamp
+ */
+
+/**
+ * An immutable representation of a registered node, as returned by
+ * `RegisteredNodeAddressBookQuery`. Constructed from mirror-node JSON via
+ * `RegisteredNode._fromJson`.
  */
 export default class RegisteredNode {
     /**
@@ -68,71 +92,60 @@ export default class RegisteredNode {
     }
 
     /**
+     * Construct a `RegisteredNode` from a mirror-node REST JSON object.
+     *
      * @internal
-     * @param {IStateRegisteredNode} registeredNode
+     * @param {RegisteredNodeJson} json
      * @returns {RegisteredNode}
      */
-    static _fromProtobuf(registeredNode) {
-        if (registeredNode.adminKey == null) {
-            throw new Error(
-                "RegisteredNode protobuf did not include an adminKey.",
-            );
-        }
-
-        const decodedKey = Key._fromProtobufKey(registeredNode.adminKey);
-
+    static _fromJson(json) {
         return new RegisteredNode({
-            registeredNodeId:
-                registeredNode.registeredNodeId != null
-                    ? registeredNode.registeredNodeId
-                    : Long.ZERO,
-            adminKey: decodedKey,
-            description:
-                registeredNode.description != null
-                    ? registeredNode.description
-                    : null,
-            serviceEndpoints:
-                registeredNode.serviceEndpoint != null
-                    ? registeredNode.serviceEndpoint.map((endpoint) =>
-                          RegisteredServiceEndpoint._fromProtobuf(endpoint),
-                      )
-                    : [],
+            registeredNodeId: Long.fromString(
+                json.registered_node_id.toString(),
+            ),
+            adminKey: keyFromJson(json.admin_key),
+            description: json.description != null ? json.description : null,
+            serviceEndpoints: json.service_endpoints.map((endpoint) =>
+                RegisteredServiceEndpoint._fromJson(endpoint),
+            ),
         });
     }
+}
 
-    /**
-     * @internal
-     * @returns {IStateRegisteredNode}
-     */
-    _toProtobuf() {
-        return {
-            registeredNodeId: this.registeredNodeId,
-            adminKey: this.adminKey._toProtobufKey(),
-            description: this.description != null ? this.description : null,
-            serviceEndpoint: this.serviceEndpoints.map((endpoint) =>
-                endpoint._toProtobuf(),
-            ),
-        };
-    }
+/**
+ * Decode a mirror-node JSON admin key into a `Key`. Handles the three
+ * documented shapes (`ED25519`, `ECDSA_SECP256K1`, and a generic
+ * `ProtobufEncoded` envelope used for complex keys like `KeyList` and
+ * `ThresholdKey`).
+ *
+ * @param {MirrorNodeKeyJson} key
+ * @returns {Key}
+ */
+function keyFromJson(key) {
+    const keyType = key._type.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
 
-    /**
-     * @param {Uint8Array} bytes
-     * @returns {RegisteredNode}
-     */
-    static fromBytes(bytes) {
-        return RegisteredNode._fromProtobuf(
-            HieroProto.com.hedera.hapi.node.state.addressbook.RegisteredNode.decode(
-                bytes,
-            ),
-        );
-    }
+    switch (keyType) {
+        case "ED25519":
+            return PublicKey.fromStringED25519(key.key);
+        case "ECDSASECP256K1":
+            return PublicKey.fromStringECDSA(key.key);
+        case "PROTOBUFENCODED": {
+            const protobufKey = HieroProto.proto.Key.decode(
+                hex.decode(key.key),
+            );
+            const decodedKey = Key._fromProtobufKey(protobufKey);
 
-    /**
-     * @returns {Uint8Array}
-     */
-    toBytes() {
-        return HieroProto.com.hedera.hapi.node.state.addressbook.RegisteredNode.encode(
-            this._toProtobuf(),
-        ).finish();
+            if (decodedKey == null) {
+                throw new Error(
+                    "Mirror node returned a protobuf-encoded admin key that could not be decoded.",
+                );
+            }
+
+            return decodedKey;
+        }
+        default:
+            throw new Error(
+                `Unsupported registered node admin key type: ${key._type}`,
+            );
     }
 }

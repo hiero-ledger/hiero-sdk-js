@@ -18,6 +18,40 @@ import BlockNodeApi from "./BlockNodeApi.js";
  * @property {?boolean} [requiresTls]
  */
 
+/**
+ * Mirror-node REST shape for the `block_node` discriminator inside an
+ * endpoint object.
+ *
+ * @typedef {object} RegisteredBlockNodeEndpointJson
+ * @property {string[]} [endpoint_apis]
+ */
+
+/**
+ * Mirror-node REST shape for the `general_service` discriminator inside an
+ * endpoint object.
+ *
+ * @typedef {object} RegisteredGeneralServiceEndpointJson
+ * @property {?string} [description]
+ */
+
+/**
+ * Mirror-node REST shape for a single registered service endpoint.
+ * Exactly one of `block_node`, `mirror_node`, `rpc_relay`, or
+ * `general_service` is populated; alternately the mirror node may set
+ * `type` as a discriminant string.
+ *
+ * @typedef {object} RegisteredServiceEndpointJson
+ * @property {?RegisteredBlockNodeEndpointJson} [block_node]
+ * @property {?string} [domain_name]
+ * @property {?RegisteredGeneralServiceEndpointJson} [general_service]
+ * @property {?string} [ip_address]
+ * @property {?Record<string, never>} [mirror_node]
+ * @property {number} port
+ * @property {boolean} requires_tls
+ * @property {?Record<string, never>} [rpc_relay]
+ * @property {?string} [type]
+ */
+
 const DOMAIN_NAME_MAX_LENGTH = 250;
 const GENERAL_SERVICE_DESCRIPTION_MAX_BYTES = 100;
 const IPV4_BYTE_LENGTH = 4;
@@ -298,6 +332,90 @@ export default class RegisteredServiceEndpoint {
     }
 
     /**
+     * Construct an endpoint from a mirror-node REST JSON object,
+     * dispatching to the correct subclass based on which discriminator
+     * field is populated.
+     *
+     * @internal
+     * @param {RegisteredServiceEndpointJson} json
+     * @returns {RegisteredServiceEndpoint}
+     */
+    static _fromJson(json) {
+        const endpointType =
+            RegisteredServiceEndpoint._getJsonEndpointType(json);
+
+        switch (endpointType) {
+            case "blockNode":
+                return BlockNodeServiceEndpoint._fromJson(json);
+            case "mirrorNode":
+                return MirrorNodeServiceEndpoint._fromJson(json);
+            case "rpcRelay":
+                return RpcRelayServiceEndpoint._fromJson(json);
+            case "generalService":
+                return GeneralServiceEndpoint._fromJson(json);
+            default:
+                throw new Error(
+                    "Registered service endpoint response did not include a recognized endpoint type.",
+                );
+        }
+    }
+
+    /**
+     * @private
+     * @param {RegisteredServiceEndpointJson} json
+     * @returns {RegisteredServiceEndpointType | null}
+     */
+    static _getJsonEndpointType(json) {
+        if (json.type != null) {
+            const normalized = json.type
+                .replace(/[^A-Za-z0-9]/g, "")
+                .toUpperCase();
+            switch (normalized) {
+                case "BLOCKNODE":
+                    return "blockNode";
+                case "MIRRORNODE":
+                    return "mirrorNode";
+                case "RPCRELAY":
+                    return "rpcRelay";
+                case "GENERALSERVICE":
+                    return "generalService";
+            }
+        }
+
+        if (json.block_node != null) return "blockNode";
+        if (json.mirror_node != null) return "mirrorNode";
+        if (json.rpc_relay != null) return "rpcRelay";
+        if (json.general_service != null) return "generalService";
+
+        return null;
+    }
+
+    /**
+     * Apply the four common JSON fields (ip address, domain name, port,
+     * tls) to a freshly-constructed subclass instance. Throws if neither
+     * an ip address nor a domain name is present, since either-or is
+     * required by the proto contract.
+     *
+     * @protected
+     * @param {RegisteredServiceEndpointJson} json
+     * @returns {void}
+     */
+    _applyJsonBaseFields(json) {
+        if (json.ip_address != null) {
+            this.setIpAddress(parseIpAddress(json.ip_address));
+        } else if (json.domain_name != null) {
+            this.setDomainName(json.domain_name);
+        } else {
+            throw new Error(
+                "Registered service endpoint response did not include an IP address or domain name.",
+            );
+        }
+
+        this.setPort(json.port);
+        this.setRequiresTls(json.requires_tls);
+    }
+
+    /**
      * @private
      * @param {IRegisteredServiceEndpoint} endpoint
      * @returns {RegisteredServiceEndpointType | null}
@@ -424,6 +542,24 @@ export class BlockNodeServiceEndpoint extends RegisteredServiceEndpoint {
 
     /**
      * @internal
+     * @param {RegisteredServiceEndpointJson} json
+     * @returns {BlockNodeServiceEndpoint}
+     */
+    static _fromJson(json) {
+        const endpoint = new BlockNodeServiceEndpoint();
+        endpoint._applyJsonBaseFields(json);
+
+        const apis = json.block_node?.endpoint_apis;
+        if (apis != null && apis.length > 0) {
+            endpoint.setEndpointApis(
+                apis.map((api) => BlockNodeApi._fromString(api)),
+            );
+        }
+        return endpoint;
+    }
+
+    /**
+     * @internal
      * @returns {IRegisteredServiceEndpoint}
      */
     _toProtobuf() {
@@ -468,6 +604,17 @@ export class MirrorNodeServiceEndpoint extends RegisteredServiceEndpoint {
 
     /**
      * @internal
+     * @param {RegisteredServiceEndpointJson} json
+     * @returns {MirrorNodeServiceEndpoint}
+     */
+    static _fromJson(json) {
+        const endpoint = new MirrorNodeServiceEndpoint();
+        endpoint._applyJsonBaseFields(json);
+        return endpoint;
+    }
+
+    /**
+     * @internal
      * @returns {IRegisteredServiceEndpoint}
      */
     _toProtobuf() {
@@ -504,6 +651,17 @@ export class RpcRelayServiceEndpoint extends RegisteredServiceEndpoint {
             requiresTls:
                 endpoint.requiresTls != null ? endpoint.requiresTls : null,
         });
+    }
+
+    /**
+     * @internal
+     * @param {RegisteredServiceEndpointJson} json
+     * @returns {RpcRelayServiceEndpoint}
+     */
+    static _fromJson(json) {
+        const endpoint = new RpcRelayServiceEndpoint();
+        endpoint._applyJsonBaseFields(json);
+        return endpoint;
     }
 
     /**
@@ -599,6 +757,20 @@ export class GeneralServiceEndpoint extends RegisteredServiceEndpoint {
 
     /**
      * @internal
+     * @param {RegisteredServiceEndpointJson} json
+     * @returns {GeneralServiceEndpoint}
+     */
+    static _fromJson(json) {
+        const endpoint = new GeneralServiceEndpoint();
+        endpoint._applyJsonBaseFields(json);
+        if (json.general_service?.description != null) {
+            endpoint.setDescription(json.general_service.description);
+        }
+        return endpoint;
+    }
+
+    /**
+     * @internal
      * @returns {IRegisteredServiceEndpoint}
      */
     _toProtobuf() {
@@ -610,4 +782,136 @@ export class GeneralServiceEndpoint extends RegisteredServiceEndpoint {
             },
         };
     }
+}
+
+// -----------------------------------------------------------------------------
+// IP-address-string parsing helpers — used only by the JSON factories above.
+// Mirror node returns IPv4 in dotted-quad form ("127.0.0.1") and IPv6 in
+// either bracketed ("[::1]") or unbracketed colon form. We need bytes for the
+// proto wire shape and for downstream comparisons.
+// -----------------------------------------------------------------------------
+
+/**
+ * @param {string} ipAddress
+ * @returns {Uint8Array}
+ */
+function parseIpAddress(ipAddress) {
+    return ipAddress.includes(":")
+        ? parseIpv6Address(ipAddress)
+        : parseIpv4Address(ipAddress);
+}
+
+/**
+ * @param {string} ipAddress
+ * @returns {Uint8Array}
+ */
+function parseIpv4Address(ipAddress) {
+    const octets = ipAddress.split(".");
+
+    if (octets.length !== 4) {
+        throw new Error(`Invalid IPv4 address: ${ipAddress}`);
+    }
+
+    return Uint8Array.from(
+        octets.map((octet) => {
+            if (!/^\d+$/.test(octet)) {
+                throw new Error(`Invalid IPv4 address: ${ipAddress}`);
+            }
+
+            const value = Number(octet);
+
+            if (!Number.isInteger(value) || value < 0 || value > 255) {
+                throw new Error(`Invalid IPv4 address: ${ipAddress}`);
+            }
+
+            return value;
+        }),
+    );
+}
+
+/**
+ * @param {string} ipAddress
+ * @returns {Uint8Array}
+ */
+function parseIpv6Address(ipAddress) {
+    const normalizedAddress =
+        ipAddress.startsWith("[") && ipAddress.endsWith("]")
+            ? ipAddress.slice(1, -1)
+            : ipAddress;
+
+    const parts = normalizedAddress.split("::");
+
+    if (parts.length > 2) {
+        throw new Error(`Invalid IPv6 address: ${ipAddress}`);
+    }
+
+    const left = parseIpv6Groups(parts[0]);
+    const right = parts.length === 2 ? parseIpv6Groups(parts[1]) : [];
+    const zeroFillSize =
+        parts.length === 2 ? 8 - (left.length + right.length) : 0;
+
+    if (
+        zeroFillSize < 0 ||
+        (parts.length === 1 && left.length !== 8) ||
+        (parts.length === 2 && zeroFillSize === 0)
+    ) {
+        throw new Error(`Invalid IPv6 address: ${ipAddress}`);
+    }
+
+    /** @type {number[]} */
+    const groups = [...left];
+
+    if (parts.length === 2) {
+        for (let i = 0; i < zeroFillSize; i++) {
+            groups.push(0);
+        }
+
+        groups.push(...right);
+    }
+
+    if (groups.length !== 8) {
+        throw new Error(`Invalid IPv6 address: ${ipAddress}`);
+    }
+
+    const bytes = new Uint8Array(16);
+
+    for (let i = 0; i < groups.length; i++) {
+        bytes[i * 2] = (groups[i] >> 8) & 0xff;
+        bytes[i * 2 + 1] = groups[i] & 0xff;
+    }
+
+    return bytes;
+}
+
+/**
+ * @param {string} segment
+ * @returns {number[]}
+ */
+function parseIpv6Groups(segment) {
+    if (segment === "") {
+        return [];
+    }
+
+    const groups = [];
+
+    for (const part of segment.split(":")) {
+        if (part === "") {
+            throw new Error(`Invalid IPv6 address segment: ${segment}`);
+        }
+
+        if (part.includes(".")) {
+            const ipv4Bytes = parseIpv4Address(part);
+            groups.push((ipv4Bytes[0] << 8) | ipv4Bytes[1]);
+            groups.push((ipv4Bytes[2] << 8) | ipv4Bytes[3]);
+            continue;
+        }
+
+        if (!/^[0-9a-fA-F]{1,4}$/.test(part)) {
+            throw new Error(`Invalid IPv6 address segment: ${segment}`);
+        }
+
+        groups.push(parseInt(part, 16));
+    }
+
+    return groups;
 }

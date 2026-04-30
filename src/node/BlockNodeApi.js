@@ -65,6 +65,41 @@ export default class BlockNodeApi {
     }
 
     /**
+     * Parses an enum-name string as returned by the mirror node REST API
+     * (e.g. `"OTHER"`, `"STATUS"`, `"SUBSCRIBE_STREAM"`). Punctuation and
+     * casing are tolerated so `"BlockNode"`, `"block-node"`, etc. all
+     * normalize to the same value.
+     *
+     * @internal
+     * @param {string} name
+     * @returns {BlockNodeApi}
+     * @throws {Error} If `name` is `"UNRECOGNIZED"` or an unknown value.
+     */
+    static _fromString(name) {
+        const normalized = name.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
+        switch (normalized) {
+            case "OTHER":
+                return BlockNodeApi.Other;
+            case "STATUS":
+                return BlockNodeApi.Status;
+            case "PUBLISH":
+                return BlockNodeApi.Publish;
+            case "SUBSCRIBESTREAM":
+                return BlockNodeApi.SubscribeStream;
+            case "STATEPROOF":
+                return BlockNodeApi.StateProof;
+            case "UNRECOGNIZED":
+                throw new Error(
+                    "Mirror node returned an unrecognized block node API.",
+                );
+            default:
+                throw new Error(
+                    `Unsupported block node API returned by mirror node: ${name}`,
+                );
+        }
+    }
+
+    /**
      * @returns {IBlockNodeApi}
      */
     valueOf() {

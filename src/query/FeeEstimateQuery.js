@@ -4,6 +4,10 @@ import FeeEstimateResponse from "./FeeEstimateResponse.js";
 import NetworkFee from "./NetworkFee.js";
 import FeeEstimate from "./FeeEstimate.js";
 import * as HieroProto from "@hiero-ledger/proto";
+import {
+    isRetryableNetworkError,
+    readErrorDetail,
+} from "../network/mirrorRestRetry.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -484,65 +488,4 @@ export default class FeeEstimateQuery {
  */
 function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-/**
- * Recognize transient network/timeout errors that should be retried per the
- * HIP-1261 retry policy (DEADLINE_EXCEEDED equivalent).
- *
- * @param {unknown} err
- * @returns {boolean}
- */
-function isRetryableNetworkError(err) {
-    if (!(err instanceof Error)) return false;
-    const name = err.name || "";
-    const message = err.message || "";
-    if (name === "AbortError" || name === "TimeoutError") return true;
-    if (/^HTTP 5\d\d/.test(message)) return true;
-    return /timeout|timed out|network|fetch failed|ECONN|ENETUNREACH/i.test(
-        message,
-    );
-}
-
-/**
- * Read a short, human-readable error detail from the response body. Mirror
- * node REST errors are typically JSON of the form `{"_status":{"messages":[{"message":"..."}]}}`,
- * but plain text responses are also handled. Returns an empty string if the
- * body is empty or unreadable.
- *
- * @param {Response} response
- * @returns {Promise<string>}
- */
-async function readErrorDetail(response) {
-    try {
-        const text = await response.text();
-        if (!text) return "";
-        try {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            const parsed =
-                /** @type {{_status?: {messages?: {message?: string, detail?: string}[]}}} */ (
-                    JSON.parse(text)
-                );
-            const first = parsed._status?.messages?.[0];
-            // Mirror node's error envelope: `message` is the HTTP reason
-            // phrase ("Bad Request") and `detail` is the actual cause
-            // ("Unable to parse transaction", "Unknown transaction type",
-            // etc.). Prefer detail; fall back to message.
-            const detail = first?.detail;
-            const message = first?.message;
-            if (typeof detail === "string" && detail.length > 0) {
-                return typeof message === "string" && message.length > 0
-                    ? `${message}: ${detail}`
-                    : detail;
-            }
-            if (typeof message === "string" && message.length > 0) {
-                return message;
-            }
-        } catch {
-            // not JSON — fall through to the raw text
-        }
-        return text.slice(0, 500);
-    } catch {
-        return "";
-    }
 }

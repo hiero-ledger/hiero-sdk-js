@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import RegisteredNode from "./RegisteredNode.js";
-
 /**
- * @typedef {import("@hiero-ledger/proto").com.hedera.hapi.node.state.addressbook.IRegisteredNode} IStateRegisteredNode
+ * @typedef {import("./RegisteredNode.js").default} RegisteredNode
  */
 
 /**
- * A collection of registered nodes.
+ * A collection of registered nodes returned by
+ * `RegisteredNodeAddressBookQuery`.
  */
 export default class RegisteredNodeAddressBook {
     /**
@@ -24,18 +23,5 @@ export default class RegisteredNodeAddressBook {
 
         Object.freeze(this.registeredNodes);
         Object.freeze(this);
-    }
-
-    /**
-     * @internal
-     * @param {IStateRegisteredNode[]} registeredNodes
-     * @returns {RegisteredNodeAddressBook}
-     */
-    static _fromProtobuf(registeredNodes) {
-        return new RegisteredNodeAddressBook({
-            registeredNodes: registeredNodes.map((registeredNode) =>
-                RegisteredNode._fromProtobuf(registeredNode),
-            ),
-        });
     }
 }
