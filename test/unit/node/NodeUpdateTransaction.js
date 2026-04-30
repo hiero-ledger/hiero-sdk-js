@@ -38,6 +38,7 @@ describe("NodeUpdateTransaction", function () {
         const SERVICE_ENDPOINTS = [
             new ServiceEndpoint().setIpAddressV4(IP_AddressV4),
         ];
+        const ASSOCIATED_REGISTERED_NODES = [101, 202];
 
         const tx = new NodeUpdateTransaction()
             .setNodeAccountIds(NODE_ACCOUNT_IDS)
@@ -54,6 +55,7 @@ describe("NodeUpdateTransaction", function () {
             .setAdminKey(ADMIN_KEY)
             .setMaxTransactionFee(new Hbar(1))
             .setDeclineReward(false)
+            .setAssociatedRegisteredNodes(ASSOCIATED_REGISTERED_NODES)
             .setGrpcWebProxyEndpoint(GRPC_WEB_PROXY_ENDPOINT);
 
         const tx2 = NodeUpdateTransaction.fromBytes(tx.toBytes());
@@ -88,9 +90,27 @@ describe("NodeUpdateTransaction", function () {
         );
         expect(tx.adminKey.toString()).to.equal(tx2.adminKey.toString());
         expect(tx.declineReward).to.equal(tx2.declineReward);
+        expect(
+            tx.associatedRegisteredNodes?.map((id) => id.toString()),
+        ).to.deep.equal(
+            tx2.associatedRegisteredNodes?.map((id) => id.toString()),
+        );
         expect(tx.grpcWebProxyEndpoint.toString()).to.equal(
             tx2.grpcWebProxyEndpoint.toString(),
         );
+    });
+
+    it("should add associated registered node", function () {
+        const tx = new NodeUpdateTransaction().addAssociatedRegisteredNode(303);
+        expect(tx.associatedRegisteredNodes?.map((id) => id.toString())).to.deep
+            .equal(["303"]);
+    });
+
+    it("should clear associated registered nodes", function () {
+        const tx = new NodeUpdateTransaction()
+            .setAssociatedRegisteredNodes([101, 202])
+            .clearAssociatedRegisteredNodes();
+        expect(tx.associatedRegisteredNodes).to.deep.equal([]);
     });
 
     it("should set decline reward", function () {
