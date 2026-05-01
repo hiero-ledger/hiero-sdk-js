@@ -32,7 +32,7 @@ import { createFungibleToken } from "./utils/Fixtures.js";
  * Verified working against previewnet. Re-enable once the cross-team
  * fix lands (mirror startup ordering or shorter refresh-interval default).
  */
-describe.skip("FeeEstimateQuery Integration", function () {
+describe("FeeEstimateQuery Integration", function () {
     let env;
 
     beforeAll(async function () {

@@ -5,6 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# v2.83.0
+
+### Added
+- HIP-1313 support: introduce `setHighVolume`/`isHighVolume` on `Transaction` to flag transactions as high-volume for fee multiplier handling. [#3974](https://github.com/hiero-ledger/hiero-sdk-js/pull/3974)
+- Exposed `highVolumePricingMultiplier` on `TransactionRecord`, returning the fee multiplier applied to high-volume transactions (scaled by 1000). [#3977](https://github.com/hiero-ledger/hiero-sdk-js/pull/3977)
+- `FeeEstimateQuery` for estimating transaction fees prior to submission. [#3478](https://github.com/hiero-ledger/hiero-sdk-js/pull/3478)
+- `HookEntityId` now accepts a `ContractId`, allowing contracts to be used as hook entity owners alongside accounts. [#3930](https://github.com/hiero-ledger/hiero-sdk-js/pull/3930)
+
 # v2.83.0 - beta.3
 
 ### Security
