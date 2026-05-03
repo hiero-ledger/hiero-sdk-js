@@ -52,21 +52,6 @@ import BlockNodeApi from "./BlockNodeApi.js";
  * @property {?string} [type]
  */
 
-const DOMAIN_NAME_MAX_LENGTH = 250;
-const GENERAL_SERVICE_DESCRIPTION_MAX_BYTES = 100;
-const IPV4_BYTE_LENGTH = 4;
-const IPV6_BYTE_LENGTH = 16;
-const PORT_MIN = 0;
-const PORT_MAX = 65535;
-
-/**
- * @param {string} value
- * @returns {number}
- */
-function utf8ByteLength(value) {
-    return new TextEncoder().encode(value).length;
-}
-
 /**
  * A service endpoint published by a registered node.
  *
@@ -150,26 +135,20 @@ export default class RegisteredServiceEndpoint {
     }
 
     /**
-     * Sets the IP address for this endpoint. Must be exactly 4 bytes (IPv4)
-     * or 16 bytes (IPv6) in big-endian order.
+     * Sets the IP address for this endpoint. Per the proto contract this must
+     * be 4 bytes (IPv4) or 16 bytes (IPv6) in big-endian order; the consensus
+     * node enforces that with `INVALID_REGISTERED_ENDPOINT_ADDRESS`. The SDK
+     * does not pre-check the length so the network's status code is what
+     * surfaces.
      *
      * @param {Uint8Array} ipAddress
      * @returns {this}
      * @throws {TypeError} If ipAddress is null/undefined.
-     * @throws {Error} If ipAddress is not 4 or 16 bytes, or if domainName is already set.
+     * @throws {Error} If domainName is already set (proto `oneof` slot).
      */
     setIpAddress(ipAddress) {
         if (ipAddress == null) {
             throw new TypeError("ipAddress must not be null or undefined.");
-        }
-
-        if (
-            ipAddress.length !== IPV4_BYTE_LENGTH &&
-            ipAddress.length !== IPV6_BYTE_LENGTH
-        ) {
-            throw new Error(
-                `IP address must be 4 bytes (IPv4) or 16 bytes (IPv6); got ${ipAddress.length} bytes.`,
-            );
         }
 
         if (this._domainName != null) {
@@ -190,22 +169,18 @@ export default class RegisteredServiceEndpoint {
     }
 
     /**
-     * Sets the fully-qualified domain name for this endpoint.
+     * Sets the fully-qualified domain name for this endpoint. Per the proto
+     * contract this must be a valid ASCII FQDN of at most 250 chars; the
+     * consensus node enforces that with `INVALID_REGISTERED_ENDPOINT_ADDRESS`.
      *
      * @param {string} domainName
      * @returns {this}
      * @throws {TypeError} If domainName is null/undefined.
-     * @throws {Error} If domainName exceeds 250 ASCII characters or if ipAddress is already set.
+     * @throws {Error} If ipAddress is already set (proto `oneof` slot).
      */
     setDomainName(domainName) {
         if (domainName == null) {
             throw new TypeError("domainName must not be null or undefined.");
-        }
-
-        if (domainName.length > DOMAIN_NAME_MAX_LENGTH) {
-            throw new Error(
-                `Domain name must be at most ${DOMAIN_NAME_MAX_LENGTH} ASCII characters.`,
-            );
         }
 
         if (this._ipAddress != null) {
@@ -226,16 +201,13 @@ export default class RegisteredServiceEndpoint {
     }
 
     /**
+     * Sets the port. Per the proto contract this must be in `[0, 65535]`;
+     * the consensus node enforces that with `INVALID_REGISTERED_ENDPOINT`.
+     *
      * @param {number} port
      * @returns {this}
      */
     setPort(port) {
-        if (!Number.isInteger(port) || port < PORT_MIN || port > PORT_MAX) {
-            throw new Error(
-                `Port must be an integer in the range [${PORT_MIN}, ${PORT_MAX}].`,
-            );
-        }
-
         this._port = port;
         return this;
     }
@@ -265,23 +237,6 @@ export default class RegisteredServiceEndpoint {
      */
     get requiresTls() {
         return this._requiresTls;
-    }
-
-    /**
-     * Validates that the endpoint satisfies the proto-required oneOf
-     * constraints (must have either an ipAddress or a domainName set).
-     * Called by transaction `freezeWith` for each endpoint before send.
-     *
-     * @internal
-     * @returns {void}
-     * @throws {Error} If neither ipAddress nor domainName is set.
-     */
-    _validate() {
-        if (this._ipAddress == null && this._domainName == null) {
-            throw new Error(
-                "RegisteredServiceEndpoint must have either an IP address or a domain name set.",
-            );
-        }
     }
 
     /**
@@ -704,27 +659,15 @@ export class GeneralServiceEndpoint extends RegisteredServiceEndpoint {
     }
 
     /**
-     * Sets the description. Pass `null` to clear it.
+     * Sets the description. Pass `null` to clear it. Per the proto contract
+     * the description must not exceed 100 bytes when encoded as UTF-8 — the
+     * consensus node enforces that.
      *
      * @param {?string} description
      * @returns {this}
-     * @throws {Error} If description exceeds 100 UTF-8 bytes.
      */
     setDescription(description) {
-        if (description == null) {
-            this._description = null;
-            return this;
-        }
-
-        if (
-            utf8ByteLength(description) > GENERAL_SERVICE_DESCRIPTION_MAX_BYTES
-        ) {
-            throw new Error(
-                `Description must be at most ${GENERAL_SERVICE_DESCRIPTION_MAX_BYTES} bytes when encoded as UTF-8.`,
-            );
-        }
-
-        this._description = description;
+        this._description = description != null ? description : null;
         return this;
     }
 

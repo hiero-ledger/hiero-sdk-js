@@ -669,6 +669,46 @@ describe("RegisteredNodeTransactionIntegrationTest", function () {
         }
     });
 
+    it("Given a RegisteredNodeCreateTransaction with no admin key set, when the transaction is executed, then the transaction fails with a precheck status of KEY_REQUIRED", async function () {
+        try {
+            const response = await new RegisteredNodeCreateTransaction()
+                .setServiceEndpoints([
+                    new BlockNodeServiceEndpoint()
+                        .setIpAddress(Uint8Array.of(127, 0, 0, 1))
+                        .setPort(443)
+                        .setRequiresTls(true)
+                        .setEndpointApis([BlockNodeApi.Status]),
+                ])
+                .execute(env.client);
+
+            await response.getReceipt(env.client);
+            expect.fail(`Expected status ${Status.KeyRequired.toString()}.`);
+        } catch (error) {
+            expect(error.status).to.equal(Status.KeyRequired);
+        }
+    });
+
+    it("Given a RegisteredNodeCreateTransaction with an empty service endpoints list, when the transaction is executed, then the transaction fails with a receipt status of INVALID_REGISTERED_ENDPOINT", async function () {
+        const adminKey = PrivateKey.generateED25519();
+        try {
+            const response = await (
+                await (
+                    await new RegisteredNodeCreateTransaction()
+                        .setAdminKey(adminKey.publicKey)
+                        .setServiceEndpoints([])
+                        .freezeWith(env.client)
+                ).sign(adminKey)
+            ).execute(env.client);
+
+            await response.getReceipt(env.client);
+            expect.fail(
+                `Expected status ${Status.InvalidRegisteredEndpoint.toString()}.`,
+            );
+        } catch (error) {
+            expect(error.status).to.equal(Status.InvalidRegisteredEndpoint);
+        }
+    });
+
     it("Given a RegisteredNodeUpdateTransaction targeting a non-existent registeredNodeId, when the transaction is executed, then the transaction fails with a receipt status of INVALID_REGISTERED_NODE_ID", async function () {
         try {
             const response = await new RegisteredNodeUpdateTransaction()
@@ -838,6 +878,192 @@ describe("RegisteredNodeTransactionIntegrationTest", function () {
             );
         } catch (error) {
             expect(error.status).to.equal(Status.InvalidRegisteredNodeId);
+        }
+    });
+
+    // -------------------------------------------------------------------------
+    // Backfill: integration coverage for response codes the SDK no longer
+    // pre-checks (port range, address shape, endpoint count). Each test sends
+    // a Create transaction with a deliberately-malformed field and asserts
+    // the consensus node returns the documented status from the HIP-1137
+    // "Response Codes" section.
+    // -------------------------------------------------------------------------
+
+    it("Given a RegisteredNodeCreateTransaction with a port out of range, when the transaction is executed, then the transaction fails with a receipt status of INVALID_REGISTERED_ENDPOINT", async function () {
+        const adminKey = PrivateKey.generateED25519();
+        try {
+            const response = await (
+                await (
+                    await new RegisteredNodeCreateTransaction()
+                        .setAdminKey(adminKey.publicKey)
+                        .setServiceEndpoints([
+                            new BlockNodeServiceEndpoint()
+                                .setIpAddress(Uint8Array.of(127, 0, 0, 1))
+                                .setPort(99999)
+                                .setRequiresTls(true)
+                                .setEndpointApis([BlockNodeApi.Status]),
+                        ])
+                        .freezeWith(env.client)
+                ).sign(adminKey)
+            ).execute(env.client);
+
+            await response.getReceipt(env.client);
+            expect.fail(
+                `Expected status ${Status.InvalidRegisteredEndpoint.toString()}.`,
+            );
+        } catch (error) {
+            expect(error.status).to.equal(Status.InvalidRegisteredEndpoint);
+        }
+    });
+
+    it("Given a RegisteredNodeCreateTransaction whose endpoint has neither an IP address nor a domain name, when the transaction is executed, then the transaction fails with a receipt status of INVALID_REGISTERED_ENDPOINT", async function () {
+        const adminKey = PrivateKey.generateED25519();
+        try {
+            const response = await (
+                await (
+                    await new RegisteredNodeCreateTransaction()
+                        .setAdminKey(adminKey.publicKey)
+                        .setServiceEndpoints([
+                            new BlockNodeServiceEndpoint()
+                                .setPort(443)
+                                .setRequiresTls(true)
+                                .setEndpointApis([BlockNodeApi.Status]),
+                        ])
+                        .freezeWith(env.client)
+                ).sign(adminKey)
+            ).execute(env.client);
+
+            await response.getReceipt(env.client);
+            expect.fail(
+                `Expected status ${Status.InvalidRegisteredEndpoint.toString()}.`,
+            );
+        } catch (error) {
+            expect(error.status).to.equal(Status.InvalidRegisteredEndpoint);
+        }
+    });
+
+    it("Given a RegisteredNodeCreateTransaction whose endpoint has an IP address that is not 4 or 16 bytes, when the transaction is executed, then the transaction fails with a receipt status of INVALID_REGISTERED_ENDPOINT_ADDRESS", async function () {
+        const adminKey = PrivateKey.generateED25519();
+        try {
+            const response = await (
+                await (
+                    await new RegisteredNodeCreateTransaction()
+                        .setAdminKey(adminKey.publicKey)
+                        .setServiceEndpoints([
+                            new BlockNodeServiceEndpoint()
+                                .setIpAddress(Uint8Array.of(1, 2, 3))
+                                .setPort(443)
+                                .setRequiresTls(true)
+                                .setEndpointApis([BlockNodeApi.Status]),
+                        ])
+                        .freezeWith(env.client)
+                ).sign(adminKey)
+            ).execute(env.client);
+
+            await response.getReceipt(env.client);
+            expect.fail(
+                `Expected status ${Status.InvalidRegisteredEndpointAddress.toString()}.`,
+            );
+        } catch (error) {
+            expect(error.status).to.equal(
+                Status.InvalidRegisteredEndpointAddress,
+            );
+        }
+    });
+
+    it("Given a RegisteredNodeCreateTransaction whose endpoint has a domain name longer than 250 ASCII characters, when the transaction is executed, then the transaction fails with a receipt status of INVALID_REGISTERED_ENDPOINT_ADDRESS", async function () {
+        const adminKey = PrivateKey.generateED25519();
+        try {
+            const response = await (
+                await (
+                    await new RegisteredNodeCreateTransaction()
+                        .setAdminKey(adminKey.publicKey)
+                        .setServiceEndpoints([
+                            new BlockNodeServiceEndpoint()
+                                .setDomainName("a".repeat(251))
+                                .setPort(443)
+                                .setRequiresTls(true)
+                                .setEndpointApis([BlockNodeApi.Status]),
+                        ])
+                        .freezeWith(env.client)
+                ).sign(adminKey)
+            ).execute(env.client);
+
+            await response.getReceipt(env.client);
+            expect.fail(
+                `Expected status ${Status.InvalidRegisteredEndpointAddress.toString()}.`,
+            );
+        } catch (error) {
+            expect(error.status).to.equal(
+                Status.InvalidRegisteredEndpointAddress,
+            );
+        }
+    });
+
+    it("Given a RegisteredNodeCreateTransaction with more than 50 service endpoints, when the transaction is executed, then the transaction fails with a receipt status of REGISTERED_ENDPOINTS_EXCEEDED_LIMIT", async function () {
+        const adminKey = PrivateKey.generateED25519();
+        const endpoints = [];
+        for (let i = 0; i < 51; i++) {
+            endpoints.push(
+                new BlockNodeServiceEndpoint()
+                    .setDomainName(`endpoint-${i}.example.com`)
+                    .setPort(443)
+                    .setRequiresTls(true)
+                    .setEndpointApis([BlockNodeApi.Status]),
+            );
+        }
+
+        try {
+            const response = await (
+                await (
+                    await new RegisteredNodeCreateTransaction()
+                        .setAdminKey(adminKey.publicKey)
+                        .setServiceEndpoints(endpoints)
+                        .freezeWith(env.client)
+                ).sign(adminKey)
+            ).execute(env.client);
+
+            await response.getReceipt(env.client);
+            expect.fail(
+                `Expected status ${Status.RegisteredEndpointsExceededLimit.toString()}.`,
+            );
+        } catch (error) {
+            expect(error.status).to.equal(
+                Status.RegisteredEndpointsExceededLimit,
+            );
+        }
+    });
+
+    // The HIP-1137 "Response Codes" section does not enumerate a specific
+    // status for description-too-long. The proto defines the 100-byte UTF-8
+    // limit and the consensus node enforces it, but we don't yet know what
+    // it returns. Skipped pending an empirical run against testnet/solo —
+    // un-skip and pin the actual `Status.X` once observed. If the network
+    // silently accepts/truncates, raise that as a HIP follow-up.
+    it.skip("Given a RegisteredNodeCreateTransaction with a description longer than 100 UTF-8 bytes, when the transaction is executed, then the transaction fails with the consensus-node-defined status", async function () {
+        const adminKey = PrivateKey.generateED25519();
+        try {
+            const response = await (
+                await (
+                    await new RegisteredNodeCreateTransaction()
+                        .setAdminKey(adminKey.publicKey)
+                        .setDescription("a".repeat(101))
+                        .setServiceEndpoints([
+                            new BlockNodeServiceEndpoint()
+                                .setIpAddress(Uint8Array.of(127, 0, 0, 1))
+                                .setPort(443)
+                                .setRequiresTls(true)
+                                .setEndpointApis([BlockNodeApi.Status]),
+                        ])
+                        .freezeWith(env.client)
+                ).sign(adminKey)
+            ).execute(env.client);
+
+            await response.getReceipt(env.client);
+            expect.fail("Expected the consensus node to reject the request.");
+        } catch (error) {
+            // TODO: pin the actual status once observed empirically.
+            expect(error).to.be.an("error");
         }
     });
 

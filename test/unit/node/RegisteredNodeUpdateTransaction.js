@@ -70,18 +70,8 @@ describe("RegisteredNodeUpdateTransaction", function () {
         expect(tx.description).to.equal("");
     });
 
-    it("should require registeredNodeId before freeze", function () {
-        const nodeAccountIds = [AccountId.fromString("0.0.5005")];
-        const tx = new RegisteredNodeUpdateTransaction()
-            .setNodeAccountIds(nodeAccountIds)
-            .setTransactionId(
-                TransactionId.withValidStart(nodeAccountIds[0], VALID_START),
-            );
-
-        expect(() => tx.freeze()).to.throw(
-            "RegisteredNodeUpdateTransaction: 'registeredNodeId' must be explicitly set before calling freeze().",
-        );
-    });
+    // Note: missing/invalid registeredNodeId is rejected by the consensus
+    // node with INVALID_REGISTERED_NODE_ID — see integration tests.
 
     it("should set registeredNodeId as a long", function () {
         const tx = new RegisteredNodeUpdateTransaction().setRegisteredNodeId(
@@ -126,10 +116,7 @@ describe("RegisteredNodeUpdateTransaction", function () {
         expect(() => tx.addServiceEndpoint(null)).to.throw(TypeError);
     });
 
-    it("should reject empty serviceEndpoints list", function () {
-        const tx = new RegisteredNodeUpdateTransaction();
-        expect(() => tx.setServiceEndpoints([])).to.throw(
-            "ServiceEndpoints list must not be empty.",
-        );
-    });
+    // Note: empty / oversized serviceEndpoints lists are rejected by the
+    // consensus node with INVALID_REGISTERED_ENDPOINT and
+    // REGISTERED_ENDPOINTS_EXCEEDED_LIMIT — see integration tests.
 });

@@ -58,36 +58,8 @@ describe("RegisteredNodeCreateTransaction", function () {
         ]);
     });
 
-    it("should reject a RegisteredNodeCreateTransaction with no admin key set before it can be executed", function () {
-        const nodeAccountIds = [AccountId.fromString("0.0.5005")];
-        const tx = new RegisteredNodeCreateTransaction()
-            .setNodeAccountIds(nodeAccountIds)
-            .setTransactionId(
-                TransactionId.withValidStart(nodeAccountIds[0], VALID_START),
-            )
-            .addServiceEndpoint(
-                new BlockNodeServiceEndpoint()
-                    .setIpAddress(Uint8Array.of(127, 0, 0, 1))
-                    .setPort(443)
-                    .setEndpointApis([BlockNodeApi.Status]),
-            );
-
-        expect(() => tx.freeze()).to.throw(
-            "RegisteredNodeCreateTransaction: 'adminKey' must be set before calling freeze().",
-        );
-    });
-
-    it("should reject a RegisteredNodeCreateTransaction with an empty service endpoints list before it can be executed", function () {
-        const nodeAccountIds = [AccountId.fromString("0.0.5005")];
-        const tx = new RegisteredNodeCreateTransaction()
-            .setNodeAccountIds(nodeAccountIds)
-            .setTransactionId(
-                TransactionId.withValidStart(nodeAccountIds[0], VALID_START),
-            )
-            .setAdminKey(ADMIN_KEY);
-
-        expect(() => tx.freeze()).to.throw(
-            "RegisteredNodeCreateTransaction: 'serviceEndpoints' must not be empty before calling freeze().",
-        );
-    });
+    // Note: missing adminKey (KEY_REQUIRED precheck) and empty/oversized
+    // serviceEndpoints lists (INVALID_REGISTERED_ENDPOINT,
+    // REGISTERED_ENDPOINTS_EXCEEDED_LIMIT) are rejected by the consensus
+    // node — see integration tests.
 });

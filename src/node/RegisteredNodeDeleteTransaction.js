@@ -83,6 +83,9 @@ export default class RegisteredNodeDeleteTransaction extends Transaction {
     }
 
     /**
+     * Sets the target registered node ID. Invalid / non-existent IDs are
+     * rejected by the consensus node with `INVALID_REGISTERED_NODE_ID`.
+     *
      * @param {Long | number} registeredNodeId
      * @returns {RegisteredNodeDeleteTransaction}
      */
@@ -95,17 +98,9 @@ export default class RegisteredNodeDeleteTransaction extends Transaction {
             );
         }
 
-        const longRegisteredNodeId = Long.isLong(registeredNodeId)
+        this._registeredNodeId = Long.isLong(registeredNodeId)
             ? registeredNodeId
             : Long.fromValue(registeredNodeId);
-
-        if (longRegisteredNodeId.toNumber() < 0) {
-            throw new Error(
-                "RegisteredNodeDeleteTransaction: 'registeredNodeId' must be positive.",
-            );
-        }
-
-        this._registeredNodeId = longRegisteredNodeId;
         return this;
     }
 
@@ -114,21 +109,6 @@ export default class RegisteredNodeDeleteTransaction extends Transaction {
      */
     get registeredNodeId() {
         return this._registeredNodeId;
-    }
-
-    /**
-     * @override
-     * @param {?import("../client/Client.js").default<Channel, *>} client
-     * @returns {this}
-     */
-    freezeWith(client) {
-        if (this._registeredNodeId == null) {
-            throw new Error(
-                "RegisteredNodeDeleteTransaction: 'registeredNodeId' must be explicitly set before calling freeze().",
-            );
-        }
-
-        return super.freezeWith(client);
     }
 
     /**

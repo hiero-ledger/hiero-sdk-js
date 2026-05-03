@@ -6,9 +6,6 @@ import Transaction, {
 } from "../transaction/Transaction.js";
 import RegisteredServiceEndpoint from "./RegisteredServiceEndpoint.js";
 
-const DESCRIPTION_MAX_BYTES = 100;
-const SERVICE_ENDPOINTS_MAX_LENGTH = 50;
-
 /**
  * @namespace proto
  * @typedef {import("@hiero-ledger/proto").proto.ITransaction} ITransaction
@@ -29,14 +26,6 @@ const SERVICE_ENDPOINTS_MAX_LENGTH = 50;
  * @typedef {import("../client/Client.js").default<*, *>} Client
  * @typedef {import("../account/AccountId.js").default} AccountId
  */
-
-/**
- * @param {string} value
- * @returns {number}
- */
-function utf8ByteLength(value) {
-    return new TextEncoder().encode(value).length;
-}
 
 /**
  * Creates a new registered node in the network address book.
@@ -152,6 +141,9 @@ export default class RegisteredNodeCreateTransaction extends Transaction {
     }
 
     /**
+     * Sets the description. Per the proto contract this must not exceed
+     * 100 bytes when encoded as UTF-8 — the consensus node enforces that.
+     *
      * @param {string} description
      * @returns {RegisteredNodeCreateTransaction}
      */
@@ -160,12 +152,6 @@ export default class RegisteredNodeCreateTransaction extends Transaction {
 
         if (description == null) {
             throw new TypeError("description must not be null or undefined.");
-        }
-
-        if (utf8ByteLength(description) > DESCRIPTION_MAX_BYTES) {
-            throw new Error(
-                `Description must be at most ${DESCRIPTION_MAX_BYTES} bytes when encoded as UTF-8.`,
-            );
         }
 
         this._description = description;
@@ -180,6 +166,10 @@ export default class RegisteredNodeCreateTransaction extends Transaction {
     }
 
     /**
+     * Replaces the service endpoint list. Empty / oversized lists and
+     * malformed endpoints are validated by the consensus node and surface as
+     * `INVALID_REGISTERED_ENDPOINT` / `REGISTERED_ENDPOINTS_EXCEEDED_LIMIT`.
+     *
      * @param {RegisteredServiceEndpoint[]} serviceEndpoints
      * @returns {RegisteredNodeCreateTransaction}
      */
@@ -189,16 +179,6 @@ export default class RegisteredNodeCreateTransaction extends Transaction {
         if (serviceEndpoints == null) {
             throw new TypeError(
                 "serviceEndpoints must not be null or undefined.",
-            );
-        }
-
-        if (serviceEndpoints.length === 0) {
-            throw new Error("ServiceEndpoints list must not be empty.");
-        }
-
-        if (serviceEndpoints.length > SERVICE_ENDPOINTS_MAX_LENGTH) {
-            throw new Error(
-                `ServiceEndpoints list must not contain more than ${SERVICE_ENDPOINTS_MAX_LENGTH} entries.`,
             );
         }
 
@@ -226,39 +206,8 @@ export default class RegisteredNodeCreateTransaction extends Transaction {
             );
         }
 
-        if (this._serviceEndpoints.length >= SERVICE_ENDPOINTS_MAX_LENGTH) {
-            throw new Error(
-                `ServiceEndpoints list must not contain more than ${SERVICE_ENDPOINTS_MAX_LENGTH} entries.`,
-            );
-        }
-
         this._serviceEndpoints.push(serviceEndpoint);
         return this;
-    }
-
-    /**
-     * @override
-     * @param {?import("../client/Client.js").default<Channel, *>} client
-     * @returns {this}
-     */
-    freezeWith(client) {
-        if (this._adminKey == null) {
-            throw new Error(
-                "RegisteredNodeCreateTransaction: 'adminKey' must be set before calling freeze().",
-            );
-        }
-
-        if (this._serviceEndpoints.length === 0) {
-            throw new Error(
-                "RegisteredNodeCreateTransaction: 'serviceEndpoints' must not be empty before calling freeze().",
-            );
-        }
-
-        for (const endpoint of this._serviceEndpoints) {
-            endpoint._validate();
-        }
-
-        return super.freezeWith(client);
     }
 
     /**

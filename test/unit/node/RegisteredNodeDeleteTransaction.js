@@ -35,28 +35,12 @@ describe("RegisteredNodeDeleteTransaction", function () {
         expect(tx2.registeredNodeId.toString()).to.equal("123");
     });
 
-    it("should throw error when setting a negative id", function () {
-        const tx = new RegisteredNodeDeleteTransaction();
-        expect(() => tx.setRegisteredNodeId(-1)).to.throw(
-            "RegisteredNodeDeleteTransaction: 'registeredNodeId' must be positive.",
-        );
-    });
-
     it("should throw TypeError when setting a null id", function () {
         const tx = new RegisteredNodeDeleteTransaction();
         expect(() => tx.setRegisteredNodeId(null)).to.throw(TypeError);
     });
 
-    it("should require registeredNodeId before freeze", function () {
-        const nodeAccountIds = [AccountId.fromString("0.0.5005")];
-        const tx = new RegisteredNodeDeleteTransaction()
-            .setNodeAccountIds(nodeAccountIds)
-            .setTransactionId(
-                TransactionId.withValidStart(nodeAccountIds[0], VALID_START),
-            );
-
-        expect(() => tx.freeze()).to.throw(
-            "RegisteredNodeDeleteTransaction: 'registeredNodeId' must be explicitly set before calling freeze().",
-        );
-    });
+    // Note: missing/negative/non-existent registeredNodeId is rejected by
+    // the consensus node with INVALID_REGISTERED_NODE_ID — see integration
+    // tests.
 });
