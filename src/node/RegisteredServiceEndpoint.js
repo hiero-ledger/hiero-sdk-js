@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import BlockNodeApi from "./BlockNodeApi.js";
-
 /**
  * @typedef {import("@hiero-ledger/proto").com.hedera.hapi.node.addressbook.IRegisteredServiceEndpoint} IRegisteredServiceEndpoint
  */
@@ -51,6 +49,34 @@ import BlockNodeApi from "./BlockNodeApi.js";
  * @property {?Record<string, never>} [rpc_relay]
  * @property {?string} [type]
  */
+
+/**
+ * @typedef {(endpoint: IRegisteredServiceEndpoint) => RegisteredServiceEndpoint} ProtobufEndpointFactory
+ */
+
+/**
+ * @typedef {(json: RegisteredServiceEndpointJson) => RegisteredServiceEndpoint} JsonEndpointFactory
+ */
+
+/**
+ * Registry of protobuf-shape factories keyed by `RegisteredServiceEndpointType`.
+ * Each concrete subclass file (e.g. `BlockNodeServiceEndpoint.js`) registers
+ * itself at module load — same pattern as `TRANSACTION_REGISTRY` in
+ * `src/transaction/Transaction.js`. Keeps the abstract base free of
+ * forward references to its subclasses (which would create a circular
+ * import).
+ *
+ * @type {Map<RegisteredServiceEndpointType, ProtobufEndpointFactory>}
+ */
+export const ENDPOINT_FROM_PROTOBUF_REGISTRY = new Map();
+
+/**
+ * Registry of mirror-JSON factories keyed by `RegisteredServiceEndpointType`.
+ * Populated the same way as `ENDPOINT_FROM_PROTOBUF_REGISTRY` above.
+ *
+ * @type {Map<RegisteredServiceEndpointType, JsonEndpointFactory>}
+ */
+export const ENDPOINT_FROM_JSON_REGISTRY = new Map();
 
 /**
  * A service endpoint published by a registered node.
@@ -262,6 +288,35 @@ export default class RegisteredServiceEndpoint {
     }
 
     /**
+     * Apply the four common JSON fields (ip address, domain name, port,
+     * tls) to a freshly-constructed subclass instance. Throws if neither
+     * an ip address nor a domain name is present, since either-or is
+     * required by the proto contract.
+     *
+     * @protected
+     * @param {RegisteredServiceEndpointJson} json
+     * @returns {void}
+     */
+    _applyJsonBaseFields(json) {
+        if (json.ip_address != null) {
+            this.setIpAddress(parseIpAddress(json.ip_address));
+        } else if (json.domain_name != null) {
+            this.setDomainName(json.domain_name);
+        } else {
+            throw new Error(
+                "Registered service endpoint response did not include an IP address or domain name.",
+            );
+        }
+
+        this.setPort(json.port);
+        this.setRequiresTls(json.requires_tls);
+    }
+
+    /**
+     * Decode a protobuf endpoint into the matching concrete subclass. Looks
+     * up the factory from `ENDPOINT_FROM_PROTOBUF_REGISTRY`, which each
+     * subclass file populates at module load.
+     *
      * @internal
      * @param {IRegisteredServiceEndpoint} endpoint
      * @returns {RegisteredServiceEndpoint}
@@ -269,27 +324,24 @@ export default class RegisteredServiceEndpoint {
     static _fromProtobuf(endpoint) {
         const endpointType =
             RegisteredServiceEndpoint._getEndpointType(endpoint);
+        const factory =
+            endpointType != null
+                ? ENDPOINT_FROM_PROTOBUF_REGISTRY.get(endpointType)
+                : null;
 
-        switch (endpointType) {
-            case "blockNode":
-                return BlockNodeServiceEndpoint._fromProtobuf(endpoint);
-            case "mirrorNode":
-                return MirrorNodeServiceEndpoint._fromProtobuf(endpoint);
-            case "rpcRelay":
-                return RpcRelayServiceEndpoint._fromProtobuf(endpoint);
-            case "generalService":
-                return GeneralServiceEndpoint._fromProtobuf(endpoint);
-            default:
-                throw new Error(
-                    "Unable to decode registered service endpoint: endpoint type is missing.",
-                );
+        if (factory == null) {
+            throw new Error(
+                "Unable to decode registered service endpoint: endpoint type is missing.",
+            );
         }
+
+        return factory(endpoint);
     }
 
     /**
-     * Construct an endpoint from a mirror-node REST JSON object,
-     * dispatching to the correct subclass based on which discriminator
-     * field is populated.
+     * Decode a mirror-node REST JSON endpoint into the matching concrete
+     * subclass. Looks up the factory from `ENDPOINT_FROM_JSON_REGISTRY`,
+     * which each subclass file populates at module load.
      *
      * @internal
      * @param {RegisteredServiceEndpointJson} json
@@ -298,21 +350,41 @@ export default class RegisteredServiceEndpoint {
     static _fromJson(json) {
         const endpointType =
             RegisteredServiceEndpoint._getJsonEndpointType(json);
+        const factory =
+            endpointType != null
+                ? ENDPOINT_FROM_JSON_REGISTRY.get(endpointType)
+                : null;
 
-        switch (endpointType) {
-            case "blockNode":
-                return BlockNodeServiceEndpoint._fromJson(json);
-            case "mirrorNode":
-                return MirrorNodeServiceEndpoint._fromJson(json);
-            case "rpcRelay":
-                return RpcRelayServiceEndpoint._fromJson(json);
-            case "generalService":
-                return GeneralServiceEndpoint._fromJson(json);
-            default:
-                throw new Error(
-                    "Registered service endpoint response did not include a recognized endpoint type.",
-                );
+        if (factory == null) {
+            throw new Error(
+                "Registered service endpoint response did not include a recognized endpoint type.",
+            );
         }
+
+        return factory(json);
+    }
+
+    /**
+     * @private
+     * @param {IRegisteredServiceEndpoint} endpoint
+     * @returns {RegisteredServiceEndpointType | null}
+     */
+    static _getEndpointType(endpoint) {
+        const endpointWithOneOf =
+            /** @type {{ endpointType?: RegisteredServiceEndpointType }} */ (
+                endpoint
+            );
+
+        if (endpointWithOneOf.endpointType != null) {
+            return endpointWithOneOf.endpointType;
+        }
+
+        if (endpoint.blockNode != null) return "blockNode";
+        if (endpoint.mirrorNode != null) return "mirrorNode";
+        if (endpoint.rpcRelay != null) return "rpcRelay";
+        if (endpoint.generalService != null) return "generalService";
+
+        return null;
     }
 
     /**
@@ -344,394 +416,13 @@ export default class RegisteredServiceEndpoint {
 
         return null;
     }
-
-    /**
-     * Apply the four common JSON fields (ip address, domain name, port,
-     * tls) to a freshly-constructed subclass instance. Throws if neither
-     * an ip address nor a domain name is present, since either-or is
-     * required by the proto contract.
-     *
-     * @protected
-     * @param {RegisteredServiceEndpointJson} json
-     * @returns {void}
-     */
-    _applyJsonBaseFields(json) {
-        if (json.ip_address != null) {
-            this.setIpAddress(parseIpAddress(json.ip_address));
-        } else if (json.domain_name != null) {
-            this.setDomainName(json.domain_name);
-        } else {
-            throw new Error(
-                "Registered service endpoint response did not include an IP address or domain name.",
-            );
-        }
-
-        this.setPort(json.port);
-        this.setRequiresTls(json.requires_tls);
-    }
-
-    /**
-     * @private
-     * @param {IRegisteredServiceEndpoint} endpoint
-     * @returns {RegisteredServiceEndpointType | null}
-     */
-    static _getEndpointType(endpoint) {
-        const endpointWithOneOf =
-            /** @type {{ endpointType?: RegisteredServiceEndpointType }} */ (
-                endpoint
-            );
-
-        if (endpointWithOneOf.endpointType != null) {
-            return endpointWithOneOf.endpointType;
-        }
-
-        if (endpoint.blockNode != null) {
-            return "blockNode";
-        }
-
-        if (endpoint.mirrorNode != null) {
-            return "mirrorNode";
-        }
-
-        if (endpoint.rpcRelay != null) {
-            return "rpcRelay";
-        }
-
-        if (endpoint.generalService != null) {
-            return "generalService";
-        }
-
-        return null;
-    }
-}
-
-/**
- * @typedef {RegisteredServiceEndpointProps & {
- *   endpointApis?: ?((BlockNodeApi | number)[]),
- * }} BlockNodeServiceEndpointProps
- */
-
-/**
- * A registered service endpoint for a block node.
- */
-export class BlockNodeServiceEndpoint extends RegisteredServiceEndpoint {
-    /**
-     * @param {BlockNodeServiceEndpointProps} [props]
-     */
-    constructor(props = {}) {
-        super(props);
-
-        /**
-         * @private
-         * @type {BlockNodeApi[]}
-         */
-        this._endpointApis = [BlockNodeApi.Other];
-
-        this._setType("blockNode");
-
-        if (props.endpointApis != null) {
-            this.setEndpointApis(props.endpointApis);
-        }
-    }
-
-    /**
-     * @param {Array<BlockNodeApi | number>} endpointApis
-     * @returns {this}
-     */
-    setEndpointApis(endpointApis) {
-        if (endpointApis == null) {
-            throw new TypeError("endpointApis must not be null or undefined.");
-        }
-
-        this._endpointApis = endpointApis.map((endpointApi) =>
-            endpointApi instanceof BlockNodeApi
-                ? endpointApi
-                : BlockNodeApi._fromCode(endpointApi),
-        );
-        return this;
-    }
-
-    /**
-     * @param {BlockNodeApi | number} endpointApi
-     * @returns {this}
-     */
-    addEndpointApi(endpointApi) {
-        if (endpointApi == null) {
-            throw new TypeError("endpointApi must not be null or undefined.");
-        }
-
-        this._endpointApis.push(
-            endpointApi instanceof BlockNodeApi
-                ? endpointApi
-                : BlockNodeApi._fromCode(endpointApi),
-        );
-        return this;
-    }
-
-    /**
-     * @returns {BlockNodeApi[]}
-     */
-    get endpointApis() {
-        return [...this._endpointApis];
-    }
-
-    /**
-     * @internal
-     * @param {IRegisteredServiceEndpoint} endpoint
-     * @returns {BlockNodeServiceEndpoint}
-     */
-    static _fromProtobuf(endpoint) {
-        return new BlockNodeServiceEndpoint({
-            ipAddress: endpoint.ipAddress != null ? endpoint.ipAddress : null,
-            domainName:
-                endpoint.domainName != null ? endpoint.domainName : null,
-            port: endpoint.port != null ? endpoint.port : null,
-            requiresTls:
-                endpoint.requiresTls != null ? endpoint.requiresTls : null,
-            endpointApis:
-                endpoint.blockNode?.endpointApi != null
-                    ? endpoint.blockNode.endpointApi
-                    : null,
-        });
-    }
-
-    /**
-     * @internal
-     * @param {RegisteredServiceEndpointJson} json
-     * @returns {BlockNodeServiceEndpoint}
-     */
-    static _fromJson(json) {
-        const endpoint = new BlockNodeServiceEndpoint();
-        endpoint._applyJsonBaseFields(json);
-
-        const apis = json.block_node?.endpoint_apis;
-        if (apis != null && apis.length > 0) {
-            endpoint.setEndpointApis(
-                apis.map((api) => BlockNodeApi._fromString(api)),
-            );
-        }
-        return endpoint;
-    }
-
-    /**
-     * @internal
-     * @returns {IRegisteredServiceEndpoint}
-     */
-    _toProtobuf() {
-        return {
-            ...this._toProtobufBase(),
-            blockNode: {
-                endpointApi: this._endpointApis.map((endpointApi) =>
-                    endpointApi.valueOf(),
-                ),
-            },
-        };
-    }
-}
-
-/**
- * A registered service endpoint for a mirror node.
- */
-export class MirrorNodeServiceEndpoint extends RegisteredServiceEndpoint {
-    /**
-     * @param {RegisteredServiceEndpointProps} [props]
-     */
-    constructor(props = {}) {
-        super(props);
-        this._setType("mirrorNode");
-    }
-
-    /**
-     * @internal
-     * @param {IRegisteredServiceEndpoint} endpoint
-     * @returns {MirrorNodeServiceEndpoint}
-     */
-    static _fromProtobuf(endpoint) {
-        return new MirrorNodeServiceEndpoint({
-            ipAddress: endpoint.ipAddress != null ? endpoint.ipAddress : null,
-            domainName:
-                endpoint.domainName != null ? endpoint.domainName : null,
-            port: endpoint.port != null ? endpoint.port : null,
-            requiresTls:
-                endpoint.requiresTls != null ? endpoint.requiresTls : null,
-        });
-    }
-
-    /**
-     * @internal
-     * @param {RegisteredServiceEndpointJson} json
-     * @returns {MirrorNodeServiceEndpoint}
-     */
-    static _fromJson(json) {
-        const endpoint = new MirrorNodeServiceEndpoint();
-        endpoint._applyJsonBaseFields(json);
-        return endpoint;
-    }
-
-    /**
-     * @internal
-     * @returns {IRegisteredServiceEndpoint}
-     */
-    _toProtobuf() {
-        return {
-            ...this._toProtobufBase(),
-            mirrorNode: {},
-        };
-    }
-}
-
-/**
- * A registered service endpoint for an RPC relay.
- */
-export class RpcRelayServiceEndpoint extends RegisteredServiceEndpoint {
-    /**
-     * @param {RegisteredServiceEndpointProps} [props]
-     */
-    constructor(props = {}) {
-        super(props);
-        this._setType("rpcRelay");
-    }
-
-    /**
-     * @internal
-     * @param {IRegisteredServiceEndpoint} endpoint
-     * @returns {RpcRelayServiceEndpoint}
-     */
-    static _fromProtobuf(endpoint) {
-        return new RpcRelayServiceEndpoint({
-            ipAddress: endpoint.ipAddress != null ? endpoint.ipAddress : null,
-            domainName:
-                endpoint.domainName != null ? endpoint.domainName : null,
-            port: endpoint.port != null ? endpoint.port : null,
-            requiresTls:
-                endpoint.requiresTls != null ? endpoint.requiresTls : null,
-        });
-    }
-
-    /**
-     * @internal
-     * @param {RegisteredServiceEndpointJson} json
-     * @returns {RpcRelayServiceEndpoint}
-     */
-    static _fromJson(json) {
-        const endpoint = new RpcRelayServiceEndpoint();
-        endpoint._applyJsonBaseFields(json);
-        return endpoint;
-    }
-
-    /**
-     * @internal
-     * @returns {IRegisteredServiceEndpoint}
-     */
-    _toProtobuf() {
-        return {
-            ...this._toProtobufBase(),
-            rpcRelay: {},
-        };
-    }
-}
-
-/**
- * @typedef {RegisteredServiceEndpointProps & { description?: ?string }} GeneralServiceEndpointProps
- */
-
-/**
- * A registered service endpoint for a general-purpose service.
- */
-export class GeneralServiceEndpoint extends RegisteredServiceEndpoint {
-    /**
-     * @param {GeneralServiceEndpointProps} [props]
-     */
-    constructor(props = {}) {
-        super(props);
-
-        /**
-         * @private
-         * @type {?string}
-         */
-        this._description = null;
-
-        this._setType("generalService");
-
-        if (props.description != null) {
-            this.setDescription(props.description);
-        }
-    }
-
-    /**
-     * Sets the description. Pass `null` to clear it. Per the proto contract
-     * the description must not exceed 100 bytes when encoded as UTF-8 — the
-     * consensus node enforces that.
-     *
-     * @param {?string} description
-     * @returns {this}
-     */
-    setDescription(description) {
-        this._description = description != null ? description : null;
-        return this;
-    }
-
-    /**
-     * @returns {?string}
-     */
-    get description() {
-        return this._description;
-    }
-
-    /**
-     * @internal
-     * @param {IRegisteredServiceEndpoint} endpoint
-     * @returns {GeneralServiceEndpoint}
-     */
-    static _fromProtobuf(endpoint) {
-        return new GeneralServiceEndpoint({
-            ipAddress: endpoint.ipAddress != null ? endpoint.ipAddress : null,
-            domainName:
-                endpoint.domainName != null ? endpoint.domainName : null,
-            port: endpoint.port != null ? endpoint.port : null,
-            requiresTls:
-                endpoint.requiresTls != null ? endpoint.requiresTls : null,
-            description:
-                endpoint.generalService?.description != null
-                    ? endpoint.generalService.description
-                    : null,
-        });
-    }
-
-    /**
-     * @internal
-     * @param {RegisteredServiceEndpointJson} json
-     * @returns {GeneralServiceEndpoint}
-     */
-    static _fromJson(json) {
-        const endpoint = new GeneralServiceEndpoint();
-        endpoint._applyJsonBaseFields(json);
-        if (json.general_service?.description != null) {
-            endpoint.setDescription(json.general_service.description);
-        }
-        return endpoint;
-    }
-
-    /**
-     * @internal
-     * @returns {IRegisteredServiceEndpoint}
-     */
-    _toProtobuf() {
-        return {
-            ...this._toProtobufBase(),
-            generalService: {
-                description:
-                    this._description != null ? this._description : null,
-            },
-        };
-    }
 }
 
 // -----------------------------------------------------------------------------
-// IP-address-string parsing helpers — used only by the JSON factories above.
-// Mirror node returns IPv4 in dotted-quad form ("127.0.0.1") and IPv6 in
-// either bracketed ("[::1]") or unbracketed colon form. We need bytes for the
-// proto wire shape and for downstream comparisons.
+// IP-address-string parsing helpers — used only by `_applyJsonBaseFields`
+// above. Mirror node returns IPv4 in dotted-quad form ("127.0.0.1") and IPv6
+// in either bracketed ("[::1]") or unbracketed colon form. We need bytes for
+// the proto wire shape and for downstream comparisons.
 // -----------------------------------------------------------------------------
 
 /**
