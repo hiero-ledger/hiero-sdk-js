@@ -1,8 +1,13 @@
 import {
     AccountId,
+    BlockNodeApi,
+    BlockNodeServiceEndpoint,
     NodeUpdateTransaction,
     PrivateKey,
+    RegisteredNodeCreateTransaction,
+    RegisteredNodeDeleteTransaction,
     ServiceEndpoint,
+    Status,
 } from "../../src/exports.js";
 import { AddressBookQuery } from "../../src/index.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
@@ -142,6 +147,104 @@ describe("NodeUpdateTransaction", function () {
                         .freezeWith(env.client)
                 ).execute(env.client)
             ).getReceipt(env.client);
+        }
+    });
+
+    it("Given an existing consensus node and an existing registered node, when a NodeUpdateTransaction sets associatedRegisteredNodes to include the registered node's ID, then the consensus node is updated with the association", async function () {
+        const CONSENSUS_OPERATOR_ACCOUNT_ID = "0.0.2";
+        const CONSENSUS_OPERATOR_PRIVATE_KEY =
+            "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137";
+        const TARGET_NODE_ID = 0;
+
+        let registeredNodeId = null;
+        let registeredNodeAdminKey = null;
+
+        const originalOperatorId = env.operatorId;
+        const originalOperatorKey = env.operatorKey;
+
+        try {
+            registeredNodeAdminKey = PrivateKey.generateED25519();
+            const registeredNodeCreateResponse = await (
+                await (
+                    await new RegisteredNodeCreateTransaction()
+                        .setAdminKey(registeredNodeAdminKey.publicKey)
+                        .setDescription("Association target registered node")
+                        .setServiceEndpoints([
+                            new BlockNodeServiceEndpoint()
+                                .setDomainName("associate.example.com")
+                                .setPort(443)
+                                .setRequiresTls(true)
+                                .setEndpointApis([BlockNodeApi.Publish]),
+                        ])
+                        .freezeWith(env.client)
+                ).sign(registeredNodeAdminKey)
+            ).execute(env.client);
+            const registeredNodeReceipt =
+                await registeredNodeCreateResponse.getReceipt(env.client);
+
+            expect(registeredNodeReceipt.status).to.equal(Status.Success);
+            registeredNodeId = registeredNodeReceipt.registeredNodeId;
+
+            const consensusOperatorId = AccountId.fromString(
+                CONSENSUS_OPERATOR_ACCOUNT_ID,
+            );
+            const consensusOperatorKey = PrivateKey.fromStringED25519(
+                CONSENSUS_OPERATOR_PRIVATE_KEY,
+            );
+
+            env.client.setOperator(consensusOperatorId, consensusOperatorKey);
+
+            const associateResponse = await (
+                await new NodeUpdateTransaction()
+                    .setNodeId(TARGET_NODE_ID)
+                    .setAssociatedRegisteredNodes([registeredNodeId])
+                    .freezeWith(env.client)
+            ).execute(env.client);
+            const associateReceipt = await associateResponse.getReceipt(
+                env.client,
+            );
+
+            expect(associateReceipt.status).to.equal(Status.Success);
+            expect(Number(associateReceipt.nodeId?.toString())).to.equal(
+                TARGET_NODE_ID,
+            );
+        } finally {
+            if (registeredNodeId != null) {
+                env.client.setOperator(
+                    AccountId.fromString(CONSENSUS_OPERATOR_ACCOUNT_ID),
+                    PrivateKey.fromStringED25519(
+                        CONSENSUS_OPERATOR_PRIVATE_KEY,
+                    ),
+                );
+
+                const clearResponse = await (
+                    await new NodeUpdateTransaction()
+                        .setNodeId(TARGET_NODE_ID)
+                        .clearAssociatedRegisteredNodes()
+                        .freezeWith(env.client)
+                ).execute(env.client);
+                const clearReceipt = await clearResponse.getReceipt(env.client);
+
+                expect(clearReceipt.status).to.equal(Status.Success);
+            }
+
+            if (originalOperatorId != null && originalOperatorKey != null) {
+                env.client.setOperator(originalOperatorId, originalOperatorKey);
+            }
+
+            if (registeredNodeId != null && registeredNodeAdminKey != null) {
+                const deleteResponse = await (
+                    await (
+                        await new RegisteredNodeDeleteTransaction()
+                            .setRegisteredNodeId(registeredNodeId)
+                            .freezeWith(env.client)
+                    ).sign(registeredNodeAdminKey)
+                ).execute(env.client);
+                const deleteReceipt = await deleteResponse.getReceipt(
+                    env.client,
+                );
+                expect(deleteReceipt.status).to.equal(Status.Success);
+            }
         }
     });
 

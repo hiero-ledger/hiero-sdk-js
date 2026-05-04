@@ -35,6 +35,7 @@ import * as hex from "../encoding/hex.js";
  * @property {string[]} serials
  * @property {TransactionReceiptJSON[]} duplicates
  * @property {TransactionReceiptJSON[]} children
+ * @property {?string} registeredNodeId
  * @property {?string} nodeId
  */
 
@@ -62,6 +63,7 @@ export default class TransactionReceipt {
      * @param {Long[]} props.serials
      * @param {TransactionReceipt[]} props.duplicates
      * @param {TransactionReceipt[]} props.children
+     * @param {?Long} props.registeredNodeId
      * @param {?Long} props.nodeId
      */
     constructor(props) {
@@ -165,6 +167,14 @@ export default class TransactionReceipt {
 
         /**
          * @readonly
+         * @description In the receipt of a RegisteredNodeCreate, the identifier of the newly created registered node.
+         * This value SHALL be set following a `createRegisteredNode` transaction.
+         * This value SHALL NOT be set following any other transaction.
+         */
+        this.registeredNodeId = props.registeredNodeId;
+
+        /**
+         * @readonly
          * @description In the receipt of a NodeCreate, NodeUpdate, NodeDelete, the id of the newly created node.
          * An affected node identifier.
          * This value SHALL be set following a `createNode` transaction.
@@ -244,6 +254,7 @@ export default class TransactionReceipt {
 
                 serialNumbers: this.serials,
                 newTotalSupply: this.totalSupply,
+                registeredNodeId: this.registeredNodeId,
                 nodeId: this.nodeId,
             },
         };
@@ -353,6 +364,16 @@ export default class TransactionReceipt {
                     : [],
             children,
             duplicates,
+            // HIP-1137: registered node IDs are assigned starting at 1, so a
+            // proto3-default value of 0 means "not assigned" — surface it as
+            // `null` rather than a fake `Long(0)`. The consensus `nodeId`
+            // field below preserves 0 because consensus node IDs are
+            // 0-indexed in the consensus address book.
+            registeredNodeId:
+                receipt.registeredNodeId != null &&
+                !Long.fromValue(receipt.registeredNodeId).isZero()
+                    ? Long.fromValue(receipt.registeredNodeId)
+                    : null,
             nodeId: receipt.nodeId != null ? receipt.nodeId : null,
         });
     }
@@ -401,6 +422,7 @@ export default class TransactionReceipt {
             serials: this.serials.map((serial) => serial.toString()),
             duplicates: this.duplicates.map((receipt) => receipt.toJSON()),
             children: this.children.map((receipt) => receipt.toJSON()),
+            registeredNodeId: this.registeredNodeId?.toString() || null,
             nodeId: this.nodeId?.toString() || null,
         };
     }
