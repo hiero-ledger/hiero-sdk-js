@@ -11,6 +11,7 @@ import {
     BlockNodeApi,
     BlockNodeServiceEndpoint,
     Client,
+    Long,
     NodeUpdateTransaction,
     PrivateKey,
     RegisteredNodeAddressBookQuery,
@@ -76,7 +77,7 @@ function delay(ms) {
 
 /**
  * @param {import("@hiero-ledger/sdk").Client} client
- * @param {import("long").default} registeredNodeId
+ * @param {import("long")} registeredNodeId
  * @returns {Promise<import("@hiero-ledger/sdk").RegisteredNode>}
  */
 async function waitForRegisteredNode(client, registeredNodeId) {
@@ -166,7 +167,9 @@ async function main() {
             `Registered node created with id ${registeredNodeId.toString()} and status ${createReceipt.status.toString()}.`,
         );
 
-        console.log("Waiting for the mirror node to expose the new registered node...");
+        console.log(
+            "Waiting for the mirror node to expose the new registered node...",
+        );
         const mirrorRegisteredNode = await waitForRegisteredNode(
             client,
             registeredNodeId,
@@ -217,7 +220,7 @@ async function main() {
             );
 
             const associateTransaction = await new NodeUpdateTransaction()
-                .setNodeId(consensusNodeId)
+                .setNodeId(Long.fromNumber(consensusNodeId))
                 .addAssociatedRegisteredNode(registeredNodeId)
                 .freezeWith(client)
                 .sign(consensusNodeAdminKey);
