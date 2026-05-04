@@ -510,6 +510,25 @@ describe("Mnemonic", function () {
         expect(result2).to.deep.equal([44, 60, 0, -1, -2]);
     });
 
+    it("Mnemonic.calculateDerivationPathValues() throws on invalid derivation path", async function () {
+        const mnemonic = await Mnemonic.fromString(MNEMONIC_24_WORD_STRING);
+
+        const invalidPaths = [
+            "m/44'/60'",          // too few components
+            "m/44'/60'/0'/0",     // missing last component
+            "not-a-path",         // completely wrong format
+            "",                   // empty string
+            "44'/60'/0'/0/0",     // missing leading m/
+        ];
+
+        for (const path of invalidPaths) {
+            expect(() => mnemonic.calculateDerivationPathValues(path)).to.throw(
+                Error,
+                "Invalid derivation path",
+            );
+        }
+    });
+
     it("Mnemonic.toStandardECDSAsecp256k1PrivateKeyCustomDerivationPath() test vector", async function () {
         const DPATH_1 = "m/44'/60'/0'/0/0";
         const PASSPHRASE_1 = "";
