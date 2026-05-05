@@ -46,6 +46,7 @@ describe("TransactionReceipt", function () {
             new Timestamp(13, 14),
         );
         const serials = [Long.fromNumber(15)];
+        const registeredNodeId = Long.fromNumber(16, true);
 
         const receipt = TransactionReceipt.fromBytes(
             new TransactionReceipt({
@@ -65,6 +66,7 @@ describe("TransactionReceipt", function () {
                 serials,
                 duplicates: [],
                 children: [],
+                registeredNodeId,
             }).toBytes(),
         )._toProtobuf();
 
@@ -95,6 +97,9 @@ describe("TransactionReceipt", function () {
         );
         expect(receipt.receipt.serialNumbers).to.deep.equal(serials);
         expect(receipt.receipt.newTotalSupply).to.deep.equal(totalSupply);
+        expect(receipt.receipt.registeredNodeId.toString()).to.equal(
+            registeredNodeId.toString(),
+        );
         expect(receipt.duplicateTransactionReceipts).to.deep.equal([]);
         expect(receipt.childTransactionReceipts).to.deep.equal([]);
     });
@@ -125,6 +130,7 @@ describe("TransactionReceipt", function () {
             new Timestamp(13, 14),
         );
         const serials = [Long.fromNumber(15)];
+        const registeredNodeId = Long.fromNumber(16, true);
         const nodeId = Long.fromNumber(1234);
 
         const receipt = new TransactionReceipt({
@@ -144,6 +150,7 @@ describe("TransactionReceipt", function () {
             serials,
             duplicates: [],
             children: [],
+            registeredNodeId,
             nodeId,
         });
         const child = new TransactionReceipt({
@@ -157,7 +164,7 @@ describe("TransactionReceipt", function () {
         receipt.duplicates.push(child);
 
         const expectedJSON = JSON.parse(
-            `{"status":"OK","accountId":"0.0.1","filedId":"0.0.2","contractId":"0.0.3","topicId":"0.0.3","tokenId":"0.0.4","scheduleId":"0.0.5","exchangeRate":{"hbars":6,"cents":7,"expirationTime":"1973-11-25T17:31:44.000Z","exchangeRateInCents":1.1666666666666667},"nextExchangeRate":{"hbars":2,"cents":1,"expirationTime":"1973-11-25T17:31:44.000Z","exchangeRateInCents":0.5},"topicSequenceNumber":"9","topicRunningHash":"0a","totalSupply":"11","scheduledTransactionId":"0.0.12@13.000000014","serials":["15"],"duplicates":[{"status":"OK","accountId":"0.0.1","filedId":"0.0.2","contractId":"0.0.3","topicId":"0.0.3","tokenId":null,"scheduleId":null,"exchangeRate":null,"nextExchangeRate":null,"topicSequenceNumber":null,"topicRunningHash":null,"totalSupply":null,"scheduledTransactionId":null,"serials":[],"duplicates":[],"children":[],"nodeId":null}],"children":[{"status":"OK","accountId":"0.0.1","filedId":"0.0.2","contractId":"0.0.3","topicId":"0.0.3","tokenId":null,"scheduleId":null,"exchangeRate":null,"nextExchangeRate":null,"topicSequenceNumber":null,"topicRunningHash":null,"totalSupply":null,"scheduledTransactionId":null,"serials":[],"duplicates":[],"children":[],"nodeId":null}],"nodeId":"1234"}`,
+            `{"status":"OK","accountId":"0.0.1","filedId":"0.0.2","contractId":"0.0.3","topicId":"0.0.3","tokenId":"0.0.4","scheduleId":"0.0.5","exchangeRate":{"hbars":6,"cents":7,"expirationTime":"1973-11-25T17:31:44.000Z","exchangeRateInCents":1.1666666666666667},"nextExchangeRate":{"hbars":2,"cents":1,"expirationTime":"1973-11-25T17:31:44.000Z","exchangeRateInCents":0.5},"topicSequenceNumber":"9","topicRunningHash":"0a","totalSupply":"11","scheduledTransactionId":"0.0.12@13.000000014","serials":["15"],"duplicates":[{"status":"OK","accountId":"0.0.1","filedId":"0.0.2","contractId":"0.0.3","topicId":"0.0.3","tokenId":null,"scheduleId":null,"exchangeRate":null,"nextExchangeRate":null,"topicSequenceNumber":null,"topicRunningHash":null,"totalSupply":null,"scheduledTransactionId":null,"serials":[],"duplicates":[],"children":[],"registeredNodeId":null,"nodeId":null}],"children":[{"status":"OK","accountId":"0.0.1","filedId":"0.0.2","contractId":"0.0.3","topicId":"0.0.3","tokenId":null,"scheduleId":null,"exchangeRate":null,"nextExchangeRate":null,"topicSequenceNumber":null,"topicRunningHash":null,"totalSupply":null,"scheduledTransactionId":null,"serials":[],"duplicates":[],"children":[],"registeredNodeId":null,"nodeId":null}],"registeredNodeId":"16","nodeId":"1234"}`,
         );
 
         const resultJSON = JSON.parse(JSON.stringify(receipt));
@@ -170,7 +177,7 @@ describe("TransactionReceipt", function () {
             status,
         });
 
-        const expectedJSON = `{"status":"OK","accountId":null,"filedId":null,"contractId":null,"topicId":null,"tokenId":null,"scheduleId":null,"exchangeRate":null,"nextExchangeRate":null,"topicSequenceNumber":null,"topicRunningHash":null,"totalSupply":null,"scheduledTransactionId":null,"serials":[],"duplicates":[],"children":[],"nodeId":null}`;
+        const expectedJSON = `{"status":"OK","accountId":null,"filedId":null,"contractId":null,"topicId":null,"tokenId":null,"scheduleId":null,"exchangeRate":null,"nextExchangeRate":null,"topicSequenceNumber":null,"topicRunningHash":null,"totalSupply":null,"scheduledTransactionId":null,"serials":[],"duplicates":[],"children":[],"registeredNodeId":null,"nodeId":null}`;
         const expectedJSONParsed = JSON.parse(expectedJSON);
 
         const resultJSON = JSON.parse(JSON.stringify(receipt));

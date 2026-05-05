@@ -40,6 +40,7 @@ describe("NodeCreateTransaction", function () {
         const TEST_ADMIN_KEY = PrivateKey.fromStringED25519(
             "302e020100300506032b65700422042062c4b69e9f45a554e5424fb5a6fe5e6ac1f19ead31dc7718c2d980fd1f998d4b",
         ).publicKey;
+        const associatedRegisteredNodes = [101, 202];
 
         tx = new NodeCreateTransaction()
             .setNodeAccountIds(nodeAccountIds)
@@ -53,6 +54,7 @@ describe("NodeCreateTransaction", function () {
             .setAdminKey(TEST_ADMIN_KEY)
             .setServiceEndpoints(serviceEndpoints)
             .setGossipEndpoints(gossipEndpoints)
+            .setAssociatedRegisteredNodes(associatedRegisteredNodes)
             .setMaxTransactionFee(new Hbar(1))
             .setDeclineReward(false)
             .setGrpcWebProxyEndpoint(grpcProxyEndpoint);
@@ -90,6 +92,11 @@ describe("NodeCreateTransaction", function () {
             tx2.maxTransactionFee.toTinybars().toInt(),
         );
         expect(tx.declineReward).to.equal(tx2.declineReward);
+        expect(
+            tx.associatedRegisteredNodes.map((id) => id.toString()),
+        ).to.deep.equal(
+            tx2.associatedRegisteredNodes.map((id) => id.toString()),
+        );
         tx.serviceEndpoints.forEach((_, index) => {
             const TX_IPV4_BUFFER = Buffer.from(
                 tx.serviceEndpoints[index]._ipAddressV4,
@@ -110,6 +117,12 @@ describe("NodeCreateTransaction", function () {
         );
         const TX2_PROXY_IPV4_BUFFER = tx2.grpcWebProxyEndpoint._ipAddressV4;
         expect(TX_PROXY_IPV4_BUFFER).to.deep.equal(TX2_PROXY_IPV4_BUFFER);
+    });
+
+    it("should add associated registered node", function () {
+        const tx = new NodeCreateTransaction().addAssociatedRegisteredNode(303);
+        expect(tx.associatedRegisteredNodes.map((id) => id.toString())).to.deep
+            .equal(["303"]);
     });
 
     it("should change account id", function () {
