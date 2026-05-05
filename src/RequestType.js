@@ -227,6 +227,8 @@ export default class RequestType {
                 return "RegisteredNodeUpdate";
             case RequestType.RegisteredNodeDelete:
                 return "RegisteredNodeDelete";
+            case RequestType.MigrationRootHashVote:
+                return "MigrationRootHashVote";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -443,6 +445,8 @@ export default class RequestType {
                 return RequestType.RegisteredNodeUpdate;
             case 115:
                 return RequestType.RegisteredNodeDelete;
+            case 116:
+                return RequestType.MigrationRootHashVote;
         }
 
         throw new Error(
@@ -981,3 +985,8 @@ RequestType.RegisteredNodeUpdate = new RequestType(114);
  * Delete a registered node
  */
 RequestType.RegisteredNodeDelete = new RequestType(115);
+
+/**
+ * Vote on wrapped record migration hash state.
+ */
+RequestType.MigrationRootHashVote = new RequestType(116);

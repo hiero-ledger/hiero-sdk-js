@@ -111,6 +111,12 @@ export { default as LiveHashQuery } from "./account/LiveHashQuery.js";
 export { default as MaxQueryPaymentExceeded } from "./MaxQueryPaymentExceeded.js";
 export { default as MirrorNodeContractCallQuery } from "./query/MirrorNodeContractCallQuery.js";
 export { default as MirrorNodeContractEstimateQuery } from "./query/MirrorNodeContractEstimateQuery.js";
+export { default as FeeEstimate } from "./query/FeeEstimate.js";
+export { default as FeeEstimateQuery } from "./query/FeeEstimateQuery.js";
+export { default as FeeEstimateResponse } from "./query/FeeEstimateResponse.js";
+export { default as FeeExtra } from "./query/FeeExtra.js";
+export { default as NetworkFee } from "./query/NetworkFee.js";
+export { default as FeeEstimateMode } from "./query/enums/FeeEstimateMode.js";
 export { default as NodeAddressBook } from "./address_book/NodeAddressBook.js";
 export { default as NetworkVersionInfo } from "./network/NetworkVersionInfo.js";
 export { default as NetworkVersionInfoQuery } from "./network/NetworkVersionInfoQuery.js";
@@ -203,6 +209,18 @@ export { default as NodeCreateTransaction } from "./node/NodeCreateTransaction.j
 export { default as ServiceEndpoint } from "./node/ServiceEndpoint.js";
 export { default as NodeDeleteTransaction } from "./node/NodeDeleteTransaction.js";
 export { default as NodeUpdateTransaction } from "./node/NodeUpdateTransaction.js";
+export { default as BlockNodeApi } from "./node/BlockNodeApi.js";
+export { default as RegisteredServiceEndpoint } from "./node/RegisteredServiceEndpoint.js";
+export { default as BlockNodeServiceEndpoint } from "./node/BlockNodeServiceEndpoint.js";
+export { default as MirrorNodeServiceEndpoint } from "./node/MirrorNodeServiceEndpoint.js";
+export { default as RpcRelayServiceEndpoint } from "./node/RpcRelayServiceEndpoint.js";
+export { default as GeneralServiceEndpoint } from "./node/GeneralServiceEndpoint.js";
+export { default as RegisteredNode } from "./node/RegisteredNode.js";
+export { default as RegisteredNodeAddressBook } from "./node/RegisteredNodeAddressBook.js";
+export { default as RegisteredNodeAddressBookQuery } from "./network/RegisteredNodeAddressBookQuery.js";
+export { default as RegisteredNodeCreateTransaction } from "./node/RegisteredNodeCreateTransaction.js";
+export { default as RegisteredNodeUpdateTransaction } from "./node/RegisteredNodeUpdateTransaction.js";
+export { default as RegisteredNodeDeleteTransaction } from "./node/RegisteredNodeDeleteTransaction.js";
 
 export { default as WebClient } from "./client/WebClient.js";
 
