@@ -50,7 +50,9 @@ async function main() {
         // mode and print the network / node / service breakdown.
         // ---------------------------------------------------------------
 
-        console.log("\n--- Scenario 1: STATE mode estimate (with breakdown) ---");
+        console.log(
+            "\n--- Scenario 1: STATE mode estimate (with breakdown) ---",
+        );
 
         // Step 1.1: Build the transaction. The query auto-freezes if needed,
         // so freezing here is optional.

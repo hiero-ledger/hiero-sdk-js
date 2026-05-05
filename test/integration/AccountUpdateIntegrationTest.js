@@ -84,6 +84,7 @@ describe("AccountUpdate", function () {
     });
 
     // Hook-related tests
+    // eslint-disable-next-line vitest/no-disabled-tests
     describe.skip("AccountUpdate with Hooks", function () {
         let testContractId;
 

@@ -209,6 +209,18 @@ export { default as NodeCreateTransaction } from "./node/NodeCreateTransaction.j
 export { default as ServiceEndpoint } from "./node/ServiceEndpoint.js";
 export { default as NodeDeleteTransaction } from "./node/NodeDeleteTransaction.js";
 export { default as NodeUpdateTransaction } from "./node/NodeUpdateTransaction.js";
+export { default as BlockNodeApi } from "./node/BlockNodeApi.js";
+export { default as RegisteredServiceEndpoint } from "./node/RegisteredServiceEndpoint.js";
+export { default as BlockNodeServiceEndpoint } from "./node/BlockNodeServiceEndpoint.js";
+export { default as MirrorNodeServiceEndpoint } from "./node/MirrorNodeServiceEndpoint.js";
+export { default as RpcRelayServiceEndpoint } from "./node/RpcRelayServiceEndpoint.js";
+export { default as GeneralServiceEndpoint } from "./node/GeneralServiceEndpoint.js";
+export { default as RegisteredNode } from "./node/RegisteredNode.js";
+export { default as RegisteredNodeAddressBook } from "./node/RegisteredNodeAddressBook.js";
+export { default as RegisteredNodeAddressBookQuery } from "./network/RegisteredNodeAddressBookQuery.js";
+export { default as RegisteredNodeCreateTransaction } from "./node/RegisteredNodeCreateTransaction.js";
+export { default as RegisteredNodeUpdateTransaction } from "./node/RegisteredNodeUpdateTransaction.js";
+export { default as RegisteredNodeDeleteTransaction } from "./node/RegisteredNodeDeleteTransaction.js";
 
 export { default as WebClient } from "./client/WebClient.js";
 

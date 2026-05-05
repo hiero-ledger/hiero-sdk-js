@@ -77,6 +77,7 @@ describe("CryptoTransfer", function () {
         }
     });
 
+    // eslint-disable-next-line vitest/no-disabled-tests
     describe.skip("allowance hooks", function () {
         let hookContractId;
 

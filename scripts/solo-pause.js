@@ -58,6 +58,30 @@ async function destroyMirrorNode() {
     }
 }
 
+async function destroyBlockNode() {
+    log.info("Destroying block node...");
+    const result = await runCommand(
+        "npx",
+        [
+            "solo",
+            "block",
+            "node",
+            "destroy",
+            "--deployment",
+            deploymentName,
+            "--cluster-ref",
+            SOLO_CLUSTER_NAME,
+        ],
+        { allowFailure: true },
+    );
+
+    if (result.code === 0) {
+        log.success("Block node destroyed");
+    } else {
+        log.warning("Block node destroy failed (it may not exist)");
+    }
+}
+
 async function stopConsensusNodes() {
     log.info("Stopping consensus nodes...");
     const result = await runSoloCommand(
@@ -111,6 +135,7 @@ async function main() {
     console.log("");
 
     await destroyMirrorNode();
+    await destroyBlockNode();
     await stopConsensusNodes();
     await removePortForwards();
     await stopCluster();
