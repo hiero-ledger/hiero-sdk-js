@@ -28,9 +28,15 @@ const concurrency = Math.max(
 );
 
 /**
+ * @typedef {object} ExampleRunResult
+ * @property {string} file
+ * @property {number} code
+ */
+
+/**
  * @param {string} examplePath
  * @param {string} file
- * @returns {Promise<{file: string, code: number | null}>}
+ * @returns {Promise<ExampleRunResult>}
  */
 function runExample(examplePath, file) {
     return new Promise((resolve, reject) => {
@@ -38,7 +44,7 @@ function runExample(examplePath, file) {
             stdio: "ignore",
         });
         child.on("close", (code) => {
-            resolve({ file, code });
+            resolve({ file, code: code ?? -1 });
         });
         child.on("error", reject);
     });
@@ -47,6 +53,7 @@ function runExample(examplePath, file) {
 /**
  * @param {string[]} examples
  * @param {number} maxConcurrency
+ * @returns {Promise<void>}
  */
 async function runInParallel(examples, maxConcurrency) {
     let completed = 0;
@@ -55,8 +62,7 @@ async function runInParallel(examples, maxConcurrency) {
     let nextIndex = 0;
 
     async function worker() {
-        let index = nextIndex++;
-        while (index < total) {
+        for (let index = nextIndex++; index < total; index = nextIndex++) {
             const file = examples[index];
             const examplePath = path.join(examplesDirectory, file);
             console.log(
@@ -87,6 +93,11 @@ async function runInParallel(examples, maxConcurrency) {
     }
 }
 
+/**
+ * @param {NodeJS.ErrnoException | null} err
+ * @param {string[]} files
+ * @returns {void}
+ */
 fs.readdir(examplesDirectory, (err, files) => {
     if (err) {
         console.error("Error reading directory:", err);
