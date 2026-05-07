@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-
+import { LOCAL_NODE_MIRROR_REST_PORT } from "../constants/ClientConstants.js";
 import RegisteredNode from "../node/RegisteredNode.js";
 import RegisteredNodeAddressBook from "../node/RegisteredNodeAddressBook.js";
 import { isRetryableNetworkError, readErrorDetail } from "./mirrorRestRetry.js";
@@ -164,7 +164,7 @@ export default class RegisteredNodeAddressBookQuery {
         // FeeEstimateQuery._buildRequestUrl.
         let baseUrl = client.mirrorRestApiBaseUrl;
         if (baseUrl.includes("127.0.0.1") || baseUrl.includes("localhost")) {
-            baseUrl = baseUrl.replace(":5551", ":8084");
+            baseUrl = baseUrl.replace(`:${LOCAL_NODE_MIRROR_REST_PORT}`, ":8084");
         }
 
         const initialUrl = new URL(`${baseUrl}/network/registered-nodes`);

@@ -8,7 +8,7 @@ import {
     isRetryableNetworkError,
     readErrorDetail,
 } from "../network/mirrorRestRetry.js";
-
+import { LOCAL_NODE_MIRROR_REST_PORT } from "../constants/ClientConstants.js";
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
@@ -335,7 +335,7 @@ export default class FeeEstimateQuery {
         // the /network/fees endpoint.
         let baseUrl = client.mirrorRestApiBaseUrl;
         if (baseUrl.includes("127.0.0.1") || baseUrl.includes("localhost")) {
-            baseUrl = baseUrl.replace(":5551", ":8084");
+            baseUrl = baseUrl.replace(`:${LOCAL_NODE_MIRROR_REST_PORT}`, ":8084");
         }
 
         const params = new URLSearchParams();

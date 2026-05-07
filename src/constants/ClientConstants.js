@@ -30,7 +30,7 @@ export const DEFAULT_LOCAL_MAX_ATTEMPTS = 1000;
  * retries and node rotation. Must be >= grpcDeadline.
  */
 export const DEFAULT_REQUEST_TIMEOUT = 2 * 60 * 1000;
-
+export const LOCAL_NODE_MIRROR_REST_PORT = 5551;
 // MAINNET node proxies are the same for both 'WebClient' and 'NativeClient'
 export const MAINNET = {
     "node00.swirldslabs.com:443": new AccountId(3),
@@ -246,7 +246,6 @@ export const MirrorNetwork = {
 
 export const WebMirrorNetwork = {
     ...MirrorNetwork,
-    LOCAL_NODE: ["127.0.0.1:5551"],
 };
 
 export const WebNetwork = {
