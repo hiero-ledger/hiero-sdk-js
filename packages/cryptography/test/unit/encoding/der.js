@@ -3,8 +3,7 @@ import * as base64 from "../../../src/encoding/base64.js";
 import * as hex from "../../../src/encoding/hex.js";
 
 describe("encoding/der", function () {
-    // --- Tag-level tests ---
-
+    //Tag-level tests
     it("should decode INTEGER (1 byte)", function () {
         // 0x02 = INTEGER tag, 0x01 = length 1, 0x05 = value 5
         expect(der.decode(new Uint8Array([0x02, 0x01, 0x05]))).to.deep.equal({
@@ -80,8 +79,7 @@ describe("encoding/der", function () {
         expect(
             der.decode(
                 new Uint8Array([
-                    0x30, 0x08, 0x02, 0x01, 0x01, 0x05, 0x00, 0x04, 0x01,
-                    0xab,
+                    0x30, 0x08, 0x02, 0x01, 0x01, 0x05, 0x00, 0x04, 0x01, 0xab,
                 ]),
             ),
         ).to.deep.equal({
@@ -96,16 +94,13 @@ describe("encoding/der", function () {
         );
     });
 
-    // --- Length encoding ---
-
+    // Length encoding
     it("should handle long-form DER length", function () {
         // OCTET STRING with 128 bytes — length encoded as 0x81 0x80 (long form)
         const payload = new Uint8Array(128);
         const encoded = new Uint8Array([0x04, 0x81, 0x80, ...payload]);
         expect(der.decode(encoded)).to.deep.equal({ bytes: payload });
     });
-
-    // --- Integration tests ---
 
     it("should decode ed25519 private key", function () {
         // taken from Keys.test.js
@@ -163,7 +158,7 @@ describe("encoding/der", function () {
                                                 // salt
                                                 {
                                                     bytes: hex.decode(
-                                                        "bc598ec6cb6b5385"
+                                                        "bc598ec6cb6b5385",
                                                     ),
                                                 },
                                                 // iterations
@@ -189,7 +184,7 @@ describe("encoding/der", function () {
                                         // IV
                                         {
                                             bytes: hex.decode(
-                                                "eab8e8d3ecb39f1c85b8d49f6d0da0ad"
+                                                "eab8e8d3ecb39f1c85b8d49f6d0da0ad",
                                             ),
                                         },
                                     ],
@@ -202,7 +197,7 @@ describe("encoding/der", function () {
                 {
                     bytes: hex.decode(
                         "6d7147cf212177160ce102b6d3d3365317589b7b5ae7e6d58c0189baf1982ab5" +
-                            "432908c93621cb54d9332c723f19585ba695f61968e18121dee11a0a67c9cd63"
+                            "432908c93621cb54d9332c723f19585ba695f61968e18121dee11a0a67c9cd63",
                     ),
                 },
             ],
