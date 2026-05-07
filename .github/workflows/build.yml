@@ -109,7 +109,7 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@692b186bd2e4c8d46b9deb1c067dc6ddcf0abcd7 # v0.17
         with:
           installMirrorNode: true
-          soloVersion: v0.71.0
+          soloVersion: v0.70.0
           installBlockNode: true
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
@@ -198,7 +198,7 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@692b186bd2e4c8d46b9deb1c067dc6ddcf0abcd7 # 0.18.0
         with:
           installMirrorNode: true
-          soloVersion: v0.71.0
+          soloVersion: v0.70.0
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
           grpcProxyPort: 8080
@@ -311,7 +311,7 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@692b186bd2e4c8d46b9deb1c067dc6ddcf0abcd7 # v0.17
         with:
           installMirrorNode: true
-          soloVersion: v0.71.0
+          soloVersion: v0.70.0
           installBlockNode: true
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
