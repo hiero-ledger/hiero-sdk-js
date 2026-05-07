@@ -132,7 +132,7 @@ describe("AccountInfoFlow", function () {
         const signature = newKey.sign(message);
 
         const result = await AccountInfoFlow.verifySignatureWithSigner(
-            env.client,
+            env.wallet,
             accountId,
             message,
             signature,
@@ -160,7 +160,7 @@ describe("AccountInfoFlow", function () {
         const signature = key1.sign(message);
 
         const result = await AccountInfoFlow.verifySignatureWithSigner(
-            env.client,
+            env.wallet,
             accountId,
             message,
             signature,
@@ -188,7 +188,7 @@ describe("AccountInfoFlow", function () {
         await transaction.sign(newKey);
 
         const result = await AccountInfoFlow.verifyTransactionWithSigner(
-            env.client,
+            env.wallet,
             accountId,
             transaction,
         );
@@ -219,7 +219,7 @@ describe("AccountInfoFlow", function () {
         await transaction.sign(key1);
 
         const result = await AccountInfoFlow.verifyTransactionWithSigner(
-            env.client,
+            env.wallet,
             accountId,
             transaction,
         );
