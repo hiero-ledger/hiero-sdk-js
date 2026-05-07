@@ -215,16 +215,20 @@ function listMatchingBetaTags(stableVersion) {
     if (!/^\d+\.\d+\.\d+$/.test(stableVersion)) {
         die(`list-matching-beta-tags requires a stable X.Y.Z version, got: ${stableVersion}`);
     }
-    const out = sh("git", [
-        "tag",
-        "--list",
-        `v${stableVersion}-beta.*`,
-    ]);
+    // Use a fixed-suffix regex (constant, not built from input) plus a string-prefix check.
+    // This avoids constructing a RegExp from external input — flagged by CodeQL even though
+    // stableVersion is already constrained to /^\d+\.\d+\.\d+$/ above.
+    const expectedPrefix = `v${stableVersion}-beta.`;
+    const betaSuffixRe = /^-beta\.(\d+)$/;
+    const out = sh("git", ["tag", "--list", `${expectedPrefix}*`]);
     const tags = out
         .split("\n")
         .map((l) => l.trim())
         .filter(Boolean)
-        .filter((t) => new RegExp(`^v${stableVersion.replace(/\./g, "\\.")}-beta\\.\\d+$`).test(t))
+        .filter((t) => {
+            if (!t.startsWith(expectedPrefix)) return false;
+            return betaSuffixRe.test("-beta." + t.slice(expectedPrefix.length));
+        })
         .sort((a, b) => {
             const an = Number(a.match(/-beta\.(\d+)$/)[1]);
             const bn = Number(b.match(/-beta\.(\d+)$/)[1]);
