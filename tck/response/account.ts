@@ -1,6 +1,7 @@
 export interface AccountResponse {
     readonly accountId?: string;
     readonly status: string;
+    readonly transactionId?: string;
 }
 
 export interface LiveHashResponse {
