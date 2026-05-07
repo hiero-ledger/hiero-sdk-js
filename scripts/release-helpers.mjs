@@ -9,6 +9,7 @@
  *   bump-versions <sdk> [--proto <v>] [--cryptography <v>]
  *                                                     → writes versions to package.json files (2-space indent)
  *   insert-changelog <version> <entry-file>           → inserts <entry-file> body below the Keep-a-Changelog header
+ *   list-matching-beta-tags <stable-version>          → prints v<stable>-beta.<N> tags ascending by N (newline-separated)
  *
  * Output is always machine-readable on stdout (text or JSON depending on the command).
  * Errors go to stderr with a non-zero exit code.
@@ -208,6 +209,30 @@ function insertChangelog(version, entryFile) {
     process.stdout.write(`inserted v${version} entry into CHANGELOG.md\n`);
 }
 
+// -------------------- list-matching-beta-tags --------------------
+
+function listMatchingBetaTags(stableVersion) {
+    if (!/^\d+\.\d+\.\d+$/.test(stableVersion)) {
+        die(`list-matching-beta-tags requires a stable X.Y.Z version, got: ${stableVersion}`);
+    }
+    const out = sh("git", [
+        "tag",
+        "--list",
+        `v${stableVersion}-beta.*`,
+    ]);
+    const tags = out
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean)
+        .filter((t) => new RegExp(`^v${stableVersion.replace(/\./g, "\\.")}-beta\\.\\d+$`).test(t))
+        .sort((a, b) => {
+            const an = Number(a.match(/-beta\.(\d+)$/)[1]);
+            const bn = Number(b.match(/-beta\.(\d+)$/)[1]);
+            return an - bn;
+        });
+    process.stdout.write(tags.join("\n") + (tags.length ? "\n" : ""));
+}
+
 // -------------------- entry --------------------
 
 const [, , subcommand, ...rest] = process.argv;
@@ -235,10 +260,14 @@ switch (subcommand) {
         if (rest.length < 2) die("insert-changelog requires <version> <entry-file>");
         insertChangelog(rest[0], rest[1]);
         break;
+    case "list-matching-beta-tags":
+        if (!rest[0]) die("list-matching-beta-tags requires <stable-version>");
+        listMatchingBetaTags(rest[0]);
+        break;
     default:
         die(
             `unknown subcommand: ${subcommand || "(none)"}\n` +
                 "  expected: get-previous-tag | list-prs-since | detect-subpackage-changes | " +
-                "compute-next-version | bump-versions | insert-changelog",
+                "compute-next-version | bump-versions | insert-changelog | list-matching-beta-tags",
         );
 }
