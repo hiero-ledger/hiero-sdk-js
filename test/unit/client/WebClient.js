@@ -3,8 +3,10 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import WebClient from "../../../src/client/WebClient.js";
 import LedgerId from "../../../src/LedgerId.js";
+import AccountId from "../../../src/account/AccountId.js";
 import {
     WebNetwork,
+    WebMirrorNetwork,
 } from "../../../src/constants/ClientConstants.js";
 
 vi.mock("../../../src/channel/WebChannel.js", () => ({
@@ -213,6 +215,156 @@ describe("WebClient", function () {
             client.setNetwork({ "http://node.example.com:80": "0.0.3" });
             expect(warnSpy).toHaveBeenCalledWith(
                 expect.stringContaining("[Deprecation Notice]"),
+            );
+        });
+    });
+
+    // setMirrorNetwork
+    describe("setMirrorNetwork", function () {
+        it("should dispatch string 'mainnet'", function () {
+            const client = new WebClient({ scheduleNetworkUpdate: false });
+            client.setMirrorNetwork("mainnet");
+            expect(client.mirrorNetwork).to.deep.equal(
+                WebMirrorNetwork.MAINNET,
+            );
+        });
+
+        it("should dispatch string 'testnet'", function () {
+            const client = new WebClient({ scheduleNetworkUpdate: false });
+            client.setMirrorNetwork("testnet");
+            expect(client.mirrorNetwork).to.deep.equal(
+                WebMirrorNetwork.TESTNET,
+            );
+        });
+
+        it("should dispatch string 'previewnet'", function () {
+            const client = new WebClient({ scheduleNetworkUpdate: false });
+            client.setMirrorNetwork("previewnet");
+            expect(client.mirrorNetwork).to.deep.equal(
+                WebMirrorNetwork.PREVIEWNET,
+            );
+        });
+
+        it("should dispatch string 'local-node'", function () {
+            const client = new WebClient({ scheduleNetworkUpdate: false });
+            client.setMirrorNetwork("local-node");
+            expect(client.mirrorNetwork).to.deep.equal(
+                WebMirrorNetwork.LOCAL_NODE,
+            );
+        });
+
+        it("should pass through an array directly", function () {
+            const mirrors = [
+                "mirror1.example.com:443",
+                "mirror2.example.com:443",
+            ];
+            const client = new WebClient({ scheduleNetworkUpdate: false });
+            client.setMirrorNetwork(mirrors);
+            const result = client.mirrorNetwork;
+            expect(result).to.have.length(mirrors.length);
+            for (const m of mirrors) {
+                expect(result).to.include(m);
+            }
+        });
+
+        it("should wrap an unknown string as a single-element array", function () {
+            const client = new WebClient({ scheduleNetworkUpdate: false });
+            client.setMirrorNetwork("custom-mirror.example.com:443");
+            expect(client.mirrorNetwork).to.deep.equal([
+                "custom-mirror.example.com:443",
+            ]);
+        });
+    });
+
+    // _createMirrorNetworkChannel
+    describe("_createMirrorNetworkChannel", function () {
+        it("should return a factory that throws when invoked", function () {
+            const client = new WebClient({ scheduleNetworkUpdate: false });
+            const factory = client._createMirrorNetworkChannel();
+            expect(() => factory("any-address")).to.throw(
+                "mirror support is not supported in browsers",
+            );
+        });
+    });
+
+    // Constructor mirror-network resolution via props
+    describe("constructor mirrorNetwork prop", function () {
+        it("should resolve mirrorNetwork string 'mainnet' in constructor", function () {
+            const client = new WebClient({
+                mirrorNetwork: "mainnet",
+                scheduleNetworkUpdate: false,
+            });
+            expect(client.mirrorNetwork).to.deep.equal(
+                WebMirrorNetwork.MAINNET,
+            );
+        });
+
+        it("should resolve mirrorNetwork string 'testnet' in constructor", function () {
+            const client = new WebClient({
+                mirrorNetwork: "testnet",
+                scheduleNetworkUpdate: false,
+            });
+            expect(client.mirrorNetwork).to.deep.equal(
+                WebMirrorNetwork.TESTNET,
+            );
+        });
+
+        it("should resolve mirrorNetwork string 'previewnet' in constructor", function () {
+            const client = new WebClient({
+                mirrorNetwork: "previewnet",
+                scheduleNetworkUpdate: false,
+            });
+            expect(client.mirrorNetwork).to.deep.equal(
+                WebMirrorNetwork.PREVIEWNET,
+            );
+        });
+
+        it("should wrap unknown mirrorNetwork string as array in constructor", function () {
+            const client = new WebClient({
+                mirrorNetwork: "custom-mirror.example.com:443",
+                scheduleNetworkUpdate: false,
+            });
+            expect(client.mirrorNetwork).to.deep.equal([
+                "custom-mirror.example.com:443",
+            ]);
+        });
+
+        it("should pass through mirrorNetwork array in constructor", function () {
+            const mirrors = [
+                "mirror1.example.com:443",
+                "mirror2.example.com:443",
+            ];
+            const client = new WebClient({
+                mirrorNetwork: mirrors,
+                scheduleNetworkUpdate: false,
+            });
+            const result = client.mirrorNetwork;
+            expect(result).to.have.length(mirrors.length);
+
+            for (const m of mirrors) {
+                expect(result).to.include(m);
+            }
+        });
+    });
+
+    // Constructor network object prop
+    describe("constructor network object prop", function () {
+        it("should accept a network object in constructor", function () {
+            const network = {
+                "node1.example.com:443": new AccountId(3),
+                "node2.example.com:443": new AccountId(4),
+            };
+            const client = new WebClient({
+                network,
+                scheduleNetworkUpdate: false,
+            });
+            const clientNetwork = client.network;
+
+            expect(clientNetwork["node1.example.com:443"].toString()).to.equal(
+                "0.0.3",
+            );
+            expect(clientNetwork["node2.example.com:443"].toString()).to.equal(
+                "0.0.4",
             );
         });
     });
