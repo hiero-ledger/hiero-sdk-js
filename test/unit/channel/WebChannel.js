@@ -4,6 +4,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import WebChannel from "../../../src/channel/WebChannel.js";
 import GrpcServiceError from "../../../src/grpc/GrpcServiceError.js";
 import GrpcStatus from "../../../src/grpc/GrpcStatus.js";
+import HttpError from "../../../src/http/HttpError.js";
 
 /**
  * Builds a mock fetch Response object.
@@ -31,6 +32,37 @@ const mockResponse = ({
     },
     arrayBuffer: vi.fn().mockResolvedValue(buffer),
 });
+
+/**
+ * Builds a valid gRPC-Web unary response frame from raw bytes.
+ * Frame format: 1 byte type (0x00) + 4 bytes big-endian length + payload
+ * Followed by a trailer frame with grpc-status: 0
+ * @param {Uint8Array} payload
+ * @returns {ArrayBuffer}
+ */
+const buildGrpcWebResponse = (payload) => {
+    // Data frame: type=0, length, payload
+    const dataFrame = new Uint8Array(5 + payload.byteLength);
+    dataFrame[0] = 0x00;
+    new DataView(dataFrame.buffer).setUint32(1, payload.byteLength);
+    dataFrame.set(payload, 5);
+
+    // Trailer frame: type=1 (0x80), content = "grpc-status:0\r\n"
+    const trailerContent = new TextEncoder().encode("grpc-status:0\r\n");
+    const trailerFrame = new Uint8Array(5 + trailerContent.byteLength);
+    trailerFrame[0] = 0x80;
+    new DataView(trailerFrame.buffer).setUint32(1, trailerContent.byteLength);
+    trailerFrame.set(trailerContent, 5);
+
+    // Combine both frames
+    const combined = new Uint8Array(
+        dataFrame.byteLength + trailerFrame.byteLength,
+    );
+    combined.set(dataFrame, 0);
+    combined.set(trailerFrame, dataFrame.byteLength);
+
+    return combined.buffer;
+};
 
 describe("WebChannel", function () {
     /** @type {import("vitest").Mock} */
@@ -288,6 +320,116 @@ describe("WebChannel", function () {
                 // expected
             }
             expect(channel._healthCheckPromise).to.be.null;
+        });
+    });
+
+    // _createUnaryClient
+    describe("_createUnaryClient", function () {
+        /** @type {WebChannel} */
+        let channel;
+        /** @type {import("protobufjs").RPCImpl} */
+        let rpcImpl;
+        const method = { name: "getAccountBalance" };
+        const requestData = new Uint8Array([1, 2, 3]);
+
+        beforeEach(function () {
+            channel = new WebChannel("localhost:8080", 10000);
+            channel._isReady = true; // skip health check
+            rpcImpl = channel._createUnaryClient("CryptoService");
+        });
+
+        it("should callback with HttpError on non-OK response", async function () {
+            mockFetch.mockResolvedValue(mockResponse({ status: 404 }));
+
+            await new Promise((resolve) => {
+                rpcImpl(method, requestData, (err, data) => {
+                    expect(err).to.be.instanceOf(HttpError);
+                    expect(data).to.be.null;
+                    resolve();
+                });
+            });
+        });
+
+        it("should callback with GrpcServiceError on gRPC error headers", async function () {
+            mockFetch.mockResolvedValue(
+                mockResponse({ grpcStatus: "14", grpcMessage: "UNAVAILABLE" }),
+            );
+
+            await new Promise((resolve) => {
+                rpcImpl(method, requestData, (err, data) => {
+                    expect(err).to.be.instanceOf(GrpcServiceError);
+                    expect(err.message).to.equal("UNAVAILABLE");
+                    expect(data).to.be.null;
+                    resolve();
+                });
+            });
+        });
+
+        it("should callback with decoded response on success", async function () {
+            const payload = new Uint8Array([10, 20, 30]);
+            const grpcWebBuffer = buildGrpcWebResponse(payload);
+
+            mockFetch.mockResolvedValue(
+                mockResponse({ buffer: grpcWebBuffer }),
+            );
+
+            await new Promise((resolve) => {
+                rpcImpl(method, requestData, (err, data) => {
+                    expect(err).to.be.null;
+                    expect(data).to.be.instanceOf(Uint8Array);
+                    expect(Array.from(data)).to.deep.equal([10, 20, 30]);
+                    resolve();
+                });
+            });
+        });
+
+        it("should callback with GrpcServiceError when _waitForReady throws GrpcServiceError", async function () {
+            channel._isReady = false;
+            const pastDeadline = -100000; // force expired deadline
+            channel._grpcDeadline = pastDeadline;
+
+            await new Promise((resolve) => {
+                rpcImpl(method, requestData, (err, data) => {
+                    expect(err).to.be.instanceOf(GrpcServiceError);
+                    expect(data).to.be.null;
+                    resolve();
+                });
+            });
+        });
+
+        it("should callback with GrpcStatus code 18 on unknown error", async function () {
+            mockFetch.mockRejectedValue(new TypeError("network failure"));
+
+            await new Promise((resolve) => {
+                rpcImpl(method, requestData, (err, data) => {
+                    expect(err).to.be.instanceOf(GrpcServiceError);
+                    expect(err.status).to.equal(GrpcStatus.GrpcWeb);
+                    expect(data).to.be.null;
+                    resolve();
+                });
+            });
+        });
+
+        it("should POST to correct URL with service and method name", async function () {
+            const payload = new Uint8Array([1]);
+            const grpcWebBuffer = buildGrpcWebResponse(payload);
+
+            mockFetch.mockResolvedValue(
+                mockResponse({ buffer: grpcWebBuffer }),
+            );
+
+            await new Promise((resolve) => {
+                rpcImpl(method, requestData, () => resolve());
+            });
+
+            // First call is health check (skipped since _isReady = true)
+            // The actual call should be to the right URL
+            expect(mockFetch).toHaveBeenCalledWith(
+                "http://localhost:8080/proto.CryptoService/getAccountBalance",
+                expect.objectContaining({
+                    method: "POST",
+                }),
+            );
         });
     });
 });
