@@ -3,6 +3,7 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import NodeClient from "../../../src/client/NodeClient.js";
 import LedgerId from "../../../src/LedgerId.js";
+import AccountId from "../../../src/account/AccountId.js";
 import { MirrorNetwork } from "../../../src/constants/ClientConstants.js";
 
 vi.mock("../../../src/channel/NodeChannel.js", () => ({
@@ -180,6 +181,99 @@ describe("NodeClient", function () {
             expect(client.mirrorNetwork).to.deep.equal([
                 "custom-mirror.example.com:443",
             ]);
+        });
+    });
+
+    // setMaxExecutionTime (deprecated shim)
+    describe("setMaxExecutionTime", function () {
+        it("should delegate to setGrpcDeadline", function () {
+            const client = new NodeClient({ scheduleNetworkUpdate: false });
+            client.setMaxExecutionTime(5000);
+            expect(client.grpcDeadline).to.equal(5000);
+        });
+
+        it("should return the client instance for chaining", function () {
+            const client = new NodeClient({ scheduleNetworkUpdate: false });
+            const result = client.setMaxExecutionTime(3000);
+            expect(result).to.equal(client);
+        });
+    });
+
+    // Constructor mirror-network resolution via props
+    describe("constructor mirrorNetwork prop", function () {
+        it("should resolve mirrorNetwork string 'mainnet' in constructor", function () {
+            const client = new NodeClient({
+                mirrorNetwork: "mainnet",
+                scheduleNetworkUpdate: false,
+            });
+            expect(client.mirrorNetwork).to.deep.equal(MirrorNetwork.MAINNET);
+        });
+
+        it("should resolve mirrorNetwork string 'testnet' in constructor", function () {
+            const client = new NodeClient({
+                mirrorNetwork: "testnet",
+                scheduleNetworkUpdate: false,
+            });
+            expect(client.mirrorNetwork).to.deep.equal(MirrorNetwork.TESTNET);
+        });
+
+        it("should resolve mirrorNetwork string 'previewnet' in constructor", function () {
+            const client = new NodeClient({
+                mirrorNetwork: "previewnet",
+                scheduleNetworkUpdate: false,
+            });
+            expect(client.mirrorNetwork).to.deep.equal(
+                MirrorNetwork.PREVIEWNET,
+            );
+        });
+
+        it("should wrap unknown mirrorNetwork string as array in constructor", function () {
+            const client = new NodeClient({
+                mirrorNetwork: "custom-mirror.example.com:443",
+                scheduleNetworkUpdate: false,
+            });
+            expect(client.mirrorNetwork).to.deep.equal([
+                "custom-mirror.example.com:443",
+            ]);
+        });
+
+        it("should pass through mirrorNetwork array in constructor", function () {
+            const mirrors = [
+                "mirror1.example.com:443",
+                "mirror2.example.com:443",
+            ];
+            const client = new NodeClient({
+                mirrorNetwork: mirrors,
+                scheduleNetworkUpdate: false,
+            });
+            const result = client.mirrorNetwork;
+            // Order-insensitive — MirrorNetwork shuffles entries internally
+            expect(result).to.have.length(mirrors.length);
+            for (const m of mirrors) {
+                expect(result).to.include(m);
+            }
+        });
+    });
+
+    // Constructor network object prop
+    describe("constructor network object prop", function () {
+        it("should accept a network object in constructor", function () {
+            const network = {
+                "node1.example.com:50211": new AccountId(3),
+                "node2.example.com:50211": new AccountId(4),
+            };
+            const client = new NodeClient({
+                network,
+                scheduleNetworkUpdate: false,
+            });
+            const clientNetwork = client.network;
+
+            expect(
+                clientNetwork["node1.example.com:50211"].toString(),
+            ).to.equal("0.0.3");
+            expect(
+                clientNetwork["node2.example.com:50211"].toString(),
+            ).to.equal("0.0.4");
         });
     });
 });
