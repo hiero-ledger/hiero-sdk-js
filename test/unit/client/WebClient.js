@@ -3,6 +3,9 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import WebClient from "../../../src/client/WebClient.js";
 import LedgerId from "../../../src/LedgerId.js";
+import {
+    WebNetwork,
+} from "../../../src/constants/ClientConstants.js";
 
 vi.mock("../../../src/channel/WebChannel.js", () => ({
     default: vi.fn().mockImplementation(() => ({ close: vi.fn() })),
@@ -73,6 +76,144 @@ describe("WebClient", function () {
             expect(
                 clientNetwork["https://node.example.com:443"].toString(),
             ).to.equal("0.0.3");
+        });
+    });
+
+    // _setNetworkFromName
+    describe("_setNetworkFromName", function () {
+        it("should throw for an unknown network name", function () {
+            expect(
+                () =>
+                    new WebClient({
+                        network: "unknown-net",
+                        scheduleNetworkUpdate: false,
+                    }),
+            ).to.throw("unknown network: unknown-net");
+        });
+
+        it("should resolve mainnet", function () {
+            const client = new WebClient({
+                network: "mainnet",
+                scheduleNetworkUpdate: false,
+            });
+            expect(client.ledgerId).to.equal(LedgerId.MAINNET);
+        });
+
+        it("should resolve testnet", function () {
+            const client = new WebClient({
+                network: "testnet",
+                scheduleNetworkUpdate: false,
+            });
+            expect(client.ledgerId).to.equal(LedgerId.TESTNET);
+        });
+
+        it("should resolve previewnet", function () {
+            const client = new WebClient({
+                network: "previewnet",
+                scheduleNetworkUpdate: false,
+            });
+            expect(client.ledgerId).to.equal(LedgerId.PREVIEWNET);
+        });
+
+        it("should resolve local-node", function () {
+            const client = new WebClient({
+                network: "local-node",
+                scheduleNetworkUpdate: false,
+            });
+            expect(client.ledgerId).to.equal(LedgerId.LOCAL_NODE);
+        });
+    });
+
+    // setNetwork, with string and object inputs
+    describe("setNetwork", function () {
+        it("should dispatch string 'mainnet'", function () {
+            const client = new WebClient({ scheduleNetworkUpdate: false });
+
+            client.setNetwork("mainnet");
+
+            const network = client.network;
+            const keys = Object.keys(network);
+
+            // Should contain the same keys as WebNetwork.MAINNET
+            for (const key of Object.keys(WebNetwork.MAINNET)) {
+                expect(keys).to.include(key);
+            }
+        });
+
+        it("should dispatch string 'testnet'", function () {
+            const client = new WebClient({ scheduleNetworkUpdate: false });
+
+            client.setNetwork("testnet");
+
+            const network = client.network;
+            const keys = Object.keys(network);
+
+            // Should contain the same keys as WebNetwork.TESTNET
+            for (const key of Object.keys(WebNetwork.TESTNET)) {
+                expect(keys).to.include(key);
+            }
+        });
+
+        it("should dispatch string 'previewnet'", function () {
+            const client = new WebClient({ scheduleNetworkUpdate: false });
+
+            client.setNetwork("previewnet");
+
+            const network = client.network;
+            const keys = Object.keys(network);
+
+            // Should contain the same keys as WebNetwork.PREVIEWNET
+            for (const key of Object.keys(WebNetwork.PREVIEWNET)) {
+                expect(keys).to.include(key);
+            }
+        });
+
+        it("should dispatch string 'local-node'", function () {
+            const client = new WebClient({ scheduleNetworkUpdate: false });
+
+            client.setNetwork("local-node");
+
+            const network = client.network;
+            const keys = Object.keys(network);
+
+            // Should contain the same keys as WebNetwork.LOCAL_NODE
+            for (const key of Object.keys(WebNetwork.LOCAL_NODE)) {
+                expect(keys).to.include(key);
+            }
+        });
+
+        it("should accept an object network map", function () {
+            const client = new WebClient({ scheduleNetworkUpdate: false });
+
+            client.setNetwork({ "custom-node.com:443": "0.0.5" });
+
+            expect(client.network["custom-node.com:443"].toString()).to.equal(
+                "0.0.5",
+            );
+        });
+
+        it("should log a deprecation warning for scheme-prefixed keys", function () {
+            const warnSpy = vi
+                .spyOn(console, "warn")
+                .mockImplementation(() => {});
+            const client = new WebClient({ scheduleNetworkUpdate: false });
+
+            client.setNetwork({ "https://node.example.com:443": "0.0.3" });
+
+            expect(warnSpy).toHaveBeenCalledWith(
+                expect.stringContaining("[Deprecation Notice]"),
+            );
+        });
+
+        it("should log a deprecation warning for http:// prefixed keys", function () {
+            const warnSpy = vi
+                .spyOn(console, "warn")
+                .mockImplementation(() => {});
+            const client = new WebClient({ scheduleNetworkUpdate: false });
+            client.setNetwork({ "http://node.example.com:80": "0.0.3" });
+            expect(warnSpy).toHaveBeenCalledWith(
+                expect.stringContaining("[Deprecation Notice]"),
+            );
         });
     });
 });
