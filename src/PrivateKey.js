@@ -533,15 +533,24 @@ export default class PrivateKey extends Key {
      * @returns {boolean}
      */
     static isDerKey(key) {
-        const lower = key.toLowerCase();
-        // DER-encoded private keys in the SDK are always PKCS#8 structures whose
-        // AlgorithmIdentifier is fixed for each supported algorithm.  Matching the
-        // first 16 bytes (32 hex chars) of that fixed prefix is O(1), deterministic,
-        // and avoids the ~2.8 % false-positive rate of the old try-catch ASN.1 parse
-        // (any raw key whose first byte is a valid ASN.1 tag would pass silently).
+        // The SDK encodes private keys with one of three fixed DER prefixes.
+        // Matching the leading bytes is O(1), deterministic, and avoids the
+        // ~2.8 % false-positive rate of the previous try-catch ASN.1 parse
+        // (any raw key whose first byte happened to be a valid ASN.1 tag
+        // would pass silently).
+        //
+        // The Ed25519 prefix is forced by RFC 8410 §3 (parameters MUST be
+        // absent for id-Ed25519) + RFC 5958 §2 + DER's shortest-length rule,
+        // so any conformant Ed25519 PKCS#8 v1 key starts with these bytes.
+        // The two ECDSA prefixes are the Hedera-style PKCS#8 (with the
+        // secp256k1 OID embedded directly as the algorithm OID) and the
+        // bare SEC1 ECPrivateKey SEQUENCE from RFC 5915 §3, both of which
+        // EcdsaPrivateKey.fromBytesDer accepts.
+        const lower = (key.startsWith("0x") ? key.slice(2) : key).toLowerCase();
         return (
             lower.startsWith("302e020100300506032b657004220420") || // Ed25519 PKCS#8
-            lower.startsWith("3030020100300706052b8104000a0422") //   ECDSA secp256k1 PKCS#8
+            lower.startsWith("3030020100300706052b8104000a0422") || // ECDSA secp256k1 PKCS#8 (Hedera)
+            lower.startsWith("30540201010420") //                     ECDSA secp256k1 SEC1 / RFC 5915
         );
     }
 }

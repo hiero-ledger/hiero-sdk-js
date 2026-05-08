@@ -232,6 +232,27 @@ describe("PrivateKey", function () {
             expect(PrivateKey.isDerKey(rawKey)).to.be.false;
         });
 
+        it("should detect ECDSA SEC1 / RFC 5915 encoded keys", function () {
+            // SEC1 ECPrivateKey: SEQUENCE { INTEGER 1, OCTET STRING(32) <key>, [0] secp256k1 OID, [1] pubkey }
+            const sec1Key =
+                "30540201010420" +
+                "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef" +
+                "a00706052b8104000a";
+            expect(PrivateKey.isDerKey(sec1Key)).to.be.true;
+        });
+
+        it("should accept keys with a 0x prefix", function () {
+            const derKey = "0x" + PrivateKey.generateED25519().toStringDer();
+            expect(PrivateKey.isDerKey(derKey)).to.be.true;
+        });
+
+        it("should accept uppercase DER hex", function () {
+            const derKey = PrivateKey.generateED25519()
+                .toStringDer()
+                .toUpperCase();
+            expect(PrivateKey.isDerKey(derKey)).to.be.true;
+        });
+
         it("should generate key from der string on ecdsa", function () {
             const derKey = PrivateKey.generateECDSA().toStringDer();
             const key = PrivateKey.fromStringDer(derKey);
