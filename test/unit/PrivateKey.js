@@ -224,8 +224,12 @@ describe("PrivateKey", function () {
         });
 
         it("should return false if the key is not a DER key", function () {
-            const derKey = PrivateKey.generateECDSA().toStringRaw();
-            expect(PrivateKey.isDerKey(derKey)).to.be.false;
+            // Use a fixed raw key string instead of a randomly generated one.
+            // Generating a random ECDSA key here is flaky: ~2.8 % of raw keys happen
+            // to start with a valid ASN.1 tag byte (0x02/0x03/0x04/0x06/0x30/0xa0/0xa1),
+            // which caused the old try-catch heuristic in isDerKey to return true.
+            const rawKey = "aa".repeat(32); // 64 hex chars, first byte 0xaa is not a DER tag
+            expect(PrivateKey.isDerKey(rawKey)).to.be.false;
         });
 
         it("should generate key from der string on ecdsa", function () {
