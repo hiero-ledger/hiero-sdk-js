@@ -173,7 +173,7 @@ tasks:
 
     "test:unit:node":
         cmds:
-            - npx vitest --config=test/vitest-node.config.ts
+            - npx vitest --config=test/vitest-node.config.ts {{.CLI_ARGS}}
     "test:unit:node:codecov":
         cmds:
             - npx vitest --coverage --config=test/vitest-node.config.ts
@@ -187,7 +187,7 @@ tasks:
 
     "test:unit:browser":
         cmds:
-            - npx vitest --config=test/vitest-browser.config.ts
+            - npx vitest --config=test/vitest-browser.config.ts {{.CLI_ARGS}}
 
     "test:integration":
         deps:
@@ -196,11 +196,11 @@ tasks:
 
     "test:integration:node":
         cmds:
-            - npx vitest --config=test/vitest-node-integration.config.ts
+            - npx vitest --config=test/vitest-node-integration.config.ts {{.CLI_ARGS}}
 
     "test:integration:browser":
         cmds:
-            - npx vitest --config=test/vitest-browser-integration.config.ts
+            - npx vitest --config=test/vitest-browser-integration.config.ts {{.CLI_ARGS}}
     "test:integration:node:codecov":
         cmds:
             - npx vitest --coverage --config=test/vitest-node-integration.config.ts
