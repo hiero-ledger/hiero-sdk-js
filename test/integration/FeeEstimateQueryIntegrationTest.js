@@ -24,20 +24,58 @@ import { createFungibleToken } from "./utils/Fixtures.js";
  * Each test maps to a specific scenario in the HIP test plan; the scenario
  * number is included in the `it()` description for traceability.
  *
- * NOTE: temporarily skipped against solo's local mirror node. On a fresh
- * solo deployment, mirror's rest-java FeeEstimationService races the
- * importer's ingestion of the genesis fee schedule — the calculator can
- * stay null and every FeeEstimateQuery returns HTTP 400 "Unknown
- * transaction type" until the @Scheduled refresh fires 10 minutes later.
- * Verified working against previewnet. Re-enable once the cross-team
- * fix lands (mirror startup ordering or shorter refresh-interval default).
+ * On a fresh solo deployment, mirror's rest-java FeeEstimationService
+ * races the importer's ingestion of the genesis fee schedule — the
+ * calculator stays null and every FeeEstimateQuery returns HTTP 400
+ * until the @Scheduled refresh fires (up to 10 minutes later). The
+ * `beforeAll` hook below polls a known-good probe query until the
+ * mirror starts answering, then proceeds with the real tests.
  */
 describe("FeeEstimateQuery Integration", function () {
     let env;
 
     beforeAll(async function () {
         env = await IntegrationTestEnv.new();
-    });
+        await waitForFeeEstimationServiceReady(env);
+    }, 11 * 60 * 1000);
+
+    /**
+     * Block until the mirror node's FeeEstimationService can answer a
+     * known-good probe query. Re-issues a fresh INTRINSIC estimate for a
+     * 1-hbar self-transfer every 5 seconds until one succeeds, or 10
+     * minutes have elapsed (matches mirror's @Scheduled refresh interval).
+     *
+     * @param {IntegrationTestEnv} env
+     * @returns {Promise<void>}
+     */
+    async function waitForFeeEstimationServiceReady(env) {
+        const deadline = Date.now() + 10 * 60 * 1000;
+        let attempt = 0;
+        let lastError;
+        while (Date.now() < deadline) {
+            attempt++;
+            try {
+                const probe = new TransferTransaction()
+                    .addHbarTransfer(env.operatorId, new Hbar(-1))
+                    .addHbarTransfer(env.operatorId, new Hbar(1));
+                await new FeeEstimateQuery()
+                    .setMode(FeeEstimateMode.INTRINSIC)
+                    .setTransaction(probe)
+                    .execute(env.client);
+                return;
+            } catch (err) {
+                lastError = err;
+                await new Promise((r) => setTimeout(r, 5000));
+            }
+        }
+        const detail =
+            lastError instanceof Error
+                ? lastError.message
+                : String(lastError);
+        throw new Error(
+            `FeeEstimationService never became ready after ${attempt} probe attempts: ${detail}`,
+        );
+    }
 
     /**
      * Sum a fee component (base + extras subtotals).

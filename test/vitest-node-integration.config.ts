@@ -22,9 +22,7 @@ export default defineConfig({
         // operator account hitting per-payer throttle buckets. Raise this as
         // network throttles allow.
         pool: "forks",
-        poolOptions: {
-            forks: { minForks: 1, maxForks: 4 },
-        },
+        maxWorkers: 4,
         fileParallelism: true,
         include: ["test/integration/**/*.js"],
         exclude: [
