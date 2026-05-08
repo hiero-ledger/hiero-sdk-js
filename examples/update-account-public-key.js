@@ -67,8 +67,11 @@ async function main() {
                 .setAccountId(accountId)
                 .setKey(publicKey2)
                 .freezeWith(client)
+                // Sign with the previous key — authorizes the change.
                 .sign(privateKey1)
-        ).sign(privateKey2)
+        )
+            // Sign with the new key — proves possession
+            .sign(privateKey2)
     ).execute(client);
 
     // Wait for the transaction to complete by querying the receipt.
