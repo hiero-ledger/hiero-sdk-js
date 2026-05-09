@@ -5,13 +5,13 @@ import PrivateKey from "../../src/PrivateKey.js";
 import AccountId from "../../src/account/AccountId.js";
 import TransferTransaction from "../../src/account/TransferTransaction.js";
 import TransactionId from "../../src/transaction/TransactionId.js";
-
+import LedgerId from "../../src/LedgerId.js";
 /**
  * Minimal mock provider for unit testing — no network calls.
  */
 function makeMockProvider(overrides = {}) {
     return {
-        getLedgerId: () => "mainnet",
+        getLedgerId: () => LedgerId.MAINNET,
         getNetwork: () => ({
             "0.testnet.hedera.com:50211": new AccountId(3),
             "1.testnet.hedera.com:50211": new AccountId(4),
@@ -149,7 +149,7 @@ describe("Wallet", function () {
                 PrivateKey.generateED25519(),
                 makeMockProvider(),
             );
-            expect(wallet.getLedgerId()).to.equal("mainnet");
+            expect(wallet.getLedgerId()).toEqual(LedgerId.MAINNET);
         });
     });
 
