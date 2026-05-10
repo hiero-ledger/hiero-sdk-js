@@ -334,7 +334,9 @@ describe("WebChannel", function () {
 
         beforeEach(function () {
             channel = new WebChannel("localhost:8080", 10000);
-            channel._isReady = true; // skip health check
+
+            // skip health check
+            channel._isReady = true;
             rpcImpl = channel._createUnaryClient("CryptoService");
         });
 
@@ -385,7 +387,9 @@ describe("WebChannel", function () {
 
         it("should callback with GrpcServiceError when _waitForReady throws GrpcServiceError", async function () {
             channel._isReady = false;
-            const pastDeadline = -100000; // force expired deadline
+
+            // force expired deadline for _waitForReady
+            const pastDeadline = -100000;
             channel._grpcDeadline = pastDeadline;
 
             await new Promise((resolve) => {
