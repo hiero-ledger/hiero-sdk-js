@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import TopicMessageChunk from "../../src/topic/TopicMessageChunk.js";
 import { Long } from "../../src/index.js";
 
