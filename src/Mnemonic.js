@@ -131,22 +131,27 @@ export default class Mnemonic {
      * @param {string} derivationPath    the derivation path in BIP-44 format,
      *                                   e.g. "m/44'/60'/0'/0/0"
      * @returns {Array<number>} to be used with PrivateKey#derive
+     * @throws {Error} if the derivation path does not match BIP-44 format
      */
     calculateDerivationPathValues(derivationPath) {
         // Parse the derivation path from string into values
         const pattern = /m\/(\d+'?)\/(\d+'?)\/(\d+'?)\/(\d+'?)\/(\d+'?)/;
         const matches = pattern.exec(derivationPath);
+        if (!matches) {
+            throw new Error(
+                `Invalid derivation path: "${derivationPath}". ` +
+                    `Expected BIP-44 format with exactly 5 components, e.g. "m/44'/60'/0'/0/0"`,
+            );
+        }
         const values = new Array(5); // as Array<Number>;
-        if (matches) {
-            // Extract numbers and use apostrophe to select if is hardened
-            for (let i = 1; i <= 5; i++) {
-                let value = matches[i];
-                if (value.endsWith("'")) {
-                    value = value.substring(0, value.length - 1);
-                    values[i - 1] = parseInt(value, 10) | HARDENED_BIT;
-                } else {
-                    values[i - 1] = parseInt(value, 10);
-                }
+        // Extract numbers and use apostrophe to select if is hardened
+        for (let i = 1; i <= 5; i++) {
+            let value = matches[i];
+            if (value.endsWith("'")) {
+                value = value.substring(0, value.length - 1);
+                values[i - 1] = parseInt(value, 10) | HARDENED_BIT;
+            } else {
+                values[i - 1] = parseInt(value, 10);
             }
         }
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
