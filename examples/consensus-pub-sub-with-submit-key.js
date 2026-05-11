@@ -99,7 +99,7 @@ async function main() {
 
     // Step 5: Publish messages, signing each with the submit key.
     for (let i = 0; i < TOTAL_MESSAGES; i++) {
-        const message = `random message ${Math.floor(Math.random() * 1e16)}`;
+        const message = `random message ${Math.floor(Math.random() * Number.MAX_SAFE_INTEGER)}`;
         console.log(`Publishing message to the topic: ${message}`);
 
         const submitTx = await new TopicMessageSubmitTransaction()
