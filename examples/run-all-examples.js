@@ -15,6 +15,8 @@ const excludedDirectories = [
 const excludedJSFile = [
     "run-all-examples.js",
     "consensus-pub-sub.js",
+    "consensus-pub-sub-chunked.js",
+    "consensus-pub-sub-with-submit-key.js",
     "create-update-delete-node.js",
     "batch-tx.js",
     "long-term-schedule-transaction.js",
