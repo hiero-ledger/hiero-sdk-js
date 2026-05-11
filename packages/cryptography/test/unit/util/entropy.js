@@ -4,8 +4,10 @@ import {
     crc8,
     convertRadix,
     legacy1,
+    legacy2,
 } from "../../../src/util/entropy.js";
 import legacyWords from "../../../src/words/legacy.js";
+import bip39Words from "../../../src/words/bip39.js";
 
 describe("entropy utilities", function () {
     // bytesToBits
@@ -107,8 +109,8 @@ describe("entropy utilities", function () {
 
         it("should process all bytes except the last", function () {
             // Changing the last byte should not affect the checksum
-            const a = crc8(new Uint8Array([0x01, 0x02, 0xAA]));
-            const b = crc8(new Uint8Array([0x01, 0x02, 0xBB]));
+            const a = crc8(new Uint8Array([0x01, 0x02, 0xaa]));
+            const b = crc8(new Uint8Array([0x01, 0x02, 0xbb]));
             expect(a).to.equal(b);
         });
     });
@@ -230,14 +232,202 @@ describe("entropy utilities", function () {
         });
 
         it("should be case-insensitive", function () {
-            const lower = ["jolly", "kidnap", "tom", "lawn", "drunk", "chick",
-                "optic", "lust", "mutter", "mole", "bride", "galley",
-                "dense", "member", "sage", "neural", "widow", "decide",
-                "curb", "aboard", "margin", "manure"];
+            const lower = [
+                "jolly",
+                "kidnap",
+                "tom",
+                "lawn",
+                "drunk",
+                "chick",
+                "optic",
+                "lust",
+                "mutter",
+                "mole",
+                "bride",
+                "galley",
+                "dense",
+                "member",
+                "sage",
+                "neural",
+                "widow",
+                "decide",
+                "curb",
+                "aboard",
+                "margin",
+                "manure",
+            ];
             const upper = lower.map((w) => w.toUpperCase());
 
             const [entropyLower] = legacy1(lower, legacyWords);
             const [entropyUpper] = legacy1(upper, legacyWords);
+
+            expect(entropyLower).to.deep.equal(entropyUpper);
+        });
+    });
+
+    // legacy2
+    describe("legacy2", function () {
+        it("should decode a valid 24-word BIP-39 mnemonic", async function () {
+            const words = [
+                "obvious",
+                "favorite",
+                "remain",
+                "caution",
+                "remove",
+                "laptop",
+                "base",
+                "vacant",
+                "increase",
+                "video",
+                "erase",
+                "pass",
+                "sniff",
+                "sausage",
+                "knock",
+                "grid",
+                "argue",
+                "salt",
+                "romance",
+                "way",
+                "alone",
+                "fever",
+                "slush",
+                "dune",
+            ];
+
+            const entropy = await legacy2(words, bip39Words);
+
+            expect(entropy).to.be.instanceOf(Uint8Array);
+            // 24 words → 256 bits entropy = 32 bytes
+            expect(entropy).to.have.length(32);
+        });
+
+        it("should decode a valid 12-word BIP-39 mnemonic", async function () {
+            const words = [
+                "radar",
+                "blur",
+                "cabbage",
+                "chef",
+                "fix",
+                "engine",
+                "embark",
+                "joy",
+                "scheme",
+                "fiction",
+                "master",
+                "release",
+            ];
+
+            const entropy = await legacy2(words, bip39Words);
+
+            expect(entropy).to.be.instanceOf(Uint8Array);
+            // 12 words → 128 bits entropy = 16 bytes
+            expect(entropy).to.have.length(16);
+        });
+
+        it("should return consistent results for the same input", async function () {
+            const words = [
+                "obvious",
+                "favorite",
+                "remain",
+                "caution",
+                "remove",
+                "laptop",
+                "base",
+                "vacant",
+                "increase",
+                "video",
+                "erase",
+                "pass",
+                "sniff",
+                "sausage",
+                "knock",
+                "grid",
+                "argue",
+                "salt",
+                "romance",
+                "way",
+                "alone",
+                "fever",
+                "slush",
+                "dune",
+            ];
+
+            const entropy1 = await legacy2(words, bip39Words);
+            const entropy2 = await legacy2(words, bip39Words);
+
+            expect(entropy1).to.deep.equal(entropy2);
+        });
+
+        it("should throw when a word is not in the wordlist", async function () {
+            const words = [
+                "obvious",
+                "favorite",
+                "remain",
+                "caution",
+                "remove",
+                "laptop",
+                "base",
+                "vacant",
+                "increase",
+                "video",
+                "erase",
+                "notarealword",
+            ];
+
+            try {
+                await legacy2(words, bip39Words);
+                expect.fail("should have thrown");
+            } catch (error) {
+                expect(error.message).to.include("Word not found in wordlist");
+                expect(error.message).to.include("notarealword");
+            }
+        });
+
+        it("should throw on checksum mismatch", async function () {
+            // Take a valid mnemonic and swap the last word to break the checksum
+            const words = [
+                "radar",
+                "blur",
+                "cabbage",
+                "chef",
+                "fix",
+                "engine",
+                "embark",
+                "joy",
+                "scheme",
+                "fiction",
+                "master",
+                "abandon", // wrong last word — checksum won't match
+            ];
+
+            try {
+                await legacy2(words, bip39Words);
+                expect.fail("should have thrown");
+            } catch (error) {
+                expect(error.message).to.equal("Checksum mismatch");
+            }
+        });
+
+        it("should be case-insensitive", async function () {
+            const lower = [
+                "radar",
+                "blur",
+                "cabbage",
+                "chef",
+                "fix",
+                "engine",
+                "embark",
+                "joy",
+                "scheme",
+                "fiction",
+                "master",
+                "release",
+            ];
+            const upper = lower.map((w) => w.toUpperCase());
+
+            const entropyLower = await legacy2(lower, bip39Words);
+            const entropyUpper = await legacy2(upper, bip39Words);
 
             expect(entropyLower).to.deep.equal(entropyUpper);
         });
