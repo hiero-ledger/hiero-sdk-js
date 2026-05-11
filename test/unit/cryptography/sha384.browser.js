@@ -1,4 +1,13 @@
 import { digest } from "../../../src/cryptography/sha384.browser.js";
+import crypto from "crypto";
+
+if (typeof window === "undefined") {
+    global.window = {
+        crypto: {
+            subtle: crypto.webcrypto.subtle,
+        },
+    };
+}
 
 describe("sha384 (browser)", function () {
     const input = new TextEncoder().encode("hello world");
