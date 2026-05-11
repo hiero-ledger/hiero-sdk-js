@@ -5,7 +5,7 @@ import { PrivateKey } from "@hiero-ledger/sdk";
  *
  * ECDSA keys with an EVM address derived from the public key are the recommended choice for new
  * Hedera accounts when you want compatibility with Ethereum tooling (wallets, Hardhat, ethers.js,
- * etc.). For legacy Hedera-only flows you can still use `PrivateKey.generateED25519()`.
+ * etc.).
  */
 function main() {
     console.log("Generate ECDSA key pair and EVM address example start");

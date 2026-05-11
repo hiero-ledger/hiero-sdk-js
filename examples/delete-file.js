@@ -33,7 +33,7 @@ async function main() {
     );
 
     // Generate the key to be used with the new file (separate from operator).
-    const newKey = PrivateKey.generateED25519();
+    const newKey = PrivateKey.generateECDSA();
 
     console.log("Creating a file to delete:");
 

@@ -57,9 +57,9 @@ async function main() {
         operatorKey,
     );
 
-    // Step 1: Generate ED25519 key pair (Submit Key for the topic).
-    console.log("Generating ED25519 key pair...");
-    const submitPrivateKey = PrivateKey.generateED25519();
+    // Step 1: Generate ECDSA key pair (Submit Key for the topic).
+    console.log("Generating ECDSA key pair...");
+    const submitPrivateKey = PrivateKey.generateECDSA();
     const submitPublicKey = submitPrivateKey.publicKey;
 
     // Step 2: Create the topic with admin + submit keys.

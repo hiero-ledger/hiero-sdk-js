@@ -42,13 +42,13 @@ async function main() {
         operatorKey,
     );
 
-    // Step 1: Generate ED25519 key pairs.
+    // Step 1: Generate ECDSA key pairs.
     // The exchange should possess this key — we generate it here for demo only.
-    const exchangePrivateKey = PrivateKey.generateED25519();
+    const exchangePrivateKey = PrivateKey.generateECDSA();
     const exchangePublicKey = exchangePrivateKey.publicKey;
 
     // The user's key — the only key we should actually possess in real life.
-    const userPrivateKey = PrivateKey.generateED25519();
+    const userPrivateKey = PrivateKey.generateECDSA();
     const userPublicKey = userPrivateKey.publicKey;
 
     // Step 2: Create exchange and user accounts.

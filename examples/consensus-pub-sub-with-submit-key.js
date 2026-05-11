@@ -18,7 +18,7 @@ const TOTAL_MESSAGES = 5;
 /**
  * How to operate with a private HCS topic.
  *
- * Create a new HCS topic with a single ED25519 Submit Key,
+ * Create a new HCS topic with a single ECDSA Submit Key,
  * publish a number of messages to the topic signed by the Submit Key
  * and subscribe to the topic (no key required).
  */
@@ -46,9 +46,9 @@ async function main() {
         operatorKey,
     );
 
-    // Step 1: Generate ED25519 key pair (Submit Key for the topic).
-    console.log("Generating ED25519 key pair...");
-    const submitPrivateKey = PrivateKey.generateED25519();
+    // Step 1: Generate ECDSA key pair (Submit Key for the topic).
+    console.log("Generating ECDSA key pair...");
+    const submitPrivateKey = PrivateKey.generateECDSA();
     const submitPublicKey = submitPrivateKey.publicKey;
 
     // Step 2: Create the topic with admin + submit keys.
@@ -61,7 +61,7 @@ async function main() {
 
     const topicId = (await topicCreateResponse.getReceipt(client)).topicId;
     console.log(
-        `Created topic with ID: ${topicId.toString()} and public ED25519 submit key: ${submitPrivateKey.toString()}`,
+        `Created topic with ID: ${topicId.toString()} and public ECDSA submit key: ${submitPrivateKey.toString()}`,
     );
 
     // Step 3: Wait for the new topic to propagate to mirror nodes.

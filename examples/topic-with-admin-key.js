@@ -41,9 +41,9 @@ async function main() {
     );
 
     // Step 1: Generate the initial admin key pairs (3 keys, 2-of-3 threshold).
-    console.log("Generating ED25519 key pairs...");
+    console.log("Generating ECDSA key pairs...");
     const initialAdminKeys = Array.from({ length: 3 }, () =>
-        PrivateKey.generateED25519(),
+        PrivateKey.generateECDSA(),
     );
     const initialAdminPublicKeys = initialAdminKeys.map((k) => k.publicKey);
 
@@ -75,9 +75,9 @@ async function main() {
     );
 
     // Step 6: Generate the new admin key pairs (4 keys, 3-of-4 threshold).
-    console.log("Generating new ED25519 key pairs...");
+    console.log("Generating new ECDSA key pairs...");
     const newAdminKeys = Array.from({ length: 4 }, () =>
-        PrivateKey.generateED25519(),
+        PrivateKey.generateECDSA(),
     );
     const newAdminPublicKeys = newAdminKeys.map((k) => k.publicKey);
 

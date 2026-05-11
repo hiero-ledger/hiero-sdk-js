@@ -35,11 +35,11 @@ async function main() {
         .setOperator(operatorId, operatorKey)
         .setDefaultMaxTransactionFee(new Hbar(10));
 
-    // Step 1: Generate ED25519 key pairs.
-    console.log("Generating ED25519 key pairs...");
-    const privateKey1 = PrivateKey.generateED25519();
+    // Step 1: Generate ECDSA key pairs.
+    console.log("Generating ECDSA key pairs...");
+    const privateKey1 = PrivateKey.generateECDSA();
     const publicKey1 = privateKey1.publicKey;
-    const privateKey2 = PrivateKey.generateED25519();
+    const privateKey2 = PrivateKey.generateECDSA();
     const publicKey2 = privateKey2.publicKey;
 
     // Step 2: Create a new account using publicKey1.

@@ -45,11 +45,11 @@ async function main() {
         operatorKey,
     );
 
-    // Step 1: generate three ED25519 private keys.
-    console.log("Generating ED25519 private keys...");
-    const privateKey1 = PrivateKey.generateED25519();
-    const privateKey2 = PrivateKey.generateED25519();
-    const privateKey3 = PrivateKey.generateED25519();
+    // Step 1: generate three ECDSA private keys.
+    console.log("Generating ECDSA private keys...");
+    const privateKey1 = PrivateKey.generateECDSA();
+    const privateKey2 = PrivateKey.generateECDSA();
+    const privateKey3 = PrivateKey.generateECDSA();
 
     // Step 2: build a KeyList from the three public keys.
     // No threshold → default is "all keys required".
