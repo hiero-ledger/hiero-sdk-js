@@ -3,7 +3,9 @@ import {
     bytesToBits,
     crc8,
     convertRadix,
+    legacy1,
 } from "../../../src/util/entropy.js";
+import legacyWords from "../../../src/words/legacy.js";
 
 describe("entropy utilities", function () {
     // bytesToBits
@@ -141,6 +143,103 @@ describe("entropy utilities", function () {
             // index 0 in a 2048-word list → should be all zeros
             const result = convertRadix([0], 2048, 256, 2);
             expect(result).to.deep.equal(new Uint8Array([0, 0]));
+        });
+    });
+
+    // legacy1
+    describe("legacy1", function () {
+        it("should decode a known 22-word legacy mnemonic", function () {
+            const words = [
+                "jolly",
+                "kidnap",
+                "tom",
+                "lawn",
+                "drunk",
+                "chick",
+                "optic",
+                "lust",
+                "mutter",
+                "mole",
+                "bride",
+                "galley",
+                "dense",
+                "member",
+                "sage",
+                "neural",
+                "widow",
+                "decide",
+                "curb",
+                "aboard",
+                "margin",
+                "manure",
+            ];
+
+            const [entropy, checksum] = legacy1(words, legacyWords);
+
+            // Should return 32 bytes of entropy
+            expect(entropy).to.be.instanceOf(Uint8Array);
+            expect(entropy).to.have.length(32);
+
+            // Checksum should be a byte value
+            expect(checksum).to.be.gte(0);
+            expect(checksum).to.be.lte(255);
+        });
+
+        it("should return consistent results for the same input", function () {
+            const words = [
+                "jolly",
+                "kidnap",
+                "tom",
+                "lawn",
+                "drunk",
+                "chick",
+                "optic",
+                "lust",
+                "mutter",
+                "mole",
+                "bride",
+                "galley",
+                "dense",
+                "member",
+                "sage",
+                "neural",
+                "widow",
+                "decide",
+                "curb",
+                "aboard",
+                "margin",
+                "manure",
+            ];
+
+            const [entropy1, checksum1] = legacy1(words, legacyWords);
+            const [entropy2, checksum2] = legacy1(words, legacyWords);
+
+            expect(entropy1).to.deep.equal(entropy2);
+            expect(checksum1).to.equal(checksum2);
+        });
+
+        it("should produce different entropy for different words", function () {
+            // Use first 22 words from the legacy wordlist
+            const words1 = legacyWords.slice(0, 22);
+            const words2 = legacyWords.slice(22, 44);
+
+            const [entropy1] = legacy1(words1, legacyWords);
+            const [entropy2] = legacy1(words2, legacyWords);
+
+            expect(entropy1).to.not.deep.equal(entropy2);
+        });
+
+        it("should be case-insensitive", function () {
+            const lower = ["jolly", "kidnap", "tom", "lawn", "drunk", "chick",
+                "optic", "lust", "mutter", "mole", "bride", "galley",
+                "dense", "member", "sage", "neural", "widow", "decide",
+                "curb", "aboard", "margin", "manure"];
+            const upper = lower.map((w) => w.toUpperCase());
+
+            const [entropyLower] = legacy1(lower, legacyWords);
+            const [entropyUpper] = legacy1(upper, legacyWords);
+
+            expect(entropyLower).to.deep.equal(entropyUpper);
         });
     });
 });
