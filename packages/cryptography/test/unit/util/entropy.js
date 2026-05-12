@@ -94,6 +94,7 @@ describe("entropy utilities", function () {
         it("should compute a deterministic checksum for known data", function () {
             const data = new Uint8Array([0x01, 0x02, 0x03, 0x04, 0x00]);
             const checksum = crc8(data);
+
             // Run again to verify determinism
             expect(crc8(data)).to.equal(checksum);
             expect(typeof checksum).to.equal("number");
@@ -385,7 +386,7 @@ describe("entropy utilities", function () {
         });
 
         it("should throw on checksum mismatch", async function () {
-            // Take a valid mnemonic and swap the last word to break the checksum
+            // Takes a valid mnemonic and swaps the last word to break the checksum
             const words = [
                 "radar",
                 "blur",
@@ -398,7 +399,7 @@ describe("entropy utilities", function () {
                 "scheme",
                 "fiction",
                 "master",
-                "abandon", // wrong last word — checksum won't match
+                "abandon", // wrong last word so checksum won't match
             ];
 
             try {
