@@ -7,7 +7,7 @@ import Hbar from "../../../src/Hbar.js";
 import Long from "long";
 
 describe("ProxyStaker", () => {
-    const accountId = new AccountId(0, 0, 5); // 
+    const accountId = new AccountId(0, 0, 5);
 
     describe("constructor", () => {
         it("wraps a raw number amount in an Hbar instance", () => {
@@ -85,31 +85,29 @@ describe("ProxyStaker", () => {
 
     describe("_toProtobuf", () => {
         it("serializes to a protobuf object", () => {
-    const hbar = Hbar.fromTinybars(750);
-    const staker = new ProxyStaker({ accountId, amount: hbar });
-    const proto = staker._toProtobuf();
+            const hbar = Hbar.fromTinybars(750);
+            const staker = new ProxyStaker({ accountId, amount: hbar });
+            const proto = staker._toProtobuf();
 
-    // Compare account fields as numbers
-    expect(proto.accountID.shardNum.toNumber()).toBe(0);
-    expect(proto.accountID.realmNum.toNumber()).toBe(0);
-    expect(proto.accountID.accountNum.toNumber()).toBe(5);
-    expect(proto.amount.toNumber()).toBe(750);
-});
+            expect(proto.accountID.shardNum.toNumber()).toBe(0);
+            expect(proto.accountID.realmNum.toNumber()).toBe(0);
+            expect(proto.accountID.accountNum.toNumber()).toBe(5);
+            expect(proto.amount.toNumber()).toBe(750);
+        });
 
         it("round-trips through _fromProtobuf and _toProtobuf", () => {
-    const original = {
-        accountID: { shardNum: 0, realmNum: 0, accountNum: 5 },
-        amount: Long.fromNumber(1234),
-    };
-    const staker = ProxyStaker._fromProtobuf(original);
-    const roundTripped = staker._toProtobuf();
+            const original = {
+                accountID: { shardNum: 0, realmNum: 0, accountNum: 5 },
+                amount: Long.fromNumber(1234),
+            };
+            const staker = ProxyStaker._fromProtobuf(original);
+            const roundTripped = staker._toProtobuf();
 
-   
-    expect(roundTripped.accountID.shardNum.toNumber()).toBe(original.accountID.shardNum);
-    expect(roundTripped.accountID.realmNum.toNumber()).toBe(original.accountID.realmNum);
-    expect(roundTripped.accountID.accountNum.toNumber()).toBe(original.accountID.accountNum);
-    expect(roundTripped.amount.toNumber()).toBe(original.amount.toNumber());
-});
+            expect(roundTripped.accountID.shardNum.toNumber()).toBe(original.accountID.shardNum);
+            expect(roundTripped.accountID.realmNum.toNumber()).toBe(original.accountID.realmNum);
+            expect(roundTripped.accountID.accountNum.toNumber()).toBe(original.accountID.accountNum);
+            expect(roundTripped.amount.toNumber()).toBe(original.amount.toNumber());
+        });
 
         it("round-trips a zero amount correctly", () => {
             const original = {
