@@ -1,12 +1,9 @@
-import CustomRoyaltyFee from "../../../src/token/CustomRoyaltyFee.js";
-import CustomFixedFee from "../../../src/token/CustomFixedFee.js";
-import AccountId from "../../../src/account/AccountId.js";
+import CustomRoyaltyFee from "../../src/token/CustomRoyaltyFee.js";
+import AccountId from "../../src/account/AccountId.js";
 
 describe("CustomRoyaltyFee", function () {
     it("setters store and getters return values", function () {
-        const fee = new CustomRoyaltyFee()
-            .setNumerator(1)
-            .setDenominator(10);
+        const fee = new CustomRoyaltyFee().setNumerator(1).setDenominator(10);
         expect(fee.numerator.toNumber()).to.equal(1);
         expect(fee.denominator.toNumber()).to.equal(10);
     });
@@ -17,8 +14,12 @@ describe("CustomRoyaltyFee", function () {
             .setNumerator(2)
             .setDenominator(5);
         const proto = fee._toProtobuf();
-        expect(proto.royaltyFee.exchangeValueFraction.numerator.toNumber()).to.equal(2);
-        expect(proto.royaltyFee.exchangeValueFraction.denominator.toNumber()).to.equal(5);
+        expect(
+            proto.royaltyFee.exchangeValueFraction.numerator.toNumber(),
+        ).to.equal(2);
+        expect(
+            proto.royaltyFee.exchangeValueFraction.denominator.toNumber(),
+        ).to.equal(5);
     });
 
     it("_fromProtobuf round-trips correctly", function () {
