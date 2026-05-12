@@ -393,4 +393,16 @@ describe("HbarAllowance", function () {
             });
         });
     });
+    describe("toString", function () {
+        it("should produce a string representation", function () {
+            const allowance = new HbarAllowance({
+                ownerAccountId,
+                spenderAccountId,
+                amount,
+            });
+
+            expect(allowance.toString()).to.be.a("string");
+        });
+    });
+
 });
