@@ -5,9 +5,9 @@ import {
     convertRadix,
     legacy1,
     legacy2,
-} from "../../../src/util/entropy.js";
-import legacyWords from "../../../src/words/legacy.js";
-import bip39Words from "../../../src/words/bip39.js";
+} from "../../src/util/entropy.js";
+import legacyWords from "../../src/words/legacy.js";
+import bip39Words from "../../src/words/bip39.js";
 
 describe("entropy utilities", function () {
     // bytesToBits
