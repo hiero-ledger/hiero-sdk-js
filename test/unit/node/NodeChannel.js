@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
-import { vi, describe, it, expect, beforeEach } from "vitest";
+
+import { vi } from "vitest";
 
 // Mock @grpc/grpc-js before importing NodeChannel
 const {
@@ -135,7 +136,9 @@ describe("NodeChannel", function () {
 
         it("should produce valid base64 content that round-trips", function () {
             const channel = new NodeChannel("10.0.0.1:50211");
-            const original = Buffer.from("test certificate data for round trip");
+            const original = Buffer.from(
+                "test certificate data for round trip",
+            );
             const pem = channel.bytesToPem(original);
 
             const base64Body = pem
@@ -185,8 +188,11 @@ describe("NodeChannel", function () {
             const channel = new NodeChannel("10.0.0.1:50212");
 
             // Stub _retrieveCertificate to avoid real TLS connection
-            const fakePem = "-----BEGIN CERTIFICATE-----\nfake\n-----END CERTIFICATE-----";
-            vi.spyOn(channel, "_retrieveCertificate").mockResolvedValue(fakePem);
+            const fakePem =
+                "-----BEGIN CERTIFICATE-----\nfake\n-----END CERTIFICATE-----";
+            vi.spyOn(channel, "_retrieveCertificate").mockResolvedValue(
+                fakePem,
+            );
 
             await channel._initializeClient();
 
@@ -286,7 +292,14 @@ describe("NodeChannel", function () {
             });
 
             expect(err).to.be.instanceOf(GrpcServicesError);
+            expect(err.name).to.equal("GrpcServiceError");
             expect(err.status).to.equal(GrpcStatus.Timeout);
+            expect(err.message).to.include(
+                GrpcStatus.Timeout.toString(),
+            );
+            expect(err.message).to.include(
+                String(GrpcStatus.Timeout.valueOf()),
+            );
         });
 
         it("should make unary request with correct path and metadata on success", async function () {
@@ -336,9 +349,11 @@ describe("NodeChannel", function () {
                 cb(null);
             });
 
-            const grpcError = new Error("UNAVAILABLE");
-            grpcError.code = 14;
-            grpcError.details = "Connection refused";
+            const grpcError = new Error(
+                GrpcStatus.Unavailable.toString(),
+            );
+            grpcError.code = GrpcStatus.Unavailable.valueOf();
+            grpcError.details = `node is ${GrpcStatus.Unavailable.toString()}`;
             mockMakeUnaryRequest.mockImplementation(
                 (_path, _serialize, _deserialize, _data, _metadata, cb) => {
                     cb(grpcError, null);
@@ -381,7 +396,7 @@ describe("NodeChannel", function () {
 
         it("should pass through Error rejection from _initializeClient", async function () {
             const channel2 = new NodeChannel("10.0.0.1:50211");
-            const initError = new Error("TLS handshake failed");
+            const initError = new GrpcServicesError(GrpcStatus.Unavailable);
             vi.spyOn(channel2, "_initializeClient").mockRejectedValue(
                 initError,
             );
@@ -397,6 +412,8 @@ describe("NodeChannel", function () {
             });
 
             expect(err).to.equal(initError);
+            expect(err).to.be.instanceOf(GrpcServicesError);
+            expect(err.status).to.equal(GrpcStatus.Unavailable);
         });
 
         it("should enforce deadline from grpcDeadline", async function () {
@@ -415,10 +432,8 @@ describe("NodeChannel", function () {
             const now = Date.now();
 
             const err = await new Promise((resolve) => {
-                rpcImpl(
-                    { name: "ping" },
-                    new Uint8Array([]),
-                    (e) => resolve(e),
+                rpcImpl({ name: "ping" }, new Uint8Array([]), (e) =>
+                    resolve(e),
                 );
             });
 
@@ -481,14 +496,16 @@ describe("NodeChannel", function () {
                 return mockSocket;
             });
 
-            await expect(
-                channel._retrieveCertificate(),
-            ).rejects.toThrow("No certificate retrieved.");
+            await expect(channel._retrieveCertificate()).rejects.toThrow(
+                "No certificate retrieved.",
+            );
         });
 
         it("should reject when socket emits error", async function () {
             const channel = new NodeChannel("10.0.0.1:50212");
-            const socketError = new Error("Connection refused");
+            const socketError = new GrpcServicesError(
+                GrpcStatus.Unavailable,
+            );
 
             const mockSocket = {
                 on: vi.fn(function (event, handler) {
@@ -506,7 +523,7 @@ describe("NodeChannel", function () {
 
             await expect(
                 channel._retrieveCertificate(),
-            ).rejects.toThrow("Connection refused");
+            ).rejects.toThrow(socketError.message);
         });
     });
 
