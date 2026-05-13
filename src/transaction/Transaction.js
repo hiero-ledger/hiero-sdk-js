@@ -1499,7 +1499,7 @@ export default class Transaction extends Executable {
     /**
      * Set the node account IDs using the client
      *
-     * @param {Client} client
+     * @param {?Client} client
      */
     _setNodeAccountIds(client) {
         if (!this._nodeAccountIds.isEmpty) {
