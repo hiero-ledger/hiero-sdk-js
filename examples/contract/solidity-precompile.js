@@ -1,6 +1,6 @@
 import * as hashgraph from "@hiero-ledger/sdk";
-import ContractHelper from "./ContractHelper.js";
-import contract from "./precompile-example/PrecompileExample.json" with { type: "json" };
+import ContractHelper from "../ContractHelper.js";
+import contract from "../precompile-example/PrecompileExample.json" with { type: "json" };
 import dotenv from "dotenv";
 
 dotenv.config();
