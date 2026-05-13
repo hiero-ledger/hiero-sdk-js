@@ -211,4 +211,97 @@ describe("FileAppendTransaction", function () {
             `cannot schedule \`FileAppendTransaction\` with message over ${tx.chunkSize} bytes`,
         );
     });
+
+    it("should verify default chunk size fits within network transaction size limit", function () {
+        const NETWORK_TRANSACTION_LIMIT = 6144;
+        const ED25519_SIGNATURE_OVERHEAD = 102; // pubKeyPrefix(34) + ed25519Sig(66) + wrapping(2)
+        const SIGNED_TRANSACTION_WRAPPER_OVERHEAD = 6; // bodyBytes field(3) + sigMap field(3)
+        const DEFAULT_CHUNK_SIZE = 4096;
+
+        const transaction = new FileAppendTransaction()
+            .setTransactionId(
+                TransactionId.withValidStart(spenderAccountId1, timestamp1),
+            )
+            .setNodeAccountIds([nodeAccountId])
+            .setFileId(fileId)
+            .setChunkSize(DEFAULT_CHUNK_SIZE)
+            .setContents(new Uint8Array(DEFAULT_CHUNK_SIZE).fill(0x41))
+            .freeze();
+
+        const bodySize = transaction.bodySize;
+
+        function totalSignedTransactionSize(sigCount) {
+            return (
+                SIGNED_TRANSACTION_WRAPPER_OVERHEAD +
+                bodySize +
+                sigCount * ED25519_SIGNATURE_OVERHEAD
+            );
+        }
+
+        // Default chunk size (4096) should fit within network limits
+        // for transactions with up to 19 Ed25519 signatures
+        expect(totalSignedTransactionSize(1)).to.be.lessThan(
+            NETWORK_TRANSACTION_LIMIT,
+        );
+        expect(totalSignedTransactionSize(5)).to.be.lessThan(
+            NETWORK_TRANSACTION_LIMIT,
+        );
+        expect(totalSignedTransactionSize(10)).to.be.lessThan(
+            NETWORK_TRANSACTION_LIMIT,
+        );
+        expect(totalSignedTransactionSize(19)).to.be.lessThan(
+            NETWORK_TRANSACTION_LIMIT,
+        );
+
+        // With 20+ signatures, the default chunk size exceeds the limit
+        expect(totalSignedTransactionSize(20)).to.be.greaterThanOrEqual(
+            NETWORK_TRANSACTION_LIMIT,
+        );
+    });
+
+    it("should determine maximum chunk size for 50 signatures", function () {
+        const NETWORK_TRANSACTION_LIMIT = 6144;
+        const ED25519_SIGNATURE_OVERHEAD = 102;
+        const SIGNED_TRANSACTION_WRAPPER_OVERHEAD = 6;
+        const SIG_COUNT = 50;
+
+        // Binary search for the maximum chunk size that fits within the network limit
+        // when 50 Ed25519 signatures are present
+        let low = 1;
+        let high = 4096;
+        let maxChunkSize = 1;
+
+        while (low <= high) {
+            const mid = Math.floor((low + high) / 2);
+
+            const tx = new FileAppendTransaction()
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        spenderAccountId1,
+                        timestamp1,
+                    ),
+                )
+                .setNodeAccountIds([nodeAccountId])
+                .setFileId(fileId)
+                .setChunkSize(mid)
+                .setContents(new Uint8Array(mid).fill(0x41))
+                .freeze();
+
+            const totalSize =
+                SIGNED_TRANSACTION_WRAPPER_OVERHEAD +
+                tx.bodySize +
+                SIG_COUNT * ED25519_SIGNATURE_OVERHEAD;
+
+            if (totalSize <= NETWORK_TRANSACTION_LIMIT) {
+                maxChunkSize = mid;
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+
+        // With 50 signatures, max chunk size should be well below the default 4096
+        expect(maxChunkSize).to.be.lessThan(4096);
+        expect(maxChunkSize).to.be.greaterThan(0);
+    });
 });

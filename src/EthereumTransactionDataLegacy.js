@@ -52,8 +52,9 @@ export default class EthereumTransactionDataLegacy extends EthereumTransactionDa
             throw new Error("empty bytes");
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const decoded = /** @type {string[]} */ (decodeRlp(bytes));
+        const decoded = /** @type {unknown[]} */ (
+            /** @type {unknown} */ (decodeRlp(bytes))
+        );
 
         if (decoded.length != 9) {
             throw new Error("invalid ethereum transaction data");

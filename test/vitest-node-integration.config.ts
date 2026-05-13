@@ -18,6 +18,12 @@ export default defineConfig({
         watch: false,
         globals: true,
         environment: "node",
+        // Cap parallelism to avoid THROTTLED_AT_CONSENSUS from the shared
+        // operator account hitting per-payer throttle buckets. Raise this as
+        // network throttles allow.
+        pool: "forks",
+        maxWorkers: 4,
+        fileParallelism: true,
         include: ["test/integration/**/*.js"],
         exclude: [
             "test/integration/client/*",

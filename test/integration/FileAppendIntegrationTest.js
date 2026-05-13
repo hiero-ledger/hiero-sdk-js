@@ -476,6 +476,100 @@ describe("FileAppend", function () {
         expect(txFromBytes.contents).to.be.deep.equal(newContents);
     });
 
+    it("should find max chunk size before TRANSACTION_OVERSIZE", async function () {
+        const operatorKey = env.operatorKey.publicKey;
+
+        let response = await new FileCreateTransaction()
+            .setKeys([operatorKey])
+            .setContents(new Uint8Array(0))
+            .execute(env.client);
+
+        let { fileId } = await response.getReceipt(env.client);
+
+        expect(fileId).to.not.be.null;
+
+        // Binary search for the maximum chunk size that the network accepts
+        // with a single operator signature before returning TRANSACTION_OVERSIZE
+        let low = 4096;
+        let high = 6144;
+        let maxAcceptedSize = 4096;
+
+        while (low <= high) {
+            const mid = Math.floor((low + high) / 2);
+            const contents = generateUInt8Array(mid);
+
+            try {
+                const tx = await new FileAppendTransaction()
+                    .setFileId(fileId)
+                    .setContents(contents)
+                    .setChunkSize(mid)
+                    .setMaxChunks(1)
+                    .execute(env.client);
+
+                await tx.getReceipt(env.client);
+                maxAcceptedSize = mid;
+                low = mid + 1;
+            } catch (error) {
+                if (
+                    error.toString().includes(Status.TransactionOversize) ||
+                    error.toString().includes("TRANSACTION_OVERSIZE")
+                ) {
+                    high = mid - 1;
+                } else {
+                    throw error;
+                }
+            }
+        }
+
+        // The empirically found max chunk size with 1 signature should be
+        // above the current default of 4096 bytes.
+        // Tested value: ~5971 bytes (network limit 6144 minus transaction overhead)
+        expect(maxAcceptedSize).to.be.greaterThanOrEqual(4096);
+
+        await (
+            await new FileDeleteTransaction()
+                .setFileId(fileId)
+                .execute(env.client)
+        ).getReceipt(env.client);
+    });
+
+    it("should execute with default chunk size", async function () {
+        const operatorKey = env.operatorKey.publicKey;
+
+        let response = await new FileCreateTransaction()
+            .setKeys([operatorKey])
+            .setContents(new Uint8Array(0))
+            .execute(env.client);
+
+        let { fileId } = await response.getReceipt(env.client);
+
+        expect(fileId).to.not.be.null;
+
+        // Append exactly one chunk at the default chunk size (4096 bytes)
+        const defaultChunkSize = new FileAppendTransaction().chunkSize;
+        const contents = generateUInt8Array(defaultChunkSize);
+
+        const tx = await new FileAppendTransaction()
+            .setFileId(fileId)
+            .setContents(contents)
+            .execute(env.client);
+
+        const receipt = await tx.getReceipt(env.client);
+        expect(receipt.status).to.be.equal(Status.Success);
+
+        const fileInfo = await new FileContentsQuery()
+            .setFileId(fileId)
+            .execute(env.client);
+
+        expect(fileInfo.length).to.be.equal(defaultChunkSize);
+
+        await (
+            await new FileDeleteTransaction()
+                .setFileId(fileId)
+                .execute(env.client)
+        ).getReceipt(env.client);
+    });
+
     afterAll(async function () {
         await env.close();
     });

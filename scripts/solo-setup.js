@@ -10,6 +10,7 @@ import {
     SOLO_CLUSTER_SETUP_NAMESPACE,
     SOLO_DEPLOYMENT,
     SOLO_DIR,
+    SOLO_GLOBAL_INSTALL_COMMAND,
     ENV_FILE,
     commandExists,
     soloInstalled,
@@ -22,6 +23,7 @@ import {
     generateEnvFile,
     setupPortForwarding,
     runCommand,
+    runSoloCommand,
     log,
 } from "./solo-lib.js";
 
@@ -41,7 +43,13 @@ function showHelp() {
         `  --mirror-node-version <version>      Mirror node version (default: ${DEFAULT_MIRROR_NODE_VERSION})`,
     );
     console.log(
-        "  --local-build-path <path>            Path to local build (overrides consensus-node-version)",
+        "  --mirror-node-chart-dir <path>       Mirror node local chart directory path (omits --mirror-node-version when present)",
+    );
+    console.log(
+        "  --local-build-path <path>            Path to local build (overrides consensus-node-version for node setup)",
+    );
+    console.log(
+        "  --block-node-release-tag <version>   Optional block node Helm chart version (maps to --chart-version)",
     );
     console.log(
         "  -h, --help                           Show this help message",
@@ -61,13 +69,21 @@ function showHelp() {
     console.log(
         "  ./scripts/solo-setup.js --local-build-path ../hiero-consensus-node/hedera-node/data",
     );
+    console.log(
+        "  ./scripts/solo-setup.js --mirror-node-chart-dir ~/hiero-mirror-node/charts",
+    );
+    console.log(
+        "  ./scripts/solo-setup.js --consensus-node-version v0.70.0 --block-node-release-tag v0.18.0",
+    );
 }
 
 function parseArgs(argv) {
     let numNodes = DEFAULT_NUM_NODES;
     let consensusVersion = DEFAULT_CONSENSUS_NODE_VERSION;
     let mirrorVersion = DEFAULT_MIRROR_NODE_VERSION;
+    let mirrorNodeChartDir = "";
     let localBuildPath = "";
+    let blockNodeReleaseTag = process.env.BLOCK_NODE_RELEASE_TAG || "";
 
     for (let index = 0; index < argv.length; index += 1) {
         const argument = argv[index];
@@ -99,12 +115,30 @@ function parseArgs(argv) {
             continue;
         }
 
+        if (argument.startsWith("--mirror-node-chart-dir=")) {
+            const value = argument.slice("--mirror-node-chart-dir=".length);
+            if (!value) {
+                throw new Error("Missing value for --mirror-node-chart-dir");
+            }
+            mirrorNodeChartDir = value;
+            continue;
+        }
+
         if (argument.startsWith("--local-build-path=")) {
             const value = argument.slice("--local-build-path=".length);
             if (!value) {
                 throw new Error("Missing value for --local-build-path");
             }
             localBuildPath = value;
+            continue;
+        }
+
+        if (argument.startsWith("--block-node-release-tag=")) {
+            const value = argument.slice("--block-node-release-tag=".length);
+            if (!value) {
+                throw new Error("Missing value for --block-node-release-tag");
+            }
+            blockNodeReleaseTag = value;
             continue;
         }
 
@@ -138,12 +172,34 @@ function parseArgs(argv) {
                 index += 1;
                 break;
             }
+            case "--mirror-node-chart-dir": {
+                const value = argv[index + 1];
+                if (!value) {
+                    throw new Error(
+                        "Missing value for --mirror-node-chart-dir",
+                    );
+                }
+                mirrorNodeChartDir = value;
+                index += 1;
+                break;
+            }
             case "--local-build-path": {
                 const value = argv[index + 1];
                 if (!value) {
                     throw new Error("Missing value for --local-build-path");
                 }
                 localBuildPath = value;
+                index += 1;
+                break;
+            }
+            case "--block-node-release-tag": {
+                const value = argv[index + 1];
+                if (!value) {
+                    throw new Error(
+                        "Missing value for --block-node-release-tag",
+                    );
+                }
+                blockNodeReleaseTag = value;
                 index += 1;
                 break;
             }
@@ -163,22 +219,31 @@ function parseArgs(argv) {
         numNodes,
         consensusVersion,
         mirrorVersion,
+        mirrorNodeChartDir,
         localBuildPath,
+        blockNodeReleaseTag,
     };
 }
 
-function setEnvironment({ consensusVersion, mirrorVersion, localBuildPath }) {
+function setEnvironment({
+    consensusVersion,
+    mirrorVersion,
+    mirrorNodeChartDir,
+    blockNodeReleaseTag,
+}) {
     process.env.SOLO_CLUSTER_NAME = SOLO_CLUSTER_NAME;
     process.env.SOLO_NAMESPACE = SOLO_NAMESPACE;
     process.env.SOLO_CLUSTER_SETUP_NAMESPACE = SOLO_CLUSTER_SETUP_NAMESPACE;
     process.env.SOLO_DEPLOYMENT = SOLO_DEPLOYMENT;
-    process.env.MIRROR_NODE_VERSION = mirrorVersion;
-
-    if (localBuildPath) {
-        delete process.env.CONSENSUS_NODE_VERSION;
+    if (mirrorNodeChartDir) {
+        delete process.env.MIRROR_NODE_VERSION;
     } else {
-        process.env.CONSENSUS_NODE_VERSION = consensusVersion;
+        process.env.MIRROR_NODE_VERSION = mirrorVersion;
     }
+    if (blockNodeReleaseTag) {
+        process.env.BLOCK_NODE_RELEASE_TAG = blockNodeReleaseTag;
+    }
+    process.env.CONSENSUS_NODE_VERSION = consensusVersion;
 }
 
 async function checkDependencies() {
@@ -194,8 +259,8 @@ async function checkDependencies() {
         missingDependencies.push("kubectl");
     }
 
-    if (!commandExists("npx")) {
-        missingDependencies.push("npx");
+    if (!commandExists("solo")) {
+        missingDependencies.push("solo");
     }
 
     if (missingDependencies.length > 0) {
@@ -216,10 +281,8 @@ async function checkDependencies() {
                         "  - kubectl: https://kubernetes.io/docs/tasks/tools/",
                     );
                     break;
-                case "npx":
-                    console.log(
-                        "  - npx: comes with Node.js (npm install -g npx)",
-                    );
+                case "solo":
+                    console.log(`  - solo: ${SOLO_GLOBAL_INSTALL_COMMAND}`);
                     break;
                 default:
                     break;
@@ -231,10 +294,8 @@ async function checkDependencies() {
 
     log.info("Checking if Solo is installed...");
     if (!(await soloInstalled())) {
-        log.error("Solo is not installed as a project dependency");
-        log.info(
-            "Please run 'task install' or 'pnpm install' first to install project dependencies including Solo",
-        );
+        log.error("Solo CLI is not available globally");
+        log.info(`Please run '${SOLO_GLOBAL_INSTALL_COMMAND}' and try again`);
         process.exit(1);
     }
 
@@ -259,7 +320,7 @@ async function initializeSolo() {
         log.info("Solo already initialized, skipping initialization");
     } else {
         log.info("Initializing Solo...");
-        await runCommand("npx", ["solo", "init"]);
+        await runSoloCommand(["init"]);
         log.success("Solo initialized");
     }
 }
@@ -267,9 +328,8 @@ async function initializeSolo() {
 async function setupDeployment(numNodes) {
     log.info("Setting up Solo deployment...");
 
-    const deploymentList = await runCommand(
-        "npx",
-        ["solo", "deployment", "config", "list", "--dev"],
+    const deploymentList = await runSoloCommand(
+        ["deployment", "config", "list", "--dev"],
         { allowFailure: true, captureOutput: true },
     );
 
@@ -284,8 +344,7 @@ async function setupDeployment(numNodes) {
     }
 
     log.info("Connecting to cluster...");
-    await runCommand("npx", [
-        "solo",
+    await runSoloCommand([
         "cluster-ref",
         "config",
         "connect",
@@ -297,8 +356,7 @@ async function setupDeployment(numNodes) {
     ]);
 
     log.info(`Creating deployment: ${SOLO_DEPLOYMENT}...`);
-    await runCommand("npx", [
-        "solo",
+    await runSoloCommand([
         "deployment",
         "config",
         "create",
@@ -310,8 +368,7 @@ async function setupDeployment(numNodes) {
     ]);
 
     log.info(`Attaching cluster to deployment (${numNodes} node(s))...`);
-    await runCommand("npx", [
-        "solo",
+    await runSoloCommand([
         "deployment",
         "cluster",
         "attach",
@@ -325,8 +382,7 @@ async function setupDeployment(numNodes) {
     ]);
 
     log.info("Setting up cluster...");
-    await runCommand("npx", [
-        "solo",
+    await runSoloCommand([
         "cluster-ref",
         "config",
         "setup",
@@ -361,10 +417,8 @@ async function ensureDeploymentConfig(numNodes) {
 
     if (await localConfigContains(`name: ${SOLO_DEPLOYMENT}`)) {
         log.info("Removing stale deployment from local config...");
-        await runCommand(
-            "npx",
+        await runSoloCommand(
             [
-                "solo",
                 "deployment",
                 "config",
                 "delete",
@@ -379,10 +433,56 @@ async function ensureDeploymentConfig(numNodes) {
     await setupDeployment(numNodes);
 }
 
-async function deployNetwork({ numNodes, localBuildPath }) {
+async function deployBlockNode({
+    consensusVersion,
+    localBuildPath,
+    blockNodeReleaseTag,
+}) {
+    const blockNodeArgs = [
+        "solo",
+        "block",
+        "node",
+        "add",
+        "--deployment",
+        SOLO_DEPLOYMENT,
+        "--cluster-ref",
+        SOLO_CLUSTER_NAME,
+    ];
+
+    if (!localBuildPath) {
+        blockNodeArgs.push("--release-tag", consensusVersion);
+        log.info(`Deploying block node (release tag: ${consensusVersion})...`);
+    } else {
+        log.info(
+            "Deploying block node (release tag omitted for local build)...",
+        );
+    }
+
+    if (blockNodeReleaseTag) {
+        blockNodeArgs.push("--chart-version", blockNodeReleaseTag);
+        log.info(`Using block node chart version: ${blockNodeReleaseTag}`);
+    }
+
+    await runCommand("npx", blockNodeArgs);
+
+    log.success("Block node deployed");
+}
+
+async function deployNetwork({
+    numNodes,
+    localBuildPath,
+    consensusVersion,
+    blockNodeReleaseTag,
+}) {
     await ensureDeploymentConfig(numNodes);
 
     const nodeIds = createNodeIdList(numNodes);
+
+    await deployBlockNode({
+        consensusVersion,
+        localBuildPath,
+        blockNodeReleaseTag,
+    });
 
     log.info("Checking consensus keys...");
     const secretResult = await runCommand(
@@ -395,8 +495,7 @@ async function deployNetwork({ numNodes, localBuildPath }) {
         log.info("Consensus keys already exist, skipping key generation");
     } else {
         log.info("Generating consensus keys...");
-        await runCommand("npx", [
-            "solo",
+        await runSoloCommand([
             "keys",
             "consensus",
             "generate",
@@ -411,8 +510,7 @@ async function deployNetwork({ numNodes, localBuildPath }) {
     log.info(
         `Deploying consensus network (${numNodes} node(s): ${nodeIds})...`,
     );
-    await runCommand("npx", [
-        "solo",
+    await runSoloCommand([
         "consensus",
         "network",
         "deploy",
@@ -426,8 +524,7 @@ async function deployNetwork({ numNodes, localBuildPath }) {
     log.info("Setting up consensus nodes...");
     if (localBuildPath) {
         log.info(`Using local build path: ${localBuildPath}`);
-        await runCommand("npx", [
-            "solo",
+        await runSoloCommand([
             "consensus",
             "node",
             "setup",
@@ -443,8 +540,7 @@ async function deployNetwork({ numNodes, localBuildPath }) {
         log.info(
             `Using consensus node version: ${process.env.CONSENSUS_NODE_VERSION}`,
         );
-        await runCommand("npx", [
-            "solo",
+        await runSoloCommand([
             "consensus",
             "node",
             "setup",
@@ -457,8 +553,7 @@ async function deployNetwork({ numNodes, localBuildPath }) {
     }
 
     log.info("Starting consensus nodes...");
-    await runCommand("npx", [
-        "solo",
+    await runSoloCommand([
         "consensus",
         "node",
         "start",
@@ -472,9 +567,9 @@ async function deployNetwork({ numNodes, localBuildPath }) {
     log.success("Network deployed and started");
 }
 
-async function deployMirror() {
+async function deployMirror({ mirrorVersion, mirrorNodeChartDir }) {
     log.info("Deploying mirror node services...");
-    await runCommand("npx", [
+    const mirrorNodeArgs = [
         "solo",
         "mirror",
         "node",
@@ -483,18 +578,43 @@ async function deployMirror() {
         SOLO_DEPLOYMENT,
         "--cluster-ref",
         SOLO_CLUSTER_NAME,
-        "--pinger",
-        "--dev",
-    ]);
+    ];
+
+    if (mirrorNodeChartDir) {
+        mirrorNodeArgs.push("--mirror-node-chart-dir", mirrorNodeChartDir);
+        log.info(
+            `Deploying mirror node services from local chart dir: ${mirrorNodeChartDir}`,
+        );
+    } else {
+        mirrorNodeArgs.push("--mirror-node-version", mirrorVersion);
+        log.info(
+            `Deploying mirror node services (version: ${mirrorVersion})...`,
+        );
+    }
+
+    mirrorNodeArgs.push("--pinger", "--dev");
+
+    await runCommand("npx", mirrorNodeArgs);
 
     log.success("Mirror node deployed");
 }
 
 async function main() {
-    const { numNodes, consensusVersion, mirrorVersion, localBuildPath } =
-        parseArgs(process.argv.slice(2));
+    const {
+        numNodes,
+        consensusVersion,
+        mirrorVersion,
+        mirrorNodeChartDir,
+        localBuildPath,
+        blockNodeReleaseTag,
+    } = parseArgs(process.argv.slice(2));
 
-    setEnvironment({ consensusVersion, mirrorVersion, localBuildPath });
+    setEnvironment({
+        consensusVersion,
+        mirrorVersion,
+        mirrorNodeChartDir,
+        blockNodeReleaseTag,
+    });
 
     log.info("======================================");
     log.info("Solo Setup for hiero-sdk-js");
@@ -508,15 +628,35 @@ async function main() {
             `  - Consensus Node Version: ${process.env.CONSENSUS_NODE_VERSION}`,
         );
     }
-    log.info(`  - Mirror Node Version: ${process.env.MIRROR_NODE_VERSION}`);
+    if (mirrorNodeChartDir) {
+        log.info(
+            "  - Mirror Node Version: <omitted (local mirror chart mode)>",
+        );
+        log.info(`  - Mirror Node Chart Dir: ${mirrorNodeChartDir}`);
+    } else {
+        log.info(`  - Mirror Node Version: ${process.env.MIRROR_NODE_VERSION}`);
+    }
+    if (localBuildPath) {
+        log.info("  - Block Node Release Tag: <omitted (local build mode)>");
+    } else {
+        log.info(`  - Block Node Release Tag: ${consensusVersion}`);
+    }
+    if (blockNodeReleaseTag) {
+        log.info(`  - Block Node Chart Version: ${blockNodeReleaseTag}`);
+    }
     log.info(`  - Consensus Nodes: ${numNodes}`);
     console.log("");
 
     await checkDependencies();
     await initializeSolo();
     await setupDeployment(numNodes);
-    await deployNetwork({ numNodes, localBuildPath });
-    await deployMirror();
+    await deployNetwork({
+        numNodes,
+        localBuildPath,
+        consensusVersion,
+        blockNodeReleaseTag,
+    });
+    await deployMirror({ mirrorVersion, mirrorNodeChartDir });
     await setupPortForwarding({
         numNodes,
         namespace: SOLO_NAMESPACE,
@@ -552,7 +692,14 @@ async function main() {
             `  - Consensus Node Version: ${process.env.CONSENSUS_NODE_VERSION}`,
         );
     }
-    log.info(`  - Mirror Node Version: ${process.env.MIRROR_NODE_VERSION}`);
+    if (mirrorNodeChartDir) {
+        log.info(
+            "  - Mirror Node Version: <omitted (local mirror chart mode)>",
+        );
+        log.info(`  - Mirror Node Chart Dir: ${mirrorNodeChartDir}`);
+    } else {
+        log.info(`  - Mirror Node Version: ${process.env.MIRROR_NODE_VERSION}`);
+    }
     log.info(`  - ${numNodes} consensus node(s)`);
     log.info("  - Mirror node services");
     log.info(`  - Dedicated ECDSA test account: ${account.accountId}`);

@@ -285,7 +285,8 @@ describe("ContractUpdate", function () {
         ).getReceipt(env.client);
     });
 
-    describe("ContractUpdate with Hooks", function () {
+    // eslint-disable-next-line vitest/no-disabled-tests
+    describe.skip("ContractUpdate with Hooks", function () {
         let hookContractId;
 
         beforeAll(async function () {

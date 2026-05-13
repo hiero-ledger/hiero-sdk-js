@@ -803,6 +803,20 @@ export default class Status {
                 return "TRANSFER_TO_FEE_COLLECTION_ACCOUNT_NOT_ALLOWED";
             case Status.TooManyHookInvocations:
                 return "TOO_MANY_HOOK_INVOCATIONS";
+            case Status.InvalidRegisteredNodeId:
+                return "INVALID_REGISTERED_NODE_ID";
+            case Status.InvalidRegisteredEndpoint:
+                return "INVALID_REGISTERED_ENDPOINT";
+            case Status.RegisteredEndpointsExceededLimit:
+                return "REGISTERED_ENDPOINTS_EXCEEDED_LIMIT";
+            case Status.InvalidRegisteredEndpointAddress:
+                return "INVALID_REGISTERED_ENDPOINT_ADDRESS";
+            case Status.InvalidRegisteredEndpointType:
+                return "INVALID_REGISTERED_ENDPOINT_TYPE";
+            case Status.RegisteredNodeStillAssociated:
+                return "REGISTERED_NODE_STILL_ASSOCIATED";
+            case Status.MaxRegisteredNodesExceeded:
+                return "MAX_REGISTERED_NODES_EXCEEDED";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -1595,6 +1609,20 @@ export default class Status {
                 return Status.TransferToFeeCollectionAccountNotAllowed;
             case 528:
                 return Status.TooManyHookInvocations;
+            case 529:
+                return Status.InvalidRegisteredNodeId;
+            case 530:
+                return Status.InvalidRegisteredEndpoint;
+            case 531:
+                return Status.RegisteredEndpointsExceededLimit;
+            case 532:
+                return Status.InvalidRegisteredEndpointAddress;
+            case 533:
+                return Status.InvalidRegisteredEndpointType;
+            case 534:
+                return Status.RegisteredNodeStillAssociated;
+            case 535:
+                return Status.MaxRegisteredNodesExceeded;
             default:
                 throw new Error(
                     `(BUG) Status.fromCode() does not handle code: ${code}`,
@@ -3561,3 +3589,38 @@ Status.TransferToFeeCollectionAccountNotAllowed = new Status(527);
  * The number of hook invocations exceeds the maximum allowed per transaction.
  */
 Status.TooManyHookInvocations = new Status(528);
+
+/**
+ * A registered node ID is invalid or does not exist.
+ */
+Status.InvalidRegisteredNodeId = new Status(529);
+
+/**
+ * A registered service endpoint is invalid.<br/> The port is out of range, or the address field is not set.
+ */
+Status.InvalidRegisteredEndpoint = new Status(530);
+
+/**
+ * The number of registered service endpoints exceeds the configured limit.
+ */
+Status.RegisteredEndpointsExceededLimit = new Status(531);
+
+/**
+ * A registered service endpoint has an invalid address.<br/> The IP address length is not 4 (IPv4) or 16 (IPv6), or the domain name is not a valid ASCII FQDN.
+ */
+Status.InvalidRegisteredEndpointAddress = new Status(532);
+
+/**
+ * A registered service endpoint does not specify an endpoint type.<br/> Exactly one of block_node, mirror_node, or rpc_relay MUST be set.
+ */
+Status.InvalidRegisteredEndpointType = new Status(533);
+
+/**
+ * A registered node cannot be deleted because it is still associated with a consensus node via their associated registered node list.
+ */
+Status.RegisteredNodeStillAssociated = new Status(534);
+
+/**
+ * The number of associated registered nodes exceeds the maximum allowed limit.
+ */
+Status.MaxRegisteredNodesExceeded = new Status(535);

@@ -1,5 +1,5 @@
 import HookEntityId from "../../src/hooks/HookEntityId.js";
-import { AccountId } from "../../src/index.js";
+import { AccountId, ContractId } from "../../src/index.js";
 
 describe("HookEntityId", function () {
     describe("constructor", function () {
@@ -36,6 +36,35 @@ describe("HookEntityId", function () {
             const entityId = new HookEntityId({});
 
             expect(entityId.accountId).to.be.null;
+        });
+
+        it("should create an instance with default null contractId", function () {
+            const entityId = new HookEntityId();
+
+            expect(entityId.contractId).to.be.null;
+        });
+
+        it("should create an instance with provided contractId", function () {
+            const contractId = new ContractId(1, 2, 3);
+            const entityId = new HookEntityId({ contractId });
+
+            expect(entityId.contractId).to.equal(contractId);
+        });
+
+        it("should create an instance with contractId from string", function () {
+            const contractId = ContractId.fromString("0.0.12345");
+            const entityId = new HookEntityId({ contractId });
+
+            expect(entityId.contractId.toString()).to.equal("0.0.12345");
+        });
+
+        it("should create an instance with contractId using shard, realm, num", function () {
+            const contractId = new ContractId(10, 20, 30);
+            const entityId = new HookEntityId({ contractId });
+
+            expect(entityId.contractId.shard.toNumber()).to.equal(10);
+            expect(entityId.contractId.realm.toNumber()).to.equal(20);
+            expect(entityId.contractId.num.toNumber()).to.equal(30);
         });
     });
 
@@ -87,6 +116,110 @@ describe("HookEntityId", function () {
         });
     });
 
+    describe("setContractId", function () {
+        it("should set contractId and return this for chaining", function () {
+            const entityId = new HookEntityId();
+            const contractId = new ContractId(5, 6, 7);
+
+            const result = entityId.setContractId(contractId);
+
+            expect(result).to.equal(entityId);
+            expect(entityId.contractId).to.equal(contractId);
+        });
+
+        it("should overwrite existing contractId", function () {
+            const oldContractId = new ContractId(1, 2, 3);
+            const newContractId = new ContractId(4, 5, 6);
+            const entityId = new HookEntityId({ contractId: oldContractId });
+
+            entityId.setContractId(newContractId);
+
+            expect(entityId.contractId).to.equal(newContractId);
+            expect(entityId.contractId).to.not.equal(oldContractId);
+        });
+
+        it("should handle different ContractId formats", function () {
+            const entityId = new HookEntityId();
+
+            // Set from new ContractId
+            const numericId = new ContractId(1, 2, 100);
+            entityId.setContractId(numericId);
+            expect(entityId.contractId.toString()).to.equal("1.2.100");
+
+            // Set from ContractId.fromString
+            const stringId = ContractId.fromString("5.10.999");
+            entityId.setContractId(stringId);
+            expect(entityId.contractId.toString()).to.equal("5.10.999");
+        });
+    });
+
+    describe("oneof behavior", function () {
+        it("should clear accountId when contractId is set", function () {
+            const accountId = new AccountId(1, 2, 3);
+            const contractId = new ContractId(4, 5, 6);
+            const entityId = new HookEntityId({ accountId });
+
+            entityId.setContractId(contractId);
+
+            expect(entityId.contractId).to.equal(contractId);
+            expect(entityId.accountId).to.be.null;
+        });
+
+        it("should clear contractId when accountId is set", function () {
+            const accountId = new AccountId(1, 2, 3);
+            const contractId = new ContractId(4, 5, 6);
+            const entityId = new HookEntityId({ contractId });
+
+            entityId.setAccountId(accountId);
+
+            expect(entityId.accountId).to.equal(accountId);
+            expect(entityId.contractId).to.be.null;
+        });
+
+        it("should leave accountId null when constructed with contractId", function () {
+            const contractId = new ContractId(1, 2, 3);
+            const entityId = new HookEntityId({ contractId });
+
+            expect(entityId.contractId).to.equal(contractId);
+            expect(entityId.accountId).to.be.null;
+        });
+
+        it("should leave contractId null when constructed with accountId", function () {
+            const accountId = new AccountId(1, 2, 3);
+            const entityId = new HookEntityId({ accountId });
+
+            expect(entityId.accountId).to.equal(accountId);
+            expect(entityId.contractId).to.be.null;
+        });
+
+        it("should let contractId win when both are passed to constructor", function () {
+            const accountId = new AccountId(1, 2, 3);
+            const contractId = new ContractId(4, 5, 6);
+            const entityId = new HookEntityId({ accountId, contractId });
+
+            expect(entityId.contractId).to.equal(contractId);
+            expect(entityId.accountId).to.be.null;
+        });
+
+        it("should allow toggling between accountId and contractId", function () {
+            const accountId = new AccountId(1, 2, 3);
+            const contractId = new ContractId(4, 5, 6);
+            const entityId = new HookEntityId();
+
+            entityId.setAccountId(accountId);
+            expect(entityId.accountId).to.equal(accountId);
+            expect(entityId.contractId).to.be.null;
+
+            entityId.setContractId(contractId);
+            expect(entityId.contractId).to.equal(contractId);
+            expect(entityId.accountId).to.be.null;
+
+            entityId.setAccountId(accountId);
+            expect(entityId.accountId).to.equal(accountId);
+            expect(entityId.contractId).to.be.null;
+        });
+    });
+
     describe("getter", function () {
         it("should get accountId using getter", function () {
             const accountId = new AccountId(10, 20, 30);
@@ -99,6 +232,29 @@ describe("HookEntityId", function () {
             const entityId = new HookEntityId();
 
             expect(entityId.accountId).to.be.null;
+        });
+
+        it("should get contractId using getter", function () {
+            const contractId = new ContractId(10, 20, 30);
+            const entityId = new HookEntityId({ contractId });
+
+            expect(entityId.contractId).to.equal(contractId);
+        });
+
+        it("should return null for unset contractId", function () {
+            const entityId = new HookEntityId();
+
+            expect(entityId.contractId).to.be.null;
+        });
+
+        it("should get updated contractId after setter is called", function () {
+            const initialId = new ContractId(1, 1, 1);
+            const entityId = new HookEntityId({ contractId: initialId });
+
+            const newId = new ContractId(2, 2, 2);
+            entityId.setContractId(newId);
+
+            expect(entityId.contractId).to.equal(newId);
         });
 
         it("should get updated accountId after setter is called", function () {
@@ -141,6 +297,26 @@ describe("HookEntityId", function () {
             expect(proto.accountId.shardNum.toNumber()).to.equal(0);
             expect(proto.accountId.realmNum.toNumber()).to.equal(0);
             expect(proto.accountId.accountNum.toNumber()).to.equal(0);
+        });
+
+        it("should convert to protobuf with contractId", function () {
+            const contractId = new ContractId(3, 4, 5);
+            const entityId = new HookEntityId({ contractId });
+
+            const proto = entityId._toProtobuf();
+
+            expect(proto.contractId).to.not.be.null;
+            expect(proto.contractId).to.deep.equal(contractId._toProtobuf());
+            expect(proto.accountId).to.be.null;
+        });
+
+        it("should convert to protobuf with both null", function () {
+            const entityId = new HookEntityId();
+
+            const proto = entityId._toProtobuf();
+
+            expect(proto.accountId).to.be.null;
+            expect(proto.contractId).to.be.null;
         });
 
         it("should produce valid protobuf structure", function () {
@@ -187,6 +363,43 @@ describe("HookEntityId", function () {
             expect(entityId.accountId).to.be.null;
         });
 
+        it("should create instance from protobuf with contractId", function () {
+            const contractId = new ContractId(11, 12, 13);
+            const proto = {
+                contractId: contractId._toProtobuf(),
+            };
+
+            const entityId = HookEntityId._fromProtobuf(proto);
+
+            expect(entityId).to.be.instanceOf(HookEntityId);
+            expect(entityId.contractId.toString()).to.equal("11.12.13");
+            expect(entityId.accountId).to.be.null;
+        });
+
+        it("should create instance from protobuf with null contractId", function () {
+            const proto = {
+                contractId: null,
+            };
+
+            const entityId = HookEntityId._fromProtobuf(proto);
+
+            expect(entityId).to.be.instanceOf(HookEntityId);
+            expect(entityId.contractId).to.be.null;
+        });
+
+        it("should preserve ContractId properties from protobuf", function () {
+            const contractId = new ContractId(99, 88, 77);
+            const proto = {
+                contractId: contractId._toProtobuf(),
+            };
+
+            const entityId = HookEntityId._fromProtobuf(proto);
+
+            expect(entityId.contractId.shard.toNumber()).to.equal(99);
+            expect(entityId.contractId.realm.toNumber()).to.equal(88);
+            expect(entityId.contractId.num.toNumber()).to.equal(77);
+        });
+
         it("should preserve AccountId properties from protobuf", function () {
             const accountId = new AccountId(99, 88, 77);
             const proto = {
@@ -213,6 +426,20 @@ describe("HookEntityId", function () {
             expect(restored.accountId.toString()).to.equal(
                 original.accountId.toString(),
             );
+        });
+
+        it("should maintain contractId data through protobuf round-trip", function () {
+            const original = new HookEntityId({
+                contractId: new ContractId(15, 25, 35),
+            });
+
+            const proto = original._toProtobuf();
+            const restored = HookEntityId._fromProtobuf(proto);
+
+            expect(restored.contractId.toString()).to.equal(
+                original.contractId.toString(),
+            );
+            expect(restored.accountId).to.be.null;
         });
 
         it("should handle empty instance round-trip", function () {
@@ -246,6 +473,14 @@ describe("HookEntityId", function () {
             const entityId = new HookEntityId().setAccountId(accountId);
 
             expect(entityId.accountId).to.equal(accountId);
+        });
+
+        it("should support method chaining with setContractId", function () {
+            const contractId = new ContractId(11, 12, 13);
+
+            const entityId = new HookEntityId().setContractId(contractId);
+
+            expect(entityId.contractId).to.equal(contractId);
         });
 
         it("should support multiple setter calls", function () {
@@ -289,6 +524,24 @@ describe("HookEntityId", function () {
             expect(accountId.toString()).to.equal(originalString);
         });
 
+        it("should handle large contract numbers", function () {
+            const contractId = new ContractId(0, 0, 98765);
+            const entityId = new HookEntityId({ contractId });
+
+            expect(entityId.contractId.toString()).to.equal("0.0.98765");
+        });
+
+        it("should handle ContractId with EVM address", function () {
+            const contractId = ContractId.fromEvmAddress(
+                0,
+                0,
+                "0x0000000000000000000000000000000000001234",
+            );
+            const entityId = new HookEntityId({ contractId });
+
+            expect(entityId.contractId).to.equal(contractId);
+        });
+
         it("should handle AccountId created from different methods", function () {
             const fromNew = new AccountId(1, 2, 3);
             const fromString = AccountId.fromString("1.2.3");
@@ -298,6 +551,37 @@ describe("HookEntityId", function () {
 
             expect(entityId1.accountId.toString()).to.equal(
                 entityId2.accountId.toString(),
+            );
+        });
+    });
+
+    describe("integration with ContractId", function () {
+        it("should work with ContractId.fromString", function () {
+            const contractId = ContractId.fromString("10.20.30");
+            const entityId = new HookEntityId({ contractId });
+
+            const proto = entityId._toProtobuf();
+
+            expect(proto.contractId).to.deep.equal(contractId._toProtobuf());
+        });
+
+        it("should preserve ContractId properties", function () {
+            const contractId = new ContractId(100, 200, 300);
+            const entityId = new HookEntityId({ contractId });
+
+            expect(entityId.contractId.shard.toNumber()).to.equal(100);
+            expect(entityId.contractId.realm.toNumber()).to.equal(200);
+            expect(entityId.contractId.num.toNumber()).to.equal(300);
+        });
+
+        it("should handle ContractId equals comparison", function () {
+            const contractId1 = new ContractId(5, 6, 7);
+            const contractId2 = new ContractId(5, 6, 7);
+
+            const entityId = new HookEntityId({ contractId: contractId1 });
+
+            expect(entityId.contractId.toString()).to.equal(
+                contractId2.toString(),
             );
         });
     });

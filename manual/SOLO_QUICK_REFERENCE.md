@@ -3,6 +3,12 @@
 > Solo is supported on macOS/Linux (Windows via WSL2).
 > RAM: 12 GB minimum (single node), 24 GB recommended for dual-node DAB tests.
 
+```bash
+npm install -g @hashgraph/solo@latest
+```
+
+Use the global `solo` CLI for all commands in this guide.
+
 ## Core Commands
 
 ```bash
@@ -48,6 +54,7 @@ Expected timing:
 ```bash
 # One-time (or after teardown)
 task install
+npm install -g @hashgraph/solo@latest
 task solo:setup
 
 # During development

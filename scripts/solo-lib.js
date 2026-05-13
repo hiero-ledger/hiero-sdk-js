@@ -14,6 +14,8 @@ export const SOLO_CLUSTER_NAME = "solo-cluster";
 export const SOLO_NAMESPACE = "solo";
 export const SOLO_CLUSTER_SETUP_NAMESPACE = "solo-cluster-setup";
 export const SOLO_DEPLOYMENT = "solo-deployment";
+export const SOLO_GLOBAL_INSTALL_COMMAND =
+    "npm install -g @hashgraph/solo@latest";
 
 const __filename = fileURLToPath(import.meta.url);
 export const SCRIPT_DIR = path.dirname(__filename);
@@ -128,6 +130,10 @@ export async function runCommand(command, args = [], options = {}) {
     });
 }
 
+export async function runSoloCommand(args = [], options = {}) {
+    return await runCommand("solo", args, options);
+}
+
 export function spawnBackgroundCommand(command, args = [], options = {}) {
     const { cwd = PROJECT_ROOT, env = process.env } = options;
 
@@ -194,7 +200,7 @@ export async function clusterExists(clusterName = SOLO_CLUSTER_NAME) {
 }
 
 export async function soloInstalled() {
-    const result = await runCommand("npx", ["solo", "--version"], {
+    const result = await runSoloCommand(["--version"], {
         allowFailure: true,
         captureOutput: true,
     });
@@ -515,10 +521,8 @@ export async function createTestAccount({
     );
 
     try {
-        const createResult = await runCommand(
-            "npx",
+        const createResult = await runSoloCommand(
             [
-                "solo",
                 "ledger",
                 "account",
                 "create",
@@ -584,8 +588,7 @@ export async function createTestAccount({
         }
 
         logger.info(`Funding account with ${hbarAmount} HBAR...`);
-        await runCommand("npx", [
-            "solo",
+        await runSoloCommand([
             "ledger",
             "account",
             "update",
