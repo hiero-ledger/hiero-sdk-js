@@ -294,9 +294,7 @@ describe("NodeChannel", function () {
             expect(err).to.be.instanceOf(GrpcServicesError);
             expect(err.name).to.equal("GrpcServiceError");
             expect(err.status).to.equal(GrpcStatus.Timeout);
-            expect(err.message).to.include(
-                GrpcStatus.Timeout.toString(),
-            );
+            expect(err.message).to.include(GrpcStatus.Timeout.toString());
             expect(err.message).to.include(
                 String(GrpcStatus.Timeout.valueOf()),
             );
@@ -349,9 +347,7 @@ describe("NodeChannel", function () {
                 cb(null);
             });
 
-            const grpcError = new Error(
-                GrpcStatus.Unavailable.toString(),
-            );
+            const grpcError = new Error(GrpcStatus.Unavailable.toString());
             grpcError.code = GrpcStatus.Unavailable.valueOf();
             grpcError.details = `node is ${GrpcStatus.Unavailable.toString()}`;
             mockMakeUnaryRequest.mockImplementation(
@@ -503,9 +499,7 @@ describe("NodeChannel", function () {
 
         it("should reject when socket emits error", async function () {
             const channel = new NodeChannel("10.0.0.1:50212");
-            const socketError = new GrpcServicesError(
-                GrpcStatus.Unavailable,
-            );
+            const socketError = new Error("Connection refused");
 
             const mockSocket = {
                 on: vi.fn(function (event, handler) {
@@ -521,9 +515,9 @@ describe("NodeChannel", function () {
                 return mockSocket;
             });
 
-            await expect(
-                channel._retrieveCertificate(),
-            ).rejects.toThrow(socketError.message);
+            await expect(channel._retrieveCertificate()).rejects.toThrow(
+                "Connection refused",
+            );
         });
     });
 
