@@ -24,7 +24,7 @@ import {
     ContractExecuteTransaction,
 } from "@hiero-ledger/sdk";
 
-import ecrecoverCaller from "./ecrecover_caller.json" with { type: "json" };
+import ecrecoverCaller from "../ecrecover_caller.json" with { type: "json" };
 
 dotenv.config();
 
