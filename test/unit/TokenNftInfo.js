@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import TokenNftInfo from "../../src/token/TokenNftInfo.js";
 import { Long } from "../../src/index.js";
 
