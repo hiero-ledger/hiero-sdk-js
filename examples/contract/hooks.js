@@ -1,5 +1,5 @@
 import fs from "fs";
-import { decode } from "../src/encoding/hex.js";
+import { decode } from "../../src/encoding/hex.js";
 import {
     ContractCreateTransaction,
     ContractUpdateTransaction,

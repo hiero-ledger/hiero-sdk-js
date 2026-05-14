@@ -1,4 +1,4 @@
-import { decode } from "../src/encoding/hex.js";
+import { decode } from "../../src/encoding/hex.js";
 import fs from "fs";
 import {
     AccountCreateTransaction,
