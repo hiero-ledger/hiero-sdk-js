@@ -485,16 +485,13 @@ describe("AccountInfoMocking", function () {
     });
 
     it("should timeout if gRPC deadline is reached", async function () {
+        const neverResolvingResponse = {
+            // Keep the RPC pending so the request-level deadline deterministically wins.
+            call: () => new Promise(() => {}),
+        };
+
         ({ client, servers } = await Mocker.withResponses([
-            [
-                { error: UNAVAILABLE },
-                { error: UNAVAILABLE },
-                { error: UNAVAILABLE },
-                { error: UNAVAILABLE },
-                { error: UNAVAILABLE },
-                { error: UNAVAILABLE },
-                { error: UNAVAILABLE },
-            ],
+            [neverResolvingResponse],
         ]));
 
         let err = false;
@@ -502,6 +499,8 @@ describe("AccountInfoMocking", function () {
         try {
             await new AccountInfoQuery()
                 .setAccountId("0.0.3")
+                .setQueryPayment(Hbar.fromTinybars(10))
+                .setMaxAttempts(1)
                 .setGrpcDeadline(1)
                 .execute(client);
         } catch (error) {
