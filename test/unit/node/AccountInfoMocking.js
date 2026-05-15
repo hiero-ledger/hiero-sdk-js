@@ -485,14 +485,14 @@ describe("AccountInfoMocking", function () {
     });
 
     it("should timeout if gRPC deadline is reached", async function () {
-        const neverResolvingResponse = {
-            // Keep the RPC pending so the request-level deadline deterministically wins.
-            call: () => new Promise(() => {}),
+        const slowResponse = {
+            call: async () => {
+                await new Promise((resolve) => setTimeout(resolve, 100));
+                return ACCOUNT_INFO_QUERY_RESPONSE;
+            },
         };
 
-        ({ client, servers } = await Mocker.withResponses([
-            [neverResolvingResponse],
-        ]));
+        ({ client, servers } = await Mocker.withResponses([[slowResponse]]));
 
         let err = false;
 
