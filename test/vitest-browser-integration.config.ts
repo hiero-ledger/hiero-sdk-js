@@ -21,6 +21,7 @@ export default defineConfig({
         environment: "jsdom",
         watch: false,
         globals: true,
+        maxWorkers: 4,
         browser: {
             screenshotFailures: false,
             headless: true,

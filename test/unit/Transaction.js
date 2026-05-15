@@ -169,6 +169,54 @@ describe("Transaction", function () {
         );
     });
 
+    describe("setHighVolume (HIP-1313 high-volume entity creation)", function () {
+        const nodeAccountId = AccountId.fromString("0.0.3");
+        const payerId = AccountId.fromString("0.0.1004");
+
+        it("setHighVolume(true) sets highVolume in the transaction body", function () {
+            const tx = new AccountCreateTransaction()
+                .setKey(PrivateKey.generateED25519().publicKey)
+                .setNodeAccountIds([nodeAccountId])
+                .setTransactionId(TransactionId.generate(payerId))
+                .setHighVolume(true);
+            const body = tx._makeTransactionBody(nodeAccountId);
+            expect(body.highVolume).to.equal(true);
+        });
+
+        it("setHighVolume(false) omits highVolume from the transaction body", function () {
+            const tx = new AccountCreateTransaction()
+                .setKey(PrivateKey.generateED25519().publicKey)
+                .setNodeAccountIds([nodeAccountId])
+                .setTransactionId(TransactionId.generate(payerId))
+                .setHighVolume(false);
+            const body = tx._makeTransactionBody(nodeAccountId);
+            expect(body.highVolume).to.equal(null);
+        });
+
+        it("getter highVolume returns the set value", function () {
+            const tx = new AccountCreateTransaction()
+                .setKey(PrivateKey.generateED25519().publicKey)
+                .setHighVolume(true);
+            expect(tx.highVolume).to.equal(true);
+            tx.setHighVolume(false);
+            expect(tx.highVolume).to.equal(false);
+        });
+
+        it("highVolume is preserved after toBytes/fromBytes round-trip", async function () {
+            const key = PrivateKey.generateED25519();
+            const tx = new AccountCreateTransaction()
+                .setKey(key.publicKey)
+                .setNodeAccountIds([nodeAccountId])
+                .setTransactionId(TransactionId.generate(payerId))
+                .setHighVolume(true)
+                .freeze();
+            await tx.sign(key);
+            const bytes = tx.toBytes();
+            const decoded = Transaction.fromBytes(bytes);
+            expect(decoded.highVolume).to.equal(true);
+        });
+    });
+
     it("fromBytes fails when bodies differ", function () {
         const key1 = PrivateKey.fromStringDer(
             "302e020100300506032b657004220420a58d361e61756ee809686255fda09bacb846ea8aa589c67ac39cfbcf82dd511c",

@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
         with:
           egress-policy: audit
 
@@ -48,7 +48,7 @@ jobs:
           version: 3.35.1
 
       - name: Install PNPM
-        uses: step-security/action-setup@3d419c73e38e670dbffe349ffff26dd13c164640 # v4.2.0
+        uses: step-security/action-setup@0ad50dc56a23060fa78b14cfcf0677c4e14b42bc # v5.0.0
         with:
           version: 9.15.5
 
@@ -70,7 +70,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
         with:
           egress-policy: audit
 
@@ -85,7 +85,7 @@ jobs:
           version: 3.35.1
 
       - name: Install PNPM
-        uses: step-security/action-setup@3d419c73e38e670dbffe349ffff26dd13c164640 # v4.2.0
+        uses: step-security/action-setup@0ad50dc56a23060fa78b14cfcf0677c4e14b42bc # v5.0.0
         with:
           version: 9.15.5
 
@@ -106,12 +106,13 @@ jobs:
 
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@4d42a74e8e644a2753f3bb7a2afa429305375b14 # v0.17
+        uses: hiero-ledger/hiero-solo-action@692b186bd2e4c8d46b9deb1c067dc6ddcf0abcd7 # v0.17
         with:
           installMirrorNode: true
-          soloVersion: v0.65.0
-          hieroVersion: v0.72.0
-          mirrorNodeVersion: v0.142.0
+          soloVersion: v0.69.0
+          installBlockNode: true
+          hieroVersion: v0.73.0
+          mirrorNodeVersion: v0.153.0
           grpcProxyPort: 8080
 
       - name: Set Operator Account
@@ -158,7 +159,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
         with:
           egress-policy: audit
 
@@ -173,7 +174,7 @@ jobs:
           version: 3.35.1
 
       - name: Install PNPM
-        uses: step-security/action-setup@3d419c73e38e670dbffe349ffff26dd13c164640 # v4.2.0
+        uses: step-security/action-setup@0ad50dc56a23060fa78b14cfcf0677c4e14b42bc # v5.0.0
         with:
           version: 9.15.5
 
@@ -194,12 +195,12 @@ jobs:
 
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@4d42a74e8e644a2753f3bb7a2afa429305375b14 # 0.17.0
+        uses: hiero-ledger/hiero-solo-action@692b186bd2e4c8d46b9deb1c067dc6ddcf0abcd7 # 0.18.0
         with:
           installMirrorNode: true
-          soloVersion: v0.65.0
-          hieroVersion: v0.72.0
-          mirrorNodeVersion: v0.142.0
+          soloVersion: v0.69.0
+          hieroVersion: v0.73.0
+          mirrorNodeVersion: v0.153.0
           grpcProxyPort: 8080
           dualMode: true
           dualModeGrpcProxyPort: 8081
@@ -233,7 +234,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
+        uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
         with:
           egress-policy: audit
 
@@ -277,7 +278,7 @@ jobs:
         node: [ "22" ]
     steps:
       -  name: Harden Runner
-         uses: step-security/harden-runner@8d3c67de8e2fe68ef647c8db1e6a09f647780f40 # v2.19.0
+         uses: step-security/harden-runner@a5ad31d6a139d249332a2605b85202e8c0b78450 # v2.19.1
          with:
           egress-policy: audit
 
@@ -292,7 +293,7 @@ jobs:
           version: 3.35.1
 
       - name: Install PNPM
-        uses: step-security/action-setup@3d419c73e38e670dbffe349ffff26dd13c164640 # v4.2.0
+        uses: step-security/action-setup@0ad50dc56a23060fa78b14cfcf0677c4e14b42bc # v5.0.0
         with:
           version: 9.15.5
 
@@ -307,12 +308,13 @@ jobs:
 
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@4d42a74e8e644a2753f3bb7a2afa429305375b14 # v0.17
+        uses: hiero-ledger/hiero-solo-action@692b186bd2e4c8d46b9deb1c067dc6ddcf0abcd7 # v0.17
         with:
           installMirrorNode: true
-          soloVersion: v0.65.0
-          hieroVersion: v0.72.0
-          mirrorNodeVersion: v0.142.0
+          soloVersion: v0.69.0
+          installBlockNode: true
+          hieroVersion: v0.73.0
+          mirrorNodeVersion: v0.153.0
           grpcProxyPort: 8080
 
       - name: Set Operator Account

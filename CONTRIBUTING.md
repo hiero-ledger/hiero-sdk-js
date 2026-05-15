@@ -60,7 +60,7 @@ To run integration tests locally, you need to set up [Solo](https://solo.hiero.o
 - **Platform:** macOS or Linux only (Windows users must use WSL2)
 - **RAM:** Minimum 12 GB for single node, 24 GB for dual node (required for DAB tests)
 
-For complete system requirements, see the [official Solo documentation](https://solo.hiero.org/latest/docs/step-by-step-guide/#prerequisites).
+For complete system requirements, see the [official Solo documentation](https://solo.hiero.org/docs/simple-solo-setup/system-readiness/).
 
 1. **Install dependencies:**
    ```bash

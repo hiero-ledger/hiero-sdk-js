@@ -1,0 +1,151 @@
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package com.hedera.mirror.api.proto;
+option java_package = "com.hedera.mirror.api.proto";
+
+import "services_transaction.proto";
+
+/**
+ * Determines whether the fee estimation depends on network state (e.g., whether an account exists or requires creation
+ * during a transfer).
+ */
+enum EstimateMode {
+  /*
+   * Estimate based on intrinsic properties plus the latest known state (e.g., check if accounts
+   * exist, load token associations). This is the default if no mode is specified.
+   */
+  STATE = 0;
+
+  /*
+   * Estimate based solely on the transaction's inherent properties (e.g., size, signatures, keys). Ignores
+   * state-dependent factors.
+   */
+  INTRINSIC = 1;
+}
+
+/**
+ * Request object for users, SDKs, and tools to query expected fees without
+ * submitting transactions to the network.
+ */
+message FeeEstimateQuery {
+  /**
+   * The mode of fee estimation. Defaults to `STATE` if omitted.
+   */
+  EstimateMode mode = 1;
+
+  /**
+   * The raw HAPI transaction that should be estimated.
+   */
+  .proto.Transaction transaction = 2;
+}
+
+/**
+ * The response containing the estimated transaction fees.
+ */
+message FeeEstimateResponse {
+  /**
+   * The mode that was used to calculate the fees.
+   */
+  EstimateMode mode = 1;
+
+  /**
+   * The network fee component which covers the cost of gossip, consensus,
+   * signature verifications, fee payment, and storage.
+   */
+  NetworkFee network = 2;
+
+  /**
+   * The node fee component which is to be paid to the node that submitted the
+   * transaction to the network. This fee exists to compensate the node for the
+   * work it performed to pre-check the transaction before submitting it, and
+   * incentivizes the node to accept new transactions from users.
+   */
+  FeeEstimate node = 3;
+
+  /**
+   * An array of strings for any caveats (e.g., ["Fallback to worst-case due to missing state"]).
+   */
+  repeated string notes = 4;
+
+  /**
+   * The service fee component which covers execution costs, state saved in the
+   * Merkle tree, and additional costs to the blockchain storage.
+   */
+  FeeEstimate service = 5;
+
+  /**
+   * The sum of the network, node, and service subtotals in tinycents.
+   */
+  uint64 total = 6;
+}
+
+/**
+ * The fee estimate for the network component. Includes the base fee and any
+ * extras associated with it.
+ */
+message FeeEstimate {
+  /**
+   * The base fee price, in tinycents.
+   */
+  uint64 base = 1;
+
+  /**
+   * The extra fees that apply for this fee component.
+   */
+  repeated FeeExtra extras = 2;
+}
+
+/**
+ * The extra fee charged for the transaction.
+ */
+message FeeExtra {
+  /**
+   * The charged count of items as calculated by `max(0, count - included)`.
+   */
+  uint32 charged = 1;
+
+  /**
+   * The actual count of items received.
+   */
+  uint32 count = 2;
+
+  /**
+   * The fee price per unit in tinycents.
+   */
+  uint64 fee_per_unit = 3;
+
+  /**
+   * The count of this "extra" that is included for free.
+   */
+  uint32 included = 4;
+
+  /**
+   * The unique name of this extra fee as defined in the fee schedule.
+   */
+  string name = 5;
+
+  /**
+   * The subtotal in tinycents for this extra fee. Calculated by multiplying the
+   * charged count by the fee_per_unit.
+   */
+  uint64 subtotal = 6;
+}
+
+/**
+ * The network fee component which covers the cost of gossip, consensus,
+ * signature verifications, fee payment, and storage.
+ */
+message NetworkFee {
+  /**
+   * Multiplied by the node fee to determine the total network fee.
+   */
+  uint32 multiplier = 1;
+
+  /**
+   * The subtotal in tinycents for the network fee component which is calculated by
+   * multiplying the node subtotal by the network multiplier.
+   */
+  uint64 subtotal = 2;
+}
