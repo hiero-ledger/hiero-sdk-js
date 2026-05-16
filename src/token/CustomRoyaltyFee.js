@@ -13,7 +13,7 @@ import CustomFixedFee from "./CustomFixedFee.js";
  * @typedef {import("@hiero-ledger/proto").proto.IFixedFee} HieroProto.proto.IFixedFee
  */
 
-export default class CustomRoyalyFee extends CustomFee {
+export default class CustomRoyaltyFee extends CustomFee {
     /**
      * @param {object} props
      * @param {AccountId | string} [props.feeCollectorAccountId]
@@ -62,7 +62,7 @@ export default class CustomRoyalyFee extends CustomFee {
 
     /**
      * @param {CustomFixedFee} fallbackFee
-     * @returns {CustomRoyalyFee}
+     * @returns {CustomRoyaltyFee}
      */
     setFallbackFee(fallbackFee) {
         this._fallbackFee = fallbackFee;
@@ -78,7 +78,7 @@ export default class CustomRoyalyFee extends CustomFee {
 
     /**
      * @param {Long | number} numerator
-     * @returns {CustomRoyalyFee}
+     * @returns {CustomRoyaltyFee}
      */
     setNumerator(numerator) {
         this._numerator =
@@ -97,7 +97,7 @@ export default class CustomRoyalyFee extends CustomFee {
 
     /**
      * @param {Long | number} denominator
-     * @returns {CustomRoyalyFee}
+     * @returns {CustomRoyaltyFee}
      */
     setDenominator(denominator) {
         this._denominator =
@@ -122,7 +122,7 @@ export default class CustomRoyalyFee extends CustomFee {
             fee.exchangeValueFraction
         );
 
-        return new CustomRoyalyFee({
+        return new CustomRoyaltyFee({
             feeCollectorAccountId:
                 info.feeCollectorAccountId != null
                     ? AccountId._fromProtobuf(info.feeCollectorAccountId)
