@@ -211,7 +211,7 @@ For contributors and developers who want to run integration tests locally, we pr
 > -   Single node setup: Minimum **12 GB RAM**
 > -   Dual node setup: Minimum **24 GB RAM** (required for dynamic address book tests)
 >
-> For complete system requirements, see the [official Solo documentation](https://solo.hiero.org/latest/docs/step-by-step-guide/#prerequisites).
+> For complete system requirements, see the [official Solo documentation](https://solo.hiero.org/docs/simple-solo-setup/system-readiness/).
 
 ### Quick Setup
 

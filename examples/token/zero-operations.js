@@ -1,8 +1,8 @@
 // This example is for HIP-564 described here: https://hips.hedera.com/hip/hip-564
 
 import * as hashgraph from "@hiero-ledger/sdk";
-import ContractHelper from "./ContractHelper.js";
-import contract from "./precompile-example/ZeroTokenOperations.json" with { type: "json" };
+import ContractHelper from "../ContractHelper.js";
+import contract from "../precompile-example/ZeroTokenOperations.json" with { type: "json" };
 import dotenv from "dotenv";
 
 dotenv.config();
