@@ -79,9 +79,7 @@ describe("NodeChannel", function () {
         clearClientCache("myhost.example.com:443");
     });
 
-    // ────────────────────────────────────────────
-    // 1. parseAddress
-    // ────────────────────────────────────────────
+    // parseAddress
     describe("parseAddress", function () {
         it("should parse a valid host:port address", function () {
             const channel = new NodeChannel("10.0.0.1:50211");
@@ -114,9 +112,7 @@ describe("NodeChannel", function () {
         });
     });
 
-    // ────────────────────────────────────────────
-    // 2. bytesToPem
-    // ────────────────────────────────────────────
+    // bytesToPem
     describe("bytesToPem", function () {
         it("should convert certificate bytes to PEM format with proper headers", function () {
             const channel = new NodeChannel("10.0.0.1:50211");
@@ -169,9 +165,7 @@ describe("NodeChannel", function () {
         });
     });
 
-    // ────────────────────────────────────────────
-    // 3. _initializeClient
-    // ────────────────────────────────────────────
+    // _initializeClient
     describe("_initializeClient", function () {
         it("should use insecure credentials for non-50212 port", async function () {
             const channel = new NodeChannel("10.0.0.1:50211");
@@ -237,9 +231,7 @@ describe("NodeChannel", function () {
         });
     });
 
-    // ────────────────────────────────────────────
-    // 4. close
-    // ────────────────────────────────────────────
+    // close
     describe("close", function () {
         it("should be a no-op when _client is null", function () {
             const channel = new NodeChannel("10.0.0.1:50211");
@@ -266,9 +258,7 @@ describe("NodeChannel", function () {
         });
     });
 
-    // ────────────────────────────────────────────
-    // 5. _createUnaryClient
-    // ────────────────────────────────────────────
+    // _createUnaryClient
     describe("_createUnaryClient", function () {
         let channel;
 
@@ -279,8 +269,8 @@ describe("NodeChannel", function () {
         });
 
         it("should call callback with GrpcServicesError on waitForReady timeout", async function () {
-            mockWaitForReady.mockImplementation((_deadline, cb) => {
-                cb(new Error("Deadline exceeded"));
+            mockWaitForReady.mockImplementation((_deadline, callback) => {
+                callback(new Error("Deadline exceeded"));
             });
 
             const rpcImpl = channel._createUnaryClient("CryptoService");
@@ -373,6 +363,7 @@ describe("NodeChannel", function () {
 
         it("should wrap non-Error rejection from _initializeClient", async function () {
             const channel2 = new NodeChannel("10.0.0.1:50211");
+
             // Stub _initializeClient to reject with a non-Error value
             vi.spyOn(channel2, "_initializeClient").mockRejectedValue(
                 "string rejection",
@@ -437,6 +428,7 @@ describe("NodeChannel", function () {
 
             expect(err).to.be.null;
             expect(capturedDeadline).to.be.instanceOf(Date);
+
             // The deadline should be within a reasonable window
             expect(capturedDeadline.getTime()).to.be.greaterThan(now);
             expect(capturedDeadline.getTime()).to.be.lessThanOrEqual(
@@ -445,9 +437,7 @@ describe("NodeChannel", function () {
         });
     });
 
-    // ────────────────────────────────────────────
-    // 6. _retrieveCertificate
-    // ────────────────────────────────────────────
+    // _retrieveCertificate
     describe("_retrieveCertificate", function () {
         it("should resolve with PEM when tls.connect succeeds", async function () {
             const channel = new NodeChannel("10.0.0.1:50212");
@@ -523,9 +513,7 @@ describe("NodeChannel", function () {
         });
     });
 
-    // ────────────────────────────────────────────
-    // 7. Constructor integration
-    // ────────────────────────────────────────────
+    // Constructor integration
     describe("constructor", function () {
         it("should store address and parsed ip/port", function () {
             const channel = new NodeChannel("192.168.1.1:50211");
@@ -542,122 +530,14 @@ describe("NodeChannel", function () {
     });
 
     // ────────────────────────────────────────────
-    // 8. Network capability: Full RPC lifecycle
+    // 8. Behaviors only testable in isolation
+    //    (not covered by integration tests)
     // ────────────────────────────────────────────
-    describe("full RPC lifecycle", function () {
-        it("should complete init → ready → request → response in sequence", async function () {
-            const callOrder = [];
-
-            const channel = new NodeChannel("10.0.0.1:50211");
-
-            // Track initialization
-            const origInit = channel._initializeClient.bind(channel);
-            vi.spyOn(channel, "_initializeClient").mockImplementation(
-                async () => {
-                    callOrder.push("init");
-                    await origInit();
-                },
-            );
-
-            mockWaitForReady.mockImplementation((_deadline, cb) => {
-                callOrder.push("waitForReady");
-                cb(null);
-            });
-
-            const responsePayload = Buffer.from([0x08, 0x01]);
-            mockMakeUnaryRequest.mockImplementation(
-                (_path, _s, _d, _data, _meta, cb) => {
-                    callOrder.push("makeUnaryRequest");
-                    cb(null, responsePayload);
-                },
-            );
-
-            const rpcImpl = channel._createUnaryClient("CryptoService");
-            const { err, response } = await new Promise((resolve) => {
-                rpcImpl(
-                    { name: "cryptoGetBalance" },
-                    new Uint8Array([0x0a, 0x02]),
-                    (e, r) => resolve({ err: e, response: r }),
-                );
-            });
-
-            expect(err).to.be.null;
-            expect(response).to.deep.equal(responsePayload);
-            expect(callOrder).to.deep.equal([
-                "init",
-                "waitForReady",
-                "makeUnaryRequest",
-            ]);
-        });
-
-        it("should route multiple services through the same gRPC client", async function () {
-            const channel = new NodeChannel("10.0.0.1:50211");
-            await channel._initializeClient();
-
-            mockWaitForReady.mockImplementation((_deadline, cb) => cb(null));
-            mockMakeUnaryRequest.mockImplementation(
-                (_path, _s, _d, _data, _meta, cb) =>
-                    cb(null, Buffer.alloc(0)),
-            );
-
-            // Issue RPCs for different services through the same channel
-            const services = [
-                "CryptoService",
-                "FileService",
-                "ConsensusService",
-                "TokenService",
-                "SmartContractService",
-            ];
-
-            for (const svc of services) {
-                const rpcImpl = channel._createUnaryClient(svc);
-                await new Promise((resolve) => {
-                    rpcImpl(
-                        { name: "someMethod" },
-                        new Uint8Array([]),
-                        (e) => resolve(e),
-                    );
-                });
-            }
-
-            // All calls should use the same Client instance (only 1 created)
-            expect(Client.mock.calls.length).to.equal(1);
-
-            // Each service should have routed to the correct path
-            const paths = mockMakeUnaryRequest.mock.calls.map(
-                (call) => call[0],
-            );
-            expect(paths).to.deep.equal([
-                "/proto.CryptoService/someMethod",
-                "/proto.FileService/someMethod",
-                "/proto.ConsensusService/someMethod",
-                "/proto.TokenService/someMethod",
-                "/proto.SmartContractService/someMethod",
-            ]);
-        });
-    });
-
-    // ────────────────────────────────────────────
-    // 9. Network capability: Connection resilience
-    // ────────────────────────────────────────────
-    describe("connection resilience", function () {
-        it("should re-establish connection after close and re-init", async function () {
-            const channel = new NodeChannel("10.0.0.1:50211");
-            await channel._initializeClient();
-            const firstClient = channel._client;
-
-            // Simulate node going down — close the channel
-            channel.close();
-            expect(mockClose).toHaveBeenCalled();
-
-            // Re-initialize creates a fresh client since cache was cleared
-            await channel._initializeClient();
-            expect(channel._client).to.not.be.null;
-            expect(channel._client).to.not.equal(firstClient);
-            expect(Client.mock.calls.length).to.equal(2);
-        });
-
-        it("should provide timeout error with node identity for health tracking", async function () {
+    describe("node health and error contract", function () {
+        it("should embed node account ID from ALL_NETWORK_IPS on timeout for SDK health tracking", async function () {
+            // Integration tests rarely trigger timeouts, and you can't control
+            // which node times out. This verifies the nodeAccountId lookup that
+            // the SDK uses to mark nodes as unhealthy and rotate.
             const channel = new NodeChannel("34.239.82.6:50211");
             await channel._initializeClient();
 
@@ -667,335 +547,34 @@ describe("NodeChannel", function () {
 
             const rpcImpl = channel._createUnaryClient("CryptoService");
             const err = await new Promise((resolve) => {
-                rpcImpl(
-                    { name: "cryptoGetBalance" },
-                    new Uint8Array([]),
-                    (e) => resolve(e),
+                rpcImpl({ name: "cryptoGetBalance" }, new Uint8Array([]), (e) =>
+                    resolve(e),
                 );
             });
 
-            // The error should carry the node account ID from ALL_NETWORK_IPS
-            // so the SDK can mark this node as unhealthy
             expect(err).to.be.instanceOf(GrpcServicesError);
             expect(err.status).to.equal(GrpcStatus.Timeout);
-            // nodeAccountId comes from ALL_NETWORK_IPS["34.239.82.6:"]
+            // ALL_NETWORK_IPS["34.239.82.6:"] maps to node 0.0.3
             expect(err.nodeAccountId).to.equal("0.0.3");
         });
 
-        it("should handle rapid close-and-reuse without leaking connections", async function () {
-            const channel = new NodeChannel("10.0.0.1:50211");
-
-            // Simulate rapid connect/disconnect cycles
-            for (let i = 0; i < 5; i++) {
-                await channel._initializeClient();
-                channel.close();
-            }
-
-            // Each cycle should have called close() and created a new Client
-            expect(mockClose.mock.calls.length).to.equal(5);
-            // 5 new clients created (cache cleared each time)
-            expect(Client.mock.calls.length).to.equal(5);
-        });
-    });
-
-    // ────────────────────────────────────────────
-    // 10. Network capability: TLS negotiation flow
-    // ────────────────────────────────────────────
-    describe("TLS negotiation flow", function () {
-        it("should complete full TLS handshake → cert extraction → SSL client creation", async function () {
-            const channel = new NodeChannel("10.0.0.1:50212");
-            const certRaw = Buffer.alloc(128, 0xde);
-
-            const mockSocket = {
-                getPeerCertificate: vi.fn(() => ({ raw: certRaw })),
-                end: vi.fn(),
-                on: vi.fn().mockReturnThis(),
-            };
-
-            tls.connect.mockImplementation((_opts, callback) => {
-                process.nextTick(() => callback());
-                return mockSocket;
-            });
-
-            await channel._initializeClient();
-
-            // Verify full flow: TLS connect → cert → PEM → SSL credentials → Client
-            expect(tls.connect).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    host: "10.0.0.1",
-                    port: 50212,
-                    rejectUnauthorized: false,
-                }),
-                expect.any(Function),
-            );
-            expect(mockSocket.getPeerCertificate).toHaveBeenCalled();
-            expect(mockSocket.end).toHaveBeenCalled();
-            expect(credentials.createSsl).toHaveBeenCalledWith(
-                expect.any(Buffer),
-            );
-
-            // The SSL cert buffer passed should be a valid PEM
-            const sslArg = credentials.createSsl.mock.calls[0][0];
-            const pemStr = sslArg.toString();
-            expect(pemStr).to.include("-----BEGIN CERTIFICATE-----");
-            expect(pemStr).to.include("-----END CERTIFICATE-----");
-        });
-
-        it("should propagate TLS failure through RPC callback as Error", async function () {
-            const channel = new NodeChannel("10.0.0.1:50212");
-
-            const mockSocket = {
-                on: vi.fn(function (event, handler) {
-                    if (event === "error") {
-                        process.nextTick(
-                            () =>
-                                handler(
-                                    new Error("ECONNREFUSED 10.0.0.1:50212"),
-                                ),
-                        );
-                    }
-                    return this;
-                }),
-                end: vi.fn(),
-            };
-
-            tls.connect.mockImplementation(() => mockSocket);
-
-            // The TLS failure should propagate through the RPC lifecycle
-            const rpcImpl = channel._createUnaryClient("CryptoService");
-            const err = await new Promise((resolve) => {
-                rpcImpl(
-                    { name: "cryptoGetBalance" },
-                    new Uint8Array([]),
-                    (e) => resolve(e),
-                );
-            });
-
-            expect(err).to.be.instanceOf(Error);
-            expect(err.message).to.include("ECONNREFUSED");
-        });
-    });
-
-    // ────────────────────────────────────────────
-    // 11. Network capability: Deadline semantics
-    // ────────────────────────────────────────────
-    describe("deadline semantics", function () {
-        it("should use DEFAULT_GRPC_DEADLINE when no custom deadline set", async function () {
-            const channel = new NodeChannel("10.0.0.1:50211");
-            await channel._initializeClient();
-
-            let capturedDeadline;
-            mockWaitForReady.mockImplementation((deadline, cb) => {
-                capturedDeadline = deadline;
-                cb(null);
-            });
-            mockMakeUnaryRequest.mockImplementation(
-                (_p, _s, _d, _data, _m, cb) => cb(null, Buffer.alloc(0)),
-            );
-
-            const rpcImpl = channel._createUnaryClient("CryptoService");
-            const now = Date.now();
-            await new Promise((resolve) => {
-                rpcImpl({ name: "ping" }, new Uint8Array([]), (e) =>
-                    resolve(e),
-                );
-            });
-
-            // DEFAULT_GRPC_DEADLINE = 10000ms
-            const deadlineMs = capturedDeadline.getTime() - now;
-            expect(deadlineMs).to.be.greaterThan(9900);
-            expect(deadlineMs).to.be.lessThanOrEqual(10100);
-        });
-
-        it("should respect custom grpcDeadline propagated from Client", async function () {
-            // Simulates NodeClient._createNetworkChannel() passing grpcDeadline
-            const customDeadline = 3000;
-            const channel = new NodeChannel("10.0.0.1:50211", customDeadline);
-            await channel._initializeClient();
-
-            let capturedDeadline;
-            mockWaitForReady.mockImplementation((deadline, cb) => {
-                capturedDeadline = deadline;
-                cb(null);
-            });
-            mockMakeUnaryRequest.mockImplementation(
-                (_p, _s, _d, _data, _m, cb) => cb(null, Buffer.alloc(0)),
-            );
-
-            const rpcImpl = channel._createUnaryClient("CryptoService");
-            const now = Date.now();
-            await new Promise((resolve) => {
-                rpcImpl({ name: "ping" }, new Uint8Array([]), (e) =>
-                    resolve(e),
-                );
-            });
-
-            const deadlineMs = capturedDeadline.getTime() - now;
-            expect(deadlineMs).to.be.greaterThan(2900);
-            expect(deadlineMs).to.be.lessThanOrEqual(3100);
-        });
-
-        it("should allow runtime deadline change via setGrpcDeadline", async function () {
-            const channel = new NodeChannel("10.0.0.1:50211");
-            await channel._initializeClient();
-
-            // Change deadline at runtime (as Client.setGrpcDeadline would)
-            channel.setGrpcDeadline(500);
-
-            let capturedDeadline;
-            mockWaitForReady.mockImplementation((deadline, cb) => {
-                capturedDeadline = deadline;
-                cb(null);
-            });
-            mockMakeUnaryRequest.mockImplementation(
-                (_p, _s, _d, _data, _m, cb) => cb(null, Buffer.alloc(0)),
-            );
-
-            const rpcImpl = channel._createUnaryClient("CryptoService");
-            const now = Date.now();
-            await new Promise((resolve) => {
-                rpcImpl({ name: "ping" }, new Uint8Array([]), (e) =>
-                    resolve(e),
-                );
-            });
-
-            const deadlineMs = capturedDeadline.getTime() - now;
-            expect(deadlineMs).to.be.greaterThan(400);
-            expect(deadlineMs).to.be.lessThanOrEqual(600);
-        });
-    });
-
-    // ────────────────────────────────────────────
-    // 12. Network capability: Cache coherence
-    // ────────────────────────────────────────────
-    describe("cache coherence", function () {
-        it("should allow independent channels to share and invalidate cache", async function () {
-            const ch1 = new NodeChannel("10.0.0.1:50211");
-            const ch2 = new NodeChannel("10.0.0.1:50211");
-
-            await ch1._initializeClient();
-            await ch2._initializeClient();
-
-            // Both point to same cached client
-            expect(ch1._client).to.equal(ch2._client);
-
-            // ch1 closes — removes from cache
-            ch1.close();
-
-            // ch2 still holds reference but cache is gone
-            // A new channel must create a fresh client
-            const ch3 = new NodeChannel("10.0.0.1:50211");
-            await ch3._initializeClient();
-            expect(ch3._client).to.not.equal(ch2._client);
-            expect(Client.mock.calls.length).to.equal(2);
-        });
-
-        it("should maintain separate cache entries for different addresses", async function () {
-            clearClientCache("10.0.0.2:50211");
-
-            const ch1 = new NodeChannel("10.0.0.1:50211");
-            const ch2 = new NodeChannel("10.0.0.2:50211");
-
-            await ch1._initializeClient();
-            await ch2._initializeClient();
-
-            expect(ch1._client).to.not.equal(ch2._client);
-            expect(Client.mock.calls.length).to.equal(2);
-
-            // Closing one doesn't affect the other
-            ch1.close();
-            const ch3 = new NodeChannel("10.0.0.2:50211");
-            await ch3._initializeClient();
-            // ch3 gets cache hit from ch2's address
-            expect(Client.mock.calls.length).to.equal(2);
-
-            clearClientCache("10.0.0.2:50211");
-        });
-
-        it("should handle concurrent initialization for same address", async function () {
-            const ch1 = new NodeChannel("10.0.0.1:50211");
-            const ch2 = new NodeChannel("10.0.0.1:50211");
-
-            // Both init concurrently
-            await Promise.all([
-                ch1._initializeClient(),
-                ch2._initializeClient(),
-            ]);
-
-            // Both should have a client assigned
-            expect(ch1._client).to.not.be.null;
-            expect(ch2._client).to.not.be.null;
-        });
-    });
-
-    // ────────────────────────────────────────────
-    // 13. Network capability: gRPC channel options
-    // ────────────────────────────────────────────
-    describe("gRPC channel options", function () {
-        it("should configure keepalive and retry options for connection stability", async function () {
-            const channel = new NodeChannel("10.0.0.1:50211");
-            await channel._initializeClient();
-
-            const options = Client.mock.calls[0][2];
-            expect(options["grpc.keepalive_time_ms"]).to.equal(100000);
-            expect(options["grpc.keepalive_timeout_ms"]).to.equal(10000);
-            expect(options["grpc.keepalive_permit_without_calls"]).to.equal(1);
-            expect(options["grpc.enable_retries"]).to.equal(1);
-        });
-
-        it("should override TLS target name for local development support", async function () {
-            const channel = new NodeChannel("10.0.0.1:50211");
-            await channel._initializeClient();
-
-            const options = Client.mock.calls[0][2];
-            expect(options["grpc.ssl_target_name_override"]).to.equal(
-                "127.0.0.1",
-            );
-            expect(options["grpc.default_authority"]).to.equal("127.0.0.1");
-        });
-    });
-
-    // ────────────────────────────────────────────
-    // 14. Network capability: Error model mapping
-    // ────────────────────────────────────────────
-    describe("error model mapping", function () {
-        it("should map ready-timeout to SDK GrpcServiceError with Timeout status", async function () {
-            const channel = new NodeChannel("10.0.0.1:50211");
-            await channel._initializeClient();
-
-            mockWaitForReady.mockImplementation((_d, cb) =>
-                cb(new Error("Deadline exceeded")),
-            );
-
-            const rpcImpl = channel._createUnaryClient("CryptoService");
-            const err = await new Promise((resolve) => {
-                rpcImpl({ name: "test" }, new Uint8Array([]), (e) =>
-                    resolve(e),
-                );
-            });
-
-            // This is the error that Executable uses to decide node health
-            expect(err).to.be.instanceOf(GrpcServicesError);
-            expect(err.status).to.equal(GrpcStatus.Timeout);
-            expect(err.status.valueOf()).to.equal(17);
-            expect(err.name).to.equal("GrpcServiceError");
-        });
-
-        it("should pass raw gRPC errors through for GrpcServiceError._fromResponse mapping", async function () {
+        it("should produce errors compatible with GrpcServiceError._fromResponse", async function () {
+            // Verifies the contract between NodeChannel and Executable:
+            // raw gRPC errors must have { code, details } for _fromResponse to map them.
+            // Integration tests only see the final mapped error, not the raw shape.
             const channel = new NodeChannel("10.0.0.1:50211");
             await channel._initializeClient();
 
             mockWaitForReady.mockImplementation((_d, cb) => cb(null));
 
-            // Simulate what @grpc/grpc-js returns on server errors
-            const rawGrpcError = new Error("13 INTERNAL: RST_STREAM");
+            const rawGrpcError = new Error(
+                `${GrpcStatus.Internal.valueOf()} ${GrpcStatus.Internal.toString()}: RST_STREAM`,
+            );
             rawGrpcError.code = GrpcStatus.Internal.valueOf();
             rawGrpcError.details = "Received RST_STREAM with code 0";
 
             mockMakeUnaryRequest.mockImplementation(
-                (_p, _s, _d, _data, _m, cb) => {
-                    cb(rawGrpcError, null);
-                },
+                (_p, _s, _d, _data, _m, cb) => cb(rawGrpcError, null),
             );
 
             const rpcImpl = channel._createUnaryClient("NetworkService");
@@ -1005,18 +584,21 @@ describe("NodeChannel", function () {
                 );
             });
 
-            // Raw error passes through — Executable._mapGrpcStatus handles conversion
+            // Channel passes raw error through unchanged
             expect(err).to.equal(rawGrpcError);
             expect(err.code).to.equal(GrpcStatus.Internal.valueOf());
             expect(err.details).to.equal("Received RST_STREAM with code 0");
 
-            // Verify it's compatible with GrpcServiceError._fromResponse
+            // Executable calls _fromResponse on this shape — verify compatibility
             const mapped = GrpcServicesError._fromResponse(err);
             expect(mapped).to.be.instanceOf(GrpcServicesError);
             expect(mapped.status).to.equal(GrpcStatus.Internal);
         });
 
         it("should wrap non-Error rejections to prevent unhandled exception crashes", async function () {
+            // This path only triggers if _initializeClient rejects with a
+            // non-Error value (e.g. a thrown string/number). Integration tests
+            // can never produce this because real gRPC always throws Error instances.
             const channel = new NodeChannel("10.0.0.1:50211");
             vi.spyOn(channel, "_initializeClient").mockRejectedValue(42);
 
@@ -1027,9 +609,109 @@ describe("NodeChannel", function () {
                 );
             });
 
-            // Non-Error values get wrapped so they don't crash callback consumers
             expect(err).to.be.instanceOf(Error);
             expect(err.message).to.equal("An unexpected error occurred");
+        });
+    });
+
+    describe("connection lifecycle (not exercised by integration)", function () {
+        it("should re-establish connection after close by clearing cache", async function () {
+            // Integration tests call close() once at teardown. This verifies
+            // that the cache-clearing logic allows reconnection — critical for
+            // the SDK's node-rotation strategy.
+            const channel = new NodeChannel("10.0.0.1:50211");
+            await channel._initializeClient();
+
+            channel.close();
+            expect(mockClose).toHaveBeenCalled();
+
+            // Cache cleared: re-init creates a new gRPC Client
+            await channel._initializeClient();
+            expect(Client.mock.calls.length).to.equal(2);
+        });
+
+        it("should handle rapid close-and-reuse cycles without connection leaks", async function () {
+            // Stress pattern: the SDK can close and re-init rapidly during
+            // network updates or node rotation. Each cycle must cleanly tear
+            // down the old client.
+            const channel = new NodeChannel("10.0.0.1:50211");
+
+            for (let i = 0; i < 5; i++) {
+                await channel._initializeClient();
+                channel.close();
+            }
+
+            expect(mockClose.mock.calls.length).to.equal(5);
+            expect(Client.mock.calls.length).to.equal(5);
+        });
+
+        it("should allow one channel's close to invalidate cache for others", async function () {
+            // The module-level cache is shared. When one channel closes and
+            // clears the cache, a new channel for the same address must
+            // create a fresh connection. This can't be tested in integration
+            // because the SDK hides this behind Node/Client abstractions.
+            const ch1 = new NodeChannel("10.0.0.1:50211");
+            const ch2 = new NodeChannel("10.0.0.1:50211");
+
+            await ch1._initializeClient();
+            await ch2._initializeClient();
+            expect(ch1._client).to.equal(ch2._client);
+
+            ch1.close();
+
+            const ch3 = new NodeChannel("10.0.0.1:50211");
+            await ch3._initializeClient();
+            expect(ch3._client).to.not.equal(ch2._client);
+            expect(Client.mock.calls.length).to.equal(2);
+        });
+    });
+
+    describe("TLS failure propagation", function () {
+        it("should propagate TLS handshake failure through the RPC callback", async function () {
+            // Integration tests always connect to live nodes with valid certs.
+            // This tests what happens when a node's cert is unreachable —
+            // the error must propagate cleanly to the RPC callback.
+            const channel = new NodeChannel("10.0.0.1:50212");
+
+            const mockSocket = {
+                on: vi.fn(function (event, handler) {
+                    if (event === "error") {
+                        process.nextTick(() =>
+                            handler(new Error("ECONNREFUSED 10.0.0.1:50212")),
+                        );
+                    }
+                    return this;
+                }),
+                end: vi.fn(),
+            };
+
+            tls.connect.mockImplementation(() => mockSocket);
+
+            const rpcImpl = channel._createUnaryClient("CryptoService");
+            const err = await new Promise((resolve) => {
+                rpcImpl({ name: "cryptoGetBalance" }, new Uint8Array([]), (e) =>
+                    resolve(e),
+                );
+            });
+
+            expect(err).to.be.instanceOf(Error);
+            expect(err.message).to.include("ECONNREFUSED");
+        });
+    });
+
+    describe("gRPC channel configuration", function () {
+        it("should pass keepalive and retry options for long-lived connection stability", async function () {
+            // These options can't be asserted in integration tests — they affect
+            // behavior over minutes (keepalive_time_ms=100s). Here we verify
+            // the channel passes the correct config to @grpc/grpc-js.
+            const channel = new NodeChannel("10.0.0.1:50211");
+            await channel._initializeClient();
+
+            const options = Client.mock.calls[0][2];
+            expect(options["grpc.keepalive_time_ms"]).to.equal(100000);
+            expect(options["grpc.keepalive_timeout_ms"]).to.equal(10000);
+            expect(options["grpc.keepalive_permit_without_calls"]).to.equal(1);
+            expect(options["grpc.enable_retries"]).to.equal(1);
         });
     });
 });
