@@ -529,10 +529,11 @@ describe("NodeChannel", function () {
         });
     });
 
-    // ────────────────────────────────────────────
-    // 8. Behaviors only testable in isolation
-    //    (not covered by integration tests)
-    // ────────────────────────────────────────────
+    // Behaviors only testable in isolation
+    // Integration tests always connect to real nodes and can't trigger certain edge cases,
+    // or verify internal contracts. These unit tests cover those gaps to ensure robustness
+    // of NodeChannel's core logic.
+
     describe("node health and error contract", function () {
         it("should embed node account ID from ALL_NETWORK_IPS on timeout for SDK health tracking", async function () {
             // Integration tests rarely trigger timeouts, and you can't control
