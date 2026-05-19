@@ -2,7 +2,6 @@
 
 import { vi } from "vitest";
 
-// Mock @grpc/grpc-js before importing NodeChannel
 const {
     mockClose,
     mockWaitForReady,
@@ -43,7 +42,6 @@ vi.mock("@grpc/grpc-js", () => {
     };
 });
 
-// Mock tls module
 vi.mock("tls", () => ({
     default: {
         connect: vi.fn(),
