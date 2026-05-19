@@ -93,7 +93,7 @@ export function isBigNumber(variable) {
  * @returns {boolean}
  */
 export function isLong(variable) {
-    return isNonNull(variable) && variable instanceof Long;
+    return isNonNull(variable) && Long.isLong(variable);
 }
 
 /**
