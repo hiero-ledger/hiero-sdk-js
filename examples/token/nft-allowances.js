@@ -494,7 +494,7 @@ async function main() {
          * TOKEN MINTER FUNCTION
          * @param {string} CID
          * @param {string} nftTokenId
-         * @returns {Promise<import("./hts-nftP1-fee-create-mint-burn-associate-transfer").TransactionReceipt>}
+         * @returns {Promise<import("./nft-1-create-mint-burn-associate-transfer").TransactionReceipt>}
          */
         async function tokenMinterFcn(CID, nftTokenId) {
             const mintTx = new TokenMintTransaction()
