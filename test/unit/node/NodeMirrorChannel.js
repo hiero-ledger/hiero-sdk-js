@@ -44,9 +44,7 @@ describe("NodeMirrorChannel", function () {
         mockMakeServerStreamRequest.mockReturnValue(mockStream);
     });
 
-    // ────────────────────────────────────────────
-    // 1. Constructor — credential selection
-    // ────────────────────────────────────────────
+    // Constructor — credential selection
     describe("constructor", function () {
         it("should use SSL credentials for address ending in :50212", function () {
             new NodeMirrorChannel("mainnet-public.mirrornode.hedera.com:50212");
@@ -96,9 +94,7 @@ describe("NodeMirrorChannel", function () {
         });
     });
 
-    // ────────────────────────────────────────────
-    // 2. close()
-    // ────────────────────────────────────────────
+    // close
     describe("close", function () {
         it("should delegate to _client.close()", function () {
             const channel = new NodeMirrorChannel("localhost:50211");
@@ -108,9 +104,7 @@ describe("NodeMirrorChannel", function () {
         });
     });
 
-    // ────────────────────────────────────────────
-    // 3. makeServerStreamRequest
-    // ────────────────────────────────────────────
+    // makeServerStreamRequest
     describe("makeServerStreamRequest", function () {
         let channel;
 
@@ -147,8 +141,7 @@ describe("NodeMirrorChannel", function () {
                 vi.fn(),
             );
 
-            const passedBuffer =
-                mockMakeServerStreamRequest.mock.calls[0][3];
+            const passedBuffer = mockMakeServerStreamRequest.mock.calls[0][3];
             expect(Buffer.isBuffer(passedBuffer)).to.be.true;
             expect([...passedBuffer]).to.deep.equal([10, 20, 30]);
         });
@@ -274,4 +267,3 @@ describe("NodeMirrorChannel", function () {
         });
     });
 });
-
