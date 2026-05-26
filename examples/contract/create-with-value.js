@@ -13,7 +13,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Import the compiled contract
-import payableContract from "./payable.json" with { type: "json" };
+import payableContract from "../payable.json" with { type: "json" };
 
 async function main() {
     if (
