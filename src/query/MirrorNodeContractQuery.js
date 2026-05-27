@@ -1,4 +1,17 @@
 import ContractFunctionParameters from "../contract/ContractFunctionParameters.js";
+import {
+    isRetryableNetworkError,
+    readErrorDetail,
+} from "../network/mirrorRestRetry.js";
+
+/** @constant {number} Initial retry backoff in milliseconds. */
+const INITIAL_BACKOFF_MS = 250;
+
+/** @constant {number} Maximum retry attempts for transient mirror errors. */
+const MAX_ATTEMPTS = 5;
+
+/** @constant {number} Maximum retry backoff in milliseconds. */
+const MAX_BACKOFF_MS = 8000;
 
 /**
  * @typedef {import("../contract/ContractId").default} ContractId
@@ -236,22 +249,62 @@ export default class MirrorNodeContractQuery {
 
         const contractCallEndpointUrl = `${mirrorRestApiBaseUrl}${contractCallEndpointPath}`;
 
-        // eslint-disable-next-line n/no-unsupported-features/node-builtins
-        const response = await fetch(contractCallEndpointUrl, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(jsonPayload),
-        });
+        let lastError = null;
+        let backoff = INITIAL_BACKOFF_MS;
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+        for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+            try {
+                // eslint-disable-next-line n/no-unsupported-features/node-builtins
+                const response = await fetch(contractCallEndpointUrl, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(jsonPayload),
+                });
+
+                if (response.ok) {
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                    const data = /** @type {MirrorNodeResponse} */ (
+                        await response.json()
+                    );
+                    return data;
+                }
+
+                const errorDetail = await readErrorDetail(response);
+
+                if (
+                    response.status === 500 ||
+                    response.status === 503 ||
+                    response.status === 504
+                ) {
+                    lastError = new Error(
+                        `HTTP ${response.status}${errorDetail ? `: ${errorDetail}` : ""}`,
+                    );
+                    if (attempt < MAX_ATTEMPTS) {
+                        await _sleep(backoff);
+                        backoff = Math.min(backoff * 2, MAX_BACKOFF_MS);
+                        continue;
+                    }
+                    throw lastError;
+                }
+
+                // 4xx and other non-retryable errors — throw immediately.
+                throw new Error(
+                    `HTTP ${response.status}${errorDetail ? `: ${errorDetail}` : ""}`,
+                );
+            } catch (err) {
+                lastError = /** @type {Error} */ (err);
+                if (attempt < MAX_ATTEMPTS && isRetryableNetworkError(err)) {
+                    await _sleep(backoff);
+                    backoff = Math.min(backoff * 2, MAX_BACKOFF_MS);
+                    continue;
+                }
+                throw lastError;
+            }
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const data = /** @type {MirrorNodeResponse} */ (await response.json());
-        return data;
+        throw lastError ?? new Error("Failed to perform mirror node contract call");
     }
 
     _fillEvmAddress() {
@@ -268,4 +321,12 @@ export default class MirrorNodeContractQuery {
             "JSONPayload getter is not implemented. Please implement this method in the subclass.",
         );
     }
+}
+
+/**
+ * @param {number} ms
+ * @returns {Promise<void>}
+ */
+function _sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
 }

@@ -202,4 +202,138 @@ describe("MirrorNodeContractQuery", function () {
             }
         });
     });
+
+    describe("performMirrorNodeRequest retry behaviour", function () {
+        let originalFetch;
+        let query;
+        let client;
+
+        beforeEach(function () {
+            originalFetch =
+                typeof global !== "undefined" ? global.fetch : window.fetch;
+
+            query = new MirrorNodeContractQuery()
+                .setContractId(CONTRACT_ID)
+                .setSender(SENDER)
+                .setFunction(FUNCTION_NAME);
+
+            client = new Client();
+            client.setMirrorNetwork(["api.example.com:443"]);
+        });
+
+        afterEach(function () {
+            if (typeof global !== "undefined") {
+                global.fetch = originalFetch;
+            } else {
+                window.fetch = originalFetch;
+            }
+        });
+
+        it("should retry on HTTP 503 and succeed on second attempt", async function () {
+            let callCount = 0;
+            const fetchStub = sinon.stub().callsFake(() => {
+                callCount++;
+                if (callCount === 1) {
+                    return Promise.resolve({
+                        ok: false,
+                        status: 503,
+                        text: sinon.stub().resolves(""),
+                    });
+                }
+                return Promise.resolve({
+                    ok: true,
+                    json: sinon.stub().resolves({ result: "0xabc" }),
+                });
+            });
+
+            if (typeof global !== "undefined") {
+                global.fetch = fetchStub;
+            } else {
+                window.fetch = fetchStub;
+            }
+
+            const result = await query.performMirrorNodeRequest(client, {});
+            expect(result.result).to.equal("0xabc");
+            expect(fetchStub.callCount).to.equal(2);
+        });
+
+        it("should retry on HTTP 504 and succeed on second attempt", async function () {
+            let callCount = 0;
+            const fetchStub = sinon.stub().callsFake(() => {
+                callCount++;
+                if (callCount === 1) {
+                    return Promise.resolve({
+                        ok: false,
+                        status: 504,
+                        text: sinon.stub().resolves(""),
+                    });
+                }
+                return Promise.resolve({
+                    ok: true,
+                    json: sinon.stub().resolves({ result: "0xdef" }),
+                });
+            });
+
+            if (typeof global !== "undefined") {
+                global.fetch = fetchStub;
+            } else {
+                window.fetch = fetchStub;
+            }
+
+            const result = await query.performMirrorNodeRequest(client, {});
+            expect(result.result).to.equal("0xdef");
+            expect(fetchStub.callCount).to.equal(2);
+        });
+
+        it("should throw after exhausting all attempts on persistent 504", async function () {
+            const fetchStub = sinon.stub().resolves({
+                ok: false,
+                status: 504,
+                text: sinon.stub().resolves("Gateway Timeout"),
+            });
+
+            if (typeof global !== "undefined") {
+                global.fetch = fetchStub;
+            } else {
+                window.fetch = fetchStub;
+            }
+
+            let thrownError = null;
+            try {
+                await query.performMirrorNodeRequest(client, {});
+            } catch (e) {
+                thrownError = e;
+            }
+
+            expect(thrownError).to.not.be.null;
+            expect(thrownError.message).to.include("HTTP 504");
+            expect(fetchStub.callCount).to.equal(5);
+        });
+
+        it("should not retry on HTTP 400 bad request", async function () {
+            const fetchStub = sinon.stub().resolves({
+                ok: false,
+                status: 400,
+                text: sinon.stub().resolves("Bad Request"),
+            });
+
+            if (typeof global !== "undefined") {
+                global.fetch = fetchStub;
+            } else {
+                window.fetch = fetchStub;
+            }
+
+            let thrownError = null;
+            try {
+                await query.performMirrorNodeRequest(client, {});
+            } catch (e) {
+                thrownError = e;
+            }
+
+            expect(thrownError).to.not.be.null;
+            expect(thrownError.message).to.include("HTTP 400");
+            expect(fetchStub.callCount).to.equal(1);
+        });
+    });
+
 });

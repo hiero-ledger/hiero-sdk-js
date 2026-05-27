@@ -267,7 +267,7 @@ export default class AddressBookQueryWeb extends Query {
 
                     if (!response.ok) {
                         throw new Error(
-                            `HTTP error! status: ${response.status}`,
+                            `HTTP ${response.status}`,
                         );
                     }
 
