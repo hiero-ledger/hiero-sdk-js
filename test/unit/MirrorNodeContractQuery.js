@@ -336,4 +336,184 @@ describe("MirrorNodeContractQuery", function () {
         });
     });
 
+    describe("retry configuration", function () {
+        it("setMaxAttempts / setMaxBackoff are fluent and expose getters", function () {
+            const query = new MirrorNodeContractQuery();
+
+            expect(query.maxAttempts).to.be.null;
+            expect(query.maxBackoff).to.be.null;
+
+            const returned = query.setMaxAttempts(2).setMaxBackoff(10);
+
+            expect(returned).to.equal(query);
+            expect(query.maxAttempts).to.equal(2);
+            expect(query.maxBackoff).to.equal(10);
+        });
+    });
+
+    describe("performMirrorNodeRequest retry behavior", function () {
+        let originalFetch;
+        let clock;
+        let query;
+        let client;
+
+        const okResponse = () => ({
+            ok: true,
+            json: sinon.stub().resolves({ result: "0x01" }),
+        });
+
+        const errorResponse = (status) => ({
+            ok: false,
+            status,
+            text: sinon.stub().resolves(""),
+        });
+
+        const setFetch = (stub) => {
+            if (typeof global !== "undefined") {
+                global.fetch = stub;
+            } else {
+                window.fetch = stub;
+            }
+            return stub;
+        };
+
+        beforeEach(function () {
+            originalFetch =
+                typeof global !== "undefined" ? global.fetch : window.fetch;
+            // Fake timers keep the exponential backoff from actually sleeping.
+            clock = sinon.useFakeTimers();
+
+            client = new Client();
+            client.setMirrorNetwork(["api.example.com:443"]);
+
+            query = new MirrorNodeContractQuery()
+                .setContractId(CONTRACT_ID)
+                .setSender(SENDER)
+                .setFunction(FUNCTION_NAME)
+                .setMaxAttempts(2)
+                .setMaxBackoff(10);
+        });
+
+        afterEach(function () {
+            clock.restore();
+            if (typeof global !== "undefined") {
+                global.fetch = originalFetch;
+            } else {
+                window.fetch = originalFetch;
+            }
+        });
+
+        it("retries on HTTP 503 and succeeds", async function () {
+            const fetchStub = setFetch(
+                sinon
+                    .stub()
+                    .onFirstCall()
+                    .resolves(errorResponse(503))
+                    .onSecondCall()
+                    .resolves(okResponse()),
+            );
+
+            const promise = query.performMirrorNodeRequest(client, {});
+            await clock.runAllAsync();
+            const data = await promise;
+
+            expect(data.result).to.equal("0x01");
+            expect(fetchStub.callCount).to.equal(2);
+        });
+
+        it("retries on HTTP 504 and succeeds", async function () {
+            const fetchStub = setFetch(
+                sinon
+                    .stub()
+                    .onFirstCall()
+                    .resolves(errorResponse(504))
+                    .onSecondCall()
+                    .resolves(okResponse()),
+            );
+
+            const promise = query.performMirrorNodeRequest(client, {});
+            await clock.runAllAsync();
+            const data = await promise;
+
+            expect(data.result).to.equal("0x01");
+            expect(fetchStub.callCount).to.equal(2);
+        });
+
+        it("retries on transient network errors and succeeds", async function () {
+            const fetchStub = setFetch(
+                sinon
+                    .stub()
+                    .onFirstCall()
+                    .rejects(new Error("fetch failed"))
+                    .onSecondCall()
+                    .resolves(okResponse()),
+            );
+
+            const promise = query.performMirrorNodeRequest(client, {});
+            await clock.runAllAsync();
+            const data = await promise;
+
+            expect(data.result).to.equal("0x01");
+            expect(fetchStub.callCount).to.equal(2);
+        });
+
+        it("exhausts retries after maxAttempts + 1 and throws", async function () {
+            const fetchStub = setFetch(
+                sinon.stub().resolves(errorResponse(503)),
+            );
+
+            const promise = query.performMirrorNodeRequest(client, {});
+            // Capture the rejection without triggering an unhandled rejection.
+            const settled = promise.then(
+                () => ({ ok: true }),
+                (error) => ({ ok: false, error }),
+            );
+            await clock.runAllAsync();
+            const result = await settled;
+
+            expect(result.ok).to.be.false;
+            expect(result.error.message).to.contain("HTTP 503");
+            // maxAttempts (2) + 1 = 3 total attempts.
+            expect(fetchStub.callCount).to.equal(3);
+        });
+
+        it("does not retry on HTTP 400", async function () {
+            const fetchStub = setFetch(
+                sinon.stub().resolves(errorResponse(400)),
+            );
+
+            const promise = query.performMirrorNodeRequest(client, {});
+            const settled = promise.then(
+                () => ({ ok: true }),
+                (error) => ({ ok: false, error }),
+            );
+            await clock.runAllAsync();
+            const result = await settled;
+
+            expect(result.ok).to.be.false;
+            expect(result.error.message).to.contain("HTTP 400");
+            expect(fetchStub.callCount).to.equal(1);
+        });
+
+        it("falls back to the client's maxAttempts when not overridden", async function () {
+            // Clear the per-instance override -> uses client.maxAttempts.
+            query._maxAttempts = null;
+
+            const fetchStub = setFetch(
+                sinon.stub().resolves(errorResponse(503)),
+            );
+
+            const promise = query.performMirrorNodeRequest(client, {});
+            const settled = promise.then(
+                () => ({ ok: true }),
+                (error) => ({ ok: false, error }),
+            );
+            await clock.runAllAsync();
+            await settled;
+
+            // client.maxAttempts + 1 total attempts.
+            expect(fetchStub.callCount).to.equal(client.maxAttempts + 1);
+        });
+    });
+
 });

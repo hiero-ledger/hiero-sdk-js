@@ -4,14 +4,12 @@ import {
     readErrorDetail,
 } from "../network/mirrorRestRetry.js";
 
-/** @constant {number} Initial retry backoff in milliseconds. */
+/**
+ * Initial retry backoff in milliseconds for transient mirror errors;
+ * doubles each attempt up to the configured max backoff.
+ * @constant {number}
+ */
 const INITIAL_BACKOFF_MS = 250;
-
-/** @constant {number} Maximum retry attempts for transient mirror errors. */
-const MAX_ATTEMPTS = 5;
-
-/** @constant {number} Maximum retry backoff in milliseconds. */
-const MAX_BACKOFF_MS = 8000;
 
 /**
  * @typedef {import("../contract/ContractId").default} ContractId
@@ -57,6 +55,23 @@ export default class MirrorNodeContractQuery {
         this._gasLimit = null;
         this._gasPrice = null;
         this._blockNumber = null;
+
+        /**
+         * Per-instance override for max retry attempts on transient mirror
+         * errors. When `null`, the client's `maxAttempts` is used at request
+         * time.
+         * @private
+         * @type {?number}
+         */
+        this._maxAttempts = null;
+
+        /**
+         * Per-instance override for max retry backoff (ms). When `null`, the
+         * client's `maxBackoff` is used at request time.
+         * @private
+         * @type {?number}
+         */
+        this._maxBackoff = null;
     }
 
     /**
@@ -153,6 +168,29 @@ export default class MirrorNodeContractQuery {
     }
 
     /**
+     * @param {number} maxAttempts
+     * @description Sets the maximum number of retry attempts for transient
+     * mirror node errors (HTTP 500/503/504 and network failures). When not
+     * set, the client's `maxAttempts` is used.
+     * @returns {this}
+     */
+    setMaxAttempts(maxAttempts) {
+        this._maxAttempts = maxAttempts;
+        return this;
+    }
+
+    /**
+     * @param {number} maxBackoff
+     * @description Sets the maximum backoff, in milliseconds, between retry
+     * attempts. When not set, the client's `maxBackoff` is used.
+     * @returns {this}
+     */
+    setMaxBackoff(maxBackoff) {
+        this._maxBackoff = maxBackoff;
+        return this;
+    }
+
+    /**
      * @returns {ContractId?}
      */
     get contractId() {
@@ -220,6 +258,20 @@ export default class MirrorNodeContractQuery {
     }
 
     /**
+     * @returns {number?}
+     */
+    get maxAttempts() {
+        return this._maxAttempts;
+    }
+
+    /**
+     * @returns {number?}
+     */
+    get maxBackoff() {
+        return this._maxBackoff;
+    }
+
+    /**
      *
      * @param {Client} client
      * @param {object} jsonPayload
@@ -249,13 +301,42 @@ export default class MirrorNodeContractQuery {
 
         const contractCallEndpointUrl = `${mirrorRestApiBaseUrl}${contractCallEndpointPath}`;
 
+        const maxAttempts = this._maxAttempts ?? client.maxAttempts;
+        const maxBackoff = this._maxBackoff ?? client.maxBackoff;
+
+        return this._fetchWithRetry(
+            contractCallEndpointUrl,
+            jsonPayload,
+            maxAttempts,
+            maxBackoff,
+        );
+    }
+
+    /**
+     * Execute the POST against the mirror node REST endpoint, retrying
+     * transient failures with exponential backoff.
+     *
+     * Retries on HTTP 500/503/504 and on transient transport errors
+     * (timeouts, connection resets, DNS failures) as classified by
+     * {@link isRetryableNetworkError}. Other non-ok responses (4xx,
+     * redirects) are caller errors and are thrown immediately.
+     *
+     * @private
+     * @param {string} url
+     * @param {object} jsonPayload
+     * @param {number} maxAttempts
+     * @param {number} maxBackoff
+     * @returns {Promise<MirrorNodeResponse>}
+     */
+    async _fetchWithRetry(url, jsonPayload, maxAttempts, maxBackoff) {
         let lastError = null;
         let backoff = INITIAL_BACKOFF_MS;
+        const totalAttempts = maxAttempts + 1;
 
-        for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+        for (let attempt = 1; attempt <= totalAttempts; attempt++) {
             try {
                 // eslint-disable-next-line n/no-unsupported-features/node-builtins
-                const response = await fetch(contractCallEndpointUrl, {
+                const response = await fetch(url, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -279,32 +360,36 @@ export default class MirrorNodeContractQuery {
                     response.status === 504
                 ) {
                     lastError = new Error(
-                        `HTTP ${response.status}${errorDetail ? `: ${errorDetail}` : ""}`,
+                        `HTTP ${response.status}${
+                            errorDetail ? `: ${errorDetail}` : ""
+                        }`,
                     );
-                    if (attempt < MAX_ATTEMPTS) {
-                        await _sleep(backoff);
-                        backoff = Math.min(backoff * 2, MAX_BACKOFF_MS);
+                    if (attempt < totalAttempts) {
+                        await sleep(backoff);
+                        backoff = Math.min(backoff * 2, maxBackoff);
                         continue;
                     }
                     throw lastError;
                 }
 
-                // 4xx and other non-retryable errors — throw immediately.
+                // Any other non-ok (4xx, redirects, ...) is a caller error.
                 throw new Error(
-                    `HTTP ${response.status}${errorDetail ? `: ${errorDetail}` : ""}`,
+                    `HTTP ${response.status}${
+                        errorDetail ? `: ${errorDetail}` : ""
+                    }`,
                 );
             } catch (err) {
                 lastError = /** @type {Error} */ (err);
-                if (attempt < MAX_ATTEMPTS && isRetryableNetworkError(err)) {
-                    await _sleep(backoff);
-                    backoff = Math.min(backoff * 2, MAX_BACKOFF_MS);
+                if (attempt < totalAttempts && isRetryableNetworkError(err)) {
+                    await sleep(backoff);
+                    backoff = Math.min(backoff * 2, maxBackoff);
                     continue;
                 }
                 throw lastError;
             }
         }
 
-        throw lastError ?? new Error("Failed to perform mirror node contract call");
+        throw lastError ?? new Error("Failed to perform mirror node request");
     }
 
     _fillEvmAddress() {
@@ -327,6 +412,6 @@ export default class MirrorNodeContractQuery {
  * @param {number} ms
  * @returns {Promise<void>}
  */
-function _sleep(ms) {
+function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
