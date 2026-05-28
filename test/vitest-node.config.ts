@@ -12,6 +12,11 @@ export default defineConfig({
         isolate: false,
         coverage: {
             include: ["src/**/*.js"],
+            exclude: [
+                "src/client/addressbooks/mainnet.js",
+                "src/client/addressbooks/previewnet.js",
+                "src/client/addressbooks/testnet.js",
+            ],
             provider: "v8",
             reporter: ["text-summary", "lcov"],
             reportsDirectory: "./coverage/node",
