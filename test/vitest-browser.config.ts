@@ -23,7 +23,12 @@ export default defineConfig({
         testTimeout: 120000,
         retry: 1,
         coverage: {
-            include: ["src/**/*.js"],
+           include: ["src/**/*.js"],
+            exclude: [
+                "src/client/addressbooks/mainnet.js",
+                "src/client/addressbooks/previewnet.js",
+                "src/client/addressbooks/testnet.js",
+            ],
             provider: "v8",
             reporter: ["text-summary", "lcov"],
             reportsDirectory: "./coverage/browser",
