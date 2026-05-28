@@ -347,6 +347,7 @@ export default class ContractCreateFlow {
 
         this._publicKeys.push(publicKey);
         this._transactionSigners.push(transactionSigner);
+        this._signerPublicKeys.add(publicKeyHex);
 
         return this;
     }
