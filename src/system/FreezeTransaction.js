@@ -143,36 +143,38 @@ export default class FreezeTransaction extends Transaction {
             body.freeze
         );
 
+        const freezeTransaction = new FreezeTransaction({
+            startTime:
+                freeze.startHour != null && freeze.startMin != null
+                    ? {
+                          hour: freeze.startHour,
+                          minute: freeze.startMin,
+                      }
+                    : undefined,
+            startTimestamp:
+                freeze.startTime != null
+                    ? Timestamp._fromProtobuf(freeze.startTime)
+                    : undefined,
+            updateFileId:
+                freeze.updateFile != null
+                    ? FileId._fromProtobuf(freeze.updateFile)
+                    : undefined,
+            fileHash: freeze.fileHash != null ? freeze.fileHash : undefined,
+            freezeType:
+                freeze.freezeType != null
+                    ? FreezeType._fromCode(freeze.freezeType)
+                    : undefined,
+        });
+
+        if (freeze.endHour != null && freeze.endMin != null) {
+            freezeTransaction._endTime = {
+                hour: freeze.endHour,
+                minute: freeze.endMin,
+            };
+        }
+
         return Transaction._fromProtobufTransactions(
-            new FreezeTransaction({
-                startTime:
-                    freeze.startHour != null && freeze.startMin != null
-                        ? {
-                              hour: freeze.startHour,
-                              minute: freeze.startMin,
-                          }
-                        : undefined,
-                endTime:
-                    freeze.endHour != null && freeze.endMin != null
-                        ? {
-                              hour: freeze.endHour,
-                              minute: freeze.endMin,
-                          }
-                        : undefined,
-                startTimestamp:
-                    freeze.startTime != null
-                        ? Timestamp._fromProtobuf(freeze.startTime)
-                        : undefined,
-                updateFileId:
-                    freeze.updateFile != null
-                        ? FileId._fromProtobuf(freeze.updateFile)
-                        : undefined,
-                fileHash: freeze.fileHash != null ? freeze.fileHash : undefined,
-                freezeType:
-                    freeze.freezeType != null
-                        ? FreezeType._fromCode(freeze.freezeType)
-                        : undefined,
-            }),
+            freezeTransaction,
             transactions,
             signedTransactions,
             transactionIds,
@@ -232,22 +234,26 @@ export default class FreezeTransaction extends Transaction {
     }
 
     /**
-     * @deprecated
+     * @deprecated The network ignores this field and there is no replacement.
      * @returns {?HourMinute}
      */
     get endTime() {
-        console.warn("`FreezeTransaction.endTime` is deprecated");
+        console.warn(
+            "`FreezeTransaction.endTime` is deprecated: the network ignores this field and there is no replacement",
+        );
         return this._endTime;
     }
 
     /**
-     * @deprecated
+     * @deprecated The network ignores this field and there is no replacement.
      * @param {number | string} endHourOrString
      * @param {?number} endMinute
      * @returns {FreezeTransaction}
      */
     setEndTime(endHourOrString, endMinute) {
-        console.warn("`FreezeTransaction.endTime` is deprecated");
+        console.warn(
+            "`FreezeTransaction.endTime` is deprecated: the network ignores this field and there is no replacement",
+        );
         this._requireNotFrozen();
         if (typeof endHourOrString === "string") {
             const split = endHourOrString.split(":");
