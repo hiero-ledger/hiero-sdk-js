@@ -23,7 +23,7 @@ class MockFileReader {
     readAsDataURL(blob) {
         // Simulate async reading
         setTimeout(() => {
-            this.result = "data:application/grpc-web+proto;base64,dGVzdA=="; // "test" in base64
+            this.result = "data:application/grpc-web+proto;base64,AAAAAAA="; // valid empty grpc-web frame in base64
             if (this.onloadend) this.onloadend();
         }, 0);
     }
@@ -36,14 +36,6 @@ const getGlobalObject = () => {
     if (typeof self !== "undefined") return self;
     return {};
 };
-
-// Mock for base64 encoding/decoding
-vi.mock("../../src/encoding/base64.native.js", () => ({
-    // eslint-disable-next-line no-unused-vars
-    encode: (data) => "encoded",
-    // eslint-disable-next-line no-unused-vars
-    decode: (data) => new Uint8Array([1, 2, 3, 4]),
-}));
 
 describe("NativeChannel", () => {
     let fetchSpy;
