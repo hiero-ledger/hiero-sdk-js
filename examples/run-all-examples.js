@@ -10,11 +10,18 @@ const excludedDirectories = [
     "./node_modules",
     "./precompile-example",
     "./react-native-example",
+    "./react-native-example-legacy",
     "./simple_rest_signature_provider",
+    "./contracts",
+    "./demo-umd",
+    "./frontend-examples",
+    "./custom-grpc-web-proxies-network",
 ];
 const excludedJSFile = [
     "run-all-examples.js",
     "consensus-pub-sub.js",
+    "consensus-pub-sub-chunked.js",
+    "consensus-pub-sub-with-submit-key.js",
     "create-update-delete-node.js",
     "batch-tx.js",
     "long-term-schedule-transaction.js",
@@ -98,7 +105,7 @@ async function runInParallel(examples, maxConcurrency) {
  * @param {string[]} files
  * @returns {void}
  */
-fs.readdir(examplesDirectory, (err, files) => {
+fs.readdir(examplesDirectory, { withFileTypes: true }, (err, entries) => {
     if (err) {
         console.error("Error reading directory:", err);
         process.exit(1);
@@ -108,19 +115,35 @@ fs.readdir(examplesDirectory, (err, files) => {
         throw new Error("Environment variable NODE_COMMAND is required.");
     }
 
-    const isPathStartsWith = (
-        /** @type {string} */ file,
-        /** @type {string} */ directory,
-    ) => path.join(examplesDirectory, file).startsWith(directory);
+    const examples = [];
 
-    const examples = files.filter(
-        (file) =>
-            file.endsWith(".js") &&
-            !excludedJSFile.includes(file) &&
-            excludedDirectories.some(
-                (directory) => !isPathStartsWith(directory, file),
-            ),
-    );
+    // Top-level .js files.
+    for (const entry of entries) {
+        if (
+            entry.isFile() &&
+            entry.name.endsWith(".js") &&
+            !excludedJSFile.includes(entry.name)
+        ) {
+            examples.push(entry.name);
+        }
+    }
+
+    // .js files one level deep — only inside non-excluded subdirectories.
+    for (const entry of entries) {
+        if (
+            !entry.isDirectory() ||
+            excludedDirectories.includes(`./${entry.name}`)
+        ) {
+            continue;
+        }
+        const subDir = path.join(examplesDirectory, entry.name);
+        const subFiles = fs.readdirSync(subDir, { withFileTypes: true });
+        for (const sub of subFiles) {
+            if (sub.isFile() && sub.name.endsWith(".js")) {
+                examples.push(path.join(entry.name, sub.name));
+            }
+        }
+    }
 
     console.log(
         `Running ${examples.length} examples with concurrency ${concurrency}...\n`,

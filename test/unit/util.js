@@ -41,6 +41,27 @@ describe("util", function () {
         expect(util.isBigNumber("1")).to.eql(false);
     });
 
+    it("soft check: isLong should return true for a Long instance from the SDK's import", function () {
+        expect(util.isLong(Long.fromNumber(42))).to.eql(true);
+    });
+
+    it("soft check: isLong should return true for a duck-typed Long from a different module", function () {
+        // Simulates a Long instance created by an externally installed copy of the long package
+        const externalLong = Object.create({ __isLong__: true });
+        externalLong.low = 42;
+        externalLong.high = 0;
+        externalLong.unsigned = false;
+        expect(util.isLong(externalLong)).to.eql(true);
+    });
+
+    it("soft check: isLong should return false for non-Long values", function () {
+        expect(util.isLong(null)).to.eql(false);
+        expect(util.isLong(undefined)).to.eql(false);
+        expect(util.isLong(42)).to.eql(false);
+        expect(util.isLong("42")).to.eql(false);
+        expect(util.isLong({})).to.eql(false);
+    });
+
     it("soft check: isString should return true if instanceof string and non-null", function () {
         expect(util.isString("")).to.eql(true);
         expect(util.isString("")).to.eql(true);
