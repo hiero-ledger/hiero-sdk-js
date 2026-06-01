@@ -4,7 +4,9 @@ import AccountInfoQuery from "./AccountInfoQuery.js";
 import KeyList from "../KeyList.js";
 
 /**
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../transaction/Transaction.js").default} Transaction
  * @typedef {import("../PublicKey.js").default} PublicKey
  * @typedef {import("./AccountId.js").default} AccountId
