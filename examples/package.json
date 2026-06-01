@@ -17,14 +17,14 @@
         "ethers": "^6.16.0",
         "@hiero-ledger/sdk": "link:..",
         "@noble/hashes": "^1.7.1",
-        "axios": "^1.15.0",
+        "axios": "^1.16.0",
         "dotenv": "^17.2.3"
     },
     "devDependencies": {
         "@types/node": "^25.0.3",
         "@typescript-eslint/eslint-plugin": "^5.62.0",
         "@typescript-eslint/parser": "^5.62.0",
-        "dpdm": "3.15.1",
+        "dpdm": "4.2.0",
         "eslint": "^8.49.0",
         "eslint-plugin-compat": "^6.1.0",
         "eslint-plugin-import": "^2.28.1",
