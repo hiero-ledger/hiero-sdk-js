@@ -31,11 +31,19 @@ vi.mock("@grpc/grpc-js", () => {
     };
 });
 
-import NodeMirrorChannel from "../../../src/channel/NodeMirrorChannel.js";
-import * as grpc from "@grpc/grpc-js";
+let NodeMirrorChannel;
+let grpc;
 
 describe("NodeMirrorChannel", function () {
     let mockStream;
+
+    beforeAll(async function () {
+        vi.resetModules();
+        grpc = await import("@grpc/grpc-js");
+        NodeMirrorChannel = (
+            await import("../../../src/channel/NodeMirrorChannel.js")
+        ).default;
+    });
 
     beforeEach(function () {
         vi.clearAllMocks();
