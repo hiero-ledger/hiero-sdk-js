@@ -424,8 +424,8 @@ importers:
         specifier: ~15.0.8
         version: 15.0.8(expo@54.0.33)
       expo-image:
-        specifier: ~3.0.11
-        version: 3.0.11(expo@54.0.33)(react-native-web@0.21.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.23.3)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+        specifier: ~56.0.9
+        version: 56.0.9(expo@54.0.33)(react-native-web@0.21.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.23.3)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       expo-linking:
         specifier: ~8.0.11
         version: 8.0.11(expo@54.0.33)(react-native@0.81.5(@babel/core@7.23.3)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
@@ -7055,8 +7055,8 @@ packages:
     peerDependencies:
       expo: '*'
 
-  expo-image@3.0.11:
-    resolution: {integrity: sha512-4TudfUCLgYgENv+f48omnU8tjS2S0Pd9EaON5/s1ZUBRwZ7K8acEr4NfvLPSaeXvxW24iLAiyQ7sV7BXQH3RoA==}
+  expo-image@56.0.9:
+    resolution: {integrity: sha512-FifiRehXnMul5XeUVHWv+COHFUeCAdsYf5MiCPUBlhr4pRb0sxjA4/floi/TEDpATOIw6GqxbrC4FdZBoyrJmw==}
     peerDependencies:
       expo: '*'
       react: '*'
@@ -22172,11 +22172,12 @@ snapshots:
     dependencies:
       expo: 54.0.33(@babel/core@7.23.3)(@expo/dom-webview@55.0.3)(@expo/metro-runtime@6.1.2)(expo-router@6.0.23)(graphql@16.12.0)(react-native@0.81.5(@babel/core@7.23.3)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
 
-  expo-image@3.0.11(expo@54.0.33)(react-native-web@0.21.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.23.3)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
+  expo-image@56.0.9(expo@54.0.33)(react-native-web@0.21.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.23.3)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
     dependencies:
       expo: 54.0.33(@babel/core@7.23.3)(@expo/dom-webview@55.0.3)(@expo/metro-runtime@6.1.2)(expo-router@6.0.23)(graphql@16.12.0)(react-native@0.81.5(@babel/core@7.23.3)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       react: 19.1.0
       react-native: 0.81.5(@babel/core@7.23.3)(@types/react@19.1.17)(react@19.1.0)
+      sf-symbols-typescript: 2.2.0
     optionalDependencies:
       react-native-web: 0.21.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
 
