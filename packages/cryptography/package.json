@@ -101,7 +101,7 @@
         "babel-plugin-dynamic-import-node": "2.3.3",
         "babel-plugin-module-rewrite": "0.2.0",
         "c8": "11.0.0",
-        "chromedriver": "146.0.1",
+        "chromedriver": "149.0.1",
         "codecov": "3.8.3",
         "dpdm": "4.2.0",
         "eslint": "8.52.0",
