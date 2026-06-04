@@ -1,4 +1,3 @@
-/* eslint-disable ie11/no-loop-func */
 import {
     Client,
     PrivateKey,

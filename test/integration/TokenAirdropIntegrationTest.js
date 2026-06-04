@@ -380,7 +380,6 @@ describe("TokenAirdropIntegrationTest", function () {
         expect(err).to.be.eq(false);
     });
 
-    // eslint-disable-next-line vitest/no-disabled-tests
     it.skip("should not airdrop with invalid tx body", async function () {
         let err = false;
         const tokenId = new TokenId(1);

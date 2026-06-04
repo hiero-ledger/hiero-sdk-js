@@ -105,7 +105,7 @@ export async function loadKeystore(keystoreBytes, passphrase) {
     /**
      * @type {Keystore}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
     const keystore = JSON.parse(utf8.decode(keystoreBytes));
 
     if (keystore.version !== 1) {

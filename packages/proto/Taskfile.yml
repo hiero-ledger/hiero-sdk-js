@@ -115,7 +115,7 @@ tasks:
 
     "lint:js":
         cmds:
-            - npx eslint --fix "src/*.js"
+            - npx eslint --config eslint.config.cjs --fix "src/*.js"
 
     "test:release":
         deps:

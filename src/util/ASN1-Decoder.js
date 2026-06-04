@@ -169,7 +169,6 @@ export class ASN1Decoder {
             items.push(this.read());
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return items;
     }
 

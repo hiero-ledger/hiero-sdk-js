@@ -52,7 +52,6 @@ export async function createCipheriv(algorithm, key, iv, data) {
     return new Uint8Array(
         // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/encrypt#return_value
         /** @type {ArrayBuffer} */ (
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
             await window.crypto.subtle.encrypt(algorithm_, key_, data)
         ),
     );
@@ -100,20 +99,15 @@ export async function createDecipheriv(algorithm, key, iv, data) {
         decrypted = await window.crypto.subtle.decrypt(algorithm_, key_, data);
     } catch (error) {
         const message =
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             error != null && /** @type {Error} */ (error).message != null
-                ? // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                  /** @type {Error} */ (error).message
+                ? /** @type {Error} */ (error).message
                 : "";
 
         throw new Error(`Unable to decrypt: ${message}`);
     }
     return new Uint8Array(
         // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/encrypt#return_value
-        /** @type {ArrayBuffer} */ (
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            decrypted
-        ),
+        /** @type {ArrayBuffer} */ (decrypted),
     );
 }
 

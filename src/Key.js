@@ -13,7 +13,7 @@ export default class Key {
      * @abstract
      * @returns {HieroProto.proto.IKey}
      */
-    // eslint-disable-next-line jsdoc/require-returns-check
+
     _toProtobufKey() {
         throw new Error("not implemented");
     }

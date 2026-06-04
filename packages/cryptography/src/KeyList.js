@@ -108,7 +108,6 @@ export default class KeyList extends Key {
      * @returns {Key[]}
      */
     toArray() {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return this._keys.slice();
     }
 

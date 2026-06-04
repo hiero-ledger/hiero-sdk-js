@@ -5,7 +5,11 @@ import * as hex from "../encoding/hex.js";
  * @param {Uint8Array} data
  * @returns {Promise<Uint8Array>}
  */
-// eslint-disable-next-line @typescript-eslint/require-await
+
+/**
+ *
+ * @param data
+ */
 export async function digest(data) {
     return Promise.resolve(
         hex.decode(
