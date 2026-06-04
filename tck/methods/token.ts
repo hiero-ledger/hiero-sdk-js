@@ -72,7 +72,7 @@ import {
 } from "../response/token";
 
 // buildCreateToken builds a TokenCreateTransaction from parameters
-const buildCreateToken = (
+export const buildCreateToken = (
     {
         name,
         symbol,
