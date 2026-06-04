@@ -23,7 +23,10 @@ export function generate() {
 /**
  * @returns {Promise<KeyPair>}
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
+/**
+ *
+ */
 export async function generateAsync() {
     return Promise.resolve(generate());
 }
@@ -32,7 +35,11 @@ export async function generateAsync() {
  * @param {Uint8Array} data
  * @returns {KeyPair}
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
+/**
+ *
+ * @param data
+ */
 export function fromBytes(data) {
     const privateKey = new Uint8Array(data);
     const publicKey = secp256k1.getPublicKey(privateKey, true);
@@ -47,7 +54,11 @@ export function fromBytes(data) {
  * @param {Uint8Array} data
  * @returns {Uint8Array}
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
+/**
+ *
+ * @param data
+ */
 export function getFullPublicKey(data) {
     return secp256k1.getPublicKey(data, false);
 }
@@ -57,7 +68,12 @@ export function getFullPublicKey(data) {
  * @param {Uint8Array} message
  * @returns {Uint8Array}
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
+/**
+ *
+ * @param keydata
+ * @param message
+ */
 export function sign(keydata, message) {
     const msg = hex.encode(message);
     const data = hex.decode(keccak256(`0x${msg}`));
@@ -72,7 +88,13 @@ export function sign(keydata, message) {
  * @param {Uint8Array} signature
  * @returns {boolean}
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
+/**
+ *
+ * @param keydata
+ * @param message
+ * @param signature
+ */
 export function verify(keydata, message, signature) {
     const msg = hex.encode(message);
     const data = hex.decode(keccak256(`0x${msg}`));

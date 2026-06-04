@@ -46,10 +46,8 @@ export default class PublicKey extends Key {
             return new PublicKey(Ed25519PublicKey.fromBytes(data));
         } catch (error) {
             message =
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 error != null && /** @type {Error} */ (error).message != null
-                    ? // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                      /** @type {Error} */ (error).message
+                    ? /** @type {Error} */ (error).message
                     : "";
         }
 
@@ -57,10 +55,8 @@ export default class PublicKey extends Key {
             return new PublicKey(EcdsaPublicKey.fromBytes(data));
         } catch (error) {
             message =
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 error != null && /** @type {Error} */ (error).message != null
-                    ? // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                      /** @type {Error} */ (error).message
+                    ? /** @type {Error} */ (error).message
                     : "";
         }
 

@@ -79,7 +79,6 @@ describe("AccountInfo", function () {
         });
     });
 
-    // eslint-disable-next-line vitest/no-disabled-tests
     it.skip("should be able to get 300 accounts", async function () {
         const operatorId = env.operatorId;
         const key = PrivateKey.generateED25519();

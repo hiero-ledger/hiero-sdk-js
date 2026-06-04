@@ -142,11 +142,11 @@ export default class TopicMessageQuery {
                     // if the message matches the right regex.
                     switch (error.code) {
                         // INTERNAL
-                        // eslint-disable-next-line no-fallthrough
+
                         case 13:
                             return RST_STREAM.test(error.details.toString());
                         // NOT_FOUND
-                        // eslint-disable-next-line no-fallthrough
+
                         case 5:
                         // RESOURCE_EXHAUSTED
                         // eslint-disable-next-line no-fallthrough
@@ -341,7 +341,7 @@ export default class TopicMessageQuery {
     _makeServerStreamRequest(client) {
         const request = this._buildConsensusRequest();
         /** @type {Map<string, HieroProto.com.hedera.mirror.api.proto.ConsensusTopicResponse[]>} */
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
         const list = new Map();
 
         const streamHandler = client._mirrorNetwork

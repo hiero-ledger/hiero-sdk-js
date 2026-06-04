@@ -514,11 +514,11 @@ describe("Mnemonic", function () {
         const mnemonic = await Mnemonic.fromString(MNEMONIC_24_WORD_STRING);
 
         const invalidPaths = [
-            "m/44'/60'",          // too few components
-            "m/44'/60'/0'/0",     // missing last component
-            "not-a-path",         // completely wrong format
-            "",                   // empty string
-            "44'/60'/0'/0/0",     // missing leading m/
+            "m/44'/60'", // too few components
+            "m/44'/60'/0'/0", // missing last component
+            "not-a-path", // completely wrong format
+            "", // empty string
+            "44'/60'/0'/0/0", // missing leading m/
         ];
 
         for (const path of invalidPaths) {

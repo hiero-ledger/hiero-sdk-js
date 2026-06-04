@@ -774,20 +774,29 @@ describe("primitive/pkcs", function () {
                                             { ident: "1.2.840.113549.1.5.12" },
                                             {
                                                 seq: [
-                                                    { bytes: new Uint8Array([1]) },
+                                                    {
+                                                        bytes: new Uint8Array([
+                                                            1,
+                                                        ]),
+                                                    },
                                                     { int: 1000 },
-                                                    { ident: "1.2.3" } // not seq, not int
-                                                ]
-                                            }
-                                        ]
+                                                    { ident: "1.2.3" }, // not seq, not int
+                                                ],
+                                            },
+                                        ],
                                     },
-                                    { seq: [{ ident: "2.16.840.1.101.3.4.1.2" }, { bytes: new Uint8Array(16) }] }
-                                ]
-                            }
-                        ]
+                                    {
+                                        seq: [
+                                            { ident: "2.16.840.1.101.3.4.1.2" },
+                                            { bytes: new Uint8Array(16) },
+                                        ],
+                                    },
+                                ],
+                            },
+                        ],
                     },
-                    { bytes: new Uint8Array([]) }
-                ]
+                    { bytes: new Uint8Array([]) },
+                ],
             };
             const info = new EncryptedPrivateKeyInfo(asn);
             let threw = false;

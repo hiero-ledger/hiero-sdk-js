@@ -70,7 +70,9 @@ describe("TokenNftInfo", function () {
 
         it("recovers the original serial number", function () {
             const result = TokenNftInfo._fromProtobuf(proto)._toProtobuf();
-            expect(Long.fromValue(result.nftID.serialNumber).toNumber()).to.equal(7);
+            expect(
+                Long.fromValue(result.nftID.serialNumber).toNumber(),
+            ).to.equal(7);
         });
 
         it("recovers the original accountId numeric fields", function () {

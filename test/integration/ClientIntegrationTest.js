@@ -80,7 +80,7 @@ describe("ClientIntegration", function () {
     });
 
     // TODO(2023-11-01 NK) - test is consistently failing and should be enabled once fixed.
-    // eslint-disable-next-line vitest/no-disabled-tests
+
     it.skip("can set network name on custom network", async function () {
         expect(clientTestnet.ledgerId).to.be.equal(LedgerId.TESTNET);
         expect(clientPreviewNet.ledgerId).to.be.equal(LedgerId.PREVIEWNET);

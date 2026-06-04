@@ -148,7 +148,7 @@ describe("TokenRejectIntegrationTest", function () {
         });
 
         // temporary disabled until issue re nfts will be resolved on services side
-        // eslint-disable-next-line vitest/no-disabled-tests
+
         it.skip("should not return spender allowance to zero after owner rejects FT", async function () {
             // Create spender account
             const { accountId: spenderAccountId, newKey: spenderPrivateKey } =
@@ -521,7 +521,7 @@ describe("TokenRejectIntegrationTest", function () {
         });
 
         // temporary disabled until issue re nfts will be resolved on services side
-        // eslint-disable-next-line vitest/no-disabled-tests
+
         it.skip("should return spender allowance to 0 after owner rejects NFT", async function () {
             // Create spender account
             const { accountId: spenderAccountId, newKey: spenderPrivateKey } =

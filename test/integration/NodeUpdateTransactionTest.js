@@ -48,7 +48,6 @@ const waitForNodeDescription = async (client, nodeId, expectedDescription) => {
     );
 };
 
-// eslint-disable-next-line vitest/no-disabled-tests
 describe("NodeUpdateTransaction", function () {
     let env;
 

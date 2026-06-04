@@ -13,7 +13,6 @@ import {
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 
-// eslint-disable-next-line vitest/no-disabled-tests
 describe("NodeCreateTransaction", function () {
     let env;
     const validGossipCertDER =

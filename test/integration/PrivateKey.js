@@ -64,7 +64,7 @@ describe("PrivateKey signTransaction", function () {
 
     // this skip is temporary before we add SOLO for the CI tests
     // as currently its unable to run the test with multiple nodes
-    // eslint-disable-next-line vitest/no-disabled-tests
+
     it.skip("File Append Transaction Execution with Multiple Nodes", async function () {
         // Create file
         let response = await new FileCreateTransaction()

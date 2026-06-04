@@ -554,10 +554,7 @@ describe("ContractFunctionParameters", function () {
             it(`addInt${bitSize}Array method should return an empty array`, async function () {
                 const contractParams = new ContractFunctionParameters()[
                     `addInt${bitSize}Array`
-                ](
-                    // eslint-disable-next-line no-loss-of-precision
-                    [],
-                );
+                ]([]);
 
                 const gasEstimte = await new MirrorNodeContractEstimateQuery()
                     .setContractId(newContractId)
@@ -842,10 +839,7 @@ describe("ContractFunctionParameters", function () {
             it(`addUint${bitSize}Array method should return an empty array`, async function () {
                 const contractParams = new ContractFunctionParameters()[
                     `addUint${bitSize}Array`
-                ](
-                    // eslint-disable-next-line no-loss-of-precision
-                    [],
-                );
+                ]([]);
 
                 const contractQuery = new ContractCallQuery()
                     //Set the gas for the query
@@ -979,10 +973,7 @@ describe("ContractFunctionParameters", function () {
     });
 
     it("should return the right zero uint256 value", async function () {
-        const contractParams = new ContractFunctionParameters().addUint256(
-            // eslint-disable-next-line no-loss-of-precision
-            0,
-        );
+        const contractParams = new ContractFunctionParameters().addUint256(0);
         const contractQuery = new ContractCallQuery()
             //Set the gas for the query
             .setGas(1_500_000)
@@ -997,15 +988,11 @@ describe("ContractFunctionParameters", function () {
         //Submit to a Hedera network
         const txResponse = await contractQuery.execute(env.client);
 
-        expect(txResponse.getUint256(0).toNumber()).to.be.equal(
-            // eslint-disable-next-line no-loss-of-precision
-            0,
-        );
+        expect(txResponse.getUint256(0).toNumber()).to.be.equal(0);
     });
 
     it("should return the right 20 decimal uint256 value", async function () {
         const contractParams = new ContractFunctionParameters().addUint256(
-            // eslint-disable-next-line no-loss-of-precision
             5000000000000000000000,
         );
         const contractQuery = new ContractCallQuery()
@@ -1023,16 +1010,12 @@ describe("ContractFunctionParameters", function () {
         const txResponse = await contractQuery.execute(env.client);
 
         expect(txResponse.getUint256(0).toNumber()).to.be.equal(
-            // eslint-disable-next-line no-loss-of-precision
             5000000000000000000000,
         );
     });
 
     it("should return the again right uint256 value", async function () {
-        const contractParams = new ContractFunctionParameters().addUint256(
-            // eslint-disable-next-line no-loss-of-precision
-            50,
-        );
+        const contractParams = new ContractFunctionParameters().addUint256(50);
         const contractQuery = new ContractCallQuery()
             //Set the gas for the query
             .setGas(1_500_000)
@@ -1047,10 +1030,7 @@ describe("ContractFunctionParameters", function () {
         //Submit to a Hedera network
         const txResponse = await contractQuery.execute(env.client);
 
-        expect(txResponse.getUint256(0).toNumber()).to.be.equal(
-            // eslint-disable-next-line no-loss-of-precision
-            50,
-        );
+        expect(txResponse.getUint256(0).toNumber()).to.be.equal(50);
     });
 
     it("contract create of A nonce, which deploys contract B in CONSTRUCTOR", async function () {

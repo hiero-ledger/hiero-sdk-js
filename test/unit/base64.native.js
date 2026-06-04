@@ -1,4 +1,4 @@
-import { decode,encode } from "../../src/encoding/base64.native.js";
+import { decode, encode } from "../../src/encoding/base64.native.js";
 
 describe("base64 (native)", function () {
     const data = new Uint8Array([72, 101, 108, 108, 111]); // "Hello"

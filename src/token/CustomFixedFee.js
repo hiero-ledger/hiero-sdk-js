@@ -115,7 +115,7 @@ export default class CustomFixedFee extends CustomFee {
      * @param {HieroProto.proto.ICustomFee} info
      * @returns {CustomFixedFee}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     static _fromProtobuf(info) {
         const fee = /** @type {HieroProto.proto.IFixedFee} */ (info.fixedFee);
 

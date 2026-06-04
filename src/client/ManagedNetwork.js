@@ -33,7 +33,7 @@ export default class ManagedNetwork {
          * @internal
          * @type {Map<string, NetworkNodeT[]>}
          */
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
         this._network = new Map();
 
         /**
@@ -208,7 +208,6 @@ export default class ManagedNetwork {
             // Remove all nodes with the same account id as
             // the selected node account id from the array
             healthyNodes = healthyNodes.filter(
-                // eslint-disable-next-line ie11/no-loop-func
                 (node) => node.getKey() !== selectedNode.getKey(),
             );
         }
@@ -261,7 +260,7 @@ export default class ManagedNetwork {
         const newHealthyNodes = [];
 
         /** @type {Map<string, NetworkNodeT[]>} */
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+
         const newNetwork = new Map();
 
         // Remove nodes that are not in the new network
