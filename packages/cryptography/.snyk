@@ -1,0 +1,38 @@
+# Snyk (https://snyk.io) policy file, patches or ignores known vulnerabilities.
+version: v1.25.1
+ignore: {}
+# patches apply the minimum changes required to fix a vulnerability
+patch:
+  'npm:hoek:20180212':
+    - npx > npm > request > hawk > hoek:
+        patched: '2026-06-04T14:08:53.707Z'
+        id: 'npm:hoek:20180212'
+        path: npx > npm > request > hawk > hoek
+    - npx > npm > request > hawk > boom > hoek:
+        patched: '2026-06-04T14:08:53.707Z'
+        id: 'npm:hoek:20180212'
+        path: npx > npm > request > hawk > boom > hoek
+    - npx > npm > request > hawk > sntp > hoek:
+        patched: '2026-06-04T14:08:53.707Z'
+        id: 'npm:hoek:20180212'
+        path: npx > npm > request > hawk > sntp > hoek
+    - npx > npm > node-gyp > request > hawk > hoek:
+        patched: '2026-06-04T14:08:53.707Z'
+        id: 'npm:hoek:20180212'
+        path: npx > npm > node-gyp > request > hawk > hoek
+    - npx > npm > request > hawk > cryptiles > boom > hoek:
+        patched: '2026-06-04T14:08:53.707Z'
+        id: 'npm:hoek:20180212'
+        path: npx > npm > request > hawk > cryptiles > boom > hoek
+    - npx > npm > node-gyp > request > hawk > boom > hoek:
+        patched: '2026-06-04T14:08:53.707Z'
+        id: 'npm:hoek:20180212'
+        path: npx > npm > node-gyp > request > hawk > boom > hoek
+    - npx > npm > node-gyp > request > hawk > sntp > hoek:
+        patched: '2026-06-04T14:08:53.707Z'
+        id: 'npm:hoek:20180212'
+        path: npx > npm > node-gyp > request > hawk > sntp > hoek
+    - npx > npm > node-gyp > request > hawk > cryptiles > boom > hoek:
+        patched: '2026-06-04T14:08:53.707Z'
+        id: 'npm:hoek:20180212'
+        path: npx > npm > node-gyp > request > hawk > cryptiles > boom > hoek
