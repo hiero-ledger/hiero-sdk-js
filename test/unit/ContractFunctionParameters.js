@@ -10,7 +10,7 @@ bytes[1] = 1;
 bytes[4] = 4;
 bytes[9] = 8;
 
-const maxInt64 = new BigNumber("0x7FFFFFFFFFFFFFFF", 16);
+const maxInt64 = new BigNumber("0x7FFFFFFFFFFFFFFF");
 
 const str = "this is a grin: \uD83D\uDE01";
 

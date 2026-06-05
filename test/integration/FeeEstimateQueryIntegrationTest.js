@@ -34,10 +34,13 @@ import { createFungibleToken } from "./utils/Fixtures.js";
 describe("FeeEstimateQuery Integration", function () {
     let env;
 
-    beforeAll(async function () {
-        env = await IntegrationTestEnv.new();
-        await waitForFeeEstimationServiceReady(env);
-    }, 11 * 60 * 1000);
+    beforeAll(
+        async function () {
+            env = await IntegrationTestEnv.new();
+            await waitForFeeEstimationServiceReady(env);
+        },
+        11 * 60 * 1000,
+    );
 
     /**
      * Block until the mirror node's FeeEstimationService can answer a
@@ -69,9 +72,7 @@ describe("FeeEstimateQuery Integration", function () {
             }
         }
         const detail =
-            lastError instanceof Error
-                ? lastError.message
-                : String(lastError);
+            lastError instanceof Error ? lastError.message : String(lastError);
         throw new Error(
             `FeeEstimationService never became ready after ${attempt} probe attempts: ${detail}`,
         );

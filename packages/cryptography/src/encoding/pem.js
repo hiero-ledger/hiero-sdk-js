@@ -32,10 +32,8 @@ export async function readPemED25519(pem, passphrase) {
             encrypted = EncryptedPrivateKeyInfo.parse(key);
         } catch (error) {
             const message =
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 error != null && /** @type {Error} */ (error).message != null
-                    ? // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                      /** @type {Error} */ (error).message
+                    ? /** @type {Error} */ (error).message
                     : "";
 
             throw new BadKeyError(
@@ -82,10 +80,9 @@ export async function readPemECDSA(pem, passphrase) {
     const key = base64.decode(pemKeyData);
 
     if (passphrase) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
         const decodedPem = pemForge.decode(pem)[0];
         /** @type {string} */
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment
+
         const ivString = decodedPem.dekInfo.parameters;
         const iv = hex.decode(ivString);
         const pemLines = pem.split("\n");
@@ -107,7 +104,7 @@ export async function readPemECDSA(pem, passphrase) {
         const parsedKey = asnData.result;
 
         // @ts-ignore
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return
+
         return parsedKey.valueBlock.value[1].valueBlock.valueHexView;
     }
 }

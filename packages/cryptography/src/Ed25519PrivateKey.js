@@ -113,10 +113,8 @@ export default class Ed25519PrivateKey {
             privateKey = arr.slice(data.length - 32);
         } catch (error) {
             const message =
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 error != null && /** @type {Error} */ (error).message != null
-                    ? // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                      /** @type {Error} */ (error).message
+                    ? /** @type {Error} */ (error).message
                     : "";
             throw new BadKeyError(
                 `cannot decode ED25519 private key data from DER format: ${message}`,

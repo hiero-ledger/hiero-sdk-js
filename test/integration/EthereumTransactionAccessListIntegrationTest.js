@@ -385,7 +385,7 @@ describe("EthereumTransactionAccessListIntegrationTest", function () {
     });
 
     // TODO: unskip when a consensus node tag supports EIP-7702 (Pectra) type 4 transactions
-    // eslint-disable-next-line vitest/no-disabled-tests
+
     it.skip("EIP-7702 (type 4): access list reduces or matches gas usage", async function () {
         const evmAddress = await deployContract();
         const privateKey = await fundNewEcdsaAccount();

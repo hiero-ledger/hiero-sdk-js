@@ -11,7 +11,7 @@ const encodeOpts = { pad: false };
  * @param {string} str  the base32 string.
  * @returns {Uint8Array | ''}
  */
-// eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+
 const decode = (str) => str && base32.parse(str, decodeOpts);
 
 /**
@@ -20,7 +20,7 @@ const decode = (str) => str && base32.parse(str, decodeOpts);
  * @param {Buffer|Uint8Array} data
  * @returns {string}
  */
-// eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+
 const encode = (data) => data && base32.stringify(data, encodeOpts);
 
 export default {

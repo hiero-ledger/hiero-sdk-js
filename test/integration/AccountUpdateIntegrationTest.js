@@ -84,7 +84,7 @@ describe("AccountUpdate", function () {
     });
 
     // Hook-related tests
-    // eslint-disable-next-line vitest/no-disabled-tests
+
     describe.skip("AccountUpdate with Hooks", function () {
         let testContractId;
 
@@ -557,7 +557,6 @@ describe("AccountUpdate", function () {
         }
     });
 
-    // eslint-disable-next-line vitest/no-disabled-tests
     it.skip("should error with insufficent tx fee when a large expiration time is set", async function () {
         const { accountId, newKey: key1 } = await createAccount(env.client);
 

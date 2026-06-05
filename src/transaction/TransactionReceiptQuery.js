@@ -189,7 +189,6 @@ export default class TransactionReceiptQuery extends Query {
      * @param {HieroProto.proto.IResponse} response
      * @returns {[Status, ExecutionState]}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _getStatusAndExecutionState(request, response) {
         const { nodeTransactionPrecheckCode } =
             this._mapResponseHeader(response);
@@ -273,7 +272,7 @@ export default class TransactionReceiptQuery extends Query {
      * @param {AccountId} nodeId
      * @returns {Error}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     _mapStatusError(request, response, nodeId) {
         const { nodeTransactionPrecheckCode } =
             this._mapResponseHeader(response);

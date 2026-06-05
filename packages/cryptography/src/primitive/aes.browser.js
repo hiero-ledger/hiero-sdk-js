@@ -2,6 +2,7 @@ import * as hex from "../encoding/hex.js";
 import * as utf8 from "../encoding/utf8.js";
 import SparkMD5 from "spark-md5";
 import { Buffer } from "buffer";
+import { toBufferSource } from "./utils.js";
 
 // this will be executed in browser environment so we can use window.crypto
 /* eslint-disable n/no-unsupported-features/node-builtins */
@@ -25,14 +26,14 @@ export async function createCipheriv(algorithm, key, iv, data) {
         case CipherAlgorithm.Aes128Ctr:
             algorithm_ = {
                 name: "AES-CTR",
-                counter: iv,
+                counter: toBufferSource(iv),
                 length: 128,
             };
             break;
         case CipherAlgorithm.Aes128Cbc:
             algorithm_ = {
                 name: "AES-CBC",
-                iv: iv,
+                iv: toBufferSource(iv),
             };
             break;
         default:
@@ -43,7 +44,7 @@ export async function createCipheriv(algorithm, key, iv, data) {
 
     const key_ = await window.crypto.subtle.importKey(
         "raw",
-        key,
+        toBufferSource(key),
         algorithm_.name,
         false,
         ["encrypt"],
@@ -52,8 +53,11 @@ export async function createCipheriv(algorithm, key, iv, data) {
     return new Uint8Array(
         // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/encrypt#return_value
         /** @type {ArrayBuffer} */ (
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            await window.crypto.subtle.encrypt(algorithm_, key_, data)
+            await window.crypto.subtle.encrypt(
+                algorithm_,
+                key_,
+                toBufferSource(data),
+            )
         ),
     );
 }
@@ -72,14 +76,14 @@ export async function createDecipheriv(algorithm, key, iv, data) {
         case CipherAlgorithm.Aes128Ctr:
             algorithm_ = {
                 name: "AES-CTR",
-                counter: iv,
+                counter: toBufferSource(iv),
                 length: 128,
             };
             break;
         case CipherAlgorithm.Aes128Cbc:
             algorithm_ = {
                 name: "AES-CBC",
-                iv,
+                iv: toBufferSource(iv),
             };
             break;
         default:
@@ -90,30 +94,29 @@ export async function createDecipheriv(algorithm, key, iv, data) {
 
     const key_ = await window.crypto.subtle.importKey(
         "raw",
-        key,
+        toBufferSource(key),
         algorithm_.name,
         false,
         ["decrypt"],
     );
     let decrypted;
     try {
-        decrypted = await window.crypto.subtle.decrypt(algorithm_, key_, data);
+        decrypted = await window.crypto.subtle.decrypt(
+            algorithm_,
+            key_,
+            toBufferSource(data),
+        );
     } catch (error) {
         const message =
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             error != null && /** @type {Error} */ (error).message != null
-                ? // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                  /** @type {Error} */ (error).message
+                ? /** @type {Error} */ (error).message
                 : "";
 
         throw new Error(`Unable to decrypt: ${message}`);
     }
     return new Uint8Array(
         // https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/encrypt#return_value
-        /** @type {ArrayBuffer} */ (
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            decrypted
-        ),
+        /** @type {ArrayBuffer} */ (decrypted),
     );
 }
 

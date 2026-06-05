@@ -1,6 +1,5 @@
 import { fixupConfigRules, fixupPluginRules } from "@eslint/compat";
 import typescriptEslint from "@typescript-eslint/eslint-plugin";
-import ie11 from "eslint-plugin-ie11";
 import globals from "globals";
 import tsParser from "@typescript-eslint/parser";
 import path from "node:path";
@@ -33,7 +32,6 @@ export default [
     {
         plugins: {
             "@typescript-eslint": fixupPluginRules(typescriptEslint),
-            ie11,
         },
 
         languageOptions: {
@@ -77,10 +75,6 @@ export default [
                     definedTags: ["internal"],
                 },
             ],
-            "ie11/no-collection-args": "error",
-            "ie11/no-for-in-const": "error",
-            "ie11/no-loop-func": "warn",
-            "ie11/no-weak-collections": "error",
         },
     },
 ];
