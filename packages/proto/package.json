@@ -58,7 +58,7 @@
     "eslint-plugin-compat": "6.1.0",
     "eslint-plugin-import": "2.28.1",
     "eslint-plugin-jsdoc": "63.0.1",
-    "eslint-plugin-n": "17.15.1",
+    "eslint-plugin-n": "18.0.1",
     "estraverse": "5.3.0",
     "globals": "17.3.0",
     "jsdoc": "4.0.0",

@@ -111,7 +111,7 @@
         "eslint-plugin-compat": "6.1.0",
         "eslint-plugin-import": "2.31.0",
         "eslint-plugin-jsdoc": "63.0.1",
-        "eslint-plugin-n": "17.17.0",
+        "eslint-plugin-n": "18.0.1",
         "@vitest/eslint-plugin": "1.6.7",
         "geckodriver": "6.0.2",
         "globals": "17.3.0",
