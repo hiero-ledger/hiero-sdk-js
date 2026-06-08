@@ -39,10 +39,34 @@ function remapNetworkToLocalPortForwards(mirrorNetworkState) {
     return remapped;
 }
 
+/**
+ * Mirror address-book refresh runs during INVALID_NODE_ACCOUNT retries. Remap
+ * immediately so the same execute() keeps using localhost port-forwards in CI.
+ *
+ * @param {import("../../../src/client/NodeClient.js").default} client
+ */
+function installLocalPortForwardNetworkRemap(client) {
+    const originalUpdateNetwork = client.updateNetwork.bind(client);
+
+    client.updateNetwork = async function updateNetworkWithLocalRemap() {
+        await originalUpdateNetwork();
+
+        const mirrorNetworkState = client.network;
+        if (Object.keys(mirrorNetworkState).length > 0) {
+            client.setNetwork(
+                remapNetworkToLocalPortForwards(mirrorNetworkState),
+            );
+        }
+
+        return client;
+    };
+}
+
 export {
     network,
     mirrorNetwork,
     node2Address,
     node2LocalAddress,
+    installLocalPortForwardNetworkRemap,
     remapNetworkToLocalPortForwards,
 };
