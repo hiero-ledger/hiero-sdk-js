@@ -227,7 +227,7 @@ export default class MirrorNodeContractQuery {
 
         if (isLocalEnvironment) {
             // For local environments, use HTTP scheme and port 8545 for contract calls
-            // (different from general mirror node REST API port 5551)
+            // (different from general mirror node REST API port 38081)
             const url = new URL(mirrorRestApiBaseUrl);
             url.protocol = "http:";
             url.port = "8545";

@@ -278,7 +278,7 @@ describe("AccountAllowanceApproveTransaction", function () {
     // Test for _validateChecksums
     it("should validate checksums for all approvals", function () {
         const client = new Client({
-            network: { "127.0.0.1:50211": "0.0.3" },
+            network: { "127.0.0.1:35211": "0.0.3" },
         });
 
         // Create stubs for validateChecksum methods

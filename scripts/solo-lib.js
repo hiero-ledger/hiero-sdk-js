@@ -250,10 +250,10 @@ export async function setupPortForwarding({
             "svc/haproxy-node1-svc",
             "-n",
             namespace,
-            "50211:50211",
+            "35211:50211",
         ]),
     );
-    logger.info("  - Node 1 (consensus): localhost:50211");
+    logger.info("  - Node 1 (consensus): localhost:35211");
 
     if (numNodes >= 2) {
         spawnBackgroundCommand(
@@ -263,10 +263,10 @@ export async function setupPortForwarding({
                 "svc/haproxy-node2-svc",
                 "-n",
                 namespace,
-                "51211:50211",
+                "36211:50211",
             ]),
         );
-        logger.info("  - Node 2 (consensus): localhost:51211");
+        logger.info("  - Node 2 (consensus): localhost:36211");
     }
 
     spawnBackgroundCommand(
@@ -276,10 +276,10 @@ export async function setupPortForwarding({
             "svc/mirror-1-rest",
             "-n",
             namespace,
-            "5551:80",
+            "38081:80",
         ]),
     );
-    logger.info("  - Mirror REST API: localhost:5551");
+    logger.info("  - Mirror REST API: localhost:38081");
 
     spawnBackgroundCommand(
         "kubectl",
@@ -646,11 +646,11 @@ GENESIS_OPERATOR_ID=${genesisOperatorId}
 GENESIS_OPERATOR_KEY=${genesisOperatorKey}
 
 # Node Endpoints
-NODE1_ENDPOINT=127.0.0.1:50211
-NODE2_ENDPOINT=127.0.0.1:51211
+NODE1_ENDPOINT=127.0.0.1:35211
+NODE2_ENDPOINT=127.0.0.1:36211
 
 # Mirror Node Endpoints
-MIRROR_REST_ENDPOINT=http://localhost:5551
+MIRROR_REST_ENDPOINT=http://localhost:38081
 MIRROR_WEB3_ENDPOINT=http://localhost:8545
 MIRROR_GRPC_ENDPOINT=localhost:5600
 `;

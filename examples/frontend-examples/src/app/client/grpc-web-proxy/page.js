@@ -53,8 +53,8 @@ const Home = () => {
 
     const setMirrorNetworkToClient = () => {
         try {
-            client.setMirrorNetwork(["127.0.0.1:5551"]);
-            showMessage("Mirror network set to localhost:5551", "success");
+            client.setMirrorNetwork(["127.0.0.1:38081"]);
+            showMessage("Mirror network set to localhost:38081", "success");
         } catch (error) {
             showMessage(
                 `Error setting mirror network: ${error.message}`,

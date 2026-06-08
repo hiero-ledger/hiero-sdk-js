@@ -183,7 +183,7 @@ describe("Executable", function () {
         const trace = vi.fn();
         const updateNetwork = vi.fn();
         const currentNode = {
-            address: { toString: () => "127.0.0.1:50211" },
+            address: { toString: () => "127.0.0.1:35211" },
         };
 
         executable._logger = { debug, warn, trace };
