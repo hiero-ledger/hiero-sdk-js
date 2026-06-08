@@ -11,8 +11,9 @@ import {
     ServiceEndpoint,
 } from "../../../src/exports.js";
 import IntegrationTestEnv from "../client/NodeIntegrationTestEnv.js";
+import { patchClientNetworkRemap } from "./SharedConstants.js";
 import {
-    installLocalPortForwardNetworkRemap,
+    mirrorGrpcNetwork,
     mirrorNetwork,
     network,
     node2Address,
@@ -45,7 +46,6 @@ describe("Node Update Integration Tests", function () {
 
         // Initialize client with integration network
         client.setMirrorNetwork(mirrorNetwork);
-        installLocalPortForwardNetworkRemap(client);
 
         // Set the operator to be genesis operator
         client.setOperator(env.genesisOperatorId, env.genesisOperatorKey);
@@ -58,20 +58,28 @@ describe("Node Update Integration Tests", function () {
     });
 
     it("should execute node update transaction", async function () {
-        const response = await new NodeUpdateTransaction()
-            .setNodeId(1)
-            .setNodeAccountIds([AccountId.fromString("0.0.3")])
-            .setDescription("testUpdated")
-            .setDeclineReward(true)
-            .setGrpcWebProxyEndpoint(
-                new ServiceEndpoint()
-                    .setDomainName("testWebUpdatedsdfsdfsdfsdf.com")
-                    .setPort(123456),
-            )
-            .execute(client);
+        try {
+            const response = await new NodeUpdateTransaction()
+                .setNodeId(1)
+                .setNodeAccountIds([AccountId.fromString("0.0.3")])
+                .setDescription("testUpdated")
+                .setDeclineReward(true)
+                .setGrpcWebProxyEndpoint(
+                    new ServiceEndpoint()
+                        .setDomainName("testWebUpdatedsdfsdfsdfsdf.com")
+                        .setPort(123456),
+                )
+                .execute(client);
 
-        const receipt = await response.getReceipt(client);
-        expect(receipt.status).to.equal(Status.Success);
+            const receipt = await response.getReceipt(client);
+            expect(receipt.status).to.equal(Status.Success);
+        } finally {
+            try {
+                await restoreOriginalGrpcWebProxyEndpoint(client);
+            } catch {
+                // Best-effort cleanup so later tests are not blocked.
+            }
+        }
     });
 
     it("should delete grpc web proxy endpoint", async function () {
@@ -261,6 +269,9 @@ describe("Node Update Integration Tests", function () {
     });
 
     it("should update addressbook and retry after node account ID change", async function () {
+        client.setMirrorNetwork(mirrorGrpcNetwork);
+        patchClientNetworkRemap(client, network);
+
         let newNodeAccountID = null;
 
         try {
@@ -332,6 +343,7 @@ describe("Node Update Integration Tests", function () {
             }
 
             client.setNetwork(network);
+            client.setMirrorNetwork(mirrorNetwork);
         }
     });
 
