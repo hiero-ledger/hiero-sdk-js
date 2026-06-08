@@ -9,7 +9,7 @@ const network = {
 
 const mirrorNetwork = ["localhost:38081"];
 
-/** Mirror gRPC used by AddressBookQuery during network refresh. */
-const mirrorGrpcNetwork = ["localhost:5600"];
+/** WebClient AddressBookQuery uses mirror REST fetch during network refresh. */
+const mirrorForAddressBookRefresh = mirrorNetwork;
 
-export { network, mirrorNetwork, mirrorGrpcNetwork, node2Address };
+export { network, mirrorNetwork, mirrorForAddressBookRefresh, node2Address };

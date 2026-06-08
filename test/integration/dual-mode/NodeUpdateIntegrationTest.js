@@ -13,7 +13,7 @@ import {
 import IntegrationTestEnv from "../client/NodeIntegrationTestEnv.js";
 import { patchClientNetworkRemap } from "./SharedConstants.js";
 import {
-    mirrorGrpcNetwork,
+    mirrorForAddressBookRefresh,
     mirrorNetwork,
     network,
     node2Address,
@@ -269,7 +269,7 @@ describe("Node Update Integration Tests", function () {
     });
 
     it("should update addressbook and retry after node account ID change", async function () {
-        client.setMirrorNetwork(mirrorGrpcNetwork);
+        client.setMirrorNetwork(mirrorForAddressBookRefresh);
         patchClientNetworkRemap(client, network);
 
         let newNodeAccountID = null;
