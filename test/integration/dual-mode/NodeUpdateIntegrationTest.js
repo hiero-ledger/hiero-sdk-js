@@ -14,8 +14,8 @@ import IntegrationTestEnv from "../client/NodeIntegrationTestEnv.js";
 import {
     mirrorNetwork,
     node2Address,
-    node2PortToReplace,
     network,
+    remapNetworkToLocalPortForwards,
 } from "./NodeConstants.js";
 
 const restoreOriginalGrpcWebProxyEndpoint = async (client) => {
@@ -283,7 +283,7 @@ describe("Node Update Integration Tests", function () {
         await updateResp.getReceipt(client);
 
         // Wait for mirror node to import data
-        await new Promise((resolve) => setTimeout(resolve, 5000));
+        await new Promise((resolve) => setTimeout(resolve, 10000));
 
         const anotherNewKey = PrivateKey.generateED25519();
         // Submit to the updated node - should trigger addressbook refresh
@@ -297,36 +297,23 @@ describe("Node Update Integration Tests", function () {
         const testReceipt = await testResp.getReceipt(client);
         expect(testReceipt.status).to.equal(Status.Success);
         // Verify address book has been updated
-        const network = client.network;
+        const clientNetwork = client.network;
 
-        const hasNewNodeAccount = Object.values(network).some(
+        const hasNewNodeAccount = Object.values(clientNetwork).some(
             (accountId) => accountId.toString() === newNodeAccountID.toString(),
         );
         expect(hasNewNodeAccount).to.be.true;
 
         // Find the address of the newly added node
-        const newNodeAddress = Object.entries(network).find(
+        const newNodeAddress = Object.entries(clientNetwork).find(
             ([, accountId]) =>
                 accountId.toString() === newNodeAccountID.toString(),
         )?.[0];
 
-        // Assert the address matches the expected value
+        // Mirror returns in-cluster DNS; CI reaches nodes via localhost port-forwards.
         expect(newNodeAddress).to.equal(node2Address);
 
-        // This is not an ideal workaround - reconstruct the network state
-        // because the mirror node returns a different address than expected
-        if (newNodeAddress === node2Address) {
-            const oldNetworkState = { ...network };
-            delete oldNetworkState[newNodeAddress];
-            const newNetworkState = {
-                ...oldNetworkState,
-                [node2Address.replace(
-                    node2Address.split(":")[1],
-                    node2PortToReplace,
-                )]: newNodeAccountID,
-            };
-            client.setNetwork(newNetworkState);
-        }
+        client.setNetwork(remapNetworkToLocalPortForwards(clientNetwork));
 
         // This transaction should succeed with the new node account ID
         const finalResp = await new AccountCreateTransaction()
@@ -370,6 +357,7 @@ describe("Node Update Integration Tests", function () {
             const updateResp = await (
                 await new NodeUpdateTransaction()
                     .setNodeId(0)
+                    .setNodeAccountIds([AccountId.fromString("0.0.3")])
                     .setAccountId(newNodeAccountID)
                     .freezeWith(client)
                     .sign(newAccountKey)
@@ -378,7 +366,7 @@ describe("Node Update Integration Tests", function () {
             await updateResp.getReceipt(client);
 
             // Wait for changes to propagate
-            await new Promise((resolve) => setTimeout(resolve, 5000));
+            await new Promise((resolve) => setTimeout(resolve, 10000));
 
             const anotherNewKey = PrivateKey.generateED25519();
 
@@ -395,20 +383,24 @@ describe("Node Update Integration Tests", function () {
             expect(testReceipt.status).to.equal(Status.Success);
 
             // Verify address book has NOT been updated (no mirror node)
-            const network = client.network;
-            const node1 = Object.entries(network).find(
+            const clientNetwork = client.network;
+            const node1 = Object.entries(clientNetwork).find(
                 ([, accountId]) => accountId.toString() === "0.0.3",
             );
-            const node2 = Object.entries(network).find(
+            const node2 = Object.entries(clientNetwork).find(
                 ([, accountId]) => accountId.toString() === "0.0.4",
             );
 
             expect(node1).to.not.be.undefined;
             expect(node2).to.not.be.undefined;
 
-            // This transaction should succeed with retries
+            // This transaction should succeed with retries (no mirror refresh)
             const finalResp = await new AccountCreateTransaction()
                 .setKey(anotherNewKey.publicKey)
+                .setNodeAccountIds([
+                    AccountId.fromString("0.0.3"),
+                    AccountId.fromString("0.0.4"),
+                ])
                 .execute(client);
 
             const finalReceipt = await finalResp.getReceipt(client);
@@ -417,7 +409,7 @@ describe("Node Update Integration Tests", function () {
             // Revert the node account ID
             const revertResp = await new NodeUpdateTransaction()
                 .setNodeId(0)
-                .setNodeAccountIds([AccountId.fromString("0.0.4")])
+                .setNodeAccountIds([newNodeAccountID])
                 .setAccountId(AccountId.fromString("0.0.3"))
                 .execute(client);
 
