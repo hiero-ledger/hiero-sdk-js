@@ -4,7 +4,7 @@ import { describe, it, expect, vi } from "vitest";
 import TopicMessageQuery from "../../../src/topic/TopicMessageQuery.js";
 import TopicId from "../../../src/topic/TopicId.js";
 import Timestamp from "../../../src/Timestamp.js";
-import Long from "long";
+//import Long from "long";
 
 describe("TopicMessageQuery", () => {
     const topicId = new TopicId(0, 0, 123);
