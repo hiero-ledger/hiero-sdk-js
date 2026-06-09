@@ -21,6 +21,9 @@ let bobKey;
  * and remove one of the signatures from the transaction then add it back
  */
 
+/**
+ *
+ */
 async function main() {
     /**
      *

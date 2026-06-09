@@ -30,6 +30,9 @@ function hsmSign(key, bodyBytes) {
     return Promise.resolve(signature);
 }
 
+/**
+ *
+ */
 async function main() {
     if (process.env.OPERATOR_ID == null || process.env.OPERATOR_KEY == null) {
         throw new Error(

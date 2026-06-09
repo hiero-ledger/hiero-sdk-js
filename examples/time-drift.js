@@ -11,6 +11,9 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+/**
+ *
+ */
 async function sync() {
     // http://time.google.com:80 doesn't actually give us an NTP response, instead it returns
     // a 302 redirected response. However, it does contain a `date` header which we can use.
@@ -32,7 +35,7 @@ async function sync() {
     // strongly discourages us using `Date.parse()`, but I'm not sure what we should replace
     // it with without adding any new deps.
     //
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const worldTime = Math.round(Date.parse(response.headers.date) / 1000);
 
     // Set the time drift value in the SDK Cache
@@ -41,6 +44,9 @@ async function sync() {
     console.log(`Calculated time drift to be ${Cache.timeDrift}`);
 }
 
+/**
+ *
+ */
 async function main() {
     if (
         process.env.OPERATOR_ID == null ||

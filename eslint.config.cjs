@@ -8,9 +8,11 @@ const tsParser = require("@typescript-eslint/parser");
 const typescriptEslint = require("@typescript-eslint/eslint-plugin");
 const deprecation = require("eslint-plugin-deprecation");
 // eslint-plugin-n v18+ is ESM-only and no longer resolvable through
-// FlatCompat's "plugin:n/recommended" string, so consume its flat config
-// directly. `.default` unwraps the ESM namespace returned by require().
-const nodePlugin = require("eslint-plugin-n").default;
+// FlatCompat's "plugin:n/recommended" string, so consume its flat config directly.
+const nodePluginModule = require("eslint-plugin-n");
+const nodePlugin = nodePluginModule.configs
+    ? nodePluginModule
+    : nodePluginModule.default;
 const js = require("@eslint/js");
 
 const { FlatCompat } = require("@eslint/eslintrc");
@@ -22,6 +24,16 @@ const compat = new FlatCompat({
 });
 
 module.exports = defineConfig([
+    {
+        ignores: [
+            "examples/demo-umd/**",
+            "examples/frontend-examples/**",
+            "examples/react-native-example/**",
+            "examples/react-native-example-legacy/**",
+            "examples/simple_rest_signature_provider/**",
+            "examples/custom-grpc-web-proxies-network/**",
+        ],
+    },
     {
         languageOptions: {
             globals: {
@@ -105,6 +117,22 @@ module.exports = defineConfig([
             ],
 
             "deprecation/deprecation": "warn",
+        },
+    },
+    {
+        files: ["examples/**/*.js"],
+        languageOptions: {
+            parserOptions: {
+                project: ["./examples/tsconfig.json"],
+                tsconfigRootDir: __dirname,
+            },
+        },
+        rules: {
+            "n/no-process-exit": "off",
+            "jsdoc/require-description": "off",
+            "jsdoc/no-blank-block-descriptions": "off",
+            "jsdoc/reject-any-type": "off",
+            "jsdoc/escape-inline-tags": "off",
         },
     },
 ]);

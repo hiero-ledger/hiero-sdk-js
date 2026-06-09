@@ -4,6 +4,9 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+/**
+ *
+ */
 function main() {
     /* Source and context: https://hips.hedera.com/hip/hip-583
 

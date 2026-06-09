@@ -19,6 +19,9 @@ let user1Key;
 /** @type {PrivateKey | undefined} */
 let user2Key;
 
+/**
+ *
+ */
 async function main() {
     if (
         process.env.OPERATOR_ID == null ||

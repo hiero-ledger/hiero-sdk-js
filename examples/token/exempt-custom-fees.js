@@ -31,6 +31,9 @@ that was created was not charged a custom fee in the transfer
 
 */
 
+/**
+ *
+ */
 async function main() {
     // If we weren't able to get them, we should throw a new error
     if (
