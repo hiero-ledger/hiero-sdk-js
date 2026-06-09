@@ -27,7 +27,7 @@ tasks:
 
     format:
         cmds:
-            - ./node_modules/.bin/prettier "*.json" "*.js" --write > /dev/null
+            - ./node_modules/.bin/prettier "*.json" "**/*.js" --write > /dev/null
 
     lint:
         deps:
@@ -46,8 +46,8 @@ tasks:
 
     "lint:format":
         cmds:
-            - ./node_modules/.bin/prettier "*.json" "*.js" --check > /dev/null
+            - ./node_modules/.bin/prettier "*.json" "**/*.js" --check > /dev/null
 
     "lint:js":
         cmds:
-            - ./node_modules/.bin/eslint --fix "*.json" "*.js"
+            - ./node_modules/.bin/eslint --fix "**/*.js"

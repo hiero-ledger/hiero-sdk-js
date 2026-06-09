@@ -38,6 +38,9 @@ after the set period (in seconds)
 2. Wait 15 seconds in order for the transaction to be valid and then submit it
 */
 
+/**
+ *
+ */
 async function main() {
     if (
         process.env.OPERATOR_ID == null ||

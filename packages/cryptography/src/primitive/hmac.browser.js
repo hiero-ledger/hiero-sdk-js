@@ -1,4 +1,5 @@
 import * as utf8 from "../encoding/utf8.js";
+import { toBufferSource } from "./utils.js";
 
 // this will be executed in browser environment so we can use window.crypto
 /* eslint-disable n/no-unsupported-features/node-builtins */
@@ -26,7 +27,7 @@ export async function hash(algorithm, secretKey, data) {
     try {
         const key_ = await window.crypto.subtle.importKey(
             "raw",
-            key,
+            toBufferSource(key),
             {
                 name: "HMAC",
                 hash: algorithm,
@@ -36,7 +37,11 @@ export async function hash(algorithm, secretKey, data) {
         );
 
         return new Uint8Array(
-            await window.crypto.subtle.sign("HMAC", key_, value),
+            await window.crypto.subtle.sign(
+                "HMAC",
+                key_,
+                toBufferSource(value),
+            ),
         );
     } catch {
         throw new Error("Fallback if SubtleCrypto fails is not implemented");

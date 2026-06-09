@@ -16,6 +16,8 @@ interface ApplyCommonTransactionInputParams {
     readonly memo?: string;
     readonly regenerateTransactionId?: boolean;
     readonly signers?: string[];
+    /** HIP-1313 high-volume entity creation opt-in. */
+    readonly highVolume?: boolean;
 }
 
 export const applyCommonTransactionParams = (
@@ -30,6 +32,7 @@ export const applyCommonTransactionParams = (
         memo = "",
         regenerateTransactionId = false,
         signers = [],
+        highVolume,
     } = params;
 
     if (transactionId) {
@@ -60,6 +63,12 @@ export const applyCommonTransactionParams = (
 
     if (regenerateTransactionId) {
         transaction.setRegenerateTransactionId(regenerateTransactionId);
+    }
+
+    // HIP-1313: opt into the high-volume entity creation throttle bucket.
+    // Apply before freeze() so the flag is included in the signed body.
+    if (highVolume != null) {
+        transaction.setHighVolume(highVolume);
     }
 
     if (signers.length > 0) {

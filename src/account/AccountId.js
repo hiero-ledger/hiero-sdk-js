@@ -11,7 +11,9 @@ import * as hex from ".././encoding/hex.js";
 import { isLongZeroAddress } from "../util.js";
 
 /**
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  */
 
 /**
@@ -272,7 +274,6 @@ export default class AccountId {
      * @returns {AccountId}
      */
     static fromSolidityAddress(address) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         if (isLongZeroAddress(hex.decode(address))) {
             return new AccountId(
                 ...EntityIdHelper.fromSolidityAddress(address),

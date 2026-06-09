@@ -1096,7 +1096,7 @@ export default class Transaction extends Executable {
      *
      * **NOTE**: If client does not have an operator set, this method will throw
      *
-     * @param {import("../client/Client.js").default<Channel, *>} client
+     * @param {Client} client
      * @returns {Promise<this>}
      */
     signWithOperator(client) {
@@ -1499,7 +1499,7 @@ export default class Transaction extends Executable {
     /**
      * Set the node account IDs using the client
      *
-     * @param {?import("../client/Client.js").default<Channel, *>} client
+     * @param {?Client} client
      */
     _setNodeAccountIds(client) {
         if (!this._nodeAccountIds.isEmpty) {
@@ -1524,7 +1524,7 @@ export default class Transaction extends Executable {
      * Note: This method assumes the caller has already verified that trimming is needed.
      *
      * @private
-     * @param {import("../client/Client.js").default<Channel, *>} client
+     * @param {Client} client
      */
     _applyMaxNodesPerTransactionLimit(client) {
         const maxNodes = client.maxNodesPerTransaction;
@@ -1695,7 +1695,7 @@ export default class Transaction extends Executable {
      * Will use the `Client`, if available, to generate a default Transaction ID and select 1/3
      * nodes to prepare this transaction for.
      *
-     * @param {?import("../client/Client.js").default<Channel, *>} client
+     * @param {?Client} client
      * @returns {this}
      */
     freezeWith(client) {
@@ -1728,7 +1728,7 @@ export default class Transaction extends Executable {
         // Set the node account IDs via client
         if (this.batchKey) {
             this._nodeAccountIds.setList([NODE_ACCOUNT_BATCH_ID]);
-        } else {
+        } else if (client != null) {
             this._setNodeAccountIds(client);
         }
 
@@ -1922,7 +1922,7 @@ export default class Transaction extends Executable {
     /**
      * @param {Client} client
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars,@typescript-eslint/no-empty-function
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _validateChecksums(client) {
         // Do nothing
     }
@@ -2166,7 +2166,6 @@ export default class Transaction extends Executable {
      * @param {HieroProto.proto.ITransactionResponse} response
      * @returns {[Status, ExecutionState]}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _getStatusAndExecutionState(request, response) {
         const { nodeTransactionPrecheckCode } = response;
 
@@ -2222,7 +2221,7 @@ export default class Transaction extends Executable {
      * @param {AccountId} nodeId
      * @returns {Error}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     _mapStatusError(request, response, nodeId) {
         const { nodeTransactionPrecheckCode } = response;
 
@@ -2234,7 +2233,7 @@ export default class Transaction extends Executable {
         if (this._logger) {
             this._logger.info(
                 // @ts-ignore
-                `Transaction Error Info: ${status.toString()}, ${this.transactionId.toString()}`, // eslint-disable-line @typescript-eslint/restrict-template-expressions
+                `Transaction Error Info: ${status.toString()}, ${this.transactionId.toString()}`,
             );
         }
 

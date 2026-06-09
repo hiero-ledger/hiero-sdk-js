@@ -270,7 +270,7 @@ export default class TransactionRecordQuery extends Query {
      * @param {AccountId} nodeId
      * @returns {Error}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     _mapStatusError(request, response, nodeId) {
         const { nodeTransactionPrecheckCode } =
             this._mapResponseHeader(response);

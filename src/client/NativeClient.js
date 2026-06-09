@@ -45,10 +45,7 @@ export default class NativeClient extends Client {
                         break;
 
                     default:
-                        throw new Error(
-                            // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                            `unknown network: ${props.network}`,
-                        );
+                        throw new Error(`unknown network: ${props.network}`);
                 }
             } else if (props.network != null) {
                 Client._validateNetworkConsistency(props.network);

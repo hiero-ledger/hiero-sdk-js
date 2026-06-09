@@ -38,9 +38,7 @@ export default class Network extends ManagedNetwork {
      */
     setNetwork(network) {
         this._setNetwork(
-            // eslint-disable-next-line ie11/no-collection-args
             new Map(
-                // eslint-disable-next-line ie11/no-collection-args
                 Object.entries(network).map(([key, value]) => {
                     return [
                         key,
@@ -84,7 +82,6 @@ export default class Network extends ManagedNetwork {
          */
         var n = {};
 
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         for (const node of this._nodes) {
             n[node.address.toString()] = node.accountId;
         }
@@ -96,7 +93,7 @@ export default class Network extends ManagedNetwork {
      * @param {string} networkName
      * @returns {this}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     setNetworkName(networkName) {
         super.setLedgerId(networkName);
 

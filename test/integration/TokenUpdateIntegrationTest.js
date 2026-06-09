@@ -334,7 +334,6 @@ describe("TokenUpdate", function () {
         }
     });
 
-    // eslint-disable-next-line vitest/no-disabled-tests
     it.skip("cannot change current treasury until no NFTs are owned", async function () {
         const key = PrivateKey.generateED25519();
 

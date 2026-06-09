@@ -16,7 +16,6 @@ describe("TopicMessage", function () {
         env = await IntegrationTestEnv.new({ throwaway: true });
     });
 
-    // eslint-disable-next-line vitest/no-disabled-tests
     it.skip("should be executable", async function () {
         const operatorKey = env.operatorKey.publicKey;
 
@@ -39,7 +38,7 @@ describe("TopicMessage", function () {
             .setCompletionHandler(() => {
                 finished = true;
             })
-            // eslint-disable-next-line no-unused-vars
+
             .subscribe(env.client, (_) => {
                 // Do nothing
             });
@@ -95,7 +94,7 @@ describe("TopicMessage", function () {
             .setCompletionHandler(() => {
                 finished = true;
             })
-            // eslint-disable-next-line no-unused-vars
+
             .subscribe(env.client, (_) => {
                 // Do nothing
             });

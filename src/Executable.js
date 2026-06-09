@@ -740,10 +740,8 @@ export default class Executable {
         // list of promises will be the execution promise.
         if (this._grpcDeadline != null) {
             promises.push(
-                // eslint-disable-next-line ie11/no-loop-func
                 new Promise((_, reject) => {
                     deadlineTimer = setTimeout(
-                        // eslint-disable-next-line ie11/no-loop-func
                         () =>
                             reject(
                                 new GrpcServiceError(
@@ -765,7 +763,7 @@ export default class Executable {
         promises.push(this._execute(channel, request));
 
         try {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-return
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return /** @type {ResponseT} */ (await Promise.race(promises));
         } finally {
             if (deadlineTimer != null) {

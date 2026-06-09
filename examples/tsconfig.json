@@ -22,5 +22,6 @@
         "resolveJsonModule": true,
         "noEmit": true
     },
-    "include": ["*.js", "*.json"]
+    "include": ["*.js", "*.json", "*/*.js"],
+    "exclude": ["demo-umd"]
 }

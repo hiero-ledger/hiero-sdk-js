@@ -40,6 +40,7 @@ describe("TopicMessageMocking", function () {
             [{ response: TOPIC_MESSAGE }],
         ]));
 
+        let receivedMessage = null;
         let finished = false;
 
         handle = new TopicMessageQuery()
@@ -47,14 +48,20 @@ describe("TopicMessageMocking", function () {
             .setCompletionHandler(() => {
                 finished = true;
             })
-            .subscribe(client, () => {});
+            .subscribe(client, null, (message) => {
+                receivedMessage = message;
+            });
 
         const startTime = Date.now();
 
-        while (!finished && Date.now() < startTime + 5000) {
-            await new Promise((resolved) => setTimeout(resolved, 2000));
+        while (
+            (receivedMessage == null || !finished) &&
+            Date.now() < startTime + 10000
+        ) {
+            await new Promise((resolved) => setTimeout(resolved, 100));
         }
 
+        expect(receivedMessage).to.not.be.null;
         expect(finished).to.be.true;
         client.close();
     });

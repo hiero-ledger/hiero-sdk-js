@@ -1,4 +1,5 @@
 import * as utf8 from "../encoding/utf8.js";
+import { toBufferSource } from "./utils.js";
 
 // this will be executed in browser environment so we can use window.crypto
 /* eslint-disable n/no-unsupported-features/node-builtins */
@@ -28,7 +29,7 @@ export async function deriveKey(algorithm, password, salt, iterations, length) {
     try {
         const key = await window.crypto.subtle.importKey(
             "raw",
-            pass,
+            toBufferSource(pass),
             {
                 name: "PBKDF2",
                 hash: algorithm,
@@ -42,7 +43,7 @@ export async function deriveKey(algorithm, password, salt, iterations, length) {
                 {
                     name: "PBKDF2",
                     hash: algorithm,
-                    salt: nacl,
+                    salt: toBufferSource(nacl),
                     iterations,
                 },
                 key,
