@@ -7,9 +7,8 @@ const { fixupConfigRules, fixupPluginRules } = require("@eslint/compat");
 const tsParser = require("@typescript-eslint/parser");
 const typescriptEslint = require("@typescript-eslint/eslint-plugin");
 // eslint-plugin-n v18+ is ESM-only and no longer resolvable through
-// FlatCompat's "plugin:n/recommended" string, so consume its flat config
-// directly. `.default` unwraps the ESM namespace returned by require().
-const nodePlugin = require("eslint-plugin-n").default;
+// FlatCompat's "plugin:n/recommended" string, so consume its flat config directly.
+const nodePlugin = require("eslint-plugin-n");
 const js = require("@eslint/js");
 
 const { FlatCompat } = require("@eslint/eslintrc");
