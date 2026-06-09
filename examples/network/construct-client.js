@@ -32,6 +32,9 @@ const HEDERA_NETWORK = "testnet";
 // or set environment variables with the same names.
 const CONFIG_FILE = process.env.CONFIG_FILE ?? null;
 
+/**
+ *
+ */
 async function main() {
     console.log("Construct Client Example Start!");
 

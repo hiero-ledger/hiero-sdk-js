@@ -15,6 +15,9 @@ dotenv.config();
 // Import the compiled contract
 import helloWorld from "../hello_world.json" with { type: "json" };
 
+/**
+ *
+ */
 async function main() {
     if (
         process.env.OPERATOR_ID == null ||

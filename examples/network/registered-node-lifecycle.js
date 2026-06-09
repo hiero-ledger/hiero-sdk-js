@@ -1,11 +1,4 @@
-/* eslint-disable
-    @typescript-eslint/no-unsafe-assignment,
-    @typescript-eslint/no-unsafe-member-access,
-    @typescript-eslint/no-unsafe-call,
-    @typescript-eslint/no-unsafe-argument,
-    @typescript-eslint/no-unsafe-return,
-    @typescript-eslint/restrict-template-expressions
-*/
+ 
 import {
     AccountId,
     BlockNodeApi,
@@ -110,6 +103,9 @@ async function waitForRegisteredNode(client, registeredNodeId) {
     );
 }
 
+/**
+ *
+ */
 async function main() {
     if (
         process.env.GENESIS_OPERATOR_ID == null ||

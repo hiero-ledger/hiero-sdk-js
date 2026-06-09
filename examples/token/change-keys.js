@@ -18,6 +18,9 @@ import dotenv from "dotenv";
  * @description Change ot remove token keys
  */
 
+/**
+ *
+ */
 async function main() {
     // Ensure required environment variables are available
     dotenv.config();

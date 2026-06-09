@@ -13,6 +13,9 @@ const OPERATOR_ID = AccountId.fromString(process.env.OPERATOR_ID);
 const OPERATOR_KEY = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
 const HEDERA_NETWORK = process.env.HEDERA_NETWORK;
 
+/**
+ *
+ */
 async function main() {
     // Step 0: Create and configure the SDK Client.
     const client = Client.forName(HEDERA_NETWORK);

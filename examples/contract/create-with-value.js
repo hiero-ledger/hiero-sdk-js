@@ -15,6 +15,9 @@ dotenv.config();
 // Import the compiled contract
 import payableContract from "../payable.json" with { type: "json" };
 
+/**
+ *
+ */
 async function main() {
     if (
         process.env.OPERATOR_ID == null ||

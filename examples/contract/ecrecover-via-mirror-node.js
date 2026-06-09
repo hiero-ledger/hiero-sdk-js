@@ -23,6 +23,9 @@ import { setTimeout } from "node:timers/promises";
 
 dotenv.config();
 
+/**
+ *
+ */
 async function main() {
     /*
      * Step 1:

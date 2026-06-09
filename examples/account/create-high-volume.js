@@ -11,6 +11,9 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+/**
+ *
+ */
 async function main() {
     if (
         !process.env.OPERATOR_ID ||

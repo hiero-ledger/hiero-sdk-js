@@ -16,6 +16,9 @@ dotenv.config();
 // Import the compiled contract
 import stateful from "../stateful.json" with { type: "json" };
 
+/**
+ *
+ */
 async function main() {
     if (
         process.env.OPERATOR_ID == null ||

@@ -21,6 +21,9 @@ dotenv.config();
  * @typedef {import("@hiero-ledger/sdk").AccountId} AccountId
  */
 
+/**
+ *
+ */
 async function main() {
     // set up wallet
     if (
