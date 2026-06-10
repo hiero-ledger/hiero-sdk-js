@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# v2.85.0
+
+### Fixed
+- Fixed spurious `FreezeTransaction.endTime` deprecation warnings when deserializing a freeze transaction from protobuf; `_fromProtobuf` now assigns `_endTime` directly instead of routing through the deprecated constructor path. [#4095](https://github.com/hiero-ledger/hiero-sdk-js/pull/4095) [#4067](https://github.com/hiero-ledger/hiero-sdk-js/issues/4067)
+- Clarified `FreezeTransaction.endTime` deprecation messaging and JSDoc to note that the network ignores this field and there is no replacement. [#4095](https://github.com/hiero-ledger/hiero-sdk-js/pull/4095)
+- Fixed `Mnemonic.calculateDerivationPathValues()` silently returning an array of empty values for malformed BIP-44 derivation paths; it now throws a descriptive error that includes the invalid input and the expected format. [#3992](https://github.com/hiero-ledger/hiero-sdk-js/pull/3992) [#3995](https://github.com/hiero-ledger/hiero-sdk-js/issues/3995)
+
 # v2.84.0
 
 ### Added

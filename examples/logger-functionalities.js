@@ -30,6 +30,9 @@ dotenv.config();
  * and in each different transaction for best experience
  */
 
+/**
+ *
+ */
 async function main() {
     if (
         process.env.OPERATOR_ID == null ||

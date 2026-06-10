@@ -68,6 +68,9 @@ async function runInParallel(examples, maxConcurrency) {
     const total = examples.length;
     let nextIndex = 0;
 
+    /**
+     *
+     */
     async function worker() {
         for (let index = nextIndex++; index < total; index = nextIndex++) {
             const file = examples[index];

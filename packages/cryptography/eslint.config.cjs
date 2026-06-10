@@ -8,6 +8,12 @@ const tsParser = require("@typescript-eslint/parser");
 const typescriptEslint = require("@typescript-eslint/eslint-plugin");
 const deprecation = require("eslint-plugin-deprecation");
 const vitest = require("@vitest/eslint-plugin");
+// eslint-plugin-n v18+ is ESM-only and no longer resolvable through
+// FlatCompat's "plugin:n/recommended" string, so consume its flat config directly.
+const nodePluginModule = require("eslint-plugin-n");
+const nodePlugin = nodePluginModule.configs
+    ? nodePluginModule
+    : nodePluginModule.default;
 const js = require("@eslint/js");
 
 const { FlatCompat } = require("@eslint/eslintrc");
@@ -25,18 +31,23 @@ const baseExtends = [
     "plugin:jsdoc/recommended",
     "plugin:import/errors",
     "plugin:import/typescript",
-    "plugin:n/recommended",
     "plugin:compat/recommended",
 ];
 
-const srcExtends = fixupConfigRules(
-    compat.extends(
-        ...baseExtends,
-        "plugin:@typescript-eslint/recommended-requiring-type-checking",
+const srcExtends = [
+    ...fixupConfigRules(
+        compat.extends(
+            ...baseExtends,
+            "plugin:@typescript-eslint/recommended-requiring-type-checking",
+        ),
     ),
-);
+    nodePlugin.configs["flat/recommended"],
+];
 
-const testExtends = fixupConfigRules(compat.extends(...baseExtends));
+const testExtends = [
+    ...fixupConfigRules(compat.extends(...baseExtends)),
+    nodePlugin.configs["flat/recommended"],
+];
 
 const sharedRules = {
     "@typescript-eslint/explicit-function-return-type": "off",

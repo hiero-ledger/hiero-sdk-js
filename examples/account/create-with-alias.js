@@ -23,6 +23,9 @@ Reference: [HIP-583 Expand alias support in CryptoCreate & CryptoTransfer Transa
     - Get the `AccountInfo` and show that the account has contractAccountId
 */
 
+/**
+ *
+ */
 async function main() {
     if (process.env.OPERATOR_ID == null || process.env.OPERATOR_KEY == null) {
         throw new Error(

@@ -11,6 +11,9 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+/**
+ *
+ */
 async function main() {
     /* Source and context:https://github.com/hiero-ledger/hiero-sdk-js/issues/1333
 

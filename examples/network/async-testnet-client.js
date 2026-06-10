@@ -18,6 +18,9 @@ dotenv.config();
  * and automatically updates the network configuration.
  */
 
+/**
+ *
+ */
 async function main() {
     // Ensure required environment variables are available
     if (

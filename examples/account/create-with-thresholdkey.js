@@ -20,6 +20,9 @@ dotenv.config();
  * Step 0: Set up client connection to Hedera network
  */
 
+/**
+ *
+ */
 async function main() {
     if (
         !process.env.OPERATOR_ID ||

@@ -21,6 +21,9 @@ const OPERATOR_ID = AccountId.fromString(process.env.OPERATOR_ID);
 const OPERATOR_KEY = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
 const HEDERA_NETWORK = process.env.HEDERA_NETWORK || "testnet";
 
+/**
+ *
+ */
 async function main() {
     console.log("Mirror Node contract queries Example Start!");
 

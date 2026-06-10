@@ -10,6 +10,9 @@ dotenv.config();
 //Steps 1-5 are executed through ContractHelper and calling HIP564Example Contract.
 //Step 6 is executed through the SDK
 
+/**
+ *
+ */
 async function main() {
     // Keys should be ECDSA
     // TODO: Fix the wallet to work with ECDSA

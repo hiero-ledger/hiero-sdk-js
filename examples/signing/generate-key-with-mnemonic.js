@@ -1,5 +1,8 @@
 import { Mnemonic } from "@hiero-ledger/sdk";
 
+/**
+ *
+ */
 async function main() {
     console.log("Generate ECDSA Key With Mnemonic Phrase Example Start!");
 

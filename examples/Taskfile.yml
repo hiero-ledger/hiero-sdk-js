@@ -50,4 +50,4 @@ tasks:
 
     "lint:js":
         cmds:
-            - ./node_modules/.bin/eslint --fix "*.json" "**/*.js"
+            - ./node_modules/.bin/eslint --fix "**/*.js"

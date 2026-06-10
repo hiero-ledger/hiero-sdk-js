@@ -54,6 +54,9 @@ const pauseKey = PrivateKey.generate();
 const freezeKey = PrivateKey.generate();
 const wipeKey = PrivateKey.generate();
 
+/**
+ *
+ */
 async function main() {
     // Create Treasury account
     console.log("Creating Treasury account...");

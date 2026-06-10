@@ -7,7 +7,7 @@
         "lint": "run-s lint:*",
         "lint:types": "tsc",
         "lint:format": "prettier '*.js' '*.json' --check",
-        "lint:js": "eslint --fix '*.js' '*.json'",
+        "lint:js": "eslint --fix '**/*.js'",
         "format": "prettier '*.js' '*.json' --write"
     },
     "engines": {

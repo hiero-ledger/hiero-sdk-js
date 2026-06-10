@@ -42,6 +42,9 @@ Example for HIP-542.
 
 */
 
+/**
+ *
+ */
 async function main() {
     // Configure accounts and client, and generate needed keys
     const supplyKey = PrivateKey.generateECDSA();

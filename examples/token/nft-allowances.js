@@ -35,6 +35,9 @@ to the allowances for NFTs does not allow users to:
 
 */
 
+/**
+ *
+ */
 async function main() {
     if (process.env.OPERATOR_ID == null || process.env.OPERATOR_KEY == null) {
         throw new Error(

@@ -12,6 +12,9 @@ import dotenv from "dotenv";
  * @description Initialize a client with only mirror node network address and create account with it
  */
 
+/**
+ *
+ */
 async function main() {
     // Ensure required environment variables are available
     dotenv.config();

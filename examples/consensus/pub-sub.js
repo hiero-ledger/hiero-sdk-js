@@ -12,6 +12,9 @@ import { setTimeout } from "node:timers/promises";
 
 dotenv.config();
 
+/**
+ *
+ */
 async function main() {
     let client;
 
@@ -62,7 +65,7 @@ async function main() {
 
         for (let i = 0; i < MESSAGES_LIMIT; i += 1) {
             //NOSONAR
-            // eslint-disable-next-line no-await-in-loop
+             
             await (
                 await new TopicMessageSubmitTransaction()
                     .setNodeAccountIds([response.nodeId])

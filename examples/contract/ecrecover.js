@@ -28,6 +28,9 @@ import ecrecoverCaller from "../ecrecover_caller.json" with { type: "json" };
 
 dotenv.config();
 
+/**
+ *
+ */
 async function main() {
     /*
      * Step 1:

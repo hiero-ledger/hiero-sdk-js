@@ -42,6 +42,9 @@ Reference: [HIP-583 Expand alias support in CryptoCreate & CryptoTransfer Transa
 - Get the `AccountInfo` for the account and return the public key on the account to show it is a complete account
 */
 
+/**
+ *
+ */
 async function main() {
     if (process.env.OPERATOR_ID == null || process.env.OPERATOR_KEY == null) {
         throw new Error(

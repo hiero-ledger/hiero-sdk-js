@@ -6,6 +6,9 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+/**
+ *
+ */
 async function main() {
     if (process.env.HEDERA_NETWORK == null) {
         throw new Error("Environment variable HEDERA_NETWORK is required.");
