@@ -1,0 +1,168 @@
+name: 'Commit Compliance Check'
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: commit-compliance-${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  compliance-check:
+    name: DCO & Signature Check
+    runs-on: hiero-client-sdk-linux-medium
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: Check commits for DCO sign-off and verified signature
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.pull_request.number;
+            const STICKY_MARKER = '<!-- commit-compliance-check -->';
+
+            // Fetch every commit on the PR (paginated). Each commit object carries the
+            // message (for DCO) and a `commit.verification` block (for the signature).
+            const commits = await github.paginate(github.rest.pulls.listCommits, {
+              owner,
+              repo,
+              pull_number: prNumber,
+              per_page: 100,
+            });
+
+            // DCO: a commit passes when it carries a `Signed-off-by: Name <email>`
+            // trailer whose email matches the author's or committer's email.
+            // Signature: a commit passes when GitHub reports its signature as verified.
+            // Merge commits are exempt from both checks.
+            const signOffRegex = /^Signed-off-by: .+ <(.+)>\s*$/gim;
+            const missingSignOff = [];
+            const unverified = [];
+
+            for (const c of commits) {
+              if (c.parents && c.parents.length > 1) continue; // merge commit
+
+              const message = c.commit.message || '';
+              const shortSha = c.sha.substring(0, 7);
+              const title = message.split('\n')[0];
+
+              // --- DCO sign-off ---
+              const authorEmail = ((c.commit.author && c.commit.author.email) || '').toLowerCase();
+              const committerEmail = ((c.commit.committer && c.commit.committer.email) || '').toLowerCase();
+              const signedEmails = [...message.matchAll(signOffRegex)].map((m) => m[1].toLowerCase());
+              if (!signedEmails.includes(authorEmail) && !signedEmails.includes(committerEmail)) {
+                missingSignOff.push({ shortSha, title });
+              }
+
+              // --- Verified signature ---
+              const verification = c.commit.verification || {};
+              if (!verification.verified) {
+                unverified.push({ shortSha, title, reason: verification.reason || 'unsigned' });
+              }
+            }
+
+            // Locate an existing sticky comment so we update instead of spamming.
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number: prNumber,
+              per_page: 100,
+            });
+            const existing = comments.find((c) => c.body && c.body.includes(STICKY_MARKER));
+
+            const upsert = async (body) => {
+              if (existing) {
+                await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+              } else {
+                await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body });
+              }
+            };
+
+            if (missingSignOff.length === 0 && unverified.length === 0) {
+              const body = [
+                STICKY_MARKER,
+                '## ✅ Commit Compliance Check',
+                '',
+                'All commits are signed off (DCO) and have a verified signature. Thank you!',
+              ].join('\n');
+
+              // Only touch the PR if a previous run left a comment, to avoid noise.
+              if (existing) await upsert(body);
+              core.info(`All ${commits.length} commit(s) pass DCO and signature checks.`);
+              return;
+            }
+
+            const sections = [
+              STICKY_MARKER,
+              '## ❌ Commit Compliance Check',
+              '',
+              'Some commits on this PR do not meet the project\'s commit requirements. Please address the item(s) below and force-push.',
+            ];
+
+            if (missingSignOff.length > 0) {
+              sections.push(
+                '',
+                '### Missing DCO sign-off',
+                '',
+                'Every commit must carry a [Developer Certificate of Origin](https://developercertificate.org/) `Signed-off-by` line, certifying you have the right to submit the code under the project\'s license.',
+                '',
+                'Affected commit(s):',
+                '',
+                missingSignOff.map((c) => `- \`${c.shortSha}\` ${c.title}`).join('\n'),
+                '',
+                '**Fix** — sign off new commits with `git commit -s`, or sign off all commits already on this branch:',
+                '',
+                '```bash',
+                `git rebase HEAD~${missingSignOff.length} --signoff`,
+                'git push --force-with-lease',
+                '```',
+                '',
+                '> The sign-off must match the commit author, e.g. `Signed-off-by: Jane Doe <jane@example.com>`.',
+              );
+            }
+
+            if (unverified.length > 0) {
+              sections.push(
+                '',
+                '### Missing verified signature',
+                '',
+                'Every commit must be cryptographically signed and [verified by GitHub](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification), so we can prove each commit genuinely came from its author and was not altered in transit.',
+                '',
+                'Affected commit(s):',
+                '',
+                unverified.map((c) => `- \`${c.shortSha}\` ${c.title} _(${c.reason})_`).join('\n'),
+                '',
+                '**Fix** — register a GPG or SSH signing key on your GitHub account, enable signing, then re-sign and force-push:',
+                '',
+                '```bash',
+                'git config --global gpg.format ssh',
+                'git config --global user.signingkey ~/.ssh/id_ed25519.pub',
+                'git config --global commit.gpgsign true',
+                `git rebase HEAD~${unverified.length} --exec "git commit --amend --no-edit -S"`,
+                'git push --force-with-lease',
+                '```',
+                '',
+                '> See [Managing commit signature verification](https://docs.github.com/en/authentication/managing-commit-signature-verification). The signing email must match a verified email on your GitHub account.',
+              );
+            }
+
+            await upsert(sections.join('\n'));
+
+            const reasons = [];
+            if (missingSignOff.length > 0) reasons.push(`${missingSignOff.length} missing DCO sign-off`);
+            if (unverified.length > 0) reasons.push(`${unverified.length} missing verified signature`);
+            core.setFailed(`Commit compliance failed: ${reasons.join('; ')}.`);
