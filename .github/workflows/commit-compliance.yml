@@ -93,15 +93,11 @@ jobs:
             };
 
             if (missingSignOff.length === 0 && unverified.length === 0) {
-              const body = [
-                STICKY_MARKER,
-                '## ✅ Commit Compliance Check',
-                '',
-                'All commits are signed off (DCO) and have a verified signature. Thank you!',
-              ].join('\n');
-
-              // Only touch the PR if a previous run left a comment, to avoid noise.
-              if (existing) await upsert(body);
+              // All good — stay silent. Remove any stale failure comment from a
+              // previous run so a now-compliant PR isn't left showing a red notice.
+              if (existing) {
+                await github.rest.issues.deleteComment({ owner, repo, comment_id: existing.id });
+              }
               core.info(`All ${commits.length} commit(s) pass DCO and signature checks.`);
               return;
             }
