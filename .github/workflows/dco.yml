@@ -1,0 +1,137 @@
+name: 'DCO Check'
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: dco-${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  dco-check:
+    name: DCO Sign-off Check
+    runs-on: hiero-client-sdk-linux-medium
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: Check commits for Signed-off-by
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.pull_request.number;
+            const STICKY_MARKER = '<!-- dco-sign-off-check -->';
+
+            // Fetch every commit on the PR (paginated).
+            const commits = await github.paginate(github.rest.pulls.listCommits, {
+              owner,
+              repo,
+              pull_number: prNumber,
+              per_page: 100,
+            });
+
+            // A commit passes when it carries a `Signed-off-by: Name <email>` trailer
+            // whose email matches the author's or committer's email (case-insensitive).
+            // Merge commits are exempt, mirroring the official DCO app.
+            const signOffRegex = /^Signed-off-by: .+ <(.+)>\s*$/gim;
+            const failed = [];
+
+            for (const c of commits) {
+              if (c.parents && c.parents.length > 1) continue; // merge commit
+
+              const message = c.commit.message || '';
+              const authorEmail = (c.commit.author && c.commit.author.email || '').toLowerCase();
+              const committerEmail = (c.commit.committer && c.commit.committer.email || '').toLowerCase();
+
+              const signedEmails = [...message.matchAll(signOffRegex)].map((m) => m[1].toLowerCase());
+              const ok = signedEmails.includes(authorEmail) || signedEmails.includes(committerEmail);
+
+              if (!ok) {
+                failed.push({
+                  sha: c.sha,
+                  shortSha: c.sha.substring(0, 7),
+                  title: message.split('\n')[0],
+                  name: (c.commit.author && c.commit.author.name) || 'You',
+                  email: authorEmail,
+                });
+              }
+            }
+
+            // Locate an existing sticky comment so we update instead of spamming.
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number: prNumber,
+              per_page: 100,
+            });
+            const existing = comments.find((c) => c.body && c.body.includes(STICKY_MARKER));
+
+            if (failed.length === 0) {
+              const body = [
+                STICKY_MARKER,
+                '## ✅ DCO Sign-off Check',
+                '',
+                'All commits are signed off. Thank you!',
+              ].join('\n');
+
+              if (existing) {
+                await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+              }
+              core.info(`All ${commits.length} commit(s) are signed off.`);
+              return;
+            }
+
+            const list = failed
+              .map((c) => `- \`${c.shortSha}\` ${c.title}`)
+              .join('\n');
+
+            const body = [
+              STICKY_MARKER,
+              '## ❌ DCO Sign-off Check',
+              '',
+              'This project requires every commit to carry a [Developer Certificate of Origin](https://developercertificate.org/) `Signed-off-by` line. By signing off you certify that you have the right to submit the code under the project\'s license.',
+              '',
+              `The following commit(s) are missing a valid sign-off:`,
+              '',
+              list,
+              '',
+              '### How to fix',
+              '',
+              'Add a sign-off to **new** commits by committing with the `-s` flag:',
+              '',
+              '```bash',
+              'git commit -s -m "your message"',
+              '```',
+              '',
+              'To sign off **all** commits already on this branch, rebase and amend them:',
+              '',
+              '```bash',
+              `git rebase HEAD~${failed.length} --signoff   # or rebase onto the base branch`,
+              'git push --force-with-lease',
+              '```',
+              '',
+              '> The sign-off line must match the commit author, e.g. `Signed-off-by: Jane Doe <jane@example.com>`.',
+              '> You can configure git to add it automatically with `git config --add format.signOff true` (git 2.43+).',
+            ].join('\n');
+
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body });
+            }
+
+            core.setFailed(`${failed.length} commit(s) are missing a Signed-off-by line.`);
