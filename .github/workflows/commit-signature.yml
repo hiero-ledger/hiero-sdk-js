@@ -1,0 +1,130 @@
+name: 'Commit Signature Check'
+on:
+  pull_request_target:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: commit-signature-${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  signature-check:
+    name: Verified Signature Check
+    runs-on: hiero-client-sdk-linux-medium
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: audit
+
+      - name: Check commits for verified signatures
+        uses: actions/github-script@60a0d83039c74a4aee543508d2ffcb1c3799cdea # v7.0.1
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.pull_request.number;
+            const STICKY_MARKER = '<!-- commit-signature-check -->';
+
+            // Fetch every commit on the PR (paginated). Each commit object carries a
+            // `commit.verification` block populated by GitHub's signature verification.
+            const commits = await github.paginate(github.rest.pulls.listCommits, {
+              owner,
+              repo,
+              pull_number: prNumber,
+              per_page: 100,
+            });
+
+            // A commit passes when GitHub reports its signature as verified. Merge
+            // commits are exempt, mirroring how we treat the DCO check.
+            const failed = [];
+
+            for (const c of commits) {
+              if (c.parents && c.parents.length > 1) continue; // merge commit
+
+              const verification = c.commit.verification || {};
+              if (!verification.verified) {
+                failed.push({
+                  shortSha: c.sha.substring(0, 7),
+                  title: (c.commit.message || '').split('\n')[0],
+                  reason: verification.reason || 'unsigned',
+                });
+              }
+            }
+
+            // Locate an existing sticky comment so we update instead of spamming.
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number: prNumber,
+              per_page: 100,
+            });
+            const existing = comments.find((c) => c.body && c.body.includes(STICKY_MARKER));
+
+            if (failed.length === 0) {
+              const body = [
+                STICKY_MARKER,
+                '## ✅ Commit Signature Check',
+                '',
+                'All commits have a verified signature. Thank you!',
+              ].join('\n');
+
+              if (existing) {
+                await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+              }
+              core.info(`All ${commits.length} commit(s) have a verified signature.`);
+              return;
+            }
+
+            const list = failed
+              .map((c) => `- \`${c.shortSha}\` ${c.title} _(${c.reason})_`)
+              .join('\n');
+
+            const body = [
+              STICKY_MARKER,
+              '## ❌ Commit Signature Check',
+              '',
+              'This project requires every commit to be cryptographically signed and [verified by GitHub](https://docs.github.com/en/authentication/managing-commit-signature-verification/about-commit-signature-verification), so we can prove each commit genuinely came from its author and was not altered in transit.',
+              '',
+              'The following commit(s) do not have a verified signature:',
+              '',
+              list,
+              '',
+              '### How to fix',
+              '',
+              '1. **Set up a signing key** (GPG or SSH) and register its public key in your GitHub account — see [Managing commit signature verification](https://docs.github.com/en/authentication/managing-commit-signature-verification).',
+              '2. **Configure git to sign commits**, for example with an SSH key:',
+              '',
+              '```bash',
+              'git config --global gpg.format ssh',
+              'git config --global user.signingkey ~/.ssh/id_ed25519.pub',
+              'git config --global commit.gpgsign true',
+              '```',
+              '',
+              '3. **Re-sign the existing commits** on this branch and force-push:',
+              '',
+              '```bash',
+              `git rebase HEAD~${failed.length} --exec "git commit --amend --no-edit -S"`,
+              'git push --force-with-lease',
+              '```',
+              '',
+              '> The signing email must match a verified email on your GitHub account, otherwise the commit shows as `Unverified`.',
+            ].join('\n');
+
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number: prNumber, body });
+            }
+
+            core.setFailed(`${failed.length} commit(s) do not have a verified signature.`);
