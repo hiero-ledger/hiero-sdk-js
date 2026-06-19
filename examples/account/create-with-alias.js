@@ -36,7 +36,7 @@ async function main() {
     const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
 
     const nodes = {
-        "127.0.0.1:50211": new AccountId(3),
+        "127.0.0.1:35211": new AccountId(3),
     };
 
     const client = Client.forNetwork(nodes).setOperator(

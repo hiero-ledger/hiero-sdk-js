@@ -86,8 +86,8 @@ describe("WebChannel", function () {
         });
 
         it("should return false for 127.0.0.1", function () {
-            const channel = new WebChannel("127.0.0.1:50211");
-            expect(channel._shouldUseHttps("127.0.0.1:50211")).to.be.false;
+            const channel = new WebChannel("127.0.0.1:35211");
+            expect(channel._shouldUseHttps("127.0.0.1:35211")).to.be.false;
         });
 
         it("should return false for .cluster.local addresses", function () {
@@ -120,9 +120,9 @@ describe("WebChannel", function () {
         });
 
         it("should prepend http:// for 127.0.0.1", function () {
-            const channel = new WebChannel("127.0.0.1:50211");
-            expect(channel._buildUrl("127.0.0.1:50211")).to.equal(
-                "http://127.0.0.1:50211",
+            const channel = new WebChannel("127.0.0.1:35211");
+            expect(channel._buildUrl("127.0.0.1:35211")).to.equal(
+                "http://127.0.0.1:35211",
             );
         });
 

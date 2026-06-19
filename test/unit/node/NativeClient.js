@@ -113,7 +113,7 @@ describe("NativeClient", function () {
 
         it("should set network from object", function () {
             const customNetwork = {
-                "127.0.0.1:50211": AccountId.fromString("0.0.5"),
+                "127.0.0.1:35211": AccountId.fromString("0.0.5"),
             };
             const client = new NativeClient({ network: customNetwork });
             // Check if the Map contains the expected key-value pair
@@ -123,7 +123,7 @@ describe("NativeClient", function () {
 
     describe("static factory methods", function () {
         it("forNetwork should create client with specified network object", function () {
-            const customNetwork = { "127.0.0.1:50211": "0.0.3" };
+            const customNetwork = { "127.0.0.1:35211": "0.0.3" };
             const client = NativeClient.forNetwork(customNetwork);
             expect(client).to.be.instanceOf(NativeClient);
             // Check if the Map contains the expected key-value pair
@@ -185,7 +185,7 @@ describe("NativeClient", function () {
 
         it("should set network from object", function () {
             const client = new NativeClient();
-            const customNetwork = { "127.0.0.1:50211": "0.0.3" };
+            const customNetwork = { "127.0.0.1:35211": "0.0.3" };
             client.setNetwork(customNetwork);
             expect(client._network._network.has("0.0.3")).to.be.true;
         });

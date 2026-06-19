@@ -1046,7 +1046,7 @@ describe("TransactionIntegration", function () {
             const clientTwoNodes = {
                 "54.176.199.109:50211": new AccountId(7),
                 "35.155.49.147:50211": new AccountId(8),
-                "127.0.0.1:50211": new AccountId(3),
+                "127.0.0.1:35211": new AccountId(3),
                 "34.106.102.218:50211": new AccountId(8),
             };
 

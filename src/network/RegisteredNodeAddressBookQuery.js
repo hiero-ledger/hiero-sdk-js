@@ -158,13 +158,13 @@ export default class RegisteredNodeAddressBookQuery {
      * @returns {Promise<void>}
      */
     async _makeFetchRequest(client, resolve, reject, requestTimeout) {
-        // For local environments, use port 8084 instead of 5551 — that is
+        // For local environments, use port 8084 instead of 38081 — that is
         // the port for the mirror node Java REST API which exposes the
         // /network/registered-nodes endpoint. Mirrors the precedent in
         // FeeEstimateQuery._buildRequestUrl.
         let baseUrl = client.mirrorRestApiBaseUrl;
         if (baseUrl.includes("127.0.0.1") || baseUrl.includes("localhost")) {
-            baseUrl = baseUrl.replace(":5551", ":8084");
+            baseUrl = baseUrl.replace(":38081", ":8084");
         }
 
         const initialUrl = new URL(`${baseUrl}/network/registered-nodes`);

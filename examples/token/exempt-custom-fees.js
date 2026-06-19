@@ -242,7 +242,7 @@ async function main() {
         process.env.HEDERA_NETWORK == "local-node" ||
         process.env.HEDERA_NETWORK == "localhost"
     ) {
-        link = `http://127.0.0.1:5551/api/v1/accounts?account.id=${firstAccountId.toString()}`;
+        link = `http://127.0.0.1:38081/api/v1/accounts?account.id=${firstAccountId.toString()}`;
     } else {
         link = `https://${
             process.env.HEDERA_NETWORK
@@ -268,7 +268,7 @@ async function main() {
         process.env.HEDERA_NETWORK == "local-node" ||
         process.env.HEDERA_NETWORK == "localhost"
     ) {
-        link2 = `http://127.0.0.1:5551/api/v1/accounts?account.id=${secondAccountId.toString()}`;
+        link2 = `http://127.0.0.1:38081/api/v1/accounts?account.id=${secondAccountId.toString()}`;
     } else {
         link2 = `https://${
             process.env.HEDERA_NETWORK
@@ -294,7 +294,7 @@ async function main() {
         process.env.HEDERA_NETWORK == "local-node" ||
         process.env.HEDERA_NETWORK == "localhost"
     ) {
-        link3 = `http://127.0.0.1:5551/api/v1/accounts?account.id=${thirdAccountId.toString()}`;
+        link3 = `http://127.0.0.1:38081/api/v1/accounts?account.id=${thirdAccountId.toString()}`;
     } else {
         link3 = `https://${
             process.env.HEDERA_NETWORK
