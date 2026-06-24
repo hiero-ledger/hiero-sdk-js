@@ -93,6 +93,36 @@ export default class EthereumTransactionDataLegacy extends EthereumTransactionDa
     }
 
     /**
+     * Sign this transaction data with the given ECDSA (secp256k1) key,
+     * populating `v`, `r` and `s`. Throws if `key` is not an ECDSA key.
+     *
+     * The unsigned, non-type-prefixed RLP payload is signed and `v` is stored
+     * as `27 + recoveryId` (pre-EIP-155).
+     *
+     * @param {import("./PrivateKey.js").default} key
+     * @returns {EthereumTransactionDataLegacy}
+     */
+    sign(key) {
+        const message = hex.decode(
+            encodeRlp([
+                this.nonce,
+                this.gasPrice,
+                this.gasLimit,
+                this.to,
+                this.value,
+                this.callData,
+            ]),
+        );
+
+        const { r, s, recoveryId } = this._signMessage(key, message);
+        this.r = r;
+        this.s = s;
+        this.v = this._numberToBytes(27 + recoveryId);
+
+        return this;
+    }
+
+    /**
      * @returns {string}
      */
     toString() {

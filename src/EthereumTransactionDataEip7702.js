@@ -170,6 +170,36 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
     }
 
     /**
+     * Sign this transaction data with the given ECDSA (secp256k1) key,
+     * populating `recId`, `r` and `s`. Throws if `key` is not an ECDSA key.
+     *
+     * @param {import("./PrivateKey.js").default} key
+     * @returns {EthereumTransactionDataEip7702}
+     */
+    sign(key) {
+        const encoded = encodeRlp([
+            this.chainId,
+            this.nonce,
+            this.maxPriorityGas,
+            this.maxGas,
+            this.gasLimit,
+            this.to,
+            this.value,
+            this.callData,
+            this.accessList,
+            this.authorizationList,
+        ]);
+        const message = hex.decode("04" + encoded.substring(2));
+
+        const { r, s, recoveryId } = this._signMessage(key, message);
+        this.r = r;
+        this.s = s;
+        this.recId = this._numberToBytes(recoveryId);
+
+        return this;
+    }
+
+    /**
      * @returns {string}
      */
     toString() {

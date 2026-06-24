@@ -136,6 +136,35 @@ export default class EthereumTransactionDataEip1559 extends EthereumTransactionD
     }
 
     /**
+     * Sign this transaction data with the given ECDSA (secp256k1) key,
+     * populating `recId`, `r` and `s`. Throws if `key` is not an ECDSA key.
+     *
+     * @param {import("./PrivateKey.js").default} key
+     * @returns {EthereumTransactionDataEip1559}
+     */
+    sign(key) {
+        const encoded = encodeRlp([
+            this.chainId,
+            this.nonce,
+            this.maxPriorityGas,
+            this.maxGas,
+            this.gasLimit,
+            this.to,
+            this.value,
+            this.callData,
+            this.accessList,
+        ]);
+        const message = hex.decode("02" + encoded.substring(2));
+
+        const { r, s, recoveryId } = this._signMessage(key, message);
+        this.r = r;
+        this.s = s;
+        this.recId = this._numberToBytes(recoveryId);
+
+        return this;
+    }
+
+    /**
      * @returns {string}
      */
     toString() {
