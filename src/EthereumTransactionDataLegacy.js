@@ -1,7 +1,13 @@
 import { decodeRlp, encodeRlp } from "ethers";
 import * as hex from "./encoding/hex.js";
 import EthereumTransactionData from "./EthereumTransactionData.js";
+import EvmAddress from "./EvmAddress.js";
 import CACHE from "./Cache.js";
+
+/**
+ * @typedef {import("long")} Long
+ * @typedef {import("bignumber.js").default} BigNumber
+ */
 
 /**
  * @typedef {object} EthereumTransactionDataLegacyJSON
@@ -120,6 +126,168 @@ export default class EthereumTransactionDataLegacy extends EthereumTransactionDa
         this.v = this._numberToBytes(27 + recoveryId);
 
         return this;
+    }
+
+    // --- Typed accessors (additive; the Uint8Array fields remain the source of truth) ---
+
+    /**
+     * @returns {Long} the nonce as an unsigned integer
+     */
+    getNonce() {
+        return this._bytesToLong(this.nonce);
+    }
+
+    /**
+     * @returns {Uint8Array} the raw nonce bytes
+     */
+    getNonceBytes() {
+        return this.nonce;
+    }
+
+    /**
+     * @param {number | Long | BigNumber | Uint8Array | string} nonce
+     * @returns {this}
+     */
+    setNonce(nonce) {
+        this.nonce = this._toMinimalBytes(nonce);
+        return this;
+    }
+
+    /**
+     * @returns {BigNumber} the gas price
+     */
+    getGasPrice() {
+        return this._bytesToBigNumber(this.gasPrice);
+    }
+
+    /**
+     * @returns {Uint8Array} the raw gas price bytes
+     */
+    getGasPriceBytes() {
+        return this.gasPrice;
+    }
+
+    /**
+     * @param {number | Long | BigNumber | Uint8Array | string} gasPrice
+     * @returns {this}
+     */
+    setGasPrice(gasPrice) {
+        this.gasPrice = this._toMinimalBytes(gasPrice);
+        return this;
+    }
+
+    /**
+     * @returns {Long} the gas limit as an unsigned integer
+     */
+    getGasLimit() {
+        return this._bytesToLong(this.gasLimit);
+    }
+
+    /**
+     * @returns {Uint8Array} the raw gas limit bytes
+     */
+    getGasLimitBytes() {
+        return this.gasLimit;
+    }
+
+    /**
+     * @param {number | Long | BigNumber | Uint8Array | string} gasLimit
+     * @returns {this}
+     */
+    setGasLimit(gasLimit) {
+        this.gasLimit = this._toMinimalBytes(gasLimit);
+        return this;
+    }
+
+    /**
+     * @returns {EvmAddress} the `to` address
+     */
+    getTo() {
+        return EvmAddress.fromBytes(this.to);
+    }
+
+    /**
+     * @returns {Uint8Array} the raw `to` address bytes
+     */
+    getToBytes() {
+        return this.to;
+    }
+
+    /**
+     * @param {EvmAddress | Uint8Array | string} to
+     * @returns {this}
+     */
+    setTo(to) {
+        this.to =
+            to instanceof EvmAddress ? to.toBytes() : this._toMinimalBytes(to);
+        return this;
+    }
+
+    /**
+     * @returns {BigNumber} the value (in wei)
+     */
+    getValue() {
+        return this._bytesToBigNumber(this.value);
+    }
+
+    /**
+     * @returns {Uint8Array} the raw value bytes
+     */
+    getValueBytes() {
+        return this.value;
+    }
+
+    /**
+     * @param {number | Long | BigNumber | Uint8Array | string} value
+     * @returns {this}
+     */
+    setValue(value) {
+        this.value = this._toMinimalBytes(value);
+        return this;
+    }
+
+    /**
+     * @returns {Uint8Array} the call data
+     */
+    getCallData() {
+        return this.callData;
+    }
+
+    /**
+     * @param {Uint8Array | string} callData
+     * @returns {this}
+     */
+    setCallData(callData) {
+        this.callData = this._toMinimalBytes(callData);
+        return this;
+    }
+
+    /**
+     * @returns {Long} the `v` value (recovery id + 27, pre-EIP-155)
+     */
+    getV() {
+        return this._bytesToLong(this.v);
+    }
+
+    /**
+     * @returns {Uint8Array} the raw `v` bytes
+     */
+    getVBytes() {
+        return this.v;
+    }
+
+    /**
+     * @returns {Uint8Array} the signature `r` value
+     */
+    getR() {
+        return this.r;
+    }
+
+    /**
+     * @returns {Uint8Array} the signature `s` value
+     */
+    getS() {
+        return this.s;
     }
 
     /**

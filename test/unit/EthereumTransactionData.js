@@ -1,6 +1,9 @@
 import * as hex from "../../src/encoding/hex.js";
 import { EthereumTransactionData, PrivateKey } from "../../src/index.js";
 import { encodeRlp, decodeRlp } from "ethers";
+import Long from "long";
+import BigNumber from "bignumber.js";
+import EvmAddress from "../../src/EvmAddress.js";
 import EthereumTransactionDataLegacy from "../../src/EthereumTransactionDataLegacy.js";
 import EthereumTransactionDataEip2930 from "../../src/EthereumTransactionDataEip2930.js";
 import EthereumTransactionDataEip1559 from "../../src/EthereumTransactionDataEip1559.js";
@@ -696,6 +699,193 @@ describe("EthereumTransactionData", function () {
             expect(() => base.sign(PrivateKey.generateECDSA())).to.throw(
                 "not implemented",
             );
+        });
+    });
+
+    describe("typed accessors (EIP-1559)", function () {
+        const empty = new Uint8Array();
+        function build() {
+            return new EthereumTransactionDataEip1559({
+                chainId: empty,
+                nonce: empty,
+                maxPriorityGas: empty,
+                maxGas: empty,
+                gasLimit: empty,
+                to: empty,
+                value: empty,
+                callData: empty,
+                accessList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            });
+        }
+
+        it("uint64 fields round-trip through Long and raw bytes", function () {
+            const d = build();
+            d.setNonce(7)
+                .setChainId(Long.fromNumber(298))
+                .setGasLimit(new Uint8Array([0x01, 0x80, 0x00]));
+
+            expect(d.getNonce().toString()).to.equal("7");
+            expect(d.getChainId().toString()).to.equal("298");
+            expect(d.getGasLimit().toNumber()).to.equal(0x018000);
+            expect(hex.encode(d.getNonceBytes())).to.equal("07");
+
+            // minimal encoding: zero -> empty bytes
+            d.setNonce(0);
+            expect(d.getNonceBytes().length).to.equal(0);
+            expect(d.getNonce().toString()).to.equal("0");
+        });
+
+        it("uint256 fields round-trip through BigNumber", function () {
+            const d = build();
+            d.setValue(new BigNumber("1000000000000000000")); // 1 ether in wei
+            expect(d.getValue().toFixed()).to.equal("1000000000000000000");
+            expect(hex.encode(d.getValueBytes())).to.equal("0de0b6b3a7640000");
+
+            d.setMaxGas(new BigNumber(1000000000));
+            expect(d.getMaxGas().toFixed()).to.equal("1000000000");
+        });
+
+        it("address accessor accepts EvmAddress, bytes and 0x string", function () {
+            const d = build();
+            const addr = "7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181";
+
+            d.setTo("0x" + addr);
+            expect(d.getTo()).to.be.instanceOf(EvmAddress);
+            expect(d.getTo().toString()).to.equal(addr);
+
+            d.setTo(EvmAddress.fromString("0x" + addr));
+            expect(hex.encode(d.getToBytes())).to.equal(addr);
+
+            d.setTo(hex.decode(addr));
+            expect(d.getTo().toString()).to.equal(addr);
+        });
+
+        it("setters accept number | Long | BigNumber | Uint8Array | hex string", function () {
+            const d = build();
+            d.setNonce(5);
+            expect(d.getNonce().toNumber()).to.equal(5);
+            d.setNonce(Long.fromNumber(6));
+            expect(d.getNonce().toNumber()).to.equal(6);
+            d.setNonce(new BigNumber(7));
+            expect(d.getNonce().toNumber()).to.equal(7);
+            d.setNonce(new Uint8Array([8]));
+            expect(d.getNonce().toNumber()).to.equal(8);
+            d.setNonce("0x09");
+            expect(d.getNonce().toNumber()).to.equal(9);
+        });
+
+        it("typed setters keep toBytes/fromBytes round-trip valid", function () {
+            const d = build()
+                .setChainId(298)
+                .setNonce(2)
+                .setMaxPriorityGas(new BigNumber(47))
+                .setMaxGas(new BigNumber(47))
+                .setGasLimit(0x018000)
+                .setTo("0x7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181")
+                .setValue(new BigNumber("1000000000000000000"))
+                .setCallData("0x123456");
+
+            const decoded = EthereumTransactionData.fromBytes(d.toBytes());
+            expect(decoded.getChainId().toString()).to.equal("298");
+            expect(decoded.getNonce().toString()).to.equal("2");
+            expect(decoded.getValue().toFixed()).to.equal(
+                "1000000000000000000",
+            );
+            expect(decoded.getTo().toString()).to.equal(
+                "7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181",
+            );
+            expect(hex.encode(decoded.getCallData())).to.equal("123456");
+        });
+    });
+
+    describe("typed accessors (EIP-2930, EIP-7702, Legacy)", function () {
+        const empty = new Uint8Array();
+
+        it("EIP-2930 exposes gasPrice (BigNumber) and round-trips", function () {
+            const d = new EthereumTransactionDataEip2930({
+                chainId: empty,
+                nonce: empty,
+                gasPrice: empty,
+                gasLimit: empty,
+                to: empty,
+                value: empty,
+                callData: empty,
+                accessList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            })
+                .setChainId(1)
+                .setNonce(2)
+                .setGasPrice(new BigNumber(1000000000))
+                .setGasLimit(21000)
+                .setTo("0x7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181")
+                .setValue(new BigNumber(100));
+
+            const decoded = EthereumTransactionData.fromBytes(d.toBytes());
+            expect(decoded.getChainId().toString()).to.equal("1");
+            expect(decoded.getGasPrice().toFixed()).to.equal("1000000000");
+            expect(decoded.getGasLimit().toNumber()).to.equal(21000);
+            expect(decoded.getTo().toString()).to.equal(
+                "7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181",
+            );
+        });
+
+        it("EIP-7702 exposes maxPriorityGas/maxGas and round-trips", function () {
+            const d = new EthereumTransactionDataEip7702({
+                chainId: empty,
+                nonce: empty,
+                maxPriorityGas: empty,
+                maxGas: empty,
+                gasLimit: empty,
+                to: empty,
+                value: empty,
+                callData: empty,
+                accessList: [],
+                authorizationList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            })
+                .setChainId(298)
+                .setMaxPriorityGas(new BigNumber(47))
+                .setMaxGas(new BigNumber(1000000000))
+                .setGasLimit(0x018000);
+
+            const decoded = EthereumTransactionData.fromBytes(d.toBytes());
+            expect(decoded.getChainId().toString()).to.equal("298");
+            expect(decoded.getMaxPriorityGas().toFixed()).to.equal("47");
+            expect(decoded.getMaxGas().toFixed()).to.equal("1000000000");
+            expect(decoded.getGasLimit().toNumber()).to.equal(0x018000);
+        });
+
+        it("Legacy exposes gasPrice + v and round-trips", function () {
+            const d = new EthereumTransactionDataLegacy({
+                nonce: empty,
+                gasPrice: empty,
+                gasLimit: empty,
+                to: empty,
+                value: empty,
+                callData: empty,
+                v: new Uint8Array([0x1b]),
+                r: empty,
+                s: empty,
+            })
+                .setNonce(1)
+                .setGasPrice(new BigNumber(50))
+                .setGasLimit(21000)
+                .setValue(new BigNumber(1));
+
+            expect(d.getV().toNumber()).to.equal(27);
+
+            const decoded = EthereumTransactionData.fromBytes(d.toBytes());
+            expect(decoded.getNonce().toString()).to.equal("1");
+            expect(decoded.getGasPrice().toFixed()).to.equal("50");
+            expect(decoded.getGasLimit().toNumber()).to.equal(21000);
+            expect(decoded.getValue().toFixed()).to.equal("1");
         });
     });
 });
