@@ -5,6 +5,7 @@ import Long from "long";
 import BigNumber from "bignumber.js";
 import EvmAddress from "../../src/EvmAddress.js";
 import EthereumAccessListItem from "../../src/EthereumAccessListItem.js";
+import EthereumAuthorization from "../../src/EthereumAuthorization.js";
 import EthereumTransactionDataLegacy from "../../src/EthereumTransactionDataLegacy.js";
 import EthereumTransactionDataEip2930 from "../../src/EthereumTransactionDataEip2930.js";
 import EthereumTransactionDataEip1559 from "../../src/EthereumTransactionDataEip1559.js";
@@ -1005,6 +1006,90 @@ describe("EthereumTransactionData", function () {
             expect(tx7702.getAccessList()[0].getStorageKeys().length).to.equal(
                 1,
             );
+        });
+    });
+
+    describe("structured authorization list (EthereumAuthorization, EIP-7702)", function () {
+        const empty = new Uint8Array();
+        const address = hex.decode("7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181");
+        const r = hex.decode(
+            "df48f2efd10421811de2bfb125ab75b2d3c44139c4642837fb1fccce911fd479",
+        );
+        const s = hex.decode(
+            "1aaf7ae92bee896651dfc9d99ae422a296bf5d9f1ca49b2d96d82b79eb112d66",
+        );
+
+        function build7702(authorizationList) {
+            return new EthereumTransactionDataEip7702({
+                chainId: hex.decode("012a"),
+                nonce: hex.decode("02"),
+                maxPriorityGas: hex.decode("2f"),
+                maxGas: hex.decode("2f"),
+                gasLimit: hex.decode("018000"),
+                to: address,
+                value: hex.decode("0de0b6b3a7640000"),
+                callData: hex.decode("123456"),
+                accessList: [],
+                authorizationList,
+                recId: empty,
+                r: empty,
+                s: empty,
+            });
+        }
+
+        it("getAuthorizationList() returns a read-only structured view", function () {
+            const d = build7702([
+                [
+                    hex.decode("012a"),
+                    address,
+                    hex.decode("01"),
+                    hex.decode("01"),
+                    r,
+                    s,
+                ],
+            ]);
+            const list = d.getAuthorizationList();
+
+            expect(list).to.be.an("array").with.length(1);
+            expect(list[0]).to.be.instanceOf(EthereumAuthorization);
+            expect(list[0].getChainId().toString()).to.equal("298");
+            expect(list[0].getAddress().toString()).to.equal(
+                "7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181",
+            );
+            expect(list[0].getNonce().toString()).to.equal("1");
+            expect(list[0].getYParity().toString()).to.equal("1");
+            expect(list[0].getRecoveryId().toString()).to.equal("1");
+            expect(hex.encode(list[0].getR())).to.equal(hex.encode(r));
+            expect(hex.encode(list[0].getS())).to.equal(hex.encode(s));
+
+            // read-only: no setters exposed
+            expect(list[0].setChainId).to.equal(undefined);
+        });
+
+        it("can be constructed from typed values and round-trips via setAuthorizationList", function () {
+            const auth = new EthereumAuthorization(
+                298,
+                EvmAddress.fromString("0x" + hex.encode(address)),
+                1,
+                1,
+                r,
+                s,
+            );
+
+            const d = build7702([]).setAuthorizationList([auth]);
+
+            // tuple field (source of truth) updated
+            expect(d.authorizationList).to.be.an("array").with.length(1);
+            expect(d.authorizationList[0].length).to.equal(6);
+
+            const decoded = EthereumTransactionData.fromBytes(d.toBytes());
+            const roundTripped = decoded.getAuthorizationList();
+            expect(roundTripped[0].getChainId().toString()).to.equal("298");
+            expect(roundTripped[0].getAddress().toString()).to.equal(
+                "7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181",
+            );
+            expect(roundTripped[0].getNonce().toString()).to.equal("1");
+            expect(hex.encode(roundTripped[0].getR())).to.equal(hex.encode(r));
         });
     });
 });

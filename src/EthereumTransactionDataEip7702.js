@@ -3,6 +3,7 @@ import * as hex from "./encoding/hex.js";
 import EthereumTransactionData from "./EthereumTransactionData.js";
 import EvmAddress from "./EvmAddress.js";
 import EthereumAccessListItem from "./EthereumAccessListItem.js";
+import EthereumAuthorization from "./EthereumAuthorization.js";
 import CACHE from "./Cache.js";
 
 /**
@@ -429,6 +430,27 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
      */
     setAccessList(accessList) {
         this.accessList = accessList.map((item) => item.toTuple());
+        return this;
+    }
+
+    /**
+     * @returns {EthereumAuthorization[]} a structured view of the EIP-7702
+     *     authorization list (HIP-1340)
+     */
+    getAuthorizationList() {
+        return this.authorizationList.map((tuple) =>
+            EthereumAuthorization.fromTuple(tuple),
+        );
+    }
+
+    /**
+     * @param {EthereumAuthorization[]} authorizationList
+     * @returns {this}
+     */
+    setAuthorizationList(authorizationList) {
+        this.authorizationList = authorizationList.map((item) =>
+            item.toTuple(),
+        );
         return this;
     }
 
