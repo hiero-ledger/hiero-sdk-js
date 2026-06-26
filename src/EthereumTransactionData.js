@@ -1,7 +1,14 @@
-import Long from "long";
-import BigNumber from "bignumber.js";
 import CACHE from "./Cache.js";
-import * as hex from "./encoding/hex.js";
+import {
+    bytesToLong,
+    bytesToBigNumber,
+    toMinimalBytes,
+} from "./encoding/rlpNumber.js";
+
+/**
+ * @typedef {import("long")} Long
+ * @typedef {import("bignumber.js").default} BigNumber
+ */
 
 /**
  * Represents the base class for Ethereum transaction data.
@@ -119,9 +126,7 @@ export default class EthereumTransactionData {
      * @returns {Long}
      */
     _bytesToLong(bytes) {
-        return bytes.length === 0
-            ? Long.UZERO
-            : Long.fromString(hex.encode(bytes), true, 16);
+        return bytesToLong(bytes);
     }
 
     /**
@@ -134,9 +139,7 @@ export default class EthereumTransactionData {
      * @returns {BigNumber}
      */
     _bytesToBigNumber(bytes) {
-        return bytes.length === 0
-            ? new BigNumber(0)
-            : new BigNumber(hex.encode(bytes), 16);
+        return bytesToBigNumber(bytes);
     }
 
     /**
@@ -149,31 +152,7 @@ export default class EthereumTransactionData {
      * @returns {Uint8Array}
      */
     _toMinimalBytes(value) {
-        if (value instanceof Uint8Array) {
-            return value;
-        }
-
-        if (typeof value === "string") {
-            const stripped = value.startsWith("0x") ? value.slice(2) : value;
-            return hex.decode(stripped);
-        }
-
-        let hexString;
-        if (Long.isLong(value)) {
-            hexString = value.toUnsigned().toString(16);
-        } else if (BigNumber.isBigNumber(value)) {
-            hexString = value.toString(16);
-        } else {
-            hexString = new BigNumber(value).toString(16);
-        }
-
-        if (hexString === "0") {
-            return new Uint8Array();
-        }
-
-        return hex.decode(
-            hexString.length % 2 === 0 ? hexString : "0" + hexString,
-        );
+        return toMinimalBytes(value);
     }
 
     // eslint-disable-next-line jsdoc/require-returns-check

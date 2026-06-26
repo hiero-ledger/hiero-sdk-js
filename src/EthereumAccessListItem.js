@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import EvmAddress from "./EvmAddress.js";
-import * as hex from "./encoding/hex.js";
+import { bytesOrHexToBytes } from "./encoding/rlpNumber.js";
 
 /**
  * @typedef {[Uint8Array, Uint8Array[]]} AccessListTuple - the positional
@@ -51,17 +51,6 @@ export default class EthereumAccessListItem {
     }
 
     /**
-     * @param {Uint8Array | string} value
-     * @returns {Uint8Array}
-     */
-    static _toBytes(value) {
-        if (typeof value === "string") {
-            return hex.decode(value.startsWith("0x") ? value.slice(2) : value);
-        }
-        return value;
-    }
-
-    /**
      * @returns {?EvmAddress} the address, or `null` when none is set
      */
     getAddress() {
@@ -85,7 +74,7 @@ export default class EthereumAccessListItem {
         this._address =
             address instanceof EvmAddress
                 ? address.toBytes()
-                : EthereumAccessListItem._toBytes(address);
+                : bytesOrHexToBytes(address);
         return this;
     }
 
@@ -110,7 +99,7 @@ export default class EthereumAccessListItem {
      * @returns {this}
      */
     addStorageKey(storageKey) {
-        this._storageKeys.push(EthereumAccessListItem._toBytes(storageKey));
+        this._storageKeys.push(bytesOrHexToBytes(storageKey));
         return this;
     }
 }
