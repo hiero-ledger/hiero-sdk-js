@@ -1,6 +1,7 @@
 import * as hex from "../../src/encoding/hex.js";
-import { EthereumTransactionData } from "../../src/index.js";
+import { EthereumTransactionData, PrivateKey } from "../../src/index.js";
 import { encodeRlp, decodeRlp } from "ethers";
+import EthereumTransactionDataLegacy from "../../src/EthereumTransactionDataLegacy.js";
 import EthereumTransactionDataEip2930 from "../../src/EthereumTransactionDataEip2930.js";
 import EthereumTransactionDataEip1559 from "../../src/EthereumTransactionDataEip1559.js";
 import EthereumTransactionDataEip7702 from "../../src/EthereumTransactionDataEip7702.js";
@@ -498,6 +499,202 @@ describe("EthereumTransactionData", function () {
             );
             expect(hex.encode(decoded.authorizationList[1][1])).to.equal(
                 hex.encode(authorizationList[1][1]),
+            );
+        });
+    });
+
+    describe("sign", function () {
+        const chainId = hex.decode("012a");
+        const nonce = hex.decode("02");
+        const gasPrice = hex.decode("2f");
+        const maxPriorityGas = hex.decode("2f");
+        const maxGas = hex.decode("2f");
+        const gasLimit = hex.decode("018000");
+        const to = hex.decode("7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181");
+        const value = hex.decode("0de0b6b3a7640000");
+        const callData = hex.decode("123456");
+        const accessList = [];
+        const authorizationList = [];
+        // Unsigned placeholders, overwritten by sign()
+        const empty = new Uint8Array();
+
+        function buildLegacy() {
+            return new EthereumTransactionDataLegacy({
+                nonce,
+                gasPrice,
+                gasLimit,
+                to,
+                value,
+                callData,
+                v: empty,
+                r: empty,
+                s: empty,
+            });
+        }
+
+        function buildEip2930() {
+            return new EthereumTransactionDataEip2930({
+                chainId,
+                nonce,
+                gasPrice,
+                gasLimit,
+                to,
+                value,
+                callData,
+                accessList,
+                recId: empty,
+                r: empty,
+                s: empty,
+            });
+        }
+
+        function buildEip1559() {
+            return new EthereumTransactionDataEip1559({
+                chainId,
+                nonce,
+                maxPriorityGas,
+                maxGas,
+                gasLimit,
+                to,
+                value,
+                callData,
+                accessList,
+                recId: empty,
+                r: empty,
+                s: empty,
+            });
+        }
+
+        function buildEip7702() {
+            return new EthereumTransactionDataEip7702({
+                chainId,
+                nonce,
+                maxPriorityGas,
+                maxGas,
+                gasLimit,
+                to,
+                value,
+                callData,
+                accessList,
+                authorizationList,
+                recId: empty,
+                r: empty,
+                s: empty,
+            });
+        }
+
+        /**
+         * Asserts that `data.r`/`data.s` form a valid ECDSA signature for `key`
+         * over the given unsigned message, and that they are 32 bytes each.
+         */
+        function expectValidSignature(key, data, message) {
+            expect(data.r).to.be.instanceOf(Uint8Array);
+            expect(data.s).to.be.instanceOf(Uint8Array);
+            expect(data.r.length).to.equal(32);
+            expect(data.s.length).to.equal(32);
+
+            const signature = new Uint8Array(64);
+            signature.set(data.r, 0);
+            signature.set(data.s, 32);
+            expect(key.publicKey.verify(message, signature)).to.be.true;
+        }
+
+        it("legacy sign() sets v = 27 + recoveryId and a recoverable r/s", function () {
+            const key = PrivateKey.generateECDSA();
+            const data = buildLegacy();
+
+            expect(data.sign(key)).to.equal(data);
+
+            const message = hex.decode(
+                encodeRlp([nonce, gasPrice, gasLimit, to, value, callData]),
+            );
+            expectValidSignature(key, data, message);
+            expect(data.v.length).to.equal(1);
+            expect(data.v[0]).to.be.oneOf([27, 28]);
+        });
+
+        it("EIP-2930 sign() sets recId and a recoverable r/s", function () {
+            const key = PrivateKey.generateECDSA();
+            const data = buildEip2930();
+
+            expect(data.sign(key)).to.equal(data);
+
+            const encoded = encodeRlp([
+                chainId,
+                nonce,
+                gasPrice,
+                gasLimit,
+                to,
+                value,
+                callData,
+                accessList,
+            ]);
+            const message = hex.decode("01" + encoded.substring(2));
+            expectValidSignature(key, data, message);
+            const recId = data.recId.length === 0 ? 0 : data.recId[0];
+            expect(recId).to.be.oneOf([0, 1]);
+        });
+
+        it("EIP-1559 sign() sets recId and a recoverable r/s", function () {
+            const key = PrivateKey.generateECDSA();
+            const data = buildEip1559();
+
+            expect(data.sign(key)).to.equal(data);
+
+            const encoded = encodeRlp([
+                chainId,
+                nonce,
+                maxPriorityGas,
+                maxGas,
+                gasLimit,
+                to,
+                value,
+                callData,
+                accessList,
+            ]);
+            const message = hex.decode("02" + encoded.substring(2));
+            expectValidSignature(key, data, message);
+            const recId = data.recId.length === 0 ? 0 : data.recId[0];
+            expect(recId).to.be.oneOf([0, 1]);
+        });
+
+        it("EIP-7702 sign() sets recId and a recoverable r/s", function () {
+            const key = PrivateKey.generateECDSA();
+            const data = buildEip7702();
+
+            expect(data.sign(key)).to.equal(data);
+
+            const encoded = encodeRlp([
+                chainId,
+                nonce,
+                maxPriorityGas,
+                maxGas,
+                gasLimit,
+                to,
+                value,
+                callData,
+                accessList,
+                authorizationList,
+            ]);
+            const message = hex.decode("04" + encoded.substring(2));
+            expectValidSignature(key, data, message);
+            const recId = data.recId.length === 0 ? 0 : data.recId[0];
+            expect(recId).to.be.oneOf([0, 1]);
+        });
+
+        it("throws when signing with a non-ECDSA (Ed25519) key", function () {
+            const key = PrivateKey.generateED25519();
+
+            expect(() => buildLegacy().sign(key)).to.throw();
+            expect(() => buildEip2930().sign(key)).to.throw();
+            expect(() => buildEip1559().sign(key)).to.throw();
+            expect(() => buildEip7702().sign(key)).to.throw();
+        });
+
+        it("base EthereumTransactionData.sign() is abstract", function () {
+            const base = new EthereumTransactionData({ callData });
+            expect(() => base.sign(PrivateKey.generateECDSA())).to.throw(
+                "not implemented",
             );
         });
     });
