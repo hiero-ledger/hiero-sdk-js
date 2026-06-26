@@ -13,6 +13,15 @@ export default class EthereumTransactionData {
      */
     constructor(props) {
         this.callData = props.callData;
+
+        // Signature components. Every concrete envelope sets these in its own
+        // constructor; declared here so shared logic (e.g. `isSigned`) can read
+        // them. `r`/`s` are the ECDSA signature; the recovery component is `v`
+        // on legacy and `recId` on the typed envelopes.
+        /** @type {Uint8Array=} */
+        this.r = undefined;
+        /** @type {Uint8Array=} */
+        this.s = undefined;
     }
 
     /**
@@ -58,6 +67,20 @@ export default class EthereumTransactionData {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     sign(key) {
         throw new Error("not implemented");
+    }
+
+    /**
+     * Whether this envelope carries a signature, i.e. both `r` and `s` are set.
+     *
+     * @returns {boolean}
+     */
+    isSigned() {
+        return (
+            this.r != null &&
+            this.r.length > 0 &&
+            this.s != null &&
+            this.s.length > 0
+        );
     }
 
     /**
