@@ -46,6 +46,68 @@ export default class EthereumTransactionData {
 
     // eslint-disable-next-line jsdoc/require-returns-check
     /**
+     * Sign this transaction data with the given ECDSA (secp256k1) key,
+     * populating the signature fields (`r`, `s` and the recovery component) on
+     * this instance.
+     *
+     * Throws if `key` is not an ECDSA key.
+     *
+     * @param {import("./PrivateKey.js").default} key
+     * @returns {EthereumTransactionData}
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    sign(key) {
+        throw new Error("not implemented");
+    }
+
+    /**
+     * Shared ECDSA signing logic for every envelope variant. Signs the given
+     * unsigned message — the type-prefixed RLP payload for typed envelopes, or
+     * the bare RLP payload for legacy — and returns the signature components.
+     *
+     * Detection of a non-ECDSA key happens via the recovery-id computation
+     * rather than a key-type or length check: an Ed25519 signature is also 64
+     * bytes, so a length check alone is insufficient. If a valid recovery id
+     * cannot be derived, signing fails.
+     *
+     * @protected
+     * @param {import("./PrivateKey.js").default} key
+     * @param {Uint8Array} message
+     * @returns {{ r: Uint8Array, s: Uint8Array, recoveryId: number }}
+     */
+    _signMessage(key, message) {
+        const signature = key.sign(message);
+        const r = signature.subarray(0, 32);
+        const s = signature.subarray(32, 64);
+        const recoveryId = key.getRecoveryId(r, s, message);
+        return { r, s, recoveryId };
+    }
+
+    /**
+     * Encode a small non-negative integer as a minimal big-endian byte array
+     * (no leading zeros; zero becomes empty bytes), matching Ethereum's RLP
+     * integer encoding.
+     *
+     * @protected
+     * @param {number} value
+     * @returns {Uint8Array}
+     */
+    _numberToBytes(value) {
+        if (value <= 0) {
+            return new Uint8Array();
+        }
+
+        const bytes = [];
+        let remaining = value;
+        while (remaining > 0) {
+            bytes.unshift(remaining & 0xff);
+            remaining = Math.floor(remaining / 256);
+        }
+        return new Uint8Array(bytes);
+    }
+
+    // eslint-disable-next-line jsdoc/require-returns-check
+    /**
      * @returns {string}
      */
     toString() {
