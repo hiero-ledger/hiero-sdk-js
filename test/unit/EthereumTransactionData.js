@@ -4,6 +4,7 @@ import { encodeRlp, decodeRlp } from "ethers";
 import Long from "long";
 import BigNumber from "bignumber.js";
 import EvmAddress from "../../src/EvmAddress.js";
+import EthereumAccessListItem from "../../src/EthereumAccessListItem.js";
 import EthereumTransactionDataLegacy from "../../src/EthereumTransactionDataLegacy.js";
 import EthereumTransactionDataEip2930 from "../../src/EthereumTransactionDataEip2930.js";
 import EthereumTransactionDataEip1559 from "../../src/EthereumTransactionDataEip1559.js";
@@ -886,6 +887,124 @@ describe("EthereumTransactionData", function () {
             expect(decoded.getGasPrice().toFixed()).to.equal("50");
             expect(decoded.getGasLimit().toNumber()).to.equal(21000);
             expect(decoded.getValue().toFixed()).to.equal("1");
+        });
+    });
+
+    describe("structured access list (EthereumAccessListItem)", function () {
+        const empty = new Uint8Array();
+        const address = hex.decode("7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181");
+        const storageKey1 = hex.decode(
+            "0000000000000000000000000000000000000000000000000000000000000001",
+        );
+        const storageKey2 = hex.decode(
+            "0000000000000000000000000000000000000000000000000000000000000002",
+        );
+
+        function build1559(accessList) {
+            return new EthereumTransactionDataEip1559({
+                chainId: hex.decode("012a"),
+                nonce: hex.decode("02"),
+                maxPriorityGas: hex.decode("2f"),
+                maxGas: hex.decode("2f"),
+                gasLimit: hex.decode("018000"),
+                to: address,
+                value: hex.decode("0de0b6b3a7640000"),
+                callData: hex.decode("123456"),
+                accessList,
+                recId: empty,
+                r: empty,
+                s: empty,
+            });
+        }
+
+        it("getAccessList() returns a structured view over the tuple field", function () {
+            const d = build1559([[address, [storageKey1, storageKey2]]]);
+            const list = d.getAccessList();
+
+            expect(list).to.be.an("array").with.length(1);
+            expect(list[0]).to.be.instanceOf(EthereumAccessListItem);
+            expect(list[0].getAddress()).to.be.instanceOf(EvmAddress);
+            expect(list[0].getAddress().toString()).to.equal(
+                "7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181",
+            );
+            expect(list[0].getStorageKeys().length).to.equal(2);
+            expect(hex.encode(list[0].getStorageKeys()[0])).to.equal(
+                hex.encode(storageKey1),
+            );
+        });
+
+        it("setAccessList() writes back to the tuple field and round-trips", function () {
+            const d = build1559([]);
+            const item = new EthereumAccessListItem()
+                .setAddress("0x" + hex.encode(address))
+                .addStorageKey(storageKey1)
+                .addStorageKey("0x" + hex.encode(storageKey2));
+
+            d.setAccessList([item]);
+
+            // tuple field (source of truth) is updated
+            expect(d.accessList).to.be.an("array").with.length(1);
+            expect(hex.encode(d.accessList[0][0])).to.equal(
+                hex.encode(address),
+            );
+            expect(d.accessList[0][1].length).to.equal(2);
+
+            // survives a full encode/decode round-trip
+            const decoded = EthereumTransactionData.fromBytes(d.toBytes());
+            const roundTripped = decoded.getAccessList();
+            expect(roundTripped[0].getAddress().toString()).to.equal(
+                "7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181",
+            );
+            expect(roundTripped[0].getStorageKeys().length).to.equal(2);
+            expect(hex.encode(roundTripped[0].getStorageKeys()[1])).to.equal(
+                hex.encode(storageKey2),
+            );
+        });
+
+        it("getAddress() is null when no address is set", function () {
+            const item = new EthereumAccessListItem(empty, [storageKey1]);
+            expect(item.getAddress()).to.equal(null);
+            expect(item.getAddressBytes().length).to.equal(0);
+        });
+
+        it("EIP-2930 and EIP-7702 also expose the structured access list", function () {
+            const item = new EthereumAccessListItem(address, [storageKey1]);
+
+            const tx2930 = new EthereumTransactionDataEip2930({
+                chainId: hex.decode("01"),
+                nonce: empty,
+                gasPrice: empty,
+                gasLimit: empty,
+                to: empty,
+                value: empty,
+                callData: empty,
+                accessList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            }).setAccessList([item]);
+            expect(tx2930.getAccessList()[0].getAddress().toString()).to.equal(
+                "7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181",
+            );
+
+            const tx7702 = new EthereumTransactionDataEip7702({
+                chainId: hex.decode("01"),
+                nonce: empty,
+                maxPriorityGas: empty,
+                maxGas: empty,
+                gasLimit: empty,
+                to: empty,
+                value: empty,
+                callData: empty,
+                accessList: [],
+                authorizationList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            }).setAccessList([item]);
+            expect(tx7702.getAccessList()[0].getStorageKeys().length).to.equal(
+                1,
+            );
         });
     });
 });

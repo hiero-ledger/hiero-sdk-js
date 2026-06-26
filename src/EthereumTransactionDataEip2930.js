@@ -2,6 +2,7 @@ import { decodeRlp, encodeRlp } from "ethers";
 import * as hex from "./encoding/hex.js";
 import EthereumTransactionData from "./EthereumTransactionData.js";
 import EvmAddress from "./EvmAddress.js";
+import EthereumAccessListItem from "./EthereumAccessListItem.js";
 import CACHE from "./Cache.js";
 
 /**
@@ -347,6 +348,24 @@ export default class EthereumTransactionDataEip2930 extends EthereumTransactionD
      */
     getS() {
         return this.s;
+    }
+
+    /**
+     * @returns {EthereumAccessListItem[]} a structured view of the access list
+     */
+    getAccessList() {
+        return this.accessList.map((tuple) =>
+            EthereumAccessListItem.fromTuple(tuple),
+        );
+    }
+
+    /**
+     * @param {EthereumAccessListItem[]} accessList
+     * @returns {this}
+     */
+    setAccessList(accessList) {
+        this.accessList = accessList.map((item) => item.toTuple());
+        return this;
     }
 
     /**
