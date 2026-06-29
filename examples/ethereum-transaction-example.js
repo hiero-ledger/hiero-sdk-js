@@ -18,6 +18,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // EVM chain id per Hedera network (used inside the signed Ethereum envelope).
+/** @type {Record<string, number>} */
 const CHAIN_IDS = {
     mainnet: 295,
     testnet: 296,
@@ -89,7 +90,9 @@ async function main() {
             ).getReceipt(client)
         ).contractId;
         const contractAddress = contractId.toEvmAddress();
-        console.log(`Contract deployed: ${contractId} (0x${contractAddress})`);
+        console.log(
+            `Contract deployed: ${contractId.toString()} (0x${contractAddress})`,
+        );
 
         /*
          * Step 2: Create and fund an ECDSA-aliased account to act as the
@@ -136,7 +139,7 @@ async function main() {
          * Step 4: The guard - an unsigned envelope is rejected up front, so an
          * unsigned transaction can never reach the network.
          */
-        console.log(`Is the envelope signed yet? ${unsignedData.isSigned()}`);
+        console.log("Is the envelope signed yet?", unsignedData.isSigned());
         try {
             new EthereumTransaction().setEthereumData(unsignedData);
         } catch (error) {
@@ -152,7 +155,7 @@ async function main() {
          * `setEthereumData` - no manual RLP encoding or signature splitting.
          */
         const signedData = unsignedData.sign(senderKey);
-        console.log(`Signed? ${signedData.isSigned()}`);
+        console.log("Signed?", signedData.isSigned());
 
         const response = await new EthereumTransaction()
             .setEthereumData(signedData)
@@ -160,7 +163,9 @@ async function main() {
             .execute(client);
 
         const receipt = await response.getReceipt(client);
-        console.log(`Ethereum transaction status: ${receipt.status}`);
+        console.log(
+            `Ethereum transaction status: ${receipt.status.toString()}`,
+        );
         if (receipt.status === Status.Success) {
             console.log("Ethereum Transaction Example Complete!");
         }
