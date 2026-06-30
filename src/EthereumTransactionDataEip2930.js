@@ -2,7 +2,7 @@ import { decodeRlp, encodeRlp } from "ethers";
 import * as hex from "./encoding/hex.js";
 import EthereumTransactionData from "./EthereumTransactionData.js";
 import EvmAddress from "./EvmAddress.js";
-import EthereumAccessListItem from "./EthereumAccessListItem.js";
+import AccessListItem from "./AccessListItem.js";
 import CACHE from "./Cache.js";
 
 /**
@@ -11,7 +11,7 @@ import CACHE from "./Cache.js";
  */
 
 /**
- * @typedef {[Uint8Array, Uint8Array[]]} AccessListItem - [address, storageKeys[]]
+ * @typedef {[Uint8Array, Uint8Array[]]} AccessListTuple - [address, storageKeys[]]
  */
 
 /**
@@ -45,7 +45,7 @@ export default class EthereumTransactionDataEip2930 extends EthereumTransactionD
      * @param {Uint8Array} props.to
      * @param {Uint8Array} props.value
      * @param {Uint8Array} props.callData
-     * @param {AccessListItem[]} props.accessList
+     * @param {AccessListTuple[]} props.accessList
      * @param {Uint8Array} props.recId
      * @param {Uint8Array} props.r
      * @param {Uint8Array} props.s
@@ -95,7 +95,7 @@ export default class EthereumTransactionDataEip2930 extends EthereumTransactionD
             to: hex.decode(/** @type {string} */ (decoded[4])),
             value: hex.decode(/** @type {string} */ (decoded[5])),
             callData: hex.decode(/** @type {string} */ (decoded[6])),
-            accessList: /** @type {AccessListItem[]} */ (
+            accessList: /** @type {AccessListTuple[]} */ (
                 /** @type {Array<[string, string[]]>} */ (
                     /** @type {unknown} */ (decoded[7])
                 ).map((item) => {
@@ -351,16 +351,14 @@ export default class EthereumTransactionDataEip2930 extends EthereumTransactionD
     }
 
     /**
-     * @returns {EthereumAccessListItem[]} a structured view of the access list
+     * @returns {AccessListItem[]} a structured view of the access list
      */
     getAccessList() {
-        return this.accessList.map((tuple) =>
-            EthereumAccessListItem.fromTuple(tuple),
-        );
+        return this.accessList.map((tuple) => AccessListItem.fromTuple(tuple));
     }
 
     /**
-     * @param {EthereumAccessListItem[]} accessList
+     * @param {AccessListItem[]} accessList
      * @returns {this}
      */
     setAccessList(accessList) {
@@ -372,7 +370,7 @@ export default class EthereumTransactionDataEip2930 extends EthereumTransactionD
      * Append a single entry to the access list (writes into the underlying
      * tuple-list field).
      *
-     * @param {EthereumAccessListItem} item
+     * @param {AccessListItem} item
      * @returns {this}
      */
     addAccessListItem(item) {

@@ -17,7 +17,7 @@ import { bytesOrHexToBytes } from "./encoding/rlpNumber.js";
  * of truth; this class is a convenience wrapper produced by `getAccessList()`
  * and consumed by `setAccessList()`.
  */
-export default class EthereumAccessListItem {
+export default class AccessListItem {
     /**
      * @param {Uint8Array | null} [address] - 20-byte address (nullable)
      * @param {Uint8Array[]} [storageKeys] - 32-byte storage keys
@@ -35,11 +35,11 @@ export default class EthereumAccessListItem {
      * Build an item from the positional `[address, storageKeys[]]` tuple.
      *
      * @param {AccessListTuple} tuple
-     * @returns {EthereumAccessListItem}
+     * @returns {AccessListItem}
      */
     static fromTuple(tuple) {
         const [address, storageKeys] = tuple;
-        return new EthereumAccessListItem(address, storageKeys);
+        return new AccessListItem(address, storageKeys);
     }
 
     /**

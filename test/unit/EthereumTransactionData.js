@@ -4,8 +4,8 @@ import { encodeRlp, decodeRlp } from "ethers";
 import Long from "long";
 import BigNumber from "bignumber.js";
 import EvmAddress from "../../src/EvmAddress.js";
-import EthereumAccessListItem from "../../src/EthereumAccessListItem.js";
-import EthereumAuthorization from "../../src/EthereumAuthorization.js";
+import AccessListItem from "../../src/AccessListItem.js";
+import Authorization from "../../src/Authorization.js";
 import EthereumTransactionDataLegacy from "../../src/EthereumTransactionDataLegacy.js";
 import EthereumTransactionDataEip2930 from "../../src/EthereumTransactionDataEip2930.js";
 import EthereumTransactionDataEip1559 from "../../src/EthereumTransactionDataEip1559.js";
@@ -891,7 +891,7 @@ describe("EthereumTransactionData", function () {
         });
     });
 
-    describe("structured access list (EthereumAccessListItem)", function () {
+    describe("structured access list (AccessListItem)", function () {
         const empty = new Uint8Array();
         const address = hex.decode("7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181");
         const storageKey1 = hex.decode(
@@ -923,7 +923,7 @@ describe("EthereumTransactionData", function () {
             const list = d.getAccessList();
 
             expect(list).to.be.an("array").with.length(1);
-            expect(list[0]).to.be.instanceOf(EthereumAccessListItem);
+            expect(list[0]).to.be.instanceOf(AccessListItem);
             expect(list[0].getAddress()).to.be.instanceOf(EvmAddress);
             expect(list[0].getAddress().toString()).to.equal(
                 "7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181",
@@ -936,7 +936,7 @@ describe("EthereumTransactionData", function () {
 
         it("setAccessList() writes back to the tuple field and round-trips", function () {
             const d = build1559([]);
-            const item = new EthereumAccessListItem()
+            const item = new AccessListItem()
                 .setAddress("0x" + hex.encode(address))
                 .addStorageKey(storageKey1)
                 .addStorageKey("0x" + hex.encode(storageKey2));
@@ -963,13 +963,13 @@ describe("EthereumTransactionData", function () {
         });
 
         it("getAddress() is null when no address is set", function () {
-            const item = new EthereumAccessListItem(empty, [storageKey1]);
+            const item = new AccessListItem(empty, [storageKey1]);
             expect(item.getAddress()).to.equal(null);
             expect(item.getAddressBytes().length).to.equal(0);
         });
 
         it("EIP-2930 and EIP-7702 also expose the structured access list", function () {
-            const item = new EthereumAccessListItem(address, [storageKey1]);
+            const item = new AccessListItem(address, [storageKey1]);
 
             const tx2930 = new EthereumTransactionDataEip2930({
                 chainId: hex.decode("01"),
@@ -1009,7 +1009,7 @@ describe("EthereumTransactionData", function () {
         });
     });
 
-    describe("structured authorization list (EthereumAuthorization, EIP-7702)", function () {
+    describe("structured authorization list (Authorization, EIP-7702)", function () {
         const empty = new Uint8Array();
         const address = hex.decode("7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181");
         const r = hex.decode(
@@ -1051,7 +1051,7 @@ describe("EthereumTransactionData", function () {
             const list = d.getAuthorizationList();
 
             expect(list).to.be.an("array").with.length(1);
-            expect(list[0]).to.be.instanceOf(EthereumAuthorization);
+            expect(list[0]).to.be.instanceOf(Authorization);
             expect(list[0].getChainId().toString()).to.equal("298");
             expect(list[0].getAddress().toString()).to.equal(
                 "7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181",
@@ -1067,7 +1067,7 @@ describe("EthereumTransactionData", function () {
         });
 
         it("can be constructed from typed values and round-trips via setAuthorizationList", function () {
-            const auth = new EthereumAuthorization(
+            const auth = new Authorization(
                 298,
                 EvmAddress.fromString("0x" + hex.encode(address)),
                 1,
@@ -1230,7 +1230,7 @@ describe("EthereumTransactionData", function () {
         });
     });
 
-    describe("EthereumAccessListItem does not alias its storage keys", function () {
+    describe("AccessListItem does not alias its storage keys", function () {
         const address = hex.decode("7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181");
         const key1 = hex.decode(
             "0000000000000000000000000000000000000000000000000000000000000001",
@@ -1261,7 +1261,7 @@ describe("EthereumTransactionData", function () {
         });
 
         it("getStorageKeys() returns a copy that cannot mutate internal state", function () {
-            const item = new EthereumAccessListItem(address, [key1]);
+            const item = new AccessListItem(address, [key1]);
             item.getStorageKeys().push(key2);
             expect(item.getStorageKeys().length).to.equal(1);
         });
@@ -1299,8 +1299,8 @@ describe("EthereumTransactionData", function () {
 
             const d = make1559();
             const ret = d
-                .addAccessListItem(new EthereumAccessListItem(address, [key1]))
-                .addAccessListItem(new EthereumAccessListItem(address, []));
+                .addAccessListItem(new AccessListItem(address, [key1]))
+                .addAccessListItem(new AccessListItem(address, []));
 
             expect(ret).to.equal(d); // chainable
             expect(d.accessList.length).to.equal(2); // wrote into the tuple field
@@ -1331,7 +1331,7 @@ describe("EthereumTransactionData", function () {
             });
 
             const ret = d.addAuthorization(
-                new EthereumAuthorization(298, address, 1, 1, r, s),
+                new Authorization(298, address, 1, 1, r, s),
             );
 
             expect(ret).to.equal(d);

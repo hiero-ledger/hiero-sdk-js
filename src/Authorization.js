@@ -26,7 +26,7 @@ import {
  * and is created either at construction time or from an existing tuple. The
  * envelope keeps the tuple representation as the source of truth.
  */
-export default class EthereumAuthorization {
+export default class Authorization {
     /**
      * Each argument is normalized to minimal big-endian bytes. Integer-like
      * fields accept a `number | bigint | Long | Uint8Array | string`; `address` also
@@ -62,18 +62,11 @@ export default class EthereumAuthorization {
      * `[chainId, address, nonce, yParity, r, s]` tuple.
      *
      * @param {AuthorizationTuple} tuple
-     * @returns {EthereumAuthorization}
+     * @returns {Authorization}
      */
     static fromTuple(tuple) {
         const [chainId, address, nonce, yParity, r, s] = tuple;
-        return new EthereumAuthorization(
-            chainId,
-            address,
-            nonce,
-            yParity,
-            r,
-            s,
-        );
+        return new Authorization(chainId, address, nonce, yParity, r, s);
     }
 
     /**

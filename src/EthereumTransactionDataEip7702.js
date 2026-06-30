@@ -2,8 +2,8 @@ import { decodeRlp, encodeRlp } from "ethers";
 import * as hex from "./encoding/hex.js";
 import EthereumTransactionData from "./EthereumTransactionData.js";
 import EvmAddress from "./EvmAddress.js";
-import EthereumAccessListItem from "./EthereumAccessListItem.js";
-import EthereumAuthorization from "./EthereumAuthorization.js";
+import AccessListItem from "./AccessListItem.js";
+import Authorization from "./Authorization.js";
 import CACHE from "./Cache.js";
 
 /**
@@ -12,7 +12,7 @@ import CACHE from "./Cache.js";
  */
 
 /**
- * @typedef {[Uint8Array, Uint8Array[]]} AccessListItem - [address, storageKeys[]]
+ * @typedef {[Uint8Array, Uint8Array[]]} AccessListTuple - [address, storageKeys[]]
  */
 
 /**
@@ -54,7 +54,7 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
      * @param {Uint8Array} props.value
      * @param {Uint8Array} props.callData
      * @param {AuthorizationItem[]} props.authorizationList - Array of [chainId, contractAddress, nonce, yParity, r, s] tuples
-     * @param {AccessListItem[]} props.accessList
+     * @param {AccessListTuple[]} props.accessList
      * @param {Uint8Array} props.recId
      * @param {Uint8Array} props.r
      * @param {Uint8Array} props.s
@@ -132,7 +132,7 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
             to: hex.decode(/** @type {string} */ (decoded[5])),
             value: hex.decode(/** @type {string} */ (decoded[6])),
             callData: hex.decode(/** @type {string} */ (decoded[7])),
-            accessList: /** @type {AccessListItem[]} */ (
+            accessList: /** @type {AccessListTuple[]} */ (
                 /** @type {Array<[string, string[]]>} */ (
                     /** @type {unknown} */ (decoded[8])
                 ).map((item) => {
@@ -416,16 +416,14 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
     }
 
     /**
-     * @returns {EthereumAccessListItem[]} a structured view of the access list
+     * @returns {AccessListItem[]} a structured view of the access list
      */
     getAccessList() {
-        return this.accessList.map((tuple) =>
-            EthereumAccessListItem.fromTuple(tuple),
-        );
+        return this.accessList.map((tuple) => AccessListItem.fromTuple(tuple));
     }
 
     /**
-     * @param {EthereumAccessListItem[]} accessList
+     * @param {AccessListItem[]} accessList
      * @returns {this}
      */
     setAccessList(accessList) {
@@ -437,7 +435,7 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
      * Append a single entry to the access list (writes into the underlying
      * tuple-list field).
      *
-     * @param {EthereumAccessListItem} item
+     * @param {AccessListItem} item
      * @returns {this}
      */
     addAccessListItem(item) {
@@ -446,17 +444,17 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
     }
 
     /**
-     * @returns {EthereumAuthorization[]} a structured view of the EIP-7702
+     * @returns {Authorization[]} a structured view of the EIP-7702
      *     authorization list (HIP-1340)
      */
     getAuthorizationList() {
         return this.authorizationList.map((tuple) =>
-            EthereumAuthorization.fromTuple(tuple),
+            Authorization.fromTuple(tuple),
         );
     }
 
     /**
-     * @param {EthereumAuthorization[]} authorizationList
+     * @param {Authorization[]} authorizationList
      * @returns {this}
      */
     setAuthorizationList(authorizationList) {
@@ -470,7 +468,7 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
      * Append a single authorization to the EIP-7702 authorization list (writes
      * into the underlying tuple-list field).
      *
-     * @param {EthereumAuthorization} authorization
+     * @param {Authorization} authorization
      * @returns {this}
      */
     addAuthorization(authorization) {
