@@ -309,7 +309,14 @@ describe("EthereumTransactionIntegrationTest", function () {
         );
     });
 
-    it("signs and submits an EIP-7702 delegation (HIP-1340)", async function (ctx) {
+    // Skipped until the target network executes EIP-7702 / HIP-1340 type-4
+    // transactions. Consensus v0.74.0 ships only the protobuf changes, so the
+    // node rejects the envelope at precheck with INVALID_ETHEREUM_TRANSACTION —
+    // a status that is indistinguishable from a malformed envelope, so we do
+    // NOT swallow it dynamically (that would mask a real encoding bug). Enable
+    // this test and validate the authorization encoding once a capable node is
+    // available.
+    it.skip("signs and submits an EIP-7702 delegation (HIP-1340)", async function () {
         const chainId = hex.decode("012a");
 
         // Deploy the contract whose code the EOA will delegate to.
@@ -408,40 +415,18 @@ describe("EthereumTransactionIntegrationTest", function () {
 
         expect(data.isSigned()).to.be.true;
 
-        try {
-            const response = await (
-                await (
-                    await new EthereumTransaction()
-                        .setEthereumData(data)
-                        .setMaxTransactionFee(new Hbar(10))
-                        .freezeWithSigner(wallet)
-                ).signWithSigner(wallet)
-            ).executeWithSigner(wallet);
+        const response = await (
+            await (
+                await new EthereumTransaction()
+                    .setEthereumData(data)
+                    .setMaxTransactionFee(new Hbar(10))
+                    .freezeWithSigner(wallet)
+            ).signWithSigner(wallet)
+        ).executeWithSigner(wallet);
 
-            const receipt = await response.getReceiptWithSigner(wallet);
-            expect(receipt).to.be.instanceof(TransactionReceipt);
-            expect(receipt.status).to.be.equal(Status.Success);
-        } catch (error) {
-            // EIP-7702 / HIP-1340 execution may not be enabled on the target
-            // network yet (consensus v0.74.0 ships only the protobuf changes).
-            // Skip — rather than fail — when the node reports the type-4
-            // transaction unsupported; re-throw anything else so real bugs
-            // still surface.
-            const status = error && error.status ? error.status.toString() : "";
-            const detail = `${status} ${String(error)}`;
-            if (
-                /NOT_SUPPORTED|not[ _]?supported|unsupported|7702|hip-?1340|delegation/i.test(
-                    detail,
-                )
-            ) {
-                console.warn(
-                    `Skipping EIP-7702 e2e — network does not support HIP-1340 yet: ${detail}`,
-                );
-                ctx.skip();
-                return;
-            }
-            throw error;
-        }
+        const receipt = await response.getReceiptWithSigner(wallet);
+        expect(receipt).to.be.instanceof(TransactionReceipt);
+        expect(receipt.status).to.be.equal(Status.Success);
     });
 
     it("Jumbo transaction", async function () {
