@@ -170,8 +170,10 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
             this.accessList,
             this.authorizationList,
             this.recId,
-            this.r,
-            this.s,
+            // r/s are signature scalars: encode minimally (no leading zero
+            // bytes), or nodes reject the tx as a non-canonical integer.
+            this._toMinimalBytes(this.r),
+            this._toMinimalBytes(this.s),
         ]);
         return hex.decode("04" + encoded.substring(2));
     }

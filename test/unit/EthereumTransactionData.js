@@ -1345,4 +1345,41 @@ describe("EthereumTransactionData", function () {
             );
         });
     });
+
+    describe("canonical signature encoding (toBytes trims r/s)", function () {
+        const empty = new Uint8Array();
+
+        it("encodes r/s as minimal big-endian scalars (no leading zero bytes)", function () {
+            // r has 31 leading zero bytes -> minimal "05"; s has one -> 31 bytes.
+            const r = new Uint8Array(32);
+            r[31] = 0x05;
+            const s = new Uint8Array(32).fill(0xab);
+            s[0] = 0x00;
+
+            const d = new EthereumTransactionDataEip1559({
+                chainId: hex.decode("012a"),
+                nonce: empty,
+                maxPriorityGas: empty,
+                maxGas: empty,
+                gasLimit: empty,
+                to: empty,
+                value: empty,
+                callData: empty,
+                accessList: [],
+                recId: empty,
+                r,
+                s,
+            });
+
+            // In-memory r/s stay full 32-byte (so verification still works)...
+            expect(d.r.length).to.equal(32);
+            expect(d.s.length).to.equal(32);
+
+            // ...but the encoded wire form is the minimal scalar.
+            const decoded = EthereumTransactionData.fromBytes(d.toBytes());
+            expect(hex.encode(decoded.getR())).to.equal("05");
+            expect(decoded.getS().length).to.equal(31);
+            expect(decoded.getS()[0]).to.equal(0xab);
+        });
+    });
 });

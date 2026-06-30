@@ -91,8 +91,10 @@ export default class EthereumTransactionDataLegacy extends EthereumTransactionDa
                 this.value,
                 this.callData,
                 this.v,
-                this.r,
-                this.s,
+                // r/s are signature scalars: encode minimally (no leading
+                // zero bytes), or nodes reject the tx as a non-canonical integer.
+                this._toMinimalBytes(this.r),
+                this._toMinimalBytes(this.s),
             ]),
         );
     }

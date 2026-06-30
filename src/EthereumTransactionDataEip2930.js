@@ -130,8 +130,10 @@ export default class EthereumTransactionDataEip2930 extends EthereumTransactionD
             this.callData,
             this.accessList,
             this.recId,
-            this.r,
-            this.s,
+            // r/s are signature scalars: encode minimally (no leading zero
+            // bytes), or nodes reject the tx as a non-canonical integer.
+            this._toMinimalBytes(this.r),
+            this._toMinimalBytes(this.s),
         ]);
         return hex.decode("01" + encoded.substring(2));
     }
