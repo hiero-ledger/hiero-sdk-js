@@ -434,6 +434,18 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
     }
 
     /**
+     * Append a single entry to the access list (writes into the underlying
+     * tuple-list field).
+     *
+     * @param {EthereumAccessListItem} item
+     * @returns {this}
+     */
+    addAccessListItem(item) {
+        this.accessList.push(item.toTuple());
+        return this;
+    }
+
+    /**
      * @returns {EthereumAuthorization[]} a structured view of the EIP-7702
      *     authorization list (HIP-1340)
      */
@@ -451,6 +463,18 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
         this.authorizationList = authorizationList.map((item) =>
             item.toTuple(),
         );
+        return this;
+    }
+
+    /**
+     * Append a single authorization to the EIP-7702 authorization list (writes
+     * into the underlying tuple-list field).
+     *
+     * @param {EthereumAuthorization} authorization
+     * @returns {this}
+     */
+    addAuthorization(authorization) {
+        this.authorizationList.push(authorization.toTuple());
         return this;
     }
 

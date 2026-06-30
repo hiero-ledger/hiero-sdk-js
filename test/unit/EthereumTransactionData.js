@@ -1249,4 +1249,83 @@ describe("EthereumTransactionData", function () {
             expect(item.getStorageKeys().length).to.equal(1);
         });
     });
+
+    describe("single-item adders (addAccessListItem / addAuthorization)", function () {
+        const empty = new Uint8Array();
+        const address = hex.decode("7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181");
+        const key1 = hex.decode(
+            "0000000000000000000000000000000000000000000000000000000000000001",
+        );
+        const r = hex.decode(
+            "df48f2efd10421811de2bfb125ab75b2d3c44139c4642837fb1fccce911fd479",
+        );
+        const s = hex.decode(
+            "1aaf7ae92bee896651dfc9d99ae422a296bf5d9f1ca49b2d96d82b79eb112d66",
+        );
+
+        it("addAccessListItem appends to the tuple field and chains (EIP-1559/2930/7702)", function () {
+            const make1559 = () =>
+                new EthereumTransactionDataEip1559({
+                    chainId: hex.decode("012a"),
+                    nonce: empty,
+                    maxPriorityGas: empty,
+                    maxGas: empty,
+                    gasLimit: empty,
+                    to: address,
+                    value: empty,
+                    callData: empty,
+                    accessList: [],
+                    recId: empty,
+                    r: empty,
+                    s: empty,
+                });
+
+            const d = make1559();
+            const ret = d
+                .addAccessListItem(new EthereumAccessListItem(address, [key1]))
+                .addAccessListItem(new EthereumAccessListItem(address, []));
+
+            expect(ret).to.equal(d); // chainable
+            expect(d.accessList.length).to.equal(2); // wrote into the tuple field
+            const view = d.getAccessList();
+            expect(view[0].getStorageKeys().length).to.equal(1);
+            expect(view[1].getStorageKeys().length).to.equal(0);
+
+            // round-trips through encode/decode
+            const decoded = EthereumTransactionData.fromBytes(d.toBytes());
+            expect(decoded.getAccessList().length).to.equal(2);
+        });
+
+        it("addAuthorization appends to the EIP-7702 authorization list", function () {
+            const d = new EthereumTransactionDataEip7702({
+                chainId: hex.decode("012a"),
+                nonce: empty,
+                maxPriorityGas: empty,
+                maxGas: empty,
+                gasLimit: empty,
+                to: address,
+                value: empty,
+                callData: empty,
+                accessList: [],
+                authorizationList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            });
+
+            const ret = d.addAuthorization(
+                new EthereumAuthorization(298, address, 1, 1, r, s),
+            );
+
+            expect(ret).to.equal(d);
+            expect(d.authorizationList.length).to.equal(1);
+
+            const decoded = EthereumTransactionData.fromBytes(d.toBytes());
+            const auth = decoded.getAuthorizationList()[0];
+            expect(auth.getChainId().toString()).to.equal("298");
+            expect(auth.getAddress().toString()).to.equal(
+                "7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181",
+            );
+        });
+    });
 });

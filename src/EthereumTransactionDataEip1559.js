@@ -398,6 +398,18 @@ export default class EthereumTransactionDataEip1559 extends EthereumTransactionD
     }
 
     /**
+     * Append a single entry to the access list (writes into the underlying
+     * tuple-list field).
+     *
+     * @param {EthereumAccessListItem} item
+     * @returns {this}
+     */
+    addAccessListItem(item) {
+        this.accessList.push(item.toTuple());
+        return this;
+    }
+
+    /**
      * @returns {string}
      */
     toString() {
