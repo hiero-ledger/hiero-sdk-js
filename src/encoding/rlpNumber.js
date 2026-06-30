@@ -35,28 +35,34 @@ export function bytesOrHexToBytes(value) {
  * @returns {Uint8Array}
  */
 export function toMinimalBytes(value) {
+    // Resolve the input to raw bytes first...
+    let bytes;
     if (value instanceof Uint8Array) {
-        return value;
-    }
-
-    if (typeof value === "string") {
-        return bytesOrHexToBytes(value);
-    }
-
-    let hexString;
-    if (Long.isLong(value)) {
-        hexString = value.toUnsigned().toString(16);
-    } else if (BigNumber.isBigNumber(value)) {
-        hexString = value.toString(16);
+        bytes = value;
+    } else if (typeof value === "string") {
+        bytes = bytesOrHexToBytes(value);
     } else {
-        hexString = new BigNumber(value).toString(16);
+        const hexString = Long.isLong(value)
+            ? value.toUnsigned().toString(16)
+            : BigNumber.isBigNumber(value)
+            ? value.toString(16)
+            : new BigNumber(value).toString(16);
+
+        if (hexString === "0") {
+            return new Uint8Array();
+        }
+        bytes = hex.decode(
+            hexString.length % 2 === 0 ? hexString : "0" + hexString,
+        );
     }
 
-    if (hexString === "0") {
-        return new Uint8Array();
+    // ...then trim leading zero bytes so the encoding is canonical regardless
+    // of how the integer was supplied (an all-zero / empty input -> empty).
+    let start = 0;
+    while (start < bytes.length && bytes[start] === 0) {
+        start++;
     }
-
-    return hex.decode(hexString.length % 2 === 0 ? hexString : "0" + hexString);
+    return start === 0 ? bytes : bytes.subarray(start);
 }
 
 /**

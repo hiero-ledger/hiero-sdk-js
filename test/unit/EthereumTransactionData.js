@@ -1092,4 +1092,61 @@ describe("EthereumTransactionData", function () {
             expect(hex.encode(roundTripped[0].getR())).to.equal(hex.encode(r));
         });
     });
+
+    describe("accessor normalization & null address", function () {
+        const empty = new Uint8Array();
+        function build1559() {
+            return new EthereumTransactionDataEip1559({
+                chainId: empty,
+                nonce: empty,
+                maxPriorityGas: empty,
+                maxGas: empty,
+                gasLimit: empty,
+                to: empty,
+                value: empty,
+                callData: empty,
+                accessList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            });
+        }
+
+        it("integer setters trim leading zero bytes to minimal encoding", function () {
+            const d = build1559();
+
+            // padded Uint8Array -> minimal
+            d.setNonce(new Uint8Array([0x00, 0x00, 0x05]));
+            expect(hex.encode(d.getNonceBytes())).to.equal("05");
+            expect(d.getNonce().toNumber()).to.equal(5);
+
+            // padded hex string -> minimal
+            d.setGasLimit("0x00018000");
+            expect(hex.encode(d.getGasLimitBytes())).to.equal("018000");
+
+            // all-zero -> empty bytes
+            d.setValue(new Uint8Array([0x00, 0x00]));
+            expect(d.getValueBytes().length).to.equal(0);
+        });
+
+        it("address and callData setters preserve exact bytes (no trimming)", function () {
+            const d = build1559();
+
+            // a 20-byte address with a leading zero byte must NOT be trimmed
+            const addr = "00aa9eaf9bcc39e2ffa38eb30bf7a93feacbc181";
+            d.setTo(hex.decode(addr));
+            expect(hex.encode(d.getToBytes())).to.equal(addr);
+            expect(d.getTo().toString()).to.equal(addr);
+
+            // callData with leading zero bytes is opaque and preserved
+            d.setCallData(new Uint8Array([0x00, 0x12, 0x34]));
+            expect(hex.encode(d.getCallData())).to.equal("001234");
+        });
+
+        it("getTo() returns null when there is no recipient", function () {
+            const d = build1559();
+            expect(d.getTo()).to.equal(null);
+            expect(d.getToBytes().length).to.equal(0);
+        });
+    });
 });

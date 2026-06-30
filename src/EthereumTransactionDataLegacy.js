@@ -200,10 +200,11 @@ export default class EthereumTransactionDataLegacy extends EthereumTransactionDa
     }
 
     /**
-     * @returns {EvmAddress} the `to` address
+     * @returns {?EvmAddress} the `to` address, or `null` when none is set
+     *     (contract creation)
      */
     getTo() {
-        return EvmAddress.fromBytes(this.to);
+        return this.to.length === 0 ? null : EvmAddress.fromBytes(this.to);
     }
 
     /**
@@ -219,7 +220,7 @@ export default class EthereumTransactionDataLegacy extends EthereumTransactionDa
      */
     setTo(to) {
         this.to =
-            to instanceof EvmAddress ? to.toBytes() : this._toMinimalBytes(to);
+            to instanceof EvmAddress ? to.toBytes() : this._toExactBytes(to);
         return this;
     }
 
@@ -258,7 +259,7 @@ export default class EthereumTransactionDataLegacy extends EthereumTransactionDa
      * @returns {this}
      */
     setCallData(callData) {
-        this.callData = this._toMinimalBytes(callData);
+        this.callData = this._toExactBytes(callData);
         return this;
     }
 

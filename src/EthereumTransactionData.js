@@ -3,6 +3,7 @@ import {
     bytesToLong,
     bytesToBigNumber,
     toMinimalBytes,
+    bytesOrHexToBytes,
 } from "./encoding/rlpNumber.js";
 
 /**
@@ -153,6 +154,20 @@ export default class EthereumTransactionData {
      */
     _toMinimalBytes(value) {
         return toMinimalBytes(value);
+    }
+
+    /**
+     * Coerce a bytes-or-hex-string value into bytes, preserving the exact byte
+     * sequence (no minimal-encoding / leading-zero trimming). Used for
+     * fixed-width or opaque fields — addresses and call data — where trimming
+     * would corrupt the value.
+     *
+     * @protected
+     * @param {Uint8Array | string} value
+     * @returns {Uint8Array}
+     */
+    _toExactBytes(value) {
+        return bytesOrHexToBytes(value);
     }
 
     // eslint-disable-next-line jsdoc/require-returns-check
