@@ -123,7 +123,7 @@ async function main() {
         const unsignedData = new EthereumTransactionDataEip1559({
             chainId: numberToBytes(chainId),
             nonce: new Uint8Array(), // first transaction from this account
-            maxPriorityGas: decode("00"),
+            maxPriorityGas: new Uint8Array(), // zero -> empty (minimal encoding)
             maxGas: decode("d1385c7bf0"),
             gasLimit: decode("0249f0"),
             to: decode(contractAddress),
