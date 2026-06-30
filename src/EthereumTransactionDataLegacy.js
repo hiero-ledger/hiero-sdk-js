@@ -144,7 +144,7 @@ export default class EthereumTransactionDataLegacy extends EthereumTransactionDa
     }
 
     /**
-     * @param {number | Long | BigNumber | Uint8Array | string} nonce
+     * @param {number | bigint | Long | BigNumber | Uint8Array | string} nonce
      * @returns {this}
      */
     setNonce(nonce) {
@@ -167,7 +167,7 @@ export default class EthereumTransactionDataLegacy extends EthereumTransactionDa
     }
 
     /**
-     * @param {number | Long | BigNumber | Uint8Array | string} gasPrice
+     * @param {number | bigint | Long | BigNumber | Uint8Array | string} gasPrice
      * @returns {this}
      */
     setGasPrice(gasPrice) {
@@ -190,7 +190,7 @@ export default class EthereumTransactionDataLegacy extends EthereumTransactionDa
     }
 
     /**
-     * @param {number | Long | BigNumber | Uint8Array | string} gasLimit
+     * @param {number | bigint | Long | BigNumber | Uint8Array | string} gasLimit
      * @returns {this}
      */
     setGasLimit(gasLimit) {
@@ -238,7 +238,7 @@ export default class EthereumTransactionDataLegacy extends EthereumTransactionDa
     }
 
     /**
-     * @param {number | Long | BigNumber | Uint8Array | string} value
+     * @param {number | bigint | Long | BigNumber | Uint8Array | string} value
      * @returns {this}
      */
     setValue(value) {

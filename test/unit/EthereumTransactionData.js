@@ -1183,6 +1183,23 @@ describe("EthereumTransactionData", function () {
             expect(d.getChainId().toNumber()).to.equal(298);
         });
 
+        it("accepts bigint input for numeric fields (incl. values beyond 2^53)", function () {
+            const d = build1559();
+
+            d.setNonce(7n);
+            expect(d.getNonce().toNumber()).to.equal(7);
+
+            d.setMaxPriorityGas(0n); // zero -> empty (minimal encoding)
+            expect(d.getMaxPriorityGasBytes().length).to.equal(0);
+
+            d.setValue(2000000000n);
+            expect(d.getValue().toFixed()).to.equal("2000000000");
+
+            // exact for values a JS number couldn't represent
+            d.setValue(10000000000000000001n);
+            expect(d.getValue().toFixed()).to.equal("10000000000000000001");
+        });
+
         it("setters copy byte input so later caller mutation can't corrupt the field", function () {
             const d = build1559();
             const a = new Uint8Array([0x05]);

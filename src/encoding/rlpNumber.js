@@ -43,7 +43,7 @@ export function bytesOrHexToBytes(value) {
  *   not silently wrapped to a uint64).
  * All forms must resolve to a non-negative integer.
  *
- * @param {number | Long | BigNumber | Uint8Array | string} value
+ * @param {number | bigint | Long | BigNumber | Uint8Array | string} value
  * @returns {Uint8Array}
  */
 export function toMinimalBytes(value) {
@@ -69,6 +69,9 @@ export function toMinimalBytes(value) {
         bn = new BigNumber(value.toString());
     } else if (BigNumber.isBigNumber(value)) {
         bn = value;
+    } else if (typeof value === "bigint") {
+        // Exact decimal string — no precision loss for arbitrarily large values.
+        bn = new BigNumber(value.toString());
     } else {
         // Guard before constructing the BigNumber: new BigNumber(double) would
         // otherwise silently round a number above 2^53.

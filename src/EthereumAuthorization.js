@@ -29,13 +29,13 @@ import {
 export default class EthereumAuthorization {
     /**
      * Each argument is normalized to minimal big-endian bytes. Integer-like
-     * fields accept a `number | Long | Uint8Array | string`; `address` also
+     * fields accept a `number | bigint | Long | Uint8Array | string`; `address` also
      * accepts an {@link EvmAddress}.
      *
-     * @param {number | Long | Uint8Array | string} chainId
+     * @param {number | bigint | Long | Uint8Array | string} chainId
      * @param {EvmAddress | Uint8Array | string} address
-     * @param {number | Long | Uint8Array | string} nonce
-     * @param {number | Long | Uint8Array | string} yParity
+     * @param {number | bigint | Long | Uint8Array | string} nonce
+     * @param {number | bigint | Long | Uint8Array | string} yParity
      * @param {Uint8Array | string} r
      * @param {Uint8Array | string} s
      */

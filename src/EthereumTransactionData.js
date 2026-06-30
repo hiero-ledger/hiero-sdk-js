@@ -149,7 +149,7 @@ export default class EthereumTransactionData {
      * integer encoding. Accepts the union used by the typed setters.
      *
      * @protected
-     * @param {number | Long | BigNumber | Uint8Array | string} value
+     * @param {number | bigint | Long | BigNumber | Uint8Array | string} value
      * @returns {Uint8Array}
      */
     _toMinimalBytes(value) {
