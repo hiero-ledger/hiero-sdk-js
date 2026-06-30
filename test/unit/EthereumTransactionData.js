@@ -1149,14 +1149,67 @@ describe("EthereumTransactionData", function () {
             expect(d.getToBytes().length).to.equal(0);
         });
 
-        it("rejects negative / non-integer numeric input", function () {
+        it("rejects negative numeric input", function () {
             const d = build1559();
             expect(() => d.setNonce(-1)).to.throw(/non-negative integer/);
             expect(() => d.setValue(new BigNumber(-5))).to.throw(
                 /non-negative integer/,
             );
-            expect(() => d.setGasLimit(1.5)).to.throw(/non-negative integer/);
-            expect(() => d.setChainId(NaN)).to.throw(/non-negative integer/);
+            expect(() => d.setNonce(Long.fromNumber(-1))).to.throw(
+                /non-negative integer/,
+            );
+        });
+
+        it("rejects unsafe-integer numbers (precision loss) instead of silently rounding", function () {
+            const d = build1559();
+            // 2^53 + 1 cannot be represented as a JS number; must throw, not round.
+            expect(() => d.setValue(9007199254740993)).to.throw(/safe integer/);
+            expect(() => d.setGasLimit(1.5)).to.throw(/safe integer/);
+            expect(() => d.setChainId(NaN)).to.throw(/safe integer/);
+
+            // the same large value passed as BigNumber is exact and round-trips
+            const wei = new BigNumber("10000000000000000"); // 0.01 ETH, > 2^53
+            d.setValue(wei);
+            expect(d.getValue().toFixed()).to.equal("10000000000000000");
+        });
+
+        it("parses string input as decimal, or hex when 0x-prefixed", function () {
+            const d = build1559();
+            d.setNonce("10");
+            expect(d.getNonce().toNumber()).to.equal(10); // decimal, not 0x10
+            d.setNonce("0x10");
+            expect(d.getNonce().toNumber()).to.equal(16); // hex
+            d.setChainId("298"); // odd-length decimal must not throw
+            expect(d.getChainId().toNumber()).to.equal(298);
+        });
+
+        it("setters copy byte input so later caller mutation can't corrupt the field", function () {
+            const d = build1559();
+            const a = new Uint8Array([0x05]);
+            d.setNonce(a);
+            a[0] = 0x09; // mutate the caller's buffer after the setter
+            expect(d.getNonce().toNumber()).to.equal(5);
+        });
+
+        it("uint64 getter throws rather than silently wrapping an out-of-range field", function () {
+            // 9-byte nonce is outside uint64 range
+            const d = new EthereumTransactionDataEip1559({
+                chainId: empty,
+                nonce: hex.decode("010000000000000000"),
+                maxPriorityGas: empty,
+                maxGas: empty,
+                gasLimit: empty,
+                to: empty,
+                value: empty,
+                callData: empty,
+                accessList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            });
+            expect(() => d.getNonce()).to.throw(/uint64/);
+            // raw bytes accessor still works
+            expect(d.getNonceBytes().length).to.equal(9);
         });
     });
 
