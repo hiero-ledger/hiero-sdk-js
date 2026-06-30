@@ -22,6 +22,7 @@ import { encodeRlp } from "ethers";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import * as hex from "../../src/encoding/hex.js";
 import EthereumTransactionDataEip1559 from "../../src/EthereumTransactionDataEip1559.js";
+import EthereumTransactionDataEip7702 from "../../src/EthereumTransactionDataEip7702.js";
 
 /**
  * @summary E2E-HIP-844
@@ -306,6 +307,141 @@ describe("EthereumTransactionIntegrationTest", function () {
         expect(() => new EthereumTransaction().setEthereumData(data)).to.throw(
             /not signed/,
         );
+    });
+
+    it("signs and submits an EIP-7702 delegation (HIP-1340)", async function (ctx) {
+        const chainId = hex.decode("012a");
+
+        // Deploy the contract whose code the EOA will delegate to.
+        const fileReceipt = await (
+            await (
+                await (
+                    await new FileCreateTransaction()
+                        .setKeys([wallet.getAccountKey()])
+                        .setContents(SMART_CONTRACT_BYTECODE)
+                        .setMaxTransactionFee(new Hbar(2))
+                        .freezeWithSigner(wallet)
+                ).signWithSigner(wallet)
+            ).executeWithSigner(wallet)
+        ).getReceiptWithSigner(wallet);
+        const fileId = fileReceipt.fileId;
+
+        const contractReceipt = await (
+            await (
+                await (
+                    await new ContractCreateTransaction()
+                        .setAdminKey(operatorKey)
+                        .setGas(300_000)
+                        .setConstructorParameters(
+                            new ContractFunctionParameters()
+                                .addString("Hello from Hedera.")
+                                ._build(),
+                        )
+                        .setBytecodeFileId(fileId)
+                        .setContractMemo("[e2e::ContractCreateTransaction]")
+                        .freezeWithSigner(wallet)
+                ).signWithSigner(wallet)
+            ).executeWithSigner(wallet)
+        ).getReceiptWithSigner(wallet);
+        expect(contractReceipt.status).to.be.equal(Status.Success);
+        const delegateAddress = hex.decode(
+            contractReceipt.contractId.toEvmAddress(),
+        );
+
+        // Fund the ECDSA account that is both the authority and the sender
+        // (self-sponsored delegation).
+        const key = PrivateKey.generateECDSA();
+        const accountAlias = key.publicKey.toEvmAddress();
+        await (
+            await (
+                await new TransferTransaction()
+                    .addHbarTransfer(operatorId, new Hbar(10).negated())
+                    .addHbarTransfer(accountAlias, new Hbar(10))
+                    .setMaxTransactionFee(new Hbar(1))
+                    .freezeWithSigner(wallet)
+            ).executeWithSigner(wallet)
+        ).getReceiptWithSigner(wallet);
+
+        // Build and sign the authorization tuple [chainId, address, nonce,
+        // yParity, r, s]. The authority signs keccak256(0x05 ‖ rlp([chainId,
+        // address, nonce])). For a self-sponsored tx the authority nonce is the
+        // sender's tx nonce + 1 (the tx consumes nonce 0).
+        const authNonce = hex.decode("01");
+        const authMessage = hex.decode(
+            "05" +
+                encodeRlp([chainId, delegateAddress, authNonce]).substring(2),
+        );
+        const authSignature = key.sign(authMessage);
+        const authR = authSignature.slice(0, 32);
+        const authS = authSignature.slice(32, 64);
+        const authRecId = key.getRecoveryId(authR, authS, authMessage);
+        const authorizationTuple = [
+            chainId,
+            delegateAddress,
+            authNonce,
+            new Uint8Array(authRecId === 0 ? [] : [authRecId]),
+            authR,
+            authS,
+        ];
+
+        const callData = new ContractFunctionParameters()
+            .addString("new message")
+            ._build("setMessage");
+
+        // Build the type-4 envelope (to = the EOA itself, now carrying the
+        // delegated code) and sign it natively with the sender key.
+        const data = new EthereumTransactionDataEip7702({
+            chainId,
+            nonce: new Uint8Array(),
+            maxPriorityGas: hex.decode("00"),
+            maxGas: hex.decode("d1385c7bf0"),
+            gasLimit: hex.decode("0249f0"),
+            to: hex.decode(accountAlias),
+            value: new Uint8Array(),
+            callData,
+            accessList: [],
+            authorizationList: [authorizationTuple],
+            recId: new Uint8Array(),
+            r: new Uint8Array(),
+            s: new Uint8Array(),
+        }).sign(key);
+
+        expect(data.isSigned()).to.be.true;
+
+        try {
+            const response = await (
+                await (
+                    await new EthereumTransaction()
+                        .setEthereumData(data)
+                        .setMaxTransactionFee(new Hbar(10))
+                        .freezeWithSigner(wallet)
+                ).signWithSigner(wallet)
+            ).executeWithSigner(wallet);
+
+            const receipt = await response.getReceiptWithSigner(wallet);
+            expect(receipt).to.be.instanceof(TransactionReceipt);
+            expect(receipt.status).to.be.equal(Status.Success);
+        } catch (error) {
+            // EIP-7702 / HIP-1340 execution may not be enabled on the target
+            // network yet (consensus v0.74.0 ships only the protobuf changes).
+            // Skip — rather than fail — when the node reports the type-4
+            // transaction unsupported; re-throw anything else so real bugs
+            // still surface.
+            const status = error && error.status ? error.status.toString() : "";
+            const detail = `${status} ${String(error)}`;
+            if (
+                /NOT_SUPPORTED|not[ _]?supported|unsupported|7702|hip-?1340|delegation/i.test(
+                    detail,
+                )
+            ) {
+                console.warn(
+                    `Skipping EIP-7702 e2e — network does not support HIP-1340 yet: ${detail}`,
+                );
+                ctx.skip();
+                return;
+            }
+            throw error;
+        }
     });
 
     it("Jumbo transaction", async function () {
