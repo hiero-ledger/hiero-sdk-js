@@ -44,7 +44,6 @@ import CACHE from "./Cache.js";
 
 export default class EthereumTransactionDataEip7702 extends EthereumTransactionData {
     /**
-     * @private
      * @param {object} props
      * @param {Uint8Array} props.chainId
      * @param {Uint8Array} props.nonce
