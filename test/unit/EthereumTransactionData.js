@@ -1148,5 +1148,52 @@ describe("EthereumTransactionData", function () {
             expect(d.getTo()).to.equal(null);
             expect(d.getToBytes().length).to.equal(0);
         });
+
+        it("rejects negative / non-integer numeric input", function () {
+            const d = build1559();
+            expect(() => d.setNonce(-1)).to.throw(/non-negative integer/);
+            expect(() => d.setValue(new BigNumber(-5))).to.throw(
+                /non-negative integer/,
+            );
+            expect(() => d.setGasLimit(1.5)).to.throw(/non-negative integer/);
+            expect(() => d.setChainId(NaN)).to.throw(/non-negative integer/);
+        });
+    });
+
+    describe("EthereumAccessListItem does not alias its storage keys", function () {
+        const address = hex.decode("7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181");
+        const key1 = hex.decode(
+            "0000000000000000000000000000000000000000000000000000000000000001",
+        );
+        const key2 = hex.decode(
+            "0000000000000000000000000000000000000000000000000000000000000002",
+        );
+
+        it("mutating a structured item does not mutate the source tuple", function () {
+            const tx = new EthereumTransactionDataEip2930({
+                chainId: hex.decode("01"),
+                nonce: new Uint8Array(),
+                gasPrice: new Uint8Array(),
+                gasLimit: new Uint8Array(),
+                to: new Uint8Array(),
+                value: new Uint8Array(),
+                callData: new Uint8Array(),
+                accessList: [[address, [key1]]],
+                recId: new Uint8Array(),
+                r: new Uint8Array(),
+                s: new Uint8Array(),
+            });
+
+            tx.getAccessList()[0].addStorageKey(key2);
+
+            // the envelope's underlying tuple is untouched
+            expect(tx.accessList[0][1].length).to.equal(1);
+        });
+
+        it("getStorageKeys() returns a copy that cannot mutate internal state", function () {
+            const item = new EthereumAccessListItem(address, [key1]);
+            item.getStorageKeys().push(key2);
+            expect(item.getStorageKeys().length).to.equal(1);
+        });
     });
 });

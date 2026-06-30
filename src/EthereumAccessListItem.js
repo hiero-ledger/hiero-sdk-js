@@ -25,8 +25,10 @@ export default class EthereumAccessListItem {
     constructor(address = null, storageKeys = []) {
         /** @type {Uint8Array | null} */
         this._address = address;
+        // Copy so mutating this item (e.g. addStorageKey) never reaches the
+        // caller's array or the envelope tuple it may have come from.
         /** @type {Uint8Array[]} */
-        this._storageKeys = storageKeys;
+        this._storageKeys = [...storageKeys];
     }
 
     /**
@@ -47,7 +49,7 @@ export default class EthereumAccessListItem {
      * @returns {AccessListTuple}
      */
     toTuple() {
-        return [this._address ?? new Uint8Array(), this._storageKeys];
+        return [this._address ?? new Uint8Array(), [...this._storageKeys]];
     }
 
     /**
@@ -82,7 +84,7 @@ export default class EthereumAccessListItem {
      * @returns {Uint8Array[]} the storage keys
      */
     getStorageKeys() {
-        return this._storageKeys;
+        return [...this._storageKeys];
     }
 
     /**
@@ -90,7 +92,7 @@ export default class EthereumAccessListItem {
      * @returns {this}
      */
     setStorageKeys(storageKeys) {
-        this._storageKeys = storageKeys;
+        this._storageKeys = [...storageKeys];
         return this;
     }
 

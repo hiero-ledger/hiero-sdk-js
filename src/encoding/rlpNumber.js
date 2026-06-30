@@ -42,11 +42,21 @@ export function toMinimalBytes(value) {
     } else if (typeof value === "string") {
         bytes = bytesOrHexToBytes(value);
     } else {
-        const hexString = Long.isLong(value)
-            ? value.toUnsigned().toString(16)
-            : BigNumber.isBigNumber(value)
-            ? value.toString(16)
-            : new BigNumber(value).toString(16);
+        let hexString;
+        if (Long.isLong(value)) {
+            // Longs model unsigned uint64 fields here.
+            hexString = value.toUnsigned().toString(16);
+        } else {
+            const bn = BigNumber.isBigNumber(value)
+                ? value
+                : new BigNumber(value);
+            if (!bn.isFinite() || bn.isNegative() || !bn.isInteger()) {
+                throw new Error(
+                    "Ethereum transaction data fields must be non-negative integers",
+                );
+            }
+            hexString = bn.toString(16);
+        }
 
         if (hexString === "0") {
             return new Uint8Array();
