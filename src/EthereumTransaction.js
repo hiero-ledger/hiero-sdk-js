@@ -2,6 +2,7 @@
 
 import Hbar from "./Hbar.js";
 import FileId from "./file/FileId.js";
+import EthereumTransactionData from "./EthereumTransactionData.js";
 import Transaction, {
     TRANSACTION_REGISTRY,
 } from "./transaction/Transaction.js";
@@ -34,7 +35,7 @@ import Transaction, {
 export default class EthereumTransaction extends Transaction {
     /**
      * @param {object} [props]
-     * @param {Uint8Array} [props.ethereumData]
+     * @param {Uint8Array | EthereumTransactionData} [props.ethereumData]
      * @param {FileId} [props.callData]
      * @param {FileId} [props.callDataFileId]
      * @param {number | string | Long | BigNumber | Hbar} [props.maxGasAllowance]
@@ -133,12 +134,30 @@ export default class EthereumTransaction extends Transaction {
      * The raw Ethereum transaction (RLP encoded type 0, 1, and 2). Complete
      * unless the callData field is set.
      *
-     * @param {Uint8Array} ethereumData
+     * Also accepts an {@link EthereumTransactionData} instance directly, so the
+     * caller does not have to manually call `toBytes()`. When an
+     * `EthereumTransactionData` is passed it must already be signed (it must
+     * carry `r`/`s`); an unsigned envelope is rejected rather than serialized,
+     * so an unsigned transaction is never submitted. Raw bytes are stored
+     * unchanged and bypass this check.
+     *
+     * @param {Uint8Array | EthereumTransactionData} ethereumData
      * @returns {this}
      */
     setEthereumData(ethereumData) {
         this._requireNotFrozen();
-        this._ethereumData = ethereumData;
+
+        if (ethereumData instanceof EthereumTransactionData) {
+            if (!ethereumData.isSigned()) {
+                throw new Error(
+                    "EthereumTransactionData is not signed; call `.sign(key)` before `setEthereumData()` (or pass the raw signed bytes)",
+                );
+            }
+            this._ethereumData = ethereumData.toBytes();
+        } else {
+            this._ethereumData = ethereumData;
+        }
+
         return this;
     }
 

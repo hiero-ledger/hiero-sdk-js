@@ -1,6 +1,6 @@
 import * as hex from "../../src/encoding/hex.js";
 import { EthereumTransactionData, PrivateKey } from "../../src/index.js";
-import { encodeRlp, decodeRlp } from "ethers";
+import { encodeRlp, decodeRlp, Transaction, Wallet, hexlify } from "ethers";
 import Long from "long";
 import BigNumber from "bignumber.js";
 import EvmAddress from "../../src/EvmAddress.js";
@@ -1380,6 +1380,115 @@ describe("EthereumTransactionData", function () {
             expect(hex.encode(decoded.getR())).to.equal("05");
             expect(decoded.getS().length).to.equal(31);
             expect(decoded.getS()[0]).to.equal(0xab);
+        });
+    });
+    describe("ethers.js signature cross-check", function () {
+        // Sign with the SDK, serialize, then have ethers recover the sender. A
+        // match proves the produced envelope is a valid Ethereum transaction
+        // (correct field order, type prefix and r/s/recId), independent of the
+        // SDK's own verifier.
+        const chainId = hex.decode("012a");
+        const nonce = hex.decode("02");
+        const gasPrice = hex.decode("2f");
+        const maxPriorityGas = hex.decode("2f");
+        const maxGas = hex.decode("3b9aca00");
+        const gasLimit = hex.decode("018000");
+        const to = hex.decode("7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181");
+        const value = hex.decode("0de0b6b3a7640000");
+        const callData = hex.decode("123456");
+        const empty = new Uint8Array();
+
+        function norm(address) {
+            return address.toLowerCase().replace(/^0x/, "");
+        }
+
+        // The EVM address ethers derives from the same private key.
+        function senderFor(key) {
+            return norm(new Wallet("0x" + key.toStringRaw()).address);
+        }
+
+        // The sender ethers recovers from the SDK-serialized signed envelope.
+        function recover(data) {
+            return norm(Transaction.from(hexlify(data.toBytes())).from);
+        }
+
+        it("Legacy recovers the signing key as sender", function () {
+            const key = PrivateKey.generateECDSA();
+            const data = new EthereumTransactionDataLegacy({
+                nonce,
+                gasPrice,
+                gasLimit,
+                to,
+                value,
+                callData,
+                v: empty,
+                r: empty,
+                s: empty,
+            }).sign(key);
+
+            expect(recover(data)).to.equal(senderFor(key));
+        });
+
+        it("EIP-2930 recovers the signing key as sender", function () {
+            const key = PrivateKey.generateECDSA();
+            const data = new EthereumTransactionDataEip2930({
+                chainId,
+                nonce,
+                gasPrice,
+                gasLimit,
+                to,
+                value,
+                callData,
+                accessList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            }).sign(key);
+
+            expect(recover(data)).to.equal(senderFor(key));
+        });
+
+        it("EIP-1559 recovers the signing key as sender", function () {
+            const key = PrivateKey.generateECDSA();
+            const data = new EthereumTransactionDataEip1559({
+                chainId,
+                nonce,
+                maxPriorityGas,
+                maxGas,
+                gasLimit,
+                to,
+                value,
+                callData,
+                accessList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            }).sign(key);
+
+            expect(recover(data)).to.equal(senderFor(key));
+        });
+
+        it("EIP-7702 recovers the signing key as sender", function () {
+            const key = PrivateKey.generateECDSA();
+            const data = new EthereumTransactionDataEip7702({
+                chainId,
+                nonce,
+                maxPriorityGas,
+                maxGas,
+                gasLimit,
+                to,
+                value,
+                callData,
+                accessList: [],
+                authorizationList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            }).sign(key);
+
+            const parsed = Transaction.from(hexlify(data.toBytes()));
+            expect(parsed.type).to.equal(4);
+            expect(norm(parsed.from)).to.equal(senderFor(key));
         });
     });
 });
