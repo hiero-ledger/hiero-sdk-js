@@ -52,6 +52,8 @@ export default defineConfig({
             "src/encoding/hex.js": "src/encoding/hex.browser.js",
             "../encoding/hex.js": "../encoding/hex.browser.js",
             "./encoding/hex.js": "./encoding/hex.browser.js",
+            // sibling import from within src/encoding (e.g. rlpNumber.js)
+            "./hex.js": "./hex.browser.js",
             "../src/encoding/utf8.js": "../src/encoding/utf8.browser.js",
             "../../src/encoding/utf8.js": "../../src/encoding/utf8.browser.js",
             "../encoding/utf8.js": "../encoding/utf8.browser.js",

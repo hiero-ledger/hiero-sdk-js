@@ -1,4 +1,15 @@
 import CACHE from "./Cache.js";
+import {
+    bytesToLong,
+    bytesToBigNumber,
+    toMinimalBytes,
+    bytesOrHexToBytes,
+} from "./encoding/rlpNumber.js";
+
+/**
+ * @typedef {import("long")} Long
+ * @typedef {import("bignumber.js").default} BigNumber
+ */
 
 /**
  * Represents the base class for Ethereum transaction data.
@@ -127,6 +138,59 @@ export default class EthereumTransactionData {
             remaining = Math.floor(remaining / 256);
         }
         return new Uint8Array(bytes);
+    }
+
+    /**
+     * Decode minimal big-endian bytes into an unsigned {@link Long} (for
+     * `uint64` fields such as `chainId`, `nonce` and `gasLimit`). Empty bytes
+     * decode to zero.
+     *
+     * @protected
+     * @param {Uint8Array} bytes
+     * @returns {Long}
+     */
+    _bytesToLong(bytes) {
+        return bytesToLong(bytes);
+    }
+
+    /**
+     * Decode minimal big-endian bytes into a {@link BigNumber} (for `uint256`
+     * fields such as `value`, `gasPrice` and `maxGas`). Empty bytes decode to
+     * zero.
+     *
+     * @protected
+     * @param {Uint8Array} bytes
+     * @returns {BigNumber}
+     */
+    _bytesToBigNumber(bytes) {
+        return bytesToBigNumber(bytes);
+    }
+
+    /**
+     * Normalize a numeric/bytes/hex-string value into minimal big-endian bytes
+     * (no leading zeros; zero becomes empty bytes), matching Ethereum's RLP
+     * integer encoding. Accepts the union used by the typed setters.
+     *
+     * @protected
+     * @param {number | bigint | Long | BigNumber | Uint8Array | string} value
+     * @returns {Uint8Array}
+     */
+    _toMinimalBytes(value) {
+        return toMinimalBytes(value);
+    }
+
+    /**
+     * Coerce a bytes-or-hex-string value into bytes, preserving the exact byte
+     * sequence (no minimal-encoding / leading-zero trimming). Used for
+     * fixed-width or opaque fields — addresses and call data — where trimming
+     * would corrupt the value.
+     *
+     * @protected
+     * @param {Uint8Array | string} value
+     * @returns {Uint8Array}
+     */
+    _toExactBytes(value) {
+        return bytesOrHexToBytes(value);
     }
 
     // eslint-disable-next-line jsdoc/require-returns-check
