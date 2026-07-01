@@ -18,7 +18,6 @@ import CACHE from "./Cache.js";
 
 export default class EthereumTransactionDataLegacy extends EthereumTransactionData {
     /**
-     * @private
      * @param {object} props
      * @param {Uint8Array} props.nonce
      * @param {Uint8Array} props.gasPrice
