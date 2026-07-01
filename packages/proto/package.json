@@ -45,7 +45,7 @@
     "@babel/plugin-transform-runtime": "7.25.9",
     "@eslint/compat": "2.0.2",
     "@eslint/eslintrc": "3.3.3",
-    "@eslint/js": "9.26.0",
+    "@eslint/js": "10.0.1",
     "@types/node": "25.9.1",
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",

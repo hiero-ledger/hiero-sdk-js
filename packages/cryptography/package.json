@@ -89,7 +89,7 @@
         "@babel/plugin-transform-modules-commonjs": "7.26.3",
         "@eslint/compat": "2.0.2",
         "@eslint/eslintrc": "3.3.3",
-        "@eslint/js": "9.26.0",
+        "@eslint/js": "10.0.1",
         "@types/bn.js": "5.1.6",
         "@types/crypto-js": "4.2.2",
         "@types/node": "25.9.1",
