@@ -14,7 +14,7 @@
         "@hiero-ledger/proto": "workspace:*",
         "@hiero-ledger/sdk": "workspace:*",
         "expo": "~56.0.8",
-        "expo-status-bar": "~56.0.4",
+        "expo-status-bar": "~57.0.0",
         "react": "19.2.4",
         "react-dom": "19.2.4",
         "react-native": "~0.78.0",
