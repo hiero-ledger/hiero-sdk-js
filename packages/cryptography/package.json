@@ -97,10 +97,10 @@
         "@types/utf8": "3.0.3",
         "@typescript-eslint/eslint-plugin": "8.55.0",
         "@typescript-eslint/parser": "8.55.0",
-        "@vitest/browser": "4.1.6",
-        "@vitest/browser-playwright": "4.0.18",
+        "@vitest/browser": "4.1.8",
+        "@vitest/browser-playwright": "4.1.8",
         "@vitest/coverage-istanbul": "4.0.18",
-        "@vitest/coverage-v8": "4.0.18",
+        "@vitest/coverage-v8": "4.1.8",
         "babel-plugin-dynamic-import-node": "2.3.3",
         "babel-plugin-module-rewrite": "0.2.0",
         "c8": "11.0.0",
@@ -121,7 +121,7 @@
         "prettier": "3.5.3",
         "typescript": "5.9.3",
         "vite": "7.3.2",
-        "vitest": "4.1.0"
+        "vitest": "4.1.8"
     },
     "publishConfig": {
         "access": "public",
