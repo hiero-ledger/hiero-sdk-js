@@ -65,7 +65,7 @@ async function main() {
 
         for (let i = 0; i < MESSAGES_LIMIT; i += 1) {
             //NOSONAR
-             
+
             await (
                 await new TopicMessageSubmitTransaction()
                     .setNodeAccountIds([response.nodeId])

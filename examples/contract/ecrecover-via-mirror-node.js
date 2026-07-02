@@ -7,8 +7,8 @@
  */
 
 import dotenv from "dotenv";
-import { keccak_256 } from "@noble/hashes/sha3";
-import { bytesToHex, hexToBytes } from "@noble/hashes/utils";
+import { keccak_256 } from "@noble/hashes/sha3.js";
+import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import {
     Client,
     AccountId,
