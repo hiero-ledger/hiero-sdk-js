@@ -133,7 +133,7 @@
         "sinon": "22.0.0",
         "typedoc": "0.28.1",
         "typescript": "5.9.3",
-        "vite": "7.3.2",
+        "vite": "7.3.6",
         "vitest": "4.1.0"
     },
     "peerDependencies": {
@@ -144,7 +144,8 @@
     },
     "pnpm": {
         "overrides": {
-            "protobufjs": "8.2.0"
+            "protobufjs": "8.2.0",
+            "esbuild": ">=0.28.1"
         }
     }
 }
