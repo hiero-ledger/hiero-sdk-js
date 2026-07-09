@@ -12,6 +12,7 @@ export default defineConfig({
         exclude: [
             "test/unit/keystore.js",
             "test/unit/primitive/aes.browser.js",
+            "test/unit/browser/sha384.browser.js",
         ],
         testTimeout: 8000,
         coverage: {
