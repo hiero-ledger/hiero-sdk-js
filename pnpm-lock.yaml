@@ -166,8 +166,8 @@ importers:
         specifier: 11.0.0
         version: 11.0.0
       chromedriver:
-        specifier: 149.0.1
-        version: 149.0.1(debug@4.4.1)
+        specifier: 150.0.0
+        version: 150.0.0(debug@4.4.1)
       codecov:
         specifier: 3.8.3
         version: 3.8.3
@@ -772,8 +772,8 @@ importers:
         specifier: 11.0.0
         version: 11.0.0
       chromedriver:
-        specifier: 149.0.1
-        version: 149.0.1(debug@4.4.1)
+        specifier: 150.0.0
+        version: 150.0.0(debug@4.4.1)
       codecov:
         specifier: 3.8.3
         version: 3.8.3
@@ -6074,8 +6074,8 @@ packages:
     resolution: {integrity: sha512-rNjApaLzuwaOTjCiT8lSDdGN1APCiqkChLMJxJPWLunPAt5fy8xgU9/jNOchV84wfIxrA0lRQB7oCT8jrn/wrQ==}
     engines: {node: '>=6.0'}
 
-  chromedriver@149.0.1:
-    resolution: {integrity: sha512-mAIzz2KZzl/zwgWklkFzYCGK3Ub3yU25JAM1qOcT1aB4p0dMXJxqu8naI/NwI8eGKqX/2OFN87KXmFqmcvmPvA==}
+  chromedriver@150.0.0:
+    resolution: {integrity: sha512-MhHObBXNUOxJFzHuwRC+BXRFJNJgbgIr+y7B/MB++QioxbHz2R3Zj4WyJJVGqkjZyoVAF4zc46egxJ1GSFG7+w==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -20204,7 +20204,7 @@ snapshots:
 
   chrome-trace-event@1.0.4: {}
 
-  chromedriver@149.0.1(debug@4.4.1):
+  chromedriver@150.0.0(debug@4.4.1):
     dependencies:
       '@testim/chrome-version': 1.1.4
       adm-zip: 0.5.17
