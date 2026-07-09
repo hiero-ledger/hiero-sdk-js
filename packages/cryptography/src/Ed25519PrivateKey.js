@@ -1,6 +1,6 @@
 import BadKeyError from "./BadKeyError.js";
 import Ed25519PublicKey from "./Ed25519PublicKey.js";
-import nacl from "tweetnacl";
+import { ed25519 } from "@noble/curves/ed25519";
 import * as hex from "./encoding/hex.js";
 import * as random from "./primitive/random.js";
 import * as slip10 from "./primitive/slip10.js";
@@ -8,23 +8,41 @@ import * as slip10 from "./primitive/slip10.js";
 export const derPrefix = "302e020100300506032b657004220420";
 export const derPrefixBytes = hex.decode(derPrefix);
 
+/**
+ * @typedef {object} KeyPair
+ * @property {Uint8Array} publicKey
+ * @property {Uint8Array} privateKey - the 32-byte Ed25519 seed
+ */
+
+/**
+ * Build an Ed25519 key pair from a 32-byte seed.
+ * @param {Uint8Array} seed
+ * @returns {KeyPair}
+ */
+function keyPairFromSeed(seed) {
+    // copy so the stored key can't be mutated through the caller's buffer
+    const privateKey = seed.slice(0, 32);
+    return {
+        privateKey,
+        publicKey: ed25519.getPublicKey(privateKey),
+    };
+}
+
 export default class Ed25519PrivateKey {
     /**
      * @hideconstructor
      * @internal
-     * @param {nacl.SignKeyPair | Uint8Array} keyPair
+     * @param {KeyPair | Uint8Array} keyPair
      * @param {Uint8Array=} chainCode
      */
     constructor(keyPair, chainCode) {
         /**
-         * @type {nacl.SignKeyPair}
+         * @type {KeyPair}
          * @readonly
          * @private
          */
         this._keyPair =
-            keyPair instanceof Uint8Array
-                ? nacl.sign.keyPair.fromSeed(keyPair)
-                : keyPair;
+            keyPair instanceof Uint8Array ? keyPairFromSeed(keyPair) : keyPair;
 
         /**
          * @type {?Uint8Array}
@@ -50,7 +68,7 @@ export default class Ed25519PrivateKey {
         const entropy = random.bytes(64);
 
         return new Ed25519PrivateKey(
-            nacl.sign.keyPair.fromSeed(entropy.subarray(0, 32)),
+            keyPairFromSeed(entropy.subarray(0, 32)),
             entropy.subarray(32),
         );
     }
@@ -65,7 +83,7 @@ export default class Ed25519PrivateKey {
         const entropy = await random.bytesAsync(64);
 
         return new Ed25519PrivateKey(
-            nacl.sign.keyPair.fromSeed(entropy.subarray(0, 32)),
+            keyPairFromSeed(entropy.subarray(0, 32)),
             entropy.subarray(32),
         );
     }
@@ -121,8 +139,7 @@ export default class Ed25519PrivateKey {
             );
         }
 
-        const keyPair = nacl.sign.keyPair.fromSeed(privateKey);
-        return new Ed25519PrivateKey(keyPair);
+        return new Ed25519PrivateKey(keyPairFromSeed(privateKey));
     }
 
     /**
@@ -133,12 +150,12 @@ export default class Ed25519PrivateKey {
     static fromBytesRaw(data) {
         switch (data.length) {
             case 32:
-                return new Ed25519PrivateKey(nacl.sign.keyPair.fromSeed(data));
+                return new Ed25519PrivateKey(keyPairFromSeed(data));
 
             case 64:
-                // priv + pub key
+                // priv + pub key; the first 32 bytes are the seed
                 return new Ed25519PrivateKey(
-                    nacl.sign.keyPair.fromSecretKey(data),
+                    keyPairFromSeed(data.subarray(0, 32)),
                 );
 
             default:
@@ -203,7 +220,7 @@ export default class Ed25519PrivateKey {
      * @returns {Uint8Array} - The signature bytes without the message
      */
     sign(bytes) {
-        return nacl.sign.detached(bytes, this._keyPair.secretKey);
+        return ed25519.sign(bytes, this._keyPair.privateKey);
     }
 
     /**
@@ -211,7 +228,7 @@ export default class Ed25519PrivateKey {
      */
     toBytesDer() {
         const bytes = new Uint8Array(derPrefixBytes.length + 32);
-        const privateKey = this._keyPair.secretKey.subarray(0, 32);
+        const privateKey = this._keyPair.privateKey.subarray(0, 32);
         const leadingZeroes = 32 - privateKey.length;
         const privateKeyOffset = derPrefixBytes.length + leadingZeroes;
 
@@ -226,6 +243,6 @@ export default class Ed25519PrivateKey {
      */
     toBytesRaw() {
         // copy the bytes so they can't be modified accidentally
-        return this._keyPair.secretKey.slice(0, 32);
+        return this._keyPair.privateKey.slice(0, 32);
     }
 }

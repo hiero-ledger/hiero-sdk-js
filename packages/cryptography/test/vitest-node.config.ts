@@ -9,10 +9,7 @@ export default defineConfig({
         pool: "threads",
         isolate: false,
         include: ["test/unit/**/*.js"],
-        exclude: [
-            "test/unit/keystore.js",
-            "test/unit/primitive/aes.browser.js",
-        ],
+        exclude: ["test/unit/keystore.js"],
         testTimeout: 8000,
         coverage: {
             provider: "v8",

@@ -9,7 +9,6 @@ import * as asn1 from "asn1js";
 import pemForge from "forge-light/lib/pem.js";
 import * as hex from "./hex.js";
 import * as aes from "../primitive/aes.js";
-import { Buffer } from "buffer";
 
 const ID_ED25519 = "1.3.101.112";
 
@@ -73,24 +72,21 @@ export async function readPemED25519(pem, passphrase) {
  * @returns {Promise<Ed25519PrivateKey | EcdsaPrivateKey | Uint8Array>}
  */
 export async function readPemECDSA(pem, passphrase) {
-    const pemKeyData = pem.replace(
-        /-----BEGIN (.*)-----|-----END (.*)-----|\n|\r/g,
-        "",
-    );
-    const key = base64.decode(pemKeyData);
-
     if (passphrase) {
         const decodedPem = pemForge.decode(pem)[0];
         /** @type {string} */
 
         const ivString = decodedPem.dekInfo.parameters;
         const iv = hex.decode(ivString);
-        const pemLines = pem.split("\n");
         const key = await aes.messageDigest(passphrase, ivString);
-        const dataToDecrypt = Buffer.from(
-            pemLines.slice(4, pemLines.length - 1).join(""),
-            "base64",
-        );
+        // Strip the PEM armor and the Proc-Type/DEK-Info headers, leaving only
+        // the base64-encoded ciphertext body.
+        const body = pem
+            .replace(/-----BEGIN (.*)-----|-----END (.*)-----/g, "")
+            .replace(/Proc-Type:.*/g, "")
+            .replace(/DEK-Info:.*/g, "")
+            .replace(/\s/g, "");
+        const dataToDecrypt = base64.decode(body);
         const keyDerBytes = await aes.createDecipheriv(
             aes.CipherAlgorithm.Aes128Cbc,
             key,
@@ -100,6 +96,13 @@ export async function readPemECDSA(pem, passphrase) {
 
         return EcdsaPrivateKey.fromBytesDer(keyDerBytes);
     } else {
+        // Strip the PEM armor; the remaining body is clean base64 for an
+        // unencrypted SEC1 key.
+        const pemKeyData = pem.replace(
+            /-----BEGIN (.*)-----|-----END (.*)-----|\n|\r/g,
+            "",
+        );
+        const key = base64.decode(pemKeyData);
         const asnData = asn1.fromBER(key);
         const parsedKey = asnData.result;
 

@@ -246,6 +246,27 @@ describe("PrivateKey", function () {
         expect(key.toString()).to.deep.equal(privKeyStr);
     });
 
+    it("fromPem() decrypts an encrypted EC (SEC1) private key", async function () {
+        // Legacy OpenSSL SEC1 PEM (`openssl ec -aes-128-cbc`): Proc-Type/DEK-Info
+        // headers with an MD5-derived key + AES-128-CBC body.
+        const encryptedEcPem =
+            "-----BEGIN EC PRIVATE KEY-----\n" +
+            "Proc-Type: 4,ENCRYPTED\n" +
+            "DEK-Info: AES-128-CBC,C47D549119566ECD5ED947A42FB455D0\n" +
+            "\n" +
+            "KF2zpH5iURXFEuLQRQ0Hw6jbR4ExoTAHdVG2LeWtlOVF//qk0A0ULA87inwPbJUt\n" +
+            "aLzDZbPeQnumkPkbgNBDzi1m9L5taFJOo5qJ0+lC0rlrhZgzZHQeCcLhnjOpN0Xc\n" +
+            "68DH4AUY+6zh4tmJBq0LYfb+FHmVRPK+JURRxVhsovA=\n" +
+            "-----END EC PRIVATE KEY-----\n";
+
+        const key = await PrivateKey.fromPem(encryptedEcPem, "hunter2");
+
+        expect(key._type).to.equal("secp256k1");
+        expect(hex.encode(key.toBytesRaw())).to.equal(
+            "74a39eb62ed861795afd1f1cad54421306610917b353839db3085bac68bd7168",
+        );
+    });
+
     it("PublicKey.fromString() should work", async function () {
         let err = false;
 
