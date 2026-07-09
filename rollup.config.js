@@ -21,97 +21,111 @@ const pkg = JSON.parse(
     readFileSync(path.resolve(__dirname, "./package.json"), "utf-8"),
 );
 
+// Alias replacements must be absolute paths. @rollup/plugin-commonjs (used in
+// the UMD/dist builds) resolves a relative replacement against the CWD instead
+// of the importing module and fails with ENOENT; absolute paths also dedupe the
+// substituted module instead of duplicating it. The many `find` variants stay
+// relative — they match the import specifier as written from varying depths.
+const abs = (p) => path.resolve(__dirname, p);
+
 const browserAliases = {
     entries: [
         {
             find: "../src/encoding/hex.js",
-            replacement: "../src/encoding/hex.browser.js",
+            replacement: abs("src/encoding/hex.browser.js"),
         },
         {
             find: "../../src/encoding/hex.js",
-            replacement: "../../src/encoding/hex.browser.js",
+            replacement: abs("src/encoding/hex.browser.js"),
         },
         {
             find: "../../../src/encoding/hex.js",
-            replacement: "../../../src/encoding/hex.browser.js",
+            replacement: abs("src/encoding/hex.browser.js"),
         },
         {
             find: "src/encoding/hex.js",
-            replacement: "src/encoding/hex.browser.js",
+            replacement: abs("src/encoding/hex.browser.js"),
         },
         {
             find: "../encoding/hex.js",
-            replacement: "../encoding/hex.browser.js",
+            replacement: abs("src/encoding/hex.browser.js"),
         },
-        { find: "./encoding/hex.js", replacement: "./encoding/hex.browser.js" },
+        {
+            find: "./encoding/hex.js",
+            replacement: abs("src/encoding/hex.browser.js"),
+        },
         {
             find: "../src/encoding/utf8.js",
-            replacement: "../src/encoding/utf8.browser.js",
+            replacement: abs("src/encoding/utf8.browser.js"),
         },
         {
             find: "../../src/encoding/utf8.js",
-            replacement: "../../src/encoding/utf8.browser.js",
+            replacement: abs("src/encoding/utf8.browser.js"),
         },
         {
             find: "../encoding/utf8.js",
-            replacement: "../encoding/utf8.browser.js",
+            replacement: abs("src/encoding/utf8.browser.js"),
         },
         {
             find: "../src/cryptography/sha384.js",
-            replacement: "../src/cryptography/sha384.browser.js",
+            replacement: abs("src/cryptography/sha384.browser.js"),
         },
         {
             find: "../cryptography/sha384.js",
-            replacement: "../cryptography/sha384.browser.js",
+            replacement: abs("src/cryptography/sha384.browser.js"),
         },
         {
             find: "./client/NodeIntegrationTestEnv.js",
-            replacement: "./client/WebIntegrationTestEnv.js",
+            replacement: abs(
+                "test/integration/client/WebIntegrationTestEnv.js",
+            ),
         },
         {
             find: "../integration/client/NodeIntegrationTestEnv.js",
-            replacement: "../integration/client/WebIntegrationTestEnv.js",
+            replacement: abs(
+                "test/integration/client/WebIntegrationTestEnv.js",
+            ),
         },
         {
             find: "../../src/client/NodeClient.js",
-            replacement: "../../src/client/WebClient.js",
+            replacement: abs("src/client/WebClient.js"),
         },
         {
             find: "../../src/network/AddressBookQuery.js",
-            replacement: "../../src/network/AddressBookQueryWeb.js",
+            replacement: abs("src/network/AddressBookQueryWeb.js"),
         },
         {
             find: "../network/AddressBookQuery.js",
-            replacement: "../network/AddressBookQueryWeb.js",
+            replacement: abs("src/network/AddressBookQueryWeb.js"),
         },
         // Add the index.js redirects
-        { find: "../../src/index.js", replacement: "../../src/browser.js" },
-        { find: "../src/index.js", replacement: "../src/browser.js" },
+        { find: "../../src/index.js", replacement: abs("src/browser.js") },
+        { find: "../src/index.js", replacement: abs("src/browser.js") },
     ],
 };
 
 const nativeAliases = {
     entries: [
-        { find: "../src/index.js", replacement: "../src/native.js" },
+        { find: "../src/index.js", replacement: abs("src/native.js") },
         {
             find: "../src/encoding/hex.js",
-            replacement: "../src/encoding/hex.native.js",
+            replacement: abs("src/encoding/hex.native.js"),
         },
         {
             find: "../src/encoding/utf8.js",
-            replacement: "../src/encoding/utf8.native.js",
+            replacement: abs("src/encoding/utf8.native.js"),
         },
         {
             find: "../src/cryptography/sha384.js",
-            replacement: "../src/cryptography/sha384.native.js",
+            replacement: abs("src/cryptography/sha384.native.js"),
         },
         {
             find: "../../src/network/AddressBookQuery.js",
-            replacement: "../../src/network/AddressBookQueryWeb.js",
+            replacement: abs("src/network/AddressBookQueryWeb.js"),
         },
         {
             find: "../network/AddressBookQuery.js",
-            replacement: "../network/AddressBookQueryWeb.js",
+            replacement: abs("src/network/AddressBookQueryWeb.js"),
         },
     ],
 };
