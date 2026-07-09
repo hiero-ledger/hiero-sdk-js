@@ -211,6 +211,58 @@ describe("PrivateKey", function () {
         expect(privateKeystore).to.deep.equal(key.toString());
     });
 
+    it("fromKeystore() rejects a truncated MAC instead of skipping the check", async function () {
+        // A length-blind comparison walks only the supplied MAC's bytes, so an
+        // empty one vacuously matches and any passphrase is accepted.
+        for (const mac of ["", "b2daf12be1b3d5326b1cd8c72f5178"]) {
+            const tampered = JSON.parse(keystoreV1);
+            tampered.crypto.mac = mac;
+
+            let err = null;
+            try {
+                await PrivateKey.fromKeystore(
+                    utf8.encode(JSON.stringify(tampered)),
+                    "some random password",
+                );
+            } catch (error) {
+                err = error;
+            }
+
+            expect(
+                err,
+                `mac ${JSON.stringify(mac)} was accepted`,
+            ).to.be.instanceOf(BadKeyError);
+            expect(err).to.have.property(
+                "message",
+                "HMAC mismatch; passphrase is incorrect",
+            );
+        }
+    });
+
+    it("fromString() rejects a mistyped key rather than deriving a different one", async function () {
+        // `hex.decode` used to map non-hex to 0x00, so a single typo silently
+        // produced a valid — but wrong — Ed25519 key.
+        expect(() => PrivateKey.fromStringED25519("zz".repeat(32))).to.throw(
+            /Invalid hex string/,
+        );
+        expect(() =>
+            PrivateKey.fromStringED25519(`g${"0".repeat(63)}`),
+        ).to.throw(/Invalid hex string/);
+        expect(() => PrivateKey.fromStringECDSA("zz".repeat(32))).to.throw(
+            /Invalid hex string/,
+        );
+    });
+
+    it("fromPem() tolerates stray whitespace in the PEM body", async function () {
+        // @scure/base rejects whitespace and unpadded input where the Buffer
+        // decoder ignored both, so the PEM readers must strip it before decoding.
+        const key = await PrivateKey.fromPem(
+            pemString.replace(/\n/g, " \t\n "),
+        );
+
+        expect(key.toStringDer()).to.equal(privKeyStr);
+    });
+
     it("derive() produces correct value", async function () {
         const iosMnemonic = await Mnemonic.fromString(iosWalletMnemonic);
         const iosKey = await iosMnemonic.toStandardEd25519PrivateKey("", 0);

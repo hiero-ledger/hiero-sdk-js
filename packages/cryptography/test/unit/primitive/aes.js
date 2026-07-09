@@ -30,6 +30,49 @@ describe("AES", function () {
         );
     });
 
+    // Known-answer vectors produced by node's `crypto.createCipheriv` /
+    // `createHash("md5")`, the implementation @noble/ciphers replaced. Round-trip
+    // tests alone would not catch a change in padding, key handling or byte
+    // order — these pin the wire format that existing keystores and encrypted
+    // PEMs depend on.
+    describe("known-answer vectors (node crypto parity)", function () {
+        it("matches AES-128-CTR", async function () {
+            const result = await createCipheriv(
+                CipherAlgorithm.Aes128Ctr,
+                testKey,
+                testIv,
+                testData,
+            );
+
+            expect(hex.encode(result)).to.equal("14d211f57ea13c9a");
+        });
+
+        it("matches AES-128-CBC, including PKCS#7 padding", async function () {
+            const result = await createCipheriv(
+                CipherAlgorithm.Aes128Cbc,
+                testKey,
+                testIv,
+                testData,
+            );
+
+            // 8 bytes of plaintext pad out to one 16-byte block
+            expect(hex.encode(result)).to.equal(
+                "72b2c56c3db0a46495c3a7565397ceb6",
+            );
+        });
+
+        it("matches the OpenSSL MD5(passphrase || iv[0:8]) key derivation", async function () {
+            const result = await messageDigest(
+                "testPassphrase",
+                hex.encode(testIv),
+            );
+
+            expect(hex.encode(result)).to.equal(
+                "fa445ea03cc9a19636ce9948d0b8d983",
+            );
+        });
+    });
+
     describe("createCipheriv", function () {
         it("should encrypt data using AES-128-CTR (deterministic)", async function () {
             const result = await createCipheriv(

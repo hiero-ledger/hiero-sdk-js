@@ -13,17 +13,30 @@ import * as aes from "../primitive/aes.js";
 const ID_ED25519 = "1.3.101.112";
 
 /**
+ * Strip the PEM armor, any RFC 1421 headers and *all* whitespace, leaving only
+ * the base64 body.
+ *
+ * `@scure/base` rejects whitespace and unpadded input, where the `Buffer`-based
+ * decoder this replaced silently ignored both -- so every stray space or tab
+ * has to go before decoding.
+ * @param {string} pem
+ * @returns {string}
+ */
+function pemBody(pem) {
+    return pem
+        .replace(/-----BEGIN (.*)-----|-----END (.*)-----/g, "")
+        .replace(/Proc-Type:.*/g, "")
+        .replace(/DEK-Info:.*/g, "")
+        .replace(/\s/g, "");
+}
+
+/**
  * @param {string} pem
  * @param {string} [passphrase]
  * @returns {Promise<Ed25519PrivateKey | EcdsaPrivateKey | Uint8Array>}
  */
 export async function readPemED25519(pem, passphrase) {
-    const pemKeyData = pem.replace(
-        /-----BEGIN (.*)-----|-----END (.*)-----|\n|\r/g,
-        "",
-    );
-
-    const key = base64.decode(pemKeyData);
+    const key = base64.decode(pemBody(pem));
     if (passphrase) {
         let encrypted;
 
@@ -79,14 +92,7 @@ export async function readPemECDSA(pem, passphrase) {
         const ivString = decodedPem.dekInfo.parameters;
         const iv = hex.decode(ivString);
         const key = await aes.messageDigest(passphrase, ivString);
-        // Strip the PEM armor and the Proc-Type/DEK-Info headers, leaving only
-        // the base64-encoded ciphertext body.
-        const body = pem
-            .replace(/-----BEGIN (.*)-----|-----END (.*)-----/g, "")
-            .replace(/Proc-Type:.*/g, "")
-            .replace(/DEK-Info:.*/g, "")
-            .replace(/\s/g, "");
-        const dataToDecrypt = base64.decode(body);
+        const dataToDecrypt = base64.decode(pemBody(pem));
         const keyDerBytes = await aes.createDecipheriv(
             aes.CipherAlgorithm.Aes128Cbc,
             key,
@@ -96,13 +102,7 @@ export async function readPemECDSA(pem, passphrase) {
 
         return EcdsaPrivateKey.fromBytesDer(keyDerBytes);
     } else {
-        // Strip the PEM armor; the remaining body is clean base64 for an
-        // unencrypted SEC1 key.
-        const pemKeyData = pem.replace(
-            /-----BEGIN (.*)-----|-----END (.*)-----|\n|\r/g,
-            "",
-        );
-        const key = base64.decode(pemKeyData);
+        const key = base64.decode(pemBody(pem));
         const asnData = asn1.fromBER(key);
         const parsedKey = asnData.result;
 

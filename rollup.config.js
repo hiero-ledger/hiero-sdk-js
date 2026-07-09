@@ -28,6 +28,31 @@ const pkg = JSON.parse(
 // relative — they match the import specifier as written from varying depths.
 const abs = (p) => path.resolve(__dirname, p);
 
+/**
+ * `@rollup/plugin-alias` matches on the import specifier alone, ignoring the
+ * importer. The `@hiero-ledger/cryptography` package imports its own encoding
+ * modules through the exact same relative specifiers the SDK uses
+ * (`../encoding/hex.js`, `./hex.js`, ...), so the browser aliases below would
+ * silently swap the SDK's copies into that package. It is isomorphic
+ * (Noble/Scure) and has no `*.browser.js` variants, so its modules must be left
+ * alone.
+ *
+ * Resolving them here, ahead of `alias()`, short-circuits the rewrite: the
+ * first plugin to return a non-null id wins. Mirrors the vite plugin in
+ * `test/browser-encoding-alias.js`.
+ * @returns {import("rollup").Plugin}
+ */
+const keepCryptographyEncoding = () => ({
+    name: "keep-cryptography-encoding",
+    resolveId(source, importer) {
+        if (importer == null || !source.startsWith(".")) return null;
+        if (!/packages[\\/]cryptography/.test(importer)) return null;
+        if (!/(^|\/)(encoding\/)?(hex|utf8)\.js$/.test(source)) return null;
+
+        return path.resolve(path.dirname(importer), source);
+    },
+});
+
 const browserAliases = {
     entries: [
         {
@@ -52,6 +77,12 @@ const browserAliases = {
         },
         {
             find: "./encoding/hex.js",
+            replacement: abs("src/encoding/hex.browser.js"),
+        },
+        {
+            // sibling import from within src/encoding (rlpNumber.js); without
+            // this the browser bundle pulls in the Buffer-backed hex module
+            find: "./hex.js",
             replacement: abs("src/encoding/hex.browser.js"),
         },
         {
@@ -134,6 +165,7 @@ export default [
     {
         input: "src/browser.js",
         plugins: [
+            keepCryptographyEncoding(),
             alias(browserAliases),
             json(),
             replace({
@@ -187,6 +219,7 @@ export default [
     {
         input: "src/browser.js",
         plugins: [
+            keepCryptographyEncoding(),
             alias(browserAliases),
             json(),
             replace({
@@ -213,6 +246,7 @@ export default [
     {
         input: "src/browser.js",
         plugins: [
+            keepCryptographyEncoding(),
             alias(browserAliases),
             json(),
             replace({
