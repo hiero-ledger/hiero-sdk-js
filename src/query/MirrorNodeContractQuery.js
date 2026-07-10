@@ -97,6 +97,18 @@ export default class MirrorNodeContractQuery {
     }
 
     /**
+     * @param {Uint8Array} params
+     * @description Sets the already ABI-encoded function parameters (including the
+     * 4-byte function selector) to use as the call data, e.g. the output of
+     * `ContractFunctionParameters._build(name)`.
+     * @returns {this}
+     */
+    setFunctionParameters(params) {
+        this._functionParameters = params;
+        return this;
+    }
+
+    /**
      * @param {Long} value
      * @description Sets the amount of value (in tinybars or wei) to be sent to the contract in the transaction.
      * Use this to specify an amount for a payable function call.

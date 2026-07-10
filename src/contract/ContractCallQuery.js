@@ -9,11 +9,13 @@ import Long from "long";
 import * as HieroProto from "@hiero-ledger/proto";
 import PrecheckStatusError from "../PrecheckStatusError.js";
 import Status from "../Status.js";
+import MirrorNodeContractEstimateQuery from "../query/MirrorNodeContractEstimateQuery.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
  * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
+ * @typedef {import("../Hbar.js").default} Hbar
  */
 
 /**
@@ -215,6 +217,74 @@ export default class ContractCallQuery extends Query {
         this._maxResultSize =
             size instanceof Long ? size : Long.fromValue(size);
         return this;
+    }
+
+    /**
+     * If gas was not set explicitly, estimate it using the client's mirror node.
+     * The consensus node requires a caller-supplied gas value for
+     * `contractCallLocal` — even for the COST_ANSWER cost probe — and rejects
+     * `gas=0` with `INSUFFICIENT_GAS`.
+     *
+     * @private
+     * @param {Client} client
+     * @returns {Promise<void>}
+     */
+    async _estimateGasIfNotSet(client) {
+        if (this._gas != null || this._contractId == null) {
+            return;
+        }
+
+        try {
+            const estimateQuery =
+                new MirrorNodeContractEstimateQuery().setContractId(
+                    this._contractId,
+                );
+
+            if (this._functionParameters != null) {
+                estimateQuery.setFunctionParameters(this._functionParameters);
+            }
+
+            if (this._senderAccountId != null) {
+                estimateQuery.setSender(this._senderAccountId);
+            }
+
+            const gas = await estimateQuery.execute(client);
+
+            if (!Number.isFinite(gas) || gas <= 0) {
+                throw new Error(
+                    `mirror node returned an invalid gas estimate: ${gas}`,
+                );
+            }
+
+            this._gas = Long.fromNumber(gas);
+        } catch (error) {
+            const cause =
+                error instanceof Error ? error.message : String(error);
+            throw new Error(
+                `ContractCallQuery requires gas to be set. Automatic gas estimation via the mirror node failed: ${cause}. Set the gas explicitly using setGas(), e.g. with a value obtained from MirrorNodeContractEstimateQuery.`,
+            );
+        }
+    }
+
+    /**
+     * @override
+     * @template {MirrorChannel} MirrorChannelT
+     * @param {import("../client/Client.js").default<Channel, MirrorChannelT>} client
+     * @returns {Promise<void>}
+     */
+    async _beforeExecute(client) {
+        await this._estimateGasIfNotSet(client);
+        return super._beforeExecute(client);
+    }
+
+    /**
+     * @override
+     * @param {Client} client
+     * @returns {Promise<Hbar>}
+     */
+    async getCost(client) {
+        await this._estimateGasIfNotSet(client);
+        return super.getCost(client);
     }
 
     /**
