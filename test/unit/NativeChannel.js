@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import { vi } from "vitest";
+import { afterAll, vi } from "vitest";
 import GrpcServiceError from "../../src/grpc/GrpcServiceError.js";
 import GrpcStatus from "../../src/grpc/GrpcStatus.js";
 import HttpError from "../../src/http/HttpError.js";
 import NativeChannel from "../../src/channel/NativeChannel.js";
 
 const mockFetch = vi.fn();
-vi.stubGlobal("fetch", mockFetch);
 
 /**
  * builds a mock fetch Response
@@ -42,9 +41,14 @@ function makeDataUrl(payload) {
 }
 
 describe("NativeChannel", function () {
+    afterAll(function () {
+        vi.unstubAllGlobals();
+    });
+
     beforeEach(function () {
         vi.clearAllMocks();
         vi.restoreAllMocks();
+        vi.stubGlobal("fetch", mockFetch);
         vi.stubGlobal(
             "FileReader",
             class {
