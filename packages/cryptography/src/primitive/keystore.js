@@ -1,4 +1,5 @@
 import BadKeyError from "../BadKeyError.js";
+import { equalBytes } from "@noble/ciphers/utils";
 import * as crypto from "./aes.js";
 import * as hex from "../encoding/hex.js";
 import * as utf8 from "../encoding/utf8.js";
@@ -152,8 +153,11 @@ export async function loadKeystore(keystoreBytes, passphrase) {
         cipherBytes,
     );
 
-    // compare that these two Uint8Arrays are equivalent
-    if (!macHex.every((b, i) => b === verifyHmac[i])) {
+    // `equalBytes` checks length first and is constant-time thereafter. A
+    // plain `.every()` over `macHex` would only compare `macHex.length` bytes,
+    // so a keystore carrying a truncated (or empty) `mac` passed against any
+    // passphrase.
+    if (!equalBytes(macHex, verifyHmac)) {
         throw new BadKeyError("HMAC mismatch; passphrase is incorrect");
     }
 

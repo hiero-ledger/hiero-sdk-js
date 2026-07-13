@@ -1,7 +1,9 @@
 import { defineConfig } from "vitest/config";
 import { playwright } from "@vitest/browser-playwright";
+import { browserEncodingAlias } from "./browser-encoding-alias.js";
 
 export default defineConfig({
+    plugins: [browserEncodingAlias()],
     test: {
         watch: false,
         globals: true,
@@ -23,7 +25,7 @@ export default defineConfig({
         testTimeout: 120000,
         retry: 1,
         coverage: {
-           include: ["src/**/*.js"],
+            include: ["src/**/*.js"],
             exclude: [
                 "src/client/addressbooks/mainnet.js",
                 "src/client/addressbooks/previewnet.js",
@@ -43,18 +45,16 @@ export default defineConfig({
             "../src/index.js": "../src/browser.js",
             // Redirect proto package to use ESM version in browser mode
             "@hiero-ledger/proto": "/packages/proto/src/index.js",
-            // TODO: extract `encoding/hex.js` etc into a variable and call a function to generate
-            // all the prefixes.
+            // Note: the bare `./encoding/hex.js` / `../encoding/utf8.js` / `./hex.js`
+            // forms are handled by the browserEncodingAlias() plugin so they don't
+            // leak into the isomorphic @hiero-ledger/cryptography package.
             "../../../src/encoding/hex.js":
                 "../../../src/encoding/hex.browser.js",
             "../../src/encoding/hex.js": "../../src/encoding/hex.browser.js",
             "../src/encoding/hex.js": "../src/encoding/hex.browser.js",
             "src/encoding/hex.js": "src/encoding/hex.browser.js",
-            "../encoding/hex.js": "../encoding/hex.browser.js",
-            "./encoding/hex.js": "./encoding/hex.browser.js",
             "../src/encoding/utf8.js": "../src/encoding/utf8.browser.js",
             "../../src/encoding/utf8.js": "../../src/encoding/utf8.browser.js",
-            "../encoding/utf8.js": "../encoding/utf8.browser.js",
             "../src/cryptography/sha384.js":
                 "../src/cryptography/sha384.browser.js",
             "../cryptography/sha384.js": "../cryptography/sha384.browser.js",

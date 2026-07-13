@@ -1,6 +1,6 @@
 {
     "name": "@hiero-ledger/sdk",
-    "version": "2.85.0",
+    "version": "2.86.0",
     "description": "Hiero SDK",
     "types": "./lib/index.d.ts",
     "main": "./lib/index.cjs",
@@ -109,7 +109,7 @@
         "babel-plugin-dynamic-import-node": "2.3.3",
         "babel-plugin-module-rewrite": "0.2.0",
         "c8": "11.0.0",
-        "chromedriver": "149.0.1",
+        "chromedriver": "150.0.0",
         "codecov": "3.8.3",
         "dotenv": "17.2.3",
         "dpdm": "4.2.0",
@@ -133,7 +133,7 @@
         "sinon": "22.0.0",
         "typedoc": "0.28.1",
         "typescript": "5.9.3",
-        "vite": "7.3.2",
+        "vite": "7.3.6",
         "vitest": "4.1.0"
     },
     "peerDependencies": {
@@ -144,7 +144,8 @@
     },
     "pnpm": {
         "overrides": {
-            "protobufjs": "8.2.0"
+            "protobufjs": "8.2.0",
+            "esbuild": ">=0.28.1"
         }
     }
 }

@@ -1,6 +1,11 @@
 import * as hex from "../../src/encoding/hex.js";
 import { EthereumTransactionData, PrivateKey } from "../../src/index.js";
-import { encodeRlp, decodeRlp } from "ethers";
+import { encodeRlp, decodeRlp, Transaction, Wallet, hexlify } from "ethers";
+import Long from "long";
+import BigNumber from "bignumber.js";
+import EvmAddress from "../../src/EvmAddress.js";
+import AccessListItem from "../../src/AccessListItem.js";
+import Authorization from "../../src/Authorization.js";
 import EthereumTransactionDataLegacy from "../../src/EthereumTransactionDataLegacy.js";
 import EthereumTransactionDataEip2930 from "../../src/EthereumTransactionDataEip2930.js";
 import EthereumTransactionDataEip1559 from "../../src/EthereumTransactionDataEip1559.js";
@@ -696,6 +701,794 @@ describe("EthereumTransactionData", function () {
             expect(() => base.sign(PrivateKey.generateECDSA())).to.throw(
                 "not implemented",
             );
+        });
+    });
+
+    describe("typed accessors (EIP-1559)", function () {
+        const empty = new Uint8Array();
+        function build() {
+            return new EthereumTransactionDataEip1559({
+                chainId: empty,
+                nonce: empty,
+                maxPriorityGas: empty,
+                maxGas: empty,
+                gasLimit: empty,
+                to: empty,
+                value: empty,
+                callData: empty,
+                accessList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            });
+        }
+
+        it("uint64 fields round-trip through Long and raw bytes", function () {
+            const d = build();
+            d.setNonce(7)
+                .setChainId(Long.fromNumber(298))
+                .setGasLimit(new Uint8Array([0x01, 0x80, 0x00]));
+
+            expect(d.getNonce().toString()).to.equal("7");
+            expect(d.getChainId().toString()).to.equal("298");
+            expect(d.getGasLimit().toNumber()).to.equal(0x018000);
+            expect(hex.encode(d.getNonceBytes())).to.equal("07");
+
+            // minimal encoding: zero -> empty bytes
+            d.setNonce(0);
+            expect(d.getNonceBytes().length).to.equal(0);
+            expect(d.getNonce().toString()).to.equal("0");
+        });
+
+        it("uint256 fields round-trip through BigNumber", function () {
+            const d = build();
+            d.setValue(new BigNumber("1000000000000000000")); // 1 ether in wei
+            expect(d.getValue().toFixed()).to.equal("1000000000000000000");
+            expect(hex.encode(d.getValueBytes())).to.equal("0de0b6b3a7640000");
+
+            d.setMaxGas(new BigNumber(1000000000));
+            expect(d.getMaxGas().toFixed()).to.equal("1000000000");
+        });
+
+        it("address accessor accepts EvmAddress, bytes and 0x string", function () {
+            const d = build();
+            const addr = "7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181";
+
+            d.setTo("0x" + addr);
+            expect(d.getTo()).to.be.instanceOf(EvmAddress);
+            expect(d.getTo().toString()).to.equal(addr);
+
+            d.setTo(EvmAddress.fromString("0x" + addr));
+            expect(hex.encode(d.getToBytes())).to.equal(addr);
+
+            d.setTo(hex.decode(addr));
+            expect(d.getTo().toString()).to.equal(addr);
+        });
+
+        it("setters accept number | Long | BigNumber | Uint8Array | hex string", function () {
+            const d = build();
+            d.setNonce(5);
+            expect(d.getNonce().toNumber()).to.equal(5);
+            d.setNonce(Long.fromNumber(6));
+            expect(d.getNonce().toNumber()).to.equal(6);
+            d.setNonce(new BigNumber(7));
+            expect(d.getNonce().toNumber()).to.equal(7);
+            d.setNonce(new Uint8Array([8]));
+            expect(d.getNonce().toNumber()).to.equal(8);
+            d.setNonce("0x09");
+            expect(d.getNonce().toNumber()).to.equal(9);
+        });
+
+        it("typed setters keep toBytes/fromBytes round-trip valid", function () {
+            const d = build()
+                .setChainId(298)
+                .setNonce(2)
+                .setMaxPriorityGas(new BigNumber(47))
+                .setMaxGas(new BigNumber(47))
+                .setGasLimit(0x018000)
+                .setTo("0x7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181")
+                .setValue(new BigNumber("1000000000000000000"))
+                .setCallData("0x123456");
+
+            const decoded = EthereumTransactionData.fromBytes(d.toBytes());
+            expect(decoded.getChainId().toString()).to.equal("298");
+            expect(decoded.getNonce().toString()).to.equal("2");
+            expect(decoded.getValue().toFixed()).to.equal(
+                "1000000000000000000",
+            );
+            expect(decoded.getTo().toString()).to.equal(
+                "7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181",
+            );
+            expect(hex.encode(decoded.getCallData())).to.equal("123456");
+        });
+    });
+
+    describe("typed accessors (EIP-2930, EIP-7702, Legacy)", function () {
+        const empty = new Uint8Array();
+
+        it("EIP-2930 exposes gasPrice (BigNumber) and round-trips", function () {
+            const d = new EthereumTransactionDataEip2930({
+                chainId: empty,
+                nonce: empty,
+                gasPrice: empty,
+                gasLimit: empty,
+                to: empty,
+                value: empty,
+                callData: empty,
+                accessList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            })
+                .setChainId(1)
+                .setNonce(2)
+                .setGasPrice(new BigNumber(1000000000))
+                .setGasLimit(21000)
+                .setTo("0x7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181")
+                .setValue(new BigNumber(100));
+
+            const decoded = EthereumTransactionData.fromBytes(d.toBytes());
+            expect(decoded.getChainId().toString()).to.equal("1");
+            expect(decoded.getGasPrice().toFixed()).to.equal("1000000000");
+            expect(decoded.getGasLimit().toNumber()).to.equal(21000);
+            expect(decoded.getTo().toString()).to.equal(
+                "7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181",
+            );
+        });
+
+        it("EIP-7702 exposes maxPriorityGas/maxGas and round-trips", function () {
+            const d = new EthereumTransactionDataEip7702({
+                chainId: empty,
+                nonce: empty,
+                maxPriorityGas: empty,
+                maxGas: empty,
+                gasLimit: empty,
+                to: empty,
+                value: empty,
+                callData: empty,
+                accessList: [],
+                authorizationList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            })
+                .setChainId(298)
+                .setMaxPriorityGas(new BigNumber(47))
+                .setMaxGas(new BigNumber(1000000000))
+                .setGasLimit(0x018000);
+
+            const decoded = EthereumTransactionData.fromBytes(d.toBytes());
+            expect(decoded.getChainId().toString()).to.equal("298");
+            expect(decoded.getMaxPriorityGas().toFixed()).to.equal("47");
+            expect(decoded.getMaxGas().toFixed()).to.equal("1000000000");
+            expect(decoded.getGasLimit().toNumber()).to.equal(0x018000);
+        });
+
+        it("Legacy exposes gasPrice + v and round-trips", function () {
+            const d = new EthereumTransactionDataLegacy({
+                nonce: empty,
+                gasPrice: empty,
+                gasLimit: empty,
+                to: empty,
+                value: empty,
+                callData: empty,
+                v: new Uint8Array([0x1b]),
+                r: empty,
+                s: empty,
+            })
+                .setNonce(1)
+                .setGasPrice(new BigNumber(50))
+                .setGasLimit(21000)
+                .setValue(new BigNumber(1));
+
+            expect(d.getV().toNumber()).to.equal(27);
+
+            const decoded = EthereumTransactionData.fromBytes(d.toBytes());
+            expect(decoded.getNonce().toString()).to.equal("1");
+            expect(decoded.getGasPrice().toFixed()).to.equal("50");
+            expect(decoded.getGasLimit().toNumber()).to.equal(21000);
+            expect(decoded.getValue().toFixed()).to.equal("1");
+        });
+    });
+
+    describe("structured access list (AccessListItem)", function () {
+        const empty = new Uint8Array();
+        const address = hex.decode("7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181");
+        const storageKey1 = hex.decode(
+            "0000000000000000000000000000000000000000000000000000000000000001",
+        );
+        const storageKey2 = hex.decode(
+            "0000000000000000000000000000000000000000000000000000000000000002",
+        );
+
+        function build1559(accessList) {
+            return new EthereumTransactionDataEip1559({
+                chainId: hex.decode("012a"),
+                nonce: hex.decode("02"),
+                maxPriorityGas: hex.decode("2f"),
+                maxGas: hex.decode("2f"),
+                gasLimit: hex.decode("018000"),
+                to: address,
+                value: hex.decode("0de0b6b3a7640000"),
+                callData: hex.decode("123456"),
+                accessList,
+                recId: empty,
+                r: empty,
+                s: empty,
+            });
+        }
+
+        it("getAccessList() returns a structured view over the tuple field", function () {
+            const d = build1559([[address, [storageKey1, storageKey2]]]);
+            const list = d.getAccessList();
+
+            expect(list).to.be.an("array").with.length(1);
+            expect(list[0]).to.be.instanceOf(AccessListItem);
+            expect(list[0].getAddress()).to.be.instanceOf(EvmAddress);
+            expect(list[0].getAddress().toString()).to.equal(
+                "7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181",
+            );
+            expect(list[0].getStorageKeys().length).to.equal(2);
+            expect(hex.encode(list[0].getStorageKeys()[0])).to.equal(
+                hex.encode(storageKey1),
+            );
+        });
+
+        it("setAccessList() writes back to the tuple field and round-trips", function () {
+            const d = build1559([]);
+            const item = new AccessListItem()
+                .setAddress("0x" + hex.encode(address))
+                .addStorageKey(storageKey1)
+                .addStorageKey("0x" + hex.encode(storageKey2));
+
+            d.setAccessList([item]);
+
+            // tuple field (source of truth) is updated
+            expect(d.accessList).to.be.an("array").with.length(1);
+            expect(hex.encode(d.accessList[0][0])).to.equal(
+                hex.encode(address),
+            );
+            expect(d.accessList[0][1].length).to.equal(2);
+
+            // survives a full encode/decode round-trip
+            const decoded = EthereumTransactionData.fromBytes(d.toBytes());
+            const roundTripped = decoded.getAccessList();
+            expect(roundTripped[0].getAddress().toString()).to.equal(
+                "7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181",
+            );
+            expect(roundTripped[0].getStorageKeys().length).to.equal(2);
+            expect(hex.encode(roundTripped[0].getStorageKeys()[1])).to.equal(
+                hex.encode(storageKey2),
+            );
+        });
+
+        it("getAddress() is null when no address is set", function () {
+            const item = new AccessListItem(empty, [storageKey1]);
+            expect(item.getAddress()).to.equal(null);
+            expect(item.getAddressBytes().length).to.equal(0);
+        });
+
+        it("EIP-2930 and EIP-7702 also expose the structured access list", function () {
+            const item = new AccessListItem(address, [storageKey1]);
+
+            const tx2930 = new EthereumTransactionDataEip2930({
+                chainId: hex.decode("01"),
+                nonce: empty,
+                gasPrice: empty,
+                gasLimit: empty,
+                to: empty,
+                value: empty,
+                callData: empty,
+                accessList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            }).setAccessList([item]);
+            expect(tx2930.getAccessList()[0].getAddress().toString()).to.equal(
+                "7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181",
+            );
+
+            const tx7702 = new EthereumTransactionDataEip7702({
+                chainId: hex.decode("01"),
+                nonce: empty,
+                maxPriorityGas: empty,
+                maxGas: empty,
+                gasLimit: empty,
+                to: empty,
+                value: empty,
+                callData: empty,
+                accessList: [],
+                authorizationList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            }).setAccessList([item]);
+            expect(tx7702.getAccessList()[0].getStorageKeys().length).to.equal(
+                1,
+            );
+        });
+    });
+
+    describe("structured authorization list (Authorization, EIP-7702)", function () {
+        const empty = new Uint8Array();
+        const address = hex.decode("7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181");
+        const r = hex.decode(
+            "df48f2efd10421811de2bfb125ab75b2d3c44139c4642837fb1fccce911fd479",
+        );
+        const s = hex.decode(
+            "1aaf7ae92bee896651dfc9d99ae422a296bf5d9f1ca49b2d96d82b79eb112d66",
+        );
+
+        function build7702(authorizationList) {
+            return new EthereumTransactionDataEip7702({
+                chainId: hex.decode("012a"),
+                nonce: hex.decode("02"),
+                maxPriorityGas: hex.decode("2f"),
+                maxGas: hex.decode("2f"),
+                gasLimit: hex.decode("018000"),
+                to: address,
+                value: hex.decode("0de0b6b3a7640000"),
+                callData: hex.decode("123456"),
+                accessList: [],
+                authorizationList,
+                recId: empty,
+                r: empty,
+                s: empty,
+            });
+        }
+
+        it("getAuthorizationList() returns a read-only structured view", function () {
+            const d = build7702([
+                [
+                    hex.decode("012a"),
+                    address,
+                    hex.decode("01"),
+                    hex.decode("01"),
+                    r,
+                    s,
+                ],
+            ]);
+            const list = d.getAuthorizationList();
+
+            expect(list).to.be.an("array").with.length(1);
+            expect(list[0]).to.be.instanceOf(Authorization);
+            expect(list[0].getChainId().toString()).to.equal("298");
+            expect(list[0].getAddress().toString()).to.equal(
+                "7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181",
+            );
+            expect(list[0].getNonce().toString()).to.equal("1");
+            expect(list[0].getYParity().toString()).to.equal("1");
+            expect(list[0].getRecoveryId().toString()).to.equal("1");
+            expect(hex.encode(list[0].getR())).to.equal(hex.encode(r));
+            expect(hex.encode(list[0].getS())).to.equal(hex.encode(s));
+
+            // read-only: no setters exposed
+            expect(list[0].setChainId).to.equal(undefined);
+        });
+
+        it("can be constructed from typed values and round-trips via setAuthorizationList", function () {
+            const auth = new Authorization(
+                298,
+                EvmAddress.fromString("0x" + hex.encode(address)),
+                1,
+                1,
+                r,
+                s,
+            );
+
+            const d = build7702([]).setAuthorizationList([auth]);
+
+            // tuple field (source of truth) updated
+            expect(d.authorizationList).to.be.an("array").with.length(1);
+            expect(d.authorizationList[0].length).to.equal(6);
+
+            const decoded = EthereumTransactionData.fromBytes(d.toBytes());
+            const roundTripped = decoded.getAuthorizationList();
+            expect(roundTripped[0].getChainId().toString()).to.equal("298");
+            expect(roundTripped[0].getAddress().toString()).to.equal(
+                "7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181",
+            );
+            expect(roundTripped[0].getNonce().toString()).to.equal("1");
+            expect(hex.encode(roundTripped[0].getR())).to.equal(hex.encode(r));
+        });
+    });
+
+    describe("accessor normalization & null address", function () {
+        const empty = new Uint8Array();
+        function build1559() {
+            return new EthereumTransactionDataEip1559({
+                chainId: empty,
+                nonce: empty,
+                maxPriorityGas: empty,
+                maxGas: empty,
+                gasLimit: empty,
+                to: empty,
+                value: empty,
+                callData: empty,
+                accessList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            });
+        }
+
+        it("integer setters trim leading zero bytes to minimal encoding", function () {
+            const d = build1559();
+
+            // padded Uint8Array -> minimal
+            d.setNonce(new Uint8Array([0x00, 0x00, 0x05]));
+            expect(hex.encode(d.getNonceBytes())).to.equal("05");
+            expect(d.getNonce().toNumber()).to.equal(5);
+
+            // padded hex string -> minimal
+            d.setGasLimit("0x00018000");
+            expect(hex.encode(d.getGasLimitBytes())).to.equal("018000");
+
+            // all-zero -> empty bytes
+            d.setValue(new Uint8Array([0x00, 0x00]));
+            expect(d.getValueBytes().length).to.equal(0);
+        });
+
+        it("address and callData setters preserve exact bytes (no trimming)", function () {
+            const d = build1559();
+
+            // a 20-byte address with a leading zero byte must NOT be trimmed
+            const addr = "00aa9eaf9bcc39e2ffa38eb30bf7a93feacbc181";
+            d.setTo(hex.decode(addr));
+            expect(hex.encode(d.getToBytes())).to.equal(addr);
+            expect(d.getTo().toString()).to.equal(addr);
+
+            // callData with leading zero bytes is opaque and preserved
+            d.setCallData(new Uint8Array([0x00, 0x12, 0x34]));
+            expect(hex.encode(d.getCallData())).to.equal("001234");
+        });
+
+        it("getTo() returns null when there is no recipient", function () {
+            const d = build1559();
+            expect(d.getTo()).to.equal(null);
+            expect(d.getToBytes().length).to.equal(0);
+        });
+
+        it("rejects negative numeric input", function () {
+            const d = build1559();
+            expect(() => d.setNonce(-1)).to.throw(/non-negative integer/);
+            expect(() => d.setValue(new BigNumber(-5))).to.throw(
+                /non-negative integer/,
+            );
+            expect(() => d.setNonce(Long.fromNumber(-1))).to.throw(
+                /non-negative integer/,
+            );
+        });
+
+        it("rejects unsafe-integer numbers (precision loss) instead of silently rounding", function () {
+            const d = build1559();
+            // 2^53 + 1 cannot be represented as a JS number; must throw, not round.
+            expect(() => d.setValue(9007199254740993)).to.throw(/safe integer/);
+            expect(() => d.setGasLimit(1.5)).to.throw(/safe integer/);
+            expect(() => d.setChainId(NaN)).to.throw(/safe integer/);
+
+            // the same large value passed as BigNumber is exact and round-trips
+            const wei = new BigNumber("10000000000000000"); // 0.01 ETH, > 2^53
+            d.setValue(wei);
+            expect(d.getValue().toFixed()).to.equal("10000000000000000");
+        });
+
+        it("parses string input as decimal, or hex when 0x-prefixed", function () {
+            const d = build1559();
+            d.setNonce("10");
+            expect(d.getNonce().toNumber()).to.equal(10); // decimal, not 0x10
+            d.setNonce("0x10");
+            expect(d.getNonce().toNumber()).to.equal(16); // hex
+            d.setChainId("298"); // odd-length decimal must not throw
+            expect(d.getChainId().toNumber()).to.equal(298);
+        });
+
+        it("accepts bigint input for numeric fields (incl. values beyond 2^53)", function () {
+            const d = build1559();
+
+            d.setNonce(7n);
+            expect(d.getNonce().toNumber()).to.equal(7);
+
+            d.setMaxPriorityGas(0n); // zero -> empty (minimal encoding)
+            expect(d.getMaxPriorityGasBytes().length).to.equal(0);
+
+            d.setValue(2000000000n);
+            expect(d.getValue().toFixed()).to.equal("2000000000");
+
+            // exact for values a JS number couldn't represent
+            d.setValue(10000000000000000001n);
+            expect(d.getValue().toFixed()).to.equal("10000000000000000001");
+        });
+
+        it("setters copy byte input so later caller mutation can't corrupt the field", function () {
+            const d = build1559();
+            const a = new Uint8Array([0x05]);
+            d.setNonce(a);
+            a[0] = 0x09; // mutate the caller's buffer after the setter
+            expect(d.getNonce().toNumber()).to.equal(5);
+        });
+
+        it("uint64 getter throws rather than silently wrapping an out-of-range field", function () {
+            // 9-byte nonce is outside uint64 range
+            const d = new EthereumTransactionDataEip1559({
+                chainId: empty,
+                nonce: hex.decode("010000000000000000"),
+                maxPriorityGas: empty,
+                maxGas: empty,
+                gasLimit: empty,
+                to: empty,
+                value: empty,
+                callData: empty,
+                accessList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            });
+            expect(() => d.getNonce()).to.throw(/uint64/);
+            // raw bytes accessor still works
+            expect(d.getNonceBytes().length).to.equal(9);
+        });
+    });
+
+    describe("AccessListItem does not alias its storage keys", function () {
+        const address = hex.decode("7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181");
+        const key1 = hex.decode(
+            "0000000000000000000000000000000000000000000000000000000000000001",
+        );
+        const key2 = hex.decode(
+            "0000000000000000000000000000000000000000000000000000000000000002",
+        );
+
+        it("mutating a structured item does not mutate the source tuple", function () {
+            const tx = new EthereumTransactionDataEip2930({
+                chainId: hex.decode("01"),
+                nonce: new Uint8Array(),
+                gasPrice: new Uint8Array(),
+                gasLimit: new Uint8Array(),
+                to: new Uint8Array(),
+                value: new Uint8Array(),
+                callData: new Uint8Array(),
+                accessList: [[address, [key1]]],
+                recId: new Uint8Array(),
+                r: new Uint8Array(),
+                s: new Uint8Array(),
+            });
+
+            tx.getAccessList()[0].addStorageKey(key2);
+
+            // the envelope's underlying tuple is untouched
+            expect(tx.accessList[0][1].length).to.equal(1);
+        });
+
+        it("getStorageKeys() returns a copy that cannot mutate internal state", function () {
+            const item = new AccessListItem(address, [key1]);
+            item.getStorageKeys().push(key2);
+            expect(item.getStorageKeys().length).to.equal(1);
+        });
+    });
+
+    describe("single-item adders (addAccessListItem / addAuthorization)", function () {
+        const empty = new Uint8Array();
+        const address = hex.decode("7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181");
+        const key1 = hex.decode(
+            "0000000000000000000000000000000000000000000000000000000000000001",
+        );
+        const r = hex.decode(
+            "df48f2efd10421811de2bfb125ab75b2d3c44139c4642837fb1fccce911fd479",
+        );
+        const s = hex.decode(
+            "1aaf7ae92bee896651dfc9d99ae422a296bf5d9f1ca49b2d96d82b79eb112d66",
+        );
+
+        it("addAccessListItem appends to the tuple field and chains (EIP-1559/2930/7702)", function () {
+            const make1559 = () =>
+                new EthereumTransactionDataEip1559({
+                    chainId: hex.decode("012a"),
+                    nonce: empty,
+                    maxPriorityGas: empty,
+                    maxGas: empty,
+                    gasLimit: empty,
+                    to: address,
+                    value: empty,
+                    callData: empty,
+                    accessList: [],
+                    recId: empty,
+                    r: empty,
+                    s: empty,
+                });
+
+            const d = make1559();
+            const ret = d
+                .addAccessListItem(new AccessListItem(address, [key1]))
+                .addAccessListItem(new AccessListItem(address, []));
+
+            expect(ret).to.equal(d); // chainable
+            expect(d.accessList.length).to.equal(2); // wrote into the tuple field
+            const view = d.getAccessList();
+            expect(view[0].getStorageKeys().length).to.equal(1);
+            expect(view[1].getStorageKeys().length).to.equal(0);
+
+            // round-trips through encode/decode
+            const decoded = EthereumTransactionData.fromBytes(d.toBytes());
+            expect(decoded.getAccessList().length).to.equal(2);
+        });
+
+        it("addAuthorization appends to the EIP-7702 authorization list", function () {
+            const d = new EthereumTransactionDataEip7702({
+                chainId: hex.decode("012a"),
+                nonce: empty,
+                maxPriorityGas: empty,
+                maxGas: empty,
+                gasLimit: empty,
+                to: address,
+                value: empty,
+                callData: empty,
+                accessList: [],
+                authorizationList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            });
+
+            const ret = d.addAuthorization(
+                new Authorization(298, address, 1, 1, r, s),
+            );
+
+            expect(ret).to.equal(d);
+            expect(d.authorizationList.length).to.equal(1);
+
+            const decoded = EthereumTransactionData.fromBytes(d.toBytes());
+            const auth = decoded.getAuthorizationList()[0];
+            expect(auth.getChainId().toString()).to.equal("298");
+            expect(auth.getAddress().toString()).to.equal(
+                "7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181",
+            );
+        });
+    });
+
+    describe("canonical signature encoding (toBytes trims r/s)", function () {
+        const empty = new Uint8Array();
+
+        it("encodes r/s as minimal big-endian scalars (no leading zero bytes)", function () {
+            // r has 31 leading zero bytes -> minimal "05"; s has one -> 31 bytes.
+            const r = new Uint8Array(32);
+            r[31] = 0x05;
+            const s = new Uint8Array(32).fill(0xab);
+            s[0] = 0x00;
+
+            const d = new EthereumTransactionDataEip1559({
+                chainId: hex.decode("012a"),
+                nonce: empty,
+                maxPriorityGas: empty,
+                maxGas: empty,
+                gasLimit: empty,
+                to: empty,
+                value: empty,
+                callData: empty,
+                accessList: [],
+                recId: empty,
+                r,
+                s,
+            });
+
+            // In-memory r/s stay full 32-byte (so verification still works)...
+            expect(d.r.length).to.equal(32);
+            expect(d.s.length).to.equal(32);
+
+            // ...but the encoded wire form is the minimal scalar.
+            const decoded = EthereumTransactionData.fromBytes(d.toBytes());
+            expect(hex.encode(decoded.getR())).to.equal("05");
+            expect(decoded.getS().length).to.equal(31);
+            expect(decoded.getS()[0]).to.equal(0xab);
+        });
+    });
+    describe("ethers.js signature cross-check", function () {
+        // Sign with the SDK, serialize, then have ethers recover the sender. A
+        // match proves the produced envelope is a valid Ethereum transaction
+        // (correct field order, type prefix and r/s/recId), independent of the
+        // SDK's own verifier.
+        const chainId = hex.decode("012a");
+        const nonce = hex.decode("02");
+        const gasPrice = hex.decode("2f");
+        const maxPriorityGas = hex.decode("2f");
+        const maxGas = hex.decode("3b9aca00");
+        const gasLimit = hex.decode("018000");
+        const to = hex.decode("7e3a9eaf9bcc39e2ffa38eb30bf7a93feacbc181");
+        const value = hex.decode("0de0b6b3a7640000");
+        const callData = hex.decode("123456");
+        const empty = new Uint8Array();
+
+        function norm(address) {
+            return address.toLowerCase().replace(/^0x/, "");
+        }
+
+        // The EVM address ethers derives from the same private key.
+        function senderFor(key) {
+            return norm(new Wallet("0x" + key.toStringRaw()).address);
+        }
+
+        // The sender ethers recovers from the SDK-serialized signed envelope.
+        function recover(data) {
+            return norm(Transaction.from(hexlify(data.toBytes())).from);
+        }
+
+        it("Legacy recovers the signing key as sender", function () {
+            const key = PrivateKey.generateECDSA();
+            const data = new EthereumTransactionDataLegacy({
+                nonce,
+                gasPrice,
+                gasLimit,
+                to,
+                value,
+                callData,
+                v: empty,
+                r: empty,
+                s: empty,
+            }).sign(key);
+
+            expect(recover(data)).to.equal(senderFor(key));
+        });
+
+        it("EIP-2930 recovers the signing key as sender", function () {
+            const key = PrivateKey.generateECDSA();
+            const data = new EthereumTransactionDataEip2930({
+                chainId,
+                nonce,
+                gasPrice,
+                gasLimit,
+                to,
+                value,
+                callData,
+                accessList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            }).sign(key);
+
+            expect(recover(data)).to.equal(senderFor(key));
+        });
+
+        it("EIP-1559 recovers the signing key as sender", function () {
+            const key = PrivateKey.generateECDSA();
+            const data = new EthereumTransactionDataEip1559({
+                chainId,
+                nonce,
+                maxPriorityGas,
+                maxGas,
+                gasLimit,
+                to,
+                value,
+                callData,
+                accessList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            }).sign(key);
+
+            expect(recover(data)).to.equal(senderFor(key));
+        });
+
+        it("EIP-7702 recovers the signing key as sender", function () {
+            const key = PrivateKey.generateECDSA();
+            const data = new EthereumTransactionDataEip7702({
+                chainId,
+                nonce,
+                maxPriorityGas,
+                maxGas,
+                gasLimit,
+                to,
+                value,
+                callData,
+                accessList: [],
+                authorizationList: [],
+                recId: empty,
+                r: empty,
+                s: empty,
+            }).sign(key);
+
+            const parsed = Transaction.from(hexlify(data.toBytes()));
+            expect(parsed.type).to.equal(4);
+            expect(norm(parsed.from)).to.equal(senderFor(key));
         });
     });
 });

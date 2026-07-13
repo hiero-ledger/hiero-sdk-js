@@ -1,13 +1,13 @@
-// aes.browser.test.js
 import * as hex from "../../../src/encoding/hex.js";
 import {
     CipherAlgorithm,
     createCipheriv,
     createDecipheriv,
     messageDigest,
-} from "../../../src/primitive/aes.browser.js";
+} from "../../../src/primitive/aes.js";
 
-describe("AES Browser Implementation", function () {
+// Single isomorphic AES implementation (@noble/ciphers) — runs in node and browser.
+describe("AES", function () {
     const testKey = new Uint8Array(16).fill(1);
     const testIv = new Uint8Array(16).fill(2);
     const testData = new Uint8Array([3, 4, 5, 6, 7, 8, 9, 10]);
@@ -15,7 +15,6 @@ describe("AES Browser Implementation", function () {
     let encryptedCBC;
 
     beforeEach(async function () {
-        // Pre-encrypt data for decryption tests
         encryptedCTR = await createCipheriv(
             CipherAlgorithm.Aes128Ctr,
             testKey,
@@ -31,8 +30,13 @@ describe("AES Browser Implementation", function () {
         );
     });
 
-    describe("createCipheriv", function () {
-        it("should encrypt data using AES-128-CTR", async function () {
+    // Known-answer vectors produced by node's `crypto.createCipheriv` /
+    // `createHash("md5")`, the implementation @noble/ciphers replaced. Round-trip
+    // tests alone would not catch a change in padding, key handling or byte
+    // order — these pin the wire format that existing keystores and encrypted
+    // PEMs depend on.
+    describe("known-answer vectors (node crypto parity)", function () {
+        it("matches AES-128-CTR", async function () {
             const result = await createCipheriv(
                 CipherAlgorithm.Aes128Ctr,
                 testKey,
@@ -40,16 +44,54 @@ describe("AES Browser Implementation", function () {
                 testData,
             );
 
-            expect(result).toBeInstanceOf(Uint8Array);
-            expect(result.length).toBeGreaterThan(0);
-            // Check that encryption is deterministic with same inputs
+            expect(hex.encode(result)).to.equal("14d211f57ea13c9a");
+        });
+
+        it("matches AES-128-CBC, including PKCS#7 padding", async function () {
+            const result = await createCipheriv(
+                CipherAlgorithm.Aes128Cbc,
+                testKey,
+                testIv,
+                testData,
+            );
+
+            // 8 bytes of plaintext pad out to one 16-byte block
+            expect(hex.encode(result)).to.equal(
+                "72b2c56c3db0a46495c3a7565397ceb6",
+            );
+        });
+
+        it("matches the OpenSSL MD5(passphrase || iv[0:8]) key derivation", async function () {
+            const result = await messageDigest(
+                "testPassphrase",
+                hex.encode(testIv),
+            );
+
+            expect(hex.encode(result)).to.equal(
+                "fa445ea03cc9a19636ce9948d0b8d983",
+            );
+        });
+    });
+
+    describe("createCipheriv", function () {
+        it("should encrypt data using AES-128-CTR (deterministic)", async function () {
+            const result = await createCipheriv(
+                CipherAlgorithm.Aes128Ctr,
+                testKey,
+                testIv,
+                testData,
+            );
+
+            expect(result).to.be.an.instanceOf(Uint8Array);
+            expect(result.length).to.be.greaterThan(0);
+
             const result2 = await createCipheriv(
                 CipherAlgorithm.Aes128Ctr,
                 testKey,
                 testIv,
                 testData,
             );
-            expect(hex.encode(result)).toBe(hex.encode(result2));
+            expect(hex.encode(result)).to.equal(hex.encode(result2));
         });
 
         it("should encrypt data using AES-128-CBC", async function () {
@@ -60,8 +102,8 @@ describe("AES Browser Implementation", function () {
                 testData,
             );
 
-            expect(result).toBeInstanceOf(Uint8Array);
-            expect(result.length).toBeGreaterThan(0);
+            expect(result).to.be.an.instanceOf(Uint8Array);
+            expect(result.length).to.be.greaterThan(0);
         });
 
         it("should throw an error for unsupported algorithm", async function () {
@@ -74,16 +116,13 @@ describe("AES Browser Implementation", function () {
                 );
                 expect.fail("Should have thrown an error");
             } catch (error) {
-                expect(error.message).toContain(
+                expect(error.message).to.include(
                     "non-exhaustive switch statement",
                 );
             }
         });
 
-        // TODO: Fix this test
-        // it should use only the first 16 bytes of key in browser too but it doesn't
-        // eslint-disable-next-line vitest/no-disabled-tests
-        it.skip("should use only the first 16 bytes of key", async function () {
+        it("should use only the first 16 bytes of key", async function () {
             const longKey = new Uint8Array(32).fill(1);
             longKey[16] = 99; // This shouldn't affect the result
 
@@ -101,7 +140,7 @@ describe("AES Browser Implementation", function () {
                 testData,
             );
 
-            expect(hex.encode(result1)).toBe(hex.encode(result2));
+            expect(hex.encode(result1)).to.equal(hex.encode(result2));
         });
     });
 
@@ -114,8 +153,8 @@ describe("AES Browser Implementation", function () {
                 encryptedCTR,
             );
 
-            expect(decrypted).toBeInstanceOf(Uint8Array);
-            expect(hex.encode(decrypted)).toBe(hex.encode(testData));
+            expect(decrypted).to.be.an.instanceOf(Uint8Array);
+            expect(hex.encode(decrypted)).to.equal(hex.encode(testData));
         });
 
         it("should decrypt data encrypted with AES-128-CBC", async function () {
@@ -126,8 +165,8 @@ describe("AES Browser Implementation", function () {
                 encryptedCBC,
             );
 
-            expect(decrypted).toBeInstanceOf(Uint8Array);
-            expect(hex.encode(decrypted)).toBe(hex.encode(testData));
+            expect(decrypted).to.be.an.instanceOf(Uint8Array);
+            expect(hex.encode(decrypted)).to.equal(hex.encode(testData));
         });
 
         it("should throw an error for unsupported algorithm", async function () {
@@ -140,38 +179,14 @@ describe("AES Browser Implementation", function () {
                 );
                 expect.fail("Should have thrown an error");
             } catch (error) {
-                expect(error.message).toContain(
+                expect(error.message).to.include(
                     "non-exhaustive switch statement",
                 );
             }
         });
-
-        it("should use only the first 16 bytes of key", async function () {
-            const longKey = new Uint8Array(32).fill(1);
-            longKey[16] = 99; // This shouldn't affect the result
-
-            const decrypted = await createDecipheriv(
-                CipherAlgorithm.Aes128Ctr,
-                longKey,
-                testIv,
-                encryptedCTR,
-            );
-
-            expect(decrypted.length).to.equal(8);
-        });
     });
 
     describe("messageDigest", function () {
-        it("should create a message digest from passphrase and IV", async function () {
-            const passphrase = "testPassphrase";
-            const iv = hex.encode(testIv);
-
-            const result = await messageDigest(passphrase, iv);
-
-            expect(result).toBeInstanceOf(Uint8Array);
-            expect(result.length).toBeGreaterThan(0);
-        });
-
         it("should be deterministic with same inputs", async function () {
             const passphrase = "testPassphrase";
             const iv = hex.encode(testIv);
@@ -179,34 +194,33 @@ describe("AES Browser Implementation", function () {
             const result1 = await messageDigest(passphrase, iv);
             const result2 = await messageDigest(passphrase, iv);
 
-            expect(hex.encode(result1)).toBe(hex.encode(result2));
+            expect(result1).to.be.an.instanceOf(Uint8Array);
+            expect(hex.encode(result1)).to.equal(hex.encode(result2));
         });
 
         it("should only use the first 8 bytes of the decoded IV", async function () {
             const passphrase = "testPassphrase";
             const iv1 = hex.encode(testIv);
 
-            // Create a different IV but with the same first 8 bytes
             const testIv2 = new Uint8Array(16).fill(2);
-            testIv2[8] = 99; // This shouldn't affect the result
+            testIv2[8] = 99; // beyond the first 8 bytes — must not affect the result
             const iv2 = hex.encode(testIv2);
 
             const result1 = await messageDigest(passphrase, iv1);
             const result2 = await messageDigest(passphrase, iv2);
 
-            expect(hex.encode(result1)).toBe(hex.encode(result2));
+            expect(hex.encode(result1)).to.equal(hex.encode(result2));
         });
     });
 
     describe("Encryption and Decryption Round Trip", function () {
-        it("should successfully round-trip data with AES-128-CTR", async function () {
+        it("should round-trip data with AES-128-CTR", async function () {
             const encrypted = await createCipheriv(
                 CipherAlgorithm.Aes128Ctr,
                 testKey,
                 testIv,
                 testData,
             );
-
             const decrypted = await createDecipheriv(
                 CipherAlgorithm.Aes128Ctr,
                 testKey,
@@ -214,17 +228,16 @@ describe("AES Browser Implementation", function () {
                 encrypted,
             );
 
-            expect(hex.encode(decrypted)).toBe(hex.encode(testData));
+            expect(hex.encode(decrypted)).to.equal(hex.encode(testData));
         });
 
-        it("should successfully round-trip data with AES-128-CBC", async function () {
+        it("should round-trip data with AES-128-CBC", async function () {
             const encrypted = await createCipheriv(
                 CipherAlgorithm.Aes128Cbc,
                 testKey,
                 testIv,
                 testData,
             );
-
             const decrypted = await createDecipheriv(
                 CipherAlgorithm.Aes128Cbc,
                 testKey,
@@ -232,7 +245,7 @@ describe("AES Browser Implementation", function () {
                 encrypted,
             );
 
-            expect(hex.encode(decrypted)).toBe(hex.encode(testData));
+            expect(hex.encode(decrypted)).to.equal(hex.encode(testData));
         });
     });
 });

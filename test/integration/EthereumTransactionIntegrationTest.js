@@ -21,6 +21,8 @@ import {
 import { encodeRlp } from "ethers";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import * as hex from "../../src/encoding/hex.js";
+import EthereumTransactionDataEip1559 from "../../src/EthereumTransactionDataEip1559.js";
+import EthereumTransactionDataEip7702 from "../../src/EthereumTransactionDataEip7702.js";
 
 /**
  * @summary E2E-HIP-844
@@ -191,6 +193,240 @@ describe("EthereumTransactionIntegrationTest", function () {
         expect(
             record.contractFunctionResult.signerNonce.toNumber(),
         ).to.be.equal(1);
+    });
+
+    it("accepts a natively signed EthereumTransactionData via the object overload", async function () {
+        // Deploy the contract to call.
+        const fileReceipt = await (
+            await (
+                await (
+                    await new FileCreateTransaction()
+                        .setKeys([wallet.getAccountKey()])
+                        .setContents(SMART_CONTRACT_BYTECODE)
+                        .setMaxTransactionFee(new Hbar(2))
+                        .freezeWithSigner(wallet)
+                ).signWithSigner(wallet)
+            ).executeWithSigner(wallet)
+        ).getReceiptWithSigner(wallet);
+        const fileId = fileReceipt.fileId;
+        expect(fileId).to.be.instanceof(FileId);
+
+        const contractReceipt = await (
+            await (
+                await (
+                    await new ContractCreateTransaction()
+                        .setAdminKey(operatorKey)
+                        .setGas(300_000)
+                        .setConstructorParameters(
+                            new ContractFunctionParameters()
+                                .addString("Hello from Hedera.")
+                                ._build(),
+                        )
+                        .setBytecodeFileId(fileId)
+                        .setContractMemo("[e2e::ContractCreateTransaction]")
+                        .freezeWithSigner(wallet)
+                ).signWithSigner(wallet)
+            ).executeWithSigner(wallet)
+        ).getReceiptWithSigner(wallet);
+        expect(contractReceipt.status).to.be.equal(Status.Success);
+        const localContractAddress = contractReceipt.contractId.toEvmAddress();
+
+        // Fund an ECDSA alias to act as the Ethereum sender.
+        const privateKey = PrivateKey.generateECDSA();
+        const accountAlias = privateKey.publicKey.toEvmAddress();
+        await (
+            await (
+                await new TransferTransaction()
+                    .addHbarTransfer(operatorId, new Hbar(10).negated())
+                    .addHbarTransfer(accountAlias, new Hbar(10))
+                    .setMaxTransactionFee(new Hbar(1))
+                    .freezeWithSigner(wallet)
+            ).executeWithSigner(wallet)
+        ).getReceiptWithSigner(wallet);
+
+        const callData = new ContractFunctionParameters()
+            .addString("new message")
+            ._build("setMessage");
+
+        // Build the envelope as a structured object and sign it natively -
+        // no manual RLP / r / s / v threading required.
+        const data = new EthereumTransactionDataEip1559({
+            chainId: hex.decode("012a"),
+            nonce: new Uint8Array(),
+            maxPriorityGas: hex.decode("00"),
+            maxGas: hex.decode("d1385c7bf0"),
+            gasLimit: hex.decode("0249f0"),
+            to: hex.decode(localContractAddress),
+            value: new Uint8Array(),
+            callData,
+            accessList: [],
+            recId: new Uint8Array(),
+            r: new Uint8Array(),
+            s: new Uint8Array(),
+        }).sign(privateKey);
+
+        expect(data.isSigned()).to.be.true;
+
+        // The object overload accepts the signed envelope directly.
+        const response = await (
+            await (
+                await new EthereumTransaction()
+                    .setEthereumData(data)
+                    .setMaxTransactionFee(new Hbar(10))
+                    .freezeWithSigner(wallet)
+            ).signWithSigner(wallet)
+        ).executeWithSigner(wallet);
+
+        const record = await response.getRecordWithSigner(wallet);
+        expect(record).to.be.instanceof(TransactionRecord);
+
+        const receipt = await response.getReceiptWithSigner(wallet);
+        expect(receipt).to.be.instanceof(TransactionReceipt);
+        expect(receipt.status).to.be.equal(Status.Success);
+        expect(
+            record.contractFunctionResult.signerNonce.toNumber(),
+        ).to.be.equal(1);
+    });
+
+    it("rejects an unsigned EthereumTransactionData before submission", function () {
+        const data = new EthereumTransactionDataEip1559({
+            chainId: hex.decode("012a"),
+            nonce: new Uint8Array(),
+            maxPriorityGas: hex.decode("00"),
+            maxGas: hex.decode("d1385c7bf0"),
+            gasLimit: hex.decode("0249f0"),
+            to: new Uint8Array(),
+            value: new Uint8Array(),
+            callData: new Uint8Array(),
+            accessList: [],
+            recId: new Uint8Array(),
+            r: new Uint8Array(),
+            s: new Uint8Array(),
+        });
+
+        expect(() => new EthereumTransaction().setEthereumData(data)).to.throw(
+            /not signed/,
+        );
+    });
+
+    // Skipped until the target network executes EIP-7702 / HIP-1340 type-4
+    // transactions. Consensus v0.74.0 ships only the protobuf changes, so the
+    // node rejects the envelope at precheck with INVALID_ETHEREUM_TRANSACTION —
+    // a status that is indistinguishable from a malformed envelope, so we do
+    // NOT swallow it dynamically (that would mask a real encoding bug). Enable
+    // this test and validate the authorization encoding once a capable node is
+    // available.
+    it.skip("signs and submits an EIP-7702 delegation (HIP-1340)", async function () {
+        const chainId = hex.decode("012a");
+
+        // Deploy the contract whose code the EOA will delegate to.
+        const fileReceipt = await (
+            await (
+                await (
+                    await new FileCreateTransaction()
+                        .setKeys([wallet.getAccountKey()])
+                        .setContents(SMART_CONTRACT_BYTECODE)
+                        .setMaxTransactionFee(new Hbar(2))
+                        .freezeWithSigner(wallet)
+                ).signWithSigner(wallet)
+            ).executeWithSigner(wallet)
+        ).getReceiptWithSigner(wallet);
+        const fileId = fileReceipt.fileId;
+
+        const contractReceipt = await (
+            await (
+                await (
+                    await new ContractCreateTransaction()
+                        .setAdminKey(operatorKey)
+                        .setGas(300_000)
+                        .setConstructorParameters(
+                            new ContractFunctionParameters()
+                                .addString("Hello from Hedera.")
+                                ._build(),
+                        )
+                        .setBytecodeFileId(fileId)
+                        .setContractMemo("[e2e::ContractCreateTransaction]")
+                        .freezeWithSigner(wallet)
+                ).signWithSigner(wallet)
+            ).executeWithSigner(wallet)
+        ).getReceiptWithSigner(wallet);
+        expect(contractReceipt.status).to.be.equal(Status.Success);
+        const delegateAddress = hex.decode(
+            contractReceipt.contractId.toEvmAddress(),
+        );
+
+        // Fund the ECDSA account that is both the authority and the sender
+        // (self-sponsored delegation).
+        const key = PrivateKey.generateECDSA();
+        const accountAlias = key.publicKey.toEvmAddress();
+        await (
+            await (
+                await new TransferTransaction()
+                    .addHbarTransfer(operatorId, new Hbar(10).negated())
+                    .addHbarTransfer(accountAlias, new Hbar(10))
+                    .setMaxTransactionFee(new Hbar(1))
+                    .freezeWithSigner(wallet)
+            ).executeWithSigner(wallet)
+        ).getReceiptWithSigner(wallet);
+
+        // Build and sign the authorization tuple [chainId, address, nonce,
+        // yParity, r, s]. The authority signs keccak256(0x05 ‖ rlp([chainId,
+        // address, nonce])). For a self-sponsored tx the authority nonce is the
+        // sender's tx nonce + 1 (the tx consumes nonce 0).
+        const authNonce = hex.decode("01");
+        const authMessage = hex.decode(
+            "05" +
+                encodeRlp([chainId, delegateAddress, authNonce]).substring(2),
+        );
+        const authSignature = key.sign(authMessage);
+        const authR = authSignature.slice(0, 32);
+        const authS = authSignature.slice(32, 64);
+        const authRecId = key.getRecoveryId(authR, authS, authMessage);
+        const authorizationTuple = [
+            chainId,
+            delegateAddress,
+            authNonce,
+            new Uint8Array(authRecId === 0 ? [] : [authRecId]),
+            authR,
+            authS,
+        ];
+
+        const callData = new ContractFunctionParameters()
+            .addString("new message")
+            ._build("setMessage");
+
+        // Build the type-4 envelope (to = the EOA itself, now carrying the
+        // delegated code) and sign it natively with the sender key.
+        const data = new EthereumTransactionDataEip7702({
+            chainId,
+            nonce: new Uint8Array(),
+            maxPriorityGas: hex.decode("00"),
+            maxGas: hex.decode("d1385c7bf0"),
+            gasLimit: hex.decode("0249f0"),
+            to: hex.decode(accountAlias),
+            value: new Uint8Array(),
+            callData,
+            accessList: [],
+            authorizationList: [authorizationTuple],
+            recId: new Uint8Array(),
+            r: new Uint8Array(),
+            s: new Uint8Array(),
+        }).sign(key);
+
+        expect(data.isSigned()).to.be.true;
+
+        const response = await (
+            await (
+                await new EthereumTransaction()
+                    .setEthereumData(data)
+                    .setMaxTransactionFee(new Hbar(10))
+                    .freezeWithSigner(wallet)
+            ).signWithSigner(wallet)
+        ).executeWithSigner(wallet);
+
+        const receipt = await response.getReceiptWithSigner(wallet);
+        expect(receipt).to.be.instanceof(TransactionReceipt);
+        expect(receipt.status).to.be.equal(Status.Success);
     });
 
     it("Jumbo transaction", async function () {
