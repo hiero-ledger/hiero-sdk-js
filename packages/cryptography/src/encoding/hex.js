@@ -1,10 +1,27 @@
 /**
+ * @type {string[]}
+ */
+const byteToHex = [];
+
+for (let n = 0; n <= 0xff; n += 1) {
+    byteToHex.push(n.toString(16).padStart(2, "0"));
+}
+
+/**
  * @param {Uint8Array} data
  * @returns {string}
  */
 export function encode(data) {
-    return Buffer.from(data).toString("hex");
+    let string = "";
+
+    for (const byte of data) {
+        string += byteToHex[byte];
+    }
+
+    return string;
 }
+
+const HEX_PAIRS = /^[0-9a-fA-F]{2}$/u;
 
 /**
  * @param {string} text
@@ -12,7 +29,25 @@ export function encode(data) {
  */
 export function decode(text) {
     const str = text.startsWith("0x") ? text.substring(2) : text;
-    return Buffer.from(str, "hex");
+    const result = str.match(/.{1,2}/gu);
+
+    if (result == null) {
+        return new Uint8Array();
+    }
+
+    // `parseInt` yields NaN for non-hex and stops at the first invalid
+    // character, both of which silently produce a wrong-but-valid byte string.
+    // Reject instead: this is the entry point for every key, address and id
+    // parsed from a string.
+    return new Uint8Array(
+        result.map((byte) => {
+            if (!HEX_PAIRS.test(byte)) {
+                throw new Error(`Invalid hex string: ${text}`);
+            }
+
+            return parseInt(byte, 16);
+        }),
+    );
 }
 
 /**

@@ -4,7 +4,6 @@ import BadMnemonicError from "./BadMnemonicError.js";
 import BadMnemonicReason from "./BadMnemonicReason.js";
 import legacyWords from "./words/legacy.js";
 import bip39Words from "./words/bip39.js";
-import nacl from "tweetnacl";
 import * as sha256 from "./primitive/sha256.js";
 import * as hmac from "./primitive/hmac.js";
 import * as slip10 from "./primitive/slip10.js";
@@ -160,14 +159,12 @@ export default class Mnemonic {
             ));
         }
 
-        const keyPair = nacl.sign.keyPair.fromSeed(keyData);
-
         if (CACHE.privateKeyConstructor == null) {
             throw new Error("PrivateKey not found in cache");
         }
 
         return CACHE.privateKeyConstructor(
-            new Ed25519PrivateKey(keyPair, chainCode),
+            new Ed25519PrivateKey(keyData, chainCode),
         );
     }
 
