@@ -7,8 +7,7 @@ import BigNumber from "bignumber.js";
 import * as hex from "../encoding/hex.js";
 import * as utf8 from "../encoding/utf8.js";
 import * as util from "../util.js";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { AbiCoder, ParamType } from "ethers";
+import { AbiCoder } from "ethers";
 
 const defaultAbiCoder = AbiCoder.defaultAbiCoder();
 import Long from "long";
@@ -16,6 +15,7 @@ import ContractNonceInfo from "./ContractNonceInfo.js";
 
 /**
  * @typedef {import("./ContractStateChange.js").default} ContractStateChange
+ * @typedef {import("ethers").ParamType} ParamType
  */
 
 /**
