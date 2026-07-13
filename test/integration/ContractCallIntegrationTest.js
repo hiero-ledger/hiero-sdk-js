@@ -9,6 +9,7 @@ import {
     Hbar,
     Status,
 } from "../../src/exports.js";
+import { wait } from "../../src/util.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 
 const smartContractBytecode =
@@ -172,7 +173,7 @@ describe("ContractCallIntegration", function () {
         }
     });
 
-    it("should error when gas is not set", async function () {
+    it("should error when neither gas nor the function to call is set", async function () {
         const operatorKey = env.operatorKey.publicKey;
 
         const response = await new FileCreateTransaction()
@@ -217,7 +218,9 @@ describe("ContractCallIntegration", function () {
                 .setMaxQueryPayment(new Hbar(5))
                 .execute(env.client);
         } catch (error) {
-            err = error.toString().includes(Status.InsufficientGas);
+            // Gas cannot be auto-estimated without call data, so the SDK asks
+            // for it explicitly instead of letting the node reject `gas=0`.
+            err = error.message.includes("setGas()");
         }
 
         await (
@@ -305,7 +308,7 @@ describe("ContractCallIntegration", function () {
         }
     });
 
-    it("should return error when the gas is not set", async function () {
+    it("should auto-estimate gas via the mirror node when the gas is not set", async function () {
         const operatorKey = env.operatorKey.publicKey;
 
         const response = await new FileCreateTransaction()
@@ -341,14 +344,35 @@ describe("ContractCallIntegration", function () {
 
         const contract = receipt.contractId;
 
-        try {
-            await new ContractCallQuery()
+        // No `setGas` and no `setQueryPayment`: this exercises the full path
+        // that used to fail with INSUFFICIENT_GAS (gas estimation, then the
+        // COST_ANSWER cost query, then the real call).
+        //
+        // The mirror node needs time to ingest the newly created contract
+        // before it can simulate the call, so poll instead of a fixed sleep.
+        // A fresh query is built per attempt because a query caches its
+        // auto-estimated gas — an estimate computed from stale mirror node
+        // state would otherwise be reused on every retry.
+        let result = null;
+        let query = null;
+        for (let attempt = 1; ; attempt++) {
+            query = new ContractCallQuery()
                 .setContractId(contract)
-                .setFunction("getMessage")
-                .execute(env.client);
-        } catch (error) {
-            expect(error.status).to.be.eql(Status.InsufficientGas);
+                .setFunction("getMessage");
+            try {
+                result = await query.execute(env.client);
+                break;
+            } catch (error) {
+                if (attempt >= 15) {
+                    throw error;
+                }
+                await wait(2000);
+            }
         }
+
+        expect(result.getString(0)).to.be.equal("Hello from Hedera.");
+        expect(query.gas).to.not.be.null;
+        expect(query.gas.toNumber()).to.be.greaterThan(0);
 
         await (
             await new ContractDeleteTransaction()
