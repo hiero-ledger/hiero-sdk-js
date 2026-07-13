@@ -3,6 +3,7 @@ import { playwright } from "@vitest/browser-playwright";
 import dotenv from "dotenv";
 import path from "path";
 import fs from "fs";
+import { browserEncodingAlias } from "./browser-encoding-alias.js";
 
 const pkg = JSON.parse(
     fs.readFileSync(path.resolve(__dirname, "../package.json"), "utf-8"),
@@ -12,6 +13,7 @@ dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 /** @type {import("vitest").UserConfig} */
 export default defineConfig({
+    plugins: [browserEncodingAlias()],
     test: {
         environment: "jsdom",
         watch: false,
@@ -70,18 +72,16 @@ export default defineConfig({
             "../src/index.js": "../src/browser.js",
             // Redirect proto package to use ESM version in browser mode
             "@hiero-ledger/proto": "/packages/proto/src/index.js",
-            // TODO: extract `encoding/hex.js` etc into a variable and call a function to generate
-            // all the prefixes.
+            // Note: the bare `./encoding/hex.js` / `../encoding/utf8.js` forms
+            // are handled by the browserEncodingAlias() plugin so they don't
+            // leak into the isomorphic @hiero-ledger/cryptography package.
             "../../../src/encoding/hex.js":
                 "../../../src/encoding/hex.browser.js",
             "../../src/encoding/hex.js": "../../src/encoding/hex.browser.js",
             "../src/encoding/hex.js": "../src/encoding/hex.browser.js",
             "src/encoding/hex.js": "src/encoding/hex.browser.js",
-            "../encoding/hex.js": "../encoding/hex.browser.js",
-            "./encoding/hex.js": "./encoding/hex.browser.js",
             "../src/encoding/utf8.js": "../src/encoding/utf8.browser.js",
             "../../src/encoding/utf8.js": "../../src/encoding/utf8.browser.js",
-            "../encoding/utf8.js": "../encoding/utf8.browser.js",
             "../src/cryptography/sha384.js":
                 "../src/cryptography/sha384.browser.js",
             "../cryptography/sha384.js": "../cryptography/sha384.browser.js",
