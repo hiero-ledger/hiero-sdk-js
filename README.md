@@ -143,6 +143,14 @@ To install it, run:
 npm install react-native-get-random-values
 ```
 
+The SDK does not import this polyfill for you — you must import it yourself at the entry point of your application (e.g., `App.js` / `App.tsx` / `index.js`), **before** importing the SDK:
+
+```js
+import "react-native-get-random-values";
+
+import { Client, PrivateKey } from "@hashgraph/sdk";
+```
+
 After installation, the native dependency must be linked for the respective platforms:
 
 🔗 Linking for Native Platforms
