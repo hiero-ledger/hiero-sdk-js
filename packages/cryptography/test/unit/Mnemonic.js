@@ -2,6 +2,7 @@ import Mnemonic from "../../src/Mnemonic.js";
 import PrivateKey from "../../src/PrivateKey.js";
 import BadMnemonicError from "../../src/BadMnemonicError.js";
 import BadMnemonicReason from "../../src/BadMnemonicReason.js";
+import * as hex from "../../src/encoding/hex.js";
 
 describe("Mnemonic", function () {
     it("should generate 24 words", async function () {
@@ -110,6 +111,30 @@ describe("Mnemonic", function () {
                 ).legacyDerive(-1)
             ).toString(),
         ).to.eql(expectedLegacyKey);
+    });
+
+    it("toSeed() accepts a 22-word legacy phrase", async function () {
+        // BIP-39 seed derivation must not enforce BIP-39 word counts:
+        // 22-word legacy phrases reach toSeed() and must keep deriving the
+        // same seed they always have.
+        const words =
+            "jolly kidnap tom lawn drunk chick optic lust mutter mole bride galley dense member sage neural widow decide curb aboard margin manure".split(
+                " ",
+            );
+
+        expect(hex.encode(await Mnemonic.toSeed(words, ""))).to.eql(
+            "02fbee10f3328bde5f78177c126ef4b55042dbc197a3891aec781dc7775d2105" +
+                "a417e8bb8d15aa383fb4cf306a1d3efef6804834c698bd47bef3f2bc74f527cf",
+        );
+        expect(hex.encode(await Mnemonic.toSeed(words, "pass"))).to.eql(
+            "2a2151082940e2ba27d0d0f536879216ced1d0e058daf476633ca841f9890706" +
+                "38b23a59e7f8af29c52c3564af6dd6e8aa3f89cba490b28baee1ff7a5e0b6f56",
+        );
+
+        // the mnemonic-instance paths that route through toSeed()
+        const mnemonic = await Mnemonic.fromString(words.join(","));
+        await mnemonic.toStandardEd25519PrivateKey();
+        await mnemonic.toStandardECDSAsecp256k1PrivateKey();
     });
 
     it("legacy2 mnemonic should work", async function () {
