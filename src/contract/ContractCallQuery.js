@@ -225,6 +225,11 @@ export default class ContractCallQuery extends Query {
      * `contractCallLocal` — even for the COST_ANSWER cost probe — and rejects
      * `gas=0` with `INSUFFICIENT_GAS`.
      *
+     * Note: the sender's EVM address is derived with `toEvmAddress()`, which is
+     * wrong for ECDSA-alias accounts (see {@link MirrorNodeContractQuery}), so
+     * for a contract whose gas depends on `msg.sender` the estimate may be
+     * computed for the wrong address. Set gas explicitly in that case.
+     *
      * @private
      * @param {Client} client
      * @returns {Promise<void>}
@@ -256,7 +261,9 @@ export default class ContractCallQuery extends Query {
                 );
             }
 
-            this._gas = Long.fromNumber(gas);
+            // Round up so a fractional estimate is never truncated below
+            // what the call actually needs.
+            this._gas = Long.fromNumber(Math.ceil(gas));
         } catch (error) {
             const cause =
                 error instanceof Error ? error.message : String(error);

@@ -98,9 +98,9 @@ export default class MirrorNodeContractQuery {
 
     /**
      * @param {Uint8Array} params
-     * @description Sets the already ABI-encoded function parameters (including the
-     * 4-byte function selector) to use as the call data, e.g. the output of
-     * `ContractFunctionParameters._build(name)`.
+     * @description Sets the full ABI-encoded call data, including the 4-byte
+     * function selector, as produced by tools like ethers.js
+     * `Interface.encodeFunctionData()`.
      * @returns {this}
      */
     setFunctionParameters(params) {

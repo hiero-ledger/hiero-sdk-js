@@ -344,10 +344,6 @@ describe("ContractCallIntegration", function () {
 
         const contract = receipt.contractId;
 
-        // Wait for the mirror node to ingest the newly created contract so it
-        // can simulate the call for the gas estimate.
-        await wait(10000);
-
         const query = new ContractCallQuery()
             .setContractId(contract)
             .setFunction("getMessage");
@@ -355,7 +351,21 @@ describe("ContractCallIntegration", function () {
         // No `setGas` and no `setQueryPayment`: this exercises the full path
         // that used to fail with INSUFFICIENT_GAS (gas estimation, then the
         // COST_ANSWER cost query, then the real call).
-        const result = await query.execute(env.client);
+        //
+        // The mirror node needs time to ingest the newly created contract
+        // before it can simulate the call, so poll instead of a fixed sleep.
+        let result = null;
+        for (let attempt = 1; ; attempt++) {
+            try {
+                result = await query.execute(env.client);
+                break;
+            } catch (error) {
+                if (attempt >= 15) {
+                    throw error;
+                }
+                await wait(2000);
+            }
+        }
 
         expect(result.getString(0)).to.be.equal("Hello from Hedera.");
         expect(query.gas).to.not.be.null;
