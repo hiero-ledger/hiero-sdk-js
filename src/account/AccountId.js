@@ -7,7 +7,7 @@ import Key from "../Key.js";
 import PublicKey from "../PublicKey.js";
 import CACHE from "../Cache.js";
 import EvmAddress from "../EvmAddress.js";
-import * as hex from ".././encoding/hex.js";
+import * as hex from "../encoding/hex.js";
 import { isLongZeroAddress } from "../util.js";
 
 /**

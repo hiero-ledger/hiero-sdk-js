@@ -235,6 +235,11 @@ export default class WebChannel extends Channel {
                             "x-grpc-web": "1",
                         },
                         body: encodeRequest(requestData),
+                        // Without this the request hangs forever when the proxy
+                        // accepts the body but never responds.
+                        signal: AbortSignal.timeout(
+                            Math.max(0, deadline.getTime() - Date.now()),
+                        ),
                     },
                 );
 
@@ -267,6 +272,21 @@ export default class WebChannel extends Channel {
             } catch (error) {
                 if (error instanceof GrpcServiceError) {
                     callback(error, null);
+                    return;
+                }
+
+                if (
+                    error instanceof Error &&
+                    (error.name === "TimeoutError" ||
+                        error.name === "AbortError")
+                ) {
+                    callback(
+                        new GrpcServiceError(
+                            GrpcStatus.Timeout,
+                            ALL_WEB_NETWORK_NODES?.[this._address]?.toString(),
+                        ),
+                        null,
+                    );
                     return;
                 }
 
