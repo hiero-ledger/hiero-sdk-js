@@ -261,9 +261,11 @@ export default class ContractCallQuery extends Query {
                 );
             }
 
-            // Round up so a fractional estimate is never truncated below
-            // what the call actually needs.
-            this._gas = Long.fromNumber(Math.ceil(gas));
+            // The mirror node estimate can be slightly below what the
+            // consensus node actually charges (it simulates a plain EVM call),
+            // which surfaces as INSUFFICIENT_GAS. Hedera recommends adding a
+            // 10-20% buffer to estimates, so pad by 20% and round up.
+            this._gas = Long.fromNumber(Math.ceil(gas * 1.2));
         } catch (error) {
             const cause =
                 error instanceof Error ? error.message : String(error);

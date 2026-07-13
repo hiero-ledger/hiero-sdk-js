@@ -344,18 +344,21 @@ describe("ContractCallIntegration", function () {
 
         const contract = receipt.contractId;
 
-        const query = new ContractCallQuery()
-            .setContractId(contract)
-            .setFunction("getMessage");
-
         // No `setGas` and no `setQueryPayment`: this exercises the full path
         // that used to fail with INSUFFICIENT_GAS (gas estimation, then the
         // COST_ANSWER cost query, then the real call).
         //
         // The mirror node needs time to ingest the newly created contract
         // before it can simulate the call, so poll instead of a fixed sleep.
+        // A fresh query is built per attempt because a query caches its
+        // auto-estimated gas — an estimate computed from stale mirror node
+        // state would otherwise be reused on every retry.
         let result = null;
+        let query = null;
         for (let attempt = 1; ; attempt++) {
+            query = new ContractCallQuery()
+                .setContractId(contract)
+                .setFunction("getMessage");
             try {
                 result = await query.execute(env.client);
                 break;

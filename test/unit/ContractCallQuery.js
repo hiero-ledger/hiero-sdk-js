@@ -23,7 +23,8 @@ describe("ContractCallQuery", function () {
         await query._estimateGasIfNotSet(CLIENT);
 
         expect(executeStub.calledOnce).to.be.true;
-        expect(query.gas.toNumber()).to.equal(25136);
+        // 25136 * 1.2 buffer, rounded up
+        expect(query.gas.toNumber()).to.equal(Math.ceil(25136 * 1.2));
     });
 
     it("does not call the mirror node when gas is already set", async function () {
