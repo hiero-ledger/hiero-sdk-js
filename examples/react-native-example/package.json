@@ -29,7 +29,7 @@
     "expo-splash-screen": "~57.0.2",
     "expo-status-bar": "~57.0.0",
     "expo-symbols": "~57.0.0",
-    "expo-system-ui": "~56.0.5",
+    "expo-system-ui": "~57.0.0",
     "expo-web-browser": "~57.0.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
