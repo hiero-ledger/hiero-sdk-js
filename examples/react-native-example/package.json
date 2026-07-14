@@ -21,7 +21,7 @@
     "expo": "~57.0.4",
     "expo-clipboard": "~57.0.0",
     "expo-constants": "~57.0.3",
-    "expo-font": "~56.0.5",
+    "expo-font": "~57.0.0",
     "expo-haptics": "~57.0.0",
     "expo-image": "~57.0.0",
     "expo-linking": "~56.0.13",
