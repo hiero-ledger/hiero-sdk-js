@@ -145,7 +145,11 @@
     "pnpm": {
         "overrides": {
             "protobufjs": "8.2.0",
-            "esbuild": ">=0.28.1"
+            "esbuild": ">=0.28.1",
+            "brace-expansion@1": "1.1.16",
+            "brace-expansion@2": "2.1.2",
+            "brace-expansion@5": "5.0.7",
+            "fast-uri@3": "3.1.3"
         }
     }
 }
