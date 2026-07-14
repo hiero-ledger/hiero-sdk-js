@@ -115,7 +115,7 @@
         "dpdm": "4.2.0",
         "@eslint/js": "9.26.0",
         "eslint": "9.26.0",
-        "eslint-plugin-compat": "6.1.0",
+        "eslint-plugin-compat": "7.0.2",
         "eslint-plugin-deprecation": "3.0.0",
         "eslint-plugin-import": "2.28.1",
         "eslint-plugin-jsdoc": "63.0.1",
@@ -145,7 +145,11 @@
     "pnpm": {
         "overrides": {
             "protobufjs": "8.2.0",
-            "esbuild": ">=0.28.1"
+            "esbuild": ">=0.28.1",
+            "brace-expansion@1": "1.1.16",
+            "brace-expansion@2": "2.1.2",
+            "brace-expansion@5": "5.0.7",
+            "fast-uri@3": "3.1.3"
         }
     }
 }

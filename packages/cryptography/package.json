@@ -54,7 +54,6 @@
         "bn.js": "5.2.3",
         "debug": "4.4.1",
         "forge-light": "1.1.4",
-        "react-native-get-random-values": "2.0.0",
         "strip-ansi": "7.1.2"
     },
     "peerDependenciesMeta": {
@@ -86,7 +85,7 @@
         "codecov": "3.8.3",
         "dpdm": "4.2.0",
         "eslint": "9.26.0",
-        "eslint-plugin-compat": "6.1.0",
+        "eslint-plugin-compat": "7.0.2",
         "eslint-plugin-import": "2.31.0",
         "eslint-plugin-jsdoc": "63.0.1",
         "eslint-plugin-n": "18.0.1",
