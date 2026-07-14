@@ -54,7 +54,6 @@
         "bn.js": "5.2.3",
         "debug": "4.4.1",
         "forge-light": "1.1.4",
-        "react-native-get-random-values": "2.0.0",
         "strip-ansi": "7.1.2"
     },
     "peerDependenciesMeta": {
