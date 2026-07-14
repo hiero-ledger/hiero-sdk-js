@@ -1,4 +1,5 @@
 import { Client, AccountId } from "@hiero-ledger/sdk";
+import { version as SDK_VERSION } from "@hiero-ledger/sdk/package.json";
 
 import { sdk } from "../sdk_data";
 import { SdkResponse } from "../response/sdk";
@@ -21,6 +22,15 @@ interface SetOperatorParams {
 }
 
 export default {
+    /**
+     * Reports the SDK name and version under test, read from the installed
+     * @hiero-ledger/sdk package. Lets TCK runs record which SDK build served
+     * them (see hiero-ledger/hiero-sdk-tck#663).
+     *
+     * @returns The SDK name and version, e.g. "hiero-sdk-js 2.84.0"
+     */
+    version: (): string => `hiero-sdk-js ${SDK_VERSION}`,
+
     /**
      * Sets up a Hedera client for a test session.
      * Supports concurrent test execution by creating isolated client instances per session.
