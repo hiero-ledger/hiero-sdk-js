@@ -417,8 +417,8 @@ importers:
         specifier: ~56.0.8
         version: 56.0.8(@babel/core@7.23.3)(@expo/dom-webview@55.0.3)(@expo/metro-runtime@6.1.2)(expo-router@56.2.8)(react-dom@19.1.0(react@19.1.0))(react-native-web@0.21.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-native-worklets@0.5.1(@babel/core@7.23.3)(react-native@0.81.5(@babel/core@7.23.3)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.23.3)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)
       expo-clipboard:
-        specifier: ~56.0.3
-        version: 56.0.3(expo@56.0.8)(react-native@0.81.5(@babel/core@7.23.3)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
+        specifier: ~57.0.0
+        version: 57.0.0(expo@56.0.8)(react-native@0.81.5(@babel/core@7.23.3)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       expo-constants:
         specifier: ~56.0.16
         version: 56.0.16(expo@56.0.8)(react-native@0.81.5(@babel/core@7.23.3)(@types/react@19.1.17)(react@19.1.0))
@@ -7260,8 +7260,8 @@ packages:
       react: '*'
       react-native: '*'
 
-  expo-clipboard@56.0.3:
-    resolution: {integrity: sha512-8mCdhmAomm0yBIonJFjAhKUXvSkc2avdNh4+rBwoe7DSWF2AC4w3uy+pa419rvVFbTyVxOBmh83UHAbUwD6qAg==}
+  expo-clipboard@57.0.0:
+    resolution: {integrity: sha512-eIt47f6kvR33HOnIEWvs9l1AUAY4GeLY27szwamSuwRl7nntNythSFFbmnrEtiSUaz//y8XVqCG9WLpdMkOpjA==}
     peerDependencies:
       expo: '*'
       react: '*'
@@ -22444,7 +22444,7 @@ snapshots:
       - supports-color
       - typescript
 
-  expo-clipboard@56.0.3(expo@56.0.8)(react-native@0.81.5(@babel/core@7.23.3)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
+  expo-clipboard@57.0.0(expo@56.0.8)(react-native@0.81.5(@babel/core@7.23.3)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
     dependencies:
       expo: 56.0.8(@babel/core@7.23.3)(@expo/dom-webview@55.0.3)(@expo/metro-runtime@6.1.2)(expo-router@56.2.8)(react-dom@19.1.0(react@19.1.0))(react-native-web@0.21.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-native-worklets@0.5.1(@babel/core@7.23.3)(react-native@0.81.5(@babel/core@7.23.3)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.23.3)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)
       react: 19.1.0
