@@ -181,8 +181,8 @@ importers:
         specifier: 9.26.0
         version: 9.26.0(jiti@2.6.1)
       eslint-plugin-compat:
-        specifier: 6.1.0
-        version: 6.1.0(eslint@9.26.0(jiti@2.6.1))
+        specifier: 7.0.2
+        version: 7.0.2(eslint@9.26.0(jiti@2.6.1))
       eslint-plugin-deprecation:
         specifier: 3.0.0
         version: 3.0.0(eslint@9.26.0(jiti@2.6.1))(typescript@5.9.3)
@@ -284,8 +284,8 @@ importers:
         specifier: ^9.26.0
         version: 9.26.0(jiti@2.6.1)
       eslint-plugin-compat:
-        specifier: ^6.1.0
-        version: 6.1.0(eslint@9.26.0(jiti@2.6.1))
+        specifier: ^7.0.2
+        version: 7.0.2(eslint@9.26.0(jiti@2.6.1))
       eslint-plugin-import:
         specifier: ^2.28.1
         version: 2.31.0(@typescript-eslint/parser@5.62.0(eslint@9.26.0(jiti@2.6.1))(typescript@5.8.2))(eslint@9.26.0(jiti@2.6.1))
@@ -602,8 +602,8 @@ importers:
         specifier: ~9.26.0
         version: 9.26.0(jiti@2.6.1)
       eslint-plugin-compat:
-        specifier: ^6.1.0
-        version: 6.1.0(eslint@9.26.0(jiti@2.6.1))
+        specifier: ^7.0.2
+        version: 7.0.2(eslint@9.26.0(jiti@2.6.1))
       eslint-plugin-import:
         specifier: ^2.28.1
         version: 2.31.0(@typescript-eslint/parser@5.62.0(eslint@9.26.0(jiti@2.6.1))(typescript@5.8.2))(eslint@9.26.0(jiti@2.6.1))
@@ -766,8 +766,8 @@ importers:
         specifier: 9.26.0
         version: 9.26.0(jiti@2.6.1)
       eslint-plugin-compat:
-        specifier: 6.1.0
-        version: 6.1.0(eslint@9.26.0(jiti@2.6.1))
+        specifier: 7.0.2
+        version: 7.0.2(eslint@9.26.0(jiti@2.6.1))
       eslint-plugin-import:
         specifier: 2.31.0
         version: 2.31.0(@typescript-eslint/parser@8.55.0(eslint@9.26.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.26.0(jiti@2.6.1))
@@ -878,8 +878,8 @@ importers:
         specifier: 9.26.0
         version: 9.26.0(jiti@2.6.1)
       eslint-plugin-compat:
-        specifier: 6.1.0
-        version: 6.1.0(eslint@9.26.0(jiti@2.6.1))
+        specifier: 7.0.2
+        version: 7.0.2(eslint@9.26.0(jiti@2.6.1))
       eslint-plugin-import:
         specifier: 2.28.1
         version: 2.28.1(@typescript-eslint/parser@5.62.0(eslint@9.26.0(jiti@2.6.1))(typescript@5.9.3))(eslint@9.26.0(jiti@2.6.1))
@@ -5806,8 +5806,8 @@ packages:
     engines: {node: '>=6.0.0'}
     hasBin: true
 
-  baseline-browser-mapping@2.10.33:
-    resolution: {integrity: sha512-bA6+tcSLpz2tIEdDXZPpPTIuxBcC4+w6SieaYyfigIa4h8GlFxbA17v22Vx3JUtuZQj9SgOsnbK+aTBzyDyEuw==}
+  baseline-browser-mapping@2.10.43:
+    resolution: {integrity: sha512-AjYpR78kDWAY3Efj+cDTFH9t9SCoL7OoTp1BOb0mQV7S+6CiLwnWM3FyxhJtdPufDFKzmCSFoUncKjWgJEZTCQ==}
     engines: {node: '>=6.0.0'}
     hasBin: true
 
@@ -5899,8 +5899,8 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
 
-  browserslist@4.28.2:
-    resolution: {integrity: sha512-48xSriZYYg+8qXna9kwqjIVzuQxi+KYWp2+5nCYnYKPTr0LvD89Jqk2Or5ogxz0NUMfIjhh2lIUX/LyX9B4oIg==}
+  browserslist@4.28.6:
+    resolution: {integrity: sha512-FQBYNK15VMslhLHpA7+n+n1GOlF1kId2xcCg7/j95f24AOF6VDYMNH4mFxF7KuaTdv627faazpOAjFzMrfJOUw==}
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
 
@@ -5984,8 +5984,8 @@ packages:
   caniuse-lite@1.0.30001792:
     resolution: {integrity: sha512-hVLMUZFgR4JJ6ACt1uEESvQN1/dBVqPAKY0hgrV70eN3391K6juAfTjKZLKvOMsx8PxA7gsY1/tLMMTcfFLLpw==}
 
-  caniuse-lite@1.0.30001793:
-    resolution: {integrity: sha512-iwSsYWaCOoh26cV8NwNRViHlrfUvYsHDfRVcbtmw0Kg6PJIZZXwMkj1442FYLBGkeUf1juAsU3DTfxW579mrPA==}
+  caniuse-lite@1.0.30001805:
+    resolution: {integrity: sha512-52noaS3DubycKSXaU30TwPGIp+POyQSUVa5jBEq3vkRkY0kjyb3LQgvhU6WGyCcyXqVLWO0Cw0Q6BSdD0kUfVA==}
 
   case-sensitive-paths-webpack-plugin@2.4.0:
     resolution: {integrity: sha512-roIFONhcxog0JSSWbvVAh3OocukmSgpqOH6YpMkCvav/ySIV3JKg4Dc8vYtQjYi/UxpNE36r/9v+VqTQqgkYmw==}
@@ -6727,8 +6727,8 @@ packages:
   electron-to-chromium@1.5.286:
     resolution: {integrity: sha512-9tfDXhJ4RKFNerfjdCcZfufu49vg620741MNs26a9+bhLThdB+plgMeou98CAaHu/WATj2iHOOHTp1hWtABj2A==}
 
-  electron-to-chromium@1.5.364:
-    resolution: {integrity: sha512-G/dYE3+AYhyHwzTwg8UbnXf7zqMERYh7l2jJ3QujhFsH8agSYwtnGAR2aZ7f0AakIKJXd5En/Hre4igIUrdlYw==}
+  electron-to-chromium@1.5.389:
+    resolution: {integrity: sha512-cEto7aeOqBfU1D+c5py5pE+ooscKE75JifxLBdFUZsqAxRS6y7kebtxAZvICszSl05gPjYHDTjY+lXpyGvpJbg==}
 
   emittery@0.10.2:
     resolution: {integrity: sha512-aITqOwnLanpHLNXZJENbOgjUBeHocD+xsSJmNrjovKBW5HbSpW3d1pEls7GFQPUWXiwG9+0P4GtHfEqC/4M0Iw==}
@@ -6940,11 +6940,11 @@ packages:
       eslint-import-resolver-webpack:
         optional: true
 
-  eslint-plugin-compat@6.1.0:
-    resolution: {integrity: sha512-xiwHz7mj6+Zj7NWOO/uaWdrQ6zP0zL5CPyKVCNlB4JaoUFeYPYwejf5toqyHGlXzhuPUdCpg31uBRiWqcgiS0A==}
-    engines: {node: '>=18.x'}
+  eslint-plugin-compat@7.0.2:
+    resolution: {integrity: sha512-gN8hF+4NzMsHUbr4m/TYZK0FtW3DcV4g8rXpTsY2EV5xiRD8jsilUlB9lNSkGGX0veDCxMhKSWbSd+faJByQDA==}
+    engines: {node: '>=22.x'}
     peerDependencies:
-      eslint: ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0 || ^9.0.0
+      eslint: ^9.0.0 || ^10.0.0
 
   eslint-plugin-deprecation@3.0.0:
     resolution: {integrity: sha512-JuVLdNg/uf0Adjg2tpTyYoYaMbwQNn/c78P1HcccokvhtRphgnRjZDKmhlxbxYptppex03zO76f97DD/yQHv7A==}
@@ -9626,8 +9626,8 @@ packages:
   node-releases@2.0.27:
     resolution: {integrity: sha512-nmh3lCkYZ3grZvqcCH+fjmQ7X+H0OeZgP40OierEaAptX4XofMh5kwNbWh7lBduUzCcV/8kZ+NDLCwm2iorIlA==}
 
-  node-releases@2.0.47:
-    resolution: {integrity: sha512-Uzmd6LXpouKo8EUK68IjH4+E01w/hXyV3R3g/geCJo+rXLNfh1xucB+LOzYEOQPSiUK3h/xZf0cQGcSsmyL2Og==}
+  node-releases@2.0.51:
+    resolution: {integrity: sha512-wRNIrw4DmVLKQlbgOMdkMx27Wrpzes2hh5Jtbi2bjPd+4wJstWIqP5A+lscnqbm0xxmT5Bpg8Lec5ItEBwx6BQ==}
     engines: {node: '>=18'}
 
   noms@0.0.0:
@@ -12996,7 +12996,7 @@ snapshots:
     dependencies:
       '@babel/compat-data': 7.28.5
       '@babel/helper-validator-option': 7.27.1
-      browserslist: 4.28.1
+      browserslist: 4.28.6
       lru-cache: 5.1.1
       semver: 6.3.1
 
@@ -13004,7 +13004,7 @@ snapshots:
     dependencies:
       '@babel/compat-data': 7.29.7
       '@babel/helper-validator-option': 7.29.7
-      browserslist: 4.28.2
+      browserslist: 4.28.6
       lru-cache: 5.1.1
       semver: 6.3.1
 
@@ -15860,7 +15860,7 @@ snapshots:
       progress: 2.0.3
       prompts: 2.4.2
       resolve-from: 5.0.0
-      semver: 7.8.1
+      semver: 7.8.5
       send: 0.19.2
       slugify: 1.6.9
       stacktrace-parser: 0.1.11
@@ -15936,7 +15936,7 @@ snapshots:
       progress: 2.0.3
       prompts: 2.4.2
       resolve-from: 5.0.0
-      semver: 7.8.1
+      semver: 7.8.5
       send: 0.19.2
       slugify: 1.6.9
       stacktrace-parser: 0.1.11
@@ -15977,7 +15977,7 @@ snapshots:
       debug: 4.4.1(supports-color@8.1.1)
       getenv: 2.0.0
       glob: 13.0.6
-      semver: 7.8.1
+      semver: 7.8.5
       slugify: 1.6.9
       xcode: 3.0.1
       xml2js: 0.6.0
@@ -16020,7 +16020,7 @@ snapshots:
       getenv: 2.0.0
       glob: 13.0.6
       resolve-workspace-root: 2.0.1
-      semver: 7.8.1
+      semver: 7.8.5
       slugify: 1.6.9
     transitivePeerDependencies:
       - supports-color
@@ -16081,7 +16081,7 @@ snapshots:
       ignore: 5.3.2
       minimatch: 10.2.5
       resolve-from: 5.0.0
-      semver: 7.8.1
+      semver: 7.8.5
     transitivePeerDependencies:
       - supports-color
 
@@ -16168,7 +16168,7 @@ snapshots:
       '@jridgewell/gen-mapping': 0.3.13
       '@jridgewell/remapping': 2.3.5
       '@jridgewell/sourcemap-codec': 1.5.5
-      browserslist: 4.28.2
+      browserslist: 4.28.6
       chalk: 4.1.2
       debug: 4.4.1(supports-color@8.1.1)
       getenv: 2.0.0
@@ -16281,7 +16281,7 @@ snapshots:
       debug: 4.4.1(supports-color@8.1.1)
       expo-modules-autolinking: 56.0.14(typescript@5.9.3)
       resolve-from: 5.0.0
-      semver: 7.8.1
+      semver: 7.8.5
     transitivePeerDependencies:
       - supports-color
       - typescript
@@ -18953,7 +18953,7 @@ snapshots:
       debug: 4.4.1(supports-color@8.1.1)
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.8.1
+      semver: 7.3.8
       tsutils: 3.21.0(typescript@5.8.2)
     optionalDependencies:
       typescript: 5.8.2
@@ -18967,7 +18967,7 @@ snapshots:
       debug: 4.4.1(supports-color@8.1.1)
       globby: 11.1.0
       is-glob: 4.0.3
-      semver: 7.8.1
+      semver: 7.3.8
       tsutils: 3.21.0(typescript@5.9.3)
     optionalDependencies:
       typescript: 5.9.3
@@ -18997,7 +18997,7 @@ snapshots:
       '@typescript-eslint/visitor-keys': 8.55.0
       debug: 4.4.3
       minimatch: 9.0.9
-      semver: 7.8.1
+      semver: 7.8.5
       tinyglobby: 0.2.17
       ts-api-utils: 2.5.0(typescript@5.9.3)
       typescript: 5.9.3
@@ -19012,7 +19012,7 @@ snapshots:
       '@typescript-eslint/visitor-keys': 8.56.0
       debug: 4.4.3
       minimatch: 9.0.9
-      semver: 7.8.1
+      semver: 7.8.5
       tinyglobby: 0.2.17
       ts-api-utils: 2.5.0(typescript@5.9.3)
       typescript: 5.9.3
@@ -19796,8 +19796,8 @@ snapshots:
 
   autoprefixer@10.4.23(postcss@8.5.6):
     dependencies:
-      browserslist: 4.28.1
-      caniuse-lite: 1.0.30001792
+      browserslist: 4.28.6
+      caniuse-lite: 1.0.30001805
       fraction.js: 5.3.4
       picocolors: 1.1.1
       postcss: 8.5.6
@@ -20358,7 +20358,7 @@ snapshots:
 
   baseline-browser-mapping@2.10.29: {}
 
-  baseline-browser-mapping@2.10.33: {}
+  baseline-browser-mapping@2.10.43: {}
 
   baseline-browser-mapping@2.9.19: {}
 
@@ -20469,13 +20469,13 @@ snapshots:
       node-releases: 2.0.27
       update-browserslist-db: 1.2.3(browserslist@4.28.1)
 
-  browserslist@4.28.2:
+  browserslist@4.28.6:
     dependencies:
-      baseline-browser-mapping: 2.10.33
-      caniuse-lite: 1.0.30001793
-      electron-to-chromium: 1.5.364
-      node-releases: 2.0.47
-      update-browserslist-db: 1.2.3(browserslist@4.28.2)
+      baseline-browser-mapping: 2.10.43
+      caniuse-lite: 1.0.30001805
+      electron-to-chromium: 1.5.389
+      node-releases: 2.0.51
+      update-browserslist-db: 1.2.3(browserslist@4.28.6)
 
   bser@2.1.1:
     dependencies:
@@ -20550,8 +20550,8 @@ snapshots:
 
   caniuse-api@3.0.0:
     dependencies:
-      browserslist: 4.28.2
-      caniuse-lite: 1.0.30001793
+      browserslist: 4.28.6
+      caniuse-lite: 1.0.30001805
       lodash.memoize: 4.1.2
       lodash.uniq: 4.5.0
 
@@ -20559,7 +20559,7 @@ snapshots:
 
   caniuse-lite@1.0.30001792: {}
 
-  caniuse-lite@1.0.30001793: {}
+  caniuse-lite@1.0.30001805: {}
 
   case-sensitive-paths-webpack-plugin@2.4.0: {}
 
@@ -20845,7 +20845,7 @@ snapshots:
 
   core-js-compat@3.47.0:
     dependencies:
-      browserslist: 4.28.1
+      browserslist: 4.28.6
 
   core-js-pure@3.47.0: {}
 
@@ -20932,7 +20932,7 @@ snapshots:
       postcss-modules-scope: 3.2.1(postcss@8.5.6)
       postcss-modules-values: 4.0.0(postcss@8.5.6)
       postcss-value-parser: 4.2.0
-      semver: 7.8.1
+      semver: 7.8.5
     optionalDependencies:
       webpack: 5.104.1
 
@@ -21303,7 +21303,7 @@ snapshots:
 
   electron-to-chromium@1.5.286: {}
 
-  electron-to-chromium@1.5.364: {}
+  electron-to-chromium@1.5.389: {}
 
   emittery@0.10.2: {}
 
@@ -21746,17 +21746,16 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-compat@6.1.0(eslint@9.26.0(jiti@2.6.1)):
+  eslint-plugin-compat@7.0.2(eslint@9.26.0(jiti@2.6.1)):
     dependencies:
       '@mdn/browser-compat-data': 6.1.5
       ast-metadata-inferer: 0.8.1
-      browserslist: 4.28.1
-      caniuse-lite: 1.0.30001770
+      browserslist: 4.28.6
       eslint: 9.26.0(jiti@2.6.1)
       find-up: 5.0.0
       globals: 15.15.0
       lodash.memoize: 4.1.2
-      semver: 7.7.4
+      semver: 7.8.5
 
   eslint-plugin-deprecation@3.0.0(eslint@9.26.0(jiti@2.6.1))(typescript@5.9.3):
     dependencies:
@@ -23714,7 +23713,7 @@ snapshots:
 
   is-bun-module@2.0.0:
     dependencies:
-      semver: 7.8.1
+      semver: 7.8.5
 
   is-callable@1.2.7: {}
 
@@ -23893,7 +23892,7 @@ snapshots:
       '@babel/parser': 7.29.0
       '@istanbuljs/schema': 0.1.3
       istanbul-lib-coverage: 3.2.2
-      semver: 7.8.1
+      semver: 7.8.5
     transitivePeerDependencies:
       - supports-color
 
@@ -24934,7 +24933,7 @@ snapshots:
 
   make-dir@4.0.0:
     dependencies:
-      semver: 7.8.1
+      semver: 7.8.5
 
   makeerror@1.0.12:
     dependencies:
@@ -25770,7 +25769,7 @@ snapshots:
 
   node-releases@2.0.27: {}
 
-  node-releases@2.0.47: {}
+  node-releases@2.0.51: {}
 
   noms@0.0.0:
     dependencies:
@@ -25792,7 +25791,7 @@ snapshots:
     dependencies:
       hosted-git-info: 7.0.2
       proc-log: 4.2.0
-      semver: 7.8.1
+      semver: 7.3.8
       validate-npm-package-name: 5.0.1
 
   npm-run-all@4.1.5:
@@ -26292,7 +26291,7 @@ snapshots:
 
   postcss-colormin@5.3.1(postcss@8.5.6):
     dependencies:
-      browserslist: 4.28.2
+      browserslist: 4.28.6
       caniuse-api: 3.0.0
       colord: 2.9.3
       postcss: 8.5.6
@@ -26300,7 +26299,7 @@ snapshots:
 
   postcss-convert-values@5.1.3(postcss@8.5.6):
     dependencies:
-      browserslist: 4.28.2
+      browserslist: 4.28.6
       postcss: 8.5.6
       postcss-value-parser: 4.2.0
 
@@ -26432,7 +26431,7 @@ snapshots:
 
   postcss-merge-rules@5.1.4(postcss@8.5.6):
     dependencies:
-      browserslist: 4.28.2
+      browserslist: 4.28.6
       caniuse-api: 3.0.0
       cssnano-utils: 3.1.0(postcss@8.5.6)
       postcss: 8.5.6
@@ -26452,7 +26451,7 @@ snapshots:
 
   postcss-minify-params@5.1.4(postcss@8.5.6):
     dependencies:
-      browserslist: 4.28.2
+      browserslist: 4.28.6
       cssnano-utils: 3.1.0(postcss@8.5.6)
       postcss: 8.5.6
       postcss-value-parser: 4.2.0
@@ -26525,7 +26524,7 @@ snapshots:
 
   postcss-normalize-unicode@5.1.1(postcss@8.5.6):
     dependencies:
-      browserslist: 4.28.2
+      browserslist: 4.28.6
       postcss: 8.5.6
       postcss-value-parser: 4.2.0
 
@@ -26589,7 +26588,7 @@ snapshots:
       '@csstools/postcss-trigonometric-functions': 1.0.2(postcss@8.5.6)
       '@csstools/postcss-unset-value': 1.0.2(postcss@8.5.6)
       autoprefixer: 10.4.23(postcss@8.5.6)
-      browserslist: 4.28.1
+      browserslist: 4.28.6
       css-blank-pseudo: 3.0.3(postcss@8.5.6)
       css-has-pseudo: 3.0.4(postcss@8.5.6)
       css-prefers-color-scheme: 6.0.3(postcss@8.5.6)
@@ -26632,7 +26631,7 @@ snapshots:
 
   postcss-reduce-initial@5.1.2(postcss@8.5.6):
     dependencies:
-      browserslist: 4.28.2
+      browserslist: 4.28.6
       caniuse-api: 3.0.0
       postcss: 8.5.6
 
@@ -26889,7 +26888,7 @@ snapshots:
     dependencies:
       '@babel/code-frame': 7.27.1
       address: 1.2.2
-      browserslist: 4.28.1
+      browserslist: 4.28.6
       chalk: 4.1.2
       cross-spawn: 7.0.6
       detect-port-alt: 1.1.6
@@ -27887,7 +27886,7 @@ snapshots:
     dependencies:
       '@img/colour': 1.1.0
       detect-libc: 2.1.2
-      semver: 7.8.1
+      semver: 7.8.5
     optionalDependencies:
       '@img/sharp-darwin-arm64': 0.34.5
       '@img/sharp-darwin-x64': 0.34.5
@@ -28319,7 +28318,7 @@ snapshots:
 
   stylehacks@5.1.1(postcss@8.5.6):
     dependencies:
-      browserslist: 4.28.2
+      browserslist: 4.28.6
       postcss: 8.5.6
       postcss-selector-parser: 6.1.2
 
@@ -28845,9 +28844,9 @@ snapshots:
       escalade: 3.2.0
       picocolors: 1.1.1
 
-  update-browserslist-db@1.2.3(browserslist@4.28.2):
+  update-browserslist-db@1.2.3(browserslist@4.28.6):
     dependencies:
-      browserslist: 4.28.2
+      browserslist: 4.28.6
       escalade: 3.2.0
       picocolors: 1.1.1
 
@@ -29172,7 +29171,7 @@ snapshots:
       '@webassemblyjs/wasm-parser': 1.14.1
       acorn: 8.15.0
       acorn-import-phases: 1.0.4(acorn@8.15.0)
-      browserslist: 4.28.1
+      browserslist: 4.28.6
       chrome-trace-event: 1.0.4
       enhanced-resolve: 5.18.3
       es-module-lexer: 2.0.0
