@@ -43,7 +43,7 @@
     ],
     "dependencies": {
         "@noble/ciphers": "1.2.1",
-        "@noble/curves": "1.8.1",
+        "@noble/curves": "2.2.0",
         "@noble/hashes": "1.8.0",
         "@scure/base": "1.2.4",
         "@scure/bip32": "1.6.2",

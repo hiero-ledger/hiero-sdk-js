@@ -1,4 +1,4 @@
-import { secp256k1 } from "@noble/curves/secp256k1";
+import { secp256k1 } from "@noble/curves/secp256k1.js";
 import Key from "./Key.js";
 import BadKeyError from "./BadKeyError.js";
 import { arrayEqual } from "./util/array.js";
@@ -73,10 +73,10 @@ export default class EcdsaPublicKey extends Key {
                 break;
             default: // Uncompressed DER public keys
                 try {
-                    const keyPair = secp256k1.ProjectivePoint.fromHex(
+                    const keyPair = secp256k1.Point.fromBytes(
                         data.subarray(derPrefixBytes.length),
                     );
-                    ecdsaPublicKeyBytes = keyPair.toRawBytes(true); // Compressed format
+                    ecdsaPublicKeyBytes = keyPair.toBytes(true); // Compressed format
                 } catch (error) {
                     throw new BadKeyError(
                         `cannot decode ECDSA public key from this DER format`,
@@ -153,9 +153,9 @@ export default class EcdsaPublicKey extends Key {
      * @returns {string}
      */
     toEthereumAddress() {
-        const publicKey = secp256k1.ProjectivePoint.fromHex(
-            this._keyData,
-        ).toRawBytes(false);
+        const publicKey = secp256k1.Point.fromBytes(this._keyData).toBytes(
+            false,
+        );
         const hash = hex.decode(
             keccak256(`0x${hex.encode(publicKey.subarray(1))}`),
         );
