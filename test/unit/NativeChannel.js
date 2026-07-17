@@ -312,7 +312,7 @@ describe("NativeChannel", function () {
             );
         });
 
-        it("should callback with HttpError on non-OK response", async function () {
+        it("should callback with HttpError exactly once on non-OK response", async function () {
             const channel = new NativeChannel("mainnet.example.com:443");
             channel._isReady = true;
 
@@ -331,15 +331,19 @@ describe("NativeChannel", function () {
 
             const rpcImpl = channel._createUnaryClient("CryptoService");
 
-            const err = await new Promise((resolve) => {
-                rpcImpl(
-                    { name: "cryptoGetBalance" },
-                    new Uint8Array([1]),
-                    (e) => resolve(e),
-                );
-            });
+            const callback = vi.fn();
+            rpcImpl(
+                { name: "cryptoGetBalance" },
+                new Uint8Array([1]),
+                callback,
+            );
 
-            expect(err).to.be.instanceOf(HttpError);
+            // Allow all microtasks/promises to settle
+            await new Promise((resolve) => setTimeout(resolve, 50));
+
+            expect(callback).toHaveBeenCalledTimes(1);
+            expect(callback.mock.calls[0][0]).to.be.instanceOf(HttpError);
+            expect(callback.mock.calls[0][1]).to.be.null;
         });
 
         it("should decode response with application/octet-stream prefix", async function () {
