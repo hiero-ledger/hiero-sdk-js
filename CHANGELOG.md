@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - `ContractCallQuery` executed without `setGas()` no longer fails with `INSUFFICIENT_GAS`: the SDK now auto-estimates gas via the mirror node (`MirrorNodeContractEstimateQuery`) before sending the query, and throws a clear "set the gas explicitly using setGas()" error if estimation is unavailable. Also adds `MirrorNodeContractQuery.setFunctionParameters(Uint8Array)` for raw call data. [#2848](https://github.com/hiero-ledger/hiero-sdk-js/issues/2848)
 - Upgraded `@grpc/grpc-js` to `1.12.7` to address two high-severity uncaught-exception advisories. [#4171](https://github.com/hiero-ledger/hiero-sdk-js/pull/4171)
+- Fixed `TopicUpdateTransaction` `clearTopicMemo()`, `clearAdminKey()`, `clearSubmitKey()`, `clearFeeScheduleKey()`, and `clearAutoRenewAccountId()` methods, which previously set fields to `null` (silently dropped during protobuf serialization) instead of the HAPI-documented sentinel values, causing the network to ignore the clear request. [#4190](https://github.com/hiero-ledger/hiero-sdk-js/issues/4190)
 
 # v2.85.0
 
