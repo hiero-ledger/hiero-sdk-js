@@ -9,7 +9,7 @@ const NUM = Long.fromNumber(123);
 const PRESENT_CHECKSUM = "esxsf";
 // 0.0.321 checksum
 const EXPECTED_CHECKSUM = "uhcxp";
-const EXPECTED_ERRORR_MESSAGE = `Entity ID ${SHARD.toString()}.${REALM.toString()}.${NUM.toString()}-${PRESENT_CHECKSUM} was incorrect.`;
+const EXPECTED_ERROR_MESSAGE = `Entity ID ${SHARD.toString()}.${REALM.toString()}.${NUM.toString()}-${PRESENT_CHECKSUM} was incorrect.`;
 
 const badEntityIdErrorBuilder = ({
     shard = SHARD,
@@ -45,7 +45,7 @@ describe("BadEntityIdError", function () {
     });
     it("should format the error message correctly", function () {
         const badEntityIdError = badEntityIdErrorBuilder();
-        expect(badEntityIdError.message).toBe(EXPECTED_ERRORR_MESSAGE);
+        expect(badEntityIdError.message).toBe(EXPECTED_ERROR_MESSAGE);
     });
     it("should have a stack trace", function () {
         const badEntityIdError = badEntityIdErrorBuilder();
