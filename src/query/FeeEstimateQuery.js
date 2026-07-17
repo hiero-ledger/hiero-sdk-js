@@ -330,12 +330,12 @@ export default class FeeEstimateQuery {
      * @returns {string}
      */
     _buildRequestUrl(client) {
-        // For local environments, use port 8084 instead of 5551
+        // For local environments, use port 8084 instead of 38081
         // as that is the port for the mirror node JAVA REST API which exposes
         // the /network/fees endpoint.
         let baseUrl = client.mirrorRestApiBaseUrl;
         if (baseUrl.includes("127.0.0.1") || baseUrl.includes("localhost")) {
-            baseUrl = baseUrl.replace(":5551", ":8084");
+            baseUrl = baseUrl.replace(":38081", ":8084");
         }
 
         const params = new URLSearchParams();

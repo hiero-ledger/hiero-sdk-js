@@ -53,11 +53,14 @@ export default class MirrorNode extends ManagedNode {
             throw new Error("Mirror node has invalid address configuration");
         }
 
-        // For localhost/127.0.0.1, mirror node gRPC and REST API use different ports
-        // gRPC typically uses port 5600, but REST API uses port 5551
-        // Note: Contract calls may use port 8545 (handled separately in MirrorNodeContractQuery)
+        // For localhost/127.0.0.1, mirror node gRPC and REST API use different ports.
+        // If the user configured the standard gRPC port (5600), map it to the standard
+        // REST port (38081). Otherwise, honor the explicitly configured port (e.g., 8084
+        // for Fee Estimates). Contract calls may use port 8545 (handled separately in
+        // MirrorNodeContractQuery).
         if (host === "localhost" || host === "127.0.0.1") {
-            return `http://${host}:5551/api/v1`;
+            const effectivePort = port === 5600 ? 38081 : port;
+            return `http://${host}:${effectivePort}/api/v1`;
         }
 
         const scheme = this._getSchemeFromHostAndPort(host, port);

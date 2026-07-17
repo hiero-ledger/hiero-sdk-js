@@ -25,7 +25,7 @@ describe("Client deadline configuration", function () {
     it("uses local max attempts for an object network with local addresses", function () {
         const client = new Client({
             network: {
-                "localhost:50211": "0.0.3",
+                "localhost:35211": "0.0.3",
                 "127.0.0.1:50212": "0.0.4",
             },
             scheduleNetworkUpdate: false,

@@ -59,7 +59,7 @@ async function main() {
     const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
 
     const nodes = {
-        "127.0.0.1:50211": new AccountId(3),
+        "127.0.0.1:35211": new AccountId(3),
     };
 
     const client = Client.forNetwork(nodes);
@@ -288,7 +288,7 @@ async function main() {
         process.env.HEDERA_NETWORK == "local-node" ||
         process.env.HEDERA_NETWORK == "localhost"
     ) {
-        link = `http://127.0.0.1:5551/api/v1/accounts?account.id=${accountId2}`;
+        link = `http://127.0.0.1:38081/api/v1/accounts?account.id=${accountId2}`;
     } else {
         link = `https://${process.env.HEDERA_NETWORK}.mirrornode.hedera.com/api/v1/accounts?account.id=${accountId2}`;
     }

@@ -89,7 +89,7 @@ export const NATIVE_PREVIEWNET = {
 };
 
 export const LocalNodeNetwork = {
-    "127.0.0.1:50211": new AccountId(3),
+    "127.0.0.1:35211": new AccountId(3),
 };
 
 export const LocalNodeWebNetwork = {
@@ -228,7 +228,7 @@ export const MirrorNetwork = {
 
 export const WebMirrorNetwork = {
     ...MirrorNetwork,
-    LOCAL_NODE: ["127.0.0.1:5551"],
+    LOCAL_NODE: ["127.0.0.1:38081"],
 };
 
 export const WebNetwork = {
