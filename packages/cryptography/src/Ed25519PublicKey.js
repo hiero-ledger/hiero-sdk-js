@@ -1,6 +1,6 @@
 import Key from "./Key.js";
 import BadKeyError from "./BadKeyError.js";
-import nacl from "tweetnacl";
+import { ed25519 } from "@noble/curves/ed25519.js";
 import { arrayEqual } from "./util/array.js";
 import * as hex from "./encoding/hex.js";
 
@@ -112,7 +112,7 @@ export default class Ed25519PublicKey extends Key {
      * @returns {boolean}
      */
     verify(message, signature) {
-        return nacl.sign.detached.verify(message, signature, this._keyData);
+        return ed25519.verify(signature, message, this._keyData);
     }
 
     /**

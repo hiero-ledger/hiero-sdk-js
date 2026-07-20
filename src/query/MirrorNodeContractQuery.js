@@ -97,6 +97,18 @@ export default class MirrorNodeContractQuery {
     }
 
     /**
+     * @param {Uint8Array} params
+     * @description Sets the full ABI-encoded call data, including the 4-byte
+     * function selector, as produced by tools like ethers.js
+     * `Interface.encodeFunctionData()`.
+     * @returns {this}
+     */
+    setFunctionParameters(params) {
+        this._functionParameters = params;
+        return this;
+    }
+
+    /**
      * @param {Long} value
      * @description Sets the amount of value (in tinybars or wei) to be sent to the contract in the transaction.
      * Use this to specify an amount for a payable function call.

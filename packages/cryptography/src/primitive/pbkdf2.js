@@ -1,7 +1,26 @@
 import { HashAlgorithm } from "./hmac.js";
+import { pbkdf2Async } from "@noble/hashes/pbkdf2";
+import { sha256, sha384, sha512 } from "@noble/hashes/sha2";
 import * as utf8 from "../encoding/utf8.js";
-import util from "util";
-import crypto from "crypto";
+
+/**
+ * @param {HashAlgorithm} algorithm
+ * @returns {typeof sha256}
+ */
+function hasher(algorithm) {
+    switch (algorithm) {
+        case HashAlgorithm.Sha256:
+            return sha256;
+        case HashAlgorithm.Sha384:
+            return sha384;
+        case HashAlgorithm.Sha512:
+            return sha512;
+        default:
+            throw new Error(
+                "(BUG) Non-Exhaustive switch statement for algorithms",
+            );
+    }
+}
 
 /**
  * @param {HashAlgorithm} algorithm
@@ -11,7 +30,7 @@ import crypto from "crypto";
  * @param {number} length
  * @returns {Promise<Uint8Array>}
  */
-export async function deriveKey(algorithm, password, salt, iterations, length) {
+export function deriveKey(algorithm, password, salt, iterations, length) {
     const pass =
         typeof password === "string"
             ? // Valid ASCII is also valid UTF-8 so encoding the password as UTF-8
@@ -19,20 +38,10 @@ export async function deriveKey(algorithm, password, salt, iterations, length) {
               utf8.encode(password)
             : password;
 
-    const nacl = typeof salt === "string" ? utf8.encode(salt) : salt;
+    const saltBytes = typeof salt === "string" ? utf8.encode(salt) : salt;
 
-    const pbkdf2 = util.promisify(crypto.pbkdf2);
-
-    switch (algorithm) {
-        case HashAlgorithm.Sha256:
-            return pbkdf2(pass, nacl, iterations, length, "sha256");
-        case HashAlgorithm.Sha384:
-            return pbkdf2(pass, nacl, iterations, length, "sha384");
-        case HashAlgorithm.Sha512:
-            return pbkdf2(pass, nacl, iterations, length, "sha512");
-        default:
-            throw new Error(
-                "(BUG) Non-Exhaustive switch statement for algorithms",
-            );
-    }
+    return pbkdf2Async(hasher(algorithm), pass, saltBytes, {
+        c: iterations,
+        dkLen: length,
+    });
 }

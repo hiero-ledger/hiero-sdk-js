@@ -1,3 +1,6 @@
+// Polyfill crypto.getRandomValues — must be imported before the SDK
+import "react-native-get-random-values";
+
 import { useEffect, useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import { Alert, StyleSheet, Text, View } from "react-native";

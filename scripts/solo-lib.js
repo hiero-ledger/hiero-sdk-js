@@ -5,8 +5,8 @@ import path from "node:path";
 import { spawn, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-export const DEFAULT_CONSENSUS_NODE_VERSION = "v0.69.1";
-export const DEFAULT_MIRROR_NODE_VERSION = "v0.145.2";
+export const DEFAULT_CONSENSUS_NODE_VERSION = "v0.73.0";
+export const DEFAULT_MIRROR_NODE_VERSION = "v0.153.0";
 export const DEFAULT_NUM_NODES = 1;
 export const DEFAULT_HBAR_AMOUNT = 10000000;
 

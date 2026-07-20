@@ -1,6 +1,6 @@
 {
     "name": "@hiero-ledger/sdk",
-    "version": "2.85.0",
+    "version": "2.86.0",
     "description": "Hiero SDK",
     "types": "./lib/index.d.ts",
     "main": "./lib/index.cjs",
@@ -61,7 +61,7 @@
     ],
     "dependencies": {
         "ethers": "6.16.0",
-        "@grpc/grpc-js": "1.12.6",
+        "@grpc/grpc-js": "1.12.7",
         "@hiero-ledger/cryptography": "workspace:*",
         "@hiero-ledger/proto": "workspace:*",
         "ansi-regex": "6.2.2",
@@ -74,7 +74,7 @@
         "long": "5.3.1",
         "pino": "10.1.0",
         "pino-pretty": "13.0.0",
-        "protobufjs": "8.2.0",
+        "protobufjs": "8.6.0",
         "rfc4648": "1.5.3",
         "strip-ansi": "7.1.2",
         "utf8": "3.0.0"
@@ -98,24 +98,24 @@
         "@rollup/plugin-replace": "6.0.2",
         "@rollup/plugin-terser": "1.0.0",
         "@types/crypto-js": "4.2.0",
-        "@types/node": "25.9.1",
+        "@types/node": "26.1.1",
         "@types/utf8": "3.0.1",
         "@typescript-eslint/eslint-plugin": "5.48.2",
-        "@typescript-eslint/parser": "5.62.0",
-        "@vitest/browser": "4.1.6",
+        "@typescript-eslint/parser": "8.64.0",
+        "@vitest/browser": "4.1.8",
         "@vitest/browser-playwright": "4.0.18",
         "@vitest/coverage-istanbul": "4.0.18",
         "@vitest/coverage-v8": "4.0.18",
         "babel-plugin-dynamic-import-node": "2.3.3",
         "babel-plugin-module-rewrite": "0.2.0",
         "c8": "11.0.0",
-        "chromedriver": "149.0.1",
+        "chromedriver": "150.0.0",
         "codecov": "3.8.3",
         "dotenv": "17.2.3",
         "dpdm": "4.2.0",
         "@eslint/js": "9.26.0",
         "eslint": "9.26.0",
-        "eslint-plugin-compat": "6.1.0",
+        "eslint-plugin-compat": "7.0.2",
         "eslint-plugin-deprecation": "3.0.0",
         "eslint-plugin-import": "2.28.1",
         "eslint-plugin-jsdoc": "63.0.1",
@@ -133,7 +133,7 @@
         "sinon": "22.0.0",
         "typedoc": "0.28.1",
         "typescript": "5.9.3",
-        "vite": "7.3.2",
+        "vite": "7.3.6",
         "vitest": "4.1.0"
     },
     "peerDependencies": {
@@ -144,7 +144,12 @@
     },
     "pnpm": {
         "overrides": {
-            "protobufjs": "8.2.0"
+            "protobufjs": "8.2.0",
+            "esbuild": ">=0.28.1",
+            "brace-expansion@1": "1.1.16",
+            "brace-expansion@2": "2.1.2",
+            "brace-expansion@5": "5.0.7",
+            "fast-uri@3": "3.1.3"
         }
     }
 }

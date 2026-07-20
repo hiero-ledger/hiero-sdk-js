@@ -34,6 +34,13 @@ describe("MirrorNodeContractQuery", function () {
         expect(query.contractId).to.be.equal(CONTRACT_ID);
     });
 
+    it("should set raw function parameters via setFunctionParameters", function () {
+        const query = new MirrorNodeContractQuery().setFunctionParameters(
+            FUNCTION_SELECTOR,
+        );
+        expect(query.callData).to.deep.equal(FUNCTION_SELECTOR);
+    });
+
     it("should throw an error when no contract id sent", async function () {
         const query = new MirrorNodeContractQuery()
             .setBlockNumber(BLOCK_NUMBER)

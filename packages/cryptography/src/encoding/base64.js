@@ -1,9 +1,11 @@
+import { base64 } from "@scure/base";
+
 /**
  * @param {string} text
  * @returns {Uint8Array}
  */
 export function decode(text) {
-    return Buffer.from(text, "base64");
+    return base64.decode(text);
 }
 
 /**
@@ -11,5 +13,5 @@ export function decode(text) {
  * @returns {string};
  */
 export function encode(data) {
-    return Buffer.from(data).toString("base64");
+    return base64.encode(data);
 }
