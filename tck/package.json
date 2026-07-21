@@ -30,7 +30,7 @@
         "@types/glob": "8.1.0",
         "@types/lossless-json": "1.0.4",
         "debug": "4.4.1",
-        "nodemon": "3.1.10",
+        "nodemon": "3.1.14",
         "ts-node": "10.9.2"
     }
 }
