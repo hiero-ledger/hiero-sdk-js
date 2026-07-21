@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# v2.86.1
+
+### Fixed
+- The SDK can now be bundled for the browser with esbuild-based tooling (Vite, modern React). A `browser` condition was added to the package `exports` map so bundlers no longer resolve the Node.js entry point and fail on `fs`/`util`/`tls`/`net` and `@grpc/grpc-js`. [#2173](https://github.com/hiero-ledger/hiero-sdk-js/issues/2173) [#4256](https://github.com/hiero-ledger/hiero-sdk-js/pull/4256)
+
+### Changed
+- Migrated `@hiero-ledger/cryptography` primitives to the Noble and @scure libraries, collapsing the separate browser/native/default implementations into a single portable one and removing the `react-native-get-random-values` dependency. Released as `@hiero-ledger/cryptography@1.20.0`. [#4229](https://github.com/hiero-ledger/hiero-sdk-js/pull/4229) [#4233](https://github.com/hiero-ledger/hiero-sdk-js/pull/4233)
+
+### Security
+- Forced `brace-expansion` and `fast-uri` to patched versions to address advisories. [#4226](https://github.com/hiero-ledger/hiero-sdk-js/pull/4226)
+- Upgraded `vite` to `7.3.6` and forced `esbuild` to `>=0.28.1` to address advisories. [#4223](https://github.com/hiero-ledger/hiero-sdk-js/pull/4223)
+
 # v2.86.0
 
 ### Added
