@@ -244,6 +244,58 @@ describe("NativeChannel", function () {
                 },
             );
         });
+
+        it("should throw GrpcServiceError(Unavailable) on non-200 status", async function () {
+            const channel = new NativeChannel("mainnet.example.com:443");
+            mockFetch.mockResolvedValue(mockResponse(404, {}));
+
+            const deadline = new Date(Date.now() + 10000);
+
+            await expect(channel._waitForReady(deadline)).rejects.toSatisfy(
+                (err) => {
+                    return (
+                        err instanceof GrpcServiceError &&
+                        err.status === GrpcStatus.Unavailable
+                    );
+                },
+            );
+        });
+
+        it("should send correct headers and body in health check request", async function () {
+            const channel = new NativeChannel("mainnet.example.com:443");
+            mockFetch.mockResolvedValue(
+                mockResponse(200, { "grpc-status": "0" }),
+            );
+
+            const deadline = new Date(Date.now() + 10000);
+            await channel._waitForReady(deadline);
+
+            const call = mockFetch.mock.calls[0];
+            const options = call[1];
+            expect(options.headers["content-type"]).to.equal(
+                "application/grpc-web-text",
+            );
+            expect(options.headers["x-grpc-web"]).to.equal("1");
+            expect(options.headers["x-user-agent"]).to.be.a("string");
+            expect(options.signal).to.be.instanceOf(AbortSignal);
+        });
+
+        it("should clear timeout on successful response", async function () {
+            vi.useFakeTimers();
+            const channel = new NativeChannel("mainnet.example.com:443");
+            mockFetch.mockResolvedValue(
+                mockResponse(200, { "grpc-status": "0" }),
+            );
+
+            const deadline = new Date(Date.now() + 10000);
+            const promise = channel._waitForReady(deadline);
+
+            await vi.runAllTimersAsync();
+            await promise;
+
+            expect(channel._isReady).to.equal(true);
+            vi.useRealTimers();
+        });
     });
 
     // _createUnaryClient
@@ -310,6 +362,106 @@ describe("NativeChannel", function () {
                 "http://localhost:50211/proto.CryptoService/cryptoGetBalance",
                 expect.any(Object),
             );
+        });
+
+        it("should use http for 127.0.0.1 in URL construction", async function () {
+            const channel = new NativeChannel("127.0.0.1:50211");
+            channel._isReady = true;
+
+            const dataUrl = makeDataUrl(new Uint8Array([1]));
+            vi.stubGlobal(
+                "FileReader",
+                class {
+                    readAsDataURL() {
+                        this.result = dataUrl;
+                        queueMicrotask(() => this.onloadend?.());
+                    }
+                },
+            );
+
+            mockFetch.mockResolvedValue(mockResponse(200, {}));
+
+            const rpcImpl = channel._createUnaryClient("CryptoService");
+
+            await new Promise((resolve) => {
+                rpcImpl({ name: "cryptoGetBalance" }, new Uint8Array([1]), () =>
+                    resolve(),
+                );
+            });
+
+            expect(mockFetch).toHaveBeenCalledWith(
+                "http://127.0.0.1:50211/proto.CryptoService/cryptoGetBalance",
+                expect.any(Object),
+            );
+        });
+
+        it("should send correct request headers", async function () {
+            const channel = new NativeChannel("mainnet.example.com:443");
+            channel._isReady = true;
+
+            const dataUrl = makeDataUrl(new Uint8Array([1]));
+            vi.stubGlobal(
+                "FileReader",
+                class {
+                    readAsDataURL() {
+                        this.result = dataUrl;
+                        queueMicrotask(() => this.onloadend?.());
+                    }
+                },
+            );
+
+            mockFetch.mockResolvedValue(mockResponse(200, {}));
+
+            const rpcImpl = channel._createUnaryClient("CryptoService");
+
+            await new Promise((resolve) => {
+                rpcImpl({ name: "cryptoGetBalance" }, new Uint8Array([1]), () =>
+                    resolve(),
+                );
+            });
+
+            const options = mockFetch.mock.calls[0][1];
+            expect(options.headers["content-type"]).to.equal(
+                "application/grpc-web-text",
+            );
+            expect(options.headers["x-accept-content-transfer-encoding"]).to.equal(
+                "base64",
+            );
+            expect(options.headers["x-grpc-web"]).to.equal("1");
+            expect(options.headers["x-user-agent"]).to.be.a("string");
+        });
+
+        it("should encode request body as base64-framed data", async function () {
+            const channel = new NativeChannel("mainnet.example.com:443");
+            channel._isReady = true;
+
+            const dataUrl = makeDataUrl(new Uint8Array([1]));
+            vi.stubGlobal(
+                "FileReader",
+                class {
+                    readAsDataURL() {
+                        this.result = dataUrl;
+                        queueMicrotask(() => this.onloadend?.());
+                    }
+                },
+            );
+
+            mockFetch.mockResolvedValue(mockResponse(200, {}));
+
+            const rpcImpl = channel._createUnaryClient("CryptoService");
+
+            await new Promise((resolve) => {
+                rpcImpl(
+                    { name: "cryptoGetBalance" },
+                    new Uint8Array([10, 20]),
+                    () => resolve(),
+                );
+            });
+
+            const body = mockFetch.mock.calls[0][1].body;
+            // body should be a non-empty base64 string
+            expect(body).to.be.a("string");
+            expect(body.length).to.be.greaterThan(0);
         });
 
         it("should callback with HttpError exactly once on non-OK response", async function () {
@@ -490,6 +642,128 @@ describe("NativeChannel", function () {
 
             expect(err).to.be.instanceOf(TypeError);
             expect(err.message).to.equal("Network failure");
+        });
+
+        it("should callback with error when FileReader.onerror fires", async function () {
+            const channel = new NativeChannel("mainnet.example.com:443");
+            channel._isReady = true;
+
+            vi.stubGlobal(
+                "FileReader",
+                class {
+                    readAsDataURL() {
+                        queueMicrotask(() =>
+                            this.onerror?.(new Error("read failed")),
+                        );
+                    }
+                },
+            );
+
+            mockFetch.mockResolvedValue(mockResponse(200, {}));
+
+            const rpcImpl = channel._createUnaryClient("CryptoService");
+
+            const err = await new Promise((resolve) => {
+                rpcImpl(
+                    { name: "cryptoGetBalance" },
+                    new Uint8Array([1]),
+                    (e) => resolve(e),
+                );
+            });
+
+            expect(err).to.be.instanceOf(Error);
+        });
+
+        it("should call _waitForReady then proceed on success when not ready", async function () {
+            const channel = new NativeChannel("mainnet.example.com:443");
+            // _isReady is false initially
+
+            const dataUrl = makeDataUrl(new Uint8Array([99]));
+            vi.stubGlobal(
+                "FileReader",
+                class {
+                    readAsDataURL() {
+                        this.result = dataUrl;
+                        queueMicrotask(() => this.onloadend?.());
+                    }
+                },
+            );
+
+            // First call is health check, second is the actual RPC
+            mockFetch
+                .mockResolvedValueOnce(
+                    mockResponse(200, { "grpc-status": "0" }),
+                )
+                .mockResolvedValueOnce(mockResponse(200, {}));
+
+            const rpcImpl = channel._createUnaryClient("CryptoService");
+
+            const response = await new Promise((resolve) => {
+                rpcImpl(
+                    { name: "cryptoGetBalance" },
+                    new Uint8Array([1]),
+                    (_e, r) => resolve(r),
+                );
+            });
+
+            expect(mockFetch).toHaveBeenCalledTimes(2);
+            expect(channel._isReady).to.equal(true);
+            expect(response).to.be.instanceOf(Uint8Array);
+            expect([...response]).to.deep.equal([99]);
+        });
+
+        it("should not call _waitForReady again once ready", async function () {
+            const channel = new NativeChannel("mainnet.example.com:443");
+            channel._isReady = true;
+
+            const dataUrl = makeDataUrl(new Uint8Array([1]));
+            vi.stubGlobal(
+                "FileReader",
+                class {
+                    readAsDataURL() {
+                        this.result = dataUrl;
+                        queueMicrotask(() => this.onloadend?.());
+                    }
+                },
+            );
+
+            mockFetch.mockResolvedValue(mockResponse(200, {}));
+
+            const rpcImpl = channel._createUnaryClient("CryptoService");
+
+            await new Promise((resolve) => {
+                rpcImpl({ name: "cryptoGetBalance" }, new Uint8Array([1]), () =>
+                    resolve(),
+                );
+            });
+
+            // Only one fetch call — the RPC itself, no health check
+            expect(mockFetch).toHaveBeenCalledTimes(1);
+            expect(mockFetch.mock.calls[0][0]).to.include("/proto.CryptoService/");
+        });
+
+        it("should not attempt response decoding on non-OK response", async function () {
+            const channel = new NativeChannel("mainnet.example.com:443");
+            channel._isReady = true;
+
+            const resp = mockResponse(502, {});
+            mockFetch.mockResolvedValue(resp);
+
+            const rpcImpl = channel._createUnaryClient("CryptoService");
+
+            const callback = vi.fn();
+            rpcImpl(
+                { name: "cryptoGetBalance" },
+                new Uint8Array([1]),
+                callback,
+            );
+
+            await new Promise((resolve) => setTimeout(resolve, 50));
+
+            // blob() should never be called when response is not ok
+            expect(resp.blob).not.toHaveBeenCalled();
+            expect(callback).toHaveBeenCalledTimes(1);
+            expect(callback.mock.calls[0][0]).to.be.instanceOf(HttpError);
         });
     });
 });
