@@ -16,17 +16,26 @@
     },
     "browser": {
         "./lib/index.js": "./lib/browser.js",
+        "./lib/index.cjs": "./lib/browser.cjs",
         "./lib/network/AddressBookQuery.js": "./lib/network/AddressBookQueryWeb.js",
+        "./lib/network/AddressBookQuery.cjs": "./lib/network/AddressBookQueryWeb.cjs",
         "./lib/encoding/hex.js": "./lib/encoding/hex.browser.js",
+        "./lib/encoding/hex.cjs": "./lib/encoding/hex.browser.cjs",
         "./lib/encoding/utf8.js": "./lib/encoding/utf8.browser.js",
+        "./lib/encoding/utf8.cjs": "./lib/encoding/utf8.browser.cjs",
         "./lib/cryptography/sha384.js": "./lib/cryptography/sha384.browser.js",
+        "./lib/cryptography/sha384.cjs": "./lib/cryptography/sha384.browser.cjs",
         "crypto": false
     },
     "exports": {
         "./package.json": "./package.json",
         ".": {
-            "react-native": "./lib/native.js",
             "types": "./lib/index.d.ts",
+            "react-native": "./lib/native.js",
+            "browser": {
+                "import": "./lib/browser.js",
+                "require": "./lib/browser.cjs"
+            },
             "import": "./lib/index.js",
             "require": "./lib/index.cjs"
         }
