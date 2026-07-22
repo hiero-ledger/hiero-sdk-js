@@ -290,6 +290,28 @@ describe("Transaction", function () {
         }
     });
 
+    it("fromBytes fails for empty bytes", function () {
+        expect(() => Transaction.fromBytes(new Uint8Array())).to.throw(
+            "cannot deserialize a transaction from empty bytes",
+        );
+    });
+
+    it("fromBytes fails for a TransactionList entry with no body", function () {
+        const list = HieroProto.proto.TransactionList.encode({
+            transactionList: [{}],
+        }).finish();
+
+        expect(() => Transaction.fromBytes(list)).to.throw(
+            "no transactions found in bytes",
+        );
+    });
+
+    it("fromBytes fails for malformed bytes", function () {
+        expect(() =>
+            Transaction.fromBytes(new Uint8Array([0xff, 0x00, 0xab, 0x1c])),
+        ).to.throw();
+    });
+
     it("fromBytes succeeds for a valid multi-node transaction list", function () {
         const nodeAccountId1 = new AccountId(3);
         const nodeAccountId2 = new AccountId(4);
