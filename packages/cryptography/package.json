@@ -62,7 +62,7 @@
         }
     },
     "devDependencies": {
-        "@babel/cli": "7.27.0",
+        "@babel/cli": "8.0.4",
         "@babel/core": "7.26.10",
         "@babel/eslint-parser": "7.27.0",
         "@babel/plugin-syntax-dynamic-import": "7.8.3",
