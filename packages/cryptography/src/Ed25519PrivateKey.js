@@ -1,6 +1,6 @@
 import BadKeyError from "./BadKeyError.js";
 import Ed25519PublicKey from "./Ed25519PublicKey.js";
-import { ed25519 } from "@noble/curves/ed25519.js";
+import { ed25519 } from "@noble/curves/ed25519";
 import * as hex from "./encoding/hex.js";
 import * as random from "./primitive/random.js";
 import * as slip10 from "./primitive/slip10.js";
