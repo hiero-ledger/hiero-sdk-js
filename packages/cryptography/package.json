@@ -42,7 +42,7 @@
         "last 1 Firefox versions"
     ],
     "dependencies": {
-        "@noble/ciphers": "1.2.1",
+        "@noble/ciphers": "2.2.0",
         "@noble/curves": "1.8.1",
         "@noble/hashes": "1.8.0",
         "@scure/base": "1.2.4",
