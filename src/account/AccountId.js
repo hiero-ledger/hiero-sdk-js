@@ -7,8 +7,6 @@ import Key from "../Key.js";
 import PublicKey from "../PublicKey.js";
 import CACHE from "../Cache.js";
 import EvmAddress from "../EvmAddress.js";
-import * as hex from "../encoding/hex.js";
-import { isLongZeroAddress } from "../util.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -266,44 +264,6 @@ export default class AccountId {
         return AccountId._fromProtobuf(
             HieroProto.proto.AccountID.decode(bytes),
         );
-    }
-
-    /**
-     * @deprecated - Use `fromEvmAddress` instead
-     * @param {string} address
-     * @returns {AccountId}
-     */
-    static fromSolidityAddress(address) {
-        if (isLongZeroAddress(hex.decode(address))) {
-            return new AccountId(
-                ...EntityIdHelper.fromSolidityAddress(address),
-            );
-        } else {
-            return this.fromEvmAddress(0, 0, address);
-        }
-    }
-
-    /**
-     * @description Statically compute the EVM address. Use only with non-native EVM accounts.
-     * @deprecated - Use `toEvmAddress` instead
-     * If the account is EVM-native, the EVM address depends on the public key and is not directly related to the account ID.
-     * @returns {string}
-     */
-    toSolidityAddress() {
-        if (this.evmAddress != null) {
-            return this.evmAddress.toString();
-        } else if (
-            this.aliasKey != null &&
-            this.aliasKey._key._type == "secp256k1"
-        ) {
-            return this.aliasKey.toEvmAddress();
-        } else {
-            return EntityIdHelper.toSolidityAddress([
-                this.shard,
-                this.realm,
-                this.num,
-            ]);
-        }
     }
 
     /**

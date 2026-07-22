@@ -57,16 +57,6 @@ export default class DelegateContractId extends ContractId {
     }
 
     /**
-     * @param {string} address
-     * @deprecated - Use `fromEvmAddress` instead
-     * @returns {DelegateContractId}
-     */
-    static fromSolidityAddress(address) {
-        // eslint-disable-next-line deprecation/deprecation
-        return new DelegateContractId(ContractId.fromSolidityAddress(address));
-    }
-
-    /**
      * @returns {DelegateContractId}
      */
     clone() {

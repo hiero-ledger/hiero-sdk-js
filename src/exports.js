@@ -18,8 +18,7 @@ export { default as Mnemonic } from "./Mnemonic.js";
 export { default as TokenAirdropTransaction } from "./token/TokenAirdropTransaction.js";
 export { default as TokenClaimAirdropTransaction } from "./token/TokenClaimAirdropTransaction.js";
 export { default as TokenCancelAirdropTransaction } from "./token/TokenCancelAirdropTransaction.js";
-// eslint-disable-next-line deprecation/deprecation
-export { default as AccountAllowanceAdjustTransaction } from "./account/AccountAllowanceAdjustTransaction.js";
+ 
 export { default as AccountAllowanceApproveTransaction } from "./account/AccountAllowanceApproveTransaction.js";
 export { default as AccountAllowanceDeleteTransaction } from "./account/AccountAllowanceDeleteTransaction.js";
 export { default as AccountBalance } from "./account/AccountBalance.js";
@@ -62,8 +61,7 @@ export { default as EthereumTransactionDataEip7702 } from "./EthereumTransaction
 export { default as EthereumTransactionData } from "./EthereumTransactionData.js";
 export { default as AccessListItem } from "./AccessListItem.js";
 export { default as Authorization } from "./Authorization.js";
-// eslint-disable-next-line deprecation/deprecation
-export { default as EthereumFlow } from "./EthereumFlow.js";
+ 
 export { default as EvmAddress } from "./EvmAddress.js";
 export { default as ExchangeRate } from "./ExchangeRate.js";
 export { default as ExchangeRates } from "./ExchangeRates.js";
@@ -103,13 +101,9 @@ export { default as FreezeTransaction } from "./system/FreezeTransaction.js";
 export { default as Hbar } from "./Hbar.js";
 export { default as HbarAllowance } from "./account/HbarAllowance.js";
 export { default as HbarUnit } from "./HbarUnit.js";
-export { default as LiveHash } from "./account/LiveHash.js";
-// eslint-disable-next-line deprecation/deprecation
-export { default as LiveHashAddTransaction } from "./account/LiveHashAddTransaction.js";
-// eslint-disable-next-line deprecation/deprecation
-export { default as LiveHashDeleteTransaction } from "./account/LiveHashDeleteTransaction.js";
-// eslint-disable-next-line deprecation/deprecation
-export { default as LiveHashQuery } from "./account/LiveHashQuery.js";
+ 
+ 
+ 
 export { default as MaxQueryPaymentExceeded } from "./MaxQueryPaymentExceeded.js";
 export { default as MirrorNodeContractCallQuery } from "./query/MirrorNodeContractCallQuery.js";
 export { default as MirrorNodeContractEstimateQuery } from "./query/MirrorNodeContractEstimateQuery.js";
@@ -141,10 +135,8 @@ export { default as Signer } from "./Signer.js";
 export { default as SignerSignature } from "./SignerSignature.js";
 export { default as Status } from "./Status.js";
 export { default as SubscriptionHandle } from "./topic/SubscriptionHandle.js";
-// eslint-disable-next-line deprecation/deprecation
-export { default as SystemDeleteTransaction } from "./system/SystemDeleteTransaction.js";
-// eslint-disable-next-line deprecation/deprecation
-export { default as SystemUndeleteTransaction } from "./system/SystemUndeleteTransaction.js";
+ 
+ 
 export { default as Timestamp } from "./Timestamp.js";
 export { default as TokenAllowance } from "./account/TokenAllowance.js";
 export { default as TokenAssociateTransaction } from "./token/TokenAssociateTransaction.js";

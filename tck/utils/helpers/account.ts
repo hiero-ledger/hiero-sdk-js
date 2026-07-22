@@ -62,13 +62,6 @@ export const handleNftAllowances = (
 export const mapAccountInfoResponse = (
     accountInfo: AccountInfo,
 ): GetAccountInfoResponse => {
-    const liveHashes = accountInfo.liveHashes.map((liveHash) => ({
-        accountId: liveHash.accountId.toString(),
-        hash: Buffer.from(liveHash.hash).toString("base64"),
-        keys: liveHash.keys.toArray().map((key) => key.toString()),
-        duration: liveHash.duration.seconds.toString(),
-    }));
-
     const tokenRelationships: Record<string, TokenRelationshipInfo> = {};
     for (const [tokenId, relationship] of accountInfo.tokenRelationships) {
         tokenRelationships[tokenId.toString()] = {
@@ -174,7 +167,6 @@ export const mapAccountInfoResponse = (
         isReceiverSignatureRequired: accountInfo.isReceiverSignatureRequired,
         expirationTime: accountInfo.expirationTime.toString(),
         autoRenewPeriod: accountInfo.autoRenewPeriod.seconds.toString(),
-        liveHashes,
         tokenRelationships,
         accountMemo: accountInfo.accountMemo,
         ownedNfts: accountInfo.ownedNfts.toString(),
