@@ -16,3 +16,7 @@ updates:
           - dependency-name: "*"
             update-types:
                 ["version-update:semver-minor", "version-update:semver-patch"]
+          # @noble/curves v2+ is ESM-only and breaks the CommonJS (lib/*.cjs)
+          # build of @hiero-ledger/cryptography — see #4259
+          - dependency-name: "@noble/curves"
+            versions: [">=2.0.0"]

@@ -1,6 +1,6 @@
 import { keccak256 } from "./keccak.js";
 import * as hex from "../encoding/hex.js";
-import { secp256k1 } from "@noble/curves/secp256k1.js";
+import { secp256k1 } from "@noble/curves/secp256k1";
 import { equalBytes } from "./utils.js";
 
 /**
@@ -11,7 +11,7 @@ import { equalBytes } from "./utils.js";
  * @returns {KeyPair}
  */
 export function generate() {
-    const privateKey = secp256k1.utils.randomSecretKey();
+    const privateKey = secp256k1.utils.randomPrivateKey();
     const publicKey = secp256k1.getPublicKey(privateKey, true);
 
     return {
@@ -77,7 +77,9 @@ export function getFullPublicKey(data) {
 export function sign(keydata, message) {
     const msg = hex.encode(message);
     const data = hex.decode(keccak256(`0x${msg}`));
-    return secp256k1.sign(data, keydata, { prehash: false });
+    const signature = secp256k1.sign(data, keydata);
+
+    return signature.toCompactRawBytes();
 }
 
 /**
@@ -97,7 +99,10 @@ export function verify(keydata, message, signature) {
     const msg = hex.encode(message);
     const data = hex.decode(keccak256(`0x${msg}`));
 
-    return secp256k1.verify(signature, data, keydata, { prehash: false });
+    const r = BigInt("0x" + hex.encode(signature.subarray(0, 32)));
+    const s = BigInt("0x" + hex.encode(signature.subarray(32, 64)));
+
+    return secp256k1.verify({ r, s }, data, keydata);
 }
 
 /**
@@ -112,12 +117,12 @@ export function getRecoveryId(privateKey, signature, message) {
 
     for (let recovery = 0; recovery < 4; recovery++) {
         try {
-            const sig = secp256k1.Signature.fromBytes(
-                signature,
-                "compact",
-            ).addRecoveryBit(recovery);
+            const sig =
+                secp256k1.Signature.fromCompact(signature).addRecoveryBit(
+                    recovery,
+                );
 
-            const recovered = sig.recoverPublicKey(hash).toBytes(false);
+            const recovered = sig.recoverPublicKey(hash).toRawBytes(false);
 
             if (equalBytes(recovered, expectedPubKey)) {
                 return recovery;
