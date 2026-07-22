@@ -201,6 +201,14 @@ describe("CustomFees", function () {
         await env.close();
     });
 
+    // Skipped: this scenario is not an error on the network. The fee used here
+    // is a fixed HBAR fee (no denominating token), and a fee collector only
+    // needs to be associated with the token when the fee is denominated in
+    // that token — that case is covered by the active test
+    // "cannot create custom fee with un-associated token fee collector" below.
+    // The fee schedule update therefore succeeds, and
+    // INVALID_CUSTOM_FEE_COLLECTOR (which signals a missing or invalid
+    // collector account, not a missing association) is never returned.
     it.skip("User cannot transfer a custom fee schedule token to a fee collecting account that is not associated with it", async function () {
         const env = await IntegrationTestEnv.new();
 
@@ -296,6 +304,12 @@ describe("CustomFees", function () {
         await env.close();
     });
 
+    // Skipped: consensus nodes do not reject a fractional fee whose fraction
+    // is greater than 1 at creation time — such a fee is valid to define and
+    // only takes effect when it is charged. Additionally, the expected
+    // `Status.InvalidCustomFractionalFeesSum` does not exist in the SDK's
+    // Status enum (it evaluates to `undefined`), so this test could never
+    // match a real status code.
     it.skip("User cannot create a token with a custom fractional fee is greater than 1", async function () {
         const env = await IntegrationTestEnv.new();
 
@@ -325,6 +339,11 @@ describe("CustomFees", function () {
         await env.close();
     });
 
+    // Skipped: adding custom fees to a token that has a fee schedule key but
+    // no custom fees yet is a supported operation — the update succeeds, so
+    // no status error is returned. CUSTOM_SCHEDULE_ALREADY_HAS_NO_FEES only
+    // applies when clearing fees from a token that already has none (see
+    // "cannot clear custom fees when no custom fees are present" below).
     it.skip("User cannot execute the fee schedule update transaction if there is not fee schedule set already", async function () {
         const env = await IntegrationTestEnv.new();
 
@@ -356,6 +375,11 @@ describe("CustomFees", function () {
         await env.close();
     });
 
+    // Skipped: the expected status is wrong — when a fee schedule update is
+    // not signed by the token's fee schedule key, the network rejects it with
+    // INVALID_SIGNATURE, not INVALID_CUSTOM_FEE_SCHEDULE_KEY (a creation-time
+    // status for an unusable key). Re-enable by asserting INVALID_SIGNATURE
+    // and verifying against a network.
     it.skip("User cannot sign the fee schedule update transaction with any key besides the key schedule key", async function () {
         const env = await IntegrationTestEnv.new();
 
@@ -591,8 +615,9 @@ describe("CustomFees", function () {
         await env.close();
     });
 
-    // Skipping since the test seems setting an empty custom fee list is no longer an error
-
+    // Skipped: setting an empty custom fee list on a token that has no custom
+    // fees is no longer an error on current networks — the update succeeds,
+    // so CUSTOM_SCHEDULE_ALREADY_HAS_NO_FEES is never returned.
     it.skip("cannot clear custom fees when no custom fees are present", async function () {
         const env = await IntegrationTestEnv.new();
 
@@ -649,8 +674,10 @@ describe("CustomFees", function () {
         await env.close({ token: tokenId });
     });
 
-    // Cannot reproduce `CustomFeeChargingExceededMaxRecursionDepth`
-
+    // Skipped: CUSTOM_FEE_CHARGING_EXCEEDED_MAX_RECURSION_DEPTH cannot be
+    // reproduced — the two-token fee cycle built here settles within the
+    // network's allowed custom fee nesting depth, so the transfer succeeds
+    // instead of erroring.
     it.skip("cannot have recursive custom fees", async function () {
         const env = await IntegrationTestEnv.new();
 
@@ -754,6 +781,10 @@ describe("CustomFees", function () {
         await env.close({ token: [tokenId1, tokenId2] });
     });
 
+    // Skipped: current consensus node configurations allow more balance
+    // adjustments per transfer than the historical limit of 20 this test was
+    // written against, so the transfer no longer exceeds the limit and
+    // CUSTOM_FEE_CHARGING_EXCEEDED_MAX_ACCOUNT_AMOUNTS is not returned.
     it.skip("cannot have more than 20 balance changes in a single transfer", async function () {
         const env = await IntegrationTestEnv.new();
 
