@@ -109,7 +109,7 @@
         "@types/crypto-js": "4.2.0",
         "@types/node": "26.1.1",
         "@types/utf8": "3.0.1",
-        "@typescript-eslint/eslint-plugin": "5.48.2",
+        "@typescript-eslint/eslint-plugin": "8.64.0",
         "@typescript-eslint/parser": "8.64.0",
         "@vitest/browser": "4.1.8",
         "@vitest/browser-playwright": "4.0.18",
