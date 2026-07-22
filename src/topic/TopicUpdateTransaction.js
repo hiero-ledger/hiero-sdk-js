@@ -7,6 +7,7 @@ import AccountId from "../account/AccountId.js";
 import TopicId from "./TopicId.js";
 import Duration from "../Duration.js";
 import Key from "../Key.js";
+import KeyList from "../KeyList.js";
 import Timestamp from "../Timestamp.js";
 import CustomFixedFee from "../token/CustomFixedFee.js";
 
@@ -312,7 +313,7 @@ export default class TopicUpdateTransaction extends Transaction {
      */
     clearTopicMemo() {
         this._requireNotFrozen();
-        this._topicMemo = null;
+        this._topicMemo = "";
 
         return this;
     }
@@ -340,7 +341,7 @@ export default class TopicUpdateTransaction extends Transaction {
      */
     clearAdminKey() {
         this._requireNotFrozen();
-        this._adminKey = null;
+        this._adminKey = new KeyList();
 
         return this;
     }
@@ -368,7 +369,7 @@ export default class TopicUpdateTransaction extends Transaction {
      */
     clearSubmitKey() {
         this._requireNotFrozen();
-        this._submitKey = null;
+        this._submitKey = new KeyList();
 
         return this;
     }
@@ -398,7 +399,7 @@ export default class TopicUpdateTransaction extends Transaction {
      */
     clearFeeScheduleKey() {
         this._requireNotFrozen();
-        this._feeScheduleKey = null;
+        this._feeScheduleKey = new KeyList();
 
         return this;
     }
@@ -476,7 +477,7 @@ export default class TopicUpdateTransaction extends Transaction {
      */
     clearAutoRenewAccountId() {
         this._requireNotFrozen();
-        this._autoRenewAccountId = null;
+        this._autoRenewAccountId =  AccountId.fromString("0.0.0");
 
         return this;
     }

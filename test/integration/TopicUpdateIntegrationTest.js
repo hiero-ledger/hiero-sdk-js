@@ -151,6 +151,134 @@ describe("TopicUpdate", function () {
         });
     });
 
+    describe("clearing scalar fields sets HAPI sentinel values on network (#4190)", function () {
+        it("should clear submitKey on the network, not leave it unchanged", async function () {
+            const adminKey = env.client.operatorPublicKey;
+            const submitKey = PrivateKey.generateED25519();
+
+            const response = await new TopicCreateTransaction()
+                .setAdminKey(adminKey)
+                .setSubmitKey(submitKey)
+                .execute(env.client);
+
+            const topicId = (await response.getReceipt(env.client)).topicId;
+
+            const info = await new TopicInfoQuery()
+                .setTopicId(topicId)
+                .execute(env.client);
+
+            expect(info.submitKey.toString()).to.equal(submitKey.publicKey.toString());
+
+            const updateResponse = await new TopicUpdateTransaction()
+                .setTopicId(topicId)
+                .clearSubmitKey()
+                .execute(env.client);
+
+            await updateResponse.getReceipt(env.client);
+
+            const updatedInfo = await new TopicInfoQuery()
+                .setTopicId(topicId)
+                .execute(env.client);
+
+            expect(updatedInfo.submitKey).to.be.null;
+        });
+
+        it("should clear adminKey on the network, not leave it unchanged", async function () {
+            const adminKey = PrivateKey.generateED25519();
+
+            const response = await new TopicCreateTransaction()
+                .setAdminKey(adminKey)
+                .freezeWith(env.client)
+                .sign(adminKey);
+
+            const submitted = await response.execute(env.client);
+            const topicId = (await submitted.getReceipt(env.client)).topicId;
+
+            const info = await new TopicInfoQuery()
+                .setTopicId(topicId)
+                .execute(env.client);
+
+            expect(info.adminKey.toString()).to.equal(adminKey.publicKey.toString());
+
+            const updateTx = await new TopicUpdateTransaction()
+                .setTopicId(topicId)
+                .clearAdminKey()
+                .freezeWith(env.client)
+                .sign(adminKey);
+
+            const updateResponse = await updateTx.execute(env.client);
+            await updateResponse.getReceipt(env.client);
+
+            const updatedInfo = await new TopicInfoQuery()
+                .setTopicId(topicId)
+                .execute(env.client);
+
+            expect(updatedInfo.adminKey).to.be.null;
+        });
+
+        it("should clear topicMemo on the network, not leave it unchanged", async function () {
+            const adminKey = env.client.operatorPublicKey;
+
+            const response = await new TopicCreateTransaction()
+                .setAdminKey(adminKey)
+                .setTopicMemo("original memo")
+                .execute(env.client);
+
+            const topicId = (await response.getReceipt(env.client)).topicId;
+
+            const info = await new TopicInfoQuery()
+                .setTopicId(topicId)
+                .execute(env.client);
+
+            expect(info.topicMemo).to.equal("original memo");
+
+            const updateResponse = await new TopicUpdateTransaction()
+                .setTopicId(topicId)
+                .clearTopicMemo()
+                .execute(env.client);
+
+            await updateResponse.getReceipt(env.client);
+
+            const updatedInfo = await new TopicInfoQuery()
+                .setTopicId(topicId)
+                .execute(env.client);
+
+            expect(updatedInfo.topicMemo).to.equal("");
+        });
+
+        it("should clear autoRenewAccountId on the network, not leave it unchanged", async function () {
+            const adminKey = env.client.operatorPublicKey;
+
+            const response = await new TopicCreateTransaction()
+                .setAdminKey(adminKey)
+                .setAutoRenewAccountId(env.client.operatorAccountId)
+                .execute(env.client);
+
+            const topicId = (await response.getReceipt(env.client)).topicId;
+
+            const info = await new TopicInfoQuery()
+                .setTopicId(topicId)
+                .execute(env.client);
+
+            expect(info.autoRenewAccountId.toString()).to.equal(
+                env.client.operatorAccountId.toString(),
+            );
+
+            const updateResponse = await new TopicUpdateTransaction()
+                .setTopicId(topicId)
+                .clearAutoRenewAccountId()
+                .execute(env.client);
+
+            await updateResponse.getReceipt(env.client);
+
+            const updatedInfo = await new TopicInfoQuery()
+                .setTopicId(topicId)
+                .execute(env.client);
+
+            expect(updatedInfo.autoRenewAccountId).to.be.null;
+        });
+    });
+    
     afterEach(async function () {
         await env.close();
     });
