@@ -2,6 +2,7 @@
 
 import Client from "./Client.js";
 import NativeChannel from "../channel/NativeChannel.js";
+import NativeMirrorChannel from "../channel/NativeMirrorChannel.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import AccountId from "../account/AccountId.js";
 import LedgerId from "../LedgerId.js";
@@ -14,7 +15,7 @@ import FileId from "../file/FileId.js";
  */
 
 /**
- * @augments {Client<NativeChannel, *>}
+ * @augments {Client<NativeChannel, NativeMirrorChannel>}
  */
 export default class NativeClient extends Client {
     /**
@@ -309,11 +310,9 @@ export default class NativeClient extends Client {
 
     /**
      * @override
-     * @returns {(address: string) => *}
+     * @returns {(address: string) => NativeMirrorChannel}
      */
     _createMirrorNetworkChannel() {
-        return () => {
-            throw new Error("mirror support is not supported in native");
-        };
+        return (address) => new NativeMirrorChannel(address);
     }
 }

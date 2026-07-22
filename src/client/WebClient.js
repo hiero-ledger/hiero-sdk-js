@@ -2,6 +2,7 @@
 
 import Client from "./Client.js";
 import WebChannel from "../channel/WebChannel.js";
+import WebMirrorChannel from "../channel/WebMirrorChannel.js";
 import LedgerId from "../LedgerId.js";
 import { WebNetwork, WebMirrorNetwork } from "../constants/ClientConstants.js";
 
@@ -19,7 +20,7 @@ import FileId from "../file/FileId.js";
  * for configuring and managing connections to the Hedera network, including
  * setting the network type (mainnet, testnet, previewnet) and handling
  * transactions and queries.
- * @augments {Client<WebChannel, *>}
+ * @augments {Client<WebChannel, WebMirrorChannel>}
  */
 export default class WebClient extends Client {
     /**
@@ -379,11 +380,9 @@ export default class WebClient extends Client {
 
     /**
      * @override
-     * @returns {(address: string) => *}
+     * @returns {(address: string) => WebMirrorChannel}
      */
     _createMirrorNetworkChannel() {
-        return () => {
-            throw new Error("mirror support is not supported in browsers");
-        };
+        return (address) => new WebMirrorChannel(address);
     }
 }
