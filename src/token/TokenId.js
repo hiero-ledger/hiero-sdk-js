@@ -98,15 +98,6 @@ export default class TokenId {
     }
 
     /**
-     * @param {string} address
-     * @deprecated - Use `fromEvmAddress` instead
-     * @returns {TokenId}
-     */
-    static fromSolidityAddress(address) {
-        return new TokenId(...EntityIdHelper.fromSolidityAddress(address));
-    }
-
-    /**
      * @param {number} shard
      * @param {number} realm
      * @param {string} address
@@ -128,18 +119,6 @@ export default class TokenId {
             address,
         );
         return new TokenId(shardLong, realmLong, tokenLong);
-    }
-
-    /**
-     * @deprecated - Use `toEvmAddress` instead
-     * @returns {string} solidity address
-     */
-    toSolidityAddress() {
-        return EntityIdHelper.toSolidityAddress([
-            this.shard,
-            this.realm,
-            this.num,
-        ]);
     }
 
     /**

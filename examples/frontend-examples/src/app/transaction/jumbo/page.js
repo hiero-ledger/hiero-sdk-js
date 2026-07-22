@@ -55,7 +55,7 @@ const JumboPage = () => {
 
         // Get contract address
         const contract = ContractId.fromString(contractId);
-        const contractAddress = contract.toSolidityAddress();
+        const contractAddress = contract.toEvmAddress();
 
         // Generate ECDSA private key for the transaction
         const privateKey = PrivateKey.generateECDSA();

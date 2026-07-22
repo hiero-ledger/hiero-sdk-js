@@ -2,7 +2,6 @@
 
 import AccountId from "./AccountId.js";
 import StakingInfo from "../StakingInfo.js";
-import LiveHash from "./LiveHash.js";
 import Hbar from "../Hbar.js";
 import Timestamp from "../Timestamp.js";
 import Long from "long";
@@ -62,7 +61,6 @@ export default class AccountInfo {
      * @param {boolean} props.isReceiverSignatureRequired
      * @param {Timestamp} props.expirationTime
      * @param {Duration} props.autoRenewPeriod
-     * @param {LiveHash[]} props.liveHashes
      * @param {TokenRelationshipMap} props.tokenRelationships
      * @param {string} props.accountMemo
      * @param {Long} props.ownedNfts
@@ -174,9 +172,6 @@ export default class AccountInfo {
          * @readonly
          */
         this.autoRenewPeriod = props.autoRenewPeriod;
-
-        /** @readonly */
-        this.liveHashes = props.liveHashes;
 
         /** @readonly */
         this.tokenRelationships = props.tokenRelationships;
@@ -291,9 +286,6 @@ export default class AccountInfo {
             proxyReceived: Hbar.fromTinybars(
                 info.proxyReceived != null ? info.proxyReceived : 0,
             ),
-            liveHashes: (info.liveHashes != null ? info.liveHashes : []).map(
-                (hash) => LiveHash._fromProtobuf(hash),
-            ),
             tokenRelationships: TokenRelationshipMap._fromProtobuf(
                 info.tokenRelationships != null ? info.tokenRelationships : [],
             ),
@@ -343,7 +335,6 @@ export default class AccountInfo {
             receiverSigRequired: this.isReceiverSignatureRequired,
             expirationTime: this.expirationTime._toProtobuf(),
             autoRenewPeriod: this.autoRenewPeriod._toProtobuf(),
-            liveHashes: this.liveHashes.map((hash) => hash._toProtobuf()),
             tokenRelationships:
                 this.tokenRelationships != null
                     ? this.tokenRelationships._toProtobuf()
