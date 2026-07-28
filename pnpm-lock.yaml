@@ -914,8 +914,8 @@ importers:
         specifier: 7.3.8
         version: 7.3.8
       tmp:
-        specifier: 0.2.6
-        version: 0.2.6
+        specifier: 0.2.7
+        version: 0.2.7
       typescript:
         specifier: 5.9.3
         version: 5.9.3
@@ -12066,8 +12066,8 @@ packages:
     resolution: {integrity: sha512-kCwffuaH8ntKtygnWe1b4BJKWiCUH30n5KfoTr6IchcXOwR7chAOFJxFrH3vjANafUYrIA4a7SDL+nn7SiR4Sw==}
     hasBin: true
 
-  tmp@0.2.6:
-    resolution: {integrity: sha512-5sJPdPjfI5Kx+qbrDesxkglRBxW//g7hCsqspEjwkewGvBMGIKMOTKzLt1hFVJzyadba3lDUN20O9qhvbQUSTA==}
+  tmp@0.2.7:
+    resolution: {integrity: sha512-e0votIpp4Uo2AJYSzVHV6xCcawuiez3DzqDAbrTc3YxBkplN6e+dM13ZeIcZnDg/QpSuU2zfZ3rzwY8ukEnaXw==}
     engines: {node: '>=14.14'}
 
   tmpl@1.0.5:
@@ -25104,7 +25104,7 @@ snapshots:
       neo-async: 2.6.2
       picocolors: 1.1.1
       recast: 0.23.11
-      tmp: 0.2.6
+      tmp: 0.2.7
       write-file-atomic: 5.0.1
     optionalDependencies:
       '@babel/preset-env': 7.22.15(@babel/core@7.26.10)
@@ -27376,7 +27376,7 @@ snapshots:
       minimist: 1.2.8
       protobufjs: 8.2.0
       semver: 7.3.8
-      tmp: 0.2.6
+      tmp: 0.2.7
       uglify-js: 3.19.3
 
   protobufjs@8.2.0:
@@ -29184,7 +29184,7 @@ snapshots:
     dependencies:
       tldts-core: 7.4.2
 
-  tmp@0.2.6: {}
+  tmp@0.2.7: {}
 
   tmpl@1.0.5: {}
 
