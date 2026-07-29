@@ -14,7 +14,10 @@ esbuild
         bundle: true,
         format: "cjs",
         platform: "node",
-        target: "esnext",
+        // Match the SDK's supported Node floor (package engines: >=18) so the
+        // emitted syntax runs on every version we claim to support, rather than
+        // whatever "esnext" maps to in the local esbuild.
+        target: "node18",
         logLevel: "info",
         plugins: [
             {
