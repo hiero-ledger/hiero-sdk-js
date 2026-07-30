@@ -663,8 +663,8 @@ importers:
         specifier: 1.8.0
         version: 1.8.0
       '@scure/base':
-        specifier: 1.2.4
-        version: 1.2.4
+        specifier: 2.2.0
+        version: 2.2.0
       '@scure/bip32':
         specifier: 1.6.2
         version: 1.6.2
@@ -4144,6 +4144,9 @@ packages:
 
   '@scure/base@1.2.4':
     resolution: {integrity: sha512-5Yy9czTO47mqz+/J8GM6GIId4umdCk1wc1q8rKERQulIoc8VP9pzDcghv10Tl2E7R96ZUx/PhND3ESYUQX8NuQ==}
+
+  '@scure/base@2.2.0':
+    resolution: {integrity: sha512-b8XEupJibegiXV+tDUseI8oLQc8ei3d/4Jkb2RpbHh3MfE054ov3uIz2dhFkB3FI8iwYkEh0gGCApkrYggkPNg==}
 
   '@scure/bip32@1.6.2':
     resolution: {integrity: sha512-t96EPDMbtGgtb7onKKqxRLfE5g05k7uHnHRM2xdE6BP/ZmxaLtPek4J4KfVn/90IQNrU1IOAqMgiDtUdtbe3nw==}
@@ -18258,6 +18261,8 @@ snapshots:
   '@rushstack/eslint-patch@1.15.0': {}
 
   '@scure/base@1.2.4': {}
+
+  '@scure/base@2.2.0': {}
 
   '@scure/bip32@1.6.2':
     dependencies:
