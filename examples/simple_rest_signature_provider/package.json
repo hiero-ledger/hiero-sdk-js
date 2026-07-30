@@ -27,7 +27,7 @@
         "@types/long": "^4.0.2",
         "@types/node": "^26.1.1",
         "@types/utf8": "^3.0.1",
-        "@typescript-eslint/eslint-plugin": "^5.62.0",
+        "@typescript-eslint/eslint-plugin": "^8.64.0",
         "@typescript-eslint/parser": "^8.64.0",
         "axios": "^1.18.0",
         "babel-plugin-dynamic-import-node": "^2.3.3",
