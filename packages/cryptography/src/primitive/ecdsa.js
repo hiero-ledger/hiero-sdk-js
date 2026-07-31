@@ -100,12 +100,16 @@ export function verify(keydata, message, signature) {
     const msg = hex.encode(message);
     const data = hex.decode(keccak256(`0x${msg}`));
 
+    // Accept a 65-byte recoverable signature (r || s || v) by verifying its
+    // 64-byte r||s prefix, as the pre-@noble-v2 implementation did.
+    const sig = signature.length === 65 ? signature.subarray(0, 64) : signature;
+
     try {
-        return secp256k1.verify(signature, data, keydata, { prehash: false });
+        return secp256k1.verify(sig, data, keydata, { prehash: false });
     } catch {
         // noble v2 throws on malformed signature bytes (e.g. wrong length)
-        // where v1 returned false; signatures are untrusted input, so keep
-        // the boolean contract.
+        // where the previous implementation returned false; signatures are
+        // untrusted input, so keep the boolean contract.
         return false;
     }
 }

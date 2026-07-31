@@ -14,9 +14,10 @@ esbuild
         bundle: true,
         format: "cjs",
         platform: "node",
-        // Match the SDK's supported Node floor (package engines: >=18) so the
-        // emitted syntax runs on every version we claim to support, rather than
-        // whatever "esnext" maps to in the local esbuild.
+        // Build the CJS artifact for node18: the inlined @noble/@scure code
+        // runs there, so the CommonJS entry stays usable across a broad range
+        // even though the package's ESM entry (via @noble v2) requires a newer
+        // Node — see "engines" in package.json.
         target: "node18",
         logLevel: "info",
         plugins: [
@@ -33,4 +34,7 @@ esbuild
             },
         ],
     })
-    .catch(() => process.exit(1));
+    .catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });
