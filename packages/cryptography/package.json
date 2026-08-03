@@ -48,7 +48,7 @@
         "@scure/base": "2.2.0",
         "@scure/bip32": "2.2.0",
         "ansi-regex": "6.2.2",
-        "ansi-styles": "6.2.3",
+        "ansi-styles": "7.0.0",
         "asn1js": "3.0.6",
         "bignumber.js": "11.1.2",
         "bn.js": "5.2.3",
