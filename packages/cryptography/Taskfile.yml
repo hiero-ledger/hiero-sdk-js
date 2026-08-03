@@ -25,9 +25,10 @@ tasks:
         deps:
             - install
         cmds:
+            - rm -rf lib
             - task: format
             - task: lint
-            - npx babel src -d lib --out-file-extension .cjs
+            - node build/bundle-cjs.cjs
 
     build:dev:
         desc: "Build and globally link @hiero-ledger/cryptography for local dev"
