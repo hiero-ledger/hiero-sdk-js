@@ -435,6 +435,107 @@ describe("NodeChannel", function () {
         });
     });
 
+    // ping
+    describe("ping", function () {
+        let channel;
+
+        beforeEach(async function () {
+            channel = new NodeChannel("10.0.0.1:50211");
+            await channel._initializeClient();
+        });
+
+        it("should resolve when the connection becomes ready", async function () {
+            mockWaitForReady.mockImplementation((_deadline, cb) => cb(null));
+
+            await channel.ping();
+
+            expect(mockWaitForReady).toHaveBeenCalled();
+        });
+
+        it("should not send a request to any service", async function () {
+            mockWaitForReady.mockImplementation((_deadline, cb) => cb(null));
+
+            await channel.ping();
+
+            expect(mockMakeUnaryRequest).not.toHaveBeenCalled();
+        });
+
+        it("should reject with GrpcServicesError when the node is unreachable", async function () {
+            mockWaitForReady.mockImplementation((_deadline, cb) =>
+                cb(new Error("Deadline exceeded")),
+            );
+
+            let error = null;
+            try {
+                await channel.ping();
+            } catch (err) {
+                error = err;
+            }
+
+            expect(error).to.be.instanceOf(GrpcServicesError);
+            expect(error.status).to.equal(GrpcStatus.Timeout);
+        });
+
+        it("should default to the channel's gRPC deadline", async function () {
+            let capturedDeadline;
+            mockWaitForReady.mockImplementation((deadline, cb) => {
+                capturedDeadline = deadline;
+                cb(null);
+            });
+
+            const now = Date.now();
+            await channel.ping();
+
+            expect(capturedDeadline.getTime()).to.be.greaterThan(now);
+            expect(capturedDeadline.getTime()).to.be.lessThanOrEqual(
+                now + channel.grpcDeadline + 100,
+            );
+        });
+
+        it("should honour an explicit timeout", async function () {
+            let capturedDeadline;
+            mockWaitForReady.mockImplementation((deadline, cb) => {
+                capturedDeadline = deadline;
+                cb(null);
+            });
+
+            const now = Date.now();
+            await channel.ping(1000);
+
+            expect(capturedDeadline.getTime()).to.be.lessThanOrEqual(
+                now + 1000 + 100,
+            );
+        });
+
+        it("should propagate a TLS failure instead of reporting a healthy node", async function () {
+            const tlsChannel = new NodeChannel("10.0.0.1:50212");
+
+            const mockSocket = {
+                on: vi.fn(function (event, handler) {
+                    if (event === "error") {
+                        process.nextTick(() =>
+                            handler(new Error("ECONNREFUSED 10.0.0.1:50212")),
+                        );
+                    }
+                    return this;
+                }),
+                end: vi.fn(),
+            };
+
+            tls.connect.mockImplementation(() => mockSocket);
+
+            let error = null;
+            try {
+                await tlsChannel.ping();
+            } catch (err) {
+                error = err;
+            }
+
+            expect(error).to.be.instanceOf(Error);
+            expect(error.message).to.include("ECONNREFUSED");
+        });
+    });
+
     // _retrieveCertificate
     describe("_retrieveCertificate", function () {
         it("should resolve with PEM when tls.connect succeeds", async function () {

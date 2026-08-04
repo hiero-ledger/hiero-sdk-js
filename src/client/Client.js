@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import AccountId from "../account/AccountId.js";
-import AccountInfoQuery from "../account/AccountInfoQuery.js";
 import Hbar from "../Hbar.js";
 import Network from "./Network.js";
 import MirrorNetwork from "./MirrorNetwork.js";
@@ -867,25 +866,35 @@ export default class Client {
     }
 
     /**
-     * Probe the liveness of the node with the given account ID by sending a
-     * `CryptoService/getAccountInfo` query for account `<shard>.<realm>.2`
-     * with `ResponseType = COST_ANSWER` — the node answers with the query fee
-     * without executing the query, so no HBAR is charged and no operator is
-     * required. A cost response means success; a gRPC failure propagates.
+     * Check that the given node is reachable.
+     *
+     * This performs a gRPC level connectivity check against the node's channel;
+     * no request is sent to any of the node's services. It rejects if the node
+     * is not part of this client's network or cannot be reached.
      *
      * @param {AccountId | string} accountId
+     * @returns {Promise<void>}
      */
     async ping(accountId) {
-        await new AccountInfoQuery()
-            .setAccountId(new AccountId(this._shard, this._realm, 2))
-            .setNodeAccountIds([
-                accountId instanceof AccountId
-                    ? accountId
-                    : AccountId.fromString(accountId),
-            ])
-            .getCost(this);
+        const nodeAccountId =
+            accountId instanceof AccountId
+                ? accountId
+                : AccountId.fromString(accountId);
+
+        const nodes = this._network.getNodesByKey(nodeAccountId);
+
+        if (nodes.length === 0) {
+            throw new Error(
+                `NodeAccountId not recognized: ${nodeAccountId.toString()}`,
+            );
+        }
+
+        await nodes[0].getChannel().ping(this._grpcDeadline);
     }
 
+    /**
+     * @returns {Promise<void>}
+     */
     async pingAll() {
         for (const nodeAccountId of Object.values(this._network.network)) {
             await this.ping(nodeAccountId);
