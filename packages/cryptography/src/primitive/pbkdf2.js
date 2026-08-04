@@ -1,11 +1,11 @@
 import { HashAlgorithm } from "./hmac.js";
-import { pbkdf2Async } from "@noble/hashes/pbkdf2";
-import { sha256, sha384, sha512 } from "@noble/hashes/sha2";
+import { pbkdf2Async } from "@noble/hashes/pbkdf2.js";
+import { sha256, sha384, sha512 } from "@noble/hashes/sha2.js";
 import * as utf8 from "../encoding/utf8.js";
 
 /**
  * @param {HashAlgorithm} algorithm
- * @returns {typeof sha256}
+ * @returns {import("@noble/hashes/utils.js").CHash}
  */
 function hasher(algorithm) {
     switch (algorithm) {

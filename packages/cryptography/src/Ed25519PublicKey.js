@@ -1,6 +1,6 @@
 import Key from "./Key.js";
 import BadKeyError from "./BadKeyError.js";
-import { ed25519 } from "@noble/curves/ed25519";
+import { ed25519 } from "@noble/curves/ed25519.js";
 import { arrayEqual } from "./util/array.js";
 import * as hex from "./encoding/hex.js";
 

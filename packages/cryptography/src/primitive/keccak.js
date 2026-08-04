@@ -1,4 +1,4 @@
-import { keccak_256 } from "@noble/hashes/sha3";
+import { keccak_256 } from "@noble/hashes/sha3.js";
 import * as hex from "../encoding/hex.js";
 import * as utf8 from "../encoding/utf8.js";
 
