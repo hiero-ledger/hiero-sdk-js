@@ -1,5 +1,5 @@
-import { cbc, ctr } from "@noble/ciphers/aes";
-import { md5 } from "@noble/hashes/legacy";
+import { cbc, ctr } from "@noble/ciphers/aes.js";
+import { md5 } from "@noble/hashes/legacy.js";
 import * as hex from "../encoding/hex.js";
 import * as utf8 from "../encoding/utf8.js";
 
@@ -12,7 +12,7 @@ export const CipherAlgorithm = {
  * @param {string} algorithm
  * @param {Uint8Array} key
  * @param {Uint8Array} iv
- * @returns {import("@noble/ciphers/utils").Cipher}
+ * @returns {import("@noble/ciphers/utils.js").Cipher}
  */
 function cipher(algorithm, key, iv) {
     // AES-128: only the first 16 bytes of the key material are used
