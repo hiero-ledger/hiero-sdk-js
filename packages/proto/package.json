@@ -51,7 +51,7 @@
     "@typescript-eslint/parser": "8.64.0",
     "babel-plugin-dynamic-import-node": "2.3.3",
     "babel-preset-minify": "0.5.2",
-    "chalk": "5.2.0",
+    "chalk": "6.0.0",
     "copyfiles": "2.4.1",
     "escodegen": "2.0.0",
     "eslint": "9.26.0",
