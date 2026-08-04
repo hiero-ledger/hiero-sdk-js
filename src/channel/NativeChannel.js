@@ -55,6 +55,32 @@ export default class NativeChannel extends Channel {
             return; // Health check already passed for this address
         }
 
+        await this._performHealthCheck(deadline);
+    }
+
+    /**
+     * @override
+     * @param {number} [timeoutMs]
+     * @returns {Promise<void>}
+     */
+    async ping(timeoutMs = this._grpcDeadline) {
+        const deadline = new Date();
+        deadline.setMilliseconds(deadline.getMilliseconds() + timeoutMs);
+
+        // Deliberately bypasses the `_isReady` cache used by `_waitForReady`:
+        // a ping must reflect the node's current state, not the result of the
+        // health check performed the first time this channel was used.
+        await this._performHealthCheck(deadline);
+    }
+
+    /**
+     * Performs the actual health check request
+     *
+     * @param {Date} deadline - Deadline for the health check
+     * @returns {Promise<void>}
+     * @private
+     */
+    async _performHealthCheck(deadline) {
         const shouldUseHttps = !(
             this._address.includes("localhost") ||
             this._address.includes("127.0.0.1")

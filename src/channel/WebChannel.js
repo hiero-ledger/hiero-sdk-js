@@ -203,6 +203,21 @@ export default class WebChannel extends Channel {
 
     /**
      * @override
+     * @param {number} [timeoutMs]
+     * @returns {Promise<void>}
+     */
+    async ping(timeoutMs = this._grpcDeadline) {
+        const deadline = new Date();
+        deadline.setMilliseconds(deadline.getMilliseconds() + timeoutMs);
+
+        // Deliberately bypasses the `_isReady` cache used by `_waitForReady`:
+        // a ping must reflect the node's current state, not the result of the
+        // health check performed the first time this channel was used.
+        await this._performHealthCheck(deadline);
+    }
+
+    /**
+     * @override
      * @protected
      * @param {string} serviceName
      * @returns {import("protobufjs").RPCImpl}

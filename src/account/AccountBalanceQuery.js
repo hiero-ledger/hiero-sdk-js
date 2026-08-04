@@ -22,6 +22,21 @@ import AccountBalance from "./AccountBalance.js";
  */
 
 /**
+ * The message reported both when an `AccountBalanceQuery` is constructed and
+ * when any attempt is made to execute it.
+ *
+ * @internal
+ */
+const ACCOUNT_BALANCE_QUERY_DEPRECATION_MESSAGE =
+    "Deprecated: AccountBalanceQuery is no longer supported. " +
+    "Use MirrorNodeAccountBalanceQuery or the mirror node REST API " +
+    "(GET /api/v1/accounts/{id}) to retrieve account balances.";
+
+/**
+ * @deprecated - The `CryptoService/cryptoGetBalance` endpoint has been removed
+ * from the consensus node. Use `MirrorNodeAccountBalanceQuery` or the mirror
+ * node REST API (`GET /api/v1/accounts/{id}`) instead.
+ *
  * Get the balance of a Hedera™ crypto-currency account.
  *
  * This returns only the balance, so its a smaller and faster reply
@@ -59,6 +74,8 @@ export default class AccountBalanceQuery extends Query {
         if (props.contractId != null) {
             this.setContractId(props.contractId);
         }
+
+        console.warn(ACCOUNT_BALANCE_QUERY_DEPRECATION_MESSAGE);
     }
 
     /**
@@ -155,14 +172,39 @@ export default class AccountBalanceQuery extends Query {
     }
 
     /**
+     * @deprecated - `AccountBalanceQuery` is no longer supported. Use
+     * `MirrorNodeAccountBalanceQuery` or the mirror node REST API instead.
+     *
+     * Rejects without contacting a consensus node.
+     *
+     * @override
+     * @template {Channel} ChannelT
+     * @template {MirrorChannel} MirrorChannelT
+     * @param {import("../client/Client.js").default<ChannelT, MirrorChannelT>} client
+     * @param {number=} requestTimeout
+     * @returns {Promise<AccountBalance>}
+     */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    execute(client, requestTimeout) {
+        return Promise.reject(
+            new Error(ACCOUNT_BALANCE_QUERY_DEPRECATION_MESSAGE),
+        );
+    }
+
+    /**
+     * @deprecated - `AccountBalanceQuery` is no longer supported. Use
+     * `MirrorNodeAccountBalanceQuery` or the mirror node REST API instead.
      * @override
      * @internal
      * @param {Channel} channel
      * @param {HieroProto.proto.IQuery} request
      * @returns {Promise<HieroProto.proto.IResponse>}
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _execute(channel, request) {
-        return channel.crypto.cryptoGetBalance(request);
+        return Promise.reject(
+            new Error(ACCOUNT_BALANCE_QUERY_DEPRECATION_MESSAGE),
+        );
     }
 
     /**
