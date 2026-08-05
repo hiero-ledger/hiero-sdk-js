@@ -328,4 +328,34 @@ describe("NativeMirrorChannel", function () {
         const err = await done;
         expect(err.code).to.equal(14);
     });
+
+    it("fails fast with the header grpc-status when the proxy rejects the request", async function () {
+        const channel = new NativeMirrorChannel("mirror.example.com:443");
+
+        const done = new Promise((resolve, reject) => {
+            channel.makeServerStreamRequest(
+                "ConsensusService",
+                "subscribeTopic",
+                new Uint8Array([0]),
+                () => {},
+                resolve,
+                () => reject(new Error("should not end cleanly")),
+            );
+        });
+
+        // e.g. the public mirror endpoints answer gRPC-Web requests with
+        // 415 + grpc-status headers and a plain-text (non-base64) body
+        const xhr = FakeXMLHttpRequest.instances[0];
+        xhr.status = 415;
+        xhr.responseHeaders["grpc-status"] = "13";
+        xhr.responseHeaders["grpc-message"] = "Content-Type not supported";
+        xhr.push("Content-Type 'application/grpc-web-text' is not supported");
+
+        const err = await done;
+        expect(err).to.deep.equal({
+            code: 13,
+            details: "Content-Type not supported",
+        });
+        expect(xhr.aborted).to.equal(true);
+    });
 });
