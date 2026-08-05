@@ -172,7 +172,13 @@ export default class NativeMirrorChannel extends MirrorChannel {
         xhr.setRequestHeader("x-user-agent", `${SDK_NAME}/${SDK_VERSION}`);
         xhr.setRequestHeader("x-grpc-web", "1");
 
-        xhr.onprogress = consumeResponseText;
+        xhr.onprogress = () => {
+            checkResponseHeaders();
+
+            if (!ended) {
+                consumeResponseText();
+            }
+        };
 
         xhr.onload = () => {
             this._requests.delete(xhr);
