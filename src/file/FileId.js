@@ -125,17 +125,6 @@ export default class FileId {
     }
 
     /**
-     * @param {string} address
-     * @deprecated - Use `fromEvmAddress` instead
-     * @returns {FileId}
-     */
-    static fromSolidityAddress(address) {
-        const [shard, realm, file] =
-            EntityIdHelper.fromSolidityAddress(address);
-        return new FileId(shard, realm, file);
-    }
-
-    /**
      * @param {number} shard
      * @param {number} realm
      * @param {string} address
@@ -157,18 +146,6 @@ export default class FileId {
             address,
         );
         return new FileId(shardLong, realmLong, fileLong);
-    }
-
-    /**
-     * @deprecated - Use `toEvmAddress` instead
-     * @returns {string} solidity address
-     */
-    toSolidityAddress() {
-        return EntityIdHelper.toSolidityAddress([
-            this.shard,
-            this.realm,
-            this.num,
-        ]);
     }
 
     /**

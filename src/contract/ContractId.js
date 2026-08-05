@@ -7,7 +7,6 @@ import CACHE from "../Cache.js";
 import * as hex from "../encoding/hex.js";
 import { arrayEqual } from "../array.js";
 import Long from "long";
-import { isLongZeroAddress } from "../util.js";
 import EvmAddress from "../EvmAddress.js";
 
 /**
@@ -165,37 +164,6 @@ export default class ContractId extends Key {
         return ContractId._fromProtobuf(
             HieroProto.proto.ContractID.decode(bytes),
         );
-    }
-
-    /**
-     * @deprecated - Use `fromEvmAddress` instead
-     * @param {string} address
-     * @returns {ContractId}
-     */
-    static fromSolidityAddress(address) {
-        if (isLongZeroAddress(hex.decode(address))) {
-            return new ContractId(
-                ...EntityIdHelper.fromSolidityAddress(address),
-            );
-        } else {
-            return this.fromEvmAddress(0, 0, address);
-        }
-    }
-
-    /**
-     * @deprecated - Use `toEvmAddress` instead
-     * @returns {string}
-     */
-    toSolidityAddress() {
-        if (this.evmAddress != null) {
-            return hex.encode(this.evmAddress);
-        } else {
-            return EntityIdHelper.toSolidityAddress([
-                this.shard,
-                this.realm,
-                this.num,
-            ]);
-        }
     }
 
     /**
