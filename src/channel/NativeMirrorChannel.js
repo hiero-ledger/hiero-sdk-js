@@ -182,7 +182,11 @@ export default class NativeMirrorChannel extends MirrorChannel {
 
         xhr.onload = () => {
             this._requests.delete(xhr);
-            consumeResponseText();
+            checkResponseHeaders();
+
+            if (!ended) {
+                consumeResponseText();
+            }
 
             if (!ended) {
                 // The stream closed without a trailers frame — signal a
