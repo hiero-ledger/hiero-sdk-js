@@ -250,9 +250,14 @@ export class Base64StreamDecoder {
             const padding = this._pending.indexOf("=");
 
             if (padding !== -1) {
-                let segmentEnd = padding + 1;
-                if (this._pending[segmentEnd] === "=") {
-                    segmentEnd += 1;
+                // A '=' at offset p means the segment is p rounded up to
+                // the next multiple of 4 characters long. Wait until the
+                // whole group has arrived — strict decoders (React
+                // Native's base64 polyfill) throw on partial padding.
+                const segmentEnd = padding + (4 - (padding % 4));
+
+                if (this._pending.length < segmentEnd) {
+                    break;
                 }
 
                 parts.push(base64.decode(this._pending.slice(0, segmentEnd)));
