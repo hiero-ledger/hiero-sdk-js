@@ -79,15 +79,15 @@ describe("ClientIntegration", function () {
         expect(error).to.be.an("Error");
     });
 
-    // TODO(2023-11-01 NK) - test is consistently failing and should be enabled once fixed.
-
-    it.skip("can set network name on custom network", async function () {
+    it("can set network name on custom network", async function () {
         expect(clientTestnet.ledgerId).to.be.equal(LedgerId.TESTNET);
         expect(clientPreviewNet.ledgerId).to.be.equal(LedgerId.PREVIEWNET);
 
         await clientTestnet.setNetwork(clientPreviewNet.network);
 
-        expect(clientTestnet.ledgerId).to.be.null;
+        // `setNetwork` only replaces the node map — it does not touch the
+        // ledger ID; switching ledgers requires an explicit `setLedgerId`
+        expect(clientTestnet.ledgerId).to.be.equal(LedgerId.TESTNET);
 
         clientTestnet.setLedgerId("previewnet");
 

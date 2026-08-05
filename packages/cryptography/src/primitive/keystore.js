@@ -1,5 +1,5 @@
 import BadKeyError from "../BadKeyError.js";
-import { equalBytes } from "@noble/ciphers/utils";
+import { equalBytes } from "@noble/ciphers/utils.js";
 import * as crypto from "./aes.js";
 import * as hex from "../encoding/hex.js";
 import * as utf8 from "../encoding/utf8.js";

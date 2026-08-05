@@ -75,4 +75,25 @@ describe("EcdsaPrivateKey", function () {
             "63201532040178a60e2738bdaaa00d628004b15d109162fa42e066fcb6720190bc7b8c440eaa028009404d56bebeea7f9c94d4dc07042c63cb0bcf0cab0ee737",
         );
     });
+
+    it("accepts a 65-byte recoverable signature and rejects other lengths", function () {
+        const key = EcdsaPrivateKey.fromStringRaw(RAW_KEY);
+        const message = utf8.encode("hello world");
+        const signature = key.sign(message);
+
+        expect(signature.length).to.be.equal(64);
+
+        // A 65-byte recoverable signature (r || s || v) is still accepted by
+        // verifying its 64-byte r||s prefix, matching the pre-@noble-v2
+        // behavior so existing callers do not break.
+        const recoverable = new Uint8Array(65);
+        recoverable.set(signature, 0);
+        recoverable[64] = 1; // recovery id, ignored by verify
+        expect(key.publicKey.verify(message, recoverable)).to.be.true;
+
+        // Any other non-64-byte length is rejected without throwing (@noble v2
+        // throws on a malformed length; verify() maps that to false).
+        const truncated = signature.subarray(0, 63);
+        expect(key.publicKey.verify(message, truncated)).to.be.false;
+    });
 });
