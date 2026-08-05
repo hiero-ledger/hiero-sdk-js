@@ -298,55 +298,6 @@ describe("NativeChannel", function () {
         });
     });
 
-    // ping
-    describe("ping", function () {
-        it("should resolve when the proxy answers with gRPC headers", async function () {
-            const channel = new NativeChannel("mainnet.example.com:443");
-            mockFetch.mockResolvedValue(
-                mockResponse(200, { "grpc-status": "0" }),
-            );
-
-            await channel.ping();
-
-            expect(mockFetch).toHaveBeenCalledTimes(1);
-        });
-
-        it("should not request any service endpoint", async function () {
-            const channel = new NativeChannel("mainnet.example.com:443");
-            mockFetch.mockResolvedValue(
-                mockResponse(200, { "grpc-status": "0" }),
-            );
-
-            await channel.ping();
-
-            expect(mockFetch.mock.calls[0][0]).to.equal(
-                "https://mainnet.example.com:443",
-            );
-        });
-
-        it("should reject when the node is unreachable", async function () {
-            const channel = new NativeChannel("mainnet.example.com:443");
-            mockFetch.mockRejectedValue(new TypeError("failed"));
-
-            await expect(channel.ping()).rejects.toSatisfy(
-                (err) =>
-                    err instanceof GrpcServiceError &&
-                    err.status === GrpcStatus.Unavailable,
-            );
-        });
-
-        it("should ignore the cached readiness of a previously healthy channel", async function () {
-            const channel = new NativeChannel("mainnet.example.com:443");
-            channel._isReady = true;
-            mockFetch.mockRejectedValue(new TypeError("failed"));
-
-            await expect(channel.ping()).rejects.toSatisfy(
-                (err) => err instanceof GrpcServiceError,
-            );
-            expect(mockFetch).toHaveBeenCalledTimes(1);
-        });
-    });
-
     // _createUnaryClient
     describe("_createUnaryClient", function () {
         it("should build the correct URL with service and method name", async function () {
@@ -473,9 +424,9 @@ describe("NativeChannel", function () {
             expect(options.headers["content-type"]).to.equal(
                 "application/grpc-web-text",
             );
-            expect(
-                options.headers["x-accept-content-transfer-encoding"],
-            ).to.equal("base64");
+            expect(options.headers["x-accept-content-transfer-encoding"]).to.equal(
+                "base64",
+            );
             expect(options.headers["x-grpc-web"]).to.equal("1");
             expect(options.headers["x-user-agent"]).to.be.a("string");
         });
@@ -788,9 +739,7 @@ describe("NativeChannel", function () {
 
             // Only one fetch call — the RPC itself, no health check
             expect(mockFetch).toHaveBeenCalledTimes(1);
-            expect(mockFetch.mock.calls[0][0]).to.include(
-                "/proto.CryptoService/",
-            );
+            expect(mockFetch.mock.calls[0][0]).to.include("/proto.CryptoService/");
         });
 
         it("should not attempt response decoding on non-OK response", async function () {

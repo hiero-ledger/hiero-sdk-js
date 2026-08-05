@@ -135,55 +135,6 @@ export default class NodeChannel extends Channel {
     }
 
     /**
-     * Wait until the underlying gRPC client reports the connection is ready.
-     *
-     * @param {number} [timeoutMs] - Defaults to the channel's gRPC deadline
-     * @returns {Promise<Client>}
-     * @private
-     */
-    async _waitForReady(timeoutMs = this.grpcDeadline) {
-        await this._initializeClient();
-
-        const client = this._client;
-
-        if (client == null) {
-            throw new GrpcServicesError(
-                GrpcStatus.Unavailable,
-                ALL_NETWORK_IPS[`${this.nodeIp}:`],
-            );
-        }
-
-        const deadline = new Date();
-        deadline.setMilliseconds(deadline.getMilliseconds() + timeoutMs);
-
-        await new Promise((resolve, reject) => {
-            client.waitForReady(deadline, (err) => {
-                if (err) {
-                    reject(
-                        new GrpcServicesError(
-                            GrpcStatus.Timeout,
-                            ALL_NETWORK_IPS[`${this.nodeIp}:`],
-                        ),
-                    );
-                } else {
-                    resolve(undefined);
-                }
-            });
-        });
-
-        return client;
-    }
-
-    /**
-     * @override
-     * @param {number} [timeoutMs]
-     * @returns {Promise<void>}
-     */
-    async ping(timeoutMs) {
-        await this._waitForReady(timeoutMs);
-    }
-
-    /**
      * @override
      * @protected
      * @param {string} serviceName
@@ -191,23 +142,44 @@ export default class NodeChannel extends Channel {
      */
     _createUnaryClient(serviceName) {
         return (method, requestData, callback) => {
-            this._waitForReady()
-                .then((client) => {
-                    // Create metadata with user agent
-                    const metadata = new Metadata();
-
-                    metadata.set("x-user-agent", `${SDK_NAME}/${SDK_VERSION}`);
-
-                    client.makeUnaryRequest(
-                        `/proto.${serviceName}/${method.name}`,
-                        (value) => value,
-                        (value) => value,
-                        Buffer.from(requestData),
-                        metadata,
-                        (e, r) => {
-                            callback(e, r);
-                        },
+            this._initializeClient()
+                .then(() => {
+                    const deadline = new Date();
+                    const milliseconds = this.grpcDeadline;
+                    deadline.setMilliseconds(
+                        deadline.getMilliseconds() + milliseconds,
                     );
+
+                    this._client?.waitForReady(deadline, (err) => {
+                        if (err) {
+                            callback(
+                                new GrpcServicesError(
+                                    GrpcStatus.Timeout,
+                                    // Added colons to the IP address to resolve a SonarCloud IP issue.
+                                    ALL_NETWORK_IPS[`${this.nodeIp}:`],
+                                ),
+                            );
+                        } else {
+                            // Create metadata with user agent
+                            const metadata = new Metadata();
+
+                            metadata.set(
+                                "x-user-agent",
+                                `${SDK_NAME}/${SDK_VERSION}`,
+                            );
+
+                            this._client?.makeUnaryRequest(
+                                `/proto.${serviceName}/${method.name}`,
+                                (value) => value,
+                                (value) => value,
+                                Buffer.from(requestData),
+                                metadata,
+                                (e, r) => {
+                                    callback(e, r);
+                                },
+                            );
+                        }
+                    });
                 })
                 .catch((err) => {
                     if (err instanceof Error) {

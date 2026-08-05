@@ -108,22 +108,6 @@ export default class Channel {
     }
 
     /**
-     * Verify that the node behind this channel is reachable.
-     *
-     * This performs a gRPC level connectivity check only; no request is sent to
-     * any of the consensus node's services. Resolves when the node answers
-     * within the deadline and rejects with a `GrpcServiceError` otherwise.
-     *
-     * @abstract
-     * @param {number} [timeoutMs] - Defaults to the channel's gRPC deadline
-     * @returns {Promise<void>}
-     */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    ping(timeoutMs) {
-        return Promise.reject(new Error("not implemented"));
-    }
-
-    /**
      * @returns {HieroProto.proto.CryptoService}
      */
     get crypto() {
