@@ -98,17 +98,6 @@ export default class TopicId {
     }
 
     /**
-     * @param {string} address
-     * @deprecated - Use `fromEvmAddress` instead
-     * @returns {TopicId}
-     */
-    static fromSolidityAddress(address) {
-        const [shard, realm, topic] =
-            EntityIdHelper.fromSolidityAddress(address);
-        return new TopicId(shard, realm, topic);
-    }
-
-    /**
      * @param {number} shard
      * @param {number} realm
      * @param {string} address
@@ -130,18 +119,6 @@ export default class TopicId {
             address,
         );
         return new TopicId(shardLong, realmLong, topicLong);
-    }
-
-    /**
-     * @deprecated - Use `toEvmAddress` instead
-     * @returns {string}
-     */
-    toSolidityAddress() {
-        return EntityIdHelper.toSolidityAddress([
-            this.shard,
-            this.realm,
-            this.num,
-        ]);
     }
 
     /**

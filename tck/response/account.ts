@@ -3,13 +3,6 @@ export interface AccountResponse {
     readonly status: string;
 }
 
-export interface LiveHashResponse {
-    readonly accountId: string;
-    readonly hash: string;
-    readonly keys: string[];
-    readonly duration: string;
-}
-
 export interface TokenRelationshipInfo {
     readonly tokenId: string;
     readonly symbol: string | null;
@@ -63,7 +56,6 @@ export interface GetAccountInfoResponse {
     readonly isReceiverSignatureRequired: boolean;
     readonly expirationTime: string;
     readonly autoRenewPeriod: string;
-    readonly liveHashes: LiveHashResponse[];
     readonly tokenRelationships: Record<string, TokenRelationshipInfo>;
     readonly accountMemo: string;
     readonly ownedNfts: string;

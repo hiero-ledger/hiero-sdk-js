@@ -97,7 +97,27 @@ describe("EthereumTransactionAccessListIntegrationTest", function () {
     }
 
     /**
+     * Helper: strip leading zero bytes so a scalar is a canonical
+     * (minimally-encoded) RLP integer.
+     */
+    function toMinimalBytes(bytes) {
+        let start = 0;
+        while (start < bytes.length && bytes[start] === 0) {
+            start += 1;
+        }
+        return bytes.slice(start);
+    }
+
+    /**
      * Helper: sign a raw Ethereum message and return { v, r, s }.
+     *
+     * `r` and `s` are minimally encoded (leading zero bytes stripped) —
+     * Ethereum's canonical RLP integer form. `getRecoveryId` requires the
+     * fixed-width 32-byte scalars, so trimming happens after that call.
+     * Without trimming, a signature whose `r` or `s` starts with a zero
+     * byte (~1/128 of signatures) makes the hand-built transaction
+     * non-canonical and the byte-exact roundtrip against
+     * EthereumTransactionData.toBytes() flakily fails.
      */
     function signMessage(privateKey, message) {
         const signedBytes = privateKey.sign(message);
@@ -106,7 +126,7 @@ describe("EthereumTransactionAccessListIntegrationTest", function () {
         const s = signedBytes.slice(mid);
         const recoveryId = privateKey.getRecoveryId(r, s, message);
         const v = new Uint8Array(recoveryId === 0 ? [] : [recoveryId]);
-        return { v, r, s };
+        return { v, r: toMinimalBytes(r), s: toMinimalBytes(s) };
     }
 
     it("EIP-1559 (type 2): access list reduces or matches gas usage", async function () {
