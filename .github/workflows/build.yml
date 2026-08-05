@@ -109,7 +109,7 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@531a2b283ca4912df537d64bf89da0f6be4c2574 # 0.22.0
         with:
           installMirrorNode: true
-          soloVersion: v0.69.0
+          soloVersion: v0.69.1
           installBlockNode: true
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
@@ -200,7 +200,7 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@531a2b283ca4912df537d64bf89da0f6be4c2574 # 0.22.0
         with:
           installMirrorNode: true
-          soloVersion: v0.69.0
+          soloVersion: v0.69.1
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
           haproxyPort: 50211
@@ -315,7 +315,7 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@531a2b283ca4912df537d64bf89da0f6be4c2574 # 0.22.0
         with:
           installMirrorNode: true
-          soloVersion: v0.69.0
+          soloVersion: v0.69.1
           installBlockNode: true
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0

@@ -15,11 +15,11 @@ describe("ContractId", function () {
         ).to.be.equal(`1.2.${evmAddress}`);
     });
 
-    it("toSolidityAddress() to prioritize evmAddress", function () {
+    it("toEvmAddress() to prioritize evmAddress", function () {
         const emvAddresContractId = ContractId.fromEvmAddress(1, 2, evmAddress);
 
         expect(emvAddresContractId.toString()).to.be.equal(`1.2.${evmAddress}`);
-        expect(emvAddresContractId.toSolidityAddress()).to.be.equal(evmAddress);
+        expect(emvAddresContractId.toEvmAddress()).to.be.equal(evmAddress);
     });
 
     it("toString() to prioritize evmAddress", function () {
@@ -57,7 +57,7 @@ describe("ContractId", function () {
         const ADDRESS_LENGTH = 42;
         const contractId = new ContractId(shard, realm, num);
         const longZeroAddress = contractId
-            .toSolidityAddress()
+            .toEvmAddress()
             .padStart(ADDRESS_LENGTH, "0x");
 
         const contractIdFromAddress = ContractId.fromEvmAddress(
