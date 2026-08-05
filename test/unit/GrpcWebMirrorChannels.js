@@ -241,6 +241,12 @@ describe("NativeMirrorChannel", function () {
             FakeXMLHttpRequest.instances.push(this);
             this.responseText = "";
             this.headers = {};
+            this.status = 200;
+            this.responseHeaders = {};
+        }
+
+        getResponseHeader(name) {
+            return this.responseHeaders[name.toLowerCase()] ?? null;
         }
 
         open(method, url) {
