@@ -28,6 +28,16 @@ function ascii(text) {
     return Uint8Array.from(text, (c) => c.charCodeAt(0));
 }
 
+/**
+ * `btoa` rather than `Buffer`, which does not exist in the browser run.
+ *
+ * @param {ArrayLike<number>} bytes
+ * @returns {string}
+ */
+function b64(bytes) {
+    return btoa(String.fromCharCode(...bytes));
+}
+
 describe("GrpcWebFrameParser", function () {
     it("parses a single frame in one chunk", function () {
         const parser = new GrpcWebFrameParser();
@@ -86,7 +96,7 @@ describe("GrpcWebFrameParser", function () {
 describe("Base64StreamDecoder", function () {
     it("decodes base64 split at arbitrary boundaries", function () {
         const decoder = new Base64StreamDecoder();
-        const encoded = Buffer.from([1, 2, 3, 4, 5, 6]).toString("base64");
+        const encoded = b64([1, 2, 3, 4, 5, 6]);
 
         const out = [
             ...decoder.feed(encoded.slice(0, 3)),
@@ -99,9 +109,7 @@ describe("Base64StreamDecoder", function () {
     it("decodes independently padded segments mid-stream", function () {
         const decoder = new Base64StreamDecoder();
         // two frames base64-encoded separately, as proxies may do
-        const encoded =
-            Buffer.from([1, 2, 3, 4, 5]).toString("base64") +
-            Buffer.from([6, 7]).toString("base64");
+        const encoded = b64([1, 2, 3, 4, 5]) + b64([6, 7]);
 
         expect([...decoder.feed(encoded)]).to.deep.equal([1, 2, 3, 4, 5, 6, 7]);
     });
@@ -262,12 +270,8 @@ describe("NativeMirrorChannel", function () {
             "/com.hedera.mirror.api.proto.ConsensusService/subscribeTopic",
         );
 
-        const message = Buffer.from(
-            frame(0, Uint8Array.from([7, 8, 9])),
-        ).toString("base64");
-        const trailers = Buffer.from(
-            frame(TRAILER_FLAG, ascii("grpc-status: 0\r\n")),
-        ).toString("base64");
+        const message = b64(frame(0, Uint8Array.from([7, 8, 9])));
+        const trailers = b64(frame(TRAILER_FLAG, ascii("grpc-status: 0\r\n")));
 
         // stream in awkwardly split chunks
         xhr.push(message.slice(0, 5));
