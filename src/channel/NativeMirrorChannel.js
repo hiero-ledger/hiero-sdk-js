@@ -101,13 +101,60 @@ export default class NativeMirrorChannel extends MirrorChannel {
             }
         };
 
+        let headersChecked = false;
+
+        // Errors the proxy reports before the stream starts arrive as an
+        // HTTP error status or grpc-status response headers instead of a
+        // trailers frame
+        const checkResponseHeaders = () => {
+            if (headersChecked) {
+                return;
+            }
+            headersChecked = true;
+
+            const grpcStatus = xhr.getResponseHeader("grpc-status");
+
+            if (
+                xhr.status < 200 ||
+                xhr.status >= 300 ||
+                (grpcStatus != null && grpcStatus !== "0")
+            ) {
+                ended = true;
+                this._requests.delete(xhr);
+                xhr.abort();
+                error({
+                    code: grpcStatus != null ? parseInt(grpcStatus, 10) : 2,
+                    details:
+                        xhr.getResponseHeader("grpc-message") ??
+                        `received HTTP status ${xhr.status}`,
+                });
+            }
+        };
+
         const consumeResponseText = () => {
             const text = xhr.responseText;
 
             if (text.length > seenLength) {
                 const chunk = text.slice(seenLength);
                 seenLength = text.length;
-                handleFrames(frameParser.feed(base64Decoder.feed(chunk)));
+
+                try {
+                    handleFrames(frameParser.feed(base64Decoder.feed(chunk)));
+                } catch (err) {
+                    // A body that fails to decode (e.g. a plain-text error
+                    // page) must fail the stream instead of throwing
+                    // uncaught inside an XHR event handler
+                    if (!ended) {
+                        ended = true;
+                        this._requests.delete(xhr);
+                        xhr.abort();
+                        error(
+                            err instanceof Error
+                                ? err
+                                : new Error(String(err)),
+                        );
+                    }
+                }
             }
         };
 
