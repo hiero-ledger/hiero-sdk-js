@@ -242,6 +242,12 @@ export default class Transaction extends Executable {
      * @returns {Transaction}
      */
     static fromBytes(bytes) {
+        if (bytes.length === 0) {
+            throw new Error(
+                "cannot deserialize a transaction from empty bytes",
+            );
+        }
+
         /** @type {HieroProto.proto.ISignedTransaction[]} */
         const signedTransactions = [];
 
@@ -263,11 +269,9 @@ export default class Transaction extends Executable {
         const list =
             HieroProto.proto.TransactionList.decode(bytes).transactionList;
 
-        // If the list is of length 0, then teh bytes provided were not a
-        // `proto.TransactionList`
-        //
-        // FIXME: We should also check to make sure the bytes length is greater than
-        // 0 otherwise this check is wrong?
+        // If the list is of length 0, then the bytes provided were not a
+        // `proto.TransactionList` (the empty-bytes case is rejected above,
+        // so an empty list here really means "not a TransactionList")
         if (list.length === 0) {
             const transaction = HieroProto.proto.Transaction.decode(bytes);
 
@@ -408,14 +412,15 @@ export default class Transaction extends Executable {
             }
         }
 
-        // FIXME: We should have a length check before we access `0` since that would error
+        // We should have decoded at least one transaction body
+        if (bodies.length === 0) {
+            throw new Error("no transactions found in bytes");
+        }
+
         const body = bodies[0];
 
-        // We should have at least more than one body
-        if (body == null || body.data == null) {
-            throw new Error(
-                "No transaction found in bytes or failed to decode TransactionBody",
-            );
+        if (body.data == null) {
+            throw new Error("failed to decode TransactionBody: data not set");
         }
 
         // Use the registry to call the right transaction's `fromProtobuf` method based

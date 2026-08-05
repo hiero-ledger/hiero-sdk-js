@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# Unreleased
+
+### Changed
+- Re-applied the `@noble` / `@scure` v2 upgrade (reverted in v2.86.2) with the ESM-only packages bundled into the CommonJS artifact (`lib/index.cjs`) via esbuild, so `require()` no longer fails with `ERR_REQUIRE_ESM` on ts-node or Node.js < 20.19. The strict-CJS guard now runs the entire `common_js_test` suite under `--no-experimental-require-module` in CI, and the `@noble/curves` `>=2.0.0` Dependabot ignore was removed. `PublicKey.verify()` continues to accept 65-byte recoverable ECDSA signatures (`r || s || v`) as before. [#4296](https://github.com/hiero-ledger/hiero-sdk-js/pull/4296)
+
+# v2.86.2
+
+### Fixed
+- Reverted the `@noble/curves` `1.8.1` → `2.2.0` upgrade: v2 is ESM-only, which broke the CommonJS build (`lib/index.cjs`) with `ERR_REQUIRE_ESM` for ts-node and Node.js < 20.19 consumers. A strict-CJS smoke test now guards the CommonJS build against ESM-only dependencies. Released as `@hiero-ledger/cryptography@1.20.1`. [#4259](https://github.com/hiero-ledger/hiero-sdk-js/pull/4259)
+- `Transaction.fromBytes` now rejects empty input with a clear error and reports separate, accurate errors for "no transactions found in bytes" and "failed to decode TransactionBody" instead of a single misleading message. [#4265](https://github.com/hiero-ledger/hiero-sdk-js/pull/4265) [#4260](https://github.com/hiero-ledger/hiero-sdk-js/issues/4260)
+
 # v2.86.1
 
 ### Fixed
