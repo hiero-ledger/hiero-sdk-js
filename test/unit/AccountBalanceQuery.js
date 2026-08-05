@@ -8,12 +8,6 @@ import NodeClient from "../../src/client/NodeClient.js";
 /**
  * A client whose nodes hand out a channel that throws as soon as any gRPC
  * service is touched, so that a single network call fails the test loudly.
- *
- * @returns {{
- *   client: NodeClient,
- *   getChannel: import("vitest").Mock,
- *   rpcAttempts: () => number
- * }}
  */
 
 function clientWithExplodingChannels() {
@@ -96,6 +90,7 @@ describe("AccountBalanceQuery", function () {
             clientWithExplodingChannels();
 
         let error = null;
+
         try {
             await new AccountBalanceQuery()
                 .setAccountId(new AccountId(10))
@@ -120,6 +115,7 @@ describe("AccountBalanceQuery", function () {
             clientWithExplodingChannels();
 
         let error = null;
+
         try {
             await new AccountBalanceQuery()
                 .setAccountId(new AccountId(10))
@@ -143,6 +139,7 @@ describe("AccountBalanceQuery", function () {
         const { client, rpcAttempts } = clientWithExplodingChannels();
 
         let error = null;
+
         try {
             await new AccountBalanceQuery()
                 .setAccountId(new AccountId(10))
@@ -165,6 +162,7 @@ describe("AccountBalanceQuery", function () {
         };
 
         let error = null;
+
         try {
             await new AccountBalanceQuery()._execute(channel, {});
         } catch (err) {
