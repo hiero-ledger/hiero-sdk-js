@@ -113,6 +113,33 @@ describe("Base64StreamDecoder", function () {
 
         expect([...decoder.feed(encoded)]).to.deep.equal([1, 2, 3, 4, 5, 6, 7]);
     });
+
+    it("holds back a padded group until all padding characters arrive", function () {
+        const decoder = new Base64StreamDecoder();
+        // "QUJDAQ==" — while only one of the two '=' has arrived the
+        // group must not be decoded: strict decoders (React Native's
+        // base64 polyfill) throw on partial padding
+        const encoded = b64([65, 66, 67, 1]);
+        expect(encoded.endsWith("==")).to.equal(true);
+
+        expect(decoder.feed(encoded.slice(0, -1))).to.have.length(0);
+        expect([...decoder.feed(encoded.slice(-1))]).to.deep.equal([
+            65, 66, 67, 1,
+        ]);
+    });
+
+    it("decodes '=='-padded segments split at every boundary", function () {
+        const encoded = b64([65, 66, 67, 1]) + b64([6, 7]);
+
+        for (let split = 0; split <= encoded.length; split += 1) {
+            const decoder = new Base64StreamDecoder();
+            const out = [
+                ...decoder.feed(encoded.slice(0, split)),
+                ...decoder.feed(encoded.slice(split)),
+            ];
+            expect(out).to.deep.equal([65, 66, 67, 1, 6, 7]);
+        }
+    });
 });
 
 describe("WebMirrorChannel", function () {
