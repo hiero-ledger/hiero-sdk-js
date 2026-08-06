@@ -2,6 +2,7 @@
 
 import { describe, it, expect, vi, afterEach } from "vitest";
 import WebClient from "../../../src/client/WebClient.js";
+import WebMirrorChannel from "../../../src/channel/WebMirrorChannel.js";
 import LedgerId from "../../../src/LedgerId.js";
 import AccountId from "../../../src/account/AccountId.js";
 import {
@@ -278,11 +279,11 @@ describe("WebClient", function () {
 
     // _createMirrorNetworkChannel
     describe("_createMirrorNetworkChannel", function () {
-        it("should return a factory that throws when invoked", function () {
+        it("should return a factory that builds a WebMirrorChannel", function () {
             const client = new WebClient({ scheduleNetworkUpdate: false });
             const factory = client._createMirrorNetworkChannel();
-            expect(() => factory("any-address")).to.throw(
-                "mirror support is not supported in browsers",
+            expect(factory("mirror.example.com:443")).to.be.instanceOf(
+                WebMirrorChannel,
             );
         });
     });
