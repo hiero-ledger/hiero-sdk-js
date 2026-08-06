@@ -6,7 +6,7 @@ import AccessListItem from "./AccessListItem.js";
 import CACHE from "./Cache.js";
 
 /**
- * @typedef {import("long")} Long
+ * @typedef {import("long").default} Long
  * @typedef {import("bignumber.js").default} BigNumber
  */
 
