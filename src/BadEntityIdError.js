@@ -1,5 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
+/**
+ * @typedef {import("long").default} Long
+ */
+
 export default class BadEntityIdError extends Error {
     /**
      * @param {Long} shard

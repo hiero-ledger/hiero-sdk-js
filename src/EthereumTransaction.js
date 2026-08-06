@@ -26,7 +26,7 @@ import Transaction, {
  * @typedef {import("./client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("./Timestamp.js").default} Timestamp
  * @typedef {import("./transaction/TransactionId.js").default} TransactionId
- * @typedef {import("long")} Long
+ * @typedef {import("long").default} Long
  */
 
 /**

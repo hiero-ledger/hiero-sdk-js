@@ -1,6 +1,10 @@
 import HookEntityId from "./HookEntityId.js";
 
 /**
+ * @typedef {import("long").default} Long
+ */
+
+/**
  * Once a hook is created, its full id.
  * <p>
  * A composite of its creating entity's id and an arbitrary 64-bit hook id
