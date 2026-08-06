@@ -34,7 +34,6 @@ describe("AccountInfo", function () {
             isReceiverSignatureRequired: true,
             expirationTime: new Timestamp(1000, 0),
             autoRenewPeriod: new Duration(90 * 24 * 60 * 60), // 90 days
-            liveHashes: [],
             tokenRelationships: new TokenRelationshipMap(),
             accountMemo: "test memo",
             ownedNfts: Long.fromNumber(5),
@@ -122,7 +121,6 @@ describe("AccountInfo", function () {
                 isReceiverSignatureRequired: false,
                 expirationTime: new Timestamp(0, 0),
                 autoRenewPeriod: new Duration(0),
-                liveHashes: [],
                 tokenRelationships: new TokenRelationshipMap(),
                 accountMemo: "",
                 ownedNfts: Long.ZERO,
@@ -189,7 +187,6 @@ describe("AccountInfo", function () {
                 isReceiverSignatureRequired: false,
                 expirationTime: new Timestamp(0, 0),
                 autoRenewPeriod: new Duration(0),
-                liveHashes: [],
                 tokenRelationships: new TokenRelationshipMap(),
                 accountMemo: "",
                 ownedNfts: Long.ZERO,

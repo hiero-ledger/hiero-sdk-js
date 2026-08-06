@@ -30,8 +30,8 @@ importers:
         specifier: 6.2.2
         version: 6.2.2
       ansi-styles:
-        specifier: 6.2.3
-        version: 6.2.3
+        specifier: 7.0.0
+        version: 7.0.0
       bignumber.js:
         specifier: 11.1.2
         version: 11.1.2
@@ -672,8 +672,8 @@ importers:
         specifier: 6.2.2
         version: 6.2.2
       ansi-styles:
-        specifier: 6.2.3
-        version: 6.2.3
+        specifier: 7.0.0
+        version: 7.0.0
       asn1js:
         specifier: 3.0.6
         version: 3.0.6
@@ -5488,6 +5488,10 @@ packages:
   ansi-styles@6.2.3:
     resolution: {integrity: sha512-4Dj6M28JB+oAH8kFkTLUo+a2jwOFkuqb3yucU0CANcRRUbxS0cP0nZYCGjcc3BNXwRIsUVmDGgzawme7zvJHvg==}
     engines: {node: '>=12'}
+
+  ansi-styles@7.0.0:
+    resolution: {integrity: sha512-kKvt3m4uwzqL0wlkPd09CmljPJGOZZ4D0fP65sqFSvPkMRKhNi+74MgIJ5QxE6SxqB4t4KyUFGg8+n5zjo6hew==}
+    engines: {node: '>=22'}
 
   any-promise@1.3.0:
     resolution: {integrity: sha512-7UvmKalWRt1wgjL1RrGxoSJW/0QZFIegpeGvZG9kjp8vrRu55XTHbwnqq2GpXm9uLbcuhxm3IqX9OB4MZR1b2A==}
@@ -19717,6 +19721,8 @@ snapshots:
   ansi-styles@5.2.0: {}
 
   ansi-styles@6.2.3: {}
+
+  ansi-styles@7.0.0: {}
 
   any-promise@1.3.0: {}
 
