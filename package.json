@@ -89,7 +89,7 @@
         "utf8": "3.0.0"
     },
     "devDependencies": {
-        "@babel/cli": "7.23.4",
+        "@babel/cli": "8.0.4",
         "@babel/core": "7.23.3",
         "@babel/eslint-parser": "7.23.3",
         "@babel/plugin-proposal-export-namespace-from": "7.18.9",
