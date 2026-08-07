@@ -33,7 +33,7 @@
     "expo-web-browser": "~57.0.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-native": "0.81.5",
+    "react-native": "0.85.0",
     "react-native-gesture-handler": "~3.0.0",
     "react-native-get-random-values": "2.0.0",
     "react-native-reanimated": "~4.1.1",
