@@ -80,7 +80,7 @@ jobs:
           echo "::endgroup::"
 
       - name: Setup JQ
-        uses: step-security/install-jq-action@6eecb102befc9cde313a218816ce91a941c1684c # v3.2.1
+        uses: step-security/install-jq-action@01c80bba4b4dfda4f9f5df20aa272d43e93a9fb1 # v4.0.1
         with:
           version: 1.7
 
