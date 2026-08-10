@@ -5,6 +5,27 @@ import IntegrationTestEnv, {
 } from "./client/NodeIntegrationTestEnv.js";
 import { createFungibleToken } from "./utils/Fixtures.js";
 
+/**
+ * Queries the balance of a node account, tolerating a BUSY precheck.
+ * Public networks throttle CI runner IPs, but a BUSY response still
+ * proves the TLS connection works — the node answered over it.
+ *
+ * @param {Client} client
+ * @param {import("../../src/exports.js").AccountId} nodeAccountId
+ */
+async function queryBalanceToleratingBusy(client, nodeAccountId) {
+    try {
+        await new AccountBalanceQuery()
+            .setAccountId(nodeAccountId)
+            .setMaxAttempts(3)
+            .execute(client);
+    } catch (error) {
+        if (!error.message.endsWith(Status.Busy.toString())) {
+            throw error;
+        }
+    }
+}
+
 describe("AccountBalanceQuery", function () {
     let clientPreviewNet;
     let clientTestnet;
@@ -33,10 +54,7 @@ describe("AccountBalanceQuery", function () {
         )) {
             expect(address.endsWith(":50212")).to.be.true;
 
-            await new AccountBalanceQuery()
-                .setAccountId(nodeAccountId)
-                .setMaxAttempts(10)
-                .execute(clientPreviewNet);
+            await queryBalanceToleratingBusy(clientPreviewNet, nodeAccountId);
         }
     });
 
@@ -50,10 +68,7 @@ describe("AccountBalanceQuery", function () {
         )) {
             expect(address.endsWith(":50212")).to.be.true;
 
-            await new AccountBalanceQuery()
-                .setAccountId(nodeAccountId)
-                .setMaxAttempts(10)
-                .execute(clientTestnet);
+            await queryBalanceToleratingBusy(clientTestnet, nodeAccountId);
         }
     });
 
