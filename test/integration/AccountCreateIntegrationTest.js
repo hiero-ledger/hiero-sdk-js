@@ -391,58 +391,70 @@ describe("AccountCreate", function () {
             expect(err).to.be.true;
         });
 
-        it("fee with setHighVolume(true) is different from fee with setHighVolume(false)", async function () {
-            const keyNormal = PrivateKey.generateED25519();
-            const keyHighVolume = PrivateKey.generateED25519();
+        // The browser and node suites share one CI runner, and the browser
+        // suite slows down heavily under contention — this test's sequential
+        // round trips need more than the default 120s there.
+        it(
+            "fee with setHighVolume(true) is different from fee with setHighVolume(false)",
+            { timeout: 240000 },
+            async function () {
+                const keyNormal = PrivateKey.generateED25519();
+                const keyHighVolume = PrivateKey.generateED25519();
 
-            const txNormal = await new AccountCreateTransaction()
-                .setKey(keyNormal.publicKey)
-                .setInitialBalance(new Hbar(1))
-                .setHighVolume(false)
-                .freezeWith(env.client)
-                .sign(keyNormal);
-            const responseNormal = await txNormal.execute(env.client);
-            const recordNormal = await responseNormal.getRecord(env.client);
-            const receiptNormal = await responseNormal.getReceipt(env.client);
-            const accountIdNormal = receiptNormal.accountId;
+                const txNormal = await new AccountCreateTransaction()
+                    .setKey(keyNormal.publicKey)
+                    .setInitialBalance(new Hbar(1))
+                    .setHighVolume(false)
+                    .freezeWith(env.client)
+                    .sign(keyNormal);
+                const responseNormal = await txNormal.execute(env.client);
+                const recordNormal = await responseNormal.getRecord(env.client);
+                const accountIdNormal = recordNormal.receipt.accountId;
 
-            const txHighVolume = await new AccountCreateTransaction()
-                .setKey(keyHighVolume.publicKey)
-                .setInitialBalance(new Hbar(1))
-                .setHighVolume(true)
-                .freezeWith(env.client)
-                .sign(keyHighVolume);
-            const responseHighVolume = await txHighVolume.execute(env.client);
-            const recordHighVolume = await responseHighVolume.getRecord(
-                env.client,
-            );
-            const receiptHighVolume = await responseHighVolume.getReceipt(
-                env.client,
-            );
-            const accountIdHighVolume = receiptHighVolume.accountId;
+                const txHighVolume = await new AccountCreateTransaction()
+                    .setKey(keyHighVolume.publicKey)
+                    .setInitialBalance(new Hbar(1))
+                    .setHighVolume(true)
+                    .freezeWith(env.client)
+                    .sign(keyHighVolume);
+                const responseHighVolume = await txHighVolume.execute(
+                    env.client,
+                );
+                const recordHighVolume = await responseHighVolume.getRecord(
+                    env.client,
+                );
+                const accountIdHighVolume = recordHighVolume.receipt.accountId;
 
-            const feeNormal = recordNormal.transactionFee.toTinybars();
-            const feeHighVolume = recordHighVolume.transactionFee.toTinybars();
-            expect(
-                !feeHighVolume.eq(feeNormal),
-                "fee with high-volume flag should differ from fee without flag",
-            ).to.be.true;
+                const feeNormal = recordNormal.transactionFee.toTinybars();
+                const feeHighVolume =
+                    recordHighVolume.transactionFee.toTinybars();
+                expect(
+                    !feeHighVolume.eq(feeNormal),
+                    "fee with high-volume flag should differ from fee without flag",
+                ).to.be.true;
 
-            await deleteAccount(env.client, keyNormal, (transaction) => {
-                transaction
-                    .setAccountId(accountIdNormal)
-                    .setTransferAccountId(env.operatorId)
-                    .setTransactionId(TransactionId.generate(accountIdNormal));
-            });
-            await deleteAccount(env.client, keyHighVolume, (transaction) => {
-                transaction
-                    .setAccountId(accountIdHighVolume)
-                    .setTransferAccountId(env.operatorId)
-                    .setTransactionId(
-                        TransactionId.generate(accountIdHighVolume),
-                    );
-            });
-        });
+                await deleteAccount(env.client, keyNormal, (transaction) => {
+                    transaction
+                        .setAccountId(accountIdNormal)
+                        .setTransferAccountId(env.operatorId)
+                        .setTransactionId(
+                            TransactionId.generate(accountIdNormal),
+                        );
+                });
+                await deleteAccount(
+                    env.client,
+                    keyHighVolume,
+                    (transaction) => {
+                        transaction
+                            .setAccountId(accountIdHighVolume)
+                            .setTransferAccountId(env.operatorId)
+                            .setTransactionId(
+                                TransactionId.generate(accountIdHighVolume),
+                            );
+                    },
+                );
+            },
+        );
 
         // TODO: fix this test
         // Flaky for now
