@@ -179,7 +179,7 @@ export default class MirrorNodeAccountBalanceQuery {
                 tokenBalances.push({
                     tokenId: TokenId.fromString(entry.token_id)._toProtobuf(),
                     balance: Long.fromValue(entry.balance),
-                    decimals: entry.decimals != null ? entry.decimals : 0,
+                    decimals: entry.decimals ?? 0,
                 });
             }
 
