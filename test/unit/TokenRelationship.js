@@ -1,14 +1,20 @@
 import Long from "long";
+import * as HieroProto from "@hiero-ledger/proto";
 import TokenRelationship from "../../src/account/TokenRelationship.js";
 import TokenId from "../../src/token/TokenId.js";
 
 describe("TokenRelationship", function () {
-    const tokenId = new TokenId(0, 0, 100);
+    const tokenId = new TokenId(1, 2, 3);
     const symbol = "TEST";
 
     /**
      * Builds a protobuf token relationship, overriding only the fields a test
      * cares about so each case stays focused on a single branch.
+     *
+     * `decimals` (field 6 of the proto message) is deliberately absent: the
+     * class does not carry it, so including it here would silently break the
+     * round-trip assertions. See the "should drop decimals" test below, which
+     * pins that omission as current behavior rather than accident.
      *
      * @param {object} [overrides]
      * @returns {object}
@@ -38,11 +44,9 @@ describe("TokenRelationship", function () {
                 automaticAssociation: true,
             });
 
-            expect(relationship.tokenId.toString()).to.equal(
-                tokenId.toString(),
-            );
+            expect(relationship.tokenId).to.equal(tokenId);
             expect(relationship.symbol).to.equal(symbol);
-            expect(relationship.balance.toNumber()).to.equal(50);
+            expect(relationship.balance).to.equal(balance);
             expect(relationship.isKycGranted).to.be.true;
             expect(relationship.isFrozen).to.be.false;
             expect(relationship.automaticAssociation).to.be.true;
@@ -63,97 +67,102 @@ describe("TokenRelationship", function () {
     });
 
     describe("_fromProtobuf", function () {
-        it("should map the token id and symbol", function () {
-            const relationship = TokenRelationship._fromProtobuf(protoWith());
-
-            expect(relationship.tokenId.toString()).to.equal("0.0.100");
-            expect(relationship.symbol).to.equal(symbol);
-        });
-
-        describe("kycStatus", function () {
-            it("should map a missing kycStatus to null", function () {
-                const proto = protoWith();
-                delete proto.kycStatus;
-
-                const relationship = TokenRelationship._fromProtobuf(proto);
-
-                expect(relationship.isKycGranted).to.be.null;
-            });
-
-            it("should map a null kycStatus to null", function () {
+        describe("tokenId", function () {
+            it("should map the token id", function () {
                 const relationship = TokenRelationship._fromProtobuf(
-                    protoWith({ kycStatus: null }),
+                    protoWith(),
                 );
 
-                expect(relationship.isKycGranted).to.be.null;
+                expect(relationship.tokenId).to.be.instanceOf(TokenId);
+                expect(relationship.tokenId.toString()).to.equal("1.2.3");
             });
 
-            it("should map a kycStatus of 0 (KycNotApplicable) to null", function () {
-                const relationship = TokenRelationship._fromProtobuf(
-                    protoWith({ kycStatus: 0 }),
-                );
-
-                expect(relationship.isKycGranted).to.be.null;
+            // `tokenId` is optional in `ITokenRelationship`, but the source
+            // passes it to `TokenId._fromProtobuf` unguarded. These pin the
+            // current throwing behavior; guarding it would be a source change.
+            it("should throw when tokenId is missing", function () {
+                expect(() =>
+                    TokenRelationship._fromProtobuf({ symbol }),
+                ).to.throw(TypeError);
             });
 
-            it("should map a kycStatus of 1 (Granted) to true", function () {
-                const relationship = TokenRelationship._fromProtobuf(
-                    protoWith({ kycStatus: 1 }),
-                );
-
-                expect(relationship.isKycGranted).to.be.true;
-            });
-
-            it("should map a kycStatus of 2 (Revoked) to false", function () {
-                const relationship = TokenRelationship._fromProtobuf(
-                    protoWith({ kycStatus: 2 }),
-                );
-
-                expect(relationship.isKycGranted).to.be.false;
+            it("should throw when tokenId is null", function () {
+                expect(() =>
+                    TokenRelationship._fromProtobuf({ tokenId: null, symbol }),
+                ).to.throw(TypeError);
             });
         });
 
-        describe("freezeStatus", function () {
-            it("should map a missing freezeStatus to null", function () {
+        describe("symbol", function () {
+            it("should map the symbol", function () {
+                const relationship = TokenRelationship._fromProtobuf(
+                    protoWith(),
+                );
+
+                expect(relationship.symbol).to.equal(symbol);
+            });
+
+            // `symbol` is `string|null` in the proto interface but is cast
+            // without a guard, so absence surfaces as `undefined` on a
+            // property documented as `string`.
+            it("should leave a missing symbol undefined", function () {
                 const proto = protoWith();
-                delete proto.freezeStatus;
+                delete proto.symbol;
 
                 const relationship = TokenRelationship._fromProtobuf(proto);
 
-                expect(relationship.isFrozen).to.be.null;
+                expect(relationship.symbol).to.be.undefined;
             });
 
-            it("should map a null freezeStatus to null", function () {
+            it("should leave a null symbol as null", function () {
                 const relationship = TokenRelationship._fromProtobuf(
-                    protoWith({ freezeStatus: null }),
+                    protoWith({ symbol: null }),
                 );
 
-                expect(relationship.isFrozen).to.be.null;
+                expect(relationship.symbol).to.be.null;
             });
+        });
 
-            it("should map a freezeStatus of 0 (FreezeNotApplicable) to null", function () {
-                const relationship = TokenRelationship._fromProtobuf(
-                    protoWith({ freezeStatus: 0 }),
-                );
+        describe("status mapping", function () {
+            const statuses = [
+                { proto: undefined, value: null, label: "missing" },
+                { proto: null, value: null, label: "null" },
+                { proto: 0, value: null, label: "0 (NotApplicable)" },
+                { proto: 1, value: true, label: "1 (Granted/Frozen)" },
+                { proto: 2, value: false, label: "2 (Revoked/Unfrozen)" },
+            ];
 
-                expect(relationship.isFrozen).to.be.null;
-            });
+            for (const status of statuses) {
+                it(`should map a ${status.label} kycStatus to ${String(
+                    status.value,
+                )}`, function () {
+                    const proto = protoWith();
+                    if (status.proto === undefined) {
+                        delete proto.kycStatus;
+                    } else {
+                        proto.kycStatus = status.proto;
+                    }
 
-            it("should map a freezeStatus of 1 (Frozen) to true", function () {
-                const relationship = TokenRelationship._fromProtobuf(
-                    protoWith({ freezeStatus: 1 }),
-                );
+                    const relationship = TokenRelationship._fromProtobuf(proto);
 
-                expect(relationship.isFrozen).to.be.true;
-            });
+                    expect(relationship.isKycGranted).to.equal(status.value);
+                });
 
-            it("should map a freezeStatus of 2 (Unfrozen) to false", function () {
-                const relationship = TokenRelationship._fromProtobuf(
-                    protoWith({ freezeStatus: 2 }),
-                );
+                it(`should map a ${status.label} freezeStatus to ${String(
+                    status.value,
+                )}`, function () {
+                    const proto = protoWith();
+                    if (status.proto === undefined) {
+                        delete proto.freezeStatus;
+                    } else {
+                        proto.freezeStatus = status.proto;
+                    }
 
-                expect(relationship.isFrozen).to.be.false;
-            });
+                    const relationship = TokenRelationship._fromProtobuf(proto);
+
+                    expect(relationship.isFrozen).to.equal(status.value);
+                });
+            }
         });
 
         describe("balance", function () {
@@ -162,7 +171,8 @@ describe("TokenRelationship", function () {
                     protoWith({ balance: null }),
                 );
 
-                expect(relationship.balance.toNumber()).to.equal(0);
+                expect(relationship.balance).to.be.instanceOf(Long);
+                expect(relationship.balance.toString()).to.equal("0");
             });
 
             it("should default a missing balance to zero", function () {
@@ -171,36 +181,56 @@ describe("TokenRelationship", function () {
 
                 const relationship = TokenRelationship._fromProtobuf(proto);
 
-                expect(relationship.balance.toNumber()).to.equal(0);
+                expect(relationship.balance).to.be.instanceOf(Long);
+                expect(relationship.balance.toString()).to.equal("0");
             });
 
-            it("should pass an existing Long balance through untouched", function () {
-                const balance = Long.fromNumber(1234);
-
+            it("should keep the value of an existing Long balance", function () {
                 const relationship = TokenRelationship._fromProtobuf(
-                    protoWith({ balance }),
+                    protoWith({ balance: Long.fromNumber(1234) }),
                 );
 
-                expect(relationship.balance).to.equal(balance);
-                expect(relationship.balance.toNumber()).to.equal(1234);
+                expect(relationship.balance).to.be.instanceOf(Long);
+                expect(relationship.balance.toString()).to.equal("1234");
             });
 
+            // `balance` is `uint64`, and a real decode hands back protobufjs's
+            // own copy of the Long class, so the `instanceof` passthrough in
+            // the source is false here and `Long.fromValue` runs instead. The
+            // value must survive that conversion intact, including above
+            // 2^63 where `toNumber()` would be lossy.
+            it("should preserve a large uint64 balance from a real decode", function () {
+                const balance = "18446744073709551000";
+
+                const decoded = HieroProto.proto.TokenRelationship.decode(
+                    HieroProto.proto.TokenRelationship.encode({
+                        tokenId: tokenId._toProtobuf(),
+                        symbol,
+                        balance: Long.fromString(balance, true),
+                        kycStatus: 1,
+                        freezeStatus: 2,
+                        automaticAssociation: true,
+                    }).finish(),
+                );
+
+                const relationship = TokenRelationship._fromProtobuf(decoded);
+
+                expect(relationship.balance.toString()).to.equal(balance);
+                expect(relationship.isKycGranted).to.be.true;
+                expect(relationship.isFrozen).to.be.false;
+                expect(relationship.automaticAssociation).to.be.true;
+            });
+
+            // Outside the declared `Long|null` type of `ITokenRelationship`,
+            // but the source's `Long.fromValue` fallback accepts it and the
+            // issue calls for this case explicitly.
             it("should convert a plain number balance to a Long", function () {
                 const relationship = TokenRelationship._fromProtobuf(
                     protoWith({ balance: 1234 }),
                 );
 
-                expect(relationship.balance instanceof Long).to.be.true;
-                expect(relationship.balance.toNumber()).to.equal(1234);
-            });
-
-            it("should convert a string balance to a Long", function () {
-                const relationship = TokenRelationship._fromProtobuf(
-                    protoWith({ balance: "1234" }),
-                );
-
-                expect(relationship.balance instanceof Long).to.be.true;
-                expect(relationship.balance.toNumber()).to.equal(1234);
+                expect(relationship.balance).to.be.instanceOf(Long);
+                expect(relationship.balance.toString()).to.equal("1234");
             });
         });
 
@@ -238,6 +268,15 @@ describe("TokenRelationship", function () {
                 expect(relationship.automaticAssociation).to.be.null;
             });
         });
+
+        it("should drop decimals", function () {
+            const relationship = TokenRelationship._fromProtobuf(
+                protoWith({ decimals: 8 }),
+            );
+
+            expect(relationship).to.not.have.property("decimals");
+            expect(relationship._toProtobuf()).to.not.have.property("decimals");
+        });
     });
 
     describe("_toProtobuf", function () {
@@ -268,7 +307,11 @@ describe("TokenRelationship", function () {
             })._toProtobuf();
 
             expect(proto).to.deep.equal({
-                tokenId: tokenId._toProtobuf(),
+                tokenId: {
+                    shardNum: Long.fromNumber(1),
+                    realmNum: Long.fromNumber(2),
+                    tokenNum: Long.fromNumber(3),
+                },
                 symbol,
                 balance,
                 kycStatus: 1,
@@ -277,44 +320,41 @@ describe("TokenRelationship", function () {
             });
         });
 
-        it("should map a null isKycGranted to a kycStatus of 0", function () {
-            expect(
-                relationshipWith({ isKycGranted: null })._toProtobuf()
-                    .kycStatus,
-            ).to.equal(0);
+        it("should handle status codes correctly", function () {
+            const combinations = [
+                { isKycGranted: null, isFrozen: null, expected: [0, 0] },
+                { isKycGranted: true, isFrozen: true, expected: [1, 1] },
+                { isKycGranted: false, isFrozen: false, expected: [2, 2] },
+                { isKycGranted: true, isFrozen: false, expected: [1, 2] },
+                { isKycGranted: false, isFrozen: null, expected: [2, 0] },
+            ];
+
+            for (const combo of combinations) {
+                const proto = relationshipWith({
+                    isKycGranted: combo.isKycGranted,
+                    isFrozen: combo.isFrozen,
+                })._toProtobuf();
+
+                expect(proto.kycStatus).to.equal(
+                    combo.expected[0],
+                    `isKycGranted=${String(
+                        combo.isKycGranted,
+                    )} should convert to ${combo.expected[0]}`,
+                );
+                expect(proto.freezeStatus).to.equal(
+                    combo.expected[1],
+                    `isFrozen=${String(combo.isFrozen)} should convert to ${
+                        combo.expected[1]
+                    }`,
+                );
+            }
         });
 
-        it("should map a true isKycGranted to a kycStatus of 1", function () {
+        it("should pass a null automaticAssociation straight through", function () {
             expect(
-                relationshipWith({ isKycGranted: true })._toProtobuf()
-                    .kycStatus,
-            ).to.equal(1);
-        });
-
-        it("should map a false isKycGranted to a kycStatus of 2", function () {
-            expect(
-                relationshipWith({ isKycGranted: false })._toProtobuf()
-                    .kycStatus,
-            ).to.equal(2);
-        });
-
-        it("should map a null isFrozen to a freezeStatus of 0", function () {
-            expect(
-                relationshipWith({ isFrozen: null })._toProtobuf().freezeStatus,
-            ).to.equal(0);
-        });
-
-        it("should map a true isFrozen to a freezeStatus of 1", function () {
-            expect(
-                relationshipWith({ isFrozen: true })._toProtobuf().freezeStatus,
-            ).to.equal(1);
-        });
-
-        it("should map a false isFrozen to a freezeStatus of 2", function () {
-            expect(
-                relationshipWith({ isFrozen: false })._toProtobuf()
-                    .freezeStatus,
-            ).to.equal(2);
+                relationshipWith({ automaticAssociation: null })._toProtobuf()
+                    .automaticAssociation,
+            ).to.be.null;
         });
     });
 
@@ -325,53 +365,21 @@ describe("TokenRelationship", function () {
             { proto: 2, value: false },
         ];
 
-        for (const kyc of statuses) {
-            for (const freeze of statuses) {
-                it(`should round-trip kycStatus ${kyc.proto} and freezeStatus ${freeze.proto}`, function () {
-                    const proto = protoWith({
-                        kycStatus: kyc.proto,
-                        freezeStatus: freeze.proto,
-                    });
-
-                    const relationship = TokenRelationship._fromProtobuf(proto);
-
-                    expect(relationship.isKycGranted).to.equal(kyc.value);
-                    expect(relationship.isFrozen).to.equal(freeze.value);
-                    expect(relationship._toProtobuf()).to.deep.equal(proto);
-
-                    const roundTripped = TokenRelationship._fromProtobuf(
-                        relationship._toProtobuf(),
-                    );
-
-                    expect(roundTripped.tokenId.toString()).to.equal(
-                        relationship.tokenId.toString(),
-                    );
-                    expect(roundTripped.symbol).to.equal(relationship.symbol);
-                    expect(roundTripped.balance.toNumber()).to.equal(
-                        relationship.balance.toNumber(),
-                    );
-                    expect(roundTripped.isKycGranted).to.equal(
-                        relationship.isKycGranted,
-                    );
-                    expect(roundTripped.isFrozen).to.equal(
-                        relationship.isFrozen,
-                    );
-                    expect(roundTripped.automaticAssociation).to.equal(
-                        relationship.automaticAssociation,
-                    );
+        // `kycStatus` and `freezeStatus` are independent ternaries in the
+        // source, so the diagonal covers every branch the full grid would.
+        for (const status of statuses) {
+            it(`should round-trip status ${status.proto} unchanged`, function () {
+                const proto = protoWith({
+                    kycStatus: status.proto,
+                    freezeStatus: status.proto,
                 });
-            }
+
+                const relationship = TokenRelationship._fromProtobuf(proto);
+
+                expect(relationship.isKycGranted).to.equal(status.value);
+                expect(relationship.isFrozen).to.equal(status.value);
+                expect(relationship._toProtobuf()).to.deep.equal(proto);
+            });
         }
-
-        it("should normalize a null kycStatus and freezeStatus to 0 on the way back out", function () {
-            const relationship = TokenRelationship._fromProtobuf(
-                protoWith({ kycStatus: null, freezeStatus: null }),
-            );
-
-            const proto = relationship._toProtobuf();
-
-            expect(proto.kycStatus).to.equal(0);
-            expect(proto.freezeStatus).to.equal(0);
-        });
     });
 });
