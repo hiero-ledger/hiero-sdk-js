@@ -45,12 +45,6 @@ import {
  */
 
 /**
- * Initial retry backoff in milliseconds for transient mirror errors.
- * @constant {number}
- */
-const INITIAL_BACKOFF_MS = 250;
-
-/**
  * Mirror-node REST replacement for the deprecated `AccountBalanceQuery`.
  *
  * Reads `GET /api/v1/accounts/{id}` for the hbar balance and
@@ -69,6 +63,12 @@ const INITIAL_BACKOFF_MS = 250;
  * are therefore NOT read-after-write consistent — unlike the consensus-node
  * `AccountBalanceQuery` this replaces, a balance read immediately after a
  * transfer may still show the pre-transfer value.
+ *
+ * NOTE ON PRECISION: balances are parsed from JSON numbers, so values
+ * above `Number.MAX_SAFE_INTEGER` (2^53 - 1 tinybars, roughly 90M hbar;
+ * likewise raw token units) silently lose precision — unlike the
+ * protobuf-based `AccountBalanceQuery`. Lossless parsing is tracked as a
+ * follow-up.
  */
 export default class MirrorNodeAccountBalanceQuery {
     /**
@@ -156,14 +156,25 @@ export default class MirrorNodeAccountBalanceQuery {
 
     /**
      * @param {Client} client
+     * @param {number} [requestTimeout] - total timeout for the whole
+     * operation in milliseconds; defaults to `client.requestTimeout`
      * @returns {Promise<AccountBalance>}
      */
-    async execute(client) {
+    async execute(client, requestTimeout) {
         const idString = this._idString();
         const baseUrl = client.mirrorRestApiBaseUrl;
+        // One deadline for the whole operation (every page, every retry) —
+        // the timeout is a total operation budget, matching `Executable`,
+        // not a per-attempt bound.
+        const timeoutMs = requestTimeout ?? client.requestTimeout;
+        const deadline = timeoutMs != null ? Date.now() + timeoutMs : null;
 
         const account = /** @type {MirrorAccountResponse} */ (
-            await this._fetchJson(`${baseUrl}/accounts/${idString}`, client)
+            await this._fetchJson(
+                `${baseUrl}/accounts/${idString}`,
+                client,
+                deadline,
+            )
         );
 
         /** @type {ITokenBalance[]} */
@@ -172,7 +183,7 @@ export default class MirrorNodeAccountBalanceQuery {
         let url = `${baseUrl}/accounts/${idString}/tokens`;
         for (;;) {
             const page = /** @type {MirrorAccountTokensResponse} */ (
-                await this._fetchJson(url, client)
+                await this._fetchJson(url, client, deadline)
             );
 
             for (const entry of page.tokens ?? []) {
@@ -240,32 +251,47 @@ export default class MirrorNodeAccountBalanceQuery {
     /**
      * GET the URL and parse the JSON body, retrying transient failures
      * (5xx, network/timeout) with exponential backoff. HTTP 4xx — an
-     * unknown or malformed ID — throws immediately.
+     * unknown or malformed ID — throws immediately. `deadline` is the
+     * epoch-millisecond cutoff shared by every attempt of the whole
+     * operation.
      *
      * @private
      * @param {string} url
      * @param {Client} client
+     * @param {?number} deadline
      * @returns {Promise<unknown>}
      */
-    async _fetchJson(url, client) {
+    async _fetchJson(url, client, deadline) {
         const maxAttempts = client.maxAttempts;
         const maxBackoff = client.maxBackoff;
-        let backoff = Math.min(INITIAL_BACKOFF_MS, maxBackoff);
+        let backoff = Math.min(client.minBackoff, maxBackoff);
         /** @type {?Error} */
         let lastError = null;
 
         for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+            const remaining = deadline != null ? deadline - Date.now() : null;
+            if (remaining != null && remaining <= 0) {
+                throw (
+                    lastError ??
+                    new Error(
+                        `Failed to query ${url}: request timeout exceeded`,
+                    )
+                );
+            }
+
             try {
                 // eslint-disable-next-line n/no-unsupported-features/node-builtins
                 const response = await fetch(url, {
                     method: "GET",
                     cache: "no-store",
                     headers: { Accept: "application/json" },
+                    // Guarded because React Native's fetch polyfill does
+                    // not provide AbortSignal.timeout.
                     signal:
-                        client.requestTimeout &&
+                        remaining != null &&
                         typeof AbortSignal !== "undefined" &&
                         typeof AbortSignal.timeout === "function"
-                            ? AbortSignal.timeout(client.requestTimeout)
+                            ? AbortSignal.timeout(remaining)
                             : undefined,
                 });
 
