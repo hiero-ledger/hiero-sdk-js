@@ -261,9 +261,12 @@ export default class MirrorNodeAccountBalanceQuery {
                     method: "GET",
                     cache: "no-store",
                     headers: { Accept: "application/json" },
-                    signal: client.requestTimeout
-                        ? AbortSignal.timeout(client.requestTimeout)
-                        : undefined,
+                    signal:
+                        client.requestTimeout &&
+                        typeof AbortSignal !== "undefined" &&
+                        typeof AbortSignal.timeout === "function"
+                            ? AbortSignal.timeout(client.requestTimeout)
+                            : undefined,
                 });
 
                 if (response.ok) {
