@@ -63,20 +63,15 @@ export default class CostQuery extends QueryBase {
         const operator =
             this._operator != null ? this._operator : client._operator;
 
-        if (operator == null) {
-            throw new Error(
-                "`client` must have an `operator` or an explicit payment transaction must be provided",
-            );
-        }
-
         if (this._query._nodeAccountIds.isEmpty) {
             this._query._nodeAccountIds.setList(
                 client._network.getNodeAccountIdsForExecute(),
             );
         }
 
-        // operator.accountId
-        const transactionId = TransactionId.generate(operator.accountId);
+        const transactionId = TransactionId.generate(
+            operator != null ? operator.accountId : new AccountId(0),
+        );
         if (this._query.paymentTransactionId == null) {
             this._query.setPaymentTransactionId(transactionId);
         }
@@ -93,6 +88,10 @@ export default class CostQuery extends QueryBase {
             );
         }
 
+        // A COST_ANSWER query is answered free of charge, but the node still
+        // expects a payment transaction in the query header to pass
+        // validation. Without an operator the payment is left unsigned —
+        // the node checks its presence, not its signatures.
         this._header = {
             payment: await this._makePaymentTransaction(
                 paymentTransactionId,

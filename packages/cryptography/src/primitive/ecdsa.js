@@ -77,6 +77,9 @@ export function getFullPublicKey(data) {
 export function sign(keydata, message) {
     const msg = hex.encode(message);
     const data = hex.decode(keccak256(`0x${msg}`));
+
+    // `data` is already a keccak256 digest, so noble must not hash it again
+    // (v2 defaults to prehash: true, i.e. sha256 of the input).
     return secp256k1.sign(data, keydata, { prehash: false });
 }
 
@@ -97,7 +100,18 @@ export function verify(keydata, message, signature) {
     const msg = hex.encode(message);
     const data = hex.decode(keccak256(`0x${msg}`));
 
-    return secp256k1.verify(signature, data, keydata, { prehash: false });
+    // Accept a 65-byte recoverable signature (r || s || v) by verifying its
+    // 64-byte r||s prefix, as the pre-@noble-v2 implementation did.
+    const sig = signature.length === 65 ? signature.subarray(0, 64) : signature;
+
+    try {
+        return secp256k1.verify(sig, data, keydata, { prehash: false });
+    } catch {
+        // noble v2 throws on malformed signature bytes (e.g. wrong length)
+        // where the previous implementation returned false; signatures are
+        // untrusted input, so keep the boolean contract.
+        return false;
+    }
 }
 
 /**
