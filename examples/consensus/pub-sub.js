@@ -46,7 +46,7 @@ async function main() {
         // need to wait before the mirror node can see new topic
         await setTimeout(5000);
 
-        new TopicMessageQuery()
+        const handle = new TopicMessageQuery()
             .setTopicId(topicId)
             .setStartTime(0)
             .subscribe(
@@ -76,14 +76,19 @@ async function main() {
             console.log(`Sent message ${i}`);
             await setTimeout(5000);
         }
-    } catch (error) {
-        console.error(error);
-    }
 
-    client.close();
+        handle.unsubscribe();
+    } finally {
+        client.close();
+    }
 }
 
-void main();
+void main()
+    .then(() => process.exit(0))
+    .catch((error) => {
+        console.error(error);
+        process.exit(1);
+    });
 
 const bigContents = `
 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur aliquam augue sem, ut mattis dui laoreet a. Curabitur consequat est euismod, scelerisque metus et, tristique dui. Nulla commodo mauris ut faucibus ultricies. Quisque venenatis nisl nec augue tempus, at efficitur elit eleifend. Duis pharetra felis metus, sed dapibus urna vehicula id. Duis non venenatis turpis, sit amet ornare orci. Donec non interdum quam. Sed finibus nunc et risus finibus, non sagittis lorem cursus. Proin pellentesque tempor aliquam. Sed congue nisl in enim bibendum, condimentum vehicula nisi feugiat.
