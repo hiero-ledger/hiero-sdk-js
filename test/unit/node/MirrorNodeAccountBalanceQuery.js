@@ -2,12 +2,12 @@
 
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import { AccountId, TokenId } from "../../../src/index.js";
+import { AccountId } from "../../../src/index.js";
 import MirrorNodeAccountBalanceQuery from "../../../src/query/MirrorNodeAccountBalanceQuery.js";
 import NativeClient from "../../../src/client/NativeClient.js";
 
 const MIRROR_HOST = "balance-mirror.example.com";
-const ACCOUNTS_URL = `https://${MIRROR_HOST}/api/v1/accounts/0.0.123`;
+const BALANCES_URL = `https://${MIRROR_HOST}/api/v1/balances`;
 
 const server = setupServer();
 
@@ -38,42 +38,18 @@ describe("MirrorNodeAccountBalanceQuery (wire)", function () {
         server.close();
     });
 
-    it("should parse the hbar balance and accumulate every token page", async function () {
-        let tokensRequests = 0;
+    it("should send account.id and parse the hbar balance", async function () {
+        let accountIdParam = null;
 
         server.use(
-            http.get(ACCOUNTS_URL, () =>
-                HttpResponse.json({
-                    account: "0.0.123",
-                    balance: {
-                        balance: 123456789,
-                        tokens: [{ token_id: "0.0.999", balance: 1 }],
-                    },
-                }),
-            ),
-            http.get(`${ACCOUNTS_URL}/tokens`, ({ request }) => {
-                tokensRequests += 1;
-                const isSecondPage = new URL(request.url).searchParams.has(
-                    "token.id",
+            http.get(BALANCES_URL, ({ request }) => {
+                accountIdParam = new URL(request.url).searchParams.get(
+                    "account.id",
                 );
-
-                if (isSecondPage) {
-                    return HttpResponse.json({
-                        tokens: [
-                            { token_id: "0.0.333", balance: 9, decimals: 8 },
-                        ],
-                        links: { next: null },
-                    });
-                }
-
                 return HttpResponse.json({
-                    tokens: [
-                        { token_id: "0.0.111", balance: 250, decimals: 3 },
-                        { token_id: "0.0.222", balance: 7, decimals: 0 },
-                    ],
-                    links: {
-                        next: "/api/v1/accounts/0.0.123/tokens?token.id=gt:0.0.222",
-                    },
+                    timestamp: "1234567890.000000001",
+                    balances: [{ account: "0.0.123", balance: 123456789 }],
+                    links: { next: null },
                 });
             }),
         );
@@ -82,61 +58,37 @@ describe("MirrorNodeAccountBalanceQuery (wire)", function () {
             .setAccountId("0.0.123")
             .execute(client);
 
-        expect(tokensRequests).to.equal(2);
+        expect(accountIdParam).to.equal("0.0.123");
         expect(balance.hbars.toTinybars().toString()).to.equal("123456789");
-        expect(
-            balance.tokens.get(TokenId.fromString("0.0.111")).toString(),
-        ).to.equal("250");
-        expect(
-            balance.tokens.get(TokenId.fromString("0.0.222")).toString(),
-        ).to.equal("7");
-        expect(
-            balance.tokens.get(TokenId.fromString("0.0.333")).toString(),
-        ).to.equal("9");
-        expect(
-            balance.tokenDecimals.get(TokenId.fromString("0.0.111")),
-        ).to.equal(3);
-        expect(
-            balance.tokenDecimals.get(TokenId.fromString("0.0.222")),
-        ).to.equal(0);
-        expect(
-            balance.tokenDecimals.get(TokenId.fromString("0.0.333")),
-        ).to.equal(8);
-        expect(balance.tokens.get(TokenId.fromString("0.0.999"))).to.be.null;
     });
 
-    it("should not retry a 404", async function () {
+    it("should return zero hbars when the account does not exist", async function () {
         let requests = 0;
 
         server.use(
-            http.get(ACCOUNTS_URL, () => {
+            http.get(BALANCES_URL, () => {
                 requests += 1;
-                return HttpResponse.json(
-                    { _status: { messages: [{ message: "Not found" }] } },
-                    { status: 404 },
-                );
+                return HttpResponse.json({
+                    timestamp: null,
+                    balances: [],
+                    links: { next: null },
+                });
             }),
         );
 
-        let message = "";
-        try {
-            await new MirrorNodeAccountBalanceQuery()
-                .setAccountId("0.0.123")
-                .execute(client);
-        } catch (error) {
-            message = error.message;
-        }
+        const balance = await new MirrorNodeAccountBalanceQuery()
+            .setAccountId("0.0.123")
+            .execute(client);
 
         expect(requests).to.equal(1);
-        expect(message).to.include("404");
-        expect(message).to.include("Not found");
+        expect(balance.hbars.toTinybars().toString()).to.equal("0");
     });
 
     it("should not retry a 400", async function () {
         let requests = 0;
 
         server.use(
-            http.get(ACCOUNTS_URL, () => {
+            http.get(BALANCES_URL, () => {
                 requests += 1;
                 return HttpResponse.json(
                     {
@@ -167,19 +119,17 @@ describe("MirrorNodeAccountBalanceQuery (wire)", function () {
         let requests = 0;
 
         server.use(
-            http.get(ACCOUNTS_URL, () => {
+            http.get(BALANCES_URL, () => {
                 requests += 1;
                 if (requests === 1) {
                     return new HttpResponse(null, { status: 503 });
                 }
                 return HttpResponse.json({
-                    account: "0.0.123",
-                    balance: { balance: 42 },
+                    timestamp: "1234567890.000000001",
+                    balances: [{ account: "0.0.123", balance: 42 }],
+                    links: { next: null },
                 });
             }),
-            http.get(`${ACCOUNTS_URL}/tokens`, () =>
-                HttpResponse.json({ tokens: [], links: { next: null } }),
-            ),
         );
 
         const balance = await new MirrorNodeAccountBalanceQuery()
@@ -188,6 +138,5 @@ describe("MirrorNodeAccountBalanceQuery (wire)", function () {
 
         expect(requests).to.equal(2);
         expect(balance.hbars.toTinybars().toString()).to.equal("42");
-        expect(balance.tokens.size).to.equal(0);
     });
 });

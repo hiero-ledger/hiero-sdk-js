@@ -3,10 +3,9 @@
 import sinon from "sinon";
 import {
     AccountId,
-    ContractId,
+    MirrorNodeAccountBalance,
     MirrorNodeAccountBalanceQuery,
     PublicKey,
-    TokenId,
 } from "../../src/exports.js";
 import { Client } from "../../src/index.js";
 import * as EntityIdHelper from "../../src/EntityIdHelper.js";
@@ -14,35 +13,9 @@ import * as EntityIdHelper from "../../src/EntityIdHelper.js";
 const MIRROR_HOST = "mirror.example.com";
 const BASE_URL = `https://${MIRROR_HOST}:443/api/v1`;
 
-/**
- * The mirror node's `/accounts/{id}` response. `balance.tokens` is a
- * truncated preview and must be ignored in favour of `/tokens`.
- */
-const ACCOUNT_RESPONSE = {
-    account: "0.0.123",
-    balance: {
-        balance: 5000000000,
-        timestamp: "1234567890.000000001",
-        tokens: [{ token_id: "0.0.999", balance: 1 }],
-    },
-    links: { next: "/api/v1/accounts/0.0.123?timestamp=lt:1234567890" },
-};
-
-const TOKENS_RESPONSE = {
-    tokens: [
-        {
-            token_id: "0.0.111",
-            balance: 250,
-            decimals: 3,
-            automatic_association: true,
-        },
-        {
-            token_id: "0.0.222",
-            balance: 7,
-            decimals: 0,
-            automatic_association: false,
-        },
-    ],
+const BALANCES_RESPONSE = {
+    timestamp: "1234567890.000000001",
+    balances: [{ account: "0.0.123", balance: 5000000000 }],
     links: { next: null },
 };
 
@@ -61,15 +34,10 @@ describe("MirrorNodeAccountBalanceQuery", function () {
     beforeEach(function () {
         originalFetch = globalObject().fetch;
 
-        fetchStub = sinon.stub().callsFake((url) => {
-            const body = url.includes("/tokens")
-                ? TOKENS_RESPONSE
-                : ACCOUNT_RESPONSE;
-            return Promise.resolve({
-                ok: true,
-                status: 200,
-                json: () => Promise.resolve(body),
-            });
+        fetchStub = sinon.stub().resolves({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(BALANCES_RESPONSE),
         });
 
         globalObject().fetch = fetchStub;
@@ -100,38 +68,11 @@ describe("MirrorNodeAccountBalanceQuery", function () {
         ).to.equal("0.0.123");
     });
 
-    it("should accept a ContractId instance and a string", function () {
-        const id = new ContractId(456);
-
-        expect(
-            new MirrorNodeAccountBalanceQuery().setContractId(id).contractId,
-        ).to.equal(id);
-        expect(
-            new MirrorNodeAccountBalanceQuery()
-                .setContractId("0.0.456")
-                .contractId.toString(),
-        ).to.equal("0.0.456");
-    });
-
     it("should throw on a malformed id without performing a request", function () {
         expect(() =>
             new MirrorNodeAccountBalanceQuery().setAccountId("not-an-id"),
         ).to.throw();
         expect(fetchStub.called).to.be.false;
-    });
-
-    it("should reject an account id and a contract id at the same time", function () {
-        expect(() =>
-            new MirrorNodeAccountBalanceQuery()
-                .setAccountId("0.0.123")
-                .setContractId("0.0.456"),
-        ).to.throw(/either an account ID or a contract ID/);
-
-        expect(() =>
-            new MirrorNodeAccountBalanceQuery()
-                .setContractId("0.0.456")
-                .setAccountId("0.0.123"),
-        ).to.throw(/either an account ID or a contract ID/);
     });
 
     it("should reject when no id is set", async function () {
@@ -141,30 +82,18 @@ describe("MirrorNodeAccountBalanceQuery", function () {
         } catch (error) {
             message = error.message;
         }
-        expect(message).to.include("requires an account ID or a contract ID");
+        expect(message).to.include("requires an account ID");
         expect(fetchStub.called).to.be.false;
     });
 
-    it("should query the accounts endpoint by shard.realm.num", async function () {
+    it("should query the balances endpoint by shard.realm.num", async function () {
         await new MirrorNodeAccountBalanceQuery()
             .setAccountId("0.0.123")
             .execute(client);
 
+        expect(fetchStub.calledOnce).to.be.true;
         expect(fetchStub.firstCall.args[0]).to.equal(
-            `${BASE_URL}/accounts/0.0.123`,
-        );
-        expect(fetchStub.secondCall.args[0]).to.equal(
-            `${BASE_URL}/accounts/0.0.123/tokens`,
-        );
-    });
-
-    it("should query a contract id through the accounts endpoint", async function () {
-        await new MirrorNodeAccountBalanceQuery()
-            .setContractId("0.0.456")
-            .execute(client);
-
-        expect(fetchStub.firstCall.args[0]).to.equal(
-            `${BASE_URL}/accounts/0.0.456`,
+            `${BASE_URL}/balances?account.id=0.0.123`,
         );
     });
 
@@ -176,7 +105,7 @@ describe("MirrorNodeAccountBalanceQuery", function () {
             .execute(client);
 
         expect(fetchStub.firstCall.args[0]).to.equal(
-            `${BASE_URL}/accounts/${evmAddress}`,
+            `${BASE_URL}/balances?account.id=${evmAddress}`,
         );
     });
 
@@ -193,31 +122,43 @@ describe("MirrorNodeAccountBalanceQuery", function () {
 
         expect(alias).to.not.be.null;
         expect(fetchStub.firstCall.args[0]).to.equal(
-            `${BASE_URL}/accounts/${alias}`,
+            `${BASE_URL}/balances?account.id=${alias}`,
         );
     });
 
-    it("should return the hbar, token and decimal balances", async function () {
+    it("should return the hbar balance", async function () {
         const balance = await new MirrorNodeAccountBalanceQuery()
             .setAccountId("0.0.123")
             .execute(client);
 
+        expect(balance).to.be.instanceOf(MirrorNodeAccountBalance);
         expect(balance.hbars.toTinybars().toString()).to.equal("5000000000");
+    });
 
-        // The `/tokens` endpoint wins — the truncated `balance.tokens`
-        // preview (0.0.999) must not appear.
-        expect(balance.tokens.get(TokenId.fromString("0.0.999"))).to.be.null;
-        expect(
-            balance.tokens.get(TokenId.fromString("0.0.111")).toString(),
-        ).to.equal("250");
-        expect(
-            balance.tokens.get(TokenId.fromString("0.0.222")).toString(),
-        ).to.equal("7");
-        expect(
-            balance.tokenDecimals.get(TokenId.fromString("0.0.111")),
-        ).to.equal(3);
-        expect(
-            balance.tokenDecimals.get(TokenId.fromString("0.0.222")),
-        ).to.equal(0);
+    it("should return zero hbars for an empty balances array", async function () {
+        fetchStub.resolves({
+            ok: true,
+            status: 200,
+            json: () =>
+                Promise.resolve({
+                    timestamp: null,
+                    balances: [],
+                    links: { next: null },
+                }),
+        });
+
+        const balance = await new MirrorNodeAccountBalanceQuery()
+            .setAccountId("0.0.123")
+            .execute(client);
+
+        expect(balance.hbars.toTinybars().toString()).to.equal("0");
+    });
+
+    it("should be immutable", async function () {
+        const balance = await new MirrorNodeAccountBalanceQuery()
+            .setAccountId("0.0.123")
+            .execute(client);
+
+        expect(Object.isFrozen(balance)).to.be.true;
     });
 });

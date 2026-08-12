@@ -42,9 +42,6 @@ async function main() {
         console.log(
             `${operatorId.toString()} balance = ${balance.hbars.toString()}`,
         );
-        console.log(
-            `${operatorId.toString()} holds ${balance.tokens.size} token(s)`,
-        );
     } catch (error) {
         console.error(error);
     }

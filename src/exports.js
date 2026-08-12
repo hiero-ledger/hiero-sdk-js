@@ -23,6 +23,7 @@ export { default as AccountAllowanceApproveTransaction } from "./account/Account
 export { default as AccountAllowanceDeleteTransaction } from "./account/AccountAllowanceDeleteTransaction.js";
 export { default as AccountBalance } from "./account/AccountBalance.js";
 export { default as AccountBalanceQuery } from "./account/AccountBalanceQuery.js";
+export { default as MirrorNodeAccountBalance } from "./account/MirrorNodeAccountBalance.js";
 export { default as MirrorNodeAccountBalanceQuery } from "./query/MirrorNodeAccountBalanceQuery.js";
 export { default as AccountCreateTransaction } from "./account/AccountCreateTransaction.js";
 export { default as AccountDeleteTransaction } from "./account/AccountDeleteTransaction.js";
