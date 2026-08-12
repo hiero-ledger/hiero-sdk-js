@@ -40,11 +40,15 @@ const exampleTimeoutMs = Math.max(
     parseInt(process.env.EXAMPLES_TIMEOUT_MS || "300000", 10),
 );
 
+// Cap captured per-example output so a chatty example cannot exhaust memory.
+const maxCapturedOutput = 64 * 1024;
+
 /**
  * @typedef {object} ExampleRunResult
  * @property {string} file
  * @property {number} code
  * @property {boolean} timedOut
+ * @property {string} output
  */
 
 /**
@@ -55,8 +59,21 @@ const exampleTimeoutMs = Math.max(
 function runExample(examplePath, file) {
     return new Promise((resolve, reject) => {
         const child = spawn(cmd, [examplePath], {
-            stdio: "ignore",
+            stdio: ["ignore", "pipe", "pipe"],
         });
+        // Keep the output so it can be printed when the example fails;
+        // without it a failure is undiagnosable from the CI log.
+        let output = "";
+        /**
+         * @param {Buffer} chunk
+         */
+        const capture = (chunk) => {
+            if (output.length < maxCapturedOutput) {
+                output += chunk.toString();
+            }
+        };
+        child.stdout.on("data", capture);
+        child.stderr.on("data", capture);
         let timedOut = false;
         const timer = setTimeout(() => {
             timedOut = true;
@@ -64,13 +81,27 @@ function runExample(examplePath, file) {
         }, exampleTimeoutMs);
         child.on("close", (code) => {
             clearTimeout(timer);
-            resolve({ file, code: code ?? -1, timedOut });
+            resolve({ file, code: code ?? -1, timedOut, output });
         });
         child.on("error", (error) => {
             clearTimeout(timer);
             reject(error);
         });
     });
+}
+
+/**
+ * @param {string} file
+ * @param {string} output
+ * @returns {void}
+ */
+function printOutput(file, output) {
+    if (output.length === 0) {
+        return;
+    }
+    console.log(`----- output of ${file} -----`);
+    console.log(output.trimEnd());
+    console.log(`----- end of output of ${file} -----`);
 }
 
 /**
@@ -98,20 +129,22 @@ async function runInParallel(examples, maxConcurrency) {
                 file: f,
                 code,
                 timedOut,
+                output,
             } = await runExample(examplePath, file);
             if (timedOut) {
                 failed += 1;
                 console.log(
                     `❌ ${f} timed out after ${String(exampleTimeoutMs)} ms and was killed.`,
                 );
+                printOutput(f, output);
             } else if (code === 0) {
                 completed += 1;
                 console.log(`✅ ${f} completed.`);
             } else {
                 failed += 1;
                 console.log(`❌ ${f} failed with code ${String(code)}.`);
+                printOutput(f, output);
             }
-            index = nextIndex++;
         }
     }
 
