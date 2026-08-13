@@ -424,9 +424,9 @@ describe("NativeChannel", function () {
             expect(options.headers["content-type"]).to.equal(
                 "application/grpc-web-text",
             );
-            expect(options.headers["x-accept-content-transfer-encoding"]).to.equal(
-                "base64",
-            );
+            expect(
+                options.headers["x-accept-content-transfer-encoding"],
+            ).to.equal("base64");
             expect(options.headers["x-grpc-web"]).to.equal("1");
             expect(options.headers["x-user-agent"]).to.be.a("string");
         });
@@ -739,7 +739,9 @@ describe("NativeChannel", function () {
 
             // Only one fetch call — the RPC itself, no health check
             expect(mockFetch).toHaveBeenCalledTimes(1);
-            expect(mockFetch.mock.calls[0][0]).to.include("/proto.CryptoService/");
+            expect(mockFetch.mock.calls[0][0]).to.include(
+                "/proto.CryptoService/",
+            );
         });
 
         it("should not attempt response decoding on non-OK response", async function () {
