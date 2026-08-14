@@ -33,11 +33,18 @@ const concurrency = Math.max(
     1,
     parseInt(process.env.EXAMPLES_CONCURRENCY || "4", 10),
 );
+// An example that never exits must not stall the whole run until the
+// CI job-level timeout (6 hours) kills it; kill it here instead.
+const exampleTimeoutMs = Math.max(
+    1000,
+    parseInt(process.env.EXAMPLES_TIMEOUT_MS || "300000", 10),
+);
 
 /**
  * @typedef {object} ExampleRunResult
  * @property {string} file
  * @property {number} code
+ * @property {boolean} timedOut
  */
 
 /**
@@ -50,10 +57,19 @@ function runExample(examplePath, file) {
         const child = spawn(cmd, [examplePath], {
             stdio: "ignore",
         });
+        let timedOut = false;
+        const timer = setTimeout(() => {
+            timedOut = true;
+            child.kill("SIGKILL");
+        }, exampleTimeoutMs);
         child.on("close", (code) => {
-            resolve({ file, code: code ?? -1 });
+            clearTimeout(timer);
+            resolve({ file, code: code ?? -1, timedOut });
         });
-        child.on("error", reject);
+        child.on("error", (error) => {
+            clearTimeout(timer);
+            reject(error);
+        });
     });
 }
 
@@ -78,8 +94,17 @@ async function runInParallel(examples, maxConcurrency) {
             console.log(
                 `\n⏳ ${String(index + 1)}/${String(total)}. Running ${file}...`,
             );
-            const { file: f, code } = await runExample(examplePath, file);
-            if (code === 0) {
+            const {
+                file: f,
+                code,
+                timedOut,
+            } = await runExample(examplePath, file);
+            if (timedOut) {
+                failed += 1;
+                console.log(
+                    `❌ ${f} timed out after ${String(exampleTimeoutMs)} ms and was killed.`,
+                );
+            } else if (code === 0) {
                 completed += 1;
                 console.log(`✅ ${f} completed.`);
             } else {
