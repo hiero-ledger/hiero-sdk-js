@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import AccountId from "../account/AccountId.js";
-import AccountBalanceQuery from "../account/AccountBalanceQuery.js";
+import AccountInfoQuery from "../account/AccountInfoQuery.js";
 import Hbar from "../Hbar.js";
 import Network from "./Network.js";
 import MirrorNetwork from "./MirrorNetwork.js";
@@ -867,16 +867,23 @@ export default class Client {
     }
 
     /**
+     * Probe the liveness of the node with the given account ID by sending a
+     * `CryptoService/getAccountInfo` query for account `<shard>.<realm>.2`
+     * with `ResponseType = COST_ANSWER` — the node answers with the query fee
+     * without executing the query, so no HBAR is charged and no operator is
+     * required. A cost response means success; a gRPC failure propagates.
+     *
      * @param {AccountId | string} accountId
      */
     async ping(accountId) {
-        await new AccountBalanceQuery({ accountId })
+        await new AccountInfoQuery()
+            .setAccountId(new AccountId(this._shard, this._realm, 2))
             .setNodeAccountIds([
                 accountId instanceof AccountId
                     ? accountId
                     : AccountId.fromString(accountId),
             ])
-            .execute(this);
+            .getCost(this);
     }
 
     async pingAll() {
