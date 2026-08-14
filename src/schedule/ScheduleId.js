@@ -7,7 +7,7 @@ import * as HieroProto from "@hiero-ledger/proto";
  * @typedef {import("long")} Long
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
- * @typedef {import("../client/Client.js").default<any, any>} Client
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  */
 
 /**
