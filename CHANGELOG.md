@@ -5,10 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-# Unreleased
+# v2.87.0
+
+### Added
+- `MirrorNodeAccountBalanceQuery`, the mirror-node replacement for `AccountBalanceQuery` ahead of its deprecation. Resolves `shard.realm.num` IDs, EVM addresses, public-key aliases, and contract IDs through a single `GET /api/v1/balances` request and returns the read-only `MirrorNodeAccountBalance` carrying `hbars`; retries 5xx/network failures with exponential backoff within a total `requestTimeout` budget. Token balances are deliberately out of scope per the migration proposal. [#4320](https://github.com/hiero-ledger/hiero-sdk-js/pull/4320) [#4286](https://github.com/hiero-ledger/hiero-sdk-js/issues/4286)
+- Mirror node streaming queries (e.g. `TopicMessageQuery` subscriptions) now work on `WebClient` and `NativeClient`, not just the Node client: new gRPC-Web mirror channels for browsers (streaming `fetch`) and React Native (`XMLHttpRequest` text mode with incremental base64 decoding). [#4268](https://github.com/hiero-ledger/hiero-sdk-js/pull/4268) [#4263](https://github.com/hiero-ledger/hiero-sdk-js/issues/4263)
 
 ### Changed
-- Re-applied the `@noble` / `@scure` v2 upgrade (reverted in v2.86.2) with the ESM-only packages bundled into the CommonJS artifact (`lib/index.cjs`) via esbuild, so `require()` no longer fails with `ERR_REQUIRE_ESM` on ts-node or Node.js < 20.19. The strict-CJS guard now runs the entire `common_js_test` suite under `--no-experimental-require-module` in CI, and the `@noble/curves` `>=2.0.0` Dependabot ignore was removed. `PublicKey.verify()` continues to accept 65-byte recoverable ECDSA signatures (`r || s || v`) as before. [#4296](https://github.com/hiero-ledger/hiero-sdk-js/pull/4296)
+- Re-applied the `@noble` / `@scure` v2 upgrade (reverted in v2.86.2) with the ESM-only packages bundled into the CommonJS artifact (`lib/index.cjs`) via esbuild, so `require()` no longer fails with `ERR_REQUIRE_ESM` on ts-node or Node.js < 20.19. The strict-CJS guard now runs the entire `common_js_test` suite under `--no-experimental-require-module` in CI, and the `@noble/curves` `>=2.0.0` Dependabot ignore was removed. `PublicKey.verify()` continues to accept 65-byte recoverable ECDSA signatures (`r || s || v`) as before. Released as `@hiero-ledger/cryptography@1.21.0`. [#4296](https://github.com/hiero-ledger/hiero-sdk-js/pull/4296)
+- Upgraded `ansi-styles` from `6.2.3` to `7.0.0`. [#4303](https://github.com/hiero-ledger/hiero-sdk-js/pull/4303)
+
+### Fixed
+- `Client.ping()` / `Client.pingAll()` now probe nodes with a free `COST_ANSWER` `AccountInfoQuery` instead of `AccountBalanceQuery`, whose `cryptoGetBalance` endpoint is being throttled to zero in consensus node release 77. `CostQuery` (and therefore `Query.getCost()`) no longer requires an operator: the payment transaction is left unsigned when none is configured, so operator-less clients can still ping. [#4312](https://github.com/hiero-ledger/hiero-sdk-js/pull/4312)
+- `NativeChannel` (React Native transport) no longer keeps processing the response after reporting an HTTP error, which previously invoked the gRPC callback a second time. [#4181](https://github.com/hiero-ledger/hiero-sdk-js/pull/4181)
+
+### Removed
+- **Breaking:** removed long-deprecated APIs: `LiveHashAddTransaction`, `LiveHashDeleteTransaction`, `LiveHashQuery`, `LiveHash`, `AccountInfo.liveHashes`, `SystemDeleteTransaction`, `SystemUndeleteTransaction`, `EthereumFlow` (use `EthereumTransaction`), `AccountAllowanceAdjustTransaction` (use `AccountAllowanceApproveTransaction` / `AccountAllowanceDeleteTransaction`), and `toSolidityAddress()` / `fromSolidityAddress()` on `AccountId`, `ContractId`, `DelegateContractId`, `FileId`, `TokenId`, and `TopicId` (use `toEvmAddress()` / `fromEvmAddress()`). `ScheduleId.toSolidityAddress()` / `fromSolidityAddress()` are kept for now, as `ScheduleId` has no `toEvmAddress()` replacement yet. [#4269](https://github.com/hiero-ledger/hiero-sdk-js/pull/4269) [#4264](https://github.com/hiero-ledger/hiero-sdk-js/issues/4264)
 
 # v2.86.2
 
