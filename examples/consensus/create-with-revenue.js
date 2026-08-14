@@ -15,7 +15,7 @@ import {
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
-import { getAccountBalance } from "../utils/balance.js";
+import { getAccountBalanceWithTokens } from "../utils/balance.js";
 
 dotenv.config();
 
@@ -86,12 +86,12 @@ async function main() {
          * Submit a message to that topic, paid for by alice, specifying max custom fee amount bigger than the topic’s amount.
          */
 
-        let aliceBalanceBefore = await getAccountBalance(
+        let aliceBalanceBefore = await getAccountBalanceWithTokens(
             client,
             aliceAccountId,
         );
 
-        let feeCollectorBalanceBefore = await getAccountBalance(
+        let feeCollectorBalanceBefore = await getAccountBalanceWithTokens(
             client,
             operatorId,
         );
@@ -125,9 +125,12 @@ async function main() {
 
         client.setOperator(operatorId, operatorKey);
 
-        let aliceBalanceAfter = await getAccountBalance(client, aliceAccountId);
+        let aliceBalanceAfter = await getAccountBalanceWithTokens(
+            client,
+            aliceAccountId,
+        );
 
-        let feeCollectorBalanceAfter = await getAccountBalance(
+        let feeCollectorBalanceAfter = await getAccountBalanceWithTokens(
             client,
             operatorId,
         );
@@ -189,9 +192,15 @@ async function main() {
          * Submit another message to that topic, paid by alice, without specifying max custom fee amount.
          */
 
-        aliceBalanceBefore = await getAccountBalance(client, aliceAccountId);
+        aliceBalanceBefore = await getAccountBalanceWithTokens(
+            client,
+            aliceAccountId,
+        );
 
-        feeCollectorBalanceBefore = await getAccountBalance(client, operatorId);
+        feeCollectorBalanceBefore = await getAccountBalanceWithTokens(
+            client,
+            operatorId,
+        );
 
         console.log("Submitting a message as alice to the topic");
         client.setOperator(aliceAccountId, aliceKey);
@@ -210,9 +219,15 @@ async function main() {
          * Verify alice was debited the new fee amount and the fee collector account was credited the amount.
          */
 
-        aliceBalanceAfter = await getAccountBalance(client, aliceAccountId);
+        aliceBalanceAfter = await getAccountBalanceWithTokens(
+            client,
+            aliceAccountId,
+        );
 
-        feeCollectorBalanceAfter = await getAccountBalance(client, operatorId);
+        feeCollectorBalanceAfter = await getAccountBalanceWithTokens(
+            client,
+            operatorId,
+        );
 
         console.log(
             `Alice's hbars balance before: ${aliceBalanceBefore.hbars.toString()} and after: ${aliceBalanceAfter.hbars.toString()}`,
@@ -274,7 +289,10 @@ async function main() {
          * Submit another message to that topic, paid with bob, without specifying max custom fee amount.
          */
 
-        const bobBalanceBefore = await getAccountBalance(client, bobAccountId);
+        const bobBalanceBefore = await getAccountBalanceWithTokens(
+            client,
+            bobAccountId,
+        );
 
         client.setOperator(bobAccountId, bobKey);
 
@@ -295,7 +313,10 @@ async function main() {
          * Step 12:
          * Verify bob was not debited the fee amount.
          */
-        const bobBalanceAfter = await getAccountBalance(client, bobAccountId);
+        const bobBalanceAfter = await getAccountBalanceWithTokens(
+            client,
+            bobAccountId,
+        );
 
         console.log(
             `Bob's hbars balance before: ${bobBalanceBefore.hbars.toString()} and after: ${bobBalanceAfter.hbars.toString()}`,

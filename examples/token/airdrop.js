@@ -15,7 +15,7 @@ import {
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
-import { getAccountBalance } from "../utils/balance.js";
+import { getAccountBalanceWithTokens } from "../utils/balance.js";
 
 dotenv.config();
 
@@ -196,11 +196,11 @@ async function main() {
      * STEP 5:
      * Query to verify account 1 and Account 2 have received the airdrops and Account 3 has not
      */
-    let account1Balance = await getAccountBalance(client, accountId1);
+    let account1Balance = await getAccountBalanceWithTokens(client, accountId1);
 
-    let account2Balance = await getAccountBalance(client, accountId2);
+    let account2Balance = await getAccountBalanceWithTokens(client, accountId2);
 
-    let account3Balance = await getAccountBalance(client, accountId3);
+    let account3Balance = await getAccountBalanceWithTokens(client, accountId3);
 
     console.log(
         "Account1 balance after airdrop: ",
@@ -227,7 +227,7 @@ async function main() {
         ).execute(client)
     ).getReceipt(client);
 
-    const account3BalanceAfterClaim = await getAccountBalance(
+    const account3BalanceAfterClaim = await getAccountBalanceWithTokens(
         client,
         accountId3,
     );
@@ -279,9 +279,9 @@ async function main() {
      * Step 9:
      * Query to verify Account 1 received the airdrop and Account 2 and Account 3 did not
      */
-    account1Balance = await getAccountBalance(client, accountId1);
+    account1Balance = await getAccountBalanceWithTokens(client, accountId1);
 
-    account2Balance = await getAccountBalance(client, accountId2);
+    account2Balance = await getAccountBalanceWithTokens(client, accountId2);
 
     console.log(
         "Account 1 NFT Balance after airdrop",
@@ -309,7 +309,7 @@ async function main() {
         ).execute(client)
     ).getReceipt(client);
 
-    account2Balance = await getAccountBalance(client, accountId2);
+    account2Balance = await getAccountBalanceWithTokens(client, accountId2);
 
     console.log(
         "Account 2 nft balance after claim: ",
@@ -325,7 +325,7 @@ async function main() {
         .addPendingAirdropId(newPendingAirdropsNfts[1].airdropId)
         .execute(client);
 
-    account3Balance = await getAccountBalance(client, accountId3);
+    account3Balance = await getAccountBalanceWithTokens(client, accountId3);
 
     console.log(
         "Account 3 nft balance after cancel: ",
@@ -351,7 +351,7 @@ async function main() {
      * Step 13:
      * Query to verify Account 2 no longer has the NFT
      */
-    account2Balance = await getAccountBalance(client, accountId2);
+    account2Balance = await getAccountBalanceWithTokens(client, accountId2);
     console.log(
         "Account 2 nft balance after reject: ",
         account2Balance.tokens.get(nftId.toString()).toInt(),
@@ -361,7 +361,10 @@ async function main() {
      * Step 14:
      * Query to verify treasury has received the NFT back
      */
-    let treasuryBalance = await getAccountBalance(client, treasuryAccount);
+    let treasuryBalance = await getAccountBalanceWithTokens(
+        client,
+        treasuryAccount,
+    );
     console.log(
         "Treasury nft balance after reject: ",
         treasuryBalance.tokens.get(nftId.toString()).toInt(),
@@ -382,14 +385,17 @@ async function main() {
         ).execute(client)
     ).getReceipt(client);
 
-    account3Balance = await getAccountBalance(client, accountId3);
+    account3Balance = await getAccountBalanceWithTokens(client, accountId3);
 
     console.log(
         "Account 3 balance after reject: ",
         account3Balance.tokens.get(tokenId.toString()).toInt(),
     );
 
-    treasuryBalance = await getAccountBalance(client, treasuryAccount);
+    treasuryBalance = await getAccountBalanceWithTokens(
+        client,
+        treasuryAccount,
+    );
 
     console.log(
         "Treasury balance after reject: ",

@@ -13,7 +13,7 @@ import {
     TokenSupplyType,
 } from "@hiero-ledger/sdk";
 import dotenv from "dotenv";
-import { getAccountBalance } from "../utils/balance.js";
+import { getAccountBalanceWithTokens } from "../utils/balance.js";
 
 dotenv.config();
 
@@ -148,16 +148,16 @@ async function main() {
     console.log("Before Token Reject");
     console.log("=======================");
     const receiverFTBalanceBefore = (
-        await getAccountBalance(client, receiverAccountId)
+        await getAccountBalanceWithTokens(client, receiverAccountId)
     ).tokens.get(ftId.toString());
     const treasuryFTBalanceBefore = (
-        await getAccountBalance(client, treasuryAccountId)
+        await getAccountBalanceWithTokens(client, treasuryAccountId)
     ).tokens.get(ftId.toString());
     const receiverNFTBalanceBefore = (
-        await getAccountBalance(client, receiverAccountId)
+        await getAccountBalanceWithTokens(client, receiverAccountId)
     ).tokens.get(nftId.toString());
     const treasuryNFTBalanceBefore = (
-        await getAccountBalance(client, treasuryAccountId)
+        await getAccountBalanceWithTokens(client, treasuryAccountId)
     ).tokens.get(nftId.toString());
     console.log("Receiver FT balance: ", receiverFTBalanceBefore.toInt());
     console.log("Treasury FT balance: ", treasuryFTBalanceBefore.toInt());
@@ -196,19 +196,19 @@ async function main() {
     console.log("=======================");
 
     const receiverFTBalanceAfter = (
-        await getAccountBalance(client, receiverAccountId)
+        await getAccountBalanceWithTokens(client, receiverAccountId)
     ).tokens.get(ftId.toString());
 
     const treasuryFTBalanceAfter = (
-        await getAccountBalance(client, treasuryAccountId)
+        await getAccountBalanceWithTokens(client, treasuryAccountId)
     ).tokens.get(ftId.toString());
 
     const receiverNFTBalanceAfter = (
-        await getAccountBalance(client, receiverAccountId)
+        await getAccountBalanceWithTokens(client, receiverAccountId)
     ).tokens.get(nftId.toString());
 
     const treasuryNFTBalanceAfter = (
-        await getAccountBalance(client, treasuryAccountId)
+        await getAccountBalanceWithTokens(client, treasuryAccountId)
     ).tokens.get(nftId.toString());
 
     console.log("TokenReject response:", tokenRejectStatus);

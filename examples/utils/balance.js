@@ -51,19 +51,37 @@ export function waitForMirrorNode() {
 }
 
 /**
+ * Read an account's HBAR balance, from the mirror node.
+ *
+ * @param {Client} client
+ * @param {AccountId | string} accountId
+ * @returns {Promise<{hbars: Hbar}>}
+ */
+export async function getAccountBalance(client, accountId) {
+    return { hbars: await getHbarBalance(client, accountId) };
+}
+
+/**
  * Read an account's HBAR and token balances.
+ *
  *
  * @param {Client} client
  * @param {AccountId | string} accountId
  * @returns {Promise<Balance>}
  */
-export async function getAccountBalance(client, accountId) {
-    const [hbars, tokens] = await Promise.all([
-        getHbarBalance(client, accountId),
-        getTokenBalances(client, accountId),
-    ]);
+export async function getAccountBalanceWithTokens(client, accountId) {
+    const info = await new AccountInfoQuery()
+        .setAccountId(accountId)
+        .execute(client);
 
-    return { hbars, tokens };
+    /** @type {Map<string, Long>} */
+    const tokens = new Map();
+
+    for (const [tokenId, relationship] of info.tokenRelationships) {
+        tokens.set(tokenId.toString(), relationship.balance);
+    }
+
+    return { hbars: info.balance, tokens };
 }
 
 /**
@@ -91,18 +109,7 @@ export async function getHbarBalance(client, accountId) {
  * @returns {Promise<Map<string, Long>>}
  */
 export async function getTokenBalances(client, accountId) {
-    const info = await new AccountInfoQuery()
-        .setAccountId(accountId)
-        .execute(client);
-
-    /** @type {Map<string, Long>} */
-    const tokens = new Map();
-
-    for (const [tokenId, relationship] of info.tokenRelationships) {
-        tokens.set(tokenId.toString(), relationship.balance);
-    }
-
-    return tokens;
+    return (await getAccountBalanceWithTokens(client, accountId)).tokens;
 }
 
 /**
