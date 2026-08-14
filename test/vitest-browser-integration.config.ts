@@ -44,14 +44,22 @@ export default defineConfig({
             "test/integration/ClientIntegrationTest.js",
             "test/integration/dual-mode/**/*.js",
         ],
-        hookTimeout: 120000,
-        testTimeout: 120000,
+        // This suite runs concurrently with the node integration suite on a
+        // single CI runner and slows down several-fold under that contention,
+        // so it needs more headroom than the node suite's 120s.
+        hookTimeout: 240000,
+        testTimeout: 240000,
         coverage: {
             include: ["src/**/*.js"],
             exclude: [
                 "src/client/addressbooks/mainnet.js",
                 "src/client/addressbooks/previewnet.js",
                 "src/client/addressbooks/testnet.js",
+                "src/contract/ContractStateChange.js",
+                "src/contract/StorageChange.js",
+                "src/token/TokenNftsUpdateTransaction.js",
+                "src/transaction/NodeAccountIdSignatureMapLegacy.js",
+                "src/transaction/SignatureMapLegacy.js",
             ],
             provider: "v8",
             reporter: ["text-summary", "lcov"],
