@@ -42,10 +42,11 @@ async function main() {
         "Consensus Service Submit Large Message And Subscribe Example Start!",
     );
 
-    // Load the ~14KB lorem-ipsum fixture from disk.
+    // Load the ~14KB lorem-ipsum fixture from disk. It lives in the
+    // examples root directory, one level above this file.
     /** @type {string} */
     const largeMessage = await readFile(
-        join(__dirname, "large_message.txt"),
+        join(__dirname, "..", "large_message.txt"),
         "utf8",
     );
 
