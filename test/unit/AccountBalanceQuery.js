@@ -149,6 +149,9 @@ describe("AccountBalanceQuery", function () {
         }
 
         expect(error).to.be.an("Error");
+        expect(error.message).to.equal(
+            ACCOUNT_BALANCE_QUERY_DEPRECATION_MESSAGE,
+        );
         expect(rpcAttempts()).to.equal(0);
 
         client.close();

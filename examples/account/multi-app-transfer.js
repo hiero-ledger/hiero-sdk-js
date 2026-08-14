@@ -4,13 +4,13 @@ import {
     PrivateKey,
     Hbar,
     AccountCreateTransaction,
-    AccountBalanceQuery,
     AccountDeleteTransaction,
     TransferTransaction,
     Transaction,
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
+import { getAccountBalance } from "../utils/balance.js";
 
 dotenv.config();
 
@@ -76,15 +76,10 @@ async function main() {
         ).getReceipt(client)
     ).accountId;
 
-    const senderBalanceBefore = (
-        await new AccountBalanceQuery()
-            .setAccountId(userAccountId)
-            .execute(client)
-    ).hbars;
+    const senderBalanceBefore = (await getAccountBalance(client, userAccountId))
+        .hbars;
     const exchangeBalanceBefore = (
-        await new AccountBalanceQuery()
-            .setAccountId(exchangeAccountId)
-            .execute(client)
+        await getAccountBalance(client, exchangeAccountId)
     ).hbars;
     console.log(
         `User account (${userAccountId.toString()}) balance: ${senderBalanceBefore.toString()}`,
@@ -124,15 +119,10 @@ async function main() {
     await transferResponse.getReceipt(client);
 
     // Step 4: Confirm balances after the transfer.
-    const senderBalanceAfter = (
-        await new AccountBalanceQuery()
-            .setAccountId(userAccountId)
-            .execute(client)
-    ).hbars;
+    const senderBalanceAfter = (await getAccountBalance(client, userAccountId))
+        .hbars;
     const exchangeBalanceAfter = (
-        await new AccountBalanceQuery()
-            .setAccountId(exchangeAccountId)
-            .execute(client)
+        await getAccountBalance(client, exchangeAccountId)
     ).hbars;
     console.log(
         `User account (${userAccountId.toString()}) balance: ${senderBalanceAfter.toString()}`,

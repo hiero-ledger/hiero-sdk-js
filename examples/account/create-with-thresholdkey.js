@@ -5,7 +5,6 @@ import {
     Hbar,
     AccountCreateTransaction,
     TransferTransaction,
-    AccountBalanceQuery,
     AccountDeleteTransaction,
     KeyList,
     Logger,
@@ -13,6 +12,7 @@ import {
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
+import { getAccountBalance } from "../utils/balance.js";
 
 dotenv.config();
 
@@ -116,9 +116,10 @@ async function main() {
         await transferTxResponse.getReceipt(client);
 
         // Query the account balance after the transfer
-        const accountBalanceAfterTransfer = await new AccountBalanceQuery()
-            .setAccountId(newAccountId)
-            .execute(client);
+        const accountBalanceAfterTransfer = await getAccountBalance(
+            client,
+            newAccountId,
+        );
 
         console.log(
             "New account's Hbar balance after transfer: " +

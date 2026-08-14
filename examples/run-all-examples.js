@@ -8,6 +8,7 @@ dotenv.config();
 const examplesDirectory = "./";
 const excludedDirectories = [
     "./node_modules",
+    "./utils",
     "./precompile-example",
     "./react-native-example",
     "./react-native-example-legacy",

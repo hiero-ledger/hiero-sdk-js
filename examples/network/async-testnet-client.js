@@ -3,12 +3,12 @@ import {
     AccountId,
     PrivateKey,
     AccountCreateTransaction,
-    AccountBalanceQuery,
     Hbar,
     LedgerId,
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
+import { getAccountBalance } from "../utils/balance.js";
 
 dotenv.config();
 
@@ -68,9 +68,7 @@ async function main() {
         // Query account balance
         console.log("Querying account balance...");
         try {
-            const balance = await new AccountBalanceQuery()
-                .setAccountId(operatorId)
-                .execute(client);
+            const balance = await getAccountBalance(client, operatorId);
 
             console.log(`Account Balance: ${balance.hbars.toString()}\n`);
         } catch (error) {

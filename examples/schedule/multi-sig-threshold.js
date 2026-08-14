@@ -3,9 +3,9 @@ import {
     LocalProvider,
     PrivateKey,
     KeyList,
+    AccountInfoQuery,
     AccountCreateTransaction,
     Hbar,
-    AccountBalanceQuery,
     TransferTransaction,
     ScheduleSignTransaction,
     ScheduleInfoQuery,
@@ -17,7 +17,6 @@ import dotenv from "dotenv";
 dotenv.config();
 
 /**
- * @typedef {import("@hiero-ledger/sdk").AccountBalance} AccountBalance
  * @typedef {import("@hiero-ledger/sdk").AccountId} AccountId
  */
 
@@ -161,18 +160,18 @@ async function main() {
 /**
  * @param {AccountId} accountId
  * @param {Wallet} wallet
- * @returns {Promise<AccountBalance>}
+ * @returns {Promise<Hbar>}
  */
 async function queryBalance(accountId, wallet) {
-    const accountBalance = await new AccountBalanceQuery()
+    const { balance } = await new AccountInfoQuery()
         .setAccountId(accountId)
         .executeWithSigner(wallet);
     console.log(
-        `Balance of account ${accountId.toString()}: ${accountBalance.hbars
+        `Balance of account ${accountId.toString()}: ${balance
             .toTinybars()
             .toInt()} tinybar`,
     );
-    return accountBalance;
+    return balance;
 }
 
 void main();

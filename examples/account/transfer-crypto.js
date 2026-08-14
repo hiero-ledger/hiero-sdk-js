@@ -3,11 +3,11 @@ import {
     AccountId,
     PrivateKey,
     Hbar,
-    AccountBalanceQuery,
     TransferTransaction,
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
+import { getAccountBalance } from "../utils/balance.js";
 
 dotenv.config();
 
@@ -37,13 +37,10 @@ async function main() {
     const recipientId = AccountId.fromString("0.0.3");
 
     // Step 1: Check Hbar balance of sender and recipient.
-    const senderBalanceBefore = (
-        await new AccountBalanceQuery().setAccountId(operatorId).execute(client)
-    ).hbars;
+    const senderBalanceBefore = (await getAccountBalance(client, operatorId))
+        .hbars;
     const recipientBalanceBefore = (
-        await new AccountBalanceQuery()
-            .setAccountId(recipientId)
-            .execute(client)
+        await getAccountBalance(client, recipientId)
     ).hbars;
 
     console.log(
@@ -69,14 +66,10 @@ async function main() {
     console.log(`Transfer memo: ${record.transactionMemo}`);
 
     // Step 3: Check Hbar balance of sender and recipient after the transfer.
-    const senderBalanceAfter = (
-        await new AccountBalanceQuery().setAccountId(operatorId).execute(client)
-    ).hbars;
-    const recipientBalanceAfter = (
-        await new AccountBalanceQuery()
-            .setAccountId(recipientId)
-            .execute(client)
-    ).hbars;
+    const senderBalanceAfter = (await getAccountBalance(client, operatorId))
+        .hbars;
+    const recipientBalanceAfter = (await getAccountBalance(client, recipientId))
+        .hbars;
 
     console.log(
         `Sender (${operatorId.toString()}) balance after transfer: ${senderBalanceAfter.toString()}`,

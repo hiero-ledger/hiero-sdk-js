@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import Client from "./client/WebClient.js";
-import AccountBalanceQuery from "./account/AccountBalanceQuery.js";
+import { ACCOUNT_BALANCE_QUERY_DEPRECATION_MESSAGE } from "./account/AccountBalanceQuery.js";
 import AccountInfoQuery from "./account/AccountInfoQuery.js";
 import AccountRecordsQuery from "./account/AccountRecordsQuery.js";
 import TransactionReceiptQuery from "./transaction/TransactionReceiptQuery.js";
@@ -81,13 +81,20 @@ export default class LocalProviderWeb {
     }
 
     /**
+     * @deprecated - The consensus node no longer serves account balances.
+     * Read them from the mirror node instead: `MirrorNodeAccountBalanceQuery`
+     * for HBAR, or the mirror node REST API for token balances.
+     *
+     * Rejects without contacting the network.
+     *
      * @param {AccountId | string} accountId
      * @returns {Promise<AccountBalance>}
      */
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     getAccountBalance(accountId) {
-        return new AccountBalanceQuery()
-            .setAccountId(accountId)
-            .execute(this._client);
+        return Promise.reject(
+            new Error(ACCOUNT_BALANCE_QUERY_DEPRECATION_MESSAGE),
+        );
     }
 
     /**

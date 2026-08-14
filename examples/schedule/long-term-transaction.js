@@ -7,12 +7,12 @@ import {
     TransferTransaction,
     ScheduleSignTransaction,
     ScheduleInfoQuery,
-    AccountBalanceQuery,
     AccountUpdateTransaction,
     Timestamp,
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
+import { getAccountBalance } from "../utils/balance.js";
 dotenv.config();
 
 /**
@@ -100,9 +100,7 @@ async function main() {
     );
 
     // Step 5: Sign the transaction with the other key
-    let accountBalance = await new AccountBalanceQuery()
-        .setAccountId(aliceId)
-        .execute(client);
+    let accountBalance = await getAccountBalance(client, aliceId);
     console.log(
         "Alice's account balance before schedule transfer: ",
         accountBalance.hbars.toString(),
@@ -118,9 +116,7 @@ async function main() {
         ).execute(client)
     ).getReceipt(client);
 
-    accountBalance = await new AccountBalanceQuery()
-        .setAccountId(aliceId)
-        .execute(client);
+    accountBalance = await getAccountBalance(client, aliceId);
     console.log(
         "Alice's account balance after schedule transfer: ",
         accountBalance.hbars.toString(),
@@ -187,9 +183,7 @@ async function main() {
     ).getReceipt(client);
 
     // Step 9: Verify that the transfer successfully executes
-    accountBalance = await new AccountBalanceQuery()
-        .setAccountId(aliceId)
-        .execute(client);
+    accountBalance = await getAccountBalance(client, aliceId);
     console.log(
         "Alice's account balance before schedule transfer: ",
         accountBalance.hbars.toString(),
@@ -198,9 +192,7 @@ async function main() {
     // Wait for the scheduled transaction to execute
     await new Promise((resolve) => setTimeout(resolve, 10000)); // Wait for 10 seconds
 
-    accountBalance = await new AccountBalanceQuery()
-        .setAccountId(aliceId)
-        .execute(client);
+    accountBalance = await getAccountBalance(client, aliceId);
     console.log(
         "Alice's account balance after schedule transfer: ",
         accountBalance.hbars.toString(),

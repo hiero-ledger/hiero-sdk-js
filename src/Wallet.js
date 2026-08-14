@@ -3,7 +3,7 @@
 import PrivateKey from "./PrivateKey.js";
 import AccountId from "./account/AccountId.js";
 import SignerSignature from "./SignerSignature.js";
-import AccountBalanceQuery from "./account/AccountBalanceQuery.js";
+import { ACCOUNT_BALANCE_QUERY_DEPRECATION_MESSAGE } from "./account/AccountBalanceQuery.js";
 import AccountInfoQuery from "./account/AccountInfoQuery.js";
 import AccountRecordsQuery from "./account/AccountRecordsQuery.js";
 import TransactionId from "./transaction/TransactionId.js";
@@ -162,11 +162,17 @@ export default class Wallet {
     }
 
     /**
+     * @deprecated - The consensus node no longer serves account balances.
+     * Read them from the mirror node instead: `MirrorNodeAccountBalanceQuery`
+     * for HBAR, or the mirror node REST API for token balances.
+     *
+     * Rejects without contacting the network.
+     *
      * @returns {Promise<AccountBalance>}
      */
     getAccountBalance() {
-        return this.call(
-            new AccountBalanceQuery().setAccountId(this.accountId),
+        return Promise.reject(
+            new Error(ACCOUNT_BALANCE_QUERY_DEPRECATION_MESSAGE),
         );
     }
 

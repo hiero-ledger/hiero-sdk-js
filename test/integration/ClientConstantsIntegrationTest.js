@@ -3,11 +3,7 @@ import {
     WEB_TESTNET,
     WEB_PREVIEWNET,
 } from "../../src/constants/ClientConstants.js";
-import {
-    AccountBalance,
-    AccountBalanceQuery,
-    Hbar,
-} from "../../src/exports.js";
+import { AccountInfo, AccountInfoQuery, Hbar } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 
 describe("ClientConstantsIntegrationTest", function () {
@@ -20,14 +16,14 @@ describe("ClientConstantsIntegrationTest", function () {
     describe("MAINNET node proxies", function () {
         const proxies = Object.keys(MAINNET);
         proxies.forEach((proxy) => {
-            it(`should fetch ${MAINNET[proxy]} account balnace`, async function () {
-                const accountBalance = await new AccountBalanceQuery()
+            it(`should fetch ${MAINNET[proxy]} account info`, async function () {
+                const accountInfo = await new AccountInfoQuery()
                     .setNodeAccountIds([MAINNET[proxy]])
                     .setAccountId(MAINNET[proxy])
                     .execute(env.client);
 
-                expect(accountBalance instanceof AccountBalance).to.be.true;
-                expect(accountBalance.hbars instanceof Hbar).to.be.true;
+                expect(accountInfo instanceof AccountInfo).to.be.true;
+                expect(accountInfo.balance instanceof Hbar).to.be.true;
             });
         });
     });
@@ -35,14 +31,14 @@ describe("ClientConstantsIntegrationTest", function () {
     describe("WEB TESTNET node proxies", function () {
         const proxies = Object.keys(WEB_TESTNET);
         proxies.forEach((proxy) => {
-            it(`should fetch ${WEB_TESTNET[proxy]} account balnace`, async function () {
-                const accountBalance = await new AccountBalanceQuery()
+            it(`should fetch ${WEB_TESTNET[proxy]} account info`, async function () {
+                const accountInfo = await new AccountInfoQuery()
                     .setNodeAccountIds([WEB_TESTNET[proxy]])
                     .setAccountId(WEB_TESTNET[proxy])
                     .execute(env.client);
 
-                expect(accountBalance instanceof AccountBalance).to.be.true;
-                expect(accountBalance.hbars instanceof Hbar).to.be.true;
+                expect(accountInfo instanceof AccountInfo).to.be.true;
+                expect(accountInfo.balance instanceof Hbar).to.be.true;
             });
         });
     });
@@ -50,14 +46,14 @@ describe("ClientConstantsIntegrationTest", function () {
     describe("WEB PREVIEWNET node proxies", function () {
         const proxies = Object.keys(WEB_PREVIEWNET);
         proxies.forEach((proxy) => {
-            it(`should fetch ${WEB_PREVIEWNET[proxy]} account balnace`, async function () {
-                const accountBalance = await new AccountBalanceQuery()
+            it(`should fetch ${WEB_PREVIEWNET[proxy]} account info`, async function () {
+                const accountInfo = await new AccountInfoQuery()
                     .setNodeAccountIds([WEB_PREVIEWNET[proxy]])
                     .setAccountId(WEB_PREVIEWNET[proxy])
                     .execute(env.client);
 
-                expect(accountBalance instanceof AccountBalance).to.be.true;
-                expect(accountBalance.hbars instanceof Hbar).to.be.true;
+                expect(accountInfo instanceof AccountInfo).to.be.true;
+                expect(accountInfo.balance instanceof Hbar).to.be.true;
             });
         });
     });
@@ -65,14 +61,14 @@ describe("ClientConstantsIntegrationTest", function () {
     describe("NATIVE PREVIEWNET node proxies", function () {
         const proxies = Object.keys(WEB_PREVIEWNET);
         proxies.forEach((proxy) => {
-            it(`should fetch ${WEB_PREVIEWNET[proxy]} account balnace`, async function () {
-                const accountBalance = await new AccountBalanceQuery()
+            it(`should fetch ${WEB_PREVIEWNET[proxy]} account info`, async function () {
+                const accountInfo = await new AccountInfoQuery()
                     .setNodeAccountIds([WEB_PREVIEWNET[proxy]])
                     .setAccountId(WEB_PREVIEWNET[proxy])
                     .execute(env.client);
 
-                expect(accountBalance instanceof AccountBalance).to.be.true;
-                expect(accountBalance.hbars instanceof Hbar).to.be.true;
+                expect(accountInfo instanceof AccountInfo).to.be.true;
+                expect(accountInfo.balance instanceof Hbar).to.be.true;
             });
         });
     });
@@ -80,14 +76,14 @@ describe("ClientConstantsIntegrationTest", function () {
     describe("NATIVE TESTNET node proxies", function () {
         const proxies = Object.keys(WEB_TESTNET);
         proxies.forEach((proxy) => {
-            it(`should fetch ${WEB_TESTNET[proxy]} account balnace`, async function () {
-                const accountBalance = await new AccountBalanceQuery()
+            it(`should fetch ${WEB_TESTNET[proxy]} account info`, async function () {
+                const accountInfo = await new AccountInfoQuery()
                     .setNodeAccountIds([WEB_TESTNET[proxy]])
                     .setAccountId(WEB_TESTNET[proxy])
                     .execute(env.client);
 
-                expect(accountBalance instanceof AccountBalance).to.be.true;
-                expect(accountBalance.hbars instanceof Hbar).to.be.true;
+                expect(accountInfo instanceof AccountInfo).to.be.true;
+                expect(accountInfo.balance instanceof Hbar).to.be.true;
             });
         });
     });

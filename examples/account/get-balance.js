@@ -1,10 +1,11 @@
-import { Wallet, LocalProvider, AccountBalanceQuery } from "@hiero-ledger/sdk";
+import { Wallet, LocalProvider, AccountInfoQuery } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
 
 dotenv.config();
 
 /**
+ * How to read the HBAR balance of the wallet's own account.
  *
  */
 async function main() {
@@ -27,14 +28,14 @@ async function main() {
     );
 
     try {
-        const balance = await new AccountBalanceQuery()
+        const info = await new AccountInfoQuery()
             .setAccountId(wallet.getAccountId())
             .executeWithSigner(wallet);
 
         console.log(
             `${wallet
                 .getAccountId()
-                .toString()} balance = ${balance.hbars.toString()}`,
+                .toString()} balance = ${info.balance.toString()}`,
         );
     } catch (error) {
         console.error(error);

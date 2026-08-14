@@ -2,7 +2,7 @@ import {
     Wallet,
     LocalProvider,
     PrivateKey,
-    AccountBalanceQuery,
+    AccountInfoQuery,
     AccountCreateTransaction,
     AccountDeleteTransaction,
     TransactionId,
@@ -280,24 +280,24 @@ async function main() {
 async function printBalances(wallet, aliceId, bobId, charlieId) {
     console.log(
         `Alice's balance: ${(
-            await new AccountBalanceQuery()
+            await new AccountInfoQuery()
                 .setAccountId(aliceId)
                 .executeWithSigner(wallet)
-        ).hbars.toString()}`,
+        ).balance.toString()}`,
     );
     console.log(
         `Bob's balance: ${(
-            await new AccountBalanceQuery()
+            await new AccountInfoQuery()
                 .setAccountId(bobId)
                 .executeWithSigner(wallet)
-        ).hbars.toString()}`,
+        ).balance.toString()}`,
     );
     console.log(
         `Charlie's balance: ${(
-            await new AccountBalanceQuery()
+            await new AccountInfoQuery()
                 .setAccountId(charlieId)
                 .executeWithSigner(wallet)
-        ).hbars.toString()}`,
+        ).balance.toString()}`,
     );
 }
 

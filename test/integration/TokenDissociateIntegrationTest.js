@@ -1,5 +1,4 @@
 import {
-    AccountBalanceQuery,
     AccountInfoQuery,
     Status,
     TokenAssociateTransaction,
@@ -13,6 +12,7 @@ import {
     createAccount,
     createFungibleToken,
     createNonFungibleToken,
+    getAccountBalance,
 } from "./utils/Fixtures.js";
 
 describe("TokenDissociate", function () {
@@ -41,9 +41,7 @@ describe("TokenDissociate", function () {
             ).execute(env.client)
         ).getReceipt(env.client);
 
-        let balances = await new AccountBalanceQuery()
-            .setAccountId(account)
-            .execute(env.client);
+        let balances = await getAccountBalance(env.client, account);
 
         expect(balances.tokens.get(token).toInt()).to.be.equal(0);
 
@@ -69,9 +67,7 @@ describe("TokenDissociate", function () {
             ).execute(env.client)
         ).getReceipt(env.client);
 
-        balances = await new AccountBalanceQuery()
-            .setAccountId(account)
-            .execute(env.client);
+        balances = await getAccountBalance(env.client, account);
 
         expect(balances.tokens.get(token)).to.be.null;
 

@@ -5,13 +5,13 @@ import {
     Hbar,
     AccountCreateTransaction,
     AccountDeleteTransaction,
-    AccountBalanceQuery,
     TransferTransaction,
     ScheduleSignTransaction,
     ScheduleInfoQuery,
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
+import { getAccountBalance } from "../utils/balance.js";
 
 dotenv.config();
 
@@ -66,11 +66,7 @@ async function main() {
     console.log(`Bob's account: ${bobAccountId.toString()}`);
 
     // Step 3: Read Bob's initial balance for the before/after comparison.
-    const balanceBefore = (
-        await new AccountBalanceQuery()
-            .setAccountId(bobAccountId)
-            .execute(client)
-    ).hbars;
+    const balanceBefore = (await getAccountBalance(client, bobAccountId)).hbars;
     console.log(`Bob's balance before schedule: ${balanceBefore.toString()}`);
 
     // Step 4: Alice builds the transfer and wraps it in a scheduled tx.
@@ -89,11 +85,8 @@ async function main() {
 
     // Step 5: Confirm Bob's balance hasn't changed — the schedule is pending
     // because Bob's signature is still missing.
-    const balancePending = (
-        await new AccountBalanceQuery()
-            .setAccountId(bobAccountId)
-            .execute(client)
-    ).hbars;
+    const balancePending = (await getAccountBalance(client, bobAccountId))
+        .hbars;
     console.log(
         `Bob's balance while schedule pending: ${balancePending.toString()}`,
     );
@@ -142,11 +135,7 @@ async function main() {
     await (await bobSignTx.execute(client)).getReceipt(client);
 
     // Step 8: Confirm Bob's balance now reflects the transfer.
-    const balanceAfter = (
-        await new AccountBalanceQuery()
-            .setAccountId(bobAccountId)
-            .execute(client)
-    ).hbars;
+    const balanceAfter = (await getAccountBalance(client, bobAccountId)).hbars;
     console.log(`Bob's balance after Bob signs: ${balanceAfter.toString()}`);
 
     // Step 9: ScheduleInfo should now show an `executed` timestamp.

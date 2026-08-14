@@ -10,12 +10,12 @@ import {
     Client,
     Hbar,
     CustomFixedFee,
-    AccountBalanceQuery,
     CustomFeeLimit,
     HbarUnit,
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
+import { getAccountBalance } from "../utils/balance.js";
 
 dotenv.config();
 
@@ -86,13 +86,15 @@ async function main() {
          * Submit a message to that topic, paid for by alice, specifying max custom fee amount bigger than the topic’s amount.
          */
 
-        let aliceBalanceBefore = await new AccountBalanceQuery()
-            .setAccountId(aliceAccountId)
-            .execute(client);
+        let aliceBalanceBefore = await getAccountBalance(
+            client,
+            aliceAccountId,
+        );
 
-        let feeCollectorBalanceBefore = await new AccountBalanceQuery()
-            .setAccountId(operatorId)
-            .execute(client);
+        let feeCollectorBalanceBefore = await getAccountBalance(
+            client,
+            operatorId,
+        );
 
         console.log("Submitting a message as alice to the topic");
 
@@ -123,13 +125,12 @@ async function main() {
 
         client.setOperator(operatorId, operatorKey);
 
-        let aliceBalanceAfter = await new AccountBalanceQuery()
-            .setAccountId(aliceAccountId)
-            .execute(client);
+        let aliceBalanceAfter = await getAccountBalance(client, aliceAccountId);
 
-        let feeCollectorBalanceAfter = await new AccountBalanceQuery()
-            .setAccountId(operatorId)
-            .execute(client);
+        let feeCollectorBalanceAfter = await getAccountBalance(
+            client,
+            operatorId,
+        );
 
         console.log(
             `Alice's balance before: ${aliceBalanceBefore.hbars.toString()} and after: ${aliceBalanceAfter.hbars.toString()}`,
@@ -188,13 +189,9 @@ async function main() {
          * Submit another message to that topic, paid by alice, without specifying max custom fee amount.
          */
 
-        aliceBalanceBefore = await new AccountBalanceQuery()
-            .setAccountId(aliceAccountId)
-            .execute(client);
+        aliceBalanceBefore = await getAccountBalance(client, aliceAccountId);
 
-        feeCollectorBalanceBefore = await new AccountBalanceQuery()
-            .setAccountId(operatorId)
-            .execute(client);
+        feeCollectorBalanceBefore = await getAccountBalance(client, operatorId);
 
         console.log("Submitting a message as alice to the topic");
         client.setOperator(aliceAccountId, aliceKey);
@@ -213,13 +210,9 @@ async function main() {
          * Verify alice was debited the new fee amount and the fee collector account was credited the amount.
          */
 
-        aliceBalanceAfter = await new AccountBalanceQuery()
-            .setAccountId(aliceAccountId)
-            .execute(client);
+        aliceBalanceAfter = await getAccountBalance(client, aliceAccountId);
 
-        feeCollectorBalanceAfter = await new AccountBalanceQuery()
-            .setAccountId(operatorId)
-            .execute(client);
+        feeCollectorBalanceAfter = await getAccountBalance(client, operatorId);
 
         console.log(
             `Alice's hbars balance before: ${aliceBalanceBefore.hbars.toString()} and after: ${aliceBalanceAfter.hbars.toString()}`,
@@ -231,14 +224,14 @@ async function main() {
 
         console.log(
             `Alice's token balance before: ${aliceBalanceBefore.tokens
-                .get(tokenId)
-                .toString()} and after: ${aliceBalanceAfter.tokens.get(tokenId).toString()}`,
+                .get(tokenId.toString())
+                .toString()} and after: ${aliceBalanceAfter.tokens.get(tokenId.toString()).toString()}`,
         );
 
         console.log(
             `Fee collector's token balance before: ${feeCollectorBalanceBefore.tokens
-                .get(tokenId)
-                .toString()} and after: ${feeCollectorBalanceAfter.tokens.get(tokenId).toString()}`,
+                .get(tokenId.toString())
+                .toString()} and after: ${feeCollectorBalanceAfter.tokens.get(tokenId.toString()).toString()}`,
         );
 
         /*
@@ -281,9 +274,7 @@ async function main() {
          * Submit another message to that topic, paid with bob, without specifying max custom fee amount.
          */
 
-        const bobBalanceBefore = await new AccountBalanceQuery()
-            .setAccountId(bobAccountId)
-            .execute(client);
+        const bobBalanceBefore = await getAccountBalance(client, bobAccountId);
 
         client.setOperator(bobAccountId, bobKey);
 
@@ -304,9 +295,7 @@ async function main() {
          * Step 12:
          * Verify bob was not debited the fee amount.
          */
-        const bobBalanceAfter = await new AccountBalanceQuery()
-            .setAccountId(bobAccountId)
-            .execute(client);
+        const bobBalanceAfter = await getAccountBalance(client, bobAccountId);
 
         console.log(
             `Bob's hbars balance before: ${bobBalanceBefore.hbars.toString()} and after: ${bobBalanceAfter.hbars.toString()}`,

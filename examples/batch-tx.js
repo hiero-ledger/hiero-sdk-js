@@ -10,10 +10,10 @@ import {
     TransferTransaction,
     HbarUnit,
     TransactionId,
-    AccountBalanceQuery,
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
+import { getAccountBalance } from "./utils/balance.js";
 
 dotenv.config();
 
@@ -100,12 +100,11 @@ async function executeBatchWithBatchify(client) {
     /**
      * Step 5: Get the balance in order to compare after this batch
      */
-    const aliceBalanceBefore = await new AccountBalanceQuery()
-        .setAccountId(alice)
-        .execute(client);
-    var operatorBalanceBefore = await new AccountBalanceQuery()
-        .setAccountId(client.getOperator().accountId)
-        .execute(client);
+    const aliceBalanceBefore = await getAccountBalance(client, alice);
+    var operatorBalanceBefore = await getAccountBalance(
+        client,
+        client.getOperator().accountId,
+    );
 
     /**
      * Step 6: Execute the batch transaction
@@ -127,12 +126,11 @@ async function executeBatchWithBatchify(client) {
      */
     console.log("Verifying the balance after batch transaction...");
 
-    const aliceBalanceAfter = await new AccountBalanceQuery()
-        .setAccountId(alice)
-        .execute(client);
-    const operatorBalanceAfter = await new AccountBalanceQuery()
-        .setAccountId(client.getOperator().accountId)
-        .execute(client);
+    const aliceBalanceAfter = await getAccountBalance(client, alice);
+    const operatorBalanceAfter = await getAccountBalance(
+        client,
+        client.getOperator().accountId,
+    );
 
     console.log("Alice balance after: " + aliceBalanceAfter.hbars.toString());
     console.log(
@@ -234,21 +232,16 @@ async function executeBatchWithManualInnerTransactionFreeze(client) {
     /**
      * Step 2: Get the balance in order to compare after this batch
      */
-    const aliceBalanceBefore = await new AccountBalanceQuery()
-        .setAccountId(alice)
-        .execute(client);
+    const aliceBalanceBefore = await getAccountBalance(client, alice);
 
-    var bobBalanceBefore = await new AccountBalanceQuery()
-        .setAccountId(bob)
-        .execute(client);
+    var bobBalanceBefore = await getAccountBalance(client, bob);
 
-    var carolBalanceBefore = await new AccountBalanceQuery()
-        .setAccountId(carol)
-        .execute(client);
+    var carolBalanceBefore = await getAccountBalance(client, carol);
 
-    var operatorBalanceBefore = await new AccountBalanceQuery()
-        .setAccountId(client.getOperator().accountId)
-        .execute(client);
+    var operatorBalanceBefore = await getAccountBalance(
+        client,
+        client.getOperator().accountId,
+    );
 
     /**
      * Step 3: Execute the batch transaction
@@ -273,18 +266,13 @@ async function executeBatchWithManualInnerTransactionFreeze(client) {
 
     console.log("Verifying the balance after batch transaction...");
 
-    const aliceBalanceAfter = await new AccountBalanceQuery()
-        .setAccountId(alice)
-        .execute(client);
-    const bobBalanceAfter = await new AccountBalanceQuery()
-        .setAccountId(bob)
-        .execute(client);
-    const carolBalanceAfter = await new AccountBalanceQuery()
-        .setAccountId(carol)
-        .execute(client);
-    const operatorBalanceAfter = await new AccountBalanceQuery()
-        .setAccountId(client.getOperator().accountId)
-        .execute(client);
+    const aliceBalanceAfter = await getAccountBalance(client, alice);
+    const bobBalanceAfter = await getAccountBalance(client, bob);
+    const carolBalanceAfter = await getAccountBalance(client, carol);
+    const operatorBalanceAfter = await getAccountBalance(
+        client,
+        client.getOperator().accountId,
+    );
 
     console.log("Alice balance after: " + aliceBalanceAfter.hbars.toString());
     console.log("Bob balance after: " + bobBalanceAfter.hbars.toString());
@@ -400,18 +388,13 @@ async function executeBatchWithSetInnerTransactions(client) {
     /**
      * Step 5: Get balances before batch transaction
      */
-    const davidBalanceBefore = await new AccountBalanceQuery()
-        .setAccountId(david)
-        .execute(client);
-    const eveBalanceBefore = await new AccountBalanceQuery()
-        .setAccountId(eve)
-        .execute(client);
-    const frankBalanceBefore = await new AccountBalanceQuery()
-        .setAccountId(frank)
-        .execute(client);
-    const operatorBalanceBefore = await new AccountBalanceQuery()
-        .setAccountId(client.getOperator().accountId)
-        .execute(client);
+    const davidBalanceBefore = await getAccountBalance(client, david);
+    const eveBalanceBefore = await getAccountBalance(client, eve);
+    const frankBalanceBefore = await getAccountBalance(client, frank);
+    const operatorBalanceBefore = await getAccountBalance(
+        client,
+        client.getOperator().accountId,
+    );
 
     /**
      * Step 6: Execute batch transaction using setInnerTransactions
@@ -435,18 +418,13 @@ async function executeBatchWithSetInnerTransactions(client) {
 
     console.log("Verifying the balance after batch transaction...");
 
-    const davidBalanceAfter = await new AccountBalanceQuery()
-        .setAccountId(david)
-        .execute(client);
-    const eveBalanceAfter = await new AccountBalanceQuery()
-        .setAccountId(eve)
-        .execute(client);
-    const frankBalanceAfter = await new AccountBalanceQuery()
-        .setAccountId(frank)
-        .execute(client);
-    const operatorBalanceAfter = await new AccountBalanceQuery()
-        .setAccountId(client.getOperator().accountId)
-        .execute(client);
+    const davidBalanceAfter = await getAccountBalance(client, david);
+    const eveBalanceAfter = await getAccountBalance(client, eve);
+    const frankBalanceAfter = await getAccountBalance(client, frank);
+    const operatorBalanceAfter = await getAccountBalance(
+        client,
+        client.getOperator().accountId,
+    );
 
     console.log("David balance after: " + davidBalanceAfter.hbars.toString());
     console.log("Eve balance after: " + eveBalanceAfter.hbars.toString());

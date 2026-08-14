@@ -1,5 +1,4 @@
 import {
-    AccountBalanceQuery,
     AccountId,
     Client,
     CustomFixedFee,
@@ -34,6 +33,7 @@ import {
  */
 
 import dotenv from "dotenv";
+import { getAccountBalance } from "../utils/balance.js";
 
 dotenv.config();
 
@@ -562,9 +562,7 @@ async function main() {
          * @returns {Promise<Hbar>}
          */
         async function bCheckerFcn(id) {
-            const balanceCheckTx = await new AccountBalanceQuery()
-                .setAccountId(id)
-                .execute(client);
+            const balanceCheckTx = await getAccountBalance(client, id);
             return balanceCheckTx.hbars;
         }
 
