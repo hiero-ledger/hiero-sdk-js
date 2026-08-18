@@ -1,4 +1,5 @@
 import {
+    AccountInfoQuery,
     AccountCreateTransaction,
     PrivateKey,
     TokenCreateTransaction,
@@ -13,7 +14,6 @@ import {
     TokenSupplyType,
 } from "@hiero-ledger/sdk";
 import dotenv from "dotenv";
-import { getAccountBalanceWithTokens } from "../utils/balance.js";
 
 dotenv.config();
 
@@ -148,17 +148,25 @@ async function main() {
     console.log("Before Token Reject");
     console.log("=======================");
     const receiverFTBalanceBefore = (
-        await getAccountBalanceWithTokens(client, receiverAccountId)
-    ).tokens.get(ftId.toString());
+        await new AccountInfoQuery()
+            .setAccountId(receiverAccountId)
+            .execute(client)
+    ).tokenRelationships.get(ftId.toString())?.balance;
     const treasuryFTBalanceBefore = (
-        await getAccountBalanceWithTokens(client, treasuryAccountId)
-    ).tokens.get(ftId.toString());
+        await new AccountInfoQuery()
+            .setAccountId(treasuryAccountId)
+            .execute(client)
+    ).tokenRelationships.get(ftId.toString())?.balance;
     const receiverNFTBalanceBefore = (
-        await getAccountBalanceWithTokens(client, receiverAccountId)
-    ).tokens.get(nftId.toString());
+        await new AccountInfoQuery()
+            .setAccountId(receiverAccountId)
+            .execute(client)
+    ).tokenRelationships.get(nftId.toString())?.balance;
     const treasuryNFTBalanceBefore = (
-        await getAccountBalanceWithTokens(client, treasuryAccountId)
-    ).tokens.get(nftId.toString());
+        await new AccountInfoQuery()
+            .setAccountId(treasuryAccountId)
+            .execute(client)
+    ).tokenRelationships.get(nftId.toString())?.balance;
     console.log("Receiver FT balance: ", receiverFTBalanceBefore.toInt());
     console.log("Treasury FT balance: ", treasuryFTBalanceBefore.toInt());
     console.log(
@@ -196,20 +204,28 @@ async function main() {
     console.log("=======================");
 
     const receiverFTBalanceAfter = (
-        await getAccountBalanceWithTokens(client, receiverAccountId)
-    ).tokens.get(ftId.toString());
+        await new AccountInfoQuery()
+            .setAccountId(receiverAccountId)
+            .execute(client)
+    ).tokenRelationships.get(ftId.toString())?.balance;
 
     const treasuryFTBalanceAfter = (
-        await getAccountBalanceWithTokens(client, treasuryAccountId)
-    ).tokens.get(ftId.toString());
+        await new AccountInfoQuery()
+            .setAccountId(treasuryAccountId)
+            .execute(client)
+    ).tokenRelationships.get(ftId.toString())?.balance;
 
     const receiverNFTBalanceAfter = (
-        await getAccountBalanceWithTokens(client, receiverAccountId)
-    ).tokens.get(nftId.toString());
+        await new AccountInfoQuery()
+            .setAccountId(receiverAccountId)
+            .execute(client)
+    ).tokenRelationships.get(nftId.toString())?.balance;
 
     const treasuryNFTBalanceAfter = (
-        await getAccountBalanceWithTokens(client, treasuryAccountId)
-    ).tokens.get(nftId.toString());
+        await new AccountInfoQuery()
+            .setAccountId(treasuryAccountId)
+            .execute(client)
+    ).tokenRelationships.get(nftId.toString())?.balance;
 
     console.log("TokenReject response:", tokenRejectStatus);
     console.log("TokenRejectFlow response:", tokenRejectFlowStatus);

@@ -1,4 +1,5 @@
 import {
+    MirrorNodeAccountBalanceQuery,
     Client,
     AccountId,
     PrivateKey,
@@ -11,7 +12,6 @@ import {
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
-import { getAccountBalance } from "../utils/balance.js";
 
 dotenv.config();
 
@@ -66,7 +66,11 @@ async function main() {
     console.log(`Bob's account: ${bobAccountId.toString()}`);
 
     // Step 3: Read Bob's initial balance for the before/after comparison.
-    const balanceBefore = (await getAccountBalance(client, bobAccountId)).hbars;
+    const balanceBefore = (
+        await new MirrorNodeAccountBalanceQuery()
+            .setAccountId(bobAccountId)
+            .execute(client)
+    ).hbars;
     console.log(`Bob's balance before schedule: ${balanceBefore.toString()}`);
 
     // Step 4: Alice builds the transfer and wraps it in a scheduled tx.
@@ -85,8 +89,11 @@ async function main() {
 
     // Step 5: Confirm Bob's balance hasn't changed — the schedule is pending
     // because Bob's signature is still missing.
-    const balancePending = (await getAccountBalance(client, bobAccountId))
-        .hbars;
+    const balancePending = (
+        await new MirrorNodeAccountBalanceQuery()
+            .setAccountId(bobAccountId)
+            .execute(client)
+    ).hbars;
     console.log(
         `Bob's balance while schedule pending: ${balancePending.toString()}`,
     );
@@ -134,8 +141,15 @@ async function main() {
         .sign(bobKey);
     await (await bobSignTx.execute(client)).getReceipt(client);
 
-    // Step 8: Confirm Bob's balance now reflects the transfer.
-    const balanceAfter = (await getAccountBalance(client, bobAccountId)).hbars;
+    // Step 8: Confirm Bob's balance now reflects the transfer. The mirror node
+    // ingests consensus state asynchronously, so wait for it to catch up.
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    const balanceAfter = (
+        await new MirrorNodeAccountBalanceQuery()
+            .setAccountId(bobAccountId)
+            .execute(client)
+    ).hbars;
     console.log(`Bob's balance after Bob signs: ${balanceAfter.toString()}`);
 
     // Step 9: ScheduleInfo should now show an `executed` timestamp.

@@ -2,6 +2,8 @@ import { TokenCreateTransaction } from "@hiero-ledger/sdk";
 import { TopicUpdateTransaction } from "@hiero-ledger/sdk";
 import { TransferTransaction } from "@hiero-ledger/sdk";
 import {
+    AccountInfoQuery,
+    MirrorNodeAccountBalanceQuery,
     TopicCreateTransaction,
     TopicMessageSubmitTransaction,
     AccountCreateTransaction,
@@ -15,7 +17,6 @@ import {
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
-import { getAccountBalanceWithTokens } from "../utils/balance.js";
 
 dotenv.config();
 
@@ -86,15 +87,21 @@ async function main() {
          * Submit a message to that topic, paid for by alice, specifying max custom fee amount bigger than the topic’s amount.
          */
 
-        let aliceBalanceBefore = await getAccountBalanceWithTokens(
-            client,
-            aliceAccountId,
-        );
+        // The account above was only just created and funded. The mirror node
+        // ingests consensus state asynchronously, so wait for it to see the
+        // account — otherwise it reports a zero balance for a funded account.
+        await new Promise((resolve) => setTimeout(resolve, 5000));
 
-        let feeCollectorBalanceBefore = await getAccountBalanceWithTokens(
-            client,
-            operatorId,
-        );
+        // Only the HBAR balance is compared in this step, so it is read from
+        // the free mirror node rather than with a paid `AccountInfoQuery`.
+        let aliceBalanceBefore = await new MirrorNodeAccountBalanceQuery()
+            .setAccountId(aliceAccountId)
+            .execute(client);
+
+        let feeCollectorBalanceBefore =
+            await new MirrorNodeAccountBalanceQuery()
+                .setAccountId(operatorId)
+                .execute(client);
 
         console.log("Submitting a message as alice to the topic");
 
@@ -125,15 +132,17 @@ async function main() {
 
         client.setOperator(operatorId, operatorKey);
 
-        let aliceBalanceAfter = await getAccountBalanceWithTokens(
-            client,
-            aliceAccountId,
-        );
+        // The mirror node ingests consensus state asynchronously, so give it a
+        // moment to catch up before reading the balances again.
+        await new Promise((resolve) => setTimeout(resolve, 5000));
 
-        let feeCollectorBalanceAfter = await getAccountBalanceWithTokens(
-            client,
-            operatorId,
-        );
+        let aliceBalanceAfter = await new MirrorNodeAccountBalanceQuery()
+            .setAccountId(aliceAccountId)
+            .execute(client);
+
+        let feeCollectorBalanceAfter = await new MirrorNodeAccountBalanceQuery()
+            .setAccountId(operatorId)
+            .execute(client);
 
         console.log(
             `Alice's balance before: ${aliceBalanceBefore.hbars.toString()} and after: ${aliceBalanceAfter.hbars.toString()}`,
@@ -192,15 +201,17 @@ async function main() {
          * Submit another message to that topic, paid by alice, without specifying max custom fee amount.
          */
 
-        aliceBalanceBefore = await getAccountBalanceWithTokens(
-            client,
-            aliceAccountId,
-        );
+        // This step compares token balances as well as HBAR, and the mirror
+        // node balance query returns HBAR only — so these reads use
+        // `AccountInfoQuery`, whose `tokenRelationships` carry both.
+        // MirrorNodeAccountBalanceQuery does not return token balances, so it is not used here.
+        const aliceInfoBefore = await new AccountInfoQuery()
+            .setAccountId(aliceAccountId)
+            .execute(client);
 
-        feeCollectorBalanceBefore = await getAccountBalanceWithTokens(
-            client,
-            operatorId,
-        );
+        const feeCollectorInfoBefore = await new AccountInfoQuery()
+            .setAccountId(operatorId)
+            .execute(client);
 
         console.log("Submitting a message as alice to the topic");
         client.setOperator(aliceAccountId, aliceKey);
@@ -219,34 +230,32 @@ async function main() {
          * Verify alice was debited the new fee amount and the fee collector account was credited the amount.
          */
 
-        aliceBalanceAfter = await getAccountBalanceWithTokens(
-            client,
-            aliceAccountId,
-        );
+        const aliceInfoAfter = await new AccountInfoQuery()
+            .setAccountId(aliceAccountId)
+            .execute(client);
 
-        feeCollectorBalanceAfter = await getAccountBalanceWithTokens(
-            client,
-            operatorId,
+        const feeCollectorInfoAfter = await new AccountInfoQuery()
+            .setAccountId(operatorId)
+            .execute(client);
+
+        console.log(
+            `Alice's hbars balance before: ${aliceInfoBefore.balance.toString()} and after: ${aliceInfoAfter.balance.toString()}`,
         );
 
         console.log(
-            `Alice's hbars balance before: ${aliceBalanceBefore.hbars.toString()} and after: ${aliceBalanceAfter.hbars.toString()}`,
+            `Fee collector's hbars balance before: ${feeCollectorInfoBefore.balance.toString()} and after: ${feeCollectorInfoAfter.balance.toString()}`,
         );
 
         console.log(
-            `Fee collector's hbars balance before: ${feeCollectorBalanceBefore.hbars.toString()} and after: ${feeCollectorBalanceAfter.hbars.toString()}`,
-        );
-
-        console.log(
-            `Alice's token balance before: ${aliceBalanceBefore.tokens
+            `Alice's token balance before: ${aliceInfoBefore.tokenRelationships
                 .get(tokenId.toString())
-                .toString()} and after: ${aliceBalanceAfter.tokens.get(tokenId.toString()).toString()}`,
+                ?.balance.toString()} and after: ${aliceInfoAfter.tokenRelationships.get(tokenId.toString())?.balance.toString()}`,
         );
 
         console.log(
-            `Fee collector's token balance before: ${feeCollectorBalanceBefore.tokens
+            `Fee collector's token balance before: ${feeCollectorInfoBefore.tokenRelationships
                 .get(tokenId.toString())
-                .toString()} and after: ${feeCollectorBalanceAfter.tokens.get(tokenId.toString()).toString()}`,
+                ?.balance.toString()} and after: ${feeCollectorInfoAfter.tokenRelationships.get(tokenId.toString())?.balance.toString()}`,
         );
 
         /*
@@ -289,10 +298,15 @@ async function main() {
          * Submit another message to that topic, paid with bob, without specifying max custom fee amount.
          */
 
-        const bobBalanceBefore = await getAccountBalanceWithTokens(
-            client,
-            bobAccountId,
-        );
+        // The account above was only just created and funded. The mirror node
+        // ingests consensus state asynchronously, so wait for it to see the
+        // account — otherwise it reports a zero balance for a funded account.
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+
+        // HBAR only again, so the mirror node serves this one too.
+        const bobBalanceBefore = await new MirrorNodeAccountBalanceQuery()
+            .setAccountId(bobAccountId)
+            .execute(client);
 
         client.setOperator(bobAccountId, bobKey);
 
@@ -313,10 +327,13 @@ async function main() {
          * Step 12:
          * Verify bob was not debited the fee amount.
          */
-        const bobBalanceAfter = await getAccountBalanceWithTokens(
-            client,
-            bobAccountId,
-        );
+        // The mirror node ingests consensus state asynchronously, so give it a
+        // moment to catch up before reading the balances again.
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+
+        const bobBalanceAfter = await new MirrorNodeAccountBalanceQuery()
+            .setAccountId(bobAccountId)
+            .execute(client);
 
         console.log(
             `Bob's hbars balance before: ${bobBalanceBefore.hbars.toString()} and after: ${bobBalanceAfter.hbars.toString()}`,

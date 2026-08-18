@@ -1,4 +1,5 @@
 import {
+    MirrorNodeAccountBalanceQuery,
     Client,
     AccountId,
     PrivateKey,
@@ -10,7 +11,6 @@ import {
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
-import { getAccountBalance } from "../utils/balance.js";
 
 dotenv.config();
 
@@ -76,10 +76,20 @@ async function main() {
         ).getReceipt(client)
     ).accountId;
 
-    const senderBalanceBefore = (await getAccountBalance(client, userAccountId))
-        .hbars;
+    // Both accounts were only just created. The mirror node ingests consensus
+    // state asynchronously, so wait for it to see them — otherwise it reports a
+    // zero balance for an account that has already been funded.
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    const senderBalanceBefore = (
+        await new MirrorNodeAccountBalanceQuery()
+            .setAccountId(userAccountId)
+            .execute(client)
+    ).hbars;
     const exchangeBalanceBefore = (
-        await getAccountBalance(client, exchangeAccountId)
+        await new MirrorNodeAccountBalanceQuery()
+            .setAccountId(exchangeAccountId)
+            .execute(client)
     ).hbars;
     console.log(
         `User account (${userAccountId.toString()}) balance: ${senderBalanceBefore.toString()}`,
@@ -119,16 +129,24 @@ async function main() {
     await transferResponse.getReceipt(client);
 
     // Step 4: Confirm balances after the transfer.
-    const senderBalanceAfter = (await getAccountBalance(client, userAccountId))
-        .hbars;
-    const exchangeBalanceAfter = (
-        await getAccountBalance(client, exchangeAccountId)
-    ).hbars;
+    // The mirror node ingests consensus state asynchronously, so give it a
+    // moment to catch up. Reading immediately would still report the balances
+    // from before the transfer above.
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    const senderBalance = await new MirrorNodeAccountBalanceQuery()
+        .setAccountId(userAccountId)
+        .execute(client);
+
+    const exchangeBalance = await new MirrorNodeAccountBalanceQuery()
+        .setAccountId(exchangeAccountId)
+        .execute(client);
     console.log(
-        `User account (${userAccountId.toString()}) balance: ${senderBalanceAfter.toString()}`,
+        `User account (${userAccountId.toString()}) balance: ${senderBalance.hbars.toString()}`,
     );
+
     console.log(
-        `Exchange account (${exchangeAccountId.toString()}) balance: ${exchangeBalanceAfter.toString()}`,
+        `Exchange account (${exchangeAccountId.toString()}) balance: ${exchangeBalance.hbars.toString()}`,
     );
 
     // Cleanup: delete both accounts, returning balances to the operator.

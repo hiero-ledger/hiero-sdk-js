@@ -1,4 +1,5 @@
 import {
+    MirrorNodeAccountBalanceQuery,
     Client,
     AccountCreateTransaction,
     Hbar,
@@ -12,7 +13,6 @@ import {
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
-import { getAccountBalance } from "../utils/balance.js";
 dotenv.config();
 
 /**
@@ -100,7 +100,9 @@ async function main() {
     );
 
     // Step 5: Sign the transaction with the other key
-    let accountBalance = await getAccountBalance(client, aliceId);
+    let accountBalance = await new MirrorNodeAccountBalanceQuery()
+        .setAccountId(aliceId)
+        .execute(client);
     console.log(
         "Alice's account balance before schedule transfer: ",
         accountBalance.hbars.toString(),
@@ -116,7 +118,13 @@ async function main() {
         ).execute(client)
     ).getReceipt(client);
 
-    accountBalance = await getAccountBalance(client, aliceId);
+    // The scheduled transfer has executed. Give the mirror node a moment to
+    // ingest it before reading the balance again.
+    await new Promise((resolve) => setTimeout(resolve, 5000));
+
+    accountBalance = await new MirrorNodeAccountBalanceQuery()
+        .setAccountId(aliceId)
+        .execute(client);
     console.log(
         "Alice's account balance after schedule transfer: ",
         accountBalance.hbars.toString(),
@@ -183,7 +191,11 @@ async function main() {
     ).getReceipt(client);
 
     // Step 9: Verify that the transfer successfully executes
-    accountBalance = await getAccountBalance(client, aliceId);
+    // A plain read: the account update above does not move Alice's balance, so
+    // there is no change to wait for here.
+    accountBalance = await new MirrorNodeAccountBalanceQuery()
+        .setAccountId(aliceId)
+        .execute(client);
     console.log(
         "Alice's account balance before schedule transfer: ",
         accountBalance.hbars.toString(),
@@ -192,7 +204,9 @@ async function main() {
     // Wait for the scheduled transaction to execute
     await new Promise((resolve) => setTimeout(resolve, 10000)); // Wait for 10 seconds
 
-    accountBalance = await getAccountBalance(client, aliceId);
+    accountBalance = await new MirrorNodeAccountBalanceQuery()
+        .setAccountId(aliceId)
+        .execute(client);
     console.log(
         "Alice's account balance after schedule transfer: ",
         accountBalance.hbars.toString(),

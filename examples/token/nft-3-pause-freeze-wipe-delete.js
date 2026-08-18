@@ -1,4 +1,5 @@
 import {
+    MirrorNodeAccountBalanceQuery,
     AccountId,
     Client,
     CustomFixedFee,
@@ -33,7 +34,6 @@ import {
  */
 
 import dotenv from "dotenv";
-import { getAccountBalance } from "../utils/balance.js";
 
 dotenv.config();
 
@@ -44,7 +44,11 @@ const nodes = {
     "127.0.0.1:50211": new AccountId(3),
 };
 
-const client = Client.forNetwork(nodes).setOperator(operatorId, operatorKey);
+const client = Client.forNetwork(nodes)
+    .setOperator(operatorId, operatorKey)
+    // Config mirror network for your custom network. This will be used by the
+    // MirrorNodeAccountBalanceQuery to get account balances from the mirror node.
+    .setMirrorNetwork("local-node");
 
 const supplyKey = PrivateKey.generate();
 const adminKey = PrivateKey.generate();
@@ -265,6 +269,9 @@ async function main() {
         );
 
         // BALANCE CHECK 1
+        // The mirror node ingests consensus state asynchronously, so give it a
+        // moment to catch up before reading these balances.
+        await new Promise((resolve) => setTimeout(resolve, 5000));
         let oB = await bCheckerFcn(treasuryId);
         let aB = await bCheckerFcn(aliceId);
         let bB = await bCheckerFcn(bobId);
@@ -290,6 +297,9 @@ async function main() {
         );
 
         // BALANCE CHECK 2
+        // The mirror node ingests consensus state asynchronously, so give it a
+        // moment to catch up before reading these balances.
+        await new Promise((resolve) => setTimeout(resolve, 5000));
         oB = await bCheckerFcn(treasuryId);
         aB = await bCheckerFcn(aliceId);
         bB = await bCheckerFcn(bobId);
@@ -318,6 +328,9 @@ async function main() {
         );
 
         // BALANCE CHECK 3
+        // The mirror node ingests consensus state asynchronously, so give it a
+        // moment to catch up before reading these balances.
+        await new Promise((resolve) => setTimeout(resolve, 5000));
         oB = await bCheckerFcn(treasuryId);
         aB = await bCheckerFcn(aliceId);
         bB = await bCheckerFcn(bobId);
@@ -398,6 +411,9 @@ async function main() {
         );
 
         // VERIFY THAT THE SCHEDULED TRANSACTION (TOKEN TRANSFER) EXECUTED
+        // The mirror node ingests consensus state asynchronously, so give it a
+        // moment to catch up before reading these balances.
+        await new Promise((resolve) => setTimeout(resolve, 5000));
         oB = await bCheckerFcn(treasuryId);
         aB = await bCheckerFcn(aliceId);
         bB = await bCheckerFcn(bobId);
@@ -513,6 +529,9 @@ async function main() {
         );
 
         // CHECK ALICE'S BALANCE
+        // The mirror node ingests consensus state asynchronously, so give it a
+        // moment to catch up before reading these balances.
+        await new Promise((resolve) => setTimeout(resolve, 5000));
         aB = await bCheckerFcn(aliceId);
         console.log(
             `- Alice balance: ID:${tokenId.toString()} and ${aB.toString()}`,
@@ -562,8 +581,13 @@ async function main() {
          * @returns {Promise<Hbar>}
          */
         async function bCheckerFcn(id) {
-            const balanceCheckTx = await getAccountBalance(client, id);
-            return balanceCheckTx.hbars;
+            // Only the HBAR balance is needed, so it comes from the mirror
+            // node. The client sets a mirror network above, which
+            // `Client.forNetwork()` does not configure on its own.
+            const balance = await new MirrorNodeAccountBalanceQuery()
+                .setAccountId(id)
+                .execute(client);
+            return balance.hbars;
         }
 
         /**

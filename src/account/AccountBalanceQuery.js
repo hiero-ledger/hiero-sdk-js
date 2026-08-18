@@ -25,10 +25,6 @@ import AccountBalance from "./AccountBalance.js";
  * The message reported both when an `AccountBalanceQuery` is constructed and
  * when any attempt is made to execute it.
  *
- * Exported for the other internal call sites that have to report the same
- * removal (`Wallet.getAccountBalance`, `LocalProvider.getAccountBalance`).
- * Not part of the public API — it is deliberately absent from `exports.js`.
- *
  * @internal
  */
 export const ACCOUNT_BALANCE_QUERY_DEPRECATION_MESSAGE =

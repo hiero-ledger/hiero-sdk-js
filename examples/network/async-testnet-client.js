@@ -1,4 +1,5 @@
 import {
+    MirrorNodeAccountBalanceQuery,
     Client,
     AccountId,
     PrivateKey,
@@ -8,7 +9,6 @@ import {
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
-import { getAccountBalance } from "../utils/balance.js";
 
 dotenv.config();
 
@@ -68,7 +68,9 @@ async function main() {
         // Query account balance
         console.log("Querying account balance...");
         try {
-            const balance = await getAccountBalance(client, operatorId);
+            const balance = await new MirrorNodeAccountBalanceQuery()
+                .setAccountId(operatorId)
+                .execute(client);
 
             console.log(`Account Balance: ${balance.hbars.toString()}\n`);
         } catch (error) {

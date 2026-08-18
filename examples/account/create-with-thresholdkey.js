@@ -1,4 +1,5 @@
 import {
+    MirrorNodeAccountBalanceQuery,
     Client,
     PrivateKey,
     AccountId,
@@ -12,7 +13,6 @@ import {
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
-import { getAccountBalance } from "../utils/balance.js";
 
 dotenv.config();
 
@@ -115,11 +115,16 @@ async function main() {
         // Wait for the transfer to reach consensus
         await transferTxResponse.getReceipt(client);
 
-        // Query the account balance after the transfer
-        const accountBalanceAfterTransfer = await getAccountBalance(
-            client,
-            newAccountId,
-        );
+        // Only the HBAR balance is needed here, so it is read from the mirror
+        // node. The mirror node ingests consensus state asynchronously, so give
+        // it a moment to catch up — this account was created and debited just
+        // above, and an immediate read could miss either change.
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+
+        const accountBalanceAfterTransfer =
+            await new MirrorNodeAccountBalanceQuery()
+                .setAccountId(newAccountId)
+                .execute(client);
 
         console.log(
             "New account's Hbar balance after transfer: " +
