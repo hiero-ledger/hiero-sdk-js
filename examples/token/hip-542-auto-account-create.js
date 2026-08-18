@@ -1,4 +1,5 @@
 import {
+    MirrorNodeTokenBalanceQuery,
     AccountId,
     PrivateKey,
     Client,
@@ -13,8 +14,6 @@ import {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     TransactionReceipt,
 } from "@hiero-ledger/sdk";
-import axios from "axios";
-
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -279,30 +278,21 @@ async function main() {
      * Show the new account ID owns the fungible token
      */
 
-    // Wait some time for the mirror node to be updated
-    await wait(10000);
-
-    let link;
-
-    if (
-        process.env.HEDERA_NETWORK == "local-node" ||
-        process.env.HEDERA_NETWORK == "localhost"
-    ) {
-        link = `http://127.0.0.1:5551/api/v1/accounts?account.id=${accountId2}`;
-    } else {
-        link = `https://${process.env.HEDERA_NETWORK}.mirrornode.hedera.com/api/v1/accounts?account.id=${accountId2}`;
-    }
-
+    // `MirrorNodeTokenBalanceQuery` reads the token balance from the mirror
+    // node, which replaces the removed `AccountBalanceQuery`. The mirror node ingests
+    // consensus state asynchronously, so poll to a deadline rather than sleeping
+    // for a guessed interval.
     try {
-        /* eslint-disable */
-        const balance = (
-            await axios.get(link)
-        ).data.accounts[0].balance.tokens.find(
-            (token) => token.token_id === tokenId,
-        ).balance;
-        /* eslint-enable */
+        const balance = await untilMirror(async () => {
+            const { balance } = await new MirrorNodeTokenBalanceQuery()
+                .setAccountId(accountId2)
+                .setTokenId(tokenId)
+                .execute(client);
 
-        balance === 10
+            return balance.toInt() === 10 ? balance : null;
+        });
+
+        balance.toInt() === 10
             ? console.log(
                   `Account is created successfully using HTS 'TransferTransaction'`,
               )
@@ -328,17 +318,29 @@ async function main() {
         return mintTxSubmit.getReceipt(client);
     }
 
-    /**
-     * @param {number} timeout
-     * @returns {Promise<any>}
-     */
-    function wait(timeout) {
-        return new Promise((resolve) => {
-            setTimeout(resolve, timeout);
-        });
-    }
-
     client.close();
 }
 
 void main();
+
+/**
+ * Poll a mirror-node read until it reflects the transaction that just happened.
+ *
+ * @template T
+ * @param {() => Promise<T | null>} read - resolves the value once it is ready
+ * @param {number} [timeoutMs]
+ * @returns {Promise<T>}
+ */
+async function untilMirror(read, timeoutMs = 60000) {
+    const deadline = Date.now() + timeoutMs;
+    for (;;) {
+        const result = await read();
+        if (result != null) {
+            return result;
+        }
+        if (Date.now() >= deadline) {
+            throw new Error("mirror node did not ingest in time");
+        }
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+}

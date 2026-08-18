@@ -2,7 +2,6 @@ import {
     Wallet,
     LocalProvider,
     PrivateKey,
-    AccountInfoQuery,
     AccountCreateTransaction,
     AccountDeleteTransaction,
     TransactionId,
@@ -278,27 +277,21 @@ async function main() {
  * @param {AccountId} charlieId
  */
 async function printBalances(wallet, aliceId, bobId, charlieId) {
-    console.log(
-        `Alice's balance: ${(
-            await new AccountInfoQuery()
-                .setAccountId(aliceId)
-                .executeWithSigner(wallet)
-        ).balance.toString()}`,
-    );
-    console.log(
-        `Bob's balance: ${(
-            await new AccountInfoQuery()
-                .setAccountId(bobId)
-                .executeWithSigner(wallet)
-        ).balance.toString()}`,
-    );
-    console.log(
-        `Charlie's balance: ${(
-            await new AccountInfoQuery()
-                .setAccountId(charlieId)
-                .executeWithSigner(wallet)
-        ).balance.toString()}`,
-    );
+    // HBAR balances come from the mirror node now that the consensus node no
+    // longer serves them; the wallet's provider wraps that query.
+    const provider = wallet.getProvider();
+    if (provider == null) {
+        throw new Error("wallet does not contain a provider");
+    }
+
+    const alice = await provider.getAccountBalance(aliceId);
+    console.log(`Alice's balance: ${alice.hbars.toString()}`);
+
+    const bob = await provider.getAccountBalance(bobId);
+    console.log(`Bob's balance: ${bob.hbars.toString()}`);
+
+    const charlie = await provider.getAccountBalance(charlieId);
+    console.log(`Charlie's balance: ${charlie.hbars.toString()}`);
 }
 
 void main();
