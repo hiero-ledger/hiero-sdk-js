@@ -40,8 +40,8 @@ const nodes = {
 
 const client = Client.forNetwork(nodes)
     .setOperator(operatorId, operatorKey)
-    // Config mirror network for your custom network. This will be used
-    // by the MirrorNodeAccountBalanceQuery to get account balances from the mirror node.
+    // Config mirror network for your custom network. This will be used by the
+    // MirrorNodeAccountBalanceQuery to get account balances from the mirror node.
     .setMirrorNetwork("local-node");
 
 const supplyKey = PrivateKey.generate();
