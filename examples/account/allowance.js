@@ -280,6 +280,7 @@ async function printBalances(wallet, aliceId, bobId, charlieId) {
     // HBAR balances come from the mirror node now that the consensus node no
     // longer serves them; the wallet's provider wraps that query.
     const provider = wallet.getProvider();
+
     if (provider == null) {
         throw new Error("wallet does not contain a provider");
     }
