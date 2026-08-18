@@ -78,3 +78,7 @@ export interface GetAccountBalanceResponse {
     readonly tokenBalances: Record<TokenId, TokenBalance>;
     readonly tokenDecimals: Record<TokenId, TokenDecimals>;
 }
+
+export interface GetMirrorNodeAccountBalanceResponse {
+    readonly hbars: string;
+}
