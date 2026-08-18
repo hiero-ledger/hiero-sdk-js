@@ -76,21 +76,8 @@ async function main() {
         ).getReceipt(client)
     ).accountId;
 
-    // Both accounts were only just created. The mirror node ingests consensus
-    // state asynchronously, so wait for it to see them — otherwise it reports a
-    // zero balance for an account that has already been funded.
-    await new Promise((resolve) => setTimeout(resolve, 5000));
-
-    const senderBalanceBefore = (
-        await new MirrorNodeAccountBalanceQuery()
-            .setAccountId(userAccountId)
-            .execute(client)
-    ).hbars;
-    const exchangeBalanceBefore = (
-        await new MirrorNodeAccountBalanceQuery()
-            .setAccountId(exchangeAccountId)
-            .execute(client)
-    ).hbars;
+    const senderBalanceBefore = await hbarBalance(client, userAccountId);
+    const exchangeBalanceBefore = await hbarBalance(client, exchangeAccountId);
     console.log(
         `User account (${userAccountId.toString()}) balance: ${senderBalanceBefore.toString()}`,
     );
@@ -128,25 +115,23 @@ async function main() {
     const transferResponse = await finalTx.execute(client);
     await transferResponse.getReceipt(client);
 
-    // Step 4: Confirm balances after the transfer.
-    // The mirror node ingests consensus state asynchronously, so give it a
-    // moment to catch up. Reading immediately would still report the balances
-    // from before the transfer above.
-    await new Promise((resolve) => setTimeout(resolve, 5000));
+    const senderBalance = await hbarBalance(
+        client,
+        userAccountId,
+        senderBalanceBefore,
+    );
 
-    const senderBalance = await new MirrorNodeAccountBalanceQuery()
-        .setAccountId(userAccountId)
-        .execute(client);
-
-    const exchangeBalance = await new MirrorNodeAccountBalanceQuery()
-        .setAccountId(exchangeAccountId)
-        .execute(client);
+    const exchangeBalance = await hbarBalance(
+        client,
+        exchangeAccountId,
+        exchangeBalanceBefore,
+    );
     console.log(
-        `User account (${userAccountId.toString()}) balance: ${senderBalance.hbars.toString()}`,
+        `User account (${userAccountId.toString()}) balance: ${senderBalance.toString()}`,
     );
 
     console.log(
-        `Exchange account (${exchangeAccountId.toString()}) balance: ${exchangeBalance.hbars.toString()}`,
+        `Exchange account (${exchangeAccountId.toString()}) balance: ${exchangeBalance.toString()}`,
     );
 
     // Cleanup: delete both accounts, returning balances to the operator.
@@ -176,3 +161,57 @@ void main()
         console.error(error);
         process.exit(1);
     });
+
+/**
+ * Read an HBAR balance from the mirror node.
+ *
+ * The mirror node ingests consensus state asynchronously, so a read straight
+ * after a transaction can still return the previous value. Pass `previous` to
+ * poll until the value moves; the loop is bounded so an example cannot hang.
+ *
+ * @param {import("@hiero-ledger/sdk").Client} client
+ * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
+ * @param {import("@hiero-ledger/sdk").Hbar} [previous]
+ * @returns {Promise<import("@hiero-ledger/sdk").Hbar>}
+ */
+async function hbarBalance(client, accountId, previous) {
+    return untilMirror(async () => {
+        const { hbars } = await new MirrorNodeAccountBalanceQuery()
+            .setAccountId(accountId)
+            .execute(client);
+
+        // Without a previous value there is nothing to wait for.
+        if (previous == null) {
+            return hbars;
+        }
+
+        return hbars.toTinybars().equals(previous.toTinybars()) ? null : hbars;
+    });
+}
+
+/**
+ * Poll a mirror-node read until it reflects the transaction that just happened.
+ *
+ * The mirror node ingests consensus state asynchronously, so a read straight
+ * after a transaction can still return the previous value. Polling to a deadline
+ * beats a fixed sleep: it does not go flaky on a slow runner and does not waste
+ * time on a fast one.
+ *
+ * @template T
+ * @param {() => Promise<T | null>} read - resolves the value once it is ready
+ * @param {number} [timeoutMs]
+ * @returns {Promise<T>}
+ */
+async function untilMirror(read, timeoutMs = 60000) {
+    const deadline = Date.now() + timeoutMs;
+    for (;;) {
+        const result = await read();
+        if (result != null) {
+            return result;
+        }
+        if (Date.now() >= deadline) {
+            throw new Error("mirror node did not ingest in time");
+        }
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+}

@@ -115,20 +115,14 @@ async function main() {
         // Wait for the transfer to reach consensus
         await transferTxResponse.getReceipt(client);
 
-        // Only the HBAR balance is needed here, so it is read from the mirror
-        // node. The mirror node ingests consensus state asynchronously, so give
-        // it a moment to catch up — this account was created and debited just
-        // above, and an immediate read could miss either change.
-        await new Promise((resolve) => setTimeout(resolve, 5000));
-
-        const accountBalanceAfterTransfer =
-            await new MirrorNodeAccountBalanceQuery()
-                .setAccountId(newAccountId)
-                .execute(client);
+        const accountBalanceAfterTransfer = await hbarBalance(
+            client,
+            newAccountId,
+        );
 
         console.log(
             "New account's Hbar balance after transfer: " +
-                accountBalanceAfterTransfer.hbars.toString(),
+                accountBalanceAfterTransfer.toString(),
         );
 
         /*
@@ -155,4 +149,58 @@ async function main() {
     }
 }
 
+/**
+ * Read an HBAR balance from the mirror node.
+ *
+ * The mirror node ingests consensus state asynchronously, so a read straight
+ * after a transaction can still return the previous value. Pass `previous` to
+ * poll until the value moves; the loop is bounded so an example cannot hang.
+ *
+ * @param {import("@hiero-ledger/sdk").Client} client
+ * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
+ * @param {import("@hiero-ledger/sdk").Hbar} [previous]
+ * @returns {Promise<import("@hiero-ledger/sdk").Hbar>}
+ */
+async function hbarBalance(client, accountId, previous) {
+    return untilMirror(async () => {
+        const { hbars } = await new MirrorNodeAccountBalanceQuery()
+            .setAccountId(accountId)
+            .execute(client);
+
+        // Without a previous value there is nothing to wait for.
+        if (previous == null) {
+            return hbars;
+        }
+
+        return hbars.toTinybars().equals(previous.toTinybars()) ? null : hbars;
+    });
+}
+
 void main();
+
+/**
+ * Poll a mirror-node read until it reflects the transaction that just happened.
+ *
+ * The mirror node ingests consensus state asynchronously, so a read straight
+ * after a transaction can still return the previous value. Polling to a deadline
+ * beats a fixed sleep: it does not go flaky on a slow runner and does not waste
+ * time on a fast one.
+ *
+ * @template T
+ * @param {() => Promise<T | null>} read - resolves the value once it is ready
+ * @param {number} [timeoutMs]
+ * @returns {Promise<T>}
+ */
+async function untilMirror(read, timeoutMs = 60000) {
+    const deadline = Date.now() + timeoutMs;
+    for (;;) {
+        const result = await read();
+        if (result != null) {
+            return result;
+        }
+        if (Date.now() >= deadline) {
+            throw new Error("mirror node did not ingest in time");
+        }
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+}

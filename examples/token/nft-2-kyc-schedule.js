@@ -249,10 +249,6 @@ async function main() {
             `\nPART 2.1 ENDS ============================================================\n`,
         );
 
-        // BALANCE CHECK 1
-        // The mirror node ingests consensus state asynchronously, so give it a
-        // moment to catch up before reading these balances.
-        await new Promise((resolve) => setTimeout(resolve, 5000));
         let oB = await bCheckerFcn(treasuryId);
         let aB = await bCheckerFcn(aliceId);
         let bB = await bCheckerFcn(bobId);
@@ -277,10 +273,6 @@ async function main() {
             `\n NFT transfer Treasury -> Alice status: ${tokenTransferRx.status.toString()} \n`,
         );
 
-        // BALANCE CHECK 2
-        // The mirror node ingests consensus state asynchronously, so give it a
-        // moment to catch up before reading these balances.
-        await new Promise((resolve) => setTimeout(resolve, 5000));
         oB = await bCheckerFcn(treasuryId);
         aB = await bCheckerFcn(aliceId);
         bB = await bCheckerFcn(bobId);
@@ -308,10 +300,6 @@ async function main() {
             `\n NFT transfer Alice -> Bob status: ${tokenTransferRx2.status.toString()} \n`,
         );
 
-        // BALANCE CHECK 3
-        // The mirror node ingests consensus state asynchronously, so give it a
-        // moment to catch up before reading these balances.
-        await new Promise((resolve) => setTimeout(resolve, 5000));
         oB = await bCheckerFcn(treasuryId);
         aB = await bCheckerFcn(aliceId);
         bB = await bCheckerFcn(bobId);
@@ -391,10 +379,6 @@ async function main() {
             ).toString()} \n`,
         );
 
-        // VERIFY THAT THE SCHEDULED TRANSACTION (TOKEN TRANSFER) EXECUTED
-        // The mirror node ingests consensus state asynchronously, so give it a
-        // moment to catch up before reading these balances.
-        await new Promise((resolve) => setTimeout(resolve, 5000));
         oB = await bCheckerFcn(treasuryId);
         aB = await bCheckerFcn(aliceId);
         bB = await bCheckerFcn(bobId);
@@ -429,10 +413,8 @@ async function main() {
          * @returns {Promise<Hbar>}
          */
         async function bCheckerFcn(id) {
-            const balance = await new MirrorNodeAccountBalanceQuery()
-                .setAccountId(id)
-                .execute(client);
-            return balance.hbars;
+            const balance = await hbarBalance(client, id);
+            return balance;
         }
 
         /**
@@ -464,4 +446,58 @@ async function main() {
     client.close();
 }
 
+/**
+ * Read an HBAR balance from the mirror node.
+ *
+ * The mirror node ingests consensus state asynchronously, so a read straight
+ * after a transaction can still return the previous value. Pass `previous` to
+ * poll until the value moves; the loop is bounded so an example cannot hang.
+ *
+ * @param {import("@hiero-ledger/sdk").Client} client
+ * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
+ * @param {import("@hiero-ledger/sdk").Hbar} [previous]
+ * @returns {Promise<import("@hiero-ledger/sdk").Hbar>}
+ */
+async function hbarBalance(client, accountId, previous) {
+    return untilMirror(async () => {
+        const { hbars } = await new MirrorNodeAccountBalanceQuery()
+            .setAccountId(accountId)
+            .execute(client);
+
+        // Without a previous value there is nothing to wait for.
+        if (previous == null) {
+            return hbars;
+        }
+
+        return hbars.toTinybars().equals(previous.toTinybars()) ? null : hbars;
+    });
+}
+
 void main();
+
+/**
+ * Poll a mirror-node read until it reflects the transaction that just happened.
+ *
+ * The mirror node ingests consensus state asynchronously, so a read straight
+ * after a transaction can still return the previous value. Polling to a deadline
+ * beats a fixed sleep: it does not go flaky on a slow runner and does not waste
+ * time on a fast one.
+ *
+ * @template T
+ * @param {() => Promise<T | null>} read - resolves the value once it is ready
+ * @param {number} [timeoutMs]
+ * @returns {Promise<T>}
+ */
+async function untilMirror(read, timeoutMs = 60000) {
+    const deadline = Date.now() + timeoutMs;
+    for (;;) {
+        const result = await read();
+        if (result != null) {
+            return result;
+        }
+        if (Date.now() >= deadline) {
+            throw new Error("mirror node did not ingest in time");
+        }
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+}

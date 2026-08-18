@@ -3,7 +3,6 @@
 import PrivateKey from "./PrivateKey.js";
 import AccountId from "./account/AccountId.js";
 import SignerSignature from "./SignerSignature.js";
-import { ACCOUNT_BALANCE_QUERY_DEPRECATION_MESSAGE } from "./account/AccountBalanceQuery.js";
 import AccountInfoQuery from "./account/AccountInfoQuery.js";
 import AccountRecordsQuery from "./account/AccountRecordsQuery.js";
 import TransactionId from "./transaction/TransactionId.js";
@@ -162,18 +161,18 @@ export default class Wallet {
     }
 
     /**
-     * @deprecated - The consensus node no longer serves account balances.
-     * Read them from the mirror node instead: `MirrorNodeAccountBalanceQuery`
-     * for HBAR, or the mirror node REST API for token balances.
+     * The wallet account's hbar balance, read from the mirror node.
      *
-     * Rejects without contacting the network.
+     * The `tokens` and `tokenDecimals` maps are always empty — use
+     * `MirrorNodeTokenBalanceQuery` for a token balance.
      *
      * @returns {Promise<AccountBalance>}
      */
     getAccountBalance() {
-        return Promise.reject(
-            new Error(ACCOUNT_BALANCE_QUERY_DEPRECATION_MESSAGE),
-        );
+        if (this.provider == null) {
+            throw new Error("wallet does not contain a provider");
+        }
+        return this.provider.getAccountBalance(this.accountId);
     }
 
     /**

@@ -1,4 +1,4 @@
-import { Wallet, LocalProvider, AccountInfoQuery } from "@hiero-ledger/sdk";
+import { Wallet, LocalProvider } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
 
@@ -7,6 +7,14 @@ dotenv.config();
 /**
  * How to read the HBAR balance of the wallet's own account.
  *
+ * `Wallet.getAccountBalance()` is backed by the mirror node now that the
+ * consensus node no longer serves `CryptoService/cryptoGetBalance`. Two things
+ * follow from that:
+ *
+ * - The `tokens` and `tokenDecimals` maps on the result are always empty. Use
+ *   `MirrorNodeTokenBalanceQuery` to read a token balance.
+ * - The mirror node lags consensus by a few seconds, so a balance read straight
+ *   after a transfer may still show the pre-transfer value.
  */
 async function main() {
     if (
@@ -28,14 +36,12 @@ async function main() {
     );
 
     try {
-        const info = await new AccountInfoQuery()
-            .setAccountId(wallet.getAccountId())
-            .executeWithSigner(wallet);
+        const balance = await wallet.getAccountBalance();
 
         console.log(
             `${wallet
                 .getAccountId()
-                .toString()} balance = ${info.balance.toString()}`,
+                .toString()} balance = ${balance.hbars.toString()}`,
         );
     } catch (error) {
         console.error(error);

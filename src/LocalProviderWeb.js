@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import Client from "./client/WebClient.js";
-import { ACCOUNT_BALANCE_QUERY_DEPRECATION_MESSAGE } from "./account/AccountBalanceQuery.js";
+import AccountBalance from "./account/AccountBalance.js";
+import MirrorNodeAccountBalanceQuery from "./query/MirrorNodeAccountBalanceQuery.js";
 import AccountInfoQuery from "./account/AccountInfoQuery.js";
 import AccountRecordsQuery from "./account/AccountRecordsQuery.js";
 import TransactionReceiptQuery from "./transaction/TransactionReceiptQuery.js";
@@ -16,7 +17,6 @@ import TransactionReceiptQuery from "./transaction/TransactionReceiptQuery.js";
  * @typedef {import("./transaction/TransactionReceipt.js").default} TransactionReceipt
  * @typedef {import("./transaction/TransactionRecord.js").default} TransactionRecord
  * @typedef {import("./account/AccountId.js").default} AccountId
- * @typedef {import("./account/AccountBalance.js").default} AccountBalance
  * @typedef {import("./account/AccountInfo.js").default} AccountInfo
  * @typedef {import("./logger/Logger.js").default} Logger
  */
@@ -81,20 +81,24 @@ export default class LocalProviderWeb {
     }
 
     /**
-     * @deprecated - The consensus node no longer serves account balances.
-     * Read them from the mirror node instead: `MirrorNodeAccountBalanceQuery`
-     * for HBAR, or the mirror node REST API for token balances.
+     * The account's hbar balance, read from the mirror node.
      *
-     * Rejects without contacting the network.
+     * The `tokens` and `tokenDecimals` maps are always empty: the consensus
+     * node no longer serves balances, and the mirror node balance endpoint
+     * is hbar-only. Use `MirrorNodeTokenBalanceQuery` for a token balance.
      *
      * @param {AccountId | string} accountId
      * @returns {Promise<AccountBalance>}
      */
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    getAccountBalance(accountId) {
-        return Promise.reject(
-            new Error(ACCOUNT_BALANCE_QUERY_DEPRECATION_MESSAGE),
-        );
+    async getAccountBalance(accountId) {
+        const { hbars } = await new MirrorNodeAccountBalanceQuery()
+            .setAccountId(accountId)
+            .execute(this._client);
+        return new AccountBalance({
+            hbars,
+            tokens: null,
+            tokenDecimals: null,
+        });
     }
 
     /**
