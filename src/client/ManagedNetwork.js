@@ -406,7 +406,7 @@ export default class ManagedNetwork {
      */
     getNode(key) {
         this._readmitNodes();
-        if (key != null && key != undefined) {
+        if (key != null) {
             const lockedNodes = this._network.get(key.toString());
             if (lockedNodes) {
                 const randomNodeAddress = Math.floor(
@@ -415,20 +415,9 @@ export default class ManagedNetwork {
                 return /** @type {NetworkNodeT[]} */ (lockedNodes)[
                     randomNodeAddress
                 ];
-            } else {
-                const nodes = Array.from(this._network.keys());
-                const randomNodeAccountId =
-                    nodes[Math.floor(Math.random() * nodes.length)];
+            }  else {
+    throw new Error(`NodeAccountId not recognized: ${key}`);
 
-                const randomNode = this._network.get(randomNodeAccountId);
-                // We get the `randomNodeAccountId` from the network mapping,
-                // so it cannot be `undefined`
-                const randomNodeAddress = Math.floor(
-                    // @ts-ignore
-                    Math.random() * randomNode.length,
-                );
-                // @ts-ignore
-                return randomNode[randomNodeAddress];
             }
         } else {
             if (this._healthyNodes.length == 0) {
