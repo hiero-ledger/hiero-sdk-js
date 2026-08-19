@@ -8,13 +8,13 @@ import {
     Client,
     AccountId,
     TransferTransaction,
-    AccountBalanceQuery,
+    MirrorNodeAccountBalanceQuery,
     AccountInfoQuery,
     PrivateKey,
     Mnemonic,
     TransactionResponse,
     AccountInfo,
-    AccountBalance,
+    MirrorNodeAccountBalance,
 } from "@hiero-ledger/sdk";
 
 import { OPERATOR_ID, OPERATOR_KEY } from "@env";
@@ -39,7 +39,9 @@ const App = () => {
         null,
     );
     const [info, setInfo] = useState<AccountInfo | null>(null);
-    const [balance, setBalance] = useState<AccountBalance | null>(null);
+    const [balance, setBalance] = useState<MirrorNodeAccountBalance | null>(
+        null,
+    );
     const [mnemonic, setMnemonic] = useState<Mnemonic | null>(null);
 
     useEffect(() => {
@@ -64,7 +66,9 @@ const App = () => {
             }
 
             try {
-                const balance = await new AccountBalanceQuery()
+                // The consensus node no longer serves account balances;
+                // read them from the mirror node instead.
+                const balance = await new MirrorNodeAccountBalanceQuery()
                     .setAccountId(operatorId)
                     .execute(client);
 

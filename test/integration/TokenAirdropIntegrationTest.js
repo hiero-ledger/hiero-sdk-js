@@ -3,7 +3,6 @@ import {
     TokenMintTransaction,
     PrivateKey,
     NftId,
-    AccountBalanceQuery,
     CustomFixedFee,
     TokenAssociateTransaction,
     TransferTransaction,
@@ -15,6 +14,7 @@ import {
     createAccount,
     createFungibleToken,
     createNonFungibleToken,
+    getAccountBalance,
 } from "./utils/Fixtures.js";
 
 describe("TokenAirdropIntegrationTest", function () {
@@ -60,13 +60,12 @@ describe("TokenAirdropIntegrationTest", function () {
         );
         expect(newPendingAirdrops.length).to.be.eq(0);
 
-        const operatorBalance = await new AccountBalanceQuery()
-            .setAccountId(env.operatorId)
-            .execute(env.client);
+        const operatorBalance = await getAccountBalance(
+            env.client,
+            env.operatorId,
+        );
 
-        const receiverBalance = await new AccountBalanceQuery()
-            .setAccountId(receiverId)
-            .execute(env.client);
+        const receiverBalance = await getAccountBalance(env.client, receiverId);
 
         expect(operatorBalance.tokens.get(ftTokenId).toInt()).to.be.eq(0);
         expect(receiverBalance.tokens.get(ftTokenId).toInt()).to.be.eq(
@@ -105,12 +104,11 @@ describe("TokenAirdropIntegrationTest", function () {
 
         const { newPendingAirdrops } = airdropTokenRecord;
 
-        const operatorBalance = await new AccountBalanceQuery()
-            .setAccountId(env.operatorId)
-            .execute(env.client);
-        const receiverBalance = await new AccountBalanceQuery()
-            .setAccountId(receiverId)
-            .execute(env.client);
+        const operatorBalance = await getAccountBalance(
+            env.client,
+            env.operatorId,
+        );
+        const receiverBalance = await getAccountBalance(env.client, receiverId);
 
         // FT checks
         expect(operatorBalance.tokens.get(ftTokenId).toInt()).to.be.eq(
@@ -179,12 +177,14 @@ describe("TokenAirdropIntegrationTest", function () {
 
         await airdropTokenResponse.getReceipt(env.client);
 
-        const aliasBalance = await new AccountBalanceQuery()
-            .setAccountId(aliasAccountId)
-            .execute(env.client);
-        const operatorBalance = await new AccountBalanceQuery()
-            .setAccountId(env.operatorId)
-            .execute(env.client);
+        const aliasBalance = await getAccountBalance(
+            env.client,
+            aliasAccountId,
+        );
+        const operatorBalance = await getAccountBalance(
+            env.client,
+            env.operatorId,
+        );
 
         expect(aliasBalance.tokens.get(ftTokenId).toInt()).to.be.eq(
             INITIAL_SUPPLY,
@@ -301,9 +301,10 @@ describe("TokenAirdropIntegrationTest", function () {
             ).execute(env.client)
         ).getReceipt(env.client);
 
-        const operatorBalance = await new AccountBalanceQuery()
-            .setAccountId(env.operatorId)
-            .execute(env.client);
+        const operatorBalance = await getAccountBalance(
+            env.client,
+            env.operatorId,
+        );
 
         // check if fees are collected
         const DISTINCT_TRANSACTIONS = 2;
@@ -312,16 +313,15 @@ describe("TokenAirdropIntegrationTest", function () {
             DISTINCT_TRANSACTIONS,
         );
 
-        const receiverBalance = await new AccountBalanceQuery()
-            .setAccountId(receiverId)
-            .execute(env.client);
+        const receiverBalance = await getAccountBalance(env.client, receiverId);
         expect(receiverBalance.tokens.get(tokenWithFeeId).toInt()).to.be.eq(
             INITIAL_SUPPLY,
         );
 
-        const senderBalance = await new AccountBalanceQuery()
-            .setAccountId(senderAccountId)
-            .execute(env.client);
+        const senderBalance = await getAccountBalance(
+            env.client,
+            senderAccountId,
+        );
         expect(senderBalance.tokens.get(tokenWithFeeId).toInt()).to.be.eq(0);
         expect(senderBalance.tokens.get(feeTokenId).toInt()).to.be.eq(
             INITIAL_SUPPLY - DISTINCT_TRANSACTIONS * FEE_AMOUNT,

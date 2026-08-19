@@ -11,9 +11,10 @@ import {
     NftId,
     TokenId,
     EvmAddress,
-    AccountBalanceQuery,
     AccountInfoQuery,
     AccountInfo,
+    ContractInfoQuery,
+    TokenInfoQuery,
 } from "@hiero-ledger/sdk";
 import Long from "long";
 
@@ -286,38 +287,66 @@ export const getAccountInfo = async ({
     return mapAccountInfoResponse(response);
 };
 
+/**
+ * `AccountBalanceQuery` has been removed from the consensus node, so the
+ * balance is assembled from the info queries instead:
+ *
+ * - HBAR and token balances come from `AccountInfoQuery`/`ContractInfoQuery`,
+ *   which are served by the consensus node and are therefore immediately
+ *   consistent (the mirror node lags by a few seconds).
+ * - `TokenRelationship` carries no decimals, so the decimals for each held
+ *   token are read with a `TokenInfoQuery` in order to keep the JSON-RPC
+ *   response shape unchanged.
+ */
 export const getAccountBalance = async ({
     accountId,
     contractId,
     sessionId,
 }: GetAccountBalanceParams): Promise<GetAccountBalanceResponse> => {
     const client = sdk.getClient(sessionId);
-    const transaction = new AccountBalanceQuery().setGrpcDeadline(
-        DEFAULT_GRPC_DEADLINE,
-    );
 
-    if (accountId != null) {
-        transaction.setAccountId(accountId);
-    }
+    let hbars: Hbar;
+    let tokenRelationships: AccountInfo["tokenRelationships"] | null;
 
     if (contractId != null) {
-        transaction.setContractId(contractId);
-    }
+        const info = await new ContractInfoQuery()
+            .setGrpcDeadline(DEFAULT_GRPC_DEADLINE)
+            .setContractId(contractId)
+            .execute(client);
 
-    const txResponse = await transaction.execute(client);
+        hbars = info.balance;
+        tokenRelationships = info.tokenRelationships;
+    } else {
+        const query = new AccountInfoQuery().setGrpcDeadline(
+            DEFAULT_GRPC_DEADLINE,
+        );
+
+        if (accountId != null) {
+            query.setAccountId(accountId);
+        }
+
+        const info = await query.execute(client);
+
+        hbars = info.balance;
+        tokenRelationships = info.tokenRelationships;
+    }
 
     let tokenBalances = {};
-    for (const [tokenId, amount] of txResponse.tokens) {
-        tokenBalances[tokenId.toString()] = amount.toString();
-    }
-
     let tokenDecimals = {};
-    for (const [tokenId, decimals] of txResponse.tokenDecimals) {
-        tokenDecimals[tokenId.toString()] = decimals;
+
+    for (const [tokenId, relationship] of tokenRelationships ?? []) {
+        tokenBalances[tokenId.toString()] = relationship.balance.toString();
+
+        const tokenInfo = await new TokenInfoQuery()
+            .setGrpcDeadline(DEFAULT_GRPC_DEADLINE)
+            .setTokenId(tokenId)
+            .execute(client);
+
+        tokenDecimals[tokenId.toString()] = tokenInfo.decimals;
     }
 
     return {
-        hbars: txResponse.hbars.toTinybars().toString(),
+        hbars: hbars.toTinybars().toString(),
         tokenBalances: tokenBalances,
         tokenDecimals: tokenDecimals,
     };
