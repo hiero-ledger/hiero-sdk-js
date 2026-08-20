@@ -9,7 +9,7 @@
  * @typedef {object} StatusErrorJSON
  * @property {string} name
  * @property {string} status
- * @property {string} transactionId
+ * @property {?string} transactionId
  * @property {string} message
  */
 
@@ -17,7 +17,8 @@ export default class StatusError extends Error {
     /**
      * @param {object} props
      * @param {Status} props.status
-     * @param {TransactionId} props.transactionId
+     * @param {?TransactionId} props.transactionId - null for failures that
+     * are not tied to a transaction, such as a mirror-node REST query
      * @param {string} message
      */
     constructor(props, message) {
@@ -43,7 +44,7 @@ export default class StatusError extends Error {
         return {
             name: this.name,
             status: this.status.toString(),
-            transactionId: this.transactionId.toString(),
+            transactionId: this.transactionId?.toString() ?? null,
             message: this.message,
         };
     }

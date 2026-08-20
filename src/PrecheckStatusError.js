@@ -13,7 +13,7 @@ import StatusError from "./StatusError.js";
  * @typedef {object} PrecheckStatusErrorJSON
  * @property {string} name
  * @property {string} status
- * @property {string} transactionId
+ * @property {?string} transactionId
  * @property {?string | null} nodeId
  * @property {string} message
  * @property {?ContractFunctionResult} contractFunctionResult
@@ -34,14 +34,19 @@ export default class PrecheckStatusError extends StatusError {
     /**
      * @param {object} props
      * @param {Status} props.status
-     * @param {TransactionId} props.transactionId
-     * @param {AccountId} props.nodeId
+     * @param {?TransactionId} props.transactionId - null when the failure is
+     * not tied to a transaction
+     * @param {?AccountId} props.nodeId - null when no consensus node was
+     * involved
      * @param {?ContractFunctionResult} props.contractFunctionResult
      */
     constructor(props) {
         super(
             props,
-            `transaction ${props.transactionId.toString()} failed precheck with status ${props.status.toString()} against node account id ${props.nodeId.toString()}`,
+            // A mirror-node query names no transaction and no node.
+            props.transactionId != null && props.nodeId != null
+                ? `transaction ${props.transactionId.toString()} failed precheck with status ${props.status.toString()} against node account id ${props.nodeId.toString()}`
+                : `query failed with status ${props.status.toString()}`,
         );
 
         /**
@@ -51,7 +56,7 @@ export default class PrecheckStatusError extends StatusError {
         this.contractFunctionResult = props.contractFunctionResult;
 
         /**
-         * @type {AccountId}
+         * @type {?AccountId}
          * @readonly
          */
         this.nodeId = props.nodeId;
@@ -64,8 +69,8 @@ export default class PrecheckStatusError extends StatusError {
         return {
             name: this.name,
             status: this.status.toString(),
-            transactionId: this.transactionId.toString(),
-            nodeId: this.nodeId.toString(),
+            transactionId: this.transactionId?.toString() ?? null,
+            nodeId: this.nodeId?.toString() ?? null,
             message: this.message,
             contractFunctionResult: this.contractFunctionResult,
         };
