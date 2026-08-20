@@ -5,7 +5,10 @@ import {
     AccountId,
     MirrorNodeAccountBalance,
     MirrorNodeAccountBalanceQuery,
+    PrecheckStatusError,
     PublicKey,
+    Status,
+    StatusError,
 } from "../../src/exports.js";
 import { Client } from "../../src/index.js";
 import * as EntityIdHelper from "../../src/EntityIdHelper.js";
@@ -135,7 +138,7 @@ describe("MirrorNodeAccountBalanceQuery", function () {
         expect(balance.hbars.toTinybars().toString()).to.equal("5000000000");
     });
 
-    it("should return zero hbars for an empty balances array", async function () {
+    it("should fail with INVALID_ACCOUNT_ID for an empty balances array", async function () {
         fetchStub.resolves({
             ok: true,
             status: 200,
@@ -147,11 +150,69 @@ describe("MirrorNodeAccountBalanceQuery", function () {
                 }),
         });
 
-        const balance = await new MirrorNodeAccountBalanceQuery()
-            .setAccountId("0.0.123")
-            .execute(client);
+        let error = null;
+        try {
+            await new MirrorNodeAccountBalanceQuery()
+                .setAccountId("0.0.123")
+                .execute(client);
+        } catch (err) {
+            error = err;
+        }
 
-        expect(balance.hbars.toTinybars().toString()).to.equal("0");
+        expect(error).to.be.instanceOf(PrecheckStatusError);
+        expect(error).to.be.instanceOf(StatusError);
+        expect(error.status).to.equal(Status.InvalidAccountId);
+
+        // No consensus node was involved; the message must not claim otherwise.
+        expect(error.transactionId).to.be.null;
+        expect(error.nodeId).to.be.null;
+        expect(error.message).to.equal(
+            "query failed with status INVALID_ACCOUNT_ID",
+        );
+    });
+
+    it("should reject a response with no balances array as malformed", async function () {
+        fetchStub.resolves({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({ timestamp: null }),
+        });
+
+        let error = null;
+        try {
+            await new MirrorNodeAccountBalanceQuery()
+                .setAccountId("0.0.123")
+                .execute(client);
+        } catch (err) {
+            error = err;
+        }
+
+        // A malformed payload is not a missing account and must not be
+        // reported as INVALID_ACCOUNT_ID.
+        expect(error).to.not.be.instanceOf(StatusError);
+        expect(error.message).to.include("no balances array");
+    });
+
+    it("should reject a non-array balances field as malformed", async function () {
+        fetchStub.resolves({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({ balances: { account: "0.0.123" } }),
+        });
+
+        let error = null;
+        try {
+            await new MirrorNodeAccountBalanceQuery()
+                .setAccountId("0.0.123")
+                .execute(client);
+        } catch (err) {
+            error = err;
+        }
+
+        // Without an Array.isArray check this fell through both guards and
+        // died on `undefined.balance` deep inside `long`.
+        expect(error).to.not.be.instanceOf(StatusError);
+        expect(error.message).to.include("no balances array");
     });
 
     it("should be immutable", async function () {

@@ -1,4 +1,9 @@
-import { AccountId, MirrorNodeAccountBalanceQuery } from "../../src/exports.js";
+import {
+    AccountId,
+    MirrorNodeAccountBalanceQuery,
+    PrecheckStatusError,
+    Status,
+} from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 
 // Cross-environment sleep function
@@ -52,12 +57,18 @@ describe("MirrorNodeAccountBalanceQuery", function () {
         expect(balance.hbars.toTinybars().toNumber()).to.be.gt(0);
     });
 
-    it("should return zero hbars for a non-existent account", async function () {
-        const balance = await new MirrorNodeAccountBalanceQuery()
-            .setAccountId(new AccountId(999999999))
-            .execute(env.client);
+    it("should fail with INVALID_ACCOUNT_ID for a non-existent account", async function () {
+        let error = null;
+        try {
+            await new MirrorNodeAccountBalanceQuery()
+                .setAccountId(new AccountId(999999999))
+                .execute(env.client);
+        } catch (err) {
+            error = err;
+        }
 
-        expect(balance.hbars.toTinybars().toNumber()).to.equal(0);
+        expect(error).to.be.instanceOf(PrecheckStatusError);
+        expect(error.status).to.equal(Status.InvalidAccountId);
     });
 
     afterAll(async function () {
