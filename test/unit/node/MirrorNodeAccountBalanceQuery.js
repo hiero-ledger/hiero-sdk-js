@@ -2,7 +2,11 @@
 
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import { AccountId, PrecheckStatusError, Status } from "../../../src/index.js";
+import {
+    AccountId,
+    MirrorNodeStatusError,
+    Status,
+} from "../../../src/index.js";
 import MirrorNodeAccountBalanceQuery from "../../../src/query/MirrorNodeAccountBalanceQuery.js";
 import NativeClient from "../../../src/client/NativeClient.js";
 
@@ -87,7 +91,7 @@ describe("MirrorNodeAccountBalanceQuery (wire)", function () {
 
         // An empty result is a definitive answer, not a transient failure.
         expect(requests).to.equal(1);
-        expect(error).to.be.instanceOf(PrecheckStatusError);
+        expect(error).to.be.instanceOf(MirrorNodeStatusError);
         expect(error.status).to.equal(Status.InvalidAccountId);
     });
 

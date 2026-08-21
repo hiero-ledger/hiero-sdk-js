@@ -1,7 +1,7 @@
 import {
     AccountId,
     MirrorNodeAccountBalanceQuery,
-    PrecheckStatusError,
+    MirrorNodeStatusError,
     Status,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
@@ -67,7 +67,7 @@ describe("MirrorNodeAccountBalanceQuery", function () {
             error = err;
         }
 
-        expect(error).to.be.instanceOf(PrecheckStatusError);
+        expect(error).to.be.instanceOf(MirrorNodeStatusError);
         expect(error.status).to.equal(Status.InvalidAccountId);
     });
 

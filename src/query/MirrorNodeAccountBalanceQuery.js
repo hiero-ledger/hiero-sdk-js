@@ -3,7 +3,7 @@
 import Long from "long";
 import AccountId from "../account/AccountId.js";
 import MirrorNodeAccountBalance from "../account/MirrorNodeAccountBalance.js";
-import PrecheckStatusError from "../PrecheckStatusError.js";
+import MirrorNodeStatusError from "../MirrorNodeStatusError.js";
 import Status from "../Status.js";
 import Hbar from "../Hbar.js";
 import * as EntityIdHelper from "../EntityIdHelper.js";
@@ -41,7 +41,7 @@ import {
  * Only the HBAR balance is returned (see {@link MirrorNodeAccountBalance}).
  *
  * An account the mirror node does not know returns an empty result rather
- * than a 404; the SDK maps that to a {@link PrecheckStatusError} carrying
+ * than a 404; the SDK maps that to a {@link MirrorNodeStatusError} carrying
  * {@link Status.InvalidAccountId}, the status `AccountBalanceQuery`
  * reported. An account that exists holding nothing returns `"balance": 0`,
  * so a real zero is never mistaken for a missing account.
@@ -104,7 +104,7 @@ export default class MirrorNodeAccountBalanceQuery {
      * @param {number} [requestTimeout] - total timeout for the whole
      * operation in milliseconds; defaults to `client.requestTimeout`
      * @returns {Promise<MirrorNodeAccountBalance>}
-     * @throws {PrecheckStatusError} with {@link Status.InvalidAccountId} if
+     * @throws {MirrorNodeStatusError} with {@link Status.InvalidAccountId} if
      * the mirror node knows no such account
      */
     async execute(client, requestTimeout) {
@@ -124,7 +124,7 @@ export default class MirrorNodeAccountBalanceQuery {
             await this._fetchJson(url, client, deadline)
         );
 
-        if (!Array.isArray(response.balances)) {
+        if (!Array.isArray(response?.balances)) {
             throw new Error(
                 `Failed to query ${url}: response has no balances array`,
             );
@@ -133,18 +133,21 @@ export default class MirrorNodeAccountBalanceQuery {
         // An existing account with no hbar still has a `"balance": 0` entry, so
         // an empty list means the account is unknown.
         if (response.balances.length === 0) {
-            throw new PrecheckStatusError({
-                status: Status.InvalidAccountId,
-                transactionId: null,
-                nodeId: null,
-                contractFunctionResult: null,
-            });
+            throw new MirrorNodeStatusError(
+                { status: Status.InvalidAccountId },
+                `account ${idString} was not found on the mirror node`,
+            );
+        }
+
+        // `Long.fromValue` turns a non-number into 0 rather than failing, which
+        // would reintroduce the silent-zero bug this query just fixed.
+        const balance = response.balances[0].balance;
+        if (typeof balance !== "number") {
+            throw new Error(`Failed to query ${url}: balance is not a number`);
         }
 
         return new MirrorNodeAccountBalance({
-            hbars: Hbar.fromTinybars(
-                Long.fromValue(response.balances[0].balance),
-            ),
+            hbars: Hbar.fromTinybars(Long.fromValue(balance)),
         });
     }
 
