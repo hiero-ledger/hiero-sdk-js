@@ -75,6 +75,70 @@ function isMultiTransactionIdType(transactionDataCase) {
 export const TRANSACTION_REGISTRY = new Map();
 
 /**
+ * Field numbers of the `data` oneof on `TransactionBody`, i.e. the transaction
+ * type fields. A valid body sets exactly one of these. Derived from the
+ * transaction registry so it stays in sync as transaction types are added.
+ * Rebuilt when the registry grows, because types register lazily on import.
+ *
+ * @type {Set<number>}
+ */
+let dataFieldNumbers = new Set();
+let dataFieldRegistrySize = -1;
+
+/**
+ * @returns {Set<number>}
+ */
+function getDataFieldNumbers() {
+    if (
+        dataFieldNumbers.size === 0 ||
+        TRANSACTION_REGISTRY.size !== dataFieldRegistrySize
+    ) {
+        /** @type {Set<number>} */
+        const numbers = new Set();
+        for (const name of TRANSACTION_REGISTRY.keys()) {
+            const probe = HieroProto.proto.TransactionBody.encode({
+                [name]: {},
+            }).finish();
+            numbers.add(HieroProto.Reader.create(probe).uint32() >>> 3);
+        }
+        dataFieldNumbers = numbers;
+        dataFieldRegistrySize = TRANSACTION_REGISTRY.size;
+    }
+    return dataFieldNumbers;
+}
+
+/**
+ * Reject a transaction body that sets more than one `data` field.
+ *
+ * A crafted `TransactionBody` can carry several `data` fields on the wire.
+ * protobufjs keeps only the last one when decoding, so the extra fields are
+ * invisible on the decoded object and cannot be counted there. We inspect the
+ * raw bytes instead, before decoding, so an ambiguous body is refused.
+ *
+ * @param {Uint8Array} bodyBytes
+ */
+function assertSingleDataField(bodyBytes) {
+    if (bodyBytes == null || bodyBytes.length === 0) {
+        return;
+    }
+    const dataFields = getDataFieldNumbers();
+    const reader = HieroProto.Reader.create(bodyBytes);
+    let count = 0;
+    while (reader.pos < reader.len) {
+        const tag = reader.uint32();
+        if (dataFields.has(tag >>> 3)) {
+            count++;
+        }
+        reader.skipType(tag & 7);
+    }
+    if (count > 1) {
+        throw new Error(
+            "transaction body sets more than one data field; refusing to decode an ambiguous transaction",
+        );
+    }
+}
+
+/**
  * Base class for all transactions that may be submitted to Hedera.
  *
  * @abstract
@@ -305,6 +369,7 @@ export default class Transaction extends Executable {
             }
 
             if (transaction.bodyBytes && transaction.bodyBytes.length != 0) {
+                assertSingleDataField(transaction.bodyBytes);
                 // Decode a transaction
                 const body = HieroProto.proto.TransactionBody.decode(
                     transaction.bodyBytes,
@@ -365,6 +430,7 @@ export default class Transaction extends Executable {
                 signedTransactions.push(signedTransaction);
 
                 // Decode a transaction body
+                assertSingleDataField(signedTransaction.bodyBytes);
                 const body = HieroProto.proto.TransactionBody.decode(
                     signedTransaction.bodyBytes,
                 );

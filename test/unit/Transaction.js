@@ -290,6 +290,30 @@ describe("Transaction", function () {
         }
     });
 
+    it("fromBytes rejects a body that sets more than one data field", function () {
+        // Two different data fields (cryptoUpdateAccount and cryptoDelete)
+        // smuggled onto one body's wire bytes. A valid body sets only one.
+        const update = HieroProto.proto.TransactionBody.encode({
+            cryptoUpdateAccount: {},
+        }).finish();
+        const del = HieroProto.proto.TransactionBody.encode({
+            cryptoDelete: {},
+        }).finish();
+        const smuggled = new Uint8Array([...update, ...del]);
+
+        const signedTransactionBytes =
+            HieroProto.proto.SignedTransaction.encode({
+                bodyBytes: smuggled,
+            }).finish();
+        const list = HieroProto.proto.TransactionList.encode({
+            transactionList: [{ signedTransactionBytes }],
+        }).finish();
+
+        expect(() => Transaction.fromBytes(list)).to.throw(
+            /more than one data field/,
+        );
+    });
+
     it("fromBytes fails for empty bytes", function () {
         expect(() => Transaction.fromBytes(new Uint8Array())).to.throw(
             "cannot deserialize a transaction from empty bytes",
