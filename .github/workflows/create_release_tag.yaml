@@ -1,0 +1,204 @@
+name: "Create Release Tag"
+on:
+  workflow_dispatch:
+    inputs:
+      sdk-version:
+        description: "New SDK Version (eg: 2.87.0 or 2.87.0-beta.1)"
+        type: string
+        required: true
+      update-proto-package:
+        description: "Update Proto Package (packages/proto)"
+        type: boolean
+        required: false
+        default: false
+      proto-version:
+        description: "New Proto Version (eg: 2.32.0)"
+        type: string
+        required: false
+      update-cryptography-package:
+        description: "Update Cryptography Package (packages/cryptography)"
+        type: boolean
+        required: false
+        default: false
+      cryptography-version:
+        description: "New Cryptography Version (eg: 1.20.0)"
+        type: string
+        required: false
+      dry-run-enabled:
+        description: "Dry Run Enabled"
+        type: boolean
+        required: false
+        default: false
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: write
+
+env:
+  HIERO_SDK_PKG_NAME: "@hiero-ledger/sdk"
+  HIERO_PROTO_PKG_NAME: "@hiero-ledger/proto"
+  HIERO_CRYPTO_PKG_NAME: "@hiero-ledger/cryptography"
+
+jobs:
+  create-tag:
+    name: Create Tag
+    runs-on: hiero-client-sdk-linux-medium
+    env:
+      SDK_VERSION: ${{ inputs.sdk-version }}
+      UPDATE_PROTO: ${{ inputs.update-proto-package }}
+      PROTO_VERSION: ${{ inputs.proto-version }}
+      UPDATE_CRYPTO: ${{ inputs.update-cryptography-package }}
+      CRYPTO_VERSION: ${{ inputs.cryptography-version }}
+      DRY_RUN_ENABLED: ${{ inputs.dry-run-enabled }}
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Install Semantic Version Tools
+        run: |
+          echo "::group::Download SemVer Binary"
+          sudo curl -L -o /usr/local/bin/semver https://raw.githubusercontent.com/fsaintjacques/semver-tool/master/src/semver
+          echo "::endgroup::"
+          echo "::group::Change SemVer Binary Permissions"
+          sudo chmod -v +x /usr/local/bin/semver
+          echo "::endgroup::"
+          echo "::group::Show SemVer Binary Version Info"
+          semver --version
+          echo "::endgroup::"
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+
+      - name: Validate Versions
+        run: |
+          # The SDK version is always required: it's what the release tag is based on,
+          # and every sub-package bump implies a new SDK release too.
+          if [[ -z "${SDK_VERSION}" ]]; then
+            echo "::error title=Missing SDK Version::An SDK version is required."
+            exit 1
+          fi
+
+          IS_VALID_SEMVER="$(semver validate "${SDK_VERSION}")"
+          if [[ "${IS_VALID_SEMVER}" != "valid" ]]; then
+            echo "::error title=Invalid SDK Version::The version '${SDK_VERSION}' is not a valid SemVer string."
+            exit 1
+          fi
+
+          EXISTING_TAG="$(git tag -l "v${SDK_VERSION}")"
+          if [[ -n "${EXISTING_TAG}" ]]; then
+            echo "::error title=Tag Already Exists::The tag 'v${SDK_VERSION}' already exists."
+            exit 1
+          fi
+
+          if curl -sSLf "https://registry.npmjs.org/${HIERO_SDK_PKG_NAME}/${SDK_VERSION}" >/dev/null 2>&1; then
+            echo "::error title=Version Already Published::${HIERO_SDK_PKG_NAME}@${SDK_VERSION} is already published to npm."
+            exit 1
+          fi
+
+          if [[ "${UPDATE_PROTO}" == "true" ]]; then
+            if [[ -z "${PROTO_VERSION}" ]]; then
+              echo "::error title=Missing Proto Version::A proto version is required when 'Update Proto Package' is enabled."
+              exit 1
+            fi
+
+            IS_VALID_SEMVER="$(semver validate "${PROTO_VERSION}")"
+            if [[ "${IS_VALID_SEMVER}" != "valid" ]]; then
+              echo "::error title=Invalid Proto Version::The version '${PROTO_VERSION}' is not a valid SemVer string."
+              exit 1
+            fi
+
+            if curl -sSLf "https://registry.npmjs.org/${HIERO_PROTO_PKG_NAME}/${PROTO_VERSION}" >/dev/null 2>&1; then
+              echo "::error title=Version Already Published::${HIERO_PROTO_PKG_NAME}@${PROTO_VERSION} is already published to npm."
+              exit 1
+            fi
+          fi
+
+          if [[ "${UPDATE_CRYPTO}" == "true" ]]; then
+            if [[ -z "${CRYPTO_VERSION}" ]]; then
+              echo "::error title=Missing Cryptography Version::A cryptography version is required when 'Update Cryptography Package' is enabled."
+              exit 1
+            fi
+
+            IS_VALID_SEMVER="$(semver validate "${CRYPTO_VERSION}")"
+            if [[ "${IS_VALID_SEMVER}" != "valid" ]]; then
+              echo "::error title=Invalid Cryptography Version::The version '${CRYPTO_VERSION}' is not a valid SemVer string."
+              exit 1
+            fi
+
+            if curl -sSLf "https://registry.npmjs.org/${HIERO_CRYPTO_PKG_NAME}/${CRYPTO_VERSION}" >/dev/null 2>&1; then
+              echo "::error title=Version Already Published::${HIERO_CRYPTO_PKG_NAME}@${CRYPTO_VERSION} is already published to npm."
+              exit 1
+            fi
+          fi
+
+      - name: Import GPG Key
+        id: gpg_importer
+        uses: step-security/ghaction-import-gpg@c0b4a334b9b72bfaaebec86ef022a78a5b17f828 # v7.0.0
+        with:
+          gpg_private_key: ${{ secrets.GPG_KEY_CONTENTS }}
+          passphrase: ${{ secrets.GPG_KEY_PASSPHRASE }}
+          git_committer_name: ${{ vars.GIT_USER_NAME }}
+          git_committer_email: ${{ vars.GIT_USER_EMAIL }}
+          git_user_signingkey: true
+          git_commit_gpgsign: true
+          git_tag_gpgsign: true
+
+      - name: Bump Versions
+        run: |
+          BUMP_ARGS=("${SDK_VERSION}")
+          [[ "${UPDATE_PROTO}" == "true" ]] && BUMP_ARGS+=(--proto "${PROTO_VERSION}")
+          [[ "${UPDATE_CRYPTO}" == "true" ]] && BUMP_ARGS+=(--cryptography "${CRYPTO_VERSION}")
+
+          node scripts/release-helpers.mjs bump-versions "${BUMP_ARGS[@]}"
+
+      - name: Commit, Push, and Tag
+        env:
+          GIT_AUTHOR_NAME: ${{ steps.gpg_importer.outputs.name }}
+          GIT_AUTHOR_EMAIL: ${{ steps.gpg_importer.outputs.email }}
+          GIT_COMMITTER_NAME: ${{ steps.gpg_importer.outputs.name }}
+          GIT_COMMITTER_EMAIL: ${{ steps.gpg_importer.outputs.email }}
+        run: |
+          TAG_NAME="v${SDK_VERSION}"
+          TAG_MESSAGE="Stable tag ${TAG_NAME}"
+          [[ "${SDK_VERSION}" == *-beta.* ]] && TAG_MESSAGE="Beta tag ${TAG_NAME}"
+
+          ADD_PATHS=(package.json)
+          [[ "${UPDATE_PROTO}" == "true" ]] && ADD_PATHS+=(packages/proto/package.json)
+          [[ "${UPDATE_CRYPTO}" == "true" ]] && ADD_PATHS+=(packages/cryptography/package.json)
+
+          if [[ "${DRY_RUN_ENABLED}" == "true" ]]; then
+            echo "Dry run enabled. The following actions would have been performed:"
+            echo "  - git add ${ADD_PATHS[*]}"
+            echo "  - git commit -S -s -m \"chore(release): ${TAG_NAME}\""
+            echo "  - git push origin HEAD:main"
+            echo "  - git tag -a -s -m \"${TAG_MESSAGE}\" \"${TAG_NAME}\""
+            echo "  - git push origin \"${TAG_NAME}\""
+            git diff -- "${ADD_PATHS[@]}"
+            exit 0
+          fi
+
+          git add "${ADD_PATHS[@]}"
+          git commit -S -s -m "chore(release): ${TAG_NAME}"
+          git push origin HEAD:main
+
+          git tag -a -s -m "${TAG_MESSAGE}" "${TAG_NAME}"
+          git push origin "${TAG_NAME}"
+
+          echo "## Release Tag Created" >> "${GITHUB_STEP_SUMMARY}"
+          echo "Tag: ${TAG_NAME}" >> "${GITHUB_STEP_SUMMARY}"
+          [[ "${UPDATE_PROTO}" == "true" ]] && echo "Proto Version: ${PROTO_VERSION}" >> "${GITHUB_STEP_SUMMARY}"
+          [[ "${UPDATE_CRYPTO}" == "true" ]] && echo "Cryptography Version: ${CRYPTO_VERSION}" >> "${GITHUB_STEP_SUMMARY}"
