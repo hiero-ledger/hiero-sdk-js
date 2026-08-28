@@ -26,8 +26,10 @@ import Timestamp from "../Timestamp.js";
  */
 
 /**
- * Deprecated: Do not use.
- * @deprecated
+ * Delete a file or smart contract without the owner's signature. Privileged:
+ * by default only accounts 2-59 may submit this, so an ordinary payer is
+ * rejected. The content is retained, so `SystemUndeleteTransaction` can
+ * reverse it.
  */
 export default class SystemDeleteTransaction extends Transaction {
     /**
@@ -93,7 +95,6 @@ export default class SystemDeleteTransaction extends Transaction {
             );
 
         return Transaction._fromProtobufTransactions(
-            // eslint-disable-next-line deprecation/deprecation
             new SystemDeleteTransaction({
                 fileId:
                     systemDelete.fileID != null
@@ -151,6 +152,9 @@ export default class SystemDeleteTransaction extends Transaction {
     }
 
     /**
+     * Targets a smart contract, submitting to `SmartContractService`, whose
+     * `systemDelete` RPC is deprecated in the protobufs. Prefer `setFileId`.
+     *
      * @param {ContractId | string} contractId
      * @returns {this}
      */
@@ -235,5 +239,5 @@ export default class SystemDeleteTransaction extends Transaction {
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/unbound-method, deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/unbound-method
 TRANSACTION_REGISTRY.set("systemDelete", SystemDeleteTransaction._fromProtobuf);

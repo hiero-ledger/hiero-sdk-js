@@ -20,21 +20,21 @@ import ContractId from "../contract/ContractId.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
- * @typedef {import("../Timestamp.js").default} Timestamp
  * @typedef {import("../account/AccountId.js").default} AccountId
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  */
 
 /**
- * Deprecated: Do not use.
- * @deprecated
+ * Restore a file or smart contract removed by `SystemDeleteTransaction`.
+ * Privileged: by default only accounts 2-60 may submit this, so an ordinary
+ * payer is rejected. Content removed by `FileDeleteTransaction` is not
+ * retained and cannot be restored this way.
  */
 export default class SystemUndeleteTransaction extends Transaction {
     /**
      * @param {object} [props]
      * @param {FileId | string} [props.fileId]
      * @param {ContractId | string} [props.contractId]
-     * @param {Timestamp} [props.expirationTime]
      */
     constructor(props = {}) {
         super();
@@ -83,7 +83,6 @@ export default class SystemUndeleteTransaction extends Transaction {
             );
 
         return Transaction._fromProtobufTransactions(
-            // eslint-disable-next-line deprecation/deprecation
             new SystemUndeleteTransaction({
                 fileId:
                     systemUndelete.fileID != null
@@ -137,6 +136,9 @@ export default class SystemUndeleteTransaction extends Transaction {
     }
 
     /**
+     * Targets a smart contract, submitting to `SmartContractService`, whose
+     * `systemUndelete` RPC is deprecated in the protobufs. Prefer `setFileId`.
+     *
      * @param {ContractId | string} contractId
      * @returns {this}
      */
@@ -202,6 +204,6 @@ export default class SystemUndeleteTransaction extends Transaction {
 
 TRANSACTION_REGISTRY.set(
     "systemUndelete",
-    // eslint-disable-next-line @typescript-eslint/unbound-method, deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/unbound-method
     SystemUndeleteTransaction._fromProtobuf,
 );

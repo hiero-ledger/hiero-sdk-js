@@ -6,8 +6,6 @@ coverage:
                 threshold: 1%
 ignore:
     - "src/token/TokenNftsUpdateTransaction.js"
-    - "src/system/SystemUndeleteTransaction.js"
-    - "src/system/SystemDeleteTransaction.js"
     - "src/contract/StorageChange.js"
     - "src/contract/ContractStateChange.js"
     - "src/transaction/SignatureMapLegacy.js"
