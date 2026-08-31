@@ -18,9 +18,7 @@ export default class BadKeyError extends Error {
             /** @type {Error=} */
             this.cause = messageOrCause;
             if (messageOrCause.stack !== undefined) {
-                // Assign via a cast so tsc does not redeclare the inherited
-                // optional `Error.stack` as an own `string | undefined` field,
-                // which breaks consumers using exactOptionalPropertyTypes.
+                // Cast so tsc keeps `Error.stack` inherited and optional.
                 /** @type {Error} */ (this).stack = messageOrCause.stack;
             }
         }

@@ -1,28 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Mirrors every `*.d.ts` under the given directories to a sibling `*.d.cts`
- * so that CommonJS consumers using `moduleResolution: node16`/`nodenext`
- * resolve CJS-flavored declarations (see issue #2722).
- *
- * The packages set `"type": "module"`, so TypeScript treats `.d.ts` files as
- * ESM-only: a CJS `require()` of the package is rejected with TS1479 even
- * though a real CJS build (`lib/*.cjs`) is shipped. The mirrored `.d.cts`
- * files describe those `.cjs` files.
- *
- * Two rewrites are applied to each mirrored file:
- *
- * 1. Relative import specifiers `./x.js` -> `./x.cjs`, matching the specifier
- *    rewrite babel applies to the runtime `.cjs` build. TypeScript then
- *    resolves them to the sibling `.d.cts` declarations.
- *
- * 2. `import("long").default` / `import("bignumber.js").default` (and the
- *    `.BigNumber` named form tsc prints for the latter) -> `import("long")` /
- *    `import("bignumber.js")`. Both packages are dual-typed: their ESM
- *    declarations use default/named exports while their CJS declarations use
- *    `export =`, which has neither member.
- *
- * Usage: node generate-cts-declarations.js <dir> [<dir> ...]
+ * Mirrors `*.d.ts` files to sibling `*.d.cts` for CJS consumers on
+ * node16/nodenext resolution (issue #2722): rewrites relative `./x.js`
+ * specifiers to `./x.cjs` and drops `.default`/`.BigNumber` from
+ * `long`/`bignumber.js` imports, whose CJS types use `export =`.
  */
 
 import { readdirSync, readFileSync, writeFileSync } from "fs";
