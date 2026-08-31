@@ -13,6 +13,9 @@
  * whose `transactionId` is part of every consensus-node error. `status` lets
  * callers keep the `err.status === Status.InvalidAccountId` check they used
  * with the consensus-node queries these mirror queries replace.
+ *
+ * Match on `status`, not on the error class: the consensus-node queries these
+ * replace failed with `PrecheckStatusError`, which this deliberately is not.
  */
 export default class MirrorNodeStatusError extends Error {
     /**
