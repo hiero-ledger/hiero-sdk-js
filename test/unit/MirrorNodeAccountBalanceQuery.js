@@ -5,7 +5,9 @@ import {
     AccountId,
     MirrorNodeAccountBalance,
     MirrorNodeAccountBalanceQuery,
+    MirrorNodeStatusError,
     PublicKey,
+    Status,
 } from "../../src/exports.js";
 import { Client } from "../../src/index.js";
 import * as EntityIdHelper from "../../src/EntityIdHelper.js";
@@ -135,7 +137,7 @@ describe("MirrorNodeAccountBalanceQuery", function () {
         expect(balance.hbars.toTinybars().toString()).to.equal("5000000000");
     });
 
-    it("should return zero hbars for an empty balances array", async function () {
+    it("should fail with INVALID_ACCOUNT_ID for an empty balances array", async function () {
         fetchStub.resolves({
             ok: true,
             status: 200,
@@ -147,11 +149,134 @@ describe("MirrorNodeAccountBalanceQuery", function () {
                 }),
         });
 
-        const balance = await new MirrorNodeAccountBalanceQuery()
-            .setAccountId("0.0.123")
-            .execute(client);
+        let error = null;
+        try {
+            await new MirrorNodeAccountBalanceQuery()
+                .setAccountId("0.0.123")
+                .execute(client);
+        } catch (err) {
+            error = err;
+        }
 
-        expect(balance.hbars.toTinybars().toString()).to.equal("0");
+        expect(error).to.be.instanceOf(MirrorNodeStatusError);
+        expect(error.status).to.equal(Status.InvalidAccountId);
+        expect(error.message).to.include("0.0.123");
+    });
+
+    it("should name the resolved alias when an alias is not found", async function () {
+        const publicKey = PublicKey.fromString(
+            "302a300506032b6570032100e0c8ec2758a5879ffac226a13c0c516b799e72e35141a0dd828f94d37988a4b7",
+        );
+        const alias = EntityIdHelper.publicKeyToAlias(publicKey);
+
+        fetchStub.resolves({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({ timestamp: null, balances: [] }),
+        });
+
+        let message = "";
+        try {
+            await new MirrorNodeAccountBalanceQuery()
+                .setAccountId(new AccountId(0, 0, 0, publicKey))
+                .execute(client);
+        } catch (error) {
+            message = error.message;
+        }
+
+        // The form actually sent is what you need to debug a false not-found.
+        expect(message).to.include(alias);
+    });
+
+    it("should reject a response with no balances array as malformed", async function () {
+        fetchStub.resolves({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({ timestamp: null }),
+        });
+
+        let error = null;
+        try {
+            await new MirrorNodeAccountBalanceQuery()
+                .setAccountId("0.0.123")
+                .execute(client);
+        } catch (err) {
+            error = err;
+        }
+
+        // A malformed payload is not a missing account and must not be
+        // reported as INVALID_ACCOUNT_ID.
+        expect(error).to.not.be.instanceOf(MirrorNodeStatusError);
+        expect(error.message).to.include("no balances array");
+    });
+
+    it("should reject a null response body as malformed", async function () {
+        fetchStub.resolves({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve(null),
+        });
+
+        let error = null;
+        try {
+            await new MirrorNodeAccountBalanceQuery()
+                .setAccountId("0.0.123")
+                .execute(client);
+        } catch (err) {
+            error = err;
+        }
+
+        expect(error).to.not.be.instanceOf(MirrorNodeStatusError);
+        expect(error.message).to.include("no balances array");
+    });
+
+    it("should reject a balance that is not a number", async function () {
+        // `Long.fromValue` coerces a string, boolean or object to 0, which
+        // would silently reintroduce the zero this query stopped returning.
+        for (const balance of ["abc", true, {}, undefined]) {
+            fetchStub.resolves({
+                ok: true,
+                status: 200,
+                json: () =>
+                    Promise.resolve({
+                        balances: [{ account: "0.0.123", balance }],
+                    }),
+            });
+
+            let error = null;
+            try {
+                await new MirrorNodeAccountBalanceQuery()
+                    .setAccountId("0.0.123")
+                    .execute(client);
+            } catch (err) {
+                error = err;
+            }
+
+            expect(error, `balance: ${JSON.stringify(balance)}`).to.not.be.null;
+            expect(error.message).to.include("balance is not a number");
+        }
+    });
+
+    it("should reject a non-array balances field as malformed", async function () {
+        fetchStub.resolves({
+            ok: true,
+            status: 200,
+            json: () => Promise.resolve({ balances: { account: "0.0.123" } }),
+        });
+
+        let error = null;
+        try {
+            await new MirrorNodeAccountBalanceQuery()
+                .setAccountId("0.0.123")
+                .execute(client);
+        } catch (err) {
+            error = err;
+        }
+
+        // Without an Array.isArray check this fell through both guards and
+        // died on `undefined.balance` deep inside `long`.
+        expect(error).to.not.be.instanceOf(MirrorNodeStatusError);
+        expect(error.message).to.include("no balances array");
     });
 
     it("should be immutable", async function () {
