@@ -3,6 +3,7 @@ import {
     Client,
     MirrorNodeAccountBalanceQuery,
     PrivateKey,
+    Status,
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
@@ -13,8 +14,9 @@ dotenv.config();
  * How to read an account balance from the mirror node REST API instead of the
  * deprecated consensus-node `AccountBalanceQuery`.
  *
- * Note: the mirror node lags consensus by a few seconds, so a balance read
- * right after a transfer may still show the pre-transfer value.
+ * Note: the mirror node is eventually consistent, so a balance read right
+ * after a transaction may lag the network by a few seconds — and an account
+ * created moments ago fails with `INVALID_ACCOUNT_ID` until it is ingested.
  */
 async function main() {
     if (
@@ -43,7 +45,11 @@ async function main() {
             `${operatorId.toString()} balance = ${balance.hbars.toString()}`,
         );
     } catch (error) {
-        console.error(error);
+        if (error.status === Status.InvalidAccountId) {
+            console.error(`${operatorId.toString()} does not exist`);
+        } else {
+            console.error(error);
+        }
     }
 
     client.close();
