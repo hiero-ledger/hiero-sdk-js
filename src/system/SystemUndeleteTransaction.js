@@ -20,6 +20,8 @@ import ContractId from "../contract/ContractId.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../account/AccountId.js").default} AccountId
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  */
@@ -123,7 +125,10 @@ export default class SystemUndeleteTransaction extends Transaction {
     setFileId(fileId) {
         this._requireNotFrozen();
         this._fileId =
-            fileId instanceof FileId ? fileId : FileId.fromString(fileId);
+            typeof fileId === "string"
+                ? FileId.fromString(fileId)
+                : fileId.clone();
+        this._contractId = null;
 
         return this;
     }
@@ -136,8 +141,9 @@ export default class SystemUndeleteTransaction extends Transaction {
     }
 
     /**
-     * Targets a smart contract, submitting to `SmartContractService`, whose
-     * `systemUndelete` RPC is deprecated in the protobufs. Prefer `setFileId`.
+     * Targets a contract's bytecode, clearing any file id. This option is
+     * unsupported: the network never implemented it and currently returns
+     * `INVALID_FILE_ID` or `MISSING_ENTITY_ID`.
      *
      * @param {ContractId | string} contractId
      * @returns {this}
@@ -145,11 +151,25 @@ export default class SystemUndeleteTransaction extends Transaction {
     setContractId(contractId) {
         this._requireNotFrozen();
         this._contractId =
-            contractId instanceof ContractId
-                ? contractId
-                : ContractId.fromString(contractId);
+            typeof contractId === "string"
+                ? ContractId.fromString(contractId)
+                : contractId.clone();
+        this._fileId = null;
 
         return this;
+    }
+
+    /**
+     * @param {Client} client
+     */
+    _validateChecksums(client) {
+        if (this._fileId != null) {
+            this._fileId.validateChecksum(client);
+        }
+
+        if (this._contractId != null) {
+            this._contractId.validateChecksum(client);
+        }
     }
 
     /**

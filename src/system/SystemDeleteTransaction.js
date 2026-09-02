@@ -21,6 +21,8 @@ import Timestamp from "../Timestamp.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../account/AccountId.js").default} AccountId
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  */
@@ -36,7 +38,7 @@ export default class SystemDeleteTransaction extends Transaction {
      * @param {object} [props]
      * @param {FileId | string} [props.fileId]
      * @param {ContractId | string} [props.contractId]
-     * @param {Timestamp} [props.expirationTime]
+     * @param {Timestamp | Date} [props.expirationTime]
      */
     constructor(props = {}) {
         super();
@@ -139,7 +141,10 @@ export default class SystemDeleteTransaction extends Transaction {
     setFileId(fileId) {
         this._requireNotFrozen();
         this._fileId =
-            fileId instanceof FileId ? fileId : FileId.fromString(fileId);
+            typeof fileId === "string"
+                ? FileId.fromString(fileId)
+                : fileId.clone();
+        this._contractId = null;
 
         return this;
     }
@@ -152,8 +157,9 @@ export default class SystemDeleteTransaction extends Transaction {
     }
 
     /**
-     * Targets a smart contract, submitting to `SmartContractService`, whose
-     * `systemDelete` RPC is deprecated in the protobufs. Prefer `setFileId`.
+     * Targets a contract's bytecode, clearing any file id. This option is
+     * unsupported: the network never implemented it and currently returns
+     * `INVALID_FILE_ID` or `MISSING_ENTITY_ID`.
      *
      * @param {ContractId | string} contractId
      * @returns {this}
@@ -161,9 +167,10 @@ export default class SystemDeleteTransaction extends Transaction {
     setContractId(contractId) {
         this._requireNotFrozen();
         this._contractId =
-            contractId instanceof ContractId
-                ? contractId
-                : ContractId.fromString(contractId);
+            typeof contractId === "string"
+                ? ContractId.fromString(contractId)
+                : contractId.clone();
+        this._fileId = null;
 
         return this;
     }
@@ -176,13 +183,33 @@ export default class SystemDeleteTransaction extends Transaction {
     }
 
     /**
-     * @param {Timestamp} expirationTime
-     * @returns {SystemDeleteTransaction}
+     * The new expiry for the deleted entity. The wire field is
+     * `TimestampSeconds`, so nanoseconds are dropped on encode.
+     *
+     * @param {Timestamp | Date} expirationTime
+     * @returns {this}
      */
     setExpirationTime(expirationTime) {
         this._requireNotFrozen();
-        this._expirationTime = expirationTime;
+        this._expirationTime =
+            expirationTime instanceof Timestamp
+                ? expirationTime
+                : Timestamp.fromDate(expirationTime);
+
         return this;
+    }
+
+    /**
+     * @param {Client} client
+     */
+    _validateChecksums(client) {
+        if (this._fileId != null) {
+            this._fileId.validateChecksum(client);
+        }
+
+        if (this._contractId != null) {
+            this._contractId.validateChecksum(client);
+        }
     }
 
     /**
