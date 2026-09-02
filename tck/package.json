@@ -13,7 +13,7 @@
     "repository": "https://github.com/hiero-ledger/hiero-sdk-js",
     "dependencies": {
         "@hiero-ledger/proto": "^2.30.0",
-        "@hiero-ledger/sdk": "2.84.0",
+        "@hiero-ledger/sdk": "2.87.0",
         "ansi-regex": "6.2.2",
         "ansi-styles": "6.2.3",
         "body-parser": "1.20.6",
