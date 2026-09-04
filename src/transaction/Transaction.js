@@ -77,8 +77,8 @@ export const TRANSACTION_REGISTRY = new Map();
 /**
  * Field numbers of the `data` oneof on `TransactionBody`, i.e. the transaction
  * type fields. A valid body sets exactly one of these. Derived from the
- * transaction registry so it stays in sync as transaction types are added.
- * Rebuilt when the registry grows, because types register lazily on import.
+ * generated protobuf prototype so it covers every field in the oneof, even
+ * transaction types the SDK does not register (e.g. `systemDelete`).
  *
  * @type {Set<number>}
  */
@@ -93,14 +93,16 @@ function getDataFieldNumbers() {
         for (const name of Object.keys(prototype)) {
             // The generated `data` oneof getter returns the name only if it
             // belongs to the oneof, which lets us test membership.
-            const carrier = Object.create(prototype);
-            carrier[name] = 1;
+            const carrier = new HieroProto.proto.TransactionBody(
+                /** @type {HieroProto.proto.ITransactionBody} */ ({
+                    [name]: {},
+                }),
+            );
             if (carrier.data !== name) {
                 continue;
             }
-            const probe = HieroProto.proto.TransactionBody.encode({
-                [name]: {},
-            }).finish();
+            const probe =
+                HieroProto.proto.TransactionBody.encode(carrier).finish();
             dataFieldNumbers.add(
                 HieroProto.Reader.create(probe).uint32() >>> 3,
             );
