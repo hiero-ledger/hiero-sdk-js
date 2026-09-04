@@ -89,7 +89,7 @@ export default class ManagedNode {
             this._minBackoff = props.cloneNode.node._minBackoff;
 
             /** @type {number} */
-            this._maxBackoff = props.cloneNode.node._minBackoff;
+            this._maxBackoff = props.cloneNode.node._maxBackoff;
         } else {
             throw new Error(
                 `failed to create ManagedNode: ${JSON.stringify(props)}`,
