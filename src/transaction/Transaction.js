@@ -83,26 +83,28 @@ export const TRANSACTION_REGISTRY = new Map();
  * @type {Set<number>}
  */
 let dataFieldNumbers = new Set();
-let dataFieldRegistrySize = -1;
 
 /**
  * @returns {Set<number>}
  */
 function getDataFieldNumbers() {
-    if (
-        dataFieldNumbers.size === 0 ||
-        TRANSACTION_REGISTRY.size !== dataFieldRegistrySize
-    ) {
-        /** @type {Set<number>} */
-        const numbers = new Set();
-        for (const name of TRANSACTION_REGISTRY.keys()) {
+    if (dataFieldNumbers.size === 0) {
+        const prototype = HieroProto.proto.TransactionBody.prototype;
+        for (const name of Object.keys(prototype)) {
+            // The generated `data` oneof getter returns the name only if it
+            // belongs to the oneof, which lets us test membership.
+            const carrier = Object.create(prototype);
+            carrier[name] = 1;
+            if (carrier.data !== name) {
+                continue;
+            }
             const probe = HieroProto.proto.TransactionBody.encode({
                 [name]: {},
             }).finish();
-            numbers.add(HieroProto.Reader.create(probe).uint32() >>> 3);
+            dataFieldNumbers.add(
+                HieroProto.Reader.create(probe).uint32() >>> 3,
+            );
         }
-        dataFieldNumbers = numbers;
-        dataFieldRegistrySize = TRANSACTION_REGISTRY.size;
     }
     return dataFieldNumbers;
 }
