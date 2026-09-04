@@ -1,5 +1,4 @@
 import {
-    AccountBalanceQuery,
     TokenAirdropTransaction,
     TokenAssociateTransaction,
     TokenMintTransaction,
@@ -14,6 +13,7 @@ import {
     createAccount,
     createFungibleToken,
     createNonFungibleToken,
+    getAccountBalance,
 } from "./utils/Fixtures.js";
 
 describe("TokenClaimAirdropIntegrationTest", function () {
@@ -67,18 +67,17 @@ describe("TokenClaimAirdropIntegrationTest", function () {
         ).getReceipt(env.client);
 
         // Check balances
-        const receiverBalance = await new AccountBalanceQuery()
-            .setAccountId(receiverId)
-            .execute(env.client);
+        const receiverBalance = await getAccountBalance(env.client, receiverId);
 
         expect(receiverBalance.tokens.get(tokenId).toInt()).to.be.equal(
             INITIAL_SUPPLY,
         );
         expect(receiverBalance.tokens.get(nftId).toInt()).to.be.equal(1);
 
-        const operatorBalance = await new AccountBalanceQuery()
-            .setAccountId(env.operatorId)
-            .execute(env.client);
+        const operatorBalance = await getAccountBalance(
+            env.client,
+            env.operatorId,
+        );
 
         expect(operatorBalance.tokens.get(tokenId).toInt()).to.be.equal(0);
         expect(operatorBalance.tokens.get(nftId).toInt()).to.be.equal(0);
@@ -139,17 +138,17 @@ describe("TokenClaimAirdropIntegrationTest", function () {
             ).execute(env.client)
         ).getReceipt(env.client);
 
-        const receiverBalance = await new AccountBalanceQuery()
-            .setAccountId(receiverId)
-            .execute(env.client);
+        const receiverBalance = await getAccountBalance(env.client, receiverId);
 
-        const receiverBalance2 = await new AccountBalanceQuery()
-            .setAccountId(receiverId2)
-            .execute(env.client);
+        const receiverBalance2 = await getAccountBalance(
+            env.client,
+            receiverId2,
+        );
 
-        const operatorBalance = await new AccountBalanceQuery()
-            .setAccountId(env.operatorId)
-            .execute(env.client);
+        const operatorBalance = await getAccountBalance(
+            env.client,
+            env.operatorId,
+        );
 
         expect(receiverBalance.tokens.get(tokenId).toInt()).to.be.equal(
             INITIAL_SUPPLY / 2,
@@ -217,18 +216,17 @@ describe("TokenClaimAirdropIntegrationTest", function () {
             ).execute(env.client)
         ).getReceipt(env.client);
 
-        const receiverBalance = await new AccountBalanceQuery()
-            .setAccountId(receiverId)
-            .execute(env.client);
+        const receiverBalance = await getAccountBalance(env.client, receiverId);
 
         expect(receiverBalance.tokens.get(tokenId).toInt()).to.be.equal(
             INITIAL_SUPPLY,
         );
         expect(receiverBalance.tokens.get(nftId).toInt()).to.be.equal(2);
 
-        const operatorBalance = await new AccountBalanceQuery()
-            .setAccountId(env.operatorId)
-            .execute(env.client);
+        const operatorBalance = await getAccountBalance(
+            env.client,
+            env.operatorId,
+        );
 
         expect(operatorBalance.tokens.get(tokenId).toInt()).to.be.equal(0);
         expect(operatorBalance.tokens.get(nftId).toInt()).to.be.equal(0);

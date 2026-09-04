@@ -25,7 +25,7 @@ import * as HieroProto from "@hiero-ledger/proto";
  */
 export default class AccountBalance {
     /**
-     * @private
+     * @internal
      * @param {object} props
      * @param {Hbar} props.hbars
      * @param {?TokenBalanceMap} props.tokens

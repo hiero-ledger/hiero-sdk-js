@@ -1,9 +1,9 @@
 import {
+    MirrorNodeAccountBalanceQuery,
     Client,
     AccountId,
     PrivateKey,
     Hbar,
-    AccountBalanceQuery,
     TransferTransaction,
 } from "@hiero-ledger/sdk";
 
@@ -37,14 +37,8 @@ async function main() {
     const recipientId = AccountId.fromString("0.0.3");
 
     // Step 1: Check Hbar balance of sender and recipient.
-    const senderBalanceBefore = (
-        await new AccountBalanceQuery().setAccountId(operatorId).execute(client)
-    ).hbars;
-    const recipientBalanceBefore = (
-        await new AccountBalanceQuery()
-            .setAccountId(recipientId)
-            .execute(client)
-    ).hbars;
+    const senderBalanceBefore = await hbarBalance(client, operatorId);
+    const recipientBalanceBefore = await hbarBalance(client, recipientId);
 
     console.log(
         `Sender (${operatorId.toString()}) balance before transfer: ${senderBalanceBefore.toString()}`,
@@ -68,15 +62,16 @@ async function main() {
     console.log(`Transferred ${transferAmount.toString()}`);
     console.log(`Transfer memo: ${record.transactionMemo}`);
 
-    // Step 3: Check Hbar balance of sender and recipient after the transfer.
-    const senderBalanceAfter = (
-        await new AccountBalanceQuery().setAccountId(operatorId).execute(client)
-    ).hbars;
-    const recipientBalanceAfter = (
-        await new AccountBalanceQuery()
-            .setAccountId(recipientId)
-            .execute(client)
-    ).hbars;
+    const senderBalanceAfter = await hbarBalance(
+        client,
+        operatorId,
+        senderBalanceBefore,
+    );
+    const recipientBalanceAfter = await hbarBalance(
+        client,
+        recipientId,
+        recipientBalanceBefore,
+    );
 
     console.log(
         `Sender (${operatorId.toString()}) balance after transfer: ${senderBalanceAfter.toString()}`,
@@ -95,3 +90,57 @@ void main()
         console.error(error);
         process.exit(1);
     });
+
+/**
+ * Read an HBAR balance from the mirror node.
+ *
+ * The mirror node ingests consensus state asynchronously, so a read straight
+ * after a transaction can still return the previous value. Pass `previous` to
+ * poll until the value moves; the loop is bounded so an example cannot hang.
+ *
+ * @param {import("@hiero-ledger/sdk").Client} client
+ * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
+ * @param {import("@hiero-ledger/sdk").Hbar} [previous]
+ * @returns {Promise<import("@hiero-ledger/sdk").Hbar>}
+ */
+async function hbarBalance(client, accountId, previous) {
+    return untilMirror(async () => {
+        const { hbars } = await new MirrorNodeAccountBalanceQuery()
+            .setAccountId(accountId)
+            .execute(client);
+
+        // Without a previous value there is nothing to wait for.
+        if (previous == null) {
+            return hbars;
+        }
+
+        return hbars.toTinybars().equals(previous.toTinybars()) ? null : hbars;
+    });
+}
+
+/**
+ * Poll a mirror-node read until it reflects the transaction that just happened.
+ *
+ * The mirror node ingests consensus state asynchronously, so a read straight
+ * after a transaction can still return the previous value. Polling to a deadline
+ * beats a fixed sleep: it does not go flaky on a slow runner and does not waste
+ * time on a fast one.
+ *
+ * @template T
+ * @param {() => Promise<T | null>} read - resolves the value once it is ready
+ * @param {number} [timeoutMs]
+ * @returns {Promise<T>}
+ */
+async function untilMirror(read, timeoutMs = 60000) {
+    const deadline = Date.now() + timeoutMs;
+    for (;;) {
+        const result = await read();
+        if (result != null) {
+            return result;
+        }
+        if (Date.now() >= deadline) {
+            throw new Error("mirror node did not ingest in time");
+        }
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+}
