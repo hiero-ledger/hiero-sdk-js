@@ -30,14 +30,25 @@
     "exports": {
         "./package.json": "./package.json",
         ".": {
-            "types": "./lib/index.d.ts",
             "react-native": "./lib/native.js",
             "browser": {
-                "import": "./lib/browser.js",
-                "require": "./lib/browser.cjs"
+                "import": {
+                    "types": "./lib/browser.d.ts",
+                    "default": "./lib/browser.js"
+                },
+                "require": {
+                    "types": "./lib/browser.d.cts",
+                    "default": "./lib/browser.cjs"
+                }
             },
-            "import": "./lib/index.js",
-            "require": "./lib/index.cjs"
+            "import": {
+                "types": "./lib/index.d.ts",
+                "default": "./lib/index.js"
+            },
+            "require": {
+                "types": "./lib/index.d.cts",
+                "default": "./lib/index.cjs"
+            }
         }
     },
     "license": "Apache-2.0",

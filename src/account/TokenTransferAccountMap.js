@@ -4,6 +4,10 @@ import AccountId from "../account/AccountId.js";
 import ObjectMap from "../ObjectMap.js";
 
 /**
+ * @typedef {import("long").default} Long
+ */
+
+/**
  * @augments {ObjectMap<AccountId, Long>}
  */
 export default class TokenTransferAccountMap extends ObjectMap {

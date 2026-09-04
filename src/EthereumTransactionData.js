@@ -7,7 +7,7 @@ import {
 } from "./encoding/rlpNumber.js";
 
 /**
- * @typedef {import("long")} Long
+ * @typedef {import("long").default} Long
  * @typedef {import("bignumber.js").default} BigNumber
  */
 

@@ -4,7 +4,7 @@ import * as entity_id from "../EntityIdHelper.js";
 import * as HieroProto from "@hiero-ledger/proto";
 
 /**
- * @typedef {import("long")} Long
+ * @typedef {import("long").default} Long
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
  * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
@@ -22,7 +22,7 @@ import * as HieroProto from "@hiero-ledger/proto";
 
 export default class ScheduleId {
     /**
-     * @param {number | Long | import("../EntityIdHelper").IEntityId} props
+     * @param {number | Long | import("../EntityIdHelper.js").IEntityId} props
      * @param {(number | Long)=} realm
      * @param {(number | Long)=} num
      */
