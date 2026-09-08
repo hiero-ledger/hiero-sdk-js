@@ -50,6 +50,10 @@ export interface GetAccountBalanceParams extends BaseParams {
     readonly contractId?: string;
 }
 
+export interface GetMirrorNodeAccountBalanceParams extends BaseParams {
+    readonly accountId?: string;
+}
+
 export interface GetAccountInfoParams extends BaseTransactionParams {
     readonly accountId?: string;
 }
