@@ -108,7 +108,7 @@ describe("account balance via the mirror node", function () {
             }
 
             expect(error).to.be.an.instanceOf(MirrorNodeStatusError);
-            // Match on the status, not the class: this is the status the
+            // Match on the status, this is the status the
             // removed `AccountBalanceQuery` reported for the same condition.
             expect(error.status).to.equal(Status.InvalidAccountId);
 
