@@ -2,7 +2,9 @@
 
 import Long from "long";
 import AccountId from "../account/AccountId.js";
+import MirrorNodeStatusError from "../MirrorNodeStatusError.js";
 import MirrorNodeTokenBalance from "../account/MirrorNodeTokenBalance.js";
+import Status from "../Status.js";
 import TokenId from "../token/TokenId.js";
 import * as EntityIdHelper from "../EntityIdHelper.js";
 import {
@@ -37,6 +39,19 @@ import {
  * not extend `Query`.
  *
  * Both `setAccountId` and `setTokenId` are required.
+ *
+ * NOTE ON STABILITY: the cross-SDK proposal for this query
+ * (hiero-ledger/sdk-collaboration-hub#281) is still under review, and its
+ * current draft returns a page with a cursor and an optional token filter
+ * rather than a single balance. This single-token form is shipping now to meet
+ * the consensus node release 0.77 cutoff, so **this API may change once that
+ * proposal is finalized**.
+ *
+ * An account the mirror node does not know throws a {@link MirrorNodeStatusError}
+ * carrying {@link Status.InvalidAccountId}, matching
+ * `MirrorNodeAccountBalanceQuery`. An account that exists but holds no
+ * relationship with the token returns a zero balance with zero decimals, since
+ * the decimals are not knowable from that response.
  *
  * NOTE ON CONSISTENCY: the mirror node ingests consensus state asynchronously
  * and typically lags the network by a few seconds. Results are therefore NOT
@@ -136,6 +151,7 @@ export default class MirrorNodeTokenBalanceQuery {
                 )}/tokens?token.id=${encodeURIComponent(tokenId.toString())}`,
                 client,
                 deadline,
+                accountIdString,
             )
         );
 
@@ -201,9 +217,10 @@ export default class MirrorNodeTokenBalanceQuery {
      * @param {string} url
      * @param {Client} client
      * @param {?number} deadline
+     * @param {string} accountIdString - for the not-found message
      * @returns {Promise<unknown>}
      */
-    async _fetchJson(url, client, deadline) {
+    async _fetchJson(url, client, deadline, accountIdString) {
         const maxAttempts = client.maxAttempts;
         const maxBackoff = client.maxBackoff;
         let backoff = Math.min(client.minBackoff, maxBackoff);
@@ -245,6 +262,18 @@ export default class MirrorNodeTokenBalanceQuery {
                 }
 
                 const detail = await readErrorDetail(response);
+
+                // Unlike `/balances`, this endpoint 404s for an account it does
+                // not know. Report that the same way
+                // `MirrorNodeAccountBalanceQuery` does, so callers can match on
+                // `status` rather than on the error class.
+                if (response.status === 404) {
+                    throw new MirrorNodeStatusError(
+                        { status: Status.InvalidAccountId },
+                        `account ${accountIdString} was not found on the mirror node`,
+                    );
+                }
+
                 const error = new Error(
                     `Failed to query ${url}: HTTP ${response.status}${
                         detail ? `: ${detail}` : ""

@@ -2,7 +2,9 @@
 
 import { vi } from "vitest";
 import AccountId from "../../src/account/AccountId.js";
+import MirrorNodeStatusError from "../../src/MirrorNodeStatusError.js";
 import MirrorNodeTokenBalanceQuery from "../../src/query/MirrorNodeTokenBalanceQuery.js";
+import Status from "../../src/Status.js";
 import TokenId from "../../src/token/TokenId.js";
 
 /**
@@ -175,6 +177,28 @@ describe("MirrorNodeTokenBalanceQuery", function () {
 
             expect(calls).to.equal(2);
             expect(balance.balance.toNumber()).to.equal(7);
+        });
+
+        it("throws MirrorNodeStatusError for an account the mirror node does not know", async function () {
+            // This endpoint 404s for an unknown account, unlike `/balances`.
+            fetchMock.mockImplementation(() =>
+                Promise.resolve(jsonResponse({ _status: "Not found" }, 404)),
+            );
+
+            let error = null;
+            try {
+                await new MirrorNodeTokenBalanceQuery()
+                    .setAccountId("0.0.10")
+                    .setTokenId("0.0.5005")
+                    .execute(stubClient());
+            } catch (err) {
+                error = err;
+            }
+
+            expect(error).to.be.an.instanceOf(MirrorNodeStatusError);
+            expect(error.status).to.equal(Status.InvalidAccountId);
+            // A 404 is not retried.
+            expect(fetchMock).toHaveBeenCalledTimes(1);
         });
 
         it("throws on a 4xx without retrying", async function () {

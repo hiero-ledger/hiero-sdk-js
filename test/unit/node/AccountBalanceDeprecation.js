@@ -4,8 +4,10 @@ import { vi } from "vitest";
 import AccountId from "../../../src/account/AccountId.js";
 import Hbar from "../../../src/Hbar.js";
 import LocalProvider from "../../../src/LocalProvider.js";
+import MirrorNodeStatusError from "../../../src/MirrorNodeStatusError.js";
 import NodeClient from "../../../src/client/NodeClient.js";
 import PrivateKey from "../../../src/PrivateKey.js";
+import Status from "../../../src/Status.js";
 import Wallet from "../../../src/Wallet.js";
 
 /**
@@ -83,7 +85,10 @@ describe("account balance via the mirror node", function () {
             client.close();
         });
 
-        it("reports a zero balance for an account the mirror node does not know", async function () {
+        it("throws MirrorNodeStatusError for an account the mirror node does not know", async function () {
+            // An existing account with no hbar still comes back with a
+            // `"balance": 0` entry, so an empty list means the account does not
+            // exist. #4335 made that an error rather than a silent zero.
             fetchMock.mockImplementation(() =>
                 Promise.resolve({
                     ok: true,
@@ -95,9 +100,17 @@ describe("account balance via the mirror node", function () {
             const { client } = clientWithExplodingChannels();
             const provider = new LocalProvider({ client });
 
-            const balance = await provider.getAccountBalance(new AccountId(10));
+            let error = null;
+            try {
+                await provider.getAccountBalance(new AccountId(10));
+            } catch (err) {
+                error = err;
+            }
 
-            expect(balance.hbars.toTinybars().toNumber()).to.equal(0);
+            expect(error).to.be.an.instanceOf(MirrorNodeStatusError);
+            // Match on the status, not the class: this is the status the
+            // removed `AccountBalanceQuery` reported for the same condition.
+            expect(error.status).to.equal(Status.InvalidAccountId);
 
             client.close();
         });
