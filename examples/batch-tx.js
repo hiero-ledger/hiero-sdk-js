@@ -1,4 +1,5 @@
 import {
+    MirrorNodeAccountBalanceQuery,
     Client,
     PrivateKey,
     AccountId,
@@ -10,7 +11,6 @@ import {
     TransferTransaction,
     HbarUnit,
     TransactionId,
-    AccountBalanceQuery,
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
@@ -100,10 +100,8 @@ async function executeBatchWithBatchify(client) {
     /**
      * Step 5: Get the balance in order to compare after this batch
      */
-    const aliceBalanceBefore = await new AccountBalanceQuery()
-        .setAccountId(alice)
-        .execute(client);
-    var operatorBalanceBefore = await new AccountBalanceQuery()
+    const aliceBalanceBefore = await hbarBalance(client, alice);
+    var operatorBalanceBefore = await new MirrorNodeAccountBalanceQuery()
         .setAccountId(client.getOperator().accountId)
         .execute(client);
 
@@ -127,21 +125,21 @@ async function executeBatchWithBatchify(client) {
      */
     console.log("Verifying the balance after batch transaction...");
 
-    const aliceBalanceAfter = await new AccountBalanceQuery()
-        .setAccountId(alice)
-        .execute(client);
-    const operatorBalanceAfter = await new AccountBalanceQuery()
+    const aliceBalanceAfter = await hbarBalance(
+        client,
+        alice,
+        aliceBalanceBefore,
+    );
+    const operatorBalanceAfter = await new MirrorNodeAccountBalanceQuery()
         .setAccountId(client.getOperator().accountId)
         .execute(client);
 
-    console.log("Alice balance after: " + aliceBalanceAfter.hbars.toString());
+    console.log("Alice balance after: " + aliceBalanceAfter.toString());
     console.log(
         "Operator balance after: " + operatorBalanceAfter.hbars.toString(),
     );
 
-    console.log(
-        "Alice's original balance: " + aliceBalanceBefore.hbars.toString(),
-    );
+    console.log("Alice's original balance: " + aliceBalanceBefore.toString());
     console.log(
         "Operator's original balance: " +
             operatorBalanceBefore.hbars.toString(),
@@ -234,19 +232,13 @@ async function executeBatchWithManualInnerTransactionFreeze(client) {
     /**
      * Step 2: Get the balance in order to compare after this batch
      */
-    const aliceBalanceBefore = await new AccountBalanceQuery()
-        .setAccountId(alice)
-        .execute(client);
+    const aliceBalanceBefore = await hbarBalance(client, alice);
 
-    var bobBalanceBefore = await new AccountBalanceQuery()
-        .setAccountId(bob)
-        .execute(client);
+    var bobBalanceBefore = await hbarBalance(client, bob);
 
-    var carolBalanceBefore = await new AccountBalanceQuery()
-        .setAccountId(carol)
-        .execute(client);
+    var carolBalanceBefore = await hbarBalance(client, carol);
 
-    var operatorBalanceBefore = await new AccountBalanceQuery()
+    var operatorBalanceBefore = await new MirrorNodeAccountBalanceQuery()
         .setAccountId(client.getOperator().accountId)
         .execute(client);
 
@@ -273,33 +265,31 @@ async function executeBatchWithManualInnerTransactionFreeze(client) {
 
     console.log("Verifying the balance after batch transaction...");
 
-    const aliceBalanceAfter = await new AccountBalanceQuery()
-        .setAccountId(alice)
-        .execute(client);
-    const bobBalanceAfter = await new AccountBalanceQuery()
-        .setAccountId(bob)
-        .execute(client);
-    const carolBalanceAfter = await new AccountBalanceQuery()
-        .setAccountId(carol)
-        .execute(client);
-    const operatorBalanceAfter = await new AccountBalanceQuery()
+    const aliceBalanceAfter = await hbarBalance(
+        client,
+        alice,
+        aliceBalanceBefore,
+    );
+    const bobBalanceAfter = await hbarBalance(client, bob, bobBalanceBefore);
+    const carolBalanceAfter = await hbarBalance(
+        client,
+        carol,
+        carolBalanceBefore,
+    );
+    const operatorBalanceAfter = await new MirrorNodeAccountBalanceQuery()
         .setAccountId(client.getOperator().accountId)
         .execute(client);
 
-    console.log("Alice balance after: " + aliceBalanceAfter.hbars.toString());
-    console.log("Bob balance after: " + bobBalanceAfter.hbars.toString());
-    console.log("Carol balance after: " + carolBalanceAfter.hbars.toString());
+    console.log("Alice balance after: " + aliceBalanceAfter.toString());
+    console.log("Bob balance after: " + bobBalanceAfter.toString());
+    console.log("Carol balance after: " + carolBalanceAfter.toString());
     console.log(
         "Operator balance after: " + operatorBalanceAfter.hbars.toString(),
     );
 
-    console.log(
-        "Alice's original balance: " + aliceBalanceBefore.hbars.toString(),
-    );
-    console.log("Bob's original balance: " + bobBalanceBefore.hbars.toString());
-    console.log(
-        "Carol's original balance: " + carolBalanceBefore.hbars.toString(),
-    );
+    console.log("Alice's original balance: " + aliceBalanceBefore.toString());
+    console.log("Bob's original balance: " + bobBalanceBefore.toString());
+    console.log("Carol's original balance: " + carolBalanceBefore.toString());
     console.log(
         "Operator's original balance: " +
             operatorBalanceBefore.hbars.toString(),
@@ -400,16 +390,10 @@ async function executeBatchWithSetInnerTransactions(client) {
     /**
      * Step 5: Get balances before batch transaction
      */
-    const davidBalanceBefore = await new AccountBalanceQuery()
-        .setAccountId(david)
-        .execute(client);
-    const eveBalanceBefore = await new AccountBalanceQuery()
-        .setAccountId(eve)
-        .execute(client);
-    const frankBalanceBefore = await new AccountBalanceQuery()
-        .setAccountId(frank)
-        .execute(client);
-    const operatorBalanceBefore = await new AccountBalanceQuery()
+    const davidBalanceBefore = await hbarBalance(client, david);
+    const eveBalanceBefore = await hbarBalance(client, eve);
+    const frankBalanceBefore = await hbarBalance(client, frank);
+    const operatorBalanceBefore = await new MirrorNodeAccountBalanceQuery()
         .setAccountId(client.getOperator().accountId)
         .execute(client);
 
@@ -435,33 +419,31 @@ async function executeBatchWithSetInnerTransactions(client) {
 
     console.log("Verifying the balance after batch transaction...");
 
-    const davidBalanceAfter = await new AccountBalanceQuery()
-        .setAccountId(david)
-        .execute(client);
-    const eveBalanceAfter = await new AccountBalanceQuery()
-        .setAccountId(eve)
-        .execute(client);
-    const frankBalanceAfter = await new AccountBalanceQuery()
-        .setAccountId(frank)
-        .execute(client);
-    const operatorBalanceAfter = await new AccountBalanceQuery()
+    const davidBalanceAfter = await hbarBalance(
+        client,
+        david,
+        davidBalanceBefore,
+    );
+    const eveBalanceAfter = await hbarBalance(client, eve, eveBalanceBefore);
+    const frankBalanceAfter = await hbarBalance(
+        client,
+        frank,
+        frankBalanceBefore,
+    );
+    const operatorBalanceAfter = await new MirrorNodeAccountBalanceQuery()
         .setAccountId(client.getOperator().accountId)
         .execute(client);
 
-    console.log("David balance after: " + davidBalanceAfter.hbars.toString());
-    console.log("Eve balance after: " + eveBalanceAfter.hbars.toString());
-    console.log("Frank balance after: " + frankBalanceAfter.hbars.toString());
+    console.log("David balance after: " + davidBalanceAfter.toString());
+    console.log("Eve balance after: " + eveBalanceAfter.toString());
+    console.log("Frank balance after: " + frankBalanceAfter.toString());
     console.log(
         "Operator balance after: " + operatorBalanceAfter.hbars.toString(),
     );
 
-    console.log(
-        "David's original balance: " + davidBalanceBefore.hbars.toString(),
-    );
-    console.log("Eve's original balance: " + eveBalanceBefore.hbars.toString());
-    console.log(
-        "Frank's original balance: " + frankBalanceBefore.hbars.toString(),
-    );
+    console.log("David's original balance: " + davidBalanceBefore.toString());
+    console.log("Eve's original balance: " + eveBalanceBefore.toString());
+    console.log("Frank's original balance: " + frankBalanceBefore.toString());
     console.log(
         "Operator's original balance: " +
             operatorBalanceBefore.hbars.toString(),
@@ -473,4 +455,58 @@ async function executeBatchWithSetInnerTransactions(client) {
     frankClient.close();
 }
 
+/**
+ * Read an HBAR balance from the mirror node.
+ *
+ * The mirror node ingests consensus state asynchronously, so a read straight
+ * after a transaction can still return the previous value. Pass `previous` to
+ * poll until the value moves; the loop is bounded so an example cannot hang.
+ *
+ * @param {import("@hiero-ledger/sdk").Client} client
+ * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
+ * @param {import("@hiero-ledger/sdk").Hbar} [previous]
+ * @returns {Promise<import("@hiero-ledger/sdk").Hbar>}
+ */
+async function hbarBalance(client, accountId, previous) {
+    return untilMirror(async () => {
+        const { hbars } = await new MirrorNodeAccountBalanceQuery()
+            .setAccountId(accountId)
+            .execute(client);
+
+        // Without a previous value there is nothing to wait for.
+        if (previous == null) {
+            return hbars;
+        }
+
+        return hbars.toTinybars().equals(previous.toTinybars()) ? null : hbars;
+    });
+}
+
 void main();
+
+/**
+ * Poll a mirror-node read until it reflects the transaction that just happened.
+ *
+ * The mirror node ingests consensus state asynchronously, so a read straight
+ * after a transaction can still return the previous value. Polling to a deadline
+ * beats a fixed sleep: it does not go flaky on a slow runner and does not waste
+ * time on a fast one.
+ *
+ * @template T
+ * @param {() => Promise<T | null>} read - resolves the value once it is ready
+ * @param {number} [timeoutMs]
+ * @returns {Promise<T>}
+ */
+async function untilMirror(read, timeoutMs = 60000) {
+    const deadline = Date.now() + timeoutMs;
+    for (;;) {
+        const result = await read();
+        if (result != null) {
+            return result;
+        }
+        if (Date.now() >= deadline) {
+            throw new Error("mirror node did not ingest in time");
+        }
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+}

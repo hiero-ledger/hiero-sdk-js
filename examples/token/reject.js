@@ -1,4 +1,5 @@
 import {
+    MirrorNodeTokenBalanceQuery,
     AccountCreateTransaction,
     PrivateKey,
     TokenCreateTransaction,
@@ -10,7 +11,6 @@ import {
     TokenRejectTransaction,
     TokenRejectFlow,
     NftId,
-    AccountBalanceQuery,
     TokenSupplyType,
 } from "@hiero-ledger/sdk";
 import dotenv from "dotenv";
@@ -147,32 +147,29 @@ async function main() {
     console.log("=======================");
     console.log("Before Token Reject");
     console.log("=======================");
-    const receiverFTBalanceBefore = (
-        await new AccountBalanceQuery()
-            .setAccountId(receiverAccountId)
-            .execute(client)
-    ).tokens.get(ftId);
-    const treasuryFTBalanceBefore = (
-        await new AccountBalanceQuery()
-            .setAccountId(treasuryAccountId)
-            .execute(client)
-    ).tokens.get(ftId);
-    const receiverNFTBalanceBefore = (
-        await new AccountBalanceQuery()
-            .setAccountId(receiverAccountId)
-            .execute(client)
-    ).tokens.get(nftId);
-    const treasuryNFTBalanceBefore = (
-        await new AccountBalanceQuery()
-            .setAccountId(treasuryAccountId)
-            .execute(client)
-    ).tokens.get(nftId);
+    const receiverFTBalanceBefore = await tokenBalance(
+        client,
+        receiverAccountId,
+        ftId,
+    );
+    const treasuryFTBalanceBefore = await tokenBalance(
+        client,
+        treasuryAccountId,
+        ftId,
+    );
+    const receiverNFTBalanceBefore = await tokenBalance(
+        client,
+        receiverAccountId,
+        nftId,
+    );
+    const treasuryNFTBalanceBefore = await tokenBalance(
+        client,
+        treasuryAccountId,
+        nftId,
+    );
     console.log("Receiver FT balance: ", receiverFTBalanceBefore.toInt());
     console.log("Treasury FT balance: ", treasuryFTBalanceBefore.toInt());
-    console.log(
-        "Receiver NFT balance: ",
-        receiverNFTBalanceBefore ? receiverNFTBalanceBefore.toInt() : 0,
-    );
+    console.log("Receiver NFT balance: ", receiverNFTBalanceBefore.toInt());
     console.log("Treasury NFT balance: ", treasuryNFTBalanceBefore.toInt());
 
     // reject fungible tokens back to treasury
@@ -203,41 +200,102 @@ async function main() {
     console.log("After Token Reject Transaction and flow");
     console.log("=======================");
 
-    const receiverFTBalanceAfter = (
-        await new AccountBalanceQuery()
-            .setAccountId(receiverAccountId)
-            .execute(client)
-    ).tokens.get(ftId);
+    const receiverFTBalanceAfter = await tokenBalance(
+        client,
+        receiverAccountId,
+        ftId,
+        receiverFTBalanceBefore,
+    );
 
-    const treasuryFTBalanceAfter = (
-        await new AccountBalanceQuery()
-            .setAccountId(treasuryAccountId)
-            .execute(client)
-    ).tokens.get(ftId);
+    const treasuryFTBalanceAfter = await tokenBalance(
+        client,
+        treasuryAccountId,
+        ftId,
+        treasuryFTBalanceBefore,
+    );
 
-    const receiverNFTBalanceAfter = (
-        await new AccountBalanceQuery()
-            .setAccountId(receiverAccountId)
-            .execute(client)
-    ).tokens.get(nftId);
+    const receiverNFTBalanceAfter = await tokenBalance(
+        client,
+        receiverAccountId,
+        nftId,
+        receiverNFTBalanceBefore,
+    );
 
-    const treasuryNFTBalanceAfter = (
-        await new AccountBalanceQuery()
-            .setAccountId(treasuryAccountId)
-            .execute(client)
-    ).tokens.get(nftId);
+    const treasuryNFTBalanceAfter = await tokenBalance(
+        client,
+        treasuryAccountId,
+        nftId,
+        treasuryNFTBalanceBefore,
+    );
 
     console.log("TokenReject response:", tokenRejectStatus);
     console.log("TokenRejectFlow response:", tokenRejectFlowStatus);
     console.log("Receiver FT balance: ", receiverFTBalanceAfter.toInt());
     console.log("Treasury FT balance: ", treasuryFTBalanceAfter.toInt());
-    console.log(
-        "Receiver NFT balance: ",
-        receiverNFTBalanceAfter ? receiverNFTBalanceAfter.toInt() : 0,
-    );
+    console.log("Receiver NFT balance: ", receiverNFTBalanceAfter.toInt());
     console.log("Treasury NFT balance: ", treasuryNFTBalanceAfter.toInt());
 
     client.close();
 }
 
+/**
+ * Read a token balance from the mirror node.
+ *
+ * `AccountBalanceQuery` used to return token balances, and
+ * `AccountInfoQuery.tokenRelationships` is deprecated as of HIP-367, so
+ * `MirrorNodeTokenBalanceQuery` is the supported way to read one.
+ *
+ * The mirror node ingests consensus state asynchronously, so a read straight
+ * after a transaction can still return the previous value. Pass `previous` to
+ * poll until the value moves; the loop is bounded so an example cannot hang.
+ *
+ * @param {Client} client
+ * @param {AccountId | string} accountId
+ * @param {import("@hiero-ledger/sdk").TokenId | string} tokenId
+ * @param {import("long")} [previous]
+ * @returns {Promise<import("long")>}
+ */
+async function tokenBalance(client, accountId, tokenId, previous) {
+    return untilMirror(async () => {
+        const { balance } = await new MirrorNodeTokenBalanceQuery()
+            .setAccountId(accountId)
+            .setTokenId(tokenId)
+            .execute(client);
+
+        // Without a previous value there is nothing to wait for.
+        if (previous == null) {
+            return balance;
+        }
+
+        return balance.equals(previous) ? null : balance;
+    });
+}
+
 void main();
+
+/**
+ * Poll a mirror-node read until it reflects the transaction that just happened.
+ *
+ * The mirror node ingests consensus state asynchronously, so a read straight
+ * after a transaction can still return the previous value. Polling to a deadline
+ * beats a fixed sleep: it does not go flaky on a slow runner and does not waste
+ * time on a fast one.
+ *
+ * @template T
+ * @param {() => Promise<T | null>} read - resolves the value once it is ready
+ * @param {number} [timeoutMs]
+ * @returns {Promise<T>}
+ */
+async function untilMirror(read, timeoutMs = 60000) {
+    const deadline = Date.now() + timeoutMs;
+    for (;;) {
+        const result = await read();
+        if (result != null) {
+            return result;
+        }
+        if (Date.now() >= deadline) {
+            throw new Error("mirror node did not ingest in time");
+        }
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+}

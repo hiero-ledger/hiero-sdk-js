@@ -1,10 +1,10 @@
 import {
+    MirrorNodeAccountBalanceQuery,
     Client,
     AccountId,
     PrivateKey,
     Hbar,
     AccountCreateTransaction,
-    AccountBalanceQuery,
     AccountDeleteTransaction,
     TransferTransaction,
     Transaction,
@@ -76,16 +76,8 @@ async function main() {
         ).getReceipt(client)
     ).accountId;
 
-    const senderBalanceBefore = (
-        await new AccountBalanceQuery()
-            .setAccountId(userAccountId)
-            .execute(client)
-    ).hbars;
-    const exchangeBalanceBefore = (
-        await new AccountBalanceQuery()
-            .setAccountId(exchangeAccountId)
-            .execute(client)
-    ).hbars;
+    const senderBalanceBefore = await hbarBalance(client, userAccountId);
+    const exchangeBalanceBefore = await hbarBalance(client, exchangeAccountId);
     console.log(
         `User account (${userAccountId.toString()}) balance: ${senderBalanceBefore.toString()}`,
     );
@@ -123,22 +115,23 @@ async function main() {
     const transferResponse = await finalTx.execute(client);
     await transferResponse.getReceipt(client);
 
-    // Step 4: Confirm balances after the transfer.
-    const senderBalanceAfter = (
-        await new AccountBalanceQuery()
-            .setAccountId(userAccountId)
-            .execute(client)
-    ).hbars;
-    const exchangeBalanceAfter = (
-        await new AccountBalanceQuery()
-            .setAccountId(exchangeAccountId)
-            .execute(client)
-    ).hbars;
-    console.log(
-        `User account (${userAccountId.toString()}) balance: ${senderBalanceAfter.toString()}`,
+    const senderBalance = await hbarBalance(
+        client,
+        userAccountId,
+        senderBalanceBefore,
+    );
+
+    const exchangeBalance = await hbarBalance(
+        client,
+        exchangeAccountId,
+        exchangeBalanceBefore,
     );
     console.log(
-        `Exchange account (${exchangeAccountId.toString()}) balance: ${exchangeBalanceAfter.toString()}`,
+        `User account (${userAccountId.toString()}) balance: ${senderBalance.toString()}`,
+    );
+
+    console.log(
+        `Exchange account (${exchangeAccountId.toString()}) balance: ${exchangeBalance.toString()}`,
     );
 
     // Cleanup: delete both accounts, returning balances to the operator.
@@ -168,3 +161,57 @@ void main()
         console.error(error);
         process.exit(1);
     });
+
+/**
+ * Read an HBAR balance from the mirror node.
+ *
+ * The mirror node ingests consensus state asynchronously, so a read straight
+ * after a transaction can still return the previous value. Pass `previous` to
+ * poll until the value moves; the loop is bounded so an example cannot hang.
+ *
+ * @param {import("@hiero-ledger/sdk").Client} client
+ * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
+ * @param {import("@hiero-ledger/sdk").Hbar} [previous]
+ * @returns {Promise<import("@hiero-ledger/sdk").Hbar>}
+ */
+async function hbarBalance(client, accountId, previous) {
+    return untilMirror(async () => {
+        const { hbars } = await new MirrorNodeAccountBalanceQuery()
+            .setAccountId(accountId)
+            .execute(client);
+
+        // Without a previous value there is nothing to wait for.
+        if (previous == null) {
+            return hbars;
+        }
+
+        return hbars.toTinybars().equals(previous.toTinybars()) ? null : hbars;
+    });
+}
+
+/**
+ * Poll a mirror-node read until it reflects the transaction that just happened.
+ *
+ * The mirror node ingests consensus state asynchronously, so a read straight
+ * after a transaction can still return the previous value. Polling to a deadline
+ * beats a fixed sleep: it does not go flaky on a slow runner and does not waste
+ * time on a fast one.
+ *
+ * @template T
+ * @param {() => Promise<T | null>} read - resolves the value once it is ready
+ * @param {number} [timeoutMs]
+ * @returns {Promise<T>}
+ */
+async function untilMirror(read, timeoutMs = 60000) {
+    const deadline = Date.now() + timeoutMs;
+    for (;;) {
+        const result = await read();
+        if (result != null) {
+            return result;
+        }
+        if (Date.now() >= deadline) {
+            throw new Error("mirror node did not ingest in time");
+        }
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+}

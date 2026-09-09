@@ -2,7 +2,6 @@ import {
     TokenAirdropTransaction,
     TokenMintTransaction,
     TokenCancelAirdropTransaction,
-    AccountBalanceQuery,
     TokenFreezeTransaction,
     TokenAssociateTransaction,
     TokenPauseTransaction,
@@ -14,6 +13,7 @@ import {
     createAccount,
     createFungibleToken,
     createNonFungibleToken,
+    getAccountBalance,
 } from "./utils/Fixtures.js";
 
 describe("TokenCancelAirdropIntegrationTest", function () {
@@ -54,9 +54,10 @@ describe("TokenCancelAirdropIntegrationTest", function () {
             .addPendingAirdropId(airdropId)
             .execute(env.client);
 
-        const ownerBalance = await new AccountBalanceQuery()
-            .setAccountId(env.operatorId)
-            .execute(env.client);
+        const ownerBalance = await getAccountBalance(
+            env.client,
+            env.operatorId,
+        );
 
         expect(ownerBalance.tokens.get(tokenId).toInt()).to.be.eq(
             INITIAL_SUPPLY,
@@ -110,9 +111,10 @@ describe("TokenCancelAirdropIntegrationTest", function () {
             .addPendingAirdropId(airdropId)
             .execute(env.client);
 
-        const ownerBalance = await new AccountBalanceQuery()
-            .setAccountId(env.operatorId)
-            .execute(env.client);
+        const ownerBalance = await getAccountBalance(
+            env.client,
+            env.operatorId,
+        );
 
         expect(ownerBalance.tokens.get(tokenId).toInt()).to.equal(
             INITIAL_SUPPLY,
@@ -146,9 +148,10 @@ describe("TokenCancelAirdropIntegrationTest", function () {
             .addPendingAirdropId(airdropId)
             .execute(env.client);
 
-        const ownerBalance = await new AccountBalanceQuery()
-            .setAccountId(env.operatorId)
-            .execute(env.client);
+        const ownerBalance = await getAccountBalance(
+            env.client,
+            env.operatorId,
+        );
 
         expect(ownerBalance.tokens.get(tokenId).toInt()).to.equal(
             INITIAL_SUPPLY,
@@ -181,9 +184,10 @@ describe("TokenCancelAirdropIntegrationTest", function () {
             .addPendingAirdropId(airdropId)
             .execute(env.client);
 
-        const ownerBalance = await new AccountBalanceQuery()
-            .setAccountId(env.operatorId)
-            .execute(env.client);
+        const ownerBalance = await getAccountBalance(
+            env.client,
+            env.operatorId,
+        );
 
         expect(ownerBalance.tokens.get(tokenId).toInt()).to.equal(
             INITIAL_SUPPLY,
@@ -241,9 +245,10 @@ describe("TokenCancelAirdropIntegrationTest", function () {
                 .execute(env.client)
         ).getReceipt(env.client);
 
-        const operatorBalance = await new AccountBalanceQuery()
-            .setAccountId(env.operatorId)
-            .execute(env.client);
+        const operatorBalance = await getAccountBalance(
+            env.client,
+            env.operatorId,
+        );
 
         expect(operatorBalance.tokens.get(tokenId).toInt()).to.be.equal(
             INITIAL_SUPPLY,
@@ -298,9 +303,10 @@ describe("TokenCancelAirdropIntegrationTest", function () {
                 .execute(env.client)
         ).getReceipt(env.client);
 
-        const operatorBalance = await new AccountBalanceQuery()
-            .setAccountId(env.operatorId)
-            .execute(env.client);
+        const operatorBalance = await getAccountBalance(
+            env.client,
+            env.operatorId,
+        );
 
         expect(operatorBalance.tokens.get(tokenId).toInt()).to.be.equal(
             INITIAL_SUPPLY,

@@ -25,6 +25,8 @@ export { default as AccountBalance } from "./account/AccountBalance.js";
 export { default as AccountBalanceQuery } from "./account/AccountBalanceQuery.js";
 export { default as MirrorNodeAccountBalance } from "./account/MirrorNodeAccountBalance.js";
 export { default as MirrorNodeAccountBalanceQuery } from "./query/MirrorNodeAccountBalanceQuery.js";
+export { default as MirrorNodeTokenBalance } from "./account/MirrorNodeTokenBalance.js";
+export { default as MirrorNodeTokenBalanceQuery } from "./query/MirrorNodeTokenBalanceQuery.js";
 export { default as AccountCreateTransaction } from "./account/AccountCreateTransaction.js";
 export { default as AccountDeleteTransaction } from "./account/AccountDeleteTransaction.js";
 export { default as AccountId } from "./account/AccountId.js";

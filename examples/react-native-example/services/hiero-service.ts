@@ -26,7 +26,7 @@ import {
   PrivateKey,
   Hbar,
   AccountCreateTransaction,
-  AccountBalanceQuery,
+  MirrorNodeAccountBalanceQuery,
   TransferTransaction,
   TokenCreateTransaction,
 } from '@hiero-ledger/sdk';
@@ -153,14 +153,17 @@ export async function createAccount(client: Client): Promise<SDKResult<AccountIn
  * Queries the HBAR balance of any account on the network.
  *
  * How it works:
- * 1. Creates an AccountBalanceQuery with the target account ID
- * 2. Executes the query against a network node
+ * 1. Creates a MirrorNodeAccountBalanceQuery with the target account ID
+ * 2. Reads GET /api/v1/balances from the mirror node
  * 3. Returns the HBAR balance as a human-readable string
  *
  * Key concepts:
- * - Queries are free (no transaction fee) — they read data without modifying state
- * - The balance includes both HBAR and any associated tokens
- * - We only return the HBAR balance here for simplicity
+ * - The consensus node no longer serves account balances; the mirror node
+ *   REST API is the replacement, and it needs no query payment
+ * - The mirror node ingests consensus state asynchronously, so a balance read
+ *   immediately after a transfer may still show the pre-transfer value
+ * - Only the HBAR balance is returned; token balances are served by the
+ *   mirror node token endpoints
  *
  * @param client - An initialised Hiero Client
  * @param accountId - The account ID to query (e.g., "0.0.12345")
@@ -175,7 +178,7 @@ export async function getAccountBalance(
     const id = AccountId.fromString(accountId);
 
     // Execute the balance query — this is a free operation (no fees)
-    const balance = await new AccountBalanceQuery()
+    const balance = await new MirrorNodeAccountBalanceQuery()
       .setAccountId(id)
       .execute(client);
 

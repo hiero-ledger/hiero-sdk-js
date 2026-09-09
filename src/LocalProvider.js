@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import Client from "./client/NodeClient.js";
-import AccountBalanceQuery from "./account/AccountBalanceQuery.js";
+import AccountBalance from "./account/AccountBalance.js";
+import MirrorNodeAccountBalanceQuery from "./query/MirrorNodeAccountBalanceQuery.js";
 import AccountInfoQuery from "./account/AccountInfoQuery.js";
 import AccountRecordsQuery from "./account/AccountRecordsQuery.js";
 import TransactionReceiptQuery from "./transaction/TransactionReceiptQuery.js";
@@ -16,7 +17,6 @@ import TransactionReceiptQuery from "./transaction/TransactionReceiptQuery.js";
  * @typedef {import("./transaction/TransactionReceipt.js").default} TransactionReceipt
  * @typedef {import("./transaction/TransactionRecord.js").default} TransactionRecord
  * @typedef {import("./account/AccountId.js").default} AccountId
- * @typedef {import("./account/AccountBalance.js").default} AccountBalance
  * @typedef {import("./account/AccountInfo.js").default} AccountInfo
  * @typedef {import("./logger/Logger.js").default} Logger
  */
@@ -86,13 +86,25 @@ export default class LocalProvider {
     }
 
     /**
+     * The account's hbar balance, read from the mirror node.
+     *
+     * The `tokens` and `tokenDecimals` maps are always empty: the consensus
+     * node no longer serves balances, and the mirror node balance endpoint
+     * is hbar-only. Use `MirrorNodeTokenBalanceQuery` for a token balance.
+     *
      * @param {AccountId | string} accountId
      * @returns {Promise<AccountBalance>}
      */
-    getAccountBalance(accountId) {
-        return new AccountBalanceQuery()
+    async getAccountBalance(accountId) {
+        const { hbars } = await new MirrorNodeAccountBalanceQuery()
             .setAccountId(accountId)
             .execute(this._client);
+
+        return new AccountBalance({
+            hbars,
+            tokens: null,
+            tokenDecimals: null,
+        });
     }
 
     /**

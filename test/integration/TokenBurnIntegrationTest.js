@@ -1,12 +1,9 @@
-import {
-    Status,
-    TokenBurnTransaction,
-    AccountBalanceQuery,
-} from "../../src/exports.js";
+import { Status, TokenBurnTransaction } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import {
     createFungibleToken,
     createNonFungibleToken,
+    getAccountBalance,
 } from "./utils/Fixtures.js";
 
 describe("TokenBurn", function () {
@@ -62,9 +59,7 @@ describe("TokenBurn", function () {
             err = error;
         }
 
-        const accountBalance = await new AccountBalanceQuery()
-            .setAccountId(operatorId)
-            .execute(env.client);
+        const accountBalance = await getAccountBalance(env.client, operatorId);
 
         expect(
             accountBalance.tokens._map.get(token.toString()).toNumber(),

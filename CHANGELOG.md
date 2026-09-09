@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# Unreleased
+
+### Deprecated
+
+-   `AccountBalanceQuery` is deprecated and no longer functional. The consensus node removed `CryptoService/cryptoGetBalance` in release 0.77, and the query had already been dropped from the mainnet, testnet and previewnet throttle configurations. Constructing one logs a deprecation warning, and `execute()` now rejects immediately without contacting a consensus node. [#4285](https://github.com/hiero-ledger/hiero-sdk-js/issues/4285)
+
+### Added
+
+-   `MirrorNodeTokenBalanceQuery` reads a single token balance from the mirror node (`GET /api/v1/accounts/{id}/tokens?token.id={tokenId}`), returning the balance and its decimals. This is the replacement for the token balances `AccountBalanceQuery` used to return: `MirrorNodeAccountBalanceQuery` is HBAR-only, and `AccountInfoQuery.tokenRelationships` is deprecated as of HIP-367 and truncated at 1000 relationships. Requires both `setAccountId` and `setTokenId`. **This API may change:** the cross-SDK proposal for the query ([sdk-collaboration-hub#281](https://github.com/hiero-ledger/sdk-collaboration-hub/pull/281)) is still under review and its current draft returns a page with a cursor and an optional token filter. The single-token form is shipping now to meet the consensus node release 0.77 cutoff. An account the mirror node does not know throws `MirrorNodeStatusError` with `Status.InvalidAccountId`, matching `MirrorNodeAccountBalanceQuery`. An account that exists but holds no relationship with the token returns a zero balance.
+
+### Changed
+
+-   `Wallet.getAccountBalance()`, `LocalProvider.getAccountBalance()` and `LocalProviderWeb.getAccountBalance()` keep working, but are now backed by the mirror node rather than the consensus node. **Two behavior changes for callers:** the returned `AccountBalance` carries the HBAR balance only — its `tokens` and `tokenDecimals` maps are always empty — and the value may lag consensus by a few seconds, so it is not read-after-write consistent. Read token balances with `MirrorNodeTokenBalanceQuery`. For an account the mirror node does not know, these methods now throw `MirrorNodeStatusError` carrying `Status.InvalidAccountId` rather than the `PrecheckStatusError` the consensus-node query used to raise — match on `status`, not on the error class. [#4335](https://github.com/hiero-ledger/hiero-sdk-js/pull/4335)
+-   Examples and integration tests no longer use `AccountBalanceQuery`. Examples read HBAR with `MirrorNodeAccountBalanceQuery` and token balances with `MirrorNodeTokenBalanceQuery`; integration tests use `AccountInfoQuery`, which the consensus node still serves and which is immediately consistent.
+
 # v2.87.0
 
 ### Added
