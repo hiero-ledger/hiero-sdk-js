@@ -2,6 +2,7 @@ import {
     AccountId,
     Client,
     MirrorNodeAccountBalanceQuery,
+    MirrorNodeStatusError,
     PrivateKey,
     Status,
 } from "@hiero-ledger/sdk";
@@ -45,7 +46,10 @@ async function main() {
             `${operatorId.toString()} balance = ${balance.hbars.toString()}`,
         );
     } catch (error) {
-        if (error.status === Status.InvalidAccountId) {
+        if (
+            error instanceof MirrorNodeStatusError &&
+            error.status === Status.InvalidAccountId
+        ) {
             console.error(`${operatorId.toString()} does not exist`);
         } else {
             console.error(error);
