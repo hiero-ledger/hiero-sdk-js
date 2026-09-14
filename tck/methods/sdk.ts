@@ -21,6 +21,14 @@ interface SetOperatorParams {
     readonly sessionId?: string;
 }
 
+/**
+ * Parameters for probing a single node's health
+ */
+interface PingParams {
+    readonly nodeAccountId: string;
+    readonly sessionId?: string;
+}
+
 export default {
     /**
      * Reports the SDK name and version under test, read from the installed
@@ -108,6 +116,42 @@ export default {
             message: `Operator updated ${
                 sessionId ? `for session: ${sessionId}` : "for default client"
             }`,
+            status: "SUCCESS",
+        };
+    },
+
+    /**
+     * Probes the health of a single node in the session client's network via
+     * Client.ping(). A failed probe rejects, and the server's error
+     * middleware reports it as a JSON-RPC error object per the TCK
+     * ClientPing specification — a result is only returned on success.
+     */
+    ping: async ({
+        nodeAccountId,
+        sessionId,
+    }: PingParams): Promise<SdkResponse> => {
+        if (!nodeAccountId) {
+            throw new Error("nodeAccountId is required");
+        }
+
+        await sdk.getClient(sessionId).ping(nodeAccountId);
+
+        return {
+            message: `Successfully pinged node ${nodeAccountId}.`,
+            status: "SUCCESS",
+        };
+    },
+
+    /**
+     * Probes every node in the session client's network via
+     * Client.pingAll(): sequential, all-or-nothing — the first failing node
+     * rejects with no partial result, per the TCK ClientPing specification.
+     */
+    pingAll: async ({ sessionId }: ResetParams = {}): Promise<SdkResponse> => {
+        await sdk.getClient(sessionId).pingAll();
+
+        return {
+            message: "Successfully pinged all nodes.",
             status: "SUCCESS",
         };
     },

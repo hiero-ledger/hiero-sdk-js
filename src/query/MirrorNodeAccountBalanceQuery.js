@@ -3,6 +3,8 @@
 import Long from "long";
 import AccountId from "../account/AccountId.js";
 import MirrorNodeAccountBalance from "../account/MirrorNodeAccountBalance.js";
+import MirrorNodeStatusError from "../MirrorNodeStatusError.js";
+import Status from "../Status.js";
 import Hbar from "../Hbar.js";
 import * as EntityIdHelper from "../EntityIdHelper.js";
 import {
@@ -36,19 +38,27 @@ import {
  * form the mirror node understands (base32 alias / bare EVM address)
  * rather than `AccountId.toString()`.
  *
- * Token balances are deliberately not returned (see
- * {@link MirrorNodeAccountBalance}).
+ * Only the HBAR balance is returned (see {@link MirrorNodeAccountBalance}).
  *
- * NOTE ON CONSISTENCY: the mirror node ingests consensus state
- * asynchronously and typically lags the network by a few seconds. Results
- * are therefore NOT read-after-write consistent — unlike the consensus-node
- * `AccountBalanceQuery` this replaces, a balance read immediately after a
- * transfer may still show the pre-transfer value.
+ * An account the mirror node does not know returns an empty result rather
+ * than a 404; the SDK maps that to a {@link MirrorNodeStatusError} carrying
+ * {@link Status.InvalidAccountId}, the status `AccountBalanceQuery`
+ * reported. An account that exists holding nothing returns `"balance": 0`,
+ * so a real zero is never mistaken for a missing account.
  *
- * NOTE ON PRECISION: the balance is parsed from a JSON number, so values
- * above `Number.MAX_SAFE_INTEGER` (2^53 - 1 tinybars, roughly 90M hbar)
- * silently lose precision — unlike the protobuf-based
- * `AccountBalanceQuery`. Lossless parsing is tracked as a follow-up.
+ * Eventual consistency: the mirror node trails the network by a few
+ * seconds, and the lag covers the account's existence as well as its
+ * balance — a just-created account transiently fails with
+ * `INVALID_ACCOUNT_ID`, so retry rather than treat the first failure as
+ * final.
+ *
+ * A deleted account reads as a zero balance: the balances endpoint does not
+ * expose the deleted flag, so unlike `AccountBalanceQuery` this query cannot
+ * report `ACCOUNT_DELETED`. Use `/accounts/{id}` if that matters.
+ *
+ * Precision: the balance is parsed from a JSON number, so values above
+ * `Number.MAX_SAFE_INTEGER` (2^53 - 1 tinybars, roughly 90M hbar) silently
+ * lose precision, unlike the protobuf-based `AccountBalanceQuery`.
  */
 export default class MirrorNodeAccountBalanceQuery {
     /**
@@ -94,6 +104,8 @@ export default class MirrorNodeAccountBalanceQuery {
      * @param {number} [requestTimeout] - total timeout for the whole
      * operation in milliseconds; defaults to `client.requestTimeout`
      * @returns {Promise<MirrorNodeAccountBalance>}
+     * @throws {MirrorNodeStatusError} with {@link Status.InvalidAccountId} if
+     * the mirror node knows no such account
      */
     async execute(client, requestTimeout) {
         const idString = this._idString();
@@ -104,19 +116,35 @@ export default class MirrorNodeAccountBalanceQuery {
         const timeoutMs = requestTimeout ?? client.requestTimeout;
         const deadline = timeoutMs != null ? Date.now() + timeoutMs : null;
 
+        const url = `${baseUrl}/balances?account.id=${encodeURIComponent(
+            idString,
+        )}`;
+
         const response = /** @type {MirrorBalancesResponse} */ (
-            await this._fetchJson(
-                `${baseUrl}/balances?account.id=${encodeURIComponent(
-                    idString,
-                )}`,
-                client,
-                deadline,
-            )
+            await this._fetchJson(url, client, deadline)
         );
 
-        // The balances endpoint returns an empty array (not a 404) for an
-        // account that does not exist; the balance is zero in that case.
-        const balance = response.balances?.[0]?.balance ?? 0;
+        if (!Array.isArray(response?.balances)) {
+            throw new Error(
+                `Failed to query ${url}: response has no balances array`,
+            );
+        }
+
+        // An existing account with no hbar still has a `"balance": 0` entry, so
+        // an empty list means the account is unknown.
+        if (response.balances.length === 0) {
+            throw new MirrorNodeStatusError(
+                { status: Status.InvalidAccountId },
+                `account ${idString} was not found on the mirror node`,
+            );
+        }
+
+        // `Long.fromValue` turns a non-number into 0 rather than failing, which
+        // would reintroduce the silent-zero bug this query just fixed.
+        const balance = response.balances[0].balance;
+        if (typeof balance !== "number") {
+            throw new Error(`Failed to query ${url}: balance is not a number`);
+        }
 
         return new MirrorNodeAccountBalance({
             hbars: Hbar.fromTinybars(Long.fromValue(balance)),

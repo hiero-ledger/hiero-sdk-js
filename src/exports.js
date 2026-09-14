@@ -135,7 +135,8 @@ export { default as Signer } from "./Signer.js";
 export { default as SignerSignature } from "./SignerSignature.js";
 export { default as Status } from "./Status.js";
 export { default as SubscriptionHandle } from "./topic/SubscriptionHandle.js";
-
+export { default as SystemDeleteTransaction } from "./system/SystemDeleteTransaction.js";
+export { default as SystemUndeleteTransaction } from "./system/SystemUndeleteTransaction.js";
 export { default as Timestamp } from "./Timestamp.js";
 export { default as TokenAllowance } from "./account/TokenAllowance.js";
 export { default as TokenAssociateTransaction } from "./token/TokenAssociateTransaction.js";
@@ -194,6 +195,7 @@ export { default as TokenKeyValidation } from "./token/TokenKeyValidation.js";
 
 export { default as StatusError } from "./StatusError.js";
 export { default as MaxAttemptsOrTimeoutError } from "./MaxAttemptsOrTimeoutError.js";
+export { default as MirrorNodeStatusError } from "./MirrorNodeStatusError.js";
 export { default as PrecheckStatusError } from "./PrecheckStatusError.js";
 export { default as ReceiptStatusError } from "./ReceiptStatusError.js";
 export { default as LedgerId } from "./LedgerId.js";

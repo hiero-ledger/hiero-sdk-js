@@ -2,7 +2,11 @@
 
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
-import { AccountId } from "../../../src/index.js";
+import {
+    AccountId,
+    MirrorNodeStatusError,
+    Status,
+} from "../../../src/index.js";
 import MirrorNodeAccountBalanceQuery from "../../../src/query/MirrorNodeAccountBalanceQuery.js";
 import NativeClient from "../../../src/client/NativeClient.js";
 
@@ -62,7 +66,7 @@ describe("MirrorNodeAccountBalanceQuery (wire)", function () {
         expect(balance.hbars.toTinybars().toString()).to.equal("123456789");
     });
 
-    it("should return zero hbars when the account does not exist", async function () {
+    it("should fail with INVALID_ACCOUNT_ID when the account does not exist", async function () {
         let requests = 0;
 
         server.use(
@@ -76,11 +80,36 @@ describe("MirrorNodeAccountBalanceQuery (wire)", function () {
             }),
         );
 
+        let error = null;
+        try {
+            await new MirrorNodeAccountBalanceQuery()
+                .setAccountId("0.0.123")
+                .execute(client);
+        } catch (err) {
+            error = err;
+        }
+
+        // An empty result is a definitive answer, not a transient failure.
+        expect(requests).to.equal(1);
+        expect(error).to.be.instanceOf(MirrorNodeStatusError);
+        expect(error.status).to.equal(Status.InvalidAccountId);
+    });
+
+    it("should return the balance of an existing account funded to zero", async function () {
+        server.use(
+            http.get(BALANCES_URL, () =>
+                HttpResponse.json({
+                    timestamp: "1234567890.000000001",
+                    balances: [{ account: "0.0.123", balance: 0 }],
+                    links: { next: null },
+                }),
+            ),
+        );
+
         const balance = await new MirrorNodeAccountBalanceQuery()
             .setAccountId("0.0.123")
             .execute(client);
 
-        expect(requests).to.equal(1);
         expect(balance.hbars.toTinybars().toString()).to.equal("0");
     });
 
