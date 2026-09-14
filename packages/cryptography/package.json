@@ -12,9 +12,14 @@
         "./package.json": "./package.json",
         ".": {
             "react-native": "./src/index.native.js",
-            "types": "./lib/index.d.ts",
-            "import": "./src/index.js",
-            "require": "./lib/index.cjs"
+            "import": {
+                "types": "./lib/index.d.ts",
+                "default": "./src/index.js"
+            },
+            "require": {
+                "types": "./lib/index.d.cts",
+                "default": "./lib/index.cjs"
+            }
         }
     },
     "license": "Apache-2.0",
