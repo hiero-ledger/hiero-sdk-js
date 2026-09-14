@@ -7,6 +7,7 @@ import FungibleHookType from "./FungibleHookType.js";
 /**
  * @namespace proto
  * @typedef {import("@hiero-ledger/proto").proto.IHookCall} HieroProto.proto.IHookCall
+ * @typedef {import("long").default} Long
  */
 
 /**

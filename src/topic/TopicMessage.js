@@ -62,9 +62,9 @@ export default class TopicMessage {
                     : new Uint8Array(),
             sequenceNumber:
                 response.sequenceNumber != null
-                    ? response.sequenceNumber instanceof Long
-                        ? response.sequenceNumber
-                        : Long.fromNumber(response.sequenceNumber)
+                    ? typeof response.sequenceNumber === "number"
+                        ? Long.fromNumber(response.sequenceNumber)
+                        : response.sequenceNumber
                     : Long.ZERO,
             initialTransactionId:
                 response.chunkInfo != null &&
