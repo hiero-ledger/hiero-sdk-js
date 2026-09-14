@@ -1,6 +1,6 @@
 /**
- * @typedef {import("../account/AccountId").default} AccountId
- * @typedef {import("../transaction/TransactionId").default} TransactionId
+ * @typedef {import("../account/AccountId.js").default} AccountId
+ * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  */
 
 /**
