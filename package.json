@@ -1,6 +1,6 @@
 {
     "name": "@hiero-ledger/sdk",
-    "version": "2.87.0",
+    "version": "2.88.0",
     "description": "Hiero SDK",
     "types": "./lib/index.d.ts",
     "main": "./lib/index.cjs",
