@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# v2.88.0
+
+### Changed
+- **Breaking:** `MirrorNodeAccountBalanceQuery` now throws the new `MirrorNodeStatusError` carrying `Status.InvalidAccountId` for an account the mirror node does not know, instead of returning `0 ℏ` as in v2.87.0. This matches the `INVALID_ACCOUNT_ID` failure of the deprecated `AccountBalanceQuery` it replaces, and the Java and Go SDKs. Match on `error.status`, not on the error class: mirror REST queries reach no consensus node, so this is deliberately not a `PrecheckStatusError`. A just-created account fails transiently until the mirror node ingests it, so create-then-read flows should retry; an account that exists holding nothing still returns zero, and a deleted account is reported as an ordinary zero balance because the balances endpoint does not expose the deleted flag. A malformed response (missing `balances` array or non-numeric balance) now throws a plain `Error` instead of returning zero. [#4335](https://github.com/hiero-ledger/hiero-sdk-js/pull/4335)
+
+### Fixed
+- Restored `SystemDeleteTransaction` and `SystemUndeleteTransaction`, which v2.87.0 removed as long-deprecated. Deleting them also unregistered `systemDelete` / `systemUndelete` from the transaction registry, so `Transaction.fromBytes()` could no longer deserialize an already-signed system delete/undelete transaction. Both classes are back exactly as in v2.86.2 and remain `@deprecated`; every other removal from v2.87.0 stays removed. [#4343](https://github.com/hiero-ledger/hiero-sdk-js/pull/4343)
+- `Transaction.fromBytes()` now rejects a transaction body that sets more than one `data` field. protobufjs silently kept only the last such field while decoding, so an ambiguous body could not be detected after the fact. This is a defense-in-depth fix for already-trusted input; there is no known untrusted-input path. [#4338](https://github.com/hiero-ledger/hiero-sdk-js/pull/4338) [#4337](https://github.com/hiero-ledger/hiero-sdk-js/issues/4337)
+
 # v2.87.0
 
 ### Added
