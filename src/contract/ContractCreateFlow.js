@@ -28,7 +28,7 @@ import PublicKey from "../PublicKey.js";
 
 /**
  * @typedef {import("bignumber.js").BigNumber} BigNumber
- * @typedef {import("long")} Long
+ * @typedef {import("long").default} Long
  */
 
 /**
