@@ -280,6 +280,8 @@ async function main() {
         ).getReceiptWithSigner(wallet);
     } catch (error) {
         console.error(error);
+        provider.close();
+        throw error;
     }
 
     provider.close();
@@ -346,8 +348,11 @@ async function printBalances(
  */
 function accountBalance(provider, accountId, previous, retryMissing = false) {
     return untilMirror(
-        async () => {
-            const balance = await provider.getAccountBalance(accountId);
+        async (remainingMs) => {
+            const balance = await provider.getAccountBalance(
+                accountId,
+                remainingMs,
+            );
             return previous != null &&
                 balance.hbars.toTinybars().equals(previous.hbars.toTinybars())
                 ? null

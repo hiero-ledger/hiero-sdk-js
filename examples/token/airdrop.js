@@ -19,6 +19,8 @@ import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 
 import dotenv from "dotenv";
 
+/** @typedef {{equals: (value: number) => boolean, toInt: () => number, toString: () => string}} TokenBalanceValue */
+
 dotenv.config();
 
 /**
@@ -395,7 +397,7 @@ async function main() {
  * @param {import("@hiero-ledger/sdk").TokenId | string} tokenId
  * @param {number} expected
  * @param {boolean} [retryMissing]
- * @returns {Promise<import("long")>}
+ * @returns {Promise<TokenBalanceValue>}
  */
 async function tokenBalance(
     client,
@@ -406,10 +408,13 @@ async function tokenBalance(
 ) {
     return untilMirror(
         async (remainingMs) => {
-            const { balance } = await new MirrorNodeTokenBalanceQuery()
+            const result = await new MirrorNodeTokenBalanceQuery()
                 .setAccountId(accountId)
                 .setTokenId(tokenId)
                 .execute(client, remainingMs);
+            // The generated SDK declaration currently exposes Long as `any`.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const balance = /** @type {TokenBalanceValue} */ (result.balance);
 
             return balance.equals(expected) ? balance : null;
         },

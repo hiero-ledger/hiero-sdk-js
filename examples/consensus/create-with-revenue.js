@@ -20,6 +20,8 @@ import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 
 import dotenv from "dotenv";
 
+/** @typedef {{equals: (value: number) => boolean, toInt: () => number, toString: () => string}} TokenBalanceValue */
+
 dotenv.config();
 
 /**
@@ -135,10 +137,15 @@ async function main() {
             aliceBalanceBefore,
         );
 
-        let feeCollectorBalanceAfter = await hbarBalance(
+        const expectedFeeCollectorBalance = Hbar.fromTinybars(
+            feeCollectorBalanceBefore
+                .toTinybars()
+                .add(Hbar.from(2, HbarUnit.Hbar).toTinybars()),
+        );
+        let feeCollectorBalanceAfter = await exactHbarBalance(
             client,
             operatorId,
-            feeCollectorBalanceBefore,
+            expectedFeeCollectorBalance,
         );
 
         console.log(
@@ -261,11 +268,17 @@ async function main() {
             tokenId,
             100,
         );
-        const feeCollectorHbarAfter = await hbarBalance(
-            client,
-            operatorId,
-            feeCollectorHbarBefore,
-        );
+        // The custom fee in this step is paid in the token, so the collector's
+        // HBAR balance must remain unchanged. The exact token poll above proves
+        // the transaction is already visible before this plain HBAR read.
+        const feeCollectorHbarAfter = await hbarBalance(client, operatorId);
+        if (
+            !feeCollectorHbarAfter
+                .toTinybars()
+                .equals(feeCollectorHbarBefore.toTinybars())
+        ) {
+            throw new Error("token custom fee unexpectedly changed HBAR");
+        }
 
         console.log(
             `Alice's hbars balance before: ${aliceHbarBefore.toString()} and after: ${aliceHbarAfter.toString()}`,
@@ -361,6 +374,7 @@ async function main() {
         );
     } catch (error) {
         console.error(error);
+        throw error;
     } finally {
         client.close();
     }
@@ -379,7 +393,7 @@ async function main() {
  * @param {import("@hiero-ledger/sdk").TokenId | string} tokenId
  * @param {number} expected
  * @param {boolean} [retryMissing]
- * @returns {Promise<import("long")>}
+ * @returns {Promise<TokenBalanceValue>}
  */
 async function tokenBalance(
     client,
@@ -390,10 +404,13 @@ async function tokenBalance(
 ) {
     return untilMirror(
         async (remainingMs) => {
-            const { balance } = await new MirrorNodeTokenBalanceQuery()
+            const result = await new MirrorNodeTokenBalanceQuery()
                 .setAccountId(accountId)
                 .setTokenId(tokenId)
                 .execute(client, remainingMs);
+            // The generated SDK declaration currently exposes Long as `any`.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const balance = /** @type {TokenBalanceValue} */ (result.balance);
 
             return balance.equals(expected) ? balance : null;
         },
@@ -440,6 +457,21 @@ async function hbarBalance(client, accountId, previous, retryMissing = false) {
                 : undefined,
         },
     );
+}
+
+/**
+ * @param {import("@hiero-ledger/sdk").Client} client
+ * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
+ * @param {import("@hiero-ledger/sdk").Hbar} expected
+ * @returns {Promise<import("@hiero-ledger/sdk").Hbar>}
+ */
+async function exactHbarBalance(client, accountId, expected) {
+    return untilMirror(async (remainingMs) => {
+        const { hbars } = await new MirrorNodeAccountBalanceQuery()
+            .setAccountId(accountId)
+            .execute(client, remainingMs);
+        return hbars.toTinybars().equals(expected.toTinybars()) ? hbars : null;
+    });
 }
 
 void main();

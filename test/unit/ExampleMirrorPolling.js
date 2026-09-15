@@ -84,6 +84,18 @@ describe("example mirror-node polling", function () {
         ).rejects.toThrow("mirror node did not ingest in time");
     });
 
+    it("does not accept a read that resolves after the deadline", async function () {
+        await expect(
+            untilMirror(
+                async () => {
+                    await new Promise((resolve) => setTimeout(resolve, 30));
+                    return "late";
+                },
+                { timeoutMs: 5, pollIntervalMs: 1 },
+            ),
+        ).rejects.toThrow("mirror node did not ingest in time");
+    });
+
     it("reports the last retryable error when it times out", async function () {
         const missingAccount = Object.assign(new Error("INVALID_ACCOUNT_ID"), {
             status: "INVALID_ACCOUNT_ID",
@@ -128,8 +140,9 @@ describe("example mirror-node polling", function () {
         ).rejects.toThrow("timeoutMs must be a non-negative finite number");
         await expect(
             untilMirror(async () => null, { pollIntervalMs: Infinity }),
-        ).rejects.toThrow(
-            "pollIntervalMs must be a non-negative finite number",
-        );
+        ).rejects.toThrow("pollIntervalMs must be a positive finite number");
+        await expect(
+            untilMirror(async () => null, { pollIntervalMs: 0 }),
+        ).rejects.toThrow("pollIntervalMs must be a positive finite number");
     });
 });

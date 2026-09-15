@@ -15,6 +15,7 @@ import {
     TransactionResponse,
     AccountInfo,
     MirrorNodeAccountBalance,
+    Long,
 } from "@hiero-ledger/sdk";
 
 import { OPERATOR_ID, OPERATOR_KEY } from "@env";
@@ -31,10 +32,6 @@ const styles = StyleSheet.create({
 });
 
 const App = () => {
-    const operatorId = AccountId.fromString(OPERATOR_ID);
-    const operatorKey = PrivateKey.fromStringECDSA(OPERATOR_KEY);
-    const client = Client.forTestnet().setOperator(operatorId, operatorKey);
-
     const [transaction, setTransaction] = useState<TransactionResponse | null>(
         null,
     );
@@ -45,47 +42,63 @@ const App = () => {
     const [mnemonic, setMnemonic] = useState<Mnemonic | null>(null);
 
     useEffect(() => {
+        // Keep the SDK client scoped to the effect so every mounted instance
+        // owns exactly one network-update timer and closes it on cleanup.
+        const operatorId = AccountId.fromString(OPERATOR_ID);
+        const operatorKey = PrivateKey.fromStringECDSA(OPERATOR_KEY);
+        const client = Client.forTestnet().setOperator(operatorId, operatorKey);
+        let active = true;
         const init = async () => {
             try {
+                const recipientId = AccountId.fromString("0.0.3");
+                const recipientBefore =
+                    await new MirrorNodeAccountBalanceQuery()
+                        .setAccountId(recipientId)
+                        .execute(client);
                 const response = await new TransferTransaction()
                     .addHbarTransfer(operatorId, -1)
-                    .addHbarTransfer("0.0.3", 1)
+                    .addHbarTransfer(recipientId, 1)
                     .execute(client);
-                setTransaction(response);
+                await response.getReceipt(client);
+                await waitForMirrorBalance(
+                    client,
+                    recipientId,
+                    recipientBefore.hbars.toTinybars().add(100_000_000),
+                );
+                if (active) setTransaction(response);
+
+                // The exact recipient credit above proves this transaction is
+                // visible before displaying the sender's post-transfer balance.
+                const currentBalance = await new MirrorNodeAccountBalanceQuery()
+                    .setAccountId(operatorId)
+                    .execute(client);
+                if (active) setBalance(currentBalance);
             } catch (err: any) {
-                Alert.alert(err.toString());
+                if (active) Alert.alert(err.toString());
             }
             try {
                 const info = await new AccountInfoQuery()
                     .setAccountId(operatorId)
                     .execute(client);
 
-                setInfo(info);
+                if (active) setInfo(info);
             } catch (err: any) {
-                Alert.alert(err.toString());
-            }
-
-            try {
-                // The consensus node no longer serves account balances;
-                // read them from the mirror node instead.
-                const balance = await new MirrorNodeAccountBalanceQuery()
-                    .setAccountId(operatorId)
-                    .execute(client);
-
-                setBalance(balance);
-            } catch (err: any) {
-                Alert.alert(err.toString());
+                if (active) Alert.alert(err.toString());
             }
 
             try {
                 const mnemonic = await Mnemonic.generate12();
 
-                setMnemonic(mnemonic);
+                if (active) setMnemonic(mnemonic);
             } catch (err: any) {
-                Alert.alert(err.toString());
+                if (active) Alert.alert(err.toString());
             }
         };
-        init();
+        void init();
+        return () => {
+            active = false;
+            client.close();
+        };
     }, []);
 
     return (
@@ -119,3 +132,28 @@ const App = () => {
 };
 
 export default App;
+
+async function waitForMirrorBalance(
+    client: Client,
+    accountId: AccountId,
+    expectedTinybars: Long,
+): Promise<MirrorNodeAccountBalance> {
+    const deadline = Date.now() + 60_000;
+    for (;;) {
+        const remaining = deadline - Date.now();
+        if (remaining <= 0) {
+            throw new Error("mirror node did not ingest in time");
+        }
+        const balance = await new MirrorNodeAccountBalanceQuery()
+            .setAccountId(accountId)
+            .execute(client, remaining);
+        if (balance.hbars.toTinybars().equals(expectedTinybars)) {
+            return balance;
+        }
+        const delay = Math.min(2_000, Math.max(0, deadline - Date.now()));
+        if (delay === 0) {
+            throw new Error("mirror node did not ingest in time");
+        }
+        await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+}

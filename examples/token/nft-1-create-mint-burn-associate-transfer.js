@@ -55,7 +55,6 @@ async function main() {
     console.log("Creating Treasury account...");
     const treasuryKey = PrivateKey.generate();
     const treasuryPublicKey = treasuryKey.publicKey;
-    console.log(`Treasury private key = ${treasuryKey.toString()}`);
     console.log(`Treasury public key = ${treasuryPublicKey.toString()}`);
 
     const treasuryTransaction = new AccountCreateTransaction()
@@ -72,7 +71,6 @@ async function main() {
     console.log("Creating Alice account...");
     const aliceKey = PrivateKey.generate();
     const alicePublicKey = aliceKey.publicKey;
-    console.log(`Alice private key = ${aliceKey.toString()}`);
     console.log(`Alice public key = ${alicePublicKey.toString()}`);
 
     const aliceTransaction = new AccountCreateTransaction()
@@ -89,7 +87,6 @@ async function main() {
     console.log("Creating Bob account...");
     const bobKey = PrivateKey.generate();
     const bobPublicKey = bobKey.publicKey;
-    console.log(`Bob private key = ${bobKey.toString()}`);
     console.log(`Bob public key = ${bobPublicKey.toString()}`);
 
     const bobTransaction = new AccountCreateTransaction()
@@ -296,6 +293,8 @@ async function main() {
         }
     } catch (error) {
         console.error(error);
+        client.close();
+        throw error;
     }
 
     client.close();

@@ -32,7 +32,9 @@ const excludedJSFile = [
 const cmd = process.env.NODE_COMMAND;
 const concurrency = Math.max(
     1,
-    parseInt(process.env.EXAMPLES_CONCURRENCY || "4", 10),
+    // Examples share the configured operator and some system accounts. Running
+    // them concurrently makes unrelated balance changes create false positives.
+    parseInt(process.env.EXAMPLES_CONCURRENCY || "1", 10),
 );
 // An example that never exits must not stall the whole run until the
 // CI job-level timeout (6 hours) kills it; kill it here instead.
@@ -70,7 +72,9 @@ function runExample(examplePath, file) {
          */
         const capture = (chunk) => {
             if (output.length < maxCapturedOutput) {
-                output += chunk.toString();
+                output += chunk
+                    .toString()
+                    .slice(0, maxCapturedOutput - output.length);
             }
         };
         child.stdout.on("data", capture);

@@ -53,7 +53,6 @@ async function main() {
         privateKeyList.push(privateKey);
         publicKeyList.push(publicKey);
         console.log(`${i + 1}. public key: ${publicKey.toString()}`);
-        console.log(`${i + 1}. private key: ${privateKey.toString()}`);
     }
     const thresholdKey = new KeyList(publicKeyList, 3);
 
@@ -176,6 +175,8 @@ async function main() {
         console.log(recordScheduledTx);
     } catch (error) {
         console.error(error);
+        provider.close();
+        throw error;
     }
 
     provider.close();
@@ -201,8 +202,11 @@ async function queryBalance(accountId, wallet, previous, retryMissing = false) {
     }
 
     const balance = await untilMirror(
-        async () => {
-            const { hbars } = await provider.getAccountBalance(accountId);
+        async (remainingMs) => {
+            const { hbars } = await provider.getAccountBalance(
+                accountId,
+                remainingMs,
+            );
 
             if (previous == null) {
                 return hbars.toTinybars().toNumber() > 0 ? hbars : null;
