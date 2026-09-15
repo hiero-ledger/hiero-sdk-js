@@ -1,11 +1,13 @@
 import {
+    MirrorNodeAccountBalanceQuery,
     Client,
     AccountId,
     PrivateKey,
     Hbar,
-    AccountBalanceQuery,
     TransferTransaction,
+    Status,
 } from "@hiero-ledger/sdk";
+import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 
 import dotenv from "dotenv";
 
@@ -37,14 +39,8 @@ async function main() {
     const recipientId = AccountId.fromString("0.0.3");
 
     // Step 1: Check Hbar balance of sender and recipient.
-    const senderBalanceBefore = (
-        await new AccountBalanceQuery().setAccountId(operatorId).execute(client)
-    ).hbars;
-    const recipientBalanceBefore = (
-        await new AccountBalanceQuery()
-            .setAccountId(recipientId)
-            .execute(client)
-    ).hbars;
+    const senderBalanceBefore = await hbarBalance(client, operatorId);
+    const recipientBalanceBefore = await hbarBalance(client, recipientId);
 
     console.log(
         `Sender (${operatorId.toString()}) balance before transfer: ${senderBalanceBefore.toString()}`,
@@ -68,15 +64,28 @@ async function main() {
     console.log(`Transferred ${transferAmount.toString()}`);
     console.log(`Transfer memo: ${record.transactionMemo}`);
 
-    // Step 3: Check Hbar balance of sender and recipient after the transfer.
-    const senderBalanceAfter = (
-        await new AccountBalanceQuery().setAccountId(operatorId).execute(client)
-    ).hbars;
-    const recipientBalanceAfter = (
-        await new AccountBalanceQuery()
-            .setAccountId(recipientId)
-            .execute(client)
-    ).hbars;
+    // The recipient's exact credit identifies this transaction in the mirror;
+    // checking only that a shared account changed can match an unrelated fee.
+    const expectedRecipientBalance = Hbar.fromTinybars(
+        recipientBalanceBefore.toTinybars().add(transferAmount.toTinybars()),
+    );
+    const recipientBalanceAfter = await hbarBalance(
+        client,
+        recipientId,
+        expectedRecipientBalance,
+    );
+    const senderBalanceAfter = await hbarBalance(client, operatorId);
+    if (
+        !senderBalanceAfter
+            .toTinybars()
+            .lessThan(
+                senderBalanceBefore
+                    .toTinybars()
+                    .subtract(transferAmount.toTinybars()),
+            )
+    ) {
+        throw new Error("sender balance did not include the transfer and fee");
+    }
 
     console.log(
         `Sender (${operatorId.toString()}) balance after transfer: ${senderBalanceAfter.toString()}`,
@@ -95,3 +104,39 @@ void main()
         console.error(error);
         process.exit(1);
     });
+
+/**
+ * Read an HBAR balance from the mirror node.
+ *
+ * The mirror node ingests consensus state asynchronously, so a read straight
+ * after a transaction can still return the previous value. Pass `expected` to
+ * poll until the exact value is visible.
+ *
+ * @param {import("@hiero-ledger/sdk").Client} client
+ * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
+ * @param {import("@hiero-ledger/sdk").Hbar} [expected]
+ * @param {boolean} [retryMissing]
+ * @returns {Promise<import("@hiero-ledger/sdk").Hbar>}
+ */
+async function hbarBalance(client, accountId, expected, retryMissing = false) {
+    return untilMirror(
+        async (remainingMs) => {
+            const { hbars } = await new MirrorNodeAccountBalanceQuery()
+                .setAccountId(accountId)
+                .execute(client, remainingMs);
+
+            if (expected == null) {
+                return hbars;
+            }
+
+            return hbars.toTinybars().equals(expected.toTinybars())
+                ? hbars
+                : null;
+        },
+        {
+            retryError: retryMissing
+                ? retryOnStatus(Status.InvalidAccountId)
+                : undefined,
+        },
+    );
+}

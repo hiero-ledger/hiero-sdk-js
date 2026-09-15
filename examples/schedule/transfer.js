@@ -1,15 +1,17 @@
 import {
+    MirrorNodeAccountBalanceQuery,
     Client,
     AccountId,
     PrivateKey,
     Hbar,
     AccountCreateTransaction,
     AccountDeleteTransaction,
-    AccountBalanceQuery,
     TransferTransaction,
     ScheduleSignTransaction,
     ScheduleInfoQuery,
+    Status,
 } from "@hiero-ledger/sdk";
+import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 
 import dotenv from "dotenv";
 
@@ -66,11 +68,12 @@ async function main() {
     console.log(`Bob's account: ${bobAccountId.toString()}`);
 
     // Step 3: Read Bob's initial balance for the before/after comparison.
-    const balanceBefore = (
-        await new AccountBalanceQuery()
-            .setAccountId(bobAccountId)
-            .execute(client)
-    ).hbars;
+    const balanceBefore = await hbarBalance(
+        client,
+        bobAccountId,
+        undefined,
+        true,
+    );
     console.log(`Bob's balance before schedule: ${balanceBefore.toString()}`);
 
     // Step 4: Alice builds the transfer and wraps it in a scheduled tx.
@@ -89,11 +92,7 @@ async function main() {
 
     // Step 5: Confirm Bob's balance hasn't changed — the schedule is pending
     // because Bob's signature is still missing.
-    const balancePending = (
-        await new AccountBalanceQuery()
-            .setAccountId(bobAccountId)
-            .execute(client)
-    ).hbars;
+    const balancePending = await hbarBalance(client, bobAccountId);
     console.log(
         `Bob's balance while schedule pending: ${balancePending.toString()}`,
     );
@@ -111,6 +110,11 @@ async function main() {
     const infoBefore = await new ScheduleInfoQuery()
         .setScheduleId(scheduleId)
         .execute(client);
+    if (infoBefore.executed != null) {
+        throw new Error(
+            "Expected the schedule to remain pending before Bob's signature.",
+        );
+    }
     const scheduledTx = infoBefore.scheduledTransaction;
     if (!(scheduledTx instanceof TransferTransaction)) {
         throw new Error(
@@ -141,12 +145,7 @@ async function main() {
         .sign(bobKey);
     await (await bobSignTx.execute(client)).getReceipt(client);
 
-    // Step 8: Confirm Bob's balance now reflects the transfer.
-    const balanceAfter = (
-        await new AccountBalanceQuery()
-            .setAccountId(bobAccountId)
-            .execute(client)
-    ).hbars;
+    const balanceAfter = await hbarBalance(client, bobAccountId, balanceBefore);
     console.log(`Bob's balance after Bob signs: ${balanceAfter.toString()}`);
 
     // Step 9: ScheduleInfo should now show an `executed` timestamp.
@@ -188,3 +187,40 @@ void main()
         console.error(error);
         process.exit(1);
     });
+
+/**
+ * Read an HBAR balance from the mirror node.
+ *
+ * The mirror node ingests consensus state asynchronously, so a read straight
+ * after a transaction can still return the previous value. Pass `previous` to
+ * poll until the value moves; the loop is bounded so an example cannot hang.
+ *
+ * @param {import("@hiero-ledger/sdk").Client} client
+ * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
+ * @param {import("@hiero-ledger/sdk").Hbar} [previous]
+ * @param {boolean} [retryMissing]
+ * @returns {Promise<import("@hiero-ledger/sdk").Hbar>}
+ */
+async function hbarBalance(client, accountId, previous, retryMissing = false) {
+    return untilMirror(
+        async (remainingMs) => {
+            const { hbars } = await new MirrorNodeAccountBalanceQuery()
+                .setAccountId(accountId)
+                .execute(client, remainingMs);
+
+            // Without a previous value there is nothing to wait for.
+            if (previous == null) {
+                return hbars;
+            }
+
+            return hbars.toTinybars().equals(previous.toTinybars())
+                ? null
+                : hbars;
+        },
+        {
+            retryError: retryMissing
+                ? retryOnStatus(Status.InvalidAccountId)
+                : undefined,
+        },
+    );
+}

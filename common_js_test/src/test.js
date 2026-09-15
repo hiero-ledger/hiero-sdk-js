@@ -1,30 +1,24 @@
-const { Client, AccountBalanceQuery } = require("@hiero-ledger/sdk");
+const {
+    Client,
+    MirrorNodeAccountBalanceQuery,
+    Hbar,
+} = require("@hiero-ledger/sdk");
 
 describe("CommonJS", function () {
-    it("should query each node's balance", async function () {
+    it("should read a balance from the mirror node", async function () {
         const client = Client.forTestnet();
 
-        let succeededAtLeastOnce = false;
+        try {
+            const balance = await new MirrorNodeAccountBalanceQuery()
+                .setAccountId("0.0.2")
+                .execute(client);
 
-        // Iterate over the nodes in the network
-        for (const [, nodeAccountId] of Object.entries(client.network)) {
-            try {
-                await new AccountBalanceQuery()
-                    .setNodeAccountIds([nodeAccountId])
-                    .setAccountId(nodeAccountId)
-                    .execute(client);
-                succeededAtLeastOnce = true;
-            } catch (error) {
-                console.log(`Failed for ${nodeAccountId}`);
+            if (!(balance.hbars instanceof Hbar)) {
+                throw new Error("expected an Hbar balance");
             }
-        }
-
-        // Close the client connection
-        client.close();
-
-        // Ensure that at least one attempt was successful
-        if (!succeededAtLeastOnce) {
-            throw new Error("No successful query attempts were made.");
+        } finally {
+            // Close the client connection
+            client.close();
         }
     });
 });

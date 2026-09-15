@@ -19,6 +19,7 @@ const excludedDirectories = [
 ];
 const excludedJSFile = [
     "run-all-examples.js",
+    "wait-for-mirror.js",
     "consensus-pub-sub.js",
     "consensus-pub-sub-chunked.js",
     "consensus-pub-sub-with-submit-key.js",
@@ -31,7 +32,9 @@ const excludedJSFile = [
 const cmd = process.env.NODE_COMMAND;
 const concurrency = Math.max(
     1,
-    parseInt(process.env.EXAMPLES_CONCURRENCY || "4", 10),
+    // Examples share the configured operator and some system accounts. Running
+    // them concurrently makes unrelated balance changes create false positives.
+    parseInt(process.env.EXAMPLES_CONCURRENCY || "1", 10),
 );
 // An example that never exits must not stall the whole run until the
 // CI job-level timeout (6 hours) kills it; kill it here instead.
@@ -69,7 +72,9 @@ function runExample(examplePath, file) {
          */
         const capture = (chunk) => {
             if (output.length < maxCapturedOutput) {
-                output += chunk.toString();
+                output += chunk
+                    .toString()
+                    .slice(0, maxCapturedOutput - output.length);
             }
         };
         child.stdout.on("data", capture);
@@ -123,7 +128,9 @@ async function runInParallel(examples, maxConcurrency) {
             const file = examples[index];
             const examplePath = path.join(examplesDirectory, file);
             console.log(
-                `\n⏳ ${String(index + 1)}/${String(total)}. Running ${file}...`,
+                `\n⏳ ${String(index + 1)}/${String(
+                    total,
+                )}. Running ${file}...`,
             );
             const {
                 file: f,
@@ -134,7 +141,9 @@ async function runInParallel(examples, maxConcurrency) {
             if (timedOut) {
                 failed += 1;
                 console.log(
-                    `❌ ${f} timed out after ${String(exampleTimeoutMs)} ms and was killed.`,
+                    `❌ ${f} timed out after ${String(
+                        exampleTimeoutMs,
+                    )} ms and was killed.`,
                 );
                 printOutput(f, output);
             } else if (code === 0) {

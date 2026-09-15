@@ -1,5 +1,5 @@
 import {
-    AccountBalanceQuery,
+    MirrorNodeAccountBalanceQuery,
     AccountId,
     Client,
     CustomFixedFee,
@@ -26,7 +26,9 @@ import {
     TokenWipeTransaction,
     TransferTransaction,
     AccountCreateTransaction,
+    Status,
 } from "@hiero-ledger/sdk";
+import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 
 /**
  * @typedef {import("@hiero-ledger/sdk").TokenInfo} TokenInfo
@@ -44,7 +46,11 @@ const nodes = {
     "127.0.0.1:50211": new AccountId(3),
 };
 
-const client = Client.forNetwork(nodes).setOperator(operatorId, operatorKey);
+const client = Client.forNetwork(nodes)
+    .setOperator(operatorId, operatorKey)
+    // Config mirror network for your custom network. This will be used by the
+    // MirrorNodeAccountBalanceQuery to get account balances from the mirror node.
+    .setMirrorNetwork("local-node");
 
 const supplyKey = PrivateKey.generate();
 const adminKey = PrivateKey.generate();
@@ -62,7 +68,6 @@ async function main() {
     console.log("Creating Treasury account...");
     const treasuryKey = PrivateKey.generate();
     const treasuryPublicKey = treasuryKey.publicKey;
-    console.log(`Treasury private key = ${treasuryKey.toString()}`);
     console.log(`Treasury public key = ${treasuryPublicKey.toString()}`);
 
     const treasuryTransaction = new AccountCreateTransaction()
@@ -79,7 +84,6 @@ async function main() {
     console.log("Creating Alice account...");
     const aliceKey = PrivateKey.generate();
     const alicePublicKey = aliceKey.publicKey;
-    console.log(`Alice private key = ${aliceKey.toString()}`);
     console.log(`Alice public key = ${alicePublicKey.toString()}`);
 
     const aliceTransaction = new AccountCreateTransaction()
@@ -96,7 +100,6 @@ async function main() {
     console.log("Creating Bob account...");
     const bobKey = PrivateKey.generate();
     const bobPublicKey = bobKey.publicKey;
-    console.log(`Bob private key = ${bobKey.toString()}`);
     console.log(`Bob public key = ${bobPublicKey.toString()}`);
 
     const bobTransaction = new AccountCreateTransaction()
@@ -264,7 +267,6 @@ async function main() {
             `\nPART 2.1 ENDS ============================================================\n`,
         );
 
-        // BALANCE CHECK 1
         let oB = await bCheckerFcn(treasuryId);
         let aB = await bCheckerFcn(aliceId);
         let bB = await bCheckerFcn(bobId);
@@ -289,7 +291,6 @@ async function main() {
             `\n NFT transfer Treasury -> Alice status: ${tokenTransferRx.status.toString()} \n`,
         );
 
-        // BALANCE CHECK 2
         oB = await bCheckerFcn(treasuryId);
         aB = await bCheckerFcn(aliceId);
         bB = await bCheckerFcn(bobId);
@@ -317,7 +318,6 @@ async function main() {
             `\n NFT transfer Alice -> Bob status: ${tokenTransferRx2.status.toString()} \n`,
         );
 
-        // BALANCE CHECK 3
         oB = await bCheckerFcn(treasuryId);
         aB = await bCheckerFcn(aliceId);
         bB = await bCheckerFcn(bobId);
@@ -397,7 +397,6 @@ async function main() {
             ).toString()} \n`,
         );
 
-        // VERIFY THAT THE SCHEDULED TRANSACTION (TOKEN TRANSFER) EXECUTED
         oB = await bCheckerFcn(treasuryId);
         aB = await bCheckerFcn(aliceId);
         bB = await bCheckerFcn(bobId);
@@ -512,7 +511,6 @@ async function main() {
             `- Wipe token ${tokenId.toString()} from Alice's account: ${tokenWipeRx.status.toString()}`,
         );
 
-        // CHECK ALICE'S BALANCE
         aB = await bCheckerFcn(aliceId);
         console.log(
             `- Alice balance: ID:${tokenId.toString()} and ${aB.toString()}`,
@@ -562,10 +560,8 @@ async function main() {
          * @returns {Promise<Hbar>}
          */
         async function bCheckerFcn(id) {
-            const balanceCheckTx = await new AccountBalanceQuery()
-                .setAccountId(id)
-                .execute(client);
-            return balanceCheckTx.hbars;
+            const balance = await hbarBalance(client, id, undefined, true);
+            return balance;
         }
 
         /**
@@ -592,9 +588,48 @@ async function main() {
         }
     } catch (error) {
         console.error(error);
+        client.close();
+        throw error;
     }
 
     client.close();
+}
+
+/**
+ * Read an HBAR balance from the mirror node.
+ *
+ * The mirror node ingests consensus state asynchronously, so a read straight
+ * after a transaction can still return the previous value. Pass `previous` to
+ * poll until the value moves; the loop is bounded so an example cannot hang.
+ *
+ * @param {import("@hiero-ledger/sdk").Client} client
+ * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
+ * @param {import("@hiero-ledger/sdk").Hbar} [previous]
+ * @param {boolean} [retryMissing]
+ * @returns {Promise<import("@hiero-ledger/sdk").Hbar>}
+ */
+async function hbarBalance(client, accountId, previous, retryMissing = false) {
+    return untilMirror(
+        async (remainingMs) => {
+            const { hbars } = await new MirrorNodeAccountBalanceQuery()
+                .setAccountId(accountId)
+                .execute(client, remainingMs);
+
+            // Without a previous value there is nothing to wait for.
+            if (previous == null) {
+                return hbars;
+            }
+
+            return hbars.toTinybars().equals(previous.toTinybars())
+                ? null
+                : hbars;
+        },
+        {
+            retryError: retryMissing
+                ? retryOnStatus(Status.InvalidAccountId)
+                : undefined,
+        },
+    );
 }
 
 void main();

@@ -1,4 +1,5 @@
 import {
+    MirrorNodeTokenBalanceQuery,
     Client,
     PrivateKey,
     AccountId,
@@ -8,14 +9,17 @@ import {
     TokenCreateTransaction,
     TokenType,
     TokenMintTransaction,
-    AccountBalanceQuery,
     TokenClaimAirdropTransaction,
     TokenCancelAirdropTransaction,
     TokenRejectTransaction,
     NftId,
+    Status,
 } from "@hiero-ledger/sdk";
+import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 
 import dotenv from "dotenv";
+
+/** @typedef {{equals: (value: number) => boolean, toInt: () => number, toString: () => string}} TokenBalanceValue */
 
 dotenv.config();
 
@@ -196,29 +200,18 @@ async function main() {
      * STEP 5:
      * Query to verify account 1 and Account 2 have received the airdrops and Account 3 has not
      */
-    let account1Balance = await new AccountBalanceQuery()
-        .setAccountId(accountId1)
-        .execute(client);
-
-    let account2Balance = await new AccountBalanceQuery()
-        .setAccountId(accountId2)
-        .execute(client);
-
-    let account3Balance = await new AccountBalanceQuery()
-        .setAccountId(accountId3)
-        .execute(client);
 
     console.log(
         "Account1 balance after airdrop: ",
-        account1Balance.tokens.get(tokenId).toInt(),
+        (await tokenBalance(client, accountId1, tokenId, 100, true)).toInt(),
     );
     console.log(
         "Account2 balance after airdrop: ",
-        account2Balance.tokens.get(tokenId).toInt(),
+        (await tokenBalance(client, accountId2, tokenId, 100, true)).toInt(),
     );
     console.log(
         "Account3 balance after airdrop: ",
-        account3Balance.tokens.get(tokenId),
+        (await tokenBalance(client, accountId3, tokenId, 0, true)).toInt(),
     );
 
     /**
@@ -233,13 +226,9 @@ async function main() {
         ).execute(client)
     ).getReceipt(client);
 
-    const account3BalanceAfterClaim = await new AccountBalanceQuery()
-        .setAccountId(accountId3)
-        .execute(client);
-
     console.log(
         "Account3 balance after airdrop claim",
-        account3BalanceAfterClaim.tokens.get(tokenId).toInt(),
+        (await tokenBalance(client, accountId3, tokenId, 100)).toInt(),
     );
 
     /**
@@ -284,25 +273,18 @@ async function main() {
      * Step 9:
      * Query to verify Account 1 received the airdrop and Account 2 and Account 3 did not
      */
-    account1Balance = await new AccountBalanceQuery()
-        .setAccountId(accountId1)
-        .execute(client);
-
-    account2Balance = await new AccountBalanceQuery()
-        .setAccountId(accountId2)
-        .execute(client);
 
     console.log(
         "Account 1 NFT Balance after airdrop",
-        account1Balance.tokens.get(nftId).toInt(),
+        (await tokenBalance(client, accountId1, nftId, 1)).toInt(),
     );
     console.log(
         "Account 2 NFT Balance after airdrop",
-        account2Balance.tokens.get(nftId),
+        (await tokenBalance(client, accountId2, nftId, 0)).toInt(),
     );
     console.log(
         "Account 3 NFT Balance after airdrop",
-        account3Balance.tokens.get(nftId),
+        (await tokenBalance(client, accountId3, nftId, 0)).toInt(),
     );
 
     /**
@@ -318,13 +300,9 @@ async function main() {
         ).execute(client)
     ).getReceipt(client);
 
-    account2Balance = await new AccountBalanceQuery()
-        .setAccountId(accountId2)
-        .execute(client);
-
     console.log(
         "Account 2 nft balance after claim: ",
-        account2Balance.tokens.get(nftId).toInt(),
+        (await tokenBalance(client, accountId2, nftId, 1)).toInt(),
     );
 
     /**
@@ -332,17 +310,15 @@ async function main() {
      * Cancel the airdrop for Account 3
      */
     console.log("Cancelling airdrop for account 3");
-    await new TokenCancelAirdropTransaction()
-        .addPendingAirdropId(newPendingAirdropsNfts[1].airdropId)
-        .execute(client);
-
-    account3Balance = await new AccountBalanceQuery()
-        .setAccountId(accountId3)
-        .execute(client);
+    await (
+        await new TokenCancelAirdropTransaction()
+            .addPendingAirdropId(newPendingAirdropsNfts[1].airdropId)
+            .execute(client)
+    ).getReceipt(client);
 
     console.log(
         "Account 3 nft balance after cancel: ",
-        account3Balance.tokens.get(nftId),
+        (await tokenBalance(client, accountId3, nftId, 0)).toInt(),
     );
 
     /**
@@ -364,24 +340,19 @@ async function main() {
      * Step 13:
      * Query to verify Account 2 no longer has the NFT
      */
-    account2Balance = await new AccountBalanceQuery()
-        .setAccountId(accountId2)
-        .execute(client);
     console.log(
         "Account 2 nft balance after reject: ",
-        account2Balance.tokens.get(nftId).toInt(),
+        (await tokenBalance(client, accountId2, nftId, 0)).toInt(),
     );
 
     /**
      * Step 14:
      * Query to verify treasury has received the NFT back
      */
-    let treasuryBalance = await new AccountBalanceQuery()
-        .setAccountId(treasuryAccount)
-        .execute(client);
+
     console.log(
         "Treasury nft balance after reject: ",
-        treasuryBalance.tokens.get(nftId).toInt(),
+        (await tokenBalance(client, treasuryAccount, nftId, 4, true)).toInt(),
     );
 
     /**
@@ -399,24 +370,60 @@ async function main() {
         ).execute(client)
     ).getReceipt(client);
 
-    account3Balance = await new AccountBalanceQuery()
-        .setAccountId(accountId3)
-        .execute(client);
-
     console.log(
         "Account 3 balance after reject: ",
-        account3Balance.tokens.get(tokenId).toInt(),
+        (await tokenBalance(client, accountId3, tokenId, 0)).toInt(),
     );
-
-    treasuryBalance = await new AccountBalanceQuery()
-        .setAccountId(treasuryAccount)
-        .execute(client);
 
     console.log(
         "Treasury balance after reject: ",
-        treasuryBalance.tokens.get(tokenId).toInt(),
+        (await tokenBalance(client, treasuryAccount, tokenId, 100)).toInt(),
     );
     client.close();
+}
+
+/**
+ * Read a token balance from the mirror node.
+ *
+ * `AccountBalanceQuery` used to return token balances, use `MirrorNodeTokenBalanceQuery` instead.
+ *
+ * The mirror node ingests consensus state asynchronously, so a read straight
+ * after a transaction can still return the previous value. Pass `expected` to
+ * poll until the intended state is visible; the loop is bounded so an example
+ * cannot hang or silently accept an intermediate value.
+ *
+ * @param {Client} client
+ * @param {AccountId | string} accountId
+ * @param {import("@hiero-ledger/sdk").TokenId | string} tokenId
+ * @param {number} expected
+ * @param {boolean} [retryMissing]
+ * @returns {Promise<TokenBalanceValue>}
+ */
+async function tokenBalance(
+    client,
+    accountId,
+    tokenId,
+    expected,
+    retryMissing = false,
+) {
+    return untilMirror(
+        async (remainingMs) => {
+            const result = await new MirrorNodeTokenBalanceQuery()
+                .setAccountId(accountId)
+                .setTokenId(tokenId)
+                .execute(client, remainingMs);
+            // The generated SDK declaration currently exposes Long as `any`.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const balance = /** @type {TokenBalanceValue} */ (result.balance);
+
+            return balance.equals(expected) ? balance : null;
+        },
+        {
+            retryError: retryMissing
+                ? retryOnStatus(Status.InvalidAccountId)
+                : undefined,
+        },
+    );
 }
 
 void main();

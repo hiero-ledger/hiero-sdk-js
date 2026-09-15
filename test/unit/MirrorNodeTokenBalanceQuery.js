@@ -1,0 +1,357 @@
+// SPDX-License-Identifier: Apache-2.0
+
+import { vi } from "vitest";
+import AccountId from "../../src/account/AccountId.js";
+import MirrorNodeStatusError from "../../src/MirrorNodeStatusError.js";
+import MirrorNodeTokenBalanceQuery from "../../src/query/MirrorNodeTokenBalanceQuery.js";
+import Status from "../../src/Status.js";
+import TokenId from "../../src/token/TokenId.js";
+
+/**
+ * The minimum a client needs to expose for a mirror REST query.
+ */
+function stubClient() {
+    return {
+        mirrorRestApiBaseUrl: "http://localhost:5551/api/v1",
+        requestTimeout: 10000,
+        maxAttempts: 3,
+        minBackoff: 1,
+        maxBackoff: 2,
+    };
+}
+
+/**
+ * @param {object} body
+ * @param {number} [status]
+ */
+function jsonResponse(body, status = 200) {
+    return {
+        ok: status >= 200 && status < 300,
+        status,
+        json: () => Promise.resolve(body),
+        text: () => Promise.resolve(JSON.stringify(body)),
+    };
+}
+
+describe("MirrorNodeTokenBalanceQuery", function () {
+    /** @type {import("vitest").MockInstance} */
+    let fetchMock;
+
+    beforeEach(function () {
+        fetchMock = vi.fn(() =>
+            Promise.resolve(
+                jsonResponse({
+                    tokens: [
+                        { token_id: "0.0.5005", balance: 1234, decimals: 2 },
+                    ],
+                }),
+            ),
+        );
+        vi.stubGlobal("fetch", fetchMock);
+    });
+
+    afterEach(function () {
+        vi.unstubAllGlobals();
+    });
+
+    describe("setters", function () {
+        it("accepts strings and instances", function () {
+            const query = new MirrorNodeTokenBalanceQuery()
+                .setAccountId("0.0.10")
+                .setTokenId("0.0.5005");
+
+            expect(query.accountId.toString()).to.equal("0.0.10");
+            expect(query.tokenId.toString()).to.equal("0.0.5005");
+
+            const fromInstances = new MirrorNodeTokenBalanceQuery()
+                .setAccountId(new AccountId(10))
+                .setTokenId(new TokenId(5005));
+
+            expect(fromInstances.accountId.toString()).to.equal("0.0.10");
+            expect(fromInstances.tokenId.toString()).to.equal("0.0.5005");
+        });
+
+        it("accepts both in the constructor", function () {
+            const query = new MirrorNodeTokenBalanceQuery({
+                accountId: "0.0.10",
+                tokenId: "0.0.5005",
+            });
+
+            expect(query.accountId.toString()).to.equal("0.0.10");
+            expect(query.tokenId.toString()).to.equal("0.0.5005");
+        });
+    });
+
+    describe("execute", function () {
+        it("issues one request to the account's tokens endpoint scoped by token", async function () {
+            await new MirrorNodeTokenBalanceQuery()
+                .setAccountId("0.0.10")
+                .setTokenId("0.0.5005")
+                .execute(stubClient());
+
+            expect(fetchMock).toHaveBeenCalledTimes(1);
+            expect(fetchMock.mock.calls[0][0]).to.equal(
+                "http://localhost:5551/api/v1/accounts/0.0.10/tokens?token.id=0.0.5005",
+            );
+            expect(fetchMock.mock.calls[0][1].method).to.equal("GET");
+        });
+
+        it("returns the balance and decimals", async function () {
+            const balance = await new MirrorNodeTokenBalanceQuery()
+                .setAccountId("0.0.10")
+                .setTokenId("0.0.5005")
+                .execute(stubClient());
+
+            expect(balance.balance.toNumber()).to.equal(1234);
+            expect(balance.decimals).to.equal(2);
+            expect(balance.tokenId.toString()).to.equal("0.0.5005");
+        });
+
+        it("reports zero when the account holds no relationship with the token", async function () {
+            fetchMock.mockImplementation(() =>
+                Promise.resolve(jsonResponse({ tokens: [] })),
+            );
+
+            const balance = await new MirrorNodeTokenBalanceQuery()
+                .setAccountId("0.0.10")
+                .setTokenId("0.0.5005")
+                .execute(stubClient());
+
+            expect(balance.balance.toNumber()).to.equal(0);
+            expect(balance.decimals).to.equal(0);
+        });
+
+        it("rejects a response without a tokens array", async function () {
+            fetchMock.mockImplementation(() =>
+                Promise.resolve(jsonResponse({ tokens: null })),
+            );
+
+            await expect(
+                new MirrorNodeTokenBalanceQuery()
+                    .setAccountId("0.0.10")
+                    .setTokenId("0.0.5005")
+                    .execute(stubClient()),
+            ).rejects.toThrow("response has no tokens array");
+        });
+
+        it("rejects a response for a different token", async function () {
+            fetchMock.mockImplementation(() =>
+                Promise.resolve(
+                    jsonResponse({
+                        tokens: [
+                            {
+                                token_id: "0.0.5006",
+                                balance: 1234,
+                                decimals: 2,
+                            },
+                        ],
+                    }),
+                ),
+            );
+
+            await expect(
+                new MirrorNodeTokenBalanceQuery()
+                    .setAccountId("0.0.10")
+                    .setTokenId("0.0.5005")
+                    .execute(stubClient()),
+            ).rejects.toThrow("response contains an invalid token balance");
+        });
+
+        it("rejects a response containing more than the requested token", async function () {
+            fetchMock.mockImplementation(() =>
+                Promise.resolve(
+                    jsonResponse({
+                        tokens: [
+                            {
+                                token_id: "0.0.5005",
+                                balance: 1,
+                                decimals: 0,
+                            },
+                            {
+                                token_id: "0.0.5006",
+                                balance: 1,
+                                decimals: 0,
+                            },
+                        ],
+                    }),
+                ),
+            );
+
+            await expect(
+                new MirrorNodeTokenBalanceQuery()
+                    .setAccountId("0.0.10")
+                    .setTokenId("0.0.5005")
+                    .execute(stubClient()),
+            ).rejects.toThrow("response contains multiple tokens");
+        });
+
+        it("rejects an unsafe numeric balance", async function () {
+            fetchMock.mockImplementation(() =>
+                Promise.resolve(
+                    jsonResponse({
+                        tokens: [
+                            {
+                                token_id: "0.0.5005",
+                                balance: Number.MAX_SAFE_INTEGER + 1,
+                                decimals: 2,
+                            },
+                        ],
+                    }),
+                ),
+            );
+
+            await expect(
+                new MirrorNodeTokenBalanceQuery()
+                    .setAccountId("0.0.10")
+                    .setTokenId("0.0.5005")
+                    .execute(stubClient()),
+            ).rejects.toThrow("response contains an invalid token balance");
+        });
+
+        it("rejects decimals outside the mirror API uint32 range", async function () {
+            fetchMock.mockImplementation(() =>
+                Promise.resolve(
+                    jsonResponse({
+                        tokens: [
+                            {
+                                token_id: "0.0.5005",
+                                balance: 1,
+                                decimals: 0x100000000,
+                            },
+                        ],
+                    }),
+                ),
+            );
+
+            await expect(
+                new MirrorNodeTokenBalanceQuery()
+                    .setAccountId("0.0.10")
+                    .setTokenId("0.0.5005")
+                    .execute(stubClient()),
+            ).rejects.toThrow("response contains an invalid token balance");
+        });
+
+        it("requires an account ID", async function () {
+            let error = null;
+            try {
+                await new MirrorNodeTokenBalanceQuery()
+                    .setTokenId("0.0.5005")
+                    .execute(stubClient());
+            } catch (err) {
+                error = err;
+            }
+
+            expect(error).to.be.an("Error");
+            expect(error.message).to.include("accountId");
+            expect(fetchMock).toHaveBeenCalledTimes(0);
+        });
+
+        it("requires a token ID", async function () {
+            let error = null;
+            try {
+                await new MirrorNodeTokenBalanceQuery()
+                    .setAccountId("0.0.10")
+                    .execute(stubClient());
+            } catch (err) {
+                error = err;
+            }
+
+            expect(error).to.be.an("Error");
+            expect(error.message).to.include("tokenId");
+            expect(fetchMock).toHaveBeenCalledTimes(0);
+        });
+
+        it("retries a 5xx and then succeeds", async function () {
+            let calls = 0;
+            fetchMock.mockImplementation(() => {
+                calls += 1;
+                return Promise.resolve(
+                    calls === 1
+                        ? jsonResponse({ _status: "boom" }, 503)
+                        : jsonResponse({
+                              tokens: [
+                                  {
+                                      token_id: "0.0.5005",
+                                      balance: 7,
+                                      decimals: 0,
+                                  },
+                              ],
+                          }),
+                );
+            });
+
+            const balance = await new MirrorNodeTokenBalanceQuery()
+                .setAccountId("0.0.10")
+                .setTokenId("0.0.5005")
+                .execute(stubClient());
+
+            expect(calls).to.equal(2);
+            expect(balance.balance.toNumber()).to.equal(7);
+        });
+
+        it("does not sleep past the total request deadline", async function () {
+            vi.useFakeTimers();
+            vi.setSystemTime(0);
+            fetchMock.mockImplementation(() =>
+                Promise.resolve(jsonResponse({ _status: "boom" }, 503)),
+            );
+            const client = {
+                ...stubClient(),
+                minBackoff: 100,
+                maxBackoff: 100,
+            };
+            const result = expect(
+                new MirrorNodeTokenBalanceQuery()
+                    .setAccountId("0.0.10")
+                    .setTokenId("0.0.5005")
+                    .execute(client, 10),
+            ).rejects.toThrow("HTTP 503");
+
+            await vi.advanceTimersByTimeAsync(10);
+            await result;
+            vi.useRealTimers();
+        });
+
+        it("throws MirrorNodeStatusError for an account the mirror node does not know", async function () {
+            // This endpoint 404s for an unknown account, unlike `/balances`.
+            fetchMock.mockImplementation(() =>
+                Promise.resolve(jsonResponse({ _status: "Not found" }, 404)),
+            );
+
+            let error = null;
+            try {
+                await new MirrorNodeTokenBalanceQuery()
+                    .setAccountId("0.0.10")
+                    .setTokenId("0.0.5005")
+                    .execute(stubClient());
+            } catch (err) {
+                error = err;
+            }
+
+            expect(error).to.be.an.instanceOf(MirrorNodeStatusError);
+            expect(error.status).to.equal(Status.InvalidAccountId);
+            // A 404 is not retried.
+            expect(fetchMock).toHaveBeenCalledTimes(1);
+        });
+
+        it("throws on a 4xx without retrying", async function () {
+            fetchMock.mockImplementation(() =>
+                Promise.resolve(jsonResponse({ _status: "bad id" }, 400)),
+            );
+
+            let error = null;
+            try {
+                await new MirrorNodeTokenBalanceQuery()
+                    .setAccountId("0.0.10")
+                    .setTokenId("0.0.5005")
+                    .execute(stubClient());
+            } catch (err) {
+                error = err;
+            }
+
+            expect(error).to.be.an("Error");
+            expect(error.message).to.include("HTTP 400");
+            expect(fetchMock).toHaveBeenCalledTimes(1);
+        });
+    });
+});

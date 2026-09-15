@@ -242,7 +242,7 @@ export default class MirrorNodeAccountBalanceQuery {
 
                 if (response.status >= 500 && attempt < maxAttempts) {
                     lastError = error;
-                    await sleep(backoff);
+                    await sleepBeforeRetry(backoff, deadline, lastError);
                     backoff = Math.min(backoff * 2, maxBackoff);
                     continue;
                 }
@@ -251,7 +251,7 @@ export default class MirrorNodeAccountBalanceQuery {
             } catch (err) {
                 lastError = /** @type {Error} */ (err);
                 if (attempt < maxAttempts && isRetryableNetworkError(err)) {
-                    await sleep(backoff);
+                    await sleepBeforeRetry(backoff, deadline, lastError);
                     backoff = Math.min(backoff * 2, maxBackoff);
                     continue;
                 }
@@ -269,4 +269,23 @@ export default class MirrorNodeAccountBalanceQuery {
  */
 function sleep(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * @param {number} backoff
+ * @param {?number} deadline
+ * @param {Error} lastError
+ * @returns {Promise<void>}
+ */
+async function sleepBeforeRetry(backoff, deadline, lastError) {
+    if (deadline == null) {
+        await sleep(backoff);
+        return;
+    }
+
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) {
+        throw lastError;
+    }
+    await sleep(Math.min(backoff, remaining));
 }

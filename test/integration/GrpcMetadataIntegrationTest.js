@@ -2,7 +2,7 @@ import { Metadata } from "@grpc/grpc-js";
 import { Client as GrpcClient } from "@grpc/grpc-js";
 
 import {
-    AccountBalanceQuery,
+    AccountInfoQuery,
     TransferTransaction,
     Hbar,
 } from "../../src/exports.js";
@@ -68,7 +68,7 @@ describe("gRPC Metadata Integration Test", function () {
 
     it("should include metadata in the actual request on a query", async function () {
         await testMetadataInRequest(async () => {
-            await new AccountBalanceQuery()
+            await new AccountInfoQuery()
                 .setAccountId(env.operatorId)
                 .execute(env.client);
         });
@@ -99,7 +99,7 @@ describe("gRPC Metadata Integration Test", function () {
         };
 
         try {
-            await new AccountBalanceQuery()
+            await new AccountInfoQuery()
                 .setAccountId(env.operatorId)
                 .execute(env.client);
 
@@ -108,7 +108,7 @@ describe("gRPC Metadata Integration Test", function () {
                 .addHbarTransfer(env.client.operatorAccountId, new Hbar(1))
                 .execute(env.client);
 
-            await new AccountBalanceQuery()
+            await new AccountInfoQuery()
                 .setAccountId(env.operatorId)
                 .execute(env.client);
 

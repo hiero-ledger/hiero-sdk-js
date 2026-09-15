@@ -5,19 +5,19 @@ import {
     KeyList,
     AccountCreateTransaction,
     Hbar,
-    AccountBalanceQuery,
     TransferTransaction,
     ScheduleSignTransaction,
     ScheduleInfoQuery,
     TransactionRecordQuery,
+    Status,
 } from "@hiero-ledger/sdk";
+import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 
 import dotenv from "dotenv";
 
 dotenv.config();
 
 /**
- * @typedef {import("@hiero-ledger/sdk").AccountBalance} AccountBalance
  * @typedef {import("@hiero-ledger/sdk").AccountId} AccountId
  */
 
@@ -53,7 +53,6 @@ async function main() {
         privateKeyList.push(privateKey);
         publicKeyList.push(publicKey);
         console.log(`${i + 1}. public key: ${publicKey.toString()}`);
-        console.log(`${i + 1}. private key: ${privateKey.toString()}`);
     }
     const thresholdKey = new KeyList(publicKeyList, 3);
 
@@ -73,7 +72,12 @@ async function main() {
         console.log(
             `3-of-4 multi-sig account ID:  ${multiSigAccountId.toString()}`,
         );
-        await queryBalance(multiSigAccountId, wallet);
+        let balance = await queryBalance(
+            multiSigAccountId,
+            wallet,
+            undefined,
+            true,
+        );
 
         // schedule crypto transfer from multi-sig account to operator account
         const txSchedule = await (
@@ -119,7 +123,20 @@ async function main() {
             "1. ScheduleSignTransaction status: " +
                 txScheduleSign1Receipt.status.toString(),
         );
-        await queryBalance(multiSigAccountId, wallet);
+        const pendingScheduleInfo = await new ScheduleInfoQuery()
+            .setScheduleId(scheduleId)
+            .executeWithSigner(wallet);
+        if (pendingScheduleInfo.executed != null) {
+            throw new Error(
+                "scheduled transfer executed before threshold was met",
+            );
+        }
+        const pendingBalance = await queryBalance(multiSigAccountId, wallet);
+        if (!pendingBalance.toTinybars().equals(balance.toTinybars())) {
+            throw new Error(
+                "scheduled transfer executed before threshold was met",
+            );
+        }
 
         // add 3. signature to trigger scheduled tx
         const txScheduleSign2 = await (
@@ -138,12 +155,17 @@ async function main() {
             "2. ScheduleSignTransaction status: " +
                 txScheduleSign2Receipt.status.toString(),
         );
-        await queryBalance(multiSigAccountId, wallet);
+        await queryBalance(multiSigAccountId, wallet, balance);
 
         // query schedule
         const scheduleInfo = await new ScheduleInfoQuery()
             .setScheduleId(scheduleId)
             .executeWithSigner(wallet);
+        if (scheduleInfo.executed == null) {
+            throw new Error(
+                "scheduled transfer did not execute after threshold was met",
+            );
+        }
         console.log(scheduleInfo);
 
         // query triggered scheduled tx
@@ -153,26 +175,60 @@ async function main() {
         console.log(recordScheduledTx);
     } catch (error) {
         console.error(error);
+        provider.close();
+        throw error;
     }
 
     provider.close();
 }
 
 /**
+ * Read an account's HBAR balance through the wallet's provider, which is backed
+ * by the mirror node now that the consensus node no longer serves balances.
+ *
+ * The mirror node ingests consensus state asynchronously, so pass the balance
+ * read before the last transaction to poll until the new value shows up.
+ *
  * @param {AccountId} accountId
  * @param {Wallet} wallet
- * @returns {Promise<AccountBalance>}
+ * @param {Hbar} [previous]
+ * @param {boolean} [retryMissing]
+ * @returns {Promise<Hbar>}
  */
-async function queryBalance(accountId, wallet) {
-    const accountBalance = await new AccountBalanceQuery()
-        .setAccountId(accountId)
-        .executeWithSigner(wallet);
+async function queryBalance(accountId, wallet, previous, retryMissing = false) {
+    const provider = wallet.getProvider();
+    if (provider == null) {
+        throw new Error("wallet does not contain a provider");
+    }
+
+    const balance = await untilMirror(
+        async (remainingMs) => {
+            const { hbars } = await provider.getAccountBalance(
+                accountId,
+                remainingMs,
+            );
+
+            if (previous == null) {
+                return hbars.toTinybars().toNumber() > 0 ? hbars : null;
+            }
+
+            return hbars.toTinybars().equals(previous.toTinybars())
+                ? null
+                : hbars;
+        },
+        {
+            retryError: retryMissing
+                ? retryOnStatus(Status.InvalidAccountId)
+                : undefined,
+        },
+    );
+
     console.log(
-        `Balance of account ${accountId.toString()}: ${accountBalance.hbars
+        `Balance of account ${accountId.toString()}: ${balance
             .toTinybars()
             .toInt()} tinybar`,
     );
-    return accountBalance;
+    return balance;
 }
 
 void main();

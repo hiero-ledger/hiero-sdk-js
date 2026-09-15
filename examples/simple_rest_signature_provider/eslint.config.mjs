@@ -25,7 +25,7 @@ export default [
             "plugin:jsdoc/recommended",
             "plugin:import/errors",
             "plugin:import/typescript",
-            "plugin:n/recommended",
+            "plugin:node/recommended",
             "plugin:compat/recommended",
         ),
     ),
@@ -55,7 +55,7 @@ export default [
             "@typescript-eslint/explicit-module-boundary-types": "off",
             "@typescript-eslint/no-empty-function": "off",
 
-            "n/no-unsupported-features/es-syntax": [
+            "node/no-unsupported-features/es-syntax": [
                 "error",
                 {
                     ignores: ["dynamicImport", "modules"],

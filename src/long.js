@@ -4,7 +4,7 @@ import BigNumber from "bignumber.js";
 
 /**
  * @typedef {{low: number, high: number, unsigned: boolean}} LongObject
- * @typedef {import("long").default} Long
+ * @typedef {import("long")} Long
  */
 
 /**

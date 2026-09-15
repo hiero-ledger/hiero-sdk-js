@@ -1,14 +1,16 @@
 import {
+    MirrorNodeAccountBalanceQuery,
     Client,
     AccountId,
     PrivateKey,
     Hbar,
     AccountCreateTransaction,
-    AccountBalanceQuery,
     AccountDeleteTransaction,
     TransferTransaction,
     Transaction,
+    Status,
 } from "@hiero-ledger/sdk";
+import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 
 import dotenv from "dotenv";
 
@@ -76,16 +78,18 @@ async function main() {
         ).getReceipt(client)
     ).accountId;
 
-    const senderBalanceBefore = (
-        await new AccountBalanceQuery()
-            .setAccountId(userAccountId)
-            .execute(client)
-    ).hbars;
-    const exchangeBalanceBefore = (
-        await new AccountBalanceQuery()
-            .setAccountId(exchangeAccountId)
-            .execute(client)
-    ).hbars;
+    const senderBalanceBefore = await hbarBalance(
+        client,
+        userAccountId,
+        undefined,
+        true,
+    );
+    const exchangeBalanceBefore = await hbarBalance(
+        client,
+        exchangeAccountId,
+        undefined,
+        true,
+    );
     console.log(
         `User account (${userAccountId.toString()}) balance: ${senderBalanceBefore.toString()}`,
     );
@@ -123,22 +127,23 @@ async function main() {
     const transferResponse = await finalTx.execute(client);
     await transferResponse.getReceipt(client);
 
-    // Step 4: Confirm balances after the transfer.
-    const senderBalanceAfter = (
-        await new AccountBalanceQuery()
-            .setAccountId(userAccountId)
-            .execute(client)
-    ).hbars;
-    const exchangeBalanceAfter = (
-        await new AccountBalanceQuery()
-            .setAccountId(exchangeAccountId)
-            .execute(client)
-    ).hbars;
-    console.log(
-        `User account (${userAccountId.toString()}) balance: ${senderBalanceAfter.toString()}`,
+    const senderBalance = await hbarBalance(
+        client,
+        userAccountId,
+        senderBalanceBefore,
+    );
+
+    const exchangeBalance = await hbarBalance(
+        client,
+        exchangeAccountId,
+        exchangeBalanceBefore,
     );
     console.log(
-        `Exchange account (${exchangeAccountId.toString()}) balance: ${exchangeBalanceAfter.toString()}`,
+        `User account (${userAccountId.toString()}) balance: ${senderBalance.toString()}`,
+    );
+
+    console.log(
+        `Exchange account (${exchangeAccountId.toString()}) balance: ${exchangeBalance.toString()}`,
     );
 
     // Cleanup: delete both accounts, returning balances to the operator.
@@ -168,3 +173,40 @@ void main()
         console.error(error);
         process.exit(1);
     });
+
+/**
+ * Read an HBAR balance from the mirror node.
+ *
+ * The mirror node ingests consensus state asynchronously, so a read straight
+ * after a transaction can still return the previous value. Pass `previous` to
+ * poll until the value moves; the loop is bounded so an example cannot hang.
+ *
+ * @param {import("@hiero-ledger/sdk").Client} client
+ * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
+ * @param {import("@hiero-ledger/sdk").Hbar} [previous]
+ * @param {boolean} [retryMissing]
+ * @returns {Promise<import("@hiero-ledger/sdk").Hbar>}
+ */
+async function hbarBalance(client, accountId, previous, retryMissing = false) {
+    return untilMirror(
+        async (remainingMs) => {
+            const { hbars } = await new MirrorNodeAccountBalanceQuery()
+                .setAccountId(accountId)
+                .execute(client, remainingMs);
+
+            // Without a previous value there is nothing to wait for.
+            if (previous == null) {
+                return hbars;
+            }
+
+            return hbars.toTinybars().equals(previous.toTinybars())
+                ? null
+                : hbars;
+        },
+        {
+            retryError: retryMissing
+                ? retryOnStatus(Status.InvalidAccountId)
+                : undefined,
+        },
+    );
+}

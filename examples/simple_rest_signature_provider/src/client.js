@@ -1,14 +1,15 @@
 import axios from "axios";
 import {
     AccountBalance,
-    AccountBalanceQuery,
     TransactionReceiptQuery,
     AccountId,
     AccountInfo,
     AccountInfoQuery,
     AccountRecordsQuery,
     Hbar,
+    Client,
     LedgerId,
+    MirrorNodeAccountBalanceQuery,
     PublicKey,
     Transaction,
     TransactionId,
@@ -56,6 +57,16 @@ export class SimpleRestProvider {
         this.ledgerId = ledgerId;
         this.network = network;
         this.mirrorNetwork = mirrorNetwork;
+
+        // Mirror queries are ordinary HTTP requests. Keep them on a local SDK
+        // client instead of serializing them through `/request`, whose server
+        // path is specifically for protobuf consensus-node executables.
+        this._mirrorClient = Client.forNetwork(network, {
+            scheduleNetworkUpdate: false,
+        }).setMirrorNetwork(mirrorNetwork);
+        if (ledgerId != null) {
+            this._mirrorClient.setLedgerId(ledgerId);
+        }
     }
 
     /**
@@ -80,11 +91,32 @@ export class SimpleRestProvider {
     }
 
     /**
+     * Read an account's HBAR balance directly from the mirror node.
+     *
+     * Token maps are empty because this endpoint is HBAR-only. Use
+     * `MirrorNodeTokenBalanceQuery` when a token balance is needed.
+     *
      * @param {AccountId | string} accountId
+     * @param {number} [requestTimeout]
      * @returns {Promise<AccountBalance>}
      */
-    getAccountBalance(accountId) {
-        return this.call(new AccountBalanceQuery().setAccountId(accountId));
+    async getAccountBalance(accountId, requestTimeout) {
+        const { hbars } = await new MirrorNodeAccountBalanceQuery()
+            .setAccountId(accountId)
+            .execute(this._mirrorClient, requestTimeout);
+
+        return new AccountBalance({
+            hbars,
+            tokens: null,
+            tokenDecimals: null,
+        });
+    }
+
+    /**
+     * @returns {void}
+     */
+    close() {
+        this._mirrorClient.close();
     }
 
     /**
@@ -150,9 +182,6 @@ export class SimpleRestProvider {
             const bytes = Buffer.from(inner, "hex");
 
             switch (request.constructor.name) {
-                case "AccountBalanceQuery":
-                    // @ts-ignore
-                    return AccountBalance.fromBytes(bytes);
                 case "AccountInfoQuery":
                     // @ts-ignore
                     return AccountInfo.fromBytes(bytes);
@@ -275,9 +304,13 @@ export class SimpleRestSigner {
      * @returns {Promise<AccountBalance>}
      */
     getAccountBalance() {
-        return this.call(
-            new AccountBalanceQuery().setAccountId(this.accountId),
-        );
+        if (this.provider == null) {
+            throw new Error(
+                "cannot get balance with a wallet that doesn't contain a provider",
+            );
+        }
+
+        return this.provider.getAccountBalance(this.accountId);
     }
 
     /**
@@ -403,23 +436,28 @@ export class SimpleRestSigner {
  */
 async function main() {
     const signer = await SimpleRestSigner.connect();
+    try {
+        // Free mirror-node query
+        const balance = await signer.getAccountBalance();
+        console.log(`balance: ${balance.hbars.toString()}`);
 
-    // Free query
-    const balance = await signer.getAccountBalance();
-    console.log(`balance: ${balance.hbars.toString()}`);
+        // Paid query
+        const info = await signer.getAccountInfo();
+        console.log(`key: ${info.key.toString()}`);
 
-    // Paid query
-    const info = await signer.getAccountInfo();
-    console.log(`key: ${info.key.toString()}`);
-
-    // Transaction
-    const transaction = await new TransferTransaction()
-        .addHbarTransfer("0.0.3", Hbar.fromTinybars(1))
-        .addHbarTransfer(signer.accountId, Hbar.fromTinybars(1).negated())
-        .freezeWithSigner(signer);
-    const response = await transaction.executeWithSigner(signer);
-    const hash = Buffer.from(response.transactionHash).toString("hex");
-    console.log(`hash: ${hash}`);
+        // Transaction
+        const transaction = await new TransferTransaction()
+            .addHbarTransfer("0.0.3", Hbar.fromTinybars(1))
+            .addHbarTransfer(signer.accountId, Hbar.fromTinybars(1).negated())
+            .freezeWithSigner(signer);
+        const response = await transaction.executeWithSigner(signer);
+        const hash = Buffer.from(response.transactionHash).toString("hex");
+        console.log(`hash: ${hash}`);
+    } finally {
+        if (signer.provider instanceof SimpleRestProvider) {
+            signer.provider.close();
+        }
+    }
 }
 
 void main();

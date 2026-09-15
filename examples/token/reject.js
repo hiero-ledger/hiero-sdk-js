@@ -1,4 +1,5 @@
 import {
+    MirrorNodeTokenBalanceQuery,
     AccountCreateTransaction,
     PrivateKey,
     TokenCreateTransaction,
@@ -10,10 +11,13 @@ import {
     TokenRejectTransaction,
     TokenRejectFlow,
     NftId,
-    AccountBalanceQuery,
     TokenSupplyType,
+    Status,
 } from "@hiero-ledger/sdk";
+import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 import dotenv from "dotenv";
+
+/** @typedef {{equals: (value: number) => boolean, toInt: () => number, toString: () => string}} TokenBalanceValue */
 
 dotenv.config();
 
@@ -147,32 +151,37 @@ async function main() {
     console.log("=======================");
     console.log("Before Token Reject");
     console.log("=======================");
-    const receiverFTBalanceBefore = (
-        await new AccountBalanceQuery()
-            .setAccountId(receiverAccountId)
-            .execute(client)
-    ).tokens.get(ftId);
-    const treasuryFTBalanceBefore = (
-        await new AccountBalanceQuery()
-            .setAccountId(treasuryAccountId)
-            .execute(client)
-    ).tokens.get(ftId);
-    const receiverNFTBalanceBefore = (
-        await new AccountBalanceQuery()
-            .setAccountId(receiverAccountId)
-            .execute(client)
-    ).tokens.get(nftId);
-    const treasuryNFTBalanceBefore = (
-        await new AccountBalanceQuery()
-            .setAccountId(treasuryAccountId)
-            .execute(client)
-    ).tokens.get(nftId);
+    const receiverFTBalanceBefore = await tokenBalance(
+        client,
+        receiverAccountId,
+        ftId,
+        1,
+        true,
+    );
+    const treasuryFTBalanceBefore = await tokenBalance(
+        client,
+        treasuryAccountId,
+        ftId,
+        99999999,
+        true,
+    );
+    const receiverNFTBalanceBefore = await tokenBalance(
+        client,
+        receiverAccountId,
+        nftId,
+        CID.length,
+        true,
+    );
+    const treasuryNFTBalanceBefore = await tokenBalance(
+        client,
+        treasuryAccountId,
+        nftId,
+        0,
+        true,
+    );
     console.log("Receiver FT balance: ", receiverFTBalanceBefore.toInt());
     console.log("Treasury FT balance: ", treasuryFTBalanceBefore.toInt());
-    console.log(
-        "Receiver NFT balance: ",
-        receiverNFTBalanceBefore ? receiverNFTBalanceBefore.toInt() : 0,
-    );
+    console.log("Receiver NFT balance: ", receiverNFTBalanceBefore.toInt());
     console.log("Treasury NFT balance: ", treasuryNFTBalanceBefore.toInt());
 
     // reject fungible tokens back to treasury
@@ -203,41 +212,88 @@ async function main() {
     console.log("After Token Reject Transaction and flow");
     console.log("=======================");
 
-    const receiverFTBalanceAfter = (
-        await new AccountBalanceQuery()
-            .setAccountId(receiverAccountId)
-            .execute(client)
-    ).tokens.get(ftId);
+    const receiverFTBalanceAfter = await tokenBalance(
+        client,
+        receiverAccountId,
+        ftId,
+        0,
+    );
 
-    const treasuryFTBalanceAfter = (
-        await new AccountBalanceQuery()
-            .setAccountId(treasuryAccountId)
-            .execute(client)
-    ).tokens.get(ftId);
+    const treasuryFTBalanceAfter = await tokenBalance(
+        client,
+        treasuryAccountId,
+        ftId,
+        100000000,
+    );
 
-    const receiverNFTBalanceAfter = (
-        await new AccountBalanceQuery()
-            .setAccountId(receiverAccountId)
-            .execute(client)
-    ).tokens.get(nftId);
+    const receiverNFTBalanceAfter = await tokenBalance(
+        client,
+        receiverAccountId,
+        nftId,
+        0,
+    );
 
-    const treasuryNFTBalanceAfter = (
-        await new AccountBalanceQuery()
-            .setAccountId(treasuryAccountId)
-            .execute(client)
-    ).tokens.get(nftId);
+    const treasuryNFTBalanceAfter = await tokenBalance(
+        client,
+        treasuryAccountId,
+        nftId,
+        CID.length,
+    );
 
     console.log("TokenReject response:", tokenRejectStatus);
     console.log("TokenRejectFlow response:", tokenRejectFlowStatus);
     console.log("Receiver FT balance: ", receiverFTBalanceAfter.toInt());
     console.log("Treasury FT balance: ", treasuryFTBalanceAfter.toInt());
-    console.log(
-        "Receiver NFT balance: ",
-        receiverNFTBalanceAfter ? receiverNFTBalanceAfter.toInt() : 0,
-    );
+    console.log("Receiver NFT balance: ", receiverNFTBalanceAfter.toInt());
     console.log("Treasury NFT balance: ", treasuryNFTBalanceAfter.toInt());
 
     client.close();
+}
+
+/**
+ * Read a token balance from the mirror node.
+ *
+ * `AccountBalanceQuery` used to return token balances, and
+ * `AccountInfoQuery.tokenRelationships` is deprecated as of HIP-367, so
+ * `MirrorNodeTokenBalanceQuery` is the supported way to read one.
+ *
+ * The mirror node ingests consensus state asynchronously, so a read straight
+ * after a transaction can still return the previous value. Pass `expected` to
+ * poll until the intended state is visible; the loop is bounded so an example
+ * cannot hang or silently accept an intermediate value.
+ *
+ * @param {Client} client
+ * @param {AccountId | string} accountId
+ * @param {import("@hiero-ledger/sdk").TokenId | string} tokenId
+ * @param {number} expected
+ * @param {boolean} [retryMissing]
+ * @returns {Promise<TokenBalanceValue>}
+ */
+async function tokenBalance(
+    client,
+    accountId,
+    tokenId,
+    expected,
+    retryMissing = false,
+) {
+    return untilMirror(
+        async (remainingMs) => {
+            const result = await new MirrorNodeTokenBalanceQuery()
+                .setAccountId(accountId)
+                .setTokenId(tokenId)
+                .execute(client, remainingMs);
+            // The generated SDK declaration currently exposes Long as `any`.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const balance = /** @type {TokenBalanceValue} */ (result.balance);
+
+            return balance.equals(expected) ? balance : null;
+        },
+        {
+            retryError: retryMissing
+                ? retryOnStatus(Status.InvalidAccountId)
+                : undefined,
+        },
+    );
 }
 
 void main();
