@@ -276,7 +276,7 @@ jobs:
 
   examples:
     name: Run examples using Node ${{ matrix.node }}
-    runs-on: hiero-client-sdk-linux-medium
+    runs-on: hiero-client-sdk-linux-large
     strategy:
       matrix:
         node: [ "22" ]
@@ -315,8 +315,8 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@531a2b283ca4912df537d64bf89da0f6be4c2574 # 0.22.0
         with:
           installMirrorNode: true
+          nodeVersion: ${{ matrix.node }}
           soloVersion: v0.69.1
-          installBlockNode: true
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
           haproxyPort: 50211
@@ -338,3 +338,46 @@ jobs:
 
       - name: Run all examples
         run: task run:examples
+        timeout-minutes: 60
+        env:
+          EXAMPLES_CONCURRENCY: 1
+
+      - name: Collect Solo diagnostics
+        if: ${{ failure() }}
+        continue-on-error: true
+        timeout-minutes: 30
+        run: |
+          mkdir -p solo-diagnostics/pod-logs
+
+          kubectl --request-timeout=30s get pods -n solo \
+            -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}' \
+            > solo-diagnostics/pod-names.txt \
+            2> solo-diagnostics/pod-names-error.txt || true
+
+          while IFS= read -r pod; do
+            [ -z "$pod" ] && continue
+            timeout 45s kubectl --request-timeout=30s logs -n solo "$pod" \
+              --all-containers --timestamps --prefix \
+              > "solo-diagnostics/pod-logs/${pod}.log" 2>&1 || true
+            timeout 45s kubectl --request-timeout=30s logs -n solo "$pod" \
+              --all-containers --timestamps --prefix --previous \
+              > "solo-diagnostics/pod-logs/${pod}.previous.log" 2>&1 || true
+          done < solo-diagnostics/pod-names.txt
+
+          kubectl --request-timeout=30s get pods -A -o wide \
+            > solo-diagnostics/pods.txt 2>&1 || true
+          kubectl --request-timeout=30s get events -A \
+            --sort-by='.metadata.creationTimestamp' \
+            > solo-diagnostics/events.txt 2>&1 || true
+          kubectl --request-timeout=30s top pods -A \
+            > solo-diagnostics/pod-resources.txt 2>&1 || true
+          timeout 45s kubectl --request-timeout=30s describe pods -n solo \
+            > solo-diagnostics/solo-pods.txt 2>&1 || true
+
+      - name: Upload Solo diagnostics
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: solo-examples-diagnostics-node-${{ matrix.node }}-${{ github.run_id }}-${{ github.run_attempt }}
+          if-no-files-found: warn
+          path: solo-diagnostics
