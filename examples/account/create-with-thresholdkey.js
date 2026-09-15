@@ -147,6 +147,7 @@ async function main() {
         console.log("Account deleted successfully");
     } catch (error) {
         console.error("Error occurred during account creation");
+        throw error;
     } finally {
         client.close();
         console.log("Create Account With Threshold Key Example Complete!");

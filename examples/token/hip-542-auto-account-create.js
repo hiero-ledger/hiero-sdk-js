@@ -18,6 +18,8 @@ import {
 import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 import dotenv from "dotenv";
 
+/** @typedef {{equals: (value: number) => boolean, toInt: () => number, toString: () => string}} TokenBalanceValue */
+
 dotenv.config();
 
 /*
@@ -287,10 +289,15 @@ async function main() {
     try {
         const balance = await untilMirror(
             async (remainingMs) => {
-                const { balance } = await new MirrorNodeTokenBalanceQuery()
+                const result = await new MirrorNodeTokenBalanceQuery()
                     .setAccountId(accountId2)
                     .setTokenId(tokenId)
                     .execute(client, remainingMs);
+                // The generated SDK declaration currently exposes Long as `any`.
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                const balance = /** @type {TokenBalanceValue} */ (
+                    result.balance
+                );
 
                 return balance.toInt() === 10 ? balance : null;
             },
@@ -308,6 +315,8 @@ async function main() {
               );
     } catch (e) {
         console.log(e);
+        client.close();
+        throw e;
     }
 
     /**

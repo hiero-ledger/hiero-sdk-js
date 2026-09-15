@@ -64,16 +64,28 @@ async function main() {
     console.log(`Transferred ${transferAmount.toString()}`);
     console.log(`Transfer memo: ${record.transactionMemo}`);
 
-    const senderBalanceAfter = await hbarBalance(
-        client,
-        operatorId,
-        senderBalanceBefore,
+    // The recipient's exact credit identifies this transaction in the mirror;
+    // checking only that a shared account changed can match an unrelated fee.
+    const expectedRecipientBalance = Hbar.fromTinybars(
+        recipientBalanceBefore.toTinybars().add(transferAmount.toTinybars()),
     );
     const recipientBalanceAfter = await hbarBalance(
         client,
         recipientId,
-        recipientBalanceBefore,
+        expectedRecipientBalance,
     );
+    const senderBalanceAfter = await hbarBalance(client, operatorId);
+    if (
+        !senderBalanceAfter
+            .toTinybars()
+            .lessThan(
+                senderBalanceBefore
+                    .toTinybars()
+                    .subtract(transferAmount.toTinybars()),
+            )
+    ) {
+        throw new Error("sender balance did not include the transfer and fee");
+    }
 
     console.log(
         `Sender (${operatorId.toString()}) balance after transfer: ${senderBalanceAfter.toString()}`,
@@ -97,30 +109,29 @@ void main()
  * Read an HBAR balance from the mirror node.
  *
  * The mirror node ingests consensus state asynchronously, so a read straight
- * after a transaction can still return the previous value. Pass `previous` to
- * poll until the value moves; the loop is bounded so an example cannot hang.
+ * after a transaction can still return the previous value. Pass `expected` to
+ * poll until the exact value is visible.
  *
  * @param {import("@hiero-ledger/sdk").Client} client
  * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
- * @param {import("@hiero-ledger/sdk").Hbar} [previous]
+ * @param {import("@hiero-ledger/sdk").Hbar} [expected]
  * @param {boolean} [retryMissing]
  * @returns {Promise<import("@hiero-ledger/sdk").Hbar>}
  */
-async function hbarBalance(client, accountId, previous, retryMissing = false) {
+async function hbarBalance(client, accountId, expected, retryMissing = false) {
     return untilMirror(
         async (remainingMs) => {
             const { hbars } = await new MirrorNodeAccountBalanceQuery()
                 .setAccountId(accountId)
                 .execute(client, remainingMs);
 
-            // Without a previous value there is nothing to wait for.
-            if (previous == null) {
+            if (expected == null) {
                 return hbars;
             }
 
-            return hbars.toTinybars().equals(previous.toTinybars())
-                ? null
-                : hbars;
+            return hbars.toTinybars().equals(expected.toTinybars())
+                ? hbars
+                : null;
         },
         {
             retryError: retryMissing

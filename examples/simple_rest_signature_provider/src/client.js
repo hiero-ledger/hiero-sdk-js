@@ -97,12 +97,13 @@ export class SimpleRestProvider {
      * `MirrorNodeTokenBalanceQuery` when a token balance is needed.
      *
      * @param {AccountId | string} accountId
+     * @param {number} [requestTimeout]
      * @returns {Promise<AccountBalance>}
      */
-    async getAccountBalance(accountId) {
+    async getAccountBalance(accountId, requestTimeout) {
         const { hbars } = await new MirrorNodeAccountBalanceQuery()
             .setAccountId(accountId)
-            .execute(this._mirrorClient);
+            .execute(this._mirrorClient, requestTimeout);
 
         return new AccountBalance({
             hbars,

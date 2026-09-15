@@ -17,6 +17,9 @@ import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 import dotenv from "dotenv";
 dotenv.config();
 
+/** @type {Client | undefined} */
+let activeClient;
+
 /**
  *
  */
@@ -37,8 +40,8 @@ async function main() {
     const operatorId = process.env.OPERATOR_ID;
     const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
     const client = Client.forName(process.env.HEDERA_NETWORK || "testnet");
+    activeClient = client;
     client.setOperator(operatorId, operatorKey);
-
     // Step 1: Create key pairs
     const privateKey1 = PrivateKey.generateECDSA();
     const privateKey2 = PrivateKey.generateECDSA();
@@ -205,9 +208,15 @@ async function main() {
 
     console.log("Long Term Scheduled Transaction Example Complete!");
     client.close();
+    activeClient = undefined;
 }
 
-main().catch(console.error);
+void main().catch((error) => {
+    activeClient?.close();
+    activeClient = undefined;
+    console.error(error);
+    process.exitCode = 1;
+});
 
 /**
  * Read an HBAR balance from the mirror node.
