@@ -19,6 +19,7 @@ const excludedDirectories = [
 ];
 const excludedJSFile = [
     "run-all-examples.js",
+    "wait-for-mirror.js",
     "consensus-pub-sub.js",
     "consensus-pub-sub-chunked.js",
     "consensus-pub-sub-with-submit-key.js",
@@ -123,7 +124,9 @@ async function runInParallel(examples, maxConcurrency) {
             const file = examples[index];
             const examplePath = path.join(examplesDirectory, file);
             console.log(
-                `\n⏳ ${String(index + 1)}/${String(total)}. Running ${file}...`,
+                `\n⏳ ${String(index + 1)}/${String(
+                    total,
+                )}. Running ${file}...`,
             );
             const {
                 file: f,
@@ -134,7 +137,9 @@ async function runInParallel(examples, maxConcurrency) {
             if (timedOut) {
                 failed += 1;
                 console.log(
-                    `❌ ${f} timed out after ${String(exampleTimeoutMs)} ms and was killed.`,
+                    `❌ ${f} timed out after ${String(
+                        exampleTimeoutMs,
+                    )} ms and was killed.`,
                 );
                 printOutput(f, output);
             } else if (code === 0) {

@@ -12,7 +12,9 @@ import {
     TokenRejectFlow,
     NftId,
     TokenSupplyType,
+    Status,
 } from "@hiero-ledger/sdk";
+import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -151,21 +153,29 @@ async function main() {
         client,
         receiverAccountId,
         ftId,
+        1,
+        true,
     );
     const treasuryFTBalanceBefore = await tokenBalance(
         client,
         treasuryAccountId,
         ftId,
+        99999999,
+        true,
     );
     const receiverNFTBalanceBefore = await tokenBalance(
         client,
         receiverAccountId,
         nftId,
+        CID.length,
+        true,
     );
     const treasuryNFTBalanceBefore = await tokenBalance(
         client,
         treasuryAccountId,
         nftId,
+        0,
+        true,
     );
     console.log("Receiver FT balance: ", receiverFTBalanceBefore.toInt());
     console.log("Treasury FT balance: ", treasuryFTBalanceBefore.toInt());
@@ -204,28 +214,28 @@ async function main() {
         client,
         receiverAccountId,
         ftId,
-        receiverFTBalanceBefore,
+        0,
     );
 
     const treasuryFTBalanceAfter = await tokenBalance(
         client,
         treasuryAccountId,
         ftId,
-        treasuryFTBalanceBefore,
+        100000000,
     );
 
     const receiverNFTBalanceAfter = await tokenBalance(
         client,
         receiverAccountId,
         nftId,
-        receiverNFTBalanceBefore,
+        0,
     );
 
     const treasuryNFTBalanceAfter = await tokenBalance(
         client,
         treasuryAccountId,
         nftId,
-        treasuryNFTBalanceBefore,
+        CID.length,
     );
 
     console.log("TokenReject response:", tokenRejectStatus);
@@ -246,56 +256,39 @@ async function main() {
  * `MirrorNodeTokenBalanceQuery` is the supported way to read one.
  *
  * The mirror node ingests consensus state asynchronously, so a read straight
- * after a transaction can still return the previous value. Pass `previous` to
- * poll until the value moves; the loop is bounded so an example cannot hang.
+ * after a transaction can still return the previous value. Pass `expected` to
+ * poll until the intended state is visible; the loop is bounded so an example
+ * cannot hang or silently accept an intermediate value.
  *
  * @param {Client} client
  * @param {AccountId | string} accountId
  * @param {import("@hiero-ledger/sdk").TokenId | string} tokenId
- * @param {import("long")} [previous]
+ * @param {number} expected
+ * @param {boolean} [retryMissing]
  * @returns {Promise<import("long")>}
  */
-async function tokenBalance(client, accountId, tokenId, previous) {
-    return untilMirror(async () => {
-        const { balance } = await new MirrorNodeTokenBalanceQuery()
-            .setAccountId(accountId)
-            .setTokenId(tokenId)
-            .execute(client);
+async function tokenBalance(
+    client,
+    accountId,
+    tokenId,
+    expected,
+    retryMissing = false,
+) {
+    return untilMirror(
+        async (remainingMs) => {
+            const { balance } = await new MirrorNodeTokenBalanceQuery()
+                .setAccountId(accountId)
+                .setTokenId(tokenId)
+                .execute(client, remainingMs);
 
-        // Without a previous value there is nothing to wait for.
-        if (previous == null) {
-            return balance;
-        }
-
-        return balance.equals(previous) ? null : balance;
-    });
+            return balance.equals(expected) ? balance : null;
+        },
+        {
+            retryError: retryMissing
+                ? retryOnStatus(Status.InvalidAccountId)
+                : undefined,
+        },
+    );
 }
 
 void main();
-
-/**
- * Poll a mirror-node read until it reflects the transaction that just happened.
- *
- * The mirror node ingests consensus state asynchronously, so a read straight
- * after a transaction can still return the previous value. Polling to a deadline
- * beats a fixed sleep: it does not go flaky on a slow runner and does not waste
- * time on a fast one.
- *
- * @template T
- * @param {() => Promise<T | null>} read - resolves the value once it is ready
- * @param {number} [timeoutMs]
- * @returns {Promise<T>}
- */
-async function untilMirror(read, timeoutMs = 60000) {
-    const deadline = Date.now() + timeoutMs;
-    for (;;) {
-        const result = await read();
-        if (result != null) {
-            return result;
-        }
-        if (Date.now() >= deadline) {
-            throw new Error("mirror node did not ingest in time");
-        }
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-    }
-}

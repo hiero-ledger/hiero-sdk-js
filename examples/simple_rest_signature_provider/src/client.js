@@ -1,12 +1,15 @@
 import axios from "axios";
 import {
+    AccountBalance,
     TransactionReceiptQuery,
     AccountId,
     AccountInfo,
     AccountInfoQuery,
     AccountRecordsQuery,
     Hbar,
+    Client,
     LedgerId,
+    MirrorNodeAccountBalanceQuery,
     PublicKey,
     Transaction,
     TransactionId,
@@ -54,6 +57,16 @@ export class SimpleRestProvider {
         this.ledgerId = ledgerId;
         this.network = network;
         this.mirrorNetwork = mirrorNetwork;
+
+        // Mirror queries are ordinary HTTP requests. Keep them on a local SDK
+        // client instead of serializing them through `/request`, whose server
+        // path is specifically for protobuf consensus-node executables.
+        this._mirrorClient = Client.forNetwork(network, {
+            scheduleNetworkUpdate: false,
+        }).setMirrorNetwork(mirrorNetwork);
+        if (ledgerId != null) {
+            this._mirrorClient.setLedgerId(ledgerId);
+        }
     }
 
     /**
@@ -78,22 +91,31 @@ export class SimpleRestProvider {
     }
 
     /**
-     * @deprecated - The consensus node no longer serves account balances. Read
-     * them from the mirror node instead: `MirrorNodeAccountBalanceQuery` for
-     * HBAR, or the mirror node REST API for token balances.
+     * Read an account's HBAR balance directly from the mirror node.
+     *
+     * Token maps are empty because this endpoint is HBAR-only. Use
+     * `MirrorNodeTokenBalanceQuery` when a token balance is needed.
      *
      * @param {AccountId | string} accountId
-     * @returns {Promise<import("@hiero-ledger/sdk").AccountBalance>}
+     * @returns {Promise<AccountBalance>}
      */
-    // eslint-disable-next-line no-unused-vars
-    getAccountBalance(accountId) {
-        return Promise.reject(
-            new Error(
-                "Deprecated: AccountBalanceQuery is no longer supported. " +
-                    "Use MirrorNodeAccountBalanceQuery or the mirror node REST API " +
-                    "(GET /api/v1/accounts/{id}) to retrieve account balances.",
-            ),
-        );
+    async getAccountBalance(accountId) {
+        const { hbars } = await new MirrorNodeAccountBalanceQuery()
+            .setAccountId(accountId)
+            .execute(this._mirrorClient);
+
+        return new AccountBalance({
+            hbars,
+            tokens: null,
+            tokenDecimals: null,
+        });
+    }
+
+    /**
+     * @returns {void}
+     */
+    close() {
+        this._mirrorClient.close();
     }
 
     /**
@@ -278,20 +300,16 @@ export class SimpleRestSigner {
     }
 
     /**
-     * @deprecated - The consensus node no longer serves account balances. Read
-     * them from the mirror node instead: `MirrorNodeAccountBalanceQuery` for
-     * HBAR, or the mirror node REST API for token balances.
-     *
-     * @returns {Promise<import("@hiero-ledger/sdk").AccountBalance>}
+     * @returns {Promise<AccountBalance>}
      */
     getAccountBalance() {
-        return Promise.reject(
-            new Error(
-                "Deprecated: AccountBalanceQuery is no longer supported. " +
-                    "Use MirrorNodeAccountBalanceQuery or the mirror node REST API " +
-                    "(GET /api/v1/accounts/{id}) to retrieve account balances.",
-            ),
-        );
+        if (this.provider == null) {
+            throw new Error(
+                "cannot get balance with a wallet that doesn't contain a provider",
+            );
+        }
+
+        return this.provider.getAccountBalance(this.accountId);
     }
 
     /**
@@ -417,19 +435,28 @@ export class SimpleRestSigner {
  */
 async function main() {
     const signer = await SimpleRestSigner.connect();
+    try {
+        // Free mirror-node query
+        const balance = await signer.getAccountBalance();
+        console.log(`balance: ${balance.hbars.toString()}`);
 
-    // Paid query
-    const info = await signer.getAccountInfo();
-    console.log(`key: ${info.key.toString()}`);
+        // Paid query
+        const info = await signer.getAccountInfo();
+        console.log(`key: ${info.key.toString()}`);
 
-    // Transaction
-    const transaction = await new TransferTransaction()
-        .addHbarTransfer("0.0.3", Hbar.fromTinybars(1))
-        .addHbarTransfer(signer.accountId, Hbar.fromTinybars(1).negated())
-        .freezeWithSigner(signer);
-    const response = await transaction.executeWithSigner(signer);
-    const hash = Buffer.from(response.transactionHash).toString("hex");
-    console.log(`hash: ${hash}`);
+        // Transaction
+        const transaction = await new TransferTransaction()
+            .addHbarTransfer("0.0.3", Hbar.fromTinybars(1))
+            .addHbarTransfer(signer.accountId, Hbar.fromTinybars(1).negated())
+            .freezeWithSigner(signer);
+        const response = await transaction.executeWithSigner(signer);
+        const hash = Buffer.from(response.transactionHash).toString("hex");
+        console.log(`hash: ${hash}`);
+    } finally {
+        if (signer.provider instanceof SimpleRestProvider) {
+            signer.provider.close();
+        }
+    }
 }
 
 void main();

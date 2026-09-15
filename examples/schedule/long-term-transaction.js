@@ -10,7 +10,9 @@ import {
     ScheduleInfoQuery,
     AccountUpdateTransaction,
     Timestamp,
+    Status,
 } from "@hiero-ledger/sdk";
+import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -100,7 +102,7 @@ async function main() {
     );
 
     // Step 5: Sign the transaction with the other key
-    let accountBalance = await hbarBalance(client, aliceId);
+    let accountBalance = await hbarBalance(client, aliceId, undefined, true);
     console.log(
         "Alice's account balance before schedule transfer: ",
         accountBalance.toString(),
@@ -116,7 +118,7 @@ async function main() {
         ).execute(client)
     ).getReceipt(client);
 
-    accountBalance = await hbarBalance(client, aliceId);
+    accountBalance = await hbarBalance(client, aliceId, accountBalance);
     console.log(
         "Alice's account balance after schedule transfer: ",
         accountBalance.toString(),
@@ -185,7 +187,8 @@ async function main() {
     // Step 9: Verify that the transfer successfully executes
     // A plain read: the account update above does not move Alice's balance, so
     // there is no change to wait for here.
-    accountBalance = await hbarBalance(client, aliceId);
+    const balanceBeforeExpiry = await hbarBalance(client, aliceId);
+    accountBalance = balanceBeforeExpiry;
     console.log(
         "Alice's account balance before schedule transfer: ",
         accountBalance.toString(),
@@ -194,7 +197,7 @@ async function main() {
     // Wait for the scheduled transaction to execute
     await new Promise((resolve) => setTimeout(resolve, 10000)); // Wait for 10 seconds
 
-    accountBalance = await hbarBalance(client, aliceId);
+    accountBalance = await hbarBalance(client, aliceId, balanceBeforeExpiry);
     console.log(
         "Alice's account balance after schedule transfer: ",
         accountBalance.toString(),
@@ -216,46 +219,29 @@ main().catch(console.error);
  * @param {import("@hiero-ledger/sdk").Client} client
  * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
  * @param {import("@hiero-ledger/sdk").Hbar} [previous]
+ * @param {boolean} [retryMissing]
  * @returns {Promise<import("@hiero-ledger/sdk").Hbar>}
  */
-async function hbarBalance(client, accountId, previous) {
-    return untilMirror(async () => {
-        const { hbars } = await new MirrorNodeAccountBalanceQuery()
-            .setAccountId(accountId)
-            .execute(client);
+async function hbarBalance(client, accountId, previous, retryMissing = false) {
+    return untilMirror(
+        async (remainingMs) => {
+            const { hbars } = await new MirrorNodeAccountBalanceQuery()
+                .setAccountId(accountId)
+                .execute(client, remainingMs);
 
-        // Without a previous value there is nothing to wait for.
-        if (previous == null) {
-            return hbars;
-        }
+            // Without a previous value there is nothing to wait for.
+            if (previous == null) {
+                return hbars;
+            }
 
-        return hbars.toTinybars().equals(previous.toTinybars()) ? null : hbars;
-    });
-}
-
-/**
- * Poll a mirror-node read until it reflects the transaction that just happened.
- *
- * The mirror node ingests consensus state asynchronously, so a read straight
- * after a transaction can still return the previous value. Polling to a deadline
- * beats a fixed sleep: it does not go flaky on a slow runner and does not waste
- * time on a fast one.
- *
- * @template T
- * @param {() => Promise<T | null>} read - resolves the value once it is ready
- * @param {number} [timeoutMs]
- * @returns {Promise<T>}
- */
-async function untilMirror(read, timeoutMs = 60000) {
-    const deadline = Date.now() + timeoutMs;
-    for (;;) {
-        const result = await read();
-        if (result != null) {
-            return result;
-        }
-        if (Date.now() >= deadline) {
-            throw new Error("mirror node did not ingest in time");
-        }
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-    }
+            return hbars.toTinybars().equals(previous.toTinybars())
+                ? null
+                : hbars;
+        },
+        {
+            retryError: retryMissing
+                ? retryOnStatus(Status.InvalidAccountId)
+                : undefined,
+        },
+    );
 }

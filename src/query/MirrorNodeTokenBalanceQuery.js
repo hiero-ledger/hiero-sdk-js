@@ -58,8 +58,9 @@ import {
  * read-after-write consistent — a balance read immediately after a transfer may
  * still show the pre-transfer value.
  *
- * NOTE ON PRECISION: the balance is parsed from a JSON number, so values above
- * `Number.MAX_SAFE_INTEGER` (2^53 - 1) silently lose precision.
+ * NOTE ON PRECISION: mirror REST returns the balance as a JSON number. Values
+ * outside JavaScript's safe-integer range are rejected instead of silently
+ * losing precision.
  */
 export default class MirrorNodeTokenBalanceQuery {
     /**
@@ -155,10 +156,38 @@ export default class MirrorNodeTokenBalanceQuery {
             )
         );
 
+        if (!Array.isArray(response?.tokens)) {
+            throw new Error(
+                `Failed to query token ${tokenId.toString()} for account ${accountIdString}: response has no tokens array`,
+            );
+        }
+
+        if (response.tokens.length > 1) {
+            throw new Error(
+                `Failed to query token ${tokenId.toString()} for account ${accountIdString}: response contains multiple tokens`,
+            );
+        }
+
         // The endpoint returns an empty array (not a 404) when the account
         // holds no relationship with the token; the balance is zero then, and
         // the decimals are unknown from this response alone.
-        const held = response.tokens?.[0];
+        const held = response.tokens[0];
+
+        if (
+            response.tokens.length === 1 &&
+            (held == null ||
+                held.token_id !== tokenId.toString() ||
+                typeof held.balance !== "number" ||
+                !Number.isSafeInteger(held.balance) ||
+                held.balance < 0 ||
+                typeof held.decimals !== "number" ||
+                !Number.isSafeInteger(held.decimals) ||
+                held.decimals < 0)
+        ) {
+            throw new Error(
+                `Failed to query token ${tokenId.toString()} for account ${accountIdString}: response contains an invalid token balance`,
+            );
+        }
 
         return new MirrorNodeTokenBalance({
             tokenId,

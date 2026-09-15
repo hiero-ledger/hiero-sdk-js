@@ -5,7 +5,9 @@ import {
     PrivateKey,
     Hbar,
     TransferTransaction,
+    Status,
 } from "@hiero-ledger/sdk";
+import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 
 import dotenv from "dotenv";
 
@@ -101,46 +103,29 @@ void main()
  * @param {import("@hiero-ledger/sdk").Client} client
  * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
  * @param {import("@hiero-ledger/sdk").Hbar} [previous]
+ * @param {boolean} [retryMissing]
  * @returns {Promise<import("@hiero-ledger/sdk").Hbar>}
  */
-async function hbarBalance(client, accountId, previous) {
-    return untilMirror(async () => {
-        const { hbars } = await new MirrorNodeAccountBalanceQuery()
-            .setAccountId(accountId)
-            .execute(client);
+async function hbarBalance(client, accountId, previous, retryMissing = false) {
+    return untilMirror(
+        async (remainingMs) => {
+            const { hbars } = await new MirrorNodeAccountBalanceQuery()
+                .setAccountId(accountId)
+                .execute(client, remainingMs);
 
-        // Without a previous value there is nothing to wait for.
-        if (previous == null) {
-            return hbars;
-        }
+            // Without a previous value there is nothing to wait for.
+            if (previous == null) {
+                return hbars;
+            }
 
-        return hbars.toTinybars().equals(previous.toTinybars()) ? null : hbars;
-    });
-}
-
-/**
- * Poll a mirror-node read until it reflects the transaction that just happened.
- *
- * The mirror node ingests consensus state asynchronously, so a read straight
- * after a transaction can still return the previous value. Polling to a deadline
- * beats a fixed sleep: it does not go flaky on a slow runner and does not waste
- * time on a fast one.
- *
- * @template T
- * @param {() => Promise<T | null>} read - resolves the value once it is ready
- * @param {number} [timeoutMs]
- * @returns {Promise<T>}
- */
-async function untilMirror(read, timeoutMs = 60000) {
-    const deadline = Date.now() + timeoutMs;
-    for (;;) {
-        const result = await read();
-        if (result != null) {
-            return result;
-        }
-        if (Date.now() >= deadline) {
-            throw new Error("mirror node did not ingest in time");
-        }
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-    }
+            return hbars.toTinybars().equals(previous.toTinybars())
+                ? null
+                : hbars;
+        },
+        {
+            retryError: retryMissing
+                ? retryOnStatus(Status.InvalidAccountId)
+                : undefined,
+        },
+    );
 }

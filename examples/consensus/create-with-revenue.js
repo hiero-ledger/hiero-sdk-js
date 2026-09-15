@@ -14,7 +14,9 @@ import {
     CustomFixedFee,
     CustomFeeLimit,
     HbarUnit,
+    Status,
 } from "@hiero-ledger/sdk";
+import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 
 import dotenv from "dotenv";
 
@@ -89,7 +91,12 @@ async function main() {
 
         // Only the HBAR balance is compared in this step, so it is read from
         // the free mirror node rather than with a paid `AccountInfoQuery`.
-        let aliceBalanceBefore = await hbarBalance(client, aliceAccountId);
+        let aliceBalanceBefore = await hbarBalance(
+            client,
+            aliceAccountId,
+            undefined,
+            true,
+        );
 
         let feeCollectorBalanceBefore = await hbarBalance(client, operatorId);
 
@@ -195,11 +202,18 @@ async function main() {
         // compared. HBAR comes from `MirrorNodeAccountBalanceQuery` and the
         // token balance from `MirrorNodeTokenBalanceQuery` — the mirror node
         // balance endpoint is HBAR-only.
-        const aliceHbarBefore = await hbarBalance(client, aliceAccountId);
+        const aliceHbarBefore = await hbarBalance(
+            client,
+            aliceAccountId,
+            undefined,
+            true,
+        );
         const aliceTokenBefore = await tokenBalance(
             client,
             aliceAccountId,
             tokenId,
+            1,
+            true,
         );
 
         const feeCollectorHbarBefore = await hbarBalance(client, operatorId);
@@ -207,6 +221,7 @@ async function main() {
             client,
             operatorId,
             tokenId,
+            99,
         );
 
         console.log("Submitting a message as alice to the topic");
@@ -232,7 +247,7 @@ async function main() {
             client,
             aliceAccountId,
             tokenId,
-            aliceTokenBefore,
+            0,
         );
         const aliceHbarAfter = await hbarBalance(
             client,
@@ -244,7 +259,7 @@ async function main() {
             client,
             operatorId,
             tokenId,
-            feeCollectorTokenBefore,
+            100,
         );
         const feeCollectorHbarAfter = await hbarBalance(
             client,
@@ -309,7 +324,12 @@ async function main() {
          */
 
         // HBAR only again, so the mirror node serves this one too.
-        const bobBalanceBefore = await hbarBalance(client, bobAccountId);
+        const bobBalanceBefore = await hbarBalance(
+            client,
+            bobAccountId,
+            undefined,
+            true,
+        );
 
         client.setOperator(bobAccountId, bobKey);
 
@@ -351,29 +371,38 @@ async function main() {
  *
  * `AccountInfoQuery.tokenRelationships` is deprecated as of HIP-367, so
  * `MirrorNodeTokenBalanceQuery` is the supported way to read one. Pass
- * `previous` to poll until the value moves; the loop is bounded so an example
- * cannot hang.
+ * `expected` to poll until the intended state is visible; the loop is bounded
+ * so an example cannot hang or accept an intermediate value.
  *
  * @param {import("@hiero-ledger/sdk").Client} client
  * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
  * @param {import("@hiero-ledger/sdk").TokenId | string} tokenId
- * @param {import("long")} [previous]
+ * @param {number} expected
+ * @param {boolean} [retryMissing]
  * @returns {Promise<import("long")>}
  */
-async function tokenBalance(client, accountId, tokenId, previous) {
-    return untilMirror(async () => {
-        const { balance } = await new MirrorNodeTokenBalanceQuery()
-            .setAccountId(accountId)
-            .setTokenId(tokenId)
-            .execute(client);
+async function tokenBalance(
+    client,
+    accountId,
+    tokenId,
+    expected,
+    retryMissing = false,
+) {
+    return untilMirror(
+        async (remainingMs) => {
+            const { balance } = await new MirrorNodeTokenBalanceQuery()
+                .setAccountId(accountId)
+                .setTokenId(tokenId)
+                .execute(client, remainingMs);
 
-        // Without a previous value there is nothing to wait for.
-        if (previous == null) {
-            return balance;
-        }
-
-        return balance.equals(previous) ? null : balance;
-    });
+            return balance.equals(expected) ? balance : null;
+        },
+        {
+            retryError: retryMissing
+                ? retryOnStatus(Status.InvalidAccountId)
+                : undefined,
+        },
+    );
 }
 
 /**
@@ -386,48 +415,31 @@ async function tokenBalance(client, accountId, tokenId, previous) {
  * @param {import("@hiero-ledger/sdk").Client} client
  * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
  * @param {import("@hiero-ledger/sdk").Hbar} [previous]
+ * @param {boolean} [retryMissing]
  * @returns {Promise<import("@hiero-ledger/sdk").Hbar>}
  */
-async function hbarBalance(client, accountId, previous) {
-    return untilMirror(async () => {
-        const { hbars } = await new MirrorNodeAccountBalanceQuery()
-            .setAccountId(accountId)
-            .execute(client);
+async function hbarBalance(client, accountId, previous, retryMissing = false) {
+    return untilMirror(
+        async (remainingMs) => {
+            const { hbars } = await new MirrorNodeAccountBalanceQuery()
+                .setAccountId(accountId)
+                .execute(client, remainingMs);
 
-        // Without a previous value there is nothing to wait for.
-        if (previous == null) {
-            return hbars;
-        }
+            // Without a previous value there is nothing to wait for.
+            if (previous == null) {
+                return hbars;
+            }
 
-        return hbars.toTinybars().equals(previous.toTinybars()) ? null : hbars;
-    });
+            return hbars.toTinybars().equals(previous.toTinybars())
+                ? null
+                : hbars;
+        },
+        {
+            retryError: retryMissing
+                ? retryOnStatus(Status.InvalidAccountId)
+                : undefined,
+        },
+    );
 }
 
 void main();
-
-/**
- * Poll a mirror-node read until it reflects the transaction that just happened.
- *
- * The mirror node ingests consensus state asynchronously, so a read straight
- * after a transaction can still return the previous value. Polling to a deadline
- * beats a fixed sleep: it does not go flaky on a slow runner and does not waste
- * time on a fast one.
- *
- * @template T
- * @param {() => Promise<T | null>} read - resolves the value once it is ready
- * @param {number} [timeoutMs]
- * @returns {Promise<T>}
- */
-async function untilMirror(read, timeoutMs = 60000) {
-    const deadline = Date.now() + timeoutMs;
-    for (;;) {
-        const result = await read();
-        if (result != null) {
-            return result;
-        }
-        if (Date.now() >= deadline) {
-            throw new Error("mirror node did not ingest in time");
-        }
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-    }
-}

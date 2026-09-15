@@ -13,7 +13,9 @@ import {
     AccountInfoQuery,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     TransactionReceipt,
+    Status,
 } from "@hiero-ledger/sdk";
+import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -283,14 +285,19 @@ async function main() {
     // consensus state asynchronously, so poll to a deadline rather than sleeping
     // for a guessed interval.
     try {
-        const balance = await untilMirror(async () => {
-            const { balance } = await new MirrorNodeTokenBalanceQuery()
-                .setAccountId(accountId2)
-                .setTokenId(tokenId)
-                .execute(client);
+        const balance = await untilMirror(
+            async (remainingMs) => {
+                const { balance } = await new MirrorNodeTokenBalanceQuery()
+                    .setAccountId(accountId2)
+                    .setTokenId(tokenId)
+                    .execute(client, remainingMs);
 
-            return balance.toInt() === 10 ? balance : null;
-        });
+                return balance.toInt() === 10 ? balance : null;
+            },
+            {
+                retryError: retryOnStatus(Status.InvalidAccountId),
+            },
+        );
 
         balance.toInt() === 10
             ? console.log(
@@ -322,25 +329,3 @@ async function main() {
 }
 
 void main();
-
-/**
- * Poll a mirror-node read until it reflects the transaction that just happened.
- *
- * @template T
- * @param {() => Promise<T | null>} read - resolves the value once it is ready
- * @param {number} [timeoutMs]
- * @returns {Promise<T>}
- */
-async function untilMirror(read, timeoutMs = 60000) {
-    const deadline = Date.now() + timeoutMs;
-    for (;;) {
-        const result = await read();
-        if (result != null) {
-            return result;
-        }
-        if (Date.now() >= deadline) {
-            throw new Error("mirror node did not ingest in time");
-        }
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-    }
-}
