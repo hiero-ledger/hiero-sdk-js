@@ -57,95 +57,107 @@ async function main() {
         operatorId,
         operatorKey,
     );
+    let subscriptionHandle;
 
-    // Step 1: Generate ECDSA key pair (Submit Key for the topic).
-    console.log("Generating ECDSA key pair...");
-    const submitPrivateKey = PrivateKey.generateECDSA();
-    const submitPublicKey = submitPrivateKey.publicKey;
+    try {
+        // Step 1: Generate ECDSA key pair (Submit Key for the topic).
+        console.log("Generating ECDSA key pair...");
+        const submitPrivateKey = PrivateKey.generateECDSA();
+        const submitPublicKey = submitPrivateKey.publicKey;
 
-    // Step 2: Create the topic with admin + submit keys.
-    console.log("Creating new topic...");
-    const topicId = (
-        await (
-            await new TopicCreateTransaction()
-                .setTopicMemo("hedera-sdk-js/ConsensusPubSubChunkedExample")
-                .setAdminKey(operatorPublicKey)
-                .setSubmitKey(submitPublicKey)
-                .execute(client)
-        ).getReceipt(client)
-    ).topicId;
-    console.log(`Created new topic with ID: ${topicId.toString()}`);
+        // Step 2: Create the topic with admin + submit keys.
+        console.log("Creating new topic...");
+        const topicCreateResponse = await new TopicCreateTransaction()
+            .setTopicMemo("hedera-sdk-js/ConsensusPubSubChunkedExample")
+            .setAdminKey(operatorPublicKey)
+            .setSubmitKey(submitPublicKey)
+            .execute(client);
+        const topicId = (await topicCreateResponse.getReceipt(client)).topicId;
+        console.log(`Created new topic with ID: ${topicId.toString()}`);
 
-    // Step 3: Wait for the new topic to propagate to mirror nodes.
-    console.log(
-        "Wait 5 seconds (to ensure data propagated to mirror nodes) ...",
-    );
-    await setTimeout(5000);
+        // Step 3: Wait for the new topic to propagate to mirror nodes.
+        console.log(
+            "Wait 5 seconds (to ensure data propagated to mirror nodes) ...",
+        );
+        await setTimeout(5000);
 
-    // Step 4: Subscribe to the topic. The latch fires after the first
-    // (reassembled) message arrives.
-    console.log("Setting up a mirror client...");
-    /** @type {(value?: void | PromiseLike<void>) => void} */
-    let latchResolve;
-    const latch = new Promise((resolve) => {
-        latchResolve = resolve;
-    });
+        // Step 4: Subscribe to the topic. The latch fires after the first
+        // (reassembled) message arrives.
+        console.log("Setting up a mirror client...");
+        /** @type {(value?: void | PromiseLike<void>) => void} */
+        let latchResolve;
+        const latch = new Promise((resolve) => {
+            latchResolve = resolve;
+        });
 
-    new TopicMessageQuery().setTopicId(topicId).subscribe(
-        client,
-        (_message, error) => {
-            if (error != null) console.error(error);
-        },
-        (message) => {
-            console.log(
-                `Topic message received! | Time: ${message.consensusTimestamp.toString()} | Sequence No.: ${message.sequenceNumber.toString()} | Size: ${message.contents.length} bytes.`,
+        subscriptionHandle = new TopicMessageQuery()
+            .setTopicId(topicId)
+            .setStartTime(0)
+            .subscribe(
+                client,
+                (_message, error) => {
+                    if (error != null) console.error(error);
+                },
+                (message) => {
+                    console.log(
+                        `Topic message received! | Time: ${message.consensusTimestamp.toString()} | Sequence No.: ${message.sequenceNumber.toString()} | Size: ${message.contents.length} bytes.`,
+                    );
+                    latchResolve();
+                },
             );
-            latchResolve();
-        },
-    );
 
-    // Step 5: Build, sign with operator, serialize, deserialize, sign with
-    // submit key, execute. The bytes round-trip mirrors the pattern where
-    // the operator and the submit-key holder are different parties.
-    const builtTx = new TopicMessageSubmitTransaction()
-        // Default is 10 chunks; increase so a large message will fit.
-        .setMaxChunks(15)
-        .setTopicId(topicId)
-        .setMessage(largeMessage);
+        // subscribe() starts the server stream asynchronously. Give it time to
+        // establish before submitting so no chunks can fall into the gap
+        // between the initial database poll and the Redis subscription.
+        await setTimeout(5000);
 
-    // The operator signs first (charged the transaction fee).
-    const operatorSignedTx = await builtTx.signWithOperator(client);
+        // Step 5: Build, sign with operator, serialize, deserialize, sign with
+        // submit key, execute. The bytes round-trip mirrors the pattern where
+        // the operator and the submit-key holder are different parties.
+        const builtTx = new TopicMessageSubmitTransaction()
+            // Default is 10 chunks; increase so a large message will fit.
+            .setMaxChunks(15)
+            .setNodeAccountIds([topicCreateResponse.nodeId])
+            .setTopicId(topicId)
+            .setMessage(largeMessage);
 
-    // Serialize so the bytes can be signed "somewhere else" by the submit key.
-    const transactionBytes = operatorSignedTx.toBytes();
-    const parsedTx = Transaction.fromBytes(transactionBytes);
+        // The operator signs first (charged the transaction fee).
+        const operatorSignedTx = await builtTx.signWithOperator(client);
 
-    console.log(
-        `Preparing to submit a message to the created topic (size of the message: ${largeMessage.length} bytes)...`,
-    );
+        // Serialize so the bytes can be signed "somewhere else" by the submit key.
+        const transactionBytes = operatorSignedTx.toBytes();
+        const parsedTx = Transaction.fromBytes(transactionBytes);
 
-    // Sign with the submit key (required because the topic has a submitKey).
-    const signedTx = await parsedTx.sign(submitPrivateKey);
+        console.log(
+            `Preparing to submit a message to the created topic (size of the message: ${largeMessage.length} bytes)...`,
+        );
 
-    // Submit the chunked message and wait for the receipt.
-    await (await signedTx.execute(client)).getReceipt(client);
+        // Sign with the submit key (required because the topic has a submitKey).
+        const signedTx = await parsedTx.sign(submitPrivateKey);
 
-    // Wait up to 60s for the reassembled message to arrive via the mirror.
-    const timeoutPromise = setTimeout(60_000).then(() => {
-        throw new Error("Large topic message was not received! (Fail)");
-    });
-    await Promise.race([latch, timeoutPromise]);
+        // Submit the chunked message and wait for the receipt.
+        await (await signedTx.execute(client)).getReceipt(client);
 
-    // Cleanup: delete the topic.
-    await (
-        await new TopicDeleteTransaction().setTopicId(topicId).execute(client)
-    ).getReceipt(client);
+        // Wait up to 60s for the reassembled message to arrive via the mirror.
+        const timeoutPromise = setTimeout(60_000).then(() => {
+            throw new Error("Large topic message was not received! (Fail)");
+        });
+        await Promise.race([latch, timeoutPromise]);
 
-    client.close();
+        // Cleanup: delete the topic.
+        await (
+            await new TopicDeleteTransaction()
+                .setTopicId(topicId)
+                .execute(client)
+        ).getReceipt(client);
 
-    console.log(
-        "Consensus Service Submit Large Message And Subscribe Example Complete!",
-    );
+        console.log(
+            "Consensus Service Submit Large Message And Subscribe Example Complete!",
+        );
+    } finally {
+        subscriptionHandle?.unsubscribe();
+        client.close();
+    }
 }
 
 void main()
