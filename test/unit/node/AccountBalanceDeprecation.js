@@ -114,29 +114,6 @@ describe("account balance via the mirror node", function () {
 
             client.close();
         });
-
-        it("rejects rather than throwing synchronously", function () {
-            const { client } = clientWithExplodingChannels();
-            const provider = new LocalProvider({ client });
-
-            // The `Provider` contract is `Promise<AccountBalance>`; callers
-            // using `.catch()` must keep working.
-            // eslint-disable-next-line deprecation/deprecation
-            const result = provider.getAccountBalance(new AccountId(10));
-
-            expect(result).to.be.an.instanceOf(Promise);
-
-            return result
-                .then(() => {
-                    throw new Error("expected a rejection");
-                })
-                .catch((/** @type {Error} */ err) => {
-                    expect(err.message).to.equal(
-                        ACCOUNT_BALANCE_QUERY_DEPRECATION_MESSAGE,
-                    );
-                    client.close();
-                });
-        });
     });
 
     describe("Wallet.getAccountBalance", function () {

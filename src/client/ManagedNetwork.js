@@ -401,19 +401,6 @@ export default class ManagedNetwork {
     }
 
     /**
-     * Get every node registered under the given key.
-     *
-     * Unlike `getNode()` this does not fall back to a random node when the key
-     * is unknown; it returns an empty list instead.
-     *
-     * @param {KeyT} key
-     * @returns {NetworkNodeT[]}
-     */
-    getNodesByKey(key) {
-        return this._network.get(key.toString()) || [];
-    }
-
-    /**
      * @param {KeyT=} key
      * @returns {NetworkNodeT}
      */

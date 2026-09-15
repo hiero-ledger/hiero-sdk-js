@@ -2,7 +2,7 @@
 
 /**
  * @typedef {import("../token/TokenId.js").default} TokenId
- * @typedef {import("long")} Long
+ * @typedef {import("long").default} Long
  */
 
 /**
