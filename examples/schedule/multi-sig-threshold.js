@@ -9,7 +9,9 @@ import {
     ScheduleSignTransaction,
     ScheduleInfoQuery,
     TransactionRecordQuery,
+    Status,
 } from "@hiero-ledger/sdk";
+import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 
 import dotenv from "dotenv";
 
@@ -71,7 +73,12 @@ async function main() {
         console.log(
             `3-of-4 multi-sig account ID:  ${multiSigAccountId.toString()}`,
         );
-        let balance = await queryBalance(multiSigAccountId, wallet);
+        let balance = await queryBalance(
+            multiSigAccountId,
+            wallet,
+            undefined,
+            true,
+        );
 
         // schedule crypto transfer from multi-sig account to operator account
         const txSchedule = await (
@@ -117,7 +124,20 @@ async function main() {
             "1. ScheduleSignTransaction status: " +
                 txScheduleSign1Receipt.status.toString(),
         );
-        balance = await queryBalance(multiSigAccountId, wallet, balance);
+        const pendingScheduleInfo = await new ScheduleInfoQuery()
+            .setScheduleId(scheduleId)
+            .executeWithSigner(wallet);
+        if (pendingScheduleInfo.executed != null) {
+            throw new Error(
+                "scheduled transfer executed before threshold was met",
+            );
+        }
+        const pendingBalance = await queryBalance(multiSigAccountId, wallet);
+        if (!pendingBalance.toTinybars().equals(balance.toTinybars())) {
+            throw new Error(
+                "scheduled transfer executed before threshold was met",
+            );
+        }
 
         // add 3. signature to trigger scheduled tx
         const txScheduleSign2 = await (
@@ -142,6 +162,11 @@ async function main() {
         const scheduleInfo = await new ScheduleInfoQuery()
             .setScheduleId(scheduleId)
             .executeWithSigner(wallet);
+        if (scheduleInfo.executed == null) {
+            throw new Error(
+                "scheduled transfer did not execute after threshold was met",
+            );
+        }
         console.log(scheduleInfo);
 
         // query triggered scheduled tx
@@ -166,23 +191,33 @@ async function main() {
  * @param {AccountId} accountId
  * @param {Wallet} wallet
  * @param {Hbar} [previous]
+ * @param {boolean} [retryMissing]
  * @returns {Promise<Hbar>}
  */
-async function queryBalance(accountId, wallet, previous) {
+async function queryBalance(accountId, wallet, previous, retryMissing = false) {
     const provider = wallet.getProvider();
     if (provider == null) {
         throw new Error("wallet does not contain a provider");
     }
 
-    const balance = await untilMirror(async () => {
-        const { hbars } = await provider.getAccountBalance(accountId);
+    const balance = await untilMirror(
+        async () => {
+            const { hbars } = await provider.getAccountBalance(accountId);
 
-        if (previous == null) {
-            return hbars.toTinybars().toNumber() > 0 ? hbars : null;
-        }
+            if (previous == null) {
+                return hbars.toTinybars().toNumber() > 0 ? hbars : null;
+            }
 
-        return hbars.toTinybars().equals(previous.toTinybars()) ? null : hbars;
-    });
+            return hbars.toTinybars().equals(previous.toTinybars())
+                ? null
+                : hbars;
+        },
+        {
+            retryError: retryMissing
+                ? retryOnStatus(Status.InvalidAccountId)
+                : undefined,
+        },
+    );
 
     console.log(
         `Balance of account ${accountId.toString()}: ${balance
@@ -190,28 +225,6 @@ async function queryBalance(accountId, wallet, previous) {
             .toInt()} tinybar`,
     );
     return balance;
-}
-
-/**
- * Poll a mirror-node read until it reflects the transaction that just happened.
- *
- * @template T
- * @param {() => Promise<T | null>} read - resolves the value once it is ready
- * @param {number} [timeoutMs]
- * @returns {Promise<T>}
- */
-async function untilMirror(read, timeoutMs = 60000) {
-    const deadline = Date.now() + timeoutMs;
-    for (;;) {
-        const result = await read();
-        if (result != null) {
-            return result;
-        }
-        if (Date.now() >= deadline) {
-            throw new Error("mirror node did not ingest in time");
-        }
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-    }
 }
 
 void main();

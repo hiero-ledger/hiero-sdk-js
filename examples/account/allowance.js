@@ -8,7 +8,9 @@ import {
     AccountAllowanceApproveTransaction,
     TransferTransaction,
     Hbar,
+    Status,
 } from "@hiero-ledger/sdk";
+import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 
 /**
  * @typedef {import("@hiero-ledger/sdk").AccountId} AccountId
@@ -84,7 +86,14 @@ async function main() {
         console.log(`Bob ID:  ${bobId.toString()}`);
         console.log(`Charlie ID:  ${charlieId.toString()}`);
 
-        await printBalances(wallet, aliceId, bobId, charlieId);
+        let balances = await printBalances(
+            wallet,
+            aliceId,
+            bobId,
+            charlieId,
+            undefined,
+            true,
+        );
 
         console.log(
             "Approving an allowance of 2 Hbar with owner Alice and spender Bob",
@@ -102,7 +111,7 @@ async function main() {
             ).executeWithSigner(wallet)
         ).getReceiptWithSigner(wallet);
 
-        await printBalances(wallet, aliceId, bobId, charlieId);
+        balances = await printBalances(wallet, aliceId, bobId, charlieId);
 
         console.log(
             "Transferring 1 Hbar from Alice to Charlie, but the transaction is signed _only_ by Bob (Bob is dipping into his allowance from Alice)",
@@ -132,7 +141,13 @@ async function main() {
             "Transfer succeeded.  Bob should now have 1 Hbar left in his allowance.",
         );
 
-        await printBalances(wallet, aliceId, bobId, charlieId);
+        balances = await printBalances(
+            wallet,
+            aliceId,
+            bobId,
+            charlieId,
+            balances,
+        );
 
         try {
             console.log(
@@ -203,7 +218,7 @@ async function main() {
 
         console.log("Transfer succeeded.");
 
-        await printBalances(wallet, aliceId, bobId, charlieId);
+        await printBalances(wallet, aliceId, bobId, charlieId, balances);
 
         console.log("Deleting Bob's allowance");
 
@@ -275,8 +290,18 @@ async function main() {
  * @param {AccountId} aliceId
  * @param {AccountId} bobId
  * @param {AccountId} charlieId
+ * @param {{alice: import("@hiero-ledger/sdk").AccountBalance, bob: import("@hiero-ledger/sdk").AccountBalance, charlie: import("@hiero-ledger/sdk").AccountBalance}} [previous]
+ * @param {boolean} [retryMissing]
+ * @returns {Promise<{alice: import("@hiero-ledger/sdk").AccountBalance, bob: import("@hiero-ledger/sdk").AccountBalance, charlie: import("@hiero-ledger/sdk").AccountBalance}>}
  */
-async function printBalances(wallet, aliceId, bobId, charlieId) {
+async function printBalances(
+    wallet,
+    aliceId,
+    bobId,
+    charlieId,
+    previous,
+    retryMissing = false,
+) {
     // HBAR balances come from the mirror node now that the consensus node no
     // longer serves them; the wallet's provider wraps that query.
     const provider = wallet.getProvider();
@@ -285,14 +310,55 @@ async function printBalances(wallet, aliceId, bobId, charlieId) {
         throw new Error("wallet does not contain a provider");
     }
 
-    const alice = await provider.getAccountBalance(aliceId);
+    const alice = await accountBalance(
+        provider,
+        aliceId,
+        previous?.alice,
+        retryMissing,
+    );
     console.log(`Alice's balance: ${alice.hbars.toString()}`);
 
-    const bob = await provider.getAccountBalance(bobId);
+    const bob = await accountBalance(
+        provider,
+        bobId,
+        previous?.bob,
+        retryMissing,
+    );
     console.log(`Bob's balance: ${bob.hbars.toString()}`);
 
-    const charlie = await provider.getAccountBalance(charlieId);
+    const charlie = await accountBalance(
+        provider,
+        charlieId,
+        previous?.charlie,
+        retryMissing,
+    );
     console.log(`Charlie's balance: ${charlie.hbars.toString()}`);
+
+    return { alice, bob, charlie };
+}
+
+/**
+ * @param {import("@hiero-ledger/sdk").Provider} provider
+ * @param {AccountId} accountId
+ * @param {import("@hiero-ledger/sdk").AccountBalance} [previous]
+ * @param {boolean} retryMissing
+ * @returns {Promise<import("@hiero-ledger/sdk").AccountBalance>}
+ */
+function accountBalance(provider, accountId, previous, retryMissing = false) {
+    return untilMirror(
+        async () => {
+            const balance = await provider.getAccountBalance(accountId);
+            return previous != null &&
+                balance.hbars.toTinybars().equals(previous.hbars.toTinybars())
+                ? null
+                : balance;
+        },
+        {
+            retryError: retryMissing
+                ? retryOnStatus(Status.InvalidAccountId)
+                : undefined,
+        },
+    );
 }
 
 void main();

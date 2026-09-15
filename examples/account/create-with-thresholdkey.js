@@ -10,7 +10,9 @@ import {
     KeyList,
     Logger,
     LogLevel,
+    Status,
 } from "@hiero-ledger/sdk";
+import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 
 import dotenv from "dotenv";
 
@@ -118,6 +120,8 @@ async function main() {
         const accountBalanceAfterTransfer = await hbarBalance(
             client,
             newAccountId,
+            new Hbar(50),
+            true,
         );
 
         console.log(
@@ -158,49 +162,27 @@ async function main() {
  *
  * @param {import("@hiero-ledger/sdk").Client} client
  * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
- * @param {import("@hiero-ledger/sdk").Hbar} [previous]
+ * @param {import("@hiero-ledger/sdk").Hbar} expected
+ * @param {boolean} [retryMissing]
  * @returns {Promise<import("@hiero-ledger/sdk").Hbar>}
  */
-async function hbarBalance(client, accountId, previous) {
-    return untilMirror(async () => {
-        const { hbars } = await new MirrorNodeAccountBalanceQuery()
-            .setAccountId(accountId)
-            .execute(client);
+async function hbarBalance(client, accountId, expected, retryMissing = false) {
+    return untilMirror(
+        async (remainingMs) => {
+            const { hbars } = await new MirrorNodeAccountBalanceQuery()
+                .setAccountId(accountId)
+                .execute(client, remainingMs);
 
-        // Without a previous value there is nothing to wait for.
-        if (previous == null) {
-            return hbars;
-        }
-
-        return hbars.toTinybars().equals(previous.toTinybars()) ? null : hbars;
-    });
+            return hbars.toTinybars().equals(expected.toTinybars())
+                ? hbars
+                : null;
+        },
+        {
+            retryError: retryMissing
+                ? retryOnStatus(Status.InvalidAccountId)
+                : undefined,
+        },
+    );
 }
 
 void main();
-
-/**
- * Poll a mirror-node read until it reflects the transaction that just happened.
- *
- * The mirror node ingests consensus state asynchronously, so a read straight
- * after a transaction can still return the previous value. Polling to a deadline
- * beats a fixed sleep: it does not go flaky on a slow runner and does not waste
- * time on a fast one.
- *
- * @template T
- * @param {() => Promise<T | null>} read - resolves the value once it is ready
- * @param {number} [timeoutMs]
- * @returns {Promise<T>}
- */
-async function untilMirror(read, timeoutMs = 60000) {
-    const deadline = Date.now() + timeoutMs;
-    for (;;) {
-        const result = await read();
-        if (result != null) {
-            return result;
-        }
-        if (Date.now() >= deadline) {
-            throw new Error("mirror node did not ingest in time");
-        }
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-    }
-}
