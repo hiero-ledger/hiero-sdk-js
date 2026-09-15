@@ -276,7 +276,7 @@ jobs:
 
   examples:
     name: Run examples using Node ${{ matrix.node }}
-    runs-on: hiero-client-sdk-linux-medium
+    runs-on: hiero-client-sdk-linux-large
     strategy:
       matrix:
         node: [ "22" ]
@@ -338,7 +338,7 @@ jobs:
 
       - name: Run all examples
         run: task run:examples
-        timeout-minutes: 180
+        timeout-minutes: 60
         env:
           EXAMPLES_CONCURRENCY: 1
 
