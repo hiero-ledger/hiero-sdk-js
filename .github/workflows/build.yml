@@ -345,6 +345,7 @@ jobs:
       - name: Collect Solo diagnostics
         if: ${{ failure() }}
         continue-on-error: true
+        timeout-minutes: 30
         run: |
           mkdir -p solo-diagnostics/pod-logs
 
