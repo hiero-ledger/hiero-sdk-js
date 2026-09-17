@@ -13,8 +13,8 @@ export const mapScheduleInfoResponse = (
         signers: info.signers?.toArray().map((key) => key.toString()),
         scheduleMemo: info.scheduleMemo,
         expirationTime: info.expirationTime?.toString(),
-        executed: info.executed?.toString(),
-        deleted: info.deleted?.toString(),
+        executedAt: info.executed?.toString(),
+        deletedAt: info.deleted?.toString(),
         scheduledTransactionId: info.scheduledTransactionId?.toString(),
         waitForExpiry: info.waitForExpiry,
     };
