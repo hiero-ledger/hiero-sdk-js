@@ -1,7 +1,5 @@
 import axios from "axios";
 import {
-    AccountBalance,
-    AccountBalanceQuery,
     TransactionReceiptQuery,
     AccountId,
     AccountInfo,
@@ -80,11 +78,22 @@ export class SimpleRestProvider {
     }
 
     /**
+     * @deprecated - The consensus node no longer serves account balances. Read
+     * them from the mirror node instead: `MirrorNodeAccountBalanceQuery` for
+     * HBAR, or the mirror node REST API for token balances.
+     *
      * @param {AccountId | string} accountId
-     * @returns {Promise<AccountBalance>}
+     * @returns {Promise<import("@hiero-ledger/sdk").AccountBalance>}
      */
+    // eslint-disable-next-line no-unused-vars
     getAccountBalance(accountId) {
-        return this.call(new AccountBalanceQuery().setAccountId(accountId));
+        return Promise.reject(
+            new Error(
+                "Deprecated: AccountBalanceQuery is no longer supported. " +
+                    "Use MirrorNodeAccountBalanceQuery or the mirror node REST API " +
+                    "(GET /api/v1/accounts/{id}) to retrieve account balances.",
+            ),
+        );
     }
 
     /**
@@ -150,9 +159,6 @@ export class SimpleRestProvider {
             const bytes = Buffer.from(inner, "hex");
 
             switch (request.constructor.name) {
-                case "AccountBalanceQuery":
-                    // @ts-ignore
-                    return AccountBalance.fromBytes(bytes);
                 case "AccountInfoQuery":
                     // @ts-ignore
                     return AccountInfo.fromBytes(bytes);
@@ -272,11 +278,19 @@ export class SimpleRestSigner {
     }
 
     /**
-     * @returns {Promise<AccountBalance>}
+     * @deprecated - The consensus node no longer serves account balances. Read
+     * them from the mirror node instead: `MirrorNodeAccountBalanceQuery` for
+     * HBAR, or the mirror node REST API for token balances.
+     *
+     * @returns {Promise<import("@hiero-ledger/sdk").AccountBalance>}
      */
     getAccountBalance() {
-        return this.call(
-            new AccountBalanceQuery().setAccountId(this.accountId),
+        return Promise.reject(
+            new Error(
+                "Deprecated: AccountBalanceQuery is no longer supported. " +
+                    "Use MirrorNodeAccountBalanceQuery or the mirror node REST API " +
+                    "(GET /api/v1/accounts/{id}) to retrieve account balances.",
+            ),
         );
     }
 
@@ -403,10 +417,6 @@ export class SimpleRestSigner {
  */
 async function main() {
     const signer = await SimpleRestSigner.connect();
-
-    // Free query
-    const balance = await signer.getAccountBalance();
-    console.log(`balance: ${balance.hbars.toString()}`);
 
     // Paid query
     const info = await signer.getAccountInfo();
