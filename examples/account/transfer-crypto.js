@@ -64,15 +64,15 @@ async function main() {
     console.log(`Transferred ${transferAmount.toString()}`);
     console.log(`Transfer memo: ${record.transactionMemo}`);
 
-    // The recipient's exact credit identifies this transaction in the mirror;
-    // checking only that a shared account changed can match an unrelated fee.
-    const expectedRecipientBalance = Hbar.fromTinybars(
+    // 0.0.3 is also a node account and may receive node fees while this runs,
+    // so wait for at least this transfer's credit instead of an exact value.
+    const minimumRecipientBalance = Hbar.fromTinybars(
         recipientBalanceBefore.toTinybars().add(transferAmount.toTinybars()),
     );
     const recipientBalanceAfter = await hbarBalance(
         client,
         recipientId,
-        expectedRecipientBalance,
+        minimumRecipientBalance,
     );
     const senderBalanceAfter = await hbarBalance(client, operatorId);
     if (
@@ -109,27 +109,28 @@ void main()
  * Read an HBAR balance from the mirror node.
  *
  * The mirror node ingests consensus state asynchronously, so a read straight
- * after a transaction can still return the previous value. Pass `expected` to
- * poll until the exact value is visible.
+ * after a transaction can still return the previous value. Pass `minimum` to
+ * poll until at least that value is visible. A lower bound is required for
+ * node accounts because unrelated node fees can increase their balance too.
  *
  * @param {import("@hiero-ledger/sdk").Client} client
  * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
- * @param {import("@hiero-ledger/sdk").Hbar} [expected]
+ * @param {import("@hiero-ledger/sdk").Hbar} [minimum]
  * @param {boolean} [retryMissing]
  * @returns {Promise<import("@hiero-ledger/sdk").Hbar>}
  */
-async function hbarBalance(client, accountId, expected, retryMissing = false) {
+async function hbarBalance(client, accountId, minimum, retryMissing = false) {
     return untilMirror(
         async (remainingMs) => {
             const { hbars } = await new MirrorNodeAccountBalanceQuery()
                 .setAccountId(accountId)
                 .execute(client, remainingMs);
 
-            if (expected == null) {
+            if (minimum == null) {
                 return hbars;
             }
 
-            return hbars.toTinybars().equals(expected.toTinybars())
+            return hbars.toTinybars().greaterThanOrEqual(minimum.toTinybars())
                 ? hbars
                 : null;
         },

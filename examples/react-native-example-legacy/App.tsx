@@ -67,8 +67,8 @@ const App = () => {
                 );
                 if (active) setTransaction(response);
 
-                // The exact recipient credit above proves this transaction is
-                // visible before displaying the sender's post-transfer balance.
+                // Reaching the recipient's minimum balance above proves this
+                // transaction is visible before displaying the sender balance.
                 const currentBalance = await new MirrorNodeAccountBalanceQuery()
                     .setAccountId(operatorId)
                     .execute(client);
@@ -147,7 +147,9 @@ async function waitForMirrorBalance(
         const balance = await new MirrorNodeAccountBalanceQuery()
             .setAccountId(accountId)
             .execute(client, remaining);
-        if (balance.hbars.toTinybars().equals(expectedTinybars)) {
+        // 0.0.3 is a node account and can receive other node fees while this
+        // app runs, so the transfer is visible once the minimum is reached.
+        if (balance.hbars.toTinybars().greaterThanOrEqual(expectedTinybars)) {
             return balance;
         }
         const delay = Math.min(2_000, Math.max(0, deadline - Date.now()));

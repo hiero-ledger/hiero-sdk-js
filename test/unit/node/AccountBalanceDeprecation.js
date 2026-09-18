@@ -75,6 +75,7 @@ describe("account balance via the mirror node", function () {
 
         it("forwards an explicit mirror request timeout", async function () {
             const timeout = vi.spyOn(AbortSignal, "timeout");
+            vi.spyOn(Date, "now").mockReturnValue(0);
             const { client } = clientWithExplodingChannels();
             const provider = new LocalProvider({ client });
 

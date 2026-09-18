@@ -49,24 +49,6 @@ async function main() {
     try {
         /*
          * Step 1:
-         * Create account - alice
-         */
-        console.log("Creating account - alice");
-
-        const aliceKey = PrivateKey.generateECDSA();
-
-        const { accountId: aliceAccountId } = await (
-            await new AccountCreateTransaction()
-                .setKeyWithoutAlias(aliceKey)
-                .setInitialBalance(new Hbar(5))
-                .setMaxAutomaticTokenAssociations(100)
-                .execute(client)
-        ).getReceipt(client);
-
-        console.log(`Alice's account ID: ${aliceAccountId.toString()}`);
-
-        /*
-         * Step 2:
          * Create a topic with hbar custom fee
          */
 
@@ -85,6 +67,26 @@ async function main() {
         ).getReceipt(client);
 
         console.log(`Created a topic with id: ${topicId.toString()}`);
+
+        /*
+         * Step 2:
+         * Create account - alice. Since this transaction follows the topic
+         * creation, seeing Alice on the mirror also proves the topic creation
+         * has been ingested before the operator balance is read below.
+         */
+        console.log("Creating account - alice");
+
+        const aliceKey = PrivateKey.generateECDSA();
+
+        const { accountId: aliceAccountId } = await (
+            await new AccountCreateTransaction()
+                .setKeyWithoutAlias(aliceKey)
+                .setInitialBalance(new Hbar(5))
+                .setMaxAutomaticTokenAssociations(100)
+                .execute(client)
+        ).getReceipt(client);
+
+        console.log(`Alice's account ID: ${aliceAccountId.toString()}`);
 
         /*
          * Step 3:
@@ -140,7 +142,7 @@ async function main() {
         const expectedFeeCollectorBalance = Hbar.fromTinybars(
             feeCollectorBalanceBefore
                 .toTinybars()
-                .add(Hbar.from(2, HbarUnit.Hbar).toTinybars()),
+                .add(Hbar.from(1, HbarUnit.Hbar).toTinybars()),
         );
         let feeCollectorBalanceAfter = await exactHbarBalance(
             client,
@@ -158,7 +160,7 @@ async function main() {
 
         /*
          * Step 5:
-         * Create a fungible token and transfer some tokens to alice
+         * Create a fungible token
          */
 
         console.log("Create a token");
@@ -172,19 +174,11 @@ async function main() {
                 .setInitialSupply(100)
                 .execute(client)
         ).getReceipt(client);
-        // transfer token to alice
-        console.log("Transferring the token to alice");
-
-        await (
-            await new TransferTransaction()
-                .addTokenTransfer(tokenId, client.operatorAccountId, -1)
-                .addTokenTransfer(tokenId, aliceAccountId, 1)
-                .execute(client)
-        ).getReceipt(client);
-
         /*
          * Step 6:
-         * Update the topic to have a fee of the token.
+         * Update the topic to have a fee of the token, then transfer a token
+         * to Alice so the exact token read in Step 7 proves both operations
+         * have reached the mirror.
          */
         console.log("Updating the topic to have a custom fee of the token");
 
@@ -197,6 +191,18 @@ async function main() {
             await new TopicUpdateTransaction()
                 .setTopicId(topicId)
                 .setCustomFees([customFeeToken])
+                .execute(client)
+        ).getReceipt(client);
+
+        // Transfer the token only after updating the topic. Seeing Alice's
+        // exact token balance below then proves both transactions are present
+        // on the mirror before the operator HBAR balance is sampled.
+        console.log("Transferring the token to alice");
+
+        await (
+            await new TransferTransaction()
+                .addTokenTransfer(tokenId, client.operatorAccountId, -1)
+                .addTokenTransfer(tokenId, aliceAccountId, 1)
                 .execute(client)
         ).getReceipt(client);
 
