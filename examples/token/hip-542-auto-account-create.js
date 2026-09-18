@@ -65,8 +65,9 @@ async function main() {
         "127.0.0.1:50211": new AccountId(3),
     };
 
-    const client = Client.forNetwork(nodes);
-    client.setOperator(operatorId, operatorKey);
+    const client = Client.forNetwork(nodes)
+        .setOperator(operatorId, operatorKey)
+        .setMirrorNetwork("local-node");
 
     /**
      *     Example 1

@@ -242,8 +242,8 @@ async function main() {
         // 2nd NFT TRANSFER NFT Alice->Bob
         let tokenTransferTx2 = await new TransferTransaction()
             .addNftTransfer(tokenId, 2, aliceId, bobId)
-            .addHbarTransfer(aliceId, 100)
-            .addHbarTransfer(bobId, -100)
+            .addHbarTransfer(aliceId, new Hbar(1))
+            .addHbarTransfer(bobId, new Hbar(-1))
             .freezeWith(client)
             .sign(aliceKey);
         const tokenTransferTx2Sign = await tokenTransferTx2.sign(bobKey);

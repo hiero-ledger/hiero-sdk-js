@@ -307,8 +307,8 @@ async function main() {
         // 2nd NFT TRANSFER NFT ALICE -> BOB
         let tokenTransferTx2 = await new TransferTransaction()
             .addNftTransfer(tokenId, 2, aliceId, bobId)
-            .addHbarTransfer(aliceId, 100)
-            .addHbarTransfer(bobId, -100)
+            .addHbarTransfer(aliceId, new Hbar(1))
+            .addHbarTransfer(bobId, new Hbar(-1))
             .freezeWith(client)
             .sign(aliceKey);
         const tokenTransferTx2Sign = await tokenTransferTx2.sign(bobKey);
@@ -340,8 +340,8 @@ async function main() {
         // REQUIRES ALICE'S AND BOB'S SIGNATURES
         let txToSchedule = new TransferTransaction()
             .addNftTransfer(tokenId, 2, bobId, aliceId)
-            .addHbarTransfer(aliceId, -200)
-            .addHbarTransfer(bobId, 200);
+            .addHbarTransfer(aliceId, new Hbar(-2))
+            .addHbarTransfer(bobId, new Hbar(2));
 
         // SCHEDULE THE NFT TRANSFER TRANSACTION CREATED IN THE LAST STEP
         let scheduleTx = await new ScheduleCreateTransaction()
@@ -469,8 +469,8 @@ async function main() {
         try {
             let tokenTransferTx4 = await new TransferTransaction()
                 .addNftTransfer(tokenId, 2, aliceId, bobId)
-                .addHbarTransfer(aliceId, 100)
-                .addHbarTransfer(bobId, -100)
+                .addHbarTransfer(aliceId, new Hbar(1))
+                .addHbarTransfer(bobId, new Hbar(-1))
                 .freezeWith(client)
                 .sign(aliceKey);
             let tokenTransferTx4Sign = await tokenTransferTx4.sign(bobKey);

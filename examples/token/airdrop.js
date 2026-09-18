@@ -311,9 +311,12 @@ async function main() {
      */
     console.log("Cancelling airdrop for account 3");
     await (
-        await new TokenCancelAirdropTransaction()
-            .addPendingAirdropId(newPendingAirdropsNfts[1].airdropId)
-            .execute(client)
+        await (
+            await new TokenCancelAirdropTransaction()
+                .addPendingAirdropId(newPendingAirdropsNfts[1].airdropId)
+                .freezeWith(client)
+                .sign(treasuryKey)
+        ).execute(client)
     ).getReceipt(client);
 
     console.log(

@@ -20,14 +20,11 @@ const excludedDirectories = [
 const excludedJSFile = [
     "run-all-examples.js",
     "wait-for-mirror.js",
-    "consensus-pub-sub.js",
-    "consensus-pub-sub-chunked.js",
-    "consensus-pub-sub-with-submit-key.js",
-    "create-update-delete-node.js",
+    path.join("consensus", "pub-sub.js"),
+    path.join("consensus", "pub-sub-chunked.js"),
+    path.join("consensus", "pub-sub-with-submit-key.js"),
     "batch-tx.js",
-    "long-term-schedule-transaction.js",
-    "mirror-node-contract-queries-example.js",
-    "node-client-async-testnet.js",
+    path.join("schedule", "long-term-transaction.js"),
 ];
 const cmd = process.env.NODE_COMMAND;
 const concurrency = Math.max(
@@ -209,8 +206,13 @@ fs.readdir(examplesDirectory, { withFileTypes: true }, (err, entries) => {
         const subDir = path.join(examplesDirectory, entry.name);
         const subFiles = fs.readdirSync(subDir, { withFileTypes: true });
         for (const sub of subFiles) {
-            if (sub.isFile() && sub.name.endsWith(".js")) {
-                examples.push(path.join(entry.name, sub.name));
+            const relativePath = path.join(entry.name, sub.name);
+            if (
+                sub.isFile() &&
+                sub.name.endsWith(".js") &&
+                !excludedJSFile.includes(relativePath)
+            ) {
+                examples.push(relativePath);
             }
         }
     }
