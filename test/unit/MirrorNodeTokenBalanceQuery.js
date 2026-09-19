@@ -121,6 +121,116 @@ describe("MirrorNodeTokenBalanceQuery", function () {
             expect(balance.decimals).to.equal(0);
         });
 
+        it("rejects a response without a tokens array", async function () {
+            fetchMock.mockImplementation(() =>
+                Promise.resolve(jsonResponse({ tokens: null })),
+            );
+
+            await expect(
+                new MirrorNodeTokenBalanceQuery()
+                    .setAccountId("0.0.10")
+                    .setTokenId("0.0.5005")
+                    .execute(stubClient()),
+            ).rejects.toThrow("response has no tokens array");
+        });
+
+        it("rejects a response for a different token", async function () {
+            fetchMock.mockImplementation(() =>
+                Promise.resolve(
+                    jsonResponse({
+                        tokens: [
+                            {
+                                token_id: "0.0.5006",
+                                balance: 1234,
+                                decimals: 2,
+                            },
+                        ],
+                    }),
+                ),
+            );
+
+            await expect(
+                new MirrorNodeTokenBalanceQuery()
+                    .setAccountId("0.0.10")
+                    .setTokenId("0.0.5005")
+                    .execute(stubClient()),
+            ).rejects.toThrow("response contains an invalid token balance");
+        });
+
+        it("rejects a response containing more than the requested token", async function () {
+            fetchMock.mockImplementation(() =>
+                Promise.resolve(
+                    jsonResponse({
+                        tokens: [
+                            {
+                                token_id: "0.0.5005",
+                                balance: 1,
+                                decimals: 0,
+                            },
+                            {
+                                token_id: "0.0.5006",
+                                balance: 1,
+                                decimals: 0,
+                            },
+                        ],
+                    }),
+                ),
+            );
+
+            await expect(
+                new MirrorNodeTokenBalanceQuery()
+                    .setAccountId("0.0.10")
+                    .setTokenId("0.0.5005")
+                    .execute(stubClient()),
+            ).rejects.toThrow("response contains multiple tokens");
+        });
+
+        it("rejects an unsafe numeric balance", async function () {
+            fetchMock.mockImplementation(() =>
+                Promise.resolve(
+                    jsonResponse({
+                        tokens: [
+                            {
+                                token_id: "0.0.5005",
+                                balance: Number.MAX_SAFE_INTEGER + 1,
+                                decimals: 2,
+                            },
+                        ],
+                    }),
+                ),
+            );
+
+            await expect(
+                new MirrorNodeTokenBalanceQuery()
+                    .setAccountId("0.0.10")
+                    .setTokenId("0.0.5005")
+                    .execute(stubClient()),
+            ).rejects.toThrow("response contains an invalid token balance");
+        });
+
+        it("rejects decimals outside the mirror API uint32 range", async function () {
+            fetchMock.mockImplementation(() =>
+                Promise.resolve(
+                    jsonResponse({
+                        tokens: [
+                            {
+                                token_id: "0.0.5005",
+                                balance: 1,
+                                decimals: 0x100000000,
+                            },
+                        ],
+                    }),
+                ),
+            );
+
+            await expect(
+                new MirrorNodeTokenBalanceQuery()
+                    .setAccountId("0.0.10")
+                    .setTokenId("0.0.5005")
+                    .execute(stubClient()),
+            ).rejects.toThrow("response contains an invalid token balance");
+        });
+
         it("requires an account ID", async function () {
             let error = null;
             try {
@@ -177,6 +287,29 @@ describe("MirrorNodeTokenBalanceQuery", function () {
 
             expect(calls).to.equal(2);
             expect(balance.balance.toNumber()).to.equal(7);
+        });
+
+        it("does not sleep past the total request deadline", async function () {
+            vi.useFakeTimers();
+            vi.setSystemTime(0);
+            fetchMock.mockImplementation(() =>
+                Promise.resolve(jsonResponse({ _status: "boom" }, 503)),
+            );
+            const client = {
+                ...stubClient(),
+                minBackoff: 100,
+                maxBackoff: 100,
+            };
+            const result = expect(
+                new MirrorNodeTokenBalanceQuery()
+                    .setAccountId("0.0.10")
+                    .setTokenId("0.0.5005")
+                    .execute(client, 10),
+            ).rejects.toThrow("HTTP 503");
+
+            await vi.advanceTimersByTimeAsync(10);
+            await result;
+            vi.useRealTimers();
         });
 
         it("throws MirrorNodeStatusError for an account the mirror node does not know", async function () {

@@ -73,6 +73,18 @@ describe("account balance via the mirror node", function () {
             client.close();
         });
 
+        it("forwards an explicit mirror request timeout", async function () {
+            const timeout = vi.spyOn(AbortSignal, "timeout");
+            vi.spyOn(Date, "now").mockReturnValue(0);
+            const { client } = clientWithExplodingChannels();
+            const provider = new LocalProvider({ client });
+
+            await provider.getAccountBalance(new AccountId(10), 4321);
+
+            expect(timeout).toHaveBeenCalledWith(4321);
+            client.close();
+        });
+
         it("returns empty token maps, since the mirror balance is HBAR only", async function () {
             const { client } = clientWithExplodingChannels();
             const provider = new LocalProvider({ client });

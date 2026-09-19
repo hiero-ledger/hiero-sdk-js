@@ -279,6 +279,35 @@ describe("MirrorNodeAccountBalanceQuery", function () {
         expect(error.message).to.include("no balances array");
     });
 
+    it("should not sleep past the total request deadline", async function () {
+        const clock = sinon.useFakeTimers();
+        fetchStub.resolves({
+            ok: false,
+            status: 503,
+            text: () => Promise.resolve("temporary"),
+        });
+        client.setMaxAttempts(2);
+        client.setMinBackoff(100);
+        client.setMaxBackoff(100);
+
+        const request = new MirrorNodeAccountBalanceQuery()
+            .setAccountId("0.0.123")
+            .execute(client, 10);
+        const result = request.then(
+            () => null,
+            (error) => error,
+        );
+        await clock.tickAsync(10);
+        let error;
+        try {
+            error = await result;
+        } finally {
+            clock.restore();
+        }
+        expect(error).to.be.an("Error");
+        expect(error.message).to.include("HTTP 503");
+    });
+
     it("should be immutable", async function () {
         const balance = await new MirrorNodeAccountBalanceQuery()
             .setAccountId("0.0.123")

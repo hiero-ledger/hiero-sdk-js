@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+-   `MirrorNodeTokenBalanceQuery` now rejects malformed mirror responses, including missing or multiple token entries, mismatched token IDs, unsafe or negative balances, and invalid decimals, instead of accepting ambiguous data.
+-   `Provider.getAccountBalance`, `LocalProvider.getAccountBalance`, and `LocalProviderWeb.getAccountBalance` accept an optional `requestTimeout` in milliseconds and apply it to the mirror-node balance request.
 -   `Wallet.getAccountBalance()`, `LocalProvider.getAccountBalance()` and `LocalProviderWeb.getAccountBalance()` keep working, but are now backed by the mirror node rather than the consensus node. **Two behavior changes for callers:** the returned `AccountBalance` carries the HBAR balance only — its `tokens` and `tokenDecimals` maps are always empty — and the value may lag consensus by a few seconds, so it is not read-after-write consistent. Read token balances with `MirrorNodeTokenBalanceQuery`. For an account the mirror node does not know, these methods now throw `MirrorNodeStatusError` carrying `Status.InvalidAccountId` rather than the `PrecheckStatusError` the consensus-node query used to raise — match on `status`, not on the error class. [#4335](https://github.com/hiero-ledger/hiero-sdk-js/pull/4335)
 -   Examples and integration tests no longer use `AccountBalanceQuery`. Examples read HBAR with `MirrorNodeAccountBalanceQuery` and token balances with `MirrorNodeTokenBalanceQuery`; integration tests use `AccountInfoQuery`, which the consensus node still serves and which is immediately consistent.
 
