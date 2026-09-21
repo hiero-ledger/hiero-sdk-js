@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   `Wallet.getAccountBalance()`, `LocalProvider.getAccountBalance()` and `LocalProviderWeb.getAccountBalance()` keep working, but are now backed by the mirror node rather than the consensus node. **Two behavior changes for callers:** the returned `AccountBalance` carries the HBAR balance only — its `tokens` and `tokenDecimals` maps are always empty — and the value may lag consensus by a few seconds, so it is not read-after-write consistent. Read token balances with `MirrorNodeTokenBalanceQuery`. For an account the mirror node does not know, these methods now throw `MirrorNodeStatusError` carrying `Status.InvalidAccountId` rather than the `PrecheckStatusError` the consensus-node query used to raise — match on `status`, not on the error class. [#4335](https://github.com/hiero-ledger/hiero-sdk-js/pull/4335)
 -   Examples and integration tests no longer use `AccountBalanceQuery`. Examples read HBAR with `MirrorNodeAccountBalanceQuery` and token balances with `MirrorNodeTokenBalanceQuery`; integration tests use `AccountInfoQuery`, which the consensus node still serves and which is immediately consistent.
 
+### Fixed
+
+-   `Client.ping()`, `Client.pingAll()` and any query or transaction pinned with `setNodeAccountIds` to a node account ID that is not in the client's network map now reject with `NodeAccountId not recognized: <id>` instead of silently executing against a random node. **Behavior change:** a `TransactionReceiptQuery` or `TransactionRecordQuery` pinned to a node that has since left the map (for example after an address book update) now errors instead of being routed to another node; a request pinned to several nodes skips the unknown IDs and errors only when none of them resolve. [#4330](https://github.com/hiero-ledger/hiero-sdk-js/issues/4330)
+
 # v2.88.0
 
 ### Changed
