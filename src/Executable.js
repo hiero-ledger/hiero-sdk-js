@@ -80,12 +80,13 @@ export default class Executable {
         this._minBackoff = null;
 
         /**
-         * This is the request's max backoff
+         * This is the request's max backoff. `null` until `_setupExecution`
+         * copies the client's value, unless `setMaxBackoff` was called.
          *
          * @internal
-         * @type {number}
+         * @type {number | null}
          */
-        this._maxBackoff = 8000;
+        this._maxBackoff = null;
 
         /**
          * The operator that was used to execute this request.
@@ -265,7 +266,7 @@ export default class Executable {
     /**
      * Get the max backoff
      *
-     * @returns {number}
+     * @returns {number | null}
      */
     get maxBackoff() {
         return this._maxBackoff;
@@ -667,7 +668,7 @@ export default class Executable {
                 isLocalNode,
                 attempt,
                 /** @type {number} */ (this._minBackoff),
-                this._maxBackoff,
+                /** @type {number} */ (this._maxBackoff),
             );
             return;
         }
@@ -938,7 +939,7 @@ export default class Executable {
                         isLocalNode,
                         attempt,
                         /** @type {number} */ (this._minBackoff),
-                        this._maxBackoff,
+                        /** @type {number} */ (this._maxBackoff),
                     );
                     continue;
                 case ExecutionState.Finished:
