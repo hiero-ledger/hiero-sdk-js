@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+-   `AddressBookQueryWeb` (the address book query used by `WebClient` and `NativeClient`) no longer retries 4xx responses or malformed bodies. It retried every non-2xx status, so a mirror node returning `404` for `/api/v1/network/nodes` cost ~48 s of retries on a default client and hours on a local network before `updateNetwork()` gave up. Only 5xx, timeouts and transport errors are retried now, matching the other mirror REST queries, and the per-attempt `console.error` is gone. [#4377](https://github.com/hiero-ledger/hiero-sdk-js/issues/4377)
 -   `Client.ping()`, `Client.pingAll()` and any query or transaction pinned with `setNodeAccountIds` to a node account ID that is not in the client's network map now reject with `NodeAccountId not recognized: <id>` instead of silently executing against a random node. **Behavior change:** a `TransactionReceiptQuery` or `TransactionRecordQuery` pinned to a node that has since left the map (for example after an address book update) now errors instead of being routed to another node; a request pinned to several nodes skips the unknown IDs and errors only when none of them resolve. [#4330](https://github.com/hiero-ledger/hiero-sdk-js/issues/4330)
 
 # v2.88.0
