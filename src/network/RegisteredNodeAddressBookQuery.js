@@ -140,12 +140,14 @@ export default class RegisteredNodeAddressBookQuery {
      */
     execute(client, requestTimeout) {
         return new Promise((resolve, reject) => {
-            void this._makeFetchRequest(
+            // `_makeFetchRequest` is async: a throw outside its retry loop
+            // rejects its own promise, so forward that or `execute()` never settles.
+            this._makeFetchRequest(
                 client,
                 resolve,
                 reject,
                 requestTimeout,
-            );
+            ).catch(reject);
         });
     }
 
