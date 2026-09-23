@@ -601,23 +601,25 @@ export default class Executable {
      * @returns {Node}
      */
     _getExecutionNode(client) {
-        /** @type {Node} */
-        let currentNode;
-
         if (this._nodeAccountIds.isEmpty) {
-            currentNode = client._network.getNode();
+            const currentNode = client._network.getNode();
             this._nodeAccountIds.setList([currentNode.accountId]);
-        } else {
-            currentNode = client._network.getNode(this._nodeAccountIds.current);
+            return currentNode;
         }
 
-        if (currentNode == null) {
-            throw new Error(
-                `NodeAccountId not recognized: ${this._nodeAccountIds.current.toString()}`,
-            );
+        // A pinned node account ID may have left the network map since the
+        // request was built (address book refresh). Skip it while another
+        // pinned ID still resolves; rethrow only when none of them do.
+        for (let i = 0; ; i++) {
+            try {
+                return client._network.getNode(this._nodeAccountIds.current);
+            } catch (error) {
+                if (i + 1 >= this._nodeAccountIds.length) {
+                    throw error;
+                }
+                this._nodeAccountIds.advance();
+            }
         }
-
-        return currentNode;
     }
 
     /**
