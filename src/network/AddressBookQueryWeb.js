@@ -180,6 +180,10 @@ export default class AddressBookQueryWeb extends Query {
      * @param {number=} requestTimeout
      */
     async _makeFetchRequest(client, resolve, reject, requestTimeout) {
+        // This class overrides `execute()`, so `Executable._setupExecution`
+        // never runs and the client logger has to be picked up here.
+        this._logger = this._logger ?? client._logger;
+
         const { port, address } =
             client._mirrorNetwork.getNextMirrorNode().address;
 
