@@ -60,6 +60,40 @@ describe("Executable", function () {
         expect(beforeExecuteCalled).to.be.true;
     });
 
+    it("inherits maxBackoff from the client when the request did not set one", async function () {
+        const executable = new Executable();
+        executable._beforeExecute = async () => {};
+        expect(executable.maxBackoff).to.be.null;
+
+        await executable._setupExecution({
+            _logger: null,
+            requestTimeout: 15000,
+            grpcDeadline: 5000,
+            maxBackoff: 1000,
+            minBackoff: 250,
+            maxAttempts: 10,
+        });
+
+        expect(executable.maxBackoff).to.equal(1000);
+        expect(executable.minBackoff).to.equal(250);
+    });
+
+    it("keeps a request-level maxBackoff over the client's", async function () {
+        const executable = new Executable().setMaxBackoff(3000);
+        executable._beforeExecute = async () => {};
+
+        await executable._setupExecution({
+            _logger: null,
+            requestTimeout: 15000,
+            grpcDeadline: 5000,
+            maxBackoff: 1000,
+            minBackoff: 250,
+            maxAttempts: 10,
+        });
+
+        expect(executable.maxBackoff).to.equal(3000);
+    });
+
     it("execute throws timeout exceeded with the current node account ID", async function () {
         const executable = new Executable();
         let nowCallCount = 0;

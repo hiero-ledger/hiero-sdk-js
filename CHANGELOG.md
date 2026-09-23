@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+-   `client.setMaxBackoff()` now applies to transactions and queries. `Executable` initialised its own `maxBackoff` to 8 s instead of leaving it unset, so the client value was never inherited and every request backed off with the 8 s cap unless `setMaxBackoff` was called on the request itself. A fresh request now reports `maxBackoff` as `null` until it executes, the same as `minBackoff` and `maxAttempts`. `AddressBookQuery` (gRPC) and `AddressBookQueryWeb` fall back to the client value the same way. [#4379](https://github.com/hiero-ledger/hiero-sdk-js/issues/4379)
 -   `Client.ping()`, `Client.pingAll()` and any query or transaction pinned with `setNodeAccountIds` to a node account ID that is not in the client's network map now reject with `NodeAccountId not recognized: <id>` instead of silently executing against a random node. **Behavior change:** a `TransactionReceiptQuery` or `TransactionRecordQuery` pinned to a node that has since left the map (for example after an address book update) now errors instead of being routed to another node; a request pinned to several nodes skips the unknown IDs and errors only when none of them resolve. [#4330](https://github.com/hiero-ledger/hiero-sdk-js/issues/4330)
 
 # v2.88.0

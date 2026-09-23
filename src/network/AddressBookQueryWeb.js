@@ -248,6 +248,7 @@ export default class AddressBookQueryWeb extends Query {
             this._limit != null ? this._limit : DEFAULT_PAGE_SIZE;
         initialUrl.searchParams.append("limit", effectiveLimit.toString());
         const maxAttempts = this._maxAttempts ?? client.maxAttempts;
+        const maxBackoff = this._maxBackoff ?? client.maxBackoff;
         // Fetch all pages
         while (!isLastPage) {
             const currentUrl = nextUrl ? new URL(nextUrl, baseUrl) : initialUrl;
@@ -318,10 +319,7 @@ export default class AddressBookQueryWeb extends Query {
                             /** @type {MirrorError | Error | null} */ (error),
                         )
                     ) {
-                        const delay = Math.min(
-                            250 * 2 ** attempt,
-                            this._maxBackoff,
-                        );
+                        const delay = Math.min(250 * 2 ** attempt, maxBackoff);
 
                         if (this._logger) {
                             this._logger.debug(
