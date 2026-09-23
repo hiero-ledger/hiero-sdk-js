@@ -3,8 +3,8 @@
 import Query from "../query/Query.js";
 import NodeAddressBook from "../address_book/NodeAddressBook.js";
 import FileId from "../file/FileId.js";
-import { RST_STREAM } from "../Executable.js";
 import NodeAddress from "../address_book/NodeAddress.js";
+import { isRetryableNetworkError, readErrorDetail } from "./mirrorRestRetry.js";
 import {
     MAINNET,
     WEB_TESTNET,
@@ -14,7 +14,6 @@ import {
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
- * @typedef {import("../channel/MirrorChannel.js").MirrorError} MirrorError
  */
 
 /**
@@ -95,44 +94,6 @@ export default class AddressBookQueryWeb extends Query {
         if (props.limit != null) {
             this.setLimit(props.limit);
         }
-
-        /**
-         * @private
-         * @type {(error: MirrorError | Error | null) => boolean}
-         */
-        this._retryHandler = (error) => {
-            if (error != null) {
-                if (error instanceof Error) {
-                    // Retry on all errors which are not `MirrorError` because they're
-                    // likely lower level HTTP errors
-                    return true;
-                } else {
-                    // Retry on `NOT_FOUND`, `RESOURCE_EXHAUSTED`, `UNAVAILABLE`, and conditionally on `INTERNAL`
-                    // if the message matches the right regex.
-                    switch (error.code) {
-                        // INTERNAL
-
-                        case 13:
-                            return RST_STREAM.test(error.details.toString());
-                        // NOT_FOUND
-
-                        case 5:
-                        // RESOURCE_EXHAUSTED
-                        // eslint-disable-next-line no-fallthrough
-                        case 8:
-                        // UNAVAILABLE
-                        // eslint-disable-next-line no-fallthrough
-                        case 14:
-                        case 17:
-                            return true;
-                        default:
-                            return false;
-                    }
-                }
-            }
-
-            return false;
-        };
 
         /** @type {NodeAddress[]} */
         this._addresses = [];
@@ -277,8 +238,13 @@ export default class AddressBookQueryWeb extends Query {
                     });
 
                     if (!response.ok) {
+                        // `HTTP <status>` is the shape `isRetryableNetworkError`
+                        // classifies on: 5xx retries, everything else is terminal.
+                        const detail = await readErrorDetail(response);
                         throw new Error(
-                            `HTTP error! status: ${response.status}`,
+                            `HTTP ${response.status}${
+                                detail ? `: ${detail}` : ""
+                            }`,
                         );
                     }
 
@@ -317,17 +283,15 @@ export default class AddressBookQueryWeb extends Query {
                     // Move to next page
                     break;
                 } catch (error) {
-                    console.error("Error in _makeFetchRequest:", error);
                     const message =
                         error instanceof Error ? error.message : String(error);
 
-                    // Check if we should retry
+                    // Retry only transient failures: 5xx, timeouts and
+                    // transport errors. A 4xx or a malformed body is terminal.
                     if (
                         attempt < maxAttempts &&
                         !client.isClientShutDown &&
-                        this._retryHandler(
-                            /** @type {MirrorError | Error | null} */ (error),
-                        )
+                        isRetryableNetworkError(error)
                     ) {
                         const delay = Math.min(250 * 2 ** attempt, maxBackoff);
 
