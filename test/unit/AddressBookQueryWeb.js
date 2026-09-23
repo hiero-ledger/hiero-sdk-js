@@ -62,6 +62,22 @@ function errorResponse(status, detail) {
     );
 }
 
+/**
+ * Behave like a real `fetch` against a server that never answers: reject
+ * only when the abort signal fires, with the signal's own reason.
+ * @param {AbortSignal} signal
+ * @returns {Promise<never>}
+ */
+function hangUntilAborted(signal) {
+    return new Promise((_, reject) => {
+        signal.addEventListener("abort", () => {
+            const fallback = new Error("This operation was aborted");
+            fallback.name = "AbortError";
+            reject(signal.reason ?? fallback);
+        });
+    });
+}
+
 function query() {
     // Keep the backoff negligible so retries do not slow the suite down.
     return new AddressBookQueryWeb().setFileId("0.0.102").setMaxBackoff(1);
@@ -217,6 +233,50 @@ describe("AddressBookQueryWeb", function () {
         expect(
             book.nodeAddresses.map((a) => a.accountId.toString()),
         ).to.deep.equal(["0.0.3", "0.0.4"]);
+    });
+
+    it("attaches a timeout signal to every request by default", async function () {
+        fetchMock.mockResolvedValue(jsonResponse({ nodes: [node(0)] }));
+
+        await query().execute(stubClient());
+
+        const init = fetchMock.mock.calls[0][1];
+        expect(init.signal).to.be.instanceOf(AbortSignal);
+        expect(init.signal.aborted).to.equal(false);
+    });
+
+    it("aborts a hung request after requestTimeout and retries", async function () {
+        fetchMock
+            .mockImplementationOnce((_, init) => hangUntilAborted(init.signal))
+            .mockResolvedValueOnce(jsonResponse({ nodes: [node(0)] }));
+
+        const book = await query().execute(stubClient(), 20);
+
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(book.nodeAddresses).to.have.length(1);
+    });
+
+    it("falls back to AbortController when AbortSignal.timeout is missing", async function () {
+        const original = AbortSignal.timeout;
+        // @ts-ignore simulate a runtime such as React Native
+        AbortSignal.timeout = undefined;
+        try {
+            fetchMock
+                .mockImplementationOnce((_, init) =>
+                    hangUntilAborted(init.signal),
+                )
+                .mockResolvedValueOnce(jsonResponse({ nodes: [node(0)] }));
+
+            const book = await query().execute(stubClient(), 20);
+
+            expect(fetchMock).toHaveBeenCalledTimes(2);
+            expect(fetchMock.mock.calls[0][1].signal).to.be.instanceOf(
+                AbortSignal,
+            );
+            expect(book.nodeAddresses).to.have.length(1);
+        } finally {
+            AbortSignal.timeout = original;
+        }
     });
 
     it("stops retrying once the client is shut down", async function () {

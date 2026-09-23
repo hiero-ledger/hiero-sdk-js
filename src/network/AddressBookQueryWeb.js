@@ -58,6 +58,44 @@ import {
 const DEFAULT_PAGE_SIZE = 25;
 
 /**
+ * Default timeout for a single mirror node request, in milliseconds.
+ *
+ * It bounds one attempt on one page; the retry loop above it decides how
+ * many attempts there are. The value matches the `perAttemptTimeout`
+ * default of the shared HTTP transport proposal (sdk-collaboration-hub#286)
+ * so it does not have to move again when that lands.
+ * @constant {number}
+ */
+const DEFAULT_REQUEST_TIMEOUT_MS = 30 * 1000;
+
+/**
+ * Build an abort signal that fires after `ms` milliseconds.
+ *
+ * `AbortSignal.timeout` is used where it exists (Node 17.3+, current
+ * browsers). React Native and older runtimes ship only `AbortController`,
+ * so fall back to a controller armed with `setTimeout`. Without either the
+ * request runs unbounded, which is what every caller got before.
+ * @param {number} ms
+ * @returns {{signal: AbortSignal | undefined, clear: () => void}}
+ */
+function timeoutSignal(ms) {
+    if (
+        typeof AbortSignal !== "undefined" &&
+        typeof AbortSignal.timeout === "function"
+    ) {
+        return { signal: AbortSignal.timeout(ms), clear: () => {} };
+    }
+
+    if (typeof AbortController === "undefined") {
+        return { signal: undefined, clear: () => {} };
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), ms);
+    return { signal: controller.signal, clear: () => clearTimeout(timer) };
+}
+
+/**
  * Web-compatible query to get a list of Hedera network node addresses from a mirror node.
  * Uses fetch API instead of gRPC for web environments.
  *
@@ -158,7 +196,10 @@ export default class AddressBookQueryWeb extends Query {
 
     /**
      * @param {Client<Channel>} client
-     * @param {number=} requestTimeout
+     * @param {number=} requestTimeout - timeout for a single mirror node
+     * request in milliseconds. It applies per attempt and per page, not to
+     * the whole query. Defaults to 30 s; a value of `0` or less also selects
+     * the default.
      * @returns {Promise<NodeAddressBook>}
      */
     execute(client, requestTimeout) {
@@ -213,22 +254,31 @@ export default class AddressBookQueryWeb extends Query {
             this._limit != null ? this._limit : DEFAULT_PAGE_SIZE;
         initialUrl.searchParams.append("limit", effectiveLimit.toString());
         const maxAttempts = this._maxAttempts ?? client.maxAttempts;
+        const timeoutMs =
+            requestTimeout != null && requestTimeout > 0
+                ? requestTimeout
+                : DEFAULT_REQUEST_TIMEOUT_MS;
         // Fetch all pages
         while (!isLastPage) {
             const currentUrl = nextUrl ? new URL(nextUrl, baseUrl) : initialUrl;
 
             for (let attempt = 0; attempt <= maxAttempts; attempt++) {
                 try {
-                    // eslint-disable-next-line n/no-unsupported-features/node-builtins
-                    const response = await fetch(currentUrl.toString(), {
-                        method: "GET",
-                        headers: {
-                            Accept: "application/json",
-                        },
-                        signal: requestTimeout
-                            ? AbortSignal.timeout(requestTimeout)
-                            : undefined,
-                    });
+                    const { signal, clear } = timeoutSignal(timeoutMs);
+                    /** @type {Response} */
+                    let response;
+                    try {
+                        // eslint-disable-next-line n/no-unsupported-features/node-builtins
+                        response = await fetch(currentUrl.toString(), {
+                            method: "GET",
+                            headers: {
+                                Accept: "application/json",
+                            },
+                            signal,
+                        });
+                    } finally {
+                        clear();
+                    }
 
                     if (!response.ok) {
                         // `HTTP <status>` is the shape `isRetryableNetworkError`
