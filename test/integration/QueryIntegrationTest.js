@@ -31,13 +31,8 @@ describe("Transaction flows", function () {
                 new AccountId(111),
             ]);
 
-        try {
-            await signTransferTransaction.execute(client);
-        } catch (error) {
-            // Attempting to execute the transaction with a node that is not in the client's node list
-            expect(error.message).to.be.equal(
-                "Attempting to execute a transaction against node 0.0.111, which is not included in the Client's node list. Please review your Client configuration.",
-            );
-        }
+        await expect(signTransferTransaction.execute(client)).rejects.toThrow(
+            "NodeAccountId not recognized: 0.0.111",
+        );
     });
 });
