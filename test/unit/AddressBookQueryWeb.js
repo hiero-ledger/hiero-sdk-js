@@ -6,9 +6,11 @@ import AddressBookQueryWeb from "../../src/network/AddressBookQueryWeb.js";
 /**
  * The minimum a client needs to expose for the web address book query.
  * @param {number} [maxAttempts]
+ * @param {object} [logger]
  */
-function stubClient(maxAttempts = 3) {
+function stubClient(maxAttempts = 3, logger = null) {
     return {
+        _logger: logger,
         _mirrorNetwork: {
             getNextMirrorNode: () => ({
                 address: { address: "127.0.0.1", port: 5551 },
@@ -87,6 +89,30 @@ describe("AddressBookQueryWeb", function () {
         expect(fetchMock).toHaveBeenCalledTimes(1);
     });
 
+    it("does not retry a 404 whose body echoes the request path", async function () {
+        // Real testnet mirror node body for an unmapped route. The path
+        // contains "network", which the transport regex would match if a
+        // status message ever reached it.
+        fetchMock.mockResolvedValue(
+            errorResponse(
+                404,
+                "No static resource api/v1/network/nodes for request '/api/v1/network/nodes'.",
+            ),
+        );
+
+        await expect(query().execute(stubClient())).rejects.toThrow("HTTP 404");
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not retry a 400 whose detail mentions a timeout", async function () {
+        fetchMock.mockResolvedValue(
+            errorResponse(400, "request timeout must be positive"),
+        );
+
+        await expect(query().execute(stubClient())).rejects.toThrow("HTTP 400");
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
     it("does not retry a malformed body", async function () {
         fetchMock.mockResolvedValue({
             ok: true,
@@ -113,6 +139,31 @@ describe("AddressBookQueryWeb", function () {
         expect(book.nodeAddresses[0].accountId.toString()).to.equal("0.0.3");
     });
 
+    it("retries a browser fetch network failure", async function () {
+        fetchMock
+            .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+            .mockRejectedValueOnce(new TypeError("Load failed"))
+            .mockResolvedValueOnce(jsonResponse({ nodes: [node(0)] }));
+
+        const book = await query().execute(stubClient());
+
+        expect(fetchMock).toHaveBeenCalledTimes(3);
+        expect(book.nodeAddresses).to.have.length(1);
+    });
+
+    it("logs each retry through the client logger", async function () {
+        const logger = { debug: vi.fn(), trace: vi.fn(), warn: vi.fn() };
+        fetchMock
+            .mockResolvedValueOnce(errorResponse(503, "Unavailable"))
+            .mockResolvedValueOnce(jsonResponse({ nodes: [node(0)] }));
+
+        await query().execute(stubClient(3, logger));
+
+        expect(logger.debug).toHaveBeenCalledTimes(1);
+        expect(logger.debug.mock.calls[0][0]).to.include("attempt 1");
+        expect(logger.debug.mock.calls[0][0]).to.include("HTTP 503");
+    });
+
     it("retries a timeout", async function () {
         const timeout = new Error("The operation was aborted due to timeout");
         timeout.name = "TimeoutError";
@@ -136,7 +187,11 @@ describe("AddressBookQueryWeb", function () {
     });
 
     it("follows pagination and applies the retry budget per page", async function () {
+        // maxAttempts 1 allows exactly one retry per page. One 5xx on each
+        // page succeeds only if the budget is renewed per page; a shared
+        // budget would be exhausted on the second page.
         fetchMock
+            .mockResolvedValueOnce(errorResponse(502, "Bad gateway"))
             .mockResolvedValueOnce(
                 jsonResponse({
                     nodes: [node(0)],
@@ -150,13 +205,13 @@ describe("AddressBookQueryWeb", function () {
                 jsonResponse({ nodes: [node(1)], links: { next: null } }),
             );
 
-        const book = await query().execute(stubClient());
+        const book = await query().execute(stubClient(1));
 
-        expect(fetchMock).toHaveBeenCalledTimes(3);
+        expect(fetchMock).toHaveBeenCalledTimes(4);
         expect(fetchMock.mock.calls[0][0]).to.equal(
             "http://127.0.0.1:5551/api/v1/network/nodes?file.id=0.0.102&limit=25",
         );
-        expect(fetchMock.mock.calls[1][0]).to.equal(
+        expect(fetchMock.mock.calls[2][0]).to.equal(
             "http://127.0.0.1:5551/api/v1/network/nodes?limit=1&node.id=gt:0",
         );
         expect(
