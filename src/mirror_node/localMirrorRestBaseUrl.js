@@ -9,6 +9,8 @@
  * @typedef {"rest" | "rest-java" | "web3"} MirrorRestEndpointFamily
  */
 
+import { trimTrailingSlashes } from "./MirrorNodeRestPath.js";
+
 /**
  * Ports a local mirror node (hiero-local-node, Solo) serves each family on.
  */
@@ -79,7 +81,7 @@ export function resolveMirrorRestBaseUrl(baseUrl, family) {
         throw new Error(`unknown mirror REST endpoint family: ${family}`);
     }
 
-    return `http://${parsed.host}:${port}${parsed.path.replace(/\/+$/, "")}`;
+    return `http://${parsed.host}:${port}${trimTrailingSlashes(parsed.path)}`;
 }
 
 /**

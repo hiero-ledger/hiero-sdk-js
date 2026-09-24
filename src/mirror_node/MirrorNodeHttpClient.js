@@ -15,7 +15,9 @@ import MirrorNodeHttpError, {
     MirrorNodeHttpErrorCode,
 } from "./MirrorNodeHttpError.js";
 import MirrorNodeHttpRetryPolicy from "./MirrorNodeHttpRetryPolicy.js";
-import MirrorNodeRestPath from "./MirrorNodeRestPath.js";
+import MirrorNodeRestPath, {
+    trimTrailingSlashes,
+} from "./MirrorNodeRestPath.js";
 import * as utf8 from "../encoding/utf8.js";
 
 /**
@@ -86,7 +88,7 @@ export default class MirrorNodeHttpClient {
          * @private
          * @type {string}
          */
-        this._baseUrl = props.baseUrl.replace(/\/+$/, "");
+        this._baseUrl = trimTrailingSlashes(props.baseUrl);
 
         /**
          * @private

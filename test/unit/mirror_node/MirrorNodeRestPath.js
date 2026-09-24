@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import MirrorNodeRestPath from "../../../src/mirror_node/MirrorNodeRestPath.js";
+import MirrorNodeRestPath, {
+    trimTrailingSlashes,
+} from "../../../src/mirror_node/MirrorNodeRestPath.js";
 import MirrorNodeHttpError, {
     MirrorNodeHttpErrorCode,
 } from "../../../src/mirror_node/MirrorNodeHttpError.js";
@@ -87,6 +89,21 @@ describe("MirrorNodeRestPath", function () {
         expect(
             MirrorNodeRestPath.fromNextLink("/network/nodes").value,
         ).to.equal("/network/nodes");
+    });
+
+    it("trims trailing slashes without backtracking", function () {
+        expect(trimTrailingSlashes("https://mirror/api/v1///")).to.equal(
+            "https://mirror/api/v1",
+        );
+        expect(trimTrailingSlashes("https://mirror/api/v1")).to.equal(
+            "https://mirror/api/v1",
+        );
+        expect(trimTrailingSlashes("///")).to.equal("");
+        expect(trimTrailingSlashes("")).to.equal("");
+        const hostile = `${"/".repeat(100000)}x`;
+        const started = Date.now();
+        expect(trimTrailingSlashes(hostile)).to.equal(hostile);
+        expect(Date.now() - started).to.be.below(100);
     });
 
     it("rejects a next link naming another host", function () {

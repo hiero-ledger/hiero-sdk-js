@@ -110,7 +110,7 @@ export default class MirrorNodeRestPath {
      * @returns {string}
      */
     resolve(baseUrl) {
-        return `${baseUrl.replace(/\/+$/, "")}${this.value}`;
+        return `${trimTrailingSlashes(baseUrl)}${this.value}`;
     }
 
     /**
@@ -119,6 +119,22 @@ export default class MirrorNodeRestPath {
     toString() {
         return this.value;
     }
+}
+
+/**
+ * Strip every trailing `/` from a URL or path. A loop rather than a
+ * `/\/+$/` regex, whose backtracking is quadratic on a long run of slashes
+ * that does not end the string.
+ *
+ * @param {string} value
+ * @returns {string}
+ */
+export function trimTrailingSlashes(value) {
+    let end = value.length;
+    while (end > 0 && value.charCodeAt(end - 1) === 47) {
+        end -= 1;
+    }
+    return end === value.length ? value : value.slice(0, end);
 }
 
 /**

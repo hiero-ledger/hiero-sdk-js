@@ -470,7 +470,16 @@ describe("NodeHttpTransport", function () {
 
     it("keeps concurrent exchanges apart", async function () {
         const { origin } = await httpServer((req, res) => {
-            setTimeout(() => res.end(req.url), 10 + Math.random() * 30);
+            // Answer with the numeric index from the path, after a random
+            // delay, so a mixed-up response is detectable.
+            const index = parseInt((req.url ?? "").split("/").pop() ?? "", 10);
+            setTimeout(
+                () => {
+                    res.setHeader("Content-Type", "text/plain");
+                    res.end(String(index));
+                },
+                10 + Math.random() * 30,
+            );
         });
         const t = transport();
 
@@ -481,7 +490,7 @@ describe("NodeHttpTransport", function () {
         );
 
         responses.forEach((response, i) => {
-            expect(response.body.toString()).to.equal(`/n/${i}`);
+            expect(response.body.toString()).to.equal(String(i));
         });
     });
 
