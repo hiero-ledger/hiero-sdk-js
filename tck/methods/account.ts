@@ -12,23 +12,24 @@ import {
     TokenId,
     EvmAddress,
     AccountInfoQuery,
+    AccountBalanceQuery,
     MirrorNodeAccountBalanceQuery,
-    AccountInfo,
-    ContractInfoQuery,
-    TokenInfoQuery,
+    MirrorNodeTokenBalanceQuery,
 } from "@hiero-ledger/sdk";
 import Long from "long";
 
 import { sdk } from "../sdk_data";
 import {
     AccountResponse,
-    GetAccountBalanceResponse,
+    ExecuteDeprecatedAccountBalanceQueryResponse,
     GetAccountInfoResponse,
     GetMirrorNodeAccountBalanceResponse,
+    GetMirrorNodeTokenBalanceResponse,
     TokenRelationshipInfo,
 } from "../response/account";
 
 import { getKeyFromString } from "../utils/key";
+import { invalidParamError } from "../utils/invalid-param-error";
 import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";
 import {
     handleNftAllowances,
@@ -40,9 +41,10 @@ import {
     CreateAccountParams,
     DeleteAccountParams,
     DeleteAllowanceParams,
-    GetAccountBalanceParams,
+    ExecuteDeprecatedAccountBalanceQueryParams,
     GetAccountInfoParams,
     GetMirrorNodeAccountBalanceParams,
+    GetMirrorNodeTokenBalanceParams,
     UpdateAccountParams,
 } from "../params/account";
 import { applyCommonTransactionParams } from "../params/common-tx-params";
@@ -291,71 +293,6 @@ export const getAccountInfo = async ({
 };
 
 /**
- * `AccountBalanceQuery` has been removed from the consensus node, so the
- * balance is assembled from the info queries instead:
- *
- * - HBAR and token balances come from `AccountInfoQuery`/`ContractInfoQuery`,
- *   which are served by the consensus node and are therefore immediately
- *   consistent (the mirror node lags by a few seconds).
- * - `TokenRelationship` carries no decimals, so the decimals for each held
- *   token are read with a `TokenInfoQuery` in order to keep the JSON-RPC
- *   response shape unchanged.
- */
-export const getAccountBalance = async ({
-    accountId,
-    contractId,
-    sessionId,
-}: GetAccountBalanceParams): Promise<GetAccountBalanceResponse> => {
-    const client = sdk.getClient(sessionId);
-
-    let hbars: Hbar;
-    let tokenRelationships: AccountInfo["tokenRelationships"] | null;
-
-    if (contractId != null) {
-        const info = await new ContractInfoQuery()
-            .setGrpcDeadline(DEFAULT_GRPC_DEADLINE)
-            .setContractId(contractId)
-            .execute(client);
-
-        hbars = info.balance;
-        tokenRelationships = info.tokenRelationships;
-    } else {
-        const query = new AccountInfoQuery().setGrpcDeadline(
-            DEFAULT_GRPC_DEADLINE,
-        );
-
-        if (accountId != null) {
-            query.setAccountId(accountId);
-        }
-
-        const info = await query.execute(client);
-
-        hbars = info.balance;
-        tokenRelationships = info.tokenRelationships;
-    }
-
-    let tokenBalances = {};
-    let tokenDecimals = {};
-
-    for (const [tokenId, relationship] of tokenRelationships ?? []) {
-        tokenBalances[tokenId.toString()] = relationship.balance.toString();
-
-        const tokenInfo = await new TokenInfoQuery()
-            .setGrpcDeadline(DEFAULT_GRPC_DEADLINE)
-            .setTokenId(tokenId)
-            .execute(client);
-
-        tokenDecimals[tokenId.toString()] = tokenInfo.decimals;
-    }
-
-    return {
-        hbars: hbars.toTinybars().toString(),
-        tokenBalances: tokenBalances,
-        tokenDecimals: tokenDecimals,
-    };
-};
-
-/**
  * Reads the HBAR balance of an account or contract from the mirror node
  * via MirrorNodeAccountBalanceQuery, per the TCK
  * MirrorNodeAccountBalanceQuery test specification. The accountId string
@@ -377,6 +314,92 @@ export const getMirrorNodeAccountBalance = async ({
 
     return {
         hbars: balance.hbars.toTinybars().toString(),
+    };
+};
+
+/**
+ * Reads the balance and decimals of one token held by an account from the
+ * mirror node via MirrorNodeTokenBalanceQuery, per the TCK
+ * MirrorNodeTokenBalanceQuery test specification. The accountId string may
+ * be an account ID, an EVM address, or a public key alias.
+ */
+export const getMirrorNodeTokenBalance = async ({
+    accountId,
+    tokenId,
+    sessionId,
+}: GetMirrorNodeTokenBalanceParams): Promise<GetMirrorNodeTokenBalanceResponse> => {
+    const client = sdk.getClient(sessionId);
+    const query = new MirrorNodeTokenBalanceQuery();
+
+    if (accountId != null) {
+        query.setAccountId(accountId);
+    }
+
+    if (tokenId != null) {
+        query.setTokenId(tokenId);
+    }
+
+    const balance = await query.execute(client);
+
+    return {
+        tokenId: balance.tokenId.toString(),
+        balance: balance.balance.toString(),
+        decimals: balance.decimals,
+    };
+};
+
+/**
+ * Stage 2 deprecation hook, per the TCK AccountBalanceQuery test
+ * specification: the only place the TCK has the SDK construct the
+ * deprecated AccountBalanceQuery. Reports what the SDK writes to
+ * console.warn during construction and the message the operation rejects
+ * with; each is null when the SDK stays silent.
+ */
+export const executeDeprecatedAccountBalanceQuery = async ({
+    accountId,
+    operation = "execute",
+    sessionId,
+}: ExecuteDeprecatedAccountBalanceQueryParams): Promise<ExecuteDeprecatedAccountBalanceQueryResponse> => {
+    if (!accountId) {
+        return invalidParamError("accountId is required");
+    }
+
+    if (operation !== "execute" && operation !== "getCost") {
+        return invalidParamError(`unknown operation: ${operation}`);
+    }
+
+    const client = sdk.getClient(sessionId);
+
+    const warnings: string[] = [];
+    const warn = console.warn;
+    let query: AccountBalanceQuery;
+
+    console.warn = (...args) => {
+        warnings.push(args.join(" "));
+    };
+    try {
+        query = new AccountBalanceQuery();
+    } finally {
+        console.warn = warn;
+    }
+
+    query.setAccountId(accountId);
+
+    let executionError: string | null = null;
+
+    try {
+        if (operation === "getCost") {
+            await query.getCost(client);
+        } else {
+            await query.execute(client);
+        }
+    } catch (error) {
+        executionError = String(error?.message ?? error);
+    }
+
+    return {
+        constructionWarning: warnings.length > 0 ? warnings.join("\n") : null,
+        executionError,
     };
 };
 

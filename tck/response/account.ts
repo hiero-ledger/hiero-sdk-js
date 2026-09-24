@@ -69,16 +69,17 @@ export interface GetAccountInfoResponse {
     readonly stakingInfo: StakingInfoResponse | null;
 }
 
-type TokenId = string;
-type TokenBalance = string;
-type TokenDecimals = string;
-
-export interface GetAccountBalanceResponse {
-    readonly hbars: string;
-    readonly tokenBalances: Record<TokenId, TokenBalance>;
-    readonly tokenDecimals: Record<TokenId, TokenDecimals>;
-}
-
 export interface GetMirrorNodeAccountBalanceResponse {
     readonly hbars: string;
+}
+
+export interface GetMirrorNodeTokenBalanceResponse {
+    readonly tokenId: string;
+    readonly balance: string;
+    readonly decimals: number;
+}
+
+export interface ExecuteDeprecatedAccountBalanceQueryResponse {
+    readonly constructionWarning: string | null;
+    readonly executionError: string | null;
 }
