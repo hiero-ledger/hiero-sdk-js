@@ -8,9 +8,9 @@ import Status from "../Status.js";
 import Hbar from "../Hbar.js";
 import * as EntityIdHelper from "../EntityIdHelper.js";
 import {
-    isRetryableNetworkError,
-    readErrorDetail,
-} from "../network/mirrorRestRetry.js";
+    bodyJson,
+    statusMessage,
+} from "../mirror_node/MirrorNodeHttpClient.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -28,9 +28,11 @@ import {
 /**
  * Mirror-node REST replacement for the deprecated `AccountBalanceQuery`.
  *
- * Reads the HBAR balance from `GET /api/v1/balances?account.id={id}`.
- * Pure HTTP — no query payment, no node rotation, no gRPC — so this class
- * deliberately does not extend `Query`.
+ * Reads the HBAR balance from `GET /api/v1/balances?account.id={id}`
+ * through the client's shared HTTP transport. Pure HTTP: no query payment,
+ * no node rotation, no gRPC, so this class deliberately does not extend
+ * `Query`. Retry, backoff and timeouts follow the client's
+ * `MirrorNodeHttpRetryPolicy` (see `Client.setMirrorNodeHttpConfig`).
  *
  * `setAccountId` accepts everything the mirror node resolves:
  * `shard.realm.num`, an EVM address, a public key alias, or a contract ID.
@@ -48,7 +50,7 @@ import {
  *
  * Eventual consistency: the mirror node trails the network by a few
  * seconds, and the lag covers the account's existence as well as its
- * balance — a just-created account transiently fails with
+ * balance. A just-created account transiently fails with
  * `INVALID_ACCOUNT_ID`, so retry rather than treat the first failure as
  * final.
  *
@@ -86,7 +88,7 @@ export default class MirrorNodeAccountBalanceQuery {
 
     /**
      * Set the account whose balance to read. Contract IDs are accepted
-     * too — the mirror node balances endpoint resolves them.
+     * too, since the mirror node balances endpoint resolves them.
      *
      * @param {AccountId | string} accountId
      * @returns {this}
@@ -102,27 +104,38 @@ export default class MirrorNodeAccountBalanceQuery {
     /**
      * @param {Client} client
      * @param {number} [requestTimeout] - total timeout for the whole
-     * operation in milliseconds; defaults to `client.requestTimeout`
+     * operation in milliseconds, every retry included; defaults to the
+     * retry policy's `totalDeadline`, which in turn defaults to
+     * `client.requestTimeout`
      * @returns {Promise<MirrorNodeAccountBalance>}
      * @throws {MirrorNodeStatusError} with {@link Status.InvalidAccountId} if
      * the mirror node knows no such account
      */
     async execute(client, requestTimeout) {
         const idString = this._idString();
-        const baseUrl = client.mirrorRestApiBaseUrl;
-        // One deadline for the whole operation (every retry) — the
-        // timeout is a total operation budget, matching `Executable`,
-        // not a per-attempt bound.
-        const timeoutMs = requestTimeout ?? client.requestTimeout;
-        const deadline = timeoutMs != null ? Date.now() + timeoutMs : null;
+        const http = client._mirrorNodeHttpClient({
+            family: "rest",
+            totalDeadline: requestTimeout,
+        });
 
-        const url = `${baseUrl}/balances?account.id=${encodeURIComponent(
-            idString,
-        )}`;
+        const path = `/balances?account.id=${encodeURIComponent(idString)}`;
+        const url = `${http.baseUrl}${path}`;
 
-        const response = /** @type {MirrorBalancesResponse} */ (
-            await this._fetchJson(url, client, deadline)
-        );
+        /** @type {MirrorBalancesResponse} */
+        let response;
+        try {
+            const httpResponse = await http.get(path);
+            if (!httpResponse.ok) {
+                throw new Error(statusMessage(httpResponse));
+            }
+            response = /** @type {MirrorBalancesResponse} */ (
+                bodyJson(httpResponse)
+            );
+        } catch (error) {
+            const message =
+                error instanceof Error ? error.message : String(error);
+            throw new Error(`Failed to query ${url}: ${message}`);
+        }
 
         if (!Array.isArray(response?.balances)) {
             throw new Error(
@@ -178,95 +191,4 @@ export default class MirrorNodeAccountBalanceQuery {
         }
         return id.toString();
     }
-
-    /**
-     * GET the URL and parse the JSON body, retrying transient failures
-     * (5xx, network/timeout) with exponential backoff. HTTP 4xx — a
-     * malformed ID — throws immediately. `deadline` is the
-     * epoch-millisecond cutoff shared by every attempt of the whole
-     * operation.
-     *
-     * @private
-     * @param {string} url
-     * @param {Client} client
-     * @param {?number} deadline
-     * @returns {Promise<unknown>}
-     */
-    async _fetchJson(url, client, deadline) {
-        const maxAttempts = client.maxAttempts;
-        const maxBackoff = client.maxBackoff;
-        let backoff = Math.min(client.minBackoff, maxBackoff);
-        /** @type {?Error} */
-        let lastError = null;
-
-        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-            const remaining = deadline != null ? deadline - Date.now() : null;
-            if (remaining != null && remaining <= 0) {
-                throw (
-                    lastError ??
-                    new Error(
-                        `Failed to query ${url}: request timeout exceeded`,
-                    )
-                );
-            }
-
-            try {
-                // eslint-disable-next-line n/no-unsupported-features/node-builtins
-                const response = await fetch(url, {
-                    method: "GET",
-                    cache: "no-store",
-                    headers: { Accept: "application/json" },
-                    // Guarded because React Native's fetch polyfill does
-                    // not provide AbortSignal.timeout.
-                    signal:
-                        remaining != null &&
-                        typeof AbortSignal !== "undefined" &&
-                        typeof AbortSignal.timeout === "function"
-                            ? AbortSignal.timeout(remaining)
-                            : undefined,
-                });
-
-                if (response.ok) {
-                    const responseJson = /** @type {unknown} */ (
-                        await response.json()
-                    );
-                    return responseJson;
-                }
-
-                const detail = await readErrorDetail(response);
-                const error = new Error(
-                    `Failed to query ${url}: HTTP ${response.status}${
-                        detail ? `: ${detail}` : ""
-                    }`,
-                );
-
-                if (response.status >= 500 && attempt < maxAttempts) {
-                    lastError = error;
-                    await sleep(backoff);
-                    backoff = Math.min(backoff * 2, maxBackoff);
-                    continue;
-                }
-
-                throw error;
-            } catch (err) {
-                lastError = /** @type {Error} */ (err);
-                if (attempt < maxAttempts && isRetryableNetworkError(err)) {
-                    await sleep(backoff);
-                    backoff = Math.min(backoff * 2, maxBackoff);
-                    continue;
-                }
-                throw lastError;
-            }
-        }
-
-        throw lastError ?? new Error(`Failed to query ${url}`);
-    }
-}
-
-/**
- * @param {number} ms
- * @returns {Promise<void>}
- */
-function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
 }

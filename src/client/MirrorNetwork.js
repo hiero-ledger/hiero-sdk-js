@@ -16,6 +16,18 @@ export default class MirrorNetwork extends ManagedNetwork {
      */
     constructor(channelInitFunction) {
         super(channelInitFunction);
+
+        /**
+         * Position of the next mirror node to serve a REST call. REST base
+         * URLs are chosen round-robin over the configured mirror nodes, one
+         * per call, so a two-node network with one node down is not a coin
+         * flip re-flipped on every call. Unlike the gRPC mirror channel, a
+         * REST transport failure never demotes a node.
+         *
+         * @private
+         * @type {number}
+         */
+        this._restRoundRobinIndex = 0;
     }
 
     /**
@@ -84,15 +96,35 @@ export default class MirrorNetwork extends ManagedNetwork {
     }
 
     /**
-     * Gets the base URL for the mirror node REST API.
+     * The mirror node the next REST call targets, chosen round-robin over
+     * every configured mirror node. Every attempt and every page of that
+     * call then targets the same node.
+     *
+     * @returns {MirrorNode}
+     * @throws {Error} When no mirror network is configured
+     */
+    nextMirrorNodeForRest() {
+        if (this._nodes.length === 0) {
+            throw new Error(
+                "Client has no mirror network configured or no healthy mirror nodes are available",
+            );
+        }
+
+        const index = this._restRoundRobinIndex % this._nodes.length;
+        this._restRoundRobinIndex = (index + 1) % this._nodes.length;
+        return this._nodes[index];
+    }
+
+    /**
+     * Gets the base URL for the mirror node REST API, advancing the
+     * round-robin position.
      *
      * @returns {string} The base URL for the mirror node REST API
      * @throws {Error} When no mirror network is configured or available
      */
     get mirrorRestApiBaseUrl() {
         try {
-            const mirrorNode = this.getNextMirrorNode();
-            return mirrorNode.mirrorRestApiBaseUrl;
+            return this.nextMirrorNodeForRest().mirrorRestApiBaseUrl;
         } catch (error) {
             // Re-throw with a more descriptive error message
             throw new Error(

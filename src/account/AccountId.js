@@ -7,6 +7,10 @@ import Key from "../Key.js";
 import PublicKey from "../PublicKey.js";
 import CACHE from "../Cache.js";
 import EvmAddress from "../EvmAddress.js";
+import {
+    bodyJson,
+    statusMessage,
+} from "../mirror_node/MirrorNodeHttpClient.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -179,23 +183,35 @@ export default class AccountId {
         if (this.evmAddress === null) {
             throw new Error("field `evmAddress` should not be null");
         }
-        const mirrorRestApiBaseUrl = client.mirrorRestApiBaseUrl;
 
-        const url = `${mirrorRestApiBaseUrl}/accounts/${this.evmAddress.toString()}`;
+        const http = client._mirrorNodeHttpClient({ family: "rest" });
+        const path = `/accounts/${this.evmAddress.toString()}`;
 
+        // Give the mirror node a moment to ingest a just-created account.
         await new Promise((resolve) => {
             setTimeout(resolve, 3000);
         });
 
-        /* eslint-disable */
-        const response = await fetch(url);
-        const data = await response.json();
-        const mirrorAccountId = data.account;
+        const response = await http.get(path);
+        if (!response.ok) {
+            throw new Error(
+                `Failed to query ${http.baseUrl}${path}: ${statusMessage(
+                    response,
+                )}`,
+            );
+        }
+
+        const data = /** @type {{account?: unknown}} */ (bodyJson(response));
+        const mirrorAccountId = data?.account;
+        if (typeof mirrorAccountId !== "string") {
+            throw new Error(
+                `Failed to query ${http.baseUrl}${path}: response has no account`,
+            );
+        }
 
         this.num = Long.fromString(
             mirrorAccountId.slice(mirrorAccountId.lastIndexOf(".") + 1),
         );
-        /* eslint-enable */
 
         return this;
     }
@@ -209,21 +225,35 @@ export default class AccountId {
         if (this.num === null) {
             throw new Error("field `num` should not be null");
         }
-        const mirrorRestApiBaseUrl = client.mirrorRestApiBaseUrl;
 
-        const url = `${mirrorRestApiBaseUrl}/accounts/${this.num.toString()}`;
+        const http = client._mirrorNodeHttpClient({ family: "rest" });
+        const path = `/accounts/${this.num.toString()}`;
 
+        // Give the mirror node a moment to ingest a just-created account.
         await new Promise((resolve) => {
             setTimeout(resolve, 3000);
         });
 
-        /* eslint-disable */
-        const response = await fetch(url);
-        const data = await response.json();
-        const mirrorAccountId = data.evm_address;
+        const response = await http.get(path);
+        if (!response.ok) {
+            throw new Error(
+                `Failed to query ${http.baseUrl}${path}: ${statusMessage(
+                    response,
+                )}`,
+            );
+        }
 
-        this.evmAddress = EvmAddress.fromString(mirrorAccountId);
-        /* eslint-enable */
+        const data = /** @type {{evm_address?: unknown}} */ (
+            bodyJson(response)
+        );
+        const evmAddress = data?.evm_address;
+        if (typeof evmAddress !== "string") {
+            throw new Error(
+                `Failed to query ${http.baseUrl}${path}: response has no evm_address`,
+            );
+        }
+
+        this.evmAddress = EvmAddress.fromString(evmAddress);
 
         return this;
     }

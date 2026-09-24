@@ -8,6 +8,10 @@ import * as hex from "../encoding/hex.js";
 import { arrayEqual } from "../array.js";
 import Long from "long";
 import EvmAddress from "../EvmAddress.js";
+import {
+    bodyJson,
+    statusMessage,
+} from "../mirror_node/MirrorNodeHttpClient.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -118,18 +122,31 @@ export default class ContractId extends Key {
      * @returns {Promise<ContractId>}
      */
     async populateAccountNum(client) {
-        const mirrorRestApiBaseUrl = client.mirrorRestApiBaseUrl;
-        const url = `${mirrorRestApiBaseUrl}/contracts/${this.toEvmAddress()}`;
+        const http = client._mirrorNodeHttpClient({ family: "rest" });
+        const path = `/contracts/${this.toEvmAddress()}`;
 
-        /* eslint-disable */
-        const response = await fetch(url);
-        const data = await response.json();
-        const mirrorAccountId = data.contract_id;
+        const response = await http.get(path);
+        if (!response.ok) {
+            throw new Error(
+                `Failed to query ${http.baseUrl}${path}: ${statusMessage(
+                    response,
+                )}`,
+            );
+        }
+
+        const data = /** @type {{contract_id?: unknown}} */ (
+            bodyJson(response)
+        );
+        const mirrorContractId = data?.contract_id;
+        if (typeof mirrorContractId !== "string") {
+            throw new Error(
+                `Failed to query ${http.baseUrl}${path}: response has no contract_id`,
+            );
+        }
 
         this.num = Long.fromString(
-            mirrorAccountId.slice(mirrorAccountId.lastIndexOf(".") + 1),
+            mirrorContractId.slice(mirrorContractId.lastIndexOf(".") + 1),
         );
-        /* eslint-enable */
 
         return this;
     }

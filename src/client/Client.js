@@ -18,11 +18,49 @@ import {
     DEFAULT_MAX_ATTEMPTS,
     DEFAULT_REQUEST_TIMEOUT,
 } from "../constants/ClientConstants.js";
+import FetchHttpTransport from "../http/FetchHttpTransport.js";
+import HttpTransportError, {
+    HttpTransportErrorCode,
+} from "../http/HttpTransportError.js";
+import MirrorNodeHttpClient from "../mirror_node/MirrorNodeHttpClient.js";
+import MirrorNodeHttpConfig from "../mirror_node/MirrorNodeHttpConfig.js";
+import MirrorNodeHttpRetryPolicy from "../mirror_node/MirrorNodeHttpRetryPolicy.js";
+import {
+    isLoopbackBaseUrl,
+    resolveMirrorRestBaseUrl,
+} from "../mirror_node/localMirrorRestBaseUrl.js";
+
+/**
+ * Grace period `close()` gives mirror REST reads still in flight before the
+ * transport the client built is torn down. Deliberately far below the
+ * per-attempt read timeout: waiting out a stalled read on a shutdown path
+ * is worse than aborting it.
+ */
+const DEFAULT_MIRROR_NODE_HTTP_CLOSE_TIMEOUT = 5 * 1000;
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
  * @typedef {import("../address_book/NodeAddressBook.js").default} NodeAddressBook
+ * @typedef {import("../http/HttpTransport.js").default} HttpTransport
+ * @typedef {import("../http/HttpTransportConfiguration.js").default} HttpTransportConfiguration
+ * @typedef {import("../mirror_node/localMirrorRestBaseUrl.js").MirrorRestEndpointFamily} MirrorRestEndpointFamily
+ */
+
+/**
+ * What a mirror REST query passes when it asks the client for an adapter.
+ *
+ * @typedef {object} MirrorNodeHttpClientRequest
+ * @property {MirrorRestEndpointFamily} [family] - the endpoint family,
+ * `"rest"` by default; only matters on a local network, where the families
+ * are served on different ports
+ * @property {string} [baseUrl] - an explicit base URL instead of the next
+ * round-robin mirror node
+ * @property {?number} [maxAttempts] - per-query override of the policy field
+ * @property {?number} [maxBackoff] - per-query override of the policy field
+ * @property {?number} [totalDeadline] - an explicit per-call timeout in
+ * milliseconds; `0`, `null` or `undefined` inherit the policy's
+ * @property {?Logger} [logger]
  */
 
 /**
@@ -210,6 +248,37 @@ export default class Client {
          * @type {Logger | null}
          */
         this._logger = null;
+
+        /**
+         * Everything this client holds for mirror node REST access, as
+         * supplied. Never null.
+         *
+         * @private
+         * @type {MirrorNodeHttpConfig}
+         */
+        this._mirrorNodeHttpConfig = new MirrorNodeHttpConfig();
+
+        /**
+         * The HTTP transport this client built for itself on the first
+         * mirror REST call, and therefore owns and closes. Stays `null` while
+         * no mirror REST call has been made or a transport was injected.
+         *
+         * @private
+         * @type {?HttpTransport}
+         */
+        this._ownedMirrorNodeHttpTransport = null;
+
+        /**
+         * Aborted by `close()`, so a mirror REST call in progress starts no
+         * new attempt and does not sleep out a backoff.
+         *
+         * @private
+         * @type {?AbortController}
+         */
+        this._closeController =
+            typeof AbortController !== "undefined"
+                ? new AbortController()
+                : null;
     }
 
     /**
@@ -342,6 +411,176 @@ export default class Client {
      */
     get mirrorRestApiBaseUrl() {
         return this._mirrorNetwork.mirrorRestApiBaseUrl;
+    }
+
+    /**
+     * Replace the mirror node HTTP configuration: the transport the mirror
+     * REST queries use (or `null` to let the SDK build one), how the SDK
+     * builds it, the retry policy, and the caller headers.
+     *
+     * The whole value is replaced, not merged, so derive from the current
+     * one to change a single field:
+     *
+     * ```javascript
+     * const cfg = client.getMirrorNodeHttpConfig();
+     * client.setMirrorNodeHttpConfig({
+     *     ...cfg,
+     *     retryPolicy: { ...cfg.retryPolicy, maxAttempts: 3 },
+     * });
+     * ```
+     *
+     * A transport set here is owned by the application and never closed by
+     * the SDK; it is used from the next mirror REST call on. The
+     * `transportConfiguration` applies only to a transport the SDK builds,
+     * which happens once, on the first mirror REST call.
+     *
+     * @param {MirrorNodeHttpConfig | ConstructorParameters<typeof MirrorNodeHttpConfig>[0]} config
+     * @returns {this}
+     */
+    setMirrorNodeHttpConfig(config) {
+        this._mirrorNodeHttpConfig = MirrorNodeHttpConfig.from(config);
+        return this;
+    }
+
+    /**
+     * The mirror node HTTP configuration as supplied, never as resolved:
+     * `transport` stays `null` even after the SDK has built its own, so
+     * inspecting a client never constructs one and
+     * `setMirrorNodeHttpConfig(getMirrorNodeHttpConfig())` is a no-op.
+     *
+     * @returns {MirrorNodeHttpConfig}
+     */
+    getMirrorNodeHttpConfig() {
+        return this._mirrorNodeHttpConfig;
+    }
+
+    /**
+     * @returns {MirrorNodeHttpConfig}
+     */
+    get mirrorNodeHttpConfig() {
+        return this._mirrorNodeHttpConfig;
+    }
+
+    /**
+     * The transport mirror REST calls go through: the injected one when the
+     * configuration carries one, else the one this client built for itself,
+     * built on first use.
+     *
+     * @internal
+     * @returns {HttpTransport}
+     */
+    _mirrorNodeHttpTransport() {
+        if (this._isShutdown) {
+            throw new HttpTransportError(
+                HttpTransportErrorCode.CLIENT_CLOSED_ERROR,
+                "the client is closed",
+            );
+        }
+
+        const injected = this._mirrorNodeHttpConfig.transport;
+        if (injected != null) {
+            return injected;
+        }
+
+        if (this._ownedMirrorNodeHttpTransport == null) {
+            this._ownedMirrorNodeHttpTransport =
+                this._createDefaultHttpTransport(
+                    this._mirrorNodeHttpConfig.transportConfiguration,
+                );
+        }
+
+        return this._ownedMirrorNodeHttpTransport;
+    }
+
+    /**
+     * Build the transport this runtime uses when none is injected. The
+     * base class builds the `fetch`-backed one; `NodeClient` overrides this
+     * with the Node transport and its private connection pool.
+     *
+     * @protected
+     * @param {HttpTransportConfiguration} configuration
+     * @returns {HttpTransport}
+     */
+    _createDefaultHttpTransport(configuration) {
+        return FetchHttpTransport.create(configuration);
+    }
+
+    /**
+     * The adapter for one mirror REST call: the next round-robin mirror
+     * node resolved for the endpoint family, the client's transport, and the
+     * retry policy resolved as package default, then the client's policy,
+     * then the query's own overrides, field by field. A `totalDeadline` of
+     * `0` inherits `requestTimeout`.
+     *
+     * @internal
+     * @param {MirrorNodeHttpClientRequest} [request]
+     * @returns {MirrorNodeHttpClient}
+     */
+    _mirrorNodeHttpClient(request = {}) {
+        // A closed client fails with `client-closed-error`, not with the
+        // "no mirror network" error that clearing the network would cause.
+        const transport = this._mirrorNodeHttpTransport();
+        const baseUrl = resolveMirrorRestBaseUrl(
+            request.baseUrl ?? this._mirrorNetwork.mirrorRestApiBaseUrl,
+            request.family ?? "rest",
+        );
+        const retryPolicy = this._resolveMirrorNodeHttpRetryPolicy(
+            baseUrl,
+            request,
+        );
+
+        return MirrorNodeHttpClient.create(baseUrl, transport, retryPolicy, {
+            requestHeaders: this._mirrorNodeHttpConfig.requestHeaders,
+            closeSignal:
+                this._closeController != null
+                    ? this._closeController.signal
+                    : null,
+            logger: request.logger ?? this._logger,
+        });
+    }
+
+    /**
+     * @private
+     * @param {string} baseUrl
+     * @param {MirrorNodeHttpClientRequest} request
+     * @returns {MirrorNodeHttpRetryPolicy}
+     */
+    _resolveMirrorNodeHttpRetryPolicy(baseUrl, request) {
+        let policy = this._mirrorNodeHttpConfig.retryPolicy;
+
+        // A mirror node still starting under a local test harness needs a
+        // startup budget, not a flaky-request budget. Only the package
+        // default moves; an explicit policy overrides it as anywhere else.
+        if (
+            policy.equals(MirrorNodeHttpRetryPolicy.DEFAULT) &&
+            isLoopbackBaseUrl(baseUrl)
+        ) {
+            policy = MirrorNodeHttpRetryPolicy.LOCAL_DEFAULT;
+        }
+
+        /** @type {ConstructorParameters<typeof MirrorNodeHttpRetryPolicy>[0]} */
+        const overrides = {};
+        if (request.maxAttempts != null) {
+            overrides.maxAttempts = request.maxAttempts;
+        }
+        if (request.maxBackoff != null) {
+            overrides.maxBackoff = request.maxBackoff;
+        }
+        if (request.totalDeadline != null && request.totalDeadline > 0) {
+            overrides.totalDeadline = request.totalDeadline;
+        }
+        if (Object.keys(overrides).length > 0) {
+            policy = new MirrorNodeHttpRetryPolicy({ ...policy, ...overrides });
+        }
+
+        if (policy.totalDeadline === 0) {
+            policy = new MirrorNodeHttpRetryPolicy({
+                ...policy,
+                totalDeadline: this._requestTimeout,
+            });
+        }
+
+        return policy;
     }
 
     /**
@@ -926,6 +1165,13 @@ export default class Client {
     }
 
     /**
+     * Close the client: the consensus and mirror gRPC channels, the
+     * scheduled network update, and the mirror HTTP transport this client
+     * built for itself, which is given a 5 s grace period for reads in
+     * flight before being torn down. A transport the application injected
+     * is never closed. Mirror REST calls still running start no new
+     * attempt.
+     *
      * @returns {void}
      */
     close() {
@@ -933,6 +1179,26 @@ export default class Client {
         this._mirrorNetwork.close();
         this._isShutdown = true;
         clearTimeout(this._timer);
+
+        if (this._closeController != null) {
+            this._closeController.abort(
+                new HttpTransportError(
+                    HttpTransportErrorCode.CLIENT_CLOSED_ERROR,
+                    "the client is closed",
+                ),
+            );
+        }
+
+        const owned = this._ownedMirrorNodeHttpTransport;
+        if (owned != null) {
+            this._ownedMirrorNodeHttpTransport = null;
+            // The drain is asynchronous and deliberately not awaited:
+            // `close()` has always been synchronous.
+            const result = owned.close(DEFAULT_MIRROR_NODE_HTTP_CLOSE_TIMEOUT);
+            if (result != null && typeof result.catch === "function") {
+                result.catch(() => {});
+            }
+        }
     }
 
     /**
