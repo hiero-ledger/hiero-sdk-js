@@ -146,6 +146,18 @@ describe("RegisteredNodeAddressBookQuery", function () {
         );
     });
 
+    it("should reject when the client has no mirror network", async function () {
+        const client = Client.forNetwork(
+            { "127.0.0.1:50211": "0.0.3" },
+            { scheduleNetworkUpdate: false },
+        );
+
+        await expect(
+            new RegisteredNodeAddressBookQuery().execute(client),
+        ).rejects.toThrow("Client has no mirror network configured");
+        client.close();
+    });
+
     it("should follow pagination links and aggregate registered nodes", async function () {
         const adminKey = PrivateKey.generateED25519().publicKey;
         const client = Client.forTestnet();

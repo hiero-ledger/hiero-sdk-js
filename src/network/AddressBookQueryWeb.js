@@ -202,12 +202,14 @@ export default class AddressBookQueryWeb extends Query {
      */
     execute(client, requestTimeout) {
         return new Promise((resolve, reject) => {
-            void this._makeFetchRequest(
+            // `_makeFetchRequest` is async: a throw outside its retry loop
+            // rejects its own promise, so forward that or `execute()` never settles.
+            this._makeFetchRequest(
                 client,
                 resolve,
                 reject,
                 requestTimeout,
-            );
+            ).catch(reject);
         });
     }
 
@@ -219,8 +221,16 @@ export default class AddressBookQueryWeb extends Query {
      * @param {number=} requestTimeout
      */
     async _makeFetchRequest(client, resolve, reject, requestTimeout) {
-        const { port, address } =
-            client._mirrorNetwork.getNextMirrorNode().address;
+        const mirrorNode = client._mirrorNetwork.getNextMirrorNode();
+        if (mirrorNode == null) {
+            reject(
+                new Error(
+                    "Client has no mirror network configured or no healthy mirror nodes are available",
+                ),
+            );
+            return;
+        }
+        const { port, address } = mirrorNode.address;
 
         let baseUrl = `${
             address.includes("127.0.0.1") || address.includes("localhost")
