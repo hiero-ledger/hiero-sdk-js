@@ -7,8 +7,9 @@ import AddressBookQueryWeb from "../../src/network/AddressBookQueryWeb.js";
  * The minimum a client needs to expose for the web address book query.
  * @param {number} [maxAttempts]
  * @param {object} [logger]
+ * @param {object} [overrides]
  */
-function stubClient(maxAttempts = 3, logger = null) {
+function stubClient(maxAttempts = 3, logger = null, overrides = {}) {
     return {
         _logger: logger,
         _mirrorNetwork: {
@@ -18,8 +19,26 @@ function stubClient(maxAttempts = 3, logger = null) {
         },
         _network: { ledgerId: null },
         maxAttempts,
+        requestTimeout: 120000,
         isClientShutDown: false,
+        ...overrides,
     };
+}
+
+/**
+ * Run `fn` with `AbortSignal.timeout` removed, as on React Native and
+ * browsers before Chrome 103 / Safari 16.
+ * @param {() => Promise<void>} fn
+ */
+async function withoutAbortSignalTimeout(fn) {
+    const original = AbortSignal.timeout;
+    // @ts-ignore simulate a runtime without the static
+    AbortSignal.timeout = undefined;
+    try {
+        await fn();
+    } finally {
+        AbortSignal.timeout = original;
+    }
 }
 
 /**
@@ -60,6 +79,22 @@ function errorResponse(status, detail) {
         { _status: { messages: [{ message: "Error", detail }] } },
         status,
     );
+}
+
+/**
+ * Behave like a real `fetch` against a server that never answers: reject
+ * only when the abort signal fires, with the signal's own reason.
+ * @param {AbortSignal} signal
+ * @returns {Promise<never>}
+ */
+function hangUntilAborted(signal) {
+    return new Promise((_, reject) => {
+        signal.addEventListener("abort", () => {
+            const fallback = new Error("This operation was aborted");
+            fallback.name = "AbortError";
+            reject(signal.reason ?? fallback);
+        });
+    });
 }
 
 function query() {
@@ -217,6 +252,153 @@ describe("AddressBookQueryWeb", function () {
         expect(
             book.nodeAddresses.map((a) => a.accountId.toString()),
         ).to.deep.equal(["0.0.3", "0.0.4"]);
+    });
+
+    it("bounds every request to 30 s by default", async function () {
+        const timeoutSpy = vi.spyOn(AbortSignal, "timeout");
+
+        for (const requestTimeout of [undefined, 0, -5]) {
+            timeoutSpy.mockClear();
+            fetchMock.mockReset();
+            fetchMock
+                .mockResolvedValueOnce(
+                    jsonResponse({
+                        nodes: [node(0)],
+                        links: {
+                            next: "/api/v1/network/nodes?limit=1&node.id=gt:0",
+                        },
+                    }),
+                )
+                .mockResolvedValueOnce(jsonResponse({ nodes: [node(1)] }));
+
+            await query().execute(stubClient(), requestTimeout);
+
+            expect(fetchMock).toHaveBeenCalledTimes(2);
+            expect(timeoutSpy).toHaveBeenCalledTimes(2);
+            for (const call of timeoutSpy.mock.calls) {
+                expect(call[0]).to.equal(30000);
+            }
+            for (const call of fetchMock.mock.calls) {
+                expect(call[1].signal).to.be.instanceOf(AbortSignal);
+            }
+        }
+        timeoutSpy.mockRestore();
+    });
+
+    it("caps each attempt at the time left in requestTimeout", async function () {
+        const timeoutSpy = vi.spyOn(AbortSignal, "timeout");
+        fetchMock.mockResolvedValue(jsonResponse({ nodes: [node(0)] }));
+
+        await query().execute(stubClient(), 1234);
+
+        expect(timeoutSpy).toHaveBeenCalledTimes(1);
+        expect(timeoutSpy.mock.calls[0][0]).to.be.within(1200, 1234);
+        timeoutSpy.mockRestore();
+    });
+
+    it("falls back to client.requestTimeout as the total budget", async function () {
+        const timeoutSpy = vi.spyOn(AbortSignal, "timeout");
+        fetchMock.mockResolvedValue(jsonResponse({ nodes: [node(0)] }));
+
+        await query().execute(stubClient(3, null, { requestTimeout: 5000 }), 0);
+
+        expect(timeoutSpy.mock.calls[0][0]).to.be.within(4900, 5000);
+        timeoutSpy.mockRestore();
+    });
+
+    it("stops retrying when the total budget is exhausted", async function () {
+        fetchMock.mockResolvedValue(errorResponse(503, "Unavailable"));
+        const q = query().setMaxBackoff(8000);
+
+        await expect(q.execute(stubClient(100), 50)).rejects.toThrow(
+            "Failed to query address book: request timeout of 50 ms exceeded. Last error: HTTP 503: Error: Unavailable",
+        );
+        // The first backoff (250 ms) would run past the 50 ms deadline, so
+        // there is no second attempt.
+        expect(fetchMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("aborts a hung request after the attempt timeout and retries", async function () {
+        fetchMock
+            .mockImplementationOnce((_, init) => hangUntilAborted(init.signal))
+            .mockResolvedValueOnce(jsonResponse({ nodes: [node(0)] }));
+        const q = query();
+        q._attemptTimeoutMs = 20;
+
+        const book = await q.execute(stubClient());
+
+        expect(fetchMock).toHaveBeenCalledTimes(2);
+        expect(book.nodeAddresses).to.have.length(1);
+    });
+
+    it("falls back to AbortController when AbortSignal.timeout is missing", async function () {
+        await withoutAbortSignalTimeout(async () => {
+            fetchMock
+                .mockImplementationOnce((_, init) =>
+                    hangUntilAborted(init.signal),
+                )
+                .mockResolvedValueOnce(jsonResponse({ nodes: [node(0)] }));
+            const q = query();
+            q._attemptTimeoutMs = 20;
+
+            const book = await q.execute(stubClient());
+
+            expect(fetchMock).toHaveBeenCalledTimes(2);
+            expect(fetchMock.mock.calls[0][1].signal).to.be.instanceOf(
+                AbortSignal,
+            );
+            expect(book.nodeAddresses).to.have.length(1);
+        });
+    });
+
+    it("keeps the fallback timer armed while the body is read", async function () {
+        await withoutAbortSignalTimeout(async () => {
+            // Headers arrive, then the body stalls. Only the abort signal
+            // can end the read.
+            fetchMock
+                .mockImplementationOnce((_, init) =>
+                    Promise.resolve({
+                        ok: true,
+                        status: 200,
+                        json: () => hangUntilAborted(init.signal),
+                        text: () => hangUntilAborted(init.signal),
+                    }),
+                )
+                .mockResolvedValueOnce(jsonResponse({ nodes: [node(0)] }));
+            const q = query();
+            q._attemptTimeoutMs = 20;
+
+            const book = await q.execute(stubClient());
+
+            expect(fetchMock).toHaveBeenCalledTimes(2);
+            expect(book.nodeAddresses).to.have.length(1);
+        });
+    });
+
+    it("clears the fallback timer once the request settles", async function () {
+        await withoutAbortSignalTimeout(async () => {
+            vi.useFakeTimers();
+            try {
+                fetchMock.mockResolvedValue(jsonResponse({ nodes: [node(0)] }));
+
+                await query().execute(stubClient());
+
+                expect(vi.getTimerCount()).to.equal(0);
+            } finally {
+                vi.useRealTimers();
+            }
+        });
+    });
+
+    it("rejects instead of hanging when no mirror node is configured", async function () {
+        const client = stubClient(3, null, {
+            _mirrorNetwork: { getNextMirrorNode: () => undefined },
+        });
+
+        await expect(query().execute(client)).rejects.toThrow(
+            "Client has no mirror network configured",
+        );
+        expect(fetchMock).not.toHaveBeenCalled();
     });
 
     it("stops retrying once the client is shut down", async function () {

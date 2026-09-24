@@ -4,7 +4,11 @@ import Query from "../query/Query.js";
 import NodeAddressBook from "../address_book/NodeAddressBook.js";
 import FileId from "../file/FileId.js";
 import NodeAddress from "../address_book/NodeAddress.js";
-import { isRetryableNetworkError, readErrorDetail } from "./mirrorRestRetry.js";
+import {
+    isRetryableNetworkError,
+    readErrorDetail,
+    timeoutSignal,
+} from "./mirrorRestRetry.js";
 import {
     MAINNET,
     WEB_TESTNET,
@@ -58,6 +62,18 @@ import {
 const DEFAULT_PAGE_SIZE = 25;
 
 /**
+ * Default upper bound for a single mirror node request, in milliseconds.
+ *
+ * One attempt on one page never waits longer than this, or longer than the
+ * time left in the query's total budget, whichever is smaller. The value
+ * matches the `perAttemptTimeout` default of the shared HTTP transport
+ * proposal (sdk-collaboration-hub#286) so it does not have to move again
+ * when that lands.
+ * @constant {number}
+ */
+const DEFAULT_ATTEMPT_TIMEOUT_MS = 30 * 1000;
+
+/**
  * Web-compatible query to get a list of Hedera network node addresses from a mirror node.
  * Uses fetch API instead of gRPC for web environments.
  *
@@ -97,6 +113,14 @@ export default class AddressBookQueryWeb extends Query {
 
         /** @type {NodeAddress[]} */
         this._addresses = [];
+
+        /**
+         * Upper bound for one attempt on one page, in milliseconds. Kept on
+         * the instance so tests can shorten it; it is not public API.
+         * @internal
+         * @type {number}
+         */
+        this._attemptTimeoutMs = DEFAULT_ATTEMPT_TIMEOUT_MS;
     }
 
     /**
@@ -158,7 +182,11 @@ export default class AddressBookQueryWeb extends Query {
 
     /**
      * @param {Client<Channel>} client
-     * @param {number=} requestTimeout
+     * @param {number=} requestTimeout - total budget for the whole query in
+     * milliseconds, covering every page and every retry, the same meaning
+     * `requestTimeout` has on `Executable` and on the mirror node balance
+     * queries. Defaults to `client.requestTimeout`; `0` or less also selects
+     * the default. Independently, one attempt never waits longer than 30 s.
      * @returns {Promise<NodeAddressBook>}
      */
     execute(client, requestTimeout) {
@@ -224,38 +252,79 @@ export default class AddressBookQueryWeb extends Query {
         initialUrl.searchParams.append("limit", effectiveLimit.toString());
         const maxAttempts = this._maxAttempts ?? client.maxAttempts;
         const maxBackoff = this._maxBackoff ?? client.maxBackoff;
+
+        // One deadline for the whole query, every page and every retry.
+        const totalTimeoutMs =
+            requestTimeout != null && requestTimeout > 0
+                ? requestTimeout
+                : client.requestTimeout;
+        const deadline =
+            totalTimeoutMs != null && totalTimeoutMs > 0
+                ? Date.now() + totalTimeoutMs
+                : null;
+        /** @type {?string} */
+        let lastMessage = null;
+        const deadlineError = () =>
+            new Error(
+                `Failed to query address book: request timeout of ${String(
+                    totalTimeoutMs,
+                )} ms exceeded${
+                    lastMessage != null ? `. Last error: ${lastMessage}` : ""
+                }`,
+            );
+
         // Fetch all pages
         while (!isLastPage) {
             const currentUrl = nextUrl ? new URL(nextUrl, baseUrl) : initialUrl;
 
             for (let attempt = 0; attempt <= maxAttempts; attempt++) {
+                const remaining =
+                    deadline != null ? deadline - Date.now() : null;
+                if (remaining != null && remaining <= 0) {
+                    reject(deadlineError());
+                    return;
+                }
+                const attemptTimeoutMs =
+                    remaining != null
+                        ? Math.min(this._attemptTimeoutMs, remaining)
+                        : this._attemptTimeoutMs;
+
                 try {
-                    // eslint-disable-next-line n/no-unsupported-features/node-builtins
-                    const response = await fetch(currentUrl.toString(), {
-                        method: "GET",
-                        headers: {
-                            Accept: "application/json",
-                        },
-                        signal: requestTimeout
-                            ? AbortSignal.timeout(requestTimeout)
-                            : undefined,
-                    });
+                    const { signal, clear } = timeoutSignal(attemptTimeoutMs);
+                    /** @type {AddressBookQueryWebResponse} */
+                    let data;
+                    // The timer must outlive the body read, not just the
+                    // headers: with the `AbortController` fallback nothing
+                    // else bounds `readErrorDetail()` and `response.json()`.
+                    try {
+                        // eslint-disable-next-line n/no-unsupported-features/node-builtins
+                        const response = await fetch(currentUrl.toString(), {
+                            method: "GET",
+                            headers: {
+                                Accept: "application/json",
+                            },
+                            signal,
+                        });
 
-                    if (!response.ok) {
-                        // `HTTP <status>` is the shape `isRetryableNetworkError`
-                        // classifies on: 5xx retries, everything else is terminal.
-                        const detail = await readErrorDetail(response);
-                        throw new Error(
-                            `HTTP ${response.status}${
-                                detail ? `: ${detail}` : ""
-                            }`,
+                        if (!response.ok) {
+                            // `HTTP <status>` is the shape
+                            // `isRetryableNetworkError` classifies on: 5xx
+                            // retries, everything else is terminal.
+                            const detail = await readErrorDetail(response);
+                            throw new Error(
+                                `HTTP ${response.status}${
+                                    detail ? `: ${detail}` : ""
+                                }`,
+                            );
+                        }
+
+                        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                        data = /** @type {AddressBookQueryWebResponse} */ (
+                            await response.json()
                         );
+                    } finally {
+                        clear();
                     }
-
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    const data = /** @type {AddressBookQueryWebResponse} */ (
-                        await response.json()
-                    );
 
                     const nodes = data.nodes || [];
 
@@ -289,6 +358,7 @@ export default class AddressBookQueryWeb extends Query {
                 } catch (error) {
                     const message =
                         error instanceof Error ? error.message : String(error);
+                    lastMessage = message;
 
                     // Retry only transient failures: 5xx, timeouts and
                     // transport errors. A 4xx or a malformed body is terminal.
@@ -298,6 +368,16 @@ export default class AddressBookQueryWeb extends Query {
                         isRetryableNetworkError(error)
                     ) {
                         const delay = Math.min(250 * 2 ** attempt, maxBackoff);
+
+                        // Do not sleep into a deadline that leaves no time
+                        // for another attempt.
+                        if (
+                            deadline != null &&
+                            Date.now() + delay >= deadline
+                        ) {
+                            reject(deadlineError());
+                            return;
+                        }
 
                         if (this._logger) {
                             this._logger.debug(

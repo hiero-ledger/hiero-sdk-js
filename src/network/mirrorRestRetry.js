@@ -41,6 +41,38 @@ export function isRetryableNetworkError(err) {
 }
 
 /**
+ * Build an abort signal that fires after `ms` milliseconds.
+ *
+ * `AbortSignal.timeout` is used where it exists (Node 17.3+, current
+ * browsers). React Native and older browsers ship only `AbortController`,
+ * so fall back to a controller armed with `setTimeout`. Without either the
+ * request runs unbounded.
+ *
+ * Call `clear()` once the response body has been consumed, not when the
+ * headers arrive: with the fallback the timer is the only thing bounding
+ * the body read.
+ *
+ * @param {number} ms
+ * @returns {{signal: AbortSignal | undefined, clear: () => void}}
+ */
+export function timeoutSignal(ms) {
+    if (
+        typeof AbortSignal !== "undefined" &&
+        typeof AbortSignal.timeout === "function"
+    ) {
+        return { signal: AbortSignal.timeout(ms), clear: () => {} };
+    }
+
+    if (typeof AbortController === "undefined") {
+        return { signal: undefined, clear: () => {} };
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), ms);
+    return { signal: controller.signal, clear: () => clearTimeout(timer) };
+}
+
+/**
  * Read a short, human-readable error detail from a mirror-node REST
  * error response. Mirror node returns JSON of the form
  * `{"_status":{"messages":[{"message":"...","detail":"..."}]}}`, but
