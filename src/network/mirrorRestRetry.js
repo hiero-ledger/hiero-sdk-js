@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Shared retry-classification helpers for mirror-node REST queries
- * (currently used by `RegisteredNodeAddressBookQuery` and
- * `FeeEstimateQuery`).
+ * Shared retry-classification helpers for mirror-node REST queries.
  *
  * These helpers describe the retry policy for fetch-based mirror REST
  * endpoints — distinct from the gRPC `Executable` retry policy, which
@@ -19,8 +17,14 @@
  * - Errors whose message starts with `"HTTP 5"` — the caller's own
  *   classifier already deemed the response a 5xx
  * - Generic transport-level failure messages (`timeout`, `network`,
- *   `fetch failed`, `ECONN…`, `ENETUNREACH`) — Node and browser fetch
- *   surface these for connection-reset and DNS-style failures
+ *   `fetch failed`, `Failed to fetch`, `Load failed`, `ECONN…`,
+ *   `ENETUNREACH`) — Node, Chrome/Edge, Safari and Firefox fetch surface
+ *   these for connection-reset and DNS-style failures
+ *
+ * An `"HTTP <status>"` message is classified by its status alone. The
+ * mirror node echoes the request path in its error body, and every mirror
+ * REST path contains `network`, `timeout` or similar words, so the
+ * transport regex must never see a status message.
  *
  * @param {unknown} err
  * @returns {boolean}
@@ -30,10 +34,42 @@ export function isRetryableNetworkError(err) {
     const name = err.name || "";
     const message = err.message || "";
     if (name === "AbortError" || name === "TimeoutError") return true;
-    if (/^HTTP 5\d\d/.test(message)) return true;
-    return /timeout|timed out|network|fetch failed|ECONN|ENETUNREACH/i.test(
+    if (/^HTTP \d{3}/.test(message)) return /^HTTP 5\d\d/.test(message);
+    return /timeout|timed out|network|fetch failed|failed to fetch|load failed|ECONN|ENETUNREACH/i.test(
         message,
     );
+}
+
+/**
+ * Build an abort signal that fires after `ms` milliseconds.
+ *
+ * `AbortSignal.timeout` is used where it exists (Node 17.3+, current
+ * browsers). React Native and older browsers ship only `AbortController`,
+ * so fall back to a controller armed with `setTimeout`. Without either the
+ * request runs unbounded.
+ *
+ * Call `clear()` once the response body has been consumed, not when the
+ * headers arrive: with the fallback the timer is the only thing bounding
+ * the body read.
+ *
+ * @param {number} ms
+ * @returns {{signal: AbortSignal | undefined, clear: () => void}}
+ */
+export function timeoutSignal(ms) {
+    if (
+        typeof AbortSignal !== "undefined" &&
+        typeof AbortSignal.timeout === "function"
+    ) {
+        return { signal: AbortSignal.timeout(ms), clear: () => {} };
+    }
+
+    if (typeof AbortController === "undefined") {
+        return { signal: undefined, clear: () => {} };
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), ms);
+    return { signal: controller.signal, clear: () => clearTimeout(timer) };
 }
 
 /**
