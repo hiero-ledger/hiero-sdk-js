@@ -371,6 +371,43 @@ describe("AddressBookQueryWeb", function () {
         expect(fake.requests).to.have.length(1);
     });
 
+    it("targets the local REST port on a loopback mirror node whatever its configured port", async function () {
+        const fake = new FakeHttpTransport().respondJson(200, { nodes: [] });
+
+        await query().execute(track(fake, { mirror: "127.0.0.1:5600" }));
+
+        expect(fake.requests[0].url).to.equal(
+            "http://127.0.0.1:5551/api/v1/network/nodes?file.id=0.0.102&limit=25",
+        );
+    });
+
+    it("draws every page and every retry from one total deadline", async function () {
+        const fake = new FakeHttpTransport()
+            .respondAfter(
+                40,
+                jsonResponse(200, {
+                    nodes: [node(0)],
+                    links: {
+                        next: "/api/v1/network/nodes?limit=1&node.id=gt:0",
+                    },
+                }),
+            )
+            .respondAfter(40, errorResponse(503, "Unavailable"))
+            .respondJson(200, { nodes: [node(1)] });
+        // No per-attempt cap, so each request's deadline is the time left
+        // in the call.
+        const client = track(fake, { policy: { perAttemptTimeout: 0 } });
+
+        const book = await query().execute(client, 5000);
+
+        expect(book.nodeAddresses).to.have.length(2);
+        expect(fake.requests).to.have.length(3);
+        const deadlines = fake.requests.map((request) => request.deadline);
+        expect(deadlines[0]).to.be.within(4900, 5000);
+        expect(deadlines[1]).to.be.below(deadlines[0] - 30);
+        expect(deadlines[2]).to.be.below(deadlines[1] - 30);
+    });
+
     it("derives the base URL from the mirror node address and uses https off loopback", async function () {
         const fake = new FakeHttpTransport().respondJson(200, { nodes: [] });
 

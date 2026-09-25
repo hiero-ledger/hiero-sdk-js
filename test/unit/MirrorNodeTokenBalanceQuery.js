@@ -183,6 +183,33 @@ describe("MirrorNodeTokenBalanceQuery", function () {
             expect(fake.requests).to.have.length(1);
         });
 
+        it("rejects an empty or foreign body instead of reporting zero", async function () {
+            for (const body of [
+                undefined,
+                {},
+                { tokens: null },
+                { tokens: "x" },
+            ]) {
+                fake.handler = () => jsonResponse(200, body);
+
+                let error = null;
+                try {
+                    await new MirrorNodeTokenBalanceQuery()
+                        .setAccountId("0.0.10")
+                        .setTokenId("0.0.5005")
+                        .execute(client);
+                } catch (err) {
+                    error = err;
+                }
+
+                expect(error, JSON.stringify(body)).to.not.be.null;
+                expect(error.message).to.include(
+                    "response has no tokens array",
+                );
+                expect(error).to.not.be.instanceOf(MirrorNodeStatusError);
+            }
+        });
+
         it("bounds the operation by the given requestTimeout", async function () {
             await new MirrorNodeTokenBalanceQuery()
                 .setAccountId("0.0.10")

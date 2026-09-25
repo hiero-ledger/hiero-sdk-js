@@ -62,6 +62,17 @@ export default class MirrorNodeHttpError extends Error {
      * @returns {boolean}
      */
     static hasCode(error, code) {
-        return error instanceof MirrorNodeHttpError && error.code === code;
+        if (error instanceof MirrorNodeHttpError) {
+            return error.code === code;
+        }
+        if (error == null || typeof error !== "object") {
+            return false;
+        }
+        const candidate = /** @type {{name?: unknown, code?: unknown}} */ (
+            error
+        );
+        return (
+            candidate.name === "MirrorNodeHttpError" && candidate.code === code
+        );
     }
 }

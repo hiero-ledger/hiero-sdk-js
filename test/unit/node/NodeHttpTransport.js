@@ -5,6 +5,7 @@ import https from "https";
 import net from "net";
 import zlib from "zlib";
 import { getEventListeners } from "events";
+import { vi } from "vitest";
 import NodeHttpTransport from "../../../src/http/NodeHttpTransport.js";
 import HttpRequest from "../../../src/http/HttpRequest.js";
 import HttpTransportError, {
@@ -140,6 +141,38 @@ function caught(promise) {
 }
 
 /**
+ * Poll until `condition` holds, for at most `timeoutMs`.
+ *
+ * @param {() => boolean} condition
+ * @param {number} [timeoutMs]
+ * @returns {Promise<void>}
+ */
+async function waitFor(condition, timeoutMs = 5000) {
+    const started = Date.now();
+    while (!condition()) {
+        if (Date.now() - started > timeoutMs) {
+            throw new Error("condition not met in time");
+        }
+        await new Promise((resolve) => setTimeout(resolve, 10));
+    }
+}
+
+/**
+ * `http.Agent` reads `HTTP_PROXY` and friends from a `proxyEnv` option
+ * since Node 24.5 and 22.19.
+ *
+ * @returns {boolean}
+ */
+function agentSupportsProxyEnv() {
+    const [major, minor] = process.versions.node.split(".").map(Number);
+    return (
+        major > 24 ||
+        (major === 24 && minor >= 5) ||
+        (major === 22 && minor >= 19)
+    );
+}
+
+/**
  * @param {import("http").IncomingMessage} req
  * @returns {Promise<Buffer>}
  */
@@ -218,6 +251,46 @@ describe("NodeHttpTransport", function () {
         expect(seen["content-length"]).to.equal("4");
         expect([...body]).to.deep.equal([1, 2, 3, 4]);
     });
+
+    it.skipIf(!agentSupportsProxyEnv())(
+        "routes through the environment proxy when NODE_USE_ENV_PROXY is set, as Node's own agents do",
+        async function () {
+            // A forward proxy that answers every absolute-URI request itself.
+            const { port } = await httpServer((req, res) => {
+                res.setHeader("Content-Type", "text/plain");
+                res.end(`via-proxy:${req.url}`);
+            });
+            const saved = {
+                NODE_USE_ENV_PROXY: process.env.NODE_USE_ENV_PROXY,
+                HTTP_PROXY: process.env.HTTP_PROXY,
+                http_proxy: process.env.http_proxy,
+                NO_PROXY: process.env.NO_PROXY,
+                no_proxy: process.env.no_proxy,
+            };
+            process.env.NODE_USE_ENV_PROXY = "1";
+            process.env.HTTP_PROXY = `http://127.0.0.1:${port}`;
+            delete process.env.http_proxy;
+            delete process.env.NO_PROXY;
+            delete process.env.no_proxy;
+            try {
+                const response = await transport().roundTrip(
+                    request("http://does-not-exist.invalid/x"),
+                );
+                expect(response.statusCode).to.equal(200);
+                expect(response.body.toString()).to.equal(
+                    "via-proxy:http://does-not-exist.invalid/x",
+                );
+            } finally {
+                for (const [name, value] of Object.entries(saved)) {
+                    if (value === undefined) {
+                        delete process.env[name];
+                    } else {
+                        process.env[name] = value;
+                    }
+                }
+            }
+        },
+    );
 
     it("fails with unknown-host-error and is not retryable", async function () {
         const error = await caught(
@@ -393,20 +466,81 @@ describe("NodeHttpTransport", function () {
         expect(requests).to.equal(0);
     });
 
-    it("drains an exchange in flight when the close timeout allows", async function () {
+    it("drains an exchange in flight when the close timeout allows, without holding the process open", async function () {
         const { origin } = await httpServer((req, res) => {
             setTimeout(() => res.end("late"), 150);
         });
         const t = transport();
+        const setTimeoutSpy = vi.spyOn(globalThis, "setTimeout");
 
         const pending = t.roundTrip(request(`${origin}/slow`));
-        await new Promise((resolve) => setTimeout(resolve, 20));
-        expect(t.inFlight).to.equal(1);
-        await t.close(2000);
+        await waitFor(() => t.inFlight === 1);
+        const started = Date.now();
+        await t.close(5000);
+        const closedAfter = Date.now() - started;
 
         const response = await pending;
         expect(response.body.toString()).to.equal("late");
         expect(t.inFlight).to.equal(0);
+        // The drain won the race; the grace timer must not keep the event
+        // loop alive for the rest of the 5 s.
+        expect(closedAfter).to.be.below(2000);
+        const graceTimer = setTimeoutSpy.mock.results
+            .filter((_, i) => setTimeoutSpy.mock.calls[i][1] === 5000)
+            .map((result) => result.value)
+            .pop();
+        expect(graceTimer).to.not.be.undefined;
+        expect(graceTimer.hasRef()).to.be.false;
+        setTimeoutSpy.mockRestore();
+    });
+
+    it("lets a call in flight follow a redirect during the drain", async function () {
+        const { origin } = await httpServer((req, res) => {
+            if (req.url === "/start") {
+                setTimeout(() => {
+                    res.writeHead(302, { Location: "/final" });
+                    res.end();
+                }, 100);
+            } else {
+                setTimeout(() => res.end("final"), 100);
+            }
+        });
+        const t = transport();
+
+        const pending = t.roundTrip(request(`${origin}/start`));
+        await waitFor(() => t.inFlight === 1);
+        const closing = t.close(5000);
+
+        const response = await pending;
+        expect(response.statusCode).to.equal(200);
+        expect(response.body.toString()).to.equal("final");
+        await closing;
+        expect(t.closed).to.be.true;
+    });
+
+    it("destroys the connection pool on close", async function () {
+        const { origin } = await httpServer((req, res) => res.end("ok"));
+        const t = transport();
+        const httpAgent = /** @type {import("http").Agent} */ (
+            /** @type {any} */ (t)._httpAgent
+        );
+        const destroyed = vi.spyOn(httpAgent, "destroy");
+
+        await t.roundTrip(request(`${origin}/x`));
+        // The keep-alive socket returns to the pool once the response ends.
+        await waitFor(
+            () => Object.values(httpAgent.freeSockets).flat().length === 1,
+        );
+
+        await t.close(0);
+
+        expect(destroyed).toHaveBeenCalledTimes(1);
+        // The agent forgets a destroyed socket on its `close` event.
+        await waitFor(
+            () =>
+                Object.values(httpAgent.freeSockets).flat().length === 0 &&
+                Object.values(httpAgent.sockets).flat().length === 0,
+        );
     });
 
     it("aborts an exchange in flight once the close timeout elapses", async function () {
@@ -420,7 +554,7 @@ describe("NodeHttpTransport", function () {
         const t = transport();
 
         const pending = t.roundTrip(request(`${origin}/slow`));
-        await new Promise((resolve) => setTimeout(resolve, 20));
+        await waitFor(() => t.inFlight === 1);
         const started = Date.now();
         await t.close(50);
         const error = await caught(pending);
@@ -448,7 +582,7 @@ describe("NodeHttpTransport", function () {
         );
         setTimeout(() => controller.abort(), 20);
         const error = await caught(pending);
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await waitFor(() => closedByClient === 1);
 
         expect(error.code).to.equal(HttpTransportErrorCode.CANCELLED_ERROR);
         expect(error.retryable).to.be.false;
@@ -509,7 +643,7 @@ describe("NodeHttpTransport", function () {
         const error = await caught(
             transport().roundTrip(request(`${origin}/drip`, { deadline: 300 })),
         );
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await waitFor(() => released);
 
         expect(error.code).to.equal(HttpTransportErrorCode.TIMEOUT_ERROR);
         expect(error.retryable).to.be.true;

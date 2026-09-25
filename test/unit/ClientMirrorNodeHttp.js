@@ -182,6 +182,136 @@ describe("Client mirror node HTTP configuration", function () {
         }
     });
 
+    it("resolves every policy field from the right tier", function () {
+        const client = track();
+        client.setMirrorNodeHttpConfig({
+            transport: new FakeHttpTransport(),
+            retryPolicy: {
+                maxAttempts: 2,
+                perAttemptTimeout: 7000,
+                initialBackoff: 3,
+                maxBackoff: 9,
+                retryableStatusCodes: [503],
+            },
+        });
+
+        const policy = client._mirrorNodeHttpClient({
+            maxAttempts: 3,
+            maxBackoff: 5,
+        }).retryPolicy;
+
+        // Query setter beats client beats package default, field by field.
+        expect(policy.maxAttempts).to.equal(3);
+        expect(policy.maxBackoff).to.equal(5);
+        expect(policy.perAttemptTimeout).to.equal(7000);
+        expect(policy.initialBackoff).to.equal(3);
+        expect(policy.retryableStatusCodes).to.deep.equal([503]);
+        expect(policy.totalDeadline).to.equal(client.requestTimeout);
+    });
+
+    it("keeps every retry of one call on the base URL the call started with", async function () {
+        const client = track(["a.example.com:443", "b.example.com:443"]);
+        const fake = new FakeHttpTransport()
+            .respond(errorResponse(503, "Down"))
+            .respondJson(200, BALANCES)
+            .respondJson(200, BALANCES);
+        client.setMirrorNodeHttpConfig({
+            transport: fake,
+            retryPolicy: { initialBackoff: 1, maxBackoff: 1 },
+        });
+
+        await new MirrorNodeAccountBalanceQuery()
+            .setAccountId("0.0.123")
+            .execute(client);
+        await new MirrorNodeAccountBalanceQuery()
+            .setAccountId("0.0.123")
+            .execute(client);
+
+        const hosts = fake.requests.map(
+            (request) => new URL(request.url).hostname,
+        );
+        expect(hosts[0]).to.equal(hosts[1]);
+        expect(hosts[2]).to.not.equal(hosts[0]);
+    });
+
+    it("bounds a long retry run by requestTimeout and reports the deadline as the cause", async function () {
+        const client = track();
+        const fake = new FakeHttpTransport();
+        fake.handler = () => errorResponse(503, "Down");
+        client.setMirrorNodeHttpConfig({ transport: fake });
+        client.setRequestTimeout(60);
+
+        const started = Date.now();
+        const error = await caught(
+            new MirrorNodeAccountBalanceQuery()
+                .setAccountId("0.0.123")
+                .execute(client),
+        );
+
+        expect(error.message).to.include("request deadline of 60 ms exceeded");
+        expect(error.cause.code).to.equal("deadline-exceeded-error");
+        expect(error.cause.response.statusCode).to.equal(503);
+        expect(Date.now() - started).to.be.below(2000);
+    });
+
+    it("wraps an exhausted retry budget with the adapter error as cause", async function () {
+        const client = track();
+        const fake = new FakeHttpTransport(() => errorResponse(503, "Down"));
+        client.setMirrorNodeHttpConfig({
+            transport: fake,
+            retryPolicy: { maxAttempts: 2, initialBackoff: 1, maxBackoff: 1 },
+        });
+
+        const error = await caught(
+            new MirrorNodeAccountBalanceQuery()
+                .setAccountId("0.0.123")
+                .execute(client),
+        );
+
+        expect(error.message).to.include(
+            "retries exhausted after 2 attempts. Last error: HTTP 503: Error: Down",
+        );
+        expect(error.cause.code).to.equal("retries-exhausted-error");
+        expect(error.cause.response.statusCode).to.equal(503);
+        expect(fake.requests).to.have.length(2);
+    });
+
+    it("reads mirrorRestApiBaseUrl without moving the round-robin", async function () {
+        const client = track(["a.example.com:443", "b.example.com:443"]);
+        const fake = new FakeHttpTransport(() => jsonResponse(200, BALANCES));
+        client.setMirrorNodeHttpConfig({ transport: fake });
+
+        const first = client.mirrorRestApiBaseUrl;
+        for (let i = 0; i < 5; i++) {
+            expect(client.mirrorRestApiBaseUrl).to.equal(first);
+        }
+
+        await new MirrorNodeAccountBalanceQuery()
+            .setAccountId("0.0.123")
+            .execute(client);
+        await new MirrorNodeAccountBalanceQuery()
+            .setAccountId("0.0.123")
+            .execute(client);
+
+        expect(fake.requests[0].url.startsWith(first)).to.be.true;
+        expect(fake.requests[1].url.startsWith(first)).to.be.false;
+        expect(client.mirrorRestApiBaseUrl).to.equal(first);
+    });
+
+    it("targets the local REST port for the HBAR balance on a loopback mirror node", async function () {
+        const client = track(["127.0.0.1:5600"]);
+        const fake = new FakeHttpTransport().respondJson(200, BALANCES);
+        client.setMirrorNodeHttpConfig({ transport: fake });
+
+        await new MirrorNodeAccountBalanceQuery()
+            .setAccountId("0.0.123")
+            .execute(client);
+
+        expect(fake.requests[0].url).to.equal(
+            "http://127.0.0.1:5551/api/v1/balances?account.id=0.0.123",
+        );
+    });
+
     it("does not close an injected transport", function () {
         const client = track();
         const fake = new FakeHttpTransport();

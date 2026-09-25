@@ -9,6 +9,7 @@ import CACHE from "../Cache.js";
 import EvmAddress from "../EvmAddress.js";
 import {
     bodyJson,
+    errorMessage,
     statusMessage,
 } from "../mirror_node/MirrorNodeHttpClient.js";
 
@@ -192,21 +193,24 @@ export default class AccountId {
             setTimeout(resolve, 3000);
         });
 
-        const response = await http.get(path);
-        if (!response.ok) {
-            throw new Error(
-                `Failed to query ${http.baseUrl}${path}: ${statusMessage(
-                    response,
-                )}`,
-            );
+        const url = `${http.baseUrl}${path}`;
+        /** @type {{account?: unknown}} */
+        let data;
+        try {
+            const response = await http.get(path);
+            if (!response.ok) {
+                throw new Error(statusMessage(response));
+            }
+            data = /** @type {{account?: unknown}} */ (bodyJson(response));
+        } catch (error) {
+            throw new Error(`Failed to query ${url}: ${errorMessage(error)}`, {
+                cause: error,
+            });
         }
 
-        const data = /** @type {{account?: unknown}} */ (bodyJson(response));
         const mirrorAccountId = data?.account;
         if (typeof mirrorAccountId !== "string") {
-            throw new Error(
-                `Failed to query ${http.baseUrl}${path}: response has no account`,
-            );
+            throw new Error(`Failed to query ${url}: response has no account`);
         }
 
         this.num = Long.fromString(
@@ -234,22 +238,25 @@ export default class AccountId {
             setTimeout(resolve, 3000);
         });
 
-        const response = await http.get(path);
-        if (!response.ok) {
-            throw new Error(
-                `Failed to query ${http.baseUrl}${path}: ${statusMessage(
-                    response,
-                )}`,
-            );
+        const url = `${http.baseUrl}${path}`;
+        /** @type {{evm_address?: unknown}} */
+        let data;
+        try {
+            const response = await http.get(path);
+            if (!response.ok) {
+                throw new Error(statusMessage(response));
+            }
+            data = /** @type {{evm_address?: unknown}} */ (bodyJson(response));
+        } catch (error) {
+            throw new Error(`Failed to query ${url}: ${errorMessage(error)}`, {
+                cause: error,
+            });
         }
 
-        const data = /** @type {{evm_address?: unknown}} */ (
-            bodyJson(response)
-        );
         const evmAddress = data?.evm_address;
         if (typeof evmAddress !== "string") {
             throw new Error(
-                `Failed to query ${http.baseUrl}${path}: response has no evm_address`,
+                `Failed to query ${url}: response has no evm_address`,
             );
         }
 

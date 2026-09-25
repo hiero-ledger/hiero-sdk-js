@@ -3,6 +3,7 @@
 import ContractFunctionParameters from "../contract/ContractFunctionParameters.js";
 import {
     bodyJson,
+    errorMessage,
     statusMessage,
 } from "../mirror_node/MirrorNodeHttpClient.js";
 import * as utf8 from "../encoding/utf8.js";
@@ -10,7 +11,9 @@ import * as utf8 from "../encoding/utf8.js";
 /**
  * @typedef {import("../contract/ContractId.js").default} ContractId
  * @typedef {import("../account/AccountId.js").default} AccountId
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("long").default} Long
  *
  */
@@ -253,17 +256,28 @@ export default class MirrorNodeContractQuery {
             totalDeadline: requestTimeout,
         });
 
-        const response = await http.post(
-            "/contracts/call",
-            "application/json",
-            utf8.encode(JSON.stringify(jsonPayload)),
-        );
+        const path = "/contracts/call";
+        const url = `${http.baseUrl}${path}`;
 
-        if (!response.ok) {
-            throw new Error(statusMessage(response));
+        try {
+            const response = await http.post(
+                path,
+                "application/json",
+                utf8.encode(JSON.stringify(jsonPayload)),
+            );
+
+            if (!response.ok) {
+                throw new Error(statusMessage(response));
+            }
+
+            return /** @type {MirrorNodeResponse} */ (bodyJson(response));
+        } catch (error) {
+            // `cause` keeps the adapter's verdict (`retries-exhausted-error`,
+            // `deadline-exceeded-error`, ...) and the last response.
+            throw new Error(`Failed to query ${url}: ${errorMessage(error)}`, {
+                cause: error,
+            });
         }
-
-        return /** @type {MirrorNodeResponse} */ (bodyJson(response));
     }
 
     _fillEvmAddress() {

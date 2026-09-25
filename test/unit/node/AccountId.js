@@ -408,7 +408,11 @@ describe("AccountId", function () {
                 await accountId.populateAccountNum(client);
                 throw new Error("Expected method to throw");
             } catch (error) {
-                expect(error.message).to.equal("Network error");
+                // Wrapped into the query's own error, with the transport
+                // failure kept as the cause.
+                expect(error.message).to.include(": Network error");
+                expect(error.message).to.match(/^Failed to query https:/);
+                expect(error.cause.message).to.equal("Network error");
             }
         });
 
@@ -540,7 +544,11 @@ describe("AccountId", function () {
                 await accountId.populateAccountEvmAddress(client);
                 throw new Error("Expected method to throw");
             } catch (error) {
-                expect(error.message).to.equal("Network error");
+                // Wrapped into the query's own error, with the transport
+                // failure kept as the cause.
+                expect(error.message).to.include(": Network error");
+                expect(error.message).to.match(/^Failed to query https:/);
+                expect(error.cause.message).to.equal("Network error");
             }
         });
 

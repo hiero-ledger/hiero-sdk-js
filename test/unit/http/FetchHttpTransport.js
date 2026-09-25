@@ -112,6 +112,94 @@ describe("FetchHttpTransport", function () {
         });
     });
 
+    it("sends no cache mode when asked, or when React Native is detected", async function () {
+        fetchMock.mockImplementation(() =>
+            Promise.resolve(new Response("{}", { status: 200 })),
+        );
+
+        await FetchHttpTransport.create(undefined, { cache: null }).roundTrip(
+            request(),
+        );
+        expect("cache" in fetchMock.mock.calls[0][1]).to.be.false;
+
+        await FetchHttpTransport.create(undefined, {
+            cache: "reload",
+        }).roundTrip(request());
+        expect(fetchMock.mock.calls[1][1].cache).to.equal("reload");
+
+        // React Native's fetch turns a cache mode into a `_=<timestamp>`
+        // query parameter the mirror node rejects, so none is sent there.
+        vi.stubGlobal("navigator", { product: "ReactNative" });
+        vi.stubGlobal("fetch", fetchMock);
+        const native = FetchHttpTransport.create();
+        expect(native.cache).to.be.null;
+        await native.roundTrip(request());
+        expect("cache" in fetchMock.mock.calls[2][1]).to.be.false;
+        expect(fetchMock.mock.calls[2][0]).to.equal(URL_);
+    });
+
+    it("fails with timeout-error when the body stalls after the headers", async function () {
+        // Headers arrive at once; the body never does. Like a real fetch,
+        // the stream errors once the request's signal aborts.
+        fetchMock.mockImplementation((_, init) =>
+            Promise.resolve(
+                new Response(
+                    new ReadableStream({
+                        start(controller) {
+                            init.signal.addEventListener("abort", () =>
+                                controller.error(
+                                    init.signal.reason ?? new Error("aborted"),
+                                ),
+                            );
+                        },
+                    }),
+                    { status: 200 },
+                ),
+            ),
+        );
+
+        const started = Date.now();
+        const error = await caught(
+            FetchHttpTransport.create().roundTrip(request({ deadline: 30 })),
+        );
+
+        expect(error.code).to.equal(HttpTransportErrorCode.TIMEOUT_ERROR);
+        expect(Date.now() - started).to.be.below(2000);
+        expect(fetchMock.mock.calls[0][1].signal.aborted).to.be.true;
+    });
+
+    it("honours the deadline even when the platform never errors a stalled body", async function () {
+        // A body stream that ignores the abort signal entirely.
+        fetchMock.mockImplementation(() =>
+            Promise.resolve(
+                new Response(new ReadableStream({ start() {} }), {
+                    status: 200,
+                }),
+            ),
+        );
+
+        const started = Date.now();
+        const error = await caught(
+            FetchHttpTransport.create().roundTrip(request({ deadline: 30 })),
+        );
+
+        expect(error.code).to.equal(HttpTransportErrorCode.TIMEOUT_ERROR);
+        expect(Date.now() - started).to.be.below(2000);
+    });
+
+    it("clears the deadline timer once the exchange settles", async function () {
+        fetchMock.mockResolvedValue(new Response("{}", { status: 200 }));
+        vi.useFakeTimers();
+        try {
+            await FetchHttpTransport.create().roundTrip(
+                request({ deadline: 5000 }),
+            );
+            expect(vi.getTimerCount()).to.equal(0);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
     it("maps an opaque fetch network failure to connection-error", async function () {
         fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
 

@@ -109,6 +109,30 @@ describe("http types", function () {
             expect(ok.deadline).to.equal(0);
         });
 
+        it("treats a header named like an Object.prototype member as an ordinary key", function () {
+            const request = new HttpRequest({
+                method: "GET",
+                url: "https://mirror.example/x",
+                // A computed key: a literal `__proto__` would set the
+                // prototype instead of defining a property.
+                headers: {
+                    constructor: "a",
+                    ["__proto__"]: "b",
+                    hasOwnProperty: "c",
+                    toString: "d",
+                },
+            });
+
+            // Names are lowercased, and nothing is inherited.
+            expect(request.headers.constructor).to.equal("a");
+            expect(request.headers["__proto__"]).to.equal("b");
+            expect(request.headers.hasownproperty).to.equal("c");
+            expect(request.headers.tostring).to.equal("d");
+            expect(request.headers.hasOwnProperty).to.be.undefined;
+            expect(request.headers.toString).to.be.undefined;
+            expect(Object.getPrototypeOf(request.headers)).to.be.null;
+        });
+
         it("derives a changed copy by spreading", function () {
             const request = new HttpRequest({
                 method: "GET",
@@ -143,6 +167,25 @@ describe("http types", function () {
             expect(response.body).to.have.length(0);
             expect(response.ok).to.be.true;
             expect(Object.isFrozen(response.headers["x-multi"])).to.be.true;
+        });
+
+        it("keeps a header named like an Object.prototype member, repeated or not", function () {
+            const response = new HttpResponse({
+                statusCode: 200,
+                headers: [
+                    ["constructor", "a"],
+                    ["Constructor", "b"],
+                    ["__proto__", "c"],
+                    ["toString", "d"],
+                ],
+            });
+
+            expect(response.headers.constructor).to.deep.equal(["a", "b"]);
+            expect(response.headers["__proto__"]).to.deep.equal(["c"]);
+            expect(response.header("constructor")).to.equal("a");
+            expect(response.header("toString")).to.equal("d");
+            expect(response.header("hasOwnProperty")).to.be.null;
+            expect(response.header("valueOf")).to.be.null;
         });
 
         it("accepts a plain object with string or list values", function () {
@@ -247,6 +290,36 @@ describe("http types", function () {
                 TypeError,
                 "unknown HttpTransportErrorCode",
             );
+        });
+
+        it("recognises an error of the same shape from another copy of the class", function () {
+            // A third-party transport may bundle its own copy of the SDK
+            // (the CommonJS build next to the ESM one), so `instanceof`
+            // alone would misclassify a perfectly good error.
+            const foreign = Object.assign(
+                new Error("connection-error: reset"),
+                {
+                    name: "HttpTransportError",
+                    code: HttpTransportErrorCode.CONNECTION_ERROR,
+                },
+            );
+
+            expect(HttpTransportError.isHttpTransportError(foreign)).to.be.true;
+            expect(HttpTransportError.isRetryable(foreign)).to.be.true;
+            expect(
+                HttpTransportError.hasCode(
+                    foreign,
+                    HttpTransportErrorCode.CONNECTION_ERROR,
+                ),
+            ).to.be.true;
+            expect(
+                HttpTransportError.isHttpTransportError(
+                    Object.assign(new Error("x"), {
+                        name: "HttpTransportError",
+                        code: "made-up-error",
+                    }),
+                ),
+            ).to.be.false;
         });
 
         it("does not treat a plain error as retryable", function () {

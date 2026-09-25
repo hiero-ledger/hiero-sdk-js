@@ -7,6 +7,7 @@ import NodeAddress from "../address_book/NodeAddress.js";
 import MirrorNodeRestPath from "../mirror_node/MirrorNodeRestPath.js";
 import {
     bodyJson,
+    errorMessage,
     statusMessage,
 } from "../mirror_node/MirrorNodeHttpClient.js";
 import { isLoopbackHost } from "../mirror_node/localMirrorRestBaseUrl.js";
@@ -285,9 +286,12 @@ export default class AddressBookQueryWeb extends Query {
                 path = next ? MirrorNodeRestPath.fromNextLink(next) : null;
             }
         } catch (error) {
-            const message =
-                error instanceof Error ? error.message : String(error);
-            reject(new Error(`Failed to query address book: ${message}`));
+            reject(
+                new Error(
+                    `Failed to query address book: ${errorMessage(error)}`,
+                    { cause: error },
+                ),
+            );
             return;
         }
 

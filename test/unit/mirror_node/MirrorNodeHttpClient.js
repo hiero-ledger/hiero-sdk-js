@@ -307,6 +307,46 @@ describe("MirrorNodeHttpClient", function () {
         expect(transport.requests).to.have.length(1);
     });
 
+    it("ignores Retry-After on a 408, where only the computed backoff applies", async function () {
+        const transport = new FakeHttpTransport()
+            .respond(
+                errorResponse(408, "Request timeout", {
+                    "retry-after": "3600",
+                }),
+            )
+            .respondJson(200, {});
+
+        const response = await client(transport, { totalDeadline: 1000 }).get(
+            "/x",
+        );
+
+        expect(response.statusCode).to.equal(200);
+        expect(transport.requests).to.have.length(2);
+    });
+
+    it("aborts each stalled attempt at perAttemptTimeout and retries", async function () {
+        const transport = new FakeHttpTransport()
+            .hang()
+            .hang()
+            .respondJson(200, {});
+
+        const started = Date.now();
+        const response = await client(transport, {
+            maxAttempts: 3,
+            perAttemptTimeout: 30,
+            totalDeadline: 10_000,
+        }).get("/x");
+
+        expect(response.statusCode).to.equal(200);
+        expect(transport.requests).to.have.length(3);
+        for (const request of transport.requests) {
+            expect(request.deadline).to.equal(30);
+        }
+        // Two attempts stalled for 30 ms each before the third answered.
+        expect(Date.now() - started).to.be.at.least(55);
+        expect(Date.now() - started).to.be.below(2000);
+    });
+
     it("draws the backoff with full jitter below the exponential cap", function () {
         const http = MirrorNodeHttpClient.create(
             BASE_URL,

@@ -9,6 +9,7 @@ import TokenId from "../token/TokenId.js";
 import * as EntityIdHelper from "../EntityIdHelper.js";
 import {
     bodyJson,
+    errorMessage,
     statusMessage,
 } from "../mirror_node/MirrorNodeHttpClient.js";
 
@@ -177,15 +178,22 @@ export default class MirrorNodeTokenBalanceQuery {
             if (error instanceof MirrorNodeStatusError) {
                 throw error;
             }
-            const message =
-                error instanceof Error ? error.message : String(error);
-            throw new Error(`Failed to query ${url}: ${message}`);
+            throw new Error(`Failed to query ${url}: ${errorMessage(error)}`, {
+                cause: error,
+            });
+        }
+
+        // An empty or foreign body is not an account with no tokens.
+        if (!Array.isArray(response?.tokens)) {
+            throw new Error(
+                `Failed to query ${url}: response has no tokens array`,
+            );
         }
 
         // The endpoint returns an empty array (not a 404) when the account
         // holds no relationship with the token; the balance is zero then, and
         // the decimals are unknown from this response alone.
-        const held = response?.tokens?.[0];
+        const held = response.tokens[0];
 
         return new MirrorNodeTokenBalance({
             tokenId,

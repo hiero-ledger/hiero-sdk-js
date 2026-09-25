@@ -521,7 +521,9 @@ export default class Client {
         // "no mirror network" error that clearing the network would cause.
         const transport = this._mirrorNodeHttpTransport();
         const baseUrl = resolveMirrorRestBaseUrl(
-            request.baseUrl ?? this._mirrorNetwork.mirrorRestApiBaseUrl,
+            request.baseUrl ??
+                this._mirrorNetwork.nextMirrorNodeForRest()
+                    .mirrorRestApiBaseUrl,
             request.family ?? "rest",
         );
         const retryPolicy = this._resolveMirrorNodeHttpRetryPolicy(

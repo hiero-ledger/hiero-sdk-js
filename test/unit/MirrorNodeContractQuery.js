@@ -3,7 +3,16 @@
 import { AccountId } from "../../src/exports.js";
 import { Client } from "../../src/index.js";
 import MirrorNodeContractQuery from "../../src/query/MirrorNodeContractQuery.js";
-import FakeHttpTransport, { errorResponse } from "./utils/FakeHttpTransport.js";
+import MirrorNodeContractCallQuery from "../../src/query/MirrorNodeContractCallQuery.js";
+import MirrorNodeContractEstimateQuery from "../../src/query/MirrorNodeContractEstimateQuery.js";
+import ContractFunctionParameters from "../../src/contract/ContractFunctionParameters.js";
+import HttpTransportError, {
+    HttpTransportErrorCode,
+} from "../../src/http/HttpTransportError.js";
+import FakeHttpTransport, {
+    errorResponse,
+    jsonResponse,
+} from "./utils/FakeHttpTransport.js";
 
 describe("MirrorNodeContractQuery", function () {
     const SENDER = new AccountId(1);
@@ -192,8 +201,63 @@ describe("MirrorNodeContractQuery", function () {
             } catch (err) {
                 error = err;
             }
-            expect(error.message).to.equal("HTTP 400: Error: Invalid contract");
+            expect(error.message).to.equal(
+                "Failed to query https://api.example.com:443/api/v1/contracts/call: HTTP 400: Error: Invalid contract",
+            );
             expect(rejected.requests).to.have.length(1);
+        });
+
+        it("wraps a transport failure and keeps it as the cause", async function () {
+            const fake = new FakeHttpTransport().fail(
+                new HttpTransportError(
+                    HttpTransportErrorCode.TLS_ERROR,
+                    "self signed certificate",
+                ),
+            );
+
+            let error = null;
+            try {
+                await query().performMirrorNodeRequest(
+                    clientWith("api.example.com:443", fake),
+                    {},
+                );
+            } catch (err) {
+                error = err;
+            }
+
+            expect(error.message).to.equal(
+                "Failed to query https://api.example.com:443/api/v1/contracts/call: tls-error: self signed certificate",
+            );
+            expect(error.cause.code).to.equal(HttpTransportErrorCode.TLS_ERROR);
+            expect(fake.requests).to.have.length(1);
+        });
+
+        it("bounds the call and the estimate by the given requestTimeout", async function () {
+            const fake = new FakeHttpTransport(() =>
+                jsonResponse(200, { result: "0x2a" }),
+            );
+            const client = clientWith("api.example.com:443", fake);
+            const params = new ContractFunctionParameters();
+
+            const result = await new MirrorNodeContractCallQuery()
+                .setContractId(CONTRACT_ID)
+                .setSender(SENDER)
+                .setFunction(FUNCTION_NAME, params)
+                .execute(client, 2500);
+            const gas = await new MirrorNodeContractEstimateQuery()
+                .setContractId(CONTRACT_ID)
+                .setSender(SENDER)
+                .setFunction(FUNCTION_NAME, params)
+                .execute(client, 1500);
+
+            expect(result).to.equal("0x2a");
+            expect(gas).to.equal(42);
+            expect(fake.requests[0].deadline).to.be.within(2400, 2500);
+            expect(fake.requests[1].deadline).to.be.within(1400, 1500);
+            expect(
+                JSON.parse(new TextDecoder().decode(fake.requests[1].body))
+                    .estimate,
+            ).to.be.true;
         });
 
         it("should throw error when no mirror network is configured", async function () {

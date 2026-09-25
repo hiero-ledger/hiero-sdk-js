@@ -13,6 +13,16 @@ import * as utf8 from "../encoding/utf8.js";
 import { SDK_NAME, SDK_VERSION } from "../version.js";
 
 /**
+ * @typedef {object} FetchHttpTransportOptions
+ * @property {?RequestCache} [cache] - the `cache` mode handed to `fetch`.
+ * `"no-store"` by default, so a mirror read is never served from an HTTP
+ * cache. `null` sends no mode at all: React Native's `fetch` (whatwg-fetch)
+ * turns `"no-store"` into a `_=<timestamp>` query parameter, which the
+ * mirror node rejects with HTTP 400, so `NativeClient` passes `null`, and so
+ * does the default whenever React Native is detected.
+ */
+
+/**
  * The `fetch`-backed transport: the SDK default in the browser and on React
  * Native, and available on Node for an application that wants the
  * platform's global `fetch` (and whatever dispatcher or proxy it has been
@@ -35,8 +45,9 @@ import { SDK_NAME, SDK_VERSION } from "../version.js";
 export default class FetchHttpTransport extends HttpTransport {
     /**
      * @param {HttpTransportConfiguration | ConstructorParameters<typeof HttpTransportConfiguration>[0]} [configuration]
+     * @param {FetchHttpTransportOptions} [options]
      */
-    constructor(configuration) {
+    constructor(configuration, options = {}) {
         super();
 
         /**
@@ -44,6 +55,17 @@ export default class FetchHttpTransport extends HttpTransport {
          * @type {HttpTransportConfiguration}
          */
         this._configuration = HttpTransportConfiguration.from(configuration);
+
+        /**
+         * @private
+         * @type {?RequestCache}
+         */
+        this._cache =
+            options.cache === undefined
+                ? isReactNative()
+                    ? null
+                    : "no-store"
+                : options.cache;
 
         /**
          * @private
@@ -63,10 +85,20 @@ export default class FetchHttpTransport extends HttpTransport {
 
     /**
      * @param {HttpTransportConfiguration | ConstructorParameters<typeof HttpTransportConfiguration>[0]} [configuration]
+     * @param {FetchHttpTransportOptions} [options]
      * @returns {FetchHttpTransport}
      */
-    static create(configuration) {
-        return new FetchHttpTransport(configuration);
+    static create(configuration, options) {
+        return new FetchHttpTransport(configuration, options);
+    }
+
+    /**
+     * The `cache` mode handed to `fetch`, or `null` when none is sent.
+     *
+     * @returns {?RequestCache}
+     */
+    get cache() {
+        return this._cache;
     }
 
     /**
@@ -172,11 +204,17 @@ export default class FetchHttpTransport extends HttpTransport {
                         ? /** @type {BodyInit} */ (req.body)
                         : undefined,
                 signal: controller.signal,
-                // Mirror node reads must never be served from an HTTP cache.
-                cache: "no-store",
+                // Mirror node reads must never be served from an HTTP cache,
+                // except where the runtime cannot express that (see
+                // `FetchHttpTransportOptions.cache`).
+                ...(this._cache != null ? { cache: this._cache } : {}),
             });
 
-            const body = await this._readBody(response, abortWith);
+            const body = await this._readBody(
+                response,
+                abortWith,
+                controller.signal,
+            );
 
             // `Headers` is not iterable under every runtime's typings, and
             // React Native's polyfill only guarantees `forEach`.
@@ -254,12 +292,17 @@ export default class FetchHttpTransport extends HttpTransport {
      * Buffer the body, failing one chunk past `maxResponseBytes` where the
      * runtime lets the body stream and after the fact where it does not.
      *
+     * Every read races the transport's own abort signal: a platform `fetch`
+     * errors the body stream when its signal aborts, but the deadline must
+     * hold even on one that does not.
+     *
      * @private
      * @param {Response} response
      * @param {(error: HttpTransportError) => void} abortWith
+     * @param {AbortSignal} aborted - the controller signal of this exchange
      * @returns {Promise<Uint8Array>}
      */
-    async _readBody(response, abortWith) {
+    async _readBody(response, abortWith, aborted) {
         const max = this._configuration.maxResponseBytes;
         const tooLarge = () =>
             new HttpTransportError(
@@ -267,43 +310,79 @@ export default class FetchHttpTransport extends HttpTransport {
                 `the response body exceeded ${max} bytes`,
             );
 
-        const stream = response.body;
-        if (stream != null && typeof stream.getReader === "function") {
-            const reader = stream.getReader();
-            /** @type {Uint8Array[]} */
-            const chunks = [];
-            let total = 0;
-            for (;;) {
-                const { done, value } = await reader.read();
-                if (done) {
-                    break;
-                }
-                total += value.byteLength;
-                if (total > max) {
-                    const error = tooLarge();
-                    abortWith(error);
-                    await reader.cancel().catch(() => {});
+        /** @type {?(() => void)} */
+        let onAbort = null;
+        /** @type {Promise<never>} */
+        const abortion = new Promise((_, reject) => {
+            onAbort = () => reject(abortReason(aborted));
+            if (aborted.aborted) {
+                onAbort();
+            } else {
+                aborted.addEventListener("abort", onAbort);
+            }
+        });
+        // Nothing awaits `abortion` on its own; a rejection it settles with
+        // must not surface as unhandled.
+        abortion.catch(() => {});
+
+        /**
+         * @template T
+         * @param {Promise<T>} read
+         * @returns {Promise<T>}
+         */
+        const untilAborted = (read) => Promise.race([read, abortion]);
+
+        try {
+            const stream = response.body;
+            if (stream != null && typeof stream.getReader === "function") {
+                const reader = stream.getReader();
+                /** @type {Uint8Array[]} */
+                const chunks = [];
+                let total = 0;
+                try {
+                    for (;;) {
+                        const { done, value } = await untilAborted(
+                            reader.read(),
+                        );
+                        if (done) {
+                            break;
+                        }
+                        total += value.byteLength;
+                        if (total > max) {
+                            const error = tooLarge();
+                            abortWith(error);
+                            throw error;
+                        }
+                        chunks.push(value);
+                    }
+                } catch (error) {
+                    reader.cancel().catch(() => {});
                     throw error;
                 }
-                chunks.push(value);
+                return concat(chunks, total);
             }
-            return concat(chunks, total);
-        }
 
-        if (typeof response.arrayBuffer === "function") {
-            const bytes = new Uint8Array(await response.arrayBuffer());
+            if (typeof response.arrayBuffer === "function") {
+                const bytes = new Uint8Array(
+                    await untilAborted(response.arrayBuffer()),
+                );
+                if (bytes.byteLength > max) {
+                    throw tooLarge();
+                }
+                return bytes;
+            }
+
+            // Oldest React Native runtimes: no streams and no `arrayBuffer()`.
+            const bytes = utf8.encode(await untilAborted(response.text()));
             if (bytes.byteLength > max) {
                 throw tooLarge();
             }
             return bytes;
+        } finally {
+            if (onAbort != null) {
+                aborted.removeEventListener("abort", onAbort);
+            }
         }
-
-        // Oldest React Native runtimes: no streams and no `arrayBuffer()`.
-        const bytes = utf8.encode(await response.text());
-        if (bytes.byteLength > max) {
-            throw tooLarge();
-        }
-        return bytes;
     }
 
     /**
@@ -316,7 +395,7 @@ export default class FetchHttpTransport extends HttpTransport {
      * @returns {unknown}
      */
     _classify(error, abortCause) {
-        if (error instanceof HttpTransportError) {
+        if (HttpTransportError.isHttpTransportError(error)) {
             return error;
         }
 
@@ -373,6 +452,18 @@ export default class FetchHttpTransport extends HttpTransport {
 
         return error;
     }
+}
+
+/**
+ * React Native sets `navigator.product` and nothing else does.
+ *
+ * @returns {boolean}
+ */
+function isReactNative() {
+    // eslint-disable-next-line n/no-unsupported-features/node-builtins
+    const nav = /** @type {{navigator?: {product?: unknown}}} */ (globalThis)
+        .navigator;
+    return nav != null && nav.product === "ReactNative";
 }
 
 /**

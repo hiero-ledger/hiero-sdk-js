@@ -9,6 +9,7 @@ import Hbar from "../Hbar.js";
 import * as EntityIdHelper from "../EntityIdHelper.js";
 import {
     bodyJson,
+    errorMessage,
     statusMessage,
 } from "../mirror_node/MirrorNodeHttpClient.js";
 
@@ -132,9 +133,11 @@ export default class MirrorNodeAccountBalanceQuery {
                 bodyJson(httpResponse)
             );
         } catch (error) {
-            const message =
-                error instanceof Error ? error.message : String(error);
-            throw new Error(`Failed to query ${url}: ${message}`);
+            // `cause` keeps the adapter's verdict (`retries-exhausted-error`,
+            // `deadline-exceeded-error`, ...) and the last response.
+            throw new Error(`Failed to query ${url}: ${errorMessage(error)}`, {
+                cause: error,
+            });
         }
 
         if (!Array.isArray(response?.balances)) {

@@ -79,6 +79,32 @@ export default class HttpTransportError extends Error {
     }
 
     /**
+     * Whether `value` is an `HttpTransportError`, by shape rather than by
+     * `instanceof`: a third-party transport may hold a second copy of this
+     * class (the CommonJS build next to the ESM one), and its errors must
+     * still be classified.
+     *
+     * @param {unknown} value
+     * @returns {value is HttpTransportError}
+     */
+    static isHttpTransportError(value) {
+        if (value instanceof HttpTransportError) {
+            return true;
+        }
+        if (value == null || typeof value !== "object") {
+            return false;
+        }
+        const candidate = /** @type {{name?: unknown, code?: unknown}} */ (
+            value
+        );
+        return (
+            candidate.name === "HttpTransportError" &&
+            typeof candidate.code === "string" &&
+            ALL_CODES.has(candidate.code)
+        );
+    }
+
+    /**
      * `true` only for an `HttpTransportError` whose code is retryable. Any
      * other value, including an unrecognised failure from a third-party
      * transport, is not retried.
@@ -87,7 +113,10 @@ export default class HttpTransportError extends Error {
      * @returns {boolean}
      */
     static isRetryable(error) {
-        return error instanceof HttpTransportError && error.retryable;
+        return (
+            HttpTransportError.isHttpTransportError(error) &&
+            RETRYABLE_CODES.has(error.code)
+        );
     }
 
     /**
@@ -96,6 +125,9 @@ export default class HttpTransportError extends Error {
      * @returns {boolean}
      */
     static hasCode(error, code) {
-        return error instanceof HttpTransportError && error.code === code;
+        return (
+            HttpTransportError.isHttpTransportError(error) &&
+            error.code === code
+        );
     }
 }

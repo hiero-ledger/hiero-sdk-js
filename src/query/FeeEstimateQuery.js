@@ -6,6 +6,7 @@ import FeeEstimate from "./FeeEstimate.js";
 import * as HieroProto from "@hiero-ledger/proto";
 import {
     bodyJson,
+    errorMessage,
     statusMessage,
 } from "../mirror_node/MirrorNodeHttpClient.js";
 
@@ -403,9 +404,12 @@ export default class FeeEstimateQuery {
                     res(FeeEstimateResponse._fromJSON(data));
                 })
                 .catch((error) => {
-                    const message =
-                        error instanceof Error ? error.message : String(error);
-                    rej(new Error(`Failed to estimate fees: ${message}`));
+                    rej(
+                        new Error(
+                            `Failed to estimate fees: ${errorMessage(error)}`,
+                            { cause: error },
+                        ),
+                    );
                 });
         });
     }

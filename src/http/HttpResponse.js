@@ -84,7 +84,11 @@ export default class HttpResponse {
      * @returns {?string}
      */
     header(name) {
-        const values = this.headers[name.toLowerCase()];
-        return values != null && values.length > 0 ? values[0] : null;
+        const key = name.toLowerCase();
+        if (!Object.prototype.hasOwnProperty.call(this.headers, key)) {
+            return null;
+        }
+        const values = this.headers[key];
+        return values.length > 0 ? values[0] : null;
     }
 }

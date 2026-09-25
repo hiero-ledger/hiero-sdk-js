@@ -116,15 +116,17 @@ export default class MirrorNetwork extends ManagedNetwork {
     }
 
     /**
-     * Gets the base URL for the mirror node REST API, advancing the
-     * round-robin position.
+     * Gets the base URL for the mirror node REST API: the node the next
+     * REST call will target. Reading it does not advance the round-robin
+     * position; only a call does.
      *
      * @returns {string} The base URL for the mirror node REST API
      * @throws {Error} When no mirror network is configured or available
      */
     get mirrorRestApiBaseUrl() {
         try {
-            return this.nextMirrorNodeForRest().mirrorRestApiBaseUrl;
+            const index = this._restRoundRobinIndex % this._nodes.length;
+            return this._nodes[index].mirrorRestApiBaseUrl;
         } catch (error) {
             // Re-throw with a more descriptive error message
             throw new Error(

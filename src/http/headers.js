@@ -17,8 +17,12 @@
  * @returns {Record<string, string>}
  */
 export function normalizeRequestHeaders(headers) {
-    /** @type {Record<string, string>} */
-    const normalized = {};
+    // A null prototype, so a header named `constructor` or `__proto__`
+    // is an ordinary key rather than an inherited property.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const normalized = /** @type {Record<string, string>} */ (
+        Object.create(null)
+    );
 
     if (headers == null) {
         return normalized;
@@ -49,8 +53,10 @@ export function normalizeRequestHeaders(headers) {
  * @returns {Record<string, string[]>}
  */
 export function normalizeResponseHeaders(headers) {
-    /** @type {Record<string, string[]>} */
-    const normalized = {};
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const normalized = /** @type {Record<string, string[]>} */ (
+        Object.create(null)
+    );
 
     if (headers == null) {
         return normalized;
@@ -63,7 +69,7 @@ export function normalizeResponseHeaders(headers) {
     const add = (name, value) => {
         const key = name.toLowerCase();
         const values = normalized[key];
-        if (values == null) {
+        if (values === undefined) {
             normalized[key] = [String(value)];
         } else {
             values.push(String(value));

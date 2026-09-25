@@ -10,6 +10,7 @@ import Long from "long";
 import EvmAddress from "../EvmAddress.js";
 import {
     bodyJson,
+    errorMessage,
     statusMessage,
 } from "../mirror_node/MirrorNodeHttpClient.js";
 
@@ -125,22 +126,25 @@ export default class ContractId extends Key {
         const http = client._mirrorNodeHttpClient({ family: "rest" });
         const path = `/contracts/${this.toEvmAddress()}`;
 
-        const response = await http.get(path);
-        if (!response.ok) {
-            throw new Error(
-                `Failed to query ${http.baseUrl}${path}: ${statusMessage(
-                    response,
-                )}`,
-            );
+        const url = `${http.baseUrl}${path}`;
+        /** @type {{contract_id?: unknown}} */
+        let data;
+        try {
+            const response = await http.get(path);
+            if (!response.ok) {
+                throw new Error(statusMessage(response));
+            }
+            data = /** @type {{contract_id?: unknown}} */ (bodyJson(response));
+        } catch (error) {
+            throw new Error(`Failed to query ${url}: ${errorMessage(error)}`, {
+                cause: error,
+            });
         }
 
-        const data = /** @type {{contract_id?: unknown}} */ (
-            bodyJson(response)
-        );
         const mirrorContractId = data?.contract_id;
         if (typeof mirrorContractId !== "string") {
             throw new Error(
-                `Failed to query ${http.baseUrl}${path}: response has no contract_id`,
+                `Failed to query ${url}: response has no contract_id`,
             );
         }
 

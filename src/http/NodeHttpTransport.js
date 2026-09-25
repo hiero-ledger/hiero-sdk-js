@@ -39,10 +39,12 @@ const CROSS_ORIGIN_SAFE_HEADERS = new Set([
  * a cross-origin hop, a streaming body cap that fails one chunk past
  * `maxResponseBytes`, and a bounded drain on `close`.
  *
- * It does not read `HTTP_PROXY` or any other environment proxy variable,
- * matching Node's own `http` module. An application behind a proxy injects
- * a transport (or uses `FetchHttpTransport`, which follows whatever
- * dispatcher the global `fetch` was given).
+ * It honours the same ambient proxy configuration as Node's own global
+ * agents: with `NODE_USE_ENV_PROXY=1` (Node 24.5 / 22.19 and later),
+ * `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` are read from the environment.
+ * A proxy installed on the global `fetch` through
+ * `undici.setGlobalDispatcher()` is not seen here; an application using one
+ * injects `FetchHttpTransport` instead.
  *
  * Bodies are decoded transparently when a server compresses them; the body
  * cap applies to the decoded bytes, which is what the SDK allocates.
@@ -60,35 +62,57 @@ export default class NodeHttpTransport extends HttpTransport {
          */
         this._configuration = HttpTransportConfiguration.from(configuration);
 
+        const agentOptions = { keepAlive: true, ...environmentProxyOptions() };
+
         /**
          * @private
          * @type {http.Agent}
          */
-        this._httpAgent = new http.Agent({ keepAlive: true });
+        this._httpAgent = new http.Agent(agentOptions);
 
         /**
          * @private
          * @type {https.Agent}
          */
-        this._httpsAgent = new https.Agent({ keepAlive: true });
+        this._httpsAgent = new https.Agent(agentOptions);
 
         /**
+         * `close()` was called: no new `roundTrip` starts.
+         *
          * @private
          * @type {boolean}
          */
         this._closed = false;
 
         /**
-         * Requests in flight, each with the function that fails it with a
+         * The drain is over: no new exchange starts, not even a redirect
+         * hop of a call that was in flight when `close()` was called.
+         *
+         * @private
+         * @type {boolean}
+         */
+        this._aborted = false;
+
+        /**
+         * Calls (`roundTrip` invocations, redirects included) in flight.
+         * This is what the close drain waits for.
+         *
+         * @private
+         * @type {number}
+         */
+        this._calls = 0;
+
+        /**
+         * Exchanges in flight, each with the function that fails it with a
          * classified error.
          *
          * @private
          * @type {Map<ClientRequest, (error: HttpTransportError) => void>}
          */
-        this._inFlight = new Map();
+        this._exchanges = new Map();
 
         /**
-         * Resolvers waiting for the in-flight set to drain.
+         * Resolvers waiting for the in-flight calls to drain.
          *
          * @private
          * @type {Array<() => void>}
@@ -119,12 +143,12 @@ export default class NodeHttpTransport extends HttpTransport {
     }
 
     /**
-     * Number of exchanges currently in flight.
+     * Number of calls currently in flight.
      *
      * @returns {number}
      */
     get inFlight() {
-        return this._inFlight.size;
+        return this._calls;
     }
 
     /**
@@ -154,12 +178,47 @@ export default class NodeHttpTransport extends HttpTransport {
         const deadlineAt =
             req.deadline != null ? Date.now() + req.deadline : null;
 
+        this._calls += 1;
+        try {
+            return await this._follow(req, deadlineAt, signal);
+        } finally {
+            this._calls -= 1;
+            if (this._calls === 0) {
+                const waiters = this._drainWaiters;
+                this._drainWaiters = [];
+                for (const waiter of waiters) {
+                    waiter();
+                }
+            }
+        }
+    }
+
+    /**
+     * Perform the exchange and follow its redirects, up to `maxRedirects`.
+     *
+     * @private
+     * @param {HttpRequest} req
+     * @param {?number} deadlineAt
+     * @param {AbortSignal} signal
+     * @returns {Promise<HttpResponse>}
+     */
+    async _follow(req, deadlineAt, signal) {
         let url = req.url;
         let method = req.method;
         let headers = this._headersFor(req);
         let body = req.body;
 
         for (let hop = 0; ; hop++) {
+            // A call that was in flight when `close()` was called may keep
+            // following redirects for as long as the drain lasts, and no
+            // longer.
+            if (this._aborted) {
+                throw new HttpTransportError(
+                    HttpTransportErrorCode.CLIENT_CLOSED_ERROR,
+                    "the transport was closed while the request was in flight",
+                );
+            }
+
             const response = await this._exchange(
                 url,
                 method,
@@ -216,8 +275,8 @@ export default class NodeHttpTransport extends HttpTransport {
 
     /**
      * Stop accepting new work, wait up to `closeTimeout` milliseconds for
-     * exchanges in flight, then destroy whatever remains together with the
-     * connection pool. Idempotent; never rejects.
+     * calls in flight (redirects included), then destroy whatever remains
+     * together with the connection pool. Idempotent; never rejects.
      *
      * @override
      * @param {number} [closeTimeout]
@@ -229,16 +288,27 @@ export default class NodeHttpTransport extends HttpTransport {
         }
         this._closed = true;
 
-        if (this._inFlight.size > 0 && closeTimeout > 0) {
+        if (this._calls > 0 && closeTimeout > 0) {
+            /** @type {ReturnType<typeof setTimeout> | null} */
+            let timer = null;
             await Promise.race([
                 new Promise((resolve) => {
                     this._drainWaiters.push(() => resolve(undefined));
                 }),
-                new Promise((resolve) => setTimeout(resolve, closeTimeout)),
+                new Promise((resolve) => {
+                    timer = setTimeout(() => resolve(undefined), closeTimeout);
+                    // Neither the drain nor the timer may keep the process
+                    // alive: `Client.close()` does not await this.
+                    timer.unref();
+                }),
             ]);
+            if (timer != null) {
+                clearTimeout(timer);
+            }
         }
 
-        for (const fail of [...this._inFlight.values()]) {
+        this._aborted = true;
+        for (const fail of [...this._exchanges.values()]) {
             fail(
                 new HttpTransportError(
                     HttpTransportErrorCode.CLIENT_CLOSED_ERROR,
@@ -313,14 +383,7 @@ export default class NodeHttpTransport extends HttpTransport {
                 for (const cleanup of cleanups) {
                     cleanup();
                 }
-                this._inFlight.delete(req);
-                if (this._inFlight.size === 0) {
-                    const waiters = this._drainWaiters;
-                    this._drainWaiters = [];
-                    for (const waiter of waiters) {
-                        waiter();
-                    }
-                }
+                this._exchanges.delete(req);
             };
 
             /**
@@ -345,7 +408,7 @@ export default class NodeHttpTransport extends HttpTransport {
                 req.destroy(error);
             };
 
-            this._inFlight.set(req, destroyWith);
+            this._exchanges.set(req, destroyWith);
 
             const onCallerAbort = () =>
                 destroyWith(
@@ -509,7 +572,7 @@ export default class NodeHttpTransport extends HttpTransport {
      * @returns {unknown}
      */
     _mapError(error) {
-        if (error instanceof HttpTransportError) {
+        if (HttpTransportError.isHttpTransportError(error)) {
             return error;
         }
         if (!(error instanceof Error)) {
@@ -536,6 +599,25 @@ export default class NodeHttpTransport extends HttpTransport {
 
         return error;
     }
+}
+
+/**
+ * The proxy configuration Node's own global agents apply: with
+ * `NODE_USE_ENV_PROXY` set, `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` are
+ * read from the environment (Node 24.5 / 22.19 and later; older versions
+ * ignore the option). A private agent only does so when handed the
+ * environment explicitly.
+ *
+ * @returns {{proxyEnv?: NodeJS.ProcessEnv}}
+ */
+function environmentProxyOptions() {
+    if (typeof process === "undefined" || process.env == null) {
+        return {};
+    }
+    const flag = process.env.NODE_USE_ENV_PROXY;
+    return flag != null && flag !== "" && flag !== "0"
+        ? { proxyEnv: process.env }
+        : {};
 }
 
 /**

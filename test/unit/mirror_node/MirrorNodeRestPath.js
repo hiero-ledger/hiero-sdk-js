@@ -103,7 +103,9 @@ describe("MirrorNodeRestPath", function () {
         const hostile = `${"/".repeat(100000)}x`;
         const started = Date.now();
         expect(trimTrailingSlashes(hostile)).to.equal(hostile);
-        expect(Date.now() - started).to.be.below(100);
+        // A backtracking regex would take minutes here; a loop takes
+        // milliseconds. The bound is generous for a busy CI runner.
+        expect(Date.now() - started).to.be.below(5000);
     });
 
     it("rejects a next link naming another host", function () {

@@ -5,6 +5,7 @@ import RegisteredNodeAddressBook from "../node/RegisteredNodeAddressBook.js";
 import MirrorNodeRestPath from "../mirror_node/MirrorNodeRestPath.js";
 import {
     bodyJson,
+    errorMessage,
     statusMessage,
 } from "../mirror_node/MirrorNodeHttpClient.js";
 
@@ -214,9 +215,12 @@ export default class RegisteredNodeAddressBookQuery {
                 path = next ? MirrorNodeRestPath.fromNextLink(next) : null;
             }
         } catch (error) {
-            const message =
-                error instanceof Error ? error.message : String(error);
-            reject(new Error(`Failed to query registered nodes: ${message}`));
+            reject(
+                new Error(
+                    `Failed to query registered nodes: ${errorMessage(error)}`,
+                    { cause: error },
+                ),
+            );
             return;
         }
 

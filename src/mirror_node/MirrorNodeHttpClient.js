@@ -325,9 +325,16 @@ export default class MirrorNodeHttpClient {
                 );
             }
 
+            // `Retry-After` is the node's own instruction and wins over the
+            // computed backoff, but only where the node means it: on a 429
+            // and on a retryable 5xx, not on a 408.
+            const retryAfter =
+                response.statusCode === 429 || response.statusCode >= 500
+                    ? parseRetryAfter(response, this._now())
+                    : null;
             await this._backoff(
                 attempt,
-                parseRetryAfter(response, this._now()),
+                retryAfter,
                 signal,
                 `${method} ${url}`,
                 reason,
@@ -472,6 +479,16 @@ function cancelled(signal, cause) {
         "the call was cancelled",
         { cause: cause ?? abortReason(signal) },
     );
+}
+
+/**
+ * The message of a thrown value, for wrapping into a query's own error.
+ *
+ * @param {unknown} error
+ * @returns {string}
+ */
+export function errorMessage(error) {
+    return error instanceof Error ? error.message : String(error);
 }
 
 /**
