@@ -181,18 +181,17 @@ export class SimpleRestProvider {
             const inner = /** @type {{response: string}} */ (response).response;
             const bytes = Buffer.from(inner, "hex");
 
-            switch (request.constructor.name) {
-                case "AccountInfoQuery":
-                    // @ts-ignore
-                    return AccountInfo.fromBytes(bytes);
-                case "TransactionReceipt":
-                    // @ts-ignore
-                    return TransactionReceipt.fromBytes(bytes);
-                default:
-                    throw new Error(
-                        `unrecognzied request time ${request.constructor.name}`,
-                    );
+            // The published SDK bundle is minified, so constructor names are
+            // mangled; dispatch on the class itself.
+            if (request instanceof AccountInfoQuery) {
+                // @ts-ignore
+                return AccountInfo.fromBytes(bytes);
             }
+            if (request instanceof TransactionReceiptQuery) {
+                // @ts-ignore
+                return TransactionReceipt.fromBytes(bytes);
+            }
+            throw new Error("unrecognized request type");
         } else {
             // @ts-ignore
             return TransactionResponse.fromJSON(response);
