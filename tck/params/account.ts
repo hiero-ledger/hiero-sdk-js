@@ -45,13 +45,18 @@ export interface RemoveAllowancesParams {
     readonly serialNumbers?: string[];
 }
 
-export interface GetAccountBalanceParams extends BaseParams {
-    readonly accountId?: string;
-    readonly contractId?: string;
-}
-
 export interface GetMirrorNodeAccountBalanceParams extends BaseParams {
     readonly accountId?: string;
+}
+
+export interface GetMirrorNodeTokenBalanceParams extends BaseParams {
+    readonly accountId?: string;
+    readonly tokenId?: string;
+}
+
+export interface ExecuteDeprecatedAccountBalanceQueryParams extends BaseParams {
+    readonly accountId?: string;
+    readonly operation?: string;
 }
 
 export interface GetAccountInfoParams extends BaseTransactionParams {
