@@ -7,7 +7,11 @@ export default defineConfig({
         globals: true,
         environment: "node",
         include: ["test/unit/**/*.js"],
-        exclude: ["test/unit/Mocker.js", "test/unit/browser/*"],
+        exclude: [
+            "test/unit/Mocker.js",
+            "test/unit/browser/*",
+            "test/unit/utils/*",
+        ],
         testTimeout: 120000,
         isolate: true,
         coverage: {

@@ -1,9 +1,19 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import ContractFunctionParameters from "../contract/ContractFunctionParameters.js";
+import {
+    bodyJson,
+    errorMessage,
+    statusMessage,
+} from "../mirror_node/MirrorNodeHttpClient.js";
+import * as utf8 from "../encoding/utf8.js";
 
 /**
  * @typedef {import("../contract/ContractId.js").default} ContractId
  * @typedef {import("../account/AccountId.js").default} AccountId
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("long").default} Long
  *
  */
@@ -220,51 +230,54 @@ export default class MirrorNodeContractQuery {
     }
 
     /**
+     * `POST /api/v1/contracts/call` through the client's shared HTTP
+     * transport. Retry, backoff and timeouts follow the client's
+     * `MirrorNodeHttpRetryPolicy` (see `Client.setMirrorNodeHttpConfig`);
+     * the body is replayed byte for byte on a retry.
      *
      * @param {Client} client
      * @param {object} jsonPayload
+     * @param {number} [requestTimeout] - total timeout for the whole
+     * operation in milliseconds, every retry included; defaults to the
+     * retry policy's `totalDeadline`, which in turn defaults to
+     * `client.requestTimeout`
      * @returns {Promise<MirrorNodeResponse>}
      */
-    async performMirrorNodeRequest(client, jsonPayload) {
+    async performMirrorNodeRequest(client, jsonPayload, requestTimeout) {
         if (this.contractId == null) {
             throw new Error("Contract ID is not set");
         }
         this._fillEvmAddress();
-        let mirrorRestApiBaseUrl = client.mirrorRestApiBaseUrl;
-        const contractCallEndpointPath = "/contracts/call";
 
-        // Check if this is a local environment (localhost or 127.0.0.1)
-        const mirrorNode = client._mirrorNetwork.getNextMirrorNode();
-        const host = mirrorNode.address.address;
-        const isLocalEnvironment = host === "localhost" || host === "127.0.0.1";
-
-        if (isLocalEnvironment) {
-            // For local environments, use HTTP scheme and port 8545 for contract calls
-            // (different from general mirror node REST API port 5551)
-            const url = new URL(mirrorRestApiBaseUrl);
-            url.protocol = "http:";
-            url.port = "8545";
-            mirrorRestApiBaseUrl = url.toString();
-        }
-
-        const contractCallEndpointUrl = `${mirrorRestApiBaseUrl}${contractCallEndpointPath}`;
-
-        // eslint-disable-next-line n/no-unsupported-features/node-builtins
-        const response = await fetch(contractCallEndpointUrl, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(jsonPayload),
+        const http = client._mirrorNodeHttpClient({
+            // `/contracts/call` is served by the mirror node's web3 module,
+            // a different port on a local network.
+            family: "web3",
+            totalDeadline: requestTimeout,
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        const path = "/contracts/call";
+        const url = `${http.baseUrl}${path}`;
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-        const data = /** @type {MirrorNodeResponse} */ (await response.json());
-        return data;
+        try {
+            const response = await http.post(
+                path,
+                "application/json",
+                utf8.encode(JSON.stringify(jsonPayload)),
+            );
+
+            if (!response.ok) {
+                throw new Error(statusMessage(response));
+            }
+
+            return /** @type {MirrorNodeResponse} */ (bodyJson(response));
+        } catch (error) {
+            // `cause` keeps the adapter's verdict (`retries-exhausted-error`,
+            // `deadline-exceeded-error`, ...) and the last response.
+            throw new Error(`Failed to query ${url}: ${errorMessage(error)}`, {
+                cause: error,
+            });
+        }
     }
 
     _fillEvmAddress() {

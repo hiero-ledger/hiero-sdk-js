@@ -9,6 +9,10 @@ import NodeClient from "../../../src/client/NodeClient.js";
 import PrivateKey from "../../../src/PrivateKey.js";
 import Status from "../../../src/Status.js";
 import Wallet from "../../../src/Wallet.js";
+import FakeHttpTransport, { jsonResponse } from "../utils/FakeHttpTransport.js";
+
+/** @type {FakeHttpTransport} */
+let fake;
 
 /**
  * A client whose consensus nodes throw if anything asks them for a channel, so
@@ -21,7 +25,9 @@ function clientWithExplodingChannels() {
     const client = NodeClient.forNetwork(
         { "127.0.0.1:50211": "0.0.3" },
         { scheduleNetworkUpdate: false },
-    ).setMirrorNetwork(["127.0.0.1:5551"]);
+    )
+        .setMirrorNetwork(["127.0.0.1:5551"])
+        .setMirrorNodeHttpConfig({ transport: fake });
 
     const getChannel = vi.fn(() => {
         throw new Error("a consensus node call was made");
@@ -35,25 +41,15 @@ function clientWithExplodingChannels() {
 }
 
 describe("account balance via the mirror node", function () {
-    /** @type {import("vitest").MockInstance} */
-    let fetchMock;
-
     beforeEach(function () {
-        fetchMock = vi.fn(() =>
-            Promise.resolve({
-                ok: true,
-                status: 200,
-                json: () =>
-                    Promise.resolve({
-                        balances: [{ account: "0.0.10", balance: 12345 }],
-                    }),
+        fake = new FakeHttpTransport(() =>
+            jsonResponse(200, {
+                balances: [{ account: "0.0.10", balance: 12345 }],
             }),
         );
-        vi.stubGlobal("fetch", fetchMock);
     });
 
     afterEach(function () {
-        vi.unstubAllGlobals();
         vi.restoreAllMocks();
     });
 
@@ -67,8 +63,8 @@ describe("account balance via the mirror node", function () {
             expect(balance.hbars.toTinybars().toNumber()).to.equal(12345);
             // Read over HTTP from the mirror node, not from a consensus node.
             expect(getChannel).toHaveBeenCalledTimes(0);
-            expect(fetchMock).toHaveBeenCalledTimes(1);
-            expect(fetchMock.mock.calls[0][0]).to.include("/balances");
+            expect(fake.requests).to.have.length(1);
+            expect(fake.requests[0].url).to.include("/balances");
 
             client.close();
         });
@@ -89,13 +85,7 @@ describe("account balance via the mirror node", function () {
             // An existing account with no hbar still comes back with a
             // `"balance": 0` entry, so an empty list means the account does not
             // exist. #4335 made that an error rather than a silent zero.
-            fetchMock.mockImplementation(() =>
-                Promise.resolve({
-                    ok: true,
-                    status: 200,
-                    json: () => Promise.resolve({ balances: [] }),
-                }),
-            );
+            fake.handler = () => jsonResponse(200, { balances: [] });
 
             const { client } = clientWithExplodingChannels();
             const provider = new LocalProvider({ client });

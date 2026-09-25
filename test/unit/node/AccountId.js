@@ -9,8 +9,8 @@ import {
     PrivateKey,
     Client,
 } from "../../../src/index.js";
-import sinon from "sinon";
 import { MirrorNetwork } from "../../../src/constants/ClientConstants.js";
+import FakeHttpTransport from "../utils/FakeHttpTransport.js";
 
 describe("AccountId", function () {
     it("constructors", function () {
@@ -329,17 +329,17 @@ describe("AccountId", function () {
     });
 
     describe("populateAccountNum", function () {
-        let originalFetch;
+        /** @type {FakeHttpTransport} */
+        let fake;
         let originalSetTimeout;
         let client;
 
         beforeEach(function () {
-            // Save originals
-            originalFetch = global.fetch;
             originalSetTimeout = global.setTimeout;
 
-            // Setup client
+            fake = new FakeHttpTransport();
             client = Client.forTestnet();
+            client.setMirrorNodeHttpConfig({ transport: fake });
 
             // Mock setTimeout to execute immediately
             global.setTimeout = (callback) => {
@@ -349,18 +349,12 @@ describe("AccountId", function () {
         });
 
         afterEach(function () {
-            // Restore originals
-            global.fetch = originalFetch;
             global.setTimeout = originalSetTimeout;
+            client.close();
         });
 
         it("should populate the num field from mirror node response", async function () {
-            // Mock fetch response
-            global.fetch = sinon.stub().resolves({
-                json: sinon.stub().resolves({
-                    account: "0.0.12345",
-                }),
-            });
+            fake.respondJson(200, { account: "0.0.12345" });
 
             // Create account ID with an EVM address
             const evmAddress = EvmAddress.fromString(
@@ -371,9 +365,8 @@ describe("AccountId", function () {
             // Call the method
             const result = await accountId.populateAccountNum(client);
 
-            // Verify fetch was called with correct URL
-            expect(global.fetch.calledOnce).to.be.true;
-            expect(global.fetch.firstCall.args[0]).to.equal(
+            expect(fake.requests).to.have.length(1);
+            expect(fake.requests[0].url).to.equal(
                 `https://${MirrorNetwork.TESTNET}/api/v1/accounts/123f681646d4a755815f9cb19e1acc8565a0c2ac`,
             );
 
@@ -403,8 +396,7 @@ describe("AccountId", function () {
         });
 
         it("should handle errors from the mirror node", async function () {
-            // Mock fetch to simulate an error
-            global.fetch = sinon.stub().rejects(new Error("Network error"));
+            fake.fail(new Error("Network error"));
 
             // Create account ID with an EVM address
             const evmAddress = EvmAddress.fromString(
@@ -412,12 +404,15 @@ describe("AccountId", function () {
             );
             const accountId = new AccountId(0, 0, 0, undefined, evmAddress);
 
-            // Should throw error from fetch
             try {
                 await accountId.populateAccountNum(client);
                 throw new Error("Expected method to throw");
             } catch (error) {
-                expect(error.message).to.equal("Network error");
+                // Wrapped into the query's own error, with the transport
+                // failure kept as the cause.
+                expect(error.message).to.include(": Network error");
+                expect(error.message).to.match(/^Failed to query https:/);
+                expect(error.cause.message).to.equal("Network error");
             }
         });
 
@@ -425,13 +420,9 @@ describe("AccountId", function () {
             // Setup client with custom mirror network using HTTP port 80
             const customClient = new Client();
             customClient.setMirrorNetwork(["example.com:80"]);
+            customClient.setMirrorNodeHttpConfig({ transport: fake });
 
-            // Mock fetch response
-            global.fetch = sinon.stub().resolves({
-                json: sinon.stub().resolves({
-                    account: "0.0.12345",
-                }),
-            });
+            fake.respondJson(200, { account: "0.0.12345" });
 
             // Create account ID with an EVM address
             const evmAddress = EvmAddress.fromString(
@@ -442,9 +433,8 @@ describe("AccountId", function () {
             // Call the method
             await accountId.populateAccountNum(customClient);
 
-            // Verify fetch was called with HTTP URL (port 80)
-            expect(global.fetch.calledOnce).to.be.true;
-            expect(global.fetch.firstCall.args[0]).to.equal(
+            expect(fake.requests).to.have.length(1);
+            expect(fake.requests[0].url).to.equal(
                 "http://example.com:80/api/v1/accounts/123f681646d4a755815f9cb19e1acc8565a0c2ac",
             );
         });
@@ -453,13 +443,9 @@ describe("AccountId", function () {
             // Setup client with custom mirror network using HTTPS port 443
             const customClient = new Client();
             customClient.setMirrorNetwork(["api.example.com:443"]);
+            customClient.setMirrorNodeHttpConfig({ transport: fake });
 
-            // Mock fetch response
-            global.fetch = sinon.stub().resolves({
-                json: sinon.stub().resolves({
-                    account: "0.0.12345",
-                }),
-            });
+            fake.respondJson(200, { account: "0.0.12345" });
 
             // Create account ID with an EVM address
             const evmAddress = EvmAddress.fromString(
@@ -470,26 +456,25 @@ describe("AccountId", function () {
             // Call the method
             await accountId.populateAccountNum(customClient);
 
-            // Verify fetch was called with HTTPS URL (port 443)
-            expect(global.fetch.calledOnce).to.be.true;
-            expect(global.fetch.firstCall.args[0]).to.equal(
+            expect(fake.requests).to.have.length(1);
+            expect(fake.requests[0].url).to.equal(
                 "https://api.example.com:443/api/v1/accounts/123f681646d4a755815f9cb19e1acc8565a0c2ac",
             );
         });
     });
 
     describe("populateAccountEvmAddress", function () {
-        let originalFetch;
+        /** @type {FakeHttpTransport} */
+        let fake;
         let originalSetTimeout;
         let client;
 
         beforeEach(function () {
-            // Save originals
-            originalFetch = global.fetch;
             originalSetTimeout = global.setTimeout;
 
-            // Setup client mock
+            fake = new FakeHttpTransport();
             client = Client.forTestnet();
+            client.setMirrorNodeHttpConfig({ transport: fake });
 
             // Mock setTimeout to execute immediately
             global.setTimeout = (callback) => {
@@ -499,17 +484,13 @@ describe("AccountId", function () {
         });
 
         afterEach(function () {
-            // Restore originals
-            global.fetch = originalFetch;
             global.setTimeout = originalSetTimeout;
+            client.close();
         });
 
         it("should populate the evmAddress field from mirror node response", async function () {
-            // Mock fetch response
-            global.fetch = sinon.stub().resolves({
-                json: sinon.stub().resolves({
-                    evm_address: "123f681646d4a755815f9cb19e1acc8565a0c2ac",
-                }),
+            fake.respondJson(200, {
+                evm_address: "123f681646d4a755815f9cb19e1acc8565a0c2ac",
             });
 
             // Create account ID with account number
@@ -518,9 +499,8 @@ describe("AccountId", function () {
             // Call the method
             const result = await accountId.populateAccountEvmAddress(client);
 
-            // Verify fetch was called with correct URL
-            expect(global.fetch.calledOnce).to.be.true;
-            expect(global.fetch.firstCall.args[0]).to.equal(
+            expect(fake.requests).to.have.length(1);
+            expect(fake.requests[0].url).to.equal(
                 `https://${MirrorNetwork.TESTNET}/api/v1/accounts/12345`,
             );
 
@@ -555,18 +535,20 @@ describe("AccountId", function () {
         });
 
         it("should handle errors from the mirror node", async function () {
-            // Mock fetch to simulate an error
-            global.fetch = sinon.stub().rejects(new Error("Network error"));
+            fake.fail(new Error("Network error"));
 
             // Create account ID
             const accountId = new AccountId(0, 0, 12345);
 
-            // Should throw error from fetch
             try {
                 await accountId.populateAccountEvmAddress(client);
                 throw new Error("Expected method to throw");
             } catch (error) {
-                expect(error.message).to.equal("Network error");
+                // Wrapped into the query's own error, with the transport
+                // failure kept as the cause.
+                expect(error.message).to.include(": Network error");
+                expect(error.message).to.match(/^Failed to query https:/);
+                expect(error.cause.message).to.equal("Network error");
             }
         });
 
@@ -574,12 +556,10 @@ describe("AccountId", function () {
             // Setup client with custom mirror network using HTTP port 80
             const customClient = new Client();
             customClient.setMirrorNetwork(["example.com:80"]);
+            customClient.setMirrorNodeHttpConfig({ transport: fake });
 
-            // Mock fetch response
-            global.fetch = sinon.stub().resolves({
-                json: sinon.stub().resolves({
-                    evm_address: "123f681646d4a755815f9cb19e1acc8565a0c2ac",
-                }),
+            fake.respondJson(200, {
+                evm_address: "123f681646d4a755815f9cb19e1acc8565a0c2ac",
             });
 
             // Create account ID with account number
@@ -588,9 +568,8 @@ describe("AccountId", function () {
             // Call the method
             await accountId.populateAccountEvmAddress(customClient);
 
-            // Verify fetch was called with HTTP URL (port 80)
-            expect(global.fetch.calledOnce).to.be.true;
-            expect(global.fetch.firstCall.args[0]).to.equal(
+            expect(fake.requests).to.have.length(1);
+            expect(fake.requests[0].url).to.equal(
                 "http://example.com:80/api/v1/accounts/12345",
             );
         });
@@ -599,12 +578,10 @@ describe("AccountId", function () {
             // Setup client with custom mirror network using HTTPS port 443
             const customClient = new Client();
             customClient.setMirrorNetwork(["api.example.com:443"]);
+            customClient.setMirrorNodeHttpConfig({ transport: fake });
 
-            // Mock fetch response
-            global.fetch = sinon.stub().resolves({
-                json: sinon.stub().resolves({
-                    evm_address: "123f681646d4a755815f9cb19e1acc8565a0c2ac",
-                }),
+            fake.respondJson(200, {
+                evm_address: "123f681646d4a755815f9cb19e1acc8565a0c2ac",
             });
 
             // Create account ID with account number
@@ -613,9 +590,8 @@ describe("AccountId", function () {
             // Call the method
             await accountId.populateAccountEvmAddress(customClient);
 
-            // Verify fetch was called with HTTPS URL (port 443)
-            expect(global.fetch.calledOnce).to.be.true;
-            expect(global.fetch.firstCall.args[0]).to.equal(
+            expect(fake.requests).to.have.length(1);
+            expect(fake.requests[0].url).to.equal(
                 "https://api.example.com:443/api/v1/accounts/12345",
             );
         });
