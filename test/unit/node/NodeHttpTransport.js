@@ -5,6 +5,8 @@ import https from "https";
 import net from "net";
 import zlib from "zlib";
 import { getEventListeners } from "events";
+import { execFile } from "child_process";
+import { promisify } from "util";
 import { vi } from "vitest";
 import NodeHttpTransport from "../../../src/http/NodeHttpTransport.js";
 import HttpRequest from "../../../src/http/HttpRequest.js";
@@ -158,21 +160,6 @@ async function waitFor(condition, timeoutMs = 5000) {
 }
 
 /**
- * `http.Agent` reads `HTTP_PROXY` and friends from a `proxyEnv` option
- * since Node 24.5 and 22.19.
- *
- * @returns {boolean}
- */
-function agentSupportsProxyEnv() {
-    const [major, minor] = process.versions.node.split(".").map(Number);
-    return (
-        major > 24 ||
-        (major === 24 && minor >= 5) ||
-        (major === 22 && minor >= 19)
-    );
-}
-
-/**
  * @param {import("http").IncomingMessage} req
  * @returns {Promise<Buffer>}
  */
@@ -252,43 +239,75 @@ describe("NodeHttpTransport", function () {
         expect([...body]).to.deep.equal([1, 2, 3, 4]);
     });
 
-    it.skipIf(!agentSupportsProxyEnv())(
-        "routes through the environment proxy when NODE_USE_ENV_PROXY is set, as Node's own agents do",
+    it.skipIf(!process.allowedNodeEnvironmentFlags.has("--use-env-proxy"))(
+        "follows the proxy configuration Node applied to its global agents",
         async function () {
             // A forward proxy that answers every absolute-URI request itself.
             const { port } = await httpServer((req, res) => {
                 res.setHeader("Content-Type", "text/plain");
                 res.end(`via-proxy:${req.url}`);
             });
-            const saved = {
-                NODE_USE_ENV_PROXY: process.env.NODE_USE_ENV_PROXY,
-                HTTP_PROXY: process.env.HTTP_PROXY,
-                http_proxy: process.env.http_proxy,
-                NO_PROXY: process.env.NO_PROXY,
-                no_proxy: process.env.no_proxy,
-            };
-            process.env.NODE_USE_ENV_PROXY = "1";
-            process.env.HTTP_PROXY = `http://127.0.0.1:${port}`;
-            delete process.env.http_proxy;
-            delete process.env.NO_PROXY;
-            delete process.env.no_proxy;
-            try {
-                const response = await transport().roundTrip(
-                    request("http://does-not-exist.invalid/x"),
-                );
-                expect(response.statusCode).to.equal(200);
-                expect(response.body.toString()).to.equal(
-                    "via-proxy:http://does-not-exist.invalid/x",
-                );
-            } finally {
-                for (const [name, value] of Object.entries(saved)) {
-                    if (value === undefined) {
-                        delete process.env[name];
-                    } else {
-                        process.env[name] = value;
-                    }
+            const url = "http://does-not-exist.invalid/x";
+            const script = `
+                import NodeHttpTransport from ${JSON.stringify(
+                    new URL(
+                        "../../../src/http/NodeHttpTransport.js",
+                        import.meta.url,
+                    ).href,
+                )};
+                const transport = NodeHttpTransport.create();
+                try {
+                    const response = await transport.roundTrip({
+                        method: "GET",
+                        url: ${JSON.stringify(url)},
+                        headers: {},
+                        deadline: 15000,
+                    });
+                    console.log(JSON.stringify({
+                        status: response.statusCode,
+                        body: Buffer.from(response.body).toString(),
+                    }));
+                } catch (error) {
+                    console.log(JSON.stringify({ error: error.code ?? error.message }));
                 }
+                await transport.close(0);
+            `;
+            const env = {
+                ...process.env,
+                HTTP_PROXY: `http://127.0.0.1:${port}`,
+                http_proxy: `http://127.0.0.1:${port}`,
+            };
+            for (const name of [
+                "NODE_USE_ENV_PROXY",
+                "NO_PROXY",
+                "no_proxy",
+                "NODE_OPTIONS",
+            ]) {
+                delete env[name];
             }
+            // Node decides at startup, so each case is a child process. It
+            // must run asynchronously: this process serves the proxy.
+            /**
+             * @param {string[]} flags
+             * @param {NodeJS.ProcessEnv} childEnv
+             */
+            const run = async (flags, childEnv) => {
+                const { stdout } = await promisify(execFile)(
+                    process.execPath,
+                    [...flags, "--input-type=module", "-e", script],
+                    { env: childEnv, encoding: "utf8", timeout: 30000 },
+                );
+                return JSON.parse(stdout);
+            };
+            const viaProxy = { status: 200, body: `via-proxy:${url}` };
+
+            expect(await run(["--use-env-proxy"], env)).to.deep.equal(viaProxy);
+            expect(
+                await run([], { ...env, NODE_USE_ENV_PROXY: "1" }),
+            ).to.deep.equal(viaProxy);
+            expect(await run([], env)).to.deep.equal({
+                error: HttpTransportErrorCode.UNKNOWN_HOST_ERROR,
+            });
         },
     );
 

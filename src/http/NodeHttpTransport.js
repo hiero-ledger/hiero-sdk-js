@@ -39,12 +39,12 @@ const CROSS_ORIGIN_SAFE_HEADERS = new Set([
  * a cross-origin hop, a streaming body cap that fails one chunk past
  * `maxResponseBytes`, and a bounded drain on `close`.
  *
- * It honours the same ambient proxy configuration as Node's own global
- * agents: with `NODE_USE_ENV_PROXY=1` (Node 24.5 / 22.19 and later),
- * `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` are read from the environment.
- * A proxy installed on the global `fetch` through
- * `undici.setGlobalDispatcher()` is not seen here; an application using one
- * injects `FetchHttpTransport` instead.
+ * It uses whatever proxy configuration Node applied to its own global
+ * agents at startup (`--use-env-proxy` or `NODE_USE_ENV_PROXY`, Node 24.5 /
+ * 22.19 and later, reading `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY`), so
+ * it agrees with `http.globalAgent` in every case. A proxy installed on the
+ * global `fetch` through `undici.setGlobalDispatcher()` is not seen here; an
+ * application using one injects `FetchHttpTransport` instead.
  *
  * Bodies are decoded transparently when a server compresses them; the body
  * cap applies to the decoded bytes, which is what the SDK allocates.
@@ -62,19 +62,23 @@ export default class NodeHttpTransport extends HttpTransport {
          */
         this._configuration = HttpTransportConfiguration.from(configuration);
 
-        const agentOptions = { keepAlive: true, ...environmentProxyOptions() };
-
         /**
          * @private
          * @type {http.Agent}
          */
-        this._httpAgent = new http.Agent(agentOptions);
+        this._httpAgent = new http.Agent({
+            keepAlive: true,
+            ...proxyOptionsOf(http.globalAgent),
+        });
 
         /**
          * @private
          * @type {https.Agent}
          */
-        this._httpsAgent = new https.Agent(agentOptions);
+        this._httpsAgent = new https.Agent({
+            keepAlive: true,
+            ...proxyOptionsOf(https.globalAgent),
+        });
 
         /**
          * `close()` was called: no new `roundTrip` starts.
@@ -602,22 +606,25 @@ export default class NodeHttpTransport extends HttpTransport {
 }
 
 /**
- * The proxy configuration Node's own global agents apply: with
- * `NODE_USE_ENV_PROXY` set, `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` are
- * read from the environment (Node 24.5 / 22.19 and later; older versions
- * ignore the option). A private agent only does so when handed the
- * environment explicitly.
+ * The proxy configuration Node applied to one of its own global agents at
+ * startup (`--use-env-proxy`, `NODE_OPTIONS`, or `NODE_USE_ENV_PROXY` with
+ * Node's own reading of its value), handed to a private agent so that it
+ * makes the same decision. Node decides once, at startup, so it is read back
+ * rather than re-derived from the environment. Undefined on older Node,
+ * where nothing changes.
  *
- * @returns {{proxyEnv?: NodeJS.ProcessEnv}}
+ * @param {http.Agent} globalAgent
+ * @returns {{proxyEnv?: http.AgentOptions["proxyEnv"]}}
  */
-function environmentProxyOptions() {
-    if (typeof process === "undefined" || process.env == null) {
-        return {};
-    }
-    const flag = process.env.NODE_USE_ENV_PROXY;
-    return flag != null && flag !== "" && flag !== "0"
-        ? { proxyEnv: process.env }
-        : {};
+function proxyOptionsOf(globalAgent) {
+    // `options` is not in the type declarations, but every `Agent` keeps
+    // the options it was created with.
+    const options =
+        /** @type {{options?: {proxyEnv?: http.AgentOptions["proxyEnv"]}}} */ (
+            globalAgent
+        ).options;
+    const proxyEnv = options != null ? options.proxyEnv : undefined;
+    return proxyEnv != null ? { proxyEnv } : {};
 }
 
 /**
