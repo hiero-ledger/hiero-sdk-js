@@ -110,6 +110,7 @@ jobs:
         with:
           installMirrorNode: true
           soloVersion: v0.91.0
+          nodeVersion: ${{ matrix.node }}
           installBlockNode: true
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
@@ -201,6 +202,7 @@ jobs:
         with:
           installMirrorNode: true
           soloVersion: v0.91.0
+          nodeVersion: ${{ matrix.node }}
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
           haproxyPort: 50211
@@ -277,6 +279,7 @@ jobs:
   examples:
     name: Run examples using Node ${{ matrix.node }}
     runs-on: hiero-client-sdk-linux-medium
+    timeout-minutes: 60
     strategy:
       matrix:
         node: [ "22" ]
@@ -316,6 +319,7 @@ jobs:
         with:
           installMirrorNode: true
           soloVersion: v0.91.0
+          nodeVersion: ${{ matrix.node }}
           installBlockNode: true
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
@@ -338,3 +342,43 @@ jobs:
 
       - name: Run all examples
         run: task run:examples
+
+      - name: Run excluded balance examples
+        run: |
+          cd examples
+          node batch-tx.js
+
+          cd simple_rest_signature_provider
+          server_log="$(mktemp)"
+          AUTO_APPROVE=true node src/server.js > "$server_log" 2>&1 &
+          server_pid=$!
+          cleanup() {
+            kill "$server_pid" 2>/dev/null || true
+            wait "$server_pid" 2>/dev/null || true
+            rm -f "$server_log"
+          }
+          trap cleanup EXIT
+
+          for _ in {1..30}; do
+            if curl --silent --output /dev/null http://127.0.0.1:3000/; then
+              break
+            fi
+            sleep 1
+          done
+
+          if ! kill -0 "$server_pid" 2>/dev/null; then
+            cat "$server_log"
+            exit 1
+          fi
+
+          node src/client.js || {
+            cat "$server_log"
+            exit 1
+          }
+
+      - name: Type-check excluded React Native examples
+        run: |
+          cd examples/react-native-example
+          ./node_modules/.bin/tsc --noEmit
+          cd ../react-native-example-legacy
+          ./node_modules/.bin/tsc --noEmit

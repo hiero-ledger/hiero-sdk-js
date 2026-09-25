@@ -29,7 +29,7 @@
  * @property {() => LedgerId?} getLedgerId
  * @property {() => {[key: string]: (string | AccountId)}} getNetwork
  * @property {() => string[]} getMirrorNetwork
- * @property {(accountId: AccountId | string) => Promise<AccountBalance>} getAccountBalance
+ * @property {(accountId: AccountId | string, requestTimeout?: number) => Promise<AccountBalance>} getAccountBalance
  * @property {(accountId: AccountId | string) => Promise<AccountInfo>} getAccountInfo
  * @property {(accountId: AccountId | string) => Promise<TransactionRecord[]>} getAccountRecords
  * @property {(transactionId: TransactionId | string) => Promise<TransactionReceipt>} getTransactionReceipt
