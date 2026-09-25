@@ -2,7 +2,17 @@
 
 import FeeEstimateQuery from "../../src/query/FeeEstimateQuery.js";
 import FeeEstimateMode from "../../src/query/enums/FeeEstimateMode.js";
-import { TransferTransaction, AccountId, Hbar } from "../../src/index.js";
+import {
+    TransferTransaction,
+    AccountId,
+    Hbar,
+    Client,
+    PrivateKey,
+} from "../../src/index.js";
+import FakeHttpTransport, {
+    errorResponse,
+    jsonResponse,
+} from "./utils/FakeHttpTransport.js";
 
 describe("FeeEstimateQuery", function () {
     let mockTransaction;
@@ -195,6 +205,114 @@ describe("FeeEstimateQuery", function () {
             }
             expect(caught).to.be.instanceOf(Error);
             expect(caught.message).to.match(/requires a transaction/);
+        });
+    });
+
+    describe("wire", function () {
+        const FEE_RESPONSE = {
+            high_volume_multiplier: 1,
+            network: { multiplier: 2, subtotal: 20 },
+            node: { base: 10, extras: [] },
+            service: { base: 5, extras: [] },
+            total: 35,
+        };
+
+        /** @type {FakeHttpTransport} */
+        let fake;
+        /** @type {Client} */
+        let client;
+
+        beforeEach(function () {
+            fake = new FakeHttpTransport(() => jsonResponse(200, FEE_RESPONSE));
+            client = Client.forNetwork({ "127.0.0.1:50211": "0.0.3" });
+            client.setMirrorNetwork(["127.0.0.1:5600"]);
+            client.setOperator(new AccountId(2), PrivateKey.generateED25519());
+            client.setMirrorNodeHttpConfig({
+                transport: fake,
+                retryPolicy: {
+                    maxAttempts: 3,
+                    initialBackoff: 1,
+                    maxBackoff: 1,
+                },
+            });
+        });
+
+        afterEach(function () {
+            client.close();
+        });
+
+        it("posts the protobuf transaction to the Java REST fees endpoint", async function () {
+            const estimate = await new FeeEstimateQuery()
+                .setTransaction(mockTransaction)
+                .execute(client);
+
+            expect(estimate.total.toString()).to.equal("35");
+            expect(fake.requests).to.have.length(1);
+            expect(fake.requests[0].method).to.equal("POST");
+            expect(fake.requests[0].url).to.equal(
+                "http://127.0.0.1:8084/api/v1/network/fees?mode=INTRINSIC",
+            );
+            expect(fake.requests[0].contentType).to.equal(
+                "application/protobuf",
+            );
+            expect(fake.requests[0].body.byteLength).to.be.above(0);
+        });
+
+        it("encodes the mode and the throttle as query parameters", async function () {
+            await new FeeEstimateQuery()
+                .setTransaction(mockTransaction)
+                .setMode(FeeEstimateMode.STATE)
+                .setHighVolumeThrottle(5000)
+                .execute(client);
+
+            expect(fake.requests[0].url).to.equal(
+                "http://127.0.0.1:8084/api/v1/network/fees?mode=STATE&high_volume_throttle=5000",
+            );
+        });
+
+        it("retries a 503 and replays the same body", async function () {
+            fake.handler = null;
+            fake.respond(errorResponse(503, "Unavailable")).respondJson(
+                200,
+                FEE_RESPONSE,
+            );
+
+            const estimate = await new FeeEstimateQuery()
+                .setTransaction(mockTransaction)
+                .execute(client);
+
+            expect(estimate.total.toString()).to.equal("35");
+            expect(fake.requests).to.have.length(2);
+            expect([...fake.requests[1].body]).to.deep.equal([
+                ...fake.requests[0].body,
+            ]);
+        });
+
+        it("does not retry a 400 and surfaces the mirror node detail", async function () {
+            fake.handler = () =>
+                errorResponse(400, "Unable to parse transaction");
+
+            let caught = null;
+            try {
+                await new FeeEstimateQuery()
+                    .setTransaction(mockTransaction)
+                    .execute(client);
+            } catch (err) {
+                caught = err;
+            }
+
+            expect(caught.message).to.equal(
+                "Failed to estimate fees: HTTP 400: Error: Unable to parse transaction",
+            );
+            expect(fake.requests).to.have.length(1);
+        });
+
+        it("bounds the operation by the given requestTimeout", async function () {
+            await new FeeEstimateQuery()
+                .setTransaction(mockTransaction)
+                .execute(client, 2500);
+
+            expect(fake.requests[0].deadline).to.be.within(2400, 2500);
         });
     });
 });

@@ -28,7 +28,9 @@ describe("MirrorNodeAccountBalanceQuery (wire)", function () {
         });
         client.setMirrorNetwork([`${MIRROR_HOST}:443`]);
         // Keep the retry backoff short so the retry test stays fast.
-        client.setMinBackoff(1).setMaxBackoff(1);
+        client.setMirrorNodeHttpConfig({
+            retryPolicy: { initialBackoff: 1, maxBackoff: 1 },
+        });
     });
 
     afterEach(function () {

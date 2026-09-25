@@ -198,6 +198,18 @@ export { default as TokenKeyValidation } from "./token/TokenKeyValidation.js";
 export { default as StatusError } from "./StatusError.js";
 export { default as MaxAttemptsOrTimeoutError } from "./MaxAttemptsOrTimeoutError.js";
 export { default as MirrorNodeStatusError } from "./MirrorNodeStatusError.js";
+export { default as HttpMethod } from "./http/HttpMethod.js";
+export { default as HttpRequest } from "./http/HttpRequest.js";
+export { default as HttpResponse } from "./http/HttpResponse.js";
+export { default as HttpTransport } from "./http/HttpTransport.js";
+export { default as HttpTransportConfiguration } from "./http/HttpTransportConfiguration.js";
+export {
+    default as HttpTransportError,
+    HttpTransportErrorCode,
+} from "./http/HttpTransportError.js";
+export { default as FetchHttpTransport } from "./http/FetchHttpTransport.js";
+export { default as MirrorNodeHttpRetryPolicy } from "./mirror_node/MirrorNodeHttpRetryPolicy.js";
+export { default as MirrorNodeHttpConfig } from "./mirror_node/MirrorNodeHttpConfig.js";
 export { default as PrecheckStatusError } from "./PrecheckStatusError.js";
 export { default as ReceiptStatusError } from "./ReceiptStatusError.js";
 export { default as LedgerId } from "./LedgerId.js";

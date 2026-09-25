@@ -21,6 +21,7 @@ export default defineConfig({
             "test/unit/Mocker.js",
             "test/unit/browser/utils/*",
             "test/unit/node/*",
+            "test/unit/utils/*",
         ],
         testTimeout: 120000,
         retry: 1,
