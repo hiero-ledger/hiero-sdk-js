@@ -2,10 +2,10 @@
 
 import BigNumber from "bignumber.js";
 
-/**
- * @typedef {{low: number, high: number, unsigned: boolean}} LongObject
- * @typedef {import("long").default} Long
- */
+/** @typedef {{low: number, high: number, unsigned: boolean}} LongObject */
+// @ts-ignore -- `long` v5 uses `export =`; keep `.default` so declaration
+// emission produces the Long value type. Tracked in #4373.
+/** @typedef {import("long").default} Long */
 
 /**
  * @param {Long | number | string | LongObject | BigNumber} value

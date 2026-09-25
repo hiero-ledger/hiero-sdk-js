@@ -13,9 +13,13 @@ import {
     TokenCancelAirdropTransaction,
     TokenRejectTransaction,
     NftId,
+    Status,
 } from "@hiero-ledger/sdk";
+import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 
 import dotenv from "dotenv";
+
+/** @typedef {{equals: (value: number) => boolean, toInt: () => number, toString: () => string}} TokenBalanceValue */
 
 dotenv.config();
 
@@ -199,15 +203,15 @@ async function main() {
 
     console.log(
         "Account1 balance after airdrop: ",
-        (await tokenBalance(client, accountId1, tokenId)).toInt(),
+        (await tokenBalance(client, accountId1, tokenId, 100, true)).toInt(),
     );
     console.log(
         "Account2 balance after airdrop: ",
-        (await tokenBalance(client, accountId2, tokenId)).toInt(),
+        (await tokenBalance(client, accountId2, tokenId, 100, true)).toInt(),
     );
     console.log(
         "Account3 balance after airdrop: ",
-        await tokenBalance(client, accountId3, tokenId),
+        (await tokenBalance(client, accountId3, tokenId, 0, true)).toInt(),
     );
 
     /**
@@ -224,7 +228,7 @@ async function main() {
 
     console.log(
         "Account3 balance after airdrop claim",
-        (await tokenBalance(client, accountId3, tokenId)).toInt(),
+        (await tokenBalance(client, accountId3, tokenId, 100)).toInt(),
     );
 
     /**
@@ -272,15 +276,15 @@ async function main() {
 
     console.log(
         "Account 1 NFT Balance after airdrop",
-        (await tokenBalance(client, accountId1, nftId)).toInt(),
+        (await tokenBalance(client, accountId1, nftId, 1)).toInt(),
     );
     console.log(
         "Account 2 NFT Balance after airdrop",
-        await tokenBalance(client, accountId2, nftId),
+        (await tokenBalance(client, accountId2, nftId, 0)).toInt(),
     );
     console.log(
         "Account 3 NFT Balance after airdrop",
-        await tokenBalance(client, accountId3, nftId),
+        (await tokenBalance(client, accountId3, nftId, 0)).toInt(),
     );
 
     /**
@@ -298,7 +302,7 @@ async function main() {
 
     console.log(
         "Account 2 nft balance after claim: ",
-        (await tokenBalance(client, accountId2, nftId)).toInt(),
+        (await tokenBalance(client, accountId2, nftId, 1)).toInt(),
     );
 
     /**
@@ -306,13 +310,18 @@ async function main() {
      * Cancel the airdrop for Account 3
      */
     console.log("Cancelling airdrop for account 3");
-    await new TokenCancelAirdropTransaction()
-        .addPendingAirdropId(newPendingAirdropsNfts[1].airdropId)
-        .execute(client);
+    await (
+        await (
+            await new TokenCancelAirdropTransaction()
+                .addPendingAirdropId(newPendingAirdropsNfts[1].airdropId)
+                .freezeWith(client)
+                .sign(treasuryKey)
+        ).execute(client)
+    ).getReceipt(client);
 
     console.log(
         "Account 3 nft balance after cancel: ",
-        await tokenBalance(client, accountId3, nftId),
+        (await tokenBalance(client, accountId3, nftId, 0)).toInt(),
     );
 
     /**
@@ -336,7 +345,7 @@ async function main() {
      */
     console.log(
         "Account 2 nft balance after reject: ",
-        (await tokenBalance(client, accountId2, nftId)).toInt(),
+        (await tokenBalance(client, accountId2, nftId, 0)).toInt(),
     );
 
     /**
@@ -346,7 +355,7 @@ async function main() {
 
     console.log(
         "Treasury nft balance after reject: ",
-        (await tokenBalance(client, treasuryAccount, nftId)).toInt(),
+        (await tokenBalance(client, treasuryAccount, nftId, 4, true)).toInt(),
     );
 
     /**
@@ -366,12 +375,12 @@ async function main() {
 
     console.log(
         "Account 3 balance after reject: ",
-        (await tokenBalance(client, accountId3, tokenId)).toInt(),
+        (await tokenBalance(client, accountId3, tokenId, 0)).toInt(),
     );
 
     console.log(
         "Treasury balance after reject: ",
-        (await tokenBalance(client, treasuryAccount, tokenId)).toInt(),
+        (await tokenBalance(client, treasuryAccount, tokenId, 100)).toInt(),
     );
     client.close();
 }
@@ -382,56 +391,42 @@ async function main() {
  * `AccountBalanceQuery` used to return token balances, use `MirrorNodeTokenBalanceQuery` instead.
  *
  * The mirror node ingests consensus state asynchronously, so a read straight
- * after a transaction can still return the previous value. Pass `previous` to
- * poll until the value moves; the loop is bounded so an example cannot hang.
+ * after a transaction can still return the previous value. Pass `expected` to
+ * poll until the intended state is visible; the loop is bounded so an example
+ * cannot hang or silently accept an intermediate value.
  *
  * @param {Client} client
  * @param {AccountId | string} accountId
  * @param {import("@hiero-ledger/sdk").TokenId | string} tokenId
- * @param {import("long")} [previous]
- * @returns {Promise<import("long")>}
+ * @param {number} expected
+ * @param {boolean} [retryMissing]
+ * @returns {Promise<TokenBalanceValue>}
  */
-async function tokenBalance(client, accountId, tokenId, previous) {
-    return untilMirror(async () => {
-        const { balance } = await new MirrorNodeTokenBalanceQuery()
-            .setAccountId(accountId)
-            .setTokenId(tokenId)
-            .execute(client);
+async function tokenBalance(
+    client,
+    accountId,
+    tokenId,
+    expected,
+    retryMissing = false,
+) {
+    return untilMirror(
+        async (remainingMs) => {
+            const result = await new MirrorNodeTokenBalanceQuery()
+                .setAccountId(accountId)
+                .setTokenId(tokenId)
+                .execute(client, remainingMs);
+            // The generated SDK declaration currently exposes Long as `any`.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const balance = /** @type {TokenBalanceValue} */ (result.balance);
 
-        // Without a previous value there is nothing to wait for.
-        if (previous == null) {
-            return balance;
-        }
-
-        return balance.equals(previous) ? null : balance;
-    });
+            return balance.equals(expected) ? balance : null;
+        },
+        {
+            retryError: retryMissing
+                ? retryOnStatus(Status.InvalidAccountId)
+                : undefined,
+        },
+    );
 }
 
 void main();
-
-/**
- * Poll a mirror-node read until it reflects the transaction that just happened.
- *
- * The mirror node ingests consensus state asynchronously, so a read straight
- * after a transaction can still return the previous value. Polling to a deadline
- * beats a fixed sleep: it does not go flaky on a slow runner and does not waste
- * time on a fast one.
- *
- * @template T
- * @param {() => Promise<T | null>} read - resolves the value once it is ready
- * @param {number} [timeoutMs]
- * @returns {Promise<T>}
- */
-async function untilMirror(read, timeoutMs = 60000) {
-    const deadline = Date.now() + timeoutMs;
-    for (;;) {
-        const result = await read();
-        if (result != null) {
-            return result;
-        }
-        if (Date.now() >= deadline) {
-            throw new Error("mirror node did not ingest in time");
-        }
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-    }
-}
