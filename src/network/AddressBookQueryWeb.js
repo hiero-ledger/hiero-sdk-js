@@ -3,8 +3,14 @@
 import Query from "../query/Query.js";
 import NodeAddressBook from "../address_book/NodeAddressBook.js";
 import FileId from "../file/FileId.js";
-import { RST_STREAM } from "../Executable.js";
 import NodeAddress from "../address_book/NodeAddress.js";
+import MirrorNodeRestPath from "../mirror_node/MirrorNodeRestPath.js";
+import {
+    bodyJson,
+    errorMessage,
+    statusMessage,
+} from "../mirror_node/MirrorNodeHttpClient.js";
+import { isLoopbackHost } from "../mirror_node/localMirrorRestBaseUrl.js";
 import {
     MAINNET,
     WEB_TESTNET,
@@ -14,7 +20,6 @@ import {
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
- * @typedef {import("../channel/MirrorChannel.js").MirrorError} MirrorError
  */
 
 /**
@@ -60,12 +65,17 @@ const DEFAULT_PAGE_SIZE = 25;
 
 /**
  * Web-compatible query to get a list of Hedera network node addresses from a mirror node.
- * Uses fetch API instead of gRPC for web environments.
+ * Uses the mirror node REST API (`GET /api/v1/network/nodes`) instead of gRPC
+ * for web environments, through the client's shared HTTP transport.
  *
  * This query can be used to retrieve node addresses either from a specific file ID
  * or from the most recent address book if no file ID is specified. The response
  * contains node metadata including IP addresses and ports for both node and mirror
  * node services.
+ *
+ * Retry, backoff and timeouts follow the client's `MirrorNodeHttpRetryPolicy`
+ * (see `Client.setMirrorNodeHttpConfig`). `setMaxAttempts` and
+ * `setMaxBackoff` on the query override only the field they name.
  * @augments {Query<NodeAddressBook>}
  */
 export default class AddressBookQueryWeb extends Query {
@@ -95,44 +105,6 @@ export default class AddressBookQueryWeb extends Query {
         if (props.limit != null) {
             this.setLimit(props.limit);
         }
-
-        /**
-         * @private
-         * @type {(error: MirrorError | Error | null) => boolean}
-         */
-        this._retryHandler = (error) => {
-            if (error != null) {
-                if (error instanceof Error) {
-                    // Retry on all errors which are not `MirrorError` because they're
-                    // likely lower level HTTP errors
-                    return true;
-                } else {
-                    // Retry on `NOT_FOUND`, `RESOURCE_EXHAUSTED`, `UNAVAILABLE`, and conditionally on `INTERNAL`
-                    // if the message matches the right regex.
-                    switch (error.code) {
-                        // INTERNAL
-
-                        case 13:
-                            return RST_STREAM.test(error.details.toString());
-                        // NOT_FOUND
-
-                        case 5:
-                        // RESOURCE_EXHAUSTED
-                        // eslint-disable-next-line no-fallthrough
-                        case 8:
-                        // UNAVAILABLE
-                        // eslint-disable-next-line no-fallthrough
-                        case 14:
-                        case 17:
-                            return true;
-                        default:
-                            return false;
-                    }
-                }
-            }
-
-            return false;
-        };
 
         /** @type {NodeAddress[]} */
         this._addresses = [];
@@ -178,6 +150,9 @@ export default class AddressBookQueryWeb extends Query {
     }
 
     /**
+     * Total attempts per page (one request plus retries), overriding the
+     * client's mirror node HTTP retry policy for this query only.
+     *
      * @param {number} attempts
      * @returns {this}
      */
@@ -187,6 +162,9 @@ export default class AddressBookQueryWeb extends Query {
     }
 
     /**
+     * Cap on the backoff between attempts in milliseconds, overriding the
+     * client's mirror node HTTP retry policy for this query only.
+     *
      * @param {number} backoff
      * @returns {this}
      */
@@ -197,17 +175,25 @@ export default class AddressBookQueryWeb extends Query {
 
     /**
      * @param {Client<Channel>} client
-     * @param {number=} requestTimeout
+     * @param {number=} requestTimeout - total budget for the whole query in
+     * milliseconds, covering every page and every retry, the same meaning
+     * `requestTimeout` has on `Executable` and on the mirror node balance
+     * queries. Defaults to the retry policy's `totalDeadline`, which in turn
+     * defaults to `client.requestTimeout`; `0` or less also selects the
+     * default. Independently, one attempt never waits longer than the
+     * policy's `perAttemptTimeout` (30 s).
      * @returns {Promise<NodeAddressBook>}
      */
     execute(client, requestTimeout) {
         return new Promise((resolve, reject) => {
-            void this._makeFetchRequest(
+            // `_makeFetchRequest` is async: a throw outside its retry loop
+            // rejects its own promise, so forward that or `execute()` never settles.
+            this._makeFetchRequest(
                 client,
                 resolve,
                 reject,
                 requestTimeout,
-            );
+            ).catch(reject);
         });
     }
 
@@ -219,140 +205,94 @@ export default class AddressBookQueryWeb extends Query {
      * @param {number=} requestTimeout
      */
     async _makeFetchRequest(client, resolve, reject, requestTimeout) {
-        const { port, address } =
-            client._mirrorNetwork.getNextMirrorNode().address;
+        // This class overrides `execute()`, so `Executable._setupExecution`
+        // never runs and the client logger has to be picked up here.
+        this._logger = this._logger ?? client._logger;
 
+        /** @type {import("../MirrorNode.js").default} */
+        let mirrorNode;
+        try {
+            mirrorNode = client._mirrorNetwork.nextMirrorNodeForRest();
+        } catch (error) {
+            reject(/** @type {Error} */ (error));
+            return;
+        }
+
+        // This query still derives the base URL from the mirror node's
+        // address rather than reading `client.mirrorRestApiBaseUrl`; that
+        // second step of its migration lands with the local-port work.
+        const { port, address } = mirrorNode.address;
         let baseUrl = `${
-            address.includes("127.0.0.1") || address.includes("localhost")
-                ? "http"
-                : "https"
+            isLoopbackHost(address) ? "http" : "https"
         }://${address}`;
-
         if (port) {
             baseUrl = `${baseUrl}:${port}`;
         }
+        baseUrl = `${baseUrl}/api/v1`;
 
-        // Initialize aggregated results
-        this._addresses = [];
-        let nextUrl = null;
-        let isLastPage = false;
+        const http = client._mirrorNodeHttpClient({
+            family: "rest",
+            baseUrl,
+            maxAttempts: this._maxAttempts,
+            maxBackoff: this._maxBackoff,
+            totalDeadline: requestTimeout,
+            logger: this._logger,
+        });
 
-        // Build initial URL
-        const initialUrl = new URL(`${baseUrl}/api/v1/network/nodes`);
+        const params = new URLSearchParams();
         if (this._fileId != null) {
-            initialUrl.searchParams.append("file.id", this._fileId.toString());
+            params.append("file.id", this._fileId.toString());
         }
-
         // Use the specified limit, or default to DEFAULT_PAGE_SIZE for optimal pagination performance
         const effectiveLimit =
             this._limit != null ? this._limit : DEFAULT_PAGE_SIZE;
-        initialUrl.searchParams.append("limit", effectiveLimit.toString());
-        const maxAttempts = this._maxAttempts ?? client.maxAttempts;
-        // Fetch all pages
-        while (!isLastPage) {
-            const currentUrl = nextUrl ? new URL(nextUrl, baseUrl) : initialUrl;
+        params.append("limit", effectiveLimit.toString());
 
-            for (let attempt = 0; attempt <= maxAttempts; attempt++) {
-                try {
-                    // eslint-disable-next-line n/no-unsupported-features/node-builtins
-                    const response = await fetch(currentUrl.toString(), {
-                        method: "GET",
-                        headers: {
-                            Accept: "application/json",
-                        },
-                        signal: requestTimeout
-                            ? AbortSignal.timeout(requestTimeout)
-                            : undefined,
-                    });
+        this._addresses = [];
 
-                    if (!response.ok) {
-                        throw new Error(
-                            `HTTP error! status: ${response.status}`,
-                        );
-                    }
+        /** @type {?MirrorNodeRestPath} */
+        let path = MirrorNodeRestPath.of(`/network/nodes?${params.toString()}`);
 
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    const data = /** @type {AddressBookQueryWebResponse} */ (
-                        await response.json()
-                    );
-
-                    const nodes = data.nodes || [];
-
-                    // Aggregate nodes from this page
-                    const pageNodes = nodes.map((node) =>
-                        NodeAddress.fromJSON({
-                            nodeId: node.node_id.toString(),
-                            accountId: node.node_account_id,
-                            addresses:
-                                this._handleAddressesFromGrpcProxyEndpoint(
-                                    node,
-                                    client,
-                                ),
-                            certHash: node.node_cert_hash,
-                            publicKey: node.public_key,
-                            description: node.description,
-                            stake: node.stake?.toString(),
-                        }),
-                    );
-
-                    this._addresses.push(...pageNodes);
-                    nextUrl = data.links?.next || null;
-
-                    // If no more pages, set flag to exit loop
-                    if (!nextUrl) {
-                        isLastPage = true;
-                    }
-
-                    // Move to next page
-                    break;
-                } catch (error) {
-                    console.error("Error in _makeFetchRequest:", error);
-                    const message =
-                        error instanceof Error ? error.message : String(error);
-
-                    // Check if we should retry
-                    if (
-                        attempt < maxAttempts &&
-                        !client.isClientShutDown &&
-                        this._retryHandler(
-                            /** @type {MirrorError | Error | null} */ (error),
-                        )
-                    ) {
-                        const delay = Math.min(
-                            250 * 2 ** attempt,
-                            this._maxBackoff,
-                        );
-
-                        if (this._logger) {
-                            this._logger.debug(
-                                `Error getting nodes from mirror for file ${
-                                    this._fileId != null
-                                        ? this._fileId.toString()
-                                        : "UNKNOWN"
-                                } during attempt ${
-                                    attempt + 1
-                                }. Waiting ${delay} ms before next attempt: ${message}`,
-                            );
-                        }
-
-                        // Wait before next attempt
-                        await new Promise((resolve) =>
-                            setTimeout(resolve, delay),
-                        );
-                        continue;
-                    }
-
-                    // If we shouldn't retry or have exhausted attempts, reject
-                    const maxAttemptsReached = attempt >= maxAttempts;
-                    const errorMessage = maxAttemptsReached
-                        ? `Failed to query address book after ${
-                              maxAttempts + 1
-                          } attempts. Last error: ${message}`
-                        : `Failed to query address book: ${message}`;
-                    reject(new Error(errorMessage));
-                    return;
+        try {
+            while (path != null) {
+                const response = await http.get(path);
+                if (!response.ok) {
+                    throw new Error(statusMessage(response));
                 }
+
+                const data = /** @type {AddressBookQueryWebResponse} */ (
+                    bodyJson(response)
+                );
+                const nodes = data.nodes || [];
+
+                // Aggregate nodes from this page
+                const pageNodes = nodes.map((node) =>
+                    NodeAddress.fromJSON({
+                        nodeId: node.node_id.toString(),
+                        accountId: node.node_account_id,
+                        addresses: this._handleAddressesFromGrpcProxyEndpoint(
+                            node,
+                            client,
+                        ),
+                        certHash: node.node_cert_hash,
+                        publicKey: node.public_key,
+                        description: node.description,
+                        stake: node.stake?.toString(),
+                    }),
+                );
+                this._addresses.push(...pageNodes);
+
+                const next = data.links?.next;
+                path = next ? MirrorNodeRestPath.fromNextLink(next) : null;
             }
+        } catch (error) {
+            reject(
+                new Error(
+                    `Failed to query address book: ${errorMessage(error)}`,
+                    { cause: error },
+                ),
+            );
+            return;
         }
 
         // Return the aggregated results

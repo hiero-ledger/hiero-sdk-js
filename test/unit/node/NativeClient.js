@@ -2,6 +2,7 @@ import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { AccountId, LedgerId, FileId } from "../../../src/index.js";
 import NativeClient from "../../../src/client/NativeClient.js";
+import AddressBookQueryWeb from "../../../src/network/AddressBookQueryWeb.js";
 import { WebNetwork } from "../../../src/constants/ClientConstants.js";
 import {
     MAINNET,
@@ -209,6 +210,32 @@ describe("NativeClient", function () {
             expect(() => WebNetwork.fromName("invalid")).to.throw(
                 "unknown network name: invalid",
             );
+        });
+    });
+
+    describe("without a mirror network", function () {
+        it("updateNetwork() settles and can run again", async function () {
+            const client = NativeClient.forNetwork({
+                "127.0.0.1:50211": "0.0.3",
+            });
+            const initialNetwork = { ...client.network };
+
+            await client.updateNetwork();
+
+            expect(client._isUpdatingNetwork).to.equal(false);
+            expect(client.network).to.deep.equal(initialNetwork);
+            client.close();
+        });
+
+        it("AddressBookQueryWeb.execute() rejects with a clear error", async function () {
+            const client = NativeClient.forNetwork({
+                "127.0.0.1:50211": "0.0.3",
+            });
+
+            await expect(
+                new AddressBookQueryWeb().execute(client),
+            ).rejects.toThrow("Client has no mirror network configured");
+            client.close();
         });
     });
 

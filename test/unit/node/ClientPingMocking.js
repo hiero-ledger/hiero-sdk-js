@@ -103,6 +103,28 @@ describe("ClientPingMocking", function () {
         await client.ping(new AccountId(3));
     });
 
+    it("ping rejects a node account ID that is not in the network map", async function () {
+        ({ client, servers } = await Mocker.withResponses([
+            [
+                {
+                    call: () => {
+                        expect.fail("no node should have been probed");
+                    },
+                },
+            ],
+        ]));
+
+        let error = null;
+        try {
+            await client.ping("0.0.111");
+        } catch (err) {
+            error = err;
+        }
+
+        expect(error).to.be.an("Error");
+        expect(error.message).to.equal("NodeAccountId not recognized: 0.0.111");
+    });
+
     it("ping rejects when the node fails at the gRPC layer", async function () {
         ({ client, servers } = await Mocker.withResponses([
             [{ error: UNAVAILABLE }],

@@ -80,12 +80,13 @@ export default class Executable {
         this._minBackoff = null;
 
         /**
-         * This is the request's max backoff
+         * This is the request's max backoff. `null` until `_setupExecution`
+         * copies the client's value, unless `setMaxBackoff` was called.
          *
          * @internal
-         * @type {number}
+         * @type {number | null}
          */
-        this._maxBackoff = 8000;
+        this._maxBackoff = null;
 
         /**
          * The operator that was used to execute this request.
@@ -265,7 +266,7 @@ export default class Executable {
     /**
      * Get the max backoff
      *
-     * @returns {number}
+     * @returns {number | null}
      */
     get maxBackoff() {
         return this._maxBackoff;
@@ -601,23 +602,25 @@ export default class Executable {
      * @returns {Node}
      */
     _getExecutionNode(client) {
-        /** @type {Node} */
-        let currentNode;
-
         if (this._nodeAccountIds.isEmpty) {
-            currentNode = client._network.getNode();
+            const currentNode = client._network.getNode();
             this._nodeAccountIds.setList([currentNode.accountId]);
-        } else {
-            currentNode = client._network.getNode(this._nodeAccountIds.current);
+            return currentNode;
         }
 
-        if (currentNode == null) {
-            throw new Error(
-                `NodeAccountId not recognized: ${this._nodeAccountIds.current.toString()}`,
-            );
+        // A pinned node account ID may have left the network map since the
+        // request was built (address book refresh). Skip it while another
+        // pinned ID still resolves; rethrow only when none of them do.
+        for (let i = 0; ; i++) {
+            try {
+                return client._network.getNode(this._nodeAccountIds.current);
+            } catch (error) {
+                if (i + 1 >= this._nodeAccountIds.length) {
+                    throw error;
+                }
+                this._nodeAccountIds.advance();
+            }
         }
-
-        return currentNode;
     }
 
     /**
@@ -665,7 +668,7 @@ export default class Executable {
                 isLocalNode,
                 attempt,
                 /** @type {number} */ (this._minBackoff),
-                this._maxBackoff,
+                /** @type {number} */ (this._maxBackoff),
             );
             return;
         }
@@ -936,7 +939,7 @@ export default class Executable {
                         isLocalNode,
                         attempt,
                         /** @type {number} */ (this._minBackoff),
-                        this._maxBackoff,
+                        /** @type {number} */ (this._maxBackoff),
                     );
                     continue;
                 case ExecutionState.Finished:

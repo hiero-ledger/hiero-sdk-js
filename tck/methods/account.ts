@@ -12,6 +12,7 @@ import {
     TokenId,
     EvmAddress,
     AccountInfoQuery,
+    MirrorNodeAccountBalanceQuery,
     AccountInfo,
     ContractInfoQuery,
     TokenInfoQuery,
@@ -23,6 +24,7 @@ import {
     AccountResponse,
     GetAccountBalanceResponse,
     GetAccountInfoResponse,
+    GetMirrorNodeAccountBalanceResponse,
     TokenRelationshipInfo,
 } from "../response/account";
 
@@ -40,6 +42,7 @@ import {
     DeleteAllowanceParams,
     GetAccountBalanceParams,
     GetAccountInfoParams,
+    GetMirrorNodeAccountBalanceParams,
     UpdateAccountParams,
 } from "../params/account";
 import { applyCommonTransactionParams } from "../params/common-tx-params";
@@ -349,6 +352,31 @@ export const getAccountBalance = async ({
         hbars: hbars.toTinybars().toString(),
         tokenBalances: tokenBalances,
         tokenDecimals: tokenDecimals,
+    };
+};
+
+/**
+ * Reads the HBAR balance of an account or contract from the mirror node
+ * via MirrorNodeAccountBalanceQuery, per the TCK
+ * MirrorNodeAccountBalanceQuery test specification. The accountId string
+ * may be anything the mirror node resolves: an account or contract ID, an
+ * EVM address, or a public key alias.
+ */
+export const getMirrorNodeAccountBalance = async ({
+    accountId,
+    sessionId,
+}: GetMirrorNodeAccountBalanceParams): Promise<GetMirrorNodeAccountBalanceResponse> => {
+    const client = sdk.getClient(sessionId);
+    const query = new MirrorNodeAccountBalanceQuery();
+
+    if (accountId != null) {
+        query.setAccountId(accountId);
+    }
+
+    const balance = await query.execute(client);
+
+    return {
+        hbars: balance.hbars.toTinybars().toString(),
     };
 };
 

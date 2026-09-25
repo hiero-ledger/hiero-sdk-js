@@ -401,35 +401,23 @@ export default class ManagedNetwork {
     }
 
     /**
+     * Returns a node for the given key, or a random healthy node when no key
+     * is given.
+     *
      * @param {KeyT=} key
      * @returns {NetworkNodeT}
+     * @throws {Error} if `key` is not present in the network map
      */
     getNode(key) {
         this._readmitNodes();
-        if (key != null && key != undefined) {
+        if (key != null) {
             const lockedNodes = this._network.get(key.toString());
-            if (lockedNodes) {
-                const randomNodeAddress = Math.floor(
-                    Math.random() * lockedNodes.length,
+            if (lockedNodes == null) {
+                throw new Error(
+                    `NodeAccountId not recognized: ${key.toString()}`,
                 );
-                return /** @type {NetworkNodeT[]} */ (lockedNodes)[
-                    randomNodeAddress
-                ];
-            } else {
-                const nodes = Array.from(this._network.keys());
-                const randomNodeAccountId =
-                    nodes[Math.floor(Math.random() * nodes.length)];
-
-                const randomNode = this._network.get(randomNodeAccountId);
-                // We get the `randomNodeAccountId` from the network mapping,
-                // so it cannot be `undefined`
-                const randomNodeAddress = Math.floor(
-                    // @ts-ignore
-                    Math.random() * randomNode.length,
-                );
-                // @ts-ignore
-                return randomNode[randomNodeAddress];
             }
+            return lockedNodes[Math.floor(Math.random() * lockedNodes.length)];
         } else {
             if (this._healthyNodes.length == 0) {
                 throw new Error("failed to find a healthy working node");
