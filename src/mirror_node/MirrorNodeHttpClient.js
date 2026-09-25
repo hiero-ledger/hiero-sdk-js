@@ -535,8 +535,20 @@ export function bodyText(response) {
 }
 
 /**
+ * A JSON string literal, or a JSON number literal. Strings come first in the
+ * alternation, so digits inside a string are never read as a number.
+ */
+const JSON_STRING_OR_NUMBER =
+    /"(?:[^"\\]|\\.)*"|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?/g;
+
+/**
  * The body parsed as JSON. Throws a `SyntaxError` on a malformed body, and
  * returns `null` on an empty one.
+ *
+ * An integer outside `Number.MAX_SAFE_INTEGER` (int64 tinybar balances, fee
+ * totals) is returned as its exact decimal string, since a JS number would
+ * round it. Every other number is a plain number. `Long.fromValue` reads
+ * both forms exactly.
  *
  * @param {HttpResponse} response
  * @returns {unknown}
@@ -546,7 +558,13 @@ export function bodyJson(response) {
     if (text.length === 0) {
         return null;
     }
-    return JSON.parse(text);
+    return JSON.parse(
+        text.replace(JSON_STRING_OR_NUMBER, (token) =>
+            /^-?\d+$/.test(token) && !Number.isSafeInteger(Number(token))
+                ? `"${token}"`
+                : token,
+        ),
+    );
 }
 
 /**
