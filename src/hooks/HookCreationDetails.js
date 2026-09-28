@@ -71,8 +71,7 @@ class HookCreationDetails {
      * @returns {this}
      */
     setHookId(hookId) {
-        this._hookId =
-            hookId instanceof Long ? hookId : Long.fromNumber(hookId);
+        this._hookId = hookId instanceof Long ? hookId : Long.fromValue(hookId);
         return this;
     }
 

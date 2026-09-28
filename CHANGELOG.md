@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# Unreleased
+
+### Fixed
+
+-   `Timestamp`, `Duration`, `EntityIdHelper.fromEvmAddress()` and `HookCreationDetails.setHookId()` keep a `Long` argument exact when it was created by a second copy of the `long` package (for example the application's own `long` next to the one `protobufjs` pulls in, or a linked SDK checkout). The `instanceof Long` check failed for such a value and the fallback converted it through a JavaScript double, so magnitudes above 2^53 changed silently: `int64 min + 1` became `int64 min`. The conversion now uses `Long.fromValue`, which reads the value's bits. [#4398](https://github.com/hiero-ledger/hiero-sdk-js/issues/4398)
+
 # v2.89.0
 
 ### Deprecated
