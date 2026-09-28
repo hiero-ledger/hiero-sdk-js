@@ -8,6 +8,9 @@
  *   compute-next-version <current> <stable|beta>      → next version per repo conventions
  *   bump-versions <sdk> [--proto <v>] [--cryptography <v>]
  *                                                     → writes versions to package.json files (2-space indent)
+ *   bump-tck-pin <sdk> [--proto <v>] [--cryptography <v>]
+ *                                                     → pins tck/package.json and tck/package-lock.json to the versions
+ *                                                       this release publishes (offline, no registry access)
  *   insert-changelog <version> <entry-file>           → inserts <entry-file> body below the Keep-a-Changelog header
  *   list-matching-beta-tags <stable-version>          → prints v<stable>-beta.<N> tags ascending by N (newline-separated)
  *
@@ -188,6 +191,87 @@ function bumpVersions(args) {
     process.stdout.write(JSON.stringify(summary) + "\n");
 }
 
+// -------------------- bump-tck-pin --------------------
+
+/**
+ * The TCK server in tck/ installs @hiero-ledger/sdk from npm at the version pinned in
+ * tck/package.json; it never uses the SDK built from the checkout. The pin therefore has to
+ * move in the release PR, so that a TCK compatibility run against the release tag exercises
+ * the release itself and not the previous one.
+ *
+ * At release-PR time the new versions do not exist on the registry yet, so `npm install`
+ * cannot regenerate the lockfile. This rewrites the affected lock entries by hand: version,
+ * resolved tarball URL and the nested @hiero-ledger/* dependency specs. The `integrity` field
+ * is dropped because the tarball hash is unknown until publish. npm accepts an entry without
+ * it and installs from `resolved` unverified; it does not write the hash back, so the two
+ * entries stay without `integrity` until they are rewritten (normally by the next release).
+ */
+function bumpTckPin(args) {
+    const sdk = args[0];
+    if (!sdk || sdk.startsWith("--")) die("bump-tck-pin requires <sdk-version> as first arg");
+    let proto = null;
+    let crypto = null;
+    for (let i = 1; i < args.length; i++) {
+        if (args[i] === "--proto") proto = args[++i];
+        else if (args[i] === "--cryptography") crypto = args[++i];
+        else die(`unknown flag: ${args[i]}`);
+    }
+
+    const pkgPath = join(REPO_ROOT, "tck/package.json");
+    const pkgRaw = readFileSync(pkgPath, "utf8");
+    const pkgUpdated = pkgRaw.replace(
+        /("@hiero-ledger\/sdk"\s*:\s*")[^"]+(")/,
+        (_, pre, post) => `${pre}${sdk}${post}`,
+    );
+    if (pkgUpdated === pkgRaw) die(`failed to update the @hiero-ledger/sdk pin in ${pkgPath}`);
+    writeFileSync(pkgPath, pkgUpdated);
+
+    const lockPath = join(REPO_ROOT, "tck/package-lock.json");
+    const lockRaw = readFileSync(lockPath, "utf8");
+    const lock = JSON.parse(lockRaw);
+    if (lock.lockfileVersion !== 3) {
+        die(`bump-tck-pin supports lockfileVersion 3, found ${String(lock.lockfileVersion)}`);
+    }
+    const indent = /^(\s+)"/m.exec(lockRaw)?.[1] ?? "  ";
+
+    const packages = lock.packages ?? {};
+    const rootDeps = packages[""]?.dependencies;
+    if (!rootDeps || !("@hiero-ledger/sdk" in rootDeps)) {
+        die("tck/package-lock.json has no root dependency on @hiero-ledger/sdk");
+    }
+    rootDeps["@hiero-ledger/sdk"] = sdk;
+
+    const tarball = (name, version) =>
+        `https://registry.npmjs.org/@hiero-ledger/${name}/-/${name}-${version}.tgz`;
+    const repin = (name, version) => {
+        const entry = packages[`node_modules/@hiero-ledger/${name}`];
+        if (!entry) die(`tck/package-lock.json has no entry for @hiero-ledger/${name}`);
+        entry.version = version;
+        entry.resolved = tarball(name, version);
+        delete entry.integrity;
+        return entry;
+    };
+
+    const sdkEntry = repin("sdk", sdk);
+    if (crypto) {
+        repin("cryptography", crypto);
+        if (sdkEntry.dependencies?.["@hiero-ledger/cryptography"]) {
+            sdkEntry.dependencies["@hiero-ledger/cryptography"] = crypto;
+        }
+    }
+    if (proto) {
+        repin("proto", proto);
+        if (sdkEntry.dependencies?.["@hiero-ledger/proto"]) {
+            sdkEntry.dependencies["@hiero-ledger/proto"] = proto;
+        }
+    }
+
+    writeFileSync(lockPath, JSON.stringify(lock, null, indent) + "\n");
+
+    const summary = { sdk, proto, cryptography: crypto };
+    process.stdout.write(JSON.stringify(summary) + "\n");
+}
+
 // -------------------- insert-changelog --------------------
 
 function insertChangelog(version, entryFile) {
@@ -260,6 +344,9 @@ switch (subcommand) {
     case "bump-versions":
         bumpVersions(rest);
         break;
+    case "bump-tck-pin":
+        bumpTckPin(rest);
+        break;
     case "insert-changelog":
         if (rest.length < 2) die("insert-changelog requires <version> <entry-file>");
         insertChangelog(rest[0], rest[1]);
@@ -272,6 +359,6 @@ switch (subcommand) {
         die(
             `unknown subcommand: ${subcommand || "(none)"}\n` +
                 "  expected: get-previous-tag | list-prs-since | detect-subpackage-changes | " +
-                "compute-next-version | bump-versions | insert-changelog | list-matching-beta-tags",
+                "compute-next-version | bump-versions | bump-tck-pin | insert-changelog | list-matching-beta-tags",
         );
 }

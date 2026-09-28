@@ -105,6 +105,13 @@ node scripts/release-helpers.mjs bump-versions <sdk-version> [--proto <proto-ver
 
 Only include `--proto` and `--cryptography` flags for sub-packages that are eligible for release (detected in step 3).
 
+Then pin the TCK server to the versions this release publishes, with the same flags:
+```
+node scripts/release-helpers.mjs bump-tck-pin <sdk-version> [--proto <proto-version>] [--cryptography <crypto-version>]
+```
+
+The TCK server in `tck/` installs `@hiero-ledger/sdk` from npm at the version pinned in `tck/package.json`; it never uses the SDK built from the checkout. Without this bump a TCK compatibility run against the release tag keeps exercising the previous release, and the suites written for this one fail. The helper rewrites `tck/package.json` and the matching `tck/package-lock.json` entries offline (version, tarball URL, nested `@hiero-ledger/*` specs) and drops their `integrity` fields, because the tarballs do not exist on the registry until after the merge. `npm install` in the TCK workflow accepts that and installs the pinned versions from their `resolved` URLs; it does not write the hashes back, so those entries stay without `integrity` until the next release rewrites them. Do not run `npm install` in `tck/` at this point; it fails with `ETARGET` for the unpublished version.
+
 ### 10. Generate changelog
 
 The shape of the entry is the same for stable and beta — what differs is the **input set of PRs** and, for stable, that prior matching betas are rolled up into a single self-contained entry so end users see the full picture in one place.
@@ -184,7 +191,7 @@ If any command fails:
 
 Stage all changes and commit:
 ```
-git add package.json packages/proto/package.json packages/cryptography/package.json CHANGELOG.md
+git add package.json packages/proto/package.json packages/cryptography/package.json CHANGELOG.md tck/package.json tck/package-lock.json
 git commit -s -S -m "chore(release): v<sdk-version>"
 ```
 
@@ -202,7 +209,10 @@ Create the PR with `gh pr create`. **The PR title must match the top-most releas
 The PR **body** is where the human-readable summary goes. Include:
 - A heading line indicating release type, e.g. `## Beta release: v<sdk-version>` or `## Stable release: v<sdk-version>`
 - Version summary (SDK version, and sub-package versions if bumped)
+- A line saying the TCK server pin in `tck/package.json` now points at this release, and that the lock entries for the new versions carry no `integrity` hash because the tarballs did not exist when the PR was made
 - The changelog entry content
+
+If the required `StepSecurity Required Checks` status flags the new `tck/package-lock.json` versions (its NPM Package Cooldown Check rejects versions younger than two days, and these are not published yet), a maintainer with StepSecurity access approves the run through the link in the check output. Say so in the PR body so reviewers do not investigate it.
 
 ### Done
 

@@ -139,3 +139,4 @@ Inform the user that:
 2. The release workflow has completed (or link to it if still running)
 3. GitHub release notes have been formatted
 4. The release is now live on npm
+5. The TCK server pin in `tck/package.json` was set in the release PR, so a hiero-sdk-tck compatibility run against tag `v<version>` (or against `main`) exercises this release; no follow-up pin PR is needed
