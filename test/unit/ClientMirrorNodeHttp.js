@@ -516,6 +516,34 @@ describe("Client mirror node HTTP configuration", function () {
         expect(policy.totalDeadline).to.equal(hosted.requestTimeout);
     });
 
+    it("keeps an explicit policy equal to the defaults on a loopback mirror node", function () {
+        const local = track(["127.0.0.1:5551"]);
+
+        for (const retryPolicy of [
+            { maxAttempts: 5 },
+            {},
+            new MirrorNodeHttpRetryPolicy(),
+        ]) {
+            local.setMirrorNodeHttpConfig({
+                transport: new FakeHttpTransport(),
+                retryPolicy,
+            });
+            const policy = local._mirrorNodeHttpClient().retryPolicy;
+            expect(policy.maxAttempts).to.equal(5);
+            expect(policy.totalDeadline).to.equal(local.requestTimeout);
+        }
+
+        // Deriving a config from the current one keeps an unset policy unset.
+        local.setMirrorNodeHttpConfig(new MirrorNodeHttpConfig());
+        local.setMirrorNodeHttpConfig({
+            ...local.getMirrorNodeHttpConfig(),
+            transport: new FakeHttpTransport(),
+        });
+        const policy = local._mirrorNodeHttpClient().retryPolicy;
+        expect(policy.maxAttempts).to.equal(15);
+        expect(policy.totalDeadline).to.equal(90_000);
+    });
+
     it("resolves the local port per endpoint family in one place", function () {
         const local = track(["127.0.0.1:5600"]);
         local.setMirrorNodeHttpConfig({ transport: new FakeHttpTransport() });
