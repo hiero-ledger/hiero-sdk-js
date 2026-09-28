@@ -126,7 +126,7 @@ async function main() {
         console.log("Storage update created:");
         console.log("  Storage Key:", Array.from(storageKey).join(" "));
         console.log("  Storage Value:", Array.from(storageValue).join(" "));
-        console.log("  Hook ID:", hookId.hookId.toString());
+        console.log("  Hook ID:", String(hookId.hookId));
         console.log("  Hook Entity ID:", hookId.entityId.accountId.toString());
 
         // Execute HookStoreTransaction
