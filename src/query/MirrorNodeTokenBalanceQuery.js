@@ -23,7 +23,7 @@ import {
  * Relevant subset of `GET /api/v1/accounts/{id}/tokens`.
  *
  * @typedef {object} MirrorTokensResponse
- * @property {?{token_id: string, balance: number, decimals: number}[]} tokens
+ * @property {?{token_id: string, balance: number | string, decimals: number}[]} tokens
  */
 
 /**
@@ -60,9 +60,6 @@ import {
  * and typically lags the network by a few seconds. Results are therefore NOT
  * read-after-write consistent: a balance read immediately after a transfer may
  * still show the pre-transfer value.
- *
- * NOTE ON PRECISION: the balance is parsed from a JSON number, so values above
- * `Number.MAX_SAFE_INTEGER` (2^53 - 1) silently lose precision.
  */
 export default class MirrorNodeTokenBalanceQuery {
     /**

@@ -5,6 +5,7 @@ import MirrorNodeStatusError from "../../src/MirrorNodeStatusError.js";
 import MirrorNodeTokenBalanceQuery from "../../src/query/MirrorNodeTokenBalanceQuery.js";
 import Status from "../../src/Status.js";
 import TokenId from "../../src/token/TokenId.js";
+import HttpResponse from "../../src/http/HttpResponse.js";
 import { Client } from "../../src/index.js";
 import FakeHttpTransport, {
     errorResponse,
@@ -86,6 +87,24 @@ describe("MirrorNodeTokenBalanceQuery", function () {
             expect(balance.balance.toNumber()).to.equal(1234);
             expect(balance.decimals).to.equal(2);
             expect(balance.tokenId.toString()).to.equal("0.0.5005");
+        });
+
+        it("keeps a balance above 2^53 exact", async function () {
+            fake.handler = () =>
+                new HttpResponse({
+                    statusCode: 200,
+                    body: new TextEncoder().encode(
+                        '{"tokens":[{"token_id":"0.0.5005","balance":9007199254740993,"decimals":2}]}',
+                    ),
+                });
+
+            const balance = await new MirrorNodeTokenBalanceQuery()
+                .setAccountId("0.0.10")
+                .setTokenId("0.0.5005")
+                .execute(client);
+
+            expect(balance.balance.toString()).to.equal("9007199254740993");
+            expect(balance.decimals).to.equal(2);
         });
 
         it("reports zero when the account holds no relationship with the token", async function () {

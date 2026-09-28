@@ -115,6 +115,27 @@ describe("MirrorNodeAccountBalanceQuery (wire)", function () {
         expect(balance.hbars.toTinybars().toString()).to.equal("0");
     });
 
+    it("should keep a balance above 2^53 exact", async function () {
+        server.use(
+            http.get(
+                BALANCES_URL,
+                () =>
+                    new HttpResponse(
+                        '{"balances":[{"account":"0.0.123","balance":4611686018427387905}]}',
+                        { headers: { "content-type": "application/json" } },
+                    ),
+            ),
+        );
+
+        const balance = await new MirrorNodeAccountBalanceQuery()
+            .setAccountId("0.0.123")
+            .execute(client);
+
+        expect(balance.hbars.toTinybars().toString()).to.equal(
+            "4611686018427387905",
+        );
+    });
+
     it("should not retry a 400", async function () {
         let requests = 0;
 

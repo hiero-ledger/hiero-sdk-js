@@ -599,6 +599,39 @@ describe("MirrorNodeHttpClient", function () {
             ).to.throw(SyntaxError);
         });
 
+        it("bodyJson keeps integers above 2^53 exact as strings", function () {
+            /** @param {string} text */
+            const parse = (text) =>
+                bodyJson(
+                    new HttpResponse({
+                        statusCode: 200,
+                        body: new TextEncoder().encode(text),
+                    }),
+                );
+
+            expect(
+                parse(
+                    '{"big":4611686018427387905,"neg":-9007199254740993,"max":9007199254740991,"small":500000000,"zero":0}',
+                ),
+            ).to.deep.equal({
+                big: "4611686018427387905",
+                neg: "-9007199254740993",
+                max: 9007199254740991,
+                small: 500000000,
+                zero: 0,
+            });
+            // Fractions, exponents and digits inside strings are untouched.
+            expect(
+                parse(
+                    '{"f":12345678901234567.5,"e":1e30,"s":"x 9007199254740993 \\" 9007199254740993"}',
+                ),
+            ).to.deep.equal({
+                f: 12345678901234567.5,
+                e: 1e30,
+                s: 'x 9007199254740993 " 9007199254740993',
+            });
+        });
+
         it("errorDetail prefers the mirror node envelope and truncates raw text", function () {
             expect(errorDetail(errorResponse(400, "Bad id"))).to.equal(
                 "Error: Bad id",

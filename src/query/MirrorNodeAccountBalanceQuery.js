@@ -23,7 +23,7 @@ import {
  * Relevant subset of `GET /api/v1/balances`.
  *
  * @typedef {object} MirrorBalancesResponse
- * @property {?{account: string, balance: number}[]} balances
+ * @property {?{account: string, balance: number | string}[]} balances
  */
 
 /**
@@ -58,10 +58,6 @@ import {
  * A deleted account reads as a zero balance: the balances endpoint does not
  * expose the deleted flag, so unlike `AccountBalanceQuery` this query cannot
  * report `ACCOUNT_DELETED`. Use `/accounts/{id}` if that matters.
- *
- * Precision: the balance is parsed from a JSON number, so values above
- * `Number.MAX_SAFE_INTEGER` (2^53 - 1 tinybars, roughly 90M hbar) silently
- * lose precision, unlike the protobuf-based `AccountBalanceQuery`.
  */
 export default class MirrorNodeAccountBalanceQuery {
     /**
@@ -156,9 +152,13 @@ export default class MirrorNodeAccountBalanceQuery {
         }
 
         // `Long.fromValue` turns a non-number into 0 rather than failing, which
-        // would reintroduce the silent-zero bug this query just fixed.
+        // would reintroduce the silent-zero bug this query just fixed. A
+        // string is a balance above 2^53 that `bodyJson` kept exact.
         const balance = response.balances[0].balance;
-        if (typeof balance !== "number") {
+        if (
+            typeof balance !== "number" &&
+            !(typeof balance === "string" && /^-?\d+$/.test(balance))
+        ) {
             throw new Error(`Failed to query ${url}: balance is not a number`);
         }
 
