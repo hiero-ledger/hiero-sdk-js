@@ -14,9 +14,13 @@ import {
     CustomFixedFee,
     CustomFeeLimit,
     HbarUnit,
+    Status,
 } from "@hiero-ledger/sdk";
+import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 
 import dotenv from "dotenv";
+
+/** @typedef {{equals: (value: number) => boolean, toInt: () => number, toString: () => string}} TokenBalanceValue */
 
 dotenv.config();
 
@@ -45,24 +49,6 @@ async function main() {
     try {
         /*
          * Step 1:
-         * Create account - alice
-         */
-        console.log("Creating account - alice");
-
-        const aliceKey = PrivateKey.generateECDSA();
-
-        const { accountId: aliceAccountId } = await (
-            await new AccountCreateTransaction()
-                .setKeyWithoutAlias(aliceKey)
-                .setInitialBalance(new Hbar(5))
-                .setMaxAutomaticTokenAssociations(100)
-                .execute(client)
-        ).getReceipt(client);
-
-        console.log(`Alice's account ID: ${aliceAccountId.toString()}`);
-
-        /*
-         * Step 2:
          * Create a topic with hbar custom fee
          */
 
@@ -83,13 +69,38 @@ async function main() {
         console.log(`Created a topic with id: ${topicId.toString()}`);
 
         /*
+         * Step 2:
+         * Create account - alice. Since this transaction follows the topic
+         * creation, seeing Alice on the mirror also proves the topic creation
+         * has been ingested before the operator balance is read below.
+         */
+        console.log("Creating account - alice");
+
+        const aliceKey = PrivateKey.generateECDSA();
+
+        const { accountId: aliceAccountId } = await (
+            await new AccountCreateTransaction()
+                .setKeyWithoutAlias(aliceKey)
+                .setInitialBalance(new Hbar(5))
+                .setMaxAutomaticTokenAssociations(100)
+                .execute(client)
+        ).getReceipt(client);
+
+        console.log(`Alice's account ID: ${aliceAccountId.toString()}`);
+
+        /*
          * Step 3:
          * Submit a message to that topic, paid for by alice, specifying max custom fee amount bigger than the topic’s amount.
          */
 
         // Only the HBAR balance is compared in this step, so it is read from
         // the free mirror node rather than with a paid `AccountInfoQuery`.
-        let aliceBalanceBefore = await hbarBalance(client, aliceAccountId);
+        let aliceBalanceBefore = await hbarBalance(
+            client,
+            aliceAccountId,
+            undefined,
+            true,
+        );
 
         let feeCollectorBalanceBefore = await hbarBalance(client, operatorId);
 
@@ -128,10 +139,15 @@ async function main() {
             aliceBalanceBefore,
         );
 
-        let feeCollectorBalanceAfter = await hbarBalance(
+        const expectedFeeCollectorBalance = Hbar.fromTinybars(
+            feeCollectorBalanceBefore
+                .toTinybars()
+                .add(Hbar.from(1, HbarUnit.Hbar).toTinybars()),
+        );
+        let feeCollectorBalanceAfter = await exactHbarBalance(
             client,
             operatorId,
-            feeCollectorBalanceBefore,
+            expectedFeeCollectorBalance,
         );
 
         console.log(
@@ -144,7 +160,7 @@ async function main() {
 
         /*
          * Step 5:
-         * Create a fungible token and transfer some tokens to alice
+         * Create a fungible token
          */
 
         console.log("Create a token");
@@ -158,19 +174,11 @@ async function main() {
                 .setInitialSupply(100)
                 .execute(client)
         ).getReceipt(client);
-        // transfer token to alice
-        console.log("Transferring the token to alice");
-
-        await (
-            await new TransferTransaction()
-                .addTokenTransfer(tokenId, client.operatorAccountId, -1)
-                .addTokenTransfer(tokenId, aliceAccountId, 1)
-                .execute(client)
-        ).getReceipt(client);
-
         /*
          * Step 6:
-         * Update the topic to have a fee of the token.
+         * Update the topic to have a fee of the token, then transfer a token
+         * to Alice so the exact token read in Step 7 proves both operations
+         * have reached the mirror.
          */
         console.log("Updating the topic to have a custom fee of the token");
 
@@ -186,6 +194,18 @@ async function main() {
                 .execute(client)
         ).getReceipt(client);
 
+        // Transfer the token only after updating the topic. Seeing Alice's
+        // exact token balance below then proves both transactions are present
+        // on the mirror before the operator HBAR balance is sampled.
+        console.log("Transferring the token to alice");
+
+        await (
+            await new TransferTransaction()
+                .addTokenTransfer(tokenId, client.operatorAccountId, -1)
+                .addTokenTransfer(tokenId, aliceAccountId, 1)
+                .execute(client)
+        ).getReceipt(client);
+
         /*
          * Step 7:
          * Submit another message to that topic, paid by alice, without specifying max custom fee amount.
@@ -195,11 +215,18 @@ async function main() {
         // compared. HBAR comes from `MirrorNodeAccountBalanceQuery` and the
         // token balance from `MirrorNodeTokenBalanceQuery` — the mirror node
         // balance endpoint is HBAR-only.
-        const aliceHbarBefore = await hbarBalance(client, aliceAccountId);
+        const aliceHbarBefore = await hbarBalance(
+            client,
+            aliceAccountId,
+            undefined,
+            true,
+        );
         const aliceTokenBefore = await tokenBalance(
             client,
             aliceAccountId,
             tokenId,
+            1,
+            true,
         );
 
         const feeCollectorHbarBefore = await hbarBalance(client, operatorId);
@@ -207,6 +234,7 @@ async function main() {
             client,
             operatorId,
             tokenId,
+            99,
         );
 
         console.log("Submitting a message as alice to the topic");
@@ -232,7 +260,7 @@ async function main() {
             client,
             aliceAccountId,
             tokenId,
-            aliceTokenBefore,
+            0,
         );
         const aliceHbarAfter = await hbarBalance(
             client,
@@ -244,13 +272,19 @@ async function main() {
             client,
             operatorId,
             tokenId,
-            feeCollectorTokenBefore,
+            100,
         );
-        const feeCollectorHbarAfter = await hbarBalance(
-            client,
-            operatorId,
-            feeCollectorHbarBefore,
-        );
+        // The custom fee in this step is paid in the token, so the collector's
+        // HBAR balance must remain unchanged. The exact token poll above proves
+        // the transaction is already visible before this plain HBAR read.
+        const feeCollectorHbarAfter = await hbarBalance(client, operatorId);
+        if (
+            !feeCollectorHbarAfter
+                .toTinybars()
+                .equals(feeCollectorHbarBefore.toTinybars())
+        ) {
+            throw new Error("token custom fee unexpectedly changed HBAR");
+        }
 
         console.log(
             `Alice's hbars balance before: ${aliceHbarBefore.toString()} and after: ${aliceHbarAfter.toString()}`,
@@ -309,7 +343,12 @@ async function main() {
          */
 
         // HBAR only again, so the mirror node serves this one too.
-        const bobBalanceBefore = await hbarBalance(client, bobAccountId);
+        const bobBalanceBefore = await hbarBalance(
+            client,
+            bobAccountId,
+            undefined,
+            true,
+        );
 
         client.setOperator(bobAccountId, bobKey);
 
@@ -341,6 +380,7 @@ async function main() {
         );
     } catch (error) {
         console.error(error);
+        throw error;
     } finally {
         client.close();
     }
@@ -351,29 +391,41 @@ async function main() {
  *
  * `AccountInfoQuery.tokenRelationships` is deprecated as of HIP-367, so
  * `MirrorNodeTokenBalanceQuery` is the supported way to read one. Pass
- * `previous` to poll until the value moves; the loop is bounded so an example
- * cannot hang.
+ * `expected` to poll until the intended state is visible; the loop is bounded
+ * so an example cannot hang or accept an intermediate value.
  *
  * @param {import("@hiero-ledger/sdk").Client} client
  * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
  * @param {import("@hiero-ledger/sdk").TokenId | string} tokenId
- * @param {import("long")} [previous]
- * @returns {Promise<import("long")>}
+ * @param {number} expected
+ * @param {boolean} [retryMissing]
+ * @returns {Promise<TokenBalanceValue>}
  */
-async function tokenBalance(client, accountId, tokenId, previous) {
-    return untilMirror(async () => {
-        const { balance } = await new MirrorNodeTokenBalanceQuery()
-            .setAccountId(accountId)
-            .setTokenId(tokenId)
-            .execute(client);
+async function tokenBalance(
+    client,
+    accountId,
+    tokenId,
+    expected,
+    retryMissing = false,
+) {
+    return untilMirror(
+        async (remainingMs) => {
+            const result = await new MirrorNodeTokenBalanceQuery()
+                .setAccountId(accountId)
+                .setTokenId(tokenId)
+                .execute(client, remainingMs);
+            // The generated SDK declaration currently exposes Long as `any`.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const balance = /** @type {TokenBalanceValue} */ (result.balance);
 
-        // Without a previous value there is nothing to wait for.
-        if (previous == null) {
-            return balance;
-        }
-
-        return balance.equals(previous) ? null : balance;
-    });
+            return balance.equals(expected) ? balance : null;
+        },
+        {
+            retryError: retryMissing
+                ? retryOnStatus(Status.InvalidAccountId)
+                : undefined,
+        },
+    );
 }
 
 /**
@@ -386,48 +438,46 @@ async function tokenBalance(client, accountId, tokenId, previous) {
  * @param {import("@hiero-ledger/sdk").Client} client
  * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
  * @param {import("@hiero-ledger/sdk").Hbar} [previous]
+ * @param {boolean} [retryMissing]
  * @returns {Promise<import("@hiero-ledger/sdk").Hbar>}
  */
-async function hbarBalance(client, accountId, previous) {
-    return untilMirror(async () => {
+async function hbarBalance(client, accountId, previous, retryMissing = false) {
+    return untilMirror(
+        async (remainingMs) => {
+            const { hbars } = await new MirrorNodeAccountBalanceQuery()
+                .setAccountId(accountId)
+                .execute(client, remainingMs);
+
+            // Without a previous value there is nothing to wait for.
+            if (previous == null) {
+                return hbars;
+            }
+
+            return hbars.toTinybars().equals(previous.toTinybars())
+                ? null
+                : hbars;
+        },
+        {
+            retryError: retryMissing
+                ? retryOnStatus(Status.InvalidAccountId)
+                : undefined,
+        },
+    );
+}
+
+/**
+ * @param {import("@hiero-ledger/sdk").Client} client
+ * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
+ * @param {import("@hiero-ledger/sdk").Hbar} expected
+ * @returns {Promise<import("@hiero-ledger/sdk").Hbar>}
+ */
+async function exactHbarBalance(client, accountId, expected) {
+    return untilMirror(async (remainingMs) => {
         const { hbars } = await new MirrorNodeAccountBalanceQuery()
             .setAccountId(accountId)
-            .execute(client);
-
-        // Without a previous value there is nothing to wait for.
-        if (previous == null) {
-            return hbars;
-        }
-
-        return hbars.toTinybars().equals(previous.toTinybars()) ? null : hbars;
+            .execute(client, remainingMs);
+        return hbars.toTinybars().equals(expected.toTinybars()) ? hbars : null;
     });
 }
 
 void main();
-
-/**
- * Poll a mirror-node read until it reflects the transaction that just happened.
- *
- * The mirror node ingests consensus state asynchronously, so a read straight
- * after a transaction can still return the previous value. Polling to a deadline
- * beats a fixed sleep: it does not go flaky on a slow runner and does not waste
- * time on a fast one.
- *
- * @template T
- * @param {() => Promise<T | null>} read - resolves the value once it is ready
- * @param {number} [timeoutMs]
- * @returns {Promise<T>}
- */
-async function untilMirror(read, timeoutMs = 60000) {
-    const deadline = Date.now() + timeoutMs;
-    for (;;) {
-        const result = await read();
-        if (result != null) {
-            return result;
-        }
-        if (Date.now() >= deadline) {
-            throw new Error("mirror node did not ingest in time");
-        }
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-    }
-}

@@ -65,7 +65,19 @@ describe("account balance via the mirror node", function () {
             expect(getChannel).toHaveBeenCalledTimes(0);
             expect(fake.requests).to.have.length(1);
             expect(fake.requests[0].url).to.include("/balances");
+            expect(fake.requests[0].deadline).to.equal(30000);
 
+            client.close();
+        });
+
+        it("forwards an explicit mirror request timeout", async function () {
+            const { client } = clientWithExplodingChannels();
+            const provider = new LocalProvider({ client });
+
+            await provider.getAccountBalance(new AccountId(10), 4321);
+
+            expect(fake.requests).to.have.length(1);
+            expect(fake.requests[0].deadline).to.equal(4321);
             client.close();
         });
 

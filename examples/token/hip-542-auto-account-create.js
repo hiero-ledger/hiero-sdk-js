@@ -13,8 +13,12 @@ import {
     AccountInfoQuery,
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     TransactionReceipt,
+    Status,
 } from "@hiero-ledger/sdk";
+import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 import dotenv from "dotenv";
+
+/** @typedef {{equals: (value: number) => boolean, toInt: () => number, toString: () => string}} TokenBalanceValue */
 
 dotenv.config();
 
@@ -61,8 +65,9 @@ async function main() {
         "127.0.0.1:50211": new AccountId(3),
     };
 
-    const client = Client.forNetwork(nodes);
-    client.setOperator(operatorId, operatorKey);
+    const client = Client.forNetwork(nodes)
+        .setOperator(operatorId, operatorKey)
+        .setMirrorNetwork("local-node");
 
     /**
      *     Example 1
@@ -283,14 +288,24 @@ async function main() {
     // consensus state asynchronously, so poll to a deadline rather than sleeping
     // for a guessed interval.
     try {
-        const balance = await untilMirror(async () => {
-            const { balance } = await new MirrorNodeTokenBalanceQuery()
-                .setAccountId(accountId2)
-                .setTokenId(tokenId)
-                .execute(client);
+        const balance = await untilMirror(
+            async (remainingMs) => {
+                const result = await new MirrorNodeTokenBalanceQuery()
+                    .setAccountId(accountId2)
+                    .setTokenId(tokenId)
+                    .execute(client, remainingMs);
+                // The generated SDK declaration currently exposes Long as `any`.
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                const balance = /** @type {TokenBalanceValue} */ (
+                    result.balance
+                );
 
-            return balance.toInt() === 10 ? balance : null;
-        });
+                return balance.toInt() === 10 ? balance : null;
+            },
+            {
+                retryError: retryOnStatus(Status.InvalidAccountId),
+            },
+        );
 
         balance.toInt() === 10
             ? console.log(
@@ -301,6 +316,8 @@ async function main() {
               );
     } catch (e) {
         console.log(e);
+        client.close();
+        throw e;
     }
 
     /**
@@ -322,25 +339,3 @@ async function main() {
 }
 
 void main();
-
-/**
- * Poll a mirror-node read until it reflects the transaction that just happened.
- *
- * @template T
- * @param {() => Promise<T | null>} read - resolves the value once it is ready
- * @param {number} [timeoutMs]
- * @returns {Promise<T>}
- */
-async function untilMirror(read, timeoutMs = 60000) {
-    const deadline = Date.now() + timeoutMs;
-    for (;;) {
-        const result = await read();
-        if (result != null) {
-            return result;
-        }
-        if (Date.now() >= deadline) {
-            throw new Error("mirror node did not ingest in time");
-        }
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-    }
-}

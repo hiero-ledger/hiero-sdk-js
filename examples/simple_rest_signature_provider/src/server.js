@@ -15,6 +15,17 @@ const rl = readline.createInterface({
     output: process.stdout,
 });
 
+// Set AUTO_APPROVE=true to approve login requests without a prompt (used by CI).
+/**
+ * @param {string} question
+ * @param {(answer: string) => void} callback
+ * @returns {void}
+ */
+const ask = (question, callback) =>
+    process.env.AUTO_APPROVE === "true"
+        ? callback("y")
+        : rl.question(question, callback);
+
 const app = express();
 app.use(express.json());
 
@@ -47,7 +58,7 @@ app.post("/login", function (req, res) {
     const accountId =
         request.accountId == null ? wallet.accountId : request.accountId;
 
-    rl.question(`Login as ${accountId.toString()}?\n`, (name) => {
+    ask(`Login as ${accountId.toString()}?\n`, (name) => {
         switch (name) {
             case "y":
             case "yes":

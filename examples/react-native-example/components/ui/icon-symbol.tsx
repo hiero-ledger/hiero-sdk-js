@@ -5,8 +5,8 @@ import { SymbolWeight, SymbolViewProps } from 'expo-symbols';
 import { ComponentProps } from 'react';
 import { OpaqueColorValue, type StyleProp, type TextStyle } from 'react-native';
 
-type IconMapping = Record<SymbolViewProps['name'], ComponentProps<typeof MaterialIcons>['name']>;
-type IconSymbolName = keyof typeof MAPPING;
+type SFSymbolName = Extract<SymbolViewProps['name'], string>;
+type IconMapping = Partial<Record<SFSymbolName, ComponentProps<typeof MaterialIcons>['name']>>;
 
 /**
  * Add your SF Symbols to Material Icons mappings here.
@@ -21,7 +21,11 @@ const MAPPING = {
   'gearshape.fill': 'settings',
   'list.bullet': 'list',
   'arrow.right.arrow.left': 'swap-horiz',
-} as IconMapping;
+  checkmark: 'check',
+  'doc.on.doc': 'content-copy',
+} as const satisfies IconMapping;
+
+type IconSymbolName = keyof typeof MAPPING;
 
 /**
  * An icon component that uses native SF Symbols on iOS, and Material Icons on Android and web.
