@@ -183,13 +183,19 @@ export default class MirrorNodeHttpRetryPolicy {
     }
 
     /**
+     * No value resolves to the `DEFAULT` instance itself, which is how a
+     * `Client` tells an unset policy from an explicit one.
+     *
      * @param {MirrorNodeHttpRetryPolicy | ConstructorParameters<typeof MirrorNodeHttpRetryPolicy>[0] | null | undefined} value
      * @returns {MirrorNodeHttpRetryPolicy}
      */
     static from(value) {
+        if (value == null) {
+            return DEFAULT_POLICY;
+        }
         return value instanceof MirrorNodeHttpRetryPolicy
             ? value
-            : new MirrorNodeHttpRetryPolicy(value ?? {});
+            : new MirrorNodeHttpRetryPolicy(value);
     }
 
     /**

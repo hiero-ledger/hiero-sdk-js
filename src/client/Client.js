@@ -553,8 +553,10 @@ export default class Client {
         // A mirror node still starting under a local test harness needs a
         // startup budget, not a flaky-request budget. Only the package
         // default moves; an explicit policy overrides it as anywhere else.
+        // Identity, not value equality: an explicit policy that happens to
+        // equal the defaults, such as `{ maxAttempts: 5 }`, is still explicit.
         if (
-            policy.equals(MirrorNodeHttpRetryPolicy.DEFAULT) &&
+            policy === MirrorNodeHttpRetryPolicy.DEFAULT &&
             isLoopbackBaseUrl(baseUrl)
         ) {
             policy = MirrorNodeHttpRetryPolicy.LOCAL_DEFAULT;
