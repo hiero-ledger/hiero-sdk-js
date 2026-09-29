@@ -1,6 +1,5 @@
 import {
     AccountId,
-    Client,
     PrivateKey,
     Logger,
     LogLevel,
@@ -13,6 +12,7 @@ import {
     TokenInfoQuery,
 } from "@hiero-ledger/sdk";
 import dotenv from "dotenv";
+import { clientForName } from "../client.js";
 
 /**
  * @description Change ot remove token keys
@@ -38,7 +38,7 @@ async function main() {
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
     const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
 
-    const client = Client.forName(network).setOperator(operatorId, operatorKey);
+    const client = clientForName(network).setOperator(operatorId, operatorKey);
 
     // Set logger
     const infoLogger = new Logger(LogLevel.Info);

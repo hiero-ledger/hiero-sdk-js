@@ -1,5 +1,4 @@
 import {
-    Client,
     PrivateKey,
     AccountId,
     TopicMessageQuery,
@@ -9,6 +8,7 @@ import {
 
 import dotenv from "dotenv";
 import { setTimeout } from "node:timers/promises";
+import { clientForName } from "../client.js";
 
 dotenv.config();
 
@@ -28,7 +28,7 @@ async function main() {
         );
     }
 
-    client = Client.forName(process.env.HEDERA_NETWORK).setOperator(
+    client = clientForName(process.env.HEDERA_NETWORK).setOperator(
         AccountId.fromString(process.env.OPERATOR_ID),
         PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY),
     );

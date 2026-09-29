@@ -6,6 +6,7 @@ import {
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
+import { clientForName } from "../client.js";
 
 dotenv.config();
 
@@ -23,7 +24,9 @@ async function main() {
         );
     }
 
-    const provider = new LocalProvider();
+    const provider = LocalProvider.fromClient(
+        clientForName(process.env.HEDERA_NETWORK),
+    );
 
     const wallet = new Wallet(
         process.env.OPERATOR_ID,

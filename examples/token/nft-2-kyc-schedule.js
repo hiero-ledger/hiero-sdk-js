@@ -1,7 +1,6 @@
 import {
     MirrorNodeAccountBalanceQuery,
     AccountId,
-    Client,
     CustomFixedFee,
     CustomRoyaltyFee,
     Hbar,
@@ -30,21 +29,14 @@ import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
  */
 
 import dotenv from "dotenv";
+import { clientForName } from "../client.js";
 
 dotenv.config();
 
 // Configure accounts and client, and generate needed keys
 const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
 const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
-const nodes = {
-    "127.0.0.1:50211": new AccountId(3),
-};
-
-const client = Client.forNetwork(nodes)
-    .setOperator(operatorId, operatorKey)
-    // Config mirror network for your custom network. This will be used by the
-    // MirrorNodeAccountBalanceQuery to get account balances from the mirror node.
-    .setMirrorNetwork("local-node");
+const client = clientForName("local-node").setOperator(operatorId, operatorKey);
 
 const supplyKey = PrivateKey.generate();
 const adminKey = PrivateKey.generate();

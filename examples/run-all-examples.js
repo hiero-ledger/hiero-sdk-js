@@ -20,6 +20,7 @@ const excludedDirectories = [
 const excludedJSFile = [
     "run-all-examples.js",
     "wait-for-mirror.js",
+    "client.js",
     path.join("consensus", "pub-sub.js"),
     path.join("consensus", "pub-sub-chunked.js"),
     path.join("consensus", "pub-sub-with-submit-key.js"),

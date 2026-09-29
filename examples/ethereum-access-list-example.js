@@ -1,6 +1,5 @@
 import { decode } from "../src/encoding/hex.js";
 import {
-    Client,
     AccountId,
     PrivateKey,
     Hbar,
@@ -15,6 +14,7 @@ import {
 } from "@hiero-ledger/sdk";
 import fs from "fs";
 import dotenv from "dotenv";
+import { clientForName } from "./client.js";
 
 dotenv.config();
 
@@ -41,7 +41,7 @@ async function main() {
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
     const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
     const network = process.env.HEDERA_NETWORK;
-    const client = Client.forName(network).setOperator(operatorId, operatorKey);
+    const client = clientForName(network).setOperator(operatorId, operatorKey);
 
     const chainId = CHAIN_IDS[network];
     if (chainId == null) {

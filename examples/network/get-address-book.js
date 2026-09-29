@@ -1,8 +1,9 @@
-import { Client, FileId, AddressBookQuery } from "@hiero-ledger/sdk";
+import { FileId, AddressBookQuery } from "@hiero-ledger/sdk";
 
 import fs from "node:fs/promises";
 
 import dotenv from "dotenv";
+import { clientForName } from "../client.js";
 
 dotenv.config();
 
@@ -14,7 +15,7 @@ async function main() {
         throw new Error("Environment variable HEDERA_NETWORK is required.");
     }
 
-    const client = Client.forName(process.env.HEDERA_NETWORK);
+    const client = clientForName(process.env.HEDERA_NETWORK);
 
     if (process.env.HEDERA_NETWORK.toLowerCase() === "mainnet") {
         client

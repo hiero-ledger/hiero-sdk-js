@@ -1,11 +1,11 @@
 import {
     PrivateKey,
-    Client,
     AccountId,
     AccountCreateTransaction,
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
+import { clientForName } from "../client.js";
 
 dotenv.config();
 
@@ -18,7 +18,7 @@ const HEDERA_NETWORK = process.env.HEDERA_NETWORK;
  */
 async function main() {
     // Step 0: Create and configure the SDK Client.
-    const client = Client.forName(HEDERA_NETWORK);
+    const client = clientForName(HEDERA_NETWORK);
     client.setOperator(OPERATOR_ID, OPERATOR_KEY);
 
     // Step 1: Generate private key for a future account create transaction

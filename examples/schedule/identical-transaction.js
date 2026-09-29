@@ -1,5 +1,4 @@
 import {
-    Client,
     AccountId,
     PrivateKey,
     Hbar,
@@ -13,6 +12,7 @@ import {
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
+import { clientForName } from "../client.js";
 
 dotenv.config();
 
@@ -41,7 +41,7 @@ async function main() {
 
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
     const operatorKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
-    const client = Client.forName(process.env.HEDERA_NETWORK).setOperator(
+    const client = clientForName(process.env.HEDERA_NETWORK).setOperator(
         operatorId,
         operatorKey,
     );
@@ -57,7 +57,7 @@ async function main() {
     ];
     /** @type {AccountId[]} */
     const accountIds = [];
-    /** @type {Client[]} */
+    /** @type {import("@hiero-ledger/sdk").Client[]} */
     const subClients = [];
     for (let i = 0; i < 3; i++) {
         const accountId = (
@@ -70,9 +70,10 @@ async function main() {
         ).accountId;
         accountIds.push(accountId);
 
-        const subClient = Client.forName(
-            process.env.HEDERA_NETWORK,
-        ).setOperator(accountId, keys[i]);
+        const subClient = clientForName(process.env.HEDERA_NETWORK).setOperator(
+            accountId,
+            keys[i],
+        );
         subClients.push(subClient);
 
         console.log(`  Sub-account ${String(i + 1)}: ${accountId.toString()}`);
