@@ -89,7 +89,7 @@ export default class ManagedNode {
             this._minBackoff = props.cloneNode.node._minBackoff;
 
             /** @type {number} */
-            this._maxBackoff = props.cloneNode.node._minBackoff;
+            this._maxBackoff = props.cloneNode.node._maxBackoff;
         } else {
             throw new Error(
                 `failed to create ManagedNode: ${JSON.stringify(props)}`,
@@ -141,7 +141,10 @@ export default class ManagedNode {
      * @returns {this}
      */
     setMinBackoff(minBackoff) {
-        if (this._currentBackoff <= minBackoff) {
+        if (
+            this._currentBackoff === this._minBackoff ||
+            this._currentBackoff < minBackoff
+        ) {
             this._currentBackoff = minBackoff;
         }
 
@@ -161,10 +164,6 @@ export default class ManagedNode {
      * @returns {this}
      */
     setMaxBackoff(maxBackoff) {
-        if (this._currentBackoff <= maxBackoff) {
-            this._currentBackoff = maxBackoff;
-        }
-
         this._maxBackoff = maxBackoff;
         return this;
     }
