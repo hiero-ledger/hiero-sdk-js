@@ -76,7 +76,7 @@ export function applyEndpointOverrides(client, env) {
  * port per mirror service (5551, 8084, 8545); an ingress serves them all on
  * one port.
  *
- * ponytail: FetchHttpTransport owns no connections, so nothing closes it.
+ * Note: FetchHttpTransport owns no connections, so nothing closes it.
  *
  * @param {string} origin
  * @param {HttpTransport} [inner]
