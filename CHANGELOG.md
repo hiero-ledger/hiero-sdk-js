@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# Unreleased
+
+### Fixed
+
+-   `@hiero-ledger/proto` declared its `protobufjs` peer dependency as an exact version (`8.0.1` in the published 2.31.0) while the SDK depends on `8.6.6`, and it declared `ansi-styles`, `ansi-regex`, `strip-ansi` and `debug` as peers although it imports none of them. The SDK also declared an exact `bn.js` peer it does not use. Installing the SDK therefore printed unmet peer warnings, and failed outright under pnpm's `strict-peer-dependencies`. Under npm the exact pin had a worse effect: npm kept a second copy of `protobufjs` at 8.0.1 next to the SDK's 8.6.6 to satisfy it, and that 8.0.1 copy is the one the generated protobuf code actually loaded, so every npm install ran the encode and decode layer on a version with ten published advisories (GHSA-685m-2w69-288q and others, fixed between 8.0.2 and 8.6.6) even though the SDK itself depended on 8.6.6. The `protobufjs` peer is now the range `^8.0.1`, so npm and pnpm resolve a single `protobufjs` 8.6.6, the unused peers are gone, and `@hiero-ledger/proto` is bumped to 2.32.0 so the change is published with the next release. [#4401](https://github.com/hiero-ledger/hiero-sdk-js/issues/4401) [#4402](https://github.com/hiero-ledger/hiero-sdk-js/pull/4402)
+
 # v2.89.1
 
 ### Fixed
