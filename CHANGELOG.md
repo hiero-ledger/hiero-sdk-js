@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# Unreleased
+
+### Fixed
+
+-   A node cloned by `Client.setTransportSecurity()` kept its minimum backoff as its maximum. `Client.setNodeMaxBackoff()` no longer raises a node's current backoff to the new maximum, so the first failure after the call is benched for twice the current backoff instead of the full maximum. `Client.setNodeMinBackoff()` now moves a resting node down to a lower minimum, so after `setNodeMinBackoff(1000)` a node's first failure benches it for 2 s instead of 16 s. Nodes added later by `Client.setNetwork()` or an address book update now receive the network's `nodeMaxBackoff` as well as `nodeMinBackoff`. [#4347](https://github.com/hiero-ledger/hiero-sdk-js/issues/4347) [#4404](https://github.com/hiero-ledger/hiero-sdk-js/pull/4404)
+
 # v2.89.1
 
 ### Fixed
