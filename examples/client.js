@@ -69,7 +69,7 @@ export function clientForName(name) {
         // The SDK maps a loopback mirror node to one port per mirror service
         // (5551, 8084, 8545); an ingress serves them all on one port, so
         // keep the path and query the SDK built and swap the origin.
-        // ponytail: FetchHttpTransport owns no connections, so nothing closes it.
+        // Note: FetchHttpTransport owns no connections, so nothing closes it.
         const inner = FetchHttpTransport.create();
         client.setMirrorNodeHttpConfig({
             ...client.getMirrorNodeHttpConfig(),
