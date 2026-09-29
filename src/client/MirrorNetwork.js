@@ -64,7 +64,7 @@ export default class MirrorNetwork extends ManagedNetwork {
                 address: entry[1],
                 channelInitFunction: this._createNetworkChannel,
             },
-        }).setMinBackoff(this._minBackoff);
+        });
     }
 
     /**

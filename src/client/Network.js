@@ -150,7 +150,7 @@ export default class Network extends ManagedNetwork {
                 accountId,
                 channelInitFunction: this._createNetworkChannel,
             },
-        }).setMinBackoff(this._minBackoff);
+        });
     }
 
     /**
