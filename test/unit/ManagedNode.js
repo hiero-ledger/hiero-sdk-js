@@ -21,9 +21,18 @@ describe("ManagedNode", function () {
 
     it("setMaxBackoff does not raise the current backoff", function () {
         const node = client._network.getNode(new AccountId(3));
-        node._currentBackoff = 1000;
 
         node.setMaxBackoff(120000);
+        node.increaseBackoff();
+
+        expect(node._currentBackoff).to.equal(2000);
+    });
+
+    it("setMinBackoff moves a resting node to a lower min", function () {
+        const node = client._network.getNode(new AccountId(3));
+
+        expect(node._currentBackoff).to.equal(1000);
+
         node.increaseBackoff();
 
         expect(node._currentBackoff).to.equal(2000);

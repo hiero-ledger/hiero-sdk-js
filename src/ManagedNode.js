@@ -141,7 +141,10 @@ export default class ManagedNode {
      * @returns {this}
      */
     setMinBackoff(minBackoff) {
-        if (this._currentBackoff <= minBackoff) {
+        if (
+            this._currentBackoff === this._minBackoff ||
+            this._currentBackoff < minBackoff
+        ) {
             this._currentBackoff = minBackoff;
         }
 
