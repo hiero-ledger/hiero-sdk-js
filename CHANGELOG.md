@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+# Unreleased
+
+### Added
+
+-   The integration tests and the examples can target a local network whose ports differ from the `local-node` defaults, such as a Solo deployment, without source edits. They read the optional `NODE_IP` and `NODE_ACCOUNT_ID` (consensus node gRPC), `NODE_WEB_IP` (consensus node gRPC-Web, browser tests), `MIRROR_NETWORK` (mirror node gRPC) and `MIRROR_NODE_REST_URL` (mirror node HTTP ingress) variables, the names the TCK uses, through the existing `setNetwork()`, `setMirrorNetwork()` and `setMirrorNodeHttpConfig()` APIs. Nothing changes when they are unset, a malformed value fails setup with an error naming the variable, and the SDK itself does not read them. Every runnable example now builds its client through `clientForName()` in `examples/client.js`. Documented in [manual/CONFIGURATION.md](manual/CONFIGURATION.md#optional-local-network-endpoints). [#4053](https://github.com/hiero-ledger/hiero-sdk-js/issues/4053)
+
+### Fixed
+
+-   The integration test setup no longer replaces a `CONFIG_FILE` mirror network with one derived from `HEDERA_NETWORK`, which crashed setup when `HEDERA_NETWORK` was unset, and its `Wallet` now uses the test client instead of building a second `local-node` client that ignored `CONFIG_FILE` and the endpoint variables. [#4053](https://github.com/hiero-ledger/hiero-sdk-js/issues/4053)
+
 # v2.89.1
 
 ### Fixed
