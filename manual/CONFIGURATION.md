@@ -41,7 +41,7 @@ The JS SDK package supports loading of configuration from an `.env` file or via 
 
 ## Optional: local network endpoints
 
-The integration tests and the examples connect to the endpoints of the network `HEDERA_NETWORK` names. To run them against a local network whose ports differ from the `local-node` defaults, such as a Solo deployment with its own port mappings, set these variables instead of editing source. They are the names the TCK uses.
+The integration tests and the examples connect to the endpoints of the network `HEDERA_NETWORK` names. To run them against a local network whose ports differ from the `local-node` defaults, such as a Solo deployment with its own port mappings, set these variables instead of editing source. Apart from `NODE_WEB_IP`, they are the names the TCK uses.
 
 | Name                 | Value                                                                                                                                       | Example                |
 | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
