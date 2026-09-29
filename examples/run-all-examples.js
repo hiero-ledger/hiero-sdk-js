@@ -21,7 +21,6 @@ const excludedJSFile = [
     "run-all-examples.js",
     "wait-for-mirror.js",
     path.join("consensus", "pub-sub.js"),
-    path.join("consensus", "pub-sub-chunked.js"),
     path.join("consensus", "pub-sub-with-submit-key.js"),
     "batch-tx.js",
     path.join("schedule", "long-term-transaction.js"),
