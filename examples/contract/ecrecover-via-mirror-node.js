@@ -10,7 +10,6 @@ import dotenv from "dotenv";
 import { keccak_256 } from "@noble/hashes/sha3.js";
 import { bytesToHex, hexToBytes } from "@noble/hashes/utils.js";
 import {
-    Client,
     AccountId,
     PrivateKey,
     ContractCreateFlow,
@@ -20,6 +19,7 @@ import {
 
 import ecrecoverCaller from "../ecrecover_caller.json" with { type: "json" };
 import { setTimeout } from "node:timers/promises";
+import { clientForName } from "../client.js";
 
 dotenv.config();
 
@@ -37,7 +37,10 @@ async function main() {
 
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
     const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
-    const client = Client.forLocalNode().setOperator(operatorId, operatorKey);
+    const client = clientForName("local-node").setOperator(
+        operatorId,
+        operatorKey,
+    );
 
     console.log(`Operator account: ${operatorId.toString()}`);
 

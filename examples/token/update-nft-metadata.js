@@ -3,7 +3,6 @@ import {
     TokenInfoQuery,
     TokenType,
     PrivateKey,
-    Client,
     AccountId,
     TokenMintTransaction,
     TokenUpdateNftsTransaction,
@@ -15,6 +14,7 @@ import {
     TokenAssociateTransaction,
 } from "@hiero-ledger/sdk";
 import dotenv from "dotenv";
+import { clientForName } from "../client.js";
 
 dotenv.config();
 
@@ -34,7 +34,7 @@ async function main() {
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
     const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
     const network = process.env.HEDERA_NETWORK;
-    const client = Client.forName(network).setOperator(operatorId, operatorKey);
+    const client = clientForName(network).setOperator(operatorId, operatorKey);
 
     // Generate a metadata key
     const metadataKey = PrivateKey.generateECDSA();

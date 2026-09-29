@@ -5,7 +5,6 @@ import {
     TokenCreateTransaction,
     TransferTransaction,
     AccountId,
-    Client,
     TokenType,
     TokenMintTransaction,
     TokenRejectTransaction,
@@ -16,6 +15,7 @@ import {
 } from "@hiero-ledger/sdk";
 import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 import dotenv from "dotenv";
+import { clientForName } from "../client.js";
 
 /** @typedef {{equals: (value: number) => boolean, toInt: () => number, toString: () => string}} TokenBalanceValue */
 
@@ -42,7 +42,7 @@ async function main() {
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
     const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
     const network = process.env.HEDERA_NETWORK;
-    const client = Client.forName(network).setOperator(operatorId, operatorKey);
+    const client = clientForName(network).setOperator(operatorId, operatorKey);
 
     // create a treasury account
     const treasuryPrivateKey = PrivateKey.generateECDSA();
@@ -262,7 +262,7 @@ async function main() {
  * poll until the intended state is visible; the loop is bounded so an example
  * cannot hang or silently accept an intermediate value.
  *
- * @param {Client} client
+ * @param {import("@hiero-ledger/sdk").Client} client
  * @param {AccountId | string} accountId
  * @param {import("@hiero-ledger/sdk").TokenId | string} tokenId
  * @param {number} expected

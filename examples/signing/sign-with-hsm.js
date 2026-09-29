@@ -3,7 +3,6 @@ import {
     AccountId,
     Hbar,
     PrivateKey,
-    Client,
     SignatureMap,
     TransferTransaction,
     TransactionId,
@@ -12,6 +11,7 @@ import {
     FileContentsQuery,
 } from "@hiero-ledger/sdk";
 import dotenv from "dotenv";
+import { clientForName } from "../client.js";
 
 const bigContents = Array(1000).fill("Lorem ipsum dolor sit amet. ").join("");
 
@@ -44,7 +44,7 @@ async function main() {
     const operatorKey = PrivateKey.fromString(process.env.OPERATOR_KEY);
     const networkName = process.env.HEDERA_NETWORK;
 
-    const client = Client.forName(networkName).setOperator(
+    const client = clientForName(networkName).setOperator(
         operatorId,
         operatorKey,
     );

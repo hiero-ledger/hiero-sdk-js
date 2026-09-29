@@ -1,7 +1,6 @@
 import {
     AccountId,
     PrivateKey,
-    Client,
     TransferTransaction,
     AccountInfoQuery,
     TransactionReceiptQuery,
@@ -9,6 +8,7 @@ import {
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
+import { clientForName } from "../client.js";
 
 dotenv.config();
 
@@ -54,11 +54,7 @@ async function main() {
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
     const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
 
-    const nodes = {
-        "127.0.0.1:50211": new AccountId(3),
-    };
-
-    const client = Client.forNetwork(nodes).setOperator(
+    const client = clientForName("local-node").setOperator(
         operatorId,
         operatorKey,
     );

@@ -6,7 +6,6 @@ import {
     ContractCallQuery,
     Hbar,
     ContractCreateTransaction,
-    Client,
     ContractFunctionParameters,
     AccountId,
     FileCreateTransaction,
@@ -14,6 +13,7 @@ import {
 } from "@hiero-ledger/sdk";
 import { setTimeout } from "timers/promises";
 import dotenv from "dotenv";
+import { clientForName } from "../client.js";
 
 dotenv.config();
 
@@ -28,7 +28,7 @@ async function main() {
     console.log("Mirror Node contract queries Example Start!");
 
     // Step 0: Create and configure the SDK Client.
-    const client = Client.forName(HEDERA_NETWORK);
+    const client = clientForName(HEDERA_NETWORK);
     client.setOperator(OPERATOR_ID, OPERATOR_KEY);
 
     const BYTECODE =

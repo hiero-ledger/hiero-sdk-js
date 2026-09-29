@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Unreleased
 
+### Added
+
+-   The integration tests and the examples can target a local network whose ports differ from the `local-node` defaults, such as a Solo deployment, without source edits. They read the optional `NODE_IP` and `NODE_ACCOUNT_ID` (consensus node gRPC), `NODE_WEB_IP` (consensus node gRPC-Web, browser tests), `MIRROR_NETWORK` (mirror node gRPC) and `MIRROR_NODE_REST_URL` (mirror node HTTP ingress) variables, the names the TCK uses apart from `NODE_WEB_IP`, through the existing `setNetwork()`, `setMirrorNetwork()` and `setMirrorNodeHttpConfig()` APIs. Nothing changes when they are unset, a malformed value fails setup with an error naming the variable, and the SDK itself does not read them. Every runnable example now builds its client through `clientForName()` in `examples/client.js`. Documented in [manual/CONFIGURATION.md](manual/CONFIGURATION.md#optional-local-network-endpoints). [#4053](https://github.com/hiero-ledger/hiero-sdk-js/issues/4053)
+
 ### Fixed
 
 -   A node cloned by `Client.setTransportSecurity()` kept its minimum backoff as its maximum. `Client.setNodeMaxBackoff()` no longer raises a node's current backoff to the new maximum, so the first failure after the call is benched for twice the current backoff instead of the full maximum. `Client.setNodeMinBackoff()` now moves a resting node down to a lower minimum, so after `setNodeMinBackoff(1000)` a node's first failure benches it for 2 s instead of 16 s. Nodes added later by `Client.setNetwork()` or an address book update now receive the network's `nodeMaxBackoff` as well as `nodeMinBackoff`. [#4347](https://github.com/hiero-ledger/hiero-sdk-js/issues/4347) [#4404](https://github.com/hiero-ledger/hiero-sdk-js/pull/4404)
+-   The integration test setup no longer replaces a `CONFIG_FILE` mirror network with one derived from `HEDERA_NETWORK`, which crashed setup when `HEDERA_NETWORK` was unset, and its `Wallet` now uses the test client instead of building a second `local-node` client that ignored `CONFIG_FILE` and the endpoint variables. [#4053](https://github.com/hiero-ledger/hiero-sdk-js/issues/4053)
 
 # v2.89.1
 
