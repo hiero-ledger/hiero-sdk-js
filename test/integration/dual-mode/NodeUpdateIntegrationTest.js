@@ -4,12 +4,14 @@ import {
     AccountId,
     AccountCreateTransaction,
     AccountDeleteTransaction,
+    FileId,
     Hbar,
     NodeUpdateTransaction,
     PrivateKey,
     Status,
     ServiceEndpoint,
 } from "../../../src/exports.js";
+import AddressBookQuery from "../../../src/network/AddressBookQuery.js";
 import IntegrationTestEnv from "../client/NodeIntegrationTestEnv.js";
 import {
     mirrorNetwork,
@@ -30,6 +32,31 @@ const restoreOriginalGrpcWebProxyEndpoint = async (client) => {
         .execute(client);
     const receipt = await response.getReceipt(client);
     expect(receipt.status).to.equal(Status.Success);
+};
+
+// The client refreshes its address book from the mirror node, so a node
+// account ID change is only visible to it after the mirror node has imported
+// the update. Poll the same query the client uses instead of sleeping for a
+// fixed time: the import delay depends on the runner.
+const waitForMirrorNodeAccountId = async (client, nodeId, accountId) => {
+    for (let attempt = 0; attempt < 30; attempt++) {
+        const addressBook = await new AddressBookQuery()
+            .setFileId(FileId.ADDRESS_BOOK)
+            .execute(client);
+
+        const nodeAddress = addressBook.nodeAddresses.find(
+            (address) => address.nodeId?.toString() === String(nodeId),
+        );
+        if (nodeAddress?.accountId?.toString() === accountId.toString()) {
+            return;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+    }
+
+    throw new Error(
+        `mirror node did not report account ${accountId.toString()} for node ${nodeId} within 30 seconds`,
+    );
 };
 
 describe("Node Update Integration Tests", function () {
@@ -270,81 +297,84 @@ describe("Node Update Integration Tests", function () {
         const createReceipt = await createResp.getReceipt(client);
         const newNodeAccountID = createReceipt.accountId;
 
-        // Update node account ID (0.0.8 -> newNodeAccountID)
-        const updateResp = await (
-            await new NodeUpdateTransaction()
+        try {
+            // Update node account ID (0.0.4 -> newNodeAccountID)
+            const updateResp = await (
+                await new NodeUpdateTransaction()
+                    .setNodeId(1)
+                    .setNodeAccountIds([AccountId.fromString("0.0.3")])
+                    .setAccountId(newNodeAccountID)
+                    .freezeWith(client)
+                    .sign(newAccountKey)
+            ).execute(client);
+
+            await updateResp.getReceipt(client);
+
+            await waitForMirrorNodeAccountId(client, 1, newNodeAccountID);
+
+            const anotherNewKey = PrivateKey.generateED25519();
+            // Submit to the updated node - should trigger addressbook refresh
+            const testResp = await new AccountCreateTransaction()
+                .setKey(anotherNewKey.publicKey)
+                .setNodeAccountIds([
+                    AccountId.fromString("0.0.4"),
+                    AccountId.fromString("0.0.3"),
+                ])
+                .execute(client);
+            const testReceipt = await testResp.getReceipt(client);
+            expect(testReceipt.status).to.equal(Status.Success);
+            // Verify address book has been updated
+            const network = client.network;
+
+            const hasNewNodeAccount = Object.values(network).some(
+                (accountId) =>
+                    accountId.toString() === newNodeAccountID.toString(),
+            );
+            expect(hasNewNodeAccount).to.be.true;
+
+            // Find the address of the newly added node
+            const newNodeAddress = Object.entries(network).find(
+                ([, accountId]) =>
+                    accountId.toString() === newNodeAccountID.toString(),
+            )?.[0];
+
+            // Assert the address matches the expected value
+            expect(newNodeAddress).to.equal(node2Address);
+
+            // This is not an ideal workaround - reconstruct the network state
+            // because the mirror node returns a different address than expected
+            if (newNodeAddress === node2Address) {
+                const oldNetworkState = { ...network };
+                delete oldNetworkState[newNodeAddress];
+                const newNetworkState = {
+                    ...oldNetworkState,
+                    [node2Address.replace(
+                        node2Address.split(":")[1],
+                        node2PortToReplace,
+                    )]: newNodeAccountID,
+                };
+                client.setNetwork(newNetworkState);
+            }
+
+            // This transaction should succeed with the new node account ID
+            const finalResp = await new AccountCreateTransaction()
+                .setKey(anotherNewKey.publicKey)
+                .setNodeAccountIds([newNodeAccountID])
+                .execute(client);
+
+            const finalReceipt = await finalResp.getReceipt(client);
+            expect(finalReceipt.status).to.equal(Status.Success);
+        } finally {
+            // Revert even when the test fails, or every later test that
+            // targets 0.0.4 hits INVALID_NODE_ACCOUNT
+            const revertResp = await new NodeUpdateTransaction()
                 .setNodeId(1)
                 .setNodeAccountIds([AccountId.fromString("0.0.3")])
-                .setAccountId(newNodeAccountID)
-                .freezeWith(client)
-                .sign(newAccountKey)
-        ).execute(client);
+                .setAccountId(AccountId.fromString("0.0.4"))
+                .execute(client);
 
-        await updateResp.getReceipt(client);
-
-        // Wait for mirror node to import data
-        await new Promise((resolve) => setTimeout(resolve, 5000));
-
-        const anotherNewKey = PrivateKey.generateED25519();
-        // Submit to the updated node - should trigger addressbook refresh
-        const testResp = await new AccountCreateTransaction()
-            .setKey(anotherNewKey.publicKey)
-            .setNodeAccountIds([
-                AccountId.fromString("0.0.4"),
-                AccountId.fromString("0.0.3"),
-            ])
-            .execute(client);
-        const testReceipt = await testResp.getReceipt(client);
-        expect(testReceipt.status).to.equal(Status.Success);
-        // Verify address book has been updated
-        const network = client.network;
-
-        const hasNewNodeAccount = Object.values(network).some(
-            (accountId) => accountId.toString() === newNodeAccountID.toString(),
-        );
-        expect(hasNewNodeAccount).to.be.true;
-
-        // Find the address of the newly added node
-        const newNodeAddress = Object.entries(network).find(
-            ([, accountId]) =>
-                accountId.toString() === newNodeAccountID.toString(),
-        )?.[0];
-
-        // Assert the address matches the expected value
-        expect(newNodeAddress).to.equal(node2Address);
-
-        // This is not an ideal workaround - reconstruct the network state
-        // because the mirror node returns a different address than expected
-        if (newNodeAddress === node2Address) {
-            const oldNetworkState = { ...network };
-            delete oldNetworkState[newNodeAddress];
-            const newNetworkState = {
-                ...oldNetworkState,
-                [node2Address.replace(
-                    node2Address.split(":")[1],
-                    node2PortToReplace,
-                )]: newNodeAccountID,
-            };
-            client.setNetwork(newNetworkState);
+            await revertResp.getReceipt(client);
         }
-
-        // This transaction should succeed with the new node account ID
-        const finalResp = await new AccountCreateTransaction()
-            .setKey(anotherNewKey.publicKey)
-            .setNodeAccountIds([newNodeAccountID])
-            .execute(client);
-
-        const finalReceipt = await finalResp.getReceipt(client);
-        expect(finalReceipt.status).to.equal(Status.Success);
-
-        // Revert the node account ID
-        const revertResp = await new NodeUpdateTransaction()
-            .setNodeId(1)
-            .setNodeAccountIds([AccountId.fromString("0.0.3")])
-            .setAccountId(AccountId.fromString("0.0.4"))
-            .execute(client);
-
-        await revertResp.getReceipt(client);
     });
 
     it("should handle node account ID change without mirror node setup", async function () {
@@ -413,8 +443,9 @@ describe("Node Update Integration Tests", function () {
 
             const finalReceipt = await finalResp.getReceipt(client);
             expect(finalReceipt.status).to.equal(Status.Success);
-
-            // Revert the node account ID
+        } finally {
+            // Revert even when the test fails, or every later test that
+            // targets 0.0.3 hits INVALID_NODE_ACCOUNT
             const revertResp = await new NodeUpdateTransaction()
                 .setNodeId(0)
                 .setNodeAccountIds([AccountId.fromString("0.0.4")])
@@ -422,7 +453,6 @@ describe("Node Update Integration Tests", function () {
                 .execute(client);
 
             await revertResp.getReceipt(client);
-        } finally {
             client.close();
         }
     });
