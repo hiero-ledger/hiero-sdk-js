@@ -1,6 +1,6 @@
 {
   "name": "@hiero-ledger/proto",
-  "version": "2.31.0",
+  "version": "2.32.0",
   "description": "Protobufs for the Hiero SDK",
   "main": "lib/index.js",
   "browser": "src/index.js",
@@ -71,11 +71,7 @@
     "typescript": "5.9.3"
   },
   "peerDependencies": {
-    "ansi-regex": "6.2.2",
-    "ansi-styles": "6.2.3",
-    "debug": "4.4.1",
-    "protobufjs": "8.2.0",
-    "strip-ansi": "7.1.2"
+    "protobufjs": "^8.0.1"
   },
   "publishConfig": {
     "access": "public",
