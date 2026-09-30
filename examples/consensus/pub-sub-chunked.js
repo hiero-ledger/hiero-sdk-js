@@ -1,5 +1,4 @@
 import {
-    Client,
     AccountId,
     PrivateKey,
     TopicCreateTransaction,
@@ -14,6 +13,7 @@ import { readFile } from "node:fs/promises";
 import { setTimeout } from "node:timers/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { clientForName } from "../client.js";
 
 dotenv.config();
 
@@ -53,7 +53,7 @@ async function main() {
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
     const operatorKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
     const operatorPublicKey = operatorKey.publicKey;
-    const client = Client.forName(process.env.HEDERA_NETWORK).setOperator(
+    const client = clientForName(process.env.HEDERA_NETWORK).setOperator(
         operatorId,
         operatorKey,
     );

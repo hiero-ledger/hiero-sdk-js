@@ -5,6 +5,7 @@ import {
     Wallet,
 } from "../../../src/exports.js";
 import LocalProvider from "../../../src/LocalProvider.js";
+import { applyEndpointOverrides } from "./endpointOverrides.js";
 
 /**
  * @typedef {import("../../../src/exports.js").TokenId} TokenId
@@ -73,6 +74,13 @@ export default class BaseIntegrationTestEnv {
         ) {
             client = options.client.forLocalNode();
         } else if (options.env.CONFIG_FILE != null) {
+            // The config file's endpoints are explicit; an environment
+            // override would silently replace them.
+            if (options.env.NODE_IP || options.env.MIRROR_NETWORK) {
+                throw new Error(
+                    "CONFIG_FILE sets the network itself; remove NODE_IP and MIRROR_NETWORK or move them into the file",
+                );
+            }
             client = await options.client.fromConfigFile(
                 options.env.CONFIG_FILE,
             );
@@ -81,6 +89,8 @@ export default class BaseIntegrationTestEnv {
                 "Failed to construct client for IntegrationTestEnv",
             );
         }
+
+        applyEndpointOverrides(client, options.env);
 
         if (
             options.env.OPERATOR_ID != null &&
@@ -92,7 +102,6 @@ export default class BaseIntegrationTestEnv {
             );
 
             client.setOperator(this.operatorId, this.operatorKey);
-            client.setMirrorNetwork(options.env.HEDERA_NETWORK);
         }
 
         if (
@@ -131,7 +140,7 @@ export default class BaseIntegrationTestEnv {
         wallet = new Wallet(
             this.operatorId,
             this.operatorKey,
-            new LocalProvider(),
+            LocalProvider.fromClient(client),
         );
 
         return new BaseIntegrationTestEnv({

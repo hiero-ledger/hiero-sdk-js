@@ -4,12 +4,12 @@ import {
     Hbar,
     FileCreateTransaction,
     FileDeleteTransaction,
-    Client,
     AccountId,
     Logger,
     LogLevel,
 } from "@hiero-ledger/sdk";
 import dotenv from "dotenv";
+import { clientForName } from "../client.js";
 
 dotenv.config();
 /**
@@ -40,7 +40,7 @@ async function main() {
     const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
 
     //  Create the client based on the HEDERA_NETWORK environment variable
-    const client = Client.forName(process.env.HEDERA_NETWORK);
+    const client = clientForName(process.env.HEDERA_NETWORK);
 
     client.setOperator(operatorId, operatorKey);
 

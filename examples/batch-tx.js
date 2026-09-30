@@ -1,6 +1,5 @@
 import {
     MirrorNodeAccountBalanceQuery,
-    Client,
     PrivateKey,
     AccountId,
     Hbar,
@@ -16,6 +15,7 @@ import {
 import { retryOnStatus, untilMirror } from "./wait-for-mirror.js";
 
 import dotenv from "dotenv";
+import { clientForName } from "./client.js";
 
 dotenv.config();
 
@@ -41,7 +41,7 @@ async function main() {
         process.env.OPERATOR_KEY,
     );
 
-    const client = Client.forName(process.env.HEDERA_NETWORK)
+    const client = clientForName(process.env.HEDERA_NETWORK)
         .setOperator(operatorAccId, operatorPrivKey)
         .setLogger(new Logger(LogLevel.Silent));
 
@@ -56,7 +56,7 @@ async function main() {
  * It creates a single HBAR transfer from Alice to the operator,
  * batches it with a single batch key, and verifies account balances
  * before and after execution.
- * @param {Client} client
+ * @param {import("@hiero-ledger/sdk").Client} client
  */
 async function executeBatchWithBatchify(client) {
     /**
@@ -81,7 +81,7 @@ async function executeBatchWithBatchify(client) {
     /**
      * Step 3: Create client for Alice
      */
-    const aliceClient = Client.forName(process.env.HEDERA_NETWORK)
+    const aliceClient = clientForName(process.env.HEDERA_NETWORK)
         .setOperator(alice, aliceKey)
         .setLogger(new Logger(LogLevel.Info));
 
@@ -159,7 +159,7 @@ async function executeBatchWithBatchify(client) {
  * individual transfer transactions with their respective batch keys,
  * combines them into a single batch transaction,
  * and verifies all account balances before and after execution.
- * @param {Client} client
+ * @param {import("@hiero-ledger/sdk").Client} client
  */
 async function executeBatchWithManualInnerTransactionFreeze(client) {
     /**
@@ -312,7 +312,7 @@ async function executeBatchWithManualInnerTransactionFreeze(client) {
  * This example demonstrates using setInnerTransactions to set all transactions at once.
  * It creates three accounts (David, Eve, Frank), prepares batchified transfer transactions,
  * and executes them in a single batch using the setInnerTransactions method.
- * @param {Client} client
+ * @param {import("@hiero-ledger/sdk").Client} client
  */
 async function executeBatchWithSetInnerTransactions(client) {
     /**
@@ -357,13 +357,13 @@ async function executeBatchWithSetInnerTransactions(client) {
     /**
      * Step 2: Create separate clients for each account
      */
-    const davidClient = Client.forName(process.env.HEDERA_NETWORK)
+    const davidClient = clientForName(process.env.HEDERA_NETWORK)
         .setOperator(david, davidKey)
         .setLogger(new Logger(LogLevel.Silent));
-    const eveClient = Client.forName(process.env.HEDERA_NETWORK)
+    const eveClient = clientForName(process.env.HEDERA_NETWORK)
         .setOperator(eve, eveKey)
         .setLogger(new Logger(LogLevel.Silent));
-    const frankClient = Client.forName(process.env.HEDERA_NETWORK)
+    const frankClient = clientForName(process.env.HEDERA_NETWORK)
         .setOperator(frank, frankKey)
         .setLogger(new Logger(LogLevel.Silent));
 

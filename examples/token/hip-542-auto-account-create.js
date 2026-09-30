@@ -2,7 +2,6 @@ import {
     MirrorNodeTokenBalanceQuery,
     AccountId,
     PrivateKey,
-    Client,
     TokenCreateTransaction,
     TokenType,
     TokenSupplyType,
@@ -17,6 +16,7 @@ import {
 } from "@hiero-ledger/sdk";
 import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 import dotenv from "dotenv";
+import { clientForName } from "../client.js";
 
 /** @typedef {{equals: (value: number) => boolean, toInt: () => number, toString: () => string}} TokenBalanceValue */
 
@@ -61,13 +61,10 @@ async function main() {
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
     const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
 
-    const nodes = {
-        "127.0.0.1:50211": new AccountId(3),
-    };
-
-    const client = Client.forNetwork(nodes)
-        .setOperator(operatorId, operatorKey)
-        .setMirrorNetwork("local-node");
+    const client = clientForName("local-node").setOperator(
+        operatorId,
+        operatorKey,
+    );
 
     /**
      *     Example 1

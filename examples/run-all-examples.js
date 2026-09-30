@@ -20,7 +20,9 @@ const excludedDirectories = [
 const excludedJSFile = [
     "run-all-examples.js",
     "wait-for-mirror.js",
+    "client.js",
     path.join("consensus", "pub-sub.js"),
+    // Quarantined until https://github.com/hiero-ledger/hiero-sdk-js/issues/4406
     path.join("consensus", "pub-sub-chunked.js"),
     path.join("consensus", "pub-sub-with-submit-key.js"),
     "batch-tx.js",

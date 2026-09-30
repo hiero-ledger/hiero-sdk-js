@@ -1,6 +1,5 @@
 import {
     MirrorNodeAccountBalanceQuery,
-    Client,
     AccountCreateTransaction,
     Hbar,
     PrivateKey,
@@ -15,9 +14,10 @@ import {
 import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 
 import dotenv from "dotenv";
+import { clientForName } from "../client.js";
 dotenv.config();
 
-/** @type {Client | undefined} */
+/** @type {import("@hiero-ledger/sdk").Client | undefined} */
 let activeClient;
 
 /**
@@ -39,7 +39,7 @@ async function main() {
     // Step 0: Create and configure the SDK Client.
     const operatorId = process.env.OPERATOR_ID;
     const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
-    const client = Client.forName(process.env.HEDERA_NETWORK || "testnet");
+    const client = clientForName(process.env.HEDERA_NETWORK || "testnet");
     activeClient = client;
     client.setOperator(operatorId, operatorKey);
     // Step 1: Create key pairs

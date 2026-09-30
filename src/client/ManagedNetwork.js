@@ -283,7 +283,11 @@ export default class ManagedNetwork {
             ) {
                 continue;
             }
-            newNodes.push(this._createNodeFromNetworkEntry([key, value]));
+            newNodes.push(
+                this._createNodeFromNetworkEntry([key, value])
+                    .setMinBackoff(this._minBackoff)
+                    .setMaxBackoff(this._maxBackoff),
+            );
         }
 
         // Shuffle the nodes so we don't immediately pick the first nodes
