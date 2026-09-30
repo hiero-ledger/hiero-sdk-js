@@ -37,9 +37,15 @@ const restoreOriginalGrpcWebProxyEndpoint = async (client) => {
 // The client refreshes its address book from the mirror node, so a node
 // account ID change is only visible to it after the mirror node has imported
 // the update. Poll the same query the client uses instead of sleeping for a
-// fixed time: the import delay depends on the runner.
+// fixed time: the import usually lands within a second or two, but the
+// importer sometimes stalls for well over 30 s.
+const MIRROR_NODE_IMPORT_TIMEOUT_MS = 90000;
+
 const waitForMirrorNodeAccountId = async (client, nodeId, accountId) => {
-    for (let attempt = 0; attempt < 30; attempt++) {
+    const start = Date.now();
+    let elapsed = 0;
+
+    while (elapsed < MIRROR_NODE_IMPORT_TIMEOUT_MS) {
         const addressBook = await new AddressBookQuery()
             .setFileId(FileId.ADDRESS_BOOK)
             .execute(client);
@@ -47,7 +53,11 @@ const waitForMirrorNodeAccountId = async (client, nodeId, accountId) => {
         const nodeAddress = addressBook.nodeAddresses.find(
             (address) => address.nodeId?.toString() === String(nodeId),
         );
+        elapsed = Date.now() - start;
         if (nodeAddress?.accountId?.toString() === accountId.toString()) {
+            console.log(
+                `mirror node reported account ${accountId.toString()} for node ${nodeId} after ${elapsed} ms`,
+            );
             return;
         }
 
@@ -55,7 +65,7 @@ const waitForMirrorNodeAccountId = async (client, nodeId, accountId) => {
     }
 
     throw new Error(
-        `mirror node did not report account ${accountId.toString()} for node ${nodeId} within 30 seconds`,
+        `mirror node did not report account ${accountId.toString()} for node ${nodeId} within ${elapsed} ms`,
     );
 };
 
