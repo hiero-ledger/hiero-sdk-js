@@ -260,7 +260,7 @@ importers:
         version: 2.2.0
       axios:
         specifier: ^1.18.0
-        version: 1.18.1(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+        version: 1.18.1(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1)
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
@@ -333,7 +333,7 @@ importers:
         version: 19.2.4(react@19.2.4)
       react-scripts:
         specifier: 5.0.1
-        version: 5.0.1(@babel/plugin-syntax-flow@7.29.7(@babel/core@7.26.10(supports-color@8.1.1)))(@babel/plugin-transform-react-jsx@7.29.7(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1))(@types/babel__core@7.20.5)(clean-css@5.3.3)(csso@4.2.0)(debug@4.4.3(supports-color@8.1.1))(esbuild@0.28.1)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.28.1)(eslint@9.26.0(jiti@2.6.1)(supports-color@8.1.1))(supports-color@8.1.1))(eslint@9.26.0(jiti@1.21.7)(supports-color@8.1.1))(react@19.2.4)(supports-color@8.1.1)(type-fest@4.41.0)(typescript@5.9.3)(uglify-js@3.19.3)(yaml@2.9.0)
+        version: 5.0.1(@babel/plugin-syntax-flow@7.29.7(@babel/core@7.26.10(supports-color@8.1.1)))(@babel/plugin-transform-react-jsx@7.29.7(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1))(@types/babel__core@7.20.5)(clean-css@5.3.3)(csso@4.2.0)(debug@4.4.1(supports-color@8.1.1))(esbuild@0.28.1)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.28.1)(eslint@9.26.0(jiti@2.6.1)(supports-color@8.1.1))(supports-color@8.1.1))(eslint@9.26.0(jiti@1.21.7)(supports-color@8.1.1))(react@19.2.4)(supports-color@8.1.1)(type-fest@4.41.0)(typescript@5.9.3)(uglify-js@3.19.3)(yaml@2.9.0)
       web-vitals:
         specifier: ^6.0.0
         version: 6.0.0
@@ -363,7 +363,7 @@ importers:
         version: 6.16.0
       next:
         specifier: 16.3.3
-        version: 16.3.3(@babel/core@7.26.10(supports-color@8.1.1))(@playwright/test@1.30.0)(@types/node@26.1.1)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 16.3.3(@babel/core@7.23.3(supports-color@8.1.1))(@playwright/test@1.30.0)(@types/node@26.1.1)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       react:
         specifier: ^19.2.4
         version: 19.2.4
@@ -438,8 +438,8 @@ importers:
         specifier: ~57.0.6
         version: 57.0.6(9224ac6bbc2660836e80a5e2718e9a23)
       expo-splash-screen:
-        specifier: ~57.0.2
-        version: 57.0.2(expo@57.0.4)(supports-color@8.1.1)(typescript@5.9.3)
+        specifier: ~58.0.1
+        version: 58.0.2(expo@57.0.4)(supports-color@8.1.1)(typescript@5.9.3)
       expo-status-bar:
         specifier: ~57.0.0
         version: 57.0.0(expo@57.0.4)(react-native@0.81.5(@babel/core@7.23.3(supports-color@8.1.1))(@types/react@19.1.17)(react@19.1.0)(supports-color@8.1.1))(react@19.1.0)
@@ -588,7 +588,7 @@ importers:
         version: 8.64.0(eslint@10.0.3(jiti@2.6.1)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.2)
       axios:
         specifier: ^1.18.0
-        version: 1.18.1(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+        version: 1.18.1(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1)
       babel-plugin-dynamic-import-node:
         specifier: ^2.3.3
         version: 2.3.3
@@ -2699,8 +2699,14 @@ packages:
   '@expo/config-plugins@57.0.3':
     resolution: {integrity: sha512-J3P2T7FoOE9P3TuLcJXwt8jISKRxo7UntTzbJ/Qc5F7QXenNntk/4t1XndVkLucYjpnHArPd9xzDXuxxKEHVbQ==}
 
+  '@expo/config-plugins@58.0.4':
+    resolution: {integrity: sha512-JlZSHqYPU7nrU1E68KGpoW9pcXYgHfKOeTnqXXOop/4yj9UarOe9Y26Wlp6fhXjZ28ZooBJxo3J0Z5SSuLfbDQ==}
+
   '@expo/config-types@57.0.1':
     resolution: {integrity: sha512-fo7d/Ym28uwGzdTV2leEvpsb9t+7i8YHjy471m31+cmDt4BRd/l7e94JHyrXAq4SWOBVus16S0JLqm89SRCCdw==}
+
+  '@expo/config-types@58.0.2':
+    resolution: {integrity: sha512-iXoMw0/8KVSrrGRxOnf69eB9k5iPomOH7RPJnYEErAMFCfl2QCkftkHVSUdZ3qxtpx9EjRm0MANyAoQj77U7qw==}
 
   '@expo/config@57.0.3':
     resolution: {integrity: sha512-IshqjjpGtT7wj86pxgsfMD1/abNMfu1wZ07ubyYO29l+PWa0eAh2TcpyLcyBaqo01IonF6646xWwrCPcdlUl3Q==}
@@ -2744,11 +2750,17 @@ packages:
   '@expo/image-utils@0.11.1':
     resolution: {integrity: sha512-0JueH4vdgAZQmhlSYFvTQzt4b4NO5cnByDuApw7bMUIjhwLRnT46Ki3ritMrzJMQaO2lLK2flInZbsZbOuy8nw==}
 
+  '@expo/image-utils@0.12.2':
+    resolution: {integrity: sha512-lz4ShWkci1UYI8JhBywQM15hamJ5YLG3kz9qjNNKS7cOq4EKkzf4ZZXLEzAPpQaN1j1wWpY2MtbPIYXFLNUHsA==}
+
   '@expo/inline-modules@0.1.2':
     resolution: {integrity: sha512-wc5wH4ND647Ne/6A/ESuelcqOQUEvK8MYjjvbp5wcl59dECk7juh0cFOJjAWkpc4pLTcvqXBSRcUDpGWm5XNWg==}
 
   '@expo/json-file@11.0.0':
     resolution: {integrity: sha512-pHJCETqFL5x5BzNV6cEPwjwuECgGmnl0bNmfHIJ6LM1tlh2eVXi5HEdit3zby/JO/B8Otk5cgcqtJXgvvUat3A==}
+
+  '@expo/json-file@11.2.1':
+    resolution: {integrity: sha512-UPhKoFCj8BcwgLB1rKQ1CuR/REITnZLiqxHEHOeH1tPsdXcHGtUDh0P5bLbr7oU0nKVdtJ5rzyKx8jniMQdESQ==}
 
   '@expo/local-build-cache-provider@57.0.2':
     resolution: {integrity: sha512-/8/FoYrEBJZPG4wR8kO6REI4VRCPAStD+7wS/Ds6XXddxhmyMP3pvUJz/c3icyAoqpbqeZZkR6E1ptT5Gi5iXg==}
@@ -2802,6 +2814,9 @@ packages:
   '@expo/package-manager@1.13.0':
     resolution: {integrity: sha512-s3W3eZafJDEyVL7W/jxj2Nz3eONKxSCU604S5xj8ijrVaRz83x0DnZznLf/UXQEI1w+FyibH68nHeQyk767b1A==}
 
+  '@expo/plist@0.10.1':
+    resolution: {integrity: sha512-nuNOqj+r/hGJbZ1Ax3jUpZaOB8UAMHUrISALJEUKaCieTflYj7224EqFWmMpriCGk9wXS1gH+9GGVnSj0tWzuQ==}
+
   '@expo/plist@0.8.0':
     resolution: {integrity: sha512-24JlUJI4PwHN4PLydlzFEzCdiqybfaV5t04QBkOg8em3AjvHKbMgBGlKreiuOoc0rNa3DZ21ZqL+xLGMBLQNKQ==}
 
@@ -2812,6 +2827,14 @@ packages:
     resolution: {integrity: sha512-uXen5/4x7j60I5slShgZr5QEtJDBK8homFiNLDnDrNrxZhrRHXASo0H6JArs3/1PDzw1wahzhGWg2WKuYyZd0A==}
     peerDependencies:
       typescript: ^5.0.0 || ^5.0.0-0 || ^6.0.0
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
+  '@expo/require-utils@58.0.2':
+    resolution: {integrity: sha512-50w3h4s8eQze5L0PGfVAWGUWrT0ss9oHPa9INAIra43ScU+MP5s3b5qysvdv7mep9SgSX3+qdWIjcrOP5rNd+A==}
+    peerDependencies:
+      typescript: ^5.0.0 || ^5.0.0-0 || ^6.0.0 || ^7.0.0
     peerDependenciesMeta:
       typescript:
         optional: true
@@ -7575,8 +7598,8 @@ packages:
     resolution: {integrity: sha512-sBfVDH6dmKVHZxqUxbfkzS00PZELMZt1IpnHKxcOTMZtR/t7CtRAFrbXcisG+EyzeqHSVDacZT+1tbYfZt5D8w==}
     engines: {node: '>=20.16.0'}
 
-  expo-splash-screen@57.0.2:
-    resolution: {integrity: sha512-xyfl+Twl5EiFKxYLKlofJi/r7mvdxwr/w9olUWYL4viEEpYCPCvj2YzZQtPptr/wMFe4G+X97W42sRWq6zdSfA==}
+  expo-splash-screen@58.0.2:
+    resolution: {integrity: sha512-rYs8/d8GGFKBfj1cecr8/87nfUcdSmqQq/enm8Wmv1IuC3l1dxnxFRWlnz2KORCYLUw42M2vNRqlSU9ETHt8GQ==}
     peerDependencies:
       expo: '*'
 
@@ -16399,7 +16422,28 @@ snapshots:
       - supports-color
       - typescript
 
+  '@expo/config-plugins@58.0.4(supports-color@8.1.1)(typescript@5.9.3)':
+    dependencies:
+      '@expo/config-types': 58.0.2
+      '@expo/json-file': 11.2.1
+      '@expo/plist': 0.10.1
+      '@expo/require-utils': 58.0.2(supports-color@8.1.1)(typescript@5.9.3)
+      '@expo/sdk-runtime-versions': 1.0.0
+      chalk: 4.1.2
+      debug: 4.4.1(supports-color@8.1.1)
+      getenv: 2.0.0
+      glob: 13.0.6
+      semver: 7.8.5
+      slugify: 1.6.9
+      xcode: 3.0.1
+      xml2js: 0.6.0
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
   '@expo/config-types@57.0.1': {}
+
+  '@expo/config-types@58.0.2': {}
 
   '@expo/config@57.0.3(supports-color@8.1.1)(typescript@5.9.3)':
     dependencies:
@@ -16498,6 +16542,19 @@ snapshots:
       - supports-color
       - typescript
 
+  '@expo/image-utils@0.12.2(supports-color@8.1.1)(typescript@5.9.3)':
+    dependencies:
+      '@expo/require-utils': 58.0.2(supports-color@8.1.1)(typescript@5.9.3)
+      '@expo/spawn-async': 1.8.0
+      chalk: 4.1.2
+      getenv: 2.0.0
+      jimp-compact: 0.16.1
+      parse-png: 2.1.0
+      semver: 7.8.5
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
   '@expo/inline-modules@0.1.2(supports-color@8.1.1)(typescript@5.9.3)':
     dependencies:
       '@expo/config-plugins': 57.0.3(supports-color@8.1.1)(typescript@5.9.3)
@@ -16506,6 +16563,11 @@ snapshots:
       - typescript
 
   '@expo/json-file@11.0.0':
+    dependencies:
+      '@babel/code-frame': 7.29.7
+      json5: 2.2.3
+
+  '@expo/json-file@11.2.1':
     dependencies:
       '@babel/code-frame': 7.29.7
       json5: 2.2.3
@@ -16660,6 +16722,12 @@ snapshots:
       ora: 3.4.0
       resolve-workspace-root: 2.0.1
 
+  '@expo/plist@0.10.1':
+    dependencies:
+      '@xmldom/xmldom': 0.8.13
+      base64-js: 1.5.1
+      xmlbuilder: 15.1.1
+
   '@expo/plist@0.8.0':
     dependencies:
       '@xmldom/xmldom': 0.8.13
@@ -16687,6 +16755,16 @@ snapshots:
       '@babel/code-frame': 7.29.7
       '@babel/core': 7.26.10(supports-color@8.1.1)
       '@babel/plugin-transform-modules-commonjs': 7.26.3(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1)
+    optionalDependencies:
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - supports-color
+
+  '@expo/require-utils@58.0.2(supports-color@8.1.1)(typescript@5.9.3)':
+    dependencies:
+      '@babel/code-frame': 7.29.7
+      '@babel/core': 7.26.10(supports-color@8.1.1)
+      '@babel/plugin-transform-modules-commonjs': 7.29.7(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1)
     optionalDependencies:
       typescript: 5.9.3
     transitivePeerDependencies:
@@ -17463,7 +17541,7 @@ snapshots:
       '@types/node': 26.1.1
       playwright-core: 1.30.0
 
-  '@pmmmwh/react-refresh-webpack-plugin@0.5.17(react-refresh@0.11.0)(type-fest@4.41.0)(webpack-dev-server@4.15.2(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3)))(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))':
+  '@pmmmwh/react-refresh-webpack-plugin@0.5.17(react-refresh@0.11.0)(type-fest@4.41.0)(webpack-dev-server@4.15.2(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3)))(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))':
     dependencies:
       ansi-html: 0.0.9
       core-js-pure: 3.47.0
@@ -17476,7 +17554,7 @@ snapshots:
       webpack: 5.104.1(esbuild@0.28.1)(uglify-js@3.19.3)
     optionalDependencies:
       type-fest: 4.41.0
-      webpack-dev-server: 4.15.2(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))
+      webpack-dev-server: 4.15.2(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))
 
   '@polka/url@1.0.0-next.29': {}
 
@@ -17954,7 +18032,7 @@ snapshots:
       '@babel/plugin-transform-function-name': 7.27.1(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1)
       '@babel/plugin-transform-literals': 7.27.1(@babel/core@7.26.10(supports-color@8.1.1))
       '@babel/plugin-transform-logical-assignment-operators': 7.29.7(@babel/core@7.26.10(supports-color@8.1.1))
-      '@babel/plugin-transform-modules-commonjs': 7.26.3(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1)
+      '@babel/plugin-transform-modules-commonjs': 7.29.7(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1)
       '@babel/plugin-transform-named-capturing-groups-regex': 7.29.7(@babel/core@7.26.10(supports-color@8.1.1))
       '@babel/plugin-transform-nullish-coalescing-operator': 7.29.7(@babel/core@7.26.10(supports-color@8.1.1))
       '@babel/plugin-transform-numeric-separator': 7.27.1(@babel/core@7.26.10(supports-color@8.1.1))
@@ -20425,9 +20503,9 @@ snapshots:
 
   axe-core@4.11.1: {}
 
-  axios@1.18.1(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1):
+  axios@1.18.1(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1):
     dependencies:
-      follow-redirects: 1.16.0(debug@4.4.3(supports-color@8.1.1))
+      follow-redirects: 1.16.0(debug@4.4.1(supports-color@8.1.1))
       form-data: 4.0.6
       https-proxy-agent: 5.0.1(supports-color@8.1.1)
       proxy-from-env: 2.1.0
@@ -20462,6 +20540,20 @@ snapshots:
   babel-helper-remove-or-void@0.4.3: {}
 
   babel-helper-to-multiple-sequence-expressions@0.5.0: {}
+
+  babel-jest@27.5.1(@babel/core@7.23.3(supports-color@8.1.1))(supports-color@8.1.1):
+    dependencies:
+      '@babel/core': 7.23.3(supports-color@8.1.1)
+      '@jest/transform': 27.5.1(supports-color@8.1.1)
+      '@jest/types': 27.5.1
+      '@types/babel__core': 7.20.5
+      babel-plugin-istanbul: 6.1.1(supports-color@8.1.1)
+      babel-preset-jest: 27.5.1(@babel/core@7.23.3(supports-color@8.1.1))
+      chalk: 4.1.2
+      graceful-fs: 4.2.11
+      slash: 3.0.0
+    transitivePeerDependencies:
+      - supports-color
 
   babel-jest@27.5.1(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1):
     dependencies:
@@ -20872,6 +20964,12 @@ snapshots:
     transitivePeerDependencies:
       - '@babel/core'
       - supports-color
+
+  babel-preset-jest@27.5.1(@babel/core@7.23.3(supports-color@8.1.1)):
+    dependencies:
+      '@babel/core': 7.23.3(supports-color@8.1.1)
+      babel-plugin-jest-hoist: 27.5.1
+      babel-preset-current-node-syntax: 1.2.0(@babel/core@7.23.3(supports-color@8.1.1))
 
   babel-preset-jest@27.5.1(@babel/core@7.26.10(supports-color@8.1.1)):
     dependencies:
@@ -23517,10 +23615,10 @@ snapshots:
 
   expo-server@57.0.1: {}
 
-  expo-splash-screen@57.0.2(expo@57.0.4)(supports-color@8.1.1)(typescript@5.9.3):
+  expo-splash-screen@58.0.2(expo@57.0.4)(supports-color@8.1.1)(typescript@5.9.3):
     dependencies:
-      '@expo/config-plugins': 57.0.3(supports-color@8.1.1)(typescript@5.9.3)
-      '@expo/image-utils': 0.11.1(supports-color@8.1.1)(typescript@5.9.3)
+      '@expo/config-plugins': 58.0.4(supports-color@8.1.1)(typescript@5.9.3)
+      '@expo/image-utils': 0.12.2(supports-color@8.1.1)(typescript@5.9.3)
       expo: 57.0.4(@babel/core@7.23.3(supports-color@8.1.1))(@expo/dom-webview@57.0.1)(@expo/metro-runtime@57.0.15)(expo-router@57.0.6)(react-dom@19.1.0(react@19.1.0))(react-native-web@0.21.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-native-worklets@0.5.1(@babel/core@7.23.3(supports-color@8.1.1))(react-native@0.81.5(@babel/core@7.23.3(supports-color@8.1.1))(@types/react@19.1.17)(react@19.1.0)(supports-color@8.1.1))(react@19.1.0)(supports-color@8.1.1))(react-native@0.81.5(@babel/core@7.23.3(supports-color@8.1.1))(@types/react@19.1.17)(react@19.1.0)(supports-color@8.1.1))(react@19.1.0)(supports-color@8.1.1)(typescript@5.9.3)
       xml2js: 0.6.0
     transitivePeerDependencies:
@@ -23922,10 +24020,6 @@ snapshots:
   follow-redirects@1.16.0(debug@4.4.1(supports-color@8.1.1)):
     optionalDependencies:
       debug: 4.4.1(supports-color@8.1.1)
-
-  follow-redirects@1.16.0(debug@4.4.3(supports-color@8.1.1)):
-    optionalDependencies:
-      debug: 4.4.3(supports-color@8.1.1)
 
   fontfaceobserver@2.3.0: {}
 
@@ -24392,10 +24486,10 @@ snapshots:
       - kerberos
       - supports-color
 
-  http-proxy-middleware@2.0.9(@types/express@4.17.25)(debug@4.4.3(supports-color@8.1.1)):
+  http-proxy-middleware@2.0.9(@types/express@4.17.25)(debug@4.4.1(supports-color@8.1.1)):
     dependencies:
       '@types/http-proxy': 1.17.17
-      http-proxy: 1.18.1(debug@4.4.3(supports-color@8.1.1))
+      http-proxy: 1.18.1(debug@4.4.1(supports-color@8.1.1))
       is-glob: 4.0.3
       is-plain-obj: 3.0.0
       micromatch: 4.0.8
@@ -24404,10 +24498,10 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  http-proxy@1.18.1(debug@4.4.3(supports-color@8.1.1)):
+  http-proxy@1.18.1(debug@4.4.1(supports-color@8.1.1)):
     dependencies:
       eventemitter3: 4.0.7
-      follow-redirects: 1.16.0(debug@4.4.3(supports-color@8.1.1))
+      follow-redirects: 1.16.0(debug@4.4.1(supports-color@8.1.1))
       requires-port: 1.0.0
     transitivePeerDependencies:
       - debug
@@ -24729,7 +24823,7 @@ snapshots:
 
   istanbul-lib-instrument@5.2.1(supports-color@8.1.1):
     dependencies:
-      '@babel/core': 7.26.10(supports-color@8.1.1)
+      '@babel/core': 7.23.3(supports-color@8.1.1)
       '@babel/parser': 7.29.8
       '@istanbuljs/schema': 0.1.6
       istanbul-lib-coverage: 3.2.2
@@ -24849,10 +24943,10 @@ snapshots:
 
   jest-config@27.5.1(supports-color@8.1.1):
     dependencies:
-      '@babel/core': 7.26.10(supports-color@8.1.1)
+      '@babel/core': 7.23.3(supports-color@8.1.1)
       '@jest/test-sequencer': 27.5.1(supports-color@8.1.1)
       '@jest/types': 27.5.1
-      babel-jest: 27.5.1(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1)
+      babel-jest: 27.5.1(@babel/core@7.23.3(supports-color@8.1.1))(supports-color@8.1.1)
       chalk: 4.1.2
       ci-info: 3.9.0
       deepmerge: 4.3.1
@@ -25143,16 +25237,16 @@ snapshots:
 
   jest-snapshot@27.5.1(supports-color@8.1.1):
     dependencies:
-      '@babel/core': 7.26.10(supports-color@8.1.1)
+      '@babel/core': 7.23.3(supports-color@8.1.1)
       '@babel/generator': 7.29.8
-      '@babel/plugin-syntax-typescript': 7.28.6(@babel/core@7.26.10(supports-color@8.1.1))
+      '@babel/plugin-syntax-typescript': 7.28.6(@babel/core@7.23.3(supports-color@8.1.1))
       '@babel/traverse': 7.29.7(supports-color@8.1.1)
       '@babel/types': 7.29.8
       '@jest/transform': 27.5.1(supports-color@8.1.1)
       '@jest/types': 27.5.1
       '@types/babel__traverse': 7.28.0
       '@types/prettier': 2.7.3
-      babel-preset-current-node-syntax: 1.2.0(@babel/core@7.26.10(supports-color@8.1.1))
+      babel-preset-current-node-syntax: 1.2.0(@babel/core@7.23.3(supports-color@8.1.1))
       chalk: 4.1.2
       expect: 27.5.1
       graceful-fs: 4.2.11
@@ -26530,7 +26624,7 @@ snapshots:
 
   netmask@2.1.1: {}
 
-  next@16.3.3(@babel/core@7.26.10(supports-color@8.1.1))(@playwright/test@1.30.0)(@types/node@26.1.1)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+  next@16.3.3(@babel/core@7.23.3(supports-color@8.1.1))(@playwright/test@1.30.0)(@types/node@26.1.1)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:
       '@next/env': 16.3.3
       '@swc/helpers': 0.5.23
@@ -26539,7 +26633,7 @@ snapshots:
       postcss: 8.5.23
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
-      styled-jsx: 5.1.6(@babel/core@7.26.10(supports-color@8.1.1))(babel-plugin-macros@3.1.0)(react@19.2.4)
+      styled-jsx: 5.1.6(@babel/core@7.23.3(supports-color@8.1.1))(babel-plugin-macros@3.1.0)(react@19.2.4)
     optionalDependencies:
       '@next/swc-darwin-arm64': 16.3.3
       '@next/swc-darwin-x64': 16.3.3
@@ -28095,10 +28189,10 @@ snapshots:
       '@types/react': 19.2.14
     optional: true
 
-  react-scripts@5.0.1(@babel/plugin-syntax-flow@7.29.7(@babel/core@7.26.10(supports-color@8.1.1)))(@babel/plugin-transform-react-jsx@7.29.7(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1))(@types/babel__core@7.20.5)(clean-css@5.3.3)(csso@4.2.0)(debug@4.4.3(supports-color@8.1.1))(esbuild@0.28.1)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.28.1)(eslint@9.26.0(jiti@2.6.1)(supports-color@8.1.1))(supports-color@8.1.1))(eslint@9.26.0(jiti@1.21.7)(supports-color@8.1.1))(react@19.2.4)(supports-color@8.1.1)(type-fest@4.41.0)(typescript@5.9.3)(uglify-js@3.19.3)(yaml@2.9.0):
+  react-scripts@5.0.1(@babel/plugin-syntax-flow@7.29.7(@babel/core@7.26.10(supports-color@8.1.1)))(@babel/plugin-transform-react-jsx@7.29.7(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1))(@types/babel__core@7.20.5)(clean-css@5.3.3)(csso@4.2.0)(debug@4.4.1(supports-color@8.1.1))(esbuild@0.28.1)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.28.1)(eslint@9.26.0(jiti@2.6.1)(supports-color@8.1.1))(supports-color@8.1.1))(eslint@9.26.0(jiti@1.21.7)(supports-color@8.1.1))(react@19.2.4)(supports-color@8.1.1)(type-fest@4.41.0)(typescript@5.9.3)(uglify-js@3.19.3)(yaml@2.9.0):
     dependencies:
       '@babel/core': 7.26.10(supports-color@8.1.1)
-      '@pmmmwh/react-refresh-webpack-plugin': 0.5.17(react-refresh@0.11.0)(type-fest@4.41.0)(webpack-dev-server@4.15.2(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3)))(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))
+      '@pmmmwh/react-refresh-webpack-plugin': 0.5.17(react-refresh@0.11.0)(type-fest@4.41.0)(webpack-dev-server@4.15.2(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3)))(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))
       '@svgr/webpack': 5.5.0(supports-color@8.1.1)
       babel-jest: 27.5.1(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1)
       babel-loader: 8.4.1(@babel/core@7.26.10(supports-color@8.1.1))(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))
@@ -28142,7 +28236,7 @@ snapshots:
       tailwindcss: 3.4.19(yaml@2.9.0)
       terser-webpack-plugin: 5.3.16(esbuild@0.28.1)(uglify-js@3.19.3)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))
       webpack: 5.104.1(esbuild@0.28.1)(uglify-js@3.19.3)
-      webpack-dev-server: 4.15.2(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))
+      webpack-dev-server: 4.15.2(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))
       webpack-manifest-plugin: 4.1.1(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))
       workbox-webpack-plugin: 6.6.0(@types/babel__core@7.20.5)(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))
     optionalDependencies:
@@ -29138,12 +29232,12 @@ snapshots:
     dependencies:
       webpack: 5.104.1(esbuild@0.28.1)(uglify-js@3.19.3)
 
-  styled-jsx@5.1.6(@babel/core@7.26.10(supports-color@8.1.1))(babel-plugin-macros@3.1.0)(react@19.2.4):
+  styled-jsx@5.1.6(@babel/core@7.23.3(supports-color@8.1.1))(babel-plugin-macros@3.1.0)(react@19.2.4):
     dependencies:
       client-only: 0.0.1
       react: 19.2.4
     optionalDependencies:
-      '@babel/core': 7.26.10(supports-color@8.1.1)
+      '@babel/core': 7.23.3(supports-color@8.1.1)
       babel-plugin-macros: 3.1.0
 
   stylehacks@5.1.1(postcss@8.5.6):
@@ -29946,7 +30040,7 @@ snapshots:
       schema-utils: 4.3.3
       webpack: 5.104.1(esbuild@0.28.1)(uglify-js@3.19.3)
 
-  webpack-dev-server@4.15.2(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3)):
+  webpack-dev-server@4.15.2(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3)):
     dependencies:
       '@types/bonjour': 3.5.13
       '@types/connect-history-api-fallback': 1.5.4
@@ -29965,7 +30059,7 @@ snapshots:
       express: 4.22.1(supports-color@8.1.1)
       graceful-fs: 4.2.11
       html-entities: 2.6.0
-      http-proxy-middleware: 2.0.9(@types/express@4.17.25)(debug@4.4.3(supports-color@8.1.1))
+      http-proxy-middleware: 2.0.9(@types/express@4.17.25)(debug@4.4.1(supports-color@8.1.1))
       ipaddr.js: 2.3.0
       launch-editor: 2.12.0
       open: 8.4.2
