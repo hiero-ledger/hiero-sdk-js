@@ -89,7 +89,7 @@
         "eslint-plugin-jsdoc": "63.0.1",
         "eslint-plugin-n": "18.0.1",
         "@vitest/eslint-plugin": "1.6.7",
-        "geckodriver": "6.0.2",
+        "geckodriver": "7.0.0",
         "globals": "17.3.0",
         "mocha": "11.7.5",
         "npm-run-all": "4.1.5",
