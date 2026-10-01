@@ -536,8 +536,8 @@ importers:
         specifier: 19.2.14
         version: 19.2.14
       react-native-dotenv:
-        specifier: ^4.1.1
-        version: 4.1.1
+        specifier: ^5.0.0
+        version: 5.0.0
       typescript:
         specifier: ^5.7.2
         version: 5.9.3
@@ -6819,10 +6819,6 @@ packages:
     resolution: {integrity: sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==}
     engines: {node: '>=10'}
 
-  dotenv@17.4.2:
-    resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
-    engines: {node: '>=12'}
-
   dotenv@18.0.4:
     resolution: {integrity: sha512-jGt9uI5BIxpVO15kvy+iEFqNAwxYClKWnkptLjSNPnFLC003Imd0ofr3aEVsbpHdSBdSsbcApNIlz4nbyGMwdA==}
     engines: {node: '>=12'}
@@ -10932,8 +10928,8 @@ packages:
   react-is@19.2.7:
     resolution: {integrity: sha512-kZFnouyVv7eP/Phmrlo9FK+zcAdriZJvzxXHF1Sl1P377WSGe2G/JxVolhTrB/jeV47lKImhNUsijjHAAbcl/A==}
 
-  react-native-dotenv@4.1.1:
-    resolution: {integrity: sha512-Y7aMj6uFa/KJO7AFbUYGvr1YXYlFrVIC0HVhB+mFw2yGgtDrWvnfrpXP7LHX4Zh+xOwsnlZTHOoNrhv/uE9AcA==}
+  react-native-dotenv@5.0.0:
+    resolution: {integrity: sha512-y63fXkOvLSDNSEG0ylOZhYvQi5oyY/vHRU+z5iATABbkyifwoUebG88LyAteiaiVsepnFaAwycm2/bytGJ2uUw==}
 
   react-native-drawer-layout@4.2.8:
     resolution: {integrity: sha512-IswXoXEaQAnzUGo7tJyMPHP0qyUc/7zufpG+kpiStYegHpKQBBnlQoRdXkL1HbCa2o1ROWDhCSJ8XS0V4LNcjQ==}
@@ -21779,8 +21775,6 @@ snapshots:
 
   dotenv@10.0.0: {}
 
-  dotenv@17.4.2: {}
-
   dotenv@18.0.4: {}
 
   dpdm@4.2.0:
@@ -27644,9 +27638,9 @@ snapshots:
 
   react-is@19.2.7: {}
 
-  react-native-dotenv@4.1.1:
+  react-native-dotenv@5.0.0:
     dependencies:
-      dotenv: 17.4.2
+      dotenv: 18.0.4
 
   react-native-drawer-layout@4.2.8(8222c99df3e32aae4fbae99c40b1b51e):
     dependencies:
