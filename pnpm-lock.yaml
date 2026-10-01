@@ -172,8 +172,8 @@ importers:
         specifier: 3.8.3
         version: 3.8.3(supports-color@8.1.1)
       dotenv:
-        specifier: 17.2.3
-        version: 17.2.3
+        specifier: 18.0.4
+        version: 18.0.4
       dpdm:
         specifier: 4.2.0
         version: 4.2.0
@@ -262,8 +262,8 @@ importers:
         specifier: ^1.20.0
         version: 1.20.0(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1)
       dotenv:
-        specifier: ^17.2.3
-        version: 17.2.3
+        specifier: ^18.0.4
+        version: 18.0.4
       ethers:
         specifier: ^6.16.0
         version: 6.16.0
@@ -596,8 +596,8 @@ importers:
         specifier: ^0.2.0
         version: 0.2.0
       dotenv:
-        specifier: ^17.2.3
-        version: 17.2.3
+        specifier: ^18.0.4
+        version: 18.0.4
       eslint:
         specifier: ~10.0.0
         version: 10.0.3(jiti@2.6.1)(supports-color@8.1.1)
@@ -6902,13 +6902,14 @@ packages:
     resolution: {integrity: sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==}
     engines: {node: '>=10'}
 
-  dotenv@17.2.3:
-    resolution: {integrity: sha512-JVUnt+DUIzu87TABbhPmNfVdBDt18BLOWjMUFJMSi/Qqg7NTYtabbvSNJGOJ7afbRuv9D/lngizHtP7QyLQ+9w==}
-    engines: {node: '>=12'}
-
   dotenv@17.4.2:
     resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
     engines: {node: '>=12'}
+
+  dotenv@18.0.4:
+    resolution: {integrity: sha512-jGt9uI5BIxpVO15kvy+iEFqNAwxYClKWnkptLjSNPnFLC003Imd0ofr3aEVsbpHdSBdSsbcApNIlz4nbyGMwdA==}
+    engines: {node: '>=12'}
+    hasBin: true
 
   dpdm@4.2.0:
     resolution: {integrity: sha512-Vq862fZ9UE66rlr2VcMhU8ZstTH3ItqmniLSCtAeg6T2AYeB2oD3Z6lGjiFDjyUvxLbfLyBBNWagCLMehpmo5g==}
@@ -22121,9 +22122,9 @@ snapshots:
 
   dotenv@10.0.0: {}
 
-  dotenv@17.2.3: {}
-
   dotenv@17.4.2: {}
+
+  dotenv@18.0.4: {}
 
   dpdm@4.2.0:
     dependencies:
