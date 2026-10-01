@@ -890,8 +890,8 @@ importers:
         specifier: 2.0.1
         version: 2.0.1(protobufjs@8.2.0)
       replace-in-file:
-        specifier: 8.3.0
-        version: 8.3.0
+        specifier: 9.0.0
+        version: 9.0.0
       semver:
         specifier: 7.3.8
         version: 7.3.8
@@ -11266,9 +11266,9 @@ packages:
   renderkid@3.0.0:
     resolution: {integrity: sha512-q/7VIQA8lmM1hF+jn+sFSPWGlMkSAeNYcPLmDQx2zzuiDfaLrOmumR8iaUKlenFgh0XRPIUeSPlH3A+AW3Z5pg==}
 
-  replace-in-file@8.3.0:
-    resolution: {integrity: sha512-4VhddQiMCPIuypiwHDTM+XHjZoVu9h7ngBbSCnwGRcwdHwxltjt/m//Ep3GDwqaOx1fDSrKFQ+n7uo4uVcEz9Q==}
-    engines: {node: '>=18'}
+  replace-in-file@9.0.0:
+    resolution: {integrity: sha512-ACFXyc5ninRlHSVw8ZRht0Fd/BKoje8mpbIDZjbOU/LCaaoZzD9uo3zDQNkULDhcrvhXyL38FCcF1D2SiHM6Vg==}
+    engines: {node: '>=22.12.0'}
     hasBin: true
 
   require-directory@2.1.1:
@@ -13106,6 +13106,10 @@ packages:
 
   yargs@18.0.0:
     resolution: {integrity: sha512-4UEqdc2RYGHZc7Doyqkrqiln3p9X2DZVxaGbwhn2pi7MrRagKaOcIKe8L3OxYcbhXLgLFUS3zAYuQjKBQgmuNg==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=23}
+
+  yargs@18.2.0:
+    resolution: {integrity: sha512-9OpKOLeaoNFecEp7P6iYbzze/5CqWoH7N3SMs/6y1XF4nMvFMspEGZzJ6uFi9MmQwXhyzqYoSEKO3tvA3Z/o2w==}
     engines: {node: ^20.19.0 || ^22.12.0 || >=23}
 
   yocto-queue@0.1.0:
@@ -28578,11 +28582,11 @@ snapshots:
       lodash: 4.17.21
       strip-ansi: 6.0.1
 
-  replace-in-file@8.3.0:
+  replace-in-file@9.0.0:
     dependencies:
-      chalk: 5.6.2
-      glob: 10.5.0
-      yargs: 17.7.2
+      chalk: 6.0.0
+      glob: 13.0.6
+      yargs: 18.2.0
 
   require-directory@2.1.1: {}
 
@@ -30697,6 +30701,15 @@ snapshots:
       escalade: 3.2.0
       get-caller-file: 2.0.5
       string-width: 7.2.0
+      y18n: 5.0.8
+      yargs-parser: 22.0.0
+
+  yargs@18.2.0:
+    dependencies:
+      cliui: 9.0.1
+      escalade: 3.2.0
+      get-caller-file: 2.0.5
+      string-width: 8.2.1
       y18n: 5.0.8
       yargs-parser: 22.0.0
 
