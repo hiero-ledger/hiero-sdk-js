@@ -81,7 +81,7 @@
     ],
     "dependencies": {
         "ethers": "6.16.0",
-        "@grpc/grpc-js": "1.12.7",
+        "@grpc/grpc-js": "1.13.6",
         "@hiero-ledger/cryptography": "workspace:*",
         "@hiero-ledger/proto": "workspace:*",
         "ansi-regex": "6.2.2",
