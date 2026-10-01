@@ -166,8 +166,8 @@ importers:
         specifier: 12.0.0
         version: 12.0.0
       chromedriver:
-        specifier: 151.0.2
-        version: 151.0.2(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1)
+        specifier: 154.0.0
+        version: 154.0.0(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1)
       codecov:
         specifier: 3.8.3
         version: 3.8.3(supports-color@8.1.1)
@@ -733,8 +733,8 @@ importers:
         specifier: 12.0.0
         version: 12.0.0
       chromedriver:
-        specifier: 151.0.2
-        version: 151.0.2(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1)
+        specifier: 154.0.0
+        version: 154.0.0(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1)
       codecov:
         specifier: 3.8.3
         version: 3.8.3(supports-color@8.1.1)
@@ -5423,9 +5423,9 @@ packages:
     resolution: {integrity: sha512-OXwN5b9pCUXNQHJpwwD2qP40byEmSgzj8B4ydSN0uMNYWiFmJ6x6KwUllMmfk8Rwu/HJDFR7U8ubsWBoN0Xp0A==}
     engines: {node: '>=8.9'}
 
-  adm-zip@0.5.18:
-    resolution: {integrity: sha512-ufJnssQGbxzLNS1Ho9bCtX4rQKCCvoVuDLHoJyc3F9dOGDB4BkWs2Ci0kv53lqocAEQ/Cbi+I2XCsNYGqVYqng==}
-    engines: {node: '>=12.0'}
+  adm-zip@0.6.1:
+    resolution: {integrity: sha512-Xwrja8nx9e5o2N1my4DsKCeKpdrnACyr1wtbPxBDgGzKzKyE9kRtBFA8mWldI+RVlD7CBZNWY/wQ2+ydwOR6kQ==}
+    engines: {node: '>=14.0'}
 
   aes-js@4.0.0-beta.5:
     resolution: {integrity: sha512-G965FqalsNyrPqgEGON7nIx1e/OVENSgiEIzyC63haUMuvNnwIgIjMs52hlTCKhkBny7A2ORNlfY9Zu+jmGk1Q==}
@@ -6167,8 +6167,8 @@ packages:
     resolution: {integrity: sha512-rNjApaLzuwaOTjCiT8lSDdGN1APCiqkChLMJxJPWLunPAt5fy8xgU9/jNOchV84wfIxrA0lRQB7oCT8jrn/wrQ==}
     engines: {node: '>=6.0'}
 
-  chromedriver@151.0.2:
-    resolution: {integrity: sha512-p2NI0qrBSpoksa9S4lxqpML28I1U1oMtNPyvbjiMlBB+JOn9qRQC/cuiAWPf36lAdsYgrqhQczb12UH2he04MQ==}
+  chromedriver@154.0.0:
+    resolution: {integrity: sha512-kn+ENZ2lEPAmeDTNNBbVw6Xt4KAr6M4EFcgeV4lUREgJWHVZBu4fFc+OFivtuf5Q9jM/qSmAcQ3MdWtdOE6mVA==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -20058,7 +20058,7 @@ snapshots:
       loader-utils: 2.0.4
       regex-parser: 2.3.1
 
-  adm-zip@0.5.18: {}
+  adm-zip@0.6.1: {}
 
   aes-js@4.0.0-beta.5: {}
 
@@ -21118,10 +21118,10 @@ snapshots:
 
   chrome-trace-event@1.0.4: {}
 
-  chromedriver@151.0.2(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1):
+  chromedriver@154.0.0(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1):
     dependencies:
       '@testim/chrome-version': 1.1.4
-      adm-zip: 0.5.18
+      adm-zip: 0.6.1
       axios: 1.20.0(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1)
       compare-versions: 6.1.1
       proxy-agent: 8.0.2(supports-color@8.1.1)
