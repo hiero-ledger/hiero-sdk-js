@@ -1,8 +1,11 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import MirrorNodeContractQuery from "./MirrorNodeContractQuery.js";
 import * as hex from "../encoding/hex.js";
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  */
 
 /**
@@ -35,12 +38,16 @@ export default class MirrorNodeContractEstimateQuery extends MirrorNodeContractQ
 
     /**
      * @param {Client} client
+     * @param {number} [requestTimeout] - total timeout for the whole
+     * operation in milliseconds, every retry included; defaults to the
+     * client's mirror node HTTP retry policy
      * @returns {Promise<number>}
      */
-    async execute(client) {
+    async execute(client, requestTimeout) {
         const mirrorNodeRequest = await this.performMirrorNodeRequest(
             client,
             this.JSONPayload,
+            requestTimeout,
         );
 
         return Number(mirrorNodeRequest.result);

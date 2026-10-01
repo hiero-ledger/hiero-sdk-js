@@ -26,7 +26,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
@@ -50,7 +50,7 @@ jobs:
           node-version: "22"
 
       - name: Install PNPM
-        uses: step-security/action-setup@7734f5522f614a4cf2820ad19aa26717c7abfd96 # v6.0.9
+        uses: step-security/action-setup@c9d80a280aaf584da8c913342a763a6de6452c7a # v6.0.10
         with:
           version: 9.15.5
 
@@ -84,7 +84,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
@@ -108,7 +108,7 @@ jobs:
           node-version: "22"
 
       - name: Install PNPM
-        uses: step-security/action-setup@7734f5522f614a4cf2820ad19aa26717c7abfd96 # v6.0.9
+        uses: step-security/action-setup@c9d80a280aaf584da8c913342a763a6de6452c7a # v6.0.10
         with:
           version: 9.15.5
 

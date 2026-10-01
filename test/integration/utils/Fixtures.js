@@ -1,16 +1,85 @@
+import Long from "long";
 import {
     AccountCreateTransaction,
     AccountDeleteTransaction,
+    AccountInfoQuery,
+    ContractInfoQuery,
     Hbar,
     PrivateKey,
     TokenCreateTransaction,
     TokenSupplyType,
     TokenType,
 } from "../../../src/exports.js";
+import TokenBalanceMap from "../../../src/account/TokenBalanceMap.js";
 /**
  * @typedef {import("../../../src/token/TokenId.js") } TokenId
  * @typedef {import("../../../src/client/Client.js").default<ChannelT, MirrorChannelT>} Client
+ * @typedef {import("../../../src/account/AccountId.js").default} AccountId
+ * @typedef {import("../../../src/contract/ContractId.js").default} ContractId
  */
+
+/**
+ * @typedef {object} Balance
+ * @property {Hbar} hbars
+ * @property {TokenBalanceMap} tokens
+ */
+
+/**
+ * Read an account's HBAR and token balances.
+ *
+ * Replaces the removed `AccountBalanceQuery`. This deliberately uses
+ * `AccountInfoQuery` rather than `MirrorNodeAccountBalanceQuery`: the mirror
+ * node ingests consensus state asynchronously and lags by a few seconds, so
+ * asserting a balance immediately after a transaction against it would be
+ * flaky. `AccountInfoQuery` is served by the consensus node and is
+ * immediately consistent.
+ *
+ * The returned shape mirrors the old `AccountBalance` (`hbars` plus a
+ * `tokens` map) so assertions read the same as before.
+ *
+ * @param {Client} client
+ * @param {AccountId | string} accountId
+ * @returns {Promise<Balance>}
+ */
+export const getAccountBalance = async (client, accountId) => {
+    const info = await new AccountInfoQuery()
+        .setAccountId(accountId)
+        .execute(client);
+
+    return { hbars: info.balance, tokens: toTokenBalanceMap(info) };
+};
+
+/**
+ * The contract equivalent of {@link getAccountBalance}.
+ *
+ * @param {Client} client
+ * @param {ContractId | string} contractId
+ * @returns {Promise<Balance>}
+ */
+export const getContractBalance = async (client, contractId) => {
+    const info = await new ContractInfoQuery()
+        .setContractId(contractId)
+        .execute(client);
+
+    return { hbars: info.balance, tokens: toTokenBalanceMap(info) };
+};
+
+/**
+ * Project the token relationships of an account or contract onto the
+ * `tokenId -> balance` map that `AccountBalance.tokens` used to expose.
+ *
+ * @param {{tokenRelationships: ?import("../../../src/account/TokenRelationshipMap.js").default}} info
+ * @returns {TokenBalanceMap}
+ */
+const toTokenBalanceMap = (info) => {
+    const tokens = new TokenBalanceMap();
+
+    for (const [tokenId, relationship] of info.tokenRelationships ?? []) {
+        tokens._set(tokenId, relationship.balance ?? Long.ZERO);
+    }
+
+    return tokens;
+};
 
 /**
  * @param {Client} client

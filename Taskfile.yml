@@ -89,6 +89,7 @@ tasks:
 
     build:
         cmds:
+            - rm -rf lib
             - task: build:prep
             - task: build:compile
 
@@ -110,6 +111,7 @@ tasks:
     "build:compile":
         cmds:
             - npx babel src -d lib --out-file-extension .cjs
+            - node ./scripts/generate-cts-declarations.js lib
             - npx rollup -c
 
     clean:

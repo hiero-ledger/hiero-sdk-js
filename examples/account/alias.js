@@ -5,12 +5,12 @@ import {
     PublicKey,
     Hbar,
     AccountId,
-    AccountBalanceQuery,
     AccountInfoQuery,
     TransferTransaction,
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
+import { clientForName } from "../client.js";
 
 dotenv.config();
 
@@ -28,7 +28,9 @@ async function main() {
         );
     }
 
-    const provider = new LocalProvider();
+    const provider = LocalProvider.fromClient(
+        clientForName(process.env.HEDERA_NETWORK),
+    );
 
     const wallet = new Wallet(
         process.env.OPERATOR_ID,
@@ -103,17 +105,17 @@ async function main() {
         const response = await transaction.executeWithSigner(wallet);
         await response.getReceiptWithSigner(wallet);
 
-        const balance = await new AccountBalanceQuery()
-            .setNodeAccountIds([response.nodeId])
-            .setAccountId(aliasAccountId)
-            .executeWithSigner(wallet);
-
-        console.log(`Balances of the new account: ${balance.toString()}`);
-
         const info = await new AccountInfoQuery()
             .setNodeAccountIds([response.nodeId])
             .setAccountId(aliasAccountId)
             .executeWithSigner(wallet);
+
+        // `AccountBalanceQuery` has been removed from the consensus node. A
+        // signer cannot drive `MirrorNodeAccountBalanceQuery` (it is a plain
+        // REST call, not an `Executable`), so the balance is read from the
+        // account info here. See `account/get-balance-mirror-node.js` for the
+        // mirror node replacement.
+        console.log(`Balance of the new account: ${info.balance.toString()}`);
 
         console.log(`Info about the new account: ${info.toString()}`);
 

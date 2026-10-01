@@ -18,6 +18,7 @@ import CustomFixedFee from "../token/CustomFixedFee.js";
  * @typedef {import("@hiero-ledger/proto").proto.TransactionBody} HieroProto.proto.TransactionBody
  * @typedef {import("@hiero-ledger/proto").proto.ITransactionBody} HieroProto.proto.ITransactionBody
  * @typedef {import("@hiero-ledger/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
+ * @typedef {import("long").default} Long
  */
 
 /**

@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
@@ -48,7 +48,7 @@ jobs:
           version: 3.35.1
 
       - name: Install PNPM
-        uses: step-security/action-setup@7734f5522f614a4cf2820ad19aa26717c7abfd96 # v6.0.9
+        uses: step-security/action-setup@c9d80a280aaf584da8c913342a763a6de6452c7a # v6.0.10
         with:
           version: 9.15.5
 
@@ -70,7 +70,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
@@ -85,7 +85,7 @@ jobs:
           version: 3.35.1
 
       - name: Install PNPM
-        uses: step-security/action-setup@7734f5522f614a4cf2820ad19aa26717c7abfd96 # v6.0.9
+        uses: step-security/action-setup@c9d80a280aaf584da8c913342a763a6de6452c7a # v6.0.10
         with:
           version: 9.15.5
 
@@ -109,7 +109,8 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@bdae0a37df52190b6b3801c1c981c0ed37f4616e # 0.23.0
         with:
           installMirrorNode: true
-          soloVersion: v0.69.1
+          soloVersion: v0.91.0
+          nodeVersion: ${{ matrix.node }}
           installBlockNode: true
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
@@ -161,7 +162,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
@@ -176,7 +177,7 @@ jobs:
           version: 3.35.1
 
       - name: Install PNPM
-        uses: step-security/action-setup@7734f5522f614a4cf2820ad19aa26717c7abfd96 # v6.0.9
+        uses: step-security/action-setup@c9d80a280aaf584da8c913342a763a6de6452c7a # v6.0.10
         with:
           version: 9.15.5
 
@@ -200,7 +201,8 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@bdae0a37df52190b6b3801c1c981c0ed37f4616e # 0.23.0
         with:
           installMirrorNode: true
-          soloVersion: v0.69.1
+          soloVersion: v0.91.0
+          nodeVersion: ${{ matrix.node }}
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
           haproxyPort: 50211
@@ -238,7 +240,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
@@ -260,7 +262,7 @@ jobs:
           path: .
 
       - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: >-
@@ -277,12 +279,13 @@ jobs:
   examples:
     name: Run examples using Node ${{ matrix.node }}
     runs-on: hiero-client-sdk-linux-medium
+    timeout-minutes: 60
     strategy:
       matrix:
         node: [ "22" ]
     steps:
       -  name: Harden Runner
-         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+         uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
          with:
           egress-policy: audit
 
@@ -297,7 +300,7 @@ jobs:
           version: 3.35.1
 
       - name: Install PNPM
-        uses: step-security/action-setup@7734f5522f614a4cf2820ad19aa26717c7abfd96 # v6.0.9
+        uses: step-security/action-setup@c9d80a280aaf584da8c913342a763a6de6452c7a # v6.0.10
         with:
           version: 9.15.5
 
@@ -315,7 +318,8 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@bdae0a37df52190b6b3801c1c981c0ed37f4616e # 0.23.0
         with:
           installMirrorNode: true
-          soloVersion: v0.69.1
+          soloVersion: v0.91.0
+          nodeVersion: ${{ matrix.node }}
           installBlockNode: true
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
@@ -338,3 +342,43 @@ jobs:
 
       - name: Run all examples
         run: task run:examples
+
+      - name: Run excluded balance examples
+        run: |
+          cd examples
+          node batch-tx.js
+
+          cd simple_rest_signature_provider
+          server_log="$(mktemp)"
+          AUTO_APPROVE=true node src/server.js > "$server_log" 2>&1 &
+          server_pid=$!
+          cleanup() {
+            kill "$server_pid" 2>/dev/null || true
+            wait "$server_pid" 2>/dev/null || true
+            rm -f "$server_log"
+          }
+          trap cleanup EXIT
+
+          for _ in {1..30}; do
+            if curl --silent --output /dev/null http://127.0.0.1:3000/; then
+              break
+            fi
+            sleep 1
+          done
+
+          if ! kill -0 "$server_pid" 2>/dev/null; then
+            cat "$server_log"
+            exit 1
+          fi
+
+          node src/client.js || {
+            cat "$server_log"
+            exit 1
+          }
+
+      - name: Type-check excluded React Native examples
+        run: |
+          cd examples/react-native-example
+          ./node_modules/.bin/tsc --noEmit
+          cd ../react-native-example-legacy
+          ./node_modules/.bin/tsc --noEmit

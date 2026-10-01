@@ -1,6 +1,6 @@
 {
     "name": "@hiero-ledger/sdk",
-    "version": "2.86.2",
+    "version": "2.89.1",
     "description": "Hiero SDK",
     "types": "./lib/index.d.ts",
     "main": "./lib/index.cjs",
@@ -30,14 +30,25 @@
     "exports": {
         "./package.json": "./package.json",
         ".": {
-            "types": "./lib/index.d.ts",
             "react-native": "./lib/native.js",
             "browser": {
-                "import": "./lib/browser.js",
-                "require": "./lib/browser.cjs"
+                "import": {
+                    "types": "./lib/browser.d.ts",
+                    "default": "./lib/browser.js"
+                },
+                "require": {
+                    "types": "./lib/browser.d.cts",
+                    "default": "./lib/browser.cjs"
+                }
             },
-            "import": "./lib/index.js",
-            "require": "./lib/index.cjs"
+            "import": {
+                "types": "./lib/index.d.ts",
+                "default": "./lib/index.js"
+            },
+            "require": {
+                "types": "./lib/index.d.cts",
+                "default": "./lib/index.cjs"
+            }
         }
     },
     "license": "Apache-2.0",
@@ -111,7 +122,7 @@
         "@types/utf8": "3.0.1",
         "@typescript-eslint/eslint-plugin": "5.48.2",
         "@typescript-eslint/parser": "8.64.0",
-        "@vitest/browser": "4.1.10",
+        "@vitest/browser": "5.0.2",
         "@vitest/browser-playwright": "4.0.18",
         "@vitest/coverage-istanbul": "4.0.18",
         "@vitest/coverage-v8": "4.0.18",
@@ -130,7 +141,7 @@
         "eslint-plugin-jsdoc": "63.0.1",
         "eslint-plugin-n": "18.0.1",
         "@vitest/eslint-plugin": "1.6.7",
-        "geckodriver": "6.0.1",
+        "geckodriver": "7.0.0",
         "jsdom": "30.0.1",
         "msw": "2.10.2",
         "npm-run-all": "4.1.5",

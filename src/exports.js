@@ -18,11 +18,15 @@ export { default as Mnemonic } from "./Mnemonic.js";
 export { default as TokenAirdropTransaction } from "./token/TokenAirdropTransaction.js";
 export { default as TokenClaimAirdropTransaction } from "./token/TokenClaimAirdropTransaction.js";
 export { default as TokenCancelAirdropTransaction } from "./token/TokenCancelAirdropTransaction.js";
- 
+
 export { default as AccountAllowanceApproveTransaction } from "./account/AccountAllowanceApproveTransaction.js";
 export { default as AccountAllowanceDeleteTransaction } from "./account/AccountAllowanceDeleteTransaction.js";
 export { default as AccountBalance } from "./account/AccountBalance.js";
 export { default as AccountBalanceQuery } from "./account/AccountBalanceQuery.js";
+export { default as MirrorNodeAccountBalance } from "./account/MirrorNodeAccountBalance.js";
+export { default as MirrorNodeAccountBalanceQuery } from "./query/MirrorNodeAccountBalanceQuery.js";
+export { default as MirrorNodeTokenBalance } from "./account/MirrorNodeTokenBalance.js";
+export { default as MirrorNodeTokenBalanceQuery } from "./query/MirrorNodeTokenBalanceQuery.js";
 export { default as AccountCreateTransaction } from "./account/AccountCreateTransaction.js";
 export { default as AccountDeleteTransaction } from "./account/AccountDeleteTransaction.js";
 export { default as AccountId } from "./account/AccountId.js";
@@ -61,7 +65,7 @@ export { default as EthereumTransactionDataEip7702 } from "./EthereumTransaction
 export { default as EthereumTransactionData } from "./EthereumTransactionData.js";
 export { default as AccessListItem } from "./AccessListItem.js";
 export { default as Authorization } from "./Authorization.js";
- 
+
 export { default as EvmAddress } from "./EvmAddress.js";
 export { default as ExchangeRate } from "./ExchangeRate.js";
 export { default as ExchangeRates } from "./ExchangeRates.js";
@@ -101,9 +105,7 @@ export { default as FreezeTransaction } from "./system/FreezeTransaction.js";
 export { default as Hbar } from "./Hbar.js";
 export { default as HbarAllowance } from "./account/HbarAllowance.js";
 export { default as HbarUnit } from "./HbarUnit.js";
- 
- 
- 
+
 export { default as MaxQueryPaymentExceeded } from "./MaxQueryPaymentExceeded.js";
 export { default as MirrorNodeContractCallQuery } from "./query/MirrorNodeContractCallQuery.js";
 export { default as MirrorNodeContractEstimateQuery } from "./query/MirrorNodeContractEstimateQuery.js";
@@ -135,8 +137,8 @@ export { default as Signer } from "./Signer.js";
 export { default as SignerSignature } from "./SignerSignature.js";
 export { default as Status } from "./Status.js";
 export { default as SubscriptionHandle } from "./topic/SubscriptionHandle.js";
- 
- 
+export { default as SystemDeleteTransaction } from "./system/SystemDeleteTransaction.js";
+export { default as SystemUndeleteTransaction } from "./system/SystemUndeleteTransaction.js";
 export { default as Timestamp } from "./Timestamp.js";
 export { default as TokenAllowance } from "./account/TokenAllowance.js";
 export { default as TokenAssociateTransaction } from "./token/TokenAssociateTransaction.js";
@@ -195,6 +197,19 @@ export { default as TokenKeyValidation } from "./token/TokenKeyValidation.js";
 
 export { default as StatusError } from "./StatusError.js";
 export { default as MaxAttemptsOrTimeoutError } from "./MaxAttemptsOrTimeoutError.js";
+export { default as MirrorNodeStatusError } from "./MirrorNodeStatusError.js";
+export { default as HttpMethod } from "./http/HttpMethod.js";
+export { default as HttpRequest } from "./http/HttpRequest.js";
+export { default as HttpResponse } from "./http/HttpResponse.js";
+export { default as HttpTransport } from "./http/HttpTransport.js";
+export { default as HttpTransportConfiguration } from "./http/HttpTransportConfiguration.js";
+export {
+    default as HttpTransportError,
+    HttpTransportErrorCode,
+} from "./http/HttpTransportError.js";
+export { default as FetchHttpTransport } from "./http/FetchHttpTransport.js";
+export { default as MirrorNodeHttpRetryPolicy } from "./mirror_node/MirrorNodeHttpRetryPolicy.js";
+export { default as MirrorNodeHttpConfig } from "./mirror_node/MirrorNodeHttpConfig.js";
 export { default as PrecheckStatusError } from "./PrecheckStatusError.js";
 export { default as ReceiptStatusError } from "./ReceiptStatusError.js";
 export { default as LedgerId } from "./LedgerId.js";

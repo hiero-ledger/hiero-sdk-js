@@ -1,6 +1,5 @@
 import {
     AccountAllowanceApproveTransaction,
-    AccountBalanceQuery,
     AccountUpdateTransaction,
     NftId,
     AccountInfoQuery,
@@ -15,6 +14,7 @@ import {
     createAccount,
     createFungibleToken,
     createNonFungibleToken,
+    getAccountBalance,
 } from "./utils/Fixtures.js";
 
 describe("TokenAssociate", function () {
@@ -41,9 +41,7 @@ describe("TokenAssociate", function () {
             ).execute(env.client)
         ).getReceipt(env.client);
 
-        const balances = await new AccountBalanceQuery()
-            .setAccountId(accountId)
-            .execute(env.client);
+        const balances = await getAccountBalance(env.client, accountId);
 
         expect(balances.tokens.get(token).toInt()).to.be.equal(0);
 
@@ -272,9 +270,10 @@ describe("TokenAssociate", function () {
 
                 await sendTokenToReceiverTx.getReceipt(env.client);
 
-                const tokenBalance = await new AccountBalanceQuery()
-                    .setAccountId(receiverId)
-                    .execute(env.client);
+                const tokenBalance = await getAccountBalance(
+                    env.client,
+                    receiverId,
+                );
 
                 expect(tokenBalance.tokens.get(tokenId).toInt()).to.be.equal(
                     TRANSFER_AMOUNT,
@@ -316,9 +315,10 @@ describe("TokenAssociate", function () {
 
                 await sendTokenToReceiverTx.getReceipt(env.client);
 
-                const tokenBalance = await new AccountBalanceQuery()
-                    .setAccountId(receiverId)
-                    .execute(env.client);
+                const tokenBalance = await getAccountBalance(
+                    env.client,
+                    receiverId,
+                );
 
                 expect(tokenBalance.tokens.get(tokenId).toInt()).to.be.equal(1);
             });
@@ -376,15 +376,11 @@ describe("TokenAssociate", function () {
                 await tokenTransferResponse2.getReceipt(env.client);
 
                 const newTokenBalance = (
-                    await new AccountBalanceQuery()
-                        .setAccountId(receiverId)
-                        .execute(env.client)
+                    await getAccountBalance(env.client, receiverId)
                 ).tokens.get(tokenId1);
 
                 const newTokenBalance2 = (
-                    await new AccountBalanceQuery()
-                        .setAccountId(receiverId)
-                        .execute(env.client)
+                    await getAccountBalance(env.client, receiverId)
                 ).tokens.get(tokenId2);
 
                 expect(newTokenBalance.toInt()).to.equal(TRANSFER_AMOUNT);
@@ -441,15 +437,11 @@ describe("TokenAssociate", function () {
                 await tokenTransferResponse2.getReceipt(env.client);
 
                 const newTokenBalance = (
-                    await new AccountBalanceQuery()
-                        .setAccountId(receiverId)
-                        .execute(env.client)
+                    await getAccountBalance(env.client, receiverId)
                 ).tokens.get(tokenId1);
 
                 const newTokenBalance2 = (
-                    await new AccountBalanceQuery()
-                        .setAccountId(receiverId)
-                        .execute(env.client)
+                    await getAccountBalance(env.client, receiverId)
                 ).tokens.get(tokenId2);
 
                 expect(newTokenBalance.toInt()).to.equal(1);
@@ -510,17 +502,20 @@ describe("TokenAssociate", function () {
                     await tokenTransferApprovedSupply.execute(env.client)
                 ).getReceipt(env.client);
 
-                const tokenBalanceReceiver = await new AccountBalanceQuery()
-                    .setAccountId(receiverId)
-                    .execute(env.client);
+                const tokenBalanceReceiver = await getAccountBalance(
+                    env.client,
+                    receiverId,
+                );
 
-                const tokenBalanceSpender = await new AccountBalanceQuery()
-                    .setAccountId(spenderAccountId)
-                    .execute(env.client);
+                const tokenBalanceSpender = await getAccountBalance(
+                    env.client,
+                    spenderAccountId,
+                );
 
-                const tokenBalanceTreasury = await new AccountBalanceQuery()
-                    .setAccountId(env.operatorId)
-                    .execute(env.client);
+                const tokenBalanceTreasury = await getAccountBalance(
+                    env.client,
+                    env.operatorId,
+                );
 
                 expect(
                     tokenBalanceReceiver.tokens.get(tokenId1).toInt(),
@@ -586,17 +581,20 @@ describe("TokenAssociate", function () {
                     await nftTransferToReceiver.execute(env.client)
                 ).getReceipt(env.client);
 
-                const tokenBalanceReceiver = await new AccountBalanceQuery()
-                    .setAccountId(receiverId)
-                    .execute(env.client);
+                const tokenBalanceReceiver = await getAccountBalance(
+                    env.client,
+                    receiverId,
+                );
 
-                const tokenBalanceSpender = await new AccountBalanceQuery()
-                    .setAccountId(spenderAccountId)
-                    .execute(env.client);
+                const tokenBalanceSpender = await getAccountBalance(
+                    env.client,
+                    spenderAccountId,
+                );
 
-                const tokenBalanceTreasury = await new AccountBalanceQuery()
-                    .setAccountId(env.operatorId)
-                    .execute(env.client);
+                const tokenBalanceTreasury = await getAccountBalance(
+                    env.client,
+                    env.operatorId,
+                );
 
                 expect(
                     tokenBalanceReceiver.tokens.get(tokenId).toInt(),
@@ -644,9 +642,7 @@ describe("TokenAssociate", function () {
                 await tokenTransferResponse.getReceipt(env.client);
 
                 const receiverBalance = (
-                    await new AccountBalanceQuery()
-                        .setAccountId(receiverAccountId)
-                        .execute(env.client)
+                    await getAccountBalance(env.client, receiverAccountId)
                 ).tokens
                     .get(tokenId)
                     .toInt();

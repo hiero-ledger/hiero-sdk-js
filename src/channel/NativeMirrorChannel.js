@@ -149,9 +149,7 @@ export default class NativeMirrorChannel extends MirrorChannel {
                         this._requests.delete(xhr);
                         xhr.abort();
                         error(
-                            err instanceof Error
-                                ? err
-                                : new Error(String(err)),
+                            err instanceof Error ? err : new Error(String(err)),
                         );
                     }
                 }

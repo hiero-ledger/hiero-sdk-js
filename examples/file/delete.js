@@ -1,5 +1,4 @@
 import {
-    Client,
     PrivateKey,
     FileCreateTransaction,
     FileDeleteTransaction,
@@ -9,6 +8,7 @@ import {
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
+import { clientForName } from "../client.js";
 
 dotenv.config();
 
@@ -27,7 +27,7 @@ async function main() {
         );
     }
 
-    const client = Client.forName(process.env.HEDERA_NETWORK).setOperator(
+    const client = clientForName(process.env.HEDERA_NETWORK).setOperator(
         process.env.OPERATOR_ID,
         process.env.OPERATOR_KEY,
     );

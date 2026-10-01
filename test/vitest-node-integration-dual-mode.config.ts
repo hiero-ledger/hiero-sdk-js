@@ -28,6 +28,13 @@ export default defineConfig({
         testTimeout: 120000,
         coverage: {
             include: ["src/**/*.js"],
+            exclude: [
+                "src/contract/ContractStateChange.js",
+                "src/contract/StorageChange.js",
+                "src/token/TokenNftsUpdateTransaction.js",
+                "src/transaction/NodeAccountIdSignatureMapLegacy.js",
+                "src/transaction/SignatureMapLegacy.js",
+            ],
             provider: "v8",
             reporter: ["text-summary", "lcov"],
             reportsDirectory: "./coverage/node-integration-dual-mode",

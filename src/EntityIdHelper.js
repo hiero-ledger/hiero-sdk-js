@@ -11,7 +11,9 @@ import { getBytes } from "ethers";
 import EvmAddress from "./EvmAddress.js";
 
 /**
- * @typedef {import("./client/Client.js").default<*, *>} Client
+ * @typedef {import("./channel/Channel.js").default} Channel
+ * @typedef {import("./channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("./client/Client.js").default<Channel, MirrorChannel>} Client
  */
 
 /**
@@ -273,8 +275,8 @@ export function fromEvmAddress(shard, realm, address) {
         );
     }
 
-    let shardLong = shard instanceof Long ? shard : Long.fromNumber(shard);
-    let realmLong = realm instanceof Long ? realm : Long.fromNumber(realm);
+    let shardLong = shard instanceof Long ? shard : Long.fromValue(shard);
+    let realmLong = realm instanceof Long ? realm : Long.fromValue(realm);
 
     return [
         shardLong,

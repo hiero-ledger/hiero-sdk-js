@@ -24,10 +24,19 @@ export default class CostQuery extends QueryBase {
         super();
 
         this._query = query;
+
+        // The cost lookup is part of the parent query's execution, so it runs
+        // with the parent's execution settings. A setting the parent left
+        // `null` falls through to the client's value in `_setupExecution`,
+        // exactly as it does for the parent itself.
         this._grpcDeadline = query._grpcDeadline;
         this._requestTimeout = query._requestTimeout;
         this._nodeAccountIds = query._nodeAccountIds.clone();
         this._operator = query._operator;
+        this._maxAttempts = query._maxAttempts;
+        this._minBackoff = query._minBackoff;
+        this._maxBackoff = query._maxBackoff;
+        this._logger = query.logger;
 
         /**
          * @type {HieroProto.proto.IQueryHeader | null}

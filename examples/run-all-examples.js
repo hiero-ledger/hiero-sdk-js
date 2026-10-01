@@ -19,25 +19,36 @@ const excludedDirectories = [
 ];
 const excludedJSFile = [
     "run-all-examples.js",
-    "consensus-pub-sub.js",
-    "consensus-pub-sub-chunked.js",
-    "consensus-pub-sub-with-submit-key.js",
-    "create-update-delete-node.js",
+    "wait-for-mirror.js",
+    "client.js",
+    path.join("consensus", "pub-sub.js"),
+    path.join("consensus", "pub-sub-with-submit-key.js"),
     "batch-tx.js",
-    "long-term-schedule-transaction.js",
-    "mirror-node-contract-queries-example.js",
-    "node-client-async-testnet.js",
+    path.join("schedule", "long-term-transaction.js"),
 ];
 const cmd = process.env.NODE_COMMAND;
 const concurrency = Math.max(
     1,
-    parseInt(process.env.EXAMPLES_CONCURRENCY || "4", 10),
+    // Examples share the configured operator and some system accounts. Running
+    // them concurrently makes unrelated balance changes create false positives.
+    parseInt(process.env.EXAMPLES_CONCURRENCY || "1", 10),
 );
+// An example that never exits must not stall the whole run until the
+// CI job-level timeout (6 hours) kills it; kill it here instead.
+const exampleTimeoutMs = Math.max(
+    1000,
+    parseInt(process.env.EXAMPLES_TIMEOUT_MS || "300000", 10),
+);
+
+// Cap captured per-example output so a chatty example cannot exhaust memory.
+const maxCapturedOutput = 64 * 1024;
 
 /**
  * @typedef {object} ExampleRunResult
  * @property {string} file
  * @property {number} code
+ * @property {boolean} timedOut
+ * @property {string} output
  */
 
 /**
@@ -48,13 +59,51 @@ const concurrency = Math.max(
 function runExample(examplePath, file) {
     return new Promise((resolve, reject) => {
         const child = spawn(cmd, [examplePath], {
-            stdio: "ignore",
+            stdio: ["ignore", "pipe", "pipe"],
         });
+        // Keep the output so it can be printed when the example fails;
+        // without it a failure is undiagnosable from the CI log.
+        let output = "";
+        /**
+         * @param {Buffer} chunk
+         */
+        const capture = (chunk) => {
+            if (output.length < maxCapturedOutput) {
+                output += chunk
+                    .toString()
+                    .slice(0, maxCapturedOutput - output.length);
+            }
+        };
+        child.stdout.on("data", capture);
+        child.stderr.on("data", capture);
+        let timedOut = false;
+        const timer = setTimeout(() => {
+            timedOut = true;
+            child.kill("SIGKILL");
+        }, exampleTimeoutMs);
         child.on("close", (code) => {
-            resolve({ file, code: code ?? -1 });
+            clearTimeout(timer);
+            resolve({ file, code: code ?? -1, timedOut, output });
         });
-        child.on("error", reject);
+        child.on("error", (error) => {
+            clearTimeout(timer);
+            reject(error);
+        });
     });
+}
+
+/**
+ * @param {string} file
+ * @param {string} output
+ * @returns {void}
+ */
+function printOutput(file, output) {
+    if (output.length === 0) {
+        return;
+    }
+    console.log(`----- output of ${file} -----`);
+    console.log(output.trimEnd());
+    console.log(`----- end of output of ${file} -----`);
 }
 
 /**
@@ -76,17 +125,32 @@ async function runInParallel(examples, maxConcurrency) {
             const file = examples[index];
             const examplePath = path.join(examplesDirectory, file);
             console.log(
-                `\n⏳ ${String(index + 1)}/${String(total)}. Running ${file}...`,
+                `\n⏳ ${String(index + 1)}/${String(
+                    total,
+                )}. Running ${file}...`,
             );
-            const { file: f, code } = await runExample(examplePath, file);
-            if (code === 0) {
+            const {
+                file: f,
+                code,
+                timedOut,
+                output,
+            } = await runExample(examplePath, file);
+            if (timedOut) {
+                failed += 1;
+                console.log(
+                    `❌ ${f} timed out after ${String(
+                        exampleTimeoutMs,
+                    )} ms and was killed.`,
+                );
+                printOutput(f, output);
+            } else if (code === 0) {
                 completed += 1;
                 console.log(`✅ ${f} completed.`);
             } else {
                 failed += 1;
                 console.log(`❌ ${f} failed with code ${String(code)}.`);
+                printOutput(f, output);
             }
-            index = nextIndex++;
         }
     }
 
@@ -142,8 +206,13 @@ fs.readdir(examplesDirectory, { withFileTypes: true }, (err, entries) => {
         const subDir = path.join(examplesDirectory, entry.name);
         const subFiles = fs.readdirSync(subDir, { withFileTypes: true });
         for (const sub of subFiles) {
-            if (sub.isFile() && sub.name.endsWith(".js")) {
-                examples.push(path.join(entry.name, sub.name));
+            const relativePath = path.join(entry.name, sub.name);
+            if (
+                sub.isFile() &&
+                sub.name.endsWith(".js") &&
+                !excludedJSFile.includes(relativePath)
+            ) {
+                examples.push(relativePath);
             }
         }
     }
