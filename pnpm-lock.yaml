@@ -18,8 +18,8 @@ importers:
   .:
     dependencies:
       '@grpc/grpc-js':
-        specifier: 1.12.7
-        version: 1.12.7
+        specifier: 1.13.6
+        version: 1.13.6
       '@hiero-ledger/cryptography':
         specifier: workspace:*
         version: link:packages/cryptography
@@ -2932,8 +2932,8 @@ packages:
   '@gerrit0/mini-shiki@3.19.0':
     resolution: {integrity: sha512-ZSlWfLvr8Nl0T4iA3FF/8VH8HivYF82xQts2DY0tJxZd4wtXJ8AA0nmdW9lmO4hlrh3f9xNwEPtOgqETPqKwDA==}
 
-  '@grpc/grpc-js@1.12.7':
-    resolution: {integrity: sha512-Tugep4V4GCsN9dSAVkXoBWqJXDoH+NSXd50kFGsm7ZG1tBXFEAnLoxzkGUIksTrDjiaMwlpsbC24oWbESGHpIQ==}
+  '@grpc/grpc-js@1.13.6':
+    resolution: {integrity: sha512-S9U8ioEds9fo8zCt4K8CyWHLJPg63FBgZo/hYUPVTiKppwsx/ykTnFg4g4/70beoa/DYao9uROQRcoahVH8PVQ==}
     engines: {node: '>=12.10.0'}
 
   '@grpc/proto-loader@0.7.15':
@@ -16843,7 +16843,7 @@ snapshots:
       '@shikijs/types': 3.19.0
       '@shikijs/vscode-textmate': 10.0.2
 
-  '@grpc/grpc-js@1.12.7':
+  '@grpc/grpc-js@1.13.6':
     dependencies:
       '@grpc/proto-loader': 0.7.15
       '@js-sdsl/ordered-map': 4.4.2
@@ -16853,7 +16853,7 @@ snapshots:
       lodash.camelcase: 4.3.0
       long: 5.3.1
       protobufjs: 8.2.0
-      yargs: 17.7.2
+      yargs: 17.7.3
 
   '@grpc/proto-loader@0.7.9':
     dependencies:
