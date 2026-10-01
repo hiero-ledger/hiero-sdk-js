@@ -260,7 +260,7 @@ importers:
         version: 2.2.0
       axios:
         specifier: ^1.18.0
-        version: 1.18.1(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+        version: 1.18.1(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1)
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
@@ -317,8 +317,8 @@ importers:
         specifier: link:../..
         version: link:../..
       '@testing-library/jest-dom':
-        specifier: ^6.9.1
-        version: 6.9.1
+        specifier: ^7.0.1
+        version: 7.0.1(@testing-library/dom@10.4.1)(vitest@4.1.0(@types/node@26.1.1)(@vitest/browser-playwright@4.0.18(msw@2.10.2(@types/node@26.1.1)(typescript@5.9.3))(playwright@1.55.1)(vite@7.3.6(@types/node@26.1.1)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.49.0)(yaml@2.9.0))(vitest@4.1.0))(jsdom@30.0.1(@noble/hashes@2.2.0))(msw@2.10.2(@types/node@26.1.1)(typescript@5.9.3))(vite@7.3.6(@types/node@26.1.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.49.0)(yaml@2.9.0)))
       '@testing-library/react':
         specifier: ^16.3.2
         version: 16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -333,7 +333,7 @@ importers:
         version: 19.2.4(react@19.2.4)
       react-scripts:
         specifier: 5.0.1
-        version: 5.0.1(@babel/plugin-syntax-flow@7.29.7(@babel/core@7.26.10(supports-color@8.1.1)))(@babel/plugin-transform-react-jsx@7.29.7(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1))(@types/babel__core@7.20.5)(clean-css@5.3.3)(csso@4.2.0)(debug@4.4.3(supports-color@8.1.1))(esbuild@0.28.1)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.28.1)(eslint@9.26.0(jiti@2.6.1)(supports-color@8.1.1))(supports-color@8.1.1))(eslint@9.26.0(jiti@1.21.7)(supports-color@8.1.1))(react@19.2.4)(supports-color@8.1.1)(type-fest@4.41.0)(typescript@5.9.3)(uglify-js@3.19.3)(yaml@2.9.0)
+        version: 5.0.1(@babel/plugin-syntax-flow@7.29.7(@babel/core@7.26.10(supports-color@8.1.1)))(@babel/plugin-transform-react-jsx@7.29.7(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1))(@types/babel__core@7.20.5)(clean-css@5.3.3)(csso@4.2.0)(debug@4.4.1(supports-color@8.1.1))(esbuild@0.28.1)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.28.1)(eslint@9.26.0(jiti@2.6.1)(supports-color@8.1.1))(supports-color@8.1.1))(eslint@9.26.0(jiti@1.21.7)(supports-color@8.1.1))(react@19.2.4)(supports-color@8.1.1)(type-fest@4.41.0)(typescript@5.9.3)(uglify-js@3.19.3)(yaml@2.9.0)
       web-vitals:
         specifier: ^6.0.0
         version: 6.0.0
@@ -363,7 +363,7 @@ importers:
         version: 6.16.0
       next:
         specifier: 16.3.3
-        version: 16.3.3(@babel/core@7.26.10(supports-color@8.1.1))(@playwright/test@1.30.0)(@types/node@26.1.1)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+        version: 16.3.3(@babel/core@7.23.3(supports-color@8.1.1))(@playwright/test@1.30.0)(@types/node@26.1.1)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       react:
         specifier: ^19.2.4
         version: 19.2.4
@@ -588,7 +588,7 @@ importers:
         version: 8.64.0(eslint@10.0.3(jiti@2.6.1)(supports-color@8.1.1))(supports-color@8.1.1)(typescript@5.8.2)
       axios:
         specifier: ^1.18.0
-        version: 1.18.1(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+        version: 1.18.1(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1)
       babel-plugin-dynamic-import-node:
         specifier: ^2.3.3
         version: 2.3.3
@@ -4396,6 +4396,16 @@ packages:
   '@testing-library/jest-dom@6.9.1':
     resolution: {integrity: sha512-zIcONa+hVtVSSep9UT3jZ5rizo2BsxgyDYU7WFD5eICBE7no3881HGeb/QkGfsJs6JTkY1aQhT7rIPC7e+0nnA==}
     engines: {node: '>=14', npm: '>=6', yarn: '>=1'}
+
+  '@testing-library/jest-dom@7.0.1':
+    resolution: {integrity: sha512-oMDTC3oA+6CXSO2JZnvOI7CA6oVub6kij5ggk9ohwye5slmkwxYDXcPOVxgMw/RQlticjtO0C1RZkR97HgrWMw==}
+    engines: {node: '>=22', npm: '>=6', yarn: '>=1'}
+    peerDependencies:
+      '@testing-library/dom': '>=10 <11'
+      vitest: '>= 0.32'
+    peerDependenciesMeta:
+      vitest:
+        optional: true
 
   '@testing-library/react@16.3.2':
     resolution: {integrity: sha512-XU5/SytQM+ykqMnAnvB2umaJNIOsLF3PVv//1Ew4CTcpz0/BRyy/af40qqrt7SjKpDdT1saBMc42CUok5gaw+g==}
@@ -17463,7 +17473,7 @@ snapshots:
       '@types/node': 26.1.1
       playwright-core: 1.30.0
 
-  '@pmmmwh/react-refresh-webpack-plugin@0.5.17(react-refresh@0.11.0)(type-fest@4.41.0)(webpack-dev-server@4.15.2(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3)))(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))':
+  '@pmmmwh/react-refresh-webpack-plugin@0.5.17(react-refresh@0.11.0)(type-fest@4.41.0)(webpack-dev-server@4.15.2(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3)))(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))':
     dependencies:
       ansi-html: 0.0.9
       core-js-pure: 3.47.0
@@ -17476,7 +17486,7 @@ snapshots:
       webpack: 5.104.1(esbuild@0.28.1)(uglify-js@3.19.3)
     optionalDependencies:
       type-fest: 4.41.0
-      webpack-dev-server: 4.15.2(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))
+      webpack-dev-server: 4.15.2(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))
 
   '@polka/url@1.0.0-next.29': {}
 
@@ -18622,6 +18632,18 @@ snapshots:
       dom-accessibility-api: 0.6.3
       picocolors: 1.1.1
       redent: 3.0.0
+
+  '@testing-library/jest-dom@7.0.1(@testing-library/dom@10.4.1)(vitest@4.1.0(@types/node@26.1.1)(@vitest/browser-playwright@4.0.18(msw@2.10.2(@types/node@26.1.1)(typescript@5.9.3))(playwright@1.55.1)(vite@7.3.6(@types/node@26.1.1)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.49.0)(yaml@2.9.0))(vitest@4.1.0))(jsdom@30.0.1(@noble/hashes@2.2.0))(msw@2.10.2(@types/node@26.1.1)(typescript@5.9.3))(vite@7.3.6(@types/node@26.1.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.49.0)(yaml@2.9.0)))':
+    dependencies:
+      '@adobe/css-tools': 4.4.4
+      '@testing-library/dom': 10.4.1
+      aria-query: 5.3.2
+      css.escape: 1.5.1
+      dom-accessibility-api: 0.6.3
+      picocolors: 1.1.1
+      redent: 3.0.0
+    optionalDependencies:
+      vitest: 4.1.0(@types/node@26.1.1)(@vitest/browser-playwright@4.0.18(msw@2.10.2(@types/node@26.1.1)(typescript@5.9.3))(playwright@1.55.1)(vite@7.3.6(@types/node@26.1.1)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.49.0)(yaml@2.9.0))(vitest@4.1.0))(jsdom@30.0.1(@noble/hashes@2.2.0))(msw@2.10.2(@types/node@26.1.1)(typescript@5.9.3))(vite@7.3.6(@types/node@26.1.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.49.0)(yaml@2.9.0))
 
   '@testing-library/react@16.3.2(@testing-library/dom@10.4.1)(@types/react-dom@18.3.7(@types/react@19.2.14))(@types/react@19.2.14)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)':
     dependencies:
@@ -19912,6 +19934,16 @@ snapshots:
       msw: 2.10.2(@types/node@26.1.1)(typescript@5.9.3)
       vite: 7.3.6(@types/node@26.1.1)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.49.0)(yaml@2.9.0)
 
+  '@vitest/mocker@4.1.0(msw@2.10.2(@types/node@26.1.1)(typescript@5.9.3))(vite@7.3.6(@types/node@26.1.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.49.0)(yaml@2.9.0))':
+    dependencies:
+      '@vitest/spy': 4.1.0
+      estree-walker: 3.0.3
+      magic-string: 0.30.21
+    optionalDependencies:
+      msw: 2.10.2(@types/node@26.1.1)(typescript@5.9.3)
+      vite: 7.3.6(@types/node@26.1.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.49.0)(yaml@2.9.0)
+    optional: true
+
   '@vitest/mocker@4.1.0(msw@2.10.2(@types/node@26.1.1)(typescript@5.9.3))(vite@7.3.6(@types/node@26.1.1)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.49.0)(yaml@2.9.0))':
     dependencies:
       '@vitest/spy': 4.1.0
@@ -20425,9 +20457,9 @@ snapshots:
 
   axe-core@4.11.1: {}
 
-  axios@1.18.1(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1):
+  axios@1.18.1(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1):
     dependencies:
-      follow-redirects: 1.16.0(debug@4.4.3(supports-color@8.1.1))
+      follow-redirects: 1.16.0(debug@4.4.1(supports-color@8.1.1))
       form-data: 4.0.6
       https-proxy-agent: 5.0.1(supports-color@8.1.1)
       proxy-from-env: 2.1.0
@@ -23923,10 +23955,6 @@ snapshots:
     optionalDependencies:
       debug: 4.4.1(supports-color@8.1.1)
 
-  follow-redirects@1.16.0(debug@4.4.3(supports-color@8.1.1)):
-    optionalDependencies:
-      debug: 4.4.3(supports-color@8.1.1)
-
   fontfaceobserver@2.3.0: {}
 
   for-each@0.3.5:
@@ -24392,10 +24420,10 @@ snapshots:
       - kerberos
       - supports-color
 
-  http-proxy-middleware@2.0.9(@types/express@4.17.25)(debug@4.4.3(supports-color@8.1.1)):
+  http-proxy-middleware@2.0.9(@types/express@4.17.25)(debug@4.4.1(supports-color@8.1.1)):
     dependencies:
       '@types/http-proxy': 1.17.17
-      http-proxy: 1.18.1(debug@4.4.3(supports-color@8.1.1))
+      http-proxy: 1.18.1(debug@4.4.1(supports-color@8.1.1))
       is-glob: 4.0.3
       is-plain-obj: 3.0.0
       micromatch: 4.0.8
@@ -24404,10 +24432,10 @@ snapshots:
     transitivePeerDependencies:
       - debug
 
-  http-proxy@1.18.1(debug@4.4.3(supports-color@8.1.1)):
+  http-proxy@1.18.1(debug@4.4.1(supports-color@8.1.1)):
     dependencies:
       eventemitter3: 4.0.7
-      follow-redirects: 1.16.0(debug@4.4.3(supports-color@8.1.1))
+      follow-redirects: 1.16.0(debug@4.4.1(supports-color@8.1.1))
       requires-port: 1.0.0
     transitivePeerDependencies:
       - debug
@@ -26530,7 +26558,7 @@ snapshots:
 
   netmask@2.1.1: {}
 
-  next@16.3.3(@babel/core@7.26.10(supports-color@8.1.1))(@playwright/test@1.30.0)(@types/node@26.1.1)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
+  next@16.3.3(@babel/core@7.23.3(supports-color@8.1.1))(@playwright/test@1.30.0)(@types/node@26.1.1)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:
       '@next/env': 16.3.3
       '@swc/helpers': 0.5.23
@@ -26539,7 +26567,7 @@ snapshots:
       postcss: 8.5.23
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
-      styled-jsx: 5.1.6(@babel/core@7.26.10(supports-color@8.1.1))(babel-plugin-macros@3.1.0)(react@19.2.4)
+      styled-jsx: 5.1.6(@babel/core@7.23.3(supports-color@8.1.1))(babel-plugin-macros@3.1.0)(react@19.2.4)
     optionalDependencies:
       '@next/swc-darwin-arm64': 16.3.3
       '@next/swc-darwin-x64': 16.3.3
@@ -28095,10 +28123,10 @@ snapshots:
       '@types/react': 19.2.14
     optional: true
 
-  react-scripts@5.0.1(@babel/plugin-syntax-flow@7.29.7(@babel/core@7.26.10(supports-color@8.1.1)))(@babel/plugin-transform-react-jsx@7.29.7(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1))(@types/babel__core@7.20.5)(clean-css@5.3.3)(csso@4.2.0)(debug@4.4.3(supports-color@8.1.1))(esbuild@0.28.1)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.28.1)(eslint@9.26.0(jiti@2.6.1)(supports-color@8.1.1))(supports-color@8.1.1))(eslint@9.26.0(jiti@1.21.7)(supports-color@8.1.1))(react@19.2.4)(supports-color@8.1.1)(type-fest@4.41.0)(typescript@5.9.3)(uglify-js@3.19.3)(yaml@2.9.0):
+  react-scripts@5.0.1(@babel/plugin-syntax-flow@7.29.7(@babel/core@7.26.10(supports-color@8.1.1)))(@babel/plugin-transform-react-jsx@7.29.7(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1))(@types/babel__core@7.20.5)(clean-css@5.3.3)(csso@4.2.0)(debug@4.4.1(supports-color@8.1.1))(esbuild@0.28.1)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.28.1)(eslint@9.26.0(jiti@2.6.1)(supports-color@8.1.1))(supports-color@8.1.1))(eslint@9.26.0(jiti@1.21.7)(supports-color@8.1.1))(react@19.2.4)(supports-color@8.1.1)(type-fest@4.41.0)(typescript@5.9.3)(uglify-js@3.19.3)(yaml@2.9.0):
     dependencies:
       '@babel/core': 7.26.10(supports-color@8.1.1)
-      '@pmmmwh/react-refresh-webpack-plugin': 0.5.17(react-refresh@0.11.0)(type-fest@4.41.0)(webpack-dev-server@4.15.2(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3)))(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))
+      '@pmmmwh/react-refresh-webpack-plugin': 0.5.17(react-refresh@0.11.0)(type-fest@4.41.0)(webpack-dev-server@4.15.2(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3)))(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))
       '@svgr/webpack': 5.5.0(supports-color@8.1.1)
       babel-jest: 27.5.1(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1)
       babel-loader: 8.4.1(@babel/core@7.26.10(supports-color@8.1.1))(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))
@@ -28142,7 +28170,7 @@ snapshots:
       tailwindcss: 3.4.19(yaml@2.9.0)
       terser-webpack-plugin: 5.3.16(esbuild@0.28.1)(uglify-js@3.19.3)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))
       webpack: 5.104.1(esbuild@0.28.1)(uglify-js@3.19.3)
-      webpack-dev-server: 4.15.2(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))
+      webpack-dev-server: 4.15.2(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))
       webpack-manifest-plugin: 4.1.1(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))
       workbox-webpack-plugin: 6.6.0(@types/babel__core@7.20.5)(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3))
     optionalDependencies:
@@ -29138,12 +29166,12 @@ snapshots:
     dependencies:
       webpack: 5.104.1(esbuild@0.28.1)(uglify-js@3.19.3)
 
-  styled-jsx@5.1.6(@babel/core@7.26.10(supports-color@8.1.1))(babel-plugin-macros@3.1.0)(react@19.2.4):
+  styled-jsx@5.1.6(@babel/core@7.23.3(supports-color@8.1.1))(babel-plugin-macros@3.1.0)(react@19.2.4):
     dependencies:
       client-only: 0.0.1
       react: 19.2.4
     optionalDependencies:
-      '@babel/core': 7.26.10(supports-color@8.1.1)
+      '@babel/core': 7.23.3(supports-color@8.1.1)
       babel-plugin-macros: 3.1.0
 
   stylehacks@5.1.1(postcss@8.5.6):
@@ -29814,6 +29842,23 @@ snapshots:
       - '@types/react-dom'
     optional: true
 
+  vite@7.3.6(@types/node@26.1.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.49.0)(yaml@2.9.0):
+    dependencies:
+      esbuild: 0.28.1
+      fdir: 6.5.0(picomatch@4.0.4)
+      picomatch: 4.0.4
+      postcss: 8.5.15
+      rollup: 4.59.0
+      tinyglobby: 0.2.17
+    optionalDependencies:
+      '@types/node': 26.1.1
+      fsevents: 2.3.3
+      jiti: 1.21.7
+      lightningcss: 1.32.0
+      terser: 5.49.0
+      yaml: 2.9.0
+    optional: true
+
   vite@7.3.6(@types/node@26.1.1)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.49.0)(yaml@2.9.0):
     dependencies:
       esbuild: 0.28.1
@@ -29829,6 +29874,36 @@ snapshots:
       lightningcss: 1.32.0
       terser: 5.49.0
       yaml: 2.9.0
+
+  vitest@4.1.0(@types/node@26.1.1)(@vitest/browser-playwright@4.0.18(msw@2.10.2(@types/node@26.1.1)(typescript@5.9.3))(playwright@1.55.1)(vite@7.3.6(@types/node@26.1.1)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.49.0)(yaml@2.9.0))(vitest@4.1.0))(jsdom@30.0.1(@noble/hashes@2.2.0))(msw@2.10.2(@types/node@26.1.1)(typescript@5.9.3))(vite@7.3.6(@types/node@26.1.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.49.0)(yaml@2.9.0)):
+    dependencies:
+      '@vitest/expect': 4.1.0
+      '@vitest/mocker': 4.1.0(msw@2.10.2(@types/node@26.1.1)(typescript@5.9.3))(vite@7.3.6(@types/node@26.1.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.49.0)(yaml@2.9.0))
+      '@vitest/pretty-format': 4.1.0
+      '@vitest/runner': 4.1.0
+      '@vitest/snapshot': 4.1.0
+      '@vitest/spy': 4.1.0
+      '@vitest/utils': 4.1.0
+      es-module-lexer: 2.1.0
+      expect-type: 1.3.0
+      magic-string: 0.30.21
+      obug: 2.1.1
+      pathe: 2.0.3
+      picomatch: 4.0.4
+      std-env: 4.1.0
+      tinybench: 2.9.0
+      tinyexec: 1.2.4
+      tinyglobby: 0.2.17
+      tinyrainbow: 3.1.0
+      vite: 7.3.6(@types/node@26.1.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.49.0)(yaml@2.9.0)
+      why-is-node-running: 2.3.0
+    optionalDependencies:
+      '@types/node': 26.1.1
+      '@vitest/browser-playwright': 4.0.18(msw@2.10.2(@types/node@26.1.1)(typescript@5.9.3))(playwright@1.55.1)(vite@7.3.6(@types/node@26.1.1)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.49.0)(yaml@2.9.0))(vitest@4.1.0)
+      jsdom: 30.0.1(@noble/hashes@2.2.0)
+    transitivePeerDependencies:
+      - msw
+    optional: true
 
   vitest@4.1.0(@types/node@26.1.1)(@vitest/browser-playwright@4.0.18)(jsdom@30.0.1(@noble/hashes@2.2.0))(msw@2.10.2(@types/node@26.1.1)(typescript@5.9.3))(vite@7.3.6(@types/node@26.1.1)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.49.0)(yaml@2.9.0)):
     dependencies:
@@ -29946,7 +30021,7 @@ snapshots:
       schema-utils: 4.3.3
       webpack: 5.104.1(esbuild@0.28.1)(uglify-js@3.19.3)
 
-  webpack-dev-server@4.15.2(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3)):
+  webpack-dev-server@4.15.2(debug@4.4.1(supports-color@8.1.1))(supports-color@8.1.1)(webpack@5.104.1(esbuild@0.28.1)(uglify-js@3.19.3)):
     dependencies:
       '@types/bonjour': 3.5.13
       '@types/connect-history-api-fallback': 1.5.4
@@ -29965,7 +30040,7 @@ snapshots:
       express: 4.22.1(supports-color@8.1.1)
       graceful-fs: 4.2.11
       html-entities: 2.6.0
-      http-proxy-middleware: 2.0.9(@types/express@4.17.25)(debug@4.4.3(supports-color@8.1.1))
+      http-proxy-middleware: 2.0.9(@types/express@4.17.25)(debug@4.4.1(supports-color@8.1.1))
       ipaddr.js: 2.3.0
       launch-editor: 2.12.0
       open: 8.4.2
