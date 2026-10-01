@@ -441,8 +441,8 @@ importers:
         specifier: ~58.0.1
         version: 58.0.2(expo@57.0.4)(supports-color@8.1.1)(typescript@5.9.3)
       expo-status-bar:
-        specifier: ~57.0.0
-        version: 57.0.0(expo@57.0.4)(react-native@0.81.5(@babel/core@7.23.3(supports-color@8.1.1))(@types/react@19.1.17)(react@19.1.0)(supports-color@8.1.1))(react@19.1.0)
+        specifier: ~58.0.1
+        version: 58.0.2(expo@57.0.4)(react-native@0.81.5(@babel/core@7.23.3(supports-color@8.1.1))(@types/react@19.1.17)(react@19.1.0)(supports-color@8.1.1))(react@19.1.0)
       expo-symbols:
         specifier: ~57.0.0
         version: 57.0.0(expo-font@57.0.0)(expo@57.0.4)(react-native@0.81.5(@babel/core@7.23.3(supports-color@8.1.1))(@types/react@19.1.17)(react@19.1.0)(supports-color@8.1.1))(react@19.1.0)
@@ -511,8 +511,8 @@ importers:
         specifier: ~57.0.4
         version: 57.0.4(@babel/core@7.26.10(supports-color@8.1.1))(@expo/dom-webview@57.0.1)(@expo/metro-runtime@57.0.15)(expo-router@58.0.10)(react-dom@19.2.4(react@19.2.4))(react-native-web@0.21.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-native-worklets@0.5.1(@babel/core@7.26.10(supports-color@8.1.1))(react-native@0.78.3(@babel/core@7.26.10(supports-color@8.1.1))(@babel/preset-env@7.22.15(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.14)(react@19.2.4)(supports-color@8.1.1))(react@19.2.4)(supports-color@8.1.1))(react-native@0.78.3(@babel/core@7.26.10(supports-color@8.1.1))(@babel/preset-env@7.22.15(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.14)(react@19.2.4)(supports-color@8.1.1))(react@19.2.4)(supports-color@8.1.1)(typescript@5.9.3)
       expo-status-bar:
-        specifier: ~57.0.0
-        version: 57.0.0(expo@57.0.4)(react-native@0.78.3(@babel/core@7.26.10(supports-color@8.1.1))(@babel/preset-env@7.22.15(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.14)(react@19.2.4)(supports-color@8.1.1))(react@19.2.4)
+        specifier: ~58.0.1
+        version: 58.0.2(expo@57.0.4)(react-native@0.78.3(@babel/core@7.26.10(supports-color@8.1.1))(@babel/preset-env@7.22.15(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.14)(react@19.2.4)(supports-color@8.1.1))(react@19.2.4)
       protobufjs:
         specifier: 8.2.0
         version: 8.2.0
@@ -7558,8 +7558,8 @@ packages:
     peerDependencies:
       expo: '*'
 
-  expo-status-bar@57.0.0:
-    resolution: {integrity: sha512-wq1fDVAjfrzCj67hOcvEkGpgRrb6xVI7oSA3bfsQ08SFk8il7vGixJq+xyEbtdcrI9CDiNKQrT3ZIjgnyGbbBA==}
+  expo-status-bar@58.0.2:
+    resolution: {integrity: sha512-NkoHQETEEW22A6RDGaLRF+aW44m1z+/7xeBgsnI7G4qlL58JkHZE07j/CU5OWXV0ns6Q5LZri8r8JrVRVaSvig==}
     peerDependencies:
       expo: '*'
       react: '*'
@@ -23423,13 +23423,13 @@ snapshots:
       - supports-color
       - typescript
 
-  expo-status-bar@57.0.0(expo@57.0.4)(react-native@0.78.3(@babel/core@7.26.10(supports-color@8.1.1))(@babel/preset-env@7.22.15(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.14)(react@19.2.4)(supports-color@8.1.1))(react@19.2.4):
+  expo-status-bar@58.0.2(expo@57.0.4)(react-native@0.78.3(@babel/core@7.26.10(supports-color@8.1.1))(@babel/preset-env@7.22.15(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.14)(react@19.2.4)(supports-color@8.1.1))(react@19.2.4):
     dependencies:
       expo: 57.0.4(@babel/core@7.26.10(supports-color@8.1.1))(@expo/dom-webview@57.0.1)(@expo/metro-runtime@57.0.15)(expo-router@58.0.10)(react-dom@19.2.4(react@19.2.4))(react-native-web@0.21.2(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-native-worklets@0.5.1(@babel/core@7.26.10(supports-color@8.1.1))(react-native@0.78.3(@babel/core@7.26.10(supports-color@8.1.1))(@babel/preset-env@7.22.15(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.14)(react@19.2.4)(supports-color@8.1.1))(react@19.2.4)(supports-color@8.1.1))(react-native@0.78.3(@babel/core@7.26.10(supports-color@8.1.1))(@babel/preset-env@7.22.15(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.14)(react@19.2.4)(supports-color@8.1.1))(react@19.2.4)(supports-color@8.1.1)(typescript@5.9.3)
       react: 19.2.4
       react-native: 0.78.3(@babel/core@7.26.10(supports-color@8.1.1))(@babel/preset-env@7.22.15(@babel/core@7.26.10(supports-color@8.1.1))(supports-color@8.1.1))(@types/react@19.2.14)(react@19.2.4)(supports-color@8.1.1)
 
-  expo-status-bar@57.0.0(expo@57.0.4)(react-native@0.81.5(@babel/core@7.23.3(supports-color@8.1.1))(@types/react@19.1.17)(react@19.1.0)(supports-color@8.1.1))(react@19.1.0):
+  expo-status-bar@58.0.2(expo@57.0.4)(react-native@0.81.5(@babel/core@7.23.3(supports-color@8.1.1))(@types/react@19.1.17)(react@19.1.0)(supports-color@8.1.1))(react@19.1.0):
     dependencies:
       expo: 57.0.4(@babel/core@7.23.3(supports-color@8.1.1))(@expo/dom-webview@57.0.1)(expo-router@58.0.10)(react-dom@19.1.0(react@19.1.0))(react-native-web@0.21.2(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react-native-worklets@0.5.1(@babel/core@7.23.3(supports-color@8.1.1))(react-native@0.81.5(@babel/core@7.23.3(supports-color@8.1.1))(@types/react@19.1.17)(react@19.1.0)(supports-color@8.1.1))(react@19.1.0)(supports-color@8.1.1))(react-native@0.81.5(@babel/core@7.23.3(supports-color@8.1.1))(@types/react@19.1.17)(react@19.1.0)(supports-color@8.1.1))(react@19.1.0)(supports-color@8.1.1)(typescript@5.9.3)
       react: 19.1.0
