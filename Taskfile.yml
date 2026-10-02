@@ -206,10 +206,10 @@ tasks:
             - npx vitest --config=test/vitest-browser-integration.config.ts {{.CLI_ARGS}}
     "test:integration:node:codecov":
         cmds:
-            - npx vitest --coverage --config=test/vitest-node-integration.config.ts
+            - npx vitest --coverage --config=test/vitest-node-integration.config.ts {{.CLI_ARGS}}
     "test:integration:browser:codecov":
         cmds:
-            - npx vitest --coverage --config=test/vitest-browser-integration.config.ts
+            - npx vitest --coverage --config=test/vitest-browser-integration.config.ts {{.CLI_ARGS}}
 
     "test:integration:codecov":
         deps:
@@ -222,8 +222,8 @@ tasks:
             - npx vitest --maxWorkers=1 --config=test/vitest-browser-integration-dual-mode.config.ts
     "test:integration:dual-mode:codecov":
         cmds:
-            - npx vitest --coverage --maxWorkers=1 --config=test/vitest-node-integration-dual-mode.config.ts
-            - npx vitest --coverage --maxWorkers=1 --config=test/vitest-browser-integration-dual-mode.config.ts
+            - npx vitest --coverage --maxWorkers=1 --config=test/vitest-node-integration-dual-mode.config.ts {{.CLI_ARGS}}
+            - npx vitest --coverage --maxWorkers=1 --config=test/vitest-browser-integration-dual-mode.config.ts {{.CLI_ARGS}}
 
     "update:proto":
         desc: "Fetch protos from submodule at tag, regenerate JS (run only when bumping proto version)"
