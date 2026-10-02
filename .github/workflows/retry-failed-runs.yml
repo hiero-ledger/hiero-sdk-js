@@ -1,10 +1,11 @@
 name: Retry Failed Runs
 # Re-runs the failed jobs of a Build & Test or Common JS run when they failed
-# for a reason unrelated to the code: a job that hit its timeout-minutes, a
-# Solo network that stopped answering, a lost runner, a registry or connection
-# error. Jobs that failed on a test, build or lint error are left alone, and
-# so is a run that a person cancelled. The decision and its reasons land in
-# the job summary. The rules live in .github/scripts/retry-failed-run.mjs.
+# for a reason unrelated to the code: a job or step that hit its
+# timeout-minutes, a Solo network that stopped answering, a lost runner, a
+# registry or connection error. Jobs that failed on a test, build or lint
+# error are left alone, and so is a run that a person cancelled. The decision
+# and its reasons land in the job summary. The rules live in
+# .github/scripts/retry-failed-run.mjs.
 on:
   workflow_run:
     workflows:
@@ -23,10 +24,12 @@ permissions:
 jobs:
   retry:
     name: Retry infrastructure failures
-    # A job that hits its timeout-minutes ends as "cancelled", so cancelled
-    # runs are inspected too; the script tells a timeout apart from a cancel
-    # by a person.
-    if: contains(fromJSON('["failure", "cancelled", "timed_out"]'), github.event.workflow_run.conclusion)
+    # Runs after every completion, green ones included: on a pull request the
+    # Harden-Runner check covers the whole commit and only finishes with the
+    # last workflow on it, so the script also judges the other workflow's
+    # failed run on the same commit. A green completion costs about a minute
+    # of a medium runner. A job that hits its timeout-minutes ends as
+    # "cancelled"; the script tells that apart from a cancel by a person.
     runs-on: hiero-client-sdk-linux-medium
     timeout-minutes: 10
     permissions:
@@ -57,11 +60,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_NAME: ${{ github.event.workflow_run.name }}
           RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
           HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           RUN_EVENT: ${{ github.event.workflow_run.event }}
           HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
           HEAD_REPO_OWNER: ${{ github.event.workflow_run.head_repository.owner.login }}
-          # A run is re-run at most this many times.
+          # A run on main is re-run at most this many times. Pull request
+          # runs get one retry: a real bug in request handling fails with the
+          # same errors as a dead network, and each re-run of the test job
+          # costs up to 25 min of a large runner.
           MAX_RETRIES: 3
+          MAX_RETRIES_PULL_REQUEST: 1
         run: node .github/scripts/retry-failed-run.mjs

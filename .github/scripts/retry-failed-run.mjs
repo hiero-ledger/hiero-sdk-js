@@ -2,21 +2,27 @@
 /*
  * Re-runs the failed jobs of a "Build & Test" or "Common JS" run when they
  * failed for a reason that has nothing to do with the code under test: a job
- * that hit its timeout-minutes, a Solo network that stopped answering (tests
- * and hooks timing out), a runner that was lost, a package registry or
+ * or step that hit its timeout-minutes, a Solo network that stopped answering
+ * (tests and hooks timing out), a runner that was lost, a package registry or
  * connection error. Jobs that failed on a test assertion, a build or lint
  * error, or that a person cancelled are left alone.
  *
+ * Besides the run that triggered it, the script judges every other completed
+ * run of those workflows on the same commit: on a pull request the
+ * Harden-Runner check only finishes with the last workflow on the head, so
+ * an earlier Common JS failure gets its turn when Build & Test completes.
+ *
  * Driven by .github/workflows/retry-failed-runs.yml, which passes GH_TOKEN,
- * GITHUB_REPOSITORY, RUN_ID, RUN_ATTEMPT, HEAD_SHA, RUN_EVENT, HEAD_BRANCH,
- * HEAD_REPO_OWNER and MAX_RETRIES (default 3). DRY_RUN=1 decides without
- * re-running anything.
+ * GITHUB_REPOSITORY, RUN_ID, RUN_NAME, RUN_ATTEMPT, HEAD_SHA, RUN_EVENT,
+ * HEAD_BRANCH, HEAD_REPO_OWNER, MAX_RETRIES (pushes, default 3) and
+ * MAX_RETRIES_PULL_REQUEST (default 1). DRY_RUN=1 decides without re-running.
  *
  * Try the classifier on downloaded job logs:
  *   node .github/scripts/retry-failed-run.mjs --classify job.log [more.log ...]
  */
 
 import fs from "node:fs";
+import { pathToFileURL } from "node:url";
 
 // A failed test or hook whose error matches one of these failed on the
 // infrastructure, not on the code. Checked against every entry of vitest's
@@ -62,14 +68,24 @@ const INFRA_JOB_ERRORS = [
 ];
 
 // GitHub's own notes about a job. They are only in the job's check-run
-// annotations, never in the log.
-const JOB_TIMED_OUT = /exceeded the maximum execution time/;
+// annotations, never in the log. A job cap reads "The job has exceeded the
+// maximum execution time of 1h0m0s", a step cap "The action '...' has timed
+// out after 25 minutes." (older runners: "The action has timed out.").
+const TIMED_OUT = /exceeded the maximum execution time|has timed out/;
 const CANCELLED_BY_PERSON = /The run was canceled by @/;
 const CANCELLED = /The operation was canceled/;
 // Annotations that say nothing about the cause.
 const GENERIC_ANNOTATION =
     /^(Process completed with exit code \d+\.?|The operation was canceled\.?)$/;
 
+// Jobs behind required checks. When one of them failed for real the run
+// stays red whatever else is re-run, so nothing is.
+const REQUIRED_JOB =
+    /^(Build using Node|Test using Node|Integration Tests on Node)\b/;
+const COVERED_WORKFLOWS = [
+    ".github/workflows/build.yml",
+    ".github/workflows/common_js.yml",
+];
 const HARDEN_RUNNER_CHECK = "StepSecurity Harden-Runner";
 const TAIL_LINES = 400;
 
@@ -115,8 +131,8 @@ export function classifyLog(rawLog, annotations = []) {
     const lines = rawLog.split(/\r?\n/).map(cleanLine);
     const notes = annotations.join("\n");
 
-    if (JOB_TIMED_OUT.test(notes))
-        return { retry: true, reason: "job hit its timeout-minutes" };
+    if (TIMED_OUT.test(notes))
+        return { retry: true, reason: "job or step hit its timeout-minutes" };
     if (CANCELLED_BY_PERSON.test(notes))
         return { retry: false, reason: "cancelled by a person" };
 
@@ -255,6 +271,67 @@ async function hardenRunnerState(repo, sha) {
     return state;
 }
 
+/**
+ * Every failed job of the run, each at its latest attempt, with a verdict.
+ * A job that passed in attempt 1 and was not re-run still counts as passed.
+ */
+async function failedJobs(repo, runId) {
+    const { jobs } = await api(
+        `/repos/${repo}/actions/runs/${runId}/jobs?filter=all&per_page=100`,
+    );
+    const latest = new Map();
+    for (const job of jobs) {
+        const seen = latest.get(job.name);
+        if (seen === undefined || job.run_attempt > seen.run_attempt)
+            latest.set(job.name, job);
+    }
+    const rows = [];
+    for (const job of latest.values()) {
+        if (
+            job.status !== "completed" ||
+            ["success", "skipped", "neutral"].includes(job.conclusion)
+        )
+            continue;
+        const verdict = classifyLog(
+            await jobLog(repo, job.id),
+            await jobAnnotations(repo, job.id),
+        );
+        rows.push({
+            id: job.id,
+            name: job.name,
+            conclusion: job.conclusion,
+            ...verdict,
+        });
+    }
+    return rows;
+}
+
+/** The other completed, failed runs of the covered workflows on the same commit. */
+async function siblingRuns(repo, headSha, ownRunId) {
+    const { workflow_runs: runs } = await api(
+        `/repos/${repo}/actions/runs?head_sha=${headSha}&per_page=50`,
+    );
+    return runs
+        .filter(
+            (run) =>
+                COVERED_WORKFLOWS.includes(run.path) &&
+                String(run.id) !== String(ownRunId),
+        )
+        .filter(
+            (run) =>
+                run.status === "completed" &&
+                ["failure", "cancelled", "timed_out"].includes(run.conclusion),
+        )
+        .map((run) => ({
+            id: run.id,
+            name: run.name,
+            attempt: run.run_attempt,
+            event: run.event,
+            headBranch: run.head_branch,
+            headRepoOwner: run.head_repository?.owner?.login ?? "",
+        }));
+}
+
 function required(names) {
     const missing = names.filter((name) => !process.env[name]);
     if (missing.length > 0)
@@ -289,119 +366,153 @@ async function main() {
         "RUN_EVENT",
     ]);
     const repo = process.env.GITHUB_REPOSITORY;
-    const runId = process.env.RUN_ID;
-    const attempt = Number(process.env.RUN_ATTEMPT);
-    const maxRetries = Number(process.env.MAX_RETRIES ?? 3);
-    const dryRun = Boolean(process.env.DRY_RUN);
-    const isPullRequest = process.env.RUN_EVENT === "pull_request";
+    const headSha = process.env.HEAD_SHA;
+    const dryRun = process.env.DRY_RUN === "1";
+    const budgets = {
+        push: Number(process.env.MAX_RETRIES ?? 3),
+        pull_request: Number(process.env.MAX_RETRIES_PULL_REQUEST ?? 1),
+    };
+    const ownRun = {
+        id: process.env.RUN_ID,
+        name: process.env.RUN_NAME ?? "this run",
+        attempt: Number(process.env.RUN_ATTEMPT),
+        event: process.env.RUN_EVENT,
+        headBranch: process.env.HEAD_BRANCH ?? "",
+        headRepoOwner: process.env.HEAD_REPO_OWNER || repo.split("/")[0],
+    };
 
-    // Every attempt of every job, reduced to the latest attempt per job: a
-    // job that passed in attempt 1 and was not re-run still counts as passed.
-    const { jobs } = await api(
-        `/repos/${repo}/actions/runs/${runId}/jobs?filter=all&per_page=100`,
-    );
-    const latest = new Map();
-    for (const job of jobs) {
-        const seen = latest.get(job.name);
-        if (seen === undefined || job.run_attempt > seen.run_attempt)
-            latest.set(job.name, job);
-    }
-    const failedJobs = [...latest.values()].filter(
-        (job) =>
-            job.status === "completed" &&
-            !["success", "skipped", "neutral"].includes(job.conclusion),
-    );
-    const rows = [];
-    for (const job of failedJobs) {
-        const verdict = classifyLog(
-            await jobLog(repo, job.id),
-            await jobAnnotations(repo, job.id),
-        );
-        rows.push({
-            id: job.id,
-            name: job.name,
-            conclusion: job.conclusion,
-            ...verdict,
-        });
-    }
-    const retryable = rows.filter((row) => row.retry);
-
-    let decision;
-    if (retryable.length === 0) {
-        decision =
-            rows.length === 0
-                ? "no failed job to look at"
-                : "nothing to re-run";
-    } else if (attempt > maxRetries) {
-        decision = `attempt ${attempt} has already used the ${maxRetries} retries, not re-running`;
-    } else if (isPullRequest) {
-        const owner = process.env.HEAD_REPO_OWNER || repo.split("/")[0];
-        const pulls = await api(
-            `/repos/${repo}/pulls?state=open&head=${encodeURIComponent(
-                `${owner}:${process.env.HEAD_BRANCH}`,
-            )}&per_page=5`,
-        );
-        if (pulls.length === 0)
-            decision = "no open pull request for this branch, not re-running";
-    }
-    if (decision === undefined && isPullRequest) {
-        // Pull request heads are re-run only once Harden-Runner has looked at
-        // them. Pushes to main carry no such check.
-        const hardenRunner = await hardenRunnerState(
-            repo,
-            process.env.HEAD_SHA,
-        );
-        if (hardenRunner !== "success")
-            decision = `${HARDEN_RUNNER_CHECK} is ${hardenRunner}, not re-running`;
-    }
-    if (decision === undefined) {
-        const verb = dryRun ? "would re-run" : "re-ran";
-        if (retryable.length === rows.length) {
-            if (!dryRun)
-                await api(
-                    `/repos/${repo}/actions/runs/${runId}/rerun-failed-jobs`,
-                    { method: "POST" },
-                );
-            decision = `${verb} all ${rows.length} failed job(s), retry ${attempt} of ${maxRetries}`;
-        } else {
-            // A re-run has to wait for the previous one to finish, so only one
-            // job goes now; the rest are judged again when this attempt ends.
-            const [first, ...rest] = retryable;
-            if (!dryRun)
-                await api(`/repos/${repo}/actions/jobs/${first.id}/rerun`, {
-                    method: "POST",
-                });
-            decision =
-                `${verb} "${first.name}" only, retry ${attempt} of ${maxRetries}; ` +
-                `${
-                    rows.length - retryable.length
-                } job(s) failed on tests and stay as they are` +
-                (rest.length > 0
-                    ? `; ${rest.length} more infrastructure failure(s) will be judged when this attempt ends`
-                    : "");
+    // Checks that depend on the commit, not on the run, are made once.
+    let pullRequestState;
+    const pullRequestIsCurrent = async (run) => {
+        if (pullRequestState === undefined) {
+            const pulls = await api(
+                `/repos/${repo}/pulls?state=open&head=${encodeURIComponent(
+                    `${run.headRepoOwner}:${run.headBranch}`,
+                )}&per_page=5`,
+            );
+            if (pulls.length === 0)
+                pullRequestState = "no open pull request for this branch";
+            else if (!pulls.some((pull) => pull.head.sha === headSha))
+                pullRequestState =
+                    "the pull request has moved on to another commit";
+            else pullRequestState = "current";
         }
-    }
+        return pullRequestState;
+    };
+    let hardenRunner;
+    const hardenRunnerPassed = async () => {
+        if (hardenRunner === undefined)
+            hardenRunner = await hardenRunnerState(repo, headSha);
+        return hardenRunner;
+    };
 
-    // Backslashes and pipes would break the markdown table.
-    const cell = (text) => text.replace(/[\\|]/g, (char) => `\\${char}`);
-    const table = rows
-        .map(
-            (row) =>
-                `| ${cell(row.name)} | ${row.conclusion} | ${
-                    row.retry ? "re-run" : "leave"
-                } | ${cell(row.reason)} |`,
-        )
-        .join("\n");
-    writeSummary(
-        `### Retry decision for run ${runId}, attempt ${attempt}\n\n` +
-            (rows.length > 0
-                ? `| Job | Result | Verdict | Why |\n| --- | --- | --- | --- |\n${table}\n\n`
-                : "") +
-            `**Decision:** ${decision}`,
-    );
+    const sections = [];
+    for (const run of [
+        ownRun,
+        ...(await siblingRuns(repo, headSha, ownRun.id)),
+    ]) {
+        const rows = await failedJobs(repo, run.id);
+        const retryable = rows.filter((row) => row.retry);
+        const realRequiredFailure = rows.find(
+            (row) => !row.retry && REQUIRED_JOB.test(row.name),
+        );
+        const maxRetries = budgets[run.event] ?? budgets.push;
+        const isPullRequest = run.event === "pull_request";
+        let decision;
+
+        if (rows.length === 0) {
+            decision = "no failed job to look at";
+        } else if (retryable.length === 0) {
+            decision = "nothing to re-run";
+        } else if (realRequiredFailure !== undefined) {
+            decision = `"${realRequiredFailure.name}" failed for real, so the run stays red whatever is re-run; not re-running`;
+        } else if (run.attempt > maxRetries) {
+            decision = `attempt ${
+                run.attempt
+            } has already used the ${maxRetries} ${
+                isPullRequest ? "pull request " : ""
+            }retr${maxRetries === 1 ? "y" : "ies"}, not re-running`;
+        } else if (
+            isPullRequest &&
+            (await pullRequestIsCurrent(run)) !== "current"
+        ) {
+            decision = `${pullRequestState}, not re-running`;
+        } else if (
+            isPullRequest &&
+            (await hardenRunnerPassed()) !== "success"
+        ) {
+            // The check covers the whole commit and finishes with the last
+            // workflow on it, so a later completion judges this run again.
+            decision =
+                `${HARDEN_RUNNER_CHECK} is ${hardenRunner}, not re-running` +
+                (hardenRunner === "still running"
+                    ? "; the next completed workflow on this commit judges this run again"
+                    : "");
+        } else {
+            const verb = dryRun ? "would re-run" : "re-ran";
+            try {
+                if (retryable.length === rows.length) {
+                    if (!dryRun)
+                        await api(
+                            `/repos/${repo}/actions/runs/${run.id}/rerun-failed-jobs`,
+                            { method: "POST" },
+                        );
+                    decision = `${verb} all ${rows.length} failed job(s), retry ${run.attempt} of ${maxRetries}`;
+                } else {
+                    // A re-run has to wait for the previous one to finish, so only
+                    // one job goes now; the rest are judged again when this
+                    // attempt ends.
+                    const [first, ...rest] = retryable;
+                    if (!dryRun)
+                        await api(
+                            `/repos/${repo}/actions/jobs/${first.id}/rerun`,
+                            { method: "POST" },
+                        );
+                    decision =
+                        `${verb} "${first.name}" only, retry ${run.attempt} of ${maxRetries}; ` +
+                        `${
+                            rows.length - retryable.length
+                        } job(s) failed on tests and stay as they are` +
+                        (rest.length > 0
+                            ? `; ${rest.length} more infrastructure failure(s) will be judged when this attempt ends`
+                            : "");
+                }
+            } catch (error) {
+                // Typically: another handler re-ran it a moment ago.
+                decision = `re-run request failed, leaving it: ${
+                    /** @type {Error} */ (error).message.slice(0, 200)
+                }`;
+            }
+        }
+
+        // Backslashes and pipes would break the markdown table.
+        const cell = (text) => text.replace(/[\\|]/g, (char) => `\\${char}`);
+        const table = rows
+            .map(
+                (row) =>
+                    `| ${cell(row.name)} | ${row.conclusion} | ${
+                        row.retry ? "re-run" : "leave"
+                    } | ${cell(row.reason)} |`,
+            )
+            .join("\n");
+        sections.push(
+            `### Retry decision for ${run.name} run ${run.id}, attempt ${run.attempt}\n\n` +
+                (rows.length > 0
+                    ? `| Job | Result | Verdict | Why |\n| --- | --- | --- | --- |\n${table}\n\n`
+                    : "") +
+                `**Decision:** ${decision}`,
+        );
+    }
+    writeSummary(sections.join("\n\n"));
 }
 
-main().catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-});
+// Only run when executed directly, so `classifyLog` can be imported.
+if (
+    process.argv[1] &&
+    import.meta.url === pathToFileURL(process.argv[1]).href
+) {
+    main().catch((error) => {
+        console.error(error);
+        process.exitCode = 1;
+    });
+}

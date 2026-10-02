@@ -13,19 +13,22 @@ import { applyEndpointOverrides } from "./endpointOverrides.js";
 
 /**
  * Whether the consensus node answers, shared by every test file this worker
- * runs (the suites run with `isolate: false`). Once a probe has found the
- * node unreachable, every later `new()` fails at once instead of waiting out
- * its hook timeout: vitest's bail only counts failed tests, not failed
- * hooks, so a node that stops answering between files would otherwise cost
- * 120 s per remaining file.
+ * runs (the suites run with `isolate: false`). Once two probes in a row have
+ * found the node unreachable, every later `new()` fails at once instead of
+ * waiting out its hook timeout: vitest's bail only counts failed tests, not
+ * failed hooks, so a node that stops answering between files would
+ * otherwise cost 120 s per remaining file. A single failed probe only fails
+ * its own setup, so one short stall does not take the rest of the run down.
  */
 const reachability = {
     /** @type {string | null} */
     unreachableSince: null,
     lastConfirmedAt: 0,
+    failedProbesInARow: 0,
 };
 const REACHABILITY_PROBE_INTERVAL_MS = 30_000;
 const REACHABILITY_PROBE_DEADLINE_MS = 10_000;
+const REACHABILITY_FAILED_PROBES_TO_LATCH = 2;
 
 /**
  * Asks the node for the cost of an account info query, the same free
@@ -52,7 +55,13 @@ async function assertNetworkReachable(client) {
             .getCost(client);
     } catch (error) {
         if (isTransportFailure(error)) {
-            reachability.unreachableSince = new Date().toISOString();
+            reachability.failedProbesInARow += 1;
+            if (
+                reachability.failedProbesInARow >=
+                REACHABILITY_FAILED_PROBES_TO_LATCH
+            ) {
+                reachability.unreachableSince = new Date().toISOString();
+            }
             throw new Error(
                 `the network stopped answering: ${
                     /** @type {Error} */ (error).message
@@ -60,6 +69,7 @@ async function assertNetworkReachable(client) {
             );
         }
     }
+    reachability.failedProbesInARow = 0;
     reachability.lastConfirmedAt = Date.now();
 }
 
