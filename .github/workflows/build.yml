@@ -64,6 +64,10 @@ jobs:
   test:
     name: Test using Node ${{ matrix.node }}
     runs-on: hiero-client-sdk-linux-large
+    # Backstop for anything outside the test step. A healthy run takes 12-22
+    # min, plus up to 20 more when apt is slow in "Install Playwright
+    # Dependencies". The step caps below are what end a hung Solo network.
+    timeout-minutes: 60
     strategy:
       matrix:
         node: [ "22" ]
@@ -126,8 +130,14 @@ jobs:
           echo "GENESIS_OPERATOR_ID=0.0.2" >> $GITHUB_ENV
           echo "HEDERA_NETWORK=local-node" >> $GITHUB_ENV
 
+      # --bail=1 stops vitest at the first failing test. Without it, a Solo
+      # network that stops answering mid-run makes every remaining test wait
+      # out its full timeout (107 tests x 120 s in run 36851615726), so a job
+      # that fails after 5 min kept running for over an hour. The step cap
+      # covers what bail cannot see: a healthy run takes 4-9 min.
       - name: Run Hedera SDK Integration Tests
-        run: ${{ env.CG_EXEC }} task test:integration:codecov
+        timeout-minutes: 25
+        run: ${{ env.CG_EXEC }} task test:integration:codecov -- --bail=1
 
       - name: Build @hiero-ledger/cryptography
         working-directory: packages/cryptography
@@ -156,6 +166,9 @@ jobs:
   dab-tests:
     name: DAB Tests using Node ${{ matrix.node }}
     runs-on: hiero-client-sdk-linux-medium
+    # Backstop, same reasoning as the test job: 8-9 min healthy, up to 29
+    # min when apt is slow.
+    timeout-minutes: 60
     strategy:
       matrix:
         node: [ "22" ]
@@ -219,8 +232,10 @@ jobs:
           echo "GENESIS_OPERATOR_ID=0.0.2" >> $GITHUB_ENV
           echo "HEDERA_NETWORK=local-node" >> $GITHUB_ENV
 
+      # A healthy run of this step takes 0.7-1.7 min.
       - name: Run DAB Integration Coverage
-        run: task test:integration:dual-mode:codecov
+        timeout-minutes: 15
+        run: task test:integration:dual-mode:codecov -- --bail=1
 
       - name: Upload DAB Coverage Artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -340,6 +355,9 @@ jobs:
           cd examples
           pnpm i
 
+      # run-all-examples.js pings the node after every failed, killed or slow
+      # example and stops the run once two pings in a row go unanswered, so a
+      # node that goes dark costs minutes instead of the 60 min job cap.
       - name: Run all examples
         run: task run:examples
 
