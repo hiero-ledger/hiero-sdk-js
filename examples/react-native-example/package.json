@@ -20,7 +20,7 @@
     "@react-navigation/native": "^7.1.8",
     "expo": "~57.0.4",
     "expo-clipboard": "~58.0.1",
-    "expo-constants": "~57.0.3",
+    "expo-constants": "~58.0.8",
     "expo-font": "~58.0.3",
     "expo-haptics": "~58.0.1",
     "expo-image": "~58.0.6",
