@@ -114,14 +114,7 @@ export default class ObjectMap {
      * @returns {string}
      */
     toString() {
-        /** @type {{[key: string]: any}} */
-        const map = {};
-
-        for (const [key, value] of this._map) {
-            map[key] = value;
-        }
-
-        return JSON.stringify(map);
+        return JSON.stringify(this.toJSON());
     }
 
     toJSON() {
