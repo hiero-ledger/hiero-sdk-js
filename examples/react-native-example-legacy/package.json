@@ -23,7 +23,7 @@
     "devDependencies": {
         "@babel/core": "^7.23.3",
         "@types/react": "19.2.14",
-        "react-native-dotenv": "^4.1.1",
+        "react-native-dotenv": "^5.0.0",
         "typescript": "^5.7.2"
     },
     "peerDependencies": {
