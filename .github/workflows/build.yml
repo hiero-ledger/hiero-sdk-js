@@ -355,6 +355,9 @@ jobs:
           cd examples
           pnpm i
 
+      # run-all-examples.js pings the node after every failed, killed or slow
+      # example and stops the run once two pings in a row go unanswered, so a
+      # node that goes dark costs minutes instead of the 60 min job cap.
       - name: Run all examples
         run: task run:examples
 

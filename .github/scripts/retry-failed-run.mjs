@@ -62,6 +62,10 @@ const INFRA_JOB_ERRORS = [
     ["Solo did not come up", /SoloError/],
     ["mirror node ingestion lag", /mirror node did not ingest in time/],
     [
+        "examples runner found the network unreachable",
+        /the network (stopped answering|has not answered)/,
+    ],
+    [
         "package registry or connection error",
         /ERR_PNPM_(META_)?FETCH|\b(ECONNREFUSED|ECONNRESET|ETIMEDOUT|EAI_AGAIN|ENOTFOUND)\b|socket hang up/,
     ],
