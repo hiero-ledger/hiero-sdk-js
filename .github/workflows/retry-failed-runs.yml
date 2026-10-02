@@ -1,0 +1,67 @@
+name: Retry Failed Runs
+# Re-runs the failed jobs of a Build & Test or Common JS run when they failed
+# for a reason unrelated to the code: a job that hit its timeout-minutes, a
+# Solo network that stopped answering, a lost runner, a registry or connection
+# error. Jobs that failed on a test, build or lint error are left alone, and
+# so is a run that a person cancelled. The decision and its reasons land in
+# the job summary. The rules live in .github/scripts/retry-failed-run.mjs.
+on:
+  workflow_run:
+    workflows:
+      - "Build & Test"
+      - "Common JS"
+    types:
+      - completed
+
+defaults:
+  run:
+    shell: bash
+
+permissions:
+  contents: read
+
+jobs:
+  retry:
+    name: Retry infrastructure failures
+    # A job that hits its timeout-minutes ends as "cancelled", so cancelled
+    # runs are inspected too; the script tells a timeout apart from a cancel
+    # by a person.
+    if: contains(fromJSON('["failure", "cancelled", "timed_out"]'), github.event.workflow_run.conclusion)
+    runs-on: hiero-client-sdk-linux-medium
+    timeout-minutes: 10
+    permissions:
+      actions: write
+      checks: read
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
+        with:
+          egress-policy: audit
+
+      # A workflow_run job checks out the default branch, never the code of
+      # the run it judges.
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+
+      - name: Decide and re-run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          RUN_EVENT: ${{ github.event.workflow_run.event }}
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          HEAD_REPO_OWNER: ${{ github.event.workflow_run.head_repository.owner.login }}
+          # A run is re-run at most this many times.
+          MAX_RETRIES: 3
+        run: node .github/scripts/retry-failed-run.mjs
