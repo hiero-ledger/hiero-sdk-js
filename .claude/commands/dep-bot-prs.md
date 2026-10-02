@@ -57,7 +57,7 @@ what they would do and stop before doing it.
 | `reqstatus.sh <pr>...` | one line per PR: `ALL-REQUIRED-GREEN` / `WAITING` / `FAILED`, head SHA, the state of every required check and the ones that have not reported yet (`missing=`) |
 | `classify.sh <pr>` | every non-green required job on the head: run id, job id, `REAL` / `FLAKE` / `INFRA` / `CANCELLED` / `RUNNING` / `UNKNOWN` and a one-line reason from the log |
 | `hardenok.sh <pr>` | exit 0 only when `StepSecurity Harden-Runner` on the head is `completed/success` |
-| `rerun.sh <pr> [job-id...]` | Harden-Runner gate, then one `gh run rerun --job` per `FLAKE` / `INFRA` / `CANCELLED` job (or per given job id) |
+| `rerun.sh <pr> [job-id...]` | Harden-Runner gate, then one re-run call per run for its `FLAKE` / `INFRA` / `CANCELLED` jobs (or the given job ids): `--job` for one job, `--failed` for several; a run that also has a `REAL` / `UNKNOWN` job is left alone |
 | `lockdups.py <pnpm-lock.yaml>` | duplicate keys in `importers` / `packages` / `snapshots`, one-line `key: {}` leaves included |
 | `simmerge.sh <pr> [sha]` | merges the PR onto current `main` (both fetched from `https://github.com/$R.git`) in a temp worktree, then `lockdups.py` and the `pnpm@9.15.5 install --lockfile-only` no-op check; exit 3 when the head is not `sha` |
 | `mergepr.sh <pr>` | scope gate, `reqstatus.sh` and `simmerge.sh` for one head SHA, then approve pinned to that SHA and `gh pr merge --squash --match-head-commit` |
@@ -163,13 +163,18 @@ report it. `rerun.sh` checks this itself and refuses otherwise.
 
 ```bash
 DRY_RUN=1 scripts/dep-bot-prs/rerun.sh N      # what would be re-run, and why
-scripts/dep-bot-prs/rerun.sh N                # Harden-Runner gate, then gh run rerun --job for every FLAKE / INFRA / CANCELLED job
+scripts/dep-bot-prs/rerun.sh N                # Harden-Runner gate, then one re-run per run for its FLAKE / INFRA / CANCELLED jobs
 scripts/dep-bot-prs/rerun.sh N <job-id>       # an UNKNOWN job you classified by hand (job id = third field of its classify line)
 gh pr comment N --repo $R --body "@dependabot rebase"   # PR head older than main's last CI-affecting change
 ```
 
-- Jobs are re-run one at a time (`gh run rerun --job <id>`, dependencies included) so `REAL` failures and the
-  non-required DAB / examples jobs do not go back on the shared runners, which are the bottleneck.
+- One re-run call per run, because GitHub refuses a second re-run while the first is in progress. A run with one
+  job to re-run gets `gh run rerun --job <id>` (dependencies included), so the non-required DAB / examples jobs
+  do not go back on the shared runners, which are the bottleneck. A run with several gets
+  `gh run rerun <run> --failed`, which also re-runs any non-required failed job of that run.
+- A run that also has a `REAL` or `UNKNOWN` required job is not re-run at all: the PR stays red anyway, and
+  neither matrix turns `fail-fast` off, so a job cancelled next to a `REAL` failure (e.g. `Build using Node 22`
+  next to the eslint 10 crash on Node 24) fails the same way.
 - A job can only be re-run once its whole run is `completed`; `rerun.sh` says so otherwise, try again later.
 - A PR whose head is weeks old (e.g. opened before the Solo bump) should be rebased, not re-run: a re-run
   reuses the old workflow snapshot.

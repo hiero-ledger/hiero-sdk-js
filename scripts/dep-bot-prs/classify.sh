@@ -10,7 +10,7 @@
 #        RUNNING    the job has not finished
 #        UNKNOWN    no known signature; the first error lines of the log follow, indented, so you can decide
 # REAL signatures are checked first: a log that has both a real error and a known flake is REAL.
-# rerun.sh consumes these lines and only re-runs FLAKE, INFRA and CANCELLED jobs.
+# rerun.sh consumes these lines and only re-runs FLAKE, INFRA and CANCELLED jobs, in runs with no REAL or UNKNOWN job.
 # Logs are 5-6k lines and the API is slow; run several PRs in the background.
 set -uo pipefail
 # shellcheck source=scripts/dep-bot-prs/common.sh
