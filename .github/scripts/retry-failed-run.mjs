@@ -40,6 +40,10 @@ const INFRA_TEST_ERRORS = [
         /\b(ECONNREFUSED|ECONNRESET|ETIMEDOUT|EAI_AGAIN|ENOTFOUND|EPIPE)\b|socket hang up/,
     ],
     ["mock server port collision", /\bEADDRINUSE\b/],
+    [
+        "test setup found the network unreachable",
+        /the network (stopped answering|has not answered)/,
+    ],
 ];
 
 // A job that failed without a failure report failed on the infrastructure
@@ -378,12 +382,14 @@ async function main() {
         }
     }
 
+    // Backslashes and pipes would break the markdown table.
+    const cell = (text) => text.replace(/[\\|]/g, (char) => `\\${char}`);
     const table = rows
         .map(
             (row) =>
-                `| ${row.name} | ${row.conclusion} | ${
+                `| ${cell(row.name)} | ${row.conclusion} | ${
                     row.retry ? "re-run" : "leave"
-                } | ${row.reason.replace(/\|/g, "\\|")} |`,
+                } | ${cell(row.reason)} |`,
         )
         .join("\n");
     writeSummary(

@@ -64,10 +64,10 @@ jobs:
   test:
     name: Test using Node ${{ matrix.node }}
     runs-on: hiero-client-sdk-linux-large
-    # A healthy run takes 12-22 min. The cap turns a hung Solo network into a
-    # failed job that can be re-run, instead of a job that blocks for the 6 h
-    # default.
-    timeout-minutes: 45
+    # Backstop for anything outside the test step. A healthy run takes 12-22
+    # min, plus up to 20 more when apt is slow in "Install Playwright
+    # Dependencies". The step caps below are what end a hung Solo network.
+    timeout-minutes: 60
     strategy:
       matrix:
         node: [ "22" ]
@@ -133,8 +133,10 @@ jobs:
       # --bail=1 stops vitest at the first failing test. Without it, a Solo
       # network that stops answering mid-run makes every remaining test wait
       # out its full timeout (107 tests x 120 s in run 36851615726), so a job
-      # that fails after 5 min kept running for over an hour.
+      # that fails after 5 min kept running for over an hour. The step cap
+      # covers what bail cannot see: a healthy run takes 4-9 min.
       - name: Run Hedera SDK Integration Tests
+        timeout-minutes: 25
         run: ${{ env.CG_EXEC }} task test:integration:codecov -- --bail=1
 
       - name: Build @hiero-ledger/cryptography
@@ -164,8 +166,9 @@ jobs:
   dab-tests:
     name: DAB Tests using Node ${{ matrix.node }}
     runs-on: hiero-client-sdk-linux-medium
-    # A healthy run takes 8-9 min; same reasoning as the test job.
-    timeout-minutes: 30
+    # Backstop, same reasoning as the test job: 8-9 min healthy, up to 29
+    # min when apt is slow.
+    timeout-minutes: 60
     strategy:
       matrix:
         node: [ "22" ]
@@ -229,7 +232,9 @@ jobs:
           echo "GENESIS_OPERATOR_ID=0.0.2" >> $GITHUB_ENV
           echo "HEDERA_NETWORK=local-node" >> $GITHUB_ENV
 
+      # A healthy run of this step takes 0.7-1.7 min.
       - name: Run DAB Integration Coverage
+        timeout-minutes: 15
         run: task test:integration:dual-mode:codecov -- --bail=1
 
       - name: Upload DAB Coverage Artifacts
