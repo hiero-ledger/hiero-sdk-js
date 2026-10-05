@@ -77,6 +77,12 @@ const INFRA_JOB_ERRORS = [
 // out after 25 minutes." (older runners: "The action has timed out.").
 const TIMED_OUT = /exceeded the maximum execution time|has timed out/;
 const CANCELLED_BY_PERSON = /The run was canceled by @/;
+// Both matrices keep GitHub's default fail-fast, so when one job of a matrix
+// fails GitHub cancels its sibling with this note (the quoted name is the
+// job that failed, e.g. "test-integration-node._22"). The sibling is a
+// follower: whether the run is re-run is decided by the job that failed.
+const CANCELLED_BY_FAIL_FAST =
+    /The strategy configuration was canceled because/;
 const CANCELLED = /The operation was canceled/;
 // Annotations that say nothing about the cause.
 const GENERIC_ANNOTATION =
@@ -144,6 +150,15 @@ export function classifyLog(rawLog, annotations = []) {
     // error annotations otherwise. Every entry has to be an infrastructure
     // failure for the job to be re-run.
     let entries = failureBlocks(lines);
+    // A matrix sibling cancelled by fail-fast failed on nothing of its own
+    // (its log has no failure report), so it follows the job that failed:
+    // a real failure there stops the run through REQUIRED_JOB, an
+    // infrastructure failure re-runs both.
+    if (entries.length === 0 && CANCELLED_BY_FAIL_FAST.test(notes))
+        return {
+            retry: true,
+            reason: "cancelled by fail-fast after another matrix job failed",
+        };
     if (entries.length === 0)
         entries = annotations.filter((note) => !GENERIC_ANNOTATION.test(note));
     if (entries.length > 0) {
