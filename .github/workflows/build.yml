@@ -122,6 +122,15 @@ jobs:
           mirrorNodePortRest: 5551
           grpcProxyPort: 8080
 
+      # The Solo action reaches the consensus node through a kubectl
+      # port-forward and haproxy. In the hung runs that path stopped answering
+      # a minute or two into the tests while envoy's direct path to the same
+      # node kept working, so 50211 (and 36211 in dual mode) is connected
+      # straight to the node's NodePort instead; the script header has the
+      # details and the fallbacks.
+      - name: Connect the consensus node port directly
+        run: node .github/scripts/forward-consensus-port.mjs
+
       - name: Set Operator Account
         run: |
           echo "OPERATOR_KEY=${{ steps.solo.outputs.ed25519PrivateKey }}" >> $GITHUB_ENV
@@ -162,6 +171,14 @@ jobs:
             ./packages/cryptography/coverage/browser/lcov.info
             ./coverage/node/lcov.info
             ./coverage/browser/lcov.info
+
+      - name: Upload consensus port forward logs
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: consensus-port-forward-test-node-${{ matrix.node }}
+          path: ${{ runner.temp }}/consensus-port-forward/
+          if-no-files-found: ignore
 
   dab-tests:
     name: DAB Tests using Node ${{ matrix.node }}
@@ -224,6 +241,15 @@ jobs:
           dualMode: true
           dualModeGrpcProxyPort: 8081
 
+      # The Solo action reaches the consensus node through a kubectl
+      # port-forward and haproxy. In the hung runs that path stopped answering
+      # a minute or two into the tests while envoy's direct path to the same
+      # node kept working, so 50211 (and 36211 in dual mode) is connected
+      # straight to the node's NodePort instead; the script header has the
+      # details and the fallbacks.
+      - name: Connect the consensus node port directly
+        run: node .github/scripts/forward-consensus-port.mjs
+
       - name: Set Operator Account
         run: |
           echo "OPERATOR_KEY=${{ steps.solo.outputs.ed25519PrivateKey }}" >> $GITHUB_ENV
@@ -245,6 +271,14 @@ jobs:
           path: |
             ./coverage/node-integration-dual-mode/lcov.info
             ./coverage/browser-integration-dual-mode/lcov.info
+
+      - name: Upload consensus port forward logs
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: consensus-port-forward-dab-tests-node-${{ matrix.node }}
+          path: ${{ runner.temp }}/consensus-port-forward/
+          if-no-files-found: ignore
 
   coverage-upload:
     name: Upload Coverage to Codecov
@@ -342,6 +376,15 @@ jobs:
           mirrorNodePortRest: 5551
           grpcProxyPort: 8080
 
+      # The Solo action reaches the consensus node through a kubectl
+      # port-forward and haproxy. In the hung runs that path stopped answering
+      # a minute or two into the tests while envoy's direct path to the same
+      # node kept working, so 50211 (and 36211 in dual mode) is connected
+      # straight to the node's NodePort instead; the script header has the
+      # details and the fallbacks.
+      - name: Connect the consensus node port directly
+        run: node .github/scripts/forward-consensus-port.mjs
+
       - name: Set Operator Account
         run: |
           echo "OPERATOR_KEY=${{ steps.solo.outputs.ecdsaPrivateKey }}" >> $GITHUB_ENV
@@ -400,3 +443,11 @@ jobs:
           ./node_modules/.bin/tsc --noEmit
           cd ../react-native-example-legacy
           ./node_modules/.bin/tsc --noEmit
+
+      - name: Upload consensus port forward logs
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: consensus-port-forward-examples-node-${{ matrix.node }}
+          path: ${{ runner.temp }}/consensus-port-forward/
+          if-no-files-found: ignore
