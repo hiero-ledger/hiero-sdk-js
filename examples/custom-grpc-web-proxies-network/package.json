@@ -2,38 +2,19 @@
     "name": "custom-grpc-network",
     "version": "0.1.0",
     "private": true,
+    "type": "module",
     "dependencies": {
         "@hiero-ledger/sdk": "link:../..",
-        "@testing-library/jest-dom": "^7.0.1",
-        "@testing-library/react": "^16.3.2",
-        "@testing-library/user-event": "^14.6.1",
-        "react": "^19.2.4",
-        "react-dom": "^19.2.4",
-        "react-scripts": "5.0.1",
-        "web-vitals": "^6.0.0"
+        "react": "^19.3.0",
+        "react-dom": "^19.3.0"
+    },
+    "devDependencies": {
+        "@vitejs/plugin-react": "^6.1.2",
+        "vite": "^8.3.2"
     },
     "scripts": {
-        "start": "react-scripts start",
-        "build": "react-scripts build",
-        "test": "react-scripts test",
-        "eject": "react-scripts eject"
-    },
-    "eslintConfig": {
-        "extends": [
-            "react-app",
-            "react-app/jest"
-        ]
-    },
-    "browserslist": {
-        "production": [
-            ">0.2%",
-            "not dead",
-            "not op_mini all"
-        ],
-        "development": [
-            "last 1 chrome version",
-            "last 1 firefox version",
-            "last 1 safari version"
-        ]
+        "dev": "vite",
+        "build": "vite build",
+        "preview": "vite preview"
     }
 }

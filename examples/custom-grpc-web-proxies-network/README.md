@@ -6,8 +6,15 @@ This guide demonstrates how to configure the Hedera SDK to communicate with a cu
 
 ### Prerequisites
 
--   Install the required Node modules by running `npm install`
--   Create a `.env` file in the root directory and add your credentials.
+-   Install the required Node modules by running `pnpm install`
+-   Create a `.env` file in this example's directory and add your credentials:
+
+```bash
+VITE_OPERATOR_ID=<YOUR_ACCOUNT_ID>
+VITE_OPERATOR_KEY=<YOUR_PRIVATE_KEY>
+```
+
+Vite only exposes variables prefixed with `VITE_` to the browser bundle, so these values end up in the built JavaScript. Use a testnet account only.
 
 ### 1. Setup the operator account
 
@@ -59,4 +66,4 @@ const response = await transferTransaction.execute(client);
 
 ### 5. Running the application
 
-Once you've set up the client and transaction as described above, you can run your React application with `npm start`. The transfer transaction will be executed using the **custom gRPC web proxies** configured in the Client.forNetwork() method.
+Once you've set up the client and transaction as described above, you can run your React application with `pnpm dev` (or create a production build with `pnpm build`). The transfer transaction will be executed using the **custom gRPC web proxies** configured in the Client.forNetwork() method.
