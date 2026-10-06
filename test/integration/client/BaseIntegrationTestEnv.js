@@ -1,11 +1,95 @@
 import {
+    AccountInfoQuery,
     PrivateKey,
     TokenDeleteTransaction,
     AccountId,
     Wallet,
+    MaxAttemptsOrTimeoutError,
 } from "../../../src/exports.js";
+import GrpcServiceError from "../../../src/grpc/GrpcServiceError.js";
+import GrpcStatus from "../../../src/grpc/GrpcStatus.js";
 import LocalProvider from "../../../src/LocalProvider.js";
 import { applyEndpointOverrides } from "./endpointOverrides.js";
+
+/**
+ * Whether the consensus node answers, shared by every test file this worker
+ * runs (the suites run with `isolate: false`). Once two probes in a row have
+ * found the node unreachable, every later `new()` fails at once instead of
+ * waiting out its hook timeout: vitest's bail only counts failed tests, not
+ * failed hooks, so a node that stops answering between files would
+ * otherwise cost 120 s per remaining file. A single failed probe only fails
+ * its own setup, so one short stall does not take the rest of the run down.
+ */
+const reachability = {
+    /** @type {string | null} */
+    unreachableSince: null,
+    lastConfirmedAt: 0,
+    failedProbesInARow: 0,
+};
+const REACHABILITY_PROBE_INTERVAL_MS = 30_000;
+const REACHABILITY_PROBE_DEADLINE_MS = 10_000;
+const REACHABILITY_FAILED_PROBES_TO_LATCH = 2;
+
+/**
+ * Asks the node for the cost of an account info query, the same free
+ * request `Client.ping()` makes, at most every 30 s. Only a transport
+ * failure marks the network unreachable; a status such as BUSY proves the
+ * node is there.
+ *
+ * @param {Client} client
+ * @returns {Promise<void>}
+ */
+async function assertNetworkReachable(client) {
+    if (
+        client.operatorAccountId == null ||
+        Date.now() - reachability.lastConfirmedAt <
+            REACHABILITY_PROBE_INTERVAL_MS
+    ) {
+        return;
+    }
+    try {
+        await new AccountInfoQuery()
+            .setAccountId(client.operatorAccountId)
+            .setMaxAttempts(2)
+            .setGrpcDeadline(REACHABILITY_PROBE_DEADLINE_MS)
+            .getCost(client);
+    } catch (error) {
+        if (isTransportFailure(error)) {
+            reachability.failedProbesInARow += 1;
+            if (
+                reachability.failedProbesInARow >=
+                REACHABILITY_FAILED_PROBES_TO_LATCH
+            ) {
+                reachability.unreachableSince = new Date().toISOString();
+            }
+            throw new Error(
+                `the network stopped answering: ${
+                    /** @type {Error} */ (error).message
+                }`,
+            );
+        }
+    }
+    reachability.failedProbesInARow = 0;
+    reachability.lastConfirmedAt = Date.now();
+}
+
+/**
+ * @param {unknown} error
+ * @returns {boolean}
+ */
+function isTransportFailure(error) {
+    if (error instanceof GrpcServiceError) {
+        return [
+            GrpcStatus.Unavailable,
+            GrpcStatus.DeadlineExceeded,
+            GrpcStatus.Timeout,
+        ].some((status) => status._code === error.status._code);
+    }
+    return (
+        error instanceof MaxAttemptsOrTimeoutError &&
+        /timeout|UNAVAILABLE|DEADLINE_EXCEEDED/i.test(error.message)
+    );
+}
 
 /**
  * @typedef {import("../../../src/exports.js").TokenId} TokenId
@@ -55,6 +139,12 @@ export default class BaseIntegrationTestEnv {
      * @property {boolean} [options.throwaway]
      */
     static async new(options = {}) {
+        if (reachability.unreachableSince != null) {
+            throw new Error(
+                `the network has not answered since ${reachability.unreachableSince}, failing setup at once`,
+            );
+        }
+
         let client, wallet;
 
         if (
@@ -137,6 +227,7 @@ export default class BaseIntegrationTestEnv {
             }
         }
         client.setNetwork(network);
+        await assertNetworkReachable(client);
         wallet = new Wallet(
             this.operatorId,
             this.operatorKey,
