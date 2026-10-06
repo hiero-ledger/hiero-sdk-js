@@ -7,7 +7,7 @@ packages:
 
 overrides:
     bn.js: 5.2.3
-    protobufjs: 8.2.0
+    protobufjs: 8.6.6
     esbuild: ">=0.28.1"
     brace-expansion@1: 1.1.16
     brace-expansion@2: 2.1.2
