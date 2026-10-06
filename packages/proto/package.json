@@ -35,7 +35,7 @@
     "last 1 Firefox versions"
   ],
   "dependencies": {
-    "long": "5.3.1"
+    "long": "5.3.2"
   },
   "devDependencies": {
     "@babel/cli": "7.23.4",
@@ -64,14 +64,14 @@
     "jsdoc": "4.0.0",
     "npm-run-all": "4.1.5",
     "prettier": "3.0.3",
-    "protobufjs-cli": "2.0.1",
+    "protobufjs-cli": "2.5.7",
     "replace-in-file": "9.0.0",
     "semver": "7.3.8",
     "tmp": "0.2.7",
     "typescript": "5.9.3"
   },
   "peerDependencies": {
-    "protobufjs": "^8.0.1"
+    "protobufjs": "^8.6.6"
   },
   "publishConfig": {
     "access": "public",

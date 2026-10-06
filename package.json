@@ -91,7 +91,7 @@
         "crypto-js": "4.2.0",
         "debug": "4.4.1",
         "js-base64": "3.7.4",
-        "long": "5.3.1",
+        "long": "5.3.2",
         "pino": "10.1.0",
         "pino-pretty": "13.0.0",
         "protobufjs": "8.6.6",
@@ -161,7 +161,7 @@
     },
     "pnpm": {
         "overrides": {
-            "protobufjs": "8.2.0",
+            "protobufjs": "$protobufjs",
             "esbuild": ">=0.28.1",
             "brace-expansion@1": "1.1.16",
             "brace-expansion@2": "2.1.2",
