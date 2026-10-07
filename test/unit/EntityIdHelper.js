@@ -1,6 +1,7 @@
 import BigNumber from "bignumber.js";
 import Long from "long";
 import * as EntityIdHelper from "../../src/EntityIdHelper.js";
+import { longFromOtherCopy } from "./utils/foreignLong.js";
 
 describe("EntityIdHelper", function () {
     it("should return hex encoded solidity address using toSolidityAddress", function () {
@@ -94,5 +95,24 @@ describe("EntityIdHelper", function () {
         const evmAddress = "0x00f10566dd219f4cfb787858b9909a468131dc0b";
         const result = EntityIdHelper.publicKeyToAlias(evmAddress);
         expect(result).to.eql(alias);
+    });
+
+    describe("fromEvmAddress", function () {
+        it("keeps shard and realm Longs from another copy of the long package exact", function () {
+            const shard = longFromOtherCopy("9007199254740993");
+            const realm = longFromOtherCopy("9007199254740993");
+            expect(shard instanceof Long).to.be.false;
+
+            const [shardLong, realmLong, num] = EntityIdHelper.fromEvmAddress(
+                shard,
+                realm,
+                "0x000000000000000000000000000000000000000a",
+            );
+
+            expect(shardLong).to.be.instanceOf(Long);
+            expect(shardLong.toString()).to.equal("9007199254740993");
+            expect(realmLong.toString()).to.equal("9007199254740993");
+            expect(num.toString()).to.equal("10");
+        });
     });
 });

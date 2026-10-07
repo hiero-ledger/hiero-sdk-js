@@ -1,8 +1,9 @@
 import {
-    AccountBalanceQuery,
     AccountInfoQuery,
     Hbar,
     Status,
+    TransactionReceiptQuery,
+    TransferTransaction,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 
@@ -64,8 +65,15 @@ describe("GetCost", function () {
             .setQueryPayment(new Hbar(1))
             .execute(env.client);
 
-        await new AccountBalanceQuery()
-            .setAccountId(operatorId)
+        const response = await new TransferTransaction()
+            .addHbarTransfer(operatorId, new Hbar(-1))
+            .addHbarTransfer(env.client.operatorAccountId, new Hbar(1))
+            .execute(env.client);
+
+        // Switching to a free receipt query carrying
+        // the assertion that a zero payment is accepted.
+        await new TransactionReceiptQuery()
+            .setTransactionId(response.transactionId)
             .setQueryPayment(new Hbar(0))
             .execute(env.client);
     });
@@ -76,11 +84,6 @@ describe("GetCost", function () {
         await new AccountInfoQuery()
             .setAccountId(operatorId)
             .setQueryPayment(new Hbar(10))
-            .execute(env.client);
-
-        await new AccountBalanceQuery()
-            .setAccountId(operatorId)
-            .setQueryPayment(new Hbar(0))
             .execute(env.client);
     });
 

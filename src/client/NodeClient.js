@@ -15,6 +15,7 @@ import {
     LocalNodeNetwork,
     MirrorNetwork,
 } from "../constants/ClientConstants.js";
+import NodeHttpTransport from "../http/NodeHttpTransport.js";
 
 const readFileAsync = util.promisify(fs.readFile);
 
@@ -349,6 +350,15 @@ export default class NodeClient extends Client {
         }
 
         return this;
+    }
+
+    /**
+     * @override
+     * @param {import("../http/HttpTransportConfiguration.js").default} configuration
+     * @returns {import("../http/HttpTransport.js").default}
+     */
+    _createDefaultHttpTransport(configuration) {
+        return NodeHttpTransport.create(configuration);
     }
 
     /**

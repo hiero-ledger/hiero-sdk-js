@@ -29,13 +29,13 @@ export default class Timestamp {
          * @type {Long}
          */
         this.seconds =
-            seconds instanceof Long ? seconds : Long.fromNumber(seconds);
+            seconds instanceof Long ? seconds : Long.fromValue(seconds);
 
         /**
          * @readonly
          * @type {Long}
          */
-        this.nanos = nanos instanceof Long ? nanos : Long.fromNumber(nanos);
+        this.nanos = nanos instanceof Long ? nanos : Long.fromValue(nanos);
 
         Object.freeze(this);
     }

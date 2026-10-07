@@ -19,6 +19,7 @@ import TokenKeyValidation from "./TokenKeyValidation.js";
  * @typedef {import("@hiero-ledger/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
  * @typedef {import("@hiero-ledger/proto").proto.ITokenUpdateTransactionBody} HieroProto.proto.ITokenUpdateTransactionBody
  * @typedef {import("@hiero-ledger/proto").proto.ITokenID} HieroProto.proto.ITokenID
+ * @typedef {import("long").default} Long
  */
 
 /**

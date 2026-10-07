@@ -1,7 +1,6 @@
 import {
     AccountCreateTransaction,
     AccountId,
-    Client,
     Hbar,
     NodeCreateTransaction,
     NodeDeleteTransaction,
@@ -11,6 +10,7 @@ import {
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
+import { clientForName } from "../client.js";
 
 dotenv.config();
 
@@ -55,7 +55,7 @@ async function main() {
         process.env.GENESIS_OPERATOR_ID,
     );
     const genesisOperatorKey = privateKeyFromEnv("GENESIS_OPERATOR_KEY");
-    const client = Client.forName(network).setOperator(
+    const client = clientForName(network).setOperator(
         genesisOperatorId,
         genesisOperatorKey,
     );

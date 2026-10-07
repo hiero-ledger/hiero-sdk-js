@@ -10,7 +10,7 @@ import ObjectMap from "../ObjectMap.js";
  */
 
 /**
- * @typedef {import("long")} Long
+ * @typedef {import("long").default} Long
  */
 
 /**

@@ -6,7 +6,7 @@ import EvmAddress from "../EvmAddress.js";
 import * as util from "../util.js";
 
 /**
- * @typedef {import("long")} Long
+ * @typedef {import("long").default} Long
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
  * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
@@ -17,7 +17,7 @@ import * as util from "../util.js";
  */
 export default class TopicId {
     /**
-     * @param {number | Long | import("../EntityIdHelper").IEntityId} props
+     * @param {number | Long | import("../EntityIdHelper.js").IEntityId} props
      * @param {(number | Long)=} realm
      * @param {(number | Long)=} num
      */

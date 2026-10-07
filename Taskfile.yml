@@ -89,6 +89,7 @@ tasks:
 
     build:
         cmds:
+            - rm -rf lib
             - task: build:prep
             - task: build:compile
 
@@ -110,6 +111,7 @@ tasks:
     "build:compile":
         cmds:
             - npx babel src -d lib --out-file-extension .cjs
+            - node ./scripts/generate-cts-declarations.js lib
             - npx rollup -c
 
     clean:
@@ -177,10 +179,10 @@ tasks:
             - npx vitest --config=test/vitest-node.config.ts {{.CLI_ARGS}}
     "test:unit:node:codecov":
         cmds:
-            - npx vitest --coverage --config=test/vitest-node.config.ts
+            - npx vitest --coverage --config=test/vitest-node.config.ts {{.CLI_ARGS}}
     "test:unit:browser:codecov":
         cmds:
-            - npx vitest --coverage --config=test/vitest-browser.config.ts
+            - npx vitest --coverage --config=test/vitest-browser.config.ts {{.CLI_ARGS}}
     "test:unit:codecov":
         deps:
             - test:unit:node:codecov
@@ -204,10 +206,10 @@ tasks:
             - npx vitest --config=test/vitest-browser-integration.config.ts {{.CLI_ARGS}}
     "test:integration:node:codecov":
         cmds:
-            - npx vitest --coverage --config=test/vitest-node-integration.config.ts
+            - npx vitest --coverage --config=test/vitest-node-integration.config.ts {{.CLI_ARGS}}
     "test:integration:browser:codecov":
         cmds:
-            - npx vitest --coverage --config=test/vitest-browser-integration.config.ts
+            - npx vitest --coverage --config=test/vitest-browser-integration.config.ts {{.CLI_ARGS}}
 
     "test:integration:codecov":
         deps:
@@ -216,12 +218,12 @@ tasks:
 
     "test:integration:dual-mode":
         cmds:
-            - npx vitest --maxWorkers=1 --config=test/vitest-node-integration-dual-mode.config.ts
-            - npx vitest --maxWorkers=1 --config=test/vitest-browser-integration-dual-mode.config.ts
+            - npx vitest --maxWorkers=1 --config=test/vitest-node-integration-dual-mode.config.ts {{.CLI_ARGS}}
+            - npx vitest --maxWorkers=1 --config=test/vitest-browser-integration-dual-mode.config.ts {{.CLI_ARGS}}
     "test:integration:dual-mode:codecov":
         cmds:
-            - npx vitest --coverage --maxWorkers=1 --config=test/vitest-node-integration-dual-mode.config.ts
-            - npx vitest --coverage --maxWorkers=1 --config=test/vitest-browser-integration-dual-mode.config.ts
+            - npx vitest --coverage --maxWorkers=1 --config=test/vitest-node-integration-dual-mode.config.ts {{.CLI_ARGS}}
+            - npx vitest --coverage --maxWorkers=1 --config=test/vitest-browser-integration-dual-mode.config.ts {{.CLI_ARGS}}
 
     "update:proto":
         desc: "Fetch protos from submodule at tag, regenerate JS (run only when bumping proto version)"

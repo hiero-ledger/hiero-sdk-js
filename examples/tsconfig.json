@@ -18,6 +18,8 @@
         "moduleResolution": "node",
         "allowSyntheticDefaultImports": true,
         "esModuleInterop": true,
+        // Generated Long declarations fail lib checks, see https://github.com/hiero-ledger/hiero-sdk-js/issues/4373
+        "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true,
         "resolveJsonModule": true,
         "noEmit": true

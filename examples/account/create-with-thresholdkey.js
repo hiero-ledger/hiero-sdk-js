@@ -1,18 +1,20 @@
 import {
-    Client,
+    MirrorNodeAccountBalanceQuery,
     PrivateKey,
     AccountId,
     Hbar,
     AccountCreateTransaction,
     TransferTransaction,
-    AccountBalanceQuery,
     AccountDeleteTransaction,
     KeyList,
     Logger,
     LogLevel,
+    Status,
 } from "@hiero-ledger/sdk";
+import { retryOnStatus, untilMirror } from "../wait-for-mirror.js";
 
 import dotenv from "dotenv";
+import { clientForName } from "../client.js";
 
 dotenv.config();
 
@@ -39,7 +41,7 @@ async function main() {
     const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
 
     //  Create the client based on the HEDERA_NETWORK environment variable
-    const client = Client.forName(process.env.HEDERA_NETWORK);
+    const client = clientForName(process.env.HEDERA_NETWORK);
 
     client.setOperator(operatorId, operatorKey);
 
@@ -115,14 +117,16 @@ async function main() {
         // Wait for the transfer to reach consensus
         await transferTxResponse.getReceipt(client);
 
-        // Query the account balance after the transfer
-        const accountBalanceAfterTransfer = await new AccountBalanceQuery()
-            .setAccountId(newAccountId)
-            .execute(client);
+        const accountBalanceAfterTransfer = await hbarBalance(
+            client,
+            newAccountId,
+            new Hbar(50),
+            true,
+        );
 
         console.log(
             "New account's Hbar balance after transfer: " +
-                accountBalanceAfterTransfer.hbars.toString(),
+                accountBalanceAfterTransfer.toString(),
         );
 
         /*
@@ -143,10 +147,43 @@ async function main() {
         console.log("Account deleted successfully");
     } catch (error) {
         console.error("Error occurred during account creation");
+        throw error;
     } finally {
         client.close();
         console.log("Create Account With Threshold Key Example Complete!");
     }
+}
+
+/**
+ * Read an HBAR balance from the mirror node.
+ *
+ * The mirror node ingests consensus state asynchronously, so a read straight
+ * after a transaction can still return the previous value. Pass `previous` to
+ * poll until the value moves; the loop is bounded so an example cannot hang.
+ *
+ * @param {import("@hiero-ledger/sdk").Client} client
+ * @param {import("@hiero-ledger/sdk").AccountId | string} accountId
+ * @param {import("@hiero-ledger/sdk").Hbar} expected
+ * @param {boolean} [retryMissing]
+ * @returns {Promise<import("@hiero-ledger/sdk").Hbar>}
+ */
+async function hbarBalance(client, accountId, expected, retryMissing = false) {
+    return untilMirror(
+        async (remainingMs) => {
+            const { hbars } = await new MirrorNodeAccountBalanceQuery()
+                .setAccountId(accountId)
+                .execute(client, remainingMs);
+
+            return hbars.toTinybars().equals(expected.toTinybars())
+                ? hbars
+                : null;
+        },
+        {
+            retryError: retryMissing
+                ? retryOnStatus(Status.InvalidAccountId)
+                : undefined,
+        },
+    );
 }
 
 void main();

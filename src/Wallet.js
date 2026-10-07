@@ -3,7 +3,6 @@
 import PrivateKey from "./PrivateKey.js";
 import AccountId from "./account/AccountId.js";
 import SignerSignature from "./SignerSignature.js";
-import AccountBalanceQuery from "./account/AccountBalanceQuery.js";
 import AccountInfoQuery from "./account/AccountInfoQuery.js";
 import AccountRecordsQuery from "./account/AccountRecordsQuery.js";
 import TransactionId from "./transaction/TransactionId.js";
@@ -162,12 +161,18 @@ export default class Wallet {
     }
 
     /**
+     * The wallet account's hbar balance, read from the mirror node.
+     *
+     * The `tokens` and `tokenDecimals` maps are always empty — use
+     * `MirrorNodeTokenBalanceQuery` for a token balance.
+     *
      * @returns {Promise<AccountBalance>}
      */
     getAccountBalance() {
-        return this.call(
-            new AccountBalanceQuery().setAccountId(this.accountId),
-        );
+        if (this.provider == null) {
+            throw new Error("wallet does not contain a provider");
+        }
+        return this.provider.getAccountBalance(this.accountId);
     }
 
     /**

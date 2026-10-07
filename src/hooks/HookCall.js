@@ -1,6 +1,7 @@
 /**
  * @namespace proto
  * @typedef {import("@hiero-ledger/proto").proto.IHookCall} HieroProto.proto.IHookCall
+ * @typedef {import("long").default} Long
  */
 
 import EvmHookCall from "../hooks/EvmHookCall.js";

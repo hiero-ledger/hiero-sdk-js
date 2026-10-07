@@ -182,6 +182,7 @@ export default class AddressBookQuery extends Query {
      */
     _makeServerStreamRequest(client, resolve, reject, requestTimeout) {
         const maxAttempts = this._maxAttempts ?? client.maxAttempts;
+        const maxBackoff = this._maxBackoff ?? client.maxBackoff;
         const request =
             HieroProto.com.hedera.mirror.api.proto.AddressBookQuery.encode({
                 fileId:
@@ -217,7 +218,7 @@ export default class AddressBookQuery extends Query {
                     ) {
                         const delay = Math.min(
                             250 * 2 ** this._attempt,
-                            this._maxBackoff,
+                            maxBackoff,
                         );
                         if (this._attempt >= maxAttempts) {
                             console.warn(

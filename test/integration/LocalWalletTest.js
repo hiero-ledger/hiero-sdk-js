@@ -8,7 +8,7 @@ describe("LocalWallet", function () {
         const wallet = new Wallet(
             env.operatorId,
             env.operatorKey,
-            new LocalProvider(),
+            LocalProvider.fromClient(env.client),
         );
 
         const info = await wallet.getAccountInfo();

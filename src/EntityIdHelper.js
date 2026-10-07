@@ -275,8 +275,8 @@ export function fromEvmAddress(shard, realm, address) {
         );
     }
 
-    let shardLong = shard instanceof Long ? shard : Long.fromNumber(shard);
-    let realmLong = realm instanceof Long ? realm : Long.fromNumber(realm);
+    let shardLong = shard instanceof Long ? shard : Long.fromValue(shard);
+    let realmLong = realm instanceof Long ? realm : Long.fromValue(realm);
 
     return [
         shardLong,

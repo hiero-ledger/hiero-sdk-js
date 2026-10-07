@@ -1,9 +1,9 @@
 import {
+    MirrorNodeAccountBalanceQuery,
     Client,
     AccountId,
     PrivateKey,
     AccountCreateTransaction,
-    AccountBalanceQuery,
     Hbar,
     LedgerId,
 } from "@hiero-ledger/sdk";
@@ -68,7 +68,7 @@ async function main() {
         // Query account balance
         console.log("Querying account balance...");
         try {
-            const balance = await new AccountBalanceQuery()
+            const balance = await new MirrorNodeAccountBalanceQuery()
                 .setAccountId(operatorId)
                 .execute(client);
 
