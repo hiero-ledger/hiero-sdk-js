@@ -1,6 +1,5 @@
 import {
     Wallet,
-    Client,
     LocalProvider,
     PrivateKey,
     Hbar,
@@ -13,6 +12,7 @@ import {
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
+import { clientForName } from "./client.js";
 dotenv.config();
 
 /**
@@ -54,12 +54,14 @@ async function main() {
     // namely: trace, debug, info, warn, error, fatal (weighted in that order)
     console.log(`Logger levels: ${JSON.stringify(debugLogger.levels)}`);
 
-    const client = Client.forName(process.env.HEDERA_NETWORK)
+    const client = clientForName(process.env.HEDERA_NETWORK)
         // Set the client's logger to `debugLogger` with debug mode
         .setLogger(debugLogger)
         .setOperator(operatorId, operatorKey);
 
-    const provider = new LocalProvider();
+    const provider = LocalProvider.fromClient(
+        clientForName(process.env.HEDERA_NETWORK),
+    );
 
     const wallet = new Wallet(client.operatorAccountId, operatorKey, provider);
 

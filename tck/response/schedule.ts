@@ -12,8 +12,8 @@ export interface ScheduleInfoQueryResponse {
     readonly signers?: string[];
     readonly scheduleMemo?: string;
     readonly expirationTime?: string;
-    readonly executed?: string;
-    readonly deleted?: string;
+    readonly executedAt?: string;
+    readonly deletedAt?: string;
     readonly scheduledTransactionId?: string;
     readonly waitForExpiry?: boolean;
     readonly cost?: string;

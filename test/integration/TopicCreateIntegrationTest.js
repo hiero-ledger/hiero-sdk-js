@@ -1,5 +1,4 @@
 import {
-    AccountBalanceQuery,
     CustomFeeLimit,
     CustomFixedFee,
     Hbar,
@@ -17,7 +16,11 @@ import {
     TransactionId,
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
-import { createAccount, createFungibleToken } from "./utils/Fixtures.js";
+import {
+    createAccount,
+    createFungibleToken,
+    getAccountBalance,
+} from "./utils/Fixtures.js";
 
 /**
  * @typedef {import("./client/BaseIntegrationTestEnv.js").default} BaseIntegrationTestEnv
@@ -418,9 +421,10 @@ describe("TopicCreate", function () {
             env.client.setOperator(env.operatorId, env.operatorKey);
 
             // Verify the custom fee charged
-            const accountInfo = await new AccountBalanceQuery()
-                .setAccountId(payerAccountId)
-                .execute(env.client);
+            const accountInfo = await getAccountBalance(
+                env.client,
+                payerAccountId,
+            );
 
             expect(accountInfo.hbars.toTinybars().toNumber()).to.be.below(
                 hbar / 2,
@@ -484,9 +488,10 @@ describe("TopicCreate", function () {
             env.client.setOperator(env.operatorId, env.operatorKey);
 
             // Verify the custom fee charged
-            const accountInfo = await new AccountBalanceQuery()
-                .setAccountId(payerAccountId)
-                .execute(env.client);
+            const accountInfo = await getAccountBalance(
+                env.client,
+                payerAccountId,
+            );
 
             expect(accountInfo.tokens.get(tokenId).toNumber()).to.be.eql(0);
         });
@@ -540,9 +545,10 @@ describe("TopicCreate", function () {
 
             // Verify the custom fee charged
 
-            const accountInfo = await new AccountBalanceQuery()
-                .setAccountId(payerAccountId)
-                .execute(env.client);
+            const accountInfo = await getAccountBalance(
+                env.client,
+                payerAccountId,
+            );
 
             expect(accountInfo.tokens.get(tokenId).toNumber()).to.be.eql(0);
         });
@@ -590,9 +596,10 @@ describe("TopicCreate", function () {
 
             // Verify the custom fee is not charged
 
-            const accountInfo = await new AccountBalanceQuery()
-                .setAccountId(payerAccountId)
-                .execute(env.client);
+            const accountInfo = await getAccountBalance(
+                env.client,
+                payerAccountId,
+            );
 
             expect(accountInfo.hbars.toTinybars().toNumber()).to.be.above(
                 hbar / 2,
@@ -653,9 +660,10 @@ describe("TopicCreate", function () {
 
             // Verify the custom fee is not charged
 
-            const accountInfo = await new AccountBalanceQuery()
-                .setAccountId(payerAccountId)
-                .execute(env.client);
+            const accountInfo = await getAccountBalance(
+                env.client,
+                payerAccountId,
+            );
 
             expect(accountInfo.tokens.get(tokenId).toNumber()).to.eql(1);
         });
@@ -895,9 +903,10 @@ describe("TopicCreate", function () {
                 env.client.setOperator(env.operatorId, env.operatorKey);
 
                 // Verify the custom fee charged
-                const accountInfo = await new AccountBalanceQuery()
-                    .setAccountId(payerAccountId)
-                    .execute(env.client);
+                const accountInfo = await getAccountBalance(
+                    env.client,
+                    payerAccountId,
+                );
 
                 expect(accountInfo.hbars.toTinybars().toNumber()).to.be.below(
                     hbar / 2,
@@ -975,9 +984,10 @@ describe("TopicCreate", function () {
                 env.client.setOperator(env.operatorId, env.operatorKey);
 
                 // Verify the custom fee charged
-                const accountInfo = await new AccountBalanceQuery()
-                    .setAccountId(payerAccountId)
-                    .execute(env.client);
+                const accountInfo = await getAccountBalance(
+                    env.client,
+                    payerAccountId,
+                );
 
                 expect(accountInfo.tokens.get(tokenId).toNumber()).to.be.eql(0);
             });

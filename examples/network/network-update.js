@@ -1,6 +1,7 @@
-import { AccountId, Client, PrivateKey } from "@hiero-ledger/sdk";
+import { AccountId, PrivateKey } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
+import { clientForName } from "../client.js";
 
 dotenv.config();
 
@@ -26,7 +27,7 @@ async function main() {
      * and subsequent updates will occur every 24 hours.
      * This is controlled by `networkUpdatePeriod`, which defaults to 86400000 milliseconds or 24 hours.
      */
-    const client = Client.forName(process.env.HEDERA_NETWORK).setOperator(
+    const client = clientForName(process.env.HEDERA_NETWORK).setOperator(
         operatorId,
         operatorKey,
     );

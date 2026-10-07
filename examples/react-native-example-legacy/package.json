@@ -14,7 +14,7 @@
         "@hiero-ledger/proto": "workspace:*",
         "@hiero-ledger/sdk": "workspace:*",
         "expo": "~57.0.4",
-        "expo-status-bar": "~57.0.0",
+        "expo-status-bar": "~58.0.1",
         "react": "19.2.4",
         "react-dom": "19.2.4",
         "react-native": "~0.78.0",
@@ -23,7 +23,7 @@
     "devDependencies": {
         "@babel/core": "^7.23.3",
         "@types/react": "19.2.14",
-        "react-native-dotenv": "^4.1.1",
+        "react-native-dotenv": "^5.0.0",
         "typescript": "^5.7.2"
     },
     "peerDependencies": {

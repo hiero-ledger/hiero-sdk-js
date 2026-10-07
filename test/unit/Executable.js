@@ -3,6 +3,7 @@
 import { vi } from "vitest";
 import Executable, { RST_STREAM } from "../../src/Executable.js";
 import AccountId from "../../src/account/AccountId.js";
+import Client from "../../src/client/Client.js";
 import GrpcServiceError from "../../src/grpc/GrpcServiceError.js";
 import GrpcStatus from "../../src/grpc/GrpcStatus.js";
 
@@ -57,6 +58,40 @@ describe("Executable", function () {
         expect(executable.minBackoff).to.equal(250);
         expect(executable.maxAttempts).to.equal(10);
         expect(beforeExecuteCalled).to.be.true;
+    });
+
+    it("inherits maxBackoff from the client when the request did not set one", async function () {
+        const executable = new Executable();
+        executable._beforeExecute = async () => {};
+        expect(executable.maxBackoff).to.be.null;
+
+        await executable._setupExecution({
+            _logger: null,
+            requestTimeout: 15000,
+            grpcDeadline: 5000,
+            maxBackoff: 1000,
+            minBackoff: 250,
+            maxAttempts: 10,
+        });
+
+        expect(executable.maxBackoff).to.equal(1000);
+        expect(executable.minBackoff).to.equal(250);
+    });
+
+    it("keeps a request-level maxBackoff over the client's", async function () {
+        const executable = new Executable().setMaxBackoff(3000);
+        executable._beforeExecute = async () => {};
+
+        await executable._setupExecution({
+            _logger: null,
+            requestTimeout: 15000,
+            grpcDeadline: 5000,
+            maxBackoff: 1000,
+            minBackoff: 250,
+            maxAttempts: 10,
+        });
+
+        expect(executable.maxBackoff).to.equal(3000);
     });
 
     it("execute throws timeout exceeded with the current node account ID", async function () {
@@ -123,6 +158,75 @@ describe("Executable", function () {
         expect(executable._nodeAccountIds.current.toString()).to.equal(
             "0.0.111",
         );
+    });
+
+    it("_getExecutionNode skips a pinned node account ID that is not in the network map", function () {
+        const executable = new Executable();
+        const knownNode = { accountId: new AccountId(3) };
+
+        executable._nodeAccountIds.setList([
+            new AccountId(111),
+            new AccountId(3),
+        ]);
+
+        const result = executable._getExecutionNode({
+            _network: {
+                getNode(key) {
+                    if (key.toString() !== "0.0.3") {
+                        throw new Error(
+                            `NodeAccountId not recognized: ${key.toString()}`,
+                        );
+                    }
+                    return knownNode;
+                },
+            },
+        });
+
+        expect(result).to.equal(knownNode);
+        expect(executable._nodeAccountIds.current.toString()).to.equal("0.0.3");
+    });
+
+    it("_getExecutionNode throws when no pinned node account ID is in the network map", function () {
+        const executable = new Executable();
+
+        executable._nodeAccountIds.setList([
+            new AccountId(111),
+            new AccountId(112),
+        ]);
+
+        expect(() =>
+            executable._getExecutionNode({
+                _network: {
+                    getNode(key) {
+                        throw new Error(
+                            `NodeAccountId not recognized: ${key.toString()}`,
+                        );
+                    },
+                },
+            }),
+        ).to.throw("NodeAccountId not recognized: 0.0.112");
+    });
+
+    it("execute rejects a pinned unknown node account ID before any request is made", async function () {
+        const client = new Client({ scheduleNetworkUpdate: false });
+        client._network.setNetwork({ "127.0.0.1:50211": "0.0.3" });
+        const executable = new Executable();
+        const makeRequest = vi.fn();
+
+        executable._nodeAccountIds.setList([new AccountId(111)]);
+        executable._beforeExecute = async () => {};
+        executable._makeRequestAsync = makeRequest;
+
+        let error = null;
+        try {
+            await executable.execute(client);
+        } catch (err) {
+            error = err;
+        }
+
+        expect(error).to.be.an("Error");
+        expect(error.message).to.equal("NodeAccountId not recognized: 0.0.111");
+        expect(makeRequest).not.toHaveBeenCalled();
     });
 
     it("_shouldSkipAttemptForNodeAccountId returns true when the node is not in transactionNodeIds", function () {

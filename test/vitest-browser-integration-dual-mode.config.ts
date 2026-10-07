@@ -40,6 +40,13 @@ export default defineConfig({
         testTimeout: 120000,
         coverage: {
             include: ["src/**/*.js"],
+            exclude: [
+                "src/contract/ContractStateChange.js",
+                "src/contract/StorageChange.js",
+                "src/token/TokenNftsUpdateTransaction.js",
+                "src/transaction/NodeAccountIdSignatureMapLegacy.js",
+                "src/transaction/SignatureMapLegacy.js",
+            ],
             provider: "v8",
             reporter: ["text-summary", "lcov"],
             reportsDirectory: "./coverage/browser-integration-dual-mode",
@@ -99,6 +106,8 @@ export default defineConfig({
             "../../src/LocalProvider.js": "../../src/LocalProviderWeb.js",
             "../src/LocalProvider.js": "../src/LocalProviderWeb.js",
             "src/LocalProvider.js": "src/LocalProviderWeb.js",
+            "../../../src/network/AddressBookQuery.js":
+                "../../../src/network/AddressBookQueryWeb.js",
             "./NodeConstants.js": "./WebConstants.js",
             // Add more comprehensive aliases for NodeIntegrationTestEnv
             "NodeIntegrationTestEnv.js": "WebIntegrationTestEnv.js",

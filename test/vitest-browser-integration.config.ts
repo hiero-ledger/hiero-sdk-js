@@ -55,6 +55,11 @@ export default defineConfig({
                 "src/client/addressbooks/mainnet.js",
                 "src/client/addressbooks/previewnet.js",
                 "src/client/addressbooks/testnet.js",
+                "src/contract/ContractStateChange.js",
+                "src/contract/StorageChange.js",
+                "src/token/TokenNftsUpdateTransaction.js",
+                "src/transaction/NodeAccountIdSignatureMapLegacy.js",
+                "src/transaction/SignatureMapLegacy.js",
             ],
             provider: "v8",
             reporter: ["text-summary", "lcov"],
@@ -77,6 +82,15 @@ export default defineConfig({
         ),
         "import.meta.env.VITE_GENESIS_OPERATOR_KEY": JSON.stringify(
             process.env.GENESIS_OPERATOR_KEY || "",
+        ),
+        "import.meta.env.VITE_NODE_WEB_IP": JSON.stringify(
+            process.env.NODE_WEB_IP || "",
+        ),
+        "import.meta.env.VITE_NODE_ACCOUNT_ID": JSON.stringify(
+            process.env.NODE_ACCOUNT_ID || "",
+        ),
+        "import.meta.env.VITE_MIRROR_NODE_REST_URL": JSON.stringify(
+            process.env.MIRROR_NODE_REST_URL || "",
         ),
     },
     resolve: {

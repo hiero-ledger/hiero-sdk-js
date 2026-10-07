@@ -1,6 +1,5 @@
 import {
     AccountAllowanceApproveTransaction,
-    AccountBalanceQuery,
     AccountUpdateTransaction,
     NftId,
     PrivateKey,
@@ -16,6 +15,7 @@ import {
     createAccount,
     createFungibleToken,
     createNonFungibleToken,
+    getAccountBalance,
 } from "./utils/Fixtures.js";
 
 describe("TokenRejectIntegrationTest", function () {
@@ -72,9 +72,10 @@ describe("TokenRejectIntegrationTest", function () {
                 ).execute(env.client)
             ).getReceipt(env.client);
 
-            const tokenBalanceReceiverQuery = await new AccountBalanceQuery()
-                .setAccountId(receiverId)
-                .execute(env.client);
+            const tokenBalanceReceiverQuery = await getAccountBalance(
+                env.client,
+                receiverId,
+            );
 
             const tokenBalanceReceiver = tokenBalanceReceiverQuery.tokens
                 .get(tokenId)
@@ -83,9 +84,10 @@ describe("TokenRejectIntegrationTest", function () {
                 .get(tokenId2)
                 .toInt();
 
-            const tokenBalanceTreasuryQuery = await new AccountBalanceQuery()
-                .setAccountId(env.operatorId)
-                .execute(env.client);
+            const tokenBalanceTreasuryQuery = await getAccountBalance(
+                env.client,
+                env.operatorId,
+            );
 
             const tokenBalanceTreasury = tokenBalanceTreasuryQuery.tokens
                 .get(tokenId)
@@ -128,9 +130,10 @@ describe("TokenRejectIntegrationTest", function () {
             ).getReceipt(env.client);
 
             // Check treasury balance
-            const tokenBalanceTreasuryQuery = await new AccountBalanceQuery()
-                .setAccountId(env.operatorId)
-                .execute(env.client);
+            const tokenBalanceTreasuryQuery = await getAccountBalance(
+                env.client,
+                env.operatorId,
+            );
 
             const tokenBalanceTreasury = tokenBalanceTreasuryQuery.tokens
                 .get(tokenId)
@@ -138,9 +141,10 @@ describe("TokenRejectIntegrationTest", function () {
             expect(tokenBalanceTreasury).to.be.equal(INITIAL_SUPPLY);
 
             // Check receiver balance
-            const tokenBalanceReceiverQuery = await new AccountBalanceQuery()
-                .setAccountId(receiverId)
-                .execute(env.client);
+            const tokenBalanceReceiverQuery = await getAccountBalance(
+                env.client,
+                receiverId,
+            );
             const tokenBalanceReceiver = tokenBalanceReceiverQuery.tokens
                 .get(tokenId)
                 .toInt();
@@ -191,13 +195,15 @@ describe("TokenRejectIntegrationTest", function () {
             ).getReceipt(env.client);
 
             // Confirm that token reject transaction has returned funds
-            const balanceReceiverPre = await new AccountBalanceQuery()
-                .setAccountId(receiverId)
-                .execute(env.client);
+            const balanceReceiverPre = await getAccountBalance(
+                env.client,
+                receiverId,
+            );
 
-            const balanceTreasuryPre = await new AccountBalanceQuery()
-                .setAccountId(env.operatorId)
-                .execute(env.client);
+            const balanceTreasuryPre = await getAccountBalance(
+                env.client,
+                env.operatorId,
+            );
 
             expect(balanceReceiverPre.tokens.get(tokenId).toInt()).to.eq(0);
             expect(balanceTreasuryPre.tokens.get(tokenId).toInt()).to.eq(
@@ -226,13 +232,15 @@ describe("TokenRejectIntegrationTest", function () {
             ).getReceipt(env.client);
 
             // Verify final balances
-            const tokenBalanceReceiverPost = await new AccountBalanceQuery()
-                .setAccountId(receiverId)
-                .execute(env.client);
+            const tokenBalanceReceiverPost = await getAccountBalance(
+                env.client,
+                receiverId,
+            );
 
-            const tokenBalanceSpenderPost = await new AccountBalanceQuery()
-                .setAccountId(spenderAccountId)
-                .execute(env.client);
+            const tokenBalanceSpenderPost = await getAccountBalance(
+                env.client,
+                spenderAccountId,
+            );
 
             expect(tokenBalanceReceiverPost.tokens.get(tokenId).toInt()).to.eq(
                 0,
@@ -445,9 +453,10 @@ describe("TokenRejectIntegrationTest", function () {
             ).getReceipt(env.client);
 
             // Check balances
-            const tokenBalanceReceiverQuery = await new AccountBalanceQuery()
-                .setAccountId(receiverId)
-                .execute(env.client);
+            const tokenBalanceReceiverQuery = await getAccountBalance(
+                env.client,
+                receiverId,
+            );
 
             const tokenBalanceReceiver = tokenBalanceReceiverQuery.tokens
                 .get(tokenId)
@@ -456,9 +465,10 @@ describe("TokenRejectIntegrationTest", function () {
                 .get(tokenId2)
                 .toInt();
 
-            const tokenBalanceTreasuryQuery = await new AccountBalanceQuery()
-                .setAccountId(env.operatorId)
-                .execute(env.client);
+            const tokenBalanceTreasuryQuery = await getAccountBalance(
+                env.client,
+                env.operatorId,
+            );
 
             const tokenBalanceTreasury = tokenBalanceTreasuryQuery.tokens
                 .get(tokenId)
@@ -500,9 +510,10 @@ describe("TokenRejectIntegrationTest", function () {
             ).getReceipt(env.client);
 
             // Check treasury balance
-            const tokenBalanceTreasuryQuery = await new AccountBalanceQuery()
-                .setAccountId(env.operatorId)
-                .execute(env.client);
+            const tokenBalanceTreasuryQuery = await getAccountBalance(
+                env.client,
+                env.operatorId,
+            );
 
             const tokenBalanceTreasury = tokenBalanceTreasuryQuery.tokens
                 .get(tokenId)
@@ -510,9 +521,10 @@ describe("TokenRejectIntegrationTest", function () {
             expect(tokenBalanceTreasury).to.be.equal(1);
 
             // Check receiver balance
-            const tokenBalanceReceiverQuery = await new AccountBalanceQuery()
-                .setAccountId(receiverId)
-                .execute(env.client);
+            const tokenBalanceReceiverQuery = await getAccountBalance(
+                env.client,
+                receiverId,
+            );
 
             const tokenBalanceReceiver = tokenBalanceReceiverQuery.tokens
                 .get(tokenId)
@@ -849,9 +861,10 @@ describe("TokenRejectIntegrationTest", function () {
             ).getReceipt(env.client);
 
             // Check token balances
-            const tokenBalanceReceiverQuery = await new AccountBalanceQuery()
-                .setAccountId(receiverId)
-                .execute(env.client);
+            const tokenBalanceReceiverQuery = await getAccountBalance(
+                env.client,
+                receiverId,
+            );
 
             const tokenBalanceFTReceiver = tokenBalanceReceiverQuery.tokens
                 .get(ftId)
@@ -864,9 +877,10 @@ describe("TokenRejectIntegrationTest", function () {
             expect(tokenBalanceNFTReceiver).to.be.equal(0);
 
             // Check treasury balances
-            const tokenBalanceTreasuryQuery = await new AccountBalanceQuery()
-                .setAccountId(env.operatorId)
-                .execute(env.client);
+            const tokenBalanceTreasuryQuery = await getAccountBalance(
+                env.client,
+                env.operatorId,
+            );
 
             const tokenBalanceTreasury = tokenBalanceTreasuryQuery.tokens
                 .get(ftId)

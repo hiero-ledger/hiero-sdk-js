@@ -5,7 +5,7 @@ import StatusError from "./StatusError.js";
 /**
  * @typedef {import("./Status.js").default} Status
  * @typedef {import("./transaction/TransactionId.js").default} TransactionId
- * @typedef {import("./transaction/TransactionRecord").default} TransactionRecord
+ * @typedef {import("./transaction/TransactionRecord.js").default} TransactionRecord
  */
 
 export default class RecordStatusError extends StatusError {

@@ -16,14 +16,25 @@ Before you begin, make sure you have:
 
 -   npm → Version 10 or higher
 
+-   Task → used to build the SDK at the repository root
+
 ## 🚀 Start the TCK Server
 
-Run the following commands to install dependencies and start the server:
+The server resolves `@hiero-ledger/sdk` to this repository (`"file:.."` in `package.json`), so build the SDK first. From the repository root:
 
 ```bash
+task build
+```
+
+Then install the server dependencies and start it:
+
+```bash
+cd tck
 npm install
 npm run start
 ```
+
+Rebuild with `task build` whenever the SDK sources change and restart the server to pick up the new build.
 
 Once started, your TCK server will be up and running! 🚦
 

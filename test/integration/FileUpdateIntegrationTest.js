@@ -101,10 +101,9 @@ describe("FileUpdate", function () {
         const FEES_FILE_ID = "0.0.111";
         const DUMMY_TEXT = "Hello, Hedera!";
 
-        const client = Client.forLocalNode().setOperator(
-            OPERATOR_ID,
-            OPERATOR_KEY,
-        );
+        const client = Client.forNetwork(env.client.network, {
+            scheduleNetworkUpdate: false,
+        }).setOperator(OPERATOR_ID, OPERATOR_KEY);
 
         await (
             await new FileUpdateTransaction()

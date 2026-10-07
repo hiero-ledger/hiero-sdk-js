@@ -6,7 +6,6 @@ import {
     ScheduleSignTransaction,
     TopicCreateTransaction,
     TopicMessageSubmitTransaction,
-    AccountBalanceQuery,
     ScheduleCreateTransaction,
     TransferTransaction,
     Timestamp,
@@ -14,7 +13,7 @@ import {
 } from "../../src/exports.js";
 import { wait } from "../../src/util.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
-import { createAccount } from "./utils/Fixtures.js";
+import { createAccount, getAccountBalance } from "./utils/Fixtures.js";
 
 describe("ScheduleCreate", function () {
     let env;
@@ -482,15 +481,11 @@ describe("ScheduleCreate", function () {
 
         expect(info.executed).to.equal(null);
 
-        const balanceBefore = await new AccountBalanceQuery()
-            .setAccountId(accountId)
-            .execute(env.client);
+        const balanceBefore = await getAccountBalance(env.client, accountId);
 
         await wait(SHORT_EXPIRATION_TIME);
 
-        const balanceAfter = await new AccountBalanceQuery()
-            .setAccountId(accountId)
-            .execute(env.client);
+        const balanceAfter = await getAccountBalance(env.client, accountId);
 
         expect(balanceAfter.hbars.toTinybars().toNumber()).to.be.lt(
             balanceBefore.hbars.toTinybars().toNumber(),

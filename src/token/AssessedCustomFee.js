@@ -6,6 +6,7 @@ import { convertAmountToLong } from "../util.js";
 
 /**
  * @typedef {import("bignumber.js").default} BigNumber
+ * @typedef {import("long").default} Long
  */
 
 /**

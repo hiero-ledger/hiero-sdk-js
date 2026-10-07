@@ -5,7 +5,7 @@ class EvmHook {
     /**
      *
      * @param {object} [props]
-     * @param {import("./../contract/ContractId").default} [props.contractId]
+     * @param {import("./../contract/ContractId.js").default} [props.contractId]
      * @param {import("./EvmHookStorageUpdate.js").EvmHookStorageUpdate[]} [props.storageUpdates]
      */
     constructor(props = {}) {

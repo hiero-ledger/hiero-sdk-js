@@ -8,6 +8,7 @@ import AccountId from "../account/AccountId.js";
 import LedgerId from "../LedgerId.js";
 import { MirrorNetwork, WebNetwork } from "../constants/ClientConstants.js";
 import AddressBookQuery from "../network/AddressBookQueryWeb.js";
+import FetchHttpTransport from "../http/FetchHttpTransport.js";
 import FileId from "../file/FileId.js";
 
 /**
@@ -298,6 +299,18 @@ export default class NativeClient extends Client {
         }
 
         return this;
+    }
+
+    /**
+     * React Native's `fetch` turns a `cache` mode into a `_=<timestamp>`
+     * query parameter that the mirror node rejects, so none is sent.
+     *
+     * @override
+     * @param {import("../http/HttpTransportConfiguration.js").default} configuration
+     * @returns {import("../http/HttpTransport.js").default}
+     */
+    _createDefaultHttpTransport(configuration) {
+        return FetchHttpTransport.create(configuration, { cache: null });
     }
 
     /**

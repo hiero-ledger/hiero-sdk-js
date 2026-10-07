@@ -14,6 +14,7 @@ import Transaction, {
  * @typedef {import("@hiero-ledger/proto").proto.ITransactionResponse} HieroProto.proto.ITransactionResponse
  * @typedef {import("@hiero-ledger/proto").proto.ITokenUpdateNftsTransactionBody} HieroProto.proto.ITokenUpdateNftsTransactionBody
  * @typedef {import("@hiero-ledger/proto").proto.ITokenID} HieroProto.proto.ITokenID
+ * @typedef {import("long").default} Long
  */
 
 /**
