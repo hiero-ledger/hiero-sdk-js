@@ -478,7 +478,7 @@ export default class TopicUpdateTransaction extends Transaction {
      */
     clearAutoRenewAccountId() {
         this._requireNotFrozen();
-        this._autoRenewAccountId =  AccountId.fromString("0.0.0");
+        this._autoRenewAccountId = AccountId.fromString("0.0.0");
 
         return this;
     }
