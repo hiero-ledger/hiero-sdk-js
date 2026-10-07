@@ -1,6 +1,6 @@
 import { Hbar, TransferTransaction } from "../../src/exports.js";
 import { Wallet, LocalProvider } from "../../src/index.js";
-import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
+import IntegrationTestEnv, { Client } from "./client/NodeIntegrationTestEnv.js";
 import { createAccount } from "./utils/Fixtures.js";
 
 describe("WalletIntegration", function () {
@@ -36,7 +36,16 @@ describe("WalletIntegration", function () {
             },
         );
 
-        const wallet = new Wallet(signerId, signerKey, new LocalProvider());
+        // A provider client without an operator, on the network the env targets.
+        const wallet = new Wallet(
+            signerId,
+            signerKey,
+            LocalProvider.fromClient(
+                Client.forNetwork(env.client.network, {
+                    scheduleNetworkUpdate: false,
+                }),
+            ),
+        );
 
         // The operator and the signer are different
         expect(env.client.getOperator().accountId).not.to.eql(signerId);

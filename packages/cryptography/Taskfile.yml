@@ -29,6 +29,7 @@ tasks:
             - task: format
             - task: lint
             - node build/bundle-cjs.cjs
+            - node ../../scripts/generate-cts-declarations.js lib
 
     build:dev:
         desc: "Build and globally link @hiero-ledger/cryptography for local dev"

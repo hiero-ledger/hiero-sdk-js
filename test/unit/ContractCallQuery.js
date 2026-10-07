@@ -80,7 +80,7 @@ describe("ContractCallQuery", function () {
     it("throws a clear error when mirror node estimation fails", async function () {
         sinon
             .stub(MirrorNodeContractEstimateQuery.prototype, "execute")
-            .rejects(new Error("HTTP error! status: 404"));
+            .rejects(new Error("HTTP 404: Not found"));
 
         const query = new ContractCallQuery()
             .setContractId(CONTRACT_ID)
@@ -93,7 +93,7 @@ describe("ContractCallQuery", function () {
             message = e.message;
         }
         expect(message).to.include("setGas()");
-        expect(message).to.include("HTTP error! status: 404");
+        expect(message).to.include("HTTP 404: Not found");
         expect(query.gas).to.be.null;
     });
 

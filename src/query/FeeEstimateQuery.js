@@ -5,9 +5,10 @@ import NetworkFee from "./NetworkFee.js";
 import FeeEstimate from "./FeeEstimate.js";
 import * as HieroProto from "@hiero-ledger/proto";
 import {
-    isRetryableNetworkError,
-    readErrorDetail,
-} from "../network/mirrorRestRetry.js";
+    bodyJson,
+    errorMessage,
+    statusMessage,
+} from "../mirror_node/MirrorNodeHttpClient.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -15,6 +16,7 @@ import {
  * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../transaction/Transaction.js").default} Transaction
  * @typedef {import("./FeeEstimateResponse.js").FeeEstimateResponseJSON} FeeEstimateResponseJSON
+ * @typedef {import("../mirror_node/MirrorNodeHttpClient.js").default} MirrorNodeHttpClient
  */
 
 /**
@@ -24,26 +26,17 @@ import {
 const HIGH_VOLUME_THROTTLE_MAX_BPS = 10000;
 
 /**
- * Maximum number of attempts for retryable errors (HTTP 500/503 / timeouts).
- * Matches the SDK's general request retry budget.
- */
-const MAX_ATTEMPTS = 5;
-
-/**
- * Initial backoff in milliseconds; doubles each attempt up to MAX_BACKOFF_MS.
- */
-const INITIAL_BACKOFF_MS = 250;
-const MAX_BACKOFF_MS = 8000;
-
-/**
  * Request object for users, SDKs, and tools to query expected fees without
  * submitting transactions to the network.
  *
  * Communicates with the mirror node REST API
- * (`POST /api/v1/network/fees`) — not the consensus node gRPC API. Per
- * HIP-1261 this class is modeled after {@link MirrorNodeContractQuery} (a
- * plain class) rather than the gRPC `Query` base, since the gRPC features
- * (node selection, query payment, transaction-id signing) do not apply.
+ * (`POST /api/v1/network/fees`), not the consensus node gRPC API, through
+ * the client's shared HTTP transport. Per HIP-1261 this class is modeled
+ * after {@link MirrorNodeContractQuery} (a plain class) rather than the gRPC
+ * `Query` base, since the gRPC features (node selection, query payment,
+ * transaction-id signing) do not apply. Retry, backoff and timeouts follow
+ * the client's `MirrorNodeHttpRetryPolicy` (see
+ * `Client.setMirrorNodeHttpConfig`).
  *
  * Per HIP-1261, transactions are automatically frozen if not already frozen
  * when `execute()` is called.
@@ -196,11 +189,20 @@ export default class FeeEstimateQuery {
 
     /**
      * @param {Client} client
+     * @param {number} [requestTimeout] - total timeout for the whole
+     * operation in milliseconds, every chunk and every retry included;
+     * defaults to the retry policy's `totalDeadline`, which in turn
+     * defaults to `client.requestTimeout`
      * @returns {Promise<FeeEstimateResponse>}
      */
-    execute(client) {
+    execute(client, requestTimeout) {
         return new Promise((resolve, reject) => {
-            this._makeMirrorNodeRequest(client, resolve, reject);
+            this._makeMirrorNodeRequest(
+                client,
+                resolve,
+                reject,
+                requestTimeout,
+            );
         });
     }
 
@@ -209,8 +211,9 @@ export default class FeeEstimateQuery {
      * @param {Client} client
      * @param {(value: FeeEstimateResponse) => void} resolve
      * @param {(error: Error) => void} reject
+     * @param {number} [requestTimeout]
      */
-    _makeMirrorNodeRequest(client, resolve, reject) {
+    _makeMirrorNodeRequest(client, resolve, reject, requestTimeout) {
         if (this._transaction == null) {
             reject(new Error("FeeEstimateQuery requires a transaction"));
             return;
@@ -225,13 +228,29 @@ export default class FeeEstimateQuery {
         const rowLength = txObj._nodeAccountIds.length || 1;
         const chunks = txObj.getRequiredChunks();
 
+        // One adapter for the whole call: every chunk targets the same
+        // mirror node and draws on the same total deadline.
+        /** @type {MirrorNodeHttpClient} */
+        let http;
+        try {
+            http = client._mirrorNodeHttpClient({
+                // `/network/fees` is served by the mirror node's Java REST
+                // API, a different port on a local network.
+                family: "rest-java",
+                totalDeadline: requestTimeout,
+            });
+        } catch (error) {
+            reject(/** @type {Error} */ (error));
+            return;
+        }
+
         /** @type {Promise<FeeEstimateResponse>[]} */
         const perChunkPromises = [];
 
         for (let chunk = 0; chunk < chunks; chunk++) {
             const index = chunk * rowLength + 0;
             perChunkPromises.push(
-                this._requestFeeEstimateForIndex(client, txObj, index),
+                this._requestFeeEstimateForIndex(http, txObj, index),
             );
         }
 
@@ -323,21 +342,13 @@ export default class FeeEstimateQuery {
     }
 
     /**
-     * Build the mirror node REST URL for the configured mode and throttle.
+     * Build the mirror node REST path for the configured mode and throttle,
+     * relative to the REST base URL.
      *
      * @private
-     * @param {Client} client
      * @returns {string}
      */
-    _buildRequestUrl(client) {
-        // For local environments, use port 8084 instead of 5551
-        // as that is the port for the mirror node JAVA REST API which exposes
-        // the /network/fees endpoint.
-        let baseUrl = client.mirrorRestApiBaseUrl;
-        if (baseUrl.includes("127.0.0.1") || baseUrl.includes("localhost")) {
-            baseUrl = baseUrl.replace(":5551", ":8084");
-        }
-
+    _buildRequestPath() {
         const params = new URLSearchParams();
         params.set(
             "mode",
@@ -350,20 +361,22 @@ export default class FeeEstimateQuery {
             );
         }
 
-        return `${baseUrl}/network/fees?${params.toString()}`;
+        return `/network/fees?${params.toString()}`;
     }
 
     /**
      * Send a fee estimate request for the transaction chunk at a flattened
-     * index, applying the HIP-1261 retry policy for transient errors.
+     * index. Transient failures (retryable statuses, timeouts, connection
+     * errors) are retried by the adapter under the client's policy; a
+     * `400` (malformed transaction) is not.
      *
      * @private
-     * @param {Client} client
+     * @param {MirrorNodeHttpClient} http
      * @param {Transaction} txObj
      * @param {number} index
      * @returns {Promise<FeeEstimateResponse>}
      */
-    _requestFeeEstimateForIndex(client, txObj, index) {
+    _requestFeeEstimateForIndex(http, txObj, index) {
         return new Promise((res, rej) => {
             txObj._buildTransaction(index);
             const tx =
@@ -376,116 +389,28 @@ export default class FeeEstimateQuery {
             }
 
             const buffer = HieroProto.proto.Transaction.encode(tx).finish();
-            const url = this._buildRequestUrl(client);
 
-            this._fetchWithRetry(url, buffer)
-                .then((data) => res(FeeEstimateResponse._fromJSON(data)))
+            http.post(this._buildRequestPath(), "application/protobuf", buffer)
+                .then((response) => {
+                    if (!response.ok) {
+                        // The mirror node returns a JSON
+                        // `_status.messages[].detail` describing what
+                        // failed; surface it so consumers can act on it.
+                        throw new Error(statusMessage(response));
+                    }
+                    const data = /** @type {FeeEstimateResponseJSON} */ (
+                        bodyJson(response)
+                    );
+                    res(FeeEstimateResponse._fromJSON(data));
+                })
                 .catch((error) => {
-                    const message =
-                        error instanceof Error ? error.message : String(error);
-                    rej(new Error(`Failed to estimate fees: ${message}`));
+                    rej(
+                        new Error(
+                            `Failed to estimate fees: ${errorMessage(error)}`,
+                            { cause: error },
+                        ),
+                    );
                 });
         });
     }
-
-    /**
-     * Execute the POST against the mirror node REST endpoint with the HIP-1261
-     * retry policy:
-     *
-     * - retry on HTTP 500 / 503 (transient mirror unavailability)
-     * - retry on request timeout / network errors
-     * - do NOT retry on HTTP 400 (malformed transaction)
-     *
-     * @private
-     * @param {string} url
-     * @param {Uint8Array} body
-     * @returns {Promise<FeeEstimateResponseJSON>}
-     */
-    async _fetchWithRetry(url, body) {
-        let lastError = null;
-        let backoff = INITIAL_BACKOFF_MS;
-
-        for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-            try {
-                // eslint-disable-next-line n/no-unsupported-features/node-builtins
-                const response = await fetch(url, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/protobuf",
-                    },
-                    body: /** @type {BodyInit} */ (body),
-                });
-
-                if (response.ok) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                    const data = /** @type {FeeEstimateResponseJSON} */ (
-                        await response.json()
-                    );
-                    return data;
-                }
-
-                // Capture the response body for diagnostics. The mirror node
-                // returns a JSON `_status.messages[].message` describing what
-                // failed; surface it so consumers can act on it.
-                const errorDetail = await readErrorDetail(response);
-
-                if (response.status === 400) {
-                    // 400 = malformed transaction (INVALID_ARGUMENT). Do not retry.
-                    throw new Error(
-                        `HTTP 400 Bad Request${
-                            errorDetail ? `: ${errorDetail}` : ""
-                        }`,
-                    );
-                }
-
-                if (
-                    response.status === 500 ||
-                    response.status === 503 ||
-                    response.status === 504
-                ) {
-                    lastError = new Error(
-                        `HTTP ${response.status}${
-                            errorDetail ? `: ${errorDetail}` : ""
-                        }`,
-                    );
-                    if (attempt < MAX_ATTEMPTS) {
-                        await sleep(backoff);
-                        backoff = Math.min(backoff * 2, MAX_BACKOFF_MS);
-                        continue;
-                    }
-                    throw lastError;
-                }
-
-                throw new Error(
-                    `HTTP ${response.status}${
-                        errorDetail ? `: ${errorDetail}` : ""
-                    }`,
-                );
-            } catch (err) {
-                if (
-                    err instanceof Error &&
-                    err.message.startsWith("HTTP 400")
-                ) {
-                    throw err;
-                }
-                lastError = /** @type {Error} */ (err);
-                if (attempt < MAX_ATTEMPTS && isRetryableNetworkError(err)) {
-                    await sleep(backoff);
-                    backoff = Math.min(backoff * 2, MAX_BACKOFF_MS);
-                    continue;
-                }
-                throw lastError;
-            }
-        }
-
-        throw lastError ?? new Error("Failed to estimate fees");
-    }
-}
-
-/**
- * @param {number} ms
- * @returns {Promise<void>}
- */
-function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
 }

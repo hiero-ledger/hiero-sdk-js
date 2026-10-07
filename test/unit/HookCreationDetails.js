@@ -1,5 +1,6 @@
 import Long from "long";
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
+import { longFromOtherCopy } from "./utils/foreignLong.js";
 import EvmHook from "../../src/hooks/EvmHook.js";
 import { PrivateKey, ContractId } from "../../src/index.js";
 
@@ -101,6 +102,16 @@ describe("HookCreationDetails", function () {
     });
 
     describe("setHookId", function () {
+        it("keeps a Long from another copy of the long package exact", function () {
+            const hookId = longFromOtherCopy("9007199254740993");
+            expect(hookId instanceof Long).to.be.false;
+
+            const details = new HookCreationDetails().setHookId(hookId);
+
+            expect(details.hookId).to.be.instanceOf(Long);
+            expect(details.hookId.toString()).to.equal("9007199254740993");
+        });
+
         it("should set hookId and return this for chaining", function () {
             const details = new HookCreationDetails();
             const hookId = Long.fromNumber(5555);

@@ -3,12 +3,15 @@
 import Long from "long";
 import AccountId from "../account/AccountId.js";
 import MirrorNodeAccountBalance from "../account/MirrorNodeAccountBalance.js";
+import MirrorNodeStatusError from "../MirrorNodeStatusError.js";
+import Status from "../Status.js";
 import Hbar from "../Hbar.js";
 import * as EntityIdHelper from "../EntityIdHelper.js";
 import {
-    isRetryableNetworkError,
-    readErrorDetail,
-} from "../network/mirrorRestRetry.js";
+    bodyJson,
+    errorMessage,
+    statusMessage,
+} from "../mirror_node/MirrorNodeHttpClient.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -20,15 +23,17 @@ import {
  * Relevant subset of `GET /api/v1/balances`.
  *
  * @typedef {object} MirrorBalancesResponse
- * @property {?{account: string, balance: number}[]} balances
+ * @property {?{account: string, balance: number | string}[]} balances
  */
 
 /**
  * Mirror-node REST replacement for the deprecated `AccountBalanceQuery`.
  *
- * Reads the HBAR balance from `GET /api/v1/balances?account.id={id}`.
- * Pure HTTP — no query payment, no node rotation, no gRPC — so this class
- * deliberately does not extend `Query`.
+ * Reads the HBAR balance from `GET /api/v1/balances?account.id={id}`
+ * through the client's shared HTTP transport. Pure HTTP: no query payment,
+ * no node rotation, no gRPC, so this class deliberately does not extend
+ * `Query`. Retry, backoff and timeouts follow the client's
+ * `MirrorNodeHttpRetryPolicy` (see `Client.setMirrorNodeHttpConfig`).
  *
  * `setAccountId` accepts everything the mirror node resolves:
  * `shard.realm.num`, an EVM address, a public key alias, or a contract ID.
@@ -36,19 +41,23 @@ import {
  * form the mirror node understands (base32 alias / bare EVM address)
  * rather than `AccountId.toString()`.
  *
- * Token balances are deliberately not returned (see
- * {@link MirrorNodeAccountBalance}).
+ * Only the HBAR balance is returned (see {@link MirrorNodeAccountBalance}).
  *
- * NOTE ON CONSISTENCY: the mirror node ingests consensus state
- * asynchronously and typically lags the network by a few seconds. Results
- * are therefore NOT read-after-write consistent — unlike the consensus-node
- * `AccountBalanceQuery` this replaces, a balance read immediately after a
- * transfer may still show the pre-transfer value.
+ * An account the mirror node does not know returns an empty result rather
+ * than a 404; the SDK maps that to a {@link MirrorNodeStatusError} carrying
+ * {@link Status.InvalidAccountId}, the status `AccountBalanceQuery`
+ * reported. An account that exists holding nothing returns `"balance": 0`,
+ * so a real zero is never mistaken for a missing account.
  *
- * NOTE ON PRECISION: the balance is parsed from a JSON number, so values
- * above `Number.MAX_SAFE_INTEGER` (2^53 - 1 tinybars, roughly 90M hbar)
- * silently lose precision — unlike the protobuf-based
- * `AccountBalanceQuery`. Lossless parsing is tracked as a follow-up.
+ * Eventual consistency: the mirror node trails the network by a few
+ * seconds, and the lag covers the account's existence as well as its
+ * balance. A just-created account transiently fails with
+ * `INVALID_ACCOUNT_ID`, so retry rather than treat the first failure as
+ * final.
+ *
+ * A deleted account reads as a zero balance: the balances endpoint does not
+ * expose the deleted flag, so unlike `AccountBalanceQuery` this query cannot
+ * report `ACCOUNT_DELETED`. Use `/accounts/{id}` if that matters.
  */
 export default class MirrorNodeAccountBalanceQuery {
     /**
@@ -76,7 +85,7 @@ export default class MirrorNodeAccountBalanceQuery {
 
     /**
      * Set the account whose balance to read. Contract IDs are accepted
-     * too — the mirror node balances endpoint resolves them.
+     * too, since the mirror node balances endpoint resolves them.
      *
      * @param {AccountId | string} accountId
      * @returns {this}
@@ -92,31 +101,66 @@ export default class MirrorNodeAccountBalanceQuery {
     /**
      * @param {Client} client
      * @param {number} [requestTimeout] - total timeout for the whole
-     * operation in milliseconds; defaults to `client.requestTimeout`
+     * operation in milliseconds, every retry included; defaults to the
+     * retry policy's `totalDeadline`, which in turn defaults to
+     * `client.requestTimeout`
      * @returns {Promise<MirrorNodeAccountBalance>}
+     * @throws {MirrorNodeStatusError} with {@link Status.InvalidAccountId} if
+     * the mirror node knows no such account
      */
     async execute(client, requestTimeout) {
         const idString = this._idString();
-        const baseUrl = client.mirrorRestApiBaseUrl;
-        // One deadline for the whole operation (every retry) — the
-        // timeout is a total operation budget, matching `Executable`,
-        // not a per-attempt bound.
-        const timeoutMs = requestTimeout ?? client.requestTimeout;
-        const deadline = timeoutMs != null ? Date.now() + timeoutMs : null;
+        const http = client._mirrorNodeHttpClient({
+            family: "rest",
+            totalDeadline: requestTimeout,
+        });
 
-        const response = /** @type {MirrorBalancesResponse} */ (
-            await this._fetchJson(
-                `${baseUrl}/balances?account.id=${encodeURIComponent(
-                    idString,
-                )}`,
-                client,
-                deadline,
-            )
-        );
+        const path = `/balances?account.id=${encodeURIComponent(idString)}`;
+        const url = `${http.baseUrl}${path}`;
 
-        // The balances endpoint returns an empty array (not a 404) for an
-        // account that does not exist; the balance is zero in that case.
-        const balance = response.balances?.[0]?.balance ?? 0;
+        /** @type {MirrorBalancesResponse} */
+        let response;
+        try {
+            const httpResponse = await http.get(path);
+            if (!httpResponse.ok) {
+                throw new Error(statusMessage(httpResponse));
+            }
+            response = /** @type {MirrorBalancesResponse} */ (
+                bodyJson(httpResponse)
+            );
+        } catch (error) {
+            // `cause` keeps the adapter's verdict (`retries-exhausted-error`,
+            // `deadline-exceeded-error`, ...) and the last response.
+            throw new Error(`Failed to query ${url}: ${errorMessage(error)}`, {
+                cause: error,
+            });
+        }
+
+        if (!Array.isArray(response?.balances)) {
+            throw new Error(
+                `Failed to query ${url}: response has no balances array`,
+            );
+        }
+
+        // An existing account with no hbar still has a `"balance": 0` entry, so
+        // an empty list means the account is unknown.
+        if (response.balances.length === 0) {
+            throw new MirrorNodeStatusError(
+                { status: Status.InvalidAccountId },
+                `account ${idString} was not found on the mirror node`,
+            );
+        }
+
+        // `Long.fromValue` turns a non-number into 0 rather than failing, which
+        // would reintroduce the silent-zero bug this query just fixed. A
+        // string is a balance above 2^53 that `bodyJson` kept exact.
+        const balance = response.balances[0].balance;
+        if (
+            typeof balance !== "number" &&
+            !(typeof balance === "string" && /^-?\d+$/.test(balance))
+        ) {
+            throw new Error(`Failed to query ${url}: balance is not a number`);
+        }
 
         return new MirrorNodeAccountBalance({
             hbars: Hbar.fromTinybars(Long.fromValue(balance)),
@@ -150,95 +194,4 @@ export default class MirrorNodeAccountBalanceQuery {
         }
         return id.toString();
     }
-
-    /**
-     * GET the URL and parse the JSON body, retrying transient failures
-     * (5xx, network/timeout) with exponential backoff. HTTP 4xx — a
-     * malformed ID — throws immediately. `deadline` is the
-     * epoch-millisecond cutoff shared by every attempt of the whole
-     * operation.
-     *
-     * @private
-     * @param {string} url
-     * @param {Client} client
-     * @param {?number} deadline
-     * @returns {Promise<unknown>}
-     */
-    async _fetchJson(url, client, deadline) {
-        const maxAttempts = client.maxAttempts;
-        const maxBackoff = client.maxBackoff;
-        let backoff = Math.min(client.minBackoff, maxBackoff);
-        /** @type {?Error} */
-        let lastError = null;
-
-        for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-            const remaining = deadline != null ? deadline - Date.now() : null;
-            if (remaining != null && remaining <= 0) {
-                throw (
-                    lastError ??
-                    new Error(
-                        `Failed to query ${url}: request timeout exceeded`,
-                    )
-                );
-            }
-
-            try {
-                // eslint-disable-next-line n/no-unsupported-features/node-builtins
-                const response = await fetch(url, {
-                    method: "GET",
-                    cache: "no-store",
-                    headers: { Accept: "application/json" },
-                    // Guarded because React Native's fetch polyfill does
-                    // not provide AbortSignal.timeout.
-                    signal:
-                        remaining != null &&
-                        typeof AbortSignal !== "undefined" &&
-                        typeof AbortSignal.timeout === "function"
-                            ? AbortSignal.timeout(remaining)
-                            : undefined,
-                });
-
-                if (response.ok) {
-                    const responseJson = /** @type {unknown} */ (
-                        await response.json()
-                    );
-                    return responseJson;
-                }
-
-                const detail = await readErrorDetail(response);
-                const error = new Error(
-                    `Failed to query ${url}: HTTP ${response.status}${
-                        detail ? `: ${detail}` : ""
-                    }`,
-                );
-
-                if (response.status >= 500 && attempt < maxAttempts) {
-                    lastError = error;
-                    await sleep(backoff);
-                    backoff = Math.min(backoff * 2, maxBackoff);
-                    continue;
-                }
-
-                throw error;
-            } catch (err) {
-                lastError = /** @type {Error} */ (err);
-                if (attempt < maxAttempts && isRetryableNetworkError(err)) {
-                    await sleep(backoff);
-                    backoff = Math.min(backoff * 2, maxBackoff);
-                    continue;
-                }
-                throw lastError;
-            }
-        }
-
-        throw lastError ?? new Error(`Failed to query ${url}`);
-    }
-}
-
-/**
- * @param {number} ms
- * @returns {Promise<void>}
- */
-function sleep(ms) {
-    return new Promise((resolve) => setTimeout(resolve, ms));
 }

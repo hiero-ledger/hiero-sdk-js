@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
+import type { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
@@ -14,7 +15,11 @@ export default function TabLayout() {
       screenOptions={{
         tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
         headerShown: false,
-        tabBarButton: HapticTab,
+        // Expo Router and the direct React Navigation dependency can resolve
+        // separate copies of this type even though the runtime props match.
+        tabBarButton: (props) => (
+          <HapticTab {...(props as unknown as BottomTabBarButtonProps)} />
+        ),
       }}>
       <Tabs.Screen
         name="index"

@@ -14,6 +14,7 @@ dotenv.config();
 
 // Import the compiled contract
 import payableContract from "../payable.json" with { type: "json" };
+import { clientForName } from "../client.js";
 
 /**
  *
@@ -29,7 +30,9 @@ async function main() {
         );
     }
 
-    const provider = new LocalProvider();
+    const provider = LocalProvider.fromClient(
+        clientForName(process.env.HEDERA_NETWORK),
+    );
 
     const wallet = new Wallet(
         process.env.OPERATOR_ID,

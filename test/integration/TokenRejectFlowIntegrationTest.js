@@ -1,5 +1,4 @@
 import {
-    AccountBalanceQuery,
     NftId,
     TokenAssociateTransaction,
     TokenMintTransaction,
@@ -8,9 +7,10 @@ import {
 } from "../../src/exports.js";
 import IntegrationTestEnv from "./client/NodeIntegrationTestEnv.js";
 import {
+    createAccount,
     createFungibleToken,
     createNonFungibleToken,
-    createAccount,
+    getAccountBalance,
 } from "./utils/Fixtures.js";
 
 describe("TokenRejectIntegrationTest", function () {
@@ -64,13 +64,15 @@ describe("TokenRejectIntegrationTest", function () {
                 .sign(receiverPrivateKey)
         ).execute(env.client);
 
-        const receiverBalanceQuery = await new AccountBalanceQuery()
-            .setAccountId(receiverId)
-            .execute(env.client);
+        const receiverBalanceQuery = await getAccountBalance(
+            env.client,
+            receiverId,
+        );
 
-        const treasuryBalanceQuery = await new AccountBalanceQuery()
-            .setAccountId(env.operatorId)
-            .execute(env.client);
+        const treasuryBalanceQuery = await getAccountBalance(
+            env.client,
+            env.operatorId,
+        );
 
         expect(receiverBalanceQuery.tokens.get(tokenId1)).to.be.eq(null);
         expect(receiverBalanceQuery.tokens.get(tokenId2)).to.be.eq(null);
@@ -138,13 +140,15 @@ describe("TokenRejectIntegrationTest", function () {
                 .sign(receiverPrivateKey)
         ).execute(env.client);
 
-        const receiverBalanceQuery = await new AccountBalanceQuery()
-            .setAccountId(receiverId)
-            .execute(env.client);
+        const receiverBalanceQuery = await getAccountBalance(
+            env.client,
+            receiverId,
+        );
 
-        const treasuryBalanceQuery = await new AccountBalanceQuery()
-            .setAccountId(env.operatorId)
-            .execute(env.client);
+        const treasuryBalanceQuery = await getAccountBalance(
+            env.client,
+            env.operatorId,
+        );
 
         expect(receiverBalanceQuery.tokens.get(tokenId)).to.eq(null);
         expect(treasuryBalanceQuery.tokens.get(tokenId).toInt()).to.be.eq(1);

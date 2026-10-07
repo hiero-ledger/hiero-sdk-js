@@ -11,21 +11,25 @@ import {
     NftId,
     TokenId,
     EvmAddress,
-    AccountBalanceQuery,
     AccountInfoQuery,
-    AccountInfo,
+    AccountBalanceQuery,
+    MirrorNodeAccountBalanceQuery,
+    MirrorNodeTokenBalanceQuery,
 } from "@hiero-ledger/sdk";
 import Long from "long";
 
 import { sdk } from "../sdk_data";
 import {
     AccountResponse,
-    GetAccountBalanceResponse,
+    ExecuteDeprecatedAccountBalanceQueryResponse,
     GetAccountInfoResponse,
+    GetMirrorNodeAccountBalanceResponse,
+    GetMirrorNodeTokenBalanceResponse,
     TokenRelationshipInfo,
 } from "../response/account";
 
 import { getKeyFromString } from "../utils/key";
+import { invalidParamError } from "../utils/invalid-param-error";
 import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";
 import {
     handleNftAllowances,
@@ -37,8 +41,10 @@ import {
     CreateAccountParams,
     DeleteAccountParams,
     DeleteAllowanceParams,
-    GetAccountBalanceParams,
+    ExecuteDeprecatedAccountBalanceQueryParams,
     GetAccountInfoParams,
+    GetMirrorNodeAccountBalanceParams,
+    GetMirrorNodeTokenBalanceParams,
     UpdateAccountParams,
 } from "../params/account";
 import { applyCommonTransactionParams } from "../params/common-tx-params";
@@ -286,40 +292,114 @@ export const getAccountInfo = async ({
     return mapAccountInfoResponse(response);
 };
 
-export const getAccountBalance = async ({
+/**
+ * Reads the HBAR balance of an account or contract from the mirror node
+ * via MirrorNodeAccountBalanceQuery, per the TCK
+ * MirrorNodeAccountBalanceQuery test specification. The accountId string
+ * may be anything the mirror node resolves: an account or contract ID, an
+ * EVM address, or a public key alias.
+ */
+export const getMirrorNodeAccountBalance = async ({
     accountId,
-    contractId,
     sessionId,
-}: GetAccountBalanceParams): Promise<GetAccountBalanceResponse> => {
+}: GetMirrorNodeAccountBalanceParams): Promise<GetMirrorNodeAccountBalanceResponse> => {
     const client = sdk.getClient(sessionId);
-    const transaction = new AccountBalanceQuery().setGrpcDeadline(
-        DEFAULT_GRPC_DEADLINE,
-    );
+    const query = new MirrorNodeAccountBalanceQuery();
 
     if (accountId != null) {
-        transaction.setAccountId(accountId);
+        query.setAccountId(accountId);
     }
 
-    if (contractId != null) {
-        transaction.setContractId(contractId);
+    const balance = await query.execute(client);
+
+    return {
+        hbars: balance.hbars.toTinybars().toString(),
+    };
+};
+
+/**
+ * Reads the balance and decimals of one token held by an account from the
+ * mirror node via MirrorNodeTokenBalanceQuery, per the TCK
+ * MirrorNodeTokenBalanceQuery test specification. The accountId string may
+ * be an account ID, an EVM address, or a public key alias.
+ */
+export const getMirrorNodeTokenBalance = async ({
+    accountId,
+    tokenId,
+    sessionId,
+}: GetMirrorNodeTokenBalanceParams): Promise<GetMirrorNodeTokenBalanceResponse> => {
+    const client = sdk.getClient(sessionId);
+    const query = new MirrorNodeTokenBalanceQuery();
+
+    if (accountId != null) {
+        query.setAccountId(accountId);
     }
 
-    const txResponse = await transaction.execute(client);
-
-    let tokenBalances = {};
-    for (const [tokenId, amount] of txResponse.tokens) {
-        tokenBalances[tokenId.toString()] = amount.toString();
+    if (tokenId != null) {
+        query.setTokenId(tokenId);
     }
 
-    let tokenDecimals = {};
-    for (const [tokenId, decimals] of txResponse.tokenDecimals) {
-        tokenDecimals[tokenId.toString()] = decimals;
+    const balance = await query.execute(client);
+
+    return {
+        tokenId: balance.tokenId.toString(),
+        balance: balance.balance.toString(),
+        decimals: balance.decimals,
+    };
+};
+
+/**
+ * Stage 2 deprecation hook, per the TCK AccountBalanceQuery test
+ * specification: the only place the TCK has the SDK construct the
+ * deprecated AccountBalanceQuery. Reports what the SDK writes to
+ * console.warn during construction and the message the operation rejects
+ * with; each is null when the SDK stays silent.
+ */
+export const executeDeprecatedAccountBalanceQuery = async ({
+    accountId,
+    operation = "execute",
+    sessionId,
+}: ExecuteDeprecatedAccountBalanceQueryParams): Promise<ExecuteDeprecatedAccountBalanceQueryResponse> => {
+    if (!accountId) {
+        return invalidParamError("accountId is required");
+    }
+
+    if (operation !== "execute" && operation !== "getCost") {
+        return invalidParamError(`unknown operation: ${operation}`);
+    }
+
+    const client = sdk.getClient(sessionId);
+
+    const warnings: string[] = [];
+    const warn = console.warn;
+    let query: AccountBalanceQuery;
+
+    console.warn = (...args) => {
+        warnings.push(args.join(" "));
+    };
+    try {
+        query = new AccountBalanceQuery();
+    } finally {
+        console.warn = warn;
+    }
+
+    query.setAccountId(accountId);
+
+    let executionError: string | null = null;
+
+    try {
+        if (operation === "getCost") {
+            await query.getCost(client);
+        } else {
+            await query.execute(client);
+        }
+    } catch (error) {
+        executionError = String(error?.message ?? error);
     }
 
     return {
-        hbars: txResponse.hbars.toTinybars().toString(),
-        tokenBalances: tokenBalances,
-        tokenDecimals: tokenDecimals,
+        constructionWarning: warnings.length > 0 ? warnings.join("\n") : null,
+        executionError,
     };
 };
 

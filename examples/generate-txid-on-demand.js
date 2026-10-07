@@ -1,7 +1,6 @@
 import {
     AccountId,
     PrivateKey,
-    Client,
     Hbar,
     Timestamp,
     TransactionId,
@@ -10,6 +9,7 @@ import {
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
+import { clientForName } from "./client.js";
 dotenv.config();
 
 /*
@@ -58,7 +58,7 @@ async function main() {
 
     try {
         // Local node
-        client = Client.forName(process.env.HEDERA_NETWORK).setOperator(
+        client = clientForName(process.env.HEDERA_NETWORK).setOperator(
             operatorId,
             operatorKey,
         );

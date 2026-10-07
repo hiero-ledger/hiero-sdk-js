@@ -6,6 +6,7 @@ import NftHookType from "./NftHookType.js";
 /**
  * @namespace proto
  * @typedef {import("@hiero-ledger/proto").proto.IHookCall} HieroProto.proto.IHookCall
+ * @typedef {import("long").default} Long
  */
 
 /**

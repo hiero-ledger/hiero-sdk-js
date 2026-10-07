@@ -22,7 +22,7 @@ export default class Duration {
          * @type {Long}
          */
         this.seconds =
-            seconds instanceof Long ? seconds : Long.fromNumber(seconds);
+            seconds instanceof Long ? seconds : Long.fromValue(seconds);
 
         Object.freeze(this);
     }

@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
@@ -48,7 +48,7 @@ jobs:
           version: 3.35.1
 
       - name: Install PNPM
-        uses: step-security/action-setup@7734f5522f614a4cf2820ad19aa26717c7abfd96 # v6.0.9
+        uses: step-security/action-setup@c9d80a280aaf584da8c913342a763a6de6452c7a # v6.0.10
         with:
           version: 9.15.5
 
@@ -64,13 +64,17 @@ jobs:
   test:
     name: Test using Node ${{ matrix.node }}
     runs-on: hiero-client-sdk-linux-large
+    # Backstop for anything outside the test step. A healthy run takes 12-22
+    # min, plus up to 20 more when apt is slow in "Install Playwright
+    # Dependencies". The step caps below are what end a hung Solo network.
+    timeout-minutes: 60
     strategy:
       matrix:
         node: [ "22" ]
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
@@ -85,7 +89,7 @@ jobs:
           version: 3.35.1
 
       - name: Install PNPM
-        uses: step-security/action-setup@7734f5522f614a4cf2820ad19aa26717c7abfd96 # v6.0.9
+        uses: step-security/action-setup@c9d80a280aaf584da8c913342a763a6de6452c7a # v6.0.10
         with:
           version: 9.15.5
 
@@ -109,13 +113,23 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@531a2b283ca4912df537d64bf89da0f6be4c2574 # 0.22.0
         with:
           installMirrorNode: true
-          soloVersion: v0.69.1
+          soloVersion: v0.91.0
+          nodeVersion: ${{ matrix.node }}
           installBlockNode: true
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
           haproxyPort: 50211
           mirrorNodePortRest: 5551
           grpcProxyPort: 8080
+
+      # The Solo action reaches the consensus node through a kubectl
+      # port-forward and haproxy. In the hung runs that path stopped answering
+      # a minute or two into the tests while envoy's direct path to the same
+      # node kept working, so 50211 (and 36211 in dual mode) is connected
+      # straight to the node's NodePort instead; the script header has the
+      # details and the fallbacks.
+      - name: Connect the consensus node port directly
+        run: node .github/scripts/forward-consensus-port.mjs
 
       - name: Set Operator Account
         run: |
@@ -125,8 +139,14 @@ jobs:
           echo "GENESIS_OPERATOR_ID=0.0.2" >> $GITHUB_ENV
           echo "HEDERA_NETWORK=local-node" >> $GITHUB_ENV
 
+      # --bail=1 stops vitest at the first failing test. Without it, a Solo
+      # network that stops answering mid-run makes every remaining test wait
+      # out its full timeout (107 tests x 120 s in run 36851615726), so a job
+      # that fails after 5 min kept running for over an hour. The step cap
+      # covers what bail cannot see: a healthy run takes 4-9 min.
       - name: Run Hedera SDK Integration Tests
-        run: ${{ env.CG_EXEC }} task test:integration:codecov
+        timeout-minutes: 25
+        run: ${{ env.CG_EXEC }} task test:integration:codecov -- --bail=1
 
       - name: Build @hiero-ledger/cryptography
         working-directory: packages/cryptography
@@ -152,16 +172,27 @@ jobs:
             ./coverage/node/lcov.info
             ./coverage/browser/lcov.info
 
+      - name: Upload consensus port forward logs
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: consensus-port-forward-test-node-${{ matrix.node }}
+          path: ${{ runner.temp }}/consensus-port-forward/
+          if-no-files-found: ignore
+
   dab-tests:
     name: DAB Tests using Node ${{ matrix.node }}
     runs-on: hiero-client-sdk-linux-medium
+    # Backstop, same reasoning as the test job: 8-9 min healthy, up to 29
+    # min when apt is slow.
+    timeout-minutes: 60
     strategy:
       matrix:
         node: [ "22" ]
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
@@ -176,7 +207,7 @@ jobs:
           version: 3.35.1
 
       - name: Install PNPM
-        uses: step-security/action-setup@7734f5522f614a4cf2820ad19aa26717c7abfd96 # v6.0.9
+        uses: step-security/action-setup@c9d80a280aaf584da8c913342a763a6de6452c7a # v6.0.10
         with:
           version: 9.15.5
 
@@ -200,7 +231,8 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@531a2b283ca4912df537d64bf89da0f6be4c2574 # 0.22.0
         with:
           installMirrorNode: true
-          soloVersion: v0.69.1
+          soloVersion: v0.91.0
+          nodeVersion: ${{ matrix.node }}
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
           haproxyPort: 50211
@@ -208,6 +240,15 @@ jobs:
           grpcProxyPort: 8080
           dualMode: true
           dualModeGrpcProxyPort: 8081
+
+      # The Solo action reaches the consensus node through a kubectl
+      # port-forward and haproxy. In the hung runs that path stopped answering
+      # a minute or two into the tests while envoy's direct path to the same
+      # node kept working, so 50211 (and 36211 in dual mode) is connected
+      # straight to the node's NodePort instead; the script header has the
+      # details and the fallbacks.
+      - name: Connect the consensus node port directly
+        run: node .github/scripts/forward-consensus-port.mjs
 
       - name: Set Operator Account
         run: |
@@ -217,8 +258,10 @@ jobs:
           echo "GENESIS_OPERATOR_ID=0.0.2" >> $GITHUB_ENV
           echo "HEDERA_NETWORK=local-node" >> $GITHUB_ENV
 
+      # A healthy run of this step takes 0.7-1.7 min.
       - name: Run DAB Integration Coverage
-        run: task test:integration:dual-mode:codecov
+        timeout-minutes: 15
+        run: task test:integration:dual-mode:codecov -- --bail=1
 
       - name: Upload DAB Coverage Artifacts
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -229,6 +272,14 @@ jobs:
             ./coverage/node-integration-dual-mode/lcov.info
             ./coverage/browser-integration-dual-mode/lcov.info
 
+      - name: Upload consensus port forward logs
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: consensus-port-forward-dab-tests-node-${{ matrix.node }}
+          path: ${{ runner.temp }}/consensus-port-forward/
+          if-no-files-found: ignore
+
   coverage-upload:
     name: Upload Coverage to Codecov
     runs-on: hiero-client-sdk-linux-medium
@@ -238,7 +289,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
@@ -260,7 +311,7 @@ jobs:
           path: .
 
       - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7.0.0
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: >-
@@ -277,12 +328,13 @@ jobs:
   examples:
     name: Run examples using Node ${{ matrix.node }}
     runs-on: hiero-client-sdk-linux-medium
+    timeout-minutes: 60
     strategy:
       matrix:
         node: [ "22" ]
     steps:
       -  name: Harden Runner
-         uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
+         uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
          with:
           egress-policy: audit
 
@@ -297,7 +349,7 @@ jobs:
           version: 3.35.1
 
       - name: Install PNPM
-        uses: step-security/action-setup@7734f5522f614a4cf2820ad19aa26717c7abfd96 # v6.0.9
+        uses: step-security/action-setup@c9d80a280aaf584da8c913342a763a6de6452c7a # v6.0.10
         with:
           version: 9.15.5
 
@@ -315,13 +367,23 @@ jobs:
         uses: hiero-ledger/hiero-solo-action@531a2b283ca4912df537d64bf89da0f6be4c2574 # 0.22.0
         with:
           installMirrorNode: true
-          soloVersion: v0.69.1
+          soloVersion: v0.91.0
+          nodeVersion: ${{ matrix.node }}
           installBlockNode: true
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
           haproxyPort: 50211
           mirrorNodePortRest: 5551
           grpcProxyPort: 8080
+
+      # The Solo action reaches the consensus node through a kubectl
+      # port-forward and haproxy. In the hung runs that path stopped answering
+      # a minute or two into the tests while envoy's direct path to the same
+      # node kept working, so 50211 (and 36211 in dual mode) is connected
+      # straight to the node's NodePort instead; the script header has the
+      # details and the fallbacks.
+      - name: Connect the consensus node port directly
+        run: node .github/scripts/forward-consensus-port.mjs
 
       - name: Set Operator Account
         run: |
@@ -336,5 +398,56 @@ jobs:
           cd examples
           pnpm i
 
+      # run-all-examples.js pings the node after every failed, killed or slow
+      # example and stops the run once two pings in a row go unanswered, so a
+      # node that goes dark costs minutes instead of the 60 min job cap.
       - name: Run all examples
         run: task run:examples
+
+      - name: Run excluded balance examples
+        run: |
+          cd examples
+          node batch-tx.js
+
+          cd simple_rest_signature_provider
+          server_log="$(mktemp)"
+          AUTO_APPROVE=true node src/server.js > "$server_log" 2>&1 &
+          server_pid=$!
+          cleanup() {
+            kill "$server_pid" 2>/dev/null || true
+            wait "$server_pid" 2>/dev/null || true
+            rm -f "$server_log"
+          }
+          trap cleanup EXIT
+
+          for _ in {1..30}; do
+            if curl --silent --output /dev/null http://127.0.0.1:3000/; then
+              break
+            fi
+            sleep 1
+          done
+
+          if ! kill -0 "$server_pid" 2>/dev/null; then
+            cat "$server_log"
+            exit 1
+          fi
+
+          node src/client.js || {
+            cat "$server_log"
+            exit 1
+          }
+
+      - name: Type-check excluded React Native examples
+        run: |
+          cd examples/react-native-example
+          ./node_modules/.bin/tsc --noEmit
+          cd ../react-native-example-legacy
+          ./node_modules/.bin/tsc --noEmit
+
+      - name: Upload consensus port forward logs
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: consensus-port-forward-examples-node-${{ matrix.node }}
+          path: ${{ runner.temp }}/consensus-port-forward/
+          if-no-files-found: ignore

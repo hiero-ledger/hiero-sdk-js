@@ -1,6 +1,5 @@
 import {
     AccountId,
-    Client,
     PrivateKey,
     TokenCreateTransaction,
     TokenType,
@@ -10,6 +9,7 @@ import {
     Status,
 } from "@hiero-ledger/sdk";
 import dotenv from "dotenv";
+import { clientForName } from "../client.js";
 
 dotenv.config();
 
@@ -20,7 +20,7 @@ async function main() {
     const operatorKey = PrivateKey.fromStringECDSA(process.env.OPERATOR_KEY);
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
 
-    const client = Client.forName(process.env.HEDERA_NETWORK).setOperator(
+    const client = clientForName(process.env.HEDERA_NETWORK).setOperator(
         operatorId,
         operatorKey,
     );

@@ -1,117 +1,120 @@
-import sinon from "sinon";
+// SPDX-License-Identifier: Apache-2.0
+
 import {
     BlockNodeApi,
     Client,
     PrivateKey,
     RegisteredNodeAddressBookQuery,
 } from "../../../src/index.js";
+import FakeHttpTransport from "../utils/FakeHttpTransport.js";
 
 describe("RegisteredNodeAddressBookQuery", function () {
-    let originalFetch;
-    let originalSetTimeout;
+    /** @type {Client[]} */
+    let clients = [];
 
-    beforeEach(function () {
-        originalFetch = global.fetch;
-        originalSetTimeout = global.setTimeout;
-
-        global.setTimeout = (callback) => {
-            callback();
-            return 0;
-        };
-    });
+    /**
+     * @param {Client} client
+     * @returns {FakeHttpTransport}
+     */
+    function inject(client) {
+        const fake = new FakeHttpTransport();
+        client.setMirrorNodeHttpConfig({ transport: fake });
+        clients.push(client);
+        return fake;
+    }
 
     afterEach(function () {
-        global.fetch = originalFetch;
-        global.setTimeout = originalSetTimeout;
+        for (const client of clients) {
+            client.close();
+        }
+        clients = [];
     });
 
     it("should query the local mirror node Java REST API and parse registered nodes", async function () {
         const adminKey = PrivateKey.generateED25519().publicKey;
         const client = Client.forLocalNode();
+        const fake = inject(client);
 
-        global.fetch = sinon.stub().resolves({
-            ok: true,
-            json: sinon.stub().resolves({
-                registered_nodes: [
-                    {
-                        admin_key: {
-                            _type: "ED25519",
-                            key: adminKey.toStringRaw(),
-                        },
-                        created_timestamp: "1234567890.000000001",
-                        description: "alpha",
-                        registered_node_id: 1,
-                        service_endpoints: [
-                            {
-                                block_node: {
-                                    endpoint_apis: ["STATUS", "PUBLISH"],
-                                },
-                                domain_name: null,
-                                general_service: null,
-                                ip_address: "127.0.0.1",
-                                mirror_node: null,
-                                port: 443,
-                                requires_tls: true,
-                                rpc_relay: null,
-                                type: "BLOCK_NODE",
-                            },
-                            {
-                                block_node: null,
-                                domain_name: "mirror.alpha.example",
-                                general_service: null,
-                                ip_address: null,
-                                mirror_node: {},
-                                port: 5600,
-                                requires_tls: true,
-                                rpc_relay: null,
-                                type: "MIRROR_NODE",
-                            },
-                            {
-                                block_node: null,
-                                domain_name: "rpc.alpha.example",
-                                general_service: null,
-                                ip_address: null,
-                                mirror_node: null,
-                                port: 7546,
-                                requires_tls: false,
-                                rpc_relay: {},
-                                type: "RPC_RELAY",
-                            },
-                            {
-                                block_node: null,
-                                domain_name: "archive.alpha.example",
-                                general_service: {
-                                    description: "Archive API",
-                                },
-                                ip_address: null,
-                                mirror_node: null,
-                                port: 8443,
-                                requires_tls: true,
-                                rpc_relay: null,
-                                type: "GENERAL_SERVICE",
-                            },
-                        ],
-                        timestamp: {
-                            from: "1234567890.000000001",
-                            to: null,
-                        },
+        fake.respondJson(200, {
+            registered_nodes: [
+                {
+                    admin_key: {
+                        _type: "ED25519",
+                        key: adminKey.toStringRaw(),
                     },
-                ],
-                links: {
-                    next: null,
+                    created_timestamp: "1234567890.000000001",
+                    description: "alpha",
+                    registered_node_id: 1,
+                    service_endpoints: [
+                        {
+                            block_node: {
+                                endpoint_apis: ["STATUS", "PUBLISH"],
+                            },
+                            domain_name: null,
+                            general_service: null,
+                            ip_address: "127.0.0.1",
+                            mirror_node: null,
+                            port: 443,
+                            requires_tls: true,
+                            rpc_relay: null,
+                            type: "BLOCK_NODE",
+                        },
+                        {
+                            block_node: null,
+                            domain_name: "mirror.alpha.example",
+                            general_service: null,
+                            ip_address: null,
+                            mirror_node: {},
+                            port: 5600,
+                            requires_tls: true,
+                            rpc_relay: null,
+                            type: "MIRROR_NODE",
+                        },
+                        {
+                            block_node: null,
+                            domain_name: "rpc.alpha.example",
+                            general_service: null,
+                            ip_address: null,
+                            mirror_node: null,
+                            port: 7546,
+                            requires_tls: false,
+                            rpc_relay: {},
+                            type: "RPC_RELAY",
+                        },
+                        {
+                            block_node: null,
+                            domain_name: "archive.alpha.example",
+                            general_service: {
+                                description: "Archive API",
+                            },
+                            ip_address: null,
+                            mirror_node: null,
+                            port: 8443,
+                            requires_tls: true,
+                            rpc_relay: null,
+                            type: "GENERAL_SERVICE",
+                        },
+                    ],
+                    timestamp: {
+                        from: "1234567890.000000001",
+                        to: null,
+                    },
                 },
-            }),
+            ],
+            links: {
+                next: null,
+            },
         });
 
         const addressBook = await new RegisteredNodeAddressBookQuery().execute(
             client,
         );
 
-        expect(global.fetch.calledOnce).to.be.true;
-        expect(global.fetch.firstCall.args[0]).to.equal(
+        expect(fake.requests).to.have.length(1);
+        expect(fake.requests[0].url).to.equal(
             "http://127.0.0.1:8084/api/v1/network/registered-nodes?limit=25",
         );
-        expect(global.fetch.firstCall.args[1]?.cache).to.equal("no-store");
+        expect(fake.requests[0].method).to.equal("GET");
 
         expect(addressBook.registeredNodes).to.have.length(1);
 
@@ -146,109 +149,106 @@ describe("RegisteredNodeAddressBookQuery", function () {
         );
     });
 
+    it("should reject when the client has no mirror network", async function () {
+        const client = Client.forNetwork(
+            { "127.0.0.1:50211": "0.0.3" },
+            { scheduleNetworkUpdate: false },
+        );
+
+        await expect(
+            new RegisteredNodeAddressBookQuery().execute(client),
+        ).rejects.toThrow("Client has no mirror network configured");
+        client.close();
+    });
+
     it("should follow pagination links and aggregate registered nodes", async function () {
         const adminKey = PrivateKey.generateED25519().publicKey;
         const client = Client.forTestnet();
+        const fake = inject(client);
 
-        global.fetch = sinon
-            .stub()
-            .onFirstCall()
-            .resolves({
-                ok: true,
-                json: sinon.stub().resolves({
-                    registered_nodes: [
+        fake.respondJson(200, {
+            registered_nodes: [
+                {
+                    admin_key: {
+                        _type: "ED25519",
+                        key: adminKey.toStringRaw(),
+                    },
+                    created_timestamp: "1234567890.000000001",
+                    description: "alpha",
+                    registered_node_id: 1,
+                    service_endpoints: [
                         {
-                            admin_key: {
-                                _type: "ED25519",
-                                key: adminKey.toStringRaw(),
+                            block_node: {
+                                endpoint_apis: ["STATUS"],
                             },
-                            created_timestamp: "1234567890.000000001",
-                            description: "alpha",
-                            registered_node_id: 1,
-                            service_endpoints: [
-                                {
-                                    block_node: {
-                                        endpoint_apis: ["STATUS"],
-                                    },
-                                    domain_name: "block.alpha.example",
-                                    general_service: null,
-                                    ip_address: null,
-                                    mirror_node: null,
-                                    port: 443,
-                                    requires_tls: true,
-                                    rpc_relay: null,
-                                    type: "BLOCK_NODE",
-                                },
-                            ],
-                            timestamp: {
-                                from: "1234567890.000000001",
-                                to: null,
-                            },
+                            domain_name: "block.alpha.example",
+                            general_service: null,
+                            ip_address: null,
+                            mirror_node: null,
+                            port: 443,
+                            requires_tls: true,
+                            rpc_relay: null,
+                            type: "BLOCK_NODE",
                         },
                     ],
-                    links: {
-                        next: "/api/v1/network/registered-nodes?limit=1&registerednode.id=gt:1",
+                    timestamp: {
+                        from: "1234567890.000000001",
+                        to: null,
                     },
-                }),
-            })
-            .onSecondCall()
-            .resolves({
-                ok: true,
-                json: sinon.stub().resolves({
-                    registered_nodes: [
+                },
+            ],
+            links: {
+                next: "/api/v1/network/registered-nodes?limit=1&registerednode.id=gt:1",
+            },
+        }).respondJson(200, {
+            registered_nodes: [
+                {
+                    admin_key: {
+                        _type: "ED25519",
+                        key: adminKey.toStringRaw(),
+                    },
+                    created_timestamp: "1234567891.000000001",
+                    description: "bravo",
+                    registered_node_id: 2,
+                    service_endpoints: [
                         {
-                            admin_key: {
-                                _type: "ED25519",
-                                key: adminKey.toStringRaw(),
-                            },
-                            created_timestamp: "1234567891.000000001",
-                            description: "bravo",
-                            registered_node_id: 2,
-                            service_endpoints: [
-                                {
-                                    block_node: null,
-                                    domain_name: "mirror.bravo.example",
-                                    general_service: null,
-                                    ip_address: null,
-                                    mirror_node: {},
-                                    port: 5600,
-                                    requires_tls: true,
-                                    rpc_relay: null,
-                                    type: "MIRROR_NODE",
-                                },
-                            ],
-                            timestamp: {
-                                from: "1234567891.000000001",
-                                to: null,
-                            },
+                            block_node: null,
+                            domain_name: "mirror.bravo.example",
+                            general_service: null,
+                            ip_address: null,
+                            mirror_node: {},
+                            port: 5600,
+                            requires_tls: true,
+                            rpc_relay: null,
+                            type: "MIRROR_NODE",
                         },
                     ],
-                    links: {
-                        next: null,
+                    timestamp: {
+                        from: "1234567891.000000001",
+                        to: null,
                     },
-                }),
-            });
+                },
+            ],
+            links: {
+                next: null,
+            },
+        });
 
         const addressBook = await new RegisteredNodeAddressBookQuery()
             .setLimit(1)
             .execute(client);
 
-        // Testnet client → no local-port rewrite; mirrorRestApiBaseUrl is
-        // identical to what the deleted mirrorRestJavaApiBaseUrl getter
-        // returned for non-local hosts.
-        const expectedFirstUrl = new URL(
-            `${client.mirrorRestApiBaseUrl}/network/registered-nodes?limit=1`,
-        ).toString();
-        const expectedSecondUrl = new URL(
-            "/api/v1/network/registered-nodes?limit=1&registerednode.id=gt:1",
-            client.mirrorRestApiBaseUrl,
-        ).toString();
+        // A testnet client gets no local-port rewrite, and the next link's
+        // `/api/v1` prefix is stripped because the base URL carries it.
+        const baseUrl = "https://testnet.mirrornode.hedera.com:443/api/v1";
 
-        expect(global.fetch.callCount).to.equal(2);
-        expect(global.fetch.firstCall.args[0]).to.equal(expectedFirstUrl);
-        expect(global.fetch.secondCall.args[0]).to.equal(expectedSecondUrl);
-        expect(global.fetch.firstCall.args[1]?.cache).to.equal("no-store");
-        expect(global.fetch.secondCall.args[1]?.cache).to.equal("no-store");
+        expect(fake.requests).to.have.length(2);
+        expect(fake.requests[0].url).to.equal(
+            `${baseUrl}/network/registered-nodes?limit=1`,
+        );
+        expect(fake.requests[1].url).to.equal(
+            `${baseUrl}/network/registered-nodes?limit=1&registerednode.id=gt:1`,
+        );
 
         expect(addressBook.registeredNodes).to.have.length(2);
         expect(

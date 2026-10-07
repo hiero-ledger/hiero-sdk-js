@@ -39,6 +39,28 @@ The JS SDK package supports loading of configuration from an `.env` file or via 
 | OPERATOR_KEY   | ED25519 private key of the operator account                                 | 302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10 |
 | HEDERA_NETWORK | Network to connect to: mainnet, testnet, previewnet, or localhost           | localhost                                                                                        |
 
+## Optional: local network endpoints
+
+The integration tests and the examples connect to the endpoints of the network `HEDERA_NETWORK` names. To run them against a local network whose ports differ from the `local-node` defaults, such as a Solo deployment with its own port mappings, set these variables instead of editing source. Apart from `NODE_WEB_IP`, they are the names the TCK uses.
+
+| Name                 | Value                                                                                                                                       | Example                |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- |
+| NODE_IP              | Consensus node gRPC `host:port`. Set together with `NODE_ACCOUNT_ID`.                                                                       | 127.0.0.1:35211        |
+| NODE_WEB_IP          | Consensus node gRPC-Web proxy `host:port`. The browser integration tests use it in place of `NODE_IP`. Set together with `NODE_ACCOUNT_ID`. | 127.0.0.1:38090        |
+| NODE_ACCOUNT_ID      | Account ID of that consensus node                                                                                                           | 0.0.3                  |
+| MIRROR_NETWORK       | Mirror node gRPC `host:port`. Node.js only: browsers stream over gRPC-Web.                                                                  | 127.0.0.1:35600        |
+| MIRROR_NODE_REST_URL | Mirror node HTTP ingress. Every mirror REST call (REST, REST Java and web3) goes to this origin instead of the per-service local ports.     | http://127.0.0.1:38081 |
+
+Precedence, highest first:
+
+1. Endpoints the code sets itself. `CONFIG_FILE` counts as explicit: the integration tests stop with an error when `NODE_IP` or `MIRROR_NETWORK` is set next to it, rather than silently replace the file's endpoints. `MIRROR_NODE_REST_URL` still applies, because a config file has no mirror REST setting.
+2. A variable that is set replaces the matching default of the network `HEDERA_NETWORK` names.
+3. A variable that is unset or empty keeps that default, so nothing changes when none are set.
+
+A malformed value stops the setup with an error that names the variable, for example `Invalid NODE_IP "127.0.0.1": failed to parse address: 127.0.0.1`.
+
+Only the test and example setup reads these variables (`test/integration/client/endpointOverrides.js` and `examples/client.js`); the SDK itself never does. Mirror REST calls reach the ingress through a transport installed with `Client.setMirrorNodeHttpConfig()`, which applications can use the same way.
+
 ### Default client settings values:
 
 | Key Name                          | Default Value                                              |

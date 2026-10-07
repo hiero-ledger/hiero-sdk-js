@@ -1,5 +1,4 @@
 import {
-    Client,
     AccountId,
     PrivateKey,
     Hbar,
@@ -10,6 +9,7 @@ import {
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
+import { clientForName } from "../client.js";
 
 dotenv.config();
 
@@ -31,7 +31,7 @@ async function main() {
 
     const operatorId = AccountId.fromString(process.env.OPERATOR_ID);
     const operatorKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
-    const client = Client.forName(process.env.HEDERA_NETWORK)
+    const client = clientForName(process.env.HEDERA_NETWORK)
         .setOperator(operatorId, operatorKey)
         .setDefaultMaxTransactionFee(new Hbar(10));
 
