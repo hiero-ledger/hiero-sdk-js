@@ -200,9 +200,14 @@ describe("TopicUpdate", function () {
 
             expect(info.adminKey.toString()).to.equal(adminKey.publicKey.toString());
 
+            // TopicCreateTransaction defaults the auto-renew account to the
+            // operator, and the network rejects an update that leaves a topic
+            // with an auto-renew account but no admin key
+            // (AUTORENEW_ACCOUNT_NOT_ALLOWED), so both are cleared together.
             const updateTx = await new TopicUpdateTransaction()
                 .setTopicId(topicId)
                 .clearAdminKey()
+                .clearAutoRenewAccountId()
                 .freezeWith(env.client)
                 .sign(adminKey);
 
@@ -214,6 +219,7 @@ describe("TopicUpdate", function () {
                 .execute(env.client);
 
             expect(updatedInfo.adminKey).to.be.null;
+            expect(updatedInfo.autoRenewAccountId).to.be.null;
         });
 
         it("should clear topicMemo on the network, not leave it unchanged", async function () {
