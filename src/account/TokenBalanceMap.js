@@ -21,11 +21,14 @@ export default class TokenBalanceMap extends ObjectMap {
         super((s) => TokenId.fromString(s));
     }
 
+    /**
+     * @returns {{[key: string]: string}}
+     */
     toJSON() {
+        /** @type {{[key: string]: string}} */
         const obj = {};
 
         this._map.forEach((value, key) => {
-            // @ts-ignore
             obj[key] = value.toString();
         });
 
