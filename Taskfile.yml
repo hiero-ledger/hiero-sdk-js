@@ -156,9 +156,15 @@ tasks:
             - npx eslint --fix "src/**/*.js"
             - cd test && npx eslint --fix "integration/**/*.js"
 
+    "size:check":
+        desc: "Fail when a published package tarball would exceed its budget in scripts/package-size/budgets.json"
+        cmds:
+            - node scripts/package-size/check-package-sizes.mjs
+
     "test:release":
         cmds:
             - task: build
+            - task: size:check
             - task: test:unit
             - task: examples:build
             - task: simple_rest_signature_provider:build
