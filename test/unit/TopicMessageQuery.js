@@ -5,6 +5,8 @@ import SubscriptionHandle from "../../src/topic/SubscriptionHandle.js";
 import TopicId from "../../src/topic/TopicId.js";
 import Timestamp from "../../src/Timestamp.js";
 import Long from "long";
+import * as HieroProto from "@hiero-ledger/proto";
+import { vi } from "vitest";
 
 describe("TopicMessageQuery", function () {
     describe("setter guard — throws after subscribe is active", function () {
@@ -160,6 +162,87 @@ describe("TopicMessageQuery", function () {
         it("returns false when error is null", function () {
             const query = new TopicMessageQuery();
             expect(query._retryHandler(null)).to.be.false;
+        });
+    });
+
+    describe("retry before the first message", function () {
+        /**
+         * Fake client that records each subscribe request and its error callback.
+         */
+        function fakeClient() {
+            const calls = [];
+            const channel = {
+                makeServerStreamRequest(
+                    service,
+                    method,
+                    request,
+                    onData,
+                    onError,
+                ) {
+                    calls.push({
+                        query: HieroProto.com.hedera.mirror.api.proto.ConsensusTopicQuery.decode(
+                            request,
+                        ),
+                        onError,
+                    });
+                    return () => {};
+                },
+            };
+            const client = {
+                _mirrorNetwork: {
+                    getNextMirrorNode: () => ({ getChannel: () => channel }),
+                },
+            };
+            return { client, calls };
+        }
+
+        beforeEach(function () {
+            vi.useFakeTimers({ toFake: ["setTimeout", "Date"] });
+            vi.setSystemTime(new Date(1700000000123));
+        });
+
+        afterEach(function () {
+            vi.useRealTimers();
+        });
+
+        it("resumes from the subscribe time when no start time was set", async function () {
+            const { client, calls } = fakeClient();
+            const subscribeTime = Timestamp.fromDate(new Date());
+
+            new TopicMessageQuery()
+                .setTopicId("0.0.5")
+                .subscribe(client, null, () => {});
+
+            expect(calls[0].query.consensusStartTime).to.be.null;
+
+            vi.setSystemTime(new Date(1700000009000));
+            calls[0].onError({ code: 5, details: "topic does not exist" });
+            await vi.runAllTimersAsync();
+
+            expect(calls).to.have.lengthOf(2);
+            const startTime = Timestamp._fromProtobuf(
+                calls[1].query.consensusStartTime,
+            );
+            expect(startTime.toString()).to.equal(subscribeTime.toString());
+        });
+
+        it("keeps a start time set by the caller", async function () {
+            const { client, calls } = fakeClient();
+
+            new TopicMessageQuery()
+                .setTopicId("0.0.5")
+                .setStartTime(42)
+                .subscribe(client, null, () => {});
+
+            calls[0].onError({ code: 5, details: "topic does not exist" });
+            await vi.runAllTimersAsync();
+
+            expect(calls).to.have.lengthOf(2);
+            expect(
+                Timestamp._fromProtobuf(
+                    calls[1].query.consensusStartTime,
+                ).toString(),
+            ).to.equal(new Timestamp(42, 0).toString());
         });
     });
 
