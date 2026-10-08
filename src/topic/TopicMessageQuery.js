@@ -181,6 +181,15 @@ export default class TopicMessageQuery {
          */
         this._handle = null;
 
+        /**
+         * Client time of the last `subscribe()` call. A retry before the first
+         * message resumes from here.
+         *
+         * @private
+         * @type {?Timestamp}
+         */
+        this._subscribeTime = null;
+
         this.setMaxBackoff(8000);
     }
 
@@ -214,6 +223,12 @@ export default class TopicMessageQuery {
     }
 
     /**
+     * Sets the consensus time to start receiving messages from.
+     *
+     * If not set, the mirror node starts at its current time. If the
+     * subscription fails before the first message arrives, the retry starts
+     * from the time `subscribe()` was called, read from the client clock.
+     *
      * @param {Timestamp | Date | number} startTime
      * @returns {TopicMessageQuery}
      */
@@ -322,6 +337,7 @@ export default class TopicMessageQuery {
     subscribe(client, errorHandler, listener) {
         this._handle = new SubscriptionHandle();
         this._listener = listener;
+        this._subscribeTime = Timestamp.fromDate(new Date());
 
         if (errorHandler != null) {
             this._errorHandler = errorHandler;
@@ -518,6 +534,13 @@ export default class TopicMessageQuery {
             } ` +
                 `during attempt ${this._attempt}. Waiting ${delay} ms before next attempt: ${errorMessage}`,
         );
+
+        // Without a start time the mirror node starts at its own "now" on every
+        // attempt, so messages sent between subscribe() and this retry would be
+        // skipped (a chunked message would never reassemble).
+        if (this._startTime == null) {
+            this._startTime = this._subscribeTime;
+        }
 
         this._attempt += 1;
         setTimeout(() => this._makeServerStreamRequest(client), delay);
