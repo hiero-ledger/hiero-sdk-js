@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import * as HieroProto from "@hiero-ledger/proto";
 import SemanticVersion from "../../../src/network/SemanticVersion.js";
 
