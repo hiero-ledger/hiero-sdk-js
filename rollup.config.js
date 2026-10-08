@@ -239,7 +239,10 @@ export default [
             file: "dist/umd.js",
             format: "umd",
             name: "sdk",
-            sourcemap: true,
+            // The UMD bundles ship without source maps. Each map embeds the
+            // source of every bundled module, 15 MB for the pair, which doubled
+            // the published package (#4476). dist/umd.js is readable as is.
+            sourcemap: false,
         },
         context: "window",
     },
@@ -266,7 +269,7 @@ export default [
         output: {
             format: "umd",
             name: "sdk",
-            sourcemap: true,
+            sourcemap: false,
             file: "dist/umd.min.js",
         },
         context: "window",
