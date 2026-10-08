@@ -231,7 +231,7 @@ export default class ManagedNode {
     }
 
     /**
-     * @param {ManagedNode<*>} node
+     * @param {ManagedNode<ChannelT>} node
      * @returns {number}
      */
     compare(node) {
