@@ -106,23 +106,23 @@ async function latestOnNpm(name) {
     }
 
     try {
+        // The /latest endpoint returns only that version's manifest, a few
+        // KB, instead of the whole packument that grows with every release.
         const response = await fetch(
-            `https://registry.npmjs.org/${name.replaceAll("/", "%2F")}`,
+            `https://registry.npmjs.org/${name}/latest`,
             { signal: AbortSignal.timeout(15000) },
         );
         if (!response.ok) {
             return null;
         }
-        const document = await response.json();
-        const version = document["dist-tags"]?.latest;
-        const dist = document.versions?.[version]?.dist;
-        if (!version || !dist) {
+        const manifest = await response.json();
+        if (!manifest.version || !manifest.dist) {
             return null;
         }
         return {
-            version,
-            unpackedSize: dist.unpackedSize ?? null,
-            fileCount: dist.fileCount ?? null,
+            version: manifest.version,
+            unpackedSize: manifest.dist.unpackedSize ?? null,
+            fileCount: manifest.dist.fileCount ?? null,
         };
     } catch {
         return null;
