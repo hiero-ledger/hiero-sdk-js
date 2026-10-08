@@ -453,28 +453,33 @@ jobs:
           if-no-files-found: ignore
 
   tck:
-    name: TCK Regression using Node ${{ matrix.node }}
+    # The job name is the status check context: "Build & Test / TCK
+    # Compatibility". It is meant to become a required check (repository
+    # ruleset 650010, next to "Test using Node 22"), so rename it only
+    # together with the ruleset.
+    name: TCK Compatibility
     runs-on: hiero-client-sdk-linux-large
     # Runs the hiero-sdk-tck conformance suite against this commit through the
     # JSON-RPC server in tck/, which uses the local build (file:..). It starts
-    # only after every other job of this workflow has passed, so a change that
-    # already fails a build or a test does not spend a Solo network and a
-    # large runner on it.
+    # only after the required jobs of this workflow (Build using Node 22 and
+    # 24, Test using Node 22) have passed, so a change that already fails a
+    # build or a test does not spend a Solo network and a large runner on it.
+    # The gate is limited to required jobs on purpose: a job skipped behind a
+    # failed prerequisite counts as passed for a required check, and the
+    # required prerequisite is what then blocks the merge.
     needs:
       - build
       - test
-      - dab-tests
-      - examples
     # A healthy run takes about 15 min: build 1, Solo 5, tests 7
     # (hiero-sdk-tck run 37763450768 on 9ace346d: 2189 passed, 233 pending).
     timeout-minutes: 45
-    strategy:
-      matrix:
-        node: [ "22" ]
     env:
+      NODE_VERSION: "22"
       # hiero-sdk-tck main on 2026-10-08: v0.13.0 plus the ClientPing flake
       # fix (hiero-sdk-tck#734). Bump deliberately; a new TCK test for a
       # feature the SDK does not have yet would otherwise turn this job red.
+      # When bumping, diff the TCK's js_compatibility.yml between the two
+      # commits and mirror any change to its env block or Solo inputs below.
       TCK_REF: d564ca2a9efae4d244de45d94117ded26038ff49
 
     steps:
@@ -509,7 +514,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: ${{ matrix.node }}
+          node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
 
       - name: Install dependencies and build SDK
@@ -535,7 +540,7 @@ jobs:
         with:
           installMirrorNode: true
           soloVersion: v0.91.0
-          nodeVersion: ${{ matrix.node }}
+          nodeVersion: ${{ env.NODE_VERSION }}
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
           haproxyPort: 50211
@@ -586,7 +591,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: tck-node-${{ matrix.node }}
+          name: tck-compatibility
           path: |
             tck-client/mochawesome-report/
             ${{ runner.temp }}/tck-server.log
