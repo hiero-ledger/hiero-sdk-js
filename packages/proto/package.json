@@ -1,6 +1,6 @@
 {
   "name": "@hiero-ledger/proto",
-  "version": "2.31.0",
+  "version": "2.31.1",
   "description": "Protobufs for the Hiero SDK",
   "main": "lib/index.js",
   "browser": "src/index.js",
@@ -25,7 +25,9 @@
   },
   "files": [
     "lib/",
-    "src/"
+    "src/*.js",
+    "src/*.d.ts",
+    "src/proto/"
   ],
   "engines": {
     "node": ">=10.0.0"
