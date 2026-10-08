@@ -587,8 +587,32 @@ jobs:
           MIRROR_NETWORK: "127.0.0.1:5600"
         run: npm run test
 
+      # The job summary shows the counts without opening the log. It runs when
+      # the tests failed too, and says so when the suite never produced a
+      # report (a crash before the end leaves no mochawesome.json).
+      - name: Summarize the TCK results
+        if: always()
+        env:
+          SDK_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          node - <<'NODE' >> "${GITHUB_STEP_SUMMARY}"
+          const fs = require("node:fs");
+          console.log("### TCK Compatibility\n");
+          console.log(`SDK commit \`${process.env.SDK_SHA.slice(0, 8)}\`, hiero-sdk-tck \`${process.env.TCK_REF.slice(0, 8)}\`\n`);
+          let stats;
+          try {
+            stats = JSON.parse(fs.readFileSync("tck-client/mochawesome-report/mochawesome.json", "utf8")).stats;
+          } catch {
+            console.log("No report was produced: the suite did not run to completion. See the job log and the `tck-compatibility` artifact.");
+            process.exit(0);
+          }
+          console.log("| Total | Passed | Failed | Pending | Duration |");
+          console.log("|---:|---:|---:|---:|---:|");
+          console.log(`| ${stats.tests} | ${stats.passes} | ${stats.failures} | ${stats.pending} | ${(stats.duration / 60000).toFixed(1)} min |`);
+          NODE
+
       - name: Upload TCK report and logs
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: tck-compatibility
