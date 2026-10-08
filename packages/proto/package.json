@@ -25,7 +25,9 @@
   },
   "files": [
     "lib/",
-    "src/"
+    "src/*.js",
+    "src/*.d.ts",
+    "src/proto/"
   ],
   "engines": {
     "node": ">=10.0.0"

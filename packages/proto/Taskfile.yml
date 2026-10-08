@@ -152,6 +152,15 @@ tasks:
         cmds:
             - pnpm pack --out {{.CLI_ARGS}}
             - ls -lh {{.CLI_ARGS}}
+            # The src/services submodule is the whole hiero-consensus-node repository.
+            # The files field keeps it out of the tarball; fail loudly if it ever gets back in.
+            - |
+              FILE_COUNT="$(tar -tzf {{.CLI_ARGS}} | wc -l | tr -d ' ')"
+              if [ "${FILE_COUNT}" -gt 1000 ]; then
+                echo "error: {{.CLI_ARGS}} contains ${FILE_COUNT} files; a correct package has a few hundred. Check the files field in package.json." >&2
+                exit 1
+              fi
+              echo "{{.CLI_ARGS}} contains ${FILE_COUNT} files"
 
     publish:
         cmds:
