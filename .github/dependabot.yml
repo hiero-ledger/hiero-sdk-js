@@ -16,3 +16,5 @@ updates:
           - dependency-name: "*"
             update-types:
                 ["version-update:semver-minor", "version-update:semver-patch"]
+          # Do not open update PRs for bignumber.js
+          - dependency-name: "bignumber.js"
