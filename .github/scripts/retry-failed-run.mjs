@@ -91,7 +91,7 @@ const GENERIC_ANNOTATION =
 // Jobs behind required checks. When one of them failed for real the run
 // stays red whatever else is re-run, so nothing is.
 const REQUIRED_JOB =
-    /^(Build using Node|Test using Node|Integration Tests on Node)\b/;
+    /^(Build using Node|Test using Node|Integration Tests on Node|TCK Compatibility)\b/;
 const COVERED_WORKFLOWS = [
     ".github/workflows/build.yml",
     ".github/workflows/common_js.yml",
