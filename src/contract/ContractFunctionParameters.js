@@ -1723,7 +1723,7 @@ function argumentToBytes(param, ty) {
         // So if will assume is already correctly updated to being a Uint8Array of UTF-8 string
         case ArgumentType.bytes:
         case ArgumentType.string: {
-            // If value is of type string, encode it in UTF-8 format and conver it to Uint8Array
+            // If value is of type string, encode it in UTF-8 format and convert it to Uint8Array
             // Required because JS Strings are UTF-16
 
             par =

@@ -334,7 +334,7 @@ export default class Executable {
 
     /**
      * Perform a single grpc call with the given request. Each request has it's own
-     * required service so we just pass in channel, and it'$ the request's responsiblity
+     * required service so we just pass in channel, and it's the request's responsibility
      * to use the right service and call the right grpc method.
      *
      * @abstract
@@ -370,7 +370,7 @@ export default class Executable {
      * Return the log ID for this particular request
      *
      * Log IDs are simply a string constructed to make it easy to track each request's
-     * execution even when mulitple requests are executing in parallel. Typically, this
+     * execution even when multiple requests are executing in parallel. Typically, this
      * method returns the format of `[<request type>.<timestamp of the transaction ID>]`
      *
      * Maybe we should deduplicate this using ${this.consturtor.name}
