@@ -51,7 +51,7 @@ const regex =
 
 /**
  * This regex supports entity IDs
- *  - as stand alone nubmers
+ *  - as stand alone numbers
  *  - as shard.realm.num
  *  - as shard.realm.hex
  *  - can optionally provide checksum for any of the above
@@ -75,7 +75,7 @@ const ENTITY_NUM_OFFSET = 16;
 
 /**
  * This method is called by most entity ID constructors. It's purpose is to
- * deduplicate the constuctors.
+ * deduplicate the constructors.
  *
  * @param {number | Long | IEntityId} props
  * @param {(number | null | Long)=} realmOrNull

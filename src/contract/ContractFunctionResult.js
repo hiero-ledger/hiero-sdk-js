@@ -227,7 +227,7 @@ export default class ContractFunctionResult {
      */
     getBytes(index) {
         // Len should never be larger than Number.MAX
-        // index * 32 is the position of the lenth
+        // index * 32 is the position of the length
         // (index + 1) * 32 onward to (index + 1) * 32 + len will be the elements of the array
         // Arrays in solidity cannot be longer than 1024:
         // https://solidity.readthedocs.io/en/v0.4.21/introduction-to-smart-contracts.html

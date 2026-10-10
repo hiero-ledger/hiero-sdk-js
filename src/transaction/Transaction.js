@@ -55,7 +55,7 @@ const NODE_ACCOUNT_BATCH_ID = new AccountId(0, 0, 0);
 const DEFAULT_TRANSACTION_VALID_DURATION = 120;
 
 // The default message chunk size in bytes when splitting a given message.
-// This value can be overriden using `setChunkSize` when preparing to submit a messsage via `TopicMessageSubmitTransaction`.
+// This value can be overridden using `setChunkSize` when preparing to submit a message via `TopicMessageSubmitTransaction`.
 export const CHUNK_SIZE = 1024;
 
 /**
@@ -223,7 +223,7 @@ export default class Transaction extends Executable {
          * The max transaction fee on the request. This field is what users are able
          * to set, not the `defaultMaxTransactionFee`. The purpose of this field is
          * to allow us to determine if the user set the field explicitly, or if we're
-         * using the default max transation fee for the request.
+         * using the default max transaction fee for the request.
          *
          * @private
          * @type {Hbar | null}
@@ -964,7 +964,7 @@ export default class Transaction extends Executable {
     }
 
     /**
-     * Get the curent transaction ID
+     * Get the current transaction ID
      *
      * @returns {?TransactionId}
      */
@@ -976,8 +976,8 @@ export default class Transaction extends Executable {
         // If a user calls `.transactionId` that means we need to use that transaction ID
         // and **not** regenerate it. To do this, we simply lock the transaction ID list.
         //
-        // This may be a little conffusing since a user can enable transaction ID regenration
-        // explicity, but if they call `.transactionId` then we will not regenerate transaction
+        // This may be a little confusing since a user can enable transaction ID regeneration
+        // explicitly, but if they call `.transactionId` then we will not regenerate transaction
         // IDs.
         this._transactionIds.setLocked();
 
@@ -1208,7 +1208,7 @@ export default class Transaction extends Executable {
     }
     /**
      * @deprecated - Using uint8array and uint8array[] as signaturemap is deprecated,
-     * use SignatureMap insted.
+     * use SignatureMap instead.
      * @overload
      * @param { PublicKey } publicKey
      * @param { Uint8Array | Uint8Array[] } signatureMap
@@ -1811,7 +1811,7 @@ export default class Transaction extends Executable {
         this._setTransactionId();
 
         // If a client was not provided, we need to make sure the transaction ID already set
-        // validates aginst the client.
+        // validates against the client.
         if (client != null) {
             for (const transactionId of this._transactionIds.list) {
                 if (transactionId.accountId != null) {
@@ -1821,7 +1821,7 @@ export default class Transaction extends Executable {
         }
 
         // Build a list of transaction IDs so that if a user calls `.transactionId` they'll
-        // get a value, but if they dont' we'll just regenerate transaction IDs during execution
+        // get a value, but if they don't we'll just regenerate transaction IDs during execution
         this._buildNewTransactionIdList();
 
         // If sign on demand is disabled we need to build out all the signed transactions
