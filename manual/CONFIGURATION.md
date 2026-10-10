@@ -73,7 +73,7 @@ Only the test and example setup reads these variables (`test/integration/client/
 | setMaxBackoff                     | 8000 (milliseconds)                                        |
 | setNetworkUpdatePeriod            | 1 day                                                      |
 | setAutoValidateChecksums          | false                                                      |
-| setMaxExecutionTime               | If you use NodeClient default value is 10000 (miliseconds) |
+| setMaxExecutionTime               | If you use NodeClient default value is 10000 (milliseconds) |
 
 ## ED25519 or ECDSA key
 
@@ -85,7 +85,7 @@ For integration tests, an Ed25519 private key should be used. This is configured
 const operatorKey = PrivateKey.fromStringECDSA(options.env.OPERATOR_KEY);
 ```
 
-It's recomended to use ED25519 due to it's better speed and performance.
+It's recommended to use ED25519 due to its better speed and performance.
 
 ### Examples
 
@@ -378,7 +378,7 @@ client.setNodeWaitTime(5000); // Set node wait time to 5 seconds (5000 milliseco
 
 ### Logging
 
--   `setLogger` - Configure client logger. Setting a logger can give you additional information for debugging processes. This is an example of how you can use this fucntionality.
+-   `setLogger` - Configure client logger. Setting a logger can give you additional information for debugging processes. This is an example of how you can use this functionality.
 
 ```javascript
 const infoLogger = new Logger(LogLevel.Info);

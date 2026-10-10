@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Hedera SDK has updated its transaction signing mechanism to provide functionaly that can work with multi-node chunked transaction and a more structured approach to managing signatures. This guide will help you migrate from the legacy mode to the new mode.
+The Hedera SDK has updated its transaction signing mechanism to provide functionality that can work with multi-node chunked transaction and a more structured approach to managing signatures. This guide will help you migrate from the legacy mode to the new mode.
 
 ## Key Changes
 

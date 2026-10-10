@@ -249,7 +249,7 @@
     * Added `setErrorHandler((Throwable, TopicMessage): void)`
         * This error handler will be called if the max retry count is exceeded, or
         * if the subscribe callback errors out for a specific `TopicMessage`
-    * Changed `subscribe(MirrorClient, (MirrorConsensusTopicResponse): void, (Errror): void)` -> `subscribe(Client, (TopicMessage): void): MirrorSubscriptionHandle`
+    * Changed `subscribe(MirrorClient, (MirrorConsensusTopicResponse): void, (Error): void)` -> `subscribe(Client, (TopicMessage): void): MirrorSubscriptionHandle`
         * Use `setErrorHandler()` instead of passing it in as the third parameter.
 
 ### Renamed `ConsensusTopicCreateTransaction` -> `TopicCreateTransaction`
