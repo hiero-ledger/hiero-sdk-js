@@ -416,7 +416,7 @@ export default class PrivateKey extends Key {
             }
         }
 
-        const siganture = this.sign(
+        const signature = this.sign(
             tx.bodyBytes != null ? tx.bodyBytes : new Uint8Array(),
         );
 
@@ -427,17 +427,17 @@ export default class PrivateKey extends Key {
 
         switch (this._type) {
             case "ED25519":
-                protoSignature.ed25519 = siganture;
+                protoSignature.ed25519 = signature;
                 break;
             case "secp256k1":
-                protoSignature.ECDSASecp256k1 = siganture;
+                protoSignature.ECDSASecp256k1 = signature;
                 break;
         }
 
         tx.sigMap.sigPair.push(protoSignature);
         transaction._signerPublicKeys.add(publicKeyHex);
 
-        return siganture;
+        return signature;
     }
 
     /**

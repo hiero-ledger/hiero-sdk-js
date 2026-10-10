@@ -145,10 +145,10 @@ export default class Wallet {
      * @returns {Promise<SignerSignature[]>}
      */
     async sign(messages) {
-        const sigantures = [];
+        const signatures = [];
 
         for (const message of messages) {
-            sigantures.push(
+            signatures.push(
                 new SignerSignature({
                     publicKey: this.publicKey,
                     signature: await this.signer(message),
@@ -157,7 +157,7 @@ export default class Wallet {
             );
         }
 
-        return sigantures;
+        return signatures;
     }
 
     /**
