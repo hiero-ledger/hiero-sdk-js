@@ -144,7 +144,7 @@ As you commit, make sure the commits are:
 - ✅ Signed correctly
 
 ### Achieving Conventionally Named Commits
-A conventionally named commit is one that summarises in words what was just commited with a suitable pre-fix.
+A conventionally named commit is one that summarises in words what was just committed with a suitable pre-fix.
 
 This is correct:
 
@@ -158,7 +158,7 @@ This is incorrect:
 git commit -S -s -m "looks like its mostly working now"
 ```
 
-Read about conventional commit messages here: [Conventional Commmits](https://www.conventionalcommits.org/en/v1.0.0/#summary)
+Read about conventional commit messages here: [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/#summary)
 
 ## DCO and GPG Signing Commits
 **Each** commit in a pull request needs to be:
