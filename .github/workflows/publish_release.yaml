@@ -283,6 +283,10 @@ jobs:
         run: |
           task -v build
 
+      - name: Check Published Package Sizes
+        run: |
+          task -v size:check
+
   calculate-release-args:
     name: Calculate Release Arguments
     runs-on: hiero-client-sdk-linux-medium

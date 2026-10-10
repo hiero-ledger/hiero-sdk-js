@@ -1,0 +1,21 @@
+[
+    {
+        "dir": ".",
+        "maxFiles": 2500,
+        "maxUnpackedMB": 40,
+        "maxGrowthPercent": 25
+    },
+    {
+        "dir": "packages/proto",
+        "maxFiles": 600,
+        "maxUnpackedMB": 25,
+        "maxGrowthPercent": 25,
+        "forbiddenPaths": ["src/services/"]
+    },
+    {
+        "dir": "packages/cryptography",
+        "maxFiles": 300,
+        "maxUnpackedMB": 5,
+        "maxGrowthPercent": 50
+    }
+]
