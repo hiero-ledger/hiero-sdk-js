@@ -16,10 +16,10 @@ function App() {
          * 1. Setup operatorId and operatorKey
          */
         const operatorId = AccountId.fromString(
-            process.env.REACT_APP_OPERATOR_ID,
+            import.meta.env.VITE_OPERATOR_ID,
         );
         const operatorKey = PrivateKey.fromStringECDSA(
-            process.env.REACT_APP_OPERATOR_KEY,
+            import.meta.env.VITE_OPERATOR_KEY,
         );
 
         /**
