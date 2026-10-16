@@ -31,8 +31,16 @@ export default class IPv4Address {
     /**
      * @returns {?IPv4AddressPart}
      */
-    get newtork() {
+    get network() {
         return this._network;
+    }
+
+    /**
+     * @deprecated - Use `network` instead
+     * @returns {?IPv4AddressPart}
+     */
+    get newtork() {
+        return this.network;
     }
 
     /**

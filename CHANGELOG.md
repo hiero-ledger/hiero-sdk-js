@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Unreleased
 
+### Added
+
+-   Added `network` getter on `IPv4Address` to replace the misspelled `newtork` getter, which is now deprecated. [#4008](https://github.com/hiero-ledger/hiero-sdk-js/issues/4008)
+
 ### Changed
 
 -   The published `@hiero-ledger/proto` package no longer contains `src/proto.d.ts` and `src/index.d.ts`, which are copies of the `lib/` type files that `types` points at, or the `src/proto/*.proto` sources, which nothing loads at runtime. The `files` field now lists only `lib/` and the `src/*.js` browser entry files, so the package goes from 15.4 MB and 194 files to 10.8 MB and 7 files unpacked, and its size budget is lowered to 15 MB and 20 files. Applies from `@hiero-ledger/proto` 2.32.1. [#4527](https://github.com/hiero-ledger/hiero-sdk-js/issues/4527)
