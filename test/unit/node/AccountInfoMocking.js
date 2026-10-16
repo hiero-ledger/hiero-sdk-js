@@ -449,7 +449,7 @@ describe("AccountInfoMocking", function () {
         try {
             await new AccountInfoQuery().setAccountId("0.0.3").execute(client);
         } catch (error) {
-            err = error.message == "timeout exceeded";
+            err = error.message.startsWith("timeout exceeded");
         }
 
         if (!err) {
@@ -476,7 +476,7 @@ describe("AccountInfoMocking", function () {
                 .setAccountId("0.0.3")
                 .execute(client, 1);
         } catch (error) {
-            err = error.message == "timeout exceeded";
+            err = error.message.startsWith("timeout exceeded");
         }
 
         if (!err) {
@@ -531,7 +531,7 @@ describe("AccountInfoMocking", function () {
                 .setAccountId("0.0.3")
                 .execute(client, 1);
         } catch (error) {
-            err = error.message === "timeout exceeded";
+            err = error.message.startsWith("timeout exceeded");
         }
 
         expect(err).to.be.true;
@@ -554,7 +554,7 @@ describe("AccountInfoMocking", function () {
         try {
             await new AccountInfoQuery().setAccountId("0.0.3").execute(client);
         } catch (error) {
-            err = error.message === "timeout exceeded";
+            err = error.message.startsWith("timeout exceeded");
         }
 
         expect(err).to.be.false;

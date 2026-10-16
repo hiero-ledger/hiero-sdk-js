@@ -280,7 +280,7 @@ export default class Executable {
      *
      * @abstract
      * @protected
-     * @param {import("./client/Client.js").default<Channel, *>} client
+     * @param {import("./client/Client.js").default<Channel, MirrorChannel>} client
      * @returns {Promise<void>}
      */
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -809,7 +809,9 @@ export default class Executable {
                 requestStartTime + this._requestTimeout <= Date.now()
             ) {
                 throw new MaxAttemptsOrTimeoutError(
-                    "timeout exceeded",
+                    persistentError != null
+                        ? `timeout exceeded with last error being: ${persistentError.toString()}`
+                        : "timeout exceeded",
                     this._nodeAccountIds.isEmpty
                         ? "No node account ID set"
                         : this._nodeAccountIds.current.toString(),

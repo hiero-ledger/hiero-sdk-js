@@ -124,6 +124,57 @@ describe("Executable", function () {
         }
     });
 
+    it("execute throws timeout exceeded with the last error seen", async function () {
+        const executable = new Executable();
+        let nowCallCount = 0;
+        // The first call records the start time, the second passes the
+        // timeout check for attempt 1 and the third fails it for attempt 2.
+        const dateNowSpy = vi
+            .spyOn(Date, "now")
+            .mockImplementation(() => (nowCallCount++ < 2 ? 1000 : 1002));
+
+        const node = {
+            accountId: new AccountId(3),
+            address: { toString: () => "127.0.0.1:50211" },
+            getChannel: () => ({ setGrpcDeadline() {} }),
+            isHealthy: () => true,
+        };
+
+        executable._requestTimeout = 1;
+        executable._nodeAccountIds.setList([new AccountId(3)]);
+        executable._beforeExecute = async () => {};
+        executable._makeRequestAsync = async () => ({});
+        executable._shouldRetryExceptionally = () => true;
+        executable._execute = () =>
+            Promise.reject(new GrpcServiceError(GrpcStatus.Timeout));
+
+        try {
+            await executable.execute({
+                _logger: null,
+                _network: {
+                    getNode: () => node,
+                    increaseBackoff() {},
+                },
+                requestTimeout: 15000,
+                grpcDeadline: 5000,
+                maxBackoff: 8000,
+                minBackoff: 250,
+                maxAttempts: 10,
+                isLocalNetwork: false,
+            });
+            expect.fail("Expected timeout error");
+        } catch (error) {
+            expect(error.message).to.equal(
+                `timeout exceeded with last error being: ${new GrpcServiceError(
+                    GrpcStatus.Timeout,
+                ).toString()}`,
+            );
+            expect(error.nodeAccountId).to.equal("0.0.3");
+        } finally {
+            dateNowSpy.mockRestore();
+        }
+    });
+
     it("_getExecutionNode returns the network node and seeds nodeAccountIds when empty", function () {
         const executable = new Executable();
         const currentNode = { accountId: new AccountId(3) };

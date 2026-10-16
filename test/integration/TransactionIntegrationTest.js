@@ -759,6 +759,9 @@ describe("TransactionIntegration", function () {
 
     describe("HIP-1300", function () {
         const MAXIMUM_TRANSACTION_SIZE = 130000;
+        // Fail fast if the node never answers instead of holding the job
+        // for the client's default 2 minute request timeout.
+        const REQUEST_TIMEOUT = 30000;
 
         it("should create a transaction with more than 6kbs of data with signatures", async function () {
             const client = NodeClient.forNetwork(env.client.network, {
@@ -774,7 +777,9 @@ describe("TransactionIntegration", function () {
                 transaction = await transaction.sign(PrivateKey.generate());
             }
 
-            await (await transaction.execute(client)).getReceipt(client);
+            await (
+                await transaction.execute(client, REQUEST_TIMEOUT)
+            ).getReceipt(client);
         });
 
         it("should create a transaction with more than 6kbs of data in a file", async function () {
@@ -795,12 +800,17 @@ describe("TransactionIntegration", function () {
 
             let err;
             try {
-                await (await transaction.execute(client)).getReceipt(client);
+                await (
+                    await transaction.execute(client, REQUEST_TIMEOUT)
+                ).getReceipt(client);
             } catch (error) {
-                err = error.status.toString().includes("TRANSACTION_OVERSIZE");
+                err = error;
             }
 
-            expect(err).to.be.true;
+            expect(
+                err?.status,
+                `expected TRANSACTION_OVERSIZE, got: ${err}`,
+            ).to.equal(Status.TransactionOversize);
         });
 
         it("should not create a transaction with more than 6kbs of data with signatures without system account", async function () {
@@ -816,12 +826,17 @@ describe("TransactionIntegration", function () {
 
             let err;
             try {
-                await (await transaction.execute(client)).getReceipt(client);
+                await (
+                    await transaction.execute(client, REQUEST_TIMEOUT)
+                ).getReceipt(client);
             } catch (error) {
-                err = error.status.toString().includes("TRANSACTION_OVERSIZE");
+                err = error;
             }
 
-            expect(err).to.be.true;
+            expect(
+                err?.status,
+                `expected TRANSACTION_OVERSIZE, got: ${err}`,
+            ).to.equal(Status.TransactionOversize);
         });
     });
 
