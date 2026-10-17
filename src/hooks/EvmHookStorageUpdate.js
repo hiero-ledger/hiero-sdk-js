@@ -1,11 +1,11 @@
 import EvmHookMappingEntry from "./EvmHookMappingEntry.js";
 
 /**
- *
- * @abstract
  * Specifies a key/value pair in the storage of a EVM hook, either by the explicit storage
  * slot contents; or by a combination of a Solidity mapping's slot key and the key into
  * that mapping.
+ *
+ * @abstract
  */
 class EvmHookStorageUpdate {
     /**
