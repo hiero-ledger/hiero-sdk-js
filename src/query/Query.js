@@ -228,7 +228,7 @@ export default class Query extends QueryBase {
     }
 
     /**
-     * Before we proceed exeuction, we need to do a couple checks
+     * Before we proceed execution, we need to do a couple checks
      *
      * @template {MirrorChannel} MirrorChannelT
      * @param {import("../client/Client.js").default<Channel, MirrorChannelT>} client
@@ -298,7 +298,7 @@ export default class Query extends QueryBase {
             this._paymentTransactions.length === 0 &&
             this._isPaymentRequired()
         ) {
-            // If the query payment was not explictly set, fetch the actual cost.
+            // If the query payment was not explicitly set, fetch the actual cost.
             const actualCost = await this.getCost(client);
 
             // Confirm it's less than max query payment
@@ -323,7 +323,7 @@ export default class Query extends QueryBase {
         // typically not needed.
         this._queryPayment = cost;
 
-        // Not sure if we should be overwritting this field tbh.
+        // Not sure if we should be overwriting this field tbh.
         this._timestamp = Date.now();
 
         this._nodeAccountIds.setLocked();
