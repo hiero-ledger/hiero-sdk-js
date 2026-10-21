@@ -1237,7 +1237,7 @@ export default class Client {
 
             if (!this._isShutdown) {
                 // Recall this method to continuously update the network
-                // every `networkUpdatePeriod` amount of itme
+                // every `networkUpdatePeriod` amount of time
                 this._scheduleNetworkUpdate();
             }
         }, this._networkUpdatePeriod);
