@@ -12,7 +12,6 @@ const excludedDirectories = [
     "./node_modules",
     "./precompile-example",
     "./react-native-example",
-    "./react-native-example-legacy",
     "./simple_rest_signature_provider",
     "./contracts",
     "./demo-umd",
