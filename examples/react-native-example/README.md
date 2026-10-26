@@ -2,7 +2,7 @@
 
 A fully working React Native example app that demonstrates how to use the
 [Hiero JavaScript SDK](https://github.com/hiero-ledger/hiero-sdk-js) in a
-mobile application. Built with **Expo SDK 54** and **expo-router**.
+mobile application. Built with **Expo SDK 58** and **expo-router**.
 
 ## Features
 

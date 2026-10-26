@@ -7,12 +7,10 @@
     "icon": "./assets/images/hiero-icon.svg",
     "scheme": "hieroledger",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
     },
     "android": {
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false
     },
     "web": {
