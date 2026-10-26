@@ -178,4 +178,3 @@ if (transfer.success) {
 
 - [Hiero JS SDK Documentation](https://docs.hedera.com/hedera/sdks-and-apis/sdks/javascript)
 - [Expo Documentation](https://docs.expo.dev/)
-- [Legacy React Native Example](../react-native-example-legacy/) (deprecated)
