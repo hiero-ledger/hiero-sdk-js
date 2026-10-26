@@ -283,7 +283,7 @@ export default class PrivateKey extends Key {
      *
      * @param {number} index
      * @returns {Promise<PrivateKey>}
-     * @throws If this key does not support derivation.
+     * @throws {Error} If this key does not support derivation.
      */
     async derive(index) {
         return new PrivateKey(await this._key.derive(index));
@@ -292,7 +292,6 @@ export default class PrivateKey extends Key {
     /**
      * @param {number} index
      * @returns {Promise<PrivateKey>}
-     * @throws If this key does not support derivation.
      */
     async legacyDerive(index) {
         return new PrivateKey(await this._key.legacyDerive(index));

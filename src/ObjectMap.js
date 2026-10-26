@@ -6,7 +6,7 @@
  *
  * @abstract
  * @template {{ toString(): string }} KeyT
- * @template {any} ValueT
+ * @template ValueT
  */
 export default class ObjectMap {
     /**

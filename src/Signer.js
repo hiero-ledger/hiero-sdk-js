@@ -15,7 +15,7 @@
  */
 
 /**
- * @template {any} O
+ * @template O
  * @typedef {import("./query/Query.js").default<O>} Query<O>
  */
 
