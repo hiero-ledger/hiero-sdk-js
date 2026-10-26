@@ -40,8 +40,9 @@ out of scope, `mergepr.sh` refuses anything out of scope. `R=hiero-ledger/hiero-
 - House style for bot merges (what the maintainers do themselves): approve, then `gh pr merge N --squash`. No
   assignee, no comment. Branch is auto-deleted.
 - Dependabot config: npm, directory `/`, monthly, **ignores minor/patch**, so the regular wave is major bumps
-  only; minor/patch PRs are Dependabot *security* updates. All Dependabot npm PRs ship the `pnpm-lock.yaml`
-  change (no manual lockfile work). GitHub Actions bumps are single-file workflow edits.
+  only; minor/patch PRs are Dependabot *security* updates. Dependabot npm PRs for `/` ship the `pnpm-lock.yaml`
+  change (no manual lockfile work); a security update for one workspace package can come without it
+  (`NO-LOCKFILE`, step 1). GitHub Actions bumps are single-file workflow edits.
 
 ## Helpers (`scripts/dep-bot-prs/`)
 
@@ -53,13 +54,15 @@ what they would do and stop before doing it.
 
 | Script | Does |
 | --- | --- |
-| `list-prs.sh` | open bot PRs in two groups: in scope, and out of scope with the reasons (`TOUCHES-.github/`, `HUMAN-COMMITS`, `NOT-DEPENDABOT`) |
+| `list-prs.sh` | open bot PRs in two groups: in scope, and out of scope with the reasons (`TOUCHES-.github/`, `HUMAN-COMMITS`, `NOT-DEPENDABOT`); an in-scope PR that changes a `package.json` but no lockfile ends in `NO-LOCKFILE: superseded by #N` |
+| `test-lock-note.sh` | offline test of that `NO-LOCKFILE` note on fixed PR titles (single and grouped bumps); run it after changing `LOCK_JQ_DEF` in `common.sh` |
 | `reqstatus.sh <pr>...` | one line per PR: `ALL-REQUIRED-GREEN` / `WAITING` / `FAILED`, head SHA, the state of every required check and the ones that have not reported yet (`missing=`) |
 | `classify.sh <pr>` | every non-green required job on the head: run id, job id, `REAL` / `FLAKE` / `INFRA` / `CANCELLED` / `RUNNING` / `UNKNOWN` and a one-line reason from the log |
 | `hardenok.sh <pr>` | exit 0 only when `StepSecurity Harden-Runner` on the head is `completed/success` |
 | `rerun.sh <pr> [job-id...]` | Harden-Runner gate, then one re-run call per run for its `FLAKE` / `INFRA` / `CANCELLED` jobs (or the given job ids): `--job` for one job, `--failed` for several; a run that also has a `REAL` / `UNKNOWN` job is left alone |
 | `lockdups.py <pnpm-lock.yaml>` | duplicate keys in `importers` / `packages` / `snapshots`, one-line `key: {}` leaves included |
-| `simmerge.sh <pr> [sha]` | merges the PR onto current `main` (both fetched from `https://github.com/$R.git`) in a temp worktree, then `lockdups.py` and the `pnpm@9.15.5 install --lockfile-only` no-op check; exit 3 when the head is not `sha` |
+| `peers.py <main-out> <merged-out>` | peer dependency issues in the second `pnpm install --resolution-only` output that the first does not have |
+| `simmerge.sh <pr> [sha]` | merges the PR onto current `main` (both fetched from `https://github.com/$R.git`) in a temp worktree, then `lockdups.py`, the `pnpm@9.15.5 install --lockfile-only` no-op check and the peer check against main (`peers.py`); a `package.json` change without a lockfile fails; exit 3 when the head is not `sha` |
 | `mergepr.sh <pr>` | scope gate, `reqstatus.sh` and `simmerge.sh` for one head SHA, then approve pinned to that SHA and `gh pr merge --squash --match-head-commit` |
 
 Every script prints `#N ...` lines, so output for several PRs can be mixed. Exit codes: 0 fine, 1 the PR is not
@@ -74,7 +77,9 @@ scripts/dep-bot-prs/list-prs.sh
 scripts/dep-bot-prs/reqstatus.sh 4437 4435 4415        # every PR of the IN SCOPE group
 ```
 
-The OUT OF SCOPE group goes straight into the report's "not in scope" list. `reqstatus.sh` says `FAILED` as soon
+The OUT OF SCOPE group goes straight into the report's "not in scope" list. An IN SCOPE line that ends in
+`NO-LOCKFILE: superseded by #N` can never pass CI (every install dies with `ERR_PNPM_OUTDATED_LOCKFILE`): merge #N,
+then `@dependabot rebase` makes Dependabot close it as up to date. `reqstatus.sh` says `FAILED` as soon
 as one required check is red, even while others still run, and `WAITING` until all seven required checks have
 reported: right after a Dependabot rebase only `DCO` and `StepSecurity Required Checks` exist for a few minutes.
 
@@ -121,7 +126,7 @@ Known **flakes** (re-run is the right move):
 | `SoloError` / `v1.min.io/tenant=minio` in "Prepare Hiero Solo" | Test / DAB / examples | Solo bring-up outage, nothing to do with the PR |
 | `DAB Tests using Node 22` red on `NodeUpdateIntegrationTest.js` | DAB | known mirror-importer lag flake and **not required** anyway |
 
-Known **real breakages** seen on 2026-10-01 (re-running does not help, report them):
+Known **real breakages** (re-running does not help, report them):
 
 | PR | Bump | Failure |
 | --- | --- | --- |
@@ -131,11 +136,14 @@ Known **real breakages** seen on 2026-10-01 (re-running does not help, report th
 | #4417 | @vitest/coverage-v8 4 → 5 | `Test using Node 22`: `Provider playwright does not support command "__vitest_startV8Coverage"` (needs the whole vitest 5 family, vitest itself is 4.1.x) |
 | #4437 | @vitest/browser-playwright 4 → 5 | `Test using Node 22`: `SyntaxError: The requested module 'vitest/node' does not provide an export named 'BrowserConnectionError'` (same vitest 5 family problem) |
 | #4423 | @vitest/coverage-istanbul 4 → 5 | `Test using Node 22`: `AssertionError: coverageFilesDirectory is required` on every file (same vitest 5 family problem) |
+| #4473, #4568, #4576 | next, vite, @vitest/browser "in /<package>" | every job: `ERR_PNPM_OUTDATED_LOCKFILE`, exit 201. A security update for one workspace package changes its `package.json` without `pnpm-lock.yaml`; the PR with the same bump for `/` supersedes it |
 
 The vitest family (`vitest`, `@vitest/browser`, `@vitest/browser-playwright`, `@vitest/coverage-v8`,
-`@vitest/coverage-istanbul`) must move together; Dependabot opens one PR per package and cannot group them without
-a `groups:` entry for `vitest` + `@vitest/*` in `.github/dependabot.yml` (worth adding). Merge only the pieces
-whose CI is green and say in the report that the rest needs a coordinated bump.
+`@vitest/coverage-istanbul`) must move together: each requires the others at the exact same version. #4586 groups
+them (and `@typescript-eslint/*`) in `.github/dependabot.yml`, but a security group only bumps the packages that
+have an alert: #4577 moved `@vitest/browser` to 5.0.5 next to `vitest` 5.0.4 with all CI green. `simmerge.sh`
+refuses such a piece (new `unmet peer vitest@5.0.5: found 5.0.4`, step 4); bump the whole family in one PR
+instead (#4582) and let Dependabot close its PRs.
 
 **`StepSecurity Required Checks` red** (org-required, not a workflow job, so `classify.sh` does not see it): read the
 check-run output, it is one of four checks: NPM Compromised Packages, **NPM Package Cooldown** (any package version
@@ -204,6 +212,12 @@ scripts/dep-bot-prs/simmerge.sh N
 - Baseline `main` first when in doubt: `python3 scripts/dep-bot-prs/lockdups.py pnpm-lock.yaml` on a fresh
   `main` checkout, then the same pnpm command. On 2026-10-01 main was clean: 0 duplicates, no-op.
 - A CONFLICTS result means the PR needs `@dependabot rebase` (the PR list will show it as CONFLICTING shortly).
+- Peer check: CI's `--frozen-lockfile` install never reports peer dependencies. `simmerge.sh` runs
+  `pnpm@9.15.5 install --lockfile-only --resolution-only` (~5 s) on `main` and on the merge, and `peers.py` fails
+  on any issue main does not have. Issues are compared by importer, declaring package and wanted range, not by the
+  version found, so bumping a package main already mismatches (eslint 10 against eslint-plugin-import) does not
+  count; main had 28 on 2026-10-23. A PR whose new unmet peer is acceptable (an example app) needs a human merge.
+- A PR that changes a `package.json` but no lockfile fails with `NO-LOCKFILE` before any pnpm run.
 
 ### 5. Approve and squash-merge, one PR at a time
 

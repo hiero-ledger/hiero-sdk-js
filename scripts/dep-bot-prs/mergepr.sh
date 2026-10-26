@@ -3,7 +3,7 @@
 # Approve and squash-merge ONE Dependabot PR, after every gate passed for ONE head SHA:
 #   1. scope (common.sh `scope`): author app/dependabot, no file under .github/, every commit by dependabot[bot]
 #   2. reqstatus.sh: ALL-REQUIRED-GREEN, and the head it looked at is the SHA from step 1
-#   3. simmerge.sh: that SHA is still the PR head, merges cleanly onto current main, lockfile healthy
+#   3. simmerge.sh: that SHA is still the PR head, merges cleanly onto current main, lockfile healthy, no new peer issues
 #   4. approve through the reviews API with commit_id=<sha>, merge with --match-head-commit <sha>, re-read the PR
 # If GitHub refuses the merge because the head moved, the approval just given is dismissed again.
 # Every gh call runs under a time limit (T); the merge result is re-read instead of trusting the exit code.

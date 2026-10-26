@@ -45,6 +45,7 @@ classify_log() {
     match REAL "eslint 10: a plugin crashes with 'Class extends value undefined'" -F 'Class extends value undefined'
     match REAL "ESM-only dependency required from CommonJS (mocha 12)" -F 'ERR_REQUIRE_ESM'
     match REAL "new lint errors from @typescript-eslint" -E 'error .*@typescript-eslint/'
+    match REAL "package.json changed without pnpm-lock.yaml; list-prs.sh names the PR that supersedes it" -F 'ERR_PNPM_OUTDATED_LOCKFILE'
     # known flakes and infrastructure problems; re-run
     match FLAKE "Mocker fixed-port collision (EADDRINUSE) between parallel vitest workers" -F 'EADDRINUSE'
     match FLAKE "Jumbo transaction integration test timed out" -F '× Jumbo transaction'
