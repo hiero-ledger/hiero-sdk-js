@@ -9,10 +9,6 @@ import * as hex from "../encoding/hex.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import BigNumber from "bignumber.js";
 import * as util from "../util.js";
-import { AbiCoder, getBytes } from "ethers";
-
-const defaultAbiCoder = AbiCoder.defaultAbiCoder();
-
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import EvmAddress from "../EvmAddress.js";
 
@@ -1689,23 +1685,10 @@ function argumentToBytes(param, ty) {
         case ArgumentType.int248:
         case ArgumentType.int256:
         case ArgumentType.uint256: {
-            let paramToHex = param.toString(16);
-
-            // @ts-ignore
-            if (param > 0 || param == 0) {
-                paramToHex = "0x" + paramToHex;
-            } else {
-                paramToHex =
-                    paramToHex.slice(0, 1) + "0x" + paramToHex.slice(1);
-            }
-
-            const encodedData = defaultAbiCoder.encode(
-                [solidityTypeToString(ty)],
-                [paramToHex],
+            return encodeAbiInteger(
+                /** @type {number | BigNumber} */ (param),
+                solidityTypeToString(ty),
             );
-
-            const dataToArrayify = getBytes(encodedData);
-            return dataToArrayify;
         }
         case ArgumentType.address:
             value.set(/** @type {Uint8Array} */ (param), 32 - 20);
@@ -1756,4 +1739,50 @@ function argumentToBytes(param, ty) {
         default:
             throw new Error(`Unsupported argument type: ${ty.ty}`);
     }
+}
+
+/**
+ * ABI-encode an `intN`/`uintN` value as a single 32-byte word: big-endian,
+ * two's complement for negative values. Throws if the value does not fit the
+ * given width, matching the range checks of the ethers ABI coder.
+ *
+ * @param {number | BigNumber} param
+ * @param {string} type e.g. `"int8"` or `"uint256"`
+ * @returns {Uint8Array}
+ */
+function encodeAbiInteger(param, type) {
+    const match = /^(u?)int(\d+)$/.exec(type);
+    if (match == null) {
+        throw new Error(`Unsupported integer type: ${type}`);
+    }
+    const signed = match[1] === "";
+    const bits = BigInt(match[2]);
+
+    const text = param.toString(16);
+    const negative = text.startsWith("-");
+    const digits = negative ? text.slice(1) : text;
+    if (!/^[0-9a-f]+$/i.test(digits)) {
+        throw new Error(`invalid ${type} value: ${param.toString()}`);
+    }
+    let value = BigInt(`0x${digits}`);
+    if (negative) {
+        value = -value;
+    }
+
+    const min = signed ? -(1n << (bits - 1n)) : 0n;
+    const max = signed ? (1n << (bits - 1n)) - 1n : (1n << bits) - 1n;
+    if (value < min || value > max) {
+        throw new Error(`value out-of-bounds for ${type}: ${param.toString()}`);
+    }
+
+    if (value < 0n) {
+        value += 1n << 256n;
+    }
+
+    const result = new Uint8Array(32);
+    for (let i = 31; i >= 0 && value > 0n; i--) {
+        result[i] = Number(value & 0xffn);
+        value >>= 8n;
+    }
+    return result;
 }

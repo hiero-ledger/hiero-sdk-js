@@ -1,5 +1,5 @@
-import { decodeRlp, encodeRlp } from "ethers";
 import * as hex from "./encoding/hex.js";
+import * as rlp from "./encoding/rlp.js";
 import EthereumTransactionData from "./EthereumTransactionData.js";
 import EvmAddress from "./EvmAddress.js";
 import AccessListItem from "./AccessListItem.js";
@@ -74,9 +74,7 @@ export default class EthereumTransactionDataEip2930 extends EthereumTransactionD
             throw new Error("empty bytes");
         }
 
-        const decoded = /** @type {unknown[]} */ (
-            /** @type {unknown} */ (decodeRlp(bytes.subarray(1)))
-        );
+        const decoded = rlp.decode(bytes.subarray(1));
 
         if (!Array.isArray(decoded)) {
             throw new Error("ethereum data is not a list");
@@ -88,31 +86,27 @@ export default class EthereumTransactionDataEip2930 extends EthereumTransactionD
 
         // TODO
         return new EthereumTransactionDataEip2930({
-            chainId: hex.decode(/** @type {string} */ (decoded[0])),
-            nonce: hex.decode(/** @type {string} */ (decoded[1])),
-            gasPrice: hex.decode(/** @type {string} */ (decoded[2])),
-            gasLimit: hex.decode(/** @type {string} */ (decoded[3])),
-            to: hex.decode(/** @type {string} */ (decoded[4])),
-            value: hex.decode(/** @type {string} */ (decoded[5])),
-            callData: hex.decode(/** @type {string} */ (decoded[6])),
-            accessList: /** @type {AccessListTuple[]} */ (
-                /** @type {Array<[string, string[]]>} */ (
-                    /** @type {unknown} */ (decoded[7])
-                ).map((item) => {
-                    if (!Array.isArray(item) || item.length !== 2) {
-                        throw new Error(
-                            "invalid access list entry: must be [address, storageKeys[]]",
-                        );
-                    }
-                    return [
-                        hex.decode(item[0]),
-                        item[1].map((key) => hex.decode(key)),
-                    ];
-                })
-            ),
-            recId: hex.decode(/** @type {string} */ (decoded[8])),
-            r: hex.decode(/** @type {string} */ (decoded[9])),
-            s: hex.decode(/** @type {string} */ (decoded[10])),
+            chainId: rlp.asBytes(decoded[0]),
+            nonce: rlp.asBytes(decoded[1]),
+            gasPrice: rlp.asBytes(decoded[2]),
+            gasLimit: rlp.asBytes(decoded[3]),
+            to: rlp.asBytes(decoded[4]),
+            value: rlp.asBytes(decoded[5]),
+            callData: rlp.asBytes(decoded[6]),
+            accessList: rlp.asList(decoded[7]).map((item) => {
+                if (!Array.isArray(item) || item.length !== 2) {
+                    throw new Error(
+                        "invalid access list entry: must be [address, storageKeys[]]",
+                    );
+                }
+                return /** @type {AccessListTuple} */ ([
+                    rlp.asBytes(item[0]),
+                    rlp.asList(item[1]).map((key) => rlp.asBytes(key)),
+                ]);
+            }),
+            recId: rlp.asBytes(decoded[8]),
+            r: rlp.asBytes(decoded[9]),
+            s: rlp.asBytes(decoded[10]),
         });
     }
 
@@ -120,7 +114,7 @@ export default class EthereumTransactionDataEip2930 extends EthereumTransactionD
      * @returns {Uint8Array}
      */
     toBytes() {
-        const encoded = encodeRlp([
+        return rlp.encodeTyped(0x01, [
             this.chainId,
             this.nonce,
             this.gasPrice,
@@ -135,7 +129,6 @@ export default class EthereumTransactionDataEip2930 extends EthereumTransactionD
             this._toMinimalBytes(this.r),
             this._toMinimalBytes(this.s),
         ]);
-        return hex.decode("01" + encoded.substring(2));
     }
 
     /**
@@ -146,7 +139,7 @@ export default class EthereumTransactionDataEip2930 extends EthereumTransactionD
      * @returns {EthereumTransactionDataEip2930}
      */
     sign(key) {
-        const encoded = encodeRlp([
+        const message = rlp.encodeTyped(0x01, [
             this.chainId,
             this.nonce,
             this.gasPrice,
@@ -156,7 +149,6 @@ export default class EthereumTransactionDataEip2930 extends EthereumTransactionD
             this.callData,
             this.accessList,
         ]);
-        const message = hex.decode("01" + encoded.substring(2));
 
         const { r, s, recoveryId } = this._signMessage(key, message);
         this.r = r;

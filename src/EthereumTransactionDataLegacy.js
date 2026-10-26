@@ -1,5 +1,5 @@
-import { decodeRlp, encodeRlp } from "ethers";
 import * as hex from "./encoding/hex.js";
+import * as rlp from "./encoding/rlp.js";
 import EthereumTransactionData from "./EthereumTransactionData.js";
 import EvmAddress from "./EvmAddress.js";
 import CACHE from "./Cache.js";
@@ -57,24 +57,22 @@ export default class EthereumTransactionDataLegacy extends EthereumTransactionDa
             throw new Error("empty bytes");
         }
 
-        const decoded = /** @type {unknown[]} */ (
-            /** @type {unknown} */ (decodeRlp(bytes))
-        );
+        const decoded = rlp.decode(bytes);
 
-        if (decoded.length != 9) {
+        if (!Array.isArray(decoded) || decoded.length != 9) {
             throw new Error("invalid ethereum transaction data");
         }
 
         return new EthereumTransactionDataLegacy({
-            nonce: hex.decode(/** @type {string} */ (decoded[0])),
-            gasPrice: hex.decode(/** @type {string} */ (decoded[1])),
-            gasLimit: hex.decode(/** @type {string} */ (decoded[2])),
-            to: hex.decode(/** @type {string} */ (decoded[3])),
-            value: hex.decode(/** @type {string} */ (decoded[4])),
-            callData: hex.decode(/** @type {string} */ (decoded[5])),
-            v: hex.decode(/** @type {string} */ (decoded[6])),
-            r: hex.decode(/** @type {string} */ (decoded[7])),
-            s: hex.decode(/** @type {string} */ (decoded[8])),
+            nonce: rlp.asBytes(decoded[0]),
+            gasPrice: rlp.asBytes(decoded[1]),
+            gasLimit: rlp.asBytes(decoded[2]),
+            to: rlp.asBytes(decoded[3]),
+            value: rlp.asBytes(decoded[4]),
+            callData: rlp.asBytes(decoded[5]),
+            v: rlp.asBytes(decoded[6]),
+            r: rlp.asBytes(decoded[7]),
+            s: rlp.asBytes(decoded[8]),
         });
     }
 
@@ -82,21 +80,19 @@ export default class EthereumTransactionDataLegacy extends EthereumTransactionDa
      * @returns {Uint8Array}
      */
     toBytes() {
-        return hex.decode(
-            encodeRlp([
-                this.nonce,
-                this.gasPrice,
-                this.gasLimit,
-                this.to,
-                this.value,
-                this.callData,
-                this.v,
-                // r/s are signature scalars: encode minimally (no leading
-                // zero bytes), or nodes reject the tx as a non-canonical integer.
-                this._toMinimalBytes(this.r),
-                this._toMinimalBytes(this.s),
-            ]),
-        );
+        return rlp.encode([
+            this.nonce,
+            this.gasPrice,
+            this.gasLimit,
+            this.to,
+            this.value,
+            this.callData,
+            this.v,
+            // r/s are signature scalars: encode minimally (no leading
+            // zero bytes), or nodes reject the tx as a non-canonical integer.
+            this._toMinimalBytes(this.r),
+            this._toMinimalBytes(this.s),
+        ]);
     }
 
     /**
@@ -110,16 +106,14 @@ export default class EthereumTransactionDataLegacy extends EthereumTransactionDa
      * @returns {EthereumTransactionDataLegacy}
      */
     sign(key) {
-        const message = hex.decode(
-            encodeRlp([
-                this.nonce,
-                this.gasPrice,
-                this.gasLimit,
-                this.to,
-                this.value,
-                this.callData,
-            ]),
-        );
+        const message = rlp.encode([
+            this.nonce,
+            this.gasPrice,
+            this.gasLimit,
+            this.to,
+            this.value,
+            this.callData,
+        ]);
 
         const { r, s, recoveryId } = this._signMessage(key, message);
         this.r = r;

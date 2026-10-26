@@ -1,5 +1,5 @@
-import { decodeRlp, encodeRlp } from "ethers";
 import * as hex from "./encoding/hex.js";
+import * as rlp from "./encoding/rlp.js";
 import EthereumTransactionData from "./EthereumTransactionData.js";
 import EvmAddress from "./EvmAddress.js";
 import AccessListItem from "./AccessListItem.js";
@@ -86,9 +86,7 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
             throw new Error("empty bytes");
         }
 
-        const decoded = /** @type {unknown[]} */ (
-            /** @type {unknown} */ (decodeRlp(bytes.subarray(1)))
-        );
+        const decoded = rlp.decode(bytes.subarray(1));
 
         if (!Array.isArray(decoded)) {
             throw new Error("ethereum data is not a list");
@@ -103,54 +101,46 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
         if (!Array.isArray(decoded[9])) {
             throw new Error("authorization list must be an array");
         }
-        const authorizationList = /** @type {AuthorizationItem[]} */ (
-            /** @type {Array<[string, string, string, string, string, string]>} */ (
-                /** @type {unknown} */ (decoded[9])
-            ).map((authTuple) => {
-                if (!Array.isArray(authTuple) || authTuple.length !== 6) {
-                    throw new Error(
-                        "invalid authorization list entry: must be [chainId, contractAddress, nonce, yParity, r, s]",
-                    );
-                }
-                return [
-                    hex.decode(authTuple[0]), // chainId
-                    hex.decode(authTuple[1]), // contractAddress (20 bytes)
-                    hex.decode(authTuple[2]), // nonce
-                    hex.decode(authTuple[3]), // yParity (0 or 1)
-                    hex.decode(authTuple[4]), // r (32 bytes)
-                    hex.decode(authTuple[5]), // s (32 bytes)
-                ];
-            })
-        );
+        const authorizationList = decoded[9].map((authTuple) => {
+            if (!Array.isArray(authTuple) || authTuple.length !== 6) {
+                throw new Error(
+                    "invalid authorization list entry: must be [chainId, contractAddress, nonce, yParity, r, s]",
+                );
+            }
+            return /** @type {AuthorizationItem} */ ([
+                rlp.asBytes(authTuple[0]), // chainId
+                rlp.asBytes(authTuple[1]), // contractAddress (20 bytes)
+                rlp.asBytes(authTuple[2]), // nonce
+                rlp.asBytes(authTuple[3]), // yParity (0 or 1)
+                rlp.asBytes(authTuple[4]), // r (32 bytes)
+                rlp.asBytes(authTuple[5]), // s (32 bytes)
+            ]);
+        });
 
         return new EthereumTransactionDataEip7702({
-            chainId: hex.decode(/** @type {string} */ (decoded[0])),
-            nonce: hex.decode(/** @type {string} */ (decoded[1])),
-            maxPriorityGas: hex.decode(/** @type {string} */ (decoded[2])),
-            maxGas: hex.decode(/** @type {string} */ (decoded[3])),
-            gasLimit: hex.decode(/** @type {string} */ (decoded[4])),
-            to: hex.decode(/** @type {string} */ (decoded[5])),
-            value: hex.decode(/** @type {string} */ (decoded[6])),
-            callData: hex.decode(/** @type {string} */ (decoded[7])),
-            accessList: /** @type {AccessListTuple[]} */ (
-                /** @type {Array<[string, string[]]>} */ (
-                    /** @type {unknown} */ (decoded[8])
-                ).map((item) => {
-                    if (!Array.isArray(item) || item.length !== 2) {
-                        throw new Error(
-                            "invalid access list entry: must be [address, storageKeys[]]",
-                        );
-                    }
-                    return [
-                        hex.decode(item[0]),
-                        item[1].map((key) => hex.decode(key)),
-                    ];
-                })
-            ),
+            chainId: rlp.asBytes(decoded[0]),
+            nonce: rlp.asBytes(decoded[1]),
+            maxPriorityGas: rlp.asBytes(decoded[2]),
+            maxGas: rlp.asBytes(decoded[3]),
+            gasLimit: rlp.asBytes(decoded[4]),
+            to: rlp.asBytes(decoded[5]),
+            value: rlp.asBytes(decoded[6]),
+            callData: rlp.asBytes(decoded[7]),
+            accessList: rlp.asList(decoded[8]).map((item) => {
+                if (!Array.isArray(item) || item.length !== 2) {
+                    throw new Error(
+                        "invalid access list entry: must be [address, storageKeys[]]",
+                    );
+                }
+                return /** @type {AccessListTuple} */ ([
+                    rlp.asBytes(item[0]),
+                    rlp.asList(item[1]).map((key) => rlp.asBytes(key)),
+                ]);
+            }),
             authorizationList: authorizationList,
-            recId: hex.decode(/** @type {string} */ (decoded[10])),
-            r: hex.decode(/** @type {string} */ (decoded[11])),
-            s: hex.decode(/** @type {string} */ (decoded[12])),
+            recId: rlp.asBytes(decoded[10]),
+            r: rlp.asBytes(decoded[11]),
+            s: rlp.asBytes(decoded[12]),
         });
     }
 
@@ -158,7 +148,7 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
      * @returns {Uint8Array}
      */
     toBytes() {
-        const encoded = encodeRlp([
+        return rlp.encodeTyped(0x04, [
             this.chainId,
             this.nonce,
             this.maxPriorityGas,
@@ -175,7 +165,6 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
             this._toMinimalBytes(this.r),
             this._toMinimalBytes(this.s),
         ]);
-        return hex.decode("04" + encoded.substring(2));
     }
 
     /**
@@ -186,7 +175,7 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
      * @returns {EthereumTransactionDataEip7702}
      */
     sign(key) {
-        const encoded = encodeRlp([
+        const message = rlp.encodeTyped(0x04, [
             this.chainId,
             this.nonce,
             this.maxPriorityGas,
@@ -198,7 +187,6 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
             this.accessList,
             this.authorizationList,
         ]);
-        const message = hex.decode("04" + encoded.substring(2));
 
         const { r, s, recoveryId } = this._signMessage(key, message);
         this.r = r;
