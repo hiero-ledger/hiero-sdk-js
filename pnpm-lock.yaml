@@ -539,8 +539,8 @@ importers:
         specifier: ^5.0.6
         version: 5.0.6
       '@types/long':
-        specifier: ^4.0.2
-        version: 4.0.2
+        specifier: ^5.0.0
+        version: 5.0.0
       '@types/node':
         specifier: ^26.1.1
         version: 26.1.1
@@ -4078,8 +4078,9 @@ packages:
   '@types/linkify-it@5.0.0':
     resolution: {integrity: sha512-sVDA58zAw4eWAffKOaQH5/5j3XeayukzDk+ewSsnv3p4yJEZHCCzMDiZM8e0OUrRvmpGZ85jf4yDHkHsgBNr9Q==}
 
-  '@types/long@4.0.2':
-    resolution: {integrity: sha512-MqTGEo5bj5t157U6fA/BiDynNkn0YknVdh48CMPkTSpFTVmvao5UQmm7uEF6xBEo7qIMAlY/JSleYaE6VOdpaA==}
+  '@types/long@5.0.0':
+    resolution: {integrity: sha512-eQs9RsucA/LNjnMoJvWG/nXa7Pot/RbBzilF/QRIU/xRl+0ApxrSUFsV5lmf01SvSlqMzJ7Zwxe440wmz2SJGA==}
+    deprecated: This is a stub types definition. long provides its own type definitions, so you do not need this installed.
 
   '@types/markdown-it@12.2.3':
     resolution: {integrity: sha512-GKMHFfv3458yYy+v/N8gjufHO6MSZKCOXpZc5GXIWWy8uldwfmPn98vp81gZ5f9SVw8YYBctgfJ22a2d7AOMeQ==}
@@ -14130,7 +14131,9 @@ snapshots:
 
   '@types/linkify-it@5.0.0': {}
 
-  '@types/long@4.0.2': {}
+  '@types/long@5.0.0':
+    dependencies:
+      long: 5.3.2
 
   '@types/markdown-it@12.2.3':
     dependencies:
