@@ -47,7 +47,7 @@ export default class Wallet {
     constructor(accountId, privateKey, provider) {
         /*
         TODO: deprecate on a major version 
-        the following lines were added because we didnt have
+        the following lines were added because we didn't have
         a way to check the algorithm of a der encoded private key
         We need to keep the old behavior for the transition period.
         */

@@ -10,7 +10,7 @@ import Long from "long";
 /**
  * A duration type.
  *
- * The main point of this tyope is for encapsulating the `[to|from]Protobuf()` implementations
+ * The main point of this type is for encapsulating the `[to|from]Protobuf()` implementations
  */
 export default class Duration {
     /**

@@ -107,7 +107,7 @@ FreezeType.FreezeUpgrade = new FreezeType(3);
 FreezeType.FreezeAbort = new FreezeType(4);
 
 /**
- * Performs an immediate upgrade on auxilary services and containers providing
+ * Performs an immediate upgrade on auxiliary services and containers providing
  * telemetry/metrics. Does not impact network operations.
  */
 FreezeType.TelemetryUpgrade = new FreezeType(5);
