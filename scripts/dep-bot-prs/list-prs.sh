@@ -15,18 +15,6 @@ set -uo pipefail
 # shellcheck source=scripts/dep-bot-prs/common.sh
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 
-# shellcheck disable=SC2016 # single quotes on purpose, this is a jq program
-LOCK_JQ_DEF='def bump: try (.title | capture("bump (?<dep>\\S+) from \\S+ to (?<to>\\S+)")) catch null;
-def has_lock: [.files[].path] | any(test("(^|/)(pnpm-lock\\.yaml|package-lock\\.json)$"));
-def lock_note($all):
-  if ([.files[].path] | any(test("(^|/)package\\.json$"))) and (has_lock | not) then
-    bump as $b | .number as $n
-    | [$all[] | select(.number != $n and has_lock and $b != null and bump != null
-        and (bump | .dep) == $b.dep and (bump | .to) == $b.to) | "#\(.number)"]
-    | if length > 0 then "\tNO-LOCKFILE: superseded by \(join(" "))"
-      else "\tNO-LOCKFILE: no open PR with the same bump and the lockfile" end
-  else "" end;'
-
 list=$(T 180 gh pr list --repo "$R" --state open --limit 100 --json number,title,author,mergeable,headRefName,files) || { echo "gh pr list failed" >&2; exit 1; }
 # keep bot PRs only, then add the commits of every Dependabot PR
 json=$(jq -c '[.[] | select(.author.is_bot or (.author.login | test("dependabot|lfdt-bot|snyk|renovate"))) | .commits = []]' <<<"$list")

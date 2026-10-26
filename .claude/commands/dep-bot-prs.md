@@ -55,6 +55,7 @@ what they would do and stop before doing it.
 | Script | Does |
 | --- | --- |
 | `list-prs.sh` | open bot PRs in two groups: in scope, and out of scope with the reasons (`TOUCHES-.github/`, `HUMAN-COMMITS`, `NOT-DEPENDABOT`); an in-scope PR that changes a `package.json` but no lockfile ends in `NO-LOCKFILE: superseded by #N` |
+| `test-lock-note.sh` | offline test of that `NO-LOCKFILE` note on fixed PR titles (single and grouped bumps); run it after changing `LOCK_JQ_DEF` in `common.sh` |
 | `reqstatus.sh <pr>...` | one line per PR: `ALL-REQUIRED-GREEN` / `WAITING` / `FAILED`, head SHA, the state of every required check and the ones that have not reported yet (`missing=`) |
 | `classify.sh <pr>` | every non-green required job on the head: run id, job id, `REAL` / `FLAKE` / `INFRA` / `CANCELLED` / `RUNNING` / `UNKNOWN` and a one-line reason from the log |
 | `hardenok.sh <pr>` | exit 0 only when `StepSecurity Harden-Runner` on the head is `completed/success` |

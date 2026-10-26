@@ -3,7 +3,7 @@
 # Source it from the sibling scripts; it is not meant to be run on its own.
 # Compatible with bash 3.2 (macOS default): no associative arrays, no mapfile.
 # shellcheck shell=bash
-# shellcheck disable=SC2034 # REPO and SCOPE_JQ_DEF are used by the scripts that source this file
+# shellcheck disable=SC2034 # REPO, SCOPE_JQ_DEF and LOCK_JQ_DEF are used by the scripts that source this file
 
 R="${DEP_BOT_PRS_REPO:-hiero-ledger/hiero-sdk-js}"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -45,6 +45,24 @@ SCOPE_JQ_DEF='def scope_reasons:
     (if ((.commits | length) == 0) or ([.commits[] | (.authors | length) == 0] | any) then "NO-COMMIT-AUTHOR-INFO"
      elif ([.commits[].authors[].login] | any(. != "dependabot[bot]")) then "HUMAN-COMMITS" else empty end) ] end;
 def scope: scope_reasons | if length == 0 then "ok" else join(",") end;'
+
+# jq function `lock_note($all)`: on one PR of $all (gh pr list --json number,title,files) prints "" or, when the PR
+# changes a package.json but no lockfile, "\tNO-LOCKFILE: superseded by #N..." naming the other PRs of $all with the
+# same bump and a lockfile (else "\tNO-LOCKFILE: no open PR with the same bump and the lockfile"). `bump` is
+# {dep, to} for a "bump X from A to B" title and null for any other title (grouped updates: "bump the vitest-security
+# group across 1 directory with 2 updates"). capture() emits nothing on no match, so it is wrapped in [...] | .[0]:
+# an empty result would drop the whole PR line. test-lock-note.sh covers it.
+# shellcheck disable=SC2016 # single quotes on purpose, this is a jq program
+LOCK_JQ_DEF='def bump: [.title | capture("bump (?<dep>\\S+) from \\S+ to (?<to>\\S+)")] | .[0];
+def has_lock: [.files[].path] | any(test("(^|/)(pnpm-lock\\.yaml|package-lock\\.json)$"));
+def lock_note($all):
+  if ([.files[].path] | any(test("(^|/)package\\.json$"))) and (has_lock | not) then
+    bump as $b | .number as $n
+    | [$all[] | select(.number != $n and has_lock and $b != null and bump != null
+        and (bump | .dep) == $b.dep and (bump | .to) == $b.to) | "#\(.number)"]
+    | if length > 0 then "\tNO-LOCKFILE: superseded by \(join(" "))"
+      else "\tNO-LOCKFILE: no open PR with the same bump and the lockfile" end
+  else "" end;'
 
 # T <seconds> <command...>: run a command under a time limit. `timeout` is GNU coreutils; macOS ships neither it
 # nor `gtimeout` by default (brew install coreutils). Without both, the command runs unbounded and we say so once.
