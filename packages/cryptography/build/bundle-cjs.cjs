@@ -1,11 +1,12 @@
 // Produces the CommonJS artifact (lib/index.cjs) consumed via the package's
-// `require` export. @noble/* and @scure/* are ESM-only from v2 onward, so they
+// `require` export. @noble/* and @scure/* are ESM-only from v2 onward, and
+// asn1js from v4 onward together with its @peculiar/utils dependency, so they
 // cannot be require()d from a per-file transpile on Node <20.19; bundling them
 // into the artifact keeps the CJS entry working on every supported Node
 // version. All other dependencies stay external and resolve from node_modules.
 const esbuild = require("esbuild");
 
-const BUNDLED_DEPS = /^(@noble|@scure)\//;
+const BUNDLED_DEPS = /^(@noble\/|@scure\/|@peculiar\/utils(\/|$)|asn1js$)/;
 
 esbuild
     .build({
