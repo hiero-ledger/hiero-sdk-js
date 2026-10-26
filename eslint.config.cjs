@@ -28,7 +28,6 @@ module.exports = defineConfig([
             "examples/demo-umd/**",
             "examples/frontend-examples/**",
             "examples/react-native-example/**",
-            "examples/react-native-example-legacy/**",
             "examples/simple_rest_signature_provider/**",
             "examples/custom-grpc-web-proxies-network/**",
         ],

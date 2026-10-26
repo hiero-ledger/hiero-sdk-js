@@ -440,11 +440,9 @@ jobs:
             exit 1
           }
 
-      - name: Type-check excluded React Native examples
+      - name: Type-check excluded React Native example
         run: |
           cd examples/react-native-example
-          ./node_modules/.bin/tsc --noEmit
-          cd ../react-native-example-legacy
           ./node_modules/.bin/tsc --noEmit
 
       - name: Upload consensus port forward logs
