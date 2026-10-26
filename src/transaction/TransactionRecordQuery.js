@@ -10,6 +10,7 @@ import ReceiptStatusError from "../ReceiptStatusError.js";
 import RecordStatusError from "../RecordStatusError.js";
 import { ExecutionState } from "../Executable.js";
 import * as HieroProto from "@hiero-ledger/proto";
+import CACHE from "../Cache.js";
 
 const { proto } = HieroProto;
 
@@ -438,4 +439,8 @@ QUERY_REGISTRY.set(
     "transactionGetRecord",
     // eslint-disable-next-line @typescript-eslint/unbound-method
     TransactionRecordQuery._fromProtobuf,
+);
+
+CACHE.setTransactionRecordQueryConstructor(
+    () => new TransactionRecordQuery(),
 );
