@@ -68,6 +68,7 @@ describe("Transaction.estimateFee() Browser Tests", function () {
             client.close();
         }
         await cleanupMSW(worker);
+        worker = undefined;
     });
 
     describe("feeEstimateQuery method", function () {
