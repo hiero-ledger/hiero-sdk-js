@@ -52,7 +52,7 @@
         "@noble/hashes": "2.2.0",
         "@scure/base": "2.2.0",
         "@scure/bip32": "2.2.0",
-        "asn1js": "3.0.6",
+        "asn1js": "4.0.0",
         "bignumber.js": "11.1.2",
         "forge-light": "1.1.4"
     },
@@ -89,7 +89,7 @@
         "npx": "10.2.2",
         "prettier": "3.5.3",
         "typescript": "5.9.3",
-        "vite": "7.3.7",
+        "vite": "8.3.5",
         "vitest": "5.0.5"
     },
     "publishConfig": {
