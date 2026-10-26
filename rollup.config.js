@@ -32,26 +32,34 @@ const abs = (p) => path.resolve(__dirname, p);
  * `@rollup/plugin-alias` matches on the import specifier alone, ignoring the
  * importer. The `@hiero-ledger/cryptography` package imports its own encoding
  * modules through the exact same relative specifiers the SDK uses
- * (`../encoding/hex.js`, `./hex.js`, ...), so the browser aliases below would
- * silently swap the SDK's copies into that package. It is isomorphic
- * (Noble/Scure) and has no `*.browser.js` variants, so its modules must be left
- * alone.
+ * (`../encoding/hex.js`, `./hex.js`, ...), and so do dependencies in
+ * `node_modules` (`@peculiar/utils`, used by asn1js 4, imports its own
+ * `../encoding/hex.js`), so the aliases below would silently swap the SDK's
+ * copies into them. They have no `*.browser.js` variants, so their modules
+ * must be left alone.
  *
  * Resolving them here, ahead of `alias()`, short-circuits the rewrite: the
  * first plugin to return a non-null id wins. Mirrors the vite plugin in
  * `test/browser-encoding-alias.js`.
+ * @param {{ entries: { find: string }[] }} aliases
  * @returns {import("rollup").Plugin}
  */
-const keepCryptographyEncoding = () => ({
-    name: "keep-cryptography-encoding",
-    resolveId(source, importer) {
-        if (importer == null || !source.startsWith(".")) return null;
-        if (!/packages[\\/]cryptography/.test(importer)) return null;
-        if (!/(^|\/)(encoding\/)?(hex|utf8)\.js$/.test(source)) return null;
+const keepDependencyImports = (aliases) => {
+    const finds = new Set(aliases.entries.map(({ find }) => find));
 
-        return path.resolve(path.dirname(importer), source);
-    },
-});
+    return {
+        name: "keep-dependency-imports",
+        resolveId(source, importer) {
+            if (importer == null || !source.startsWith(".")) return null;
+            if (!/node_modules|packages[\\/]cryptography/.test(importer)) {
+                return null;
+            }
+            if (!finds.has(source)) return null;
+
+            return path.resolve(path.dirname(importer), source);
+        },
+    };
+};
 
 const browserAliases = {
     entries: [
@@ -165,7 +173,7 @@ export default [
     {
         input: "src/browser.js",
         plugins: [
-            keepCryptographyEncoding(),
+            keepDependencyImports(browserAliases),
             alias(browserAliases),
             json(),
             replace({
@@ -191,6 +199,7 @@ export default [
                 preventAssignment: true,
                 __SDK_VERSION__: JSON.stringify(pkg.version),
             }),
+            keepDependencyImports(nativeAliases),
             alias(nativeAliases),
             terser(terserOptions),
         ],
@@ -225,7 +234,7 @@ export default [
     {
         input: "src/browser.js",
         plugins: [
-            keepCryptographyEncoding(),
+            keepDependencyImports(browserAliases),
             alias(browserAliases),
             json(),
             replace({
@@ -255,7 +264,7 @@ export default [
     {
         input: "src/browser.js",
         plugins: [
-            keepCryptographyEncoding(),
+            keepDependencyImports(browserAliases),
             alias(browserAliases),
             json(),
             replace({
