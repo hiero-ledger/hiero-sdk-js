@@ -26,6 +26,7 @@ import Long from "long";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
  */
 
 /**
@@ -276,7 +277,6 @@ export default class TokenNftInfoQuery extends Query {
 
     /**
      * @override
-     * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
      * @param {import("../client/Client.js").default<Channel, MirrorChannel>} client
      * @returns {Promise<Hbar>}
      */

@@ -461,7 +461,7 @@ export default class TopicCreateTransaction extends Transaction {
      * are on version 0.60.
      *
      * @override
-     * @param {?import("../client/Client.js").default<Channel, *>} client
+     * @param {?import("../client/Client.js").default<Channel, MirrorChannel>} client
      * @returns {this}
      */
     /*
