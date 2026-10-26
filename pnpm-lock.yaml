@@ -150,8 +150,8 @@ importers:
         specifier: 12.0.0
         version: 12.0.0
       chromedriver:
-        specifier: 154.0.0
-        version: 154.0.0(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+        specifier: 156.0.0
+        version: 156.0.0(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
       codecov:
         specifier: 3.8.3
         version: 3.8.3(supports-color@8.1.1)
@@ -679,8 +679,8 @@ importers:
         specifier: 12.0.0
         version: 12.0.0
       chromedriver:
-        specifier: 154.0.0
-        version: 154.0.0(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
+        specifier: 156.0.0
+        version: 156.0.0(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
       codecov:
         specifier: 3.8.3
         version: 3.8.3(supports-color@8.1.1)
@@ -5177,8 +5177,8 @@ packages:
     engines: {node: '>=12.13.0'}
     hasBin: true
 
-  chromedriver@154.0.0:
-    resolution: {integrity: sha512-kn+ENZ2lEPAmeDTNNBbVw6Xt4KAr6M4EFcgeV4lUREgJWHVZBu4fFc+OFivtuf5Q9jM/qSmAcQ3MdWtdOE6mVA==}
+  chromedriver@156.0.0:
+    resolution: {integrity: sha512-C1YDo5DHMNdQ5w5i4lz9htZ7ZQPnLTkQcnaQio8NKN1nPudJXhervWf9rr1othlT58QGTNVLhDDjp9Jel0kQLQ==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -15628,7 +15628,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  chromedriver@154.0.0(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1):
+  chromedriver@156.0.0(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1):
     dependencies:
       '@testim/chrome-version': 1.1.4
       adm-zip: 0.6.1
@@ -19806,7 +19806,7 @@ snapshots:
   proxy-agent@8.0.2(supports-color@8.1.1):
     dependencies:
       agent-base: 9.0.0
-      debug: 4.4.1(supports-color@8.1.1)
+      debug: 4.4.3(supports-color@8.1.1)
       http-proxy-agent: 9.1.0(supports-color@8.1.1)
       https-proxy-agent: 9.1.0(supports-color@8.1.1)
       lru-cache: 7.18.3
