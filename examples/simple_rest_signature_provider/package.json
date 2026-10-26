@@ -24,7 +24,7 @@
         "@hiero-ledger/sdk": "link:../..",
         "@types/crypto-js": "^4.2.0",
         "@types/express": "^5.0.6",
-        "@types/long": "^4.0.2",
+        "@types/long": "^5.0.0",
         "@types/node": "^26.1.1",
         "@types/utf8": "^3.0.1",
         "@typescript-eslint/eslint-plugin": "^8.71.1",
