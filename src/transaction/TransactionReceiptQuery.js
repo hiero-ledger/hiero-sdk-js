@@ -8,6 +8,7 @@ import PrecheckStatusError from "../PrecheckStatusError.js";
 import ReceiptStatusError from "../ReceiptStatusError.js";
 import { ExecutionState } from "../Executable.js";
 import * as HieroProto from "@hiero-ledger/proto";
+import CACHE from "../Cache.js";
 
 const { proto } = HieroProto;
 
@@ -415,4 +416,8 @@ QUERY_REGISTRY.set(
     "transactionGetReceipt",
     // eslint-disable-next-line @typescript-eslint/unbound-method
     TransactionReceiptQuery._fromProtobuf,
+);
+
+CACHE.setTransactionReceiptQueryConstructor(
+    () => new TransactionReceiptQuery(),
 );
