@@ -21,7 +21,6 @@ defaults:
 
 permissions:
   contents: write
-  id-token: write
 
 env:
   HIERO_PROTO_PKG_NAME: "@hiero-ledger/proto"
@@ -461,6 +460,9 @@ jobs:
   publish-release:
     name: Publish Release Packages
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     needs:
       - calculate-release-args
       - build-release-package
