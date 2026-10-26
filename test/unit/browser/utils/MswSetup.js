@@ -10,11 +10,11 @@ export const startMSW = async (handlers) => {
 };
 
 /**
- * Clean up MSW worker
+ * Clean up MSW worker. The caller must drop its reference afterwards:
+ * msw 3 throws when a stopped worker is stopped again.
  */
 export const cleanupMSW = async (worker) => {
     if (worker) {
         await worker.stop();
-        worker = null;
     }
 };

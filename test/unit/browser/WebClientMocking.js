@@ -177,6 +177,7 @@ describe("WebClient Browser Tests", function () {
             client.close();
         }
         await cleanupMSW(worker);
+        worker = undefined;
     });
 
     // ========================================
