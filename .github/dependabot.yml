@@ -16,3 +16,28 @@ updates:
           - dependency-name: "*"
             update-types:
                 ["version-update:semver-minor", "version-update:semver-patch"]
+      # vitest and its @vitest/* packages require each other at the exact same version, and the
+      # @typescript-eslint/* packages move together: one PR per family instead of one per package, which
+      # left @vitest/browser 5.0.5 next to vitest 5.0.4 in #4577. A security group only bumps the packages
+      # that have an alert; the /dep-bot-prs sweep refuses a merge that adds an unmet peer (#4584).
+      groups:
+          vitest:
+              patterns:
+                  - "vitest"
+                  - "@vitest/*"
+              exclude-patterns:
+                  - "@vitest/eslint-plugin"
+          vitest-security:
+              applies-to: security-updates
+              patterns:
+                  - "vitest"
+                  - "@vitest/*"
+              exclude-patterns:
+                  - "@vitest/eslint-plugin"
+          typescript-eslint:
+              patterns:
+                  - "@typescript-eslint/*"
+          typescript-eslint-security:
+              applies-to: security-updates
+              patterns:
+                  - "@typescript-eslint/*"
