@@ -13,7 +13,7 @@ defaults:
     shell: bash
 
 permissions:
-  statuses: write
+  contents: read
 
 concurrency:
   group: pr-checks-${{ github.workflow }}-${{ github.head_ref || github.run_id }}
@@ -23,6 +23,8 @@ jobs:
   title-check:
     name: Title Check
     runs-on: hiero-client-sdk-linux-medium
+    permissions:
+      statuses: write
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2

@@ -9,14 +9,16 @@ defaults:
     shell: bash
 
 permissions:
-  pages: write
   contents: read
-  id-token: write
 
 jobs:
   build-and-deploy-docs:
     name: Documentation
     runs-on: hiero-client-sdk-linux-medium
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
     steps:
       - name: Harden Runner
         uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
