@@ -241,17 +241,50 @@ describe("Client mirror node HTTP configuration", function () {
         client.setMirrorNodeHttpConfig({ transport: fake });
         client.setRequestTimeout(60);
 
-        const started = Date.now();
+        const base = 1_000_000;
+        vi.spyOn(Date, "now").mockImplementation(
+            () => (fake.requests.length === 0 ? base : base + 61),
+        );
+
+        const started = Date.now(); // base (no requests yet)
         const error = await caught(
             new MirrorNodeAccountBalanceQuery()
                 .setAccountId("0.0.123")
                 .execute(client),
         );
 
+        expect(fake.requests.length).to.be.at.least(1);
         expect(error.message).to.include("request deadline of 60 ms exceeded");
         expect(error.cause.code).to.equal("deadline-exceeded-error");
         expect(error.cause.response.statusCode).to.equal(503);
         expect(Date.now() - started).to.be.below(2000);
+    });
+
+    it("reports deadline-exceeded-error with a null response when the deadline expires before the first attempt", async function () {
+        const client = track();
+        const fake = new FakeHttpTransport();
+        fake.handler = () => errorResponse(503, "Down");
+        client.setMirrorNodeHttpConfig({ transport: fake });
+        client.setRequestTimeout(60);
+
+        const base = 1_000_000;
+        let calls = 0;
+        vi.spyOn(Date, "now").mockImplementation(
+            () => (calls++ === 0 ? base : base + 61),
+        );
+
+        const error = await caught(
+            new MirrorNodeAccountBalanceQuery()
+                .setAccountId("0.0.123")
+                .execute(client),
+        );
+
+        expect(fake.requests).to.have.length(0);
+        expect(error.cause.code).to.equal("deadline-exceeded-error");
+        expect(error.cause.response).to.be.null;
+        // No "Last error" suffix when no attempt was made.
+        expect(error.message).to.include("request deadline of 60 ms exceeded");
+        expect(error.message).not.to.include("Last error");
     });
 
     it("wraps an exhausted retry budget with the adapter error as cause", async function () {
