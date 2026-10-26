@@ -1,5 +1,6 @@
 import Long from "long";
 import { Timestamp } from "../../src/index.js";
+import Cache from "../../src/Cache.js";
 import { longFromOtherCopy } from "./utils/foreignLong.js";
 
 describe("Timestamp", function () {
@@ -46,5 +47,70 @@ describe("Timestamp", function () {
 
         expect(timestamp.seconds.toInt()).to.be.eql(0);
         expect(timestamp.nanos.toInt()).to.be.eql(999999998);
+    });
+
+    describe("generate", function () {
+        // every test starts a minute later than the last one, so the
+        // timestamps of one test never collide with those of another
+        let NOW = Math.floor(Date.now() / 1000) * 1000;
+
+        beforeEach(function () {
+            NOW += 60000;
+            vi.useFakeTimers();
+            vi.setSystemTime(NOW);
+        });
+
+        afterEach(function () {
+            vi.useRealTimers();
+            vi.restoreAllMocks();
+            Cache.setTimeDrift(0);
+        });
+
+        it("does not add jitter when a collision is retried with hasJitter = false", function () {
+            // the first two calls use random 0 for the nanos, the third
+            // call (the retry) gets a different value
+            vi.spyOn(Math, "random")
+                .mockReturnValueOnce(0)
+                .mockReturnValueOnce(0)
+                .mockReturnValueOnce(0.5);
+
+            const first = Timestamp.generate(false);
+            const second = Timestamp.generate(false);
+
+            expect(first.seconds.toNumber()).to.equal(NOW / 1000);
+            expect(second.seconds.toNumber()).to.equal(NOW / 1000);
+            expect(second.toString()).to.not.equal(first.toString());
+        });
+
+        it("forgets generated timestamps once the window has passed", function () {
+            vi.spyOn(Math, "random").mockReturnValue(0.5);
+
+            const first = Timestamp.generate(false);
+
+            // move the clock forward and the drift back so the same
+            // timestamp is generated again
+            const elapsedSeconds = 25;
+            vi.setSystemTime(NOW + elapsedSeconds * 1000);
+            Cache.setTimeDrift(-elapsedSeconds);
+
+            // would recurse forever if the old entry was still remembered
+            const again = Timestamp.generate(false);
+
+            expect(again.toString()).to.equal(first.toString());
+        });
+
+        it("still detects a collision inside the window", function () {
+            const random = vi
+                .spyOn(Math, "random")
+                .mockReturnValueOnce(0.5)
+                .mockReturnValueOnce(0.5)
+                .mockReturnValueOnce(0.25);
+
+            const first = Timestamp.generate(false);
+            const second = Timestamp.generate(false);
+
+            expect(second.toString()).to.not.equal(first.toString());
+            expect(random).toHaveBeenCalledTimes(3);
+        });
     });
 });
