@@ -255,7 +255,13 @@ tasks:
         deps:
             - "build"
         cmds:
-            - pnpm pack --out {{.CLI_ARGS}}
+            # pnpm 9.15.5 (packageManager in the root package.json) has no `pack --out`:
+            # pack into a temp dir, then move the tarball to the requested name.
+            - |
+              PACK_DIR="$(mktemp -d)"
+              pnpm pack --pack-destination "${PACK_DIR}"
+              mv "${PACK_DIR}"/*.tgz "{{.CLI_ARGS}}"
+              rmdir "${PACK_DIR}"
             - ls -lh {{.CLI_ARGS}}
 
     "publish":

@@ -21,7 +21,6 @@ defaults:
 
 permissions:
   contents: write
-  id-token: write
 
 env:
   HIERO_PROTO_PKG_NAME: "@hiero-ledger/proto"
@@ -272,7 +271,7 @@ jobs:
       - name: Install PNPM
         uses: step-security/action-setup@8beec6731697ff7a074963eaa56f6d8e02e1c399 # v6.1.0
         with:
-          version: 10.17.0
+          version: 9.15.5
 
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -375,7 +374,7 @@ jobs:
       - name: Install PNPM
         uses: step-security/action-setup@8beec6731697ff7a074963eaa56f6d8e02e1c399 # v6.1.0
         with:
-          version: 10.24.0
+          version: 9.15.5
 
       - name: Setup Node
         uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
@@ -461,6 +460,9 @@ jobs:
   publish-release:
     name: Publish Release Packages
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     needs:
       - calculate-release-args
       - build-release-package
