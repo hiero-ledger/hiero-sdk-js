@@ -64,6 +64,9 @@ jobs:
       - name: Check published package sizes
         run: task -v size:check
 
+      - name: Check bundled packages with webpack, Vite and esbuild
+        run: task -v test:bundle
+
   test:
     name: Test using Node ${{ matrix.node }}
     runs-on: hiero-client-sdk-linux-large
