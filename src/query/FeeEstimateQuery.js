@@ -222,7 +222,9 @@ export default class FeeEstimateQuery {
         const txObj = this._transaction;
 
         // Per HIP-1261: auto-freeze if not already frozen.
-        txObj.freezeWith(client);
+        if (!txObj.isFrozen()) {
+            txObj.freezeWith(client);
+        }
         txObj._buildAllTransactions();
 
         const rowLength = txObj._nodeAccountIds.length || 1;

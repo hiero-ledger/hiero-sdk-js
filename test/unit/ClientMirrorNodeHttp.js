@@ -242,8 +242,8 @@ describe("Client mirror node HTTP configuration", function () {
         client.setRequestTimeout(60);
 
         const base = 1_000_000;
-        vi.spyOn(Date, "now").mockImplementation(
-            () => (fake.requests.length === 0 ? base : base + 61),
+        vi.spyOn(Date, "now").mockImplementation(() =>
+            fake.requests.length === 0 ? base : base + 61,
         );
 
         const started = Date.now(); // base (no requests yet)
@@ -269,8 +269,8 @@ describe("Client mirror node HTTP configuration", function () {
 
         const base = 1_000_000;
         let calls = 0;
-        vi.spyOn(Date, "now").mockImplementation(
-            () => (calls++ === 0 ? base : base + 61),
+        vi.spyOn(Date, "now").mockImplementation(() =>
+            calls++ === 0 ? base : base + 61,
         );
 
         const error = await caught(
