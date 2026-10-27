@@ -3,6 +3,8 @@
 import { vi } from "vitest";
 import { Client } from "../../src/index.js";
 import AddressBookQueryWeb from "../../src/network/AddressBookQueryWeb.js";
+import WebClient from "../../src/client/WebClient.js";
+import NativeClient from "../../src/client/NativeClient.js";
 import HttpResponse from "../../src/http/HttpResponse.js";
 import HttpTransportError, {
     HttpTransportErrorCode,
@@ -94,6 +96,25 @@ describe("AddressBookQueryWeb", function () {
         clients = [];
         vi.restoreAllMocks();
     });
+
+    for (const ClientType of [WebClient, NativeClient]) {
+        it(`keeps node37 in ${ClientType.name} when mirror proxy metadata is absent`, async function () {
+            const fake = new FakeHttpTransport().respondJson(200, {
+                nodes: [{ ...node(37), grpc_proxy_endpoint: null }],
+            });
+            const client = ClientType.forMainnet();
+            clients.push(client);
+            client.setMirrorNodeHttpConfig({ transport: fake });
+            const endpoint = "node37.swirldslabs.com:443";
+
+            expect(client.network[endpoint]?.toString()).to.equal("0.0.40");
+
+            await client.updateNetwork();
+
+            expect(fake.requests).to.have.length(1);
+            expect(client.network[endpoint]?.toString()).to.equal("0.0.40");
+        });
+    }
 
     it("does not retry a 4xx and surfaces the mirror node detail", async function () {
         const fake = new FakeHttpTransport(() =>
