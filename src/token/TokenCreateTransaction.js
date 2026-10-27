@@ -562,7 +562,7 @@ export default class TokenCreateTransaction extends Transaction {
 
     /**
      * @override
-     * @param {?import("../client/Client.js").default<Channel, *>} client
+     * @param {?import("../client/Client.js").default<Channel, MirrorChannel>} client
      * @returns {this}
      */
     freezeWith(client) {

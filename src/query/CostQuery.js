@@ -8,6 +8,7 @@ import QueryBase from "./QueryBase.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
  * @typedef {import("../Status.js").default} Status
  * @typedef {import("../Executable.js").ExecutionState} ExecutionState
  */
@@ -61,7 +62,7 @@ export default class CostQuery extends QueryBase {
     /**
      * @abstract
      * @protected
-     * @param {import("../client/Client.js").default<*, *>} client
+     * @param {import("../client/Client.js").default<Channel, MirrorChannel>} client
      * @returns {Promise<void>}
      */
     async _beforeExecute(client) {
