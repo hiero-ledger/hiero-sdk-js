@@ -3,8 +3,13 @@ import {
     Status,
     TransactionReceiptQuery,
     TransactionRecordQuery,
+    ReceiptStatusError,
 } from "../../../src/index.js";
-import Mocker, { TRANSACTION_RECEIPT_SUCCESS_RESPONSE } from "../Mocker.js";
+import CACHE from "../../../src/Cache.js";
+import Mocker, {
+    TRANSACTION_RECEIPT_SUCCESS_RESPONSE,
+    TRANSACTION_RECEIPT_FAILED_RESPONSE,
+} from "../Mocker.js";
 import Long from "long";
 import { proto } from "@hiero-ledger/proto";
 
@@ -68,11 +73,11 @@ describe("TransactionId.getReceipt / getRecord (#4575)", function () {
         servers?.close();
     });
 
-    it("registers CACHE constructors when the query modules load", function () {
-        expect(new TransactionReceiptQuery()).to.be.instanceOf(
+    it("registers the query constructors in CACHE when the query modules load", function () {
+        expect(CACHE.transactionReceiptQueryConstructor()).to.be.instanceOf(
             TransactionReceiptQuery,
         );
-        expect(new TransactionRecordQuery()).to.be.instanceOf(
+        expect(CACHE.transactionRecordQueryConstructor()).to.be.instanceOf(
             TransactionRecordQuery,
         );
     });
@@ -88,20 +93,18 @@ describe("TransactionId.getReceipt / getRecord (#4575)", function () {
         expect(receipt.status.toString()).to.equal(Status.Success.toString());
     });
 
-    it("getReceipt rejects instead of throwing synchronously when it fails", async function () {
-        ({ client, servers } = await Mocker.withResponses([[]]));
+    it("getReceipt rejects with the receipt status instead of throwing synchronously", async function () {
+        ({ client, servers } = await Mocker.withResponses([
+            [{ response: TRANSACTION_RECEIPT_FAILED_RESPONSE }],
+        ]));
 
         const id = TransactionId.fromString("0.0.1001@4.5");
         const pending = id.getReceipt(client);
 
         expect(pending).to.be.instanceOf(Promise);
-        let rejected = false;
-        try {
-            await pending;
-        } catch {
-            rejected = true;
-        }
-        expect(rejected).to.be.true;
+        const error = await pending.catch((e) => e);
+        expect(error).to.be.instanceOf(ReceiptStatusError);
+        expect(error.status).to.equal(Status.InvalidFileId);
     });
 
     it("getRecord returns the record via the CACHE constructors", async function () {

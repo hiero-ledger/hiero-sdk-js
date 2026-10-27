@@ -441,6 +441,4 @@ QUERY_REGISTRY.set(
     TransactionRecordQuery._fromProtobuf,
 );
 
-CACHE.setTransactionRecordQueryConstructor(
-    () => new TransactionRecordQuery(),
-);
+CACHE.setTransactionRecordQueryConstructor(() => new TransactionRecordQuery());

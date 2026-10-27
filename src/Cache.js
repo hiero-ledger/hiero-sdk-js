@@ -6,6 +6,8 @@
  * @typedef {import("./KeyList.js").default} KeyList
  * @typedef {import("./PublicKey.js").default} PublicKey
  * @typedef {import("./PrivateKey.js").default} PrivateKey
+ * @typedef {import("./Mnemonic.js").default} Mnemonic
+ * @typedef {import("./EvmAddress.js").default} EvmAddress
  * @typedef {import("./EthereumTransactionData.js").default} EthereumTransactionData
  * @typedef {import("./transaction/TransactionReceiptQuery.js").default} TransactionReceiptQuery
  * @typedef {import("./transaction/TransactionRecordQuery.js").default} TransactionRecordQuery
@@ -23,6 +25,7 @@
 /**
  * @namespace cryptography
  * @typedef {import("@hiero-ledger/cryptography").PrivateKey} cryptography.PrivateKey
+ * @typedef {import("@hiero-ledger/cryptography").Mnemonic} cryptography.Mnemonic
  */
 
 /**
@@ -59,11 +62,17 @@ class Cache {
         /** @type {((key: cryptography.PrivateKey) => PrivateKey) | null} */
         this._privateKeyConstructor = null;
 
+        /** @type {((key: cryptography.Mnemonic) => Mnemonic) | null} */
+        this._mnemonicFromString = null;
+
         /** @type {((shard: Long | number, realm: Long | number, key: PublicKey) => AccountId) | null} */
         this._accountIdConstructor = null;
 
         /** @type {FromProtobufKeyFuncT<HieroProto.proto.IContractID, ContractId> | null} */
         this._delegateContractId = null;
+
+        /** @type {FromProtobufKeyFuncT<Uint8Array, EvmAddress> | null} */
+        this._evmAddress = null;
 
         /** @type {((bytes: Uint8Array) => EthereumTransactionData) | null} */
         this._ethereumTransactionDataLegacyFromBytes = null;
@@ -215,6 +224,26 @@ class Cache {
     }
 
     /**
+     * @param {((key: cryptography.Mnemonic) => Mnemonic)} mnemonicFromString
+     */
+    setMnemonicFromString(mnemonicFromString) {
+        this._mnemonicFromString = mnemonicFromString;
+    }
+
+    /**
+     * @returns {((key: cryptography.PrivateKey) => PrivateKey)}
+     */
+    get mnemonicFromString() {
+        if (this._mnemonicFromString == null) {
+            throw new Error(
+                "Cache.mnemonicFromString was used before it was set",
+            );
+        }
+
+        return this.mnemonicFromString;
+    }
+
+    /**
      * @param {((shard: Long | number, realm: Long | number, key: PublicKey) => AccountId)} accountIdConstructor
      */
     setAccountIdConstructor(accountIdConstructor) {
@@ -252,6 +281,24 @@ class Cache {
         }
 
         return this._delegateContractId;
+    }
+
+    /**
+     * @param {FromProtobufKeyFuncT<Uint8Array, EvmAddress>} evmAddress
+     */
+    setEvmAddress(evmAddress) {
+        this._evmAddress = evmAddress;
+    }
+
+    /**
+     * @returns {FromProtobufKeyFuncT<Uint8Array, EvmAddress>}
+     */
+    get evmAddress() {
+        if (this._evmAddress == null) {
+            throw new Error("Cache.evmAddress was used before it was set");
+        }
+
+        return this._evmAddress;
     }
 
     /**
