@@ -11,11 +11,32 @@ updates:
           interval: monthly
       open-pull-requests-limit: 40
       versioning-strategy: increase
+      # The StepSecurity NPM Package Cooldown check fails versions published less than 3 days ago, so
+      # do not propose them earlier (#4622). Security updates are not delayed.
+      cooldown:
+          default-days: 3
       ignore:
           # For all packages, ignore all minor & patch updates
           - dependency-name: "*"
             update-types:
                 ["version-update:semver-minor", "version-update:semver-patch"]
+          # An Expo SDK major moves every expo, expo-* and react-native-* package of the React Native
+          # example to the versions of that SDK at once (`npx expo install --fix`), which one-package
+          # bumps cannot do (#4602, #4621). Upgrade the SDK by hand.
+          - dependency-name: "expo"
+            update-types: ["version-update:semver-major"]
+          - dependency-name: "expo-*"
+            update-types: ["version-update:semver-major"]
+          - dependency-name: "@expo/*"
+            update-types: ["version-update:semver-major"]
+          - dependency-name: "react-native"
+            update-types: ["version-update:semver-major"]
+          - dependency-name: "react-native-*"
+            update-types: ["version-update:semver-major"]
+          # One eslint PR moves every package, and the lint plugins of the Next.js and Expo example apps
+          # lag behind eslint majors (#4605, #4619). Bump eslint majors by hand with those apps.
+          - dependency-name: "eslint"
+            update-types: ["version-update:semver-major"]
       # vitest and its @vitest/* packages require each other at the exact same version, and the
       # @typescript-eslint/* packages move together: one PR per family instead of one per package, which
       # left @vitest/browser 5.0.5 next to vitest 5.0.4 in #4577. A security group only bumps the packages
@@ -41,3 +62,13 @@ updates:
               applies-to: security-updates
               patterns:
                   - "@typescript-eslint/*"
+          # All other minor and patch security fixes in one PR instead of one per package (7 on 2026-10-26,
+          # each merge rebased the rest). Majors stay separate PRs. Keep this group last: a dependency
+          # goes to the first group it matches (#4622).
+          security:
+              applies-to: security-updates
+              patterns:
+                  - "*"
+              update-types:
+                  - "minor"
+                  - "patch"

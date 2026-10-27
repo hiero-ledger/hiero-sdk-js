@@ -22,8 +22,9 @@ import RegisteredServiceEndpoint from "./RegisteredServiceEndpoint.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../account/AccountId.js").default} AccountId
  */
 

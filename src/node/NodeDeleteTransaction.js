@@ -21,8 +21,9 @@ import Long from "long";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../account/AccountId.js").default} AccountId
  */
 
@@ -118,7 +119,7 @@ export default class NodeDeleteTransaction extends Transaction {
 
     /**
      * @override
-     * @param {?import("../client/Client.js").default<Channel, *>} client
+     * @param {?import("../client/Client.js").default<Channel, MirrorChannel>} client
      * @returns {this}
      */
     freezeWith(client) {

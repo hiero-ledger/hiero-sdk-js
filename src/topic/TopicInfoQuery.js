@@ -95,7 +95,7 @@ export default class TopicInfoQuery extends Query {
 
     /**
      * @override
-     * @param {import("../client/Client.js").default<Channel, *>} client
+     * @param {import("../client/Client.js").default<Channel, MirrorChannel>} client
      * @returns {Promise<Hbar>}
      */
     async getCost(client) {

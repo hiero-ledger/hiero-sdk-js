@@ -16,7 +16,7 @@ import CostQuery from "./CostQuery.js";
  * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
  * @typedef {import("../PublicKey.js").default} PublicKey
  * @typedef {import("../client/Client.js").ClientOperator} ClientOperator
- * @typedef {import("../client/Client.js").default<*, *>} Client
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../logger/Logger.js").default} Logger
  */
 
@@ -151,7 +151,7 @@ export default class Query extends QueryBase {
     /**
      * Fetch the cost of this query from a consensus node
      *
-     * @param {import("../client/Client.js").default<Channel, *>} client
+     * @param {import("../client/Client.js").default<Channel, MirrorChannel>} client
      * @returns {Promise<Hbar>}
      */
     async getCost(client) {
