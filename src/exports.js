@@ -224,6 +224,12 @@ export { default as ClprLedgerConfigurationInfo } from "./clpr/ClprLedgerConfigu
 export { default as ClprGetLedgerConfigurationQuery } from "./clpr/ClprGetLedgerConfigurationQuery.js";
 export { default as ClprCloseChannelTransaction } from "./clpr/ClprCloseChannelTransaction.js";
 export { default as ClprSubmitBundleTransaction } from "./clpr/ClprSubmitBundleTransaction.js";
+export { default as ClprCompleteChannelTransaction } from "./clpr/ClprCompleteChannelTransaction.js";
+export { default as ClprServiceEndpoint } from "./clpr/ClprServiceEndpoint.js";
+export { default as ClprEndpoint } from "./clpr/ClprEndpoint.js";
+export { default as ClprEndpointManifestInfo } from "./clpr/ClprEndpointManifestInfo.js";
+export { default as ClprGetEndpointManifestQuery } from "./clpr/ClprGetEndpointManifestQuery.js";
+export { default as ClprUpdateLedgerConfigurationTransaction } from "./clpr/ClprUpdateLedgerConfigurationTransaction.js";
 export { default as NodeUpdateTransaction } from "./node/NodeUpdateTransaction.js";
 export { default as BlockNodeApi } from "./node/BlockNodeApi.js";
 export { default as RegisteredServiceEndpoint } from "./node/RegisteredServiceEndpoint.js";
