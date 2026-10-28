@@ -228,6 +228,8 @@ export { default as ClprEndpoint } from "./clpr/ClprEndpoint.js";
 export { default as ClprEndpointManifestInfo } from "./clpr/ClprEndpointManifestInfo.js";
 export { default as ClprGetEndpointManifestQuery } from "./clpr/ClprGetEndpointManifestQuery.js";
 export { default as ClprUpdateLedgerConfigurationTransaction } from "./clpr/ClprUpdateLedgerConfigurationTransaction.js";
+export { default as ClprRegisterConnectorTransaction } from "./clpr/ClprRegisterConnectorTransaction.js";
+export { default as ClprCompleteConnectorTransaction } from "./clpr/ClprCompleteConnectorTransaction.js";
 export { default as NodeUpdateTransaction } from "./node/NodeUpdateTransaction.js";
 export { default as BlockNodeApi } from "./node/BlockNodeApi.js";
 export { default as RegisteredServiceEndpoint } from "./node/RegisteredServiceEndpoint.js";

@@ -4,9 +4,8 @@ import Transaction, {
     TRANSACTION_REGISTRY,
 } from "../transaction/Transaction.js";
 import ContractId from "../contract/ContractId.js";
-import { arrayEqual, requireUint8ArrayLength } from "../util.js";
-import OwnershipProof from "./OwnershipProof.js";
-import { sign } from "./ownership.js";
+import { requireUint8ArrayLength } from "../util.js";
+import OwnershipProofState from "./OwnershipProofState.js";
 
 /**
  * @namespace proto
@@ -82,9 +81,9 @@ export default class ClprCompleteChannelTransaction extends Transaction {
 
         /**
          * @private
-         * @type {?OwnershipProof}
+         * @type {OwnershipProofState}
          */
-        this._ownershipProof = null;
+        this._ownershipProof = new OwnershipProofState();
 
         if (props?.channelId != null) {
             this.setChannelId(props.channelId);
@@ -134,10 +133,7 @@ export default class ClprCompleteChannelTransaction extends Transaction {
                 completion.endpointManifestProofBytes ?? undefined,
         });
 
-        if (completion.publicKey?.length || completion.signature?.length) {
-            transaction._ownershipProof =
-                OwnershipProof._fromProtobuf(completion);
-        }
+        transaction._ownershipProof.restore(completion);
 
         return Transaction._fromProtobufTransactions(
             transaction,
@@ -159,12 +155,7 @@ export default class ClprCompleteChannelTransaction extends Transaction {
     setChannelId(channelId) {
         this._requireNotFrozen();
         requireUint8ArrayLength(channelId, 32, "channelId");
-        if (
-            this._channelId == null ||
-            !arrayEqual(this._channelId, channelId)
-        ) {
-            this._ownershipProof = null;
-        }
+        this._ownershipProof.clearIfChanged(this._channelId, channelId);
         this._channelId = new Uint8Array(channelId);
         return this;
     }
@@ -191,7 +182,7 @@ export default class ClprCompleteChannelTransaction extends Transaction {
                 "ClprCompleteChannelTransaction: 'channelId' must be explicitly set before calling setOwnershipProof().",
             );
         }
-        this._ownershipProof = sign(privateKey, this._channelId);
+        this._ownershipProof.sign(privateKey, this._channelId);
         return this;
     }
 
@@ -200,7 +191,7 @@ export default class ClprCompleteChannelTransaction extends Transaction {
      * @returns {?Uint8Array}
      */
     get publicKey() {
-        return this._ownershipProof?.publicKey ?? null;
+        return this._ownershipProof.publicKey;
     }
 
     /**
@@ -208,7 +199,7 @@ export default class ClprCompleteChannelTransaction extends Transaction {
      * @returns {?Uint8Array}
      */
     get signature() {
-        return this._ownershipProof?.signature ?? null;
+        return this._ownershipProof.signature;
     }
 
     /**
@@ -216,7 +207,7 @@ export default class ClprCompleteChannelTransaction extends Transaction {
      * @returns {?ClprSignatureScheme}
      */
     get signatureScheme() {
-        return this._ownershipProof?.scheme ?? null;
+        return this._ownershipProof.signatureScheme;
     }
 
     /**
@@ -309,14 +300,7 @@ export default class ClprCompleteChannelTransaction extends Transaction {
                 "ClprCompleteChannelTransaction: 'channelId' must be explicitly set before freezing or executing.",
             );
         }
-        if (
-            this._ownershipProof == null ||
-            !this._ownershipProof.isComplete()
-        ) {
-            throw new Error(
-                "ClprCompleteChannelTransaction: a complete ownership proof must be set before freezing or executing.",
-            );
-        }
+        this._ownershipProof.requireComplete("ClprCompleteChannelTransaction");
     }
 
     /**
@@ -359,7 +343,7 @@ export default class ClprCompleteChannelTransaction extends Transaction {
             verifierContract: this._verifierContract?._toProtobuf(),
             configProofBytes: this.configProofBytes,
             endpointManifestProofBytes: this.endpointManifestProofBytes,
-            ...this._ownershipProof?._toProtobuf(),
+            ...this._ownershipProof._toProtobuf(),
         };
     }
 
