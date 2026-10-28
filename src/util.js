@@ -240,6 +240,21 @@ export function requireUint8Array(variable) {
 }
 
 /**
+ * Requires a Uint8Array of exactly the specified length.
+ * @param {unknown} value
+ * @param {number} length
+ * @param {string} fieldName
+ * @returns {void}
+ */
+export function requireUint8ArrayLength(value, length, fieldName) {
+    if (!(value instanceof Uint8Array) || value.length !== length) {
+        throw new Error(
+            `${fieldName} must be a Uint8Array of exactly ${length} bytes`,
+        );
+    }
+}
+
+/**
  * Takes any param and throws custom error if non Uint8Array.
  *
  * @param {any | null | undefined} variable

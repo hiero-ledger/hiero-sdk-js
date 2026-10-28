@@ -3,6 +3,57 @@ import Long from "long";
 import * as util from "../../src/util.js";
 
 describe("util", function () {
+    describe("requireUint8ArrayLength", function () {
+        it.each([0, 20, 32, 64])(
+            "accepts exactly %i bytes and returns nothing",
+            function (length) {
+                expect(util.requireUint8ArrayLength).toBeTypeOf("function");
+                const bytes = new Uint8Array(length).fill(7);
+
+                expect(
+                    util.requireUint8ArrayLength(bytes, length, "testField"),
+                ).toBeUndefined();
+                expect(bytes).toEqual(new Uint8Array(length).fill(7));
+            },
+        );
+
+        it.each([0, 31, 33, 64])(
+            "rejects %i bytes for a 32-byte field and names the field",
+            function (length) {
+                expect(util.requireUint8ArrayLength).toBeTypeOf("function");
+                expect(() =>
+                    util.requireUint8ArrayLength(
+                        new Uint8Array(length),
+                        32,
+                        "channelId",
+                    ),
+                ).toThrow(/channelId/);
+            },
+        );
+
+        it.each([
+            null,
+            undefined,
+            "00".repeat(32),
+            Array(32).fill(0),
+            new ArrayBuffer(32),
+            new Uint16Array(32),
+            { length: 32 },
+        ])(
+            "rejects non-Uint8Array input %# and names the field",
+            function (value) {
+                expect(util.requireUint8ArrayLength).toBeTypeOf("function");
+                expect(() =>
+                    util.requireUint8ArrayLength(
+                        value,
+                        32,
+                        "ownershipCommitment",
+                    ),
+                ).toThrow(/ownershipCommitment/);
+            },
+        );
+    });
+
     it("soft check: isNonNull should return false if null and true if non-null", function () {
         expect(util.isNonNull("")).to.eql(true);
 
