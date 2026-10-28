@@ -89,7 +89,7 @@ tasks:
 
   build:standalone:
     cmds:
-      - pnpm exec pbjs -r hashgraph -t static-module -w es6 -p=src/proto --force-long --no-beautify --no-convert --no-delimited --no-verify -o src/proto.js src/proto/**/*.proto
+      - pnpm exec pbjs -r hashgraph -t scripts/static-module.cjs -w es6 -p=src/proto --force-long --no-beautify --no-convert --no-delimited --no-verify -o src/proto.js src/proto/**/*.proto
       - pnpm exec pbts -n hashgraph -o src/proto.d.ts src/proto.js
       - node scripts/fix-proto-namespaces.js
       - task: format
