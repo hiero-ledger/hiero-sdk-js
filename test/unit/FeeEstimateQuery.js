@@ -8,7 +8,10 @@ import {
     Hbar,
     Client,
     PrivateKey,
+    Transaction,
+    TransactionId,
 } from "../../src/index.js";
+import * as HieroProto from "@hiero-ledger/proto";
 import FakeHttpTransport, {
     errorResponse,
     jsonResponse,
@@ -313,6 +316,92 @@ describe("FeeEstimateQuery", function () {
                 .execute(client, 2500);
 
             expect(fake.requests[0].deadline).to.be.within(2400, 2500);
+        });
+
+        it("preserves signatures and payer when estimating a frozen, signed transaction", async function () {
+            const keyA = PrivateKey.generateED25519();
+            const keyB = PrivateKey.generateED25519();
+            const payerId = new AccountId(1001);
+
+            const tx = new TransferTransaction()
+                .setTransactionId(TransactionId.generate(payerId))
+                .addHbarTransfer(payerId, new Hbar(-20))
+                .addHbarTransfer(new AccountId(1002), new Hbar(10))
+                .addHbarTransfer(new AccountId(1003), new Hbar(10))
+                .freezeWith(client);
+
+            await tx.sign(keyA);
+            await tx.sign(keyB);
+
+            expect(
+                tx._signedTransactions.get(0).sigMap?.sigPair,
+            ).to.have.length(2);
+            expect(tx.transactionId.accountId.toString()).to.equal("0.0.1001");
+
+            await new FeeEstimateQuery().setTransaction(tx).execute(client);
+
+            // Caller's transaction must keep signatures and payer
+            expect(
+                tx._signedTransactions.get(0).sigMap?.sigPair,
+            ).to.have.length(2);
+            expect(tx.transactionId.accountId.toString()).to.equal("0.0.1001");
+
+            // Protobuf sent over the wire to mirror node must contain the signatures
+            expect(fake.requests).to.have.length(1);
+            const sentTx = HieroProto.proto.Transaction.decode(
+                fake.requests[0].body,
+            );
+            const signedTx = HieroProto.proto.SignedTransaction.decode(
+                /** @type {Uint8Array} */ (sentTx.signedTransactionBytes),
+            );
+            expect(signedTx.sigMap?.sigPair).to.have.length(2);
+        });
+
+        it("preserves signatures and payer when estimating a transaction restored from bytes", async function () {
+            const keyA = PrivateKey.generateED25519();
+            const keyB = PrivateKey.generateED25519();
+            const payerId = new AccountId(1001);
+
+            const tx = new TransferTransaction()
+                .setTransactionId(TransactionId.generate(payerId))
+                .addHbarTransfer(payerId, new Hbar(-20))
+                .addHbarTransfer(new AccountId(1002), new Hbar(10))
+                .addHbarTransfer(new AccountId(1003), new Hbar(10))
+                .freezeWith(client);
+
+            await tx.sign(keyA);
+            await tx.sign(keyB);
+
+            const restored = Transaction.fromBytes(tx.toBytes());
+
+            // Read the payer from the list directly; the transactionId getter would lock it
+            expect(
+                restored._transactionIds.current.accountId.toString(),
+            ).to.equal("0.0.1001");
+            expect(
+                restored._signedTransactions.get(0).sigMap?.sigPair,
+            ).to.have.length(2);
+
+            await new FeeEstimateQuery()
+                .setTransaction(restored)
+                .execute(client);
+
+            // Payer must not be replaced by client operator (0.0.2)
+            expect(
+                restored._transactionIds.current.accountId.toString(),
+            ).to.equal("0.0.1001");
+            expect(
+                restored._signedTransactions.get(0).sigMap?.sigPair,
+            ).to.have.length(2);
+
+            expect(fake.requests).to.have.length(1);
+            const sentTx = HieroProto.proto.Transaction.decode(
+                fake.requests[0].body,
+            );
+            const signedTx = HieroProto.proto.SignedTransaction.decode(
+                /** @type {Uint8Array} */ (sentTx.signedTransactionBytes),
+            );
+            expect(signedTx.sigMap?.sigPair).to.have.length(2);
         });
     });
 });
