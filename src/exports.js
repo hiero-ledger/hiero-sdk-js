@@ -218,6 +218,7 @@ export { default as NodeCreateTransaction } from "./node/NodeCreateTransaction.j
 export { default as ServiceEndpoint } from "./node/ServiceEndpoint.js";
 export { default as NodeDeleteTransaction } from "./node/NodeDeleteTransaction.js";
 export { default as ClprSignatureScheme } from "./clpr/ClprSignatureScheme.js";
+export { default as ClprRegisterChannelTransaction } from "./clpr/ClprRegisterChannelTransaction.js";
 export { default as ClprThrottles } from "./clpr/ClprThrottles.js";
 export { default as ClprLedgerConfigurationInfo } from "./clpr/ClprLedgerConfigurationInfo.js";
 export { default as ClprGetLedgerConfigurationQuery } from "./clpr/ClprGetLedgerConfigurationQuery.js";

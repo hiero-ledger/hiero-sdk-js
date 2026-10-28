@@ -521,6 +521,10 @@ export default class Transaction extends Executable {
      * @returns {ScheduleCreateTransaction}
      */
     schedule() {
+        if (!this._isSchedulable()) {
+            throw new Error(`${this.constructor.name} cannot be scheduled`);
+        }
+
         this._requireNotFrozen();
 
         if (SCHEDULE_CREATE_TRANSACTION.length != 1) {
@@ -2443,6 +2447,16 @@ export default class Transaction extends Executable {
     }
 
     /**
+     * Whether this transaction type supports scheduling.
+     *
+     * @protected
+     * @returns {boolean}
+     */
+    _isSchedulable() {
+        return true;
+    }
+
+    /**
      * Make a scheduled transaction body
      * FIXME: Should really call this `makeScheduledTransactionBody` to be consistent
      *
@@ -2450,6 +2464,10 @@ export default class Transaction extends Executable {
      * @returns {HieroProto.proto.ISchedulableTransactionBody}
      */
     _getScheduledTransactionBody() {
+        if (!this._isSchedulable()) {
+            throw new Error(`${this.constructor.name} cannot be scheduled`);
+        }
+
         return {
             memo: this.transactionMemo,
             transactionFee:
