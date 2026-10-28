@@ -15,12 +15,13 @@ const __dirname = dirname(__filename);
 
 const SCRIPT_DIR = __dirname;
 const PROTO_PACKAGE_ROOT = path.dirname(SCRIPT_DIR);
-const filePath = path.join(PROTO_PACKAGE_ROOT, 'src', 'proto.d.ts');
+const filePath = process.argv[2] || path.join(PROTO_PACKAGE_ROOT, 'src', 'proto.d.ts');
 
 let content = fs.readFileSync(filePath, 'utf8');
 
 // Replace proto. with hashgraph.proto. except when preceded by api.
 content = content.replace(/(?<!api\.)proto\./g, 'hashgraph.proto.');
+content = content.replace(/&#64;deprecated\b/g, '@deprecated');
 
 fs.writeFileSync(filePath, content, 'utf8');
 console.log('Fixed proto namespaces in proto.d.ts');
