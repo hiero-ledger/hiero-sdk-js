@@ -222,6 +222,8 @@ export { default as ClprRegisterChannelTransaction } from "./clpr/ClprRegisterCh
 export { default as ClprThrottles } from "./clpr/ClprThrottles.js";
 export { default as ClprLedgerConfigurationInfo } from "./clpr/ClprLedgerConfigurationInfo.js";
 export { default as ClprGetLedgerConfigurationQuery } from "./clpr/ClprGetLedgerConfigurationQuery.js";
+export { default as ClprCloseChannelTransaction } from "./clpr/ClprCloseChannelTransaction.js";
+export { default as ClprSubmitBundleTransaction } from "./clpr/ClprSubmitBundleTransaction.js";
 export { default as NodeUpdateTransaction } from "./node/NodeUpdateTransaction.js";
 export { default as BlockNodeApi } from "./node/BlockNodeApi.js";
 export { default as RegisteredServiceEndpoint } from "./node/RegisteredServiceEndpoint.js";
