@@ -2,172 +2,176 @@ version: "3"
 
 silent: false
 
+vars:
+  proto: "a6b2452980d4d576dd01df665fecea72b6446dd3"
+
 tasks:
-    default:
-        deps:
-            - build
+  default:
+    deps:
+      - build
 
-    docs:
-        cmds:
-            - npx typedoc
-              --excludeInternal
-              --excludePrivate
-              --excludeProtected
-              --out docs
-              --validation.invalidLink
-              --entryPoints src/index.js src/browser.js src/native.js
+  docs:
+    cmds:
+      - npx typedoc
+        --excludeInternal
+        --excludePrivate
+        --excludeProtected
+        --out docs
+        --validation.invalidLink
+        --entryPoints src/index.js src/browser.js src/native.js
 
-    install:submodules:
-        vars:
-            commit: "251d0e71f42a1466d104b409d100e7bb4d26d04c" # v0.73.0
-        cmds:
-            - git submodule update --init --recursive --remote
-            - |
-                (
-                cd src/services &&
-                if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
-                    git fetch --unshallow --tags
-                fi &&
-                git checkout {{.commit}}
-                )
+  install:submodules:
+    cmds:
+      - git submodule update --init --recursive --remote
+      - |
+        (
+        cd src/services &&
+        if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
+            git fetch --unshallow --tags
+        fi &&
+        git checkout {{.proto}}
+        )
 
-    move:protobufs:
-        after:
-            - "install:submodules"
-        desc: "Move protobufs from src/services/hapi/hedera-protobufs-java-api/src/main/proto to src/proto"
-        cmds:
-            - rm -rf src/proto/services
-            - rm -rf src/proto/streams
-            - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/services src/proto/
-            - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/streams src/proto/
-            - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/event/* src/proto/
-            - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/state/* src/proto/
-            - node scripts/remove-duplicate-protobuf.js
-            - echo "Protobufs moved successfully!"
-            - task "delete:submodule"
+  move:protobufs:
+    after:
+      - "install:submodules"
+    desc: "Move protobufs from src/services/hapi/hedera-protobufs-java-api/src/main/proto to src/proto"
+    cmds:
+      - rm -rf src/proto/services
+      - rm -rf src/proto/streams
+      - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/services src/proto/
+      - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/streams src/proto/
+      - |
+        for event_file in src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/event/*.proto; do
+            event_name="${event_file##*/}"
+            if [ -f "src/proto/services_$event_name" ]; then
+                cp "$event_file" "src/proto/services_$event_name"
+            fi
+        done
+      - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/event/* src/proto/
+      - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/state/* src/proto/
+      - node scripts/remove-duplicate-protobuf.js
+      - echo "Protobufs moved successfully!"
+      - task "delete:submodule"
 
-    flatten:protobufs:
-        after:
-            - "move:protobufs"
-        desc: "Flatten proto directory structure to src/proto/* and fix imports"
-        cmds:
-            - node scripts/flatten-protos.js
+  flatten:protobufs:
+    after:
+      - "move:protobufs"
+    desc: "Flatten proto directory structure to src/proto/* and fix imports"
+    cmds:
+      - node scripts/flatten-protos.js
 
-    delete:submodule:
-        cmds:
-            - npx -y rimraf --glob "src/services/*" "src/services/.[!.]*" "src/services/..?*"
-            - echo "Submodule contents removed successfully, folder retained."
+  delete:submodule:
+    cmds:
+      - npx -y rimraf --glob "src/services/*" "src/services/.[!.]*" "src/services/..?*"
+      - echo "Submodule contents removed successfully, folder retained."
 
-    install:
-        desc: "Fetch protobufs from submodule, move, flatten (run only when updating protos; normal build uses committed files)"
-        deps:
-            - "install:submodules"
-        cmds:
-            - task "move:protobufs"
-            - task "flatten:protobufs"
-            - pnpm i
+  install:
+    desc: "Fetch protobufs from submodule, move, flatten (run only when updating protos; normal build uses committed files)"
+    deps:
+      - "install:submodules"
+    cmds:
+      - task "move:protobufs"
+      - task "flatten:protobufs"
+      - pnpm i
 
-    build:
-        desc: "Compile committed protos to JS/TS (no download)"
-        cmds:
-            - task "build:standalone"
+  build:
+    desc: "Compile committed protos to JS/TS (no download)"
+    cmds:
+      - task "build:standalone"
 
-    build:dev:
-        desc: "Build and globally link @hiero-ledger/proto for local dev"
-        deps:
-            - build
-        cmds:
-            - pnpm link --global --dir . --package @hiero-ledger/proto
+  build:dev:
+    desc: "Build and globally link @hiero-ledger/proto for local dev"
+    deps:
+      - build
+    cmds:
+      - pnpm link --global --dir . --package @hiero-ledger/proto
 
-    build:standalone:
-        cmds:
-            - pnpm exec pbjs -r hashgraph -t static-module -w es6 -p=src/proto --force-long --no-beautify --no-convert --no-delimited --no-verify -o src/proto.js src/proto/**/*.proto
-            - pnpm exec pbts -n hashgraph -o src/proto.d.ts src/proto.js
-            - node scripts/fix-proto-namespaces.js
-            - task: format
-            - task: lint
-            - npx babel src -d lib
-            - npx copyfiles -u 1 src/index.d.ts src/proto.d.ts lib/
+  build:standalone:
+    cmds:
+      - pnpm exec pbjs -r hashgraph -t static-module -w es6 -p=src/proto --force-long --no-beautify --no-convert --no-delimited --no-verify -o src/proto.js src/proto/**/*.proto
+      - pnpm exec pbts -n hashgraph -o src/proto.d.ts src/proto.js
+      - node scripts/fix-proto-namespaces.js
+      - task: format
+      - task: lint
+      - npx babel src -d lib
+      - npx copyfiles -u 1 src/index.d.ts src/proto.d.ts lib/
 
-    clean:
-        cmds:
-            - |
-                pnpm list --global --depth 0 2>/dev/null | grep -q "@hiero-ledger/proto" && pnpm remove --global @hiero-ledger/proto 2>/dev/null || true
-            - rm -rf node_modules
+  clean:
+    cmds:
+      - |
+        pnpm list --global --depth 0 2>/dev/null | grep -q "@hiero-ledger/proto" && pnpm remove --global @hiero-ledger/proto 2>/dev/null || true
+      - rm -rf node_modules
 
-    format:
-        cmds:
-            - npx prettier "*.json" "src/*.js" --write
+  format:
+    cmds:
+      - npx prettier "*.json" "src/*.js" --write
 
-    lint:
-        deps:
-            - "lint:types"
-            - "lint:format"
-            - "lint:js"
+  lint:
+    deps:
+      - "lint:types"
+      - "lint:format"
+      - "lint:js"
 
-    "lint:types":
-        cmds:
-            - npx tsc
+  "lint:types":
+    cmds:
+      - npx tsc
 
-    "lint:format":
-        cmds:
-            - npx prettier "*.json" "src/*.js" --check
+  "lint:format":
+    cmds:
+      - npx prettier "*.json" "src/*.js" --check
 
-    "lint:js":
-        cmds:
-            - npx eslint --config eslint.config.cjs --fix "src/*.js"
+  "lint:js":
+    cmds:
+      - npx eslint --config eslint.config.cjs --fix "src/*.js"
 
-    "test:release":
-        deps:
-            - build
+  "test:release":
+    deps:
+      - build
 
-    update:
-        desc: "Update protobufs: fetch from submodule at given tag, move, flatten, regenerate JS. Use when bumping proto tag (e.g. task proto:update -- v0.68.2)"
-        vars:
-            latest_tag:
-                sh: git ls-remote --tags https://github.com/hiero-ledger/hiero-consensus-node.git | awk '{print $2}' | grep -E 'refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1 | sed 's#refs/tags/##'
-            proto: "{{.proto | default .latest_tag}}"
-        cmds:
-            - echo "Protobuf version set to {{.proto}}"
-            - git submodule update --init --recursive --remote
-            - |
-                (
-                cd src/services &&
-                if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
-                    git fetch --unshallow --tags
-                fi &&
-                git checkout {{.proto}}
-                )
-            - task "move:protobufs"
-            - task "flatten:protobufs"
-            - pnpm i
-            - task "build:standalone"
-            - echo "Successfully updated protobufs to {{.proto}}"
+  update:
+    desc: "Update protobufs from the pinned CN ref, move, flatten, regenerate JS. Override the ref with task proto:update proto=v0.68.2"
+    cmds:
+      - echo "Protobuf version set to {{.proto}}"
+      - git submodule update --init --recursive --remote
+      - |
+        (
+        cd src/services &&
+        if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
+            git fetch --unshallow --tags
+        fi &&
+        git checkout {{.proto}}
+        )
+      - task "move:protobufs"
+      - task "flatten:protobufs"
+      - pnpm i
+      - task "build:standalone"
+      - echo "Successfully updated protobufs to {{.proto}}"
 
-    pack:
-        preconditions:
-            - "! grep '\".*\": \"\\(link\\|file\\):.*\"' package.json"
-        deps:
-            - "test:release"
-        cmds:
-            # pnpm 9.15.5 (packageManager in the root package.json) has no `pack --out`:
-            # pack into a temp dir, then move the tarball to the requested name.
-            - |
-              PACK_DIR="$(mktemp -d)"
-              pnpm pack --pack-destination "${PACK_DIR}"
-              mv "${PACK_DIR}"/*.tgz "{{.CLI_ARGS}}"
-              rmdir "${PACK_DIR}"
-            - ls -lh {{.CLI_ARGS}}
-            # The src/services submodule is the whole hiero-consensus-node repository.
-            # The files field keeps it out of the tarball; fail loudly if it ever gets back in.
-            - |
-              FILE_COUNT="$(tar -tzf {{.CLI_ARGS}} | wc -l | tr -d ' ')"
-              if [ "${FILE_COUNT}" -gt 1000 ]; then
-                echo "error: {{.CLI_ARGS}} contains ${FILE_COUNT} files; a correct package has a few hundred. Check the files field in package.json." >&2
-                exit 1
-              fi
-              echo "{{.CLI_ARGS}} contains ${FILE_COUNT} files"
+  pack:
+    preconditions:
+      - "! grep '\".*\": \"\\(link\\|file\\):.*\"' package.json"
+    deps:
+      - "test:release"
+    cmds:
+      # pnpm 9.15.5 (packageManager in the root package.json) has no `pack --out`:
+      # pack into a temp dir, then move the tarball to the requested name.
+      - |
+        PACK_DIR="$(mktemp -d)"
+        pnpm pack --pack-destination "${PACK_DIR}"
+        mv "${PACK_DIR}"/*.tgz "{{.CLI_ARGS}}"
+        rmdir "${PACK_DIR}"
+      - ls -lh {{.CLI_ARGS}}
+      # The src/services submodule is the whole hiero-consensus-node repository.
+      # The files field keeps it out of the tarball; fail loudly if it ever gets back in.
+      - |
+        FILE_COUNT="$(tar -tzf {{.CLI_ARGS}} | wc -l | tr -d ' ')"
+        if [ "${FILE_COUNT}" -gt 1000 ]; then
+          echo "error: {{.CLI_ARGS}} contains ${FILE_COUNT} files; a correct package has a few hundred. Check the files field in package.json." >&2
+          exit 1
+        fi
+        echo "{{.CLI_ARGS}} contains ${FILE_COUNT} files"
 
-    publish:
-        cmds:
-            - npm publish {{.TARBALL}} {{.CLI_ARGS}}
+  publish:
+    cmds:
+      - npm publish {{.TARBALL}} {{.CLI_ARGS}}

@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+-   Added HIP-1535 CLPR support: eight transactions, two free queries, ownership helpers, CLPR `Status` and `RequestType` codes, and protobufs from CN `a6b2452`. [#4578](https://github.com/hiero-ledger/hiero-sdk-js/issues/4578)
 -   Added `network` getter on `IPv4Address` to replace the misspelled `newtork` getter, which is now deprecated. [#4008](https://github.com/hiero-ledger/hiero-sdk-js/issues/4008)
 
 ### Changed
@@ -118,287 +119,324 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # v2.88.0
 
 ### Changed
-- **Breaking:** `MirrorNodeAccountBalanceQuery` now throws the new `MirrorNodeStatusError` carrying `Status.InvalidAccountId` for an account the mirror node does not know, instead of returning `0 ℏ` as in v2.87.0. This matches the `INVALID_ACCOUNT_ID` failure of the deprecated `AccountBalanceQuery` it replaces, and the Java and Go SDKs. Match on `error.status`, not on the error class: mirror REST queries reach no consensus node, so this is deliberately not a `PrecheckStatusError`. A just-created account fails transiently until the mirror node ingests it, so create-then-read flows should retry; an account that exists holding nothing still returns zero, and a deleted account is reported as an ordinary zero balance because the balances endpoint does not expose the deleted flag. A malformed response (missing `balances` array or non-numeric balance) now throws a plain `Error` instead of returning zero. [#4335](https://github.com/hiero-ledger/hiero-sdk-js/pull/4335)
+
+-   **Breaking:** `MirrorNodeAccountBalanceQuery` now throws the new `MirrorNodeStatusError` carrying `Status.InvalidAccountId` for an account the mirror node does not know, instead of returning `0 ℏ` as in v2.87.0. This matches the `INVALID_ACCOUNT_ID` failure of the deprecated `AccountBalanceQuery` it replaces, and the Java and Go SDKs. Match on `error.status`, not on the error class: mirror REST queries reach no consensus node, so this is deliberately not a `PrecheckStatusError`. A just-created account fails transiently until the mirror node ingests it, so create-then-read flows should retry; an account that exists holding nothing still returns zero, and a deleted account is reported as an ordinary zero balance because the balances endpoint does not expose the deleted flag. A malformed response (missing `balances` array or non-numeric balance) now throws a plain `Error` instead of returning zero. [#4335](https://github.com/hiero-ledger/hiero-sdk-js/pull/4335)
 
 ### Fixed
-- Restored `SystemDeleteTransaction` and `SystemUndeleteTransaction`, which v2.87.0 removed as long-deprecated. Deleting them also unregistered `systemDelete` / `systemUndelete` from the transaction registry, so `Transaction.fromBytes()` could no longer deserialize an already-signed system delete/undelete transaction. Both classes are back exactly as in v2.86.2 and remain `@deprecated`; every other removal from v2.87.0 stays removed. [#4343](https://github.com/hiero-ledger/hiero-sdk-js/pull/4343)
-- `Transaction.fromBytes()` now rejects a transaction body that sets more than one `data` field. protobufjs silently kept only the last such field while decoding, so an ambiguous body could not be detected after the fact. This is a defense-in-depth fix for already-trusted input; there is no known untrusted-input path. [#4338](https://github.com/hiero-ledger/hiero-sdk-js/pull/4338) [#4337](https://github.com/hiero-ledger/hiero-sdk-js/issues/4337)
+
+-   Restored `SystemDeleteTransaction` and `SystemUndeleteTransaction`, which v2.87.0 removed as long-deprecated. Deleting them also unregistered `systemDelete` / `systemUndelete` from the transaction registry, so `Transaction.fromBytes()` could no longer deserialize an already-signed system delete/undelete transaction. Both classes are back exactly as in v2.86.2 and remain `@deprecated`; every other removal from v2.87.0 stays removed. [#4343](https://github.com/hiero-ledger/hiero-sdk-js/pull/4343)
+-   `Transaction.fromBytes()` now rejects a transaction body that sets more than one `data` field. protobufjs silently kept only the last such field while decoding, so an ambiguous body could not be detected after the fact. This is a defense-in-depth fix for already-trusted input; there is no known untrusted-input path. [#4338](https://github.com/hiero-ledger/hiero-sdk-js/pull/4338) [#4337](https://github.com/hiero-ledger/hiero-sdk-js/issues/4337)
 
 # v2.87.0
 
 ### Added
-- `MirrorNodeAccountBalanceQuery`, the mirror-node replacement for `AccountBalanceQuery` ahead of its deprecation. Resolves `shard.realm.num` IDs, EVM addresses, public-key aliases, and contract IDs through a single `GET /api/v1/balances` request and returns the read-only `MirrorNodeAccountBalance` carrying `hbars`; retries 5xx/network failures with exponential backoff within a total `requestTimeout` budget. Token balances are deliberately out of scope per the migration proposal. [#4320](https://github.com/hiero-ledger/hiero-sdk-js/pull/4320) [#4286](https://github.com/hiero-ledger/hiero-sdk-js/issues/4286)
-- Mirror node streaming queries (e.g. `TopicMessageQuery` subscriptions) now work on `WebClient` and `NativeClient`, not just the Node client: new gRPC-Web mirror channels for browsers (streaming `fetch`) and React Native (`XMLHttpRequest` text mode with incremental base64 decoding). [#4268](https://github.com/hiero-ledger/hiero-sdk-js/pull/4268) [#4263](https://github.com/hiero-ledger/hiero-sdk-js/issues/4263)
+
+-   `MirrorNodeAccountBalanceQuery`, the mirror-node replacement for `AccountBalanceQuery` ahead of its deprecation. Resolves `shard.realm.num` IDs, EVM addresses, public-key aliases, and contract IDs through a single `GET /api/v1/balances` request and returns the read-only `MirrorNodeAccountBalance` carrying `hbars`; retries 5xx/network failures with exponential backoff within a total `requestTimeout` budget. Token balances are deliberately out of scope per the migration proposal. [#4320](https://github.com/hiero-ledger/hiero-sdk-js/pull/4320) [#4286](https://github.com/hiero-ledger/hiero-sdk-js/issues/4286)
+-   Mirror node streaming queries (e.g. `TopicMessageQuery` subscriptions) now work on `WebClient` and `NativeClient`, not just the Node client: new gRPC-Web mirror channels for browsers (streaming `fetch`) and React Native (`XMLHttpRequest` text mode with incremental base64 decoding). [#4268](https://github.com/hiero-ledger/hiero-sdk-js/pull/4268) [#4263](https://github.com/hiero-ledger/hiero-sdk-js/issues/4263)
 
 ### Changed
-- Re-applied the `@noble` / `@scure` v2 upgrade (reverted in v2.86.2) with the ESM-only packages bundled into the CommonJS artifact (`lib/index.cjs`) via esbuild, so `require()` no longer fails with `ERR_REQUIRE_ESM` on ts-node or Node.js < 20.19. The strict-CJS guard now runs the entire `common_js_test` suite under `--no-experimental-require-module` in CI, and the `@noble/curves` `>=2.0.0` Dependabot ignore was removed. `PublicKey.verify()` continues to accept 65-byte recoverable ECDSA signatures (`r || s || v`) as before. Released as `@hiero-ledger/cryptography@1.21.0`. [#4296](https://github.com/hiero-ledger/hiero-sdk-js/pull/4296)
-- Upgraded `ansi-styles` from `6.2.3` to `7.0.0`. [#4303](https://github.com/hiero-ledger/hiero-sdk-js/pull/4303)
+
+-   Re-applied the `@noble` / `@scure` v2 upgrade (reverted in v2.86.2) with the ESM-only packages bundled into the CommonJS artifact (`lib/index.cjs`) via esbuild, so `require()` no longer fails with `ERR_REQUIRE_ESM` on ts-node or Node.js < 20.19. The strict-CJS guard now runs the entire `common_js_test` suite under `--no-experimental-require-module` in CI, and the `@noble/curves` `>=2.0.0` Dependabot ignore was removed. `PublicKey.verify()` continues to accept 65-byte recoverable ECDSA signatures (`r || s || v`) as before. Released as `@hiero-ledger/cryptography@1.21.0`. [#4296](https://github.com/hiero-ledger/hiero-sdk-js/pull/4296)
+-   Upgraded `ansi-styles` from `6.2.3` to `7.0.0`. [#4303](https://github.com/hiero-ledger/hiero-sdk-js/pull/4303)
 
 ### Fixed
-- `Client.ping()` / `Client.pingAll()` now probe nodes with a free `COST_ANSWER` `AccountInfoQuery` instead of `AccountBalanceQuery`, whose `cryptoGetBalance` endpoint is being throttled to zero in consensus node release 77. `CostQuery` (and therefore `Query.getCost()`) no longer requires an operator: the payment transaction is left unsigned when none is configured, so operator-less clients can still ping. [#4312](https://github.com/hiero-ledger/hiero-sdk-js/pull/4312)
-- `NativeChannel` (React Native transport) no longer keeps processing the response after reporting an HTTP error, which previously invoked the gRPC callback a second time. [#4181](https://github.com/hiero-ledger/hiero-sdk-js/pull/4181)
+
+-   `Client.ping()` / `Client.pingAll()` now probe nodes with a free `COST_ANSWER` `AccountInfoQuery` instead of `AccountBalanceQuery`, whose `cryptoGetBalance` endpoint is being throttled to zero in consensus node release 77. `CostQuery` (and therefore `Query.getCost()`) no longer requires an operator: the payment transaction is left unsigned when none is configured, so operator-less clients can still ping. [#4312](https://github.com/hiero-ledger/hiero-sdk-js/pull/4312)
+-   `NativeChannel` (React Native transport) no longer keeps processing the response after reporting an HTTP error, which previously invoked the gRPC callback a second time. [#4181](https://github.com/hiero-ledger/hiero-sdk-js/pull/4181)
 
 ### Removed
-- **Breaking:** removed long-deprecated APIs: `LiveHashAddTransaction`, `LiveHashDeleteTransaction`, `LiveHashQuery`, `LiveHash`, `AccountInfo.liveHashes`, `SystemDeleteTransaction`, `SystemUndeleteTransaction`, `EthereumFlow` (use `EthereumTransaction`), `AccountAllowanceAdjustTransaction` (use `AccountAllowanceApproveTransaction` / `AccountAllowanceDeleteTransaction`), and `toSolidityAddress()` / `fromSolidityAddress()` on `AccountId`, `ContractId`, `DelegateContractId`, `FileId`, `TokenId`, and `TopicId` (use `toEvmAddress()` / `fromEvmAddress()`). `ScheduleId.toSolidityAddress()` / `fromSolidityAddress()` are kept for now, as `ScheduleId` has no `toEvmAddress()` replacement yet. [#4269](https://github.com/hiero-ledger/hiero-sdk-js/pull/4269) [#4264](https://github.com/hiero-ledger/hiero-sdk-js/issues/4264)
+
+-   **Breaking:** removed long-deprecated APIs: `LiveHashAddTransaction`, `LiveHashDeleteTransaction`, `LiveHashQuery`, `LiveHash`, `AccountInfo.liveHashes`, `SystemDeleteTransaction`, `SystemUndeleteTransaction`, `EthereumFlow` (use `EthereumTransaction`), `AccountAllowanceAdjustTransaction` (use `AccountAllowanceApproveTransaction` / `AccountAllowanceDeleteTransaction`), and `toSolidityAddress()` / `fromSolidityAddress()` on `AccountId`, `ContractId`, `DelegateContractId`, `FileId`, `TokenId`, and `TopicId` (use `toEvmAddress()` / `fromEvmAddress()`). `ScheduleId.toSolidityAddress()` / `fromSolidityAddress()` are kept for now, as `ScheduleId` has no `toEvmAddress()` replacement yet. [#4269](https://github.com/hiero-ledger/hiero-sdk-js/pull/4269) [#4264](https://github.com/hiero-ledger/hiero-sdk-js/issues/4264)
 
 # v2.86.2
 
 ### Fixed
-- Reverted the `@noble/curves` `1.8.1` → `2.2.0` upgrade: v2 is ESM-only, which broke the CommonJS build (`lib/index.cjs`) with `ERR_REQUIRE_ESM` for ts-node and Node.js < 20.19 consumers. A strict-CJS smoke test now guards the CommonJS build against ESM-only dependencies. Released as `@hiero-ledger/cryptography@1.20.1`. [#4259](https://github.com/hiero-ledger/hiero-sdk-js/pull/4259)
-- `Transaction.fromBytes` now rejects empty input with a clear error and reports separate, accurate errors for "no transactions found in bytes" and "failed to decode TransactionBody" instead of a single misleading message. [#4265](https://github.com/hiero-ledger/hiero-sdk-js/pull/4265) [#4260](https://github.com/hiero-ledger/hiero-sdk-js/issues/4260)
+
+-   Reverted the `@noble/curves` `1.8.1` → `2.2.0` upgrade: v2 is ESM-only, which broke the CommonJS build (`lib/index.cjs`) with `ERR_REQUIRE_ESM` for ts-node and Node.js < 20.19 consumers. A strict-CJS smoke test now guards the CommonJS build against ESM-only dependencies. Released as `@hiero-ledger/cryptography@1.20.1`. [#4259](https://github.com/hiero-ledger/hiero-sdk-js/pull/4259)
+-   `Transaction.fromBytes` now rejects empty input with a clear error and reports separate, accurate errors for "no transactions found in bytes" and "failed to decode TransactionBody" instead of a single misleading message. [#4265](https://github.com/hiero-ledger/hiero-sdk-js/pull/4265) [#4260](https://github.com/hiero-ledger/hiero-sdk-js/issues/4260)
 
 # v2.86.1
 
 ### Fixed
-- The SDK can now be bundled for the browser with esbuild-based tooling (Vite, modern React). A `browser` condition was added to the package `exports` map so bundlers no longer resolve the Node.js entry point and fail on `fs`/`util`/`tls`/`net` and `@grpc/grpc-js`. [#2173](https://github.com/hiero-ledger/hiero-sdk-js/issues/2173) [#4256](https://github.com/hiero-ledger/hiero-sdk-js/pull/4256)
+
+-   The SDK can now be bundled for the browser with esbuild-based tooling (Vite, modern React). A `browser` condition was added to the package `exports` map so bundlers no longer resolve the Node.js entry point and fail on `fs`/`util`/`tls`/`net` and `@grpc/grpc-js`. [#2173](https://github.com/hiero-ledger/hiero-sdk-js/issues/2173) [#4256](https://github.com/hiero-ledger/hiero-sdk-js/pull/4256)
 
 ### Changed
-- Migrated `@hiero-ledger/cryptography` primitives to the Noble and @scure libraries, collapsing the separate browser/native/default implementations into a single portable one and removing the `react-native-get-random-values` dependency. Released as `@hiero-ledger/cryptography@1.20.0`. [#4229](https://github.com/hiero-ledger/hiero-sdk-js/pull/4229) [#4233](https://github.com/hiero-ledger/hiero-sdk-js/pull/4233)
+
+-   Migrated `@hiero-ledger/cryptography` primitives to the Noble and @scure libraries, collapsing the separate browser/native/default implementations into a single portable one and removing the `react-native-get-random-values` dependency. Released as `@hiero-ledger/cryptography@1.20.0`. [#4229](https://github.com/hiero-ledger/hiero-sdk-js/pull/4229) [#4233](https://github.com/hiero-ledger/hiero-sdk-js/pull/4233)
 
 ### Security
-- Forced `brace-expansion` and `fast-uri` to patched versions to address advisories. [#4226](https://github.com/hiero-ledger/hiero-sdk-js/pull/4226)
-- Upgraded `vite` to `7.3.6` and forced `esbuild` to `>=0.28.1` to address advisories. [#4223](https://github.com/hiero-ledger/hiero-sdk-js/pull/4223)
+
+-   Forced `brace-expansion` and `fast-uri` to patched versions to address advisories. [#4226](https://github.com/hiero-ledger/hiero-sdk-js/pull/4226)
+-   Upgraded `vite` to `7.3.6` and forced `esbuild` to `>=0.28.1` to address advisories. [#4223](https://github.com/hiero-ledger/hiero-sdk-js/pull/4223)
 
 # v2.86.0
 
 ### Added
-- Native `sign(key)` for Ethereum transaction data across all four envelope variants (Legacy, EIP-2930, EIP-1559, EIP-7702). [#4183](https://github.com/hiero-ledger/hiero-sdk-js/pull/4183)
-- Typed accessors and structured access-list / authorization (HIP-1340) views for Ethereum transaction data, plus the `AccessListItem` and `Authorization` classes. [#4186](https://github.com/hiero-ledger/hiero-sdk-js/pull/4186)
-- `EthereumTransaction.setEthereumData(EthereumTransactionData)` overload with a never-submit-unsigned guard and `EthereumTransactionData.isSigned()`. [#4187](https://github.com/hiero-ledger/hiero-sdk-js/pull/4187)
+
+-   Native `sign(key)` for Ethereum transaction data across all four envelope variants (Legacy, EIP-2930, EIP-1559, EIP-7702). [#4183](https://github.com/hiero-ledger/hiero-sdk-js/pull/4183)
+-   Typed accessors and structured access-list / authorization (HIP-1340) views for Ethereum transaction data, plus the `AccessListItem` and `Authorization` classes. [#4186](https://github.com/hiero-ledger/hiero-sdk-js/pull/4186)
+-   `EthereumTransaction.setEthereumData(EthereumTransactionData)` overload with a never-submit-unsigned guard and `EthereumTransactionData.isSigned()`. [#4187](https://github.com/hiero-ledger/hiero-sdk-js/pull/4187)
 
 ### Changed
-- Aligned `protobufjs` to `8.2.0` across the workspace and reconciled the pnpm lockfile. [#4167](https://github.com/hiero-ledger/hiero-sdk-js/pull/4167)
+
+-   Aligned `protobufjs` to `8.2.0` across the workspace and reconciled the pnpm lockfile. [#4167](https://github.com/hiero-ledger/hiero-sdk-js/pull/4167)
 
 ### Fixed
-- `ContractCallQuery` executed without `setGas()` no longer fails with `INSUFFICIENT_GAS`: the SDK now auto-estimates gas via the mirror node (`MirrorNodeContractEstimateQuery`) before sending the query, and throws a clear "set the gas explicitly using setGas()" error if estimation is unavailable. Also adds `MirrorNodeContractQuery.setFunctionParameters(Uint8Array)` for raw call data. [#2848](https://github.com/hiero-ledger/hiero-sdk-js/issues/2848)
-- Upgraded `@grpc/grpc-js` to `1.12.7` to address two high-severity uncaught-exception advisories. [#4171](https://github.com/hiero-ledger/hiero-sdk-js/pull/4171)
+
+-   `ContractCallQuery` executed without `setGas()` no longer fails with `INSUFFICIENT_GAS`: the SDK now auto-estimates gas via the mirror node (`MirrorNodeContractEstimateQuery`) before sending the query, and throws a clear "set the gas explicitly using setGas()" error if estimation is unavailable. Also adds `MirrorNodeContractQuery.setFunctionParameters(Uint8Array)` for raw call data. [#2848](https://github.com/hiero-ledger/hiero-sdk-js/issues/2848)
+-   Upgraded `@grpc/grpc-js` to `1.12.7` to address two high-severity uncaught-exception advisories. [#4171](https://github.com/hiero-ledger/hiero-sdk-js/pull/4171)
 
 # v2.85.0
 
 ### Fixed
-- Fixed spurious `FreezeTransaction.endTime` deprecation warnings when deserializing a freeze transaction from protobuf; `_fromProtobuf` now assigns `_endTime` directly instead of routing through the deprecated constructor path. [#4095](https://github.com/hiero-ledger/hiero-sdk-js/pull/4095) [#4067](https://github.com/hiero-ledger/hiero-sdk-js/issues/4067)
-- Clarified `FreezeTransaction.endTime` deprecation messaging and JSDoc to note that the network ignores this field and there is no replacement. [#4095](https://github.com/hiero-ledger/hiero-sdk-js/pull/4095)
-- Fixed `Mnemonic.calculateDerivationPathValues()` silently returning an array of empty values for malformed BIP-44 derivation paths; it now throws a descriptive error that includes the invalid input and the expected format. [#3992](https://github.com/hiero-ledger/hiero-sdk-js/pull/3992) [#3995](https://github.com/hiero-ledger/hiero-sdk-js/issues/3995)
+
+-   Fixed spurious `FreezeTransaction.endTime` deprecation warnings when deserializing a freeze transaction from protobuf; `_fromProtobuf` now assigns `_endTime` directly instead of routing through the deprecated constructor path. [#4095](https://github.com/hiero-ledger/hiero-sdk-js/pull/4095) [#4067](https://github.com/hiero-ledger/hiero-sdk-js/issues/4067)
+-   Clarified `FreezeTransaction.endTime` deprecation messaging and JSDoc to note that the network ignores this field and there is no replacement. [#4095](https://github.com/hiero-ledger/hiero-sdk-js/pull/4095)
+-   Fixed `Mnemonic.calculateDerivationPathValues()` silently returning an array of empty values for malformed BIP-44 derivation paths; it now throws a descriptive error that includes the invalid input and the expected format. [#3992](https://github.com/hiero-ledger/hiero-sdk-js/pull/3992) [#3995](https://github.com/hiero-ledger/hiero-sdk-js/issues/3995)
 
 # v2.84.0
 
 ### Added
-- HIP-1137 support: Registered Node Address Book — adds `RegisteredNodeCreateTransaction`, `RegisteredNodeUpdateTransaction`, `RegisteredNodeDeleteTransaction`, `RegisteredNodeAddressBookQuery`, and new service endpoint types (`BlockNodeServiceEndpoint`, `MirrorNodeServiceEndpoint`, `RpcRelayServiceEndpoint`, `GeneralServiceEndpoint`, `RegisteredServiceEndpoint`). [#3846](https://github.com/hiero-ledger/hiero-sdk-js/pull/3846) [HIP-1137](https://hips.hedera.com/hip/hip-1137)
+
+-   HIP-1137 support: Registered Node Address Book — adds `RegisteredNodeCreateTransaction`, `RegisteredNodeUpdateTransaction`, `RegisteredNodeDeleteTransaction`, `RegisteredNodeAddressBookQuery`, and new service endpoint types (`BlockNodeServiceEndpoint`, `MirrorNodeServiceEndpoint`, `RpcRelayServiceEndpoint`, `GeneralServiceEndpoint`, `RegisteredServiceEndpoint`). [#3846](https://github.com/hiero-ledger/hiero-sdk-js/pull/3846) [HIP-1137](https://hips.hedera.com/hip/hip-1137)
 
 # v2.84.0-beta.1
 
 ### Added
-- HIP-1137 support: Registered Node Address Book — adds `RegisteredNodeCreateTransaction`, `RegisteredNodeUpdateTransaction`, `RegisteredNodeDeleteTransaction`, `RegisteredNodeAddressBookQuery`, and new service endpoint types (`BlockNodeServiceEndpoint`, `MirrorNodeServiceEndpoint`, `RpcRelayServiceEndpoint`, `GeneralServiceEndpoint`, `RegisteredServiceEndpoint`). [#3846](https://github.com/hiero-ledger/hiero-sdk-js/pull/3846) [HIP-1137](https://hips.hedera.com/hip/hip-1137)
+
+-   HIP-1137 support: Registered Node Address Book — adds `RegisteredNodeCreateTransaction`, `RegisteredNodeUpdateTransaction`, `RegisteredNodeDeleteTransaction`, `RegisteredNodeAddressBookQuery`, and new service endpoint types (`BlockNodeServiceEndpoint`, `MirrorNodeServiceEndpoint`, `RpcRelayServiceEndpoint`, `GeneralServiceEndpoint`, `RegisteredServiceEndpoint`). [#3846](https://github.com/hiero-ledger/hiero-sdk-js/pull/3846) [HIP-1137](https://hips.hedera.com/hip/hip-1137)
 
 # v2.83.0
 
 ### Added
-- HIP-1313 support: introduce `setHighVolume`/`isHighVolume` on `Transaction` to flag transactions as high-volume for fee multiplier handling. [#3974](https://github.com/hiero-ledger/hiero-sdk-js/pull/3974)
-- Exposed `highVolumePricingMultiplier` on `TransactionRecord`, returning the fee multiplier applied to high-volume transactions (scaled by 1000). [#3977](https://github.com/hiero-ledger/hiero-sdk-js/pull/3977)
-- `FeeEstimateQuery` for estimating transaction fees prior to submission. [#3478](https://github.com/hiero-ledger/hiero-sdk-js/pull/3478)
-- `HookEntityId` now accepts a `ContractId`, allowing contracts to be used as hook entity owners alongside accounts. [#3930](https://github.com/hiero-ledger/hiero-sdk-js/pull/3930)
+
+-   HIP-1313 support: introduce `setHighVolume`/`isHighVolume` on `Transaction` to flag transactions as high-volume for fee multiplier handling. [#3974](https://github.com/hiero-ledger/hiero-sdk-js/pull/3974)
+-   Exposed `highVolumePricingMultiplier` on `TransactionRecord`, returning the fee multiplier applied to high-volume transactions (scaled by 1000). [#3977](https://github.com/hiero-ledger/hiero-sdk-js/pull/3977)
+-   `FeeEstimateQuery` for estimating transaction fees prior to submission. [#3478](https://github.com/hiero-ledger/hiero-sdk-js/pull/3478)
+-   `HookEntityId` now accepts a `ContractId`, allowing contracts to be used as hook entity owners alongside accounts. [#3930](https://github.com/hiero-ledger/hiero-sdk-js/pull/3930)
 
 # v2.83.0 - beta.3
 
 ### Security
-- Bumped `protobufjs` from 8.0.0 to 8.0.1 to address a vulnerability in the previous version. [#3941](https://github.com/hiero-ledger/hiero-sdk-js/pull/3941)
+
+-   Bumped `protobufjs` from 8.0.0 to 8.0.1 to address a vulnerability in the previous version. [#3941](https://github.com/hiero-ledger/hiero-sdk-js/pull/3941)
 
 # v2.83.0 - beta.2
 
 ### Fixed
-- Support `accessList` to have the proper type that is required by the EIP
+
+-   Support `accessList` to have the proper type that is required by the EIP
 
 # v2.83.0 - beta.1
 
 ### Added
-- Support for Hiero Hooks [#3911](https://github.com/hiero-ledger/hiero-sdk-js/pull/3911)
+
+-   Support for Hiero Hooks [#3911](https://github.com/hiero-ledger/hiero-sdk-js/pull/3911)
 
 ### Fixed
-- Add a new Logger constructor overload that accepts an options object (LoggerOptions) with a silent flag, which creates a no-op pino logger (enabled: false) without spawning a pino-pretty worker thread
-- The legacy positional-arguments constructor (new Logger(level, logFile, sync, ...)) remains fully intact — no breaking changes. Add JSDoc @overload annotations for both constructor signatures
+
+-   Add a new Logger constructor overload that accepts an options object (LoggerOptions) with a silent flag, which creates a no-op pino logger (enabled: false) without spawning a pino-pretty worker thread
+-   The legacy positional-arguments constructor (new Logger(level, logFile, sync, ...)) remains fully intact — no breaking changes. Add JSDoc @overload annotations for both constructor signatures
 
 # v2.82.0
 
 ### Added
-- String input support for `PendingAirdropId` constructor and setter methods (`setSenderId`, `setReceiverId`, `setTokenId`, `setNftId`), allowing callers to pass string representations of IDs instead of only object instances. [#3844](https://github.com/hiero-ledger/hiero-sdk-js/pull/3844)
+
+-   String input support for `PendingAirdropId` constructor and setter methods (`setSenderId`, `setReceiverId`, `setTokenId`, `setNftId`), allowing callers to pass string representations of IDs instead of only object instances. [#3844](https://github.com/hiero-ledger/hiero-sdk-js/pull/3844)
 
 ### Changed
-- Migrated from `ethers` v5 to `ethers` v6, resolving peer dependency security vulnerabilities in transitive dependencies (e.g. `elliptic`). [#3870](https://github.com/hiero-ledger/hiero-sdk-js/pull/3870)
-- Upgraded dev dependency `typescript` from 5.7.2 to 5.9.3 and `@types/node` from 24.0.8 to 25.5.0 to fix TS 5.9 `Uint8Array` generic type compatibility issues. [#3871](https://github.com/hiero-ledger/hiero-sdk-js/pull/3871)
-- Bumped `bignumber.js` from 9.1.1 to 10.0.2. Note: `BigNumber.DEBUG` has been removed upstream — invalid input now always throws instead of returning `NaN`. [#3807](https://github.com/hiero-ledger/hiero-sdk-js/pull/3807)
+
+-   Migrated from `ethers` v5 to `ethers` v6, resolving peer dependency security vulnerabilities in transitive dependencies (e.g. `elliptic`). [#3870](https://github.com/hiero-ledger/hiero-sdk-js/pull/3870)
+-   Upgraded dev dependency `typescript` from 5.7.2 to 5.9.3 and `@types/node` from 24.0.8 to 25.5.0 to fix TS 5.9 `Uint8Array` generic type compatibility issues. [#3871](https://github.com/hiero-ledger/hiero-sdk-js/pull/3871)
+-   Bumped `bignumber.js` from 9.1.1 to 10.0.2. Note: `BigNumber.DEBUG` has been removed upstream — invalid input now always throws instead of returning `NaN`. [#3807](https://github.com/hiero-ledger/hiero-sdk-js/pull/3807)
 
 ### Fixed
-- Resolved an issue where `NodeUpdateTransaction` was clearing the node's description when the description field had not been explicitly set. [#3889](https://github.com/hiero-ledger/hiero-sdk-js/pull/3889)
+
+-   Resolved an issue where `NodeUpdateTransaction` was clearing the node's description when the description field had not been explicitly set. [#3889](https://github.com/hiero-ledger/hiero-sdk-js/pull/3889)
 
 # 2.81.0
 
 ### Fixed
-- Resolved issues related to inconsistent handling of multiple transaction bodies, ensuring transactions are processed and serialized consistently across the SDK. [#3832](https://github.com/hiero-ledger/hiero-sdk-js/pull/3832)
+
+-   Resolved issues related to inconsistent handling of multiple transaction bodies, ensuring transactions are processed and serialized consistently across the SDK. [#3832](https://github.com/hiero-ledger/hiero-sdk-js/pull/3832)
 
 # 2.81.0-beta.1
 
 ### Added
 
-- HIP-1195 support. [#3535](https://github.com/hiero-ledger/hiero-sdk-js/pull/3535)  - *Released but not supported on Testnet yet*
-- Allow multiple nodes on getRecord/getReceipt. [#3741](https://github.com/hiero-ledger/hiero-sdk-js/pull/3741)
+-   HIP-1195 support. [#3535](https://github.com/hiero-ledger/hiero-sdk-js/pull/3535) - _Released but not supported on Testnet yet_
+-   Allow multiple nodes on getRecord/getReceipt. [#3741](https://github.com/hiero-ledger/hiero-sdk-js/pull/3741)
 
 # 2.80.0
 
 ### Fixed
-- Fixed an integer overflow issue where `validStart` and `expirationTime` (Unix seconds stored as 64-bit values) were incorrectly converted using `Long.toInt()`, causing dates beyond `2^32−1` seconds (e.g., year 2125) to decode incorrectly (e.g., as 1988). `ExchangeRate` and `ExpirationTime` now correctly use 64-bit values. [#3641](https://github.com/hiero-ledger/hiero-sdk-js/pull/3641)
-- Resolved a race condition in node health handling where concurrent failures could repeatedly increase backoff and mark a node unhealthy for an excessive duration. Backoff is now only increased when the node is healthy, preventing runaway backoff under high concurrency. [#3647](https://github.com/hiero-ledger/hiero-sdk-js/pull/3647)
+
+-   Fixed an integer overflow issue where `validStart` and `expirationTime` (Unix seconds stored as 64-bit values) were incorrectly converted using `Long.toInt()`, causing dates beyond `2^32−1` seconds (e.g., year 2125) to decode incorrectly (e.g., as 1988). `ExchangeRate` and `ExpirationTime` now correctly use 64-bit values. [#3641](https://github.com/hiero-ledger/hiero-sdk-js/pull/3641)
+-   Resolved a race condition in node health handling where concurrent failures could repeatedly increase backoff and mark a node unhealthy for an excessive duration. Backoff is now only increased when the node is healthy, preventing runaway backoff under high concurrency. [#3647](https://github.com/hiero-ledger/hiero-sdk-js/pull/3647)
 
 # 2.80.0-beta.1
 
 ### Changed
-- Switched to **pnpm workspaces** for local development library linking, replacing the unsupported `yalc`. This improves maintainability and contributor development experience. ([#3610](https://github.com/hiero-ledger/hiero-sdk-js/pull/3610))
-- Improved contributor experience by integrating **solo** as a development dependency with predefined start scripts and supporting documentation. ([#3614](https://github.com/hiero-ledger/hiero-sdk-js/pull/3614))
+
+-   Switched to **pnpm workspaces** for local development library linking, replacing the unsupported `yalc`. This improves maintainability and contributor development experience. ([#3610](https://github.com/hiero-ledger/hiero-sdk-js/pull/3610))
+-   Improved contributor experience by integrating **solo** as a development dependency with predefined start scripts and supporting documentation. ([#3614](https://github.com/hiero-ledger/hiero-sdk-js/pull/3614))
 
 # 2.79.0
 
-### Addded 
+### Addded
 
-- Tests for HIP-1300
+-   Tests for HIP-1300
 
 # 2.79.0-beta.13
 
 ### Added
 
-- Support for Ethereum type 4 transaction (currently not supported in consensus node)
+-   Support for Ethereum type 4 transaction (currently not supported in consensus node)
 
 # 2.79.0-beta.12
 
 ### Added
 
-- Updated publishing mechanism to support npmjs' new OIDC trusted publishers [#3572](https://github.com/hiero-ledger/hiero-sdk-js/pull/3572)
+-   Updated publishing mechanism to support npmjs' new OIDC trusted publishers [#3572](https://github.com/hiero-ledger/hiero-sdk-js/pull/3572)
 
 # 2.78.0
 
-### Added 
+### Added
 
-- Retry mechanism when a transaction hits `INVALID_NODE_ACCOUNT_ID` that updates the network automatically in accordance to [#53](https://github.com/hiero-ledger/sdk-collaboration-hub/pull/53)
+-   Retry mechanism when a transaction hits `INVALID_NODE_ACCOUNT_ID` that updates the network automatically in accordance to [#53](https://github.com/hiero-ledger/sdk-collaboration-hub/pull/53)
 
-### Fixed 
+### Fixed
 
--  Fix of the pollyfills for react native environment not being loaded correctly, causing No PRNG errors [#3526](https://github.com/hiero-ledger/hiero-sdk-js/pull/3526)
+-   Fix of the pollyfills for react native environment not being loaded correctly, causing No PRNG errors [#3526](https://github.com/hiero-ledger/hiero-sdk-js/pull/3526)
 
 # v2.78.0-beta.2
 
 ### Changed
 
-- Updated the entire codebase to use the definitions from the @hiero-ledger/* packages instead of @hashgraph/* packages. This is part of the transition to the new @hiero-ledger namespace for all SDK packages. [#3400]
-- Swap publishing order of @hiero-ledger and @hashgraph packages to ensure @hiero-ledger packages are published first. [#3400]
+-   Updated the entire codebase to use the definitions from the @hiero-ledger/_ packages instead of @hashgraph/_ packages. This is part of the transition to the new @hiero-ledger namespace for all SDK packages. [#3400]
+-   Swap publishing order of @hiero-ledger and @hashgraph packages to ensure @hiero-ledger packages are published first. [#3400]
 
 ## v2.77.0
 
 ### Fixed
-- Resolved an issue where the mirror network was not correctly set in the client state when using `WebClient.forMirrorNetwork` in web environments. [#3510](https://github.com/hiero-ledger/hiero-sdk-js/pull/3510)
-- Fixed a bug preventing `AddressBookQuery` from executing when the `Client` class had an empty network state. [#3510](https://github.com/hiero-ledger/hiero-sdk-js/pull/3510)
-- Corrected a model definition issue where a property of the `Node` model was not marked as optional. [#3510](https://github.com/hiero-ledger/hiero-sdk-js/pull/3510)
 
+-   Resolved an issue where the mirror network was not correctly set in the client state when using `WebClient.forMirrorNetwork` in web environments. [#3510](https://github.com/hiero-ledger/hiero-sdk-js/pull/3510)
+-   Fixed a bug preventing `AddressBookQuery` from executing when the `Client` class had an empty network state. [#3510](https://github.com/hiero-ledger/hiero-sdk-js/pull/3510)
+-   Corrected a model definition issue where a property of the `Node` model was not marked as optional. [#3510](https://github.com/hiero-ledger/hiero-sdk-js/pull/3510)
 
 ## v2.76.0
 
 ### Added
 
-- Added New gRPC web proxy for node 32. [#3482](https://github.com/hiero-ledger/hiero-sdk-js/pull/3482)
+-   Added New gRPC web proxy for node 32. [#3482](https://github.com/hiero-ledger/hiero-sdk-js/pull/3482)
 
 ### Fixed
 
-- Restored backward compatibility for custom network configurations in the web environment that include a URL scheme (e.g., https://node00.swirldslabs.com:443). The SDK now normalizes these endpoints internally to the expected host:port format to prevent breaking existing integrations. A deprecation warning is logged to encourage migration to the correct format.[#3480](https://github.com/hiero-ledger/hiero-sdk-js/pull/3480)
+-   Restored backward compatibility for custom network configurations in the web environment that include a URL scheme (e.g., https://node00.swirldslabs.com:443). The SDK now normalizes these endpoints internally to the expected host:port format to prevent breaking existing integrations. A deprecation warning is logged to encourage migration to the correct format.[#3480](https://github.com/hiero-ledger/hiero-sdk-js/pull/3480)
 
 ### Deprecated
 
-- Endpoints with URL schemes (http:// or https://) are now deprecated. While still accepted for backward compatibility, developers should update their configurations to use the documented host:port format (e.g., node00.swirldslabs.com:443). Support for scheme-prefixed endpoints will be removed in a future release.[#3480](https://github.com/hiero-ledger/hiero-sdk-js/pull/3480)
+-   Endpoints with URL schemes (http:// or https://) are now deprecated. While still accepted for backward compatibility, developers should update their configurations to use the documented host:port format (e.g., node00.swirldslabs.com:443). Support for scheme-prefixed endpoints will be removed in a future release.[#3480](https://github.com/hiero-ledger/hiero-sdk-js/pull/3480)
 
 ## v2.75.0
 
 ### Fixed
 
-- Fixed pagination issue in `AddressBookQuery` for web environments where only the first page of nodes from the Mirror Node API was being retrieved instead of all available pages. [#3421](https://github.com/hiero-ledger/hiero-sdk-js/pull/3421)
+-   Fixed pagination issue in `AddressBookQuery` for web environments where only the first page of nodes from the Mirror Node API was being retrieved instead of all available pages. [#3421](https://github.com/hiero-ledger/hiero-sdk-js/pull/3421)
 
 ## v2.74.0
 
 ### Fixed
 
-- Fixed an issue where setMaxNodesPerTransaction() had no effect if called after a transaction was frozen. The setting is now applied correctly, allowing dApps and wallets to reduce redundant signing prompts when executing transactions. [#3383](https://github.com/hiero-ledger/hiero-sdk-js/pull/3383)
+-   Fixed an issue where setMaxNodesPerTransaction() had no effect if called after a transaction was frozen. The setting is now applied correctly, allowing dApps and wallets to reduce redundant signing prompts when executing transactions. [#3383](https://github.com/hiero-ledger/hiero-sdk-js/pull/3383)
 
 ### Added
 
-- Extended amount field support across the SDK to accept BigNumber and bigint types in addition to existing Long and number types, ensuring consistent handling of large amounts throughout the codebase. [#3394](https://github.com/hiero-ledger/hiero-sdk-js/pull/3394)
-- Added support for latest Metro bundler by adding "react-native" to `package.json`'s exports [#3388](https://github.com/hiero-ledger/hiero-sdk-js/pull/3388)
+-   Extended amount field support across the SDK to accept BigNumber and bigint types in addition to existing Long and number types, ensuring consistent handling of large amounts throughout the codebase. [#3394](https://github.com/hiero-ledger/hiero-sdk-js/pull/3394)
+-   Added support for latest Metro bundler by adding "react-native" to `package.json`'s exports [#3388](https://github.com/hiero-ledger/hiero-sdk-js/pull/3388)
 
 ### Changed
 
-- This moves the mirrorRestApiBaseUrl construction from the client to the MirrorNode class for better separation of concerns.
-Additional fix - port for the rest api is handled correctly for local dev environments. [#3395](https://github.com/hiero-ledger/hiero-sdk-js/pull/3395)
-- Added New gRPC web proxies for node 33 and node 34[#3384](https://github.com/hiero-ledger/hiero-sdk-js/pull/3384)
+-   This moves the mirrorRestApiBaseUrl construction from the client to the MirrorNode class for better separation of concerns.
+    Additional fix - port for the rest api is handled correctly for local dev environments. [#3395](https://github.com/hiero-ledger/hiero-sdk-js/pull/3395)
+-   Added New gRPC web proxies for node 33 and node 34[#3384](https://github.com/hiero-ledger/hiero-sdk-js/pull/3384)
 
 ## v2.73.2
 
 ### Added
-- Introduced `Client.mirrorRestApiBaseUrl` getter to provide the full Mirror Node REST API base URL, including scheme and port. [#3376](https://github.com/hiero-ledger/hiero-sdk-js/pull/3376)
+
+-   Introduced `Client.mirrorRestApiBaseUrl` getter to provide the full Mirror Node REST API base URL, including scheme and port. [#3376](https://github.com/hiero-ledger/hiero-sdk-js/pull/3376)
 
 ### Changed
-- Updated `AccountId.populateAccountEvmAddress`, `AccountId.populateAccountNum`  `MirrorNodeContractQuery` to construct URLs using `mirrorRestApiBaseUrl` instead of manually parsing strings. [#3376](https://github.com/hiero-ledger/hiero-sdk-js/pull/3376)
+
+-   Updated `AccountId.populateAccountEvmAddress`, `AccountId.populateAccountNum` `MirrorNodeContractQuery` to construct URLs using `mirrorRestApiBaseUrl` instead of manually parsing strings. [#3376](https://github.com/hiero-ledger/hiero-sdk-js/pull/3376)
 
 ### Fixed
-- Resolved an issue in `MirrorNodeContractQuery` where the port was incorrectly overridden to `8545` for custom network configurations. [#3376](https://github.com/hiero-ledger/hiero-sdk-js/pull/3376)
+
+-   Resolved an issue in `MirrorNodeContractQuery` where the port was incorrectly overridden to `8545` for custom network configurations. [#3376](https://github.com/hiero-ledger/hiero-sdk-js/pull/3376)
 
 ## v2.73.1
 
 ### Added
 
-- Added negative NodeId check in the NodeUpdateTransaction and NodeDeleteTransaction
-- Updated NodeDeleteTransaction and NodeUpdateTransaction to transform the input always to Long
+-   Added negative NodeId check in the NodeUpdateTransaction and NodeDeleteTransaction
+-   Updated NodeDeleteTransaction and NodeUpdateTransaction to transform the input always to Long
 
 ### Changed
 
-- Pin all dependency versions in the SDK package/proto package/cryptography
+-   Pin all dependency versions in the SDK package/proto package/cryptography
 
 ## v2.72.0
 
 ### Added
-- Validation for negative gas in `ContractExecuteTransaction`, ensuring safer transaction execution. [#3317](https://github.com/hiero-ledger/hiero-sdk-js/pull/3317)
-- Support for `CustomFee` in scheduled transaction body, enabling more flexible fee structures in scheduled transactions. [#3254](https://github.com/hiero-ledger/hiero-sdk-js/pull/3254)
+
+-   Validation for negative gas in `ContractExecuteTransaction`, ensuring safer transaction execution. [#3317](https://github.com/hiero-ledger/hiero-sdk-js/pull/3317)
+-   Support for `CustomFee` in scheduled transaction body, enabling more flexible fee structures in scheduled transactions. [#3254](https://github.com/hiero-ledger/hiero-sdk-js/pull/3254)
 
 ## v2.71.0
 
 ### Added
-- Async client initialization support for `WebClient` to allow fetching the latest address book during setup:
-  - `WebClient.forMainnetAsync()`
-  - `WebClient.forTestnetAsync()`
-  - `WebClient.forPreviewnetAsync()`
-  - `WebClient.forNameAsync(name)` [#3274](https://github.com/hiero-ledger/hiero-sdk-js/pull/3274)
 
-  These methods default to performing an address book update unless `scheduleNetworkUpdate` is explicitly set to `false`, improving client reliability.
-- Async client initialization for `NativeClient` (intended for **React Native / Expo users**), allowing automatic address book updates at instantiation time. [#3285](https://github.com/hiero-ledger/hiero-sdk-js/pull/3285)
-  - `NativeClient.forMainnetAsync()`
-  - `NativeClient.forTestnetAsync()`
-  - `NativeClient.forPreviewnetAsync()`
-  - `NativeClient.forNameAsync(networkName)`
+-   Async client initialization support for `WebClient` to allow fetching the latest address book during setup:
 
-  These methods fetch the latest address book unless `scheduleNetworkUpdate` is explicitly set to `false`.
-- Support for HIP-1046 ([HIP Link](https://hips.hedera.com/hip/hip-1046)): Enabled in native environments to expand protocol capabilities. [#3283](https://github.com/hiero-ledger/hiero-sdk-js/pull/3283)
-- Implemented `permanentRemoval` in `ContractDeleteTransaction`, enabling permanent contract deletion behavior. [#3304](https://github.com/hiero-ledger/hiero-sdk-js/pull/3304)
-- Added ability to remove auto-renew account in `ContractUpdateTransaction` by setting it to `0.0.0`.
-- Added validation in `ContractCreateTransaction` to reject gas values less than 0.
-- Added validations in `hex.js` to reject invalid hex string decoding. [#3299](https://github.com/hiero-ledger/hiero-sdk-js/pull/3299)
+    -   `WebClient.forMainnetAsync()`
+    -   `WebClient.forTestnetAsync()`
+    -   `WebClient.forPreviewnetAsync()`
+    -   `WebClient.forNameAsync(name)` [#3274](https://github.com/hiero-ledger/hiero-sdk-js/pull/3274)
+
+    These methods default to performing an address book update unless `scheduleNetworkUpdate` is explicitly set to `false`, improving client reliability.
+
+-   Async client initialization for `NativeClient` (intended for **React Native / Expo users**), allowing automatic address book updates at instantiation time. [#3285](https://github.com/hiero-ledger/hiero-sdk-js/pull/3285)
+
+    -   `NativeClient.forMainnetAsync()`
+    -   `NativeClient.forTestnetAsync()`
+    -   `NativeClient.forPreviewnetAsync()`
+    -   `NativeClient.forNameAsync(networkName)`
+
+    These methods fetch the latest address book unless `scheduleNetworkUpdate` is explicitly set to `false`.
+
+-   Support for HIP-1046 ([HIP Link](https://hips.hedera.com/hip/hip-1046)): Enabled in native environments to expand protocol capabilities. [#3283](https://github.com/hiero-ledger/hiero-sdk-js/pull/3283)
+-   Implemented `permanentRemoval` in `ContractDeleteTransaction`, enabling permanent contract deletion behavior. [#3304](https://github.com/hiero-ledger/hiero-sdk-js/pull/3304)
+-   Added ability to remove auto-renew account in `ContractUpdateTransaction` by setting it to `0.0.0`.
+-   Added validation in `ContractCreateTransaction` to reject gas values less than 0.
+-   Added validations in `hex.js` to reject invalid hex string decoding. [#3299](https://github.com/hiero-ledger/hiero-sdk-js/pull/3299)
 
 ### Changed
-- Native clients (React Native / Expo) now attempt to retrieve node addresses from mirror nodes before falling back to hardcoded values in Web environments. [#3283](https://github.com/hiero-ledger/hiero-sdk-js/pull/3283)
-- Made `setStakedAccountId` and `setStakedNodeId` explicitly mutually exclusive. Setting one clears the other.
-- Made `setTransferAccountId` and `setTransferContractId` explicitly mutually exclusive. Setting one clears the other. [#3299](https://github.com/hiero-ledger/hiero-sdk-js/pull/3299)
 
+-   Native clients (React Native / Expo) now attempt to retrieve node addresses from mirror nodes before falling back to hardcoded values in Web environments. [#3283](https://github.com/hiero-ledger/hiero-sdk-js/pull/3283)
+-   Made `setStakedAccountId` and `setStakedNodeId` explicitly mutually exclusive. Setting one clears the other.
+-   Made `setTransferAccountId` and `setTransferContractId` explicitly mutually exclusive. Setting one clears the other. [#3299](https://github.com/hiero-ledger/hiero-sdk-js/pull/3299)
 
 ### Fixed
-- Fixed a bug where an error status triggered the error callback twice. [#3280](https://github.com/hiero-ledger/hiero-sdk-js/pull/3280)
+
+-   Fixed a bug where an error status triggered the error callback twice. [#3280](https://github.com/hiero-ledger/hiero-sdk-js/pull/3280)
 
 ## v2.71.0-beta.0
 
 ### Added
 
-- Added `maxAutomaticTokenAssociations` property with integration test [#3289](https://github.com/hiero-ledger/hiero-sdk-js/pull/3289)
+-   Added `maxAutomaticTokenAssociations` property with integration test [#3289](https://github.com/hiero-ledger/hiero-sdk-js/pull/3289)
 
 ## v2.70.0
 
@@ -414,79 +452,84 @@ Additional fix - port for the rest api is handled correctly for local dev enviro
 ---
 
 ### Added
-- `deleteGrpcWebProxyEndpoint` method in `NodeUpdateTransaction` to support the removal of web proxy. [#3268](https://github.com/hiero-ledger/hiero-sdk-js/pull/3268)
+
+-   `deleteGrpcWebProxyEndpoint` method in `NodeUpdateTransaction` to support the removal of web proxy. [#3268](https://github.com/hiero-ledger/hiero-sdk-js/pull/3268)
 
 ### Fixed
-- Aligned `clear` methods for array properties in `TopicUpdateTransaction` with other SDKs, ensuring they correctly remove the arrays from network state. [#3265](https://github.com/hiero-ledger/hiero-sdk-js/pull/3265)
+
+-   Aligned `clear` methods for array properties in `TopicUpdateTransaction` with other SDKs, ensuring they correctly remove the arrays from network state. [#3265](https://github.com/hiero-ledger/hiero-sdk-js/pull/3265)
 
 ### Removed
-- Removed the gRPC proxy endpoint for node with account ID `0.0.5`, as it was taken out of the address book by a council member. [#3256](https://github.com/hiero-ledger/hiero-sdk-js/pull/3256)
+
+-   Removed the gRPC proxy endpoint for node with account ID `0.0.5`, as it was taken out of the address book by a council member. [#3256](https://github.com/hiero-ledger/hiero-sdk-js/pull/3256)
 
 ## v2.69.0
 
 ### Added
-- Added validation to NodeUpdateTransaction and NodeDeleteTransaction ensuring that nodeId is explicitly set before execution. This prevents accidental updates to node 0.0.3 due to protobuf's default uint64 = 0 behavior. [3228](https://github.com/hiero-ledger/hiero-sdk-js/pull/3228)
+
+-   Added validation to NodeUpdateTransaction and NodeDeleteTransaction ensuring that nodeId is explicitly set before execution. This prevents accidental updates to node 0.0.3 due to protobuf's default uint64 = 0 behavior. [3228](https://github.com/hiero-ledger/hiero-sdk-js/pull/3228)
 
 ### Fixed
-- Fixed formatting of the X-User-Agent header in the JavaScript SDK to ensure correct identification by the Consensus Node. The header now uses the format: X-User-Agent: hiero-sdk-js/<version> (e.g., hiero-sdk-js/1.2.3), preventing misclassification as unknown/unspecified usage. [3216](https://github.com/hiero-ledger/hiero-sdk-js/pull/3216)
+
+-   Fixed formatting of the X-User-Agent header in the JavaScript SDK to ensure correct identification by the Consensus Node. The header now uses the format: X-User-Agent: hiero-sdk-js/<version> (e.g., hiero-sdk-js/1.2.3), preventing misclassification as unknown/unspecified usage. [3216](https://github.com/hiero-ledger/hiero-sdk-js/pull/3216)
 
 ## v2.69.0-beta.1
 
 ### Added
-- `WebClient.forMirrorNetwork()` factory method now works and correctly initializes and updates the address book during initialization.
-- `WebClient` now supports scheduled network updates via the `scheduleNetworkUpdate: true` option, and manual updates using the `updateNetwork()` method.
-- `AddressBookQuery` is now supported in browser environments.
-- `MirrorNodeContractCallQuery` is now supported in browser environments.
-- `MirrorNodeContractЕstimateQuery` is now supported in browser environments. [#3092](https://github.com/hiero-ledger/hiero-sdk-js/pull/3092)
-- For `Mainnet`, `Testnet`, and `Previewnet`, a fallback mechanism is in place: if the mirror node returns null or missing `grpc_proxy_endpoint` values, the SDK will retain and use the hardcoded list of gRPC web proxy endpoints.
+
+-   `WebClient.forMirrorNetwork()` factory method now works and correctly initializes and updates the address book during initialization.
+-   `WebClient` now supports scheduled network updates via the `scheduleNetworkUpdate: true` option, and manual updates using the `updateNetwork()` method.
+-   `AddressBookQuery` is now supported in browser environments.
+-   `MirrorNodeContractCallQuery` is now supported in browser environments.
+-   `MirrorNodeContractЕstimateQuery` is now supported in browser environments. [#3092](https://github.com/hiero-ledger/hiero-sdk-js/pull/3092)
+-   For `Mainnet`, `Testnet`, and `Previewnet`, a fallback mechanism is in place: if the mirror node returns null or missing `grpc_proxy_endpoint` values, the SDK will retain and use the hardcoded list of gRPC web proxy endpoints.
 
 ## v2.68.0
 
 ### Added
-- `<EntityId>.toEvmAddress()` for `AccountId`, `ContractId`, `ContractDelegateId`, `TopicId`, `TokenId`, `FileId`. [#3200](https://github.com/hiero-ledger/hiero-sdk-js/pull/3200)
+
+-   `<EntityId>.toEvmAddress()` for `AccountId`, `ContractId`, `ContractDelegateId`, `TopicId`, `TokenId`, `FileId`. [#3200](https://github.com/hiero-ledger/hiero-sdk-js/pull/3200)
 
 ### Changed
-- `<EntityId>.fromEvmAddress(shard, realm, evmAddress)` for `AccountId`, `ContractId`, and `ContractDelegateId`:
-  - Shard and realm must now be explicitly provided and are **not encoded** in the EVM address.
-  [#3200](https://github.com/hiero-ledger/hiero-sdk-js/pull/3200)
+
+-   `<EntityId>.fromEvmAddress(shard, realm, evmAddress)` for `AccountId`, `ContractId`, and `ContractDelegateId`:
+    -   Shard and realm must now be explicitly provided and are **not encoded** in the EVM address.
+        [#3200](https://github.com/hiero-ledger/hiero-sdk-js/pull/3200)
 
 ### Deprecated
-- Replaced `fromSolidityAddress()` with `fromEvmAddress()`
-- Replaced `toSolidityAddress()` with `toEvmAddress()` [#3200](https://github.com/hiero-ledger/hiero-sdk-js/pull/3200)
-- EthereumFlow, with the introduction of jumbo transactions, it should always be less cost and more efficient to use EthereumTransaction instead [#3187](https://github.com/hiero-ledger/hiero-sdk-js/pull/3187)
+
+-   Replaced `fromSolidityAddress()` with `fromEvmAddress()`
+-   Replaced `toSolidityAddress()` with `toEvmAddress()` [#3200](https://github.com/hiero-ledger/hiero-sdk-js/pull/3200)
+-   EthereumFlow, with the introduction of jumbo transactions, it should always be less cost and more efficient to use EthereumTransaction instead [#3187](https://github.com/hiero-ledger/hiero-sdk-js/pull/3187)
 
 ### Documentation
-- Migration guide to `@hiero/sdk` v3:
-  - Step-by-step instructions, automated scripts, supported file types, and issue template. [#3207](https://github.com/hiero-ledger/hiero-sdk-js/pull/3207)
 
-
+-   Migration guide to `@hiero/sdk` v3:
+    -   Step-by-step instructions, automated scripts, supported file types, and issue template. [#3207](https://github.com/hiero-ledger/hiero-sdk-js/pull/3207)
 
 ## v2.67.0
 
 ### Added
 
-- Getter for `shard` set in the client
-- Getter for `realm` set in the client
+-   Getter for `shard` set in the client
+-   Getter for `realm` set in the client
 
 ### Changed
 
-- `ClientConfiguration` type updated: The `Client` constructor now accepts `shard` and `realm` parameters directly. [#3133](https://github.com/hiero-ledger/hiero-sdk-js/pull/3133)
-- `Client.forMirrorNetwork` now supports two additional arguments: `shard` and `realm`. [#3133](https://github.com/hiero-ledger/hiero-sdk-js/pull/3133)
-- When a custom network is provided in the `Client` constructor, the `shard` and `realm` values are now automatically inferred from the specified network. [#3133](https://github.com/hiero-ledger/hiero-sdk-js/pull/3133)
-- An error is now thrown if the nodes defined in a custom network are not all in the same `shard` and `realm`, enforcing consistency and preventing misconfiguration. [#3133](https://github.com/hiero-ledger/hiero-sdk-js/pull/3133)
-
-
+-   `ClientConfiguration` type updated: The `Client` constructor now accepts `shard` and `realm` parameters directly. [#3133](https://github.com/hiero-ledger/hiero-sdk-js/pull/3133)
+-   `Client.forMirrorNetwork` now supports two additional arguments: `shard` and `realm`. [#3133](https://github.com/hiero-ledger/hiero-sdk-js/pull/3133)
+-   When a custom network is provided in the `Client` constructor, the `shard` and `realm` values are now automatically inferred from the specified network. [#3133](https://github.com/hiero-ledger/hiero-sdk-js/pull/3133)
+-   An error is now thrown if the nodes defined in a custom network are not all in the same `shard` and `realm`, enforcing consistency and preventing misconfiguration. [#3133](https://github.com/hiero-ledger/hiero-sdk-js/pull/3133)
 
 ## v2.66.0
 
 ### Added
 
--  Extended `setPayableAmount` function in ContractExecuteTransaction, by allowing the user to pass a HbarUnit as optional second parameter. [#3129](https://github.com/hiero-ledger/hiero-sdk-js/pull/3129)
-
+-   Extended `setPayableAmount` function in ContractExecuteTransaction, by allowing the user to pass a HbarUnit as optional second parameter. [#3129](https://github.com/hiero-ledger/hiero-sdk-js/pull/3129)
 
 ### Fixed
-- Prevented unintended removal of transaction type registrations by disabling tree shaking for modules with critical side effects, ensuring proper runtime functionality. [#3149](https://github.com/hiero-ledger/hiero-sdk-js/pull/3149)
 
+-   Prevented unintended removal of transaction type registrations by disabling tree shaking for modules with critical side effects, ensuring proper runtime functionality. [#3149](https://github.com/hiero-ledger/hiero-sdk-js/pull/3149)
 
 ## v2.66.0-beta.1
 
