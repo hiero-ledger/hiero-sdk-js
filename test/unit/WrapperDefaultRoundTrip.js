@@ -1,5 +1,6 @@
 import {
     AccountUpdateTransaction,
+    ContractUpdateTransaction,
     NodeUpdateTransaction,
     RegisteredNodeUpdateTransaction,
     TokenUpdateNftsTransaction,
@@ -34,6 +35,20 @@ describe("wrapper fields set to their default value", function () {
         expect(tx.receiverSignatureRequired).to.equal(false);
         expect(tx.maxAutomaticTokenAssociations.toNumber()).to.equal(0);
         expect(tx.declineStakingRewards).to.equal(false);
+    });
+
+    it("ContractUpdateTransaction keeps false and an unset field stays null", function () {
+        const tx = roundTrip(
+            new ContractUpdateTransaction()
+                .setContractId("0.0.5")
+                .setDeclineStakingReward(false),
+        );
+        const unset = roundTrip(
+            new ContractUpdateTransaction().setContractId("0.0.5"),
+        );
+
+        expect(tx.declineStakingRewards).to.equal(false);
+        expect(unset.declineStakingRewards).to.be.null;
     });
 
     it("NodeUpdateTransaction keeps an empty description and hash", function () {
