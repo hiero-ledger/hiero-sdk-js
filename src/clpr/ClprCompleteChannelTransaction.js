@@ -3,8 +3,9 @@
 import Transaction, {
     TRANSACTION_REGISTRY,
 } from "../transaction/Transaction.js";
+import ClprTransaction from "./ClprTransaction.js";
 import ContractId from "../contract/ContractId.js";
-import { requireUint8ArrayLength } from "../util.js";
+import { copyBytes32 } from "../util.js";
 import OwnershipProofState from "./OwnershipProofState.js";
 
 /**
@@ -44,7 +45,7 @@ import OwnershipProofState from "./OwnershipProofState.js";
  * CLPR is off by default and requires the network setting `clpr.enabled`.
  * This transaction cannot be scheduled.
  */
-export default class ClprCompleteChannelTransaction extends Transaction {
+export default class ClprCompleteChannelTransaction extends ClprTransaction {
     /**
      * @param {object} [props]
      * @param {Uint8Array} [props.channelId]
@@ -154,9 +155,9 @@ export default class ClprCompleteChannelTransaction extends Transaction {
      */
     setChannelId(channelId) {
         this._requireNotFrozen();
-        requireUint8ArrayLength(channelId, 32, "channelId");
+        const bytes = copyBytes32(channelId, "channelId");
         this._ownershipProof.clearIfChanged(this._channelId, channelId);
-        this._channelId = new Uint8Array(channelId);
+        this._channelId = bytes;
         return this;
     }
 
@@ -165,7 +166,9 @@ export default class ClprCompleteChannelTransaction extends Transaction {
      * @returns {?Uint8Array}
      */
     get channelId() {
-        return this._channelId == null ? null : new Uint8Array(this._channelId);
+        return this._channelId == null
+            ? null
+            : copyBytes32(this._channelId, "channelId");
     }
 
     /**
@@ -177,12 +180,14 @@ export default class ClprCompleteChannelTransaction extends Transaction {
      */
     setOwnershipProof(privateKey) {
         this._requireNotFrozen();
-        if (this._channelId == null) {
-            throw new Error(
-                "ClprCompleteChannelTransaction: 'channelId' must be explicitly set before calling setOwnershipProof().",
-            );
-        }
-        this._ownershipProof.sign(privateKey, this._channelId);
+        this._requireFields(
+            { channelId: this._channelId },
+            "calling setOwnershipProof()",
+        );
+        this._ownershipProof.sign(
+            privateKey,
+            /** @type {Uint8Array} */ (this._channelId),
+        );
         return this;
     }
 
@@ -271,38 +276,15 @@ export default class ClprCompleteChannelTransaction extends Transaction {
 
     /**
      * @override
-     * @param {?Client} client
-     * @returns {this}
-     */
-    freezeWith(client) {
-        this._validateRequiredFields();
-        return super.freezeWith(client);
-    }
-
-    /**
-     * @override
      * @protected
-     * @param {Client} client
-     * @returns {Promise<void>}
+     * @returns {Record<string, unknown>}
      */
-    async _beforeExecute(client) {
-        this._validateRequiredFields();
-        await super._beforeExecute(client);
+    _getRequiredFields() {
+        return {
+            channelId: this._channelId,
+            ownershipProof: this._ownershipProof,
+        };
     }
-
-    /**
-     * @private
-     * @returns {void}
-     */
-    _validateRequiredFields() {
-        if (this._channelId == null) {
-            throw new Error(
-                "ClprCompleteChannelTransaction: 'channelId' must be explicitly set before freezing or executing.",
-            );
-        }
-        this._ownershipProof.requireComplete("ClprCompleteChannelTransaction");
-    }
-
     /**
      * @override
      * @protected

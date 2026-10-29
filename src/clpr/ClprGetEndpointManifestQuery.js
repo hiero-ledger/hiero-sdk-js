@@ -46,6 +46,7 @@ export default class ClprGetEndpointManifestQuery extends Query {
      * @returns {Promise<ProtoQuery>}
      */
     _makeRequestAsync() {
+        // CLPR free queries omit the payment header, even when an operator is set.
         return Promise.resolve(this._makeRequest());
     }
 

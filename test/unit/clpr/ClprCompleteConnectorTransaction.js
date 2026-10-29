@@ -127,6 +127,29 @@ const boundFields = [
 ];
 
 describe("ClprCompleteConnectorTransaction", function () {
+    it.each(["9223372036854775808", "18446744073709551615"])(
+        "forwards signed wire stake %s exactly without applying builder limits",
+        function (stake) {
+            const encoded = wireBytes({
+                ...wireBody(),
+                lockedStake: Long.fromString(stake, true),
+            });
+            const decoded = sdk.Transaction.fromBytes(encoded);
+
+            expect(decoded.lockedStake.to(sdk.HbarUnit.Tinybar).toFixed()).toBe(
+                stake,
+            );
+            expect(decoded.toBytes()).toEqual(encoded);
+            expect(privateKey().publicKey.verifyTransaction(decoded)).toBe(
+                true,
+            );
+            expect(() =>
+                completeConnector().setLockedStake(
+                    sdk.Hbar.fromTinybars(stake),
+                ),
+            ).toThrow(/lockedStake/);
+        },
+    );
     it("exports the class from the package entry", async function () {
         const entry = import.meta.env.SSR
             ? await import("../../../src/index.js")

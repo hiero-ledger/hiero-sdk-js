@@ -3,7 +3,8 @@
 import Transaction, {
     TRANSACTION_REGISTRY,
 } from "../transaction/Transaction.js";
-import { requireUint8ArrayLength } from "../util.js";
+import ClprTransaction from "./ClprTransaction.js";
+import { copyBytes32 } from "../util.js";
 
 /**
  * @namespace proto
@@ -39,7 +40,7 @@ import { requireUint8ArrayLength } from "../util.js";
  * CLPR is off by default and requires the network setting `clpr.enabled`.
  * This transaction cannot be scheduled.
  */
-export default class ClprSubmitBundleTransaction extends Transaction {
+export default class ClprSubmitBundleTransaction extends ClprTransaction {
     /**
      * @param {object} [props]
      * @param {Uint8Array} [props.channelId]
@@ -111,8 +112,8 @@ export default class ClprSubmitBundleTransaction extends Transaction {
      */
     setChannelId(channelId) {
         this._requireNotFrozen();
-        requireUint8ArrayLength(channelId, 32, "channelId");
-        this._channelId = new Uint8Array(channelId);
+        const bytes = copyBytes32(channelId, "channelId");
+        this._channelId = bytes;
         return this;
     }
 
@@ -122,7 +123,9 @@ export default class ClprSubmitBundleTransaction extends Transaction {
      * @returns {?Uint8Array}
      */
     get channelId() {
-        return this._channelId == null ? null : new Uint8Array(this._channelId);
+        return this._channelId == null
+            ? null
+            : copyBytes32(this._channelId, "channelId");
     }
 
     /**
@@ -153,17 +156,13 @@ export default class ClprSubmitBundleTransaction extends Transaction {
 
     /**
      * @override
-     * @param {?Client} client
-     * @returns {this}
+     * @protected
+     * @returns {Record<string, unknown>}
      */
-    freezeWith(client) {
-        if (this._channelId == null) {
-            throw new Error(
-                "ClprSubmitBundleTransaction: 'channelId' must be explicitly set before calling freeze().",
-            );
-        }
-
-        return super.freezeWith(client);
+    _getRequiredFields() {
+        return {
+            channelId: this._channelId,
+        };
     }
 
     /**

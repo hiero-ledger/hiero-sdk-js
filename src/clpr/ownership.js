@@ -25,14 +25,9 @@ export function encodePublicKey(publicKey) {
 
     switch (publicKey.type) {
         case "secp256k1": {
-            // Keep access to the cryptography wrapper's internal public key here.
-            const key =
-                /** @type {{ _key: { toBytesRawUncompressed(): Uint8Array } }} */ (
-                    /** @type {unknown} */ (publicKey._key)
-                );
             return {
                 scheme: ClprSignatureScheme.ECDSA_SECP256K1,
-                publicKey: key._key.toBytesRawUncompressed(),
+                publicKey: publicKey.toBytesRawUncompressed(),
             };
         }
         case "ED25519":

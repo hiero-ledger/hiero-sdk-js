@@ -11,6 +11,7 @@ export default defineConfig({
             "test/unit/Mocker.js",
             "test/unit/browser/*",
             "test/unit/utils/*",
+            "test/unit/node/ClprTckAdapter.js",
         ],
         testTimeout: 120000,
         isolate: true,

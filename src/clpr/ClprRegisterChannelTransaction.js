@@ -3,7 +3,8 @@
 import Transaction, {
     TRANSACTION_REGISTRY,
 } from "../transaction/Transaction.js";
-import { requireUint8ArrayLength } from "../util.js";
+import ClprTransaction from "./ClprTransaction.js";
+import { copyBytes32 } from "../util.js";
 import { computeChannelCommitment } from "./ownership.js";
 
 /**
@@ -38,7 +39,7 @@ import { computeChannelCommitment } from "./ownership.js";
  * CLPR is off by default and requires the network setting `clpr.enabled`.
  * This transaction cannot be scheduled.
  */
-export default class ClprRegisterChannelTransaction extends Transaction {
+export default class ClprRegisterChannelTransaction extends ClprTransaction {
     /**
      * @param {object} [props]
      * @param {Uint8Array} [props.ownershipCommitment]
@@ -111,8 +112,8 @@ export default class ClprRegisterChannelTransaction extends Transaction {
      */
     setOwnershipCommitment(ownershipCommitment) {
         this._requireNotFrozen();
-        requireUint8ArrayLength(ownershipCommitment, 32, "ownershipCommitment");
-        this._ownershipCommitment = new Uint8Array(ownershipCommitment);
+        const bytes = copyBytes32(ownershipCommitment, "ownershipCommitment");
+        this._ownershipCommitment = bytes;
         return this;
     }
 
@@ -124,22 +125,18 @@ export default class ClprRegisterChannelTransaction extends Transaction {
     get ownershipCommitment() {
         return this._ownershipCommitment == null
             ? null
-            : new Uint8Array(this._ownershipCommitment);
+            : copyBytes32(this._ownershipCommitment, "ownershipCommitment");
     }
 
     /**
      * @override
-     * @param {?Client} client
-     * @returns {this}
+     * @protected
+     * @returns {Record<string, unknown>}
      */
-    freezeWith(client) {
-        if (this._ownershipCommitment == null) {
-            throw new Error(
-                "ClprRegisterChannelTransaction: 'ownershipCommitment' must be explicitly set before calling freeze().",
-            );
-        }
-
-        return super.freezeWith(client);
+    _getRequiredFields() {
+        return {
+            ownershipCommitment: this._ownershipCommitment,
+        };
     }
 
     /**

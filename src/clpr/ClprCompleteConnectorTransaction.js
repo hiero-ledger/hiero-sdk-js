@@ -3,11 +3,12 @@
 import Transaction, {
     TRANSACTION_REGISTRY,
 } from "../transaction/Transaction.js";
+import ClprTransaction from "./ClprTransaction.js";
 import ContractId from "../contract/ContractId.js";
 import Key from "../Key.js";
 import Hbar from "../Hbar.js";
 import HbarUnit from "../HbarUnit.js";
-import { arrayEqual, requireUint8ArrayLength } from "../util.js";
+import { arrayEqual, copyBytes32 } from "../util.js";
 import OwnershipProofState from "./OwnershipProofState.js";
 import { CLPR_SERVICE_ADDRESS, computeConnectorId } from "./ownership.js";
 
@@ -51,7 +52,7 @@ import { CLPR_SERVICE_ADDRESS, computeConnectorId } from "./ownership.js";
  * CLPR is off by default and requires the network setting `clpr.enabled`.
  * This transaction cannot be scheduled.
  */
-export default class ClprCompleteConnectorTransaction extends Transaction {
+export default class ClprCompleteConnectorTransaction extends ClprTransaction {
     /**
      * @param {object} [props]
      * @param {Uint8Array} [props.channelId]
@@ -162,12 +163,14 @@ export default class ClprCompleteConnectorTransaction extends Transaction {
                 completion.adminKey != null
                     ? Key._fromProtobufKey(completion.adminKey)
                     : undefined,
-            lockedStake:
-                completion.lockedStake != null
-                    ? Hbar.fromTinybars(completion.lockedStake)
-                    : undefined,
         });
 
+        // Wire values retain the full uint64 range, independently of builder limits.
+        if (completion.lockedStake != null) {
+            transaction._lockedStake = Hbar.fromTinybars(
+                completion.lockedStake,
+            );
+        }
         transaction._ownershipProof.restore(completion);
 
         return Transaction._fromProtobufTransactions(
@@ -187,9 +190,9 @@ export default class ClprCompleteConnectorTransaction extends Transaction {
      */
     setChannelId(channelId) {
         this._requireNotFrozen();
-        requireUint8ArrayLength(channelId, 32, "channelId");
+        const bytes = copyBytes32(channelId, "channelId");
         this._ownershipProof.clearIfChanged(this._channelId, channelId);
-        this._channelId = new Uint8Array(channelId);
+        this._channelId = bytes;
         return this;
     }
 
@@ -198,7 +201,9 @@ export default class ClprCompleteConnectorTransaction extends Transaction {
      * @returns {?Uint8Array}
      */
     get channelId() {
-        return this._channelId == null ? null : new Uint8Array(this._channelId);
+        return this._channelId == null
+            ? null
+            : copyBytes32(this._channelId, "channelId");
     }
 
     /**
@@ -208,9 +213,9 @@ export default class ClprCompleteConnectorTransaction extends Transaction {
      */
     setConnectorId(connectorId) {
         this._requireNotFrozen();
-        requireUint8ArrayLength(connectorId, 32, "connectorId");
+        const bytes = copyBytes32(connectorId, "connectorId");
         this._ownershipProof.clearIfChanged(this._connectorId, connectorId);
-        this._connectorId = new Uint8Array(connectorId);
+        this._connectorId = bytes;
         return this;
     }
 
@@ -221,7 +226,7 @@ export default class ClprCompleteConnectorTransaction extends Transaction {
     get connectorId() {
         return this._connectorId == null
             ? null
-            : new Uint8Array(this._connectorId);
+            : copyBytes32(this._connectorId, "connectorId");
     }
 
     /**
@@ -231,9 +236,9 @@ export default class ClprCompleteConnectorTransaction extends Transaction {
      */
     setSalt(salt) {
         this._requireNotFrozen();
-        requireUint8ArrayLength(salt, 32, "salt");
+        const bytes = copyBytes32(salt, "salt");
         this._ownershipProof.clearIfChanged(this._salt, salt);
-        this._salt = new Uint8Array(salt);
+        this._salt = bytes;
         return this;
     }
 
@@ -242,7 +247,7 @@ export default class ClprCompleteConnectorTransaction extends Transaction {
      * @returns {?Uint8Array}
      */
     get salt() {
-        return this._salt == null ? null : new Uint8Array(this._salt);
+        return this._salt == null ? null : copyBytes32(this._salt, "salt");
     }
 
     /**
@@ -253,7 +258,14 @@ export default class ClprCompleteConnectorTransaction extends Transaction {
      */
     setOwnershipProof(privateKey) {
         this._requireNotFrozen();
-        this._validateBoundFields("calling setOwnershipProof()");
+        this._requireFields(
+            {
+                channelId: this._channelId,
+                connectorId: this._connectorId,
+                salt: this._salt,
+            },
+            "calling setOwnershipProof()",
+        );
         const channelId = /** @type {Uint8Array} */ (this._channelId);
         const connectorId = /** @type {Uint8Array} */ (this._connectorId);
         const salt = /** @type {Uint8Array} */ (this._salt);
@@ -374,60 +386,18 @@ export default class ClprCompleteConnectorTransaction extends Transaction {
 
     /**
      * @override
-     * @param {?Client} client
-     * @returns {this}
-     */
-    freezeWith(client) {
-        this._validateRequiredFields();
-        return super.freezeWith(client);
-    }
-
-    /**
-     * @override
      * @protected
-     * @param {Client} client
-     * @returns {Promise<void>}
+     * @returns {Record<string, unknown>}
      */
-    async _beforeExecute(client) {
-        this._validateRequiredFields();
-        await super._beforeExecute(client);
+    _getRequiredFields() {
+        return {
+            channelId: this._channelId,
+            connectorId: this._connectorId,
+            salt: this._salt,
+            adminKey: this._adminKey,
+            ownershipProof: this._ownershipProof,
+        };
     }
-
-    /**
-     * @private
-     * @param {string} action
-     * @returns {void}
-     */
-    _validateBoundFields(action) {
-        for (const field of [
-            { name: "channelId", value: this._channelId },
-            { name: "connectorId", value: this._connectorId },
-            { name: "salt", value: this._salt },
-        ]) {
-            if (field.value == null) {
-                throw new Error(
-                    `ClprCompleteConnectorTransaction: '${field.name}' must be explicitly set before ${action}.`,
-                );
-            }
-        }
-    }
-
-    /**
-     * @private
-     * @returns {void}
-     */
-    _validateRequiredFields() {
-        this._validateBoundFields("freezing or executing");
-        if (this._adminKey == null) {
-            throw new Error(
-                "ClprCompleteConnectorTransaction: 'adminKey' must be explicitly set before freezing or executing.",
-            );
-        }
-        this._ownershipProof.requireComplete(
-            "ClprCompleteConnectorTransaction",
-        );
-    }
-
     /**
      * @override
      * @protected

@@ -3,6 +3,29 @@ import Long from "long";
 import * as util from "../../src/util.js";
 
 describe("util", function () {
+    describe("copyBytes32", function () {
+        it("validates and returns an independent copy on every call", function () {
+            const input = new Uint8Array(32).fill(7);
+            const stored = util.copyBytes32(input, "channelId");
+            input.fill(0);
+            expect(stored).toEqual(new Uint8Array(32).fill(7));
+            const output = util.copyBytes32(stored, "channelId");
+            output.fill(0);
+            expect(stored).toEqual(new Uint8Array(32).fill(7));
+        });
+
+        it.each([
+            null,
+            undefined,
+            new Uint8Array(31),
+            new Uint8Array(33),
+            Array(32).fill(0),
+        ])("rejects invalid input %# and names the field", function (value) {
+            expect(() => util.copyBytes32(value, "channelId")).toThrow(
+                /channelId/,
+            );
+        });
+    });
     describe("requireUint8ArrayLength", function () {
         it.each([0, 20, 32, 64])(
             "accepts exactly %i bytes and returns nothing",

@@ -40,6 +40,22 @@ describe("CLPR live test opt-in", function () {
             expect(results.numPassedTests).toBe(0);
             expect(results.numFailedTests).toBe(0);
             expect(results.numPendingTests).toBe(results.numTotalTests);
+            const names = results.testResults.flatMap((suite) =>
+                suite.assertionResults.map((test) => test.fullName),
+            );
+            expect(names).toEqual(
+                expect.arrayContaining([
+                    expect.stringContaining(
+                        "Channel lifecycle: register, complete, close",
+                    ),
+                    expect.stringContaining(
+                        "Connector lifecycle: register, complete, deregister",
+                    ),
+                    expect.stringContaining(
+                        "rejects a CLPR transaction in an atomic batch by default",
+                    ),
+                ]),
+            );
         } finally {
             rmSync(temp, { recursive: true, force: true });
         }

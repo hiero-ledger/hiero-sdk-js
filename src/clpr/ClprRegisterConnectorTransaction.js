@@ -3,7 +3,8 @@
 import Transaction, {
     TRANSACTION_REGISTRY,
 } from "../transaction/Transaction.js";
-import { requireUint8ArrayLength } from "../util.js";
+import ClprTransaction from "./ClprTransaction.js";
+import { copyBytes32 } from "../util.js";
 import { computeConnectorId, computeConnectorCommitment } from "./ownership.js";
 
 /**
@@ -40,7 +41,7 @@ import { computeConnectorId, computeConnectorCommitment } from "./ownership.js";
  * CLPR is off by default and requires the network setting `clpr.enabled`.
  * This transaction cannot be scheduled.
  */
-export default class ClprRegisterConnectorTransaction extends Transaction {
+export default class ClprRegisterConnectorTransaction extends ClprTransaction {
     /**
      * @param {object} [props]
      * @param {Uint8Array} [props.commitment]
@@ -124,8 +125,8 @@ export default class ClprRegisterConnectorTransaction extends Transaction {
      */
     setCommitment(commitment) {
         this._requireNotFrozen();
-        requireUint8ArrayLength(commitment, 32, "commitment");
-        this._commitment = new Uint8Array(commitment);
+        const bytes = copyBytes32(commitment, "commitment");
+        this._commitment = bytes;
         return this;
     }
 
@@ -137,22 +138,18 @@ export default class ClprRegisterConnectorTransaction extends Transaction {
     get commitment() {
         return this._commitment == null
             ? null
-            : new Uint8Array(this._commitment);
+            : copyBytes32(this._commitment, "commitment");
     }
 
     /**
      * @override
-     * @param {?Client} client
-     * @returns {this}
+     * @protected
+     * @returns {Record<string, unknown>}
      */
-    freezeWith(client) {
-        if (this._commitment == null) {
-            throw new Error(
-                "ClprRegisterConnectorTransaction: 'commitment' must be explicitly set before calling freeze().",
-            );
-        }
-
-        return super.freezeWith(client);
+    _getRequiredFields() {
+        return {
+            commitment: this._commitment,
+        };
     }
 
     /**

@@ -255,6 +255,17 @@ export function requireUint8ArrayLength(value, length, fieldName) {
 }
 
 /**
+ * Validates and copies a 32-byte field, including when the input is a Buffer.
+ * @param {Uint8Array} value
+ * @param {string} fieldName
+ * @returns {Uint8Array}
+ */
+export function copyBytes32(value, fieldName) {
+    requireUint8ArrayLength(value, 32, fieldName);
+    return new Uint8Array(value);
+}
+
+/**
  * Takes any param and throws custom error if non Uint8Array.
  *
  * @param {any | null | undefined} variable

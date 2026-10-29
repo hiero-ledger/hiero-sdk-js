@@ -195,6 +195,15 @@ export default class PublicKey extends Key {
     }
 
     /**
+     * Returns secp256k1 x || y coordinates without the SEC1 prefix.
+     * @returns {Uint8Array}
+     * @throws {Error} If this is an Ed25519 key.
+     */
+    toBytesRawUncompressed() {
+        return this._key.toBytesRawUncompressed();
+    }
+
+    /**
      * @deprecated Use `toEvmAddress()` instead.
      * @returns {string}
      */

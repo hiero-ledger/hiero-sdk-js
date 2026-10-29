@@ -3,7 +3,8 @@
 import Transaction, {
     TRANSACTION_REGISTRY,
 } from "../transaction/Transaction.js";
-import { requireUint8ArrayLength } from "../util.js";
+import ClprTransaction from "./ClprTransaction.js";
+import { copyBytes32 } from "../util.js";
 
 /**
  * @namespace proto
@@ -37,7 +38,7 @@ import { requireUint8ArrayLength } from "../util.js";
  * CLPR is off by default and requires the network setting `clpr.enabled`.
  * This transaction cannot be scheduled.
  */
-export default class ClprCloseChannelTransaction extends Transaction {
+export default class ClprCloseChannelTransaction extends ClprTransaction {
     /**
      * @param {object} [props]
      * @param {Uint8Array} [props.channelId]
@@ -111,8 +112,8 @@ export default class ClprCloseChannelTransaction extends Transaction {
      */
     setChannelId(channelId) {
         this._requireNotFrozen();
-        requireUint8ArrayLength(channelId, 32, "channelId");
-        this._channelId = new Uint8Array(channelId);
+        const bytes = copyBytes32(channelId, "channelId");
+        this._channelId = bytes;
         return this;
     }
 
@@ -122,7 +123,9 @@ export default class ClprCloseChannelTransaction extends Transaction {
      * @returns {?Uint8Array}
      */
     get channelId() {
-        return this._channelId == null ? null : new Uint8Array(this._channelId);
+        return this._channelId == null
+            ? null
+            : copyBytes32(this._channelId, "channelId");
     }
 
     /**
@@ -134,8 +137,8 @@ export default class ClprCloseChannelTransaction extends Transaction {
      */
     setOwnershipCommitment(ownershipCommitment) {
         this._requireNotFrozen();
-        requireUint8ArrayLength(ownershipCommitment, 32, "ownershipCommitment");
-        this._ownershipCommitment = new Uint8Array(ownershipCommitment);
+        const bytes = copyBytes32(ownershipCommitment, "ownershipCommitment");
+        this._ownershipCommitment = bytes;
         return this;
     }
 
@@ -147,22 +150,18 @@ export default class ClprCloseChannelTransaction extends Transaction {
     get ownershipCommitment() {
         return this._ownershipCommitment == null
             ? null
-            : new Uint8Array(this._ownershipCommitment);
+            : copyBytes32(this._ownershipCommitment, "ownershipCommitment");
     }
 
     /**
      * @override
-     * @param {?Client} client
-     * @returns {this}
+     * @protected
+     * @returns {Record<string, unknown>}
      */
-    freezeWith(client) {
-        if (this._channelId == null) {
-            throw new Error(
-                "ClprCloseChannelTransaction: 'channelId' must be explicitly set before calling freeze().",
-            );
-        }
-
-        return super.freezeWith(client);
+    _getRequiredFields() {
+        return {
+            channelId: this._channelId,
+        };
     }
 
     /**

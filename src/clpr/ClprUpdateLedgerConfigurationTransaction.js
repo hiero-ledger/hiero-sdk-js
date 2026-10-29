@@ -3,6 +3,7 @@
 import Transaction, {
     TRANSACTION_REGISTRY,
 } from "../transaction/Transaction.js";
+import ClprTransaction from "./ClprTransaction.js";
 import ClprThrottles from "./ClprThrottles.js";
 
 /**
@@ -40,7 +41,7 @@ import ClprThrottles from "./ClprThrottles.js";
  * CLPR is off by default and requires the network setting `clpr.enabled`.
  * This transaction cannot be scheduled.
  */
-export default class ClprUpdateLedgerConfigurationTransaction extends Transaction {
+export default class ClprUpdateLedgerConfigurationTransaction extends ClprTransaction {
     /**
      * @param {object} [props]
      * @param {ClprThrottles} [props.throttles]
@@ -122,17 +123,13 @@ export default class ClprUpdateLedgerConfigurationTransaction extends Transactio
 
     /**
      * @override
-     * @param {?Client} client
-     * @returns {this}
+     * @protected
+     * @returns {Record<string, unknown>}
      */
-    freezeWith(client) {
-        if (this._throttles == null) {
-            throw new Error(
-                "ClprUpdateLedgerConfigurationTransaction: 'throttles' must be explicitly set before calling freeze().",
-            );
-        }
-
-        return super.freezeWith(client);
+    _getRequiredFields() {
+        return {
+            throttles: this._throttles,
+        };
     }
 
     /**
