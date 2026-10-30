@@ -16,7 +16,7 @@ describe("TokenTransfer", function () {
             const transfersProtobuf = [
                 {
                     token: transfer.tokenId._toProtobuf(),
-                    expectedDecimals: {},
+                    expectedDecimals: null,
                     transfers: [transfer._toProtobuf()],
                 },
             ];
