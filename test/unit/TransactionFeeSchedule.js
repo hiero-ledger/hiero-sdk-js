@@ -12,14 +12,14 @@ describe("TransactionFeeSchedule", function () {
         min: Long.fromNumber(10),
         max: Long.fromNumber(100),
         constant: Long.fromNumber(5),
-        bpt: Long.fromNumber(2),
-        vpt: Long.fromNumber(1),
-        rbh: Long.fromNumber(3),
-        sbh: Long.fromNumber(4),
-        gas: Long.fromNumber(6),
-        tv: Long.fromNumber(7),
-        bpr: Long.fromNumber(8),
-        sbpr: Long.fromNumber(9),
+        transactionBandwidthByte: Long.fromNumber(2),
+        transactionVerification: Long.fromNumber(1),
+        transactionRamByteHour: Long.fromNumber(3),
+        transactionStorageByteHour: Long.fromNumber(4),
+        contractTransactionGas: Long.fromNumber(6),
+        transferVolumeHbar: Long.fromNumber(7),
+        responseMemoryByte: Long.fromNumber(8),
+        responseDiskByte: Long.fromNumber(9),
     };
 
     function createSampleFeeData(minVal = 10) {
@@ -153,8 +153,14 @@ describe("TransactionFeeSchedule", function () {
                 );
                 expect(schedule.hederaFunctionality.valueOf()).to.equal(0);
                 expect(schedule.feeData.nodedata.min.toNumber()).to.equal(10);
+                expect(
+                    schedule.feeData.nodedata.transactionBandwidthByte.toNumber(),
+                ).to.equal(2);
                 expect(schedule.fees).to.have.lengthOf(1);
                 expect(schedule.fees[0].nodedata.min.toNumber()).to.equal(10);
+                expect(
+                    schedule.fees[0].nodedata.contractTransactionGas.toNumber(),
+                ).to.equal(6);
             });
 
             it("should correctly convert non-zero hederaFunctionality", function () {
@@ -188,9 +194,11 @@ describe("TransactionFeeSchedule", function () {
             expect(proto.hederaFunctionality).to.equal(1);
             expect(proto.feeData).to.exist;
             expect(proto.feeData.nodedata.min.toNumber()).to.equal(10);
+            expect(proto.feeData.nodedata.bpt.toNumber()).to.equal(2);
             expect(proto.fees).to.exist;
             expect(proto.fees).to.have.lengthOf(2);
             expect(proto.fees[0].nodedata.min.toNumber()).to.equal(10);
+            expect(proto.fees[0].nodedata.gas.toNumber()).to.equal(6);
             expect(proto.fees[1].nodedata.min.toNumber()).to.equal(20);
         });
 
@@ -237,9 +245,24 @@ describe("TransactionFeeSchedule", function () {
             expect(roundTripped.feeData.nodedata.min.toNumber()).to.equal(
                 original.feeData.nodedata.min.toNumber(),
             );
+            expect(
+                roundTripped.feeData.nodedata.transactionBandwidthByte.toNumber(),
+            ).to.equal(
+                original.feeData.nodedata.transactionBandwidthByte.toNumber(),
+            );
+            expect(
+                roundTripped.feeData.nodedata.contractTransactionGas.toNumber(),
+            ).to.equal(
+                original.feeData.nodedata.contractTransactionGas.toNumber(),
+            );
             expect(roundTripped.fees).to.have.lengthOf(original.fees.length);
             expect(roundTripped.fees[0].nodedata.min.toNumber()).to.equal(
                 original.fees[0].nodedata.min.toNumber(),
+            );
+            expect(
+                roundTripped.fees[0].nodedata.contractTransactionGas.toNumber(),
+            ).to.equal(
+                original.fees[0].nodedata.contractTransactionGas.toNumber(),
             );
             expect(roundTripped.fees[1].nodedata.min.toNumber()).to.equal(
                 original.fees[1].nodedata.min.toNumber(),
@@ -298,6 +321,16 @@ describe("TransactionFeeSchedule", function () {
             expect(recovered.feeData.nodedata.min.toNumber()).to.equal(
                 original.feeData.nodedata.min.toNumber(),
             );
+            expect(
+                recovered.feeData.nodedata.transactionBandwidthByte.toNumber(),
+            ).to.equal(
+                original.feeData.nodedata.transactionBandwidthByte.toNumber(),
+            );
+            expect(
+                recovered.feeData.nodedata.contractTransactionGas.toNumber(),
+            ).to.equal(
+                original.feeData.nodedata.contractTransactionGas.toNumber(),
+            );
             expect(recovered.feeData.networkdata.min.toNumber()).to.equal(
                 original.feeData.networkdata.min.toNumber(),
             );
@@ -307,6 +340,11 @@ describe("TransactionFeeSchedule", function () {
             expect(recovered.fees).to.have.lengthOf(2);
             expect(recovered.fees[0].nodedata.min.toNumber()).to.equal(
                 original.fees[0].nodedata.min.toNumber(),
+            );
+            expect(
+                recovered.fees[0].nodedata.contractTransactionGas.toNumber(),
+            ).to.equal(
+                original.fees[0].nodedata.contractTransactionGas.toNumber(),
             );
             expect(recovered.fees[1].nodedata.min.toNumber()).to.equal(
                 original.fees[1].nodedata.min.toNumber(),
@@ -336,6 +374,9 @@ describe("TransactionFeeSchedule", function () {
             expect(recovered.hederaFunctionality.valueOf()).to.equal(0);
             expect(recovered.fees).to.have.lengthOf(2);
             expect(recovered.fees[0].nodedata.min.toNumber()).to.equal(10);
+            expect(
+                recovered.fees[0].nodedata.transactionBandwidthByte.toNumber(),
+            ).to.equal(2);
             expect(recovered.fees[1].nodedata.min.toNumber()).to.equal(50);
             expect(recovered.fees[1].feeDataType.valueOf()).to.equal(
                 FeeDataType.TokenFungibleCommon.valueOf(),
