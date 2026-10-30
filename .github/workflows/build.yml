@@ -283,6 +283,89 @@ jobs:
           path: ${{ runner.temp }}/consensus-port-forward/
           if-no-files-found: ignore
 
+  shard-realm-tests:
+    name: Shard and Realm Tests using Node ${{ matrix.node }}
+    runs-on: hiero-client-sdk-linux-medium
+    # The Solo action has no shard or realm inputs, so this job deploys with
+    # scripts/solo-setup.js, which passes them to `solo deployment config
+    # create`. Every entity on the network is then 1.2.x; distinct values
+    # also catch code that swaps the two.
+    timeout-minutes: 60
+    strategy:
+      matrix:
+        node: [ "22" ]
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        with:
+          egress-policy: audit
+
+      - name: Checkout Code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          submodules: recursive
+
+      - name: Install Task
+        uses: arduino/setup-task@c0bc642852239c2689f73f4ea6459c29405f3c52 # v3.0.0
+        with:
+          version: 3.35.1
+
+      - name: Install PNPM
+        uses: step-security/action-setup@8beec6731697ff7a074963eaa56f6d8e02e1c399 # v6.1.0
+        with:
+          version: 9.15.5
+
+      - name: Setup Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: task install
+
+      # Same kind and kubectl as the Solo action uses in the other jobs.
+      - name: Setup Kind
+        uses: helm/kind-action@06c1ae10762d3b9c1644e7fe69596ae519e015a2 # v1.15.0
+        with:
+          install_only: true
+          node_image: kindest/node:v1.32.2@sha256:f226345927d7e348497136874b6d207e0b32cc52154ad8323129352923a3142f
+          version: v0.29.0
+          kubectl_version: v1.32.2
+
+      - name: Install Solo
+        run: npm install -g @hashgraph/solo@0.91.0
+
+      - name: Deploy a network in shard 1, realm 2
+        timeout-minutes: 30
+        run: task solo:setup -- --shard 1 --realm 2
+
+      - name: Connect the consensus node port directly
+        run: node .github/scripts/forward-consensus-port.mjs
+
+      # The tests take the shard and realm from the operator account, so a
+      # setup that quietly fell back to 0.0 would pass them without testing
+      # anything.
+      - name: Check the operator is in shard 1, realm 2
+        run: grep -q '^OPERATOR_ID=1\.2\.' .env
+
+      - name: Run Shard and Realm Integration Tests
+        timeout-minutes: 15
+        run: >-
+          task test:integration:node -- --bail=1
+          test/integration/ShardRealmIntegrationTest.js
+          test/integration/AccountIdTest.js
+          test/integration/ContractIdTest.js
+
+      - name: Upload consensus port forward logs
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: consensus-port-forward-shard-realm-tests-node-${{ matrix.node }}
+          path: ${{ runner.temp }}/consensus-port-forward/
+          if-no-files-found: ignore
+
   coverage-upload:
     name: Upload Coverage to Codecov
     runs-on: hiero-client-sdk-linux-medium
