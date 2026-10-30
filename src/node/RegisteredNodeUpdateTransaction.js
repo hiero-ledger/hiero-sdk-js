@@ -129,9 +129,8 @@ export default class RegisteredNodeUpdateTransaction extends Transaction {
                         ? Key._fromProtobufKey(registeredNodeUpdate.adminKey)
                         : null,
                 description:
-                    registeredNodeUpdate.description != null &&
-                    Object.hasOwn(registeredNodeUpdate.description, "value")
-                        ? registeredNodeUpdate.description.value
+                    registeredNodeUpdate.description != null
+                        ? registeredNodeUpdate.description.value ?? ""
                         : null,
                 serviceEndpoints:
                     registeredNodeUpdate.serviceEndpoint != null &&

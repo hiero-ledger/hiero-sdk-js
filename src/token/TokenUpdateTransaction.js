@@ -327,9 +327,7 @@ export default class TokenUpdateTransaction extends Transaction {
                         : undefined,
                 metadata:
                     update.metadata != null
-                        ? Object.hasOwn(update.metadata, "value")
-                            ? update.metadata.value
-                            : undefined
+                        ? update.metadata.value ?? new Uint8Array()
                         : undefined,
                 keyVerificationMode:
                     update.keyVerificationMode != null
