@@ -1,5 +1,6 @@
 import {
     CustomFixedFee,
+    KeyList,
     PrivateKey,
     TokenId,
     TopicUpdateTransaction,
@@ -34,7 +35,12 @@ describe("TopicUpdateTransaction", function () {
 
             topicUpdateTransaction.clearFeeScheduleKey();
 
-            expect(topicUpdateTransaction.getFeeScheduleKey()).to.be.null;
+            expect(topicUpdateTransaction.getFeeScheduleKey()).to.be.instanceOf(
+                KeyList,
+            );
+            expect(
+                topicUpdateTransaction.getFeeScheduleKey().toArray().length,
+            ).to.eql(0);
         });
 
         it("should set fee exempt keys", function () {
@@ -228,6 +234,7 @@ describe("TopicUpdateTransaction", function () {
             expect(deserializedData.feeExemptKeyList).to.be.null;
         });
 
+
         it("should not include customFees in transaction data when customFees is null", function () {
             const transaction = new TopicUpdateTransaction();
 
@@ -246,3 +253,78 @@ describe("TopicUpdateTransaction", function () {
         });
     });
 });
+
+
+   describe("clear methods should preserve HAPI sentinel semantics (#4190)", function () {
+        it("should clear topic memo to empty string, not null", function () {
+            const tx = new TopicUpdateTransaction().setTopicMemo(
+                "original memo",
+            );
+
+            tx.clearTopicMemo();
+
+            expect(tx.topicMemo).to.eql("");
+        });
+
+        it("should clear admin key to an empty KeyList, not null", function () {
+            const adminKey = PrivateKey.generateED25519();
+            const tx = new TopicUpdateTransaction().setAdminKey(adminKey);
+
+            tx.clearAdminKey();
+
+            expect(tx.adminKey).to.be.instanceOf(KeyList);
+            expect(tx.adminKey.toArray().length).to.eql(0);
+        });
+
+        it("should clear submit key to an empty KeyList, not null", function () {
+            const submitKey = PrivateKey.generateED25519();
+            const tx = new TopicUpdateTransaction().setSubmitKey(submitKey);
+
+            tx.clearSubmitKey();
+
+            expect(tx.submitKey).to.be.instanceOf(KeyList);
+            expect(tx.submitKey.toArray().length).to.eql(0);
+        });
+
+        it("should clear auto renew account id to 0.0.0, not null", function () {
+            const tx = new TopicUpdateTransaction().setAutoRenewAccountId(
+                "0.0.100",
+            );
+
+            tx.clearAutoRenewAccountId();
+
+            expect(tx.autoRenewAccountId.toString()).to.eql("0.0.0");
+        });
+
+        it("should serialize cleared adminKey into transaction data, not omit it", function () {
+            const adminKey = PrivateKey.generateED25519();
+            const tx = new TopicUpdateTransaction()
+                .setAdminKey(adminKey)
+                .clearAdminKey();
+
+            const transactionData = tx._makeTransactionData();
+
+            expect(transactionData.adminKey).to.not.be.null;
+        });
+
+        it("should serialize cleared topicMemo as empty string in transaction data, not omit it", function () {
+            const tx = new TopicUpdateTransaction()
+                .setTopicMemo("original memo")
+                .clearTopicMemo();
+
+            const transactionData = tx._makeTransactionData();
+
+            expect(transactionData.memo).to.not.be.null;
+            expect(transactionData.memo.value).to.eql("");
+        });
+
+        it("should serialize cleared autoRenewAccountId into transaction data, not omit it", function () {
+            const tx = new TopicUpdateTransaction()
+                .setAutoRenewAccountId("0.0.100")
+                .clearAutoRenewAccountId();
+
+            const transactionData = tx._makeTransactionData();
+
+            expect(transactionData.autoRenewAccount).to.not.be.null;
+        });
+    }); 
