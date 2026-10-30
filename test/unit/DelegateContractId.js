@@ -1,5 +1,6 @@
 import { ContractId, DelegateContractId, Key } from "../../src/index.js";
 import Long from "long";
+import * as hex from "../../src/encoding/hex.js";
 
 describe("DelegateContractId", function () {
     it("constructors", function () {
@@ -34,4 +35,32 @@ describe("DelegateContractId", function () {
         expect(keyToId instanceof DelegateContractId).to.be.true;
         expect(keyToId instanceof ContractId).to.be.true;
     });
+
+    it.each(["contract", "key"])(
+        "keeps a copied EVM address when decoding a delegate %s",
+        function (path) {
+            const address = "0011223344556677889900112233445577889900";
+            const input = new Uint8Array(hex.decode(address));
+            const protobuf = {
+                shardNum: Long.fromNumber(1),
+                realmNum: Long.fromNumber(2),
+                evmAddress: input,
+            };
+            const decoded =
+                path === "contract"
+                    ? DelegateContractId._fromProtobuf(protobuf)
+                    : Key._fromProtobufKey({ delegatableContractId: protobuf });
+
+            expect(decoded).toBeInstanceOf(DelegateContractId);
+            expect(decoded.toString()).toBe(`1.2.${address}`);
+            expect(decoded.toEvmAddress()).toBe(address);
+            input.fill(0);
+            expect(hex.encode(decoded.evmAddress)).toBe(address);
+            expect(
+                hex.encode(
+                    decoded._toProtobufKey().delegatableContractId.evmAddress,
+                ),
+            ).toBe(address);
+        },
+    );
 });

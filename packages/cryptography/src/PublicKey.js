@@ -194,6 +194,20 @@ export default class PublicKey extends Key {
     }
 
     /**
+     * Returns secp256k1 x || y coordinates without the SEC1 prefix.
+     * @returns {Uint8Array}
+     * @throws {Error} If this is an Ed25519 key.
+     */
+    toBytesRawUncompressed() {
+        if (!(this._key instanceof EcdsaPublicKey)) {
+            throw new Error(
+                "Uncompressed coordinates are not supported for Ed25519 keys",
+            );
+        }
+        return this._key.toBytesRawUncompressed();
+    }
+
+    /**
      * @returns {string}
      */
     toString() {

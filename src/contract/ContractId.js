@@ -102,6 +102,7 @@ export default class ContractId extends Key {
             id.shardNum != null ? id.shardNum : 0,
             id.realmNum != null ? id.realmNum : 0,
             id.contractNum != null ? id.contractNum : 0,
+            id.evmAddress?.length ? new Uint8Array(id.evmAddress) : undefined,
         );
 
         return contractId;
@@ -243,7 +244,8 @@ export default class ContractId extends Key {
     clone() {
         const id = new ContractId(this);
         id._checksum = this._checksum;
-        id.evmAddress = this.evmAddress;
+        id.evmAddress =
+            this.evmAddress != null ? new Uint8Array(this.evmAddress) : null;
         return id;
     }
 

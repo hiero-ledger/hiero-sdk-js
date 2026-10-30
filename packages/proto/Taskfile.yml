@@ -2,6 +2,9 @@ version: "3"
 
 silent: false
 
+vars:
+    proto: "a6b2452980d4d576dd01df665fecea72b6446dd3"
+
 tasks:
     default:
         deps:
@@ -18,8 +21,6 @@ tasks:
               --entryPoints src/index.js src/browser.js src/native.js
 
     install:submodules:
-        vars:
-            commit: "251d0e71f42a1466d104b409d100e7bb4d26d04c" # v0.73.0
         cmds:
             - git submodule update --init --recursive --remote
             - |
@@ -28,7 +29,7 @@ tasks:
                 if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then
                     git fetch --unshallow --tags
                 fi &&
-                git checkout {{.commit}}
+                git checkout {{.proto}}
                 )
 
     move:protobufs:
@@ -40,6 +41,13 @@ tasks:
             - rm -rf src/proto/streams
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/services src/proto/
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/streams src/proto/
+            - |
+                for event_file in src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/event/*.proto; do
+                    event_name="${event_file##*/}"
+                    if [ -f "src/proto/services_$event_name" ]; then
+                        cp "$event_file" "src/proto/services_$event_name"
+                    fi
+                done
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/event/* src/proto/
             - mv src/services/hapi/hedera-protobuf-java-api/src/main/proto/platform/state/* src/proto/
             - node scripts/remove-duplicate-protobuf.js
@@ -81,7 +89,7 @@ tasks:
 
     build:standalone:
         cmds:
-            - pnpm exec pbjs -r hashgraph -t static-module -w es6 -p=src/proto --force-long --no-beautify --no-convert --no-delimited --no-verify -o src/proto.js src/proto/**/*.proto
+            - pnpm exec pbjs -r hashgraph -t scripts/static-module.cjs -w es6 -p=src/proto --force-long --no-beautify --no-convert --no-delimited --no-verify -o src/proto.js src/proto/**/*.proto
             - pnpm exec pbts -n hashgraph -o src/proto.d.ts src/proto.js
             - node scripts/fix-proto-namespaces.js
             - task: format
@@ -122,11 +130,7 @@ tasks:
             - build
 
     update:
-        desc: "Update protobufs: fetch from submodule at given tag, move, flatten, regenerate JS. Use when bumping proto tag (e.g. task proto:update -- v0.68.2)"
-        vars:
-            latest_tag:
-                sh: git ls-remote --tags https://github.com/hiero-ledger/hiero-consensus-node.git | awk '{print $2}' | grep -E 'refs/tags/v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1 | sed 's#refs/tags/##'
-            proto: "{{.proto | default .latest_tag}}"
+        desc: "Update protobufs from the pinned CN ref, move, flatten, regenerate JS. Override the ref with task proto:update proto=v0.68.2"
         cmds:
             - echo "Protobuf version set to {{.proto}}"
             - git submodule update --init --recursive --remote

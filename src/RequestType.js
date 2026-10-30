@@ -229,6 +229,30 @@ export default class RequestType {
                 return "RegisteredNodeDelete";
             case RequestType.MigrationRootHashVote:
                 return "MigrationRootHashVote";
+            case RequestType.ClprUpdateLedgerConfiguration:
+                return "ClprUpdateLedgerConfiguration";
+            case RequestType.ClprRegisterChannel:
+                return "ClprRegisterChannel";
+            case RequestType.ClprCompleteChannel:
+                return "ClprCompleteChannel";
+            case RequestType.ClprCloseChannel:
+                return "ClprCloseChannel";
+            case RequestType.ClprGetLedgerConfiguration:
+                return "ClprGetLedgerConfiguration";
+            case RequestType.ClprSubmitBundle:
+                return "ClprSubmitBundle";
+            case RequestType.ClprRegisterConnector:
+                return "ClprRegisterConnector";
+            case RequestType.ClprDeregisterConnector:
+                return "ClprDeregisterConnector";
+            case RequestType.ClprCompleteConnector:
+                return "ClprCompleteConnector";
+            case RequestType.ClprEndpointPublication:
+                return "ClprEndpointPublication";
+            case RequestType.ClprGetEndpointManifest:
+                return "ClprGetEndpointManifest";
+            case RequestType.ClprMaintenance:
+                return "ClprMaintenance";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -447,6 +471,30 @@ export default class RequestType {
                 return RequestType.RegisteredNodeDelete;
             case 116:
                 return RequestType.MigrationRootHashVote;
+            case 117:
+                return RequestType.ClprUpdateLedgerConfiguration;
+            case 118:
+                return RequestType.ClprRegisterChannel;
+            case 119:
+                return RequestType.ClprCompleteChannel;
+            case 120:
+                return RequestType.ClprCloseChannel;
+            case 121:
+                return RequestType.ClprGetLedgerConfiguration;
+            case 122:
+                return RequestType.ClprSubmitBundle;
+            case 124:
+                return RequestType.ClprRegisterConnector;
+            case 125:
+                return RequestType.ClprDeregisterConnector;
+            case 126:
+                return RequestType.ClprCompleteConnector;
+            case 127:
+                return RequestType.ClprEndpointPublication;
+            case 128:
+                return RequestType.ClprGetEndpointManifest;
+            case 129:
+                return RequestType.ClprMaintenance;
         }
 
         throw new Error(
@@ -990,3 +1038,63 @@ RequestType.RegisteredNodeDelete = new RequestType(115);
  * Vote on wrapped record migration hash state.
  */
 RequestType.MigrationRootHashVote = new RequestType(116);
+
+/**
+ * Update the local CLPR ledger configuration.
+ */
+RequestType.ClprUpdateLedgerConfiguration = new RequestType(117);
+
+/**
+ * Register a new CLPR Channel to a peer ledger.
+ */
+RequestType.ClprRegisterChannel = new RequestType(118);
+
+/**
+ * Complete a PENDING CLPR Channel (reveal phase).
+ */
+RequestType.ClprCompleteChannel = new RequestType(119);
+
+/**
+ * Initiate graceful closure of a CLPR Channel.
+ */
+RequestType.ClprCloseChannel = new RequestType(120);
+
+/**
+ * Get the current CLPR ledger configuration.
+ */
+RequestType.ClprGetLedgerConfiguration = new RequestType(121);
+
+/**
+ * Submit a bundle of cross-ledger messages from a peer sync.
+ */
+RequestType.ClprSubmitBundle = new RequestType(122);
+
+/**
+ * Register a Connector on the CLPR Service.
+ */
+RequestType.ClprRegisterConnector = new RequestType(124);
+
+/**
+ * Remove a Connector from the CLPR Service.
+ */
+RequestType.ClprDeregisterConnector = new RequestType(125);
+
+/**
+ * Complete a Connector registration (reveal phase).
+ */
+RequestType.ClprCompleteConnector = new RequestType(126);
+
+/**
+ * Self-publish a node's CLPR endpoint into a manifest construction (spec §2.4.1 / `dev-context/clpr-endpoint-self-publication-design.md`).
+ */
+RequestType.ClprEndpointPublication = new RequestType(127);
+
+/**
+ * Get the current CLPR endpoint manifest (spec §6.5).
+ */
+RequestType.ClprGetEndpointManifest = new RequestType(128);
+
+/**
+ * (Internal-only) Externalize CLPR singleton maintenance.
+ */
+RequestType.ClprMaintenance = new RequestType(129);
