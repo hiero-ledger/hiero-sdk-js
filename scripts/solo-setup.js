@@ -16,6 +16,7 @@ import {
     commandExists,
     soloInstalled,
     validateNumNodes,
+    validateEntityNumber,
     directoryExists,
     clusterExists,
     localConfigContains,
@@ -53,6 +54,12 @@ function showHelp() {
         `  --block-node-release-tag <version>   Block node Helm chart version, maps to --chart-version (default: ${DEFAULT_BLOCK_NODE_RELEASE_TAG} below consensus node v0.77.0)`,
     );
     console.log(
+        "  --shard <number>                     Shard of the network's entities (default: 0)",
+    );
+    console.log(
+        "  --realm <number>                     Realm of the network's entities (default: 0)",
+    );
+    console.log(
         "  -h, --help                           Show this help message",
     );
     console.log("");
@@ -76,6 +83,9 @@ function showHelp() {
     console.log(
         "  ./scripts/solo-setup.js --consensus-node-version v0.70.0 --block-node-release-tag v0.18.0",
     );
+    console.log(
+        "  ./scripts/solo-setup.js --shard 1 --realm 2                # Entities are 1.2.x",
+    );
 }
 
 function parseArgs(argv) {
@@ -85,6 +95,8 @@ function parseArgs(argv) {
     let mirrorNodeChartDir = "";
     let localBuildPath = "";
     let blockNodeReleaseTag = process.env.BLOCK_NODE_RELEASE_TAG || "";
+    let shard = 0;
+    let realm = 0;
 
     for (let index = 0; index < argv.length; index += 1) {
         const argument = argv[index];
@@ -140,6 +152,22 @@ function parseArgs(argv) {
                 throw new Error("Missing value for --block-node-release-tag");
             }
             blockNodeReleaseTag = value;
+            continue;
+        }
+
+        if (argument.startsWith("--shard=")) {
+            shard = validateEntityNumber(
+                "--shard",
+                argument.slice("--shard=".length),
+            );
+            continue;
+        }
+
+        if (argument.startsWith("--realm=")) {
+            realm = validateEntityNumber(
+                "--realm",
+                argument.slice("--realm=".length),
+            );
             continue;
         }
 
@@ -204,6 +232,16 @@ function parseArgs(argv) {
                 index += 1;
                 break;
             }
+            case "--shard": {
+                shard = validateEntityNumber("--shard", argv[index + 1]);
+                index += 1;
+                break;
+            }
+            case "--realm": {
+                realm = validateEntityNumber("--realm", argv[index + 1]);
+                index += 1;
+                break;
+            }
             case "-h":
             case "--help":
                 showHelp();
@@ -235,6 +273,8 @@ function parseArgs(argv) {
         mirrorNodeChartDir,
         localBuildPath,
         blockNodeReleaseTag,
+        shard,
+        realm,
     };
 }
 
@@ -338,7 +378,7 @@ async function initializeSolo() {
     }
 }
 
-async function setupDeployment(numNodes) {
+async function setupDeployment({ numNodes, shard, realm }) {
     log.info("Setting up Solo deployment...");
 
     const deploymentList = await runSoloCommand(
@@ -377,6 +417,10 @@ async function setupDeployment(numNodes) {
         SOLO_DEPLOYMENT,
         "--namespace",
         SOLO_NAMESPACE,
+        "--shard",
+        String(shard),
+        "--realm",
+        String(realm),
         "--dev",
     ]);
 
@@ -407,7 +451,7 @@ async function setupDeployment(numNodes) {
     log.success("Deployment setup complete");
 }
 
-async function ensureDeploymentConfig(numNodes) {
+async function ensureDeploymentConfig({ numNodes, shard, realm }) {
     const remoteConfigResult = await runCommand(
         "kubectl",
         [
@@ -443,7 +487,7 @@ async function ensureDeploymentConfig(numNodes) {
         );
     }
 
-    await setupDeployment(numNodes);
+    await setupDeployment({ numNodes, shard, realm });
 }
 
 async function deployBlockNode({
@@ -483,11 +527,13 @@ async function deployBlockNode({
 
 async function deployNetwork({
     numNodes,
+    shard,
+    realm,
     localBuildPath,
     consensusVersion,
     blockNodeReleaseTag,
 }) {
-    await ensureDeploymentConfig(numNodes);
+    await ensureDeploymentConfig({ numNodes, shard, realm });
 
     const nodeIds = createNodeIdList(numNodes);
 
@@ -620,6 +666,8 @@ async function main() {
         mirrorNodeChartDir,
         localBuildPath,
         blockNodeReleaseTag,
+        shard,
+        realm,
     } = parseArgs(process.argv.slice(2));
 
     setEnvironment({
@@ -658,13 +706,16 @@ async function main() {
         log.info(`  - Block Node Chart Version: ${blockNodeReleaseTag}`);
     }
     log.info(`  - Consensus Nodes: ${numNodes}`);
+    log.info(`  - Shard and Realm: ${shard}.${realm}`);
     console.log("");
 
     await checkDependencies();
     await initializeSolo();
-    await setupDeployment(numNodes);
+    await setupDeployment({ numNodes, shard, realm });
     await deployNetwork({
         numNodes,
+        shard,
+        realm,
         localBuildPath,
         consensusVersion,
         blockNodeReleaseTag,
@@ -689,6 +740,9 @@ async function main() {
         envFilePath: ENV_FILE,
         operatorId: account.accountId,
         operatorKey: account.accountPrivateKey,
+        numNodes,
+        shard,
+        realm,
         logger: log,
     });
 
@@ -714,6 +768,7 @@ async function main() {
         log.info(`  - Mirror Node Version: ${process.env.MIRROR_NODE_VERSION}`);
     }
     log.info(`  - ${numNodes} consensus node(s)`);
+    log.info(`  - Entities in shard ${shard}, realm ${realm}`);
     log.info("  - Mirror node services");
     log.info(`  - Dedicated ECDSA test account: ${account.accountId}`);
     console.log("");

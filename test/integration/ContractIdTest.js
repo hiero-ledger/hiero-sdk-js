@@ -61,7 +61,11 @@ describe("ContractId", function () {
         const actualEvmAddress = contractData.evm_address;
 
         // Create another ContractId from the actual EVM address for testing populateAccountNum
-        const idMirror = ContractId.fromEvmAddress(0, 0, actualEvmAddress);
+        const idMirror = ContractId.fromEvmAddress(
+            contractId.shard,
+            contractId.realm,
+            actualEvmAddress,
+        );
 
         // Populate the contract number using mirror node
         const populatedContractId = await idMirror.populateAccountNum(

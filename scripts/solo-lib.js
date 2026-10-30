@@ -24,6 +24,7 @@ const __filename = fileURLToPath(import.meta.url);
 export const SCRIPT_DIR = path.dirname(__filename);
 export const PROJECT_ROOT = path.resolve(SCRIPT_DIR, "..");
 export const ENV_FILE = path.join(PROJECT_ROOT, ".env");
+export const CLIENT_CONFIG_FILE = path.join(PROJECT_ROOT, "solo-client.json");
 export const SOLO_DIR = path.join(os.homedir(), ".solo");
 export const SOLO_LOCAL_CONFIG_PATH = path.join(SOLO_DIR, "local-config.yaml");
 
@@ -620,6 +621,10 @@ export async function generateEnvFile({
     envFilePath = ENV_FILE,
     operatorId,
     operatorKey,
+    numNodes = 1,
+    shard = 0,
+    realm = 0,
+    clientConfigFilePath = CLIENT_CONFIG_FILE,
     logger = log,
 }) {
     logger.info("Generating .env file...");
@@ -629,16 +634,37 @@ export async function generateEnvFile({
         await fs.copyFile(envFilePath, `${envFilePath}.backup`);
     }
 
-    const genesisOperatorId = "0.0.2";
+    const genesisOperatorId = `${shard}.${realm}.2`;
     const genesisOperatorKey =
         "302e020100300506032b65700422042091132178e72057a1d7528025956fe39b0b847f200ab59b2fdd367017f3087137";
+
+    // `local-node` names its nodes 0.0.3 and 0.0.4. Any other shard and realm
+    // gets a client config file instead, and the client takes its shard and
+    // realm from the node account IDs in it.
+    let networkConfiguration = "HEDERA_NETWORK=local-node\nCONFIG_FILE=";
+    if (shard !== 0 || realm !== 0) {
+        const network = { "127.0.0.1:50211": `${shard}.${realm}.3` };
+        if (numNodes >= 2) {
+            network["127.0.0.1:51211"] = `${shard}.${realm}.4`;
+        }
+        await fs.writeFile(
+            clientConfigFilePath,
+            `${JSON.stringify(
+                { network, mirrorNetwork: ["127.0.0.1:5600"] },
+                null,
+                4,
+            )}\n`,
+            "utf8",
+        );
+        logger.success(`Client config file created at ${clientConfigFilePath}`);
+        networkConfiguration = `HEDERA_NETWORK=\nCONFIG_FILE=${clientConfigFilePath}`;
+    }
 
     const content = `# Hiero SDK JS - Local Development Environment Configuration
 # Generated on ${new Date().toString()}
 
 # Network Configuration
-HEDERA_NETWORK=local-node
-CONFIG_FILE=
+${networkConfiguration}
 
 # Standard Test Account (ECDSA) - Use this for most integration tests
 OPERATOR_ID=${operatorId}
@@ -660,6 +686,13 @@ MIRROR_GRPC_ENDPOINT=localhost:5600
 
     await fs.writeFile(envFilePath, content, "utf8");
     logger.success(`.env file created at ${envFilePath}`);
+}
+
+export function validateEntityNumber(name, value) {
+    if (value == null || !/^\d+$/u.test(value)) {
+        throw new Error(`${name} must be a non-negative integer`);
+    }
+    return Number.parseInt(value, 10);
 }
 
 export function validateNumNodes(value) {
