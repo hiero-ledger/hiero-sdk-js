@@ -33,10 +33,10 @@ export default class ClprTransaction extends Transaction {
     _requireFields(fields, action = "freezing or executing") {
         for (const [name, value] of Object.entries(fields)) {
             if (value instanceof OwnershipProofState) {
-                value.requireComplete(this.constructor.name);
+                value.requireComplete(this._getName());
             } else if (value == null) {
                 throw new Error(
-                    `${this.constructor.name}: '${name}' must be explicitly set before ${action}.`,
+                    `${this._getName()}: '${name}' must be explicitly set before ${action}.`,
                 );
             }
         }

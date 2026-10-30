@@ -107,7 +107,9 @@ export default class ClprRegisterConnectorTransaction extends ClprTransaction {
 
         return Transaction._fromProtobufTransactions(
             new ClprRegisterConnectorTransaction({
-                commitment: registerConnector.commitment ?? undefined,
+                commitment: registerConnector.commitment?.length
+                    ? registerConnector.commitment
+                    : undefined,
             }),
             transactions,
             signedTransactions,
@@ -139,6 +141,15 @@ export default class ClprRegisterConnectorTransaction extends ClprTransaction {
         return this._commitment == null
             ? null
             : copyBytes32(this._commitment, "commitment");
+    }
+
+    /**
+     * @override
+     * @protected
+     * @returns {string}
+     */
+    _getName() {
+        return "ClprRegisterConnectorTransaction";
     }
 
     /**

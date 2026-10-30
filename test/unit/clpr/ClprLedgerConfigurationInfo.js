@@ -2,6 +2,7 @@
 
 import * as sdk from "../../../src/exports.js";
 import * as hex from "../../../src/encoding/hex.js";
+import Long from "long";
 import { makeLedgerConfigurationResponse } from "../utils/ClprLedgerConfiguration.js";
 
 const BYTE_FIELDS = [
@@ -44,6 +45,44 @@ describe("ClprLedgerConfigurationInfo", function () {
             expect(hex.encode(info[field])).toBe(expected);
         }
     });
+
+    it.each([
+        ["9007199254740993", "9007199254740995"],
+        ["18446744073709551615", "18446744073709551615"],
+    ])(
+        "preserves exact uint64 limits %s and %s when editing a spread of info.throttles",
+        function (gas, sync) {
+            const response = makeLedgerConfigurationResponse();
+            response.configuration.throttles.maxGasPerMessage = Long.fromString(
+                gas,
+                true,
+            );
+            response.configuration.throttles.maxSyncBytes = Long.fromString(
+                sync,
+                true,
+            );
+            const info =
+                sdk.ClprLedgerConfigurationInfo._fromProtobuf(response);
+
+            const updated = sdk.ClprThrottles.of({
+                ...info.throttles,
+                maxMessagesPerBundle: 20,
+            });
+
+            expect(updated.maxMessagesPerBundle).toBe(20);
+            expect(updated.maxGasPerMessage.unsigned).toBe(true);
+            expect(updated.maxGasPerMessage.toString()).toBe(gas);
+            expect(updated.maxSyncBytes.unsigned).toBe(true);
+            expect(updated.maxSyncBytes.toString()).toBe(sync);
+            expect(updated._toProtobuf()).toEqual({
+                ...response.configuration.throttles,
+                maxMessagesPerBundle: 20,
+            });
+            expect(info.throttles.maxMessagesPerBundle).toBe(8);
+            expect(info.throttles.maxGasPerMessage.toString()).toBe(gas);
+            expect(info.throttles.maxSyncBytes.toString()).toBe(sync);
+        },
+    );
 
     it("keeps an empty state proof as empty bytes", function () {
         const response = makeLedgerConfigurationResponse();

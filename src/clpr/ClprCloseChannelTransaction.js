@@ -156,6 +156,15 @@ export default class ClprCloseChannelTransaction extends ClprTransaction {
     /**
      * @override
      * @protected
+     * @returns {string}
+     */
+    _getName() {
+        return "ClprCloseChannelTransaction";
+    }
+
+    /**
+     * @override
+     * @protected
      * @returns {Record<string, unknown>}
      */
     _getRequiredFields() {

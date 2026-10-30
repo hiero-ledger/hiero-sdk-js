@@ -124,6 +124,15 @@ export default class ClprUpdateLedgerConfigurationTransaction extends ClprTransa
     /**
      * @override
      * @protected
+     * @returns {string}
+     */
+    _getName() {
+        return "ClprUpdateLedgerConfigurationTransaction";
+    }
+
+    /**
+     * @override
+     * @protected
      * @returns {Record<string, unknown>}
      */
     _getRequiredFields() {

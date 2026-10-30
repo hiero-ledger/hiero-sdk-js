@@ -387,6 +387,15 @@ export default class ClprCompleteConnectorTransaction extends ClprTransaction {
     /**
      * @override
      * @protected
+     * @returns {string}
+     */
+    _getName() {
+        return "ClprCompleteConnectorTransaction";
+    }
+
+    /**
+     * @override
+     * @protected
      * @returns {Record<string, unknown>}
      */
     _getRequiredFields() {

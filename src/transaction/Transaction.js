@@ -2445,6 +2445,16 @@ export default class Transaction extends Executable {
     }
 
     /**
+     * The transaction name used in validation errors.
+     *
+     * @protected
+     * @returns {string}
+     */
+    _getName() {
+        return this.constructor.name;
+    }
+
+    /**
      * Whether this transaction type supports scheduling.
      *
      * @protected
@@ -2460,7 +2470,7 @@ export default class Transaction extends Executable {
      */
     _requireSchedulable() {
         if (!this._isSchedulable()) {
-            throw new Error(`${this.constructor.name} cannot be scheduled`);
+            throw new Error(`${this._getName()} cannot be scheduled`);
         }
     }
 

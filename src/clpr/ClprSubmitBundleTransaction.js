@@ -32,8 +32,8 @@ import { copyBytes32 } from "../util.js";
  * Submits an opaque peer bundle to a CLPR Channel under HIP-1535.
  *
  * The SDK copies the payload without interpreting it. The Channel's verifier
- * contract interprets and verifies it. The network decides who may submit a
- * bundle, as described by the HIP-1535 schema's endpoint authority rules.
+ * contract interprets and verifies it. Any payer can currently submit a bundle;
+ * the endpoint-only rule in HAPI docs is not enforced by the pinned handler.
  * The deprecated endpointNodeId and endpointSignature fields do not authenticate
  * the caller and are not exposed by this builder. Newly built bodies omit them.
  * Decoded signed transactions keep their original body bytes and signatures.
@@ -152,6 +152,15 @@ export default class ClprSubmitBundleTransaction extends ClprTransaction {
         return this._bundlePayload == null
             ? null
             : new Uint8Array(this._bundlePayload);
+    }
+
+    /**
+     * @override
+     * @protected
+     * @returns {string}
+     */
+    _getName() {
+        return "ClprSubmitBundleTransaction";
     }
 
     /**

@@ -100,8 +100,12 @@ export default class ClprDeregisterConnectorTransaction extends ClprTransaction 
 
         return Transaction._fromProtobufTransactions(
             new ClprDeregisterConnectorTransaction({
-                channelId: deregisterConnector.channelId ?? undefined,
-                connectorId: deregisterConnector.connectorId ?? undefined,
+                channelId: deregisterConnector.channelId?.length
+                    ? deregisterConnector.channelId
+                    : undefined,
+                connectorId: deregisterConnector.connectorId?.length
+                    ? deregisterConnector.connectorId
+                    : undefined,
                 stakeRecipient:
                     deregisterConnector.stakeRecipient != null
                         ? AccountId._fromProtobuf(
@@ -189,6 +193,15 @@ export default class ClprDeregisterConnectorTransaction extends ClprTransaction 
         return this._stakeRecipient == null
             ? null
             : this._stakeRecipient.clone();
+    }
+
+    /**
+     * @override
+     * @protected
+     * @returns {string}
+     */
+    _getName() {
+        return "ClprDeregisterConnectorTransaction";
     }
 
     /**

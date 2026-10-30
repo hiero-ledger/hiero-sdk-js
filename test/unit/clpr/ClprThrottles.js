@@ -215,6 +215,48 @@ describe("ClprThrottles", function () {
     });
 
     it.each(["of", "_fromProtobuf"])(
+        "%s spreads all seven public limits",
+        function (factory) {
+            const limits = makeThrottleLimits();
+            const throttles = sdk.ClprThrottles[factory](limits);
+            const spread = { ...throttles };
+
+            expect(Object.keys(spread).sort()).toEqual(
+                [...UINT32_FIELDS, ...UINT64_FIELDS].sort(),
+            );
+            expect(spread).toEqual(limits);
+        },
+    );
+
+    it.each(["of", "_fromProtobuf"])(
+        "%s returns frozen uint64 Long values that cannot be changed",
+        function (factory) {
+            const limits = makeThrottleLimits();
+            const throttles = sdk.ClprThrottles[factory](limits);
+
+            for (const field of UINT64_FIELDS) {
+                const value = throttles[field];
+
+                expect(Long.isLong(value)).toBe(true);
+                expect(value).not.toBe(limits[field]);
+                expect(Object.isFrozen(value)).toBe(true);
+                for (const [part, replacement] of [
+                    ["low", 0],
+                    ["high", 0],
+                    ["unsigned", false],
+                ]) {
+                    expect(Reflect.set(value, part, replacement)).toBe(false);
+                }
+                expect(value.toString()).toBe(limits[field].toString());
+                expect(value.unsigned).toBe(true);
+                expect(throttles[field].toString()).toBe(
+                    limits[field].toString(),
+                );
+            }
+        },
+    );
+
+    it.each(["of", "_fromProtobuf"])(
         "%s copies input Long values and values returned by getters and encoding",
         function (factory) {
             const limits = makeThrottleLimits();
@@ -224,9 +266,13 @@ describe("ClprThrottles", function () {
             const encoded = throttles._toProtobuf();
 
             limits.maxMessagesPerBundle = 99;
+            for (const field of UINT64_FIELDS) {
+                expect(Object.isFrozen(limits[field])).toBe(false);
+                expect(Reflect.set(limits[field], "low", 0)).toBe(true);
+                expect(Reflect.set(limits[field], "high", 0)).toBe(true);
+                expect(limits[field].toString()).toBe("0");
+            }
             for (const value of [
-                limits.maxGasPerMessage,
-                limits.maxSyncBytes,
                 gas,
                 sync,
                 encoded.maxGasPerMessage,

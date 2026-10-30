@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 -   Added HIP-1535 CLPR support: eight transactions, two free queries, ownership helpers, CLPR `Status` and `RequestType` codes, and protobufs from CN `a6b2452`. [#4578](https://github.com/hiero-ledger/hiero-sdk-js/issues/4578)
+-   `PublicKey.toBytesRawUncompressed()` returns ECDSA secp256k1 64-byte `x || y`. [#4578](https://github.com/hiero-ledger/hiero-sdk-js/issues/4578)
 
 -   Added `network` getter on `IPv4Address` to replace the misspelled `newtork` getter, which is now deprecated. [#4008](https://github.com/hiero-ledger/hiero-sdk-js/issues/4008)
 
@@ -22,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+-   `ContractId` and `DelegateContractId` protobuf decoding preserves EVM addresses. [#4578](https://github.com/hiero-ledger/hiero-sdk-js/issues/4578)
 -   `fromString()` of `AccountId`, `ContractId`, `DelegateContractId`, `TokenId`, `FileId`, `TopicId`, `ScheduleId` and `NftId` no longer truncates an entity number that contains letters, so `AccountId.fromString("0.0.12ab34")` now throws `failed to parse entity id: 0.0.12ab34` instead of returning `0.0.12`. EVM addresses and public key aliases are still accepted where they were before. The internal `_parseAddress()` regex is also fixed so it matches valid IDs again. [#4555](https://github.com/hiero-ledger/hiero-sdk-js/issues/4555)
 -   `TransactionId.fromString()` now throws an `Error` that names the input and the expected `{account}@{seconds}.{nanos}[?scheduled][/{nonce}]` format when the string is malformed, instead of a `TypeError` or silently dropping or misreading a part (extra parts, a non-numeric or negative timestamp, a non-numeric or negative nonce). Valid strings parse as before. [#4552](https://github.com/hiero-ledger/hiero-sdk-js/issues/4552)
 -   `clearAccountMemo()`, `clearFileMemo()`, `clearContractMemo()` and `clearTokenMemo()` now clear the memo on the network. They used to reset the field to `null`, so the memo was left out of the transaction and the old memo stayed. They now send an empty memo, the memo getters return `""` after a clear, and `fromBytes()` keeps an explicitly empty memo instead of turning it into `null`. [#4556](https://github.com/hiero-ledger/hiero-sdk-js/issues/4556)

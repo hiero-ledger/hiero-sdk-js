@@ -27,12 +27,6 @@ import Long from "long";
  * CLPR is off by default and must be enabled with `clpr.enabled`.
  */
 export default class ClprThrottles {
-    /** @type {Long} */
-    #maxGasPerMessage;
-
-    /** @type {Long} */
-    #maxSyncBytes;
-
     /**
      * @private
      * @param {ClprThrottleLimits} limits
@@ -42,15 +36,28 @@ export default class ClprThrottles {
         this.maxMessagesPerBundle = limits.maxMessagesPerBundle;
         /** @readonly */
         this.maxMessagePayloadBytes = limits.maxMessagePayloadBytes;
+        /**
+         * Maximum gas allocated to one message, as an unsigned Long.
+         * @readonly
+         * @type {Long}
+         */
+        this.maxGasPerMessage = Object.freeze(
+            Long.fromValue(limits.maxGasPerMessage, true),
+        );
         /** @readonly */
         this.maxQueueDepth = limits.maxQueueDepth;
+        /**
+         * Maximum serialized sync payload size, as an unsigned Long.
+         * @readonly
+         * @type {Long}
+         */
+        this.maxSyncBytes = Object.freeze(
+            Long.fromValue(limits.maxSyncBytes, true),
+        );
         /** @readonly */
         this.maxLocalEndpoints = limits.maxLocalEndpoints;
         /** @readonly */
         this.maxPeerEndpoints = limits.maxPeerEndpoints;
-
-        this.#maxGasPerMessage = Long.fromValue(limits.maxGasPerMessage, true);
-        this.#maxSyncBytes = Long.fromValue(limits.maxSyncBytes, true);
 
         Object.freeze(this);
     }
@@ -107,22 +114,6 @@ export default class ClprThrottles {
         }
 
         return new ClprThrottles(limits);
-    }
-
-    /**
-     * Maximum gas allocated to one message, as an unsigned Long copy.
-     * @returns {Long}
-     */
-    get maxGasPerMessage() {
-        return Long.fromValue(this.#maxGasPerMessage, true);
-    }
-
-    /**
-     * Maximum serialized sync payload size, as an unsigned Long copy.
-     * @returns {Long}
-     */
-    get maxSyncBytes() {
-        return Long.fromValue(this.#maxSyncBytes, true);
     }
 
     /**

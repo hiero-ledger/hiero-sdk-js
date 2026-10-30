@@ -93,8 +93,9 @@ export default class ClprRegisterChannelTransaction extends ClprTransaction {
 
         return Transaction._fromProtobufTransactions(
             new ClprRegisterChannelTransaction({
-                ownershipCommitment:
-                    registerChannel.ownershipCommitment ?? undefined,
+                ownershipCommitment: registerChannel.ownershipCommitment?.length
+                    ? registerChannel.ownershipCommitment
+                    : undefined,
             }),
             transactions,
             signedTransactions,
@@ -126,6 +127,15 @@ export default class ClprRegisterChannelTransaction extends ClprTransaction {
         return this._ownershipCommitment == null
             ? null
             : copyBytes32(this._ownershipCommitment, "ownershipCommitment");
+    }
+
+    /**
+     * @override
+     * @protected
+     * @returns {string}
+     */
+    _getName() {
+        return "ClprRegisterChannelTransaction";
     }
 
     /**

@@ -3,6 +3,7 @@
 import fs from "fs";
 import os from "os";
 import path from "path";
+import { proto } from "@hiero-ledger/proto";
 import {
     AccountId,
     MirrorNodeAccountBalanceQuery,
@@ -15,6 +16,7 @@ import {
     ingressTransport,
 } from "../../integration/client/endpointOverrides.js";
 import FakeHttpTransport, { jsonResponse } from "../utils/FakeHttpTransport.js";
+import Mocker from "../Mocker.js";
 
 describe("integration test endpoint overrides", function () {
     /** @type {NodeClient} */
@@ -120,20 +122,66 @@ describe("integration test endpoint overrides", function () {
         });
 
         it("keeps the file's mirror network", async function () {
-            const env = await BaseIntegrationTestEnv.new({
-                client: NodeClient,
-                env: {
-                    CONFIG_FILE: configFile,
-                    OPERATOR_ID: "0.0.2",
-                    OPERATOR_KEY: operatorKey.toStringDer(),
-                },
-            });
+            let probe;
+            const mock = await Mocker.withResponses([
+                [
+                    {
+                        call: (request) => {
+                            probe = request.cryptoGetInfo;
+                            return {
+                                cryptoGetInfo: {
+                                    header: {
+                                        nodeTransactionPrecheckCode: 0,
+                                        responseType:
+                                            proto.ResponseType.COST_ANSWER,
+                                        cost: 0,
+                                    },
+                                },
+                            };
+                        },
+                    },
+                ],
+            ]);
+            let env;
+            try {
+                fs.writeFileSync(
+                    configFile,
+                    JSON.stringify({
+                        network: Object.fromEntries(
+                            Object.entries(mock.client.network).map(
+                                ([endpoint, accountId]) => [
+                                    endpoint,
+                                    accountId.toString(),
+                                ],
+                            ),
+                        ),
+                        mirrorNetwork: ["127.0.0.1:35600"],
+                    }),
+                );
+                env = await BaseIntegrationTestEnv.new({
+                    client: NodeClient,
+                    env: {
+                        CONFIG_FILE: configFile,
+                        OPERATOR_ID: "0.0.2",
+                        OPERATOR_KEY: operatorKey.toStringDer(),
+                    },
+                });
 
-            expect(env.client.network).to.deep.equal({
-                "127.0.0.1:35211": new AccountId(3),
-            });
-            expect(env.client.mirrorNetwork).to.deep.equal(["127.0.0.1:35600"]);
-            await env.close();
+                expect(env.client.network).to.deep.equal(mock.client.network);
+                expect(env.client.mirrorNetwork).to.deep.equal([
+                    "127.0.0.1:35600",
+                ]);
+                expect(probe.header.responseType).to.equal(
+                    proto.ResponseType.COST_ANSWER,
+                );
+                expect(
+                    AccountId._fromProtobuf(probe.accountID).toString(),
+                ).to.equal("0.0.2");
+            } finally {
+                await env?.close();
+                mock.client.close();
+                mock.servers.close();
+            }
         });
 
         it("refuses an endpoint override that would replace the file's", async function () {
