@@ -8,6 +8,7 @@ import {
     TransferTransaction,
 } from "../../src/index.js";
 import SignatureMap from "../../src/transaction/SignatureMap.js";
+import * as hex from "../../src/encoding/hex.js";
 
 describe("PrivateKey", function () {
     describe("PrivateKey getRecoveryId", function () {
@@ -218,14 +219,79 @@ describe("PrivateKey", function () {
     });
 
     describe("DER encoded functions", function () {
+        // Raw 32-byte keys that start like an ASN.1 element: INTEGER, BIT
+        // STRING, OCTET STRING, OBJECT IDENTIFIER, SEQUENCE and the [0] and
+        // [1] tags, each with a length that fits. About 1 in 50 random raw
+        // keys look like this.
+        const rawKeysThatLookLikeAsn1 = [
+            "021e" + "11".repeat(30),
+            "031e" + "11".repeat(30),
+            "041e" + "11".repeat(30),
+            "061e" + "11".repeat(30),
+            "301e041c" + "11".repeat(28),
+            "a01e041c" + "11".repeat(28),
+            "a11e041c" + "11".repeat(28),
+        ];
+
+        // SEC1 (RFC 5915) secp256k1 keys: with the curve only, and with the
+        // curve and the public key, as `openssl ecparam -genkey` writes it.
+        const sec1Keys = [
+            {
+                der: "302e0201010420a6170a6aa6389a5bd3a3a8f9375f57bd91aa7f7d8b8b46ce0b702e000a21a5fea00706052b8104000a",
+                raw: "a6170a6aa6389a5bd3a3a8f9375f57bd91aa7f7d8b8b46ce0b702e000a21a5fe",
+            },
+            {
+                der: "30740201010420edd580d7ca2f40596ff6fecb31f51c720f3b4b6ce3d2e6760126c3787812d53aa00706052b8104000aa1440342000457390ed9b1ed92bf6dd5d3619c894a84f4f43e4ce9ee6a1a19b686c11ce6c260facabc2cab8e20a97a3308e5bb9e013efdf316444adfb6242fd95ffaa705e923",
+                raw: "edd580d7ca2f40596ff6fecb31f51c720f3b4b6ce3d2e6760126c3787812d53a",
+            },
+        ];
+
         it("should return true if the key is a DER key", function () {
             const derKey = PrivateKey.generateECDSA().toStringDer();
             expect(PrivateKey.isDerKey(derKey)).to.be.true;
         });
 
+        it("should return true for an ed25519 DER key", function () {
+            const derKey = PrivateKey.generateED25519().toStringDer();
+            expect(PrivateKey.isDerKey(derKey)).to.be.true;
+        });
+
+        it("should return true for SEC1 ecdsa keys", function () {
+            for (const { der, raw } of sec1Keys) {
+                expect(PrivateKey.isDerKey(der)).to.be.true;
+                expect(PrivateKey.getAlgorithm(der)).to.equal("ecdsa");
+                expect(PrivateKey.fromStringDer(der).toStringRaw()).to.equal(
+                    raw,
+                );
+            }
+        });
+
         it("should return false if the key is not a DER key", function () {
-            const derKey = PrivateKey.generateECDSA().toStringRaw();
-            expect(PrivateKey.isDerKey(derKey)).to.be.false;
+            for (const rawKey of rawKeysThatLookLikeAsn1) {
+                expect(PrivateKey.isDerKey(rawKey), rawKey).to.be.false;
+            }
+        });
+
+        it("should return false for a DER key with bytes missing or added", function () {
+            const derKey = PrivateKey.generateED25519().toStringDer();
+            expect(PrivateKey.isDerKey(derKey.slice(0, -2))).to.be.false;
+            expect(PrivateKey.isDerKey(derKey + "00")).to.be.false;
+        });
+
+        it("should read raw keys that look like ASN.1 as raw keys", function () {
+            for (const rawKey of rawKeysThatLookLikeAsn1) {
+                expect(() => PrivateKey.getAlgorithm(rawKey)).to.throw(
+                    "Only der keys are supported",
+                );
+                // Without a DER header the key type is unknown and defaults
+                // to ED25519, as for any other raw key.
+                const key = PrivateKey.fromBytes(hex.decode(rawKey));
+                expect(key.type).to.equal("ED25519");
+                expect(key.toStringRaw()).to.equal(rawKey);
+                expect(
+                    PrivateKey.fromStringECDSA(rawKey).toStringRaw(),
+                ).to.equal(rawKey);
+            }
         });
 
         it("should generate key from der string on ecdsa", function () {
