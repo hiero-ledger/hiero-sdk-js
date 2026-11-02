@@ -18,6 +18,7 @@ docs/
 # local environment (for examples and Solo)
 .env
 .env.backup
+solo-client.json
 account_create_output_ecdsa.txt
 
 # instabul (code coverage)

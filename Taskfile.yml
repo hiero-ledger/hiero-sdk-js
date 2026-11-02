@@ -175,6 +175,11 @@ tasks:
             - "test:unit"
             - "test:integration"
 
+    "test:bundle":
+        desc: "Bundle the packed packages with webpack, Vite and esbuild and check that fromBytes() still finds every class (needs task build)"
+        cmds:
+            - node test/bundle/run.mjs {{.CLI_ARGS}}
+
     "test:unit":
         deps:
             - "test:unit:node"

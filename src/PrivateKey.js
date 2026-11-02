@@ -533,9 +533,21 @@ export default class PrivateKey extends Key {
     static isDerKey(key) {
         try {
             const data = Uint8Array.from(decode(key));
+            // A DER private key (PKCS#8 or SEC1) is one SEQUENCE that spans
+            // the whole input and names its algorithm. Reading only the first
+            // element let through about 1 in 50 raw keys, the ones that start
+            // with a byte the decoder takes for an ASN.1 tag.
+            if (data[0] !== 0x30) {
+                return false;
+            }
             const decoder = new ASN1Decoder(data);
-            decoder.read(); // Attempt to read the ASN.1 structure
-            return true;
+            decoder.read();
+            return (
+                decoder.isFullyRead() &&
+                decoder
+                    .getOidKeyTypes()
+                    .some((type) => type === "ecdsa" || type === "ed25519")
+            );
         } catch {
             return false;
         }

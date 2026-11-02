@@ -294,8 +294,9 @@ export default class ContractUpdateTransaction extends Transaction {
                         ? update.stakedNodeId
                         : undefined,
                 declineStakingReward:
-                    update.declineReward != null &&
-                    Boolean(update.declineReward) == true,
+                    update.declineReward != null
+                        ? update.declineReward.value ?? false
+                        : undefined,
                 autoRenewAccountId:
                     update.autoRenewAccountId != null
                         ? AccountId._fromProtobuf(update.autoRenewAccountId)

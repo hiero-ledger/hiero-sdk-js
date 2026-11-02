@@ -128,6 +128,8 @@ tasks:
     "test:release":
         deps:
             - build
+        cmds:
+            - node -e "const { proto } = require('./lib/index.js'); const key = proto.Key.decode(Buffer.from('0a021005', 'hex')); if (!key.contractID || key.contractID.realmNum.toNumber() !== 5) throw new Error('decode failed');"
 
     update:
         desc: "Update protobufs from the pinned CN ref, move, flatten, regenerate JS. Override the ref with task proto:update proto=v0.68.2"

@@ -42,6 +42,11 @@ task solo:setup -- --consensus-node-version v0.70.1 --mirror-node-version v0.146
 
 # Local consensus build (overrides consensus version)
 task solo:setup -- --local-build-path ../hiero-consensus-node/hedera-node/data
+
+# Non-zero shard and realm: every entity is 1.2.x, including the nodes (1.2.3)
+# and the genesis account (1.2.2). The .env points CONFIG_FILE at a generated
+# solo-client.json, because local-node names its node 0.0.3.
+task solo:setup -- --shard 1 --realm 2
 ```
 
 Expected timing:
