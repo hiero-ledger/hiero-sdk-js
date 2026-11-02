@@ -64,8 +64,8 @@ describe("AccountId", function () {
 
             // Create AccountId from EVM address
             const evmAddressAccount = AccountId.fromEvmAddress(
-                0,
-                0,
+                env.operatorId.shard,
+                env.operatorId.realm,
                 evmAddress,
             );
 
@@ -86,7 +86,11 @@ describe("AccountId", function () {
             const newAccountId = receipt.children[0].accountId;
 
             // Create another AccountId from the same EVM address for testing populateAccountNum
-            const idMirror = AccountId.fromEvmAddress(0, 0, evmAddress);
+            const idMirror = AccountId.fromEvmAddress(
+                env.operatorId.shard,
+                env.operatorId.realm,
+                evmAddress,
+            );
 
             // Wait a bit for the account to be available on mirror node
             await new Promise((resolve) => setTimeout(resolve, 5000));
