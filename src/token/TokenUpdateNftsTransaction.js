@@ -109,9 +109,7 @@ export default class TokenUpdateNftsTransaction extends Transaction {
                         : [],
                 metadata:
                     tokenUpdate.metadata != null
-                        ? Object.hasOwn(tokenUpdate.metadata, "value")
-                            ? tokenUpdate.metadata.value
-                            : undefined
+                        ? tokenUpdate.metadata.value ?? new Uint8Array()
                         : undefined,
             }),
             transactions,

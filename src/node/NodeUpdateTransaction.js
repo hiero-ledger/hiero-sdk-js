@@ -198,9 +198,7 @@ export default class NodeUpdateTransaction extends Transaction {
                         : undefined,
                 description:
                     nodeUpdate.description != null
-                        ? Object.hasOwn(nodeUpdate.description, "value")
-                            ? nodeUpdate.description.value
-                            : undefined
+                        ? nodeUpdate.description.value ?? ""
                         : undefined,
                 gossipEndpoints:
                     nodeUpdate.gossipEndpoint != null
@@ -216,15 +214,13 @@ export default class NodeUpdateTransaction extends Transaction {
                         : undefined,
                 gossipCaCertificate:
                     nodeUpdate.gossipCaCertificate != null
-                        ? Object.hasOwn(nodeUpdate.gossipCaCertificate, "value")
-                            ? nodeUpdate.gossipCaCertificate.value
-                            : undefined
+                        ? nodeUpdate.gossipCaCertificate.value ??
+                          new Uint8Array()
                         : undefined,
                 grpcCertificateHash:
                     nodeUpdate.grpcCertificateHash != null
-                        ? Object.hasOwn(nodeUpdate.grpcCertificateHash, "value")
-                            ? nodeUpdate.grpcCertificateHash.value
-                            : undefined
+                        ? nodeUpdate.grpcCertificateHash.value ??
+                          new Uint8Array()
                         : undefined,
                 grpcWebProxyEndpoint:
                     nodeUpdate.grpcProxyEndpoint != null

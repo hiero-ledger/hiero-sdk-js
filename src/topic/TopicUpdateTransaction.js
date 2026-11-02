@@ -219,11 +219,7 @@ export default class TopicUpdateTransaction extends Transaction {
                           )
                         : undefined,
                 topicMemo:
-                    update.memo != null
-                        ? Object.hasOwn(update.memo, "value")
-                            ? update.memo.value
-                            : undefined
-                        : undefined,
+                    update.memo != null ? update.memo.value ?? "" : undefined,
                 expirationTime:
                     update.expirationTime != null
                         ? Timestamp._fromProtobuf(update.expirationTime)

@@ -55,7 +55,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
@@ -253,7 +253,7 @@ jobs:
     runs-on: hiero-client-sdk-linux-medium
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
@@ -300,7 +300,7 @@ jobs:
       sdk-publish-args: ${{ steps.sdk-publish-args.outputs.args }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
@@ -356,7 +356,7 @@ jobs:
       hiero-sdk-pkg-name: ${{ steps.set-package-names.outputs.hl-sdk-pkg-name || '' }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
@@ -469,7 +469,7 @@ jobs:
       - validate-release
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@dc2769abcc0fcfbadfc1df54081c1608579ef6b2 # v2.22.2
+        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
         with:
           egress-policy: audit
 
