@@ -3,7 +3,8 @@
 /**
  * Fills the lookup tables that let the SDK find a class from data alone:
  * `Transaction.fromBytes()` and the inner transactions of `BatchTransaction`
- * (TRANSACTION_REGISTRY) and `Transaction.schedule()` (SCHEDULE_CREATE_TRANSACTION).
+ * (TRANSACTION_REGISTRY), `Transaction.schedule()` (SCHEDULE_CREATE_TRANSACTION), `Query.fromBytes()` (QUERY_REGISTRY) and service endpoint parsing (ENDPOINT_FROM_PROTOBUF_REGISTRY,
+ * ENDPOINT_FROM_JSON_REGISTRY).
  *
  * Every entry point (index.js, browser.js, native.js) imports this module.
  * The classes registered here have no side effects, so a bundler cannot drop
@@ -19,31 +20,50 @@ import {
     TRANSACTION_REGISTRY,
     SCHEDULE_CREATE_TRANSACTION,
 } from "./transaction/Transaction.js";
+import { QUERY_REGISTRY } from "./query/Query.js";
+import {
+    ENDPOINT_FROM_PROTOBUF_REGISTRY,
+    ENDPOINT_FROM_JSON_REGISTRY,
+} from "./node/RegisteredServiceEndpoint.js";
 import EthereumTransaction from "./EthereumTransaction.js";
 import PrngTransaction from "./PrngTransaction.js";
 import AccountAllowanceApproveTransaction from "./account/AccountAllowanceApproveTransaction.js";
 import AccountAllowanceDeleteTransaction from "./account/AccountAllowanceDeleteTransaction.js";
+import AccountBalanceQuery from "./account/AccountBalanceQuery.js";
 import AccountCreateTransaction from "./account/AccountCreateTransaction.js";
 import AccountDeleteTransaction from "./account/AccountDeleteTransaction.js";
+import AccountInfoQuery from "./account/AccountInfoQuery.js";
+import AccountRecordsQuery from "./account/AccountRecordsQuery.js";
 import AccountUpdateTransaction from "./account/AccountUpdateTransaction.js";
 import TransferTransaction from "./account/TransferTransaction.js";
+import ContractByteCodeQuery from "./contract/ContractByteCodeQuery.js";
+import ContractCallQuery from "./contract/ContractCallQuery.js";
 import ContractCreateTransaction from "./contract/ContractCreateTransaction.js";
 import ContractDeleteTransaction from "./contract/ContractDeleteTransaction.js";
 import ContractExecuteTransaction from "./contract/ContractExecuteTransaction.js";
+import ContractInfoQuery from "./contract/ContractInfoQuery.js";
 import ContractUpdateTransaction from "./contract/ContractUpdateTransaction.js";
 import FileAppendTransaction from "./file/FileAppendTransaction.js";
+import FileContentsQuery from "./file/FileContentsQuery.js";
 import FileCreateTransaction from "./file/FileCreateTransaction.js";
 import FileDeleteTransaction from "./file/FileDeleteTransaction.js";
+import FileInfoQuery from "./file/FileInfoQuery.js";
 import FileUpdateTransaction from "./file/FileUpdateTransaction.js";
 import HookStoreTransaction from "./hooks/HookStoreTransaction.js";
+import NetworkVersionInfoQuery from "./network/NetworkVersionInfoQuery.js";
+import BlockNodeServiceEndpoint from "./node/BlockNodeServiceEndpoint.js";
+import GeneralServiceEndpoint from "./node/GeneralServiceEndpoint.js";
+import MirrorNodeServiceEndpoint from "./node/MirrorNodeServiceEndpoint.js";
 import NodeCreateTransaction from "./node/NodeCreateTransaction.js";
 import NodeDeleteTransaction from "./node/NodeDeleteTransaction.js";
 import NodeUpdateTransaction from "./node/NodeUpdateTransaction.js";
 import RegisteredNodeCreateTransaction from "./node/RegisteredNodeCreateTransaction.js";
 import RegisteredNodeDeleteTransaction from "./node/RegisteredNodeDeleteTransaction.js";
 import RegisteredNodeUpdateTransaction from "./node/RegisteredNodeUpdateTransaction.js";
+import RpcRelayServiceEndpoint from "./node/RpcRelayServiceEndpoint.js";
 import ScheduleCreateTransaction from "./schedule/ScheduleCreateTransaction.js";
 import ScheduleDeleteTransaction from "./schedule/ScheduleDeleteTransaction.js";
+import ScheduleInfoQuery from "./schedule/ScheduleInfoQuery.js";
 import ScheduleSignTransaction from "./schedule/ScheduleSignTransaction.js";
 import FreezeTransaction from "./system/FreezeTransaction.js";
 import SystemDeleteTransaction from "./system/SystemDeleteTransaction.js";
@@ -59,7 +79,9 @@ import TokenDissociateTransaction from "./token/TokenDissociateTransaction.js";
 import TokenFeeScheduleUpdateTransaction from "./token/TokenFeeScheduleUpdateTransaction.js";
 import TokenFreezeTransaction from "./token/TokenFreezeTransaction.js";
 import TokenGrantKycTransaction from "./token/TokenGrantKycTransaction.js";
+import TokenInfoQuery from "./token/TokenInfoQuery.js";
 import TokenMintTransaction from "./token/TokenMintTransaction.js";
+import TokenNftInfoQuery from "./token/TokenNftInfoQuery.js";
 import TokenPauseTransaction from "./token/TokenPauseTransaction.js";
 import TokenRejectTransaction from "./token/TokenRejectTransaction.js";
 import TokenRevokeKycTransaction from "./token/TokenRevokeKycTransaction.js";
@@ -70,9 +92,12 @@ import TokenUpdateTransaction from "./token/TokenUpdateTransaction.js";
 import TokenWipeTransaction from "./token/TokenWipeTransaction.js";
 import TopicCreateTransaction from "./topic/TopicCreateTransaction.js";
 import TopicDeleteTransaction from "./topic/TopicDeleteTransaction.js";
+import TopicInfoQuery from "./topic/TopicInfoQuery.js";
 import TopicMessageSubmitTransaction from "./topic/TopicMessageSubmitTransaction.js";
 import TopicUpdateTransaction from "./topic/TopicUpdateTransaction.js";
 import BatchTransaction from "./transaction/BatchTransaction.js";
+import TransactionReceiptQuery from "./transaction/TransactionReceiptQuery.js";
+import TransactionRecordQuery from "./transaction/TransactionRecordQuery.js";
 
 TRANSACTION_REGISTRY.set("atomicBatch", BatchTransaction._fromProtobuf);
 TRANSACTION_REGISTRY.set(
@@ -217,3 +242,66 @@ TRANSACTION_REGISTRY.set("tokenWipe", TokenWipeTransaction._fromProtobuf);
 TRANSACTION_REGISTRY.set("utilPrng", PrngTransaction._fromProtobuf);
 
 SCHEDULE_CREATE_TRANSACTION.push(() => new ScheduleCreateTransaction());
+
+QUERY_REGISTRY.set("consensusGetTopicInfo", TopicInfoQuery._fromProtobuf);
+QUERY_REGISTRY.set("contractCallLocal", ContractCallQuery._fromProtobuf);
+QUERY_REGISTRY.set("contractGetBytecode", ContractByteCodeQuery._fromProtobuf);
+QUERY_REGISTRY.set("contractGetInfo", ContractInfoQuery._fromProtobuf);
+QUERY_REGISTRY.set(
+    "cryptoGetAccountRecords",
+    AccountRecordsQuery._fromProtobuf,
+);
+QUERY_REGISTRY.set("cryptoGetInfo", AccountInfoQuery._fromProtobuf);
+QUERY_REGISTRY.set(
+    "cryptogetAccountBalance",
+    // Still registered so Query.fromBytes() can read existing bytes.
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
+    AccountBalanceQuery._fromProtobuf,
+);
+QUERY_REGISTRY.set("fileGetContents", FileContentsQuery._fromProtobuf);
+QUERY_REGISTRY.set("fileGetInfo", FileInfoQuery._fromProtobuf);
+QUERY_REGISTRY.set(
+    "networkGetVersionInfo",
+    NetworkVersionInfoQuery._fromProtobuf,
+);
+QUERY_REGISTRY.set("scheduleGetInfo", ScheduleInfoQuery._fromProtobuf);
+QUERY_REGISTRY.set("tokenGetInfo", TokenInfoQuery._fromProtobuf);
+QUERY_REGISTRY.set("tokenGetNftInfo", TokenNftInfoQuery._fromProtobuf);
+QUERY_REGISTRY.set(
+    "transactionGetReceipt",
+    TransactionReceiptQuery._fromProtobuf,
+);
+QUERY_REGISTRY.set(
+    "transactionGetRecord",
+    TransactionRecordQuery._fromProtobuf,
+);
+
+ENDPOINT_FROM_PROTOBUF_REGISTRY.set(
+    "blockNode",
+    BlockNodeServiceEndpoint._fromProtobuf,
+);
+ENDPOINT_FROM_PROTOBUF_REGISTRY.set(
+    "generalService",
+    GeneralServiceEndpoint._fromProtobuf,
+);
+ENDPOINT_FROM_PROTOBUF_REGISTRY.set(
+    "mirrorNode",
+    MirrorNodeServiceEndpoint._fromProtobuf,
+);
+ENDPOINT_FROM_PROTOBUF_REGISTRY.set(
+    "rpcRelay",
+    RpcRelayServiceEndpoint._fromProtobuf,
+);
+ENDPOINT_FROM_JSON_REGISTRY.set(
+    "blockNode",
+    BlockNodeServiceEndpoint._fromJson,
+);
+ENDPOINT_FROM_JSON_REGISTRY.set(
+    "generalService",
+    GeneralServiceEndpoint._fromJson,
+);
+ENDPOINT_FROM_JSON_REGISTRY.set(
+    "mirrorNode",
+    MirrorNodeServiceEndpoint._fromJson,
+);
+ENDPOINT_FROM_JSON_REGISTRY.set("rpcRelay", RpcRelayServiceEndpoint._fromJson);

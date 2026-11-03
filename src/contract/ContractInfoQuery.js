@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Query, { QUERY_REGISTRY } from "../query/Query.js";
+import Query from "../query/Query.js";
 import ContractId from "./ContractId.js";
 import ContractInfo from "./ContractInfo.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -186,6 +186,3 @@ export default class ContractInfoQuery extends Query {
         return `ContractInfoQuery:${timestamp.toString()}`;
     }
 }
-
-// eslint-disable-next-line @typescript-eslint/unbound-method
-QUERY_REGISTRY.set("contractGetInfo", ContractInfoQuery._fromProtobuf);

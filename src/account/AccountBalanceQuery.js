@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Query, { QUERY_REGISTRY } from "../query/Query.js";
+import Query from "../query/Query.js";
 import AccountId from "./AccountId.js";
 import ContractId from "../contract/ContractId.js";
 import AccountBalance from "./AccountBalance.js";
@@ -269,8 +269,3 @@ export default class AccountBalanceQuery extends Query {
         return `AccountBalanceQuery:${this._timestamp.toString()}`;
     }
 }
-
-QUERY_REGISTRY.set(
-    "cryptogetAccountBalance",
-    AccountBalanceQuery._fromProtobuf.bind(null),
-);
