@@ -9,7 +9,7 @@
  * key, account ID and Ethereum data parsing and `TransactionId.getReceipt()` /
  * `getRecord()` (CACHE).
  *
- * Every entry point (index.js, browser.js, native.js) imports this module, and
+ * exports.js, which every entry point re-exports, imports this module, and
  * it is the only module that registers anything. The classes themselves have
  * no side effects, so a bundler cannot drop a registration by dropping an
  * unused class file (#3011). Don't import this module from a class: the base
