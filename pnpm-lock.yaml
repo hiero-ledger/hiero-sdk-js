@@ -25,15 +25,15 @@ importers:
       '@hiero-ledger/proto':
         specifier: workspace:*
         version: link:packages/proto
+      '@noble/hashes':
+        specifier: 2.2.0
+        version: 2.2.0
       bignumber.js:
         specifier: 11.1.2
         version: 11.1.2
       crypto-js:
         specifier: 4.2.0
         version: 4.2.0
-      ethers:
-        specifier: 6.16.0
-        version: 6.16.0
       js-base64:
         specifier: 3.7.4
         version: 3.7.4
@@ -179,6 +179,9 @@ importers:
       eslint-plugin-n:
         specifier: 18.0.1
         version: 18.0.1(eslint@10.13.0(jiti@2.6.1))(ts-declaration-location@1.0.7(typescript@5.9.3))(typescript@5.9.3)
+      ethers:
+        specifier: 6.16.0
+        version: 6.16.0
       fast-check:
         specifier: 4.10.2
         version: 4.10.2
