@@ -72,9 +72,9 @@ export function applyEndpointOverrides(client, env) {
 
 /**
  * A transport that sends every mirror REST request to `origin`, keeping the
- * path and query the SDK built. The SDK maps a loopback mirror node to one
- * port per mirror service (5551, 8084, 8545); an ingress serves them all on
- * one port.
+ * path and query the SDK built, for a deployment whose mirror REST ingress
+ * is not at the mirror network's gRPC address. On a local Solo network both
+ * are 127.0.0.1:38081, so the local-node preset needs no override.
  *
  * Note: FetchHttpTransport owns no connections, so nothing closes it.
  *
