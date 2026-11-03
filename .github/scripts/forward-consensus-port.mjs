@@ -5,7 +5,7 @@
  * `haproxy-nodeN-svc`, then haproxy to the node).
  *
  * Why: in the hung Build & Test runs the Node suite's path to the node
- * (127.0.0.1:50211 -> kubectl port-forward -> haproxy -> node) stopped
+ * (127.0.0.1:35211 -> kubectl port-forward -> haproxy -> node) stopped
  * answering a minute or two into the run while the browser suite's path
  * (envoy -> the same node) kept working, and a 10 s ping through the stalled
  * path ended in DEADLINE_EXCEEDED: connections were accepted but never
@@ -30,7 +30,7 @@
  *
  * Environment:
  *   SOLO_NAMESPACE     Solo namespace, default "solo"
- *   CONSENSUS_PORTS    comma separated local ports, default "50211" plus
+ *   CONSENSUS_PORTS    comma separated local ports, default "35211" plus
  *                      "36211" when network-node2-svc exists (dual mode)
  *   FORWARD_LOG_DIR    where the relay / port-forward logs go, default
  *                      $RUNNER_TEMP/consensus-port-forward
@@ -45,9 +45,13 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 
 const NAMESPACE = process.env.SOLO_NAMESPACE || "solo";
 const NODE_GRPC_PORT = 50211;
-/** Local port -> the Solo services behind it. The action hardcodes 36211 for node 2. */
+/**
+ * Local port -> the Solo services behind it: Solo's own local ports
+ * (hiero-ledger/solo#3618), which the SDK's local-node preset uses. The
+ * action hardcodes 36211 for node 2.
+ */
 const NODES = {
-    50211: { service: "network-node1-svc", haproxy: "haproxy-node1-svc" },
+    35211: { service: "network-node1-svc", haproxy: "haproxy-node1-svc" },
     36211: { service: "network-node2-svc", haproxy: "haproxy-node2-svc" },
 };
 const CONNECT_TIMEOUT_MS = 3000;
@@ -249,7 +253,7 @@ async function main() {
         .map((p) => Number(p.trim()))
         .filter((p) => NODES[p] != null);
     if (ports.length === 0) {
-        ports.push(50211);
+        ports.push(35211);
         if (serviceExists(NODES[36211].service)) {
             ports.push(36211);
         }
