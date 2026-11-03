@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import AccountId from "./AccountId.js";
 import Timestamp from "../Timestamp.js";
 import Duration from "../Duration.js";
@@ -692,9 +690,3 @@ export default class AccountUpdateTransaction extends Transaction {
         return `AccountUpdateTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "cryptoUpdateAccount",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    AccountUpdateTransaction._fromProtobuf,
-);

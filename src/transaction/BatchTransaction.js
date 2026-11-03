@@ -285,9 +285,3 @@ export default class BatchTransaction extends Transaction {
         }
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "atomicBatch",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    BatchTransaction._fromProtobuf,
-);

@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import Timestamp from "../Timestamp.js";
 import FileId from "../file/FileId.js";
 import * as hex from "../encoding/hex.js";
@@ -391,6 +389,3 @@ export default class FreezeTransaction extends Transaction {
         return channel.freeze.freeze(request);
     }
 }
-
-// eslint-disable-next-line @typescript-eslint/unbound-method
-TRANSACTION_REGISTRY.set("freeze", FreezeTransaction._fromProtobuf);

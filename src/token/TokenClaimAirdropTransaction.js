@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import PendingAirdropId from "../token/PendingAirdropId.js";
 import AirdropPendingTransaction from "./AirdropPendingTransaction.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 
 /**
  * @typedef {import("@hiero-ledger/proto").proto.ITransaction} HieroProto.proto.ITransaction
@@ -113,9 +111,3 @@ export default class TokenClaimAirdropTransaction extends AirdropPendingTransact
         return `TokenClaimAirdropTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "tokenClaimAirdrop",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    TokenClaimAirdropTransaction._fromProtobuf,
-);

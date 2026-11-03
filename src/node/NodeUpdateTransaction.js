@@ -2,9 +2,7 @@
 
 import AccountId from "../account/AccountId.js";
 import Key from "../Key.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import ServiceEndpoint from "./ServiceEndpoint.js";
 import Long from "long";
 
@@ -698,9 +696,3 @@ export default class NodeUpdateTransaction extends Transaction {
         return `NodeUpdateTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "nodeUpdate",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    NodeUpdateTransaction._fromProtobuf,
-);

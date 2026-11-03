@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Transaction, {
-    TRANSACTION_REGISTRY,
-    CHUNK_SIZE,
-} from "../transaction/Transaction.js";
+import Transaction, { CHUNK_SIZE } from "../transaction/Transaction.js";
 import TopicId from "./TopicId.js";
 import * as utf8 from "../encoding/utf8.js";
 import TransactionId from "../transaction/TransactionId.js";
@@ -482,9 +479,3 @@ export default class TopicMessageSubmitTransaction extends Transaction {
         return `TopicMessageSubmitTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "consensusSubmitMessage",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    TopicMessageSubmitTransaction._fromProtobuf,
-);

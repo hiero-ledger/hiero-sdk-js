@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import Timestamp from "../Timestamp.js";
 import * as utf8 from "../encoding/utf8.js";
 import FileId from "./FileId.js";
@@ -367,6 +365,3 @@ export default class FileUpdateTransaction extends Transaction {
         return `FileUpdateTransaction:${timestamp.toString()}`;
     }
 }
-
-// eslint-disable-next-line @typescript-eslint/unbound-method
-TRANSACTION_REGISTRY.set("fileUpdate", FileUpdateTransaction._fromProtobuf);

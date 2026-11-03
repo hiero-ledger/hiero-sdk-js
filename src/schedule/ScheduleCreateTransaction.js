@@ -2,10 +2,7 @@
 
 import Timestamp from "../Timestamp.js";
 import AccountId from "../account/AccountId.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-    SCHEDULE_CREATE_TRANSACTION,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import Key from "../Key.js";
 import Hbar from "../Hbar.js";
 import * as HieroProto from "@hiero-ledger/proto";
@@ -362,11 +359,3 @@ export default class ScheduleCreateTransaction extends Transaction {
         return this._waitForExpiry;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "scheduleCreate",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    ScheduleCreateTransaction._fromProtobuf,
-);
-
-SCHEDULE_CREATE_TRANSACTION.push(() => new ScheduleCreateTransaction());

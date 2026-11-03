@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import TokenId from "./TokenId.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 
 /**
  * @namespace proto
@@ -217,9 +215,3 @@ export default class TokenUpdateNftsTransaction extends Transaction {
         return `TokenUpdateNftsTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "tokenUpdateNfts",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    TokenUpdateNftsTransaction._fromProtobuf,
-);

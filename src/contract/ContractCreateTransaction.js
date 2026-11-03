@@ -6,7 +6,6 @@ import FileId from "../file/FileId.js";
 import ContractFunctionParameters from "./ContractFunctionParameters.js";
 import Transaction, {
     DEFAULT_AUTO_RENEW_PERIOD,
-    TRANSACTION_REGISTRY,
 } from "../transaction/Transaction.js";
 import Long from "long";
 import Duration from "../Duration.js";
@@ -709,9 +708,3 @@ export default class ContractCreateTransaction extends Transaction {
         return `ContractCreateTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "contractCreateInstance",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    ContractCreateTransaction._fromProtobuf,
-);

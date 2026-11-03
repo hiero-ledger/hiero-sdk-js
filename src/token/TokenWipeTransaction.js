@@ -2,9 +2,7 @@
 
 import TokenId from "./TokenId.js";
 import AccountId from "../account/AccountId.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import Long from "long";
 import { convertAmountToLong } from "../util.js";
 
@@ -266,9 +264,3 @@ export default class TokenWipeTransaction extends Transaction {
         return `TokenWipeTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "tokenWipe",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    TokenWipeTransaction._fromProtobuf,
-);

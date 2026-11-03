@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import TopicId from "./TopicId.js";
 
 /**
@@ -160,9 +158,3 @@ export default class TopicDeleteTransaction extends Transaction {
         return `TopicDeleteTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "consensusDeleteTopic",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    TopicDeleteTransaction._fromProtobuf,
-);
