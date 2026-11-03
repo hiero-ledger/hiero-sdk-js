@@ -321,9 +321,19 @@ export default class NodeCreateTransaction extends Transaction {
      * @returns {NodeCreateTransaction}
      */
     addGossipEndpoint(endpoint) {
-        if (this._gossipEndpoints != null) {
-            this._gossipEndpoints.push(endpoint);
+        this._requireNotFrozen();
+
+        if (this._gossipEndpoints == null) {
+            this._gossipEndpoints = [];
         }
+
+        if (this._gossipEndpoints.length >= GOSSIP_ENDPOINTS_MAX_LENGTH) {
+            throw new Error(
+                `GossipEndpoints list must not contain more than ${GOSSIP_ENDPOINTS_MAX_LENGTH} entries.`,
+            );
+        }
+
+        this._gossipEndpoints.push(endpoint);
         return this;
     }
 
@@ -363,9 +373,19 @@ export default class NodeCreateTransaction extends Transaction {
      * @returns {NodeCreateTransaction}
      */
     addServiceEndpoint(endpoint) {
-        if (this._serviceEndpoints != null) {
-            this._serviceEndpoints.push(endpoint);
+        this._requireNotFrozen();
+
+        if (this._serviceEndpoints == null) {
+            this._serviceEndpoints = [];
         }
+
+        if (this._serviceEndpoints.length >= SERVICE_ENDPOINTS_MAX_LENGTH) {
+            throw new Error(
+                `ServiceEndpoints list must not contain more than ${SERVICE_ENDPOINTS_MAX_LENGTH} entries.`,
+            );
+        }
+
+        this._serviceEndpoints.push(endpoint);
         return this;
     }
 
