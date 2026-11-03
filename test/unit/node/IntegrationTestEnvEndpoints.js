@@ -37,9 +37,9 @@ describe("integration test endpoint overrides", function () {
         });
 
         expect(client.network).to.deep.equal({
-            "127.0.0.1:50211": new AccountId(3),
+            "127.0.0.1:35211": new AccountId(3),
         });
-        expect(client.mirrorNetwork).to.deep.equal(["127.0.0.1:5600"]);
+        expect(client.mirrorNetwork).to.deep.equal(["127.0.0.1:38081"]);
         expect(client.getMirrorNodeHttpConfig().transport).to.be.null;
     });
 

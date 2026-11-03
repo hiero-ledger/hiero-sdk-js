@@ -331,8 +331,8 @@ describe("Client mirror node HTTP configuration", function () {
         expect(client.mirrorRestApiBaseUrl).to.equal(first);
     });
 
-    it("targets the local REST port for the HBAR balance on a loopback mirror node", async function () {
-        const client = track(["127.0.0.1:5600"]);
+    it("asks a loopback mirror node for the HBAR balance on its configured port", async function () {
+        const client = track(["127.0.0.1:38081"]);
         const fake = new FakeHttpTransport().respondJson(200, BALANCES);
         client.setMirrorNodeHttpConfig({ transport: fake });
 
@@ -341,7 +341,7 @@ describe("Client mirror node HTTP configuration", function () {
             .execute(client);
 
         expect(fake.requests[0].url).to.equal(
-            "http://127.0.0.1:5551/api/v1/balances?account.id=0.0.123",
+            "http://127.0.0.1:38081/api/v1/balances?account.id=0.0.123",
         );
     });
 
@@ -577,26 +577,23 @@ describe("Client mirror node HTTP configuration", function () {
         expect(policy.totalDeadline).to.equal(90_000);
     });
 
-    it("resolves the local port per endpoint family in one place", function () {
-        const local = track(["127.0.0.1:5600"]);
-        local.setMirrorNodeHttpConfig({ transport: new FakeHttpTransport() });
-        expect(
-            local._mirrorNodeHttpClient({ family: "rest" }).baseUrl,
-        ).to.equal("http://127.0.0.1:5551/api/v1");
-        expect(
-            local._mirrorNodeHttpClient({ family: "rest-java" }).baseUrl,
-        ).to.equal("http://127.0.0.1:8084/api/v1");
-        expect(
-            local._mirrorNodeHttpClient({ family: "web3" }).baseUrl,
-        ).to.equal("http://127.0.0.1:8545/api/v1");
-
-        const hosted = track(["mirror.example.com:443"]);
-        hosted.setMirrorNodeHttpConfig({ transport: new FakeHttpTransport() });
-        for (const family of ["rest", "rest-java", "web3"]) {
-            expect(
-                hosted._mirrorNodeHttpClient({ family }).baseUrl,
-                family,
-            ).to.equal("https://mirror.example.com:443/api/v1");
+    it("uses the configured mirror node address as is, also on a loopback host", function () {
+        // A local network serves every mirror node API on one port, as
+        // Solo's ingress does; the SDK no longer maps a loopback mirror node
+        // to a port per mirror service (#3590).
+        for (const [address, baseUrl] of [
+            ["127.0.0.1:38081", "http://127.0.0.1:38081/api/v1"],
+            ["localhost:38081", "http://localhost:38081/api/v1"],
+            ["127.0.0.1:5600", "http://127.0.0.1:5600/api/v1"],
+            ["mirror.example.com:443", "https://mirror.example.com:443/api/v1"],
+        ]) {
+            const client = track([address]);
+            client.setMirrorNodeHttpConfig({
+                transport: new FakeHttpTransport(),
+            });
+            expect(client._mirrorNodeHttpClient().baseUrl, address).to.equal(
+                baseUrl,
+            );
         }
     });
 
