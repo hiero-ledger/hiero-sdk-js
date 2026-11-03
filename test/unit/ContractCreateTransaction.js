@@ -1,4 +1,8 @@
-import { AccountId, ContractCreateTransaction } from "../../src/index.js";
+import {
+    AccountId,
+    ContractCreateTransaction,
+    Transaction,
+} from "../../src/index.js";
 import Long from "long";
 
 import PrivateKey from "../../src/PrivateKey.js";
@@ -20,6 +24,55 @@ describe("ContractCreateTransaction", function () {
     beforeEach(function () {
         stakedAccountId = new AccountId(0, 0, 3333);
         stakedNodeId = Long.fromNumber(5);
+    });
+
+    describe("fromBytes bytecode round trip", function () {
+        const buildWithBytecode = () =>
+            new ContractCreateTransaction()
+                .setBytecode(new Uint8Array([1, 2, 3, 4]))
+                .setGas(100000)
+                .setNodeAccountIds([new AccountId(3)])
+                .setTransactionId(TransactionId.generate(new AccountId(2)));
+
+        it("keeps setBytecode() after a frozen toBytes/fromBytes round trip", function () {
+            const frozen = buildWithBytecode().freeze();
+            const restored = Transaction.fromBytes(frozen.toBytes());
+
+            expect(restored).to.be.instanceOf(ContractCreateTransaction);
+            expect(restored.bytecode).to.deep.equal(
+                new Uint8Array([1, 2, 3, 4]),
+            );
+            expect(restored.bytecodeFileId).to.be.null;
+        });
+
+        it("keeps setBytecodeFileId() after a frozen toBytes/fromBytes round trip", function () {
+            const fileId = new FileId(0, 0, 100);
+            const frozen = new ContractCreateTransaction()
+                .setBytecodeFileId(fileId)
+                .setGas(100000)
+                .setNodeAccountIds([new AccountId(3)])
+                .setTransactionId(TransactionId.generate(new AccountId(2)))
+                .freeze();
+            const restored = Transaction.fromBytes(frozen.toBytes());
+
+            expect(restored).to.be.instanceOf(ContractCreateTransaction);
+            expect(restored.bytecodeFileId.toString()).to.equal(
+                fileId.toString(),
+            );
+            expect(restored.bytecode).to.be.null;
+        });
+
+        it("keeps initcode when unfrozen bytes are decoded and frozen again", function () {
+            const refrozen = Transaction.fromBytes(
+                buildWithBytecode().toBytes(),
+            ).freeze();
+
+            expect(refrozen).to.be.instanceOf(ContractCreateTransaction);
+            expect(refrozen.bytecode).to.deep.equal(
+                new Uint8Array([1, 2, 3, 4]),
+            );
+            expect(refrozen.bytecodeFileId).to.be.null;
+        });
     });
 
     it("should throw an error if gas is negative", function () {
