@@ -2,8 +2,9 @@
 /**
  * Bundles the published packages with webpack, Vite and esbuild and checks
  * that every class `Transaction.fromBytes()`, `Query.fromBytes()`,
- * `Transaction.schedule()`, key parsing and `EthereumTransactionData.fromBytes()`
- * look up at runtime is still in the bundle.
+ * `Transaction.schedule()`, key parsing, `EthereumTransactionData.fromBytes()`
+ * and `TransactionId.getReceipt()` / `getRecord()` look up at runtime is still
+ * in the bundle.
  *
  *   node test/bundle/run.mjs [--keep]
  *
