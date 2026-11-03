@@ -327,6 +327,11 @@ jobs:
       - name: Install dependencies
         run: task install
 
+      - name: Install Playwright Dependencies
+        run: |
+          sudo npx playwright install-deps
+          npx playwright install
+
       # Same kind and kubectl as the Solo action uses in the other jobs.
       - name: Setup Kind
         uses: helm/kind-action@1544676c07bb3570fcb70166beaa07c4528fd4aa # v1.15.1
@@ -359,6 +364,21 @@ jobs:
           test/integration/ShardRealmIntegrationTest.js
           test/integration/AccountIdTest.js
           test/integration/ContractIdTest.js
+
+      # A browser cannot read CONFIG_FILE, so the browser suite starts from
+      # local-node and switches to the node's gRPC-Web proxy with
+      # NODE_WEB_IP and NODE_ACCOUNT_ID, which calls client.setNetwork().
+      # That keeps the client in 0.0 unless setNetwork() takes the shard and
+      # realm from the nodes (#4646).
+      - name: Run Shard and Realm Browser Integration Tests
+        timeout-minutes: 15
+        env:
+          HEDERA_NETWORK: local-node
+          NODE_WEB_IP: 127.0.0.1:8080
+          NODE_ACCOUNT_ID: 1.2.3
+        run: >-
+          task test:integration:browser -- --bail=1
+          test/integration/ShardRealmIntegrationTest.js
 
       - name: Upload consensus port forward logs
         if: failure()
