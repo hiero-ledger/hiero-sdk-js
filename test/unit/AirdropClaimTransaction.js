@@ -1,4 +1,4 @@
-import { AccountId, TokenId } from "../../src/exports.js";
+import { AccountId, TokenId } from "../../src/index.js";
 import TokenClaimAirdropTransaction from "../../src/token/TokenClaimAirdropTransaction.js";
 import PendingAirdropId from "../../src/token/PendingAirdropId.js";
 
