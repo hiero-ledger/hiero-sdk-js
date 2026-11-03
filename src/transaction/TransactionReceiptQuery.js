@@ -8,7 +8,6 @@ import PrecheckStatusError from "../PrecheckStatusError.js";
 import ReceiptStatusError from "../ReceiptStatusError.js";
 import { ExecutionState } from "../Executable.js";
 import * as HieroProto from "@hiero-ledger/proto";
-import CACHE from "../Cache.js";
 
 const { proto } = HieroProto;
 
@@ -411,7 +410,3 @@ export default class TransactionReceiptQuery extends Query {
         return `TransactionReceiptQuery:${this._timestamp.toString()}`;
     }
 }
-
-CACHE.setTransactionReceiptQueryConstructor(
-    () => new TransactionReceiptQuery(),
-);

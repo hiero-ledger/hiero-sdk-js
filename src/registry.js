@@ -3,19 +3,24 @@
 /**
  * Fills the lookup tables that let the SDK find a class from data alone:
  * `Transaction.fromBytes()` and the inner transactions of `BatchTransaction`
- * (TRANSACTION_REGISTRY), `Transaction.schedule()` (SCHEDULE_CREATE_TRANSACTION), `Query.fromBytes()` (QUERY_REGISTRY) and service endpoint parsing (ENDPOINT_FROM_PROTOBUF_REGISTRY,
- * ENDPOINT_FROM_JSON_REGISTRY).
+ * (TRANSACTION_REGISTRY), `Query.fromBytes()` (QUERY_REGISTRY),
+ * `Transaction.schedule()` (SCHEDULE_CREATE_TRANSACTION), service endpoint
+ * parsing (ENDPOINT_FROM_PROTOBUF_REGISTRY, ENDPOINT_FROM_JSON_REGISTRY), and
+ * key, account ID and Ethereum data parsing and `TransactionId.getReceipt()` /
+ * `getRecord()` (CACHE).
  *
- * Every entry point (index.js, browser.js, native.js) imports this module.
- * The classes registered here have no side effects, so a bundler cannot drop
- * a registration by dropping an unused class file (#3011). Don't import this
- * module from a class: the base classes read the tables but must not depend
- * on every class.
+ * Every entry point (index.js, browser.js, native.js) imports this module, and
+ * it is the only module that registers anything. The classes themselves have
+ * no side effects, so a bundler cannot drop a registration by dropping an
+ * unused class file (#3011). Don't import this module from a class: the base
+ * classes read the tables but must not depend on every class.
  */
 
 // The registered _fromProtobuf and _fromJson are static and don't use `this`.
 /* eslint-disable @typescript-eslint/unbound-method */
 
+import Long from "long";
+import CACHE from "./Cache.js";
 import {
     TRANSACTION_REGISTRY,
     SCHEDULE_CREATE_TRANSACTION,
@@ -26,12 +31,20 @@ import {
     ENDPOINT_FROM_JSON_REGISTRY,
 } from "./node/RegisteredServiceEndpoint.js";
 import EthereumTransaction from "./EthereumTransaction.js";
+import EthereumTransactionDataEip1559 from "./EthereumTransactionDataEip1559.js";
+import EthereumTransactionDataEip2930 from "./EthereumTransactionDataEip2930.js";
+import EthereumTransactionDataEip7702 from "./EthereumTransactionDataEip7702.js";
+import EthereumTransactionDataLegacy from "./EthereumTransactionDataLegacy.js";
+import KeyList from "./KeyList.js";
+import PrivateKey from "./PrivateKey.js";
 import PrngTransaction from "./PrngTransaction.js";
+import PublicKey from "./PublicKey.js";
 import AccountAllowanceApproveTransaction from "./account/AccountAllowanceApproveTransaction.js";
 import AccountAllowanceDeleteTransaction from "./account/AccountAllowanceDeleteTransaction.js";
 import AccountBalanceQuery from "./account/AccountBalanceQuery.js";
 import AccountCreateTransaction from "./account/AccountCreateTransaction.js";
 import AccountDeleteTransaction from "./account/AccountDeleteTransaction.js";
+import AccountId from "./account/AccountId.js";
 import AccountInfoQuery from "./account/AccountInfoQuery.js";
 import AccountRecordsQuery from "./account/AccountRecordsQuery.js";
 import AccountUpdateTransaction from "./account/AccountUpdateTransaction.js";
@@ -41,8 +54,10 @@ import ContractCallQuery from "./contract/ContractCallQuery.js";
 import ContractCreateTransaction from "./contract/ContractCreateTransaction.js";
 import ContractDeleteTransaction from "./contract/ContractDeleteTransaction.js";
 import ContractExecuteTransaction from "./contract/ContractExecuteTransaction.js";
+import ContractId from "./contract/ContractId.js";
 import ContractInfoQuery from "./contract/ContractInfoQuery.js";
 import ContractUpdateTransaction from "./contract/ContractUpdateTransaction.js";
+import DelegateContractId from "./contract/DelegateContractId.js";
 import FileAppendTransaction from "./file/FileAppendTransaction.js";
 import FileContentsQuery from "./file/FileContentsQuery.js";
 import FileCreateTransaction from "./file/FileCreateTransaction.js";
@@ -305,3 +320,30 @@ ENDPOINT_FROM_JSON_REGISTRY.set(
     MirrorNodeServiceEndpoint._fromJson,
 );
 ENDPOINT_FROM_JSON_REGISTRY.set("rpcRelay", RpcRelayServiceEndpoint._fromJson);
+
+CACHE.setEthereumTransactionDataEip1559FromBytes((bytes) =>
+    EthereumTransactionDataEip1559.fromBytes(bytes),
+);
+CACHE.setEthereumTransactionDataEip2930FromBytes((bytes) =>
+    EthereumTransactionDataEip2930.fromBytes(bytes),
+);
+CACHE.setEthereumTransactionDataEip7702FromBytes((bytes) =>
+    EthereumTransactionDataEip7702.fromBytes(bytes),
+);
+CACHE.setEthereumTransactionDataLegacyFromBytes((bytes) =>
+    EthereumTransactionDataLegacy.fromBytes(bytes),
+);
+CACHE.setKeyList((key) => KeyList.__fromProtobufKeyList(key));
+CACHE.setThresholdKey((key) => KeyList.__fromProtobufThresoldKey(key));
+CACHE.setPrivateKeyConstructor((key) => new PrivateKey(key));
+CACHE.setPublicKeyED25519((key) => PublicKey.fromBytesED25519(key));
+CACHE.setPublicKeyECDSA((key) => PublicKey.fromBytesECDSA(key));
+CACHE.setAccountIdConstructor(
+    (shard, realm, key) => new AccountId(shard, realm, Long.ZERO, key),
+);
+CACHE.setContractId((key) => ContractId.__fromProtobufKey(key));
+CACHE.setDelegateContractId((key) => DelegateContractId.__fromProtobufKey(key));
+CACHE.setTransactionReceiptQueryConstructor(
+    () => new TransactionReceiptQuery(),
+);
+CACHE.setTransactionRecordQueryConstructor(() => new TransactionRecordQuery());
