@@ -454,6 +454,8 @@ describe("NodeUpdateTransaction", function () {
                 "NodeUpdateTransaction: 'nodeId' must be explicitly set before calling freeze().",
             );
         });
+    });
+
     it("should add a gossip endpoint to a new transaction", function () {
         const tx = new NodeUpdateTransaction();
         const endpoint = new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1));
@@ -603,6 +605,5 @@ describe("NodeUpdateTransaction", function () {
         expect(() => {
             tx.addServiceEndpoint(new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1)));
         }).to.throw("ServiceEndpoints list must not contain more than 8 entries.");
-    });
     });
 });
