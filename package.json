@@ -84,7 +84,6 @@
         "@grpc/grpc-js": "1.13.6",
         "@hiero-ledger/cryptography": "workspace:*",
         "@hiero-ledger/proto": "workspace:*",
-        "@noble/hashes": "2.2.0",
         "bignumber.js": "11.1.2",
         "crypto-js": "4.2.0",
         "js-base64": "3.7.4",

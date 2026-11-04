@@ -2,7 +2,7 @@
 
 import * as hex from "./hex.js";
 import BigNumber from "bignumber.js";
-import { keccak_256 } from "@noble/hashes/sha3.js";
+import { keccak256 } from "../cryptography/keccak.js";
 
 /**
  * @typedef {string | ParamType} TypeInput
@@ -16,14 +16,14 @@ import { keccak_256 } from "@noble/hashes/sha3.js";
 /**
  * ParamType shape matching ethers' public API.
  *
- * @typedef {Object} ParamType
+ * @typedef {object} ParamType
  * @property {string} type
  * @property {string} [name]
  * @property {string} [baseType]
- * @property {boolean} [indexed]
- * @property {ParamType[]} [components]
- * @property {ParamType} [arrayChildren]
- * @property {number} [arrayLength]
+ * @property {?boolean} [indexed]
+ * @property {?ReadonlyArray<ParamType>} [components]
+ * @property {?ParamType} [arrayChildren]
+ * @property {?number} [arrayLength]
  */
 
 /**
@@ -31,6 +31,13 @@ import { keccak_256 } from "@noble/hashes/sha3.js";
  * @returns {ParamType}
  */
 function parseType(typeStr) {
+    // Strip member names: "tuple(uint256 a, string b)" -> "tuple(uint256,string)"
+    // Replace "type name" patterns with just "type"
+    typeStr = typeStr.replace(
+        /\b(u?int\d+|bytes\d*|address|bool|string|tuple)\s+\w+/g,
+        "$1",
+    );
+
     // Handle arrays
     const arrayMatch = typeStr.match(/^(.+?)((\[\d*\])+)$/);
     if (arrayMatch) {
@@ -38,8 +45,8 @@ function parseType(typeStr) {
         const dimensions = arrayMatch[2];
         let current = parseType(baseType);
 
-        // Process array dimensions right-to-left
-        const dimMatches = [...dimensions.matchAll(/\[(\d*)\]/g)].reverse();
+        // Process array dimensions left-to-right
+        const dimMatches = [...dimensions.matchAll(/\[(\d*)\]/g)];
         for (const dimMatch of dimMatches) {
             const length = dimMatch[1] ? parseInt(dimMatch[1], 10) : -1;
             current = {
@@ -52,12 +59,14 @@ function parseType(typeStr) {
         return current;
     }
 
-    // Handle tuples
-    if (typeStr.startsWith("tuple(")) {
-        const inner = typeStr.slice(6, -1);
+    // Handle tuples - accept both "tuple(...)" and "(...)"
+    if (typeStr.startsWith("tuple(") || /^\([^)]+\)$/.test(typeStr)) {
+        const inner = typeStr.startsWith("tuple(")
+            ? typeStr.slice(6, -1)
+            : typeStr.slice(1, -1);
         const components = parseTupleComponents(inner);
         return {
-            type: typeStr,
+            type: typeStr.startsWith("tuple(") ? typeStr : `tuple${typeStr}`,
             baseType: "tuple",
             components,
         };
@@ -84,13 +93,15 @@ function parseTupleComponents(inner) {
         if (char === ")" || char === "]") depth--;
 
         if (char === "," && depth === 0) {
-            components.push(parseType(inner.slice(start, i).trim()));
+            const component = inner.slice(start, i).trim();
+            if (component) components.push(parseType(component));
             start = i + 1;
         }
     }
 
     if (start < inner.length) {
-        components.push(parseType(inner.slice(start).trim()));
+        const component = inner.slice(start).trim();
+        if (component) components.push(parseType(component));
     }
 
     return components;
@@ -102,188 +113,234 @@ function parseTupleComponents(inner) {
  *
  * @param {TypeInput[]} types
  * @param {Uint8Array} data
- * @returns {Array<*>}
+ * @returns {Array<any>}
  */
 export function decode(types, data) {
     const parsedTypes = types.map((t) =>
         typeof t === "string" ? parseType(t) : t,
     );
 
-    const results = [];
-    let offset = 0;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return unpack(parsedTypes, data, 0);
+}
 
-    for (const type of parsedTypes) {
-        const { value, consumed } = decodeValue(type, data, offset, data);
-        results.push(value);
-        offset += consumed;
+/**
+ * Unpack a list of types from data at a given offset.
+ * This handles both top-level decoding, tuple members, and array elements.
+ *
+ * @param {ParamType[]} types
+ * @param {Uint8Array} data
+ * @param {number} offset
+ * @param {boolean} inTupleOrFixedArray - Whether we're unpacking inside a tuple/fixed array
+ * @returns {Array<any>}
+ */
+function unpack(types, data, offset, inTupleOrFixedArray = false) {
+    const results = [];
+    let headOffset = offset;
+
+    for (const type of types) {
+        if (isDynamic(type)) {
+            // Read pointer and follow it
+            const pointer = readUint(data, headOffset);
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const value = decodeValue(
+                type,
+                data,
+                offset + pointer,
+                inTupleOrFixedArray,
+            );
+            results.push(value);
+            headOffset += 32;
+        } else {
+            // Decode inline
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const value = decodeValue(
+                type,
+                data,
+                headOffset,
+                inTupleOrFixedArray,
+            );
+            results.push(value);
+            headOffset += getStaticSize(type);
+        }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return results;
+}
+
+/**
+ * Get the static size in bytes of a type.
+ * @param {ParamType} type
+ * @returns {number}
+ */
+function getStaticSize(type) {
+    if (isDynamic(type)) return 32; // pointer
+
+    if (type.baseType === "array" && type.arrayLength && type.arrayLength > 0) {
+        const childSize = getStaticSize(
+            /** @type {ParamType} */ (type.arrayChildren),
+        );
+        return childSize * type.arrayLength;
+    }
+
+    if (type.baseType === "tuple") {
+        let size = 0;
+        for (const comp of /** @type {ParamType[]} */ (type.components)) {
+            size += getStaticSize(comp);
+        }
+        return size;
+    }
+
+    return 32; // All other static types are 32 bytes
 }
 
 /**
  * @param {ParamType} type
  * @param {Uint8Array} data
  * @param {number} offset
- * @param {Uint8Array} rootData
- * @param {boolean} [inTuple=false] - Whether we're inside a tuple (affects int conversion)
- * @returns {{ value: any, consumed: number }}
+ * @param {boolean} inTupleOrFixedArray - Whether inside tuple or fixed array
+ * @returns {any}
  */
-function decodeValue(type, data, offset, rootData, inTuple = false) {
+function decodeValue(type, data, offset, inTupleOrFixedArray) {
     const typeStr = type.type;
 
     // Static types
     if (typeStr === "bool") {
-        return { value: data[offset + 31] !== 0, consumed: 32 };
+        checkBounds(data, offset, 32);
+        return data[offset + 31] !== 0;
     }
 
     if (typeStr === "address") {
+        checkBounds(data, offset, 32);
         const addr = hex.encode(data.subarray(offset + 12, offset + 32));
-        // Checksum the address like ethers does
-        return { value: checksumAddress(addr), consumed: 32 };
+        return checksumAddress(addr);
     }
 
     if (typeStr === "bytes32") {
-        return {
-            value: `0x${hex.encode(data.subarray(offset, offset + 32))}`,
-            consumed: 32,
-        };
+        checkBounds(data, offset, 32);
+        return `0x${hex.encode(data.subarray(offset, offset + 32))}`;
     }
 
     // Fixed-size bytesN
     const bytesNMatch = typeStr.match(/^bytes(\d+)$/);
     if (bytesNMatch) {
+        checkBounds(data, offset, 32);
         const n = parseInt(bytesNMatch[1], 10);
-        return {
-            value: `0x${hex.encode(data.subarray(offset, offset + n))}`,
-            consumed: 32,
-        };
+        return `0x${hex.encode(data.subarray(offset, offset + n))}`;
     }
 
     // Integer types
     const intMatch = typeStr.match(/^(u?)int(\d+)?$/);
     if (intMatch) {
+        checkBounds(data, offset, 32);
         const unsigned = intMatch[1] === "u";
         const bits = intMatch[2] ? parseInt(intMatch[2], 10) : 256;
-        return { value: decodeInt(data, offset, unsigned, bits, inTuple), consumed: 32 };
+        return decodeInt(data, offset, unsigned, bits, inTupleOrFixedArray);
     }
 
-    // Fixed-size arrays (e.g., int256[2])
+    // Fixed-size arrays (e.g., int256[2], string[2])
     if (type.arrayLength != null && type.arrayLength > 0) {
+        const childType = /** @type {ParamType} */ (type.arrayChildren);
         const elements = [];
-        let elemOffset = offset;
-        for (let i = 0; i < type.arrayLength; i++) {
-            const { value } = decodeValue(
-                /** @type {ParamType} */ (type.arrayChildren),
-                data,
-                elemOffset,
-                rootData,
-                inTuple,
-            );
-            elements.push(value);
-            elemOffset += isDynamic(
-                /** @type {ParamType} */ (type.arrayChildren),
-            )
-                ? 32
-                : 32;
+
+        if (isDynamic(childType)) {
+            // Dynamic children (e.g., string[2]): use pointers relative to offset
+            let headOffset = offset;
+            for (let i = 0; i < type.arrayLength; i++) {
+                checkBounds(data, headOffset, 32);
+                const pointer = readUint(data, headOffset);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                const value = decodeValue(
+                    childType,
+                    data,
+                    offset + pointer,
+                    false,
+                );
+                elements.push(value);
+                headOffset += 32;
+            }
+        } else {
+            // Static children: decode inline
+            const childSize = getStaticSize(childType);
+            let elemOffset = offset;
+
+            for (let i = 0; i < type.arrayLength; i++) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                const value = decodeValue(childType, data, elemOffset, true);
+                elements.push(value);
+                elemOffset += childSize;
+            }
         }
-        return { value: elements, consumed: 32 * type.arrayLength };
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        return elements;
     }
 
-    // Dynamic types (read pointer and follow it)
-    if (
-        typeStr.includes("[]") ||
-        typeStr === "bytes" ||
-        typeStr === "string" ||
-        type.baseType === "tuple"
-    ) {
-        const pointer = readUint(data, offset);
-        const { value } = decodeDynamic(type, rootData, pointer, inTuple);
-        return { value, consumed: 32 };
-    }
-
-    throw new Error(`unsupported type: ${typeStr}`);
-}
-
-/**
- * @param {ParamType} type
- * @param {Uint8Array} data
- * @param {number} offset
- * @param {boolean} [inTuple=false]
- * @returns {{ value: any, consumed: number }}
- */
-function decodeDynamic(type, data, offset, inTuple = false) {
-    const typeStr = type.type;
-
+    // Dynamic types
     if (typeStr === "bytes") {
+        checkBounds(data, offset, 32);
         const length = readUint(data, offset);
-        const value = `0x${hex.encode(data.subarray(offset + 32, offset + 32 + length))}`;
-        const consumed = 32 + Math.ceil(length / 32) * 32;
-        return { value, consumed };
+        checkBounds(data, offset + 32, length);
+        return `0x${hex.encode(
+            data.subarray(offset + 32, offset + 32 + length),
+        )}`;
     }
 
     if (typeStr === "string") {
+        checkBounds(data, offset, 32);
         const length = readUint(data, offset);
+        checkBounds(data, offset + 32, length);
         const bytes = data.subarray(offset + 32, offset + 32 + length);
-        const value = new TextDecoder().decode(bytes);
-        const consumed = 32 + Math.ceil(length / 32) * 32;
-        return { value, consumed };
+        return new TextDecoder().decode(bytes);
     }
 
     // Dynamic arrays
     if (typeStr.endsWith("[]")) {
+        checkBounds(data, offset, 32);
         const length = readUint(data, offset);
-        const elements = [];
-        let elemOffset = offset + 32;
-
         const childType = /** @type {ParamType} */ (type.arrayChildren);
-        const childIsDynamic = isDynamic(childType);
+        const elements = [];
+        const arrayDataStart = offset + 32;
 
-        for (let i = 0; i < length; i++) {
-            if (childIsDynamic) {
-                const pointer = readUint(data, elemOffset);
-                const { value } = decodeDynamic(childType, data, offset + 32 + pointer, inTuple);
+        if (isDynamic(childType)) {
+            // Dynamic children: read pointers relative to arrayDataStart
+            let headOffset = arrayDataStart;
+            for (let i = 0; i < length; i++) {
+                checkBounds(data, headOffset, 32);
+                const pointer = readUint(data, headOffset);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                const value = decodeValue(
+                    childType,
+                    data,
+                    arrayDataStart + pointer,
+                    false,
+                );
                 elements.push(value);
-                elemOffset += 32;
-            } else {
-                const { value } = decodeValue(childType, data, elemOffset, data, inTuple);
+                headOffset += 32;
+            }
+        } else {
+            // Static children: decode inline
+            let elemOffset = arrayDataStart;
+            const childSize = getStaticSize(childType);
+            for (let i = 0; i < length; i++) {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                const value = decodeValue(childType, data, elemOffset, false);
                 elements.push(value);
-                elemOffset += 32;
+                elemOffset += childSize;
             }
         }
-
-        return { value: elements, consumed: elemOffset - offset };
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        return elements;
     }
 
     // Tuples
     if (type.baseType === "tuple") {
         const components = /** @type {ParamType[]} */ (type.components);
-        const values = [];
-        let headOffset = offset;
-        let tailOffset = offset;
-
-        // Calculate where dynamic data starts
-        for (const comp of components) {
-            tailOffset += isDynamic(comp) ? 32 : 32;
-        }
-
-        for (const comp of components) {
-            if (isDynamic(comp)) {
-                const pointer = readUint(data, headOffset);
-                const { value } = decodeDynamic(comp, data, offset + pointer, true);
-                values.push(value);
-                headOffset += 32;
-            } else {
-                const { value } = decodeValue(comp, data, headOffset, data, true);
-                values.push(value);
-                headOffset += 32;
-            }
-        }
-
-        return { value: values, consumed: tailOffset - offset };
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        return unpack(components, data, offset, true);
     }
 
-    throw new Error(`unsupported dynamic type: ${typeStr}`);
+    throw new Error(`unsupported type: ${typeStr}`);
 }
 
 /**
@@ -292,19 +349,27 @@ function decodeDynamic(type, data, offset, inTuple = false) {
  */
 function isDynamic(type) {
     const typeStr = type.type;
-    if (
-        typeStr === "bytes" ||
-        typeStr === "string" ||
-        typeStr.endsWith("[]")
-    ) {
+    if (typeStr === "bytes" || typeStr === "string" || typeStr.endsWith("[]")) {
         return true;
     }
+    if (type.baseType === "array" && type.arrayLength && type.arrayLength > 0) {
+        return isDynamic(/** @type {ParamType} */ (type.arrayChildren));
+    }
     if (type.baseType === "tuple") {
-        return (
-            type.components?.some((c) => isDynamic(c)) ?? false
-        );
+        return type.components?.some((c) => isDynamic(c)) ?? false;
     }
     return false;
+}
+
+/**
+ * @param {Uint8Array} data
+ * @param {number} offset
+ * @param {number} needed
+ */
+function checkBounds(data, offset, needed) {
+    if (offset + needed > data.length) {
+        throw new Error("data out-of-bounds");
+    }
 }
 
 /**
@@ -316,7 +381,6 @@ function readUint(data, offset) {
     let result = 0;
     for (let i = 0; i < 32; i++) {
         result = result * 256 + data[offset + i];
-        // Prevent overflow for large numbers
         if (result > Number.MAX_SAFE_INTEGER) {
             throw new Error("uint value too large for safe integer");
         }
@@ -329,10 +393,10 @@ function readUint(data, offset) {
  * @param {number} offset
  * @param {boolean} unsigned
  * @param {number} bits
- * @param {boolean} [inTuple=false] - If true, always return BigNumber for compatibility
+ * @param {boolean} inTupleOrFixedArray
  * @returns {bigint | BigNumber | number}
  */
-function decodeInt(data, offset, unsigned, bits, inTuple = false) {
+function decodeInt(data, offset, unsigned, bits, inTupleOrFixedArray) {
     if (unsigned) {
         const bytesNeeded = Math.ceil(bits / 8);
         const start = offset + 32 - bytesNeeded;
@@ -342,12 +406,12 @@ function decodeInt(data, offset, unsigned, bits, inTuple = false) {
             result = (result << 8n) | BigInt(data[start + i]);
         }
 
-        // In tuples, always return BigNumber for compatibility with ethers
-        if (inTuple) {
+        // In tuples or fixed arrays, always return BigNumber
+        if (inTupleOrFixedArray) {
             return new BigNumber(result.toString());
         }
 
-        // Return number for ≤32 bits, BigNumber for larger
+        // Otherwise: number for ≤32 bits, BigNumber for larger
         if (bits <= 32) {
             return Number(result);
         }
@@ -373,12 +437,12 @@ function decodeInt(data, offset, unsigned, bits, inTuple = false) {
             }
         }
 
-        // In tuples, always return BigNumber for compatibility with ethers
-        if (inTuple) {
+        // In tuples or fixed arrays, always return BigNumber
+        if (inTupleOrFixedArray) {
             return new BigNumber(result.toString());
         }
 
-        // Return number for ≤32 bits, BigNumber for larger
+        // Otherwise: number for ≤32 bits, BigNumber for larger
         if (bits <= 32) {
             return Number(result);
         }
@@ -395,10 +459,8 @@ function decodeInt(data, offset, unsigned, bits, inTuple = false) {
 function checksumAddress(address) {
     const addr = address.toLowerCase().replace(/^0x/, "");
 
-    // Hash the ASCII representation of the lowercase address
-    const addrBytes = new TextEncoder().encode(addr);
-    const hashBytes = keccak_256(addrBytes);
-    const hash = hex.encode(hashBytes);
+    // keccak256 from SDK: pass plain string (no 0x), returns 0x-prefixed hash
+    const hash = keccak256(addr).slice(2);
 
     let result = "0x";
     for (let i = 0; i < addr.length; i++) {

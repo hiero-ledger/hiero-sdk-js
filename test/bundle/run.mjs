@@ -202,7 +202,7 @@ async function createInputs(dir) {
     );
 
     const { Wallet } = await import(
-        pathToFileURL(require.resolve("ethers")).href
+        pathToFileURL(join(repoRoot, "node_modules/ethers/index.js")).href
     );
 
     const accountId = { shardNum: 0, realmNum: 0, accountNum: 1001 };

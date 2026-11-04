@@ -434,6 +434,179 @@ describe("ethers parity", function () {
 
             expect(() => result.getResult(["uint256"])).to.throw();
         });
+
+        it("decodes tuple(uint256,uint256)", function () {
+            const encoded = abi.encode(["tuple(uint256,uint256)"], [[1n, 2n]]);
+            const result = new ContractFunctionResult({
+                bytes: getBytes(encoded),
+            }).getResult(["tuple(uint256,uint256)"]);
+
+            expect(result).to.deep.equal([
+                [new BigNumber("1"), new BigNumber("2")],
+            ]);
+        });
+
+        it("decodes uint256, tuple(uint256,uint256), string", function () {
+            const encoded = abi.encode(
+                ["uint256", "tuple(uint256,uint256)", "string"],
+                [5n, [1n, 2n], "hi"],
+            );
+            const result = new ContractFunctionResult({
+                bytes: getBytes(encoded),
+            }).getResult(["uint256", "tuple(uint256,uint256)", "string"]);
+
+            expect(result).to.deep.equal([
+                new BigNumber("5"),
+                [new BigNumber("1"), new BigNumber("2")],
+                "hi",
+            ]);
+        });
+
+        it("decodes tuple(uint8,tuple(uint8,uint8),string)", function () {
+            const encoded = abi.encode(
+                ["tuple(uint8,tuple(uint8,uint8),string)"],
+                [[1, [2, 3], "x"]],
+            );
+            const result = new ContractFunctionResult({
+                bytes: getBytes(encoded),
+            }).getResult(["tuple(uint8,tuple(uint8,uint8),string)"]);
+
+            expect(result).to.deep.equal([
+                [
+                    new BigNumber("1"),
+                    [new BigNumber("2"), new BigNumber("3")],
+                    "x",
+                ],
+            ]);
+        });
+
+        it("decodes tuple(uint256,address)[]", function () {
+            const encoded = abi.encode(
+                ["tuple(uint256,address)[]"],
+                [
+                    [
+                        [1n, `0x${ADDRESS_A}`],
+                        [2n, `0x${ADDRESS_B}`],
+                    ],
+                ],
+            );
+            const result = new ContractFunctionResult({
+                bytes: getBytes(encoded),
+            }).getResult(["tuple(uint256,address)[]"]);
+
+            expect(result).to.deep.equal([
+                [
+                    [new BigNumber("1"), checksumA],
+                    [new BigNumber("2"), checksumB],
+                ],
+            ]);
+        });
+
+        it("decodes string[2]", function () {
+            const encoded = abi.encode(["string[2]"], [["a", "b"]]);
+            const result = new ContractFunctionResult({
+                bytes: getBytes(encoded),
+            }).getResult(["string[2]"]);
+
+            expect(result).to.deep.equal([["a", "b"]]);
+        });
+
+        it("decodes bytes[2]", function () {
+            const encoded = abi.encode(["bytes[2]"], [["0x01", "0x0203"]]);
+            const result = new ContractFunctionResult({
+                bytes: getBytes(encoded),
+            }).getResult(["bytes[2]"]);
+
+            expect(result).to.deep.equal([["0x01", "0x0203"]]);
+        });
+
+        it("decodes uint8[2][2]", function () {
+            const encoded = abi.encode(
+                ["uint8[2][2]"],
+                [
+                    [
+                        [1, 2],
+                        [3, 4],
+                    ],
+                ],
+            );
+            const result = new ContractFunctionResult({
+                bytes: getBytes(encoded),
+            }).getResult(["uint8[2][2]"]);
+
+            expect(result).to.deep.equal([
+                [
+                    [new BigNumber("1"), new BigNumber("2")],
+                    [new BigNumber("3"), new BigNumber("4")],
+                ],
+            ]);
+        });
+
+        it("decodes uint256[2][]", function () {
+            const encoded = abi.encode(
+                ["uint256[2][]"],
+                [
+                    [
+                        [1n, 2n],
+                        [3n, 4n],
+                    ],
+                ],
+            );
+            const result = new ContractFunctionResult({
+                bytes: getBytes(encoded),
+            }).getResult(["uint256[2][]"]);
+
+            expect(result).to.deep.equal([
+                [
+                    [new BigNumber("1"), new BigNumber("2")],
+                    [new BigNumber("3"), new BigNumber("4")],
+                ],
+            ]);
+        });
+
+        it("decodes uint8[2]", function () {
+            const encoded = abi.encode(["uint8[2]"], [[5, 10]]);
+            const result = new ContractFunctionResult({
+                bytes: getBytes(encoded),
+            }).getResult(["uint8[2]"]);
+
+            expect(result).to.deep.equal([
+                [new BigNumber("5"), new BigNumber("10")],
+            ]);
+        });
+
+        it("accepts (uint256,string) without tuple keyword", function () {
+            const encoded = abi.encode(
+                ["tuple(uint256,string)"],
+                [[42n, "test"]],
+            );
+            const result = new ContractFunctionResult({
+                bytes: getBytes(encoded),
+            }).getResult(["(uint256,string)"]);
+
+            expect(result).to.deep.equal([[new BigNumber("42"), "test"]]);
+        });
+
+        it("accepts tuple(uint256 a, string b) with member names", function () {
+            const encoded = abi.encode(
+                ["tuple(uint256,string)"],
+                [[99n, "named"]],
+            );
+            const result = new ContractFunctionResult({
+                bytes: getBytes(encoded),
+            }).getResult(["tuple(uint256 a, string b)"]);
+
+            expect(result).to.deep.equal([[new BigNumber("99"), "named"]]);
+        });
+
+        it("decodes bool from empty-like bytes", function () {
+            const encoded = abi.encode(["bool"], [true]);
+            const result = new ContractFunctionResult({
+                bytes: getBytes(encoded),
+            }).getResult(["bool"]);
+
+            expect(result).to.deep.equal([true]);
+        });
     });
 
     describe("EthereumTransactionData RLP", function () {

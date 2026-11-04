@@ -25,9 +25,6 @@ importers:
       '@hiero-ledger/proto':
         specifier: workspace:*
         version: link:packages/proto
-      '@noble/hashes':
-        specifier: 2.2.0
-        version: 2.2.0
       bignumber.js:
         specifier: 11.1.2
         version: 11.1.2
