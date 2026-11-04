@@ -87,9 +87,11 @@ const mapNodeAddress = (nodeAddress: SdkNodeAddress): NodeAddress => {
                 : "",
         serviceEndpoints,
         rsaPublicKey: nodeAddress.publicKey || null,
+        // The address book stores the SHA-384 hash as hex characters encoded
+        // as UTF-8, so decoding the bytes gives the 96-character hash.
         nodeCertHash:
             nodeAddress.certHash != null
-                ? Buffer.from(nodeAddress.certHash).toString("hex")
+                ? Buffer.from(nodeAddress.certHash).toString("utf8")
                 : null,
         description: nodeAddress.description || null,
     };
