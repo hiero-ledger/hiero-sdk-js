@@ -69,6 +69,8 @@ const TRANSACTION_CASES_WITHOUT_CLASS = new Set([
     "hookDispatch",
     "ledgerIdPublication",
     "migrationRootHashVote",
+    "clprEndpointPublication",
+    "clprMaintenance",
 ]);
 
 const QUERY_CASES_WITHOUT_CLASS = new Set([

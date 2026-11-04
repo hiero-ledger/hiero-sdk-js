@@ -417,7 +417,12 @@ export default class AccountId {
         const id = new AccountId(this);
         id._checksum = this._checksum;
         id.aliasKey = this.aliasKey;
-        id.evmAddress = this.evmAddress;
+        id.evmAddress =
+            this.evmAddress == null
+                ? this.evmAddress
+                : EvmAddress.fromBytes(
+                      new Uint8Array(this.evmAddress.toBytes()),
+                  );
         return id;
     }
 

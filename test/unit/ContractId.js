@@ -28,6 +28,26 @@ describe("ContractId", function () {
         expect(emvAddresContractId.toString()).to.be.equal(`1.2.${evmAddress}`);
     });
 
+    it("round-trips an EVM ContractId through bytes", function () {
+        const contractId = ContractId.fromEvmAddress(1, 2, evmAddress);
+        const bytes = contractId.toBytes();
+        const decoded = ContractId.fromBytes(bytes);
+
+        expect(decoded.toString()).toBe(`1.2.${evmAddress}`);
+        expect(decoded.toEvmAddress()).toBe(evmAddress);
+        expect(decoded.toBytes()).toEqual(bytes);
+    });
+
+    it("clones EVM ContractId bytes independently", function () {
+        const contractId = ContractId.fromEvmAddress(1, 2, evmAddress);
+        const cloned = contractId.clone();
+
+        cloned.evmAddress.fill(0);
+        expect(contractId.toEvmAddress()).toBe(evmAddress);
+        contractId.evmAddress.fill(255);
+        expect(cloned.evmAddress).toEqual(new Uint8Array(20));
+    });
+
     it("toProtobuf() with evmAddres", function () {
         const emvAddresContractId = ContractId.fromEvmAddress(1, 2, evmAddress);
 

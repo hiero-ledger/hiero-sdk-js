@@ -1,6 +1,26 @@
-import { AccountId, NftId, PrivateKey } from "../../src/index.js";
+import { AccountId, EvmAddress, NftId, PrivateKey } from "../../src/index.js";
 
 describe("AccountId", function () {
+    describe("clone()", function () {
+        it.each(["original", "clone"])(
+            "copies EVM address bytes independently when mutating the %s",
+            function (target) {
+                const address = "0011223344556677889900112233445577889900";
+                const original = AccountId.fromString(`2.3.${address}`);
+                const clone = original.clone();
+
+                expect(clone.evmAddress).toBeInstanceOf(EvmAddress);
+                expect(clone.equals(original)).toBe(true);
+                const mutated = target === "original" ? original : clone;
+                const unchanged = target === "original" ? clone : original;
+                mutated.evmAddress.toBytes().fill(255);
+
+                expect(unchanged.toString()).toBe(`2.3.${address}`);
+                expect(mutated.toString()).toBe(`2.3.${"ff".repeat(20)}`);
+            },
+        );
+    });
+
     describe("fromString()", function () {
         it("should parse valid entity IDs", function () {
             expect(AccountId.fromString("0.0.123").toString()).to.equal(

@@ -240,6 +240,32 @@ export function requireUint8Array(variable) {
 }
 
 /**
+ * Requires a Uint8Array of exactly the specified length.
+ * @param {unknown} value
+ * @param {number} length
+ * @param {string} fieldName
+ * @returns {void}
+ */
+export function requireUint8ArrayLength(value, length, fieldName) {
+    if (!(value instanceof Uint8Array) || value.length !== length) {
+        throw new Error(
+            `${fieldName} must be a Uint8Array of exactly ${length} bytes`,
+        );
+    }
+}
+
+/**
+ * Validates and copies a 32-byte field, including when the input is a Buffer.
+ * @param {Uint8Array} value
+ * @param {string} fieldName
+ * @returns {Uint8Array}
+ */
+export function copyBytes32(value, fieldName) {
+    requireUint8ArrayLength(value, 32, fieldName);
+    return new Uint8Array(value);
+}
+
+/**
  * Takes any param and throws custom error if non Uint8Array.
  *
  * @param {any | null | undefined} variable

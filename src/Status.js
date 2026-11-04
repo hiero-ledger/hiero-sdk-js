@@ -817,6 +817,74 @@ export default class Status {
                 return "REGISTERED_NODE_STILL_ASSOCIATED";
             case Status.MaxRegisteredNodesExceeded:
                 return "MAX_REGISTERED_NODES_EXCEEDED";
+            case Status.ConfigFilePartUploaded:
+                return "CONFIG_FILE_PART_UPLOADED";
+            case Status.ClprNotEnabled:
+                return "CLPR_NOT_ENABLED";
+            case Status.InvalidClprConfiguration:
+                return "INVALID_CLPR_CONFIGURATION";
+            case Status.ClprChainIdImmutable:
+                return "CLPR_CHAIN_ID_IMMUTABLE";
+            case Status.ClprTooManySeedEndpoints:
+                return "CLPR_TOO_MANY_SEED_ENDPOINTS";
+            case Status.ClprInvalidSeedEndpoint:
+                return "CLPR_INVALID_SEED_ENDPOINT";
+            case Status.ClprChannelAlreadyExists:
+                return "CLPR_CHANNEL_ALREADY_EXISTS";
+            case Status.ClprInvalidSignature:
+                return "CLPR_INVALID_SIGNATURE";
+            case Status.ClprInvalidVerifierContract:
+                return "CLPR_INVALID_VERIFIER_CONTRACT";
+            case Status.ClprVerifierConfigFailed:
+                return "CLPR_VERIFIER_CONFIG_FAILED";
+            case Status.ClprCommitmentMismatch:
+                return "CLPR_COMMITMENT_MISMATCH";
+            case Status.ClprChannelNotFound:
+                return "CLPR_CHANNEL_NOT_FOUND";
+            case Status.ClprInvalidChannelStatus:
+                return "CLPR_INVALID_CHANNEL_STATUS";
+            case Status.ClprMessageNotFound:
+                return "CLPR_MESSAGE_NOT_FOUND";
+            case Status.ClprInvalidEndpointSignature:
+                return "CLPR_INVALID_ENDPOINT_SIGNATURE";
+            case Status.ClprBundleVerificationFailed:
+                return "CLPR_BUNDLE_VERIFICATION_FAILED";
+            case Status.ClprRunningHashMismatch:
+                return "CLPR_RUNNING_HASH_MISMATCH";
+            case Status.ClprQueueFull:
+                return "CLPR_QUEUE_FULL";
+            case Status.ClprConnectorNotFound:
+                return "CLPR_CONNECTOR_NOT_FOUND";
+            case Status.ClprConnectorAlreadyExists:
+                return "CLPR_CONNECTOR_ALREADY_EXISTS";
+            case Status.ClprConnectorUnauthorized:
+                return "CLPR_CONNECTOR_UNAUTHORIZED";
+            case Status.ClprInvalidConnectorAddress:
+                return "CLPR_INVALID_CONNECTOR_ADDRESS";
+            case Status.ClprInvalidConnectorContract:
+                return "CLPR_INVALID_CONNECTOR_CONTRACT";
+            case Status.ClprInsufficientStake:
+                return "CLPR_INSUFFICIENT_STAKE";
+            case Status.ClprPayloadTooLarge:
+                return "CLPR_PAYLOAD_TOO_LARGE";
+            case Status.ClprAuthorizationFailed:
+                return "CLPR_AUTHORIZATION_FAILED";
+            case Status.ClprQueueQuotaExceeded:
+                return "CLPR_QUEUE_QUOTA_EXCEEDED";
+            case Status.ClprInsufficientConnectorBalance:
+                return "CLPR_INSUFFICIENT_CONNECTOR_BALANCE";
+            case Status.ClprInternalStateCorruption:
+                return "CLPR_INTERNAL_STATE_CORRUPTION";
+            case Status.ClprConnectorHasInFlightMessages:
+                return "CLPR_CONNECTOR_HAS_IN_FLIGHT_MESSAGES";
+            case Status.ClprBundleDecodeFailed:
+                return "CLPR_BUNDLE_DECODE_FAILED";
+            case Status.ClprEmptyBundle:
+                return "CLPR_EMPTY_BUNDLE";
+            case Status.ClprRateLimited:
+                return "CLPR_RATE_LIMITED";
+            case Status.ClprNoProgress:
+                return "CLPR_NO_PROGRESS";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -1623,6 +1691,74 @@ export default class Status {
                 return Status.RegisteredNodeStillAssociated;
             case 535:
                 return Status.MaxRegisteredNodesExceeded;
+            case 536:
+                return Status.ConfigFilePartUploaded;
+            case 537:
+                return Status.ClprNotEnabled;
+            case 538:
+                return Status.InvalidClprConfiguration;
+            case 539:
+                return Status.ClprChainIdImmutable;
+            case 540:
+                return Status.ClprTooManySeedEndpoints;
+            case 541:
+                return Status.ClprInvalidSeedEndpoint;
+            case 542:
+                return Status.ClprChannelAlreadyExists;
+            case 543:
+                return Status.ClprInvalidSignature;
+            case 544:
+                return Status.ClprInvalidVerifierContract;
+            case 545:
+                return Status.ClprVerifierConfigFailed;
+            case 546:
+                return Status.ClprCommitmentMismatch;
+            case 547:
+                return Status.ClprChannelNotFound;
+            case 548:
+                return Status.ClprInvalidChannelStatus;
+            case 549:
+                return Status.ClprMessageNotFound;
+            case 551:
+                return Status.ClprInvalidEndpointSignature;
+            case 552:
+                return Status.ClprBundleVerificationFailed;
+            case 553:
+                return Status.ClprRunningHashMismatch;
+            case 554:
+                return Status.ClprQueueFull;
+            case 555:
+                return Status.ClprConnectorNotFound;
+            case 556:
+                return Status.ClprConnectorAlreadyExists;
+            case 557:
+                return Status.ClprConnectorUnauthorized;
+            case 558:
+                return Status.ClprInvalidConnectorAddress;
+            case 559:
+                return Status.ClprInvalidConnectorContract;
+            case 560:
+                return Status.ClprInsufficientStake;
+            case 561:
+                return Status.ClprPayloadTooLarge;
+            case 562:
+                return Status.ClprAuthorizationFailed;
+            case 564:
+                return Status.ClprQueueQuotaExceeded;
+            case 565:
+                return Status.ClprInsufficientConnectorBalance;
+            case 566:
+                return Status.ClprInternalStateCorruption;
+            case 567:
+                return Status.ClprConnectorHasInFlightMessages;
+            case 568:
+                return Status.ClprBundleDecodeFailed;
+            case 569:
+                return Status.ClprEmptyBundle;
+            case 570:
+                return Status.ClprRateLimited;
+            case 571:
+                return Status.ClprNoProgress;
             default:
                 throw new Error(
                     `(BUG) Status.fromCode() does not handle code: ${code}`,
@@ -3624,3 +3760,173 @@ Status.RegisteredNodeStillAssociated = new Status(534);
  * The number of associated registered nodes exceeds the maximum allowed limit.
  */
 Status.MaxRegisteredNodesExceeded = new Status(535);
+
+/**
+ * The contents of a configuration system file (network properties or HAPI permissions) could not be parsed as a `ServicesConfigurationList`.<br/> The bytes were committed, but no configuration change was applied. This is expected for every part but the last of a multi-part upload.
+ */
+Status.ConfigFilePartUploaded = new Status(536);
+
+/**
+ * The CLPR service is not enabled on this ledger.
+ */
+Status.ClprNotEnabled = new Status(537);
+
+/**
+ * A CLPR configuration field has an invalid value.<br/> Throttle values such as max_messages_per_bundle, max_message_payload_bytes, and max_queue_depth must be greater than zero.
+ */
+Status.InvalidClprConfiguration = new Status(538);
+
+/**
+ * The chain_id in a CLPR ledger configuration is immutable (set at genesis from configuration properties).
+ */
+Status.ClprChainIdImmutable = new Status(539);
+
+/**
+ * Too many endpoints were specified in the CLPR configuration.<br/> The maximum number of endpoints is set by `max_local_endpoints` when that value is non-zero.
+ */
+Status.ClprTooManySeedEndpoints = new Status(540);
+
+/**
+ * An endpoint in the CLPR configuration is missing required fields (service_endpoint, tls_certificate, or ecdsa_signing_key).
+ */
+Status.ClprInvalidSeedEndpoint = new Status(541);
+
+/**
+ * A CLPR Channel with the given channel_id already exists, or (on registerChannel) the ownership commitment is already registered, either pending reveal or bound to an existing Channel in any status, including CLOSED.
+ */
+Status.ClprChannelAlreadyExists = new Status(542);
+
+/**
+ * The signature on the CLPR channel completion is invalid.
+ */
+Status.ClprInvalidSignature = new Status(543);
+
+/**
+ * The verifier contract account does not exist or is not a smart contract.
+ */
+Status.ClprInvalidVerifierContract = new Status(544);
+
+/**
+ * The verifier contract's verifyConfig call failed or returned invalid data.
+ */
+Status.ClprVerifierConfigFailed = new Status(545);
+
+/**
+ * The keccak256(channel_id || public_key) does not match any stored ownership commitment.
+ */
+Status.ClprCommitmentMismatch = new Status(546);
+
+/**
+ * The specified channel_id does not correspond to any known CLPR channel.
+ */
+Status.ClprChannelNotFound = new Status(547);
+
+/**
+ * The channel's current status does not allow the requested transition (e.g., attempting to close an already-closing or closed channel).
+ */
+Status.ClprInvalidChannelStatus = new Status(548);
+
+/**
+ * The specified message ID does not exist in the queue.
+ */
+Status.ClprMessageNotFound = new Status(549);
+
+/**
+ * The endpoint signature is invalid or the signer is not a registered endpoint.
+ */
+Status.ClprInvalidEndpointSignature = new Status(551);
+
+/**
+ * The bundle proof verification failed.
+ */
+Status.ClprBundleVerificationFailed = new Status(552);
+
+/**
+ * The running hash in the bundle does not match the expected value.
+ */
+Status.ClprRunningHashMismatch = new Status(553);
+
+/**
+ * The message queue has reached the maximum depth for this Channel.
+ */
+Status.ClprQueueFull = new Status(554);
+
+/**
+ * The specified Connector does not exist.
+ */
+Status.ClprConnectorNotFound = new Status(555);
+
+/**
+ * A Connector with the same (channel_id, connector_id) already exists, or (on registerConnector) the commitment is already registered, either pending reveal or already used to create a Connector, including one that has since been deregistered.
+ */
+Status.ClprConnectorAlreadyExists = new Status(556);
+
+/**
+ * The caller is not the admin of the specified Connector.
+ */
+Status.ClprConnectorUnauthorized = new Status(557);
+
+/**
+ * The connector_id is missing or empty.
+ */
+Status.ClprInvalidConnectorAddress = new Status(558);
+
+/**
+ * The connector_contract does not refer to a deployed smart contract.
+ */
+Status.ClprInvalidConnectorContract = new Status(559);
+
+/**
+ * The locked_stake amount is below the minimum required by ClprConfig.
+ */
+Status.ClprInsufficientStake = new Status(560);
+
+/**
+ * The message payload exceeds the destination ledger's max_message_payload_bytes.
+ */
+Status.ClprPayloadTooLarge = new Status(561);
+
+/**
+ * The Connector's authorization contract rejected the message.
+ */
+Status.ClprAuthorizationFailed = new Status(562);
+
+/**
+ * The Connector has exceeded its per-Channel queue quota. Other Connectors may still enqueue messages on this Channel.
+ */
+Status.ClprQueueQuotaExceeded = new Status(564);
+
+/**
+ * The Connector's balance is insufficient to cover the queue fee (including any congestion escalation).
+ */
+Status.ClprInsufficientConnectorBalance = new Status(565);
+
+/**
+ * Internal CLPR state is corrupt (e.g., an outbound message ID was assigned but the message does not exist in the queue). Requires investigation and possible data migration.
+ */
+Status.ClprInternalStateCorruption = new Status(566);
+
+/**
+ * Cannot deregister a Connector that still has unresolved outbound in-flight messages. All enqueued DATA messages must be acknowledged by a terminal reply before deregistration.
+ */
+Status.ClprConnectorHasInFlightMessages = new Status(567);
+
+/**
+ * A per-message protobuf decode failed inside a verifier-accepted bundle. Because the verifier already attested to the bundle contents, a decode failure means the verifier signed off on malformed data. The Channel is transitioned to PAUSED and remaining messages in the bundle are not processed.
+ */
+Status.ClprBundleDecodeFailed = new Status(568);
+
+/**
+ * The submitted bundle carries no application messages, no trust anchor advance, and no ack progress. Such a bundle has nothing to deliver and is rejected to prevent endpoints from posting empty proofs. @deprecated Use CLPR_NO_PROGRESS instead.
+ */
+Status.ClprEmptyBundle = new Status(569);
+
+/**
+ * The submitting endpoint has exceeded its fair share of the per-ledger max_bundles_per_sec throttle. Each endpoint's share is max_bundles_per_sec / num_registered_endpoints; submissions beyond that within a one-second window are rejected and the endpoint is charged a misbehavior penalty.
+ */
+Status.ClprRateLimited = new Status(570);
+
+/**
+ * A submitted bundle satisfies none of the four Bundle Progress Criteria (spec §2.1.2). The submitting endpoint is charged a penalty fee.
+ */
+Status.ClprNoProgress = new Status(571);

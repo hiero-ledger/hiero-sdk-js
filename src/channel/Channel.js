@@ -78,6 +78,12 @@ export default class Channel {
 
         /**
          * @protected
+         * @type {?HieroProto.proto.ClprService}
+         */
+        this._clpr = null;
+
+        /**
+         * @protected
          * @type {number}
          */
         this._grpcDeadline = grpcDeadline;
@@ -255,6 +261,21 @@ export default class Channel {
         );
 
         return this._addressBook;
+    }
+
+    /**
+     * @returns {HieroProto.proto.ClprService}
+     */
+    get clpr() {
+        if (this._clpr != null) {
+            return this._clpr;
+        }
+
+        this._clpr = proto.ClprService.create(
+            this._createUnaryClient("ClprService"),
+        );
+
+        return this._clpr;
     }
 
     /**

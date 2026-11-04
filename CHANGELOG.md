@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+-   Added HIP-1535 CLPR support: eight transactions, two free queries, ownership helpers, CLPR `Status` and `RequestType` codes, and protobufs from CN `a6b2452`. [#4578](https://github.com/hiero-ledger/hiero-sdk-js/issues/4578)
+-   `PublicKey.toBytesRawUncompressed()` returns ECDSA secp256k1 64-byte `x || y`. [#4578](https://github.com/hiero-ledger/hiero-sdk-js/issues/4578)
+
 -   Added `network` getter on `IPv4Address` to replace the misspelled `newtork` getter, which is now deprecated. [#4008](https://github.com/hiero-ledger/hiero-sdk-js/issues/4008)
 
 ### Changed
@@ -20,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+-   `ContractId` and `DelegateContractId` protobuf decoding preserves EVM addresses. [#4578](https://github.com/hiero-ledger/hiero-sdk-js/issues/4578)
 -   `PrivateKey.getAlgorithm()` now throws `Only der keys are supported` for a raw key instead of returning `undefined` when the key happens to start like an ASN.1 element, which about 1 in 50 random keys do. A key now counts as DER only when it is one ASN.1 sequence that spans the whole input and names the Ed25519 or secp256k1 algorithm, so PKCS#8 and SEC1 keys are read as before. `PrivateKey.fromBytes()`, `PrivateKey.fromString()` and `Wallet` return the same keys as before. This also fixes a unit test that failed about once in 25 CI runs. [#4005](https://github.com/hiero-ledger/hiero-sdk-js/issues/4005)
 -   `TransactionId.getReceipt()` and `TransactionId.getRecord()` no longer throw `Cache.transactionReceiptQueryConstructor was used before it was set` before sending a request. The `TransactionReceiptQuery` and `TransactionRecordQuery` modules now register their constructors on `CACHE` the same way other SDK types do, and `getReceipt()` is `async` so a failure rejects instead of throwing synchronously. [#4575](https://github.com/hiero-ledger/hiero-sdk-js/issues/4575)
 -   `fromString()` of `AccountId`, `ContractId`, `DelegateContractId`, `TokenId`, `FileId`, `TopicId`, `ScheduleId` and `NftId` no longer truncates an entity number that contains letters, so `AccountId.fromString("0.0.12ab34")` now throws `failed to parse entity id: 0.0.12ab34` instead of returning `0.0.12`. EVM addresses and public key aliases are still accepted where they were before. The internal `_parseAddress()` regex is also fixed so it matches valid IDs again. [#4555](https://github.com/hiero-ledger/hiero-sdk-js/issues/4555)

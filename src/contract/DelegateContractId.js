@@ -45,7 +45,13 @@ export default class DelegateContractId extends ContractId {
      * @returns {DelegateContractId}
      */
     static _fromProtobuf(id) {
-        return new DelegateContractId(ContractId._fromProtobuf(id));
+        const contractId = ContractId._fromProtobuf(id);
+        return new DelegateContractId(
+            contractId.shard,
+            contractId.realm,
+            contractId.num,
+            contractId.evmAddress ?? undefined,
+        );
     }
 
     /**
