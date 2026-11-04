@@ -48,10 +48,13 @@ const NODE_GRPC_PORT = 50211;
 /**
  * Local port -> the Solo services behind it: Solo's own local ports
  * (hiero-ledger/solo#3618), which the SDK's local-node preset uses. The
- * action hardcodes 36211 for node 2.
+ * action hardcodes 36211 for node 2. 50211 is node 1 on its pod port, for
+ * a job that sets CONSENSUS_PORTS to it because its tests read node
+ * addresses from the address book.
  */
 const NODES = {
     35211: { service: "network-node1-svc", haproxy: "haproxy-node1-svc" },
+    50211: { service: "network-node1-svc", haproxy: "haproxy-node1-svc" },
     36211: { service: "network-node2-svc", haproxy: "haproxy-node2-svc" },
 };
 const CONNECT_TIMEOUT_MS = 3000;

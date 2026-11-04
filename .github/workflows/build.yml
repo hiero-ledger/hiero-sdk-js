@@ -247,7 +247,11 @@ jobs:
           nodeVersion: ${{ matrix.node }}
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
-          haproxyPort: 35211
+          # Not Solo's 35211: these tests make the SDK replace its nodes
+          # with the address book, which lists node 1 by its pod port as
+          # network-node1-svc.solo.svc.cluster.local:50211, and the action
+          # points that name at 127.0.0.1, so node 1 has to answer on 50211.
+          haproxyPort: 50211
           # One mirror node URL, 127.0.0.1:38081, for gRPC, REST, Java REST
           # and web3: the SDK uses it as is and the local-node preset points
           # at it (#3590).
@@ -259,10 +263,12 @@ jobs:
       # The Solo action reaches the consensus node through a kubectl
       # port-forward and haproxy. In the hung runs that path stopped answering
       # a minute or two into the tests while envoy's direct path to the same
-      # node kept working, so 35211 (and 36211 in dual mode) is connected
-      # straight to the node's NodePort instead; the script header has the
-      # details and the fallbacks.
+      # node kept working, so 50211 (see haproxyPort above) and 36211 are
+      # connected straight to the nodes' NodePorts instead; the script header
+      # has the details and the fallbacks.
       - name: Connect the consensus node port directly
+        env:
+          CONSENSUS_PORTS: "50211,36211"
         run: node .github/scripts/forward-consensus-port.mjs
 
       - name: Set Operator Account
