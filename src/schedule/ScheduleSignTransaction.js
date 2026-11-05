@@ -2,9 +2,7 @@
 
 import ScheduleId from "./ScheduleId.js";
 import Hbar from "../Hbar.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 
 /**
  * @typedef {object} ProtoSignaturePair
@@ -182,9 +180,3 @@ export default class ScheduleSignTransaction extends Transaction {
         return `ScheduleSignTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "scheduleSign",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    ScheduleSignTransaction._fromProtobuf,
-);

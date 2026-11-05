@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import TokenId from "./TokenId.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import CustomFixedFee from "./CustomFixedFee.js";
 import CustomFractionalFee from "./CustomFractionalFee.js";
 import CustomRoyaltyFee from "./CustomRoyaltyFee.js";
@@ -190,9 +188,3 @@ export default class TokenFeeScheduleUpdateTransaction extends Transaction {
         return `TokenFeeScheduleUpdateTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "tokenFeeScheduleUpdate",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    TokenFeeScheduleUpdateTransaction._fromProtobuf,
-);

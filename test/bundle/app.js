@@ -9,10 +9,12 @@
  */
 import {
     AccountUpdateTransaction,
+    Cache,
     EthereumTransactionData,
     Query,
     TopicMessageSubmitTransaction,
     Transaction,
+    TransactionId,
 } from "@hiero-ledger/sdk";
 
 function decode(base64) {
@@ -73,6 +75,22 @@ export function accountUpdateKey(base64) {
         if (transaction.key == null) {
             throw new Error("the key was not parsed");
         }
+    });
+}
+
+/**
+ * Builds the query that `TransactionId.getReceipt()` or `getRecord()` creates
+ * through the cache before it contacts a node, so it needs no network. A
+ * missing registration throws `Cache.transaction…QueryConstructor was used
+ * before it was set`, as both methods did before #4575 was fixed.
+ */
+export function transactionIdQuery(method) {
+    return attempt(() => {
+        const query =
+            method === "getReceipt"
+                ? Cache.transactionReceiptQueryConstructor()
+                : Cache.transactionRecordQueryConstructor();
+        query.setTransactionId(TransactionId.fromString("0.0.1001@4.5"));
     });
 }
 

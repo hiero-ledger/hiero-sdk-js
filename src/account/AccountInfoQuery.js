@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Query, { QUERY_REGISTRY } from "../query/Query.js";
+import Query from "../query/Query.js";
 import AccountId from "./AccountId.js";
 import AccountInfo from "./AccountInfo.js";
 
@@ -179,9 +179,3 @@ export default class AccountInfoQuery extends Query {
         return `AccountInfoQuery:${timestamp.toString()}`;
     }
 }
-
-QUERY_REGISTRY.set(
-    "cryptoGetInfo",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    AccountInfoQuery._fromProtobuf,
-);

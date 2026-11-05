@@ -2,9 +2,7 @@
 
 import TokenId from "./TokenId.js";
 import AccountId from "../account/AccountId.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 
 /**
  * @namespace proto
@@ -196,9 +194,3 @@ export default class TokenFreezeTransaction extends Transaction {
         return `TokenFreezeTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "tokenFreeze",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    TokenFreezeTransaction._fromProtobuf,
-);

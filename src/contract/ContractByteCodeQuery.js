@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Query, { QUERY_REGISTRY } from "../query/Query.js";
+import Query from "../query/Query.js";
 import ContractId from "./ContractId.js";
 
 /**
@@ -174,6 +174,3 @@ export default class ContractByteCodeQuery extends Query {
         return `ContractByteCodeQuery:${timestamp.toString()}`;
     }
 }
-
-// eslint-disable-next-line @typescript-eslint/unbound-method
-QUERY_REGISTRY.set("contractGetBytecode", ContractByteCodeQuery._fromProtobuf);

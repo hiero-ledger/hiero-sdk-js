@@ -3,9 +3,7 @@
 import Hbar from "../Hbar.js";
 import TokenId from "../token/TokenId.js";
 import AccountId from "./AccountId.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import Transfer from "../Transfer.js";
 import TokenTransfer from "../token/TokenTransfer.js";
 import HbarTransferMap from "./HbarTransferMap.js";
@@ -440,8 +438,3 @@ export default class TransferTransaction extends AbstractTokenTransferTransactio
         return `TransferTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "cryptoTransfer",
-    TransferTransaction._fromProtobuf.bind(null),
-);

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Query, { QUERY_REGISTRY } from "../query/Query.js";
+import Query from "../query/Query.js";
 import FileId from "./FileId.js";
 
 /**
@@ -170,6 +170,3 @@ export default class FileContentsQuery extends Query {
         return `FileContentsQuery:${timestamp.toString()}`;
     }
 }
-
-// eslint-disable-next-line @typescript-eslint/unbound-method
-QUERY_REGISTRY.set("fileGetContents", FileContentsQuery._fromProtobuf);

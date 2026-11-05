@@ -3,7 +3,6 @@ import * as rlp from "./encoding/rlp.js";
 import EthereumTransactionData from "./EthereumTransactionData.js";
 import EvmAddress from "./EvmAddress.js";
 import AccessListItem from "./AccessListItem.js";
-import CACHE from "./Cache.js";
 
 /**
  * @typedef {import("long").default} Long
@@ -401,7 +400,3 @@ export default class EthereumTransactionDataEip2930 extends EthereumTransactionD
         };
     }
 }
-
-CACHE.setEthereumTransactionDataEip2930FromBytes((bytes) =>
-    EthereumTransactionDataEip2930.fromBytes(bytes),
-);

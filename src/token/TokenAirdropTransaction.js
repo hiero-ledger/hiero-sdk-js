@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import TokenTransfer from "./TokenTransfer.js";
 import NftTransfer from "./TokenNftTransfer.js";
 import AbstractTokenTransferTransaction from "./AbstractTokenTransferTransaction.js";
@@ -214,9 +212,3 @@ export default class TokenAirdropTransaction extends AbstractTokenTransferTransa
         return `TokenAirdropTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "tokenAirdrop",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    TokenAirdropTransaction._fromProtobuf,
-);
