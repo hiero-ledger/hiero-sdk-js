@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import fc from "fast-check";
 import Long from "long";
 import AccountId from "../../../src/account/AccountId.js";
