@@ -190,6 +190,47 @@ describe("NativeClient", function () {
             client.setNetwork(customNetwork);
             expect(client._network._network.has("0.0.3")).to.be.true;
         });
+
+        it("takes the shard and realm from a node map", function () {
+            const client = new NativeClient();
+
+            client.setNetwork({ "127.0.0.1:50211": "1.2.3" });
+
+            expect(client.shard).to.equal(1);
+            expect(client.realm).to.equal(2);
+        });
+
+        it("resets to shard 0, realm 0 for a named network", function () {
+            for (const name of ["testnet", "mainnet", "previewnet"]) {
+                const client = new NativeClient({
+                    network: { "127.0.0.1:50211": "1.2.3" },
+                    scheduleNetworkUpdate: false,
+                });
+
+                client.setNetwork(name);
+
+                expect(client.shard, name).to.equal(0);
+                expect(client.realm, name).to.equal(0);
+            }
+        });
+
+        it("throws for nodes in different shards or realms and changes nothing", function () {
+            const client = new NativeClient({
+                network: { "127.0.0.1:50211": "1.2.3" },
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(() =>
+                client.setNetwork({
+                    "127.0.0.1:50211": "1.2.3",
+                    "127.0.0.1:51211": "1.3.4",
+                }),
+            ).to.throw(
+                "Network is not valid, all nodes must be in the same shard and realm",
+            );
+            expect(client.shard).to.equal(1);
+            expect(client.realm).to.equal(2);
+        });
     });
 
     describe("Network utility", function () {
