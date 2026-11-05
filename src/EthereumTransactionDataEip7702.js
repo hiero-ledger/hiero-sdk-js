@@ -4,7 +4,6 @@ import EthereumTransactionData from "./EthereumTransactionData.js";
 import EvmAddress from "./EvmAddress.js";
 import AccessListItem from "./AccessListItem.js";
 import Authorization from "./Authorization.js";
-import CACHE from "./Cache.js";
 
 /**
  * @typedef {import("long").default} Long
@@ -506,7 +505,3 @@ export default class EthereumTransactionDataEip7702 extends EthereumTransactionD
         };
     }
 }
-
-CACHE.setEthereumTransactionDataEip7702FromBytes((bytes) =>
-    EthereumTransactionDataEip7702.fromBytes(bytes),
-);

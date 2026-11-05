@@ -3,9 +3,7 @@
 import Hbar from "./Hbar.js";
 import FileId from "./file/FileId.js";
 import EthereumTransactionData from "./EthereumTransactionData.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "./transaction/Transaction.js";
+import Transaction from "./transaction/Transaction.js";
 
 /**
  * @namespace proto
@@ -310,9 +308,3 @@ export default class EthereumTransaction extends Transaction {
         return `EthereumTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "ethereumTransaction",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    EthereumTransaction._fromProtobuf,
-);

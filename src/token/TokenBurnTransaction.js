@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import TokenId from "./TokenId.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import Long from "long";
 import { convertAmountToLong } from "../util.js";
 
@@ -224,9 +222,3 @@ export default class TokenBurnTransaction extends Transaction {
         return `TokenBurnTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "tokenBurn",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    TokenBurnTransaction._fromProtobuf,
-);

@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "./transaction/Transaction.js";
+import Transaction from "./transaction/Transaction.js";
 import { isNumber } from "./util.js";
 
 /**
@@ -145,9 +143,3 @@ export default class PrngTransaction extends Transaction {
         return `RandomGenerate:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "utilPrng",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    PrngTransaction._fromProtobuf,
-);

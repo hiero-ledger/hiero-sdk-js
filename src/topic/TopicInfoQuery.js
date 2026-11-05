@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Query, { QUERY_REGISTRY } from "../query/Query.js";
+import Query from "../query/Query.js";
 import TopicId from "./TopicId.js";
 import TopicInfo from "./TopicInfo.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -186,6 +186,3 @@ export default class TopicInfoQuery extends Query {
         return `TopicInfoQuery:${timestamp.toString()}`;
     }
 }
-
-// eslint-disable-next-line @typescript-eslint/unbound-method
-QUERY_REGISTRY.set("consensusGetTopicInfo", TopicInfoQuery._fromProtobuf);

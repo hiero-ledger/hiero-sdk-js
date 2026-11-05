@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import AccountId from "../account/AccountId.js";
 import Transaction from "../transaction/Transaction.js";
-import { TRANSACTION_REGISTRY } from "../transaction/Transaction.js";
 import TokenReference from "../token/TokenReference.js";
 
 /**
@@ -256,8 +255,3 @@ export default class TokenRejectTransaction extends Transaction {
         return `TokenRejectTransaction:${timestamp.toString()}`;
     }
 }
-TRANSACTION_REGISTRY.set(
-    "tokenReject",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    TokenRejectTransaction._fromProtobuf,
-);

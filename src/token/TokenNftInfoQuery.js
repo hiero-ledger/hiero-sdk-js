@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Query, { QUERY_REGISTRY } from "../query/Query.js";
+import Query from "../query/Query.js";
 import NftId from "./NftId.js";
 import AccountId from "../account/AccountId.js";
 import TokenId from "../token/TokenId.js";
@@ -365,6 +365,3 @@ export default class TokenNftInfoQuery extends Query {
         return `TokenNftInfoQuery:${timestamp.toString()}`;
     }
 }
-
-// eslint-disable-next-line @typescript-eslint/unbound-method
-QUERY_REGISTRY.set("tokenGetNftInfo", TokenNftInfoQuery._fromProtobuf);

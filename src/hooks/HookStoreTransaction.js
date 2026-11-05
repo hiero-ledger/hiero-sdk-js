@@ -1,8 +1,6 @@
 import HookId from "../hooks/HookId.js";
 import { EvmHookStorageUpdate } from "../hooks/EvmHookStorageUpdate.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -176,11 +174,5 @@ class HookStoreTransaction extends Transaction {
         );
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "hookStore",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    HookStoreTransaction._fromProtobuf,
-);
 
 export default HookStoreTransaction;

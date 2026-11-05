@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import ScheduleId from "./ScheduleId.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import Hbar from "../Hbar.js";
 
 /**
@@ -167,9 +165,3 @@ export default class ScheduleDeleteTransaction extends Transaction {
         return `ScheduleDeleteTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "scheduleDelete",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    ScheduleDeleteTransaction._fromProtobuf,
-);

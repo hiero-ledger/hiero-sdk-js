@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import TokenId from "./TokenId.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 
 /**
  * @namespace proto
@@ -154,9 +152,3 @@ export default class TokenDeleteTransaction extends Transaction {
         return `TokenDeleteTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "tokenDeletion",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    TokenDeleteTransaction._fromProtobuf,
-);

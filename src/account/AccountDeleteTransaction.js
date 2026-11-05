@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import AccountId from "./AccountId.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 
 /**
  * @namespace proto
@@ -214,9 +212,3 @@ export default class AccountDeleteTransaction extends Transaction {
         return `AccountDeleteTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "cryptoDelete",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    AccountDeleteTransaction._fromProtobuf,
-);

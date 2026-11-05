@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import FileId from "../file/FileId.js";
 import ContractId from "../contract/ContractId.js";
 import Timestamp from "../Timestamp.js";
@@ -265,6 +263,3 @@ export default class SystemDeleteTransaction extends Transaction {
         return `SystemDeleteTransaction:${timestamp.toString()}`;
     }
 }
-
-// eslint-disable-next-line @typescript-eslint/unbound-method
-TRANSACTION_REGISTRY.set("systemDelete", SystemDeleteTransaction._fromProtobuf);

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Query, { QUERY_REGISTRY } from "../query/Query.js";
+import Query from "../query/Query.js";
 import ContractId from "./ContractId.js";
 import AccountId from "../account/AccountId.js";
 import ContractFunctionParameters from "./ContractFunctionParameters.js";
@@ -458,6 +458,3 @@ export default class ContractCallQuery extends Query {
         return `ContractCallQuery:${timestamp.toString()}`;
     }
 }
-
-// eslint-disable-next-line @typescript-eslint/unbound-method
-QUERY_REGISTRY.set("contractCallLocal", ContractCallQuery._fromProtobuf);

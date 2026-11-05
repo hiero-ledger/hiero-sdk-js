@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import Hbar from "../Hbar.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import * as utf8 from "../encoding/utf8.js";
 import FileId from "./FileId.js";
 import TransactionId from "../transaction/TransactionId.js";
@@ -589,6 +587,3 @@ export default class FileAppendTransaction extends Transaction {
         };
     }
 }
-
-// eslint-disable-next-line @typescript-eslint/unbound-method
-TRANSACTION_REGISTRY.set("fileAppend", FileAppendTransaction._fromProtobuf);

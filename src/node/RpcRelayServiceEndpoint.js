@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import RegisteredServiceEndpoint, {
-    ENDPOINT_FROM_JSON_REGISTRY,
-    ENDPOINT_FROM_PROTOBUF_REGISTRY,
-} from "./RegisteredServiceEndpoint.js";
+import RegisteredServiceEndpoint from "./RegisteredServiceEndpoint.js";
 
 /**
  * @typedef {import("@hiero-ledger/proto").com.hedera.hapi.node.addressbook.IRegisteredServiceEndpoint} IRegisteredServiceEndpoint
@@ -61,14 +58,3 @@ export default class RpcRelayServiceEndpoint extends RegisteredServiceEndpoint {
         };
     }
 }
-
-ENDPOINT_FROM_PROTOBUF_REGISTRY.set(
-    "rpcRelay",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    RpcRelayServiceEndpoint._fromProtobuf,
-);
-ENDPOINT_FROM_JSON_REGISTRY.set(
-    "rpcRelay",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    RpcRelayServiceEndpoint._fromJson,
-);
