@@ -73,7 +73,7 @@ describe("TransactionId.getReceipt / getRecord (#4575)", function () {
         servers?.close();
     });
 
-    it("registers the query constructors in CACHE when the query modules load", function () {
+    it("registers the query constructors in CACHE when the SDK loads", function () {
         expect(CACHE.transactionReceiptQueryConstructor()).to.be.instanceOf(
             TransactionReceiptQuery,
         );

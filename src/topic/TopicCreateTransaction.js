@@ -4,7 +4,6 @@ import AccountId from "../account/AccountId.js";
 import CustomFixedFee from "../token/CustomFixedFee.js";
 import Transaction, {
     DEFAULT_AUTO_RENEW_PERIOD,
-    TRANSACTION_REGISTRY,
 } from "../transaction/Transaction.js";
 import Duration from "../Duration.js";
 import Key from "../Key.js";
@@ -551,9 +550,3 @@ export default class TopicCreateTransaction extends Transaction {
         return `TopicCreateTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "consensusCreateTopic",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    TopicCreateTransaction._fromProtobuf,
-);

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Query, { QUERY_REGISTRY } from "../query/Query.js";
+import Query from "../query/Query.js";
 import TransactionRecord from "./TransactionRecord.js";
 import TransactionReceipt from "./TransactionReceipt.js";
 import TransactionId from "./TransactionId.js";
@@ -10,7 +10,6 @@ import ReceiptStatusError from "../ReceiptStatusError.js";
 import RecordStatusError from "../RecordStatusError.js";
 import { ExecutionState } from "../Executable.js";
 import * as HieroProto from "@hiero-ledger/proto";
-import CACHE from "../Cache.js";
 
 const { proto } = HieroProto;
 
@@ -434,11 +433,3 @@ export default class TransactionRecordQuery extends Query {
         return `TransactionRecordQuery:${timestamp.toString()}`;
     }
 }
-
-QUERY_REGISTRY.set(
-    "transactionGetRecord",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    TransactionRecordQuery._fromProtobuf,
-);
-
-CACHE.setTransactionRecordQueryConstructor(() => new TransactionRecordQuery());

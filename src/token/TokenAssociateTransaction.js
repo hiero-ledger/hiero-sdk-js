@@ -3,9 +3,7 @@
 import Hbar from "../Hbar.js";
 import TokenId from "./TokenId.js";
 import AccountId from "../account/AccountId.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 
 /**
  * @namespace proto
@@ -207,9 +205,3 @@ export default class TokenAssociateTransaction extends Transaction {
         return `TokenAssociateTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "tokenAssociate",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    TokenAssociateTransaction._fromProtobuf,
-);
