@@ -141,6 +141,13 @@ describe("NodeUpdateTransaction", function () {
         expect(tx.description).to.equal(newDescription);
     });
 
+    it("should clear description and return the transaction", function () {
+        const tx = new NodeUpdateTransaction().setDescription("My node");
+
+        expect(tx.clearDescription()).to.equal(tx);
+        expect(tx.description).to.equal("");
+    });
+
     it("should change gossip endpoints", function () {
         const NEW_IP_AddressV4 = Uint8Array.of(127, 0, 0, 2);
         const newGossipEndpoints = [
@@ -280,6 +287,16 @@ describe("NodeUpdateTransaction", function () {
             const DESCRIPTION = "New Description";
             try {
                 tx.setDescription(DESCRIPTION);
+            } catch (error) {
+                err = error.toString().includes(IMMUTABLE_ERROR);
+            }
+            expect(err).to.be.true;
+        });
+
+        it("should not clear description", function () {
+            let err = false;
+            try {
+                tx.clearDescription();
             } catch (error) {
                 err = error.toString().includes(IMMUTABLE_ERROR);
             }

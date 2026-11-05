@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   `Timestamp.generate()` no longer remembers every timestamp it has generated for the life of the process. It now keeps each one for 10 to 20 seconds, which covers the largest jitter, so memory use stays flat in long-running processes. A retry after a collision also keeps the `hasJitter` argument, so `Timestamp.generate(false)` can no longer return a jittered timestamp. [#4595](https://github.com/hiero-ledger/hiero-sdk-js/issues/4595)
 -   `FeeEstimateQuery` no longer calls `freezeWith()` unconditionally. Already frozen and signed transactions now keep their signatures, payer, and transaction IDs when estimated, and the estimation request includes the signatures instead of pricing the transaction as unsigned. [#4581](https://github.com/hiero-ledger/hiero-sdk-js/issues/4581)
 -   `@hiero-ledger/proto` now declares `protobufjs` as a direct dependency instead of a peer dependency. Consumers that resolve or hoist incompatible `protobufjs` 7.x releases (such as 7.6.x which removed `Reader.prototype.tag()`) no longer encounter `TypeError: r.tag is not a function` during protobuf decode calls. [#4643](https://github.com/hiero-ledger/hiero-sdk-js/issues/4643)
+-   `NodeUpdateTransaction.clearDescription()` now returns the transaction, so it can be chained like the other setters, and throws `transaction is immutable` on a frozen transaction, like `setDescription()`. [#4656](https://github.com/hiero-ledger/hiero-sdk-js/issues/4656)
 
 # v2.90.1
 
