@@ -218,6 +218,52 @@ describe("WebClient", function () {
                 expect.stringContaining("[Deprecation Notice]"),
             );
         });
+
+        it("takes the shard and realm from a node map", function () {
+            const client = new WebClient({ scheduleNetworkUpdate: false });
+
+            client.setNetwork({ "localhost:8080": "1.2.3" });
+
+            expect(client.shard).to.equal(1);
+            expect(client.realm).to.equal(2);
+        });
+
+        it("resets to shard 0, realm 0 for a named network", function () {
+            for (const name of [
+                "testnet",
+                "mainnet",
+                "previewnet",
+                "local-node",
+            ]) {
+                const client = new WebClient({
+                    network: { "localhost:8080": "1.2.3" },
+                    scheduleNetworkUpdate: false,
+                });
+
+                client.setNetwork(name);
+
+                expect(client.shard, name).to.equal(0);
+                expect(client.realm, name).to.equal(0);
+            }
+        });
+
+        it("throws for nodes in different shards or realms and changes nothing", function () {
+            const client = new WebClient({
+                network: { "localhost:8080": "1.2.3" },
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(() =>
+                client.setNetwork({
+                    "localhost:8080": "1.2.3",
+                    "localhost:8081": "2.2.4",
+                }),
+            ).to.throw(
+                "Network is not valid, all nodes must be in the same shard and realm",
+            );
+            expect(client.shard).to.equal(1);
+            expect(client.realm).to.equal(2);
+        });
     });
 
     // setMirrorNetwork
