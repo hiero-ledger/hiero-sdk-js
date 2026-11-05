@@ -2,7 +2,6 @@
 
 import Hbar from "../Hbar.js";
 import Transaction, {
-    TRANSACTION_REGISTRY,
     DEFAULT_AUTO_RENEW_PERIOD,
 } from "../transaction/Transaction.js";
 import * as utf8 from "../encoding/utf8.js";
@@ -296,6 +295,3 @@ export default class FileCreateTransaction extends Transaction {
         return `FileCreateTransaction:${timestamp.toString()}`;
     }
 }
-
-// eslint-disable-next-line @typescript-eslint/unbound-method
-TRANSACTION_REGISTRY.set("fileCreate", FileCreateTransaction._fromProtobuf);

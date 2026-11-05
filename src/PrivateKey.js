@@ -4,7 +4,6 @@ import { proto } from "@hiero-ledger/proto";
 import Mnemonic from "./Mnemonic.js";
 import PublicKey from "./PublicKey.js";
 import Key from "./Key.js";
-import CACHE from "./Cache.js";
 import SignatureMap from "./transaction/SignatureMap.js";
 import AccountId from "./account/AccountId.js";
 import TransactionId from "./transaction/TransactionId.js";
@@ -553,5 +552,3 @@ export default class PrivateKey extends Key {
         }
     }
 }
-
-CACHE.setPrivateKeyConstructor((key) => new PrivateKey(key));

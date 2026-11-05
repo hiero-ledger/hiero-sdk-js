@@ -6,7 +6,6 @@ import AccountId from "./AccountId.js";
 import Transaction, {
     DEFAULT_AUTO_RENEW_PERIOD,
     DEFAULT_RECORD_THRESHOLD,
-    TRANSACTION_REGISTRY,
 } from "../transaction/Transaction.js";
 import Duration from "../Duration.js";
 import Long from "long";
@@ -706,9 +705,3 @@ export default class AccountCreateTransaction extends Transaction {
         return `AccountCreateTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "cryptoCreateAccount",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    AccountCreateTransaction._fromProtobuf,
-);

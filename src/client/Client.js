@@ -335,12 +335,60 @@ export default class Client {
     }
 
     /**
+     * Replaces the consensus nodes and takes the client's shard and realm
+     * from the nodes in the address book.
+     *
      * @param {NodeAddressBook} addressBook
      * @returns {this}
      */
     setNetworkFromAddressBook(addressBook) {
+        /** @type {{[key: string]: AccountId}} */
+        const nodes = {};
+        for (const { accountId } of addressBook.nodeAddresses) {
+            if (accountId != null) {
+                nodes[accountId.toString()] = accountId;
+            }
+        }
+        this._setShardRealmFromNetwork(nodes);
+
         this._network.setNetworkFromAddressBook(addressBook);
         return this;
+    }
+
+    /**
+     * Replaces the consensus nodes and takes the client's shard and realm
+     * from their account IDs. The client-specific `setNetwork()` methods
+     * call this for every node map, named networks included, so `ping()`
+     * and `updateNetwork()` query entities in the network's shard and realm.
+     *
+     * @protected
+     * @param {{[key: string]: (string | AccountId)}} network
+     * @returns {void}
+     */
+    _setNetworkNodes(network) {
+        this._setShardRealmFromNetwork(network);
+        this._network.setNetwork(network);
+    }
+
+    /**
+     * Sets the client's shard and realm from the node account IDs. Throws,
+     * without changing anything, if the nodes are in different shards or
+     * realms. An empty network keeps the current values, so a client
+     * created with an explicit shard and realm and no nodes yet keeps them.
+     *
+     * @private
+     * @param {{[key: string]: (string | AccountId)}} network
+     * @returns {void}
+     */
+    _setShardRealmFromNetwork(network) {
+        if (Object.keys(network).length === 0) {
+            return;
+        }
+
+        Client._validateNetworkConsistency(network);
+        const { shard, realm } = Client._extractShardRealm(network);
+        this._shard = shard;
+        this._realm = realm;
     }
 
     /**

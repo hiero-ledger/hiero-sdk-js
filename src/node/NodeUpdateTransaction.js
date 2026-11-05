@@ -2,9 +2,7 @@
 
 import AccountId from "../account/AccountId.js";
 import Key from "../Key.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import ServiceEndpoint from "./ServiceEndpoint.js";
 import Long from "long";
 
@@ -384,9 +382,18 @@ export default class NodeUpdateTransaction extends Transaction {
      */
     addGossipEndpoint(endpoint) {
         this._requireNotFrozen();
-        if (this._gossipEndpoints != null) {
-            this._gossipEndpoints.push(endpoint);
+
+        if (this._gossipEndpoints == null) {
+            this._gossipEndpoints = [];
         }
+
+        if (this._gossipEndpoints.length >= GOSSIP_ENDPOINTS_MAX_LENGTH) {
+            throw new Error(
+                `GossipEndpoints list must not contain more than ${GOSSIP_ENDPOINTS_MAX_LENGTH} entries.`,
+            );
+        }
+
+        this._gossipEndpoints.push(endpoint);
         return this;
     }
 
@@ -427,9 +434,18 @@ export default class NodeUpdateTransaction extends Transaction {
      */
     addServiceEndpoint(endpoint) {
         this._requireNotFrozen();
-        if (this._serviceEndpoints != null) {
-            this._serviceEndpoints.push(endpoint);
+
+        if (this._serviceEndpoints == null) {
+            this._serviceEndpoints = [];
         }
+
+        if (this._serviceEndpoints.length >= SERVICE_ENDPOINTS_MAX_LENGTH) {
+            throw new Error(
+                `ServiceEndpoints list must not contain more than ${SERVICE_ENDPOINTS_MAX_LENGTH} entries.`,
+            );
+        }
+
+        this._serviceEndpoints.push(endpoint);
         return this;
     }
 
@@ -698,9 +714,3 @@ export default class NodeUpdateTransaction extends Transaction {
         return `NodeUpdateTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "nodeUpdate",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    NodeUpdateTransaction._fromProtobuf,
-);

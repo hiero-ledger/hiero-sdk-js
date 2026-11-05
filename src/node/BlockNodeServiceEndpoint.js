@@ -1,10 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import BlockNodeApi from "./BlockNodeApi.js";
-import RegisteredServiceEndpoint, {
-    ENDPOINT_FROM_JSON_REGISTRY,
-    ENDPOINT_FROM_PROTOBUF_REGISTRY,
-} from "./RegisteredServiceEndpoint.js";
+import RegisteredServiceEndpoint from "./RegisteredServiceEndpoint.js";
 
 /**
  * @typedef {import("@hiero-ledger/proto").com.hedera.hapi.node.addressbook.IRegisteredServiceEndpoint} IRegisteredServiceEndpoint
@@ -135,14 +132,3 @@ export default class BlockNodeServiceEndpoint extends RegisteredServiceEndpoint 
         };
     }
 }
-
-ENDPOINT_FROM_PROTOBUF_REGISTRY.set(
-    "blockNode",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    BlockNodeServiceEndpoint._fromProtobuf,
-);
-ENDPOINT_FROM_JSON_REGISTRY.set(
-    "blockNode",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    BlockNodeServiceEndpoint._fromJson,
-);

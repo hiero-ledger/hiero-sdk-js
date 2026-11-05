@@ -2,6 +2,9 @@ import { Client, LedgerId } from "../../../src/index.js";
 import AccountId from "../../../src/account/AccountId.js";
 import NodeClient from "../../../src/client/NodeClient.js";
 import MirrorNode from "../../../src/MirrorNode.js";
+import NodeAddressBook from "../../../src/address_book/NodeAddressBook.js";
+import NodeAddress from "../../../src/address_book/NodeAddress.js";
+import Endpoint from "../../../src/address_book/Endpoint.js";
 import { DEFAULT_GRPC_DEADLINE } from "../../../src/constants/ClientConstants.js";
 
 const ledgerId = LedgerId.LOCAL_NODE;
@@ -336,6 +339,108 @@ describe("Client", function () {
                 expect(client._shard).to.equal(1);
                 expect(client._realm).to.equal(2);
             });
+        });
+    });
+
+    describe("setNetwork shard and realm", function () {
+        it("takes the shard and realm from a node map", function () {
+            const client = NodeClient.forLocalNode();
+
+            client.setNetwork({ "127.0.0.1:50211": "1.2.3" });
+
+            expect(client.shard).to.equal(1);
+            expect(client.realm).to.equal(2);
+        });
+
+        it("takes the shard and realm from AccountId values", function () {
+            const client = NodeClient.forLocalNode();
+
+            client.setNetwork({
+                "127.0.0.1:50211": new AccountId(1, 2, 3),
+                "127.0.0.1:51211": new AccountId(1, 2, 4),
+            });
+
+            expect(client.shard).to.equal(1);
+            expect(client.realm).to.equal(2);
+        });
+
+        it("throws for nodes in different shards or realms and changes nothing", function () {
+            const client = NodeClient.forNetwork(
+                { "127.0.0.1:50211": "1.2.3" },
+                { scheduleNetworkUpdate: false },
+            );
+
+            expect(() =>
+                client.setNetwork({
+                    "127.0.0.1:50211": "1.2.3",
+                    "127.0.0.1:51211": "1.3.4",
+                }),
+            ).to.throw(
+                "Network is not valid, all nodes must be in the same shard and realm",
+            );
+            expect(client.shard).to.equal(1);
+            expect(client.realm).to.equal(2);
+            expect(Object.values(client.network).map(String)).to.deep.equal([
+                "1.2.3",
+            ]);
+        });
+
+        it("resets to shard 0, realm 0 for a named network", function () {
+            for (const name of [
+                "testnet",
+                "mainnet",
+                "previewnet",
+                "local-node",
+            ]) {
+                const client = NodeClient.forNetwork(
+                    { "127.0.0.1:50211": "1.2.3" },
+                    { scheduleNetworkUpdate: false },
+                );
+
+                client.setNetwork(name);
+
+                expect(client.shard, name).to.equal(0);
+                expect(client.realm, name).to.equal(0);
+            }
+        });
+
+        it("keeps the shard and realm for an empty node map", function () {
+            const client = new NodeClient({
+                shard: 1,
+                realm: 2,
+                scheduleNetworkUpdate: false,
+            });
+
+            client.setNetwork({});
+
+            expect(client.shard).to.equal(1);
+            expect(client.realm).to.equal(2);
+        });
+
+        it("takes the shard and realm from setNetworkFromAddressBook()", function () {
+            const client = NodeClient.forLocalNode();
+
+            client.setNetworkFromAddressBook(
+                new NodeAddressBook({
+                    nodeAddresses: [
+                        new NodeAddress({
+                            accountId: new AccountId(1, 2, 3),
+                            addresses: [
+                                new Endpoint({
+                                    address: "127.0.0.1",
+                                    port: 50211,
+                                }),
+                            ],
+                        }),
+                    ],
+                }),
+            );
+
+            expect(client.shard).to.equal(1);
+            expect(client.realm).to.equal(2);
+            expect(Object.values(client.network).map(String)).to.deep.equal([
+                "1.2.3",
+            ]);
         });
     });
 

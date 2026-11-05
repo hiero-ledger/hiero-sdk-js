@@ -3,7 +3,6 @@
 import Hbar from "../Hbar.js";
 import Transaction, {
     DEFAULT_AUTO_RENEW_PERIOD,
-    TRANSACTION_REGISTRY,
 } from "../transaction/Transaction.js";
 import Long from "long";
 import AccountId from "../account/AccountId.js";
@@ -969,9 +968,3 @@ export default class TokenCreateTransaction extends Transaction {
         return `TokenCreateTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "tokenCreation",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    TokenCreateTransaction._fromProtobuf,
-);

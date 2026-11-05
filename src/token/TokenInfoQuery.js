@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Query, { QUERY_REGISTRY } from "../query/Query.js";
+import Query from "../query/Query.js";
 import TokenId from "./TokenId.js";
 import TokenInfo from "./TokenInfo.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -181,6 +181,3 @@ export default class TokenInfoQuery extends Query {
         return `TokenInfoQuery:${timestamp.toString()}`;
     }
 }
-
-// eslint-disable-next-line @typescript-eslint/unbound-method
-QUERY_REGISTRY.set("tokenGetInfo", TokenInfoQuery._fromProtobuf);
