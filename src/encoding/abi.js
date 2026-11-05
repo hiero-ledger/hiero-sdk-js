@@ -31,12 +31,8 @@ import { keccak256 } from "../cryptography/keccak.js";
  * @returns {ParamType}
  */
 function parseType(typeStr) {
-    // Strip member names: "tuple(uint256 a, string b)" -> "tuple(uint256,string)"
-    // Replace "type name" patterns with just "type"
-    typeStr = typeStr.replace(
-        /\b(u?int\d+|bytes\d*|address|bool|string|tuple)\s+\w+/g,
-        "$1",
-    );
+    // Strip trailing member name: "uint256 a" -> "uint256", "string[] names" -> "string[]"
+    typeStr = typeStr.trim().replace(/\s+[A-Za-z_$][\w$]*$/, "");
 
     // Handle arrays
     const arrayMatch = typeStr.match(/^(.+?)((\[\d*\])+)$/);
@@ -60,7 +56,10 @@ function parseType(typeStr) {
     }
 
     // Handle tuples - accept both "tuple(...)" and "(...)"
-    if (typeStr.startsWith("tuple(") || /^\([^)]+\)$/.test(typeStr)) {
+    if (
+        typeStr.startsWith("tuple(") ||
+        (typeStr.startsWith("(") && typeStr.endsWith(")"))
+    ) {
         const inner = typeStr.startsWith("tuple(")
             ? typeStr.slice(6, -1)
             : typeStr.slice(1, -1);
@@ -208,11 +207,23 @@ function decodeValue(type, data, offset, inTupleOrFixedArray) {
     // Static types
     if (typeStr === "bool") {
         checkBounds(data, offset, 32);
+        // Check all 32 bytes - only the last byte matters but all others must be zero
+        for (let i = 0; i < 31; i++) {
+            if (data[offset + i] !== 0) {
+                throw new Error("invalid bool encoding");
+            }
+        }
         return data[offset + 31] !== 0;
     }
 
     if (typeStr === "address") {
         checkBounds(data, offset, 32);
+        // Upper 12 bytes must be zero
+        for (let i = 0; i < 12; i++) {
+            if (data[offset + i] !== 0) {
+                throw new Error("invalid address encoding");
+            }
+        }
         const addr = hex.encode(data.subarray(offset + 12, offset + 32));
         return checksumAddress(addr);
     }
@@ -255,7 +266,7 @@ function decodeValue(type, data, offset, inTupleOrFixedArray) {
                     childType,
                     data,
                     offset + pointer,
-                    false,
+                    true,
                 );
                 elements.push(value);
                 headOffset += 32;
@@ -313,7 +324,7 @@ function decodeValue(type, data, offset, inTupleOrFixedArray) {
                     childType,
                     data,
                     arrayDataStart + pointer,
-                    false,
+                    inTupleOrFixedArray,
                 );
                 elements.push(value);
                 headOffset += 32;
@@ -324,7 +335,7 @@ function decodeValue(type, data, offset, inTupleOrFixedArray) {
             const childSize = getStaticSize(childType);
             for (let i = 0; i < length; i++) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                const value = decodeValue(childType, data, elemOffset, false);
+                const value = decodeValue(childType, data, elemOffset, inTupleOrFixedArray);
                 elements.push(value);
                 elemOffset += childSize;
             }
