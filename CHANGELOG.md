@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+-   Added frozen-only `Transaction.getTransactionBodyHash(): Promise<Uint8Array>`, returning a 48-byte digest of all prepared node/chunk bodies independently of outer and batch-child envelope signatures. This is a local candidate for [sdk-collaboration-hub #288](https://github.com/hiero-ledger/sdk-collaboration-hub/pull/288); SDK PRs must not merge before maintainer agreement on framing, import ordering and rejection rules. The digest commits to the prepared protobuf representation, without a semantic canonicalization guarantee across encoders. See [the body hash guide](manual/TRANSACTION_BODY_HASH.md). [#4579](https://github.com/hiero-ledger/hiero-sdk-js/issues/4579)
 -   Added `network` getter on `IPv4Address` to replace the misspelled `newtork` getter, which is now deprecated. [#4008](https://github.com/hiero-ledger/hiero-sdk-js/issues/4008)
 
 ### Changed
