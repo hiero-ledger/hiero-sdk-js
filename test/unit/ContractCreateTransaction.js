@@ -4,6 +4,7 @@ import {
     Transaction,
 } from "../../src/index.js";
 import Long from "long";
+import * as HieroProto from "@hiero-ledger/proto";
 
 import PrivateKey from "../../src/PrivateKey.js";
 import TransactionId from "../../src/transaction/TransactionId.js";
@@ -72,6 +73,15 @@ describe("ContractCreateTransaction", function () {
                 new Uint8Array([1, 2, 3, 4]),
             );
             expect(refrozen.bytecodeFileId).to.be.null;
+
+            const body = HieroProto.proto.TransactionBody.decode(
+                refrozen.signableNodeBodyBytesList[0]
+                    .signableTransactionBodyBytes,
+            );
+            expect(
+                Uint8Array.from(body.contractCreateInstance.initcode),
+            ).to.deep.equal(new Uint8Array([1, 2, 3, 4]));
+            expect(body.contractCreateInstance.fileID).to.be.null;
         });
     });
 
