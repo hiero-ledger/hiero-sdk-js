@@ -1,4 +1,4 @@
-import { AccountId, ContractCreateTransaction } from "../../src/index.js";
+import { AccountId, ContractCreateTransaction, Transaction } from "../../src/index.js";
 import Long from "long";
 
 import PrivateKey from "../../src/PrivateKey.js";
@@ -613,6 +613,152 @@ describe("ContractCreateTransaction", function () {
                     autoRenewAccountId.toString(),
                 );
             });
+        });
+    });
+
+    describe("round-trip serialization (toBytes/fromBytes)", function () {
+        it("should preserve hooks and bytecode in frozen -> toBytes() -> fromBytes() round trip", function () {
+                const bytecode = new Uint8Array([1, 2, 3, 4]);
+                const accountId = new AccountId(3);
+                const hook = new HookCreationDetails({
+                    extensionPoint: 1,
+                    hookId: Long.fromNumber(42),
+                    evmHook: new EvmHook({
+                        contractId: new ContractId(1234),
+                    }),
+                });
+
+                const tx = new ContractCreateTransaction()
+                    .setBytecode(bytecode)
+                    .setGas(100000)
+                    .addHook(hook)
+                    .setNodeAccountIds([accountId])
+                    .setTransactionId(TransactionId.generate(accountId))
+                    .freeze();
+
+                const decoded = Transaction.fromBytes(tx.toBytes());
+
+                expect(decoded.hooks).to.have.lengthOf(1);
+                expect(decoded.hooks[0].extensionPoint).to.equal(1);
+                expect(decoded.hooks[0].hookId.toNumber()).to.equal(42);
+                expect(
+                    decoded.hooks[0].evmHook.contractId.num.toNumber(),
+                ).to.equal(1234);
+                expect(decoded.bytecode).to.deep.equal(bytecode);
+            });
+
+        it("should preserve bytecode without hooks", function () {
+                const bytecode = new Uint8Array([5, 6, 7, 8, 9, 10]);
+                const accountId = new AccountId(3);
+
+                const tx = new ContractCreateTransaction()
+                    .setBytecode(bytecode)
+                    .setGas(100000)
+                    .setNodeAccountIds([accountId])
+                    .setTransactionId(TransactionId.generate(accountId))
+                    .freeze();
+
+                const decoded = Transaction.fromBytes(tx.toBytes());
+
+                expect(decoded.bytecode).to.deep.equal(bytecode);
+                expect(decoded.hooks).to.have.lengthOf(0);
+            });
+
+        it("should preserve hooks in unfrozen -> toBytes() -> fromBytes() -> freeze() round trip", function () {
+                const bytecode = new Uint8Array([1, 2, 3, 4]);
+                const accountId = new AccountId(3);
+                const hook = new HookCreationDetails({
+                    extensionPoint: 1,
+                    hookId: Long.fromNumber(42),
+                });
+
+                const tx = new ContractCreateTransaction()
+                    .setBytecode(bytecode)
+                    .setGas(100000)
+                    .addHook(hook)
+                    .setNodeAccountIds([accountId])
+                    .setTransactionId(TransactionId.generate(accountId));
+
+                const decoded = Transaction.fromBytes(tx.toBytes()).freeze();
+
+                expect(decoded.hooks).to.have.lengthOf(1);
+                expect(decoded.hooks[0].extensionPoint).to.equal(1);
+                expect(decoded.hooks[0].hookId.toNumber()).to.equal(42);
+                expect(decoded.bytecode).to.deep.equal(bytecode);
+
+                // Verify the frozen transaction still contains hooks and bytecode in the body
+                const body = decoded._makeTransactionData();
+                expect(body.hookCreationDetails).to.have.lengthOf(1);
+                expect(body.initcode).to.deep.equal(bytecode);
+            });
+
+        it("should preserve complex hooks with storage updates", function () {
+                const bytecode = new Uint8Array([1, 2, 3, 4]);
+                const accountId = new AccountId(3);
+                const storageKey = new Uint8Array([1, 2, 3, 4]);
+                const storageValue = new Uint8Array([5, 6, 7, 8]);
+                const storageSlot = new EvmHookStorageSlot({
+                    key: storageKey,
+                    value: storageValue,
+                });
+                const hook = new HookCreationDetails({
+                    extensionPoint: 1,
+                    evmHook: new EvmHook({
+                        contractId: new ContractId(999),
+                        storageUpdates: [storageSlot],
+                    }),
+                });
+
+                const tx = new ContractCreateTransaction()
+                    .setBytecode(bytecode)
+                    .setGas(100000)
+                    .addHook(hook)
+                    .setNodeAccountIds([accountId])
+                    .setTransactionId(TransactionId.generate(accountId))
+                    .freeze();
+
+                const decoded = Transaction.fromBytes(tx.toBytes());
+
+                expect(decoded.hooks).to.have.lengthOf(1);
+                expect(decoded.hooks[0].evmHook.storageUpdates).to.have.lengthOf(
+                    1,
+                );
+                expect(
+                    decoded.hooks[0].evmHook.storageUpdates[0].key,
+                ).to.deep.equal(storageKey);
+                expect(
+                    decoded.hooks[0].evmHook.storageUpdates[0].value,
+                ).to.deep.equal(storageValue);
+                expect(decoded.bytecode).to.deep.equal(bytecode);
+            });
+
+        it("should preserve multiple hooks and bytecode", function () {
+                const bytecode = new Uint8Array([1, 2, 3, 4]);
+                const accountId = new AccountId(3);
+                const hook1 = new HookCreationDetails({
+                    extensionPoint: 1,
+                    hookId: Long.fromNumber(1),
+                });
+                const hook2 = new HookCreationDetails({
+                    extensionPoint: 2,
+                    hookId: Long.fromNumber(2),
+                });
+
+                const tx = new ContractCreateTransaction()
+                    .setBytecode(bytecode)
+                    .setGas(100000)
+                    .addHook(hook1)
+                    .addHook(hook2)
+                    .setNodeAccountIds([accountId])
+                    .setTransactionId(TransactionId.generate(accountId))
+                    .freeze();
+
+                const decoded = Transaction.fromBytes(tx.toBytes());
+
+                expect(decoded.hooks).to.have.lengthOf(2);
+                expect(decoded.hooks[0].extensionPoint).to.equal(1);
+                expect(decoded.hooks[1].extensionPoint).to.equal(2);
+                expect(decoded.bytecode).to.deep.equal(bytecode);
         });
     });
 });
