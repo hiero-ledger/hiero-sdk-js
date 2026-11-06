@@ -29,6 +29,20 @@ export function encode(data) {
  */
 export function decode(text) {
     const str = text.startsWith("0x") ? text.substring(2) : text;
+
+    // Same checks as hex.js, so every platform rejects the same input.
+    if (str.length % 2 !== 0) {
+        throw new Error(
+            "Invalid hex string: Must have an even number of characters.",
+        );
+    }
+
+    if (/[^0-9a-fA-F]/.test(str)) {
+        throw new Error(
+            "Invalid hex string: Contains non-hexadecimal characters.",
+        );
+    }
+
     const result = str.match(/.{1,2}/gu);
 
     return new Uint8Array(
