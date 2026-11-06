@@ -1,29 +1,242 @@
 import {
     AccountId,
+    Client,
+    Timestamp,
     TopicDeleteTransaction,
     TopicId,
-    Timestamp,
     Transaction,
     TransactionId,
 } from "../../src/index.js";
+import BadEntityIdError from "../../src/BadEntityIdError.js";
 
 describe("TopicDeleteTransaction", function () {
-    it("should convert from and to bytes", function () {
-        const transactionId = TransactionId.withValidStart(
-            AccountId.fromString("0.0.1001"),
-            new Timestamp(1596210382, 0),
+    const VALID_START = new Timestamp(1596210382, 0);
+
+    let topicId, transactionId, nodeId;
+
+    beforeEach(function () {
+        topicId = new TopicId(0, 0, 5005);
+        transactionId = TransactionId.withValidStart(
+            new AccountId(0, 0, 1001),
+            VALID_START,
         );
+        nodeId = new AccountId(0, 0, 3);
+    });
 
-        const tx = new TopicDeleteTransaction()
-            .setNodeAccountIds([AccountId.fromString("0.0.3")])
+    /**
+     * @param {TopicDeleteTransaction} transaction
+     * @returns {TopicDeleteTransaction}
+     */
+    function freezeWithIds(transaction) {
+        return transaction
+            .setNodeAccountIds([nodeId])
             .setTransactionId(transactionId)
-            .setTopicId(TopicId.fromString("0.0.5005"))
             .freeze();
+    }
 
-        const tx2 = Transaction.fromBytes(tx.toBytes());
+    /**
+     * @returns {TopicDeleteTransaction}
+     */
+    function withAllFields() {
+        return new TopicDeleteTransaction().setTopicId(topicId);
+    }
 
-        expect(tx2).to.be.instanceOf(TopicDeleteTransaction);
-        expect(tx2.transactionId.toString()).to.equal(transactionId.toString());
-        expect(tx2.topicId.toString()).to.equal("0.0.5005");
+    describe("constructor", function () {
+        it("should default every field to null", function () {
+            const transaction = new TopicDeleteTransaction();
+
+            expect(transaction.topicId).to.be.null;
+        });
+
+        it("should set the fields given in props", function () {
+            const transaction = new TopicDeleteTransaction({ topicId });
+
+            expect(transaction.topicId.toString()).to.equal(topicId.toString());
+        });
+
+        it("should accept strings in props", function () {
+            const transaction = new TopicDeleteTransaction({
+                topicId: "0.0.5005",
+            });
+
+            expect(transaction.topicId.toString()).to.equal("0.0.5005");
+        });
+    });
+
+    describe("setTopicId", function () {
+        it("should accept an instance", function () {
+            const transaction = new TopicDeleteTransaction().setTopicId(
+                topicId,
+            );
+
+            expect(transaction.topicId.toString()).to.equal(topicId.toString());
+        });
+
+        it("should accept a string", function () {
+            const transaction = new TopicDeleteTransaction().setTopicId(
+                "0.0.5005",
+            );
+
+            expect(transaction.topicId.toString()).to.equal("0.0.5005");
+        });
+
+        it("should store a copy of the instance", function () {
+            const transaction = new TopicDeleteTransaction().setTopicId(
+                topicId,
+            );
+
+            expect(transaction.topicId).to.not.equal(topicId);
+        });
+
+        it("should be chainable", function () {
+            const transaction = new TopicDeleteTransaction();
+
+            expect(transaction.setTopicId(topicId)).to.equal(transaction);
+        });
+
+        it("should throw once frozen", function () {
+            const transaction = freezeWithIds(new TopicDeleteTransaction());
+
+            expect(() => transaction.setTopicId(topicId)).to.throw(
+                "transaction is immutable",
+            );
+        });
+    });
+
+    describe("_makeTransactionData", function () {
+        it("should encode every field", function () {
+            expect(withAllFields()._makeTransactionData()).to.deep.equal({
+                topicID: topicId._toProtobuf(),
+            });
+        });
+
+        it("should encode unset fields as null", function () {
+            expect(
+                new TopicDeleteTransaction()._makeTransactionData(),
+            ).to.deep.equal({
+                topicID: null,
+            });
+        });
+    });
+
+    describe("_fromProtobuf", function () {
+        /**
+         * @param {object} body the consensusDeleteTopic body
+         * @returns {TopicDeleteTransaction}
+         */
+        function fromBody(body) {
+            const transaction = { bodyBytes: Uint8Array.of(0), sigMap: {} };
+
+            return TopicDeleteTransaction._fromProtobuf(
+                [transaction],
+                [transaction],
+                [transactionId],
+                [nodeId],
+                [{ consensusDeleteTopic: body }],
+            );
+        }
+
+        it("should decode every field", function () {
+            const transaction = fromBody({
+                topicID: topicId._toProtobuf(),
+            });
+
+            expect(transaction).to.be.instanceOf(TopicDeleteTransaction);
+            expect(transaction.topicId.toString()).to.equal(topicId.toString());
+        });
+
+        it("should leave missing fields null", function () {
+            const transaction = fromBody({});
+
+            expect(transaction.topicId).to.be.null;
+        });
+    });
+
+    describe("toBytes() and fromBytes()", function () {
+        it("should keep every field", function () {
+            const transaction = freezeWithIds(withAllFields());
+
+            const decoded = Transaction.fromBytes(transaction.toBytes());
+
+            expect(decoded).to.be.instanceOf(TopicDeleteTransaction);
+            expect(decoded.transactionId.toString()).to.equal(
+                transactionId.toString(),
+            );
+            expect(decoded.topicId.toString()).to.equal(topicId.toString());
+        });
+    });
+
+    describe("_validateChecksums", function () {
+        let mainnet, testnet;
+
+        beforeEach(function () {
+            mainnet = Client.forMainnet({ scheduleNetworkUpdate: false });
+            testnet = Client.forTestnet({ scheduleNetworkUpdate: false });
+        });
+
+        afterEach(function () {
+            mainnet.close();
+            testnet.close();
+        });
+
+        it("should check the topic ID checksum against the client's network", function () {
+            // 0.0.123-vfmkw has the mainnet checksum
+            const transaction = new TopicDeleteTransaction().setTopicId(
+                TopicId.fromString("0.0.123-vfmkw"),
+            );
+
+            expect(() =>
+                transaction._validateChecksums(mainnet),
+            ).to.not.throw();
+            expect(() => transaction._validateChecksums(testnet)).to.throw(
+                BadEntityIdError,
+            );
+        });
+
+        it("should skip unset fields", function () {
+            expect(() =>
+                new TopicDeleteTransaction()._validateChecksums(testnet),
+            ).to.not.throw();
+        });
+    });
+
+    describe("_execute", function () {
+        it("should call consensus.deleteTopic() with the request", async function () {
+            const request = {};
+            const response = {};
+            const calls = [];
+            const channel = {
+                consensus: {
+                    deleteTopic: (arg) => {
+                        calls.push(arg);
+                        return Promise.resolve(response);
+                    },
+                },
+            };
+
+            expect(
+                await new TopicDeleteTransaction()._execute(channel, request),
+            ).to.equal(response);
+            expect(calls).to.deep.equal([request]);
+            expect(calls[0]).to.equal(request);
+        });
+    });
+
+    describe("_getTransactionDataCase", function () {
+        it("should return consensusDeleteTopic", function () {
+            expect(
+                new TopicDeleteTransaction()._getTransactionDataCase(),
+            ).to.equal("consensusDeleteTopic");
+        });
+    });
+
+    describe("_getLogId", function () {
+        it("should include the class name and valid start", function () {
+            const transaction = freezeWithIds(new TopicDeleteTransaction());
+
+            expect(transaction._getLogId()).to.equal(
+                `TopicDeleteTransaction:${VALID_START.toString()}`,
+            );
+        });
     });
 });
