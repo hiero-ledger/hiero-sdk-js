@@ -123,8 +123,8 @@ describe("Client", function () {
     });
 
     describe("local-node factories work", function () {
-        const consensusNodes = { "127.0.0.1:50211": new AccountId(3) };
-        const mirrorNodes = ["127.0.0.1:5600"];
+        const consensusNodes = { "127.0.0.1:35211": new AccountId(3) };
+        const mirrorNodes = ["127.0.0.1:38081"];
 
         function assertIsLocalNode(client) {
             expect(client.network).to.deep.equal(consensusNodes);
@@ -474,13 +474,13 @@ describe("Client", function () {
                 scheduleNetworkUpdate: false,
             });
 
-            // Set a custom mirror network with localhost and custom port (should use HTTP)
-            client._mirrorNetwork.setNetwork(["localhost:5600"]);
+            // A loopback mirror node keeps its port and uses HTTP
+            client._mirrorNetwork.setNetwork(["localhost:38081"]);
 
             const mirrorRestApiBaseUrl = client.mirrorRestApiBaseUrl;
 
             expect(mirrorRestApiBaseUrl).to.equal(
-                "http://localhost:5551/api/v1",
+                "http://localhost:38081/api/v1",
             );
         });
 
@@ -489,13 +489,13 @@ describe("Client", function () {
                 scheduleNetworkUpdate: false,
             });
 
-            // Set a custom mirror network with 127.0.0.1 and custom port (should use HTTP)
-            client._mirrorNetwork.setNetwork(["127.0.0.1:5600"]);
+            // A loopback mirror node keeps its port and uses HTTP
+            client._mirrorNetwork.setNetwork(["127.0.0.1:38081"]);
 
             const mirrorRestApiBaseUrl = client.mirrorRestApiBaseUrl;
 
             expect(mirrorRestApiBaseUrl).to.equal(
-                "http://127.0.0.1:5551/api/v1",
+                "http://127.0.0.1:38081/api/v1",
             );
         });
 

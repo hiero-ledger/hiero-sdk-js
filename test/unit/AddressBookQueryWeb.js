@@ -392,13 +392,13 @@ describe("AddressBookQueryWeb", function () {
         expect(fake.requests).to.have.length(1);
     });
 
-    it("targets the local REST port on a loopback mirror node whatever its configured port", async function () {
+    it("asks a loopback mirror node on its configured port, over HTTP", async function () {
         const fake = new FakeHttpTransport().respondJson(200, { nodes: [] });
 
-        await query().execute(track(fake, { mirror: "127.0.0.1:5600" }));
+        await query().execute(track(fake, { mirror: "127.0.0.1:38081" }));
 
         expect(fake.requests[0].url).to.equal(
-            "http://127.0.0.1:5551/api/v1/network/nodes?file.id=0.0.102&limit=25",
+            "http://127.0.0.1:38081/api/v1/network/nodes?file.id=0.0.102&limit=25",
         );
     });
 

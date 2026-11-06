@@ -231,7 +231,6 @@ export default class AddressBookQueryWeb extends Query {
         baseUrl = `${baseUrl}/api/v1`;
 
         const http = client._mirrorNodeHttpClient({
-            family: "rest",
             baseUrl,
             maxAttempts: this._maxAttempts,
             maxBackoff: this._maxBackoff,
