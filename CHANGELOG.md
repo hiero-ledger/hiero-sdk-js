@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+-   Added node37 (0.0.40) to the mainnet gRPC-web proxies used by WebClient and NativeClient. [#4649](https://github.com/hiero-ledger/hiero-sdk-js/issues/4649)
 -   Added node39 (0.0.42) to the mainnet gRPC-web proxies used by WebClient and NativeClient. [#4687](https://github.com/hiero-ledger/hiero-sdk-js/issues/4687)
 -   Added `network` getter on `IPv4Address` to replace the misspelled `newtork` getter, which is now deprecated. [#4008](https://github.com/hiero-ledger/hiero-sdk-js/issues/4008)
 
