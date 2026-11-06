@@ -58,6 +58,7 @@ export const MAINNET = {
     "node32.swirldslabs.com:443": new AccountId(35),
     "node33.swirldslabs.com:443": new AccountId(36),
     "node34.swirldslabs.com:443": new AccountId(37),
+    "node39.swirldslabs.com:443": new AccountId(42),
 };
 
 export const WEB_TESTNET = {
@@ -162,6 +163,8 @@ export const ALL_NETWORK_IPS = {
     "34.142.172.228:": "0.0.33",
     "34.16.139.248:": "0.0.34",
     "35.155.212.90:": "0.0.34",
+    "91.103.1.115:": "0.0.42",
+    "91.103.1.116:": "0.0.42",
     // TESTNET
     "34.94.106.61:": "0.0.3",
     "50.18.132.211:": "0.0.3",

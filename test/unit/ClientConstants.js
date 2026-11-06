@@ -79,6 +79,12 @@ describe("ClientConstants", function () {
     });
 
     describe("ALL_NETWORK_IPS", function () {
+        it("identifies both node39 proxy IPs as account 0.0.42", function () {
+            for (const ip of ["91.103.1.115:", "91.103.1.116:"]) {
+                expect(ALL_NETWORK_IPS[ip], ip).to.equal("0.0.42");
+            }
+        });
+
         // The keys deliberately carry a trailing colon so the literals are not
         // read as bare hardcoded IP addresses by static analysis; `NodeChannel`
         // re-appends it on lookup. A key without it would silently never match.
