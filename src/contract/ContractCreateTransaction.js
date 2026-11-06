@@ -261,6 +261,14 @@ export default class ContractCreateTransaction extends Transaction {
                               ),
                           )
                         : undefined,
+                // fileID and initcode are a oneof; copy Buffer → Uint8Array so
+                // round-tripped bytecode deep-equals the original Uint8Array.
+                bytecode:
+                    create.initcode != null
+                        ? new Uint8Array(
+                              /** @type {Uint8Array} */ (create.initcode),
+                          )
+                        : undefined,
                 adminKey:
                     create.adminKey != null
                         ? Key._fromProtobufKey(create.adminKey)
