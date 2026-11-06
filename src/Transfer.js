@@ -67,6 +67,10 @@ export default class Transfer {
         const transfers = [];
 
         for (const transfer of accountAmounts) {
+            if (transfer.accountID == null) {
+                throw new Error("accountID is required");
+            }
+
             let hookCall = undefined;
             if (transfer.preTxAllowanceHook != null) {
                 hookCall = FungibleHookCall._fromProtobufWithType(
@@ -82,11 +86,7 @@ export default class Transfer {
 
             transfers.push(
                 new Transfer({
-                    accountId: AccountId._fromProtobuf(
-                        /** @type {HieroProto.proto.IAccountID} */ (
-                            transfer.accountID
-                        ),
-                    ),
+                    accountId: AccountId._fromProtobuf(transfer.accountID),
                     amount: Hbar.fromTinybars(
                         transfer.amount != null ? transfer.amount : 0,
                     ),

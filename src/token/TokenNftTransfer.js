@@ -74,12 +74,20 @@ export default class TokenNftTransfer {
         const transfers = [];
 
         for (const tokenTransfer of tokenTransfers) {
-            const tokenId = TokenId._fromProtobuf(
-                /** @type {HieroProto.proto.ITokenID} */ (tokenTransfer.token),
-            );
+            if (tokenTransfer.token == null) {
+                throw new Error("token is required");
+            }
+            const tokenId = TokenId._fromProtobuf(tokenTransfer.token);
             for (const transfer of tokenTransfer.nftTransfers != null
                 ? tokenTransfer.nftTransfers
                 : []) {
+                if (transfer.senderAccountID == null) {
+                    throw new Error("senderAccountID is required");
+                }
+                if (transfer.receiverAccountID == null) {
+                    throw new Error("receiverAccountID is required");
+                }
+
                 // Determine sender hook type
                 let senderHookCall;
                 if (transfer.preTxSenderAllowanceHook != null) {
@@ -112,14 +120,10 @@ export default class TokenNftTransfer {
                     new TokenNftTransfer({
                         tokenId,
                         senderAccountId: AccountId._fromProtobuf(
-                            /** @type {HieroProto.proto.IAccountID} */ (
-                                transfer.senderAccountID
-                            ),
+                            transfer.senderAccountID,
                         ),
                         receiverAccountId: AccountId._fromProtobuf(
-                            /** @type {HieroProto.proto.IAccountID} */ (
-                                transfer.receiverAccountID
-                            ),
+                            transfer.receiverAccountID,
                         ),
                         serialNumber:
                             transfer.serialNumber != null
