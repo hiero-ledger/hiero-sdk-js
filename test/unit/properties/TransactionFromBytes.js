@@ -44,27 +44,6 @@ function fieldNumber(kase) {
 const TRANSACTION_CASES = oneofCases(proto.TransactionBody, "data");
 
 /**
- * Transaction types that fail today. Their properties are skipped until the
- * issue for each one is fixed.
- */
-const KNOWN_FAILURES = new Set([
-    // TODO(#4689): a schedule without a scheduled transaction body.
-    "scheduleCreate",
-    // TODO(#4690): a transfer, allowance or token rejection without an account
-    // or token ID.
-    "cryptoTransfer",
-    "tokenAirdrop",
-    "cryptoApproveAllowance",
-    "cryptoDeleteAllowance",
-    "tokenReject",
-    // TODO(#4691): a custom fee without its fee details.
-    "tokenCreation",
-    "tokenFeeScheduleUpdate",
-    "consensusCreateTopic",
-    "consensusUpdateTopic",
-]);
-
-/**
  * A body with a transaction ID and node account ID, so decoding gets past
  * the common fields to the code for each transaction type.
  */
@@ -232,41 +211,33 @@ describe(
 
         describe("for each transaction type", function () {
             for (const kase of TRANSACTION_CASES) {
-                const property = KNOWN_FAILURES.has(kase) ? it.skip : it;
-
                 describe(kase, function () {
-                    property(
-                        "returns a transaction or throws an Error for random content",
-                        function () {
-                            fc.assert(
-                                fc.property(protobufMessage(3), (content) => {
-                                    decode(transactionWithCase(kase, content));
-                                }),
-                            );
-                        },
-                    );
+                    it("returns a transaction or throws an Error for random content", function () {
+                        fc.assert(
+                            fc.property(protobufMessage(3), (content) => {
+                                decode(transactionWithCase(kase, content));
+                            }),
+                        );
+                    });
 
-                    property(
-                        "decodes what toBytes() writes for a decoded transaction",
-                        function () {
-                            fc.assert(
-                                fc.property(protobufMessage(3), (content) => {
-                                    const transaction = decode(
-                                        transactionWithCase(kase, content),
-                                    );
-                                    if (transaction == null) {
-                                        return;
-                                    }
+                    it("decodes what toBytes() writes for a decoded transaction", function () {
+                        fc.assert(
+                            fc.property(protobufMessage(3), (content) => {
+                                const transaction = decode(
+                                    transactionWithCase(kase, content),
+                                );
+                                if (transaction == null) {
+                                    return;
+                                }
 
-                                    expect(
-                                        Transaction.fromBytes(
-                                            transaction.toBytes(),
-                                        ),
-                                    ).to.be.instanceOf(transaction.constructor);
-                                }),
-                            );
-                        },
-                    );
+                                expect(
+                                    Transaction.fromBytes(
+                                        transaction.toBytes(),
+                                    ),
+                                ).to.be.instanceOf(transaction.constructor);
+                            }),
+                        );
+                    });
                 });
             }
         });
