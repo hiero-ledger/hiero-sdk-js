@@ -207,6 +207,14 @@ export class ASN1Decoder {
     isPublicKeyType() {
         return this.isPublicKey;
     }
+
+    /**
+     * Checks whether decoding ended exactly at the end of the data.
+     * @returns {boolean} True if every byte was read and no element ran past the end.
+     */
+    isFullyRead() {
+        return this.pos === this.data.length;
+    }
 }
 
 /**

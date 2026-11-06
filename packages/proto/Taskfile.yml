@@ -120,6 +120,8 @@ tasks:
     "test:release":
         deps:
             - build
+        cmds:
+            - node -e "const { proto } = require('./lib/index.js'); const key = proto.Key.decode(Buffer.from('0a021005', 'hex')); if (!key.contractID || key.contractID.realmNum.toNumber() !== 5) throw new Error('decode failed');"
 
     update:
         desc: "Update protobufs: fetch from submodule at given tag, move, flatten, regenerate JS. Use when bumping proto tag (e.g. task proto:update -- v0.68.2)"

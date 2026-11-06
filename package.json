@@ -96,7 +96,7 @@
         "utf8": "3.0.0"
     },
     "devDependencies": {
-        "@babel/cli": "7.23.4",
+        "@babel/cli": "8.0.6",
         "@babel/core": "7.23.3",
         "@babel/eslint-parser": "7.23.3",
         "@babel/plugin-proposal-export-namespace-from": "7.18.9",
@@ -129,6 +129,7 @@
         "codecov": "3.8.3",
         "dotenv": "18.0.4",
         "dpdm": "4.2.0",
+        "esbuild": "0.28.1",
         "@eslint/js": "10.0.1",
         "eslint": "10.13.0",
         "eslint-plugin-compat": "7.0.2",
@@ -136,6 +137,7 @@
         "eslint-plugin-jsdoc": "65.4.2",
         "eslint-plugin-n": "18.0.1",
         "@vitest/eslint-plugin": "1.6.7",
+        "fast-check": "4.10.2",
         "geckodriver": "8.0.0",
         "jsdom": "30.0.1",
         "msw": "3.0.3",
@@ -149,7 +151,8 @@
         "typedoc": "0.28.1",
         "typescript": "5.9.3",
         "vite": "8.3.5",
-        "vitest": "5.0.5"
+        "vitest": "5.0.5",
+        "webpack": "5.111.1"
     },
     "pnpm": {
         "overrides": {

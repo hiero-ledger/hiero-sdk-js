@@ -306,6 +306,3 @@ export default class PublicKey extends Key {
         );
     }
 }
-
-CACHE.setPublicKeyED25519((key) => PublicKey.fromBytesED25519(key));
-CACHE.setPublicKeyECDSA((key) => PublicKey.fromBytesECDSA(key));

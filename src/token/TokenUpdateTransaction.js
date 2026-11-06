@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import TokenId from "./TokenId.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import AccountId from "../account/AccountId.js";
 import Timestamp from "../Timestamp.js";
 import Duration from "../Duration.js";
@@ -327,9 +325,7 @@ export default class TokenUpdateTransaction extends Transaction {
                         : undefined,
                 metadata:
                     update.metadata != null
-                        ? Object.hasOwn(update.metadata, "value")
-                            ? update.metadata.value
-                            : undefined
+                        ? update.metadata.value ?? new Uint8Array()
                         : undefined,
                 keyVerificationMode:
                     update.keyVerificationMode != null
@@ -817,9 +813,3 @@ export default class TokenUpdateTransaction extends Transaction {
         return `TokenUpdateTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "tokenUpdate",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    TokenUpdateTransaction._fromProtobuf,
-);

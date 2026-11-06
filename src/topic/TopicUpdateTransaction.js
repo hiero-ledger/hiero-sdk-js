@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import AccountId from "../account/AccountId.js";
 import TopicId from "./TopicId.js";
 import Duration from "../Duration.js";
@@ -219,11 +217,7 @@ export default class TopicUpdateTransaction extends Transaction {
                           )
                         : undefined,
                 topicMemo:
-                    update.memo != null
-                        ? Object.hasOwn(update.memo, "value")
-                            ? update.memo.value
-                            : undefined
-                        : undefined,
+                    update.memo != null ? update.memo.value ?? "" : undefined,
                 expirationTime:
                     update.expirationTime != null
                         ? Timestamp._fromProtobuf(update.expirationTime)
@@ -653,9 +647,3 @@ export default class TopicUpdateTransaction extends Transaction {
         return `TopicUpdateTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "consensusUpdateTopic",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    TopicUpdateTransaction._fromProtobuf,
-);

@@ -249,7 +249,7 @@ export default class TransactionId {
      * @param {Client} client
      * @returns {Promise<TransactionReceipt>}
      */
-    getReceipt(client) {
+    async getReceipt(client) {
         return CACHE.transactionReceiptQueryConstructor()
             .setTransactionId(this)
             .execute(client);

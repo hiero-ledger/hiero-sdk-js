@@ -3,9 +3,7 @@
 import AccountId from "../account/AccountId.js";
 import ContractId from "./ContractId.js";
 import FileId from "../file/FileId.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import Duration from "../Duration.js";
 import Timestamp from "../Timestamp.js";
 import Key from "../Key.js";
@@ -294,8 +292,9 @@ export default class ContractUpdateTransaction extends Transaction {
                         ? update.stakedNodeId
                         : undefined,
                 declineStakingReward:
-                    update.declineReward != null &&
-                    Boolean(update.declineReward) == true,
+                    update.declineReward != null
+                        ? update.declineReward.value ?? false
+                        : undefined,
                 autoRenewAccountId:
                     update.autoRenewAccountId != null
                         ? AccountId._fromProtobuf(update.autoRenewAccountId)
@@ -737,9 +736,3 @@ export default class ContractUpdateTransaction extends Transaction {
         return `ContractUpdateTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "contractUpdateInstance",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    ContractUpdateTransaction._fromProtobuf,
-);

@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import Long from "long";
 
 /**
@@ -173,9 +171,3 @@ export default class NodeDeleteTransaction extends Transaction {
         return `NodeDeleteTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "nodeDelete",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    NodeDeleteTransaction._fromProtobuf,
-);

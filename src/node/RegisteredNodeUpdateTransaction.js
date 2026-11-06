@@ -2,9 +2,7 @@
 
 import Long from "long";
 import Key from "../Key.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import RegisteredServiceEndpoint from "./RegisteredServiceEndpoint.js";
 
 /**
@@ -129,9 +127,8 @@ export default class RegisteredNodeUpdateTransaction extends Transaction {
                         ? Key._fromProtobufKey(registeredNodeUpdate.adminKey)
                         : null,
                 description:
-                    registeredNodeUpdate.description != null &&
-                    Object.hasOwn(registeredNodeUpdate.description, "value")
-                        ? registeredNodeUpdate.description.value
+                    registeredNodeUpdate.description != null
+                        ? registeredNodeUpdate.description.value ?? ""
                         : null,
                 serviceEndpoints:
                     registeredNodeUpdate.serviceEndpoint != null &&
@@ -340,9 +337,3 @@ export default class RegisteredNodeUpdateTransaction extends Transaction {
         return `RegisteredNodeUpdateTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "registeredNodeUpdate",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    RegisteredNodeUpdateTransaction._fromProtobuf,
-);

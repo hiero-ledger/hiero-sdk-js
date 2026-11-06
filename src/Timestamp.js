@@ -9,7 +9,20 @@ import Cache from "./Cache.js";
  */
 
 const MAX_NS = Long.fromNumber(1000000000);
-const generatedIds = new Set();
+
+/**
+ * How long a generated timestamp is remembered. Jitter moves a timestamp back
+ * by 3 to 8 seconds, so ids generated at the same moment can fall into a window
+ * of about 5 seconds. 10 seconds is the maximum jitter plus a margin.
+ */
+const GENERATED_IDS_WINDOW_MS = 10000;
+
+// Two generations of generated timestamps. Every window the current one
+// becomes the previous one and the old previous one is dropped, so an entry is
+// kept for at least one and at most two windows.
+let currentIds = new Set();
+let previousIds = new Set();
+let lastSwap = Date.now();
 
 /**
  * Represents a point in time with seconds and nanoseconds precision.
@@ -58,10 +71,23 @@ export default class Timestamp {
             Math.floor(Math.random() * 1000000);
 
         const timestamp = new Timestamp(seconds, nanos);
-        if (generatedIds.has(timestamp.toString())) {
-            return this.generate();
+        const id = timestamp.toString();
+
+        const elapsed = Date.now() - lastSwap;
+        if (elapsed >= 2 * GENERATED_IDS_WINDOW_MS) {
+            currentIds = new Set();
+            previousIds = new Set();
+            lastSwap = Date.now();
+        } else if (elapsed >= GENERATED_IDS_WINDOW_MS) {
+            previousIds = currentIds;
+            currentIds = new Set();
+            lastSwap = Date.now();
+        }
+
+        if (currentIds.has(id) || previousIds.has(id)) {
+            return this.generate(hasJitter);
         } else {
-            generatedIds.add(timestamp.toString());
+            currentIds.add(id);
             return timestamp;
         }
     }

@@ -50,17 +50,7 @@ export default class NativeClient extends Client {
                         throw new Error(`unknown network: ${props.network}`);
                 }
             } else if (props.network != null) {
-                Client._validateNetworkConsistency(props.network);
-
-                const { shard, realm } = Client._extractShardRealm(
-                    props.network,
-                );
-
-                // Shard and realm are inferred from the network, so we need to set them here
-                // to ensure that the client is properly configured.
-                this._shard = shard;
-                this._realm = realm;
-
+                // Also takes the shard and realm from the node account IDs.
                 this.setNetwork(props.network);
             }
         }
@@ -208,6 +198,10 @@ export default class NativeClient extends Client {
     }
 
     /**
+     * Replaces the consensus nodes. The client's shard and realm follow the
+     * node account IDs, which must all be in the same shard and realm; the
+     * named networks are in shard 0, realm 0.
+     *
      * @param {{[key: string]: (string | AccountId)} | string} network
      * @returns {void}
      */
@@ -215,16 +209,16 @@ export default class NativeClient extends Client {
         if (typeof network === "string") {
             switch (network) {
                 case "previewnet":
-                    this._network.setNetwork(WebNetwork.PREVIEWNET);
+                    this._setNetworkNodes(WebNetwork.PREVIEWNET);
                     break;
                 case "testnet":
-                    this._network.setNetwork(WebNetwork.TESTNET);
+                    this._setNetworkNodes(WebNetwork.TESTNET);
                     break;
                 case "mainnet":
-                    this._network.setNetwork(WebNetwork.MAINNET);
+                    this._setNetworkNodes(WebNetwork.MAINNET);
             }
         } else {
-            this._network.setNetwork(network);
+            this._setNetworkNodes(network);
         }
     }
 

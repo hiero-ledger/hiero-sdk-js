@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import AccountId from "./AccountId.js";
 import Timestamp from "../Timestamp.js";
 import Duration from "../Duration.js";
@@ -229,12 +227,7 @@ export default class AccountUpdateTransaction extends Transaction {
                         : undefined,
                 receiverSignatureRequired:
                     update.receiverSigRequiredWrapper != null
-                        ? Object.hasOwn(
-                              update.receiverSigRequiredWrapper,
-                              "value",
-                          )
-                            ? update.receiverSigRequiredWrapper.value
-                            : undefined
+                        ? update.receiverSigRequiredWrapper.value ?? false
                         : undefined,
                 proxyAccountId:
                     update.proxyAccountID != null
@@ -257,11 +250,9 @@ export default class AccountUpdateTransaction extends Transaction {
                 accountMemo:
                     update.memo != null ? update.memo.value ?? "" : undefined,
                 maxAutomaticTokenAssociations:
-                    update.maxAutomaticTokenAssociations != null &&
-                    update.maxAutomaticTokenAssociations.value != null &&
-                    Object.hasOwn(update.maxAutomaticTokenAssociations, "value")
+                    update.maxAutomaticTokenAssociations != null
                         ? Long.fromNumber(
-                              update.maxAutomaticTokenAssociations.value,
+                              update.maxAutomaticTokenAssociations.value ?? 0,
                           )
                         : undefined,
                 stakedAccountId:
@@ -274,9 +265,7 @@ export default class AccountUpdateTransaction extends Transaction {
                         : undefined,
                 declineStakingReward:
                     update.declineReward != null
-                        ? Object.hasOwn(update.declineReward, "value")
-                            ? update.declineReward.value
-                            : undefined
+                        ? update.declineReward.value ?? false
                         : undefined,
             }),
             transactions,
@@ -701,9 +690,3 @@ export default class AccountUpdateTransaction extends Transaction {
         return `AccountUpdateTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "cryptoUpdateAccount",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    AccountUpdateTransaction._fromProtobuf,
-);
