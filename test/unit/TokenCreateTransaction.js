@@ -7,8 +7,14 @@ import {
     Timestamp,
     TokenType,
     TokenSupplyType,
+    CustomFixedFee,
+    CustomFractionalFee,
+    CustomRoyaltyFee,
+    TokenId,
+    Transaction,
 } from "../../src/index.js";
 import Long from "long";
+import * as HieroProto from "@hiero-ledger/proto";
 import { DEFAULT_AUTO_RENEW_PERIOD } from "../../src/transaction/Transaction.js";
 
 describe("TokenCreateTransaction", function () {
@@ -329,5 +335,113 @@ describe("TokenCreateTransaction", function () {
             TokenSupplyType.Finite.toString(),
         );
         expect(reconstructed.customFees.length).to.be.greaterThan(0);
+    });
+
+    it("should convert from and to bytes", function () {
+        const transactionId = TransactionId.withValidStart(
+            AccountId.fromString("0.0.1001"),
+            new Timestamp(1596210382, 0),
+        );
+        const keys = Array.from(
+            { length: 8 },
+            () => PrivateKey.generateED25519().publicKey,
+        );
+        const [
+            adminKey,
+            kycKey,
+            freezeKey,
+            pauseKey,
+            wipeKey,
+            supplyKey,
+            feeScheduleKey,
+            metadataKey,
+        ] = keys;
+        const expirationTime = new Timestamp(1700000000, 0);
+        const metadata = Uint8Array.of(1, 2, 3);
+        const collector = AccountId.fromString("0.0.5007");
+        const customFees = [
+            new CustomFixedFee()
+                .setAmount(10)
+                .setDenominatingTokenId(TokenId.fromString("0.0.5008"))
+                .setFeeCollectorAccountId(collector),
+            new CustomFractionalFee()
+                .setNumerator(1)
+                .setDenominator(20)
+                .setMin(1)
+                .setMax(100)
+                .setFeeCollectorAccountId(collector),
+            new CustomRoyaltyFee()
+                .setNumerator(1)
+                .setDenominator(10)
+                .setFallbackFee(new CustomFixedFee().setHbarAmount(new Hbar(1)))
+                .setFeeCollectorAccountId(collector)
+                .setAllCollectorsAreExempt(true),
+        ];
+        /** @param {import("../../src/token/CustomFee.js").default} fee */
+        const encodeFee = (fee) =>
+            HieroProto.proto.CustomFee.encode(fee._toProtobuf()).finish();
+
+        // setExpirationTime() clears the auto renew period, so it goes first.
+        const tx = new TokenCreateTransaction()
+            .setNodeAccountIds([AccountId.fromString("0.0.3")])
+            .setTransactionId(transactionId)
+            .setTokenName("name")
+            .setTokenSymbol("symbol")
+            .setDecimals(7)
+            .setInitialSupply(1000)
+            .setTreasuryAccountId(AccountId.fromString("0.0.5005"))
+            .setAdminKey(adminKey)
+            .setKycKey(kycKey)
+            .setFreezeKey(freezeKey)
+            .setPauseKey(pauseKey)
+            .setWipeKey(wipeKey)
+            .setSupplyKey(supplyKey)
+            .setFeeScheduleKey(feeScheduleKey)
+            .setMetadataKey(metadataKey)
+            .setFreezeDefault(true)
+            .setExpirationTime(expirationTime)
+            .setAutoRenewAccountId(AccountId.fromString("0.0.5006"))
+            .setAutoRenewPeriod(8000000)
+            .setTokenMemo("memo")
+            .setCustomFees(customFees)
+            .setTokenType(TokenType.NonFungibleUnique)
+            .setSupplyType(TokenSupplyType.Finite)
+            .setMaxSupply(10000)
+            .setMetadata(metadata)
+            .freeze();
+
+        const tx2 = Transaction.fromBytes(tx.toBytes());
+
+        expect(tx2).to.be.instanceOf(TokenCreateTransaction);
+        expect(tx2.transactionId.toString()).to.equal(transactionId.toString());
+        expect(tx2.tokenName).to.equal("name");
+        expect(tx2.tokenSymbol).to.equal("symbol");
+        expect(tx2.decimals.toString()).to.equal("7");
+        expect(tx2.initialSupply.toString()).to.equal("1000");
+        expect(tx2.treasuryAccountId.toString()).to.equal("0.0.5005");
+        expect(tx2.adminKey.toString()).to.equal(adminKey.toString());
+        expect(tx2.kycKey.toString()).to.equal(kycKey.toString());
+        expect(tx2.freezeKey.toString()).to.equal(freezeKey.toString());
+        expect(tx2.pauseKey.toString()).to.equal(pauseKey.toString());
+        expect(tx2.wipeKey.toString()).to.equal(wipeKey.toString());
+        expect(tx2.supplyKey.toString()).to.equal(supplyKey.toString());
+        expect(tx2.feeScheduleKey.toString()).to.equal(
+            feeScheduleKey.toString(),
+        );
+        expect(tx2.metadataKey.toString()).to.equal(metadataKey.toString());
+        expect(tx2.freezeDefault).to.equal(true);
+        expect(tx2.expirationTime.toString()).to.equal(
+            expirationTime.toString(),
+        );
+        expect(tx2.autoRenewAccountId.toString()).to.equal("0.0.5006");
+        expect(tx2.autoRenewPeriod.seconds.toString()).to.equal("8000000");
+        expect(tx2.tokenMemo).to.equal("memo");
+        expect(tx2.customFees.map(encodeFee)).to.deep.equal(
+            customFees.map(encodeFee),
+        );
+        expect(tx2.tokenType).to.equal(TokenType.NonFungibleUnique);
+        expect(tx2.supplyType).to.equal(TokenSupplyType.Finite);
+        expect(tx2.maxSupply.toString()).to.equal("10000");
+        expect(tx2.metadata).to.deep.equal(metadata);
     });
 });
