@@ -97,23 +97,32 @@ describe("AddressBookQueryWeb", function () {
         vi.restoreAllMocks();
     });
 
-    for (const ClientType of [WebClient, NativeClient]) {
-        it(`keeps node37 in ${ClientType.name} when mirror proxy metadata is absent`, async function () {
-            const fake = new FakeHttpTransport().respondJson(200, {
-                nodes: [{ ...node(37), grpc_proxy_endpoint: null }],
+    for (const { nodeId, accountId } of [
+        { nodeId: 37, accountId: "0.0.40" },
+        { nodeId: 39, accountId: "0.0.42" },
+    ]) {
+        for (const ClientType of [WebClient, NativeClient]) {
+            it(`keeps node${nodeId} in ${ClientType.name} when mirror proxy metadata is absent`, async function () {
+                const fake = new FakeHttpTransport().respondJson(200, {
+                    nodes: [{ ...node(nodeId), grpc_proxy_endpoint: null }],
+                });
+                const client = ClientType.forMainnet();
+                clients.push(client);
+                client.setMirrorNodeHttpConfig({ transport: fake });
+                const endpoint = `node${nodeId}.swirldslabs.com:443`;
+
+                expect(client.network[endpoint]?.toString()).to.equal(
+                    accountId,
+                );
+
+                await client.updateNetwork();
+
+                expect(fake.requests).to.have.length(1);
+                expect(client.network[endpoint]?.toString()).to.equal(
+                    accountId,
+                );
             });
-            const client = ClientType.forMainnet();
-            clients.push(client);
-            client.setMirrorNodeHttpConfig({ transport: fake });
-            const endpoint = "node37.swirldslabs.com:443";
-
-            expect(client.network[endpoint]?.toString()).to.equal("0.0.40");
-
-            await client.updateNetwork();
-
-            expect(fake.requests).to.have.length(1);
-            expect(client.network[endpoint]?.toString()).to.equal("0.0.40");
-        });
+        }
     }
 
     it("does not retry a 4xx and surfaces the mirror node detail", async function () {
