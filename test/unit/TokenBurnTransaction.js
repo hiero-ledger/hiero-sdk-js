@@ -8,11 +8,25 @@ import {
 } from "../../src/index.js";
 import Long from "long";
 import BigNumber from "bignumber.js";
+import { describeTransaction } from "./utils/transactionTests.js";
 
 describe("TokenBurnTransaction", function () {
     const tokenId = new TokenId(1, 2, 3);
     const accountId = new AccountId(1);
     const timestamp = new Timestamp(1234567890, 0);
+
+    describeTransaction(TokenBurnTransaction, {
+        dataCase: "tokenBurn",
+        execute: ["token", "burnToken"],
+        fields: [
+            { name: "tokenId", value: new TokenId(0, 0, 5005), entityId: true },
+            { name: "amount", value: Long.fromNumber(10) },
+            {
+                name: "serials",
+                value: [Long.fromNumber(1), Long.fromNumber(2)],
+            },
+        ],
+    });
 
     it("should create transaction with number amount", function () {
         const amount = 1000;

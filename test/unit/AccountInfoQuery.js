@@ -1,15 +1,16 @@
-import { AccountId, Query, AccountInfoQuery } from "../../src/index.js";
+import { AccountId, AccountInfoQuery } from "../../src/index.js";
+import { describeQuery } from "./utils/transactionTests.js";
 
-describe("AccountInfo", function () {
-    it("[to|from]Bytes()", async function () {
-        const accountId = new AccountId(10);
-
-        const query = Query.fromBytes(
-            new AccountInfoQuery().setAccountId(accountId).toBytes(),
-        );
-
-        expect(query instanceof AccountInfoQuery).to.be.true;
-
-        expect(query.accountId.toString()).to.be.equal(accountId.toString());
+describe("AccountInfoQuery", function () {
+    describeQuery(AccountInfoQuery, {
+        queryCase: "cryptoGetInfo",
+        execute: ["crypto", "getAccountInfo"],
+        fields: [
+            {
+                name: "accountId",
+                value: new AccountId(0, 0, 5005),
+                entityId: true,
+            },
+        ],
     });
 });
