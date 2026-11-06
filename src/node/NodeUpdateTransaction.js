@@ -331,10 +331,13 @@ export default class NodeUpdateTransaction extends Transaction {
 
     /**
      * @description Clear description of the node.
-     * @returns {void}
+     * @returns {NodeUpdateTransaction}
      */
     clearDescription() {
+        this._requireNotFrozen();
         this._description = "";
+
+        return this;
     }
 
     /**
