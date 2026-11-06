@@ -773,5 +773,149 @@ describe("AccountCreateTransaction", function () {
                 expect(tx.declineStakingRewards).to.equal(true);
             });
         });
+
+        describe("round-trip serialization (toBytes/fromBytes)", function () {
+            it("should preserve hooks in frozen -> toBytes() -> fromBytes() round trip", function () {
+                const key = PrivateKey.generateED25519().publicKey;
+                const accountId = new AccountId(3);
+                const hook = new HookCreationDetails({
+                    extensionPoint: 1,
+                    hookId: Long.fromNumber(42),
+                    evmHook: new EvmHook({
+                        contractId: new ContractId(1234),
+                    }),
+                });
+
+                const tx = new AccountCreateTransaction()
+                    .setKeyWithoutAlias(key)
+                    .addHook(hook)
+                    .setNodeAccountIds([accountId])
+                    .setTransactionId(TransactionId.generate(accountId))
+                    .freeze();
+
+                const decoded = Transaction.fromBytes(tx.toBytes());
+
+                expect(decoded.hooks).to.have.lengthOf(1);
+                expect(decoded.hooks[0].extensionPoint).to.equal(1);
+                expect(decoded.hooks[0].hookId.toNumber()).to.equal(42);
+                expect(
+                    decoded.hooks[0].evmHook.contractId.num.toNumber(),
+                ).to.equal(1234);
+            });
+
+            it("should preserve hooks in unfrozen -> toBytes() -> fromBytes() -> freeze() round trip", function () {
+                const key = PrivateKey.generateED25519().publicKey;
+                const accountId = new AccountId(3);
+                const hook = new HookCreationDetails({
+                    extensionPoint: 1,
+                    hookId: Long.fromNumber(42),
+                });
+
+                const tx = new AccountCreateTransaction()
+                    .setKeyWithoutAlias(key)
+                    .addHook(hook)
+                    .setNodeAccountIds([accountId])
+                    .setTransactionId(TransactionId.generate(accountId));
+
+                const decoded = Transaction.fromBytes(tx.toBytes()).freeze();
+
+                expect(decoded.hooks).to.have.lengthOf(1);
+                expect(decoded.hooks[0].extensionPoint).to.equal(1);
+                expect(decoded.hooks[0].hookId.toNumber()).to.equal(42);
+
+                const body = decoded._makeTransactionData();
+                expect(body.hookCreationDetails).to.have.lengthOf(1);
+            });
+
+            it("should preserve complex hooks with storage updates", function () {
+                const key = PrivateKey.generateED25519().publicKey;
+                const accountId = new AccountId(3);
+                const storageKey = new Uint8Array([1, 2, 3, 4]);
+                const storageValue = new Uint8Array([5, 6, 7, 8]);
+                const storageSlot = new EvmHookStorageSlot({
+                    key: storageKey,
+                    value: storageValue,
+                });
+                const hook = new HookCreationDetails({
+                    extensionPoint: 1,
+                    evmHook: new EvmHook({
+                        contractId: new ContractId(999),
+                        storageUpdates: [storageSlot],
+                    }),
+                });
+
+                const tx = new AccountCreateTransaction()
+                    .setKeyWithoutAlias(key)
+                    .addHook(hook)
+                    .setNodeAccountIds([accountId])
+                    .setTransactionId(TransactionId.generate(accountId))
+                    .freeze();
+
+                const decoded = Transaction.fromBytes(tx.toBytes());
+
+                expect(decoded.hooks).to.have.lengthOf(1);
+                expect(decoded.hooks[0].evmHook.storageUpdates).to.have.lengthOf(
+                    1,
+                );
+                expect(
+                    decoded.hooks[0].evmHook.storageUpdates[0].key,
+                ).to.deep.equal(storageKey);
+                expect(
+                    decoded.hooks[0].evmHook.storageUpdates[0].value,
+                ).to.deep.equal(storageValue);
+            });
+
+            it("should preserve multiple hooks", function () {
+                const key = PrivateKey.generateED25519().publicKey;
+                const accountId = new AccountId(3);
+                const hook1 = new HookCreationDetails({
+                    extensionPoint: 1,
+                    hookId: Long.fromNumber(1),
+                });
+                const hook2 = new HookCreationDetails({
+                    extensionPoint: 2,
+                    hookId: Long.fromNumber(2),
+                });
+
+                const tx = new AccountCreateTransaction()
+                    .setKeyWithoutAlias(key)
+                    .addHook(hook1)
+                    .addHook(hook2)
+                    .setNodeAccountIds([accountId])
+                    .setTransactionId(TransactionId.generate(accountId))
+                    .freeze();
+
+                const decoded = Transaction.fromBytes(tx.toBytes());
+
+                expect(decoded.hooks).to.have.lengthOf(2);
+                expect(decoded.hooks[0].extensionPoint).to.equal(1);
+                expect(decoded.hooks[1].extensionPoint).to.equal(2);
+            });
+
+            it("should preserve hooks with adminKey", function () {
+                const key = PrivateKey.generateED25519().publicKey;
+                const adminKey = PrivateKey.generateED25519().publicKey;
+                const accountId = new AccountId(3);
+                const hook = new HookCreationDetails({
+                    extensionPoint: 1,
+                    adminKey,
+                });
+
+                const tx = new AccountCreateTransaction()
+                    .setKeyWithoutAlias(key)
+                    .addHook(hook)
+                    .setNodeAccountIds([accountId])
+                    .setTransactionId(TransactionId.generate(accountId))
+                    .freeze();
+
+                const decoded = Transaction.fromBytes(tx.toBytes());
+
+                expect(decoded.hooks).to.have.lengthOf(1);
+                expect(decoded.hooks[0].adminKey).to.not.be.null;
+                expect(decoded.hooks[0].adminKey.toString()).to.equal(
+                    adminKey.toString(),
+                );
+            });
+        });
     });
 });
