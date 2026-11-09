@@ -1,6 +1,9 @@
 import {
     AccountId,
     ContractCreateTransaction,
+    Hbar,
+    HookExtensionPoint,
+    Timestamp,
     Transaction,
 } from "../../src/index.js";
 import Long from "long";
@@ -676,6 +679,124 @@ describe("ContractCreateTransaction", function () {
                     autoRenewAccountId.toString(),
                 );
             });
+        });
+    });
+
+    describe("toBytes() and fromBytes()", function () {
+        let transactionId, adminKey;
+
+        beforeEach(function () {
+            transactionId = TransactionId.withValidStart(
+                AccountId.fromString("0.0.1001"),
+                new Timestamp(1596210382, 0),
+            );
+            adminKey = PrivateKey.generateED25519().publicKey;
+        });
+
+        /**
+         * Sets every field except the bytecode, the hooks and the staked ID,
+         * which each test sets.
+         *
+         * @param {ContractCreateTransaction} tx
+         * @returns {ContractCreateTransaction}
+         */
+        function setFields(tx) {
+            return tx
+                .setNodeAccountIds([AccountId.fromString("0.0.3")])
+                .setTransactionId(transactionId)
+                .setAdminKey(adminKey)
+                .setGas(100000)
+                .setInitialBalance(new Hbar(5))
+                .setProxyAccountId(AccountId.fromString("0.0.5006"))
+                .setAutoRenewPeriod(8000000)
+                .setConstructorParameters(Uint8Array.of(4, 5, 6))
+                .setContractMemo("memo")
+                .setMaxAutomaticTokenAssociations(10)
+                .setDeclineStakingReward(true)
+                .setAutoRenewAccountId(AccountId.fromString("0.0.5007"));
+        }
+
+        /**
+         * @param {ContractCreateTransaction} tx
+         */
+        function expectFields(tx) {
+            expect(tx).to.be.instanceOf(ContractCreateTransaction);
+            expect(tx.transactionId.toString()).to.equal(
+                transactionId.toString(),
+            );
+            expect(tx.adminKey.toString()).to.equal(adminKey.toString());
+            expect(tx.gas.toString()).to.equal("100000");
+            expect(tx.initialBalance.toTinybars().toString()).to.equal(
+                new Hbar(5).toTinybars().toString(),
+            );
+            expect(tx.proxyAccountId.toString()).to.equal("0.0.5006");
+            expect(tx.autoRenewPeriod.seconds.toString()).to.equal("8000000");
+            expect(tx.constructorParameters).to.deep.equal(
+                Uint8Array.of(4, 5, 6),
+            );
+            expect(tx.contractMemo).to.equal("memo");
+            expect(tx.maxAutomaticTokenAssociations.toString()).to.equal("10");
+            expect(tx.declineStakingRewards).to.equal(true);
+            expect(tx.autoRenewAccountId.toString()).to.equal("0.0.5007");
+        }
+
+        it("should keep every field with a staked account ID", function () {
+            const tx = setFields(new ContractCreateTransaction())
+                .setBytecodeFileId(FileId.fromString("0.0.5005"))
+                .setStakedAccountId(AccountId.fromString("0.0.5008"))
+                .freeze();
+
+            const tx2 = Transaction.fromBytes(tx.toBytes());
+
+            expectFields(tx2);
+            expect(tx2.bytecodeFileId.toString()).to.equal("0.0.5005");
+            expect(tx2.stakedAccountId.toString()).to.equal("0.0.5008");
+            expect(tx2.stakedNodeId).to.be.null;
+        });
+
+        it("should keep every field with a staked node ID", function () {
+            const tx = setFields(new ContractCreateTransaction())
+                .setBytecodeFileId(FileId.fromString("0.0.5005"))
+                .setStakedNodeId(4)
+                .freeze();
+
+            const tx2 = Transaction.fromBytes(tx.toBytes());
+
+            expectFields(tx2);
+            expect(tx2.stakedNodeId.toString()).to.equal("4");
+            expect(tx2.stakedAccountId).to.be.null;
+        });
+
+        // TODO(#4654): fromBytes() drops the bytecode and the hooks.
+        it.skip("should keep the bytecode and the hooks", function () {
+            const hook = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                hookId: 7,
+                evmHook: new EvmHook({
+                    contractId: ContractId.fromString("0.0.5010"),
+                }),
+                adminKey,
+            });
+            const tx = setFields(new ContractCreateTransaction())
+                .setBytecode(Uint8Array.of(1, 2, 3))
+                .setHooks([hook])
+                .freeze();
+
+            const tx2 = Transaction.fromBytes(tx.toBytes());
+
+            expectFields(tx2);
+            expect(tx2.bytecode).to.deep.equal(Uint8Array.of(1, 2, 3));
+            expect(tx2.hooks).to.have.lengthOf(1);
+            expect(tx2.hooks[0].extensionPoint).to.equal(
+                HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+            );
+            expect(tx2.hooks[0].hookId.toString()).to.equal("7");
+            expect(tx2.hooks[0].evmHook.contractId.toString()).to.equal(
+                "0.0.5010",
+            );
+            expect(tx2.hooks[0].adminKey.toString()).to.equal(
+                adminKey.toString(),
+            );
         });
     });
 });

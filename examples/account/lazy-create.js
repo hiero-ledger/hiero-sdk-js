@@ -139,11 +139,15 @@ async function main() {
             .execute(client);
 
         console.log(`Check if it is a hollow account with 'AccountInfoQuery'`);
-        hollowAccountInfo.aliasKey === null &&
-        hollowAccountInfo.key._toProtobufKey().keyList.keys.length == 0 &&
-        hollowAccountInfo.contractAccountId !== null
-            ? console.log(`The newly created account is a hollow account`)
-            : console.log(`Not a hollow account`);
+        if (
+            hollowAccountInfo.aliasKey === null &&
+            hollowAccountInfo.key._toProtobufKey().keyList.keys.length == 0 &&
+            hollowAccountInfo.contractAccountId !== null
+        ) {
+            console.log(`The newly created account is a hollow account`);
+        } else {
+            console.log(`Not a hollow account`);
+        }
 
         /**
          *
@@ -183,11 +187,13 @@ async function main() {
         const completeAccountInfo = await new AccountInfoQuery()
             .setAccountId(newAccountId)
             .execute(client);
-        completeAccountInfo.key !== null
-            ? console.log(
-                  `The public key of the newly created and now complete account: ${completeAccountInfo.key.toString()}`,
-              )
-            : console.log(`Account ${newAccountId} is still a hollow account`);
+        if (completeAccountInfo.key !== null) {
+            console.log(
+                `The public key of the newly created and now complete account: ${completeAccountInfo.key.toString()}`,
+            );
+        } else {
+            console.log(`Account ${newAccountId} is still a hollow account`);
+        }
     } catch (error) {
         console.error(error);
     }

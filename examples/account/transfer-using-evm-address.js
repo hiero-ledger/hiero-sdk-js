@@ -114,13 +114,15 @@ async function main() {
             .setAccountId(newAccountId)
             .execute(client);
 
-        hollowAccountInfo.key._toProtobufKey().keyList.keys.length == 0
-            ? console.log(
-                  `Account ${newAccountId} does not have public key, therefore it is a hollow account`,
-              )
-            : console.log(
-                  `Account ${newAccountId} has a public key, therefore it is not a hollow account`,
-              );
+        if (hollowAccountInfo.key._toProtobufKey().keyList.keys.length == 0) {
+            console.log(
+                `Account ${newAccountId} does not have public key, therefore it is a hollow account`,
+            );
+        } else {
+            console.log(
+                `Account ${newAccountId} has a public key, therefore it is not a hollow account`,
+            );
+        }
 
         /**
          * Step 7
@@ -156,11 +158,13 @@ async function main() {
         const completeAccountInfo = await new AccountInfoQuery()
             .setAccountId(newAccountId)
             .execute(client);
-        completeAccountInfo.key !== null
-            ? console.log(
-                  `The public key of the newly created and now complete account: ${completeAccountInfo.key.toString()}`,
-              )
-            : console.log(`Account ${newAccountId} is still a hollow account`);
+        if (completeAccountInfo.key !== null) {
+            console.log(
+                `The public key of the newly created and now complete account: ${completeAccountInfo.key.toString()}`,
+            );
+        } else {
+            console.log(`Account ${newAccountId} is still a hollow account`);
+        }
     } catch (error) {
         console.error(error);
     }
