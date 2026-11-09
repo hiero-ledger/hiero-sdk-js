@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
+import { errorMessage } from "./error-message.js";
+
 /**
  * @param {number} milliseconds
  * @returns {Promise<void>}
@@ -119,6 +121,10 @@ function timeoutError(lastRetryableError) {
     const detail =
         lastRetryableError == null
             ? ""
-            : `; last retryable error: ${String(lastRetryableError)}`;
+            : `; last retryable error: ${
+                  lastRetryableError instanceof Error
+                      ? lastRetryableError.toString()
+                      : errorMessage(lastRetryableError)
+              }`;
     return new Error(`mirror node did not ingest in time${detail}`);
 }

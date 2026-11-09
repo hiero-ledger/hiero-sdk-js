@@ -121,11 +121,13 @@ async function main() {
             .setAccountId(newAccountId)
             .execute(client);
 
-        accountInfo.contractAccountId !== null
-            ? console.log(
-                  `The newly created account has an alias: ${accountInfo.contractAccountId}`,
-              )
-            : console.log(`The new account doesn't have an alias`);
+        if (accountInfo.contractAccountId !== null) {
+            console.log(
+                `The newly created account has an alias: ${accountInfo.contractAccountId}`,
+            );
+        } else {
+            console.log(`The new account doesn't have an alias`);
+        }
     } catch (error) {
         console.error(error);
     }

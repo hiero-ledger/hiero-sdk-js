@@ -76,7 +76,6 @@ app.post("/login", function (req, res) {
     });
 });
 
-// eslint-disable-next-line @typescript-eslint/no-misused-promises
 app.post("/request", async function (req, res) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const request = /** @type {{ request: string | undefined }} */ (req.body);
@@ -93,13 +92,13 @@ app.post("/request", async function (req, res) {
         const response = await wallet.call(transaction);
         res.json(response);
         return;
-    } catch (_) {
+    } catch {
         try {
             const query = Query.fromBytes(bytes);
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const response = await wallet.call(query);
             res.json({
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-argument
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access,@typescript-eslint/no-unsafe-call
                 response: Buffer.from(response.toBytes()).toString("hex"),
             });
             return;
@@ -110,7 +109,6 @@ app.post("/request", async function (req, res) {
     }
 });
 
-// eslint-disable-next-line @typescript-eslint/no-misused-promises
 app.post("/sign", async function (req, res) {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const request = /** @type {{ request: string | undefined }} */ (req.body);
