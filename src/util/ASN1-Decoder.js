@@ -1,4 +1,3 @@
-import { proto } from "@hiero-ledger/proto";
 /* eslint-disable @typescript-eslint/no-unsafe-return */
 /**
  * A class to decode ASN.1 encoded data, typically used for parsing cryptographic key data.
@@ -216,48 +215,3 @@ export class ASN1Decoder {
         return this.pos === this.data.length;
     }
 }
-
-/**
- * Processes a hexadecimal string representation of an ASN.1 encoded key.
- * Checks if the input is a list of keys in hexadecimal format. If not, it decodes
- * the ASN.1 data to extract key types and identify if the key is a public key.
- *
- * @param {string} keyString - The hexadecimal string representation of the ASN.1 encoded key.
- * @returns {{keyTypes: string[], isPublicKey: boolean, isKeyListHex: boolean}} Object containing information about the decoded key.
- */
-export const asn1DecodeStringDer = (keyString) => {
-    const isKeyListHex = isHexKeyList(keyString);
-
-    if (isKeyListHex) {
-        return { keyTypes: [], isPublicKey: false, isKeyListHex };
-    }
-
-    const signerData = Uint8Array.from(Buffer.from(keyString, "hex"));
-    const decoder = new ASN1Decoder(signerData);
-
-    decoder.read();
-    const keyTypes = decoder.getOidKeyTypes();
-    const isPublicKey = decoder.isPublicKeyType();
-
-    return {
-        keyTypes,
-        isPublicKey,
-        isKeyListHex: false,
-    };
-};
-
-/**
- * Checks if the input is a list of keys in hexadecimal format.
- * @param {string} hexString - The hexadecimal string representation of the ASN.1 encoded key.
- * @returns {boolean} True if the key is a public key, false otherwise.
- */
-const isHexKeyList = (hexString) => {
-    try {
-        const binaryData = Buffer.from(hexString, "hex");
-        const decodedData = proto.KeyList.decode(binaryData);
-
-        return !!decodedData.keys && Array.isArray(decodedData.keys);
-    } catch {
-        return false;
-    }
-};
