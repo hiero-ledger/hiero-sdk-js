@@ -62,6 +62,8 @@ export default defineConfig({
             "src/encoding/hex.js": "src/encoding/hex.browser.js",
             "../src/encoding/utf8.js": "../src/encoding/utf8.browser.js",
             "../../src/encoding/utf8.js": "../../src/encoding/utf8.browser.js",
+            "../../../src/encoding/utf8.js":
+                "../../../src/encoding/utf8.browser.js",
             "../src/cryptography/sha384.js":
                 "../src/cryptography/sha384.browser.js",
             "../cryptography/sha384.js": "../cryptography/sha384.browser.js",

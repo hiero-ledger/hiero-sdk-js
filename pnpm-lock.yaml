@@ -659,6 +659,9 @@ importers:
       eslint-plugin-n:
         specifier: 18.0.1
         version: 18.0.1(eslint@10.13.0(jiti@2.6.1))(ts-declaration-location@1.0.7(typescript@5.9.3))(typescript@5.9.3)
+      fast-check:
+        specifier: 4.10.2
+        version: 4.10.2
       geckodriver:
         specifier: 8.0.0
         version: 8.0.0(@wdio/logger@9.18.0)
