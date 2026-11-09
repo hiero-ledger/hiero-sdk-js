@@ -1,12 +1,16 @@
 import {
     AccountCreateTransaction,
     AccountId,
+    CustomFixedFee,
+    CustomFractionalFee,
+    CustomRoyaltyFee,
     FileAppendTransaction,
     FileCreateTransaction,
     FileId,
     Hbar,
     HbarUnit,
     PrivateKey,
+    ScheduleCreateTransaction,
     TopicId,
     TopicMessageSubmitTransaction,
     Timestamp,
@@ -89,6 +93,105 @@ describe("Transaction", function () {
                 .toTinybars()
                 .toString(),
         ).to.be.equal(new Hbar(1).toTinybars().toString());
+    });
+
+    describe("fromBytes with a custom fee missing its details", function () {
+        /**
+         * @param {HieroProto.proto.ITransactionBody} data
+         * @returns {Uint8Array}
+         */
+        function transactionBytes(data) {
+            const bodyBytes = HieroProto.proto.TransactionBody.encode({
+                transactionID: {
+                    accountID: { accountNum: 1001 },
+                    transactionValidStart: { seconds: 1700000000 },
+                },
+                nodeAccountID: { accountNum: 3 },
+                ...data,
+            }).finish();
+            const signedTransactionBytes =
+                HieroProto.proto.SignedTransaction.encode({
+                    bodyBytes,
+                }).finish();
+
+            return HieroProto.proto.TransactionList.encode({
+                transactionList: [{ signedTransactionBytes }],
+            }).finish();
+        }
+
+        const cases = [
+            [
+                "a token fee with no fee set",
+                { tokenCreation: { customFees: [{}] } },
+                "custom fee must set fixedFee, fractionalFee or royaltyFee",
+            ],
+            [
+                "a fractional fee without its fraction",
+                { tokenCreation: { customFees: [{ fractionalFee: {} }] } },
+                "fractionalAmount is required",
+            ],
+            [
+                "a royalty fee without its fraction",
+                { tokenCreation: { customFees: [{ royaltyFee: {} }] } },
+                "exchangeValueFraction is required",
+            ],
+            [
+                "a fee schedule update fee with no fee set",
+                { tokenFeeScheduleUpdate: { customFees: [{}] } },
+                "custom fee must set fixedFee, fractionalFee or royaltyFee",
+            ],
+            [
+                "a topic create fee without its fixed fee",
+                { consensusCreateTopic: { customFees: [{}] } },
+                "fixedFee is required",
+            ],
+            [
+                "a topic update fee without its fixed fee",
+                { consensusUpdateTopic: { customFees: { fees: [{}] } } },
+                "fixedFee is required",
+            ],
+        ];
+
+        for (const [name, data, message] of cases) {
+            it(`throws for ${name}`, function () {
+                expect(() =>
+                    Transaction.fromBytes(transactionBytes(data)),
+                ).to.throw(Error, message);
+            });
+        }
+
+        it("still decodes complete fees", function () {
+            const transaction = Transaction.fromBytes(
+                transactionBytes({
+                    tokenCreation: {
+                        customFees: [
+                            { fixedFee: { amount: 1 } },
+                            {
+                                fractionalFee: {
+                                    fractionalAmount: {
+                                        numerator: 1,
+                                        denominator: 10,
+                                    },
+                                },
+                            },
+                            {
+                                royaltyFee: {
+                                    exchangeValueFraction: {
+                                        numerator: 1,
+                                        denominator: 20,
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                }),
+            );
+
+            const [fixed, fractional, royalty] = transaction.customFees;
+            expect(fixed).to.be.instanceOf(CustomFixedFee);
+            expect(fractional).to.be.instanceOf(CustomFractionalFee);
+            expect(royalty).to.be.instanceOf(CustomRoyaltyFee);
+        });
     });
 
     describe("fromBytes with 64-bit validStart (e.g. year 2125 in seconds)", function () {
@@ -336,6 +439,35 @@ describe("Transaction", function () {
         expect(() => Transaction.fromBytes(list)).to.throw(
             /more than one data field/,
         );
+    });
+
+    it("fromBytes decodes a ScheduleCreateTransaction without a scheduled transaction", function () {
+        const bodyBytes = HieroProto.proto.TransactionBody.encode({
+            transactionID: {
+                accountID: { accountNum: 1001 },
+                transactionValidStart: { seconds: 1700000000 },
+            },
+            nodeAccountID: { accountNum: 3 },
+            scheduleCreate: { memo: "memo" },
+        }).finish();
+        const signedTransactionBytes =
+            HieroProto.proto.SignedTransaction.encode({ bodyBytes }).finish();
+        const list = HieroProto.proto.TransactionList.encode({
+            transactionList: [{ signedTransactionBytes }],
+        }).finish();
+
+        const transaction = Transaction.fromBytes(list);
+
+        // The getters throw on a frozen transaction (#4681), and there is no
+        // getter for the scheduled transaction, so this reads the fields.
+        expect(transaction).to.be.instanceOf(ScheduleCreateTransaction);
+        expect(transaction._scheduledTransaction).to.be.null;
+        expect(transaction._scheduleMemo).to.equal("memo");
+
+        const decoded = Transaction.fromBytes(transaction.toBytes());
+
+        expect(decoded).to.be.instanceOf(ScheduleCreateTransaction);
+        expect(decoded._scheduledTransaction).to.be.null;
     });
 
     it("fromBytes fails for empty bytes", function () {
