@@ -157,7 +157,7 @@ describe("Key properties", { retry: 0 }, function () {
     describe("isDerKey() on random hex", function () {
         it("only says true when fromStringDer() accepts the hex as a DER key", function () {
             fc.assert(
-                fc.property(keyBytes, (bytes) => {
+                fc.property(fc.uint8Array({ maxLength: 200 }), (bytes) => {
                     const hex = encode(bytes);
 
                     if (PrivateKey.isDerKey(hex)) {
