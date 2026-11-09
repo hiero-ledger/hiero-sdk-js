@@ -4,6 +4,7 @@ import { spawn } from "child_process";
 import dotenv from "dotenv";
 import { MaxAttemptsOrTimeoutError } from "@hiero-ledger/sdk";
 import { clientForName } from "./client.js";
+import { errorMessage } from "./error-message.js";
 
 dotenv.config();
 
@@ -22,6 +23,7 @@ const excludedJSFile = [
     "run-all-examples.js",
     "wait-for-mirror.js",
     "client.js",
+    "error-message.js",
     path.join("consensus", "pub-sub.js"),
     path.join("consensus", "pub-sub-with-submit-key.js"),
     "batch-tx.js",
@@ -145,7 +147,7 @@ async function probeNetwork() {
         if (!isTransportFailure(error)) {
             return null;
         }
-        return error instanceof Error ? error.message : String(error);
+        return errorMessage(error);
     } finally {
         client.close();
     }
@@ -246,9 +248,9 @@ async function runInParallel(examples, maxConcurrency) {
                 unreachable = await probeNetwork();
             } catch (error) {
                 console.log(
-                    `⚠️ could not ping the node after ${f}: ${
-                        error instanceof Error ? error.message : String(error)
-                    }`,
+                    `⚠️ could not ping the node after ${f}: ${errorMessage(
+                        error,
+                    )}`,
                 );
                 continue;
             }

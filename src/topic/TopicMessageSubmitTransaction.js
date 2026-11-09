@@ -32,6 +32,38 @@ import * as util from "../util.js";
  */
 
 /**
+ * The maximum number of chunks a message can be split into, unless
+ * `setMaxChunks()` changes it.
+ */
+const DEFAULT_MAX_CHUNKS = 20;
+
+/**
+ * Joins the chunks of a message into one array. A single chunk is returned
+ * as it is, so a message that fits in one chunk keeps the type protobufjs
+ * decoded it to, which is a `Buffer` in Node.
+ *
+ * @param {Uint8Array[]} chunks
+ * @returns {Uint8Array}
+ */
+function concatChunks(chunks) {
+    if (chunks.length === 1) {
+        return chunks[0];
+    }
+
+    const result = new Uint8Array(
+        chunks.reduce((length, chunk) => length + chunk.length, 0),
+    );
+
+    let offset = 0;
+    for (const chunk of chunks) {
+        result.set(chunk, offset);
+        offset += chunk.length;
+    }
+
+    return result;
+}
+
+/**
  * <p>
  * Valid and authorized messages on valid topics will be ordered by the
  * consensus service, published in the block stream, and available to all
@@ -80,7 +112,7 @@ export default class TopicMessageSubmitTransaction extends Transaction {
          * Default max chunk size: 20
          * This value can be overridden with `setMaxChunks`
          */
-        this._maxChunks = 20;
+        this._maxChunks = DEFAULT_MAX_CHUNKS;
 
         /**
          * @private
@@ -123,13 +155,45 @@ export default class TopicMessageSubmitTransaction extends Transaction {
                 body.consensusSubmitMessage
             );
 
+        // A frozen message has one body per chunk per node, and the bodies
+        // of one chunk are next to each other, so a new chunk starts every
+        // `nodeIds.length` bodies. Without node IDs there is one body per
+        // chunk.
+        const bodiesPerChunk = nodeIds.length > 0 ? nodeIds.length : 1;
+
+        /** @type {Uint8Array[]} */
+        const chunks = [];
+        for (let i = 0; i < bodies.length; i += bodiesPerChunk) {
+            // `?.` because the bodies are only validated after this, and a
+            // body of another transaction type must fail that validation
+            // instead of throwing a TypeError here.
+            const chunk = bodies[i].consensusSubmitMessage?.message;
+            if (chunk != null) {
+                chunks.push(chunk);
+            }
+        }
+
+        // Every chunk except the last is `chunkSize` bytes long, so the first
+        // of two or more chunks gives the chunk size. A single chunk only
+        // shows that the chunk size was at least its length, so the default
+        // is kept then. It is also kept when the first chunk is empty, as a
+        // chunk size of 0 would make `getRequiredChunks()` return Infinity.
+        const chunkSize =
+            chunks.length > 1 && chunks[0].length > 0
+                ? chunks[0].length
+                : undefined;
+
         return Transaction._fromProtobufTransactions(
             new TopicMessageSubmitTransaction({
                 topicId:
                     message.topicID != null
                         ? TopicId._fromProtobuf(message.topicID)
                         : undefined,
-                message: message.message != null ? message.message : undefined,
+                message: chunks.length > 0 ? concatChunks(chunks) : undefined,
+                chunkSize,
+                // `freeze()` on the decoded transaction splits the message
+                // again, and must not throw for more chunks than the default.
+                maxChunks: Math.max(DEFAULT_MAX_CHUNKS, chunks.length),
             }),
             transactions,
             signedTransactions,
