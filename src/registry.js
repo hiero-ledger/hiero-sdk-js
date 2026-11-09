@@ -14,6 +14,13 @@
  * no side effects, so a bundler cannot drop a registration by dropping an
  * unused class file (#3011). Don't import this module from a class: the base
  * classes read the tables but must not depend on every class.
+ *
+ * `sideEffects` in package.json lists this module, exports.js and the entry
+ * points, and every other file is treated as side-effect free. The entry
+ * points and exports.js have to be listed too: they only re-export, and
+ * webpack and Vite skip a side-effect-free module that only re-exports, which
+ * also skips the `import "./registry.js"` in it. A new entry point, or moving
+ * that import, needs the list updated.
  */
 
 // The registered _fromProtobuf and _fromJson are static and don't use `this`.
