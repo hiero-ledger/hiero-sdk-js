@@ -132,10 +132,11 @@ export default class ScheduleCreateTransaction extends Transaction {
                     ? Timestamp._fromProtobuf(create.expirationTime)
                     : undefined,
         });
-        if (body.scheduleCreate != null) {
-            const scheduleCreateBody =
-                body.scheduleCreate.scheduledTransactionBody;
-
+        // The scheduled transaction body is optional in the protobuf. Without
+        // it, the transaction is returned with no scheduled transaction, as
+        // a new ScheduleCreateTransaction has before setScheduledTransaction().
+        const scheduleCreateBody = create.scheduledTransactionBody;
+        if (scheduleCreateBody != null) {
             const scheduleCreateBodyBytes =
                 HieroProto.proto.TransactionBody.encode(
                     // @ts-ignore
