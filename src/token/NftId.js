@@ -70,10 +70,12 @@ export default class NftId {
      * @returns {NftId}
      */
     static _fromProtobuf(id) {
+        if (id.token_ID == null) {
+            throw new Error("token_ID is required");
+        }
+
         return new NftId(
-            TokenId._fromProtobuf(
-                /** @type {HieroProto.proto.ITokenID} */ (id.token_ID),
-            ),
+            TokenId._fromProtobuf(id.token_ID),
             id.serialNumber != null ? id.serialNumber : Long.ZERO,
         );
     }
