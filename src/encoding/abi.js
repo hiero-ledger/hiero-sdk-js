@@ -207,13 +207,7 @@ function decodeValue(type, data, offset, inTupleOrFixedArray) {
     // Static types
     if (typeStr === "bool") {
         checkBounds(data, offset, 32);
-        // Check all 32 bytes - only the last byte matters but all others must be zero
-        for (let i = 0; i < 31; i++) {
-            if (data[offset + i] !== 0) {
-                throw new Error("invalid bool encoding");
-            }
-        }
-        return data[offset + 31] !== 0;
+        return data.subarray(offset, offset + 32).some((b) => b !== 0);
     }
 
     if (typeStr === "address") {
@@ -335,7 +329,12 @@ function decodeValue(type, data, offset, inTupleOrFixedArray) {
             const childSize = getStaticSize(childType);
             for (let i = 0; i < length; i++) {
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-                const value = decodeValue(childType, data, elemOffset, inTupleOrFixedArray);
+                const value = decodeValue(
+                    childType,
+                    data,
+                    elemOffset,
+                    inTupleOrFixedArray,
+                );
                 elements.push(value);
                 elemOffset += childSize;
             }

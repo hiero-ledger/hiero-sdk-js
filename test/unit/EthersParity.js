@@ -608,6 +608,15 @@ describe("ethers parity", function () {
             expect(result).to.deep.equal([true]);
         });
 
+        it("decodes bool from a dirty word like ethers", function () {
+            const bytes = getBytes(`0x${"00".repeat(30)}0100`);
+            const result = new ContractFunctionResult({
+                bytes,
+            }).getResult(["bool"]);
+
+            expect(result).to.deep.equal([true]);
+        });
+
         it("decodes tuple(uint8[],string)", function () {
             const encoded = abi.encode(
                 ["tuple(uint8[],string)"],
@@ -672,14 +681,8 @@ describe("ethers parity", function () {
 
             expect(result).to.deep.equal([
                 [
-                    [
-                        [new BigNumber("1")],
-                        [new BigNumber("2")],
-                    ],
-                    [
-                        [new BigNumber("3")],
-                        [new BigNumber("4")],
-                    ],
+                    [[new BigNumber("1")], [new BigNumber("2")]],
+                    [[new BigNumber("3")], [new BigNumber("4")]],
                 ],
             ]);
         });
@@ -727,10 +730,7 @@ describe("ethers parity", function () {
         });
 
         it("accepts tuple(uint a, int b) with short type names", function () {
-            const encoded = abi.encode(
-                ["tuple(uint256,int256)"],
-                [[42n, -1n]],
-            );
+            const encoded = abi.encode(["tuple(uint256,int256)"], [[42n, -1n]]);
             const result = new ContractFunctionResult({
                 bytes: getBytes(encoded),
             }).getResult(["tuple(uint a, int b)"]);
