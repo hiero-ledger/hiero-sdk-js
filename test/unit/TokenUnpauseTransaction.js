@@ -1,14 +1,16 @@
 import {
-    TokenPauseTransaction,
+    TokenUnpauseTransaction,
     TransactionId,
     AccountId,
     Timestamp,
+    TokenId,
+    Transaction,
 } from "../../src/index.js";
 import Long from "long";
 
-describe("TokenPauseTransaction", function () {
+describe("TokenUnpauseTransaction", function () {
     it("encodes to correct protobuf", function () {
-        const transaction = new TokenPauseTransaction()
+        const transaction = new TokenUnpauseTransaction()
             .setTransactionId(
                 TransactionId.withValidStart(
                     new AccountId(1),
@@ -23,7 +25,7 @@ describe("TokenPauseTransaction", function () {
         const protobuf = transaction._makeTransactionBody();
 
         expect(protobuf).to.deep.include({
-            tokenPause: {
+            tokenUnpause: {
                 token: {
                     tokenNum: Long.fromNumber(5),
                     shardNum: Long.fromNumber(0),
@@ -51,5 +53,24 @@ describe("TokenPauseTransaction", function () {
                 seconds: Long.fromNumber(120),
             },
         });
+    });
+
+    it("should convert from and to bytes", function () {
+        const transactionId = TransactionId.withValidStart(
+            AccountId.fromString("0.0.1001"),
+            new Timestamp(1596210382, 0),
+        );
+
+        const tx = new TokenUnpauseTransaction()
+            .setNodeAccountIds([AccountId.fromString("0.0.3")])
+            .setTransactionId(transactionId)
+            .setTokenId(TokenId.fromString("0.0.5005"))
+            .freeze();
+
+        const tx2 = Transaction.fromBytes(tx.toBytes());
+
+        expect(tx2).to.be.instanceOf(TokenUnpauseTransaction);
+        expect(tx2.transactionId.toString()).to.equal(transactionId.toString());
+        expect(tx2.tokenId.toString()).to.equal("0.0.5005");
     });
 });

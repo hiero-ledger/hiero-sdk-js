@@ -118,7 +118,10 @@ export default class CustomFixedFee extends CustomFee {
      */
 
     static _fromProtobuf(info) {
-        const fee = /** @type {HieroProto.proto.IFixedFee} */ (info.fixedFee);
+        if (info.fixedFee == null) {
+            throw new Error("fixedFee is required");
+        }
+        const fee = info.fixedFee;
 
         return new CustomFixedFee({
             feeCollectorAccountId:
