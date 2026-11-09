@@ -10,6 +10,7 @@ import {
     Hbar,
     HbarUnit,
     PrivateKey,
+    ScheduleCreateTransaction,
     TopicId,
     TopicMessageSubmitTransaction,
     Timestamp,
@@ -438,6 +439,35 @@ describe("Transaction", function () {
         expect(() => Transaction.fromBytes(list)).to.throw(
             /more than one data field/,
         );
+    });
+
+    it("fromBytes decodes a ScheduleCreateTransaction without a scheduled transaction", function () {
+        const bodyBytes = HieroProto.proto.TransactionBody.encode({
+            transactionID: {
+                accountID: { accountNum: 1001 },
+                transactionValidStart: { seconds: 1700000000 },
+            },
+            nodeAccountID: { accountNum: 3 },
+            scheduleCreate: { memo: "memo" },
+        }).finish();
+        const signedTransactionBytes =
+            HieroProto.proto.SignedTransaction.encode({ bodyBytes }).finish();
+        const list = HieroProto.proto.TransactionList.encode({
+            transactionList: [{ signedTransactionBytes }],
+        }).finish();
+
+        const transaction = Transaction.fromBytes(list);
+
+        // The getters throw on a frozen transaction (#4681), and there is no
+        // getter for the scheduled transaction, so this reads the fields.
+        expect(transaction).to.be.instanceOf(ScheduleCreateTransaction);
+        expect(transaction._scheduledTransaction).to.be.null;
+        expect(transaction._scheduleMemo).to.equal("memo");
+
+        const decoded = Transaction.fromBytes(transaction.toBytes());
+
+        expect(decoded).to.be.instanceOf(ScheduleCreateTransaction);
+        expect(decoded._scheduledTransaction).to.be.null;
     });
 
     it("fromBytes fails for empty bytes", function () {
