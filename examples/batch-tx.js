@@ -97,7 +97,7 @@ async function executeBatchWithBatchify(client) {
         .batchify(aliceClient, batchKey1);
     aliceClient.close();
 
-    console.log("Created account for Alice: " + aliceClient.toString());
+    console.log("Created account for Alice: " + alice.toString());
 
     /**
      * Step 5: Get the balance in order to compare after this batch

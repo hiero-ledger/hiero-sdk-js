@@ -1,7 +1,9 @@
 import {
     AccountUpdateTransaction,
     AccountId,
+    HookExtensionPoint,
     PrivateKey,
+    TransactionId,
 } from "../../src/index.js";
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
 import EvmHook from "../../src/hooks/EvmHook.js";
@@ -561,6 +563,59 @@ describe("AccountUpdateTransaction", function () {
                     tx.hooksToCreate[0].evmHook.storageUpdates[0].entries,
                 ).to.have.lengthOf(2);
             });
+        });
+    });
+
+    describe("hook serialization", function () {
+        it("should keep hooks in a frozen bytes round trip", function () {
+            const accountId = new AccountId(3);
+            const hook = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                hookId: Long.fromNumber(7),
+                evmHook: new EvmHook({
+                    contractId: new ContractId(0, 0, 100),
+                }),
+            });
+            const tx = new AccountUpdateTransaction({ accountId })
+                .addHookToCreate(hook)
+                .addHookToDelete(Long.fromNumber(9))
+                .setNodeAccountIds([accountId])
+                .setTransactionId(TransactionId.generate(accountId))
+                .freeze();
+
+            const tx2 = AccountUpdateTransaction.fromBytes(tx.toBytes());
+
+            expect(tx2.hooksToCreate).to.have.lengthOf(1);
+            expect(tx2.hooksToCreate[0].extensionPoint).to.equal(
+                HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+            );
+            expect(tx2.hooksToCreate[0].hookId.toString()).to.equal("7");
+            expect(tx2.hooksToDelete).to.have.lengthOf(1);
+            expect(tx2.hooksToDelete[0].toString()).to.equal("9");
+        });
+
+        it("should keep hooks when an unfrozen transaction is decoded and frozen", function () {
+            const accountId = new AccountId(3);
+            const hook = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                hookId: Long.fromNumber(7),
+            });
+            const tx = new AccountUpdateTransaction({ accountId })
+                .addHookToCreate(hook)
+                .addHookToDelete(Long.fromNumber(9))
+                .setNodeAccountIds([accountId])
+                .setTransactionId(TransactionId.generate(accountId));
+
+            const tx2 = AccountUpdateTransaction.fromBytes(
+                tx.toBytes(),
+            ).freeze();
+            const body = tx2._makeTransactionData();
+
+            expect(tx2.hooksToCreate).to.have.lengthOf(1);
+            expect(tx2.hooksToCreate[0].hookId.toString()).to.equal("7");
+            expect(tx2.hooksToDelete).to.have.lengthOf(1);
+            expect(body.hookCreationDetails).to.have.lengthOf(1);
+            expect(body.hookIdsToDelete).to.have.lengthOf(1);
         });
     });
 

@@ -261,7 +261,6 @@ export default class ContractCreateTransaction extends Transaction {
                           ),
                       )
                     : undefined,
-            bytecode: create.initcode ?? undefined,
             adminKey:
                 create.adminKey != null
                     ? Key._fromProtobufKey(create.adminKey)
@@ -299,9 +298,7 @@ export default class ContractCreateTransaction extends Transaction {
                     ? AccountId._fromProtobuf(create.stakedAccountId)
                     : undefined,
             stakedNodeId:
-                create.stakedNodeId != null
-                    ? create.stakedNodeId
-                    : undefined,
+                create.stakedNodeId != null ? create.stakedNodeId : undefined,
             declineStakingReward: create.declineReward == true,
             autoRenewAccountId:
                 create.autoRenewAccountId != null

@@ -78,9 +78,10 @@ export default class TokenTransfer {
         const transfers = [];
 
         for (const tokenTransfer of tokenTransfers) {
-            const tokenId = TokenId._fromProtobuf(
-                /** @type {HieroProto.proto.ITokenID} */ (tokenTransfer.token),
-            );
+            if (tokenTransfer.token == null) {
+                throw new Error("token is required");
+            }
+            const tokenId = TokenId._fromProtobuf(tokenTransfer.token);
             const expectedDecimals =
                 tokenTransfer.expectedDecimals != null
                     ? tokenTransfer.expectedDecimals.value ?? 0
@@ -89,6 +90,10 @@ export default class TokenTransfer {
             for (const transfer of tokenTransfer.transfers != null
                 ? tokenTransfer.transfers
                 : []) {
+                if (transfer.accountID == null) {
+                    throw new Error("accountID is required");
+                }
+
                 // Determine which hook type is present, if any
                 let hookCall = null;
                 if (transfer.preTxAllowanceHook != null) {
@@ -106,11 +111,7 @@ export default class TokenTransfer {
                 transfers.push(
                     new TokenTransfer({
                         tokenId,
-                        accountId: AccountId._fromProtobuf(
-                            /** @type {HieroProto.proto.IAccountID} */ (
-                                transfer.accountID
-                            ),
-                        ),
+                        accountId: AccountId._fromProtobuf(transfer.accountID),
                         expectedDecimals,
                         amount:
                             transfer.amount != null

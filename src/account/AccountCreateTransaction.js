@@ -249,9 +249,7 @@ export default class AccountCreateTransaction extends Transaction {
                     ? AccountId._fromProtobuf(create.stakedAccountId)
                     : undefined,
             stakedNodeId:
-                create.stakedNodeId != null
-                    ? create.stakedNodeId
-                    : undefined,
+                create.stakedNodeId != null ? create.stakedNodeId : undefined,
             declineStakingReward: create.declineReward == true,
             alias,
         });

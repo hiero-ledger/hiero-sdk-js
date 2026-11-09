@@ -115,12 +115,19 @@ export default class CustomRoyaltyFee extends CustomFee {
      */
 
     static _fromProtobuf(info) {
-        const fee = /** @type {HieroProto.proto.IRoyaltyFee} */ (
-            info.royaltyFee
-        );
-        const fraction = /** @type {HieroProto.proto.IFraction} */ (
-            fee.exchangeValueFraction
-        );
+        // Fees with no fixedFee or fractionalFee are decoded as royalty fees,
+        // so a missing royaltyFee means the fee sets none of the three.
+        if (info.royaltyFee == null) {
+            throw new Error(
+                "custom fee must set fixedFee, fractionalFee or royaltyFee",
+            );
+        }
+        const fee = info.royaltyFee;
+
+        if (fee.exchangeValueFraction == null) {
+            throw new Error("exchangeValueFraction is required");
+        }
+        const fraction = fee.exchangeValueFraction;
 
         return new CustomRoyaltyFee({
             feeCollectorAccountId:

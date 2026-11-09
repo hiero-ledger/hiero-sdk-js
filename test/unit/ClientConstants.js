@@ -79,6 +79,25 @@ describe("ClientConstants", function () {
     });
 
     describe("ALL_NETWORK_IPS", function () {
+        for (const { name, accountId, ips } of [
+            {
+                name: "node37",
+                accountId: "0.0.40",
+                ips: ["85.195.95.137:", "85.195.101.111:"],
+            },
+            {
+                name: "node39",
+                accountId: "0.0.42",
+                ips: ["91.103.1.115:", "91.103.1.116:"],
+            },
+        ]) {
+            it(`identifies both ${name} proxy IPs as account ${accountId}`, function () {
+                for (const ip of ips) {
+                    expect(ALL_NETWORK_IPS[ip], ip).to.equal(accountId);
+                }
+            });
+        }
+
         // The keys deliberately carry a trailing colon so the literals are not
         // read as bare hardcoded IP addresses by static analysis; `NodeChannel`
         // re-appends it on lookup. A key without it would silently never match.

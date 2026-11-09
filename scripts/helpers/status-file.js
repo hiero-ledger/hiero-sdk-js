@@ -1,7 +1,19 @@
 import fs from "fs";
 import path from "path";
 
-import { screamingSnakeToPascalCase } from "../../src/util.js";
+/**
+ * Converts a SCREAMING_SNAKE_CASE string to PascalCase
+ * @param {string} name - The string to convert
+ * @returns {string} The converted PascalCase string
+ */
+function screamingSnakeToPascalCase(name) {
+    const words = name.toLowerCase().split("_");
+    let result = "";
+    for (let i = 0; i < words.length; i++) {
+        result += words[i].charAt(0).toUpperCase() + words[i].slice(1);
+    }
+    return result;
+}
 
 /**
  * Finds the highest existing status code in the Status.js file
