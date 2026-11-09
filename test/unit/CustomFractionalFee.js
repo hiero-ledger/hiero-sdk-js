@@ -231,6 +231,18 @@ describe("CustomFractionalFee", function () {
             expect(fee.max).to.be.undefined;
             expect(fee.assessmentMethod).to.be.undefined;
         });
+
+        it("should throw when the fractional fee is missing", function () {
+            expect(() => CustomFractionalFee._fromProtobuf({})).to.throw(
+                "fractionalFee is required",
+            );
+        });
+
+        it("should throw when the fractional amount is missing", function () {
+            expect(() =>
+                CustomFractionalFee._fromProtobuf({ fractionalFee: {} }),
+            ).to.throw("fractionalAmount is required");
+        });
     });
 
     describe("_toProtobuf", function () {
