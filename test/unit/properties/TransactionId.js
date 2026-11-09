@@ -119,17 +119,17 @@ describe("TransactionId properties", { retry: 0 }, function () {
     it("fromString() either throws or returns an ID that survives a round trip", function () {
         fc.assert(
             fc.property(fc.string(), (text) => {
+                let id;
                 try {
-                    const id = TransactionId.fromString(text);
-                    const roundTripped = TransactionId.fromString(
-                        id.toString(),
-                    );
-
-                    expectTransactionId(roundTripped, id);
+                    id = TransactionId.fromString(text);
                 } catch (error) {
                     // Expected for malformed strings - fromString() should throw
                     expect(error).to.be.an.instanceOf(Error);
+                    return;
                 }
+
+                const roundTripped = TransactionId.fromString(id.toString());
+                expectTransactionId(roundTripped, id);
             }),
         );
     });
