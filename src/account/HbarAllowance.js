@@ -63,10 +63,12 @@ export default class HbarAllowance {
      * @returns {HbarAllowance}
      */
     static _fromProtobuf(allowance) {
+        if (allowance.spender == null) {
+            throw new Error("spender is required");
+        }
+
         return new HbarAllowance({
-            spenderAccountId: AccountId._fromProtobuf(
-                /** @type {HieroProto.proto.IAccountID} */ (allowance.spender),
-            ),
+            spenderAccountId: AccountId._fromProtobuf(allowance.spender),
             ownerAccountId:
                 allowance.owner != null
                     ? AccountId._fromProtobuf(
