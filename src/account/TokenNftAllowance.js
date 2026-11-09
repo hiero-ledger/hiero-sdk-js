@@ -84,13 +84,15 @@ export default class TokenNftAllowance {
      * @returns {TokenNftAllowance}
      */
     static _fromProtobuf(allowance) {
+        if (allowance.tokenId == null) {
+            throw new Error("tokenId is required");
+        }
+
         const allSerials =
             allowance.approvedForAll != null &&
             allowance.approvedForAll.value == true;
         return new TokenNftAllowance({
-            tokenId: TokenId._fromProtobuf(
-                /** @type {HieroProto.proto.ITokenID} */ (allowance.tokenId),
-            ),
+            tokenId: TokenId._fromProtobuf(allowance.tokenId),
             spenderAccountId:
                 allowance.spender != null
                     ? AccountId._fromProtobuf(
