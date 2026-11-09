@@ -1,4 +1,5 @@
 import {
+    Client,
     PrivateKey,
     Hbar,
     TokenCreateTransaction,
@@ -13,6 +14,7 @@ import {
     TokenId,
     Transaction,
 } from "../../src/index.js";
+import BadEntityIdError from "../../src/BadEntityIdError.js";
 import Long from "long";
 import * as HieroProto from "@hiero-ledger/proto";
 import { DEFAULT_AUTO_RENEW_PERIOD } from "../../src/transaction/Transaction.js";
@@ -443,5 +445,94 @@ describe("TokenCreateTransaction", function () {
         expect(tx2.supplyType).to.equal(TokenSupplyType.Finite);
         expect(tx2.maxSupply.toString()).to.equal("10000");
         expect(tx2.metadata).to.deep.equal(metadata);
+    });
+
+    describe("_validateChecksums", function () {
+        let mainnet, testnet;
+
+        beforeEach(function () {
+            mainnet = Client.forMainnet({ scheduleNetworkUpdate: false });
+            testnet = Client.forTestnet({ scheduleNetworkUpdate: false });
+        });
+
+        afterEach(function () {
+            mainnet.close();
+            testnet.close();
+        });
+
+        it("should check the treasury account checksum", function () {
+            const treasury = new AccountId(0, 0, 123);
+            treasury._checksum = "vfmkw";
+
+            const tx = new TokenCreateTransaction().setTreasuryAccountId(
+                treasury,
+            );
+
+            expect(() => tx._validateChecksums(mainnet)).to.not.throw();
+            expect(() => tx._validateChecksums(testnet)).to.throw(
+                BadEntityIdError,
+            );
+        });
+
+        it("should check the auto renew account checksum", function () {
+            const autoRenew = new AccountId(0, 0, 123);
+            autoRenew._checksum = "vfmkw";
+
+            const tx = new TokenCreateTransaction().setAutoRenewAccountId(
+                autoRenew,
+            );
+
+            expect(() => tx._validateChecksums(mainnet)).to.not.throw();
+            expect(() => tx._validateChecksums(testnet)).to.throw(
+                BadEntityIdError,
+            );
+        });
+
+        it("should skip unset fields", function () {
+            expect(() =>
+                new TokenCreateTransaction()._validateChecksums(testnet),
+            ).to.not.throw();
+        });
+    });
+
+    describe("_execute", function () {
+        it("should call token.createToken() with the request", async function () {
+            const request = {};
+            const response = {};
+            const calls = [];
+            const channel = {
+                token: {
+                    createToken: (arg) => {
+                        calls.push(arg);
+                        return Promise.resolve(response);
+                    },
+                },
+            };
+
+            expect(
+                await new TokenCreateTransaction()._execute(channel, request),
+            ).to.equal(response);
+            expect(calls).to.deep.equal([request]);
+            expect(calls[0]).to.equal(request);
+        });
+    });
+
+    describe("_getLogId", function () {
+        it("should include the class name and valid start", function () {
+            const validStart = new Timestamp(1596210382, 0);
+            const tx = new TokenCreateTransaction()
+                .setNodeAccountIds([new AccountId(0, 0, 3)])
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        new AccountId(0, 0, 1001),
+                        validStart,
+                    ),
+                )
+                .freeze();
+
+            expect(tx._getLogId()).to.equal(
+                `TokenCreateTransaction:${validStart.toString()}`,
+            );
+        });
     });
 });
