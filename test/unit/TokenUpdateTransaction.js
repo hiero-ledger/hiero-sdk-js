@@ -1,4 +1,5 @@
 import {
+    Client,
     PrivateKey,
     TokenUpdateTransaction,
     TransactionId,
@@ -7,6 +8,7 @@ import {
     TokenKeyValidation,
     TokenId,
 } from "../../src/index.js";
+import BadEntityIdError from "../../src/BadEntityIdError.js";
 import Duration from "../../src/Duration.js";
 import Long from "long";
 
@@ -340,6 +342,106 @@ describe("TokenUpdateTransaction", function () {
             const tx = new TokenUpdateTransaction();
 
             expect(tx._makeTransactionData().memo).to.be.null;
+        });
+    });
+
+    describe("_validateChecksums", function () {
+        let mainnet, testnet;
+
+        beforeEach(function () {
+            mainnet = Client.forMainnet({ scheduleNetworkUpdate: false });
+            testnet = Client.forTestnet({ scheduleNetworkUpdate: false });
+        });
+
+        afterEach(function () {
+            mainnet.close();
+            testnet.close();
+        });
+
+        it("should check the token ID checksum", function () {
+            const tx = new TokenUpdateTransaction().setTokenId(
+                TokenId.fromString("0.0.123-vfmkw"),
+            );
+
+            expect(() => tx._validateChecksums(mainnet)).to.not.throw();
+            expect(() => tx._validateChecksums(testnet)).to.throw(
+                BadEntityIdError,
+            );
+        });
+
+        it("should check the treasury account checksum", function () {
+            const treasury = new AccountId(0, 0, 123);
+            treasury._checksum = "vfmkw";
+
+            const tx = new TokenUpdateTransaction().setTreasuryAccountId(
+                treasury,
+            );
+
+            expect(() => tx._validateChecksums(mainnet)).to.not.throw();
+            expect(() => tx._validateChecksums(testnet)).to.throw(
+                BadEntityIdError,
+            );
+        });
+
+        it("should check the auto renew account checksum", function () {
+            const autoRenew = new AccountId(0, 0, 123);
+            autoRenew._checksum = "vfmkw";
+
+            const tx = new TokenUpdateTransaction().setAutoRenewAccountId(
+                autoRenew,
+            );
+
+            expect(() => tx._validateChecksums(mainnet)).to.not.throw();
+            expect(() => tx._validateChecksums(testnet)).to.throw(
+                BadEntityIdError,
+            );
+        });
+
+        it("should skip unset fields", function () {
+            expect(() =>
+                new TokenUpdateTransaction()._validateChecksums(testnet),
+            ).to.not.throw();
+        });
+    });
+
+    describe("_execute", function () {
+        it("should call token.updateToken() with the request", async function () {
+            const request = {};
+            const response = {};
+            const calls = [];
+            const channel = {
+                token: {
+                    updateToken: (arg) => {
+                        calls.push(arg);
+                        return Promise.resolve(response);
+                    },
+                },
+            };
+
+            expect(
+                await new TokenUpdateTransaction()._execute(channel, request),
+            ).to.equal(response);
+            expect(calls).to.deep.equal([request]);
+            expect(calls[0]).to.equal(request);
+        });
+    });
+
+    describe("_getLogId", function () {
+        it("should include the class name and valid start", function () {
+            const validStart = new Timestamp(1596210382, 0);
+            const tx = new TokenUpdateTransaction()
+                .setNodeAccountIds([new AccountId(0, 0, 3)])
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        new AccountId(0, 0, 1001),
+                        validStart,
+                    ),
+                )
+                .freeze();
+
+            expect(tx._getLogId()).to.equal(
+                `TokenUpdateTransaction:${validStart.toString()}`,
+            );
         });
     });
 });

@@ -1,4 +1,6 @@
+import { vi } from "vitest";
 import {
+    Client,
     TokenMintTransaction,
     TokenId,
     AccountId,
@@ -6,6 +8,7 @@ import {
     Timestamp,
     Transaction,
 } from "../../src/index.js";
+import BadEntityIdError from "../../src/BadEntityIdError.js";
 import Long from "long";
 import BigNumber from "bignumber.js";
 
@@ -174,5 +177,161 @@ describe("TokenMintTransaction", function () {
 
         expect(transaction.tokenId.toString()).to.equal(tokenId.toString());
         expect(transaction.amount.toString()).to.equal("1234");
+    });
+
+    describe("metadata", function () {
+        it("should default to an empty list", function () {
+            expect(new TokenMintTransaction().metadata).to.deep.equal([]);
+        });
+
+        it("should accept a Uint8Array in addMetadata", function () {
+            const metadata = new TextEncoder().encode("metadata");
+            const transaction = new TokenMintTransaction().addMetadata(
+                metadata,
+            );
+
+            expect(transaction.metadata).to.deep.equal([metadata]);
+        });
+
+        it("should decode a string in addMetadata and warn", function () {
+            const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+            try {
+                const transaction = new TokenMintTransaction().addMetadata(
+                    "deadbeef",
+                );
+
+                expect(transaction.metadata).to.deep.equal([
+                    Uint8Array.of(0xde, 0xad, 0xbe, 0xef),
+                ]);
+                expect(warn).toHaveBeenCalledTimes(1);
+            } finally {
+                warn.mockRestore();
+            }
+        });
+
+        it("should be chainable in addMetadata", function () {
+            const transaction = new TokenMintTransaction();
+
+            expect(
+                transaction.addMetadata(new TextEncoder().encode("a")),
+            ).to.equal(transaction);
+        });
+
+        it("should throw once frozen", function () {
+            const transaction = new TokenMintTransaction()
+                .setNodeAccountIds([new AccountId(0, 0, 3)])
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        new AccountId(0, 0, 1001),
+                        new Timestamp(1596210382, 0),
+                    ),
+                )
+                .freeze();
+
+            expect(() =>
+                transaction.addMetadata(new TextEncoder().encode("a")),
+            ).to.throw("transaction is immutable");
+        });
+
+        it("should set metadata from Uint8Arrays", function () {
+            const metadata = new TextEncoder().encode("metadata");
+            const transaction = new TokenMintTransaction().setMetadata([
+                metadata,
+            ]);
+
+            expect(transaction.metadata).to.deep.equal([metadata]);
+        });
+
+        it("should decode string metadata and warn", function () {
+            const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+            try {
+                const transaction = new TokenMintTransaction().setMetadata([
+                    "deadbeef",
+                ]);
+
+                expect(transaction.metadata).to.deep.equal([
+                    Uint8Array.of(0xde, 0xad, 0xbe, 0xef),
+                ]);
+                expect(warn).toHaveBeenCalledTimes(1);
+            } finally {
+                warn.mockRestore();
+            }
+        });
+    });
+
+    describe("_validateChecksums", function () {
+        let mainnet, testnet;
+
+        beforeEach(function () {
+            mainnet = Client.forMainnet({ scheduleNetworkUpdate: false });
+            testnet = Client.forTestnet({ scheduleNetworkUpdate: false });
+        });
+
+        afterEach(function () {
+            mainnet.close();
+            testnet.close();
+        });
+
+        it("should check the token ID checksum against the client's network", function () {
+            const transaction = new TokenMintTransaction().setTokenId(
+                TokenId.fromString("0.0.123-vfmkw"),
+            );
+
+            expect(() =>
+                transaction._validateChecksums(mainnet),
+            ).to.not.throw();
+            expect(() => transaction._validateChecksums(testnet)).to.throw(
+                BadEntityIdError,
+            );
+        });
+
+        it("should skip an unset tokenId", function () {
+            expect(() =>
+                new TokenMintTransaction()._validateChecksums(testnet),
+            ).to.not.throw();
+        });
+    });
+
+    describe("_execute", function () {
+        it("should call token.mintToken() with the request", async function () {
+            const request = {};
+            const response = {};
+            const calls = [];
+            const channel = {
+                token: {
+                    mintToken: (arg) => {
+                        calls.push(arg);
+                        return Promise.resolve(response);
+                    },
+                },
+            };
+
+            expect(
+                await new TokenMintTransaction()._execute(channel, request),
+            ).to.equal(response);
+            expect(calls).to.deep.equal([request]);
+            expect(calls[0]).to.equal(request);
+        });
+    });
+
+    describe("_getLogId", function () {
+        it("should include the class name and valid start", function () {
+            const validStart = new Timestamp(1596210382, 0);
+            const transaction = new TokenMintTransaction()
+                .setNodeAccountIds([new AccountId(0, 0, 3)])
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        new AccountId(0, 0, 1001),
+                        validStart,
+                    ),
+                )
+                .freeze();
+
+            expect(transaction._getLogId()).to.equal(
+                `TokenMintTransaction:${validStart.toString()}`,
+            );
+        });
     });
 });

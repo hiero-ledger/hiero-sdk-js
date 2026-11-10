@@ -74,8 +74,7 @@ describe("ScheduleCreateTransaction", function () {
             expect(transaction.getScheduleMemo).to.equal("memo");
         });
 
-        // TODO(#4681): the constructor ignores these two props.
-        it.skip("should set the expiration time and wait for expiry given in props", function () {
+        it("should set the expiration time and wait for expiry given in props", function () {
             const transaction = new ScheduleCreateTransaction({
                 expirationTime,
                 waitForExpiry: true,
@@ -131,6 +130,21 @@ describe("ScheduleCreateTransaction", function () {
                 transaction.setPayerAccountId(payerAccountId),
             ).to.throw("transaction is immutable");
             expect(() => transaction.setScheduleMemo("memo")).to.throw(
+                "transaction is immutable",
+            );
+        });
+
+        it("should throw on setting the expiration time or wait for expiry once frozen", function () {
+            const transaction = freezeWithIds(
+                new ScheduleCreateTransaction().setScheduledTransaction(
+                    newTransfer(),
+                ),
+            );
+
+            expect(() =>
+                transaction.setExpirationTime(expirationTime),
+            ).to.throw("transaction is immutable");
+            expect(() => transaction.setWaitForExpiry(true)).to.throw(
                 "transaction is immutable",
             );
         });
@@ -278,11 +292,7 @@ describe("ScheduleCreateTransaction", function () {
             ).to.equal("100000000");
         });
 
-        // TODO(#4681): fromBytes() drops the expiration time and wait for
-        // expiry, and the getScheduleMemo, expirationTime and waitForExpiry
-        // getters throw on a frozen transaction, which every transaction
-        // fromBytes() returns is.
-        it.skip("should keep the memo, expiration time and wait for expiry", function () {
+        it("should keep the memo, expiration time and wait for expiry", function () {
             const transaction = freezeWithIds(
                 new ScheduleCreateTransaction()
                     .setScheduledTransaction(newTransfer())

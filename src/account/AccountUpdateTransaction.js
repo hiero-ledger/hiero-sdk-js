@@ -6,6 +6,7 @@ import Timestamp from "../Timestamp.js";
 import Duration from "../Duration.js";
 import Long from "long";
 import Key from "../Key.js";
+import HookCreationDetails from "../hooks/HookCreationDetails.js";
 
 /**
  * @namespace proto
@@ -211,63 +212,73 @@ export default class AccountUpdateTransaction extends Transaction {
                 body.cryptoUpdateAccount
             );
 
+        const transaction = new AccountUpdateTransaction({
+            accountId:
+                update.accountIDToUpdate != null
+                    ? AccountId._fromProtobuf(
+                          /** @type {HieroProto.proto.IAccountID} */ (
+                              update.accountIDToUpdate
+                          ),
+                      )
+                    : undefined,
+            key:
+                update.key != null
+                    ? Key._fromProtobufKey(update.key)
+                    : undefined,
+            receiverSignatureRequired:
+                update.receiverSigRequiredWrapper != null
+                    ? update.receiverSigRequiredWrapper.value ?? false
+                    : undefined,
+            proxyAccountId:
+                update.proxyAccountID != null
+                    ? AccountId._fromProtobuf(
+                          /** @type {HieroProto.proto.IAccountID} */ (
+                              update.proxyAccountID
+                          ),
+                      )
+                    : undefined,
+            autoRenewPeriod:
+                update.autoRenewPeriod != null
+                    ? update.autoRenewPeriod.seconds != null
+                        ? update.autoRenewPeriod.seconds
+                        : undefined
+                    : undefined,
+            expirationTime:
+                update.expirationTime != null
+                    ? Timestamp._fromProtobuf(update.expirationTime)
+                    : undefined,
+            accountMemo:
+                update.memo != null ? update.memo.value ?? "" : undefined,
+            maxAutomaticTokenAssociations:
+                update.maxAutomaticTokenAssociations != null
+                    ? Long.fromNumber(
+                          update.maxAutomaticTokenAssociations.value ?? 0,
+                      )
+                    : undefined,
+            stakedAccountId:
+                update.stakedAccountId != null
+                    ? AccountId._fromProtobuf(update.stakedAccountId)
+                    : undefined,
+            stakedNodeId:
+                update.stakedNodeId != null ? update.stakedNodeId : undefined,
+            declineStakingReward:
+                update.declineReward != null
+                    ? update.declineReward.value ?? false
+                    : undefined,
+        });
+
+        if (update.hookCreationDetails != null) {
+            transaction._hooksToBeCreated = update.hookCreationDetails.map(
+                (hook) => HookCreationDetails._fromProtobuf(hook),
+            );
+        }
+
+        if (update.hookIdsToDelete != null) {
+            transaction._hooksToBeDeleted = update.hookIdsToDelete;
+        }
+
         return Transaction._fromProtobufTransactions(
-            new AccountUpdateTransaction({
-                accountId:
-                    update.accountIDToUpdate != null
-                        ? AccountId._fromProtobuf(
-                              /** @type {HieroProto.proto.IAccountID} */ (
-                                  update.accountIDToUpdate
-                              ),
-                          )
-                        : undefined,
-                key:
-                    update.key != null
-                        ? Key._fromProtobufKey(update.key)
-                        : undefined,
-                receiverSignatureRequired:
-                    update.receiverSigRequiredWrapper != null
-                        ? update.receiverSigRequiredWrapper.value ?? false
-                        : undefined,
-                proxyAccountId:
-                    update.proxyAccountID != null
-                        ? AccountId._fromProtobuf(
-                              /** @type {HieroProto.proto.IAccountID} */ (
-                                  update.proxyAccountID
-                              ),
-                          )
-                        : undefined,
-                autoRenewPeriod:
-                    update.autoRenewPeriod != null
-                        ? update.autoRenewPeriod.seconds != null
-                            ? update.autoRenewPeriod.seconds
-                            : undefined
-                        : undefined,
-                expirationTime:
-                    update.expirationTime != null
-                        ? Timestamp._fromProtobuf(update.expirationTime)
-                        : undefined,
-                accountMemo:
-                    update.memo != null ? update.memo.value ?? "" : undefined,
-                maxAutomaticTokenAssociations:
-                    update.maxAutomaticTokenAssociations != null
-                        ? Long.fromNumber(
-                              update.maxAutomaticTokenAssociations.value ?? 0,
-                          )
-                        : undefined,
-                stakedAccountId:
-                    update.stakedAccountId != null
-                        ? AccountId._fromProtobuf(update.stakedAccountId)
-                        : undefined,
-                stakedNodeId:
-                    update.stakedNodeId != null
-                        ? update.stakedNodeId
-                        : undefined,
-                declineStakingReward:
-                    update.declineReward != null
-                        ? update.declineReward.value ?? false
-                        : undefined,
-            }),
+            transaction,
             transactions,
             signedTransactions,
             transactionIds,
