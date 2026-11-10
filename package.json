@@ -1,6 +1,6 @@
 {
     "name": "@hiero-ledger/sdk",
-    "version": "2.90.1",
+    "version": "2.91.0",
     "description": "Hiero SDK",
     "types": "./lib/index.d.ts",
     "main": "./lib/index.cjs",
@@ -63,7 +63,23 @@
         "sdk",
         "transactions"
     ],
-    "sideEffects": true,
+    "sideEffects": [
+        "./src/index.js",
+        "./src/browser.js",
+        "./src/native.js",
+        "./src/exports.js",
+        "./src/registry.js",
+        "./lib/index.js",
+        "./lib/index.cjs",
+        "./lib/browser.js",
+        "./lib/browser.cjs",
+        "./lib/native.js",
+        "./lib/native.cjs",
+        "./lib/exports.js",
+        "./lib/exports.cjs",
+        "./lib/registry.js",
+        "./lib/registry.cjs"
+    ],
     "files": [
         "lib/",
         "src/",
@@ -81,7 +97,6 @@
         "not ie > 0"
     ],
     "dependencies": {
-        "ethers": "6.16.0",
         "@grpc/grpc-js": "1.13.6",
         "@hiero-ledger/cryptography": "workspace:*",
         "@hiero-ledger/proto": "workspace:*",
@@ -137,6 +152,7 @@
         "eslint-plugin-jsdoc": "65.4.2",
         "eslint-plugin-n": "18.0.1",
         "@vitest/eslint-plugin": "1.6.7",
+        "ethers": "6.16.0",
         "fast-check": "4.10.2",
         "geckodriver": "8.0.0",
         "jsdom": "30.0.1",

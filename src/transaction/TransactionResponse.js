@@ -316,8 +316,6 @@ export default class TransactionResponse {
                     "Transaction or Transaction ID is null after reset",
                 );
             }
-            // need to set the transactionId again in case we are doing getRecord afterwards
-            this.transactionId = this.transaction.transactionId;
             if (i > 0) {
                 // Wait with exponential backoff before retrying
                 await wait(Math.min(BACKOFF, MAX_BACKOFF));
@@ -325,8 +323,8 @@ export default class TransactionResponse {
             }
 
             try {
-                this.transaction._resetTransaction(client);
                 const resp = await this.transaction.execute(client);
+                this.transactionId = resp.transactionId;
 
                 const receipt = await new TransactionReceiptQuery()
                     .setTransactionId(resp.transactionId)

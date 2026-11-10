@@ -95,7 +95,6 @@ export class SimpleRestProvider {
      *
      * Token maps are empty because this endpoint is HBAR-only. Use
      * `MirrorNodeTokenBalanceQuery` when a token balance is needed.
-     *
      * @param {AccountId | string} accountId
      * @param {number} [requestTimeout]
      * @returns {Promise<AccountBalance>}

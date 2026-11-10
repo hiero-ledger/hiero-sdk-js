@@ -5,6 +5,9 @@ import {
     PrivateKey,
     AccountId,
     TransactionId,
+    Hbar,
+    Timestamp,
+    Transaction,
 } from "../../src/index.js";
 import * as HieroProto from "@hiero-ledger/proto";
 import Long from "long";
@@ -354,5 +357,69 @@ describe("TopicCreateTransaction", function () {
             expect(topicCreateTransaction.getTopicMemo()).to.be.null;
             expect(topicCreateTransaction.getCustomFees()).to.have.length(0);
         });
+    });
+
+    it("should convert from and to bytes", function () {
+        const transactionId = TransactionId.withValidStart(
+            AccountId.fromString("0.0.1001"),
+            new Timestamp(1596210382, 0),
+        );
+        const adminKey = PrivateKey.generateED25519().publicKey;
+        const submitKey = PrivateKey.generateED25519().publicKey;
+        const feeScheduleKey = PrivateKey.generateED25519().publicKey;
+        const feeExemptKeys = [
+            PrivateKey.generateED25519().publicKey,
+            PrivateKey.generateECDSA().publicKey,
+        ];
+        const customFees = [
+            new CustomFixedFee()
+                .setAmount(10)
+                .setDenominatingTokenId(TokenId.fromString("0.0.5008"))
+                .setFeeCollectorAccountId(AccountId.fromString("0.0.5007")),
+            new CustomFixedFee()
+                .setHbarAmount(new Hbar(1))
+                .setFeeCollectorAccountId(AccountId.fromString("0.0.5007")),
+        ];
+
+        const tx = new TopicCreateTransaction()
+            .setNodeAccountIds([AccountId.fromString("0.0.3")])
+            .setTransactionId(transactionId)
+            .setTopicMemo("memo")
+            .setAdminKey(adminKey)
+            .setSubmitKey(submitKey)
+            .setFeeScheduleKey(feeScheduleKey)
+            .setFeeExemptKeys(feeExemptKeys)
+            .setAutoRenewAccountId(AccountId.fromString("0.0.5006"))
+            .setAutoRenewPeriod(8000000)
+            .setCustomFees(customFees)
+            .freeze();
+
+        const tx2 = Transaction.fromBytes(tx.toBytes());
+
+        expect(tx2).to.be.instanceOf(TopicCreateTransaction);
+        expect(tx2.transactionId.toString()).to.equal(transactionId.toString());
+        expect(tx2.topicMemo).to.equal("memo");
+        expect(tx2.adminKey.toString()).to.equal(adminKey.toString());
+        expect(tx2.submitKey.toString()).to.equal(submitKey.toString());
+        expect(tx2.getFeeScheduleKey().toString()).to.equal(
+            feeScheduleKey.toString(),
+        );
+        expect(
+            tx2.getFeeExemptKeys().map((key) => key.toString()),
+        ).to.deep.equal(feeExemptKeys.map((key) => key.toString()));
+        expect(tx2.autoRenewAccountId.toString()).to.equal("0.0.5006");
+        expect(tx2.autoRenewPeriod.seconds.toString()).to.equal("8000000");
+        expect(
+            tx2
+                .getCustomFees()
+                .map((fee) => [
+                    fee.amount.toString(),
+                    fee.denominatingTokenId?.toString() ?? null,
+                    fee.feeCollectorAccountId.toString(),
+                ]),
+        ).to.deep.equal([
+            ["10", "0.0.5008", "0.0.5007"],
+            [new Hbar(1).toTinybars().toString(), null, "0.0.5007"],
+        ]);
     });
 });

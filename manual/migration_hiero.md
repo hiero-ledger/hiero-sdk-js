@@ -147,16 +147,16 @@ You can use the following commands to automatically update most references:
 ### For Unix-like systems (Linux, macOS):
 ```bash
 # Update import statements in JavaScript/TypeScript files
-find . -name "*.js" -o -name "*.ts" -o -name "*.jsx" -o -name "*.tsx" | xargs sed -i 's/@hashgraph\/sdk/@hiero\/sdk/g'
+find . -name "*.js" -o -name "*.ts" -o -name "*.jsx" -o -name "*.tsx" | xargs sed -i 's/@hashgraph\/sdk/@hiero-ledger\/sdk/g'
 
 # Update package.json files
-find . -name "package.json" | xargs sed -i 's/"@hashgraph\/sdk"/"@hiero\/sdk"/g'
+find . -name "package.json" | xargs sed -i 's/"@hashgraph\/sdk"/"@hiero-ledger\/sdk"/g'
 
 # Update HTML files
-find . -name "*.html" | xargs sed -i 's/@hashgraph\/sdk/@hiero\/sdk/g'
+find . -name "*.html" | xargs sed -i 's/@hashgraph\/sdk/@hiero-ledger\/sdk/g'
 
 # Update markdown files
-find . -name "*.md" | xargs sed -i 's/@hashgraph\/sdk/@hiero\/sdk/g'
+find . -name "*.md" | xargs sed -i 's/@hashgraph\/sdk/@hiero-ledger\/sdk/g'
 ```
 
 ### For Windows (PowerShell):

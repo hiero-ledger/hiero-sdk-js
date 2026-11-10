@@ -65,6 +65,7 @@ async function main() {
     } catch (error) {
         throw new Error(
             "Environment variables HEDERA_NETWORK, OPERATOR_ID, and OPERATOR_KEY are required.",
+            { cause: error },
         );
     }
 
@@ -142,11 +143,13 @@ async function main() {
                 ? count++
                 : console.log(`Failed with: ${receipt.status.toString()}`),
         );
-        transactionsCount == count
-            ? console.log(`All transactions are executed successfully`)
-            : console.log(
-                  `${transactionsCount - count} unsuccessful transactions`,
-              );
+        if (transactionsCount == count) {
+            console.log(`All transactions are executed successfully`);
+        } else {
+            console.log(
+                `${transactionsCount - count} unsuccessful transactions`,
+            );
+        }
 
         /**
          *     Example 2

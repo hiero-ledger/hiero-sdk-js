@@ -1,3 +1,6 @@
+import ContractId from "./../contract/ContractId.js";
+import { EvmHookStorageUpdate } from "./EvmHookStorageUpdate.js";
+
 /**
  * Definition of an EVM hook extending shared specifications for an EVM hook.
  */
@@ -62,6 +65,26 @@ class EvmHook {
      */
     get contractId() {
         return this._contractId;
+    }
+
+    /**
+     *
+     * @param {import("@hiero-ledger/proto").com.hedera.hapi.node.hooks.IEvmHook} evmHook
+     * @returns {EvmHook}
+     */
+    static _fromProtobuf(evmHook) {
+        return new EvmHook({
+            contractId:
+                evmHook.spec?.contractId != null
+                    ? ContractId._fromProtobuf(evmHook.spec.contractId)
+                    : undefined,
+            storageUpdates:
+                evmHook.storageUpdates != null
+                    ? evmHook.storageUpdates.map((update) =>
+                          EvmHookStorageUpdate._fromProtobuf(update),
+                      )
+                    : undefined,
+        });
     }
 
     /**
