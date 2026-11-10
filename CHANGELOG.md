@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+-   In React Native, `Client` (`NativeClient`) now reads the `mirrorNetwork` passed to its constructor or to `Client.fromConfig()`, as `NodeClient` and `WebClient` already did. Before, it was ignored: the client had no mirror network, or kept the default one of a named `network`, and `Client.forMirrorNetwork()` returned a client whose `updateNetwork()` couldn't fetch the address book. [#4724](https://github.com/hiero-ledger/hiero-sdk-js/issues/4724)
 -   `ScheduleCreateTransaction`'s `getScheduleMemo`, `expirationTime` and `waitForExpiry` getters no longer throw on a frozen transaction, such as one returned by `Transaction.fromBytes()`, and `Transaction.fromBytes()` now keeps the expiration time and wait for expiry. `setExpirationTime()` and `setWaitForExpiry()` now throw on a frozen transaction, like the other setters. [#4681](https://github.com/hiero-ledger/hiero-sdk-js/issues/4681)
 
 # v2.91.0
