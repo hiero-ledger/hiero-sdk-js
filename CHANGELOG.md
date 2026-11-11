@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--   `PrivateKey.fromPem()` with a passphrase now throws an `Error` such as `invalid DER: data too short` when the encrypted ED25519 key's DER structure is malformed. Before, the DER decoder threw `RangeError: Offset is outside the bounds of the DataView` when the input ended before a length or an INTEGER's content, or used the indefinite length `0x80`, and a length that pointed past the end of the input was cut short instead of failing. [#4734](https://github.com/hiero-ledger/hiero-sdk-js/issues/4734)
+-   `PrivateKey.fromPem()` with a passphrase now throws an `Error` such as `invalid DER: data too short` when the decrypted ED25519 key's DER structure is malformed, for example after decrypting with a wrong passphrase. Before, the DER decoder threw `RangeError: Offset is outside the bounds of the DataView` when the input ended before a length or an INTEGER's content, or used the indefinite length `0x80`, and returned data the input didn't contain when a length pointed past its end or an OBJECT IDENTIFIER was empty or cut off. A malformed encrypted structure still throws a `BadKeyError` that names the DER error. [#4734](https://github.com/hiero-ledger/hiero-sdk-js/issues/4734)
 -   `ScheduleCreateTransaction`'s `getScheduleMemo`, `expirationTime` and `waitForExpiry` getters no longer throw on a frozen transaction, such as one returned by `Transaction.fromBytes()`, and `Transaction.fromBytes()` now keeps the expiration time and wait for expiry. `setExpirationTime()` and `setWaitForExpiry()` now throw on a frozen transaction, like the other setters. [#4681](https://github.com/hiero-ledger/hiero-sdk-js/issues/4681)
 
 # v2.91.0

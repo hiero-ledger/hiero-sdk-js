@@ -149,10 +149,30 @@ describe("encoding/der", function () {
         ).to.throw("invalid DER: data too short");
     });
 
+    it("should throw for a length cut short inside a SEQUENCE", function () {
+        // SEQUENCE { OCTET STRING } where 0x81 says one length byte follows, but none does
+        expect(() =>
+            der.decode(new Uint8Array([0x30, 0x02, 0x04, 0x81])),
+        ).to.throw("invalid DER: data too short");
+    });
+
     it("should throw for an INTEGER with no content", function () {
         expect(() => der.decode(new Uint8Array([0x02, 0x00]))).to.throw(
             "invalid DER: INTEGER has no content",
         );
+    });
+
+    it("should throw for an OBJECT IDENTIFIER with no content", function () {
+        expect(() => der.decode(new Uint8Array([0x06, 0x00]))).to.throw(
+            "invalid DER: OBJECT IDENTIFIER has no content",
+        );
+    });
+
+    it("should throw for an OBJECT IDENTIFIER cut off inside a component", function () {
+        // 1.2 and then 0x86, whose MSB says another byte of the component follows
+        expect(() =>
+            der.decode(new Uint8Array([0x06, 0x02, 0x2a, 0x86])),
+        ).to.throw("invalid DER: OBJECT IDENTIFIER is cut off");
     });
 
     // Length encoding

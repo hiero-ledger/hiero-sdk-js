@@ -98,6 +98,15 @@ function decodeSeq(seqBytes) {
  * @returns {string}
  */
 function decodeObjectIdent(idBytes) {
+    if (idBytes.length === 0) {
+        throw new Error("invalid DER: OBJECT IDENTIFIER has no content");
+    }
+
+    // the last byte of every component has the MSB clear
+    if (idBytes[idBytes.length - 1] >= 128) {
+        throw new Error("invalid DER: OBJECT IDENTIFIER is cut off");
+    }
+
     const id = [
         // first octet is 40 * value1 + value2
         Math.floor(idBytes[0] / 40),
