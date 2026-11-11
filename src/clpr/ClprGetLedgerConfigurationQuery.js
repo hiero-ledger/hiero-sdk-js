@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Query, { QUERY_REGISTRY } from "../query/Query.js";
+import Query from "../query/Query.js";
 import ClprLedgerConfigurationInfo from "./ClprLedgerConfigurationInfo.js";
 
 /**
@@ -107,9 +107,3 @@ export default class ClprGetLedgerConfigurationQuery extends Query {
         return `ClprGetLedgerConfigurationQuery:${this._timestamp.toString()}`;
     }
 }
-
-QUERY_REGISTRY.set(
-    "clprGetLedgerConfiguration",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    ClprGetLedgerConfigurationQuery._fromProtobuf,
-);

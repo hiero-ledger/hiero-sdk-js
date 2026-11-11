@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import ClprTransaction from "./ClprTransaction.js";
 import { copyBytes32 } from "../util.js";
 import { computeChannelCommitment } from "./ownership.js";
@@ -197,9 +195,3 @@ export default class ClprRegisterChannelTransaction extends ClprTransaction {
         return `ClprRegisterChannelTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "clprRegisterChannel",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    ClprRegisterChannelTransaction._fromProtobuf,
-);

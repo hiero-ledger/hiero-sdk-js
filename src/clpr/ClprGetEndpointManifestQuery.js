@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Query, { QUERY_REGISTRY } from "../query/Query.js";
+import Query from "../query/Query.js";
 import ClprEndpointManifestInfo from "./ClprEndpointManifestInfo.js";
 
 /**
@@ -107,9 +107,3 @@ export default class ClprGetEndpointManifestQuery extends Query {
         return `ClprGetEndpointManifestQuery:${this._timestamp.toString()}`;
     }
 }
-
-QUERY_REGISTRY.set(
-    "clprGetEndpointManifest",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    ClprGetEndpointManifestQuery._fromProtobuf,
-);

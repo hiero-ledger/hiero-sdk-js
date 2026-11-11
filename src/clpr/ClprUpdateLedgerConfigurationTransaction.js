@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import ClprTransaction from "./ClprTransaction.js";
 import ClprThrottles from "./ClprThrottles.js";
 
@@ -193,9 +191,3 @@ export default class ClprUpdateLedgerConfigurationTransaction extends ClprTransa
         return `ClprUpdateLedgerConfigurationTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "clprUpdateLedgerConfiguration",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    ClprUpdateLedgerConfigurationTransaction._fromProtobuf,
-);

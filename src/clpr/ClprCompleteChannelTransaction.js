@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import ClprTransaction from "./ClprTransaction.js";
 import ContractId from "../contract/ContractId.js";
 import { copyBytes32 } from "../util.js";
@@ -348,9 +346,3 @@ export default class ClprCompleteChannelTransaction extends ClprTransaction {
         return `ClprCompleteChannelTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "clprCompleteChannel",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    ClprCompleteChannelTransaction._fromProtobuf,
-);

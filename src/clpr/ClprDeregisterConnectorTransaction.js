@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import ClprTransaction from "./ClprTransaction.js";
 import AccountId from "../account/AccountId.js";
 import { copyBytes32 } from "../util.js";
@@ -277,9 +275,3 @@ export default class ClprDeregisterConnectorTransaction extends ClprTransaction 
         return `ClprDeregisterConnectorTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "clprDeregisterConnector",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    ClprDeregisterConnectorTransaction._fromProtobuf,
-);
