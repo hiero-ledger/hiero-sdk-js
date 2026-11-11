@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import { describe, it, expect } from "vitest";
 import BadMnemonicError from "../../src/BadMnemonicError.js";
 import BadMnemonicReason from "../../src/BadMnemonicReason.js";
