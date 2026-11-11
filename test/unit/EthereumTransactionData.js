@@ -40,6 +40,12 @@ describe("EthereumTransactionData", function () {
         ).to.deep.equal(rawTxType2);
     });
 
+    it("fromBytes() throws for empty bytes", function () {
+        expect(() =>
+            EthereumTransactionData.fromBytes(new Uint8Array()),
+        ).to.throw("empty bytes");
+    });
+
     describe("RLP access list structure", function () {
         it("decodeRlp returns access list as [address, storageKeys[]] tuples, not flat strings", function () {
             const address = hex.decode(
