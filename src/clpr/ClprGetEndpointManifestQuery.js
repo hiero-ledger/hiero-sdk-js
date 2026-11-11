@@ -13,8 +13,8 @@ import ClprEndpointManifestInfo from "./ClprEndpointManifestInfo.js";
  */
 
 /**
- * Read the current CLPR endpoint manifest without an operator or payment.
- * Execution sends no cost request.
+ * Read the current CLPR endpoint manifest with the standard query payment flow.
+ * Execution requires an operator and looks up the cost unless a payment is set.
  *
  * The manifest and its state proof are paired and should be kept together.
  * An empty state proof is a successful read; retry later for proof material.
@@ -28,26 +28,6 @@ export default class ClprGetEndpointManifestQuery extends Query {
      */
     static _fromProtobuf() {
         return new ClprGetEndpointManifestQuery();
-    }
-
-    /**
-     * @override
-     * @protected
-     * @returns {boolean}
-     */
-    _isPaymentRequired() {
-        return false;
-    }
-
-    /**
-     * Build the execution request without a payment transaction.
-     * @override
-     * @internal
-     * @returns {Promise<ProtoQuery>}
-     */
-    _makeRequestAsync() {
-        // CLPR free queries omit the payment header, even when an operator is set.
-        return Promise.resolve(this._makeRequest());
     }
 
     /**

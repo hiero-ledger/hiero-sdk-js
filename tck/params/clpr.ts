@@ -24,6 +24,7 @@ export interface SubmitClprBundleParams extends BaseTransactionParams {
 }
 
 export interface RegisterClprConnectorParams extends BaseTransactionParams {
+    readonly channelId?: string;
     readonly commitment?: string;
 }
 
@@ -61,5 +62,9 @@ export interface UpdateClprLedgerConfigurationParams
     readonly throttles?: ClprThrottlesParams;
 }
 
-export type GetClprLedgerConfigurationParams = BaseParams;
-export type GetClprEndpointManifestParams = BaseParams;
+export interface GetClprLedgerConfigurationParams extends BaseParams {
+    /** Decimal tinybars, using the SDK's normal query payment controls. */
+    readonly queryPayment?: string;
+    readonly maxQueryPayment?: string;
+}
+export type GetClprEndpointManifestParams = GetClprLedgerConfigurationParams;

@@ -20,6 +20,7 @@ import {
     ClprServiceEndpoint,
     ClprSignatureScheme,
     Client,
+    Hbar,
     PrivateKey,
     Transaction,
 } from "../../../src/index.js";
@@ -73,9 +74,13 @@ export function useClpr(client: Client, key: PrivateKey): Transaction[] {
         maxPeerEndpoints: 0,
     });
     const ledger: Promise<ClprLedgerConfigurationInfo> =
-        new ClprGetLedgerConfigurationQuery().execute(client);
+        new ClprGetLedgerConfigurationQuery()
+            .setQueryPayment(Hbar.fromTinybars(7))
+            .execute(client);
     const manifest: Promise<ClprEndpointManifestInfo> =
-        new ClprGetEndpointManifestQuery().execute(client);
+        new ClprGetEndpointManifestQuery()
+            .setMaxQueryPayment(new Hbar(1))
+            .execute(client);
     void ledger.then((info) => {
         const limits: ClprThrottles = info.throttles;
         return limits;
@@ -98,6 +103,11 @@ export function useClpr(client: Client, key: PrivateKey): Transaction[] {
 
     // @ts-expect-error Channel IDs require bytes.
     new ClprCloseChannelTransaction().setChannelId("invalid");
+    const registration = new ClprRegisterConnectorTransaction({ channelId });
+    const registeredChannel: Uint8Array | null = registration.channelId;
+    void registeredChannel;
+    // @ts-expect-error Registration Channel IDs require bytes.
+    registration.setChannelId("invalid");
     // @ts-expect-error Throttles require the typed model.
     new ClprUpdateLedgerConfigurationTransaction().setThrottles({});
     // @ts-expect-error Endpoint ports are numeric.
@@ -118,12 +128,14 @@ export function useClpr(client: Client, key: PrivateKey): Transaction[] {
         new ClprSubmitBundleTransaction()
             .setChannelId(channelId)
             .setBundlePayload(new Uint8Array()),
-        new ClprRegisterConnectorTransaction().setCommitment(
-            ClprRegisterConnectorTransaction.computeOwnershipCommitment(
-                connectorId,
-                key.publicKey,
+        new ClprRegisterConnectorTransaction({ channelId })
+            .setChannelId(channelId)
+            .setCommitment(
+                ClprRegisterConnectorTransaction.computeOwnershipCommitment(
+                    connectorId,
+                    key.publicKey,
+                ),
             ),
-        ),
         completion,
         new ClprDeregisterConnectorTransaction()
             .setChannelId(channelId)

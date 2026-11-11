@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Unreleased
 
+### Added
+
+-   Added HIP-1535 CLPR support: eight transactions, two paid proof queries, ownership helpers and value models. Connector registration requires the existing Channel ID alongside the commitment. [#4578](https://github.com/hiero-ledger/hiero-sdk-js/issues/4578)
+-   `PublicKey.toBytesRawUncompressed()` returns ECDSA secp256k1 64-byte `x || y`. [#4578](https://github.com/hiero-ledger/hiero-sdk-js/issues/4578)
+
+### Changed
+
+-   CLPR protobufs use CN main [`77c8361`](https://github.com/hiero-ledger/hiero-consensus-node/tree/77c8361520e595c25d2d943f89a57b32cb21d22c). Proof queries use the standard cost/payment flow targeting `fix-clpr-fees` [`08036e9`](https://github.com/hiero-ledger/hiero-consensus-node/tree/08036e992bd5db2feba155c11f7676778b861775), separately from the schema baseline. Live CLPR runtime and real-proof acceptance remain pending.
+
 ### Fixed
 
 -   `ContractCreateTransaction.fromBytes()` (via `Transaction.fromBytes()`) no longer drops bytecode set with `setBytecode()`. `_fromProtobuf()` now reads the proto `initcode` field into `bytecode` (copied to a `Uint8Array`), so a frozen or unfrozen round trip keeps the bytecode and refreezing still signs a body with `initcode`. `setBytecodeFileId()` round trips are unchanged. [#4659](https://github.com/hiero-ledger/hiero-sdk-js/issues/4659)
@@ -15,9 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 # v2.91.0
 
 ### Added
-
--   Added HIP-1535 CLPR support: eight transactions, two free queries, ownership helpers, CLPR `Status` and `RequestType` codes, and protobufs from CN `a6b2452`. [#4578](https://github.com/hiero-ledger/hiero-sdk-js/issues/4578)
--   `PublicKey.toBytesRawUncompressed()` returns ECDSA secp256k1 64-byte `x || y`. [#4578](https://github.com/hiero-ledger/hiero-sdk-js/issues/4578)
 
 -   Added node37 (0.0.40) to the mainnet gRPC-web proxies used by WebClient and NativeClient. [#4649](https://github.com/hiero-ledger/hiero-sdk-js/issues/4649) [#4634](https://github.com/hiero-ledger/hiero-sdk-js/pull/4634)
 -   Added node39 (0.0.42) to the mainnet gRPC-web proxies used by WebClient and NativeClient. [#4687](https://github.com/hiero-ledger/hiero-sdk-js/issues/4687) [#4688](https://github.com/hiero-ledger/hiero-sdk-js/pull/4688)

@@ -202,17 +202,25 @@ const deregistrationValues = {
 };
 const incompleteCases = [
     ...[
+        [{}, "commitment"],
+        [{ channelId: new Uint8Array(32).fill(1) }, "commitment"],
+        [{ commitment: new Uint8Array(32).fill(2) }, "channelId"],
+    ].map(([props, missing]) => ({
+        name: `register-connector missing ${missing} with ${
+            Object.keys(props).join() || "no fields"
+        }`,
+        TransactionClass: ClprRegisterConnectorTransaction,
+        kind: "clprRegisterConnector",
+        props,
+        fields: ["channelId", "commitment"],
+        missing,
+    })),
+    ...[
         [
             "register-channel",
             ClprRegisterChannelTransaction,
             "clprRegisterChannel",
             "ownershipCommitment",
-        ],
-        [
-            "register-connector",
-            ClprRegisterConnectorTransaction,
-            "clprRegisterConnector",
-            "commitment",
         ],
     ].map(([name, TransactionClass, kind, field]) => ({
         name: `empty ${name}`,
@@ -298,6 +306,7 @@ it.each([
         "setOwnershipCommitment",
     ],
     ["commitment", ClprRegisterConnectorTransaction, "setCommitment"],
+    ["channelId", ClprRegisterConnectorTransaction, "setChannelId"],
     ["channelId", ClprDeregisterConnectorTransaction, "setChannelId"],
     ["connectorId", ClprDeregisterConnectorTransaction, "setConnectorId"],
 ])(
@@ -313,5 +322,16 @@ it.each([
         expect(
             () => new TransactionClass({ [field]: new Uint8Array() }),
         ).toThrow(new RegExp(field));
+    },
+);
+
+it.each([31, 33])(
+    "rejects a decoded %i-byte registration channelId",
+    function (length) {
+        const bytes = frozenTransactionBytes("clprRegisterConnector", {
+            commitment: new Uint8Array(32),
+            channelId: new Uint8Array(length),
+        });
+        expect(() => Transaction.fromBytes(bytes)).toThrow(/channelId/);
     },
 );

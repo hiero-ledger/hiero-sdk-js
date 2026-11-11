@@ -12,7 +12,7 @@ import { makeEndpointManifestResponse } from "../utils/ClprEndpointManifest.js";
 
 describe("ClprGetEndpointManifestQuery execution", function () {
     it.each(["090a0b0c", ""])(
-        "reads a typed manifest with proof '%s' using one free RPC and no operator",
+        "reads a typed manifest with proof '%s' using an explicit query payment",
         async function (proof) {
             expect(sdk.ClprGetEndpointManifestQuery).toBeTypeOf("function");
             const response = makeEndpointManifestResponse();
@@ -51,8 +51,12 @@ describe("ClprGetEndpointManifestQuery execution", function () {
             };
 
             try {
-                expect(client.operatorAccountId).toBeNull();
+                client.setOperator(
+                    "0.0.1854",
+                    sdk.PrivateKey.generateED25519(),
+                );
                 const info = await new sdk.ClprGetEndpointManifestQuery()
+                    .setQueryPayment(sdk.Hbar.fromTinybars(7))
                     .setMaxAttempts(1)
                     .execute(client);
 
@@ -62,7 +66,7 @@ describe("ClprGetEndpointManifestQuery execution", function () {
                 );
                 expect(requests[0].query.query).toBe("clprGetEndpointManifest");
                 const header = requests[0].query.clprGetEndpointManifest.header;
-                expect(header.payment == null).toBe(true);
+                expect(header.payment).not.toBeNull();
                 expect(header.responseType).toBe(
                     proto.ResponseType.ANSWER_ONLY,
                 );

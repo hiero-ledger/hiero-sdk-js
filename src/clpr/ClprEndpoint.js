@@ -49,7 +49,7 @@ export default class ClprEndpoint {
     }
 
     /**
-     * DER-encoded certificate for mutual TLS transport.
+     * DER-encoded TLS listener certificate, preserved as opaque bytes.
      * @returns {Uint8Array}
      */
     get tlsCertificate() {

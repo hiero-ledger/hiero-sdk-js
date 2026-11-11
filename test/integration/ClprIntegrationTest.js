@@ -196,6 +196,7 @@ describe.skipIf(!configured)("CLPR", function () {
                 );
             const registerConnector =
                 await new ClprRegisterConnectorTransaction()
+                    .setChannelId(channelId)
                     .setCommitment(connectorCommitment)
                     .execute(env.client);
             expect(
@@ -321,7 +322,7 @@ describe.skipIf(!configured)("CLPR", function () {
     );
 
     it.runIf(mode === "false")(
-        "rejects a free query with CLPR_NOT_ENABLED",
+        "rejects a paid query with CLPR_NOT_ENABLED",
         async function () {
             await expect(
                 new ClprGetLedgerConfigurationQuery().execute(env.client),

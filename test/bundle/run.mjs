@@ -72,6 +72,7 @@ const TRANSACTION_CASES_WITHOUT_CLASS = new Set([
     "migrationRootHashVote",
     "clprEndpointPublication",
     "clprMaintenance",
+    "clprEvictPeerEndpoint",
 ]);
 
 const QUERY_CASES_WITHOUT_CLASS = new Set([

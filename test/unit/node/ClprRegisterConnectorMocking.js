@@ -24,31 +24,29 @@ function signedBody(transaction) {
 }
 
 describe("ClprRegisterConnectorMocking", function () {
-    it.each(["constructor", "setter"])(
-        "copies a Node Buffer commitment on input and output through the %s",
-        function (path) {
-            const input = Buffer.from(
-                vectors.vectors[0].connectorCommitment,
-                "hex",
-            );
-            const transaction =
-                path === "constructor"
-                    ? registerConnector({ commitment: input })
-                    : registerConnector().setCommitment(input);
-
-            input.fill(0);
-            expect(hex.encode(transaction.commitment)).toBe(
-                vectors.vectors[0].connectorCommitment,
-            );
-            transaction.commitment.fill(0);
-            expect(hex.encode(transaction.commitment)).toBe(
-                vectors.vectors[0].connectorCommitment,
-            );
-        },
-    );
+    for (const [field, setter, expected] of [
+        ["commitment", "setCommitment", vectors.vectors[0].connectorCommitment],
+        ["channelId", "setChannelId", vectors.channelId],
+    ]) {
+        it.each(["constructor", "setter"])(
+            `copies a Node Buffer ${field} on input and output through the %s`,
+            function (path) {
+                const input = Buffer.from(expected, "hex");
+                const transaction =
+                    path === "constructor"
+                        ? registerConnector({ [field]: input })
+                        : registerConnector()[setter](input);
+                input.fill(0);
+                expect(hex.encode(transaction[field])).toBe(expected);
+                transaction[field].fill(0);
+                expect(hex.encode(transaction[field])).toBe(expected);
+            },
+        );
+    }
 
     it("executes registerConnector over Node gRPC with the builder body and gets a normal receipt", async function () {
         const transaction = registerConnector()
+            .setChannelId(hex.decode(vectors.channelId))
             .setCommitment(hex.decode(vectors.vectors[0].connectorCommitment))
             .setTransactionMemo("register connector");
         const unaryRequests = vi.spyOn(
@@ -99,6 +97,9 @@ describe("ClprRegisterConnectorMocking", function () {
             const body = proto.TransactionBody.decode(received.bodyBytes);
             expect(body.data).toBe("clprRegisterConnector");
             expect(
+                Uint8Array.from(body.clprRegisterConnector.channelId),
+            ).toEqual(transaction.channelId);
+            expect(
                 Uint8Array.from(body.clprRegisterConnector.commitment),
             ).toEqual(transaction.commitment);
             expect(body.memo).toBe("register connector");
@@ -119,9 +120,9 @@ describe("ClprRegisterConnectorMocking", function () {
     });
 
     it("surfaces a CLPR_NOT_ENABLED receipt as the named Status and receipt error", async function () {
-        const transaction = registerConnector().setCommitment(
-            hex.decode(vectors.vectors[0].connectorCommitment),
-        );
+        const transaction = registerConnector()
+            .setChannelId(hex.decode(vectors.channelId))
+            .setCommitment(hex.decode(vectors.vectors[0].connectorCommitment));
         let mock;
         try {
             mock = await Mocker.withResponses([

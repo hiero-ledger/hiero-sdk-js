@@ -253,6 +253,8 @@ export default class RequestType {
                 return "ClprGetEndpointManifest";
             case RequestType.ClprMaintenance:
                 return "ClprMaintenance";
+            case RequestType.ClprEvictPeerEndpoint:
+                return "ClprEvictPeerEndpoint";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -495,6 +497,8 @@ export default class RequestType {
                 return RequestType.ClprGetEndpointManifest;
             case 129:
                 return RequestType.ClprMaintenance;
+            case 130:
+                return RequestType.ClprEvictPeerEndpoint;
         }
 
         throw new Error(
@@ -1098,3 +1102,8 @@ RequestType.ClprGetEndpointManifest = new RequestType(128);
  * (Internal-only) Externalize CLPR singleton maintenance.
  */
 RequestType.ClprMaintenance = new RequestType(129);
+
+/**
+ * Remove a peer endpoint from a CLPR Channel's cached endpoint manifest.
+ */
+RequestType.ClprEvictPeerEndpoint = new RequestType(130);

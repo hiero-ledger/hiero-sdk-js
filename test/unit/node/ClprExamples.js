@@ -107,11 +107,17 @@ describe("CLPR example recipes", function () {
             const header = source.slice(0, source.search(/^\s*import\s/m));
 
             expect(header).toContain("clpr.enabled");
-            expect(header).toMatch(/treasury|system[ -]admin/i);
-            expect(header).toMatch(/key/i);
-            expect(header).toMatch(/deploy[\s\S]*verifier/i);
-            expect(header).toMatch(/Connector[\s\S]*contract/i);
-            expect(header).toMatch(/real[\s\S]*proof/i);
+            if (name.startsWith("get-")) {
+                expect(header).toContain("OPERATOR_ID/OPERATOR_KEY");
+                expect(header).toMatch(/funded/i);
+                expect(header).toMatch(/cost[\s\S]*payment/i);
+            } else {
+                expect(header).toMatch(/treasury|system[ -]admin/i);
+                expect(header).toMatch(/key/i);
+                expect(header).toMatch(/deploy[\s\S]*verifier/i);
+                expect(header).toMatch(/Connector[\s\S]*contract/i);
+                expect(header).toMatch(/real[\s\S]*proof/i);
+            }
         },
     );
 

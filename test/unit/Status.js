@@ -45,6 +45,7 @@ describe("Status", function () {
         [569, "CLPR_EMPTY_BUNDLE"],
         [570, "CLPR_RATE_LIMITED"],
         [571, "CLPR_NO_PROGRESS"],
+        [572, "CLPR_PEER_ENDPOINT_NOT_FOUND"],
     ])("round-trips response code %i as %s", function (code, name) {
         const status = Status._fromCode(code);
 

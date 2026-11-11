@@ -885,6 +885,8 @@ export default class Status {
                 return "CLPR_RATE_LIMITED";
             case Status.ClprNoProgress:
                 return "CLPR_NO_PROGRESS";
+            case Status.ClprPeerEndpointNotFound:
+                return "CLPR_PEER_ENDPOINT_NOT_FOUND";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -1759,6 +1761,8 @@ export default class Status {
                 return Status.ClprRateLimited;
             case 571:
                 return Status.ClprNoProgress;
+            case 572:
+                return Status.ClprPeerEndpointNotFound;
             default:
                 throw new Error(
                     `(BUG) Status.fromCode() does not handle code: ${code}`,
@@ -3930,3 +3934,8 @@ Status.ClprRateLimited = new Status(570);
  * A submitted bundle satisfies none of the four Bundle Progress Criteria (spec §2.1.2). The submitting endpoint is charged a penalty fee.
  */
 Status.ClprNoProgress = new Status(571);
+
+/**
+ * The peer endpoint to evict is not in the Channel's cached endpoint manifest.
+ */
+Status.ClprPeerEndpointNotFound = new Status(572);

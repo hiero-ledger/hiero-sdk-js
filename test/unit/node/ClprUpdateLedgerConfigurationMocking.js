@@ -58,6 +58,7 @@ describe("ClprUpdateLedgerConfigurationMocking", function () {
             ]);
 
             const info = await new sdk.ClprGetLedgerConfigurationQuery()
+                .setQueryPayment(sdk.Hbar.fromTinybars(11))
                 .setMaxAttempts(1)
                 .execute(mock.client);
             expect(info).toBeInstanceOf(sdk.ClprLedgerConfigurationInfo);

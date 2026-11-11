@@ -3,7 +3,7 @@ version: "3"
 silent: false
 
 vars:
-    proto: "a6b2452980d4d576dd01df665fecea72b6446dd3"
+    proto: "77c8361520e595c25d2d943f89a57b32cb21d22c"
 
 tasks:
     default:

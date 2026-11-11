@@ -79,6 +79,7 @@ async function main() {
         console.log("Salt:", Buffer.from(salt).toString("hex"));
         const registerReceipt = await (
             await new ClprRegisterConnectorTransaction()
+                .setChannelId(channelId)
                 .setCommitment(commitment)
                 .execute(client)
         ).getReceipt(client);

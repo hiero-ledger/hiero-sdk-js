@@ -1,27 +1,35 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Free ledger configuration query on a network with clpr.enabled=true.
- * Prerequisites: HEDERA_NETWORK and reachable node endpoints. No operator,
- * payment or key is needed for this query. Other CLPR workflows need the
- * treasury or system-admin key for privileged steps, a deployed verifier and
- * Connector contract, and real peer proof material for Channel completion.
+ * Paid ledger configuration query on a network with clpr.enabled=true.
+ * Prerequisites: HEDERA_NETWORK, reachable node endpoints and a funded
+ * OPERATOR_ID/OPERATOR_KEY. The client looks up the query cost and signs the
+ * payment, subject to its normal maximum query payment.
  *
  * Configuration fields are live; configurationStateProof describes a signed
  * snapshot. An empty proof is a successful read; retry later if a proof is needed.
  * Run from examples: node clpr/get-ledger-configuration.js
  */
-import { ClprGetLedgerConfigurationQuery } from "@hiero-ledger/sdk";
+import { ClprGetLedgerConfigurationQuery, PrivateKey } from "@hiero-ledger/sdk";
 import dotenv from "dotenv";
 import { clientForName } from "../client.js";
 
 dotenv.config();
 
-/** Read the typed configuration and proof without an operator. */
+/** Read the typed configuration and proof with a query payment. */
 async function main() {
+    for (const name of ["HEDERA_NETWORK", "OPERATOR_ID", "OPERATOR_KEY"]) {
+        if (!process.env[name]) {
+            throw new Error(`Environment variable ${name} is required.`);
+        }
+    }
     const client = clientForName(process.env.HEDERA_NETWORK);
 
     try {
+        client.setOperator(
+            process.env.OPERATOR_ID,
+            PrivateKey.fromStringDer(process.env.OPERATOR_KEY),
+        );
         const info = await new ClprGetLedgerConfigurationQuery().execute(
             client,
         );

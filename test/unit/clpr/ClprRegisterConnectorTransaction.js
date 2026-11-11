@@ -5,6 +5,10 @@ import { proto } from "@hiero-ledger/proto";
 import * as hex from "../../../src/encoding/hex.js";
 import vectors from "../utils/ClprOwnershipVectors.js";
 
+function channelIdBytes() {
+    return new Uint8Array(hex.decode(vectors.channelId));
+}
+
 function commitment() {
     return new Uint8Array(hex.decode(vectors.vectors[0].connectorCommitment));
 }
@@ -51,7 +55,10 @@ describe("ClprRegisterConnectorTransaction", function () {
         "matches both HIP Connector statics for $signatureScheme without mutating inputs or a builder",
         function (vector) {
             const transaction = offline(
-                registerConnector({ commitment: commitment() }),
+                registerConnector({
+                    channelId: channelIdBytes(),
+                    commitment: commitment(),
+                }),
             ).freeze();
             const bytes = transaction.toBytes();
             const channelId = new Uint8Array(hex.decode(vectors.channelId));
@@ -132,9 +139,11 @@ describe("ClprRegisterConnectorTransaction", function () {
         });
     }
 
-    it("round-trips a commitment and every node signature through the transaction registry", async function () {
+    it("round-trips the Channel ID, commitment and every node signature through the transaction registry", async function () {
         const transaction = offline(
-            registerConnector().setCommitment(commitment()),
+            registerConnector()
+                .setChannelId(channelIdBytes())
+                .setCommitment(commitment()),
         ).freeze();
         const keys = vectors.vectors.map(privateKey);
         for (const key of keys) {
@@ -145,10 +154,13 @@ describe("ClprRegisterConnectorTransaction", function () {
 
         expect(decoded).toBeInstanceOf(sdk.ClprRegisterConnectorTransaction);
         expect(decoded.commitment).toEqual(commitment());
+        expect(decoded.channelId).toEqual(channelIdBytes());
         expect(decoded.transactionId.toString()).toBe(
             transaction.transactionId.toString(),
         );
         expect(decoded.nodeAccountIds.map(String)).toEqual(["0.0.3", "0.0.4"]);
+        decoded.channelId.fill(0);
+        decoded.commitment.fill(0);
         expect(decoded.toBytes()).toEqual(bytes);
         expect(decoded.getSignatures().size).toBe(2);
         for (const item of proto.TransactionList.decode(bytes)
@@ -159,6 +171,9 @@ describe("ClprRegisterConnectorTransaction", function () {
             const body = proto.TransactionBody.decode(signed.bodyBytes);
             expect(body.data).toBe("clprRegisterConnector");
             expect(
+                new Uint8Array(body.clprRegisterConnector.channelId),
+            ).toEqual(channelIdBytes());
+            expect(
                 new Uint8Array(body.clprRegisterConnector.commitment),
             ).toEqual(commitment());
             expect(signed.sigMap.sigPair).toHaveLength(2);
@@ -168,74 +183,79 @@ describe("ClprRegisterConnectorTransaction", function () {
         }
     });
 
-    it.each(["freeze", "freezeWith"])(
-        "rejects %s without a commitment before freezing and allows repair",
-        function (method) {
-            const transaction = offline(registerConnector());
-
-            expect(transaction.commitment).toBeNull();
-            expect(() => transaction[method](null)).toThrow(/commitment/);
-            expect(transaction.isFrozen()).toBe(false);
-            expect(transaction.setCommitment(commitment())).toBe(transaction);
-            expect(() => transaction[method](null)).not.toThrow();
-        },
-    );
-
-    it.each([31, 33])(
-        "rejects a %i-byte commitment before changing existing state",
-        function (length) {
-            const transaction = registerConnector({ commitment: commitment() });
-
-            expect(() =>
-                transaction.setCommitment(new Uint8Array(length)),
-            ).toThrow(/commitment/);
-            expect(transaction.commitment).toEqual(commitment());
-            expect(() =>
-                registerConnector({ commitment: new Uint8Array(length) }),
-            ).toThrow(/commitment/);
-        },
-    );
-
-    it.each([null, undefined, "00".repeat(32), Array(32).fill(0)])(
-        "rejects a non-byte commitment (%j)",
-        function (value) {
-            const transaction = registerConnector({ commitment: commitment() });
-
-            expect(() => transaction.setCommitment(value)).toThrow(
-                /commitment/,
-            );
-            expect(transaction.commitment).toEqual(commitment());
-        },
-    );
-
-    it.each(["constructor", "setter"])(
-        "copies commitment input and output bytes through the %s",
-        function (path) {
-            const input = commitment();
-            const transaction =
-                path === "constructor"
-                    ? registerConnector({ commitment: input })
-                    : registerConnector().setCommitment(input);
-
-            input.fill(0);
-            expect(transaction.commitment).toEqual(commitment());
-            transaction.commitment.fill(0);
-            expect(transaction.commitment).toEqual(commitment());
-        },
-    );
-
-    it("rejects the commitment setter after freeze and preserves signed bytes", async function () {
-        const transaction = offline(
-            registerConnector({ commitment: commitment() }),
-        ).freeze();
-        await transaction.sign(privateKey(vectors.vectors[1]));
-        const bytes = transaction.toBytes();
-
-        expect(() => transaction.setCommitment(new Uint8Array(32))).toThrow(
-            /immutable/,
+    for (const [field, setter, value] of [
+        ["channelId", "setChannelId", channelIdBytes],
+        ["commitment", "setCommitment", commitment],
+    ]) {
+        const props = () => ({
+            channelId: channelIdBytes(),
+            commitment: commitment(),
+        });
+        it.each(["freeze", "freezeWith"])(
+            `rejects %s without ${field} before freezing and allows repair`,
+            function (method) {
+                const values = props();
+                delete values[field];
+                const transaction = offline(registerConnector(values));
+                expect(transaction[field]).toBeNull();
+                expect(() => transaction[method](null)).toThrow(
+                    new RegExp(field),
+                );
+                expect(transaction.isFrozen()).toBe(false);
+                expect(transaction[setter](value())).toBe(transaction);
+                expect(() => transaction[method](null)).not.toThrow();
+            },
         );
-        expect(transaction.toBytes()).toEqual(bytes);
-    });
+        it.each([0, 31, 33])(
+            `rejects a %i-byte ${field} before changing existing state`,
+            function (length) {
+                const transaction = registerConnector(props());
+                expect(() =>
+                    transaction[setter](new Uint8Array(length)),
+                ).toThrow(new RegExp(field));
+                expect(transaction[field]).toEqual(value());
+                expect(() =>
+                    registerConnector({
+                        ...props(),
+                        [field]: new Uint8Array(length),
+                    }),
+                ).toThrow(new RegExp(field));
+            },
+        );
+        it.each([null, undefined, "00".repeat(32), Array(32).fill(0)])(
+            `rejects a non-byte ${field} (%j)`,
+            function (input) {
+                const transaction = registerConnector(props());
+                expect(() => transaction[setter](input)).toThrow(
+                    new RegExp(field),
+                );
+                expect(transaction[field]).toEqual(value());
+            },
+        );
+        it.each(["constructor", "setter"])(
+            `copies ${field} input and output bytes through the %s`,
+            function (path) {
+                const input = value();
+                const transaction =
+                    path === "constructor"
+                        ? registerConnector({ [field]: input })
+                        : registerConnector()[setter](input);
+                input.fill(0);
+                expect(transaction[field]).toEqual(value());
+                transaction[field].fill(0);
+                expect(transaction[field]).toEqual(value());
+            },
+        );
+        it(`rejects ${setter} after freeze and preserves signed bytes`, async function () {
+            const transaction = offline(registerConnector(props())).freeze();
+            await transaction.sign(privateKey(vectors.vectors[1]));
+            const bytes = transaction.toBytes();
+            expect(() => transaction[setter](new Uint8Array(32))).toThrow(
+                /immutable/,
+            );
+            expect(transaction.toBytes()).toEqual(bytes);
+        });
+    }
 
     it.each([
         ["schedule()", (transaction) => transaction.schedule()],
@@ -251,7 +271,10 @@ describe("ClprRegisterConnectorTransaction", function () {
             (transaction) => transaction._getScheduledTransactionBody(),
         ],
     ])("refuses %s", function (_name, schedule) {
-        const transaction = registerConnector({ commitment: commitment() });
+        const transaction = registerConnector({
+            channelId: channelIdBytes(),
+            commitment: commitment(),
+        });
 
         expect(() => schedule(transaction)).toThrow(
             new Error("ClprRegisterConnectorTransaction cannot be scheduled"),

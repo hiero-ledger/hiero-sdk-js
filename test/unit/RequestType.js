@@ -23,6 +23,7 @@ describe("RequestType", function () {
         [127, "ClprEndpointPublication"],
         [128, "ClprGetEndpointManifest"],
         [129, "ClprMaintenance"],
+        [130, "ClprEvictPeerEndpoint"],
     ])("round-trips functionality code %i as %s", function (code, name) {
         const requestType = RequestType._fromCode(code);
 

@@ -6,7 +6,7 @@ import { proto } from "@hiero-ledger/proto";
 import Long from "long";
 import { vi } from "vitest";
 import * as hex from "../../../src/encoding/hex.js";
-import Mocker from "../Mocker.js";
+import Mocker, { PRIVATE_KEY } from "../Mocker.js";
 import { makeEndpointManifestResponse } from "../utils/ClprEndpointManifest.js";
 
 describe("ClprGetEndpointManifestMocking", function () {
@@ -40,6 +40,21 @@ describe("ClprGetEndpointManifestMocking", function () {
                 {
                     call: (request) => {
                         received.push(request);
+                        return {
+                            clprGetEndpointManifest: {
+                                header: {
+                                    nodeTransactionPrecheckCode: 0,
+                                    responseType:
+                                        proto.ResponseType.COST_ANSWER,
+                                    cost: 10,
+                                },
+                            },
+                        };
+                    },
+                },
+                {
+                    call: (request) => {
+                        received.push(request);
                         return { clprGetEndpointManifest: response };
                     },
                 },
@@ -55,22 +70,25 @@ describe("ClprGetEndpointManifestMocking", function () {
             scheduleNetworkUpdate: false,
         });
 
-        expect(client.operatorAccountId).toBeNull();
+        client.setOperator("0.0.1854", PRIVATE_KEY);
         const result = await new sdk.ClprGetEndpointManifestQuery()
             .setMaxAttempts(1)
             .execute(client);
 
-        expect(unaryRequests).toHaveBeenCalledTimes(1);
+        expect(unaryRequests).toHaveBeenCalledTimes(2);
         expect(unaryRequests.mock.calls[0][0]).toBe(
             "/proto.ClprService/getEndpointManifest",
         );
-        expect(received).toHaveLength(1);
+        expect(received).toHaveLength(2);
+        expect(received[0].clprGetEndpointManifest.header.responseType).toBe(
+            proto.ResponseType.COST_ANSWER,
+        );
         const request = proto.Query.decode(
-            proto.Query.encode(received[0]).finish(),
+            proto.Query.encode(received[1]).finish(),
         );
         expect(request.query).toBe("clprGetEndpointManifest");
         expect(request.clprGetEndpointManifest.header).not.toBeNull();
-        expect(request.clprGetEndpointManifest.header.payment == null).toBe(
+        expect(request.clprGetEndpointManifest.header.payment != null).toBe(
             true,
         );
         expect(request.clprGetEndpointManifest.header.responseType).toBe(
@@ -81,7 +99,7 @@ describe("ClprGetEndpointManifestMocking", function () {
         return result;
     }
 
-    it("gets every manifest field and two typed endpoints with one free RPC and no operator", async function () {
+    it("gets every manifest field and two typed endpoints with cost lookup and payment", async function () {
         const info = await execute(makeEndpointManifestResponse());
 
         expect(Long.isLong(info.version)).toBe(true);

@@ -29,11 +29,11 @@ import { computeConnectorId, computeConnectorCommitment } from "./ownership.js";
  */
 
 /**
- * Reserves a CLPR Connector in the commit phase of HIP-1535 commit-reveal.
+ * Reserves a CLPR Connector on an existing Channel in HIP-1535 commit-reveal.
  *
  * Derive the Connector ID with computeConnectorId(), then register the result
- * of computeOwnershipCommitment(). Complete the registration by revealing the
- * bound Channel ID, Connector ID, salt and ownership proof with
+ * of computeOwnershipCommitment() alongside the Channel ID. Complete the
+ * registration by revealing the bound Channel ID, Connector ID, salt and proof with
  * ClprCompleteConnectorTransaction. The reveal's admin key keeps deregistration
  * possible, and its payer funds the locked stake.
  * CLPR is off by default and requires the network setting `clpr.enabled`.
@@ -43,6 +43,7 @@ export default class ClprRegisterConnectorTransaction extends ClprTransaction {
     /**
      * @param {object} [props]
      * @param {Uint8Array} [props.commitment]
+     * @param {Uint8Array} [props.channelId]
      */
     constructor(props) {
         super();
@@ -53,8 +54,17 @@ export default class ClprRegisterConnectorTransaction extends ClprTransaction {
          */
         this._commitment = null;
 
+        /**
+         * @private
+         * @type {?Uint8Array}
+         */
+        this._channelId = null;
+
         if (props?.commitment != null) {
             this.setCommitment(props.commitment);
+        }
+        if (props?.channelId != null) {
+            this.setChannelId(props.channelId);
         }
     }
 
@@ -105,6 +115,9 @@ export default class ClprRegisterConnectorTransaction extends ClprTransaction {
 
         return Transaction._fromProtobufTransactions(
             new ClprRegisterConnectorTransaction({
+                channelId: registerConnector.channelId?.length
+                    ? registerConnector.channelId
+                    : undefined,
                 commitment: registerConnector.commitment?.length
                     ? registerConnector.commitment
                     : undefined,
@@ -142,6 +155,29 @@ export default class ClprRegisterConnectorTransaction extends ClprTransaction {
     }
 
     /**
+     * Sets the existing Channel's 32-byte ID and copies its bytes.
+     *
+     * @param {Uint8Array} channelId
+     * @returns {this}
+     */
+    setChannelId(channelId) {
+        this._requireNotFrozen();
+        this._channelId = copyBytes32(channelId, "channelId");
+        return this;
+    }
+
+    /**
+     * Returns a copy of the Channel ID, or null when it has not been set.
+     *
+     * @returns {?Uint8Array}
+     */
+    get channelId() {
+        return this._channelId == null
+            ? null
+            : copyBytes32(this._channelId, "channelId");
+    }
+
+    /**
      * @override
      * @protected
      * @returns {string}
@@ -158,6 +194,7 @@ export default class ClprRegisterConnectorTransaction extends ClprTransaction {
     _getRequiredFields() {
         return {
             commitment: this._commitment,
+            channelId: this._channelId,
         };
     }
 
@@ -196,7 +233,7 @@ export default class ClprRegisterConnectorTransaction extends ClprTransaction {
      * @returns {IClprRegisterConnectorTransactionBody}
      */
     _makeTransactionData() {
-        return { commitment: this._commitment };
+        return { commitment: this._commitment, channelId: this._channelId };
     }
 
     /**

@@ -6,7 +6,7 @@ import { proto } from "@hiero-ledger/proto";
 import Long from "long";
 import { vi } from "vitest";
 import * as hex from "../../../src/encoding/hex.js";
-import Mocker from "../Mocker.js";
+import Mocker, { PRIVATE_KEY } from "../Mocker.js";
 import { makeLedgerConfigurationResponse } from "../utils/ClprLedgerConfiguration.js";
 
 describe("ClprGetLedgerConfigurationMocking", function () {
@@ -40,6 +40,21 @@ describe("ClprGetLedgerConfigurationMocking", function () {
                 {
                     call: (request) => {
                         received.push(request);
+                        return {
+                            clprGetLedgerConfiguration: {
+                                header: {
+                                    nodeTransactionPrecheckCode: 0,
+                                    responseType:
+                                        proto.ResponseType.COST_ANSWER,
+                                    cost: 10,
+                                },
+                            },
+                        };
+                    },
+                },
+                {
+                    call: (request) => {
+                        received.push(request);
                         return { clprGetLedgerConfiguration: response };
                     },
                 },
@@ -55,22 +70,25 @@ describe("ClprGetLedgerConfigurationMocking", function () {
             scheduleNetworkUpdate: false,
         });
 
-        expect(client.operatorAccountId).toBeNull();
+        client.setOperator("0.0.1854", PRIVATE_KEY);
         const result = await new sdk.ClprGetLedgerConfigurationQuery()
             .setMaxAttempts(1)
             .execute(client);
 
-        expect(unaryRequests).toHaveBeenCalledTimes(1);
+        expect(unaryRequests).toHaveBeenCalledTimes(2);
         expect(unaryRequests.mock.calls[0][0]).toBe(
             "/proto.ClprService/getLedgerConfiguration",
         );
-        expect(received).toHaveLength(1);
+        expect(received).toHaveLength(2);
+        expect(received[0].clprGetLedgerConfiguration.header.responseType).toBe(
+            proto.ResponseType.COST_ANSWER,
+        );
         const request = proto.Query.decode(
-            proto.Query.encode(received[0]).finish(),
+            proto.Query.encode(received[1]).finish(),
         );
         expect(request.query).toBe("clprGetLedgerConfiguration");
         expect(request.clprGetLedgerConfiguration.header).not.toBeNull();
-        expect(request.clprGetLedgerConfiguration.header.payment == null).toBe(
+        expect(request.clprGetLedgerConfiguration.header.payment != null).toBe(
             true,
         );
         expect(request.clprGetLedgerConfiguration.header.responseType).toBe(
@@ -81,7 +99,7 @@ describe("ClprGetLedgerConfigurationMocking", function () {
         return result;
     }
 
-    it("gets every typed configuration field with one free RPC and no operator", async function () {
+    it("gets every typed configuration field with cost lookup and payment", async function () {
         const info = await execute(makeLedgerConfigurationResponse());
 
         expect(info.protocolVersion).toBe(1);

@@ -13,6 +13,7 @@ import {
     Hbar,
     PrivateKey,
     Transaction,
+    Query,
 } from "@hiero-ledger/sdk";
 import Long from "long";
 
@@ -41,6 +42,18 @@ import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";
 import { decode } from "../utils/hex";
 import { getKeyFromString } from "../utils/key";
 import { invalidParamError } from "../utils/invalid-param-error";
+
+const applyQueryPayment = (
+    query: Query<unknown>,
+    params: GetClprLedgerConfigurationParams,
+): void => {
+    if (params.queryPayment != null) {
+        query.setQueryPayment(Hbar.fromTinybars(params.queryPayment));
+    }
+    if (params.maxQueryPayment != null) {
+        query.setMaxQueryPayment(Hbar.fromTinybars(params.maxQueryPayment));
+    }
+};
 
 const encode = (bytes: Uint8Array | null): string | null =>
     bytes == null ? null : Buffer.from(bytes).toString("hex");
@@ -174,6 +187,9 @@ export const registerClprConnector = async (
     params: RegisterClprConnectorParams,
 ): Promise<ClprTransactionResponse> => {
     const transaction = new ClprRegisterConnectorTransaction();
+    if (params.channelId != null) {
+        transaction.setChannelId(decode(params.channelId));
+    }
     if (params.commitment != null) {
         transaction.setCommitment(decode(params.commitment));
     }
@@ -262,9 +278,11 @@ export const getClprLedgerConfiguration = async (
     params: GetClprLedgerConfigurationParams,
 ): Promise<ClprLedgerConfigurationResponse> => {
     const client = sdk.getClient(params.sessionId);
-    const info = await new ClprGetLedgerConfigurationQuery()
-        .setGrpcDeadline(DEFAULT_GRPC_DEADLINE)
-        .execute(client);
+    const query = new ClprGetLedgerConfigurationQuery().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+    applyQueryPayment(query, params);
+    const info = await query.execute(client);
     const limits = info.throttles;
     return {
         protocolVersion: info.protocolVersion,
@@ -290,9 +308,11 @@ export const getClprEndpointManifest = async (
     params: GetClprEndpointManifestParams,
 ): Promise<ClprEndpointManifestResponse> => {
     const client = sdk.getClient(params.sessionId);
-    const info = await new ClprGetEndpointManifestQuery()
-        .setGrpcDeadline(DEFAULT_GRPC_DEADLINE)
-        .execute(client);
+    const query = new ClprGetEndpointManifestQuery().setGrpcDeadline(
+        DEFAULT_GRPC_DEADLINE,
+    );
+    applyQueryPayment(query, params);
+    const info = await query.execute(client);
     return {
         version: info.version.toString(),
         serviceAddress: encode(info.serviceAddress),

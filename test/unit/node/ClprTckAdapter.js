@@ -136,7 +136,10 @@ const transactionCases = [
     [
         "registerClprConnector",
         "registerConnector",
-        { commitment: vector.connectorCommitment },
+        {
+            channelId: vectors.channelId,
+            commitment: vector.connectorCommitment,
+        },
     ],
     [
         "completeClprConnector",
@@ -415,6 +418,21 @@ describe("CLPR TCK adapter", function () {
         },
     );
 
+    it.each([undefined, "", "00".repeat(31), "00".repeat(33)])(
+        "registerClprConnector rejects a missing or malformed channelId (%j) before RPC",
+        async function (channelId) {
+            await connect([]);
+            await expect(
+                methods.registerClprConnector({
+                    sessionId,
+                    commitment: vector.connectorCommitment,
+                    channelId,
+                }),
+            ).rejects.toThrow(/channelId/);
+            expect(unaryRequests).not.toHaveBeenCalled();
+        },
+    );
+
     it.each(transactionCases)(
         "%s builds the SDK transaction, applies common parameters and returns SUCCESS",
         async function (name, rpcName, params) {
@@ -664,7 +682,7 @@ describe("CLPR TCK adapter", function () {
         ],
     ]) {
         it.each(["090a0b0c", ""])(
-            `${name} maps typed fields to JSON and returns state proof '%s' with one free query`,
+            `${name} maps typed fields to JSON and returns state proof '%s' with cost lookup and payment`,
             async function (proof) {
                 requireMethod(name);
                 const wireResponse = makeResponse();
@@ -681,18 +699,26 @@ describe("CLPR TCK adapter", function () {
                 const field = `clpr${rpcName[0].toUpperCase()}${rpcName.slice(
                     1,
                 )}`;
-                await connect(
-                    [
-                        {
-                            call(request) {
-                                received = request;
-                                return { [field]: wireResponse };
+                await connect([
+                    {
+                        response: {
+                            [field]: {
+                                header: {
+                                    nodeTransactionPrecheckCode: 0,
+                                    responseType:
+                                        proto.ResponseType.COST_ANSWER,
+                                    cost: 10,
+                                },
                             },
                         },
-                    ],
-                    false,
-                );
-                expect(client.operatorAccountId).toBeNull();
+                    },
+                    {
+                        call(request) {
+                            received = request;
+                            return { [field]: wireResponse };
+                        },
+                    },
+                ]);
                 const response = await rpc(name, { sessionId });
                 const result = response.result;
                 expect(result).toBeDefined();
@@ -733,11 +759,75 @@ describe("CLPR TCK adapter", function () {
                         },
                     ]);
                 }
-                expect(received[field].header.payment == null).toBe(true);
+                expect(received[field].header.payment).not.toBeNull();
+                const payment = proto.SignedTransaction.decode(
+                    received[field].header.payment.signedTransactionBytes,
+                );
+                expect(Mocker.verifySignatures(payment)).toBe(true);
+                expect(
+                    proto.TransactionBody.decode(
+                        payment.bodyBytes,
+                    ).cryptoTransfer.transfers.accountAmounts[1].amount.toString(),
+                ).toBe("11");
                 expect(unaryRequests.mock.calls.map(([path]) => path)).toEqual([
+                    `/proto.ClprService/${rpcName}`,
                     `/proto.ClprService/${rpcName}`,
                 ]);
             },
         );
+
+        it(`${name} accepts an explicit payment without a cost RPC`, async function () {
+            const field = `clpr${rpcName[0].toUpperCase()}${rpcName.slice(1)}`;
+            let payment;
+            await connect([
+                {
+                    call(request) {
+                        payment = proto.SignedTransaction.decode(
+                            request[field].header.payment
+                                .signedTransactionBytes,
+                        );
+                        return { [field]: makeResponse() };
+                    },
+                },
+            ]);
+            const result = await rpc(name, { sessionId, queryPayment: "7" });
+            expect(result.result).toBeDefined();
+            expect(unaryRequests).toHaveBeenCalledTimes(1);
+            expect(Mocker.verifySignatures(payment)).toBe(true);
+            expect(
+                proto.TransactionBody.decode(
+                    payment.bodyBytes,
+                ).cryptoTransfer.transfers.accountAmounts[1].amount.toString(),
+            ).toBe("7");
+        });
+
+        it(`${name} enforces maxQueryPayment before the answer RPC`, async function () {
+            const field = `clpr${rpcName[0].toUpperCase()}${rpcName.slice(1)}`;
+            await connect([
+                {
+                    response: {
+                        [field]: {
+                            header: {
+                                nodeTransactionPrecheckCode: 0,
+                                responseType: proto.ResponseType.COST_ANSWER,
+                                cost: 10,
+                            },
+                        },
+                    },
+                },
+            ]);
+            await expect(
+                methods[name]({ sessionId, maxQueryPayment: "10" }),
+            ).rejects.toBeInstanceOf(sdk.MaxQueryPaymentExceeded);
+            expect(unaryRequests).toHaveBeenCalledTimes(1);
+        });
+
+        it(`${name} requires a payment operator before any RPC`, async function () {
+            await connect([], false);
+            await expect(methods[name]({ sessionId })).rejects.toThrow(
+                /operator/,
+            );
+            expect(unaryRequests).not.toHaveBeenCalled();
+        });
     }
 });
