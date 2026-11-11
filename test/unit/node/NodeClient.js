@@ -442,6 +442,30 @@ describe("Client", function () {
                 "1.2.3",
             ]);
         });
+
+        it("throws when setNetworkFromAddressBook() results in empty network", function () {
+            const client = NodeClient.forLocalNode();
+
+            expect(() =>
+                client.setNetworkFromAddressBook(
+                    new NodeAddressBook({
+                        nodeAddresses: [
+                            new NodeAddress({
+                                accountId: new AccountId(1, 2, 3),
+                                addresses: [
+                                    new Endpoint({
+                                        address: "127.0.0.1",
+                                        port: 1,
+                                    }),
+                                ],
+                            }),
+                        ],
+                    }),
+                ),
+            ).to.throw(
+                "setNetworkFromAddressBook: address book contained no nodes matching expected ports (50211/50212); resulting network would be empty.",
+            );
+        });
     });
 
     describe("mirrorRestApiBaseUrl", function () {

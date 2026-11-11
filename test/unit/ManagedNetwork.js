@@ -1,5 +1,8 @@
 import Client from "../../src/client/Client.js";
 import AccountId from "../../src/account/AccountId.js";
+import NodeAddressBook from "../../src/address_book/NodeAddressBook.js";
+import NodeAddress from "../../src/address_book/NodeAddress.js";
+import Endpoint from "../../src/address_book/Endpoint.js";
 
 describe("ManagedNetwork", function () {
     let client;
@@ -26,5 +29,60 @@ describe("ManagedNetwork", function () {
         expect(client._network.getNode().accountId.toString()).to.equal(
             "0.0.3",
         );
+    });
+
+    describe("setNetworkFromAddressBook", function () {
+        it("throws when address book contains no nodes matching expected ports", function () {
+            const addressBook = new NodeAddressBook({
+                nodeAddresses: [
+                    new NodeAddress({
+                        accountId: new AccountId(3),
+                        addresses: [
+                            new Endpoint({
+                                address: "127.0.0.1",
+                                port: 1,
+                            }),
+                        ],
+                    }),
+                ],
+            });
+
+            expect(() =>
+                client._network.setNetworkFromAddressBook(addressBook),
+            ).to.throw(
+                "setNetworkFromAddressBook: address book contained no nodes matching expected ports (50211/50212); resulting network would be empty.",
+            );
+        });
+
+        it("throws when address book has no node addresses", function () {
+            const addressBook = new NodeAddressBook({ nodeAddresses: [] });
+
+            expect(() =>
+                client._network.setNetworkFromAddressBook(addressBook),
+            ).to.throw(
+                "setNetworkFromAddressBook: address book contained no nodes matching expected ports (50211/50212); resulting network would be empty.",
+            );
+        });
+
+        it("successfully sets network when nodes match expected port", function () {
+            const addressBook = new NodeAddressBook({
+                nodeAddresses: [
+                    new NodeAddress({
+                        accountId: new AccountId(3),
+                        addresses: [
+                            new Endpoint({
+                                address: "127.0.0.1",
+                                port: 50211,
+                            }),
+                        ],
+                    }),
+                ],
+            });
+
+            client._network.setNetworkFromAddressBook(addressBook);
+            expect(
+                client._network.network["127.0.0.1:50211"].toString(),
+            ).to.equal("0.0.3");
+        });
     });
 });
