@@ -23,7 +23,9 @@ describe("TopicMessage", function () {
             expect(message.contents).to.deep.equal(new Uint8Array([1, 2, 3]));
             expect(message.sequenceNumber.toNumber()).to.equal(42);
             expect(message.chunks.length).to.equal(1);
-            expect(message.runningHash).to.deep.equal(new Uint8Array([9, 9, 9]));
+            expect(message.runningHash).to.deep.equal(
+                new Uint8Array([9, 9, 9]),
+            );
             expect(message.consensusTimestamp.seconds.toNumber()).to.equal(
                 2000,
             );
@@ -93,12 +95,7 @@ describe("TopicMessage", function () {
 
         it("sorts out-of-order responses by chunkInfo.number before concatenating", function () {
             const first = chunkResponse(1, new Uint8Array([10, 20]), 10, 4000);
-            const second = chunkResponse(
-                2,
-                new Uint8Array([30, 40]),
-                11,
-                4001,
-            );
+            const second = chunkResponse(2, new Uint8Array([30, 40]), 11, 4001);
 
             // Input order is reversed; contents must still follow chunk numbers.
             // Message-level timestamp/sequence come from the last input element
