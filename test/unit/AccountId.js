@@ -6,6 +6,7 @@ describe("AccountId", function () {
             expect(AccountId.fromString("0.0.123").toString()).to.equal(
                 "0.0.123",
             );
+            expect(AccountId.fromString("0.0.123").checksum).to.be.null;
             expect(AccountId.fromString("123").toString()).to.equal("0.0.123");
             expect(AccountId.fromString("1.2.3").toString()).to.equal("1.2.3");
             expect(AccountId.fromString("0.0.0123").toString()).to.equal(
@@ -13,6 +14,9 @@ describe("AccountId", function () {
             );
             expect(AccountId.fromString("0.0.123-vfmkw").toString()).to.equal(
                 "0.0.123",
+            );
+            expect(AccountId.fromString("0.0.123-vfmkw").checksum).to.equal(
+                "vfmkw",
             );
         });
 
@@ -29,6 +33,9 @@ describe("AccountId", function () {
             expect(AccountId.fromString(`0.0.${evm}`).toString()).to.equal(
                 `0.0.${evm}`,
             );
+            expect(AccountId.fromString(`0.0.${evm}`).checksum).to.be.null;
+            expect(AccountId.fromString(`0.0.${evm}-vfmkw`).checksum).to.be
+                .null;
             expect(AccountId.fromString(evm).toString()).to.equal(`0.0.${evm}`);
             expect(AccountId.fromString(`0x${evm}`).toString()).to.equal(
                 `0.0.${evm}`,

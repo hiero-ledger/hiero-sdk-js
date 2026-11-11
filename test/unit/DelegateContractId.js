@@ -34,4 +34,16 @@ describe("DelegateContractId", function () {
         expect(keyToId instanceof DelegateContractId).to.be.true;
         expect(keyToId instanceof ContractId).to.be.true;
     });
+
+    it("should keep the checksum when parsed with fromString (#4757)", function () {
+        const id = DelegateContractId.fromString("0.0.123-vfmkw");
+        expect(id.checksum).to.equal("vfmkw");
+        expect(id.toString()).to.equal("0.0.123");
+
+        expect(DelegateContractId.fromString("0.0.123").checksum).to.be.null;
+
+        const evm = "0011223344556677889900112233445577889900";
+        expect(DelegateContractId.fromString(`0.0.${evm}-vfmkw`).checksum).to.be
+            .null;
+    });
 });

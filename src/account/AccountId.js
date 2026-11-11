@@ -59,6 +59,7 @@ export default class AccountId {
         let num = Long.ZERO;
         let aliasKey = undefined;
         let evmAddress = undefined;
+        let checksum = null;
 
         if ((text.startsWith("0x") && text.length == 42) || text.length == 40) {
             evmAddress = EvmAddress.fromString(text);
@@ -70,6 +71,7 @@ export default class AccountId {
 
             if (result.numOrHex.length < 20) {
                 num = EntityIdHelper.parseEntityNum(result.numOrHex, text);
+                checksum = result.checksum ?? null;
             } else if (result.numOrHex.length == 40) {
                 evmAddress = EvmAddress.fromString(result.numOrHex);
             } else {
@@ -77,7 +79,9 @@ export default class AccountId {
             }
         }
 
-        return new AccountId(shard, realm, num, aliasKey, evmAddress);
+        const id = new AccountId(shard, realm, num, aliasKey, evmAddress);
+        id._checksum = checksum;
+        return id;
     }
 
     /**
