@@ -102,8 +102,9 @@ describe("NodeUpdateTransaction", function () {
 
     it("should add associated registered node", function () {
         const tx = new NodeUpdateTransaction().addAssociatedRegisteredNode(303);
-        expect(tx.associatedRegisteredNodes?.map((id) => id.toString())).to.deep
-            .equal(["303"]);
+        expect(
+            tx.associatedRegisteredNodes?.map((id) => id.toString()),
+        ).to.deep.equal(["303"]);
     });
 
     it("should clear associated registered nodes", function () {
@@ -408,11 +409,11 @@ describe("NodeUpdateTransaction", function () {
             const transaction = new NodeUpdateTransaction();
             transaction.clearDescription();
 
-            expect(transaction._makeTransactionData().description).to.deep.equal(
-                {
-                    value: "",
-                },
-            );
+            expect(
+                transaction._makeTransactionData().description,
+            ).to.deep.equal({
+                value: "",
+            });
         });
     });
 
@@ -475,7 +476,9 @@ describe("NodeUpdateTransaction", function () {
 
     it("should add a gossip endpoint to a new transaction", function () {
         const tx = new NodeUpdateTransaction();
-        const endpoint = new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1));
+        const endpoint = new ServiceEndpoint().setIpAddressV4(
+            Uint8Array.of(127, 0, 0, 1),
+        );
 
         tx.addGossipEndpoint(endpoint);
 
@@ -485,8 +488,12 @@ describe("NodeUpdateTransaction", function () {
 
     it("should add multiple gossip endpoints to a new transaction", function () {
         const tx = new NodeUpdateTransaction();
-        const endpoint1 = new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1));
-        const endpoint2 = new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 2));
+        const endpoint1 = new ServiceEndpoint().setIpAddressV4(
+            Uint8Array.of(127, 0, 0, 1),
+        );
+        const endpoint2 = new ServiceEndpoint().setIpAddressV4(
+            Uint8Array.of(127, 0, 0, 2),
+        );
 
         tx.addGossipEndpoint(endpoint1).addGossipEndpoint(endpoint2);
 
@@ -495,7 +502,9 @@ describe("NodeUpdateTransaction", function () {
 
     it("should add a service endpoint to a new transaction", function () {
         const tx = new NodeUpdateTransaction();
-        const endpoint = new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1));
+        const endpoint = new ServiceEndpoint().setIpAddressV4(
+            Uint8Array.of(127, 0, 0, 1),
+        );
 
         tx.addServiceEndpoint(endpoint);
 
@@ -505,8 +514,12 @@ describe("NodeUpdateTransaction", function () {
 
     it("should add multiple service endpoints to a new transaction", function () {
         const tx = new NodeUpdateTransaction();
-        const endpoint1 = new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1));
-        const endpoint2 = new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 2));
+        const endpoint1 = new ServiceEndpoint().setIpAddressV4(
+            Uint8Array.of(127, 0, 0, 1),
+        );
+        const endpoint2 = new ServiceEndpoint().setIpAddressV4(
+            Uint8Array.of(127, 0, 0, 2),
+        );
 
         tx.addServiceEndpoint(endpoint1).addServiceEndpoint(endpoint2);
 
@@ -516,12 +529,17 @@ describe("NodeUpdateTransaction", function () {
         const tx = new NodeUpdateTransaction()
             .setNodeAccountIds([AccountId.fromString("0.0.5005")])
             .setTransactionId(
-                TransactionId.withValidStart(AccountId.fromString("0.6.9"), new Timestamp(1596210382, 0)),
+                TransactionId.withValidStart(
+                    AccountId.fromString("0.6.9"),
+                    new Timestamp(1596210382, 0),
+                ),
             )
             .setNodeId(420)
             .setAccountId(AccountId.fromString("0.6.9"))
             .addGossipEndpoint(
-                new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1)),
+                new ServiceEndpoint().setIpAddressV4(
+                    Uint8Array.of(127, 0, 0, 1),
+                ),
             );
 
         const tx2 = NodeUpdateTransaction.fromBytes(tx.toBytes());
@@ -537,12 +555,17 @@ describe("NodeUpdateTransaction", function () {
         const tx = new NodeUpdateTransaction()
             .setNodeAccountIds([AccountId.fromString("0.0.5005")])
             .setTransactionId(
-                TransactionId.withValidStart(AccountId.fromString("0.6.9"), new Timestamp(1596210382, 0)),
+                TransactionId.withValidStart(
+                    AccountId.fromString("0.6.9"),
+                    new Timestamp(1596210382, 0),
+                ),
             )
             .setNodeId(420)
             .setAccountId(AccountId.fromString("0.6.9"))
             .addServiceEndpoint(
-                new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1)),
+                new ServiceEndpoint().setIpAddressV4(
+                    Uint8Array.of(127, 0, 0, 1),
+                ),
             );
 
         const tx2 = NodeUpdateTransaction.fromBytes(tx.toBytes());
@@ -557,12 +580,17 @@ describe("NodeUpdateTransaction", function () {
         const tx = new NodeUpdateTransaction()
             .setNodeAccountIds([AccountId.fromString("0.0.5005")])
             .setTransactionId(
-                TransactionId.withValidStart(AccountId.fromString("0.6.9"), new Timestamp(1596210382, 0)),
+                TransactionId.withValidStart(
+                    AccountId.fromString("0.6.9"),
+                    new Timestamp(1596210382, 0),
+                ),
             )
             .setNodeId(420)
             .setAccountId(AccountId.fromString("0.6.9"));
 
-        const endpoint = new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1));
+        const endpoint = new ServiceEndpoint().setIpAddressV4(
+            Uint8Array.of(127, 0, 0, 1),
+        );
 
         tx.freeze();
 
@@ -581,12 +609,17 @@ describe("NodeUpdateTransaction", function () {
         const tx = new NodeUpdateTransaction()
             .setNodeAccountIds([AccountId.fromString("0.0.5005")])
             .setTransactionId(
-                TransactionId.withValidStart(AccountId.fromString("0.6.9"), new Timestamp(1596210382, 0)),
+                TransactionId.withValidStart(
+                    AccountId.fromString("0.6.9"),
+                    new Timestamp(1596210382, 0),
+                ),
             )
             .setNodeId(420)
             .setAccountId(AccountId.fromString("0.6.9"));
 
-        const endpoint = new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1));
+        const endpoint = new ServiceEndpoint().setIpAddressV4(
+            Uint8Array.of(127, 0, 0, 1),
+        );
 
         tx.freeze();
 
@@ -604,23 +637,39 @@ describe("NodeUpdateTransaction", function () {
         const tx = new NodeUpdateTransaction();
 
         for (let i = 0; i < 10; i++) {
-            tx.addGossipEndpoint(new ServiceEndpoint().setIpAddressV4(Uint8Array.of(i, 0, 0, 1)));
+            tx.addGossipEndpoint(
+                new ServiceEndpoint().setIpAddressV4(Uint8Array.of(i, 0, 0, 1)),
+            );
         }
 
         expect(() => {
-            tx.addGossipEndpoint(new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1)));
-        }).to.throw("GossipEndpoints list must not contain more than 10 entries.");
+            tx.addGossipEndpoint(
+                new ServiceEndpoint().setIpAddressV4(
+                    Uint8Array.of(127, 0, 0, 1),
+                ),
+            );
+        }).to.throw(
+            "GossipEndpoints list must not contain more than 10 entries.",
+        );
     });
 
     it("should throw when adding more than 8 service endpoints", function () {
         const tx = new NodeUpdateTransaction();
 
         for (let i = 0; i < 8; i++) {
-            tx.addServiceEndpoint(new ServiceEndpoint().setIpAddressV4(Uint8Array.of(i, 0, 0, 1)));
+            tx.addServiceEndpoint(
+                new ServiceEndpoint().setIpAddressV4(Uint8Array.of(i, 0, 0, 1)),
+            );
         }
 
         expect(() => {
-            tx.addServiceEndpoint(new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1)));
-        }).to.throw("ServiceEndpoints list must not contain more than 8 entries.");
+            tx.addServiceEndpoint(
+                new ServiceEndpoint().setIpAddressV4(
+                    Uint8Array.of(127, 0, 0, 1),
+                ),
+            );
+        }).to.throw(
+            "ServiceEndpoints list must not contain more than 8 entries.",
+        );
     });
 });

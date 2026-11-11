@@ -121,8 +121,9 @@ describe("NodeCreateTransaction", function () {
 
     it("should add associated registered node", function () {
         const tx = new NodeCreateTransaction().addAssociatedRegisteredNode(303);
-        expect(tx.associatedRegisteredNodes.map((id) => id.toString())).to.deep
-            .equal(["303"]);
+        expect(
+            tx.associatedRegisteredNodes.map((id) => id.toString()),
+        ).to.deep.equal(["303"]);
     });
 
     it("should change account id", function () {
@@ -304,7 +305,9 @@ describe("NodeCreateTransaction", function () {
 
     it("should add a gossip endpoint to a new transaction", function () {
         const tx = new NodeCreateTransaction();
-        const endpoint = new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1));
+        const endpoint = new ServiceEndpoint().setIpAddressV4(
+            Uint8Array.of(127, 0, 0, 1),
+        );
 
         tx.addGossipEndpoint(endpoint);
 
@@ -314,8 +317,12 @@ describe("NodeCreateTransaction", function () {
 
     it("should add multiple gossip endpoints to a new transaction", function () {
         const tx = new NodeCreateTransaction();
-        const endpoint1 = new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1));
-        const endpoint2 = new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 2));
+        const endpoint1 = new ServiceEndpoint().setIpAddressV4(
+            Uint8Array.of(127, 0, 0, 1),
+        );
+        const endpoint2 = new ServiceEndpoint().setIpAddressV4(
+            Uint8Array.of(127, 0, 0, 2),
+        );
 
         tx.addGossipEndpoint(endpoint1).addGossipEndpoint(endpoint2);
 
@@ -324,7 +331,9 @@ describe("NodeCreateTransaction", function () {
 
     it("should add a service endpoint to a new transaction", function () {
         const tx = new NodeCreateTransaction();
-        const endpoint = new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1));
+        const endpoint = new ServiceEndpoint().setIpAddressV4(
+            Uint8Array.of(127, 0, 0, 1),
+        );
 
         tx.addServiceEndpoint(endpoint);
 
@@ -334,8 +343,12 @@ describe("NodeCreateTransaction", function () {
 
     it("should add multiple service endpoints to a new transaction", function () {
         const tx = new NodeCreateTransaction();
-        const endpoint1 = new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1));
-        const endpoint2 = new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 2));
+        const endpoint1 = new ServiceEndpoint().setIpAddressV4(
+            Uint8Array.of(127, 0, 0, 1),
+        );
+        const endpoint2 = new ServiceEndpoint().setIpAddressV4(
+            Uint8Array.of(127, 0, 0, 2),
+        );
 
         tx.addServiceEndpoint(endpoint1).addServiceEndpoint(endpoint2);
 
@@ -350,7 +363,9 @@ describe("NodeCreateTransaction", function () {
             )
             .setAccountId(accountId)
             .addGossipEndpoint(
-                new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1)),
+                new ServiceEndpoint().setIpAddressV4(
+                    Uint8Array.of(127, 0, 0, 1),
+                ),
             );
 
         const tx2 = NodeCreateTransaction.fromBytes(tx.toBytes());
@@ -370,7 +385,9 @@ describe("NodeCreateTransaction", function () {
             )
             .setAccountId(accountId)
             .addServiceEndpoint(
-                new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1)),
+                new ServiceEndpoint().setIpAddressV4(
+                    Uint8Array.of(127, 0, 0, 1),
+                ),
             );
 
         const tx2 = NodeCreateTransaction.fromBytes(tx.toBytes());
@@ -385,10 +402,14 @@ describe("NodeCreateTransaction", function () {
     it("should not change gossip endpoints if frozen", function () {
         const tx = new NodeCreateTransaction()
             .setNodeAccountIds(nodeAccountIds)
-            .setTransactionId(TransactionId.withValidStart(nodeAccountIds[0], VALID_START))
+            .setTransactionId(
+                TransactionId.withValidStart(nodeAccountIds[0], VALID_START),
+            )
             .setAccountId(accountId);
 
-        const endpoint = new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1));
+        const endpoint = new ServiceEndpoint().setIpAddressV4(
+            Uint8Array.of(127, 0, 0, 1),
+        );
 
         tx.freeze();
 
@@ -406,10 +427,14 @@ describe("NodeCreateTransaction", function () {
     it("should not change service endpoints if frozen", function () {
         const tx = new NodeCreateTransaction()
             .setNodeAccountIds(nodeAccountIds)
-            .setTransactionId(TransactionId.withValidStart(nodeAccountIds[0], VALID_START))
+            .setTransactionId(
+                TransactionId.withValidStart(nodeAccountIds[0], VALID_START),
+            )
             .setAccountId(accountId);
 
-        const endpoint = new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1));
+        const endpoint = new ServiceEndpoint().setIpAddressV4(
+            Uint8Array.of(127, 0, 0, 1),
+        );
 
         tx.freeze();
 
@@ -428,23 +453,39 @@ describe("NodeCreateTransaction", function () {
         const tx = new NodeCreateTransaction();
 
         for (let i = 0; i < 10; i++) {
-            tx.addGossipEndpoint(new ServiceEndpoint().setIpAddressV4(Uint8Array.of(i, 0, 0, 1)));
+            tx.addGossipEndpoint(
+                new ServiceEndpoint().setIpAddressV4(Uint8Array.of(i, 0, 0, 1)),
+            );
         }
 
         expect(() => {
-            tx.addGossipEndpoint(new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1)));
-        }).to.throw("GossipEndpoints list must not contain more than 10 entries.");
+            tx.addGossipEndpoint(
+                new ServiceEndpoint().setIpAddressV4(
+                    Uint8Array.of(127, 0, 0, 1),
+                ),
+            );
+        }).to.throw(
+            "GossipEndpoints list must not contain more than 10 entries.",
+        );
     });
 
     it("should throw when adding more than 8 service endpoints", function () {
         const tx = new NodeCreateTransaction();
 
         for (let i = 0; i < 8; i++) {
-            tx.addServiceEndpoint(new ServiceEndpoint().setIpAddressV4(Uint8Array.of(i, 0, 0, 1)));
+            tx.addServiceEndpoint(
+                new ServiceEndpoint().setIpAddressV4(Uint8Array.of(i, 0, 0, 1)),
+            );
         }
 
         expect(() => {
-            tx.addServiceEndpoint(new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1)));
-        }).to.throw("ServiceEndpoints list must not contain more than 8 entries.");
+            tx.addServiceEndpoint(
+                new ServiceEndpoint().setIpAddressV4(
+                    Uint8Array.of(127, 0, 0, 1),
+                ),
+            );
+        }).to.throw(
+            "ServiceEndpoints list must not contain more than 8 entries.",
+        );
     });
 });
