@@ -9,8 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+-   `Hbar.toString(unit)` now always prints a plain decimal number, so `Hbar.fromString()` can read it back. Before, a small amount in a large unit was printed in exponent notation, for example `Hbar.fromTinybars(1).toString(HbarUnit.Hbar)` returned `"1e-8 ℏ"`, which `Hbar.fromString()` rejected with `invalid argument provided`. It now returns `"0.00000001 ℏ"`. [#4685](https://github.com/hiero-ledger/hiero-sdk-js/issues/4685)
 -   `ContractCreateTransaction.fromBytes()` (via `Transaction.fromBytes()`) no longer drops bytecode set with `setBytecode()`. `_fromProtobuf()` now reads the proto `initcode` field into `bytecode` (copied to a `Uint8Array`), so a frozen or unfrozen round trip keeps the bytecode and refreezing still signs a body with `initcode`. `setBytecodeFileId()` round trips are unchanged. [#4659](https://github.com/hiero-ledger/hiero-sdk-js/issues/4659)
 -   `ScheduleCreateTransaction`'s `getScheduleMemo`, `expirationTime` and `waitForExpiry` getters no longer throw on a frozen transaction, such as one returned by `Transaction.fromBytes()`, and `Transaction.fromBytes()` now keeps the expiration time and wait for expiry. `setExpirationTime()` and `setWaitForExpiry()` now throw on a frozen transaction, like the other setters. [#4681](https://github.com/hiero-ledger/hiero-sdk-js/issues/4681)
+-   `new NodeClient({ mirrorNetwork: "local-node" })` and `new WebClient({ mirrorNetwork: "local-node" })` no longer throw `failed to parse address: local-node`. The constructors knew the `mainnet`, `testnet` and `previewnet` names but not `local-node`, which they passed on as an address; they now go through `setMirrorNetwork()`, which knows every name. [#4748](https://github.com/hiero-ledger/hiero-sdk-js/issues/4748)
 
 # v2.91.0
 
