@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import AccountId from "./AccountId.js";
 import NftId from "../token/NftId.js";
 import TokenNftAllowance from "./TokenNftAllowance.js";
@@ -192,9 +190,3 @@ export default class AccountAllowanceDeleteTransaction extends Transaction {
         return `AccountAllowanceDeleteTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "cryptoDeleteAllowance",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    AccountAllowanceDeleteTransaction._fromProtobuf,
-);

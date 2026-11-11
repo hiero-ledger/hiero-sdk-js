@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import FileId from "./FileId.js";
 
 /**
@@ -163,6 +161,3 @@ export default class FileDeleteTransaction extends Transaction {
         return `FileDeleteTransaction:${timestamp.toString()}`;
     }
 }
-
-// eslint-disable-next-line @typescript-eslint/unbound-method
-TRANSACTION_REGISTRY.set("fileDelete", FileDeleteTransaction._fromProtobuf);

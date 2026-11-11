@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Query, { QUERY_REGISTRY } from "../query/Query.js";
+import Query from "../query/Query.js";
 import TransactionRecord from "./TransactionRecord.js";
 import TransactionReceipt from "./TransactionReceipt.js";
 import TransactionId from "./TransactionId.js";
@@ -433,9 +433,3 @@ export default class TransactionRecordQuery extends Query {
         return `TransactionRecordQuery:${timestamp.toString()}`;
     }
 }
-
-QUERY_REGISTRY.set(
-    "transactionGetRecord",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    TransactionRecordQuery._fromProtobuf,
-);

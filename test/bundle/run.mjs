@@ -2,8 +2,9 @@
 /**
  * Bundles the published packages with webpack, Vite and esbuild and checks
  * that every class `Transaction.fromBytes()`, `Query.fromBytes()`,
- * `Transaction.schedule()`, key parsing and `EthereumTransactionData.fromBytes()`
- * look up at runtime is still in the bundle.
+ * `Transaction.schedule()`, key parsing, `EthereumTransactionData.fromBytes()`
+ * and `TransactionId.getReceipt()` / `getRecord()` look up at runtime is still
+ * in the bundle.
  *
  *   node test/bundle/run.mjs [--keep]
  *
@@ -194,7 +195,7 @@ function oneofCases(Message, oneof) {
 
 /**
  * Builds the bytes the bundled app decodes, using the packed proto package and
- * ethers (an SDK dependency) from the test project.
+ * ethers (a root devDependency) from the repository.
  */
 async function createInputs(dir) {
     const require = createRequire(join(dir, "package.json"));
@@ -203,7 +204,9 @@ async function createInputs(dir) {
     );
 
     const { Wallet } = await import(
-        pathToFileURL(require.resolve("ethers")).href
+        pathToFileURL(
+            createRequire(join(repoRoot, "package.json")).resolve("ethers"),
+        ).href
     );
 
     const accountId = { shardNum: 0, realmNum: 0, accountNum: 1001 };

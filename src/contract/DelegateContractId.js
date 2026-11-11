@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import CACHE from "../Cache.js";
 import ContractId from "./ContractId.js";
 
 /**
@@ -88,5 +87,3 @@ export default class DelegateContractId extends ContractId {
         return DelegateContractId._fromProtobuf(key);
     }
 }
-
-CACHE.setDelegateContractId((key) => DelegateContractId.__fromProtobufKey(key));

@@ -9,6 +9,7 @@ import {
 } from "@hiero-ledger/sdk";
 
 import dotenv from "dotenv";
+import { errorMessage as describeError } from "../error-message.js";
 
 dotenv.config();
 
@@ -49,7 +50,9 @@ async function main() {
 
         console.log("Client initialized successfully!");
         console.log(
-            `Network Type: ${client.ledgerId === LedgerId.TESTNET ? "Testnet" : "Unknown"}`,
+            `Network Type: ${
+                client.ledgerId === LedgerId.TESTNET ? "Testnet" : "Unknown"
+            }`,
         );
         console.log(`Node Count: ${Object.keys(client.network).length}`);
         console.log(`Operator Account: ${operatorId.toString()}\n`);
@@ -74,8 +77,7 @@ async function main() {
 
             console.log(`Account Balance: ${balance.hbars.toString()}\n`);
         } catch (error) {
-            const errorMessage =
-                error instanceof Error ? error.message : String(error);
+            const errorMessage = describeError(error);
             console.log(`Error querying balance: ${errorMessage}\n`);
         }
 
@@ -98,8 +100,7 @@ async function main() {
             console.log(`Account created successfully!`);
             console.log(`New Account ID: ${receipt.accountId.toString()}\n`);
         } catch (error) {
-            const errorMessage =
-                error instanceof Error ? error.message : String(error);
+            const errorMessage = describeError(error);
             console.log(`Error creating account: ${errorMessage}\n`);
         }
 
@@ -109,7 +110,9 @@ async function main() {
             console.log("Updating network from address book...");
             await client.updateNetwork();
             console.log(
-                `Network updated! New node count: ${Object.keys(client.network).length}`,
+                `Network updated! New node count: ${
+                    Object.keys(client.network).length
+                }`,
             );
 
             console.log("Updated Network Nodes:");
@@ -121,8 +124,7 @@ async function main() {
                 },
             );
         } catch (error) {
-            const errorMessage =
-                error instanceof Error ? error.message : String(error);
+            const errorMessage = describeError(error);
             console.log(`Error updating network: ${errorMessage}`);
         }
 
@@ -130,8 +132,7 @@ async function main() {
         client.close();
         console.log("\nClient closed successfully!");
     } catch (error) {
-        const errorMessage =
-            error instanceof Error ? error.message : String(error);
+        const errorMessage = describeError(error);
         console.error("Error initializing client:", errorMessage);
     }
 }

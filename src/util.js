@@ -4,10 +4,6 @@ import BigNumber from "bignumber.js";
 import Long from "long";
 
 /**
- * @typedef {import("./Hbar.js").default} Hbar
- */
-
-/**
  * Utility Error Messages
  */
 export const REQUIRE_NON_NULL_ERROR = "This value cannot be null | undefined.";
@@ -131,21 +127,6 @@ export function isLongZeroAddress(address) {
         }
     }
     return true;
-}
-
-/**
- * Takes any param and returns false if null or undefined.
- *
- * @template {Long | Hbar} T
- * @param {T} variable
- * @returns {T}
- */
-export function requireNotNegative(variable) {
-    if (variable.isNegative()) {
-        throw new Error("negative value not allowed");
-    }
-
-    return variable;
 }
 
 /**
@@ -513,18 +494,4 @@ export function arrayEqual(array1, array2) {
  */
 export function wait(ms) {
     return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
-/**
- * Converts a SCREAMING_SNAKE_CASE string to PascalCase
- * @param {string} name - The string to convert
- * @returns {string} The converted PascalCase string
- */
-export function screamingSnakeToPascalCase(name) {
-    const words = name.toLowerCase().split("_");
-    let result = "";
-    for (let i = 0; i < words.length; i++) {
-        result += words[i].charAt(0).toUpperCase() + words[i].slice(1);
-    }
-    return result;
 }

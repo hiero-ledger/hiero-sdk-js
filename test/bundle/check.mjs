@@ -31,6 +31,10 @@ for (const [name, bytes] of Object.entries(inputs.keyTransactions)) {
     results[`key:${name}`] = app.accountUpdateKey(bytes);
 }
 
+for (const method of ["getReceipt", "getRecord"]) {
+    results[`transactionId:${method}`] = app.transactionIdQuery(method);
+}
+
 for (const [name, bytes] of Object.entries(inputs.ethereum)) {
     results[`ethereum:${name}`] = app.ethereumTransactionDataFromBytes(bytes);
 }

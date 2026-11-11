@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Query, { QUERY_REGISTRY } from "../query/Query.js";
+import Query from "../query/Query.js";
 import FileId from "./FileId.js";
 import FileInfo from "./FileInfo.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -182,6 +182,3 @@ export default class FileInfoQuery extends Query {
         return `FileInfoQuery:${timestamp.toString()}`;
     }
 }
-
-// eslint-disable-next-line @typescript-eslint/unbound-method
-QUERY_REGISTRY.set("fileGetInfo", FileInfoQuery._fromProtobuf);

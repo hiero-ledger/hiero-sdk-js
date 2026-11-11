@@ -2,7 +2,6 @@ import * as hex from "./encoding/hex.js";
 import * as rlp from "./encoding/rlp.js";
 import EthereumTransactionData from "./EthereumTransactionData.js";
 import EvmAddress from "./EvmAddress.js";
-import CACHE from "./Cache.js";
 
 /**
  * @typedef {import("long").default} Long
@@ -310,7 +309,3 @@ export default class EthereumTransactionDataLegacy extends EthereumTransactionDa
         };
     }
 }
-
-CACHE.setEthereumTransactionDataLegacyFromBytes((bytes) =>
-    EthereumTransactionDataLegacy.fromBytes(bytes),
-);

@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import ContractId from "./ContractId.js";
 import AccountId from "../account/AccountId.js";
 
@@ -318,9 +316,3 @@ export default class ContractDeleteTransaction extends Transaction {
         return `ContractDeleteTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "contractDeleteInstance",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    ContractDeleteTransaction._fromProtobuf,
-);

@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import Hbar from "../Hbar.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import ContractId from "./ContractId.js";
 import ContractFunctionParameters from "./ContractFunctionParameters.js";
 import Long from "long";
@@ -310,9 +308,3 @@ export default class ContractExecuteTransaction extends Transaction {
         return `ContractExecuteTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "contractCall",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    ContractExecuteTransaction._fromProtobuf,
-);

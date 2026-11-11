@@ -5,7 +5,6 @@ import * as EntityIdHelper from "../EntityIdHelper.js";
 import * as HieroProto from "@hiero-ledger/proto";
 import Key from "../Key.js";
 import PublicKey from "../PublicKey.js";
-import CACHE from "../Cache.js";
 import EvmAddress from "../EvmAddress.js";
 import {
     bodyJson,
@@ -475,7 +474,3 @@ export default class AccountId {
         }
     }
 }
-
-CACHE.setAccountIdConstructor(
-    (shard, realm, key) => new AccountId(shard, realm, Long.ZERO, key),
-);

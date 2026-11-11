@@ -2,10 +2,7 @@
 
 import Timestamp from "../Timestamp.js";
 import AccountId from "../account/AccountId.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-    SCHEDULE_CREATE_TRANSACTION,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import Key from "../Key.js";
 import Hbar from "../Hbar.js";
 import * as HieroProto from "@hiero-ledger/proto";
@@ -89,6 +86,14 @@ export default class ScheduleCreateTransaction extends Transaction {
             this.setScheduleMemo(props.scheduleMemo);
         }
 
+        if (props.expirationTime != null) {
+            this.setExpirationTime(props.expirationTime);
+        }
+
+        if (props.waitForExpiry != null) {
+            this.setWaitForExpiry(props.waitForExpiry);
+        }
+
         this._defaultMaxTransactionFee = new Hbar(5);
     }
 
@@ -135,10 +140,11 @@ export default class ScheduleCreateTransaction extends Transaction {
                     ? Timestamp._fromProtobuf(create.expirationTime)
                     : undefined,
         });
-        if (body.scheduleCreate != null) {
-            const scheduleCreateBody =
-                body.scheduleCreate.scheduledTransactionBody;
-
+        // The scheduled transaction body is optional in the protobuf. Without
+        // it, the transaction is returned with no scheduled transaction, as
+        // a new ScheduleCreateTransaction has before setScheduledTransaction().
+        const scheduleCreateBody = create.scheduledTransactionBody;
+        if (scheduleCreateBody != null) {
             const scheduleCreateBodyBytes =
                 HieroProto.proto.TransactionBody.encode(
                     // @ts-ignore
@@ -244,7 +250,6 @@ export default class ScheduleCreateTransaction extends Transaction {
      * @returns {?string}
      */
     get getScheduleMemo() {
-        this._requireNotFrozen();
         return this._scheduleMemo;
     }
 
@@ -332,6 +337,7 @@ export default class ScheduleCreateTransaction extends Transaction {
      * @returns {this}
      */
     setExpirationTime(expirationTime) {
+        this._requireNotFrozen();
         this._expirationTime = expirationTime;
         return this;
     }
@@ -340,7 +346,6 @@ export default class ScheduleCreateTransaction extends Transaction {
      * @returns {?Timestamp}
      */
     get expirationTime() {
-        this._requireNotFrozen();
         return this._expirationTime;
     }
 
@@ -349,6 +354,7 @@ export default class ScheduleCreateTransaction extends Transaction {
      * @returns {this}
      */
     setWaitForExpiry(waitForExpiry) {
+        this._requireNotFrozen();
         this._waitForExpiry = waitForExpiry;
 
         return this;
@@ -358,15 +364,6 @@ export default class ScheduleCreateTransaction extends Transaction {
      * @returns {?boolean}
      */
     get waitForExpiry() {
-        this._requireNotFrozen();
         return this._waitForExpiry;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "scheduleCreate",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    ScheduleCreateTransaction._fromProtobuf,
-);
-
-SCHEDULE_CREATE_TRANSACTION.push(() => new ScheduleCreateTransaction());

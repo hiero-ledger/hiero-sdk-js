@@ -3,7 +3,6 @@
 import * as EntityIdHelper from "../EntityIdHelper.js";
 import Key from "../Key.js";
 import * as HieroProto from "@hiero-ledger/proto";
-import CACHE from "../Cache.js";
 import * as hex from "../encoding/hex.js";
 import { arrayEqual } from "../array.js";
 import Long from "long";
@@ -295,5 +294,3 @@ export default class ContractId extends Key {
         return ContractId._fromProtobuf(key);
     }
 }
-
-CACHE.setContractId((key) => ContractId.__fromProtobufKey(key));

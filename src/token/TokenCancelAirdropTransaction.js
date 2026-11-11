@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
 import PendingAirdropId from "../token/PendingAirdropId.js";
-import { TRANSACTION_REGISTRY } from "../transaction/Transaction.js";
 import Transaction from "../transaction/Transaction.js";
 import AirdropPendingTransaction from "./AirdropPendingTransaction.js";
 
@@ -112,9 +111,3 @@ export default class TokenCancelAirdropTransaction extends AirdropPendingTransac
         return `TokenCancelAirdrop:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "tokenCancelAirdrop",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    TokenCancelAirdropTransaction._fromProtobuf,
-);
