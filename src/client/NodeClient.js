@@ -44,25 +44,10 @@ export default class NodeClient extends Client {
                 this.setNetwork(props.network);
             }
 
-            if (typeof props.mirrorNetwork === "string") {
-                switch (props.mirrorNetwork) {
-                    case "mainnet":
-                        this.setMirrorNetwork(MirrorNetwork.MAINNET);
-                        break;
-
-                    case "testnet":
-                        this.setMirrorNetwork(MirrorNetwork.TESTNET);
-                        break;
-
-                    case "previewnet":
-                        this.setMirrorNetwork(MirrorNetwork.PREVIEWNET);
-                        break;
-
-                    default:
-                        this.setMirrorNetwork([props.mirrorNetwork]);
-                        break;
-                }
-            } else if (props.mirrorNetwork != null) {
+            if (props.mirrorNetwork != null) {
+                // setMirrorNetwork knows every network name, "local-node"
+                // included; a name it does not know becomes a one-address
+                // list, which is what the address form needs.
                 this.setMirrorNetwork(props.mirrorNetwork);
             }
         }
