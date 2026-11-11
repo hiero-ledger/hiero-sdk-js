@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+-   `TransactionRecordQuery.setIncludeDuplicates()` now sets the `includeDuplicates` flag sent in the query request to consensus nodes, and `Query.fromBytes()` preserves it across serialization. Previously, `setIncludeDuplicates()` stored the value in an internal `_duplicates` field while `_onMakeRequest()` sent `_includeDuplicates` (which stayed `null`), so duplicate records were never requested from the network. [#4760](https://github.com/hiero-ledger/hiero-sdk-js/issues/4760) [#4764](https://github.com/hiero-ledger/hiero-sdk-js/pull/4764)
 -   `ContractCreateTransaction.fromBytes()` (via `Transaction.fromBytes()`) no longer drops bytecode set with `setBytecode()`. `_fromProtobuf()` now reads the proto `initcode` field into `bytecode` (copied to a `Uint8Array`), so a frozen or unfrozen round trip keeps the bytecode and refreezing still signs a body with `initcode`. `setBytecodeFileId()` round trips are unchanged. [#4659](https://github.com/hiero-ledger/hiero-sdk-js/issues/4659)
 -   `ScheduleCreateTransaction`'s `getScheduleMemo`, `expirationTime` and `waitForExpiry` getters no longer throw on a frozen transaction, such as one returned by `Transaction.fromBytes()`, and `Transaction.fromBytes()` now keeps the expiration time and wait for expiry. `setExpirationTime()` and `setWaitForExpiry()` now throw on a frozen transaction, like the other setters. [#4681](https://github.com/hiero-ledger/hiero-sdk-js/issues/4681)
 
