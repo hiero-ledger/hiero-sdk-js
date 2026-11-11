@@ -150,7 +150,19 @@ export async function readPemECDSA(pem, passphrase) {
             );
         }
 
-        return parsedKey.valueBlock.value[1].valueBlock.valueHexView;
+        try {
+            return EcdsaPrivateKey.fromBytesRaw(
+                parsedKey.valueBlock.value[1].valueBlock.valueHexView,
+            );
+        } catch (error) {
+            // the 32 bytes are not a secp256k1 private key, for example 0
+            const message =
+                error != null && /** @type {Error} */ (error).message != null
+                    ? /** @type {Error} */ (error).message
+                    : "";
+
+            throw new BadKeyError(`invalid EC private key: ${message}`);
+        }
     }
 }
 

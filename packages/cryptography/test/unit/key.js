@@ -367,6 +367,40 @@ describe("PrivateKey", function () {
         );
     });
 
+    it("fromPem() rejects an EC PRIVATE KEY with a private key that is not 32 bytes", async function () {
+        // SEC1 ECPrivateKey with a 31-byte private key and the secp256k1 parameters
+        const label = "EC PRIVATE KEY";
+
+        await expect(
+            PrivateKey.fromPem(
+                `-----BEGIN ${label}-----\n` +
+                    "MC0CAQEEHwEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQGgBwYFK4EEAAo=\n" +
+                    `-----END ${label}-----`,
+            ),
+        ).rejects.toThrow(
+            "invalid EC private key: expected a SEC1 ECPrivateKey",
+        );
+    });
+
+    it("fromPem() rejects an EC PRIVATE KEY whose private key is out of range", async function () {
+        // SEC1 ECPrivateKey with a private key of 0 and the secp256k1 parameters
+        const label = "EC PRIVATE KEY";
+
+        await expect(
+            PrivateKey.fromPem(
+                `-----BEGIN ${label}-----\n` +
+                    "MC4CAQEEIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAoAcGBSuBBAAK\n" +
+                    `-----END ${label}-----`,
+            ),
+        ).rejects.toThrow(BadKeyError);
+    });
+
+    it("fromPem() reads a key with CRLF line endings", async function () {
+        const key = await PrivateKey.fromPem(pemString.replace(/\n/g, "\r\n"));
+
+        expect(key.toStringDer()).to.equal(privKeyStr);
+    });
+
     it("PublicKey.fromString() should work", async function () {
         let err = false;
 
