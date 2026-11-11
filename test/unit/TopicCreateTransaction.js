@@ -1,4 +1,5 @@
 import {
+    Client,
     TopicCreateTransaction,
     TokenId,
     CustomFixedFee,
@@ -11,6 +12,8 @@ import {
 } from "../../src/index.js";
 import * as HieroProto from "@hiero-ledger/proto";
 import Long from "long";
+import BadEntityIdError from "../../src/BadEntityIdError.js";
+import Duration from "../../src/Duration.js";
 
 describe("TopicCreateTransaction", function () {
     describe("HIP-991: Permissionless revenue generating topics", function () {
@@ -421,5 +424,248 @@ describe("TopicCreateTransaction", function () {
             ["10", "0.0.5008", "0.0.5007"],
             [new Hbar(1).toTinybars().toString(), null, "0.0.5007"],
         ]);
+    });
+
+    describe("fields", function () {
+        const VALID_START = new Timestamp(1596210382, 0);
+
+        let adminKey,
+            submitKey,
+            feeScheduleKey,
+            feeExemptKey,
+            autoRenewAccountId,
+            customFee,
+            transactionId,
+            nodeId;
+
+        beforeEach(function () {
+            adminKey = PrivateKey.generateED25519().publicKey;
+            submitKey = PrivateKey.generateED25519().publicKey;
+            feeScheduleKey = PrivateKey.generateECDSA().publicKey;
+            feeExemptKey = PrivateKey.generateECDSA().publicKey;
+            autoRenewAccountId = new AccountId(0, 0, 5006);
+            customFee = new CustomFixedFee()
+                .setHbarAmount(new Hbar(1))
+                .setFeeCollectorAccountId(new AccountId(0, 0, 5007));
+            transactionId = TransactionId.withValidStart(
+                new AccountId(0, 0, 1001),
+                VALID_START,
+            );
+            nodeId = new AccountId(0, 0, 3);
+        });
+
+        describe("clearFeeExemptKeys", function () {
+            it("should empty the list and be chainable", function () {
+                const transaction =
+                    new TopicCreateTransaction().setFeeExemptKeys([
+                        feeExemptKey,
+                    ]);
+
+                expect(transaction.clearFeeExemptKeys()).to.equal(transaction);
+                expect(transaction.getFeeExemptKeys()).to.deep.equal([]);
+            });
+
+            it("should throw once frozen", function () {
+                const transaction = new TopicCreateTransaction()
+                    .setNodeAccountIds([nodeId])
+                    .setTransactionId(transactionId)
+                    .freeze();
+
+                expect(() => transaction.clearFeeExemptKeys()).to.throw(
+                    "transaction is immutable",
+                );
+            });
+        });
+
+        describe("clearCustomFees", function () {
+            it("should empty the list and be chainable", function () {
+                const transaction = new TopicCreateTransaction().setCustomFees([
+                    customFee,
+                ]);
+
+                expect(transaction.clearCustomFees()).to.equal(transaction);
+                expect(transaction.getCustomFees()).to.deep.equal([]);
+            });
+
+            it("should throw once frozen", function () {
+                const transaction = new TopicCreateTransaction()
+                    .setNodeAccountIds([nodeId])
+                    .setTransactionId(transactionId)
+                    .freeze();
+
+                expect(() => transaction.clearCustomFees()).to.throw(
+                    "transaction is immutable",
+                );
+            });
+        });
+
+        describe("freezeWith", function () {
+            it("should use the transaction ID's account as the auto renew account", function () {
+                const transaction = new TopicCreateTransaction()
+                    .setNodeAccountIds([nodeId])
+                    .setTransactionId(transactionId)
+                    .freezeWith(null);
+
+                expect(transaction.getAutoRenewAccountId().toString()).to.equal(
+                    "0.0.1001",
+                );
+            });
+
+            it("should use the client's operator without a transaction ID", function () {
+                const client = Client.forNetwork(
+                    { "127.0.0.1:50211": "0.0.3" },
+                    { scheduleNetworkUpdate: false },
+                ).setOperator(
+                    new AccountId(0, 0, 1002),
+                    PrivateKey.generateED25519(),
+                );
+
+                try {
+                    const transaction = new TopicCreateTransaction()
+                        .setNodeAccountIds([nodeId])
+                        .freezeWith(client);
+
+                    expect(
+                        transaction.getAutoRenewAccountId().toString(),
+                    ).to.equal("0.0.1002");
+                } finally {
+                    client.close();
+                }
+            });
+
+            it("should keep an auto renew account that was set", function () {
+                const transaction = new TopicCreateTransaction()
+                    .setAutoRenewAccountId(autoRenewAccountId)
+                    .setNodeAccountIds([nodeId])
+                    .setTransactionId(transactionId)
+                    .freezeWith(null);
+
+                expect(transaction.getAutoRenewAccountId().toString()).to.equal(
+                    "0.0.5006",
+                );
+            });
+        });
+
+        describe("_makeTransactionData", function () {
+            it("should encode every field", function () {
+                const transaction = new TopicCreateTransaction()
+                    .setTopicMemo("memo")
+                    .setAdminKey(adminKey)
+                    .setSubmitKey(submitKey)
+                    .setFeeScheduleKey(feeScheduleKey)
+                    .setFeeExemptKeys([feeExemptKey])
+                    .setAutoRenewAccountId(autoRenewAccountId)
+                    .setAutoRenewPeriod(8000000)
+                    .setCustomFees([customFee]);
+
+                expect(transaction._makeTransactionData()).to.deep.equal({
+                    adminKey: adminKey._toProtobufKey(),
+                    submitKey: submitKey._toProtobufKey(),
+                    feeScheduleKey: feeScheduleKey._toProtobufKey(),
+                    feeExemptKeyList: [feeExemptKey._toProtobufKey()],
+                    autoRenewAccount: autoRenewAccountId._toProtobuf(),
+                    autoRenewPeriod: new Duration(8000000)._toProtobuf(),
+                    customFees: [customFee._toTopicFeeProtobuf()],
+                    memo: "memo",
+                });
+            });
+
+            it("should encode the defaults", function () {
+                expect(
+                    new TopicCreateTransaction()._makeTransactionData(),
+                ).to.deep.equal({
+                    adminKey: null,
+                    submitKey: null,
+                    feeScheduleKey: null,
+                    feeExemptKeyList: [],
+                    autoRenewAccount: null,
+                    autoRenewPeriod: new Duration(7776000)._toProtobuf(),
+                    customFees: [],
+                    memo: null,
+                });
+            });
+        });
+
+        describe("_validateChecksums", function () {
+            let mainnet, testnet;
+
+            beforeEach(function () {
+                mainnet = Client.forMainnet({ scheduleNetworkUpdate: false });
+                testnet = Client.forTestnet({ scheduleNetworkUpdate: false });
+            });
+
+            afterEach(function () {
+                mainnet.close();
+                testnet.close();
+            });
+
+            // TODO(#4757): AccountId.fromString() drops the checksum.
+            it.skip("should check the auto renew account ID checksum against the client's network", function () {
+                // 0.0.123-vfmkw has the mainnet checksum
+                const transaction =
+                    new TopicCreateTransaction().setAutoRenewAccountId(
+                        AccountId.fromString("0.0.123-vfmkw"),
+                    );
+
+                expect(() =>
+                    transaction._validateChecksums(mainnet),
+                ).to.not.throw();
+                expect(() => transaction._validateChecksums(testnet)).to.throw(
+                    BadEntityIdError,
+                );
+            });
+
+            it("should skip unset fields", function () {
+                expect(() =>
+                    new TopicCreateTransaction()._validateChecksums(testnet),
+                ).to.not.throw();
+            });
+        });
+
+        describe("_execute", function () {
+            it("should call consensus.createTopic() with the request", async function () {
+                const request = {};
+                const response = {};
+                const calls = [];
+                const channel = {
+                    consensus: {
+                        createTopic: (arg) => {
+                            calls.push(arg);
+                            return Promise.resolve(response);
+                        },
+                    },
+                };
+
+                expect(
+                    await new TopicCreateTransaction()._execute(
+                        channel,
+                        request,
+                    ),
+                ).to.equal(response);
+                expect(calls).to.deep.equal([request]);
+                expect(calls[0]).to.equal(request);
+            });
+        });
+
+        describe("_getTransactionDataCase", function () {
+            it("should return consensusCreateTopic", function () {
+                expect(
+                    new TopicCreateTransaction()._getTransactionDataCase(),
+                ).to.equal("consensusCreateTopic");
+            });
+        });
+
+        describe("_getLogId", function () {
+            it("should include the class name and valid start", function () {
+                const transaction = new TopicCreateTransaction()
+                    .setNodeAccountIds([nodeId])
+                    .setTransactionId(transactionId)
+                    .freeze();
+
+                expect(transaction._getLogId()).to.equal(
+                    `TopicCreateTransaction:${VALID_START.toString()}`,
+                );
+            });
+        });
     });
 });
