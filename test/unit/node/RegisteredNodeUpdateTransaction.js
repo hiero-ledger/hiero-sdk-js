@@ -119,4 +119,57 @@ describe("RegisteredNodeUpdateTransaction", function () {
     // Note: empty / oversized serviceEndpoints lists are rejected by the
     // consensus node with INVALID_REGISTERED_ENDPOINT and
     // REGISTERED_ENDPOINTS_EXCEEDED_LIMIT — see integration tests.
+
+    describe("_execute", function () {
+        it("should call addressBook.updateRegisteredNode() with the request", async function () {
+            const request = {};
+            const response = {};
+            const calls = [];
+            const channel = {
+                addressBook: {
+                    updateRegisteredNode: (arg) => {
+                        calls.push(arg);
+                        return Promise.resolve(response);
+                    },
+                },
+            };
+
+            expect(
+                await new RegisteredNodeUpdateTransaction()._execute(
+                    channel,
+                    request,
+                ),
+            ).to.equal(response);
+            expect(calls).to.deep.equal([request]);
+            expect(calls[0]).to.equal(request);
+        });
+    });
+
+    describe("_getTransactionDataCase", function () {
+        it("should return registeredNodeUpdate", function () {
+            expect(
+                new RegisteredNodeUpdateTransaction()._getTransactionDataCase(),
+            ).to.equal("registeredNodeUpdate");
+        });
+    });
+
+    describe("_getLogId", function () {
+        it("should include the class name and valid start", function () {
+            const validStart = new Timestamp(1596210382, 0);
+            const transaction = new RegisteredNodeUpdateTransaction()
+                .setRegisteredNodeId(7)
+                .setNodeAccountIds([new AccountId(0, 0, 3)])
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        new AccountId(0, 0, 1001),
+                        validStart,
+                    ),
+                )
+                .freeze();
+
+            expect(transaction._getLogId()).to.equal(
+                `RegisteredNodeUpdateTransaction:${validStart.toString()}`,
+            );
+        });
+    });
 });

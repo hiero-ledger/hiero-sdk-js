@@ -1,5 +1,6 @@
 import {
     AccountId,
+    Client,
     Hbar,
     NodeCreateTransaction,
     PrivateKey,
@@ -7,6 +8,7 @@ import {
     Timestamp,
     TransactionId,
 } from "../../../src/index.js";
+import BadEntityIdError from "../../../src/BadEntityIdError.js";
 
 describe("NodeCreateTransaction", function () {
     // setting these variables outside of the beforeEach function to avoid
@@ -487,5 +489,153 @@ describe("NodeCreateTransaction", function () {
         }).to.throw(
             "ServiceEndpoints list must not contain more than 8 entries.",
         );
+    });
+
+    describe("validation", function () {
+        /**
+         * @param {number} count
+         * @returns {ServiceEndpoint[]}
+         */
+        function endpoints(count) {
+            return Array.from({ length: count }, (_, i) =>
+                new ServiceEndpoint().setIpAddressV4(
+                    Uint8Array.of(10, 0, 0, i),
+                ),
+            );
+        }
+
+        it("setDescription() throws for more than 100 characters", function () {
+            expect(() =>
+                new NodeCreateTransaction().setDescription("a".repeat(101)),
+            ).to.throw("Description must be at most 100 characters.");
+        });
+
+        it("setGossipEndpoints() throws for an empty list", function () {
+            expect(() =>
+                new NodeCreateTransaction().setGossipEndpoints([]),
+            ).to.throw("GossipEndpoints list must not be empty.");
+        });
+
+        it("setGossipEndpoints() throws for more than 10 endpoints", function () {
+            expect(() =>
+                new NodeCreateTransaction().setGossipEndpoints(endpoints(11)),
+            ).to.throw(
+                "GossipEndpoints list must not contain more than 10 entries.",
+            );
+        });
+
+        it("setServiceEndpoints() throws for an empty list", function () {
+            expect(() =>
+                new NodeCreateTransaction().setServiceEndpoints([]),
+            ).to.throw("ServiceEndpoints list must not be empty.");
+        });
+
+        it("setServiceEndpoints() throws for more than 8 endpoints", function () {
+            expect(() =>
+                new NodeCreateTransaction().setServiceEndpoints(endpoints(9)),
+            ).to.throw(
+                "ServiceEndpoints list must not contain more than 8 entries.",
+            );
+        });
+
+        it("setGossipCaCertificate() throws for empty bytes", function () {
+            expect(() =>
+                new NodeCreateTransaction().setGossipCaCertificate(
+                    new Uint8Array(),
+                ),
+            ).to.throw("GossipCaCertificate must not be empty.");
+        });
+
+        it("setAssociatedRegisteredNodes() throws for a negative ID", function () {
+            expect(() =>
+                new NodeCreateTransaction().setAssociatedRegisteredNodes([-1]),
+            ).to.throw(
+                "NodeCreateTransaction: associated registered node IDs must be positive.",
+            );
+        });
+    });
+
+    describe("_validateChecksums", function () {
+        let mainnet, testnet;
+
+        beforeEach(function () {
+            mainnet = Client.forMainnet({ scheduleNetworkUpdate: false });
+            testnet = Client.forTestnet({ scheduleNetworkUpdate: false });
+        });
+
+        afterEach(function () {
+            mainnet.close();
+            testnet.close();
+        });
+
+        // TODO(#4683, #4757): NodeCreateTransaction doesn't validate the account ID
+        // checksum, and AccountId.fromString() drops it.
+        it.skip("should check the account ID checksum against the client's network", function () {
+            // 0.0.123-vfmkw has the mainnet checksum
+            const transaction = new NodeCreateTransaction().setAccountId(
+                AccountId.fromString("0.0.123-vfmkw"),
+            );
+
+            expect(() =>
+                transaction._validateChecksums(mainnet),
+            ).to.not.throw();
+            expect(() => transaction._validateChecksums(testnet)).to.throw(
+                BadEntityIdError,
+            );
+        });
+
+        it("should skip unset fields", function () {
+            expect(() =>
+                new NodeCreateTransaction()._validateChecksums(testnet),
+            ).to.not.throw();
+        });
+    });
+
+    describe("_execute", function () {
+        it("should call addressBook.createNode() with the request", async function () {
+            const request = {};
+            const response = {};
+            const calls = [];
+            const channel = {
+                addressBook: {
+                    createNode: (arg) => {
+                        calls.push(arg);
+                        return Promise.resolve(response);
+                    },
+                },
+            };
+
+            expect(
+                await new NodeCreateTransaction()._execute(channel, request),
+            ).to.equal(response);
+            expect(calls).to.deep.equal([request]);
+            expect(calls[0]).to.equal(request);
+        });
+    });
+
+    describe("_getTransactionDataCase", function () {
+        it("should return nodeCreate", function () {
+            expect(
+                new NodeCreateTransaction()._getTransactionDataCase(),
+            ).to.equal("nodeCreate");
+        });
+    });
+
+    describe("_getLogId", function () {
+        it("should include the class name and valid start", function () {
+            const transaction = new NodeCreateTransaction()
+                .setNodeAccountIds([new AccountId(0, 0, 3)])
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        new AccountId(0, 0, 1001),
+                        VALID_START,
+                    ),
+                )
+                .freeze();
+
+            expect(transaction._getLogId()).to.equal(
+                `NodeCreateTransaction:${VALID_START.toString()}`,
+            );
+        });
     });
 });
