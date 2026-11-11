@@ -37,25 +37,10 @@ export default class WebClient extends Client {
                 this.setNetwork(props.network);
             }
 
-            if (typeof props.mirrorNetwork === "string") {
-                switch (props.mirrorNetwork) {
-                    case "mainnet":
-                        this.setMirrorNetwork(WebMirrorNetwork.MAINNET);
-                        break;
-
-                    case "testnet":
-                        this.setMirrorNetwork(WebMirrorNetwork.TESTNET);
-                        break;
-
-                    case "previewnet":
-                        this.setMirrorNetwork(WebMirrorNetwork.PREVIEWNET);
-                        break;
-
-                    default:
-                        this.setMirrorNetwork([props.mirrorNetwork]);
-                        break;
-                }
-            } else if (props.mirrorNetwork != null) {
+            if (props.mirrorNetwork != null) {
+                // setMirrorNetwork knows every network name, "local-node"
+                // included; a name it does not know becomes a one-address
+                // list, which is what the address form needs.
                 this.setMirrorNetwork(props.mirrorNetwork);
             }
         }
