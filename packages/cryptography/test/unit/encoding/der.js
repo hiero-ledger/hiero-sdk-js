@@ -94,6 +94,67 @@ describe("encoding/der", function () {
         );
     });
 
+    // Malformed input
+    it("should throw for empty input", function () {
+        expect(() => der.decode(new Uint8Array([]))).to.throw(
+            "invalid DER: data too short",
+        );
+    });
+
+    it("should throw for a tag with no length", function () {
+        expect(() => der.decode(new Uint8Array([0xc2]))).to.throw(
+            "invalid DER: data too short",
+        );
+    });
+
+    it("should throw for a long-form length with no length bytes", function () {
+        // 0x81 says one length byte follows, but none does
+        expect(() => der.decode(new Uint8Array([0x04, 0x81]))).to.throw(
+            "invalid DER: data too short",
+        );
+    });
+
+    it("should throw for a long-form length cut short", function () {
+        // 0x82 says two length bytes follow, but only one does
+        expect(() => der.decode(new Uint8Array([0x04, 0x82, 0x01]))).to.throw(
+            "invalid DER: data too short",
+        );
+    });
+
+    it("should throw for the indefinite length", function () {
+        // 0x80 is the BER indefinite length, which DER doesn't allow
+        expect(() => der.decode(new Uint8Array([0x04, 0x80]))).to.throw(
+            "invalid DER: indefinite length",
+        );
+    });
+
+    it("should throw for an OCTET STRING longer than the input", function () {
+        // the length says 5 bytes, but only 1 follows
+        expect(() => der.decode(new Uint8Array([0x04, 0x05, 0x01]))).to.throw(
+            "invalid DER: data too short",
+        );
+    });
+
+    it("should throw for a SEQUENCE longer than the input", function () {
+        // the length says 16 bytes, but only the 2 bytes of a NULL follow
+        expect(() =>
+            der.decode(new Uint8Array([0x30, 0x10, 0x05, 0x00])),
+        ).to.throw("invalid DER: data too short");
+    });
+
+    it("should throw for an INTEGER cut off inside a SEQUENCE", function () {
+        // SEQUENCE { INTEGER of length 1 } with the INTEGER's content byte missing
+        expect(() =>
+            der.decode(new Uint8Array([0x30, 0x03, 0x02, 0x01])),
+        ).to.throw("invalid DER: data too short");
+    });
+
+    it("should throw for an INTEGER with no content", function () {
+        expect(() => der.decode(new Uint8Array([0x02, 0x00]))).to.throw(
+            "invalid DER: INTEGER has no content",
+        );
+    });
+
     // Length encoding
     it("should handle long-form DER length", function () {
         // OCTET STRING with 128 bytes — length encoded as 0x81 0x80 (long form)
