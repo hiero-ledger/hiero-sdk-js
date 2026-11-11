@@ -293,4 +293,26 @@ describe("TokenGrantKycTransaction", function () {
             expect(logId).to.be.a("string");
         });
     });
+
+    describe("_execute", function () {
+        it("should call token.grantKycToTokenAccount() with the request", async function () {
+            const request = {};
+            const response = {};
+            const calls = [];
+            const channel = {
+                token: {
+                    grantKycToTokenAccount: (arg) => {
+                        calls.push(arg);
+                        return Promise.resolve(response);
+                    },
+                },
+            };
+
+            expect(
+                await new TokenGrantKycTransaction()._execute(channel, request),
+            ).to.equal(response);
+            expect(calls).to.deep.equal([request]);
+            expect(calls[0]).to.equal(request);
+        });
+    });
 });

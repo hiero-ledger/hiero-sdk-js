@@ -9,6 +9,7 @@ import Timestamp from "../Timestamp.js";
 import Key from "../Key.js";
 import Long from "long";
 import * as Proto from "@hiero-ledger/proto";
+import HookCreationDetails from "../hooks/HookCreationDetails.js";
 
 /**
  * @namespace proto
@@ -246,60 +247,70 @@ export default class ContractUpdateTransaction extends Transaction {
                 update.maxAutomaticTokenAssociations.value;
         }
 
+        const transaction = new ContractUpdateTransaction({
+            contractId:
+                update.contractID != null
+                    ? ContractId._fromProtobuf(
+                          /** @type {HieroProto.proto.IContractID} */ (
+                              update.contractID
+                          ),
+                      )
+                    : undefined,
+            bytecodeFileId:
+                update.fileID != null
+                    ? FileId._fromProtobuf(
+                          /** @type {HieroProto.proto.IFileID} */ (
+                              update.fileID
+                          ),
+                      )
+                    : undefined,
+            expirationTime:
+                update.expirationTime != null
+                    ? Timestamp._fromProtobuf(update.expirationTime)
+                    : undefined,
+            adminKey:
+                update.adminKey != null
+                    ? Key._fromProtobufKey(update.adminKey)
+                    : undefined,
+            proxyAccountId:
+                update.proxyAccountID != null
+                    ? AccountId._fromProtobuf(
+                          /** @type {HieroProto.proto.IAccountID} */ (
+                              update.proxyAccountID
+                          ),
+                      )
+                    : undefined,
+            autoRenewPeriod,
+            contractMemo,
+            maxAutomaticTokenAssociations,
+            stakedAccountId:
+                update.stakedAccountId != null
+                    ? AccountId._fromProtobuf(update.stakedAccountId)
+                    : undefined,
+            stakedNodeId:
+                update.stakedNodeId != null ? update.stakedNodeId : undefined,
+            declineStakingReward:
+                update.declineReward != null
+                    ? update.declineReward.value ?? false
+                    : undefined,
+            autoRenewAccountId:
+                update.autoRenewAccountId != null
+                    ? AccountId._fromProtobuf(update.autoRenewAccountId)
+                    : undefined,
+        });
+
+        if (update.hookCreationDetails != null) {
+            transaction._hooksToBeCreated = update.hookCreationDetails.map(
+                (hook) => HookCreationDetails._fromProtobuf(hook),
+            );
+        }
+
+        if (update.hookIdsToDelete != null) {
+            transaction._hooksToBeDeleted = update.hookIdsToDelete;
+        }
+
         return Transaction._fromProtobufTransactions(
-            new ContractUpdateTransaction({
-                contractId:
-                    update.contractID != null
-                        ? ContractId._fromProtobuf(
-                              /** @type {HieroProto.proto.IContractID} */ (
-                                  update.contractID
-                              ),
-                          )
-                        : undefined,
-                bytecodeFileId:
-                    update.fileID != null
-                        ? FileId._fromProtobuf(
-                              /** @type {HieroProto.proto.IFileID} */ (
-                                  update.fileID
-                              ),
-                          )
-                        : undefined,
-                expirationTime:
-                    update.expirationTime != null
-                        ? Timestamp._fromProtobuf(update.expirationTime)
-                        : undefined,
-                adminKey:
-                    update.adminKey != null
-                        ? Key._fromProtobufKey(update.adminKey)
-                        : undefined,
-                proxyAccountId:
-                    update.proxyAccountID != null
-                        ? AccountId._fromProtobuf(
-                              /** @type {HieroProto.proto.IAccountID} */ (
-                                  update.proxyAccountID
-                              ),
-                          )
-                        : undefined,
-                autoRenewPeriod,
-                contractMemo,
-                maxAutomaticTokenAssociations,
-                stakedAccountId:
-                    update.stakedAccountId != null
-                        ? AccountId._fromProtobuf(update.stakedAccountId)
-                        : undefined,
-                stakedNodeId:
-                    update.stakedNodeId != null
-                        ? update.stakedNodeId
-                        : undefined,
-                declineStakingReward:
-                    update.declineReward != null
-                        ? update.declineReward.value ?? false
-                        : undefined,
-                autoRenewAccountId:
-                    update.autoRenewAccountId != null
-                        ? AccountId._fromProtobuf(update.autoRenewAccountId)
-                        : undefined,
-            }),
+            transaction,
             transactions,
             signedTransactions,
             transactionIds,

@@ -5,6 +5,7 @@ import {
     FileId,
     TransactionId,
     AccountId,
+    Transaction,
 } from "../../src/index.js";
 import * as HieroProto from "@hiero-ledger/proto";
 import Long from "long";
@@ -224,5 +225,36 @@ describe("FreezeTransaction", function () {
                 fileId.toString(),
             );
         });
+    });
+
+    it("should convert from and to bytes", function () {
+        const transactionId = TransactionId.withValidStart(
+            AccountId.fromString("0.0.1001"),
+            new Timestamp(1596210382, 0),
+        );
+        const startTimestamp = new Timestamp(1700000000, 0);
+        const fileHash = Uint8Array.of(1, 2, 3);
+
+        // setStartTime() and setEndTime() are deprecated and not sent to the
+        // network, so they can't survive a round trip.
+        const tx = new FreezeTransaction()
+            .setNodeAccountIds([AccountId.fromString("0.0.3")])
+            .setTransactionId(transactionId)
+            .setStartTimestamp(startTimestamp)
+            .setFileId(FileId.fromString("0.0.150"))
+            .setFileHash(fileHash)
+            .setFreezeType(FreezeType.PrepareUpgrade)
+            .freeze();
+
+        const tx2 = Transaction.fromBytes(tx.toBytes());
+
+        expect(tx2).to.be.instanceOf(FreezeTransaction);
+        expect(tx2.transactionId.toString()).to.equal(transactionId.toString());
+        expect(tx2.startTimestamp.toString()).to.equal(
+            startTimestamp.toString(),
+        );
+        expect(tx2.fileId.toString()).to.equal("0.0.150");
+        expect(tx2.fileHash).to.deep.equal(fileHash);
+        expect(tx2.freezeType).to.equal(FreezeType.PrepareUpgrade);
     });
 });

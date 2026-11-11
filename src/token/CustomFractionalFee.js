@@ -168,12 +168,15 @@ export default class CustomFractionalFee extends CustomFee {
      */
 
     static _fromProtobuf(info) {
-        const fee = /** @type {HieroProto.proto.IFractionalFee} */ (
-            info.fractionalFee
-        );
-        const fractional = /** @type {HieroProto.proto.IFraction} */ (
-            fee.fractionalAmount
-        );
+        if (info.fractionalFee == null) {
+            throw new Error("fractionalFee is required");
+        }
+        const fee = info.fractionalFee;
+
+        if (fee.fractionalAmount == null) {
+            throw new Error("fractionalAmount is required");
+        }
+        const fractional = fee.fractionalAmount;
 
         return new CustomFractionalFee({
             feeCollectorAccountId:
