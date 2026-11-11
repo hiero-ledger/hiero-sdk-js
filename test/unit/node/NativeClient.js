@@ -1,8 +1,11 @@
+import { vi } from "vitest";
 import { http, HttpResponse } from "msw";
 import { setupServer } from "msw/node";
 import { AccountId, LedgerId, FileId } from "../../../src/index.js";
 import NativeClient from "../../../src/client/NativeClient.js";
 import AddressBookQueryWeb from "../../../src/network/AddressBookQueryWeb.js";
+import NativeChannel from "../../../src/channel/NativeChannel.js";
+import NativeMirrorChannel from "../../../src/channel/NativeMirrorChannel.js";
 import { WebNetwork } from "../../../src/constants/ClientConstants.js";
 import {
     MAINNET,
@@ -2132,6 +2135,216 @@ describe("NativeClient", function () {
                     createNetworkAddressNodeSet(WEB_PREVIEWNET);
                 expect(networkEntries).to.deep.equal(previewnetEntries);
             });
+        });
+    });
+
+    describe("fromConfig", function () {
+        it("creates a client from a JSON string", function () {
+            const client = NativeClient.fromConfig(
+                JSON.stringify({
+                    network: "testnet",
+                    scheduleNetworkUpdate: false,
+                }),
+            );
+
+            expect(client).to.be.instanceOf(NativeClient);
+            expect(client.ledgerId).to.equal(LedgerId.TESTNET);
+            client.close();
+        });
+
+        it("creates a client from a configuration object", function () {
+            const client = NativeClient.fromConfig({
+                network: { "127.0.0.1:50211": "0.0.3" },
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(client).to.be.instanceOf(NativeClient);
+            expect(client.network).to.deep.equal({
+                "127.0.0.1:50211": new AccountId(3),
+            });
+            client.close();
+        });
+    });
+
+    describe("forMirrorNetwork", function () {
+        beforeEach(function () {
+            server.use(
+                http.get(
+                    "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
+                    () =>
+                        HttpResponse.json(
+                            generateAddressBookResponse({
+                                "127.0.0.1:50211": new AccountId(3),
+                            }),
+                        ),
+                ),
+            );
+        });
+
+        it("returns a NativeClient", async function () {
+            const client = await NativeClient.forMirrorNetwork("testnet");
+
+            expect(client).to.be.instanceOf(NativeClient);
+            client.close();
+        });
+
+        // TODO: #4724. The constructor ignores mirrorNetwork.
+        it.skip("sets the mirror network and takes the network from its address book", async function () {
+            const client = await NativeClient.forMirrorNetwork("testnet");
+
+            expect(client.mirrorNetwork).to.deep.equal([
+                "testnet.mirrornode.hedera.com:443",
+            ]);
+            expect(client.network).to.deep.equal({
+                "127.0.0.1:50211": new AccountId(3),
+            });
+            client.close();
+        });
+    });
+
+    describe("setMirrorNetwork", function () {
+        let client;
+
+        beforeEach(function () {
+            client = new NativeClient({ scheduleNetworkUpdate: false });
+        });
+
+        afterEach(function () {
+            client.close();
+        });
+
+        it("sets the mainnet mirror node for 'mainnet'", function () {
+            expect(client.setMirrorNetwork("mainnet")).to.equal(client);
+            expect(client.mirrorNetwork).to.deep.equal([
+                "mainnet-public.mirrornode.hedera.com:443",
+            ]);
+        });
+
+        it("sets the testnet mirror node for 'testnet'", function () {
+            client.setMirrorNetwork("testnet");
+            expect(client.mirrorNetwork).to.deep.equal([
+                "testnet.mirrornode.hedera.com:443",
+            ]);
+        });
+
+        it("sets the previewnet mirror node for 'previewnet'", function () {
+            client.setMirrorNetwork("previewnet");
+            expect(client.mirrorNetwork).to.deep.equal([
+                "previewnet.mirrornode.hedera.com:443",
+            ]);
+        });
+
+        it("sets the local mirror node for 'local-node'", function () {
+            client.setMirrorNetwork("local-node");
+            expect(client.mirrorNetwork).to.deep.equal(["127.0.0.1:5600"]);
+        });
+
+        it("uses any other string as the mirror node address", function () {
+            client.setMirrorNetwork("mirror.example.com:443");
+            expect(client.mirrorNetwork).to.deep.equal([
+                "mirror.example.com:443",
+            ]);
+        });
+
+        it("uses an array as the mirror node addresses", function () {
+            client.setMirrorNetwork(["127.0.0.1:5600", "127.0.0.1:5601"]);
+            expect(client.mirrorNetwork).to.have.members([
+                "127.0.0.1:5600",
+                "127.0.0.1:5601",
+            ]);
+        });
+    });
+
+    describe("updateNetwork", function () {
+        afterEach(function () {
+            vi.restoreAllMocks();
+        });
+
+        it("returns the client without querying while an update is running", async function () {
+            const client = NativeClient.forNetwork({
+                "127.0.0.1:50211": "0.0.3",
+            });
+            let rejectQuery;
+            const execute = vi
+                .spyOn(AddressBookQueryWeb.prototype, "execute")
+                .mockImplementation(
+                    () =>
+                        new Promise((resolve, reject) => {
+                            rejectQuery = reject;
+                        }),
+                );
+
+            const running = client.updateNetwork();
+
+            expect(await client.updateNetwork()).to.equal(client);
+            expect(execute).toHaveBeenCalledTimes(1);
+
+            rejectQuery(new Error("mirror node unavailable"));
+            expect(await running).to.equal(client);
+            expect(client._isUpdatingNetwork).to.be.false;
+            client.close();
+        });
+
+        it("logs the error and keeps the network when the update fails", async function () {
+            const client = NativeClient.forNetwork({
+                "127.0.0.1:50211": "0.0.3",
+            });
+            const logger = { trace: vi.fn() };
+            client.setLogger(logger);
+
+            expect(await client.updateNetwork()).to.equal(client);
+
+            expect(logger.trace).toHaveBeenCalledWith(
+                "failed to update client address book: Client has no mirror network configured or no healthy mirror nodes are available",
+            );
+            expect(client.network).to.deep.equal({
+                "127.0.0.1:50211": new AccountId(3),
+            });
+            client.close();
+        });
+
+        it("logs a thrown value that is not an Error", async function () {
+            const client = NativeClient.forNetwork({
+                "127.0.0.1:50211": "0.0.3",
+            });
+            vi.spyOn(
+                AddressBookQueryWeb.prototype,
+                "execute",
+            ).mockRejectedValue("mirror node unavailable");
+            const logger = { trace: vi.fn() };
+            client.setLogger(logger);
+
+            await client.updateNetwork();
+
+            expect(logger.trace).toHaveBeenCalledWith(
+                "failed to update client address book: mirror node unavailable",
+            );
+            client.close();
+        });
+    });
+
+    describe("channel factories", function () {
+        it("_createNetworkChannel() returns a factory for NativeChannel", function () {
+            const client = new NativeClient({ scheduleNetworkUpdate: false });
+
+            const channel = client._createNetworkChannel()("127.0.0.1:50211");
+
+            expect(channel).to.be.instanceOf(NativeChannel);
+            expect(channel._address).to.equal("127.0.0.1:50211");
+            channel.close();
+            client.close();
+        });
+
+        it("_createMirrorNetworkChannel() returns a factory for NativeMirrorChannel", function () {
+            const client = new NativeClient({ scheduleNetworkUpdate: false });
+
+            const channel =
+                client._createMirrorNetworkChannel()("127.0.0.1:5600");
+
+            expect(channel).to.be.instanceOf(NativeMirrorChannel);
+            expect(channel._address).to.equal("127.0.0.1:5600");
+            channel.close();
+            client.close();
         });
     });
 });

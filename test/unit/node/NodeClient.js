@@ -1,3 +1,4 @@
+import { vi } from "vitest";
 import { Client, LedgerId } from "../../../src/index.js";
 import AccountId from "../../../src/account/AccountId.js";
 import NodeClient from "../../../src/client/NodeClient.js";
@@ -528,6 +529,246 @@ describe("Client", function () {
             }).to.throw(
                 "Client has no mirror network configured or no healthy mirror nodes are available",
             );
+        });
+    });
+
+    describe("async factories", function () {
+        let updateNetwork;
+
+        beforeEach(function () {
+            // forMainnetAsync() and the others return what updateNetwork()
+            // returns, so the stub resolves to the client.
+            updateNetwork = vi
+                .spyOn(NodeClient.prototype, "updateNetwork")
+                .mockImplementation(function () {
+                    return Promise.resolve(this);
+                });
+        });
+
+        afterEach(function () {
+            vi.restoreAllMocks();
+        });
+
+        it("forMainnetAsync() returns a mainnet client after updating the network", async function () {
+            const client = await NodeClient.forMainnetAsync({
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(client).to.be.instanceOf(NodeClient);
+            expect(client.ledgerId).to.equal(LedgerId.MAINNET);
+            expect(client.mirrorNetwork).to.deep.equal([
+                "mainnet-public.mirrornode.hedera.com:443",
+            ]);
+            expect(Object.keys(client.network)).to.not.be.empty;
+            expect(updateNetwork).toHaveBeenCalledTimes(1);
+            client.close();
+        });
+
+        it("forTestnetAsync() returns a testnet client after updating the network", async function () {
+            const client = await NodeClient.forTestnetAsync({
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(client).to.be.instanceOf(NodeClient);
+            expect(client.ledgerId).to.equal(LedgerId.TESTNET);
+            expect(client.mirrorNetwork).to.deep.equal([
+                "testnet.mirrornode.hedera.com:443",
+            ]);
+            expect(Object.keys(client.network)).to.not.be.empty;
+            expect(updateNetwork).toHaveBeenCalledTimes(1);
+            client.close();
+        });
+
+        it("forPreviewnetAsync() returns a previewnet client after updating the network", async function () {
+            const client = await NodeClient.forPreviewnetAsync({
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(client).to.be.instanceOf(NodeClient);
+            expect(client.ledgerId).to.equal(LedgerId.PREVIEWNET);
+            expect(client.mirrorNetwork).to.deep.equal([
+                "previewnet.mirrornode.hedera.com:443",
+            ]);
+            expect(Object.keys(client.network)).to.not.be.empty;
+            expect(updateNetwork).toHaveBeenCalledTimes(1);
+            client.close();
+        });
+
+        it("forNameAsync() returns a client for the name after updating the network", async function () {
+            const client = await NodeClient.forNameAsync("testnet", {
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(client).to.be.instanceOf(NodeClient);
+            expect(client.ledgerId).to.equal(LedgerId.TESTNET);
+            expect(updateNetwork).toHaveBeenCalledTimes(1);
+            client.close();
+        });
+
+        it("forNameAsync() doesn't update the network for local-node", async function () {
+            const client = await NodeClient.forNameAsync("local-node", {
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(client.ledgerId).to.equal(LedgerId.LOCAL_NODE);
+            expect(client.network).to.deep.equal({
+                "127.0.0.1:50211": new AccountId(3),
+            });
+            expect(updateNetwork).not.toHaveBeenCalled();
+            client.close();
+        });
+    });
+
+    describe("mirrorNetwork constructor prop", function () {
+        it("sets the mainnet mirror node for 'mainnet'", function () {
+            const client = new NodeClient({
+                mirrorNetwork: "mainnet",
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(client.mirrorNetwork).to.deep.equal([
+                "mainnet-public.mirrornode.hedera.com:443",
+            ]);
+            client.close();
+        });
+
+        it("sets the testnet mirror node for 'testnet'", function () {
+            const client = new NodeClient({
+                mirrorNetwork: "testnet",
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(client.mirrorNetwork).to.deep.equal([
+                "testnet.mirrornode.hedera.com:443",
+            ]);
+            client.close();
+        });
+
+        it("sets the previewnet mirror node for 'previewnet'", function () {
+            const client = new NodeClient({
+                mirrorNetwork: "previewnet",
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(client.mirrorNetwork).to.deep.equal([
+                "previewnet.mirrornode.hedera.com:443",
+            ]);
+            client.close();
+        });
+
+        // TODO: #4748. The constructor reads "local-node" as an address.
+        it.skip("sets the local mirror node for 'local-node'", function () {
+            const client = new NodeClient({
+                mirrorNetwork: "local-node",
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(client.mirrorNetwork).to.deep.equal(["127.0.0.1:5600"]);
+            client.close();
+        });
+
+        it("uses any other string as the mirror node address", function () {
+            const client = new NodeClient({
+                mirrorNetwork: "mirror.example.com:443",
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(client.mirrorNetwork).to.deep.equal([
+                "mirror.example.com:443",
+            ]);
+            client.close();
+        });
+
+        it("uses an array as the mirror node addresses", function () {
+            const client = new NodeClient({
+                mirrorNetwork: ["127.0.0.1:5600", "127.0.0.1:5601"],
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(client.mirrorNetwork).to.have.members([
+                "127.0.0.1:5600",
+                "127.0.0.1:5601",
+            ]);
+            client.close();
+        });
+
+        it("replaces the mirror node of a named network", function () {
+            const client = new NodeClient({
+                network: "testnet",
+                mirrorNetwork: "mainnet",
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(client.mirrorNetwork).to.deep.equal([
+                "mainnet-public.mirrornode.hedera.com:443",
+            ]);
+            client.close();
+        });
+    });
+
+    describe("setMirrorNetwork()", function () {
+        let client;
+
+        beforeEach(function () {
+            client = new NodeClient({ scheduleNetworkUpdate: false });
+        });
+
+        afterEach(function () {
+            client.close();
+        });
+
+        it("sets the mainnet mirror node for 'mainnet'", function () {
+            expect(client.setMirrorNetwork("mainnet")).to.equal(client);
+            expect(client.mirrorNetwork).to.deep.equal([
+                "mainnet-public.mirrornode.hedera.com:443",
+            ]);
+        });
+
+        it("sets the testnet mirror node for 'testnet'", function () {
+            client.setMirrorNetwork("testnet");
+            expect(client.mirrorNetwork).to.deep.equal([
+                "testnet.mirrornode.hedera.com:443",
+            ]);
+        });
+
+        it("sets the previewnet mirror node for 'previewnet'", function () {
+            client.setMirrorNetwork("previewnet");
+            expect(client.mirrorNetwork).to.deep.equal([
+                "previewnet.mirrornode.hedera.com:443",
+            ]);
+        });
+
+        it("sets the local mirror node for 'local-node'", function () {
+            client.setMirrorNetwork("local-node");
+            expect(client.mirrorNetwork).to.deep.equal(["127.0.0.1:5600"]);
+        });
+
+        it("uses any other string as the mirror node address", function () {
+            client.setMirrorNetwork("mirror.example.com:443");
+            expect(client.mirrorNetwork).to.deep.equal([
+                "mirror.example.com:443",
+            ]);
+        });
+    });
+
+    describe("unknown network name", function () {
+        it("the constructor throws for an unknown network name", function () {
+            expect(
+                () =>
+                    new NodeClient({
+                        network: "unknown-net",
+                        scheduleNetworkUpdate: false,
+                    }),
+            ).to.throw("unknown network: unknown-net");
+        });
+
+        it("setNetwork() throws for an unknown network name", function () {
+            const client = new NodeClient({ scheduleNetworkUpdate: false });
+
+            expect(() => client.setNetwork("unknown-net")).to.throw(
+                "unknown network: unknown-net",
+            );
+            client.close();
         });
     });
 });
