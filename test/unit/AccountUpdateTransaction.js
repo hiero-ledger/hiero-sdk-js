@@ -2,6 +2,7 @@ import {
     AccountUpdateTransaction,
     AccountId,
     Client,
+    HookExtensionPoint,
     PrivateKey,
     Timestamp,
     Transaction,
@@ -570,6 +571,59 @@ describe("AccountUpdateTransaction", function () {
         });
     });
 
+    describe("hook serialization", function () {
+        it("should keep hooks in a frozen bytes round trip", function () {
+            const accountId = new AccountId(3);
+            const hook = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                hookId: Long.fromNumber(7),
+                evmHook: new EvmHook({
+                    contractId: new ContractId(0, 0, 100),
+                }),
+            });
+            const tx = new AccountUpdateTransaction({ accountId })
+                .addHookToCreate(hook)
+                .addHookToDelete(Long.fromNumber(9))
+                .setNodeAccountIds([accountId])
+                .setTransactionId(TransactionId.generate(accountId))
+                .freeze();
+
+            const tx2 = AccountUpdateTransaction.fromBytes(tx.toBytes());
+
+            expect(tx2.hooksToCreate).to.have.lengthOf(1);
+            expect(tx2.hooksToCreate[0].extensionPoint).to.equal(
+                HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+            );
+            expect(tx2.hooksToCreate[0].hookId.toString()).to.equal("7");
+            expect(tx2.hooksToDelete).to.have.lengthOf(1);
+            expect(tx2.hooksToDelete[0].toString()).to.equal("9");
+        });
+
+        it("should keep hooks when an unfrozen transaction is decoded and frozen", function () {
+            const accountId = new AccountId(3);
+            const hook = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                hookId: Long.fromNumber(7),
+            });
+            const tx = new AccountUpdateTransaction({ accountId })
+                .addHookToCreate(hook)
+                .addHookToDelete(Long.fromNumber(9))
+                .setNodeAccountIds([accountId])
+                .setTransactionId(TransactionId.generate(accountId));
+
+            const tx2 = AccountUpdateTransaction.fromBytes(
+                tx.toBytes(),
+            ).freeze();
+            const body = tx2._makeTransactionData();
+
+            expect(tx2.hooksToCreate).to.have.lengthOf(1);
+            expect(tx2.hooksToCreate[0].hookId.toString()).to.equal("7");
+            expect(tx2.hooksToDelete).to.have.lengthOf(1);
+            expect(body.hookCreationDetails).to.have.lengthOf(1);
+            expect(body.hookIdsToDelete).to.have.lengthOf(1);
+        });
+    });
+
     describe("clearAccountMemo", function () {
         it("should send an empty memo wrapper when the memo is cleared", function () {
             const tx = new AccountUpdateTransaction()
@@ -881,44 +935,6 @@ describe("AccountUpdateTransaction", function () {
             const decoded = Transaction.fromBytes(transaction.toBytes());
 
             expect(decoded.stakedNodeId.toNumber()).to.equal(1);
-        });
-
-        // TODO(#4654): Transaction.fromBytes() drops hooksToCreate and
-        // hooksToDelete, so the round trip cannot be tested until that is fixed.
-        it.skip("should keep hooksToCreate through a round trip", function () {
-            const transaction = new AccountUpdateTransaction()
-                .addHookToCreate(new HookCreationDetails({ extensionPoint: 1 }))
-                .setNodeAccountIds([nodeId])
-                .setTransactionId(
-                    TransactionId.withValidStart(
-                        new AccountId(0, 0, 1001),
-                        VALID_START,
-                    ),
-                )
-                .freeze();
-
-            const decoded = Transaction.fromBytes(transaction.toBytes());
-
-            expect(decoded.hooksToCreate).to.have.lengthOf(1);
-        });
-
-        // TODO(#4654): Transaction.fromBytes() drops hooksToCreate and
-        // hooksToDelete, so the round trip cannot be tested until that is fixed.
-        it.skip("should keep hooksToDelete through a round trip", function () {
-            const transaction = new AccountUpdateTransaction()
-                .addHookToDelete(Long.fromNumber(123))
-                .setNodeAccountIds([nodeId])
-                .setTransactionId(
-                    TransactionId.withValidStart(
-                        new AccountId(0, 0, 1001),
-                        VALID_START,
-                    ),
-                )
-                .freeze();
-
-            const decoded = Transaction.fromBytes(transaction.toBytes());
-
-            expect(decoded.hooksToDelete).to.have.lengthOf(1);
         });
     });
 

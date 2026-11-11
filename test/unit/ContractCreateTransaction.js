@@ -65,7 +65,7 @@ describe("ContractCreateTransaction", function () {
             it("should add a hook to the hooks array", function () {
                 const tx = new ContractCreateTransaction();
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                 });
 
                 tx.addHook(hook);
@@ -77,10 +77,10 @@ describe("ContractCreateTransaction", function () {
             it("should add multiple hooks to the hooks array", function () {
                 const tx = new ContractCreateTransaction();
                 const hook1 = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                 });
                 const hook2 = new HookCreationDetails({
-                    extensionPoint: 2,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                 });
 
                 tx.addHook(hook1);
@@ -94,7 +94,7 @@ describe("ContractCreateTransaction", function () {
             it("should return the transaction for chaining", function () {
                 const tx = new ContractCreateTransaction();
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                 });
 
                 const result = tx.addHook(hook);
@@ -107,8 +107,14 @@ describe("ContractCreateTransaction", function () {
             it("should set the hooks array", function () {
                 const tx = new ContractCreateTransaction();
                 const hooks = [
-                    new HookCreationDetails({ extensionPoint: 1 }),
-                    new HookCreationDetails({ extensionPoint: 2 }),
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
                 ];
 
                 tx.setHooks(hooks);
@@ -120,11 +126,20 @@ describe("ContractCreateTransaction", function () {
             it("should replace existing hooks", function () {
                 const tx = new ContractCreateTransaction();
                 const initialHooks = [
-                    new HookCreationDetails({ extensionPoint: 1 }),
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
                 ];
                 const newHooks = [
-                    new HookCreationDetails({ extensionPoint: 2 }),
-                    new HookCreationDetails({ extensionPoint: 3 }),
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
                 ];
 
                 tx.setHooks(initialHooks);
@@ -136,7 +151,12 @@ describe("ContractCreateTransaction", function () {
 
             it("should accept empty array", function () {
                 const tx = new ContractCreateTransaction();
-                tx.addHook(new HookCreationDetails({ extensionPoint: 1 }));
+                tx.addHook(
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
+                );
 
                 tx.setHooks([]);
 
@@ -145,7 +165,12 @@ describe("ContractCreateTransaction", function () {
 
             it("should return the transaction for chaining", function () {
                 const tx = new ContractCreateTransaction();
-                const hooks = [new HookCreationDetails({ extensionPoint: 1 })];
+                const hooks = [
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
+                ];
 
                 const result = tx.setHooks(hooks);
 
@@ -164,8 +189,14 @@ describe("ContractCreateTransaction", function () {
             it("should return the hooks array", function () {
                 const tx = new ContractCreateTransaction();
                 const hooks = [
-                    new HookCreationDetails({ extensionPoint: 1 }),
-                    new HookCreationDetails({ extensionPoint: 2 }),
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
                 ];
 
                 tx.setHooks(hooks);
@@ -177,8 +208,14 @@ describe("ContractCreateTransaction", function () {
         describe("constructor with hooks", function () {
             it("should set hooks via constructor", function () {
                 const hooks = [
-                    new HookCreationDetails({ extensionPoint: 1 }),
-                    new HookCreationDetails({ extensionPoint: 2 }),
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
                 ];
 
                 const tx = new ContractCreateTransaction({
@@ -199,7 +236,12 @@ describe("ContractCreateTransaction", function () {
             });
 
             it("should combine constructor hooks with other properties", function () {
-                const hooks = [new HookCreationDetails({ extensionPoint: 1 })];
+                const hooks = [
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
+                ];
                 const bytecodeFileId = new FileId(0, 0, 100);
                 const adminKey = PrivateKey.generateED25519().publicKey;
                 const gas = Long.fromNumber(100000);
@@ -225,7 +267,7 @@ describe("ContractCreateTransaction", function () {
                 const contractId = new ContractId(0, 0, 100);
                 const evmHook = new EvmHook({ contractId });
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                     evmHook: evmHook,
                 });
 
@@ -233,7 +275,9 @@ describe("ContractCreateTransaction", function () {
                 tx.addHook(hook);
 
                 expect(tx.hooks).to.have.lengthOf(1);
-                expect(tx.hooks[0].extensionPoint).to.equal(1);
+                expect(tx.hooks[0].extensionPoint).to.equal(
+                    HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                );
                 expect(tx.hooks[0].evmHook).to.equal(evmHook);
                 expect(tx.hooks[0].evmHook.contractId.num.toNumber()).to.equal(
                     100,
@@ -251,7 +295,7 @@ describe("ContractCreateTransaction", function () {
                     storageUpdates: [storageSlot],
                 });
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                     evmHook: evmHook,
                 });
 
@@ -286,7 +330,7 @@ describe("ContractCreateTransaction", function () {
                     storageUpdates: [mappingEntries],
                 });
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                     evmHook: evmHook,
                 });
 
@@ -311,7 +355,7 @@ describe("ContractCreateTransaction", function () {
             it("should create a hook with adminKey", function () {
                 const adminKey = PrivateKey.generateED25519().publicKey;
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                     adminKey,
                 });
 
@@ -324,7 +368,7 @@ describe("ContractCreateTransaction", function () {
             it("should create a hook with hookId", function () {
                 const hookId = Long.fromNumber(999);
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                     hookId,
                 });
 
@@ -346,7 +390,7 @@ describe("ContractCreateTransaction", function () {
                     storageUpdates: [storageSlot],
                 });
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                     hookId,
                     evmHook: evmHook,
                     adminKey,
@@ -355,7 +399,9 @@ describe("ContractCreateTransaction", function () {
                 const tx = new ContractCreateTransaction();
                 tx.addHook(hook);
 
-                expect(tx.hooks[0].extensionPoint).to.equal(1);
+                expect(tx.hooks[0].extensionPoint).to.equal(
+                    HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                );
                 expect(tx.hooks[0].hookId).to.equal(hookId);
                 expect(tx.hooks[0].evmHook).to.equal(evmHook);
                 expect(tx.hooks[0].adminKey).to.equal(adminKey);
@@ -365,7 +411,9 @@ describe("ContractCreateTransaction", function () {
         describe("serialization with hooks", function () {
             it("should serialize with hooks", function () {
                 const bytecodeFileId = new FileId(0, 0, 100);
-                const hook = new HookCreationDetails({ extensionPoint: 1 });
+                const hook = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                });
 
                 const tx = new ContractCreateTransaction({
                     bytecodeFileId,
@@ -408,7 +456,7 @@ describe("ContractCreateTransaction", function () {
                     storageUpdates: [storageSlot],
                 });
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                     hookId,
                     evmHook: evmHook,
                     adminKey,
@@ -424,7 +472,7 @@ describe("ContractCreateTransaction", function () {
                 expect(txData.hookCreationDetails).to.be.an("array");
                 expect(txData.hookCreationDetails).to.have.lengthOf(1);
                 expect(txData.hookCreationDetails[0].extensionPoint).to.equal(
-                    1,
+                    HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                 );
                 expect(txData.hookCreationDetails[0].hookId).to.equal(hookId);
                 expect(txData.hookCreationDetails[0].evmHook).to.not.be.null;
@@ -433,9 +481,15 @@ describe("ContractCreateTransaction", function () {
 
             it("should serialize multiple hooks", function () {
                 const bytecodeFileId = new FileId(0, 0, 100);
-                const hook1 = new HookCreationDetails({ extensionPoint: 1 });
-                const hook2 = new HookCreationDetails({ extensionPoint: 2 });
-                const hook3 = new HookCreationDetails({ extensionPoint: 3 });
+                const hook1 = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                });
+                const hook2 = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                });
+                const hook3 = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                });
 
                 const tx = new ContractCreateTransaction({
                     bytecodeFileId,
@@ -468,7 +522,7 @@ describe("ContractCreateTransaction", function () {
                 });
 
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                     evmHook: evmHook,
                 });
 
@@ -499,7 +553,7 @@ describe("ContractCreateTransaction", function () {
                     storageUpdates: [mappingEntries],
                 });
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                     evmHook: evmHook,
                 });
 
@@ -531,7 +585,9 @@ describe("ContractCreateTransaction", function () {
                 const bytecodeFileId = new FileId(0, 0, 100);
                 const gas = Long.fromNumber(100000);
                 const accountId = new AccountId(3);
-                const hook = new HookCreationDetails({ extensionPoint: 1 });
+                const hook = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                });
 
                 const tx = new ContractCreateTransaction()
                     .setBytecodeFileId(bytecodeFileId)
@@ -546,9 +602,15 @@ describe("ContractCreateTransaction", function () {
             });
 
             it("should maintain hook order", function () {
-                const hook1 = new HookCreationDetails({ extensionPoint: 1 });
-                const hook2 = new HookCreationDetails({ extensionPoint: 2 });
-                const hook3 = new HookCreationDetails({ extensionPoint: 3 });
+                const hook1 = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                });
+                const hook2 = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                });
+                const hook3 = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                });
 
                 const tx = new ContractCreateTransaction()
                     .addHook(hook1)
@@ -562,7 +624,9 @@ describe("ContractCreateTransaction", function () {
 
             it("should allow setting hooks after initial construction", function () {
                 const bytecodeFileId = new FileId(0, 0, 100);
-                const hook = new HookCreationDetails({ extensionPoint: 1 });
+                const hook = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                });
 
                 const tx = new ContractCreateTransaction({ bytecodeFileId });
                 tx.addHook(hook);
@@ -575,7 +639,9 @@ describe("ContractCreateTransaction", function () {
 
             it("should work with bytecode instead of bytecodeFileId", function () {
                 const bytecode = new Uint8Array([1, 2, 3, 4, 5]);
-                const hook = new HookCreationDetails({ extensionPoint: 1 });
+                const hook = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                });
 
                 const tx = new ContractCreateTransaction({
                     bytecode,
@@ -592,7 +658,9 @@ describe("ContractCreateTransaction", function () {
                 const bytecodeFileId = new FileId(0, 0, 100);
                 const adminKey = PrivateKey.generateED25519().publicKey;
                 const gas = Long.fromNumber(100000);
-                const hook = new HookCreationDetails({ extensionPoint: 1 });
+                const hook = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                });
                 const contractMemo = "test contract";
                 const autoRenewAccountId = new AccountId(0, 0, 200);
 
@@ -708,8 +776,7 @@ describe("ContractCreateTransaction", function () {
             expect(tx2.stakedAccountId).to.be.null;
         });
 
-        // TODO(#4654): fromBytes() drops the bytecode and the hooks.
-        it.skip("should keep the bytecode and the hooks", function () {
+        it("should keep the hooks", function () {
             const hook = new HookCreationDetails({
                 extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                 hookId: 7,
@@ -726,7 +793,6 @@ describe("ContractCreateTransaction", function () {
             const tx2 = Transaction.fromBytes(tx.toBytes());
 
             expectFields(tx2);
-            expect(tx2.bytecode).to.deep.equal(Uint8Array.of(1, 2, 3));
             expect(tx2.hooks).to.have.lengthOf(1);
             expect(tx2.hooks[0].extensionPoint).to.equal(
                 HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
@@ -738,6 +804,73 @@ describe("ContractCreateTransaction", function () {
             expect(tx2.hooks[0].adminKey.toString()).to.equal(
                 adminKey.toString(),
             );
+        });
+
+        it("should keep multiple hooks", function () {
+            const hook1 = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                hookId: 1,
+            });
+            const hook2 = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                hookId: 2,
+            });
+            const tx = setFields(new ContractCreateTransaction())
+                .setBytecode(Uint8Array.of(1, 2, 3))
+                .setHooks([hook1, hook2])
+                .freeze();
+
+            const tx2 = Transaction.fromBytes(tx.toBytes());
+
+            expect(tx2.hooks).to.have.lengthOf(2);
+            expect(tx2.hooks[0].hookId.toString()).to.equal("1");
+            expect(tx2.hooks[1].hookId.toString()).to.equal("2");
+        });
+
+        it("should keep a hook with storage updates", function () {
+            const storageUpdate = new EvmHookStorageSlot({
+                key: Uint8Array.of(1, 2, 3, 4),
+                value: Uint8Array.of(5, 6, 7, 8),
+            });
+            const hook = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                hookId: 7,
+                evmHook: new EvmHook({
+                    contractId: ContractId.fromString("0.0.5010"),
+                    storageUpdates: [storageUpdate],
+                }),
+            });
+            const tx = setFields(new ContractCreateTransaction())
+                .setBytecode(Uint8Array.of(1, 2, 3))
+                .setHooks([hook])
+                .freeze();
+
+            const tx2 = Transaction.fromBytes(tx.toBytes());
+
+            expect(tx2.hooks[0].evmHook.storageUpdates).to.have.lengthOf(1);
+            expect(tx2.hooks[0].evmHook.storageUpdates[0].key).to.deep.equal(
+                Uint8Array.of(1, 2, 3, 4),
+            );
+            expect(tx2.hooks[0].evmHook.storageUpdates[0].value).to.deep.equal(
+                Uint8Array.of(5, 6, 7, 8),
+            );
+        });
+
+        it("should keep the hooks when an unfrozen transaction is decoded", function () {
+            const hook = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                hookId: 7,
+            });
+            const tx = setFields(new ContractCreateTransaction())
+                .setBytecode(Uint8Array.of(1, 2, 3))
+                .setHooks([hook]);
+
+            const tx2 = Transaction.fromBytes(tx.toBytes()).freeze();
+            const body = tx2._makeTransactionData();
+
+            expect(tx2.hooks).to.have.lengthOf(1);
+            expect(tx2.hooks[0].hookId.toString()).to.equal("7");
+            expect(body.hookCreationDetails).to.have.lengthOf(1);
         });
     });
 });

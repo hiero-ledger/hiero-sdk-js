@@ -39,7 +39,6 @@ async function main() {
 
     const newKey = PrivateKey.generateECDSA();
     console.log(`Generated new public key: ${newKey.publicKey.toString()}`);
-    let accountId = null;
 
     let transaction = new AccountCreateTransaction()
         .setInitialBalance(new Hbar(10))
@@ -56,7 +55,7 @@ async function main() {
         const receipt = await response.getReceipt(client);
 
         if (receipt.status === Status.Success) {
-            accountId = receipt.accountId;
+            const accountId = receipt.accountId;
             console.log(
                 `Success! Account created with ID: ${accountId.toString()}`,
             );

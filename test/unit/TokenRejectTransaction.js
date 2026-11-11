@@ -1,5 +1,6 @@
 import {
     AccountId,
+    Client,
     NftId,
     Timestamp,
     TokenId,
@@ -7,6 +8,7 @@ import {
     Transaction,
     TransactionId,
 } from "../../src/index.js";
+import BadEntityIdError from "../../src/BadEntityIdError.js";
 
 describe("Transaction", function () {
     const owner = new AccountId(1);
@@ -108,5 +110,132 @@ describe("Transaction", function () {
         expect(() => tx.setNftIds(nftIds)).to.throw(
             "transaction is immutable; it has at least one signature or has been explicitly frozen",
         );
+    });
+
+    it("should add a token ID", function () {
+        const transaction = new TokenRejectTransaction();
+        const tokenId = new TokenId(1);
+
+        expect(transaction.addTokenId(tokenId)).to.equal(transaction);
+        expect(transaction.tokenIds).to.deep.equal([tokenId]);
+    });
+
+    it("should throw adding a token ID once frozen", function () {
+        const transaction = new TokenRejectTransaction()
+            .setNodeAccountIds([new AccountId(10, 11, 12)])
+            .setTransactionId(
+                TransactionId.withValidStart(
+                    new AccountId(1),
+                    new Timestamp(14, 15),
+                ),
+            )
+            .freeze();
+
+        expect(() => transaction.addTokenId(new TokenId(1))).to.throw(
+            "transaction is immutable",
+        );
+    });
+
+    it("should add an NFT ID", function () {
+        const transaction = new TokenRejectTransaction();
+        const nftId = new NftId(new TokenId(1), 2);
+
+        expect(transaction.addNftId(nftId)).to.equal(transaction);
+        expect(transaction.nftIds).to.deep.equal([nftId]);
+    });
+
+    it("should throw adding an NFT ID once frozen", function () {
+        const transaction = new TokenRejectTransaction()
+            .setNodeAccountIds([new AccountId(10, 11, 12)])
+            .setTransactionId(
+                TransactionId.withValidStart(
+                    new AccountId(1),
+                    new Timestamp(14, 15),
+                ),
+            )
+            .freeze();
+
+        expect(() =>
+            transaction.addNftId(new NftId(new TokenId(1), 2)),
+        ).to.throw("transaction is immutable");
+    });
+
+    it("should call token.rejectToken() with the request", async function () {
+        const request = {};
+        const response = {};
+        const calls = [];
+        const channel = {
+            token: {
+                rejectToken: (arg) => {
+                    calls.push(arg);
+                    return Promise.resolve(response);
+                },
+            },
+        };
+
+        expect(
+            await new TokenRejectTransaction()._execute(channel, request),
+        ).to.equal(response);
+        expect(calls).to.deep.equal([request]);
+        expect(calls[0]).to.equal(request);
+    });
+
+    it("should include the class name and valid start in the log ID", function () {
+        const validStart = new Timestamp(1596210382, 0);
+        const transaction = new TokenRejectTransaction()
+            .setNodeAccountIds([new AccountId(0, 0, 3)])
+            .setTransactionId(
+                TransactionId.withValidStart(
+                    new AccountId(0, 0, 1001),
+                    validStart,
+                ),
+            )
+            .freeze();
+
+        expect(transaction._getLogId()).to.equal(
+            `TokenRejectTransaction:${validStart.toString()}`,
+        );
+    });
+
+    // TODO(#4683): TokenRejectTransaction does not validate entity ID checksums yet.
+    describe.skip("_validateChecksums", function () {
+        let mainnet, testnet;
+
+        beforeEach(function () {
+            mainnet = Client.forMainnet({ scheduleNetworkUpdate: false });
+            testnet = Client.forTestnet({ scheduleNetworkUpdate: false });
+        });
+
+        afterEach(function () {
+            mainnet.close();
+            testnet.close();
+        });
+
+        it("should check the token ID checksum", function () {
+            const transaction = new TokenRejectTransaction().addTokenId(
+                TokenId.fromString("0.0.123-vfmkw"),
+            );
+
+            expect(() =>
+                transaction._validateChecksums(mainnet),
+            ).to.not.throw();
+            expect(() => transaction._validateChecksums(testnet)).to.throw(
+                BadEntityIdError,
+            );
+        });
+
+        it("should check the owner checksum", function () {
+            const owner = new AccountId(0, 0, 123);
+            owner._checksum = "vfmkw";
+
+            const transaction = new TokenRejectTransaction().setOwnerId(owner);
+
+            expect(() =>
+                transaction._validateChecksums(mainnet),
+            ).to.not.throw();
+            expect(() => transaction._validateChecksums(testnet)).to.throw(
+                BadEntityIdError,
+            );
+        });
     });
 });
