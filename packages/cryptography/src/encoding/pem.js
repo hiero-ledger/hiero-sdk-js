@@ -31,12 +31,32 @@ function pemBody(pem) {
 }
 
 /**
+ * Base64-decode the body of a PEM string.
+ * @param {string} pem
+ * @returns {Uint8Array}
+ */
+function decodePemBody(pem) {
+    try {
+        return base64.decode(pemBody(pem));
+    } catch (error) {
+        const message =
+            error != null && /** @type {Error} */ (error).message != null
+                ? /** @type {Error} */ (error).message
+                : "";
+
+        throw new BadKeyError(
+            `failed to decode PEM body as base64: ${message}`,
+        );
+    }
+}
+
+/**
  * @param {string} pem
  * @param {string} [passphrase]
  * @returns {Promise<Ed25519PrivateKey | EcdsaPrivateKey | Uint8Array>}
  */
 export async function readPemED25519(pem, passphrase) {
-    const key = base64.decode(pemBody(pem));
+    const key = decodePemBody(pem);
     if (passphrase) {
         let encrypted;
 
@@ -76,7 +96,16 @@ export async function readPemED25519(pem, passphrase) {
         return privateKey.fromBytes(keyData.bytes);
     }
 
-    return key.subarray(16);
+    // An unencrypted ED25519 key is a 48-byte PKCS#8 `PrivateKeyInfo`: the
+    // 16-byte prefix `derPrefix` and the 32-byte key. `fromBytesDer()` checks
+    // the prefix.
+    if (key.length !== 48) {
+        throw new BadKeyError(
+            `invalid ED25519 private key length: ${key.length} bytes, expected 48`,
+        );
+    }
+
+    return Ed25519PrivateKey.fromBytesDer(key);
 }
 
 /**
@@ -92,7 +121,7 @@ export async function readPemECDSA(pem, passphrase) {
         const ivString = decodedPem.dekInfo.parameters;
         const iv = hex.decode(ivString);
         const key = await aes.messageDigest(passphrase, ivString);
-        const dataToDecrypt = base64.decode(pemBody(pem));
+        const dataToDecrypt = decodePemBody(pem);
         const keyDerBytes = await aes.createDecipheriv(
             aes.CipherAlgorithm.Aes128Cbc,
             key,
@@ -102,11 +131,24 @@ export async function readPemECDSA(pem, passphrase) {
 
         return EcdsaPrivateKey.fromBytesDer(keyDerBytes);
     } else {
-        const key = base64.decode(pemBody(pem));
+        const key = decodePemBody(pem);
         const asnData = asn1.fromBER(key);
         const parsedKey = asnData.result;
 
-        // @ts-ignore
+        // A SEC1 `ECPrivateKey` is a SEQUENCE of the version (an INTEGER),
+        // the 32-byte private key (an OCTET STRING) and optional fields.
+        if (
+            asnData.offset === -1 ||
+            !(parsedKey instanceof asn1.Sequence) ||
+            parsedKey.valueBlock.value.length < 2 ||
+            !(parsedKey.valueBlock.value[0] instanceof asn1.Integer) ||
+            !(parsedKey.valueBlock.value[1] instanceof asn1.OctetString) ||
+            parsedKey.valueBlock.value[1].valueBlock.valueHexView.length !== 32
+        ) {
+            throw new BadKeyError(
+                "invalid EC private key: expected a SEC1 ECPrivateKey",
+            );
+        }
 
         return parsedKey.valueBlock.value[1].valueBlock.valueHexView;
     }

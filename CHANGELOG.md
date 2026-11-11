@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+-   `PrivateKey.fromPem()` without a passphrase now throws a `BadKeyError` for input that isn't a private key. Before, any body that decoded to 48 bytes was read as an ED25519 key without checking its PKCS#8 prefix, so for example `PrivateKey.fromPem("BwcH".repeat(16))` returned a key. A body that wasn't base64 threw the base64 decoder's `SyntaxError` or `Error`, and an `EC PRIVATE KEY` whose body wasn't a SEC1 `ECPrivateKey` threw `TypeError: Cannot read properties of undefined (reading '1')`. [#4735](https://github.com/hiero-ledger/hiero-sdk-js/issues/4735)
 -   `ScheduleCreateTransaction`'s `getScheduleMemo`, `expirationTime` and `waitForExpiry` getters no longer throw on a frozen transaction, such as one returned by `Transaction.fromBytes()`, and `Transaction.fromBytes()` now keeps the expiration time and wait for expiry. `setExpirationTime()` and `setWaitForExpiry()` now throw on a frozen transaction, like the other setters. [#4681](https://github.com/hiero-ledger/hiero-sdk-js/issues/4681)
 
 # v2.91.0

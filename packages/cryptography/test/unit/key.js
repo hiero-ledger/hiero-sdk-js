@@ -319,6 +319,54 @@ describe("PrivateKey", function () {
         );
     });
 
+    it("fromPem() rejects a 48-byte body that is not an ED25519 key", async function () {
+        // 48 bytes of 0x07: the length of an ED25519 PKCS#8 key, but not its prefix
+        await expect(PrivateKey.fromPem("BwcH".repeat(16))).rejects.toThrow(
+            BadKeyError,
+        );
+    });
+
+    it("fromPem() rejects an ED25519 body of the wrong length", async function () {
+        // the 48-byte key of `pemString` with 3 more bytes
+        await expect(
+            PrivateKey.fromPem(
+                "MC4CAQAwBQYDK2VwBCIEINtIS4KOZLLY8SzjwKDpOguMznrxu485yXcyOUSCU44QAAAA",
+            ),
+        ).rejects.toThrow("invalid ED25519 private key length: 51 bytes");
+    });
+
+    it("fromPem() rejects a body that is not base64", async function () {
+        await expect(PrivateKey.fromPem("hello")).rejects.toThrow(
+            "failed to decode PEM body as base64",
+        );
+    });
+
+    it("fromPem() rejects an EC PRIVATE KEY body that is not ASN.1", async function () {
+        // the body is 3 zero bytes
+        const label = "EC PRIVATE KEY";
+
+        await expect(
+            PrivateKey.fromPem(
+                `-----BEGIN ${label}-----\nAAAA\n-----END ${label}-----`,
+            ),
+        ).rejects.toThrow(
+            "invalid EC private key: expected a SEC1 ECPrivateKey",
+        );
+    });
+
+    it("fromPem() rejects an EC PRIVATE KEY body without a private key", async function () {
+        // the body is SEQUENCE { INTEGER 1 }, with no OCTET STRING
+        const label = "EC PRIVATE KEY";
+
+        await expect(
+            PrivateKey.fromPem(
+                `-----BEGIN ${label}-----\nMAMCAQE=\n-----END ${label}-----`,
+            ),
+        ).rejects.toThrow(
+            "invalid EC private key: expected a SEC1 ECPrivateKey",
+        );
+    });
+
     it("PublicKey.fromString() should work", async function () {
         let err = false;
 
