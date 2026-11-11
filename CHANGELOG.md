@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 -   `ScheduleCreateTransaction`'s `getScheduleMemo`, `expirationTime` and `waitForExpiry` getters no longer throw on a frozen transaction, such as one returned by `Transaction.fromBytes()`, and `Transaction.fromBytes()` now keeps the expiration time and wait for expiry. `setExpirationTime()` and `setWaitForExpiry()` now throw on a frozen transaction, like the other setters. [#4681](https://github.com/hiero-ledger/hiero-sdk-js/issues/4681)
+-   `new NodeClient({ mirrorNetwork: "local-node" })` and `new WebClient({ mirrorNetwork: "local-node" })` no longer throw `failed to parse address: local-node`. The constructors knew the `mainnet`, `testnet` and `previewnet` names but not `local-node`, which they passed on as an address; they now go through `setMirrorNetwork()`, which knows every name. [#4748](https://github.com/hiero-ledger/hiero-sdk-js/issues/4748)
 
 # v2.91.0
 
