@@ -408,4 +408,42 @@ describe("ContractDeleteTransaction", function () {
             );
         });
     });
+
+    describe("_execute", function () {
+        it("should call smartContract.deleteContract() with the request", async function () {
+            const request = {};
+            const response = {};
+            const calls = [];
+            const channel = {
+                smartContract: {
+                    deleteContract: (arg) => {
+                        calls.push(arg);
+                        return Promise.resolve(response);
+                    },
+                },
+            };
+
+            expect(
+                await new ContractDeleteTransaction()._execute(
+                    channel,
+                    request,
+                ),
+            ).to.equal(response);
+            expect(calls).to.deep.equal([request]);
+        });
+    });
+
+    describe("_getLogId", function () {
+        it("should use the transaction ID valid start", function () {
+            const transaction = new ContractDeleteTransaction()
+                .setContractId(contractId)
+                .setNodeAccountIds([nodeId])
+                .setTransactionId(transactionId)
+                .freeze();
+
+            expect(transaction._getLogId()).to.equal(
+                `ContractDeleteTransaction:${transactionId.validStart.toString()}`,
+            );
+        });
+    });
 });
