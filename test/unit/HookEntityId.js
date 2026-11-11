@@ -13,12 +13,14 @@ describe("HookEntityId", function () {
             const accountId = new AccountId(1, 2, 3);
             const entityId = new HookEntityId({ accountId });
 
-            expect(entityId.accountId).to.equal(accountId);
+            expect(entityId.accountId.toString()).to.equal(
+                accountId.toString(),
+            );
+            expect(entityId.accountId).to.not.equal(accountId);
         });
 
         it("should create an instance with accountId from string", function () {
-            const accountId = AccountId.fromString("0.0.12345");
-            const entityId = new HookEntityId({ accountId });
+            const entityId = new HookEntityId({ accountId: "0.0.12345" });
 
             expect(entityId.accountId.toString()).to.equal("0.0.12345");
         });
@@ -76,7 +78,10 @@ describe("HookEntityId", function () {
             const result = entityId.setAccountId(accountId);
 
             expect(result).to.equal(entityId);
-            expect(entityId.accountId).to.equal(accountId);
+            expect(entityId.accountId.toString()).to.equal(
+                accountId.toString(),
+            );
+            expect(entityId.accountId).to.not.equal(accountId);
         });
 
         it("should overwrite existing accountId", function () {
@@ -86,8 +91,19 @@ describe("HookEntityId", function () {
 
             entityId.setAccountId(newAccountId);
 
-            expect(entityId.accountId).to.equal(newAccountId);
+            expect(entityId.accountId.toString()).to.equal(
+                newAccountId.toString(),
+            );
             expect(entityId.accountId).to.not.equal(oldAccountId);
+            expect(entityId.accountId).to.not.equal(newAccountId);
+        });
+
+        it("should accept a raw accountId string", function () {
+            const entityId = new HookEntityId();
+
+            entityId.setAccountId("5.10.999");
+
+            expect(entityId.accountId.toString()).to.equal("5.10.999");
         });
 
         it("should handle different AccountId formats", function () {
@@ -98,9 +114,8 @@ describe("HookEntityId", function () {
             entityId.setAccountId(numericId);
             expect(entityId.accountId.toString()).to.equal("1.2.100");
 
-            // Set from AccountId.fromString
-            const stringId = AccountId.fromString("5.10.999");
-            entityId.setAccountId(stringId);
+            // Set from a raw string
+            entityId.setAccountId("5.10.999");
             expect(entityId.accountId.toString()).to.equal("5.10.999");
         });
 
@@ -112,7 +127,10 @@ describe("HookEntityId", function () {
 
             entityId.setAccountId(accountId);
 
-            expect(entityId.accountId).to.equal(accountId);
+            expect(entityId.accountId.toString()).to.equal(
+                accountId.toString(),
+            );
+            expect(entityId.accountId).to.not.equal(accountId);
         });
     });
 
@@ -172,7 +190,9 @@ describe("HookEntityId", function () {
 
             entityId.setAccountId(accountId);
 
-            expect(entityId.accountId).to.equal(accountId);
+            expect(entityId.accountId.toString()).to.equal(
+                accountId.toString(),
+            );
             expect(entityId.contractId).to.be.null;
         });
 
@@ -188,7 +208,9 @@ describe("HookEntityId", function () {
             const accountId = new AccountId(1, 2, 3);
             const entityId = new HookEntityId({ accountId });
 
-            expect(entityId.accountId).to.equal(accountId);
+            expect(entityId.accountId.toString()).to.equal(
+                accountId.toString(),
+            );
             expect(entityId.contractId).to.be.null;
         });
 
@@ -207,7 +229,9 @@ describe("HookEntityId", function () {
             const entityId = new HookEntityId();
 
             entityId.setAccountId(accountId);
-            expect(entityId.accountId).to.equal(accountId);
+            expect(entityId.accountId.toString()).to.equal(
+                accountId.toString(),
+            );
             expect(entityId.contractId).to.be.null;
 
             entityId.setContractId(contractId);
@@ -215,7 +239,9 @@ describe("HookEntityId", function () {
             expect(entityId.accountId).to.be.null;
 
             entityId.setAccountId(accountId);
-            expect(entityId.accountId).to.equal(accountId);
+            expect(entityId.accountId.toString()).to.equal(
+                accountId.toString(),
+            );
             expect(entityId.contractId).to.be.null;
         });
     });
@@ -225,7 +251,9 @@ describe("HookEntityId", function () {
             const accountId = new AccountId(10, 20, 30);
             const entityId = new HookEntityId({ accountId });
 
-            expect(entityId.accountId).to.equal(accountId);
+            expect(entityId.accountId.toString()).to.equal(
+                accountId.toString(),
+            );
         });
 
         it("should return null for unset accountId", function () {
@@ -264,7 +292,7 @@ describe("HookEntityId", function () {
             const newId = new AccountId(2, 2, 2);
             entityId.setAccountId(newId);
 
-            expect(entityId.accountId).to.equal(newId);
+            expect(entityId.accountId.toString()).to.equal(newId.toString());
         });
     });
 
@@ -472,7 +500,9 @@ describe("HookEntityId", function () {
 
             const entityId = new HookEntityId().setAccountId(accountId);
 
-            expect(entityId.accountId).to.equal(accountId);
+            expect(entityId.accountId.toString()).to.equal(
+                accountId.toString(),
+            );
         });
 
         it("should support method chaining with setContractId", function () {
@@ -493,7 +523,7 @@ describe("HookEntityId", function () {
                 .setAccountId(secondId)
                 .setAccountId(thirdId);
 
-            expect(entityId.accountId).to.equal(thirdId);
+            expect(entityId.accountId.toString()).to.equal(thirdId.toString());
         });
     });
 
