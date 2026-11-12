@@ -152,6 +152,55 @@ describe("Client", function () {
             assertIsLocalNode(client);
         });
 
+        it("takes the local node mirror network from the constructor", function () {
+            const client = new NodeClient({
+                mirrorNetwork: "local-node",
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(client.mirrorNetwork).to.deep.equal(mirrorNodes);
+        });
+
+        it("takes the local node mirror network from a config string", function () {
+            const client = NodeClient.fromConfig(
+                JSON.stringify({
+                    mirrorNetwork: "local-node",
+                    scheduleNetworkUpdate: false,
+                }),
+            );
+
+            expect(client.mirrorNetwork).to.deep.equal(mirrorNodes);
+        });
+
+        it("takes a named mirror network from the constructor as the setter does", function () {
+            for (const name of [
+                "mainnet",
+                "testnet",
+                "previewnet",
+                "local-node",
+            ]) {
+                const client = new NodeClient({
+                    mirrorNetwork: name,
+                    scheduleNetworkUpdate: false,
+                });
+                const setter = new NodeClient({ scheduleNetworkUpdate: false });
+                setter.setMirrorNetwork(name);
+
+                expect(client.mirrorNetwork).to.deep.equal(
+                    setter.mirrorNetwork,
+                );
+            }
+        });
+
+        it("takes a mirror network address list as it is", function () {
+            const client = new NodeClient({
+                mirrorNetwork: ["127.0.0.1:5600"],
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(client.mirrorNetwork).to.deep.equal(mirrorNodes);
+        });
+
         it("destructures props for local node", function () {
             const client = new NodeClient({
                 network: "local-node",
@@ -653,17 +702,6 @@ describe("Client", function () {
             expect(client.mirrorNetwork).to.deep.equal([
                 "previewnet.mirrornode.hedera.com:443",
             ]);
-            client.close();
-        });
-
-        // TODO: #4748. The constructor reads "local-node" as an address.
-        it.skip("sets the local mirror node for 'local-node'", function () {
-            const client = new NodeClient({
-                mirrorNetwork: "local-node",
-                scheduleNetworkUpdate: false,
-            });
-
-            expect(client.mirrorNetwork).to.deep.equal(["127.0.0.1:5600"]);
             client.close();
         });
 

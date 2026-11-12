@@ -130,7 +130,7 @@ export default class Hbar {
         if (unit != null) {
             return `${this._valueInTinybar
                 .dividedBy(unit._tinybar)
-                .toString()} ${unit._symbol}`;
+                .toFixed()} ${unit._symbol}`;
         }
 
         if (

@@ -1,5 +1,6 @@
 import {
     AccountId,
+    Client,
     ContractCreateTransaction,
     Hbar,
     HookExtensionPoint,
@@ -7,7 +8,9 @@ import {
     Transaction,
 } from "../../src/index.js";
 import Long from "long";
+import * as HieroProto from "@hiero-ledger/proto";
 
+import BadEntityIdError from "../../src/BadEntityIdError.js";
 import PrivateKey from "../../src/PrivateKey.js";
 import TransactionId from "../../src/transaction/TransactionId.js";
 import FileId from "../../src/file/FileId.js";
@@ -27,6 +30,64 @@ describe("ContractCreateTransaction", function () {
     beforeEach(function () {
         stakedAccountId = new AccountId(0, 0, 3333);
         stakedNodeId = Long.fromNumber(5);
+    });
+
+    describe("fromBytes bytecode round trip", function () {
+        const buildWithBytecode = () =>
+            new ContractCreateTransaction()
+                .setBytecode(new Uint8Array([1, 2, 3, 4]))
+                .setGas(100000)
+                .setNodeAccountIds([new AccountId(3)])
+                .setTransactionId(TransactionId.generate(new AccountId(2)));
+
+        it("keeps setBytecode() after a frozen toBytes/fromBytes round trip", function () {
+            const frozen = buildWithBytecode().freeze();
+            const restored = Transaction.fromBytes(frozen.toBytes());
+
+            expect(restored).to.be.instanceOf(ContractCreateTransaction);
+            expect(restored.bytecode).to.deep.equal(
+                new Uint8Array([1, 2, 3, 4]),
+            );
+            expect(restored.bytecodeFileId).to.be.null;
+        });
+
+        it("keeps setBytecodeFileId() after a frozen toBytes/fromBytes round trip", function () {
+            const fileId = new FileId(0, 0, 100);
+            const frozen = new ContractCreateTransaction()
+                .setBytecodeFileId(fileId)
+                .setGas(100000)
+                .setNodeAccountIds([new AccountId(3)])
+                .setTransactionId(TransactionId.generate(new AccountId(2)))
+                .freeze();
+            const restored = Transaction.fromBytes(frozen.toBytes());
+
+            expect(restored).to.be.instanceOf(ContractCreateTransaction);
+            expect(restored.bytecodeFileId.toString()).to.equal(
+                fileId.toString(),
+            );
+            expect(restored.bytecode).to.be.null;
+        });
+
+        it("keeps initcode when unfrozen bytes are decoded and frozen again", function () {
+            const refrozen = Transaction.fromBytes(
+                buildWithBytecode().toBytes(),
+            ).freeze();
+
+            expect(refrozen).to.be.instanceOf(ContractCreateTransaction);
+            expect(refrozen.bytecode).to.deep.equal(
+                new Uint8Array([1, 2, 3, 4]),
+            );
+            expect(refrozen.bytecodeFileId).to.be.null;
+
+            const body = HieroProto.proto.TransactionBody.decode(
+                refrozen.signableNodeBodyBytesList[0]
+                    .signableTransactionBodyBytes,
+            );
+            expect(
+                Uint8Array.from(body.contractCreateInstance.initcode),
+            ).to.deep.equal(new Uint8Array([1, 2, 3, 4]));
+            expect(body.contractCreateInstance.fileID).to.be.null;
+        });
     });
 
     it("should throw an error if gas is negative", function () {
@@ -871,6 +932,117 @@ describe("ContractCreateTransaction", function () {
             expect(tx2.hooks).to.have.lengthOf(1);
             expect(tx2.hooks[0].hookId.toString()).to.equal("7");
             expect(body.hookCreationDetails).to.have.lengthOf(1);
+        });
+    });
+
+    describe("_validateChecksums", function () {
+        let mainnet, testnet;
+
+        beforeEach(function () {
+            mainnet = Client.forMainnet({ scheduleNetworkUpdate: false });
+            testnet = Client.forTestnet({ scheduleNetworkUpdate: false });
+        });
+
+        afterEach(function () {
+            mainnet.close();
+            testnet.close();
+        });
+
+        /**
+         * @returns {ContractId}
+         */
+        function checksummedContractId() {
+            const contractId = new ContractId(0, 0, 123);
+            contractId._checksum = "vfmkw";
+            return contractId;
+        }
+
+        it("should validate bytecodeFileId checksum when present", function () {
+            const query = new ContractCreateTransaction();
+            const bytecodeFileId = checksummedContractId();
+            query.setBytecodeFileId(bytecodeFileId);
+
+            expect(() => query._validateChecksums(mainnet)).to.not.throw();
+            expect(() => query._validateChecksums(testnet)).to.throw(
+                BadEntityIdError,
+            );
+        });
+
+        it("should skip validation when bytecodeFileId is unset", function () {
+            expect(() =>
+                new ContractCreateTransaction()._validateChecksums(testnet),
+            ).to.not.throw();
+        });
+
+        it("should validate proxyAccountId checksum when present (deprecated)", function () {
+            const query = new ContractCreateTransaction();
+            const proxyAccountId = new AccountId(0, 0, 123);
+            proxyAccountId._checksum = "vfmkw";
+            query.setProxyAccountId(proxyAccountId);
+
+            expect(() => query._validateChecksums(mainnet)).to.not.throw();
+            expect(() => query._validateChecksums(testnet)).to.throw(
+                BadEntityIdError,
+            );
+        });
+
+        it("should skip validation when proxyAccountId is unset", function () {
+            expect(() =>
+                new ContractCreateTransaction()._validateChecksums(testnet),
+            ).to.not.throw();
+        });
+    });
+
+    describe("_execute", function () {
+        it("should call smartContract.createContract() with the request", async function () {
+            const request = {};
+            const response = {};
+            const calls = [];
+            const channel = {
+                smartContract: {
+                    createContract: (arg) => {
+                        calls.push(arg);
+                        return Promise.resolve(response);
+                    },
+                },
+            };
+
+            expect(
+                await new ContractCreateTransaction()._execute(
+                    channel,
+                    request,
+                ),
+            ).to.equal(response);
+            expect(calls).to.deep.equal([request]);
+        });
+    });
+
+    describe("_getLogId", function () {
+        it("should use the payment transaction ID valid start when set", function () {
+            const tx = new ContractCreateTransaction();
+            tx._transactionIds = {
+                current: {
+                    validStart: new Timestamp(1596210382, 0),
+                },
+            };
+
+            expect(tx._getLogId()).to.equal(
+                `ContractCreateTransaction:1596210382.000000000`,
+            );
+        });
+
+        it("should fall back to the timestamp of the transaction", function () {
+            const tx = new ContractCreateTransaction();
+
+            tx._transactionIds = {
+                current: {
+                    validStart: new Timestamp(1596210382, 0),
+                },
+            };
+
+            expect(tx._getLogId()).to.equal(
+                `ContractCreateTransaction:1596210382.000000000`,
+            );
         });
     });
 });
