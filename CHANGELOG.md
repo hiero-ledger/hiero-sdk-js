@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Unreleased
 
+### Added
+
+-   `HookEntityId.setAccountId()` and the `accountId` constructor prop now accept a string such as `"0.0.123"` as well as an `AccountId`. The id is stored as a copy, like in the other `setAccountId()` setters. [#3789](https://github.com/hiero-ledger/hiero-sdk-js/issues/3789)
+
 ### Fixed
 
 -   `TransactionRecordQuery.setIncludeDuplicates()` now sets the `includeDuplicates` flag sent in the query request to consensus nodes, and `Query.fromBytes()` preserves it across serialization. Previously, `setIncludeDuplicates()` stored the value in an internal `_duplicates` field while `_onMakeRequest()` sent `_includeDuplicates` (which stayed `null`), so duplicate records were never requested from the network. [#4760](https://github.com/hiero-ledger/hiero-sdk-js/issues/4760) [#4764](https://github.com/hiero-ledger/hiero-sdk-js/pull/4764)
