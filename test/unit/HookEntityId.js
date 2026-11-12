@@ -22,6 +22,7 @@ describe("HookEntityId", function () {
         it("should create an instance with accountId from string", function () {
             const entityId = new HookEntityId({ accountId: "0.0.12345" });
 
+            expect(entityId.accountId).to.be.instanceOf(AccountId);
             expect(entityId.accountId.toString()).to.equal("0.0.12345");
         });
 
@@ -103,6 +104,7 @@ describe("HookEntityId", function () {
 
             entityId.setAccountId("5.10.999");
 
+            expect(entityId.accountId).to.be.instanceOf(AccountId);
             expect(entityId.accountId.toString()).to.equal("5.10.999");
         });
 
@@ -116,6 +118,7 @@ describe("HookEntityId", function () {
 
             // Set from a raw string
             entityId.setAccountId("5.10.999");
+            expect(entityId.accountId).to.be.instanceOf(AccountId);
             expect(entityId.accountId.toString()).to.equal("5.10.999");
         });
 

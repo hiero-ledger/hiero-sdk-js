@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 # Unreleased
 
+### Added
+
+-   `HookEntityId.setAccountId()` and the `accountId` constructor prop now accept a string such as `"0.0.123"` as well as an `AccountId`. The id is stored as a copy, like in the other `setAccountId()` setters. [#3789](https://github.com/hiero-ledger/hiero-sdk-js/issues/3789)
+
 ### Fixed
 
 -   `Hbar.toString(unit)` now always prints a plain decimal number, so `Hbar.fromString()` can read it back. Before, a small amount in a large unit was printed in exponent notation, for example `Hbar.fromTinybars(1).toString(HbarUnit.Hbar)` returned `"1e-8 ℏ"`, which `Hbar.fromString()` rejected with `invalid argument provided`. It now returns `"0.00000001 ℏ"`. [#4685](https://github.com/hiero-ledger/hiero-sdk-js/issues/4685)
