@@ -1,4 +1,5 @@
 import { AccountId, NftId, PrivateKey } from "../../src/index.js";
+import Long from "long";
 
 describe("AccountId", function () {
     describe("fromString()", function () {
@@ -14,6 +15,26 @@ describe("AccountId", function () {
             expect(AccountId.fromString("0.0.123-vfmkw").toString()).to.equal(
                 "0.0.123",
             );
+        });
+
+        it("should round-trip a 40-character shard.realm.num ID", function () {
+            const accountId = new AccountId(
+                Long.fromString("100000000000000000"),
+                0,
+                Long.fromString("1000000000000000000"),
+            );
+            const text = accountId.toString();
+            expect(text.length).to.equal(40);
+
+            const parsed = AccountId.fromString(text);
+            expect(parsed.shard.toString()).to.equal(
+                accountId.shard.toString(),
+            );
+            expect(parsed.realm.toString()).to.equal(
+                accountId.realm.toString(),
+            );
+            expect(parsed.num.toString()).to.equal(accountId.num.toString());
+            expect(parsed.evmAddress).to.equal(null);
         });
 
         it("should throw when the entity number contains letters", function () {
