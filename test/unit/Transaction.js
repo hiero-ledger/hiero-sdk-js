@@ -1,6 +1,9 @@
 import {
     AccountCreateTransaction,
     AccountId,
+    CustomFixedFee,
+    CustomFractionalFee,
+    CustomRoyaltyFee,
     FileAppendTransaction,
     FileCreateTransaction,
     FileId,
@@ -92,6 +95,105 @@ describe("Transaction", function () {
         ).to.be.equal(new Hbar(1).toTinybars().toString());
     });
 
+    describe("fromBytes with a custom fee missing its details", function () {
+        /**
+         * @param {HieroProto.proto.ITransactionBody} data
+         * @returns {Uint8Array}
+         */
+        function transactionBytes(data) {
+            const bodyBytes = HieroProto.proto.TransactionBody.encode({
+                transactionID: {
+                    accountID: { accountNum: 1001 },
+                    transactionValidStart: { seconds: 1700000000 },
+                },
+                nodeAccountID: { accountNum: 3 },
+                ...data,
+            }).finish();
+            const signedTransactionBytes =
+                HieroProto.proto.SignedTransaction.encode({
+                    bodyBytes,
+                }).finish();
+
+            return HieroProto.proto.TransactionList.encode({
+                transactionList: [{ signedTransactionBytes }],
+            }).finish();
+        }
+
+        const cases = [
+            [
+                "a token fee with no fee set",
+                { tokenCreation: { customFees: [{}] } },
+                "custom fee must set fixedFee, fractionalFee or royaltyFee",
+            ],
+            [
+                "a fractional fee without its fraction",
+                { tokenCreation: { customFees: [{ fractionalFee: {} }] } },
+                "fractionalAmount is required",
+            ],
+            [
+                "a royalty fee without its fraction",
+                { tokenCreation: { customFees: [{ royaltyFee: {} }] } },
+                "exchangeValueFraction is required",
+            ],
+            [
+                "a fee schedule update fee with no fee set",
+                { tokenFeeScheduleUpdate: { customFees: [{}] } },
+                "custom fee must set fixedFee, fractionalFee or royaltyFee",
+            ],
+            [
+                "a topic create fee without its fixed fee",
+                { consensusCreateTopic: { customFees: [{}] } },
+                "fixedFee is required",
+            ],
+            [
+                "a topic update fee without its fixed fee",
+                { consensusUpdateTopic: { customFees: { fees: [{}] } } },
+                "fixedFee is required",
+            ],
+        ];
+
+        for (const [name, data, message] of cases) {
+            it(`throws for ${name}`, function () {
+                expect(() =>
+                    Transaction.fromBytes(transactionBytes(data)),
+                ).to.throw(Error, message);
+            });
+        }
+
+        it("still decodes complete fees", function () {
+            const transaction = Transaction.fromBytes(
+                transactionBytes({
+                    tokenCreation: {
+                        customFees: [
+                            { fixedFee: { amount: 1 } },
+                            {
+                                fractionalFee: {
+                                    fractionalAmount: {
+                                        numerator: 1,
+                                        denominator: 10,
+                                    },
+                                },
+                            },
+                            {
+                                royaltyFee: {
+                                    exchangeValueFraction: {
+                                        numerator: 1,
+                                        denominator: 20,
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                }),
+            );
+
+            const [fixed, fractional, royalty] = transaction.customFees;
+            expect(fixed).to.be.instanceOf(CustomFixedFee);
+            expect(fractional).to.be.instanceOf(CustomFractionalFee);
+            expect(royalty).to.be.instanceOf(CustomRoyaltyFee);
+        });
+    });
+
     describe("fromBytes with 64-bit validStart (e.g. year 2125 in seconds)", function () {
         it("decodes hex bytes without throwing", function () {
             const bytes = hex.decode(HEX_BYTES_VALID_START_YEAR_2125);
@@ -168,6 +270,149 @@ describe("Transaction", function () {
         expect(transaction.maxTransactionFee.toTinybars().toInt()).to.be.equal(
             1,
         );
+    });
+
+    describe("fromBytes with a missing account or token ID", function () {
+        const account = { accountNum: 2 };
+        const token = { tokenNum: 5 };
+
+        /**
+         * @param {HieroProto.proto.ITransactionBody} data
+         * @returns {Uint8Array}
+         */
+        function transactionBytes(data) {
+            const bodyBytes = HieroProto.proto.TransactionBody.encode({
+                transactionID: {
+                    accountID: { accountNum: 1001 },
+                    transactionValidStart: { seconds: 1700000000 },
+                },
+                nodeAccountID: { accountNum: 3 },
+                ...data,
+            }).finish();
+            const signedTransactionBytes =
+                HieroProto.proto.SignedTransaction.encode({
+                    bodyBytes,
+                }).finish();
+
+            return HieroProto.proto.TransactionList.encode({
+                transactionList: [{ signedTransactionBytes }],
+            }).finish();
+        }
+
+        const cases = [
+            [
+                "an Hbar transfer without an account",
+                {
+                    cryptoTransfer: {
+                        transfers: { accountAmounts: [{ amount: 1 }] },
+                    },
+                },
+                "accountID is required",
+            ],
+            [
+                "a token transfer list without a token",
+                { cryptoTransfer: { tokenTransfers: [{}] } },
+                "token is required",
+            ],
+            [
+                "a token transfer without an account",
+                {
+                    cryptoTransfer: {
+                        tokenTransfers: [{ token, transfers: [{ amount: 1 }] }],
+                    },
+                },
+                "accountID is required",
+            ],
+            [
+                "an NFT transfer without a sender",
+                {
+                    cryptoTransfer: {
+                        tokenTransfers: [
+                            {
+                                token,
+                                nftTransfers: [
+                                    {
+                                        receiverAccountID: account,
+                                        serialNumber: 1,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                },
+                "senderAccountID is required",
+            ],
+            [
+                "an NFT transfer without a receiver",
+                {
+                    cryptoTransfer: {
+                        tokenTransfers: [
+                            {
+                                token,
+                                nftTransfers: [
+                                    {
+                                        senderAccountID: account,
+                                        serialNumber: 1,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                },
+                "receiverAccountID is required",
+            ],
+            [
+                "an airdrop token transfer list without a token",
+                { tokenAirdrop: { tokenTransfers: [{}] } },
+                "token is required",
+            ],
+            [
+                "an Hbar allowance without a spender",
+                { cryptoApproveAllowance: { cryptoAllowances: [{}] } },
+                "spender is required",
+            ],
+            [
+                "a token allowance without a token",
+                {
+                    cryptoApproveAllowance: {
+                        tokenAllowances: [{ spender: account }],
+                    },
+                },
+                "tokenId is required",
+            ],
+            [
+                "a token allowance without a spender",
+                {
+                    cryptoApproveAllowance: {
+                        tokenAllowances: [{ tokenId: token }],
+                    },
+                },
+                "spender is required",
+            ],
+            [
+                "an NFT allowance without a token",
+                { cryptoApproveAllowance: { nftAllowances: [{}] } },
+                "tokenId is required",
+            ],
+            [
+                "an NFT allowance deletion without a token",
+                { cryptoDeleteAllowance: { nftAllowances: [{}] } },
+                "tokenId is required",
+            ],
+            [
+                "a rejected NFT without a token",
+                { tokenReject: { rejections: [{ nft: { serialNumber: 1 } }] } },
+                "token_ID is required",
+            ],
+        ];
+
+        for (const [name, data, message] of cases) {
+            it(`throws for ${name}`, function () {
+                expect(() =>
+                    Transaction.fromBytes(transactionBytes(data)),
+                ).to.throw(Error, message);
+            });
+        }
     });
 
     describe("setHighVolume (HIP-1313 high-volume entity creation)", function () {

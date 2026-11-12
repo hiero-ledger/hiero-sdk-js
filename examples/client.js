@@ -6,6 +6,7 @@ import {
     FetchHttpTransport,
     HttpRequest,
 } from "@hiero-ledger/sdk";
+import { errorMessage } from "./error-message.js";
 
 /**
  * `Client.forName(name)`, pointed at the endpoints in these optional
@@ -102,10 +103,8 @@ function parse(name, value, apply) {
     try {
         return apply(value);
     } catch (error) {
-        throw new Error(
-            `Invalid ${name} "${value}": ${
-                error instanceof Error ? error.message : String(error)
-            }`,
-        );
+        throw new Error(`Invalid ${name} "${value}": ${errorMessage(error)}`, {
+            cause: error,
+        });
     }
 }

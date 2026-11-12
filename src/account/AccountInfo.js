@@ -401,8 +401,6 @@ export default class AccountInfo {
                     : null,
             // eslint-disable-next-line @typescript-eslint/no-deprecated
             proxyReceived: this.proxyReceived.toString(),
-            // Every concrete Key subclass implements toString().
-            // eslint-disable-next-line @typescript-eslint/no-base-to-string
             key: this.key != null ? this.key.toString() : null,
             sendRecordThreshold: this.sendRecordThreshold.toString(),
             receiveRecordThreshold: this.receiveRecordThreshold.toString(),

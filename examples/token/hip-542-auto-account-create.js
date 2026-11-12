@@ -189,11 +189,13 @@ async function main() {
 
     console.log(`The normal account ID of the given alias: ${accountId}`);
 
-    nftOwnerAccountId === accountId
-        ? console.log(
-              `The NFT owner accountId matches the accountId created with the HTS\n`,
-          )
-        : console.log(`The two account IDs does not match\n`);
+    if (nftOwnerAccountId === accountId) {
+        console.log(
+            `The NFT owner accountId matches the accountId created with the HTS\n`,
+        );
+    } else {
+        console.log(`The two account IDs does not match\n`);
+    }
 
     /**
      *     Example 2
@@ -304,13 +306,15 @@ async function main() {
             },
         );
 
-        balance.toInt() === 10
-            ? console.log(
-                  `Account is created successfully using HTS 'TransferTransaction'`,
-              )
-            : console.log(
-                  "Creating account with HTS using public key alias failed",
-              );
+        if (balance.toInt() === 10) {
+            console.log(
+                `Account is created successfully using HTS 'TransferTransaction'`,
+            );
+        } else {
+            console.log(
+                "Creating account with HTS using public key alias failed",
+            );
+        }
     } catch (e) {
         console.log(e);
         client.close();

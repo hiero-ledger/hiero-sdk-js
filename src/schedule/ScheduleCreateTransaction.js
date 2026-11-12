@@ -86,6 +86,14 @@ export default class ScheduleCreateTransaction extends Transaction {
             this.setScheduleMemo(props.scheduleMemo);
         }
 
+        if (props.expirationTime != null) {
+            this.setExpirationTime(props.expirationTime);
+        }
+
+        if (props.waitForExpiry != null) {
+            this.setWaitForExpiry(props.waitForExpiry);
+        }
+
         this._defaultMaxTransactionFee = new Hbar(5);
     }
 
@@ -242,7 +250,6 @@ export default class ScheduleCreateTransaction extends Transaction {
      * @returns {?string}
      */
     get getScheduleMemo() {
-        this._requireNotFrozen();
         return this._scheduleMemo;
     }
 
@@ -330,6 +337,7 @@ export default class ScheduleCreateTransaction extends Transaction {
      * @returns {this}
      */
     setExpirationTime(expirationTime) {
+        this._requireNotFrozen();
         this._expirationTime = expirationTime;
         return this;
     }
@@ -338,7 +346,6 @@ export default class ScheduleCreateTransaction extends Transaction {
      * @returns {?Timestamp}
      */
     get expirationTime() {
-        this._requireNotFrozen();
         return this._expirationTime;
     }
 
@@ -347,6 +354,7 @@ export default class ScheduleCreateTransaction extends Transaction {
      * @returns {this}
      */
     setWaitForExpiry(waitForExpiry) {
+        this._requireNotFrozen();
         this._waitForExpiry = waitForExpiry;
 
         return this;
@@ -356,7 +364,6 @@ export default class ScheduleCreateTransaction extends Transaction {
      * @returns {?boolean}
      */
     get waitForExpiry() {
-        this._requireNotFrozen();
         return this._waitForExpiry;
     }
 }
