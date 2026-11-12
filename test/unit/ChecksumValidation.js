@@ -1,9 +1,5 @@
-import {
-    AccountId,
-    ContractId,
-    DelegateContractId,
-    BadEntityIdError,
-} from "../../src/index.js";
+import { AccountId, ContractId, DelegateContractId } from "../../src/index.js";
+import BadEntityIdError from "../../src/BadEntityIdError.js";
 
 import Client from "../../src/client/NodeClient.js";
 
