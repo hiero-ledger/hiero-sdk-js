@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
--   **Breaking for local networks:** `Client.forLocalNode()` and `setNetwork("local-node")` now use Solo's local ports: the consensus node at `127.0.0.1:35211` (was `50211`) and the mirror node at `127.0.0.1:38081` (was `5600`, or `5551` in the browser and React Native). The SDK also uses a loopback mirror node address as given, and no longer sends its REST, Java REST and web3 calls to `5551`, `8084` and `8545`. Start Solo with the mirror node ingress, which serves all of them on one port, or set the network and mirror network yourself. [#3590](https://github.com/hiero-ledger/hiero-sdk-js/issues/3590)
+-   **Breaking for local networks:** `Client.forLocalNode()` and `setNetwork("local-node")` now use Solo's local ports: the consensus node at `127.0.0.1:35211` (was `50211`) and the mirror node at `127.0.0.1:38081` (was `5600` in Node.js and React Native, and `5551` in the browser). The SDK also uses a loopback mirror node address as given, and no longer sends its REST, Java REST and web3 calls to `5551`, `8084` and `8545`. Start Solo with the mirror node ingress, which serves all of them on one port, or set the network and mirror network yourself. [#3590](https://github.com/hiero-ledger/hiero-sdk-js/issues/3590)
 
 ### Fixed
 

@@ -13,7 +13,8 @@ import {
 
 /**
  * Point a client at a deployment whose endpoints differ from the ones it
- * was built with, such as a Solo network with its own port mappings.
+ * was built with, such as a local network on other ports than the
+ * `local-node` defaults.
  * Every variable is optional; an unset or empty one keeps what the client
  * already has.
  *

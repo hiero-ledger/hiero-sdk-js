@@ -10,9 +10,9 @@ import { errorMessage } from "./error-message.js";
 
 /**
  * `Client.forName(name)`, pointed at the endpoints in these optional
- * environment variables, so the examples run against a local network with
- * its own port mappings (a Solo deployment, say) without source edits. An
- * unset or empty variable keeps the named network's default.
+ * environment variables, so the examples run against a local network on
+ * other ports than the `local-node` defaults without source edits. An unset
+ * or empty variable keeps the named network's default.
  *
  * - `NODE_IP` and `NODE_ACCOUNT_ID`, set together: the consensus node
  *   `host:port` and its account ID. They replace the network map.
