@@ -1,5 +1,6 @@
 import {
     AccountId,
+    Client,
     ContractCreateTransaction,
     Hbar,
     HookExtensionPoint,
@@ -9,6 +10,7 @@ import {
 import Long from "long";
 import * as HieroProto from "@hiero-ledger/proto";
 
+import BadEntityIdError from "../../src/BadEntityIdError.js";
 import PrivateKey from "../../src/PrivateKey.js";
 import TransactionId from "../../src/transaction/TransactionId.js";
 import FileId from "../../src/file/FileId.js";
@@ -930,6 +932,117 @@ describe("ContractCreateTransaction", function () {
             expect(tx2.hooks).to.have.lengthOf(1);
             expect(tx2.hooks[0].hookId.toString()).to.equal("7");
             expect(body.hookCreationDetails).to.have.lengthOf(1);
+        });
+    });
+
+    describe("_validateChecksums", function () {
+        let mainnet, testnet;
+
+        beforeEach(function () {
+            mainnet = Client.forMainnet({ scheduleNetworkUpdate: false });
+            testnet = Client.forTestnet({ scheduleNetworkUpdate: false });
+        });
+
+        afterEach(function () {
+            mainnet.close();
+            testnet.close();
+        });
+
+        /**
+         * @returns {ContractId}
+         */
+        function checksummedContractId() {
+            const contractId = new ContractId(0, 0, 123);
+            contractId._checksum = "vfmkw";
+            return contractId;
+        }
+
+        it("should validate bytecodeFileId checksum when present", function () {
+            const query = new ContractCreateTransaction();
+            const bytecodeFileId = checksummedContractId();
+            query.setBytecodeFileId(bytecodeFileId);
+
+            expect(() => query._validateChecksums(mainnet)).to.not.throw();
+            expect(() => query._validateChecksums(testnet)).to.throw(
+                BadEntityIdError,
+            );
+        });
+
+        it("should skip validation when bytecodeFileId is unset", function () {
+            expect(() =>
+                new ContractCreateTransaction()._validateChecksums(testnet),
+            ).to.not.throw();
+        });
+
+        it("should validate proxyAccountId checksum when present (deprecated)", function () {
+            const query = new ContractCreateTransaction();
+            const proxyAccountId = new AccountId(0, 0, 123);
+            proxyAccountId._checksum = "vfmkw";
+            query.setProxyAccountId(proxyAccountId);
+
+            expect(() => query._validateChecksums(mainnet)).to.not.throw();
+            expect(() => query._validateChecksums(testnet)).to.throw(
+                BadEntityIdError,
+            );
+        });
+
+        it("should skip validation when proxyAccountId is unset", function () {
+            expect(() =>
+                new ContractCreateTransaction()._validateChecksums(testnet),
+            ).to.not.throw();
+        });
+    });
+
+    describe("_execute", function () {
+        it("should call smartContract.createContract() with the request", async function () {
+            const request = {};
+            const response = {};
+            const calls = [];
+            const channel = {
+                smartContract: {
+                    createContract: (arg) => {
+                        calls.push(arg);
+                        return Promise.resolve(response);
+                    },
+                },
+            };
+
+            expect(
+                await new ContractCreateTransaction()._execute(
+                    channel,
+                    request,
+                ),
+            ).to.equal(response);
+            expect(calls).to.deep.equal([request]);
+        });
+    });
+
+    describe("_getLogId", function () {
+        it("should use the payment transaction ID valid start when set", function () {
+            const tx = new ContractCreateTransaction();
+            tx._transactionIds = {
+                current: {
+                    validStart: new Timestamp(1596210382, 0),
+                },
+            };
+
+            expect(tx._getLogId()).to.equal(
+                `ContractCreateTransaction:1596210382.000000000`,
+            );
+        });
+
+        it("should fall back to the timestamp of the transaction", function () {
+            const tx = new ContractCreateTransaction();
+
+            tx._transactionIds = {
+                current: {
+                    validStart: new Timestamp(1596210382, 0),
+                },
+            };
+
+            expect(tx._getLogId()).to.equal(
+                `ContractCreateTransaction:1596210382.000000000`,
+            );
         });
     });
 });
