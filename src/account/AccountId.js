@@ -59,6 +59,7 @@ export default class AccountId {
         let num = Long.ZERO;
         let aliasKey = undefined;
         let evmAddress = undefined;
+        let checksum = null;
 
         // A dotted shard.realm.num ID can also be 40 characters long.
         // Only undotted input may be a standalone EVM address.
@@ -75,6 +76,7 @@ export default class AccountId {
 
             if (result.numOrHex.length < 20) {
                 num = EntityIdHelper.parseEntityNum(result.numOrHex, text);
+                checksum = result.checksum ?? null;
             } else if (result.numOrHex.length == 40) {
                 evmAddress = EvmAddress.fromString(result.numOrHex);
             } else {
@@ -82,7 +84,9 @@ export default class AccountId {
             }
         }
 
-        return new AccountId(shard, realm, num, aliasKey, evmAddress);
+        const id = new AccountId(shard, realm, num, aliasKey, evmAddress);
+        id._checksum = checksum;
+        return id;
     }
 
     /**
