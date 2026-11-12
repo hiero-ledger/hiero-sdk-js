@@ -1,4 +1,5 @@
 import {
+    Client,
     ContractUpdateTransaction,
     ContractId,
     AccountId,
@@ -10,6 +11,7 @@ import {
 import Duration from "../../src/Duration.js";
 import Long from "long";
 
+import BadEntityIdError from "../../src/BadEntityIdError.js";
 import TransactionId from "../../src/transaction/TransactionId.js";
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
 import EvmHook from "../../src/hooks/EvmHook.js";
@@ -942,6 +944,145 @@ describe("ContractUpdateTransaction", function () {
             const tx = new ContractUpdateTransaction();
 
             expect(tx._makeTransactionData().memoWrapper).to.be.null;
+        });
+
+        describe("clearAutoRenewAccountId", function () {
+            it("should clear the autoRenewAccountId", function () {
+                const autoRenewAccountId = new AccountId(0, 0, 200);
+                const tx =
+                    new ContractUpdateTransaction().setAutoRenewAccountId(
+                        autoRenewAccountId,
+                    );
+
+                expect(tx.autoRenewAccountId.toString()).to.equal(
+                    autoRenewAccountId.toString(),
+                );
+
+                tx.clearAutoRenewAccountId();
+
+                expect(tx.autoRenewAccountId.toString()).to.equal(
+                    new AccountId(0).toString(),
+                );
+            });
+
+            it("should be chainable", function () {
+                const tx = new ContractUpdateTransaction();
+
+                expect(tx.clearAutoRenewAccountId()).to.equal(tx);
+            });
+        });
+
+        describe("_validateChecksums", function () {
+            let mainnet, testnet;
+
+            beforeEach(function () {
+                mainnet = Client.forMainnet({ scheduleNetworkUpdate: false });
+                testnet = Client.forTestnet({ scheduleNetworkUpdate: false });
+            });
+
+            afterEach(function () {
+                mainnet.close();
+                testnet.close();
+            });
+
+            it("should validate contractId checksum when present", function () {
+                const query = new ContractUpdateTransaction();
+                const contractId = new ContractId(0, 0, 123);
+                contractId._checksum = "vfmkw";
+                query._contractId = contractId;
+
+                expect(() => query._validateChecksums(mainnet)).to.not.throw();
+                expect(() => query._validateChecksums(testnet)).to.throw(
+                    BadEntityIdError,
+                );
+            });
+
+            it("should validate bytecodeFileId checksum when present", function () {
+                const query = new ContractUpdateTransaction();
+                const bytecodeFileId = new ContractId(0, 0, 123);
+                bytecodeFileId._checksum = "vfmkw";
+                query._bytecodeFileId = bytecodeFileId;
+
+                expect(() => query._validateChecksums(mainnet)).to.not.throw();
+                expect(() => query._validateChecksums(testnet)).to.throw(
+                    BadEntityIdError,
+                );
+            });
+
+            it("should validate proxyAccountId checksum when present (deprecated)", function () {
+                const query = new ContractUpdateTransaction();
+                const proxyAccountId = new ContractId(0, 0, 123);
+                proxyAccountId._checksum = "vfmkw";
+                query._proxyAccountId = proxyAccountId;
+
+                expect(() => query._validateChecksums(mainnet)).to.not.throw();
+                expect(() => query._validateChecksums(testnet)).to.throw(
+                    BadEntityIdError,
+                );
+            });
+
+            it("should skip validation when contractId is unset", function () {
+                const query = new ContractUpdateTransaction();
+
+                expect(() => query._validateChecksums(testnet)).to.not.throw();
+            });
+        });
+
+        describe("_execute", function () {
+            it("should call smartContract.updateContract with the request", async function () {
+                const request = {};
+                const response = {};
+                const calls = [];
+                const channel = {
+                    smartContract: {
+                        updateContract: (arg) => {
+                            calls.push(arg);
+                            return Promise.resolve(response);
+                        },
+                    },
+                };
+
+                expect(
+                    await new ContractUpdateTransaction()._execute(
+                        channel,
+                        request,
+                    ),
+                ).to.equal(response);
+                expect(calls).to.deep.equal([request]);
+            });
+        });
+
+        describe("_getLogId", function () {
+            it("should return the log ID with the transaction ID valid start", function () {
+                const tx = new ContractUpdateTransaction();
+
+                // Set up a mock transaction ID with valid start
+                const mockValidStart = new Timestamp(1596210382, 0);
+                tx._transactionIds = {
+                    current: {
+                        validStart: mockValidStart,
+                    },
+                };
+
+                expect(tx._getLogId()).to.equal(
+                    `ContractUpdateTransaction:${mockValidStart.toString()}`,
+                );
+            });
+
+            it("should fall back to the current timestamp when valid start is not set", function () {
+                const tx = new ContractUpdateTransaction();
+
+                // Set up a mock transaction ID with valid start
+                tx._transactionIds = {
+                    current: {
+                        validStart: new Timestamp(1596210382, 0),
+                    },
+                };
+
+                expect(tx._getLogId()).to.equal(
+                    `ContractUpdateTransaction:1596210382.000000000`,
+                );
+            });
         });
     });
 });

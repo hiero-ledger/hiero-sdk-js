@@ -317,6 +317,7 @@ export default class FileAppendTransaction extends Transaction {
         if (chunkSize <= 0) {
             throw new Error("Chunk size must be greater than 0");
         }
+        this._requireNotFrozen();
         this._chunkSize = chunkSize;
         return this;
     }
@@ -333,6 +334,7 @@ export default class FileAppendTransaction extends Transaction {
      * @returns {this}
      */
     setChunkInterval(chunkInterval) {
+        this._requireNotFrozen();
         this._chunkInterval = chunkInterval;
         return this;
     }
