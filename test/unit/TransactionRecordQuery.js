@@ -127,11 +127,14 @@ describe("TransactionRecordQuery", function () {
             expect(query.includeChildren).to.be.true;
         });
 
-        it("setIncludeDuplicates() should be chainable", function () {
+        it("setIncludeDuplicates() should set the value and be chainable", function () {
             const query = new TransactionRecordQuery();
 
             expect(query.setIncludeDuplicates(true)).to.equal(query);
             expect(query.includeDuplicates).to.be.true;
+
+            expect(query.setIncludeDuplicates(false)).to.equal(query);
+            expect(query.includeDuplicates).to.be.false;
         });
 
         it("setValidateReceiptStatus() should be chainable", function () {
@@ -186,15 +189,16 @@ describe("TransactionRecordQuery", function () {
             expect(decoded.includeChildren).to.be.true;
         });
 
-        // TODO(#4760): includeDuplicates is never sent (setIncludeDuplicates() writes _duplicates).
-        it.skip("should keep includeDuplicates", function () {
-            const query = new TransactionRecordQuery()
-                .setTransactionId(transactionId)
-                .setIncludeDuplicates(true);
+        it("should keep includeDuplicates", function () {
+            for (const includeDuplicates of [true, false]) {
+                const query = new TransactionRecordQuery()
+                    .setTransactionId(transactionId)
+                    .setIncludeDuplicates(includeDuplicates);
 
-            const decoded = Query.fromBytes(query.toBytes());
+                const decoded = Query.fromBytes(query.toBytes());
 
-            expect(decoded.includeDuplicates).to.be.true;
+                expect(decoded.includeDuplicates).to.equal(includeDuplicates);
+            }
         });
     });
 
@@ -511,15 +515,17 @@ describe("TransactionRecordQuery", function () {
             });
         });
 
-        // TODO(#4760): includeDuplicates is never sent (setIncludeDuplicates() writes _duplicates).
-        it.skip("should encode includeDuplicates", function () {
-            const query = new TransactionRecordQuery()
-                .setTransactionId(transactionId)
-                .setIncludeDuplicates(true);
+        it("should encode includeDuplicates", function () {
+            for (const includeDuplicates of [true, false]) {
+                const query = new TransactionRecordQuery()
+                    .setTransactionId(transactionId)
+                    .setIncludeDuplicates(includeDuplicates);
 
-            expect(
-                query._onMakeRequest({}).transactionGetRecord.includeDuplicates,
-            ).to.be.true;
+                expect(
+                    query._onMakeRequest({}).transactionGetRecord
+                        .includeDuplicates,
+                ).to.equal(includeDuplicates);
+            }
         });
     });
 
