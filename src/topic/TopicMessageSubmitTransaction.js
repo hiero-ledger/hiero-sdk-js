@@ -331,6 +331,7 @@ export default class TopicMessageSubmitTransaction extends Transaction {
      * @returns {this}
      */
     setChunkSize(chunkSize) {
+        this._requireNotFrozen();
         this._chunkSize = chunkSize;
         return this;
     }
