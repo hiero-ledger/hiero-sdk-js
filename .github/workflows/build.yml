@@ -115,9 +115,7 @@ jobs:
 
       - name: Prepare Hiero Solo
         id: solo
-        # TODO: pin the hiero-solo-action release that ships enableMirrorIngress
-        # (hiero-ledger/hiero-solo-action#169). Until then this is that PR's commit.
-        uses: Jexsie/hiero-solo-action@1a3270501a7d61bb973699091ee25e57ca5843e4 # feat/120-mirror-node-ingress
+        uses: hiero-ledger/hiero-solo-action@dd84e95ece32d42071c945214571099ffbed9cf2 # 0.27.0
         with:
           installMirrorNode: true
           soloVersion: v0.91.0
@@ -238,9 +236,7 @@ jobs:
 
       - name: Prepare Hiero Solo
         id: solo
-        # TODO: pin the hiero-solo-action release that ships enableMirrorIngress
-        # (hiero-ledger/hiero-solo-action#169). Until then this is that PR's commit.
-        uses: Jexsie/hiero-solo-action@1a3270501a7d61bb973699091ee25e57ca5843e4 # feat/120-mirror-node-ingress
+        uses: hiero-ledger/hiero-solo-action@dd84e95ece32d42071c945214571099ffbed9cf2 # 0.27.0
         with:
           installMirrorNode: true
           soloVersion: v0.91.0
@@ -488,9 +484,7 @@ jobs:
 
       - name: Prepare Hiero Solo
         id: solo
-        # TODO: pin the hiero-solo-action release that ships enableMirrorIngress
-        # (hiero-ledger/hiero-solo-action#169). Until then this is that PR's commit.
-        uses: Jexsie/hiero-solo-action@1a3270501a7d61bb973699091ee25e57ca5843e4 # feat/120-mirror-node-ingress
+        uses: hiero-ledger/hiero-solo-action@dd84e95ece32d42071c945214571099ffbed9cf2 # 0.27.0
         with:
           installMirrorNode: true
           soloVersion: v0.91.0
@@ -645,9 +639,7 @@ jobs:
 
       - name: Prepare Hiero Solo
         id: solo
-        # TODO: pin the hiero-solo-action release that ships enableMirrorIngress
-        # (hiero-ledger/hiero-solo-action#169). Until then this is that PR's commit.
-        uses: Jexsie/hiero-solo-action@1a3270501a7d61bb973699091ee25e57ca5843e4 # feat/120-mirror-node-ingress
+        uses: hiero-ledger/hiero-solo-action@dd84e95ece32d42071c945214571099ffbed9cf2 # 0.27.0
         with:
           installMirrorNode: true
           soloVersion: v0.91.0
