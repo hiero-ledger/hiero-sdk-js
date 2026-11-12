@@ -51,4 +51,24 @@ describe("FileAppendTransaction", function () {
         expect(tx2.maxChunks).to.equal(3);
         expect(tx2.chunkInterval).to.equal(100);
     });
+
+    it("should throw on setting the chunk size or chunk interval once frozen", function () {
+        const tx = new FileAppendTransaction()
+            .setNodeAccountIds([AccountId.fromString("0.0.3")])
+            .setTransactionId(
+                TransactionId.withValidStart(
+                    AccountId.fromString("0.0.1001"),
+                    new Timestamp(1596210382, 0),
+                ),
+            )
+            .setFileId(FileId.fromString("0.0.5005"))
+            .setContents(new Uint8Array(25))
+            .setChunkSize(10)
+            .freeze();
+
+        expect(() => tx.setChunkSize(5)).to.throw("transaction is immutable");
+        expect(() => tx.setChunkInterval(1000)).to.throw(
+            "transaction is immutable",
+        );
+    });
 });
