@@ -197,7 +197,7 @@ describe("Client", function () {
                 scheduleNetworkUpdate: false,
             });
 
-            expect(client.mirrorNetwork).to.deep.equal(mirrorNodes);
+            expect(client.mirrorNetwork).to.deep.equal(["127.0.0.1:5600"]);
         });
 
         it("destructures props for local node", function () {
