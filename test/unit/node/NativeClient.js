@@ -3,7 +3,10 @@ import { setupServer } from "msw/node";
 import { AccountId, LedgerId, FileId } from "../../../src/index.js";
 import NativeClient from "../../../src/client/NativeClient.js";
 import AddressBookQueryWeb from "../../../src/network/AddressBookQueryWeb.js";
-import { WebNetwork } from "../../../src/constants/ClientConstants.js";
+import {
+    MirrorNetwork,
+    WebNetwork,
+} from "../../../src/constants/ClientConstants.js";
 import {
     MAINNET,
     WEB_TESTNET,
@@ -119,6 +122,99 @@ describe("NativeClient", function () {
             const client = new NativeClient({ network: customNetwork });
             // Check if the Map contains the expected key-value pair
             expect(client._network._network.has("0.0.5")).to.be.true;
+        });
+
+        it("should set mirrorNetwork from string 'mainnet'", function () {
+            const client = new NativeClient({ mirrorNetwork: "mainnet" });
+            expect(client.mirrorNetwork).to.deep.equal(MirrorNetwork.MAINNET);
+        });
+
+        it("should set mirrorNetwork from string 'testnet'", function () {
+            const client = new NativeClient({ mirrorNetwork: "testnet" });
+            expect(client.mirrorNetwork).to.deep.equal(MirrorNetwork.TESTNET);
+        });
+
+        it("should set mirrorNetwork from string 'previewnet'", function () {
+            const client = new NativeClient({ mirrorNetwork: "previewnet" });
+            expect(client.mirrorNetwork).to.deep.equal(
+                MirrorNetwork.PREVIEWNET,
+            );
+        });
+
+        it("should set mirrorNetwork from string 'local-node'", function () {
+            const client = new NativeClient({ mirrorNetwork: "local-node" });
+            expect(client.mirrorNetwork).to.deep.equal(
+                MirrorNetwork.LOCAL_NODE,
+            );
+        });
+
+        it("should wrap custom mirrorNetwork string as array", function () {
+            const client = new NativeClient({
+                mirrorNetwork: "mirror.example.com:443",
+            });
+            expect(client.mirrorNetwork).to.deep.equal([
+                "mirror.example.com:443",
+            ]);
+        });
+
+        it("should set mirrorNetwork from array of addresses", function () {
+            const mirrors = ["mirror.example.com:443"];
+            const client = new NativeClient({ mirrorNetwork: mirrors });
+            expect(client.mirrorNetwork).to.deep.equal(mirrors);
+        });
+
+        it("should override named network default mirrorNetwork when mirrorNetwork prop is provided", function () {
+            const client = new NativeClient({
+                network: "mainnet",
+                mirrorNetwork: ["mirror.example.com:443"],
+            });
+            expect(client.mirrorNetwork).to.deep.equal([
+                "mirror.example.com:443",
+            ]);
+        });
+
+        it("should override named network default mirrorNetwork with named mirrorNetwork", function () {
+            const client = new NativeClient({
+                network: "mainnet",
+                mirrorNetwork: "testnet",
+            });
+            expect(client.mirrorNetwork).to.deep.equal(MirrorNetwork.TESTNET);
+        });
+    });
+
+    describe("fromConfig", function () {
+        it("should create a client from JSON string with mirrorNetwork", function () {
+            const client = NativeClient.fromConfig(
+                JSON.stringify({
+                    network: "mainnet",
+                    mirrorNetwork: ["mirror.example.com:443"],
+                }),
+            );
+            expect(client).to.be.instanceOf(NativeClient);
+            expect(client._network._ledgerId).to.equal(LedgerId.MAINNET);
+            expect(client.mirrorNetwork).to.deep.equal([
+                "mirror.example.com:443",
+            ]);
+        });
+
+        it("should create a client from configuration object with mirrorNetwork", function () {
+            const client = NativeClient.fromConfig({
+                network: "mainnet",
+                mirrorNetwork: ["mirror.example.com:443"],
+            });
+            expect(client).to.be.instanceOf(NativeClient);
+            expect(client._network._ledgerId).to.equal(LedgerId.MAINNET);
+            expect(client.mirrorNetwork).to.deep.equal([
+                "mirror.example.com:443",
+            ]);
+        });
+
+        it("should create a client from configuration object with mirrorNetwork alone", function () {
+            const client = NativeClient.fromConfig({
+                mirrorNetwork: "testnet",
+            });
+            expect(client).to.be.instanceOf(NativeClient);
+            expect(client.mirrorNetwork).to.deep.equal(MirrorNetwork.TESTNET);
         });
     });
 
@@ -2131,6 +2227,78 @@ describe("NativeClient", function () {
                 const previewnetEntries =
                     createNetworkAddressNodeSet(WEB_PREVIEWNET);
                 expect(networkEntries).to.deep.equal(previewnetEntries);
+            });
+        });
+
+        describe("forMirrorNetwork", function () {
+            it("should create client with testnet mirror network and update network", async function () {
+                server.use(
+                    http.get(
+                        "https://testnet.mirrornode.hedera.com/api/v1/network/nodes",
+                        ({ request }) => {
+                            const url = new URL(request.url);
+                            const fileId = url.searchParams.get("file.id");
+
+                            if (fileId === FileId.ADDRESS_BOOK.toString()) {
+                                return HttpResponse.json(
+                                    generateAddressBookResponse(WEB_TESTNET),
+                                );
+                            }
+
+                            return HttpResponse.json({ nodes: [] });
+                        },
+                    ),
+                );
+
+                const client = await NativeClient.forMirrorNetwork("testnet");
+
+                expect(client).to.be.instanceOf(NativeClient);
+                expect(client.network).to.not.be.empty;
+                expect(client.mirrorNetwork).to.deep.equal(
+                    MirrorNetwork.TESTNET,
+                );
+
+                const networkEntries = createNetworkAddressNodeSet(
+                    client.network,
+                );
+                const testnetEntries = createNetworkAddressNodeSet(WEB_TESTNET);
+                expect(networkEntries).to.deep.equal(testnetEntries);
+            });
+
+            it("should create client with custom mirror network and update network", async function () {
+                server.use(
+                    http.get(
+                        "https://custom-mirror.example.com/api/v1/network/nodes",
+                        ({ request }) => {
+                            const url = new URL(request.url);
+                            const fileId = url.searchParams.get("file.id");
+
+                            if (fileId === FileId.ADDRESS_BOOK.toString()) {
+                                return HttpResponse.json(
+                                    generateAddressBookResponse(WEB_TESTNET),
+                                );
+                            }
+
+                            return HttpResponse.json({ nodes: [] });
+                        },
+                    ),
+                );
+
+                const client = await NativeClient.forMirrorNetwork([
+                    "custom-mirror.example.com:443",
+                ]);
+
+                expect(client).to.be.instanceOf(NativeClient);
+                expect(client.network).to.not.be.empty;
+                expect(client.mirrorNetwork).to.deep.equal([
+                    "custom-mirror.example.com:443",
+                ]);
+
+                const networkEntries = createNetworkAddressNodeSet(
+                    client.network,
+                );
+                const testnetEntries = createNetworkAddressNodeSet(WEB_TESTNET);
+                expect(networkEntries).to.deep.equal(testnetEntries);
             });
         });
     });
