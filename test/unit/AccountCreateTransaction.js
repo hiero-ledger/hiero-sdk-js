@@ -8,8 +8,12 @@ import {
     Transaction,
     TransactionId,
     EvmAddress,
+    Client,
+    Hbar,
     HookExtensionPoint,
 } from "../../src/index.js";
+import BadEntityIdError from "../../src/BadEntityIdError.js";
+import Duration from "../../src/Duration.js";
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
 import EvmHook from "../../src/hooks/EvmHook.js";
 import {
@@ -987,6 +991,249 @@ describe("AccountCreateTransaction", function () {
                     adminKey.toString(),
                 );
             });
+        });
+    });
+
+    describe("autoRenewPeriod, staking and logging", function () {
+        const VALID_START = new Timestamp(1596210382, 0);
+
+        it("should accept an autoRenewPeriod given as a Duration", function () {
+            const transaction =
+                new AccountCreateTransaction().setAutoRenewPeriod(
+                    new Duration(90),
+                );
+
+            expect(transaction.autoRenewPeriod).to.be.instanceOf(Duration);
+            expect(transaction.autoRenewPeriod.seconds.toNumber()).to.equal(90);
+        });
+
+        it("should accept an autoRenewPeriod given as a Long", function () {
+            const transaction =
+                new AccountCreateTransaction().setAutoRenewPeriod(
+                    Long.fromNumber(90),
+                );
+
+            expect(transaction.autoRenewPeriod).to.be.instanceOf(Duration);
+            expect(transaction.autoRenewPeriod.seconds.toNumber()).to.equal(90);
+        });
+
+        it("should accept an autoRenewPeriod given as a number", function () {
+            const transaction =
+                new AccountCreateTransaction().setAutoRenewPeriod(90);
+
+            expect(transaction.autoRenewPeriod).to.be.instanceOf(Duration);
+            expect(transaction.autoRenewPeriod.seconds.toNumber()).to.equal(90);
+        });
+
+        it("should set stakedAccountId from a string", function () {
+            const transaction =
+                new AccountCreateTransaction().setStakedAccountId("0.0.456");
+
+            expect(transaction.stakedAccountId.toString()).to.equal("0.0.456");
+        });
+
+        it("should set stakedAccountId from an instance", function () {
+            const transaction =
+                new AccountCreateTransaction().setStakedAccountId(
+                    new AccountId(0, 0, 456),
+                );
+
+            expect(transaction.stakedAccountId.toString()).to.equal("0.0.456");
+        });
+
+        it("should set stakedNodeId", function () {
+            const transaction = new AccountCreateTransaction().setStakedNodeId(
+                1,
+            );
+
+            expect(transaction.stakedNodeId.toNumber()).to.equal(1);
+
+            transaction.setStakedNodeId(Long.fromNumber(2));
+
+            expect(transaction.stakedNodeId.toNumber()).to.equal(2);
+        });
+
+        it("should set the staking fields from props", function () {
+            const transaction = new AccountCreateTransaction({
+                autoRenewPeriod: new Duration(90),
+                stakedAccountId: new AccountId(0, 0, 456),
+                stakedNodeId: 1,
+            });
+
+            expect(transaction.autoRenewPeriod.seconds.toNumber()).to.equal(90);
+            expect(transaction.stakedAccountId.toString()).to.equal("0.0.456");
+            expect(transaction.stakedNodeId.toNumber()).to.equal(1);
+        });
+
+        it("should keep the staking fields through a round trip", function () {
+            const transaction = new AccountCreateTransaction()
+                .setKey(PrivateKey.generateED25519().publicKey)
+                .setStakedAccountId(new AccountId(0, 0, 456))
+                .setNodeAccountIds([new AccountId(0, 0, 3)])
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        new AccountId(0, 0, 1001),
+                        VALID_START,
+                    ),
+                )
+                .freeze();
+
+            const decoded = Transaction.fromBytes(transaction.toBytes());
+
+            expect(decoded).to.be.instanceOf(AccountCreateTransaction);
+            expect(decoded.stakedAccountId.toString()).to.equal("0.0.456");
+        });
+
+        it("should throw once frozen", function () {
+            const transaction = new AccountCreateTransaction()
+                .setNodeAccountIds([new AccountId(0, 0, 3)])
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        new AccountId(0, 0, 1001),
+                        VALID_START,
+                    ),
+                )
+                .freeze();
+
+            expect(() => transaction.setAutoRenewPeriod(90)).to.throw(
+                "transaction is immutable",
+            );
+            expect(() =>
+                transaction.setStakedAccountId(new AccountId(0, 0, 456)),
+            ).to.throw("transaction is immutable");
+            expect(() => transaction.setStakedNodeId(1)).to.throw(
+                "transaction is immutable",
+            );
+        });
+    });
+
+    describe("_validateChecksums", function () {
+        let mainnet, testnet;
+
+        beforeEach(function () {
+            mainnet = Client.forMainnet({ scheduleNetworkUpdate: false });
+            testnet = Client.forTestnet({ scheduleNetworkUpdate: false });
+        });
+
+        afterEach(function () {
+            mainnet.close();
+            testnet.close();
+        });
+
+        it("should check the deprecated proxy account ID checksum", function () {
+            // 0.0.123-vfmkw has the mainnet checksum
+            const accountId = new AccountId(0, 0, 123);
+            accountId._checksum = "vfmkw";
+
+            const transaction = new AccountCreateTransaction();
+            transaction._proxyAccountId = accountId;
+
+            expect(() =>
+                transaction._validateChecksums(mainnet),
+            ).to.not.throw();
+            expect(() => transaction._validateChecksums(testnet)).to.throw(
+                BadEntityIdError,
+            );
+        });
+
+        it("should not throw when no proxy account ID is set", function () {
+            expect(() =>
+                new AccountCreateTransaction()._validateChecksums(testnet),
+            ).to.not.throw();
+        });
+    });
+
+    describe("_execute", function () {
+        it("should call crypto.createAccount() with the request", async function () {
+            const request = {};
+            const response = {};
+            const calls = [];
+            const channel = {
+                crypto: {
+                    createAccount: (arg) => {
+                        calls.push(arg);
+                        return Promise.resolve(response);
+                    },
+                },
+            };
+
+            expect(
+                await new AccountCreateTransaction()._execute(channel, request),
+            ).to.equal(response);
+            expect(calls).to.deep.equal([request]);
+        });
+    });
+
+    describe("_getLogId", function () {
+        it("should include the class name and valid start", function () {
+            const transaction = new AccountCreateTransaction()
+                .setNodeAccountIds([new AccountId(0, 0, 3)])
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        new AccountId(0, 0, 1001),
+                        new Timestamp(1596210382, 0),
+                    ),
+                )
+                .freeze();
+
+            expect(transaction._getLogId()).to.equal(
+                `AccountCreateTransaction:${new Timestamp(
+                    1596210382,
+                    0,
+                ).toString()}`,
+            );
+        });
+    });
+
+    describe("initialBalance", function () {
+        it("defaults to null", function () {
+            expect(new AccountCreateTransaction().initialBalance).to.be.null;
+        });
+
+        it("should set the initial balance from a number", function () {
+            const transaction =
+                new AccountCreateTransaction().setInitialBalance(100);
+
+            expect(transaction.initialBalance).to.be.instanceOf(Hbar);
+            expect(transaction.initialBalance.toTinybars().toNumber()).to.equal(
+                10000000000,
+            );
+        });
+
+        it("should keep an Hbar instance as is", function () {
+            const initialBalance = new Hbar(2);
+            const transaction =
+                new AccountCreateTransaction().setInitialBalance(
+                    initialBalance,
+                );
+
+            expect(transaction.initialBalance).to.equal(initialBalance);
+        });
+
+        it("should throw once frozen", function () {
+            const transaction = new AccountCreateTransaction()
+                .setNodeAccountIds([new AccountId(0, 0, 3)])
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        new AccountId(0, 0, 1001),
+                        new Timestamp(1596210382, 0),
+                    ),
+                )
+                .freeze();
+
+            expect(() => transaction.setInitialBalance(1)).to.throw(
+                "transaction is immutable",
+            );
+        });
+    });
+
+    describe("setAlias", function () {
+        it("should throw for an invalid EVM address", function () {
+            expect(() =>
+                new AccountCreateTransaction().setAlias("0x1234"),
+            ).to.throw(
+                'evmAddress must be a valid EVM address with or without "0x" prefix',
+            );
         });
     });
 });

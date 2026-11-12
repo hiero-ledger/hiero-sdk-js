@@ -204,15 +204,6 @@ describe("FileAppendTransaction", function () {
                 expect(transaction.setChunkSize(10)).to.equal(transaction);
                 expect(transaction.chunkSize).to.equal(10);
             });
-
-            // TODO(#4754): setChunkSize() doesn't check that the transaction isn't frozen.
-            it.skip("should throw once frozen", function () {
-                const transaction = freezeWithIds(new FileAppendTransaction());
-
-                expect(() => transaction.setChunkSize(10)).to.throw(
-                    "transaction is immutable",
-                );
-            });
         });
 
         describe("chunkInterval", function () {
@@ -286,15 +277,6 @@ describe("FileAppendTransaction", function () {
                 const decoded = Transaction.fromBytes(transaction.toBytes());
 
                 expect(decoded.chunkInterval).to.equal(10);
-            });
-
-            // TODO(#4754): setChunkInterval() doesn't check that the transaction isn't frozen.
-            it.skip("setChunkInterval() should throw once frozen", function () {
-                const transaction = freezeWithIds(new FileAppendTransaction());
-
-                expect(() => transaction.setChunkInterval(100)).to.throw(
-                    "transaction is immutable",
-                );
             });
         });
 
@@ -548,5 +530,25 @@ describe("FileAppendTransaction", function () {
                 );
             });
         });
+    });
+
+    it("should throw on setting the chunk size or chunk interval once frozen", function () {
+        const tx = new FileAppendTransaction()
+            .setNodeAccountIds([AccountId.fromString("0.0.3")])
+            .setTransactionId(
+                TransactionId.withValidStart(
+                    AccountId.fromString("0.0.1001"),
+                    new Timestamp(1596210382, 0),
+                ),
+            )
+            .setFileId(FileId.fromString("0.0.5005"))
+            .setContents(new Uint8Array(25))
+            .setChunkSize(10)
+            .freeze();
+
+        expect(() => tx.setChunkSize(5)).to.throw("transaction is immutable");
+        expect(() => tx.setChunkInterval(1000)).to.throw(
+            "transaction is immutable",
+        );
     });
 });
