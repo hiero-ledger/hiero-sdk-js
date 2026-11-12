@@ -8,7 +8,7 @@ class HookEntityId {
     /**
      *
      * @param {object} props
-     * @param {AccountId} [props.accountId]
+     * @param {AccountId | string} [props.accountId]
      * @param {ContractId} [props.contractId]
      */
     constructor(props = {}) {
@@ -34,11 +34,14 @@ class HookEntityId {
     }
 
     /**
-     * @param {AccountId} accountId
+     * @param {AccountId | string} accountId
      * @returns {this}
      */
     setAccountId(accountId) {
-        this._accountId = accountId;
+        this._accountId =
+            typeof accountId === "string"
+                ? AccountId.fromString(accountId)
+                : accountId.clone();
         this._contractId = null;
         return this;
     }
