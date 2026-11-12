@@ -565,6 +565,19 @@ describe("TopicMessageSubmitTransaction", function () {
                 // Default is set from CHUNK_SIZE constant
                 expect(transaction.getChunkSize()).to.equal(1024);
             });
+
+            it("should throw on setting chunkSize once frozen", function () {
+                const transaction = new TopicMessageSubmitTransaction()
+                    .setNodeAccountIds([nodeId])
+                    .setTransactionId(transactionId)
+                    .setTopicId(topicId)
+                    .setMessage(message)
+                    .freeze();
+
+                expect(() => transaction.setChunkSize(5)).to.throw(
+                    "transaction is immutable",
+                );
+            });
         });
 
         describe("customFeeLimits", function () {

@@ -57,9 +57,7 @@ describe("Hbar properties", { retry: 0 }, function () {
         );
     });
 
-    // Skipped until #4685 is fixed: toString(unit) can print exponent notation
-    // (for example "1e-8 ℏ") that fromString() rejects.
-    it.skip("fromString() reads back what toString(unit) writes for any unit", function () {
+    it("fromString() reads back what toString(unit) writes for any unit", function () {
         fc.assert(
             fc.property(int64, unit, (amount, u) => {
                 const hbar = Hbar.fromTinybars(amount.toString());

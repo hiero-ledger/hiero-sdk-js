@@ -148,7 +148,7 @@ export default class TransactionRecordQuery extends Query {
      * @returns {TransactionRecordQuery}
      */
     setIncludeDuplicates(includeDuplicates) {
-        this._duplicates = includeDuplicates;
+        this._includeDuplicates = includeDuplicates;
         return this;
     }
 
@@ -156,7 +156,9 @@ export default class TransactionRecordQuery extends Query {
      * @returns {boolean}
      */
     get includeDuplicates() {
-        return this._duplicates != null ? this._duplicates : false;
+        return this._includeDuplicates != null
+            ? this._includeDuplicates
+            : false;
     }
 
     /**

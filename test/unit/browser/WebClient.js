@@ -41,6 +41,66 @@ describe("WebClient", function () {
         });
     });
 
+    // The mirror network name in the configuration
+    describe("mirrorNetwork in the configuration", function () {
+        it("takes the local node mirror network from the constructor", function () {
+            const client = new WebClient({
+                mirrorNetwork: "local-node",
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(client.mirrorNetwork).to.deep.equal(
+                WebMirrorNetwork.LOCAL_NODE,
+            );
+        });
+
+        it("takes the local node mirror network from a config string", function () {
+            const client = WebClient.fromConfig(
+                JSON.stringify({
+                    mirrorNetwork: "local-node",
+                    scheduleNetworkUpdate: false,
+                }),
+            );
+
+            expect(client.mirrorNetwork).to.deep.equal(
+                WebMirrorNetwork.LOCAL_NODE,
+            );
+        });
+
+        it("takes a named mirror network from the constructor as the setter does", function () {
+            for (const name of [
+                "mainnet",
+                "testnet",
+                "previewnet",
+                "local-node",
+            ]) {
+                const client = new WebClient({
+                    mirrorNetwork: name,
+                    scheduleNetworkUpdate: false,
+                });
+                const setter = new WebClient({
+                    scheduleNetworkUpdate: false,
+                });
+                setter.setMirrorNetwork(name);
+
+                expect(client.mirrorNetwork).to.deep.equal(
+                    setter.mirrorNetwork,
+                );
+            }
+        });
+
+        it("takes a mirror network address list as it is", function () {
+            const client = new WebClient({
+                mirrorNetwork: ["127.0.0.1:5551"],
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(client.mirrorNetwork).to.deep.equal(
+                WebMirrorNetwork.LOCAL_NODE,
+            );
+        });
+    });
+
     // Named-network static factories
     describe("named-network factories", function () {
         it("forMainnet returns a client with MAINNET ledgerId", function () {
