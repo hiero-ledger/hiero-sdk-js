@@ -313,6 +313,34 @@ describe("ContractExecuteTransaction", function () {
             expect(contractExec.functionParameters).to.not.be.null;
             expect(contractExec.functionParameters.length).to.be.greaterThan(0);
         });
+        it("should keep an EVM address contract id when serialized before freezing", function () {
+            const evmAddress = "abcdef1234567890abcdef1234567890abcdef12";
+            const evmContractId = ContractId.fromEvmAddress(0, 0, evmAddress);
+
+            // Serialized without freezing, e.g. to hand to another signer
+            const transactionBytes = new ContractExecuteTransaction()
+                .setContractId(evmContractId)
+                .setGas(gas)
+                .setNodeAccountIds([new AccountId(3)])
+                .setTransactionId(TransactionId.generate(new AccountId(10)))
+                .toBytes();
+
+            const contractExec = /** @type {ContractExecuteTransaction} */ (
+                Transaction.fromBytes(transactionBytes)
+            );
+
+            expect(contractExec.contractId.toString()).to.equal(
+                `0.0.${evmAddress}`,
+            );
+
+            // The body rebuilt by freeze() must still target the EVM address
+            contractExec.freeze();
+            const transactionData = contractExec._makeTransactionData();
+
+            expect(
+                ContractId._fromProtobuf(transactionData.contractID).toString(),
+            ).to.equal(`0.0.${evmAddress}`);
+        });
     });
 
     describe("_makeTransactionData", function () {

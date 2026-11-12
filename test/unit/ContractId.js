@@ -1,4 +1,4 @@
-import { ContractId, DelegateContractId } from "../../src/index.js";
+import { ContractId, DelegateContractId, Key } from "../../src/index.js";
 import * as hex from "../../src/encoding/hex.js";
 import Long from "long";
 
@@ -26,16 +26,6 @@ describe("ContractId", function () {
         const emvAddresContractId = ContractId.fromEvmAddress(1, 2, evmAddress);
 
         expect(emvAddresContractId.toString()).to.be.equal(`1.2.${evmAddress}`);
-    });
-
-    it("round-trips an EVM ContractId through bytes", function () {
-        const contractId = ContractId.fromEvmAddress(1, 2, evmAddress);
-        const bytes = contractId.toBytes();
-        const decoded = ContractId.fromBytes(bytes);
-
-        expect(decoded.toString()).toBe(`1.2.${evmAddress}`);
-        expect(decoded.toEvmAddress()).toBe(evmAddress);
-        expect(decoded.toBytes()).toEqual(bytes);
     });
 
     it("clones EVM ContractId bytes independently", function () {
@@ -244,6 +234,103 @@ describe("ContractId", function () {
             expect(ContractId.fromString(`0.0.${evm}`).toString()).to.equal(
                 `0.0.${evm}`,
             );
+        });
+    });
+    describe("toBytes() / fromBytes()", function () {
+        const nonLongZeroAddress = "742d35cc6634c0532925a3b844bc454e4438f44e";
+
+        it("should keep a non-long-zero EVM address", function () {
+            const contractId = ContractId.fromEvmAddress(
+                0,
+                0,
+                nonLongZeroAddress,
+            );
+
+            const roundTripped = ContractId.fromBytes(contractId.toBytes());
+
+            expect(roundTripped.toString()).to.equal(
+                `0.0.${nonLongZeroAddress}`,
+            );
+            expect(roundTripped.toEvmAddress()).to.equal(nonLongZeroAddress);
+            expect(roundTripped.num.toNumber()).to.equal(0);
+            expect(roundTripped.equals(contractId)).to.be.true;
+        });
+
+        it("should keep a non-long-zero EVM address with non-zero shard/realm", function () {
+            const contractId = ContractId.fromEvmAddress(
+                5,
+                10,
+                nonLongZeroAddress,
+            );
+
+            const roundTripped = ContractId.fromBytes(contractId.toBytes());
+
+            expect(roundTripped.toString()).to.equal(
+                `5.10.${nonLongZeroAddress}`,
+            );
+            expect(roundTripped.shard.toNumber()).to.equal(5);
+            expect(roundTripped.realm.toNumber()).to.equal(10);
+            expect(roundTripped.equals(contractId)).to.be.true;
+        });
+
+        it("should keep the num of a long-zero EVM address", function () {
+            const longZeroAddress = "00000000000000000000000000000000000004d2"; // 1234
+            const contractId = ContractId.fromEvmAddress(1, 1, longZeroAddress);
+
+            const roundTripped = ContractId.fromBytes(contractId.toBytes());
+
+            expect(roundTripped.toString()).to.equal("1.1.1234");
+            expect(roundTripped.num.toNumber()).to.equal(1234);
+            expect(roundTripped.evmAddress).to.be.null;
+            expect(roundTripped.toEvmAddress()).to.equal(longZeroAddress);
+        });
+
+        it("should leave evmAddress null for a numeric id", function () {
+            const contractId = new ContractId(1, 2, 3);
+
+            const roundTripped = ContractId.fromBytes(contractId.toBytes());
+
+            expect(roundTripped.toString()).to.equal("1.2.3");
+            expect(roundTripped.evmAddress).to.be.null;
+            expect(roundTripped.compare(contractId)).to.equal(0);
+        });
+
+        it("should keep the EVM address of a ContractId used as a key", function () {
+            const contractId = ContractId.fromEvmAddress(
+                0,
+                0,
+                nonLongZeroAddress,
+            );
+
+            const fromKey = Key._fromProtobufKey(contractId._toProtobufKey());
+
+            expect(fromKey).to.be.instanceOf(ContractId);
+            expect(fromKey.toString()).to.equal(`0.0.${nonLongZeroAddress}`);
+        });
+
+        it("_fromProtobuf() should copy the EVM address", function () {
+            const evmAddressBytes = hex.decode(nonLongZeroAddress);
+
+            const contractId = ContractId._fromProtobuf({
+                shardNum: Long.ZERO,
+                realmNum: Long.ZERO,
+                evmAddress: evmAddressBytes,
+            });
+            evmAddressBytes.fill(0);
+
+            expect(contractId.toEvmAddress()).to.equal(nonLongZeroAddress);
+        });
+
+        it("_fromProtobuf() should treat an empty EVM address as unset", function () {
+            const contractId = ContractId._fromProtobuf({
+                shardNum: Long.ZERO,
+                realmNum: Long.ZERO,
+                contractNum: Long.fromNumber(7),
+                evmAddress: new Uint8Array(),
+            });
+
+            expect(contractId.evmAddress).to.be.null;
+            expect(contractId.toString()).to.equal("0.0.7");
         });
     });
 });

@@ -1,6 +1,6 @@
 import { ContractId, DelegateContractId, Key } from "../../src/index.js";
-import Long from "long";
 import * as hex from "../../src/encoding/hex.js";
+import Long from "long";
 
 describe("DelegateContractId", function () {
     it("constructors", function () {
@@ -35,32 +35,52 @@ describe("DelegateContractId", function () {
         expect(keyToId instanceof DelegateContractId).to.be.true;
         expect(keyToId instanceof ContractId).to.be.true;
     });
+    describe("EVM address", function () {
+        const evmAddress = "742d35cc6634c0532925a3b844bc454e4438f44e";
 
-    it.each(["contract", "key"])(
-        "keeps a copied EVM address when decoding a delegate %s",
-        function (path) {
-            const address = "0011223344556677889900112233445577889900";
-            const input = new Uint8Array(hex.decode(address));
-            const protobuf = {
-                shardNum: Long.fromNumber(1),
-                realmNum: Long.fromNumber(2),
-                evmAddress: input,
-            };
-            const decoded =
-                path === "contract"
-                    ? DelegateContractId._fromProtobuf(protobuf)
-                    : Key._fromProtobufKey({ delegatableContractId: protobuf });
+        it("fromBytes() should keep the EVM address", function () {
+            const id = DelegateContractId.fromString(`0.0.${evmAddress}`);
 
-            expect(decoded).toBeInstanceOf(DelegateContractId);
-            expect(decoded.toString()).toBe(`1.2.${address}`);
-            expect(decoded.toEvmAddress()).toBe(address);
-            input.fill(0);
-            expect(hex.encode(decoded.evmAddress)).toBe(address);
-            expect(
-                hex.encode(
-                    decoded._toProtobufKey().delegatableContractId.evmAddress,
-                ),
-            ).toBe(address);
-        },
-    );
+            const roundTripped = DelegateContractId.fromBytes(id.toBytes());
+
+            expect(roundTripped).to.be.instanceOf(DelegateContractId);
+            expect(roundTripped.toString()).to.equal(`0.0.${evmAddress}`);
+            expect(roundTripped.toEvmAddress()).to.equal(evmAddress);
+        });
+
+        it("fromString() should keep the EVM address", function () {
+            const id = DelegateContractId.fromString(`1.2.${evmAddress}`);
+
+            expect(id.toString()).to.equal(`1.2.${evmAddress}`);
+            expect(id.evmAddress).to.deep.equal(hex.decode(evmAddress));
+        });
+
+        it("should keep the EVM address through a key round trip", function () {
+            const id = DelegateContractId.fromString(`0.0.${evmAddress}`);
+
+            const keyToId = Key._fromProtobufKey(id._toProtobufKey());
+
+            expect(keyToId).to.be.instanceOf(DelegateContractId);
+            expect(keyToId.toString()).to.equal(`0.0.${evmAddress}`);
+        });
+
+        it("clone() should keep the EVM address", function () {
+            const id = DelegateContractId.fromString(`0.0.${evmAddress}`);
+
+            const clone = id.clone();
+
+            expect(clone).to.be.instanceOf(DelegateContractId);
+            expect(clone.toString()).to.equal(`0.0.${evmAddress}`);
+        });
+
+        it("should leave evmAddress null for a numeric id", function () {
+            const id = new DelegateContractId(1, 2, 3);
+
+            const roundTripped = DelegateContractId.fromBytes(id.toBytes());
+
+            expect(roundTripped.toString()).to.equal("1.2.3");
+            expect(roundTripped.evmAddress).to.be.null;
+            expect(id.clone().evmAddress).to.be.null;
+        });
+    });
 });
