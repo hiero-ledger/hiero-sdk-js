@@ -2,12 +2,14 @@ import {
     ContractExecuteTransaction,
     ContractId,
     AccountId,
+    Timestamp,
     TransactionId,
     Hbar,
     PrivateKey,
     ContractFunctionParameters,
     Transaction,
     HbarUnit,
+    Client,
 } from "../../src/index.js";
 import Long from "long";
 
@@ -350,6 +352,93 @@ describe("ContractExecuteTransaction", function () {
             expect(transactionData.gas).to.be.null;
             expect(transactionData.amount).to.be.null;
             expect(transactionData.functionParameters).to.be.null;
+        });
+    });
+
+    describe("_validateChecksums", function () {
+        let mainnet, testnet;
+
+        beforeEach(function () {
+            mainnet = Client.forMainnet({ scheduleNetworkUpdate: false });
+            testnet = Client.forTestnet({ scheduleNetworkUpdate: false });
+        });
+
+        afterEach(function () {
+            mainnet.close();
+            testnet.close();
+        });
+
+        it("should validate contractId checksum when present", function () {
+            const query = new ContractExecuteTransaction();
+            const contractId = new ContractId(0, 0, 123);
+            contractId._checksum = "vfmkw";
+            query._contractId = contractId;
+
+            expect(() => query._validateChecksums(mainnet)).not.to.throw();
+            expect(() => query._validateChecksums(testnet)).to.throw();
+        });
+
+        it("should skip validation when contractId is unset", function () {
+            const query = new ContractExecuteTransaction();
+
+            expect(() => query._validateChecksums(testnet)).not.to.throw();
+        });
+    });
+
+    describe("_execute", function () {
+        it("should call smartContract.contractCallMethod with the request", async function () {
+            const request = {};
+            const response = {};
+            const calls = [];
+            const channel = {
+                smartContract: {
+                    contractCallMethod: (arg) => {
+                        calls.push(arg);
+                        return Promise.resolve(response);
+                    },
+                },
+            };
+
+            expect(
+                await new ContractExecuteTransaction()._execute(
+                    channel,
+                    request,
+                ),
+            ).to.equal(response);
+            expect(calls).to.deep.equal([request]);
+        });
+    });
+
+    describe("_getLogId", function () {
+        it("should return the log ID with the transaction ID valid start", function () {
+            const tx = new ContractExecuteTransaction();
+
+            // Set up a mock transaction ID with valid start
+            const mockValidStart = new Timestamp(1596210382, 0);
+            tx._transactionIds = {
+                current: {
+                    validStart: mockValidStart,
+                },
+            };
+
+            expect(tx._getLogId()).to.equal(
+                `ContractExecuteTransaction:${mockValidStart.toString()}`,
+            );
+        });
+
+        it("should fall back to the current timestamp when valid start is not set", function () {
+            const tx = new ContractExecuteTransaction();
+
+            // Set up a mock transaction ID with valid start
+            tx._transactionIds = {
+                current: {
+                    validStart: new Timestamp(1596210382, 0),
+                },
+            };
+
+            expect(tx._getLogId()).to.equal(
+                `ContractExecuteTransaction:1596210382.000000000`,
+            );
         });
     });
 });
