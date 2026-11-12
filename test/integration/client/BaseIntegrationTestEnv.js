@@ -210,7 +210,6 @@ export default class BaseIntegrationTestEnv {
         }
 
         client
-            .setMaxNodeAttempts(1)
             .setNodeMinBackoff(0)
             .setNodeMaxBackoff(0)
             .setNodeMinReadmitPeriod(0)
