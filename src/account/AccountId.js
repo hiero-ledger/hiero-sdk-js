@@ -60,7 +60,12 @@ export default class AccountId {
         let aliasKey = undefined;
         let evmAddress = undefined;
 
-        if ((text.startsWith("0x") && text.length == 42) || text.length == 40) {
+        // A dotted shard.realm.num ID can also be 40 characters long.
+        // Only undotted input may be a standalone EVM address.
+        if (
+            !text.includes(".") &&
+            ((text.startsWith("0x") && text.length == 42) || text.length == 40)
+        ) {
             evmAddress = EvmAddress.fromString(text);
         } else {
             const result = EntityIdHelper.fromStringSplitter(text);

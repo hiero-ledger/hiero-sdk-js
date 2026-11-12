@@ -77,12 +77,6 @@ describe("Entity ID properties", { retry: 0 }, function () {
                         const id = new EntityId(shard, realm, num);
                         const text = id.toString();
 
-                        // TODO(#4671): AccountId.fromString() reads any
-                        // 40-character string as an EVM address, so it
-                        // cannot read back an ID whose toString() is 40
-                        // characters long. Remove this once that is fixed.
-                        fc.pre(EntityId !== AccountId || text.length !== 40);
-
                         expectEntityId(
                             EntityId.fromString(text),
                             shard,
