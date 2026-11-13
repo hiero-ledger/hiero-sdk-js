@@ -224,6 +224,13 @@ export default class ManagedNetwork {
         node.close();
         this._removeNodeFromNetwork(node);
         this._nodes.splice(i, 1);
+
+        // A closed node must not be picked again by `getNode()` or
+        // `getNodeAccountIdsForExecute()`.
+        const healthyIndex = this._healthyNodes.indexOf(node);
+        if (healthyIndex !== -1) {
+            this._healthyNodes.splice(healthyIndex, 1);
+        }
     }
 
     /**
@@ -293,21 +300,22 @@ export default class ManagedNetwork {
         // Shuffle the nodes so we don't immediately pick the first nodes
         util.shuffle(newNodes);
 
-        // Copy all the nodes into the healhty nodes list initially
-        // and push the nodes into the network; this maintains the
-        // shuffled state from `newNodes`
+        // Push every node into the network map and only the healthy ones into
+        // the healthy list; pushing in this order keeps the shuffled state
+        // from `newNodes`. A backed-off node has to stay in the map, because
+        // that is what `getNode(accountId)` reads: leaving it out made the
+        // node unfindable by its account ID until the network was set again,
+        // even after its backoff ended (#4749).
         for (const node of newNodes) {
-            if (!node.isHealthy()) {
-                continue;
-            }
-
-            newHealthyNodes.push(node);
-
             const newNetworkNodes = newNetwork.has(node.getKey())
                 ? /** @type {NetworkNodeT[]} */ (newNetwork.get(node.getKey()))
                 : [];
             newNetworkNodes.push(node);
             newNetwork.set(node.getKey(), newNetworkNodes);
+
+            if (node.isHealthy()) {
+                newHealthyNodes.push(node);
+            }
         }
 
         this._nodes = newNodes;

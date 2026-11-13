@@ -454,4 +454,108 @@ describe("AccountAllowanceApproveTransaction", function () {
             "9000000000000000000",
         );
     });
+
+    describe("approveTokenNftAllowanceWithDelegatingSpender", function () {
+        it("should set the delegating spender on the approval", function () {
+            const tokenId = new TokenId(1);
+            const nftId = new NftId(tokenId, Long.fromNumber(2));
+            const ownerAccountId = new AccountId(3);
+            const spenderAccountId = new AccountId(4);
+            const delegatingSpender = new AccountId(5);
+
+            const transaction =
+                new AccountAllowanceApproveTransaction().approveTokenNftAllowanceWithDelegatingSpender(
+                    nftId,
+                    ownerAccountId,
+                    spenderAccountId,
+                    delegatingSpender,
+                );
+
+            expect(transaction.tokenNftApprovals).to.have.lengthOf(1);
+
+            const approval = transaction.tokenNftApprovals[0];
+
+            expect(approval.tokenId.toString()).to.equal(tokenId.toString());
+            expect(approval.serialNumbers[0].toNumber()).to.equal(2);
+            expect(approval.ownerAccountId.toString()).to.equal(
+                ownerAccountId.toString(),
+            );
+            expect(approval.spenderAccountId.toString()).to.equal(
+                spenderAccountId.toString(),
+            );
+            expect(approval.delegatingSpender.toString()).to.equal(
+                delegatingSpender.toString(),
+            );
+        });
+
+        it("should be accumulative for the same token and spender", function () {
+            const tokenId = new TokenId(1);
+            const spenderAccountId = new AccountId(4);
+
+            const transaction = new AccountAllowanceApproveTransaction()
+                .approveTokenNftAllowanceWithDelegatingSpender(
+                    new NftId(tokenId, Long.fromNumber(2)),
+                    new AccountId(3),
+                    spenderAccountId,
+                    new AccountId(5),
+                )
+                .approveTokenNftAllowanceWithDelegatingSpender(
+                    new NftId(tokenId, Long.fromNumber(6)),
+                    new AccountId(3),
+                    spenderAccountId,
+                    new AccountId(5),
+                );
+
+            expect(transaction.tokenNftApprovals).to.have.lengthOf(1);
+            expect(
+                transaction.tokenNftApprovals[0].serialNumbers,
+            ).to.have.lengthOf(2);
+            expect(
+                transaction.tokenNftApprovals[0].serialNumbers[1].toNumber(),
+            ).to.equal(6);
+        });
+    });
+
+    describe("_execute", function () {
+        it("should call crypto.approveAllowances() with the request", async function () {
+            const request = {};
+            const response = {};
+            const calls = [];
+            const channel = {
+                crypto: {
+                    approveAllowances: (arg) => {
+                        calls.push(arg);
+                        return Promise.resolve(response);
+                    },
+                },
+            };
+
+            expect(
+                await new AccountAllowanceApproveTransaction()._execute(
+                    channel,
+                    request,
+                ),
+            ).to.equal(response);
+            expect(calls).to.deep.equal([request]);
+        });
+    });
+
+    describe("_getLogId", function () {
+        it("should include the class name and valid start", function () {
+            const VALID_START = new Timestamp(1596210382, 0);
+            const transaction = new AccountAllowanceApproveTransaction()
+                .setNodeAccountIds([new AccountId(3)])
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        new AccountId(1001),
+                        VALID_START,
+                    ),
+                )
+                .freeze();
+
+            expect(transaction._getLogId()).to.equal(
+                `AccountAllowanceApproveTransaction:${VALID_START.toString()}`,
+            );
+        });
+    });
 });

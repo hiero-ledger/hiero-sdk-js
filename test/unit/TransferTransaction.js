@@ -8,7 +8,14 @@ import {
     TransactionId,
     Timestamp,
     NftId,
+    Client,
 } from "../../src/index.js";
+import BadEntityIdError from "../../src/BadEntityIdError.js";
+import FungibleHookCall from "../../src/hooks/FungibleHookCall.js";
+import FungibleHookType from "../../src/hooks/FungibleHookType.js";
+import NftHookCall from "../../src/hooks/NftHookCall.js";
+import NftHookType from "../../src/hooks/NftHookType.js";
+import EvmHookCall from "../../src/hooks/EvmHookCall.js";
 import Long from "long";
 
 describe("TransferTransaction", function () {
@@ -403,5 +410,290 @@ describe("TransferTransaction", function () {
         );
         expect(transfers[1].isApproved).to.equal(false);
         expect(transfers[1].hookCall).to.be.undefined;
+    });
+
+    describe("addApprovedHbarTransfer", function () {
+        it("should mark the transfer as approved", function () {
+            const transaction = new TransferTransaction()
+                .addApprovedHbarTransfer(accountId1, 1)
+                .addApprovedHbarTransfer(accountId2, -1);
+
+            const transfers = transaction.hbarTransfersList;
+
+            expect(transfers[0].isApproved).to.be.true;
+            expect(transfers[1].isApproved).to.be.true;
+        });
+    });
+
+    describe("transfers with hooks", function () {
+        /**
+         * @returns {FungibleHookCall}
+         */
+        function fungibleHook() {
+            return new FungibleHookCall({
+                hookId: Long.fromNumber(5),
+                evmHookCall: new EvmHookCall({
+                    data: new Uint8Array([1, 2, 3]),
+                    gasLimit: Long.fromNumber(1000),
+                }),
+                type: FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
+            });
+        }
+
+        /**
+         * @param {number} type
+         * @returns {NftHookCall}
+         */
+        function nftHook(type) {
+            return new NftHookCall({
+                hookId: Long.fromNumber(7),
+                evmHookCall: new EvmHookCall({
+                    data: new Uint8Array([4, 5, 6]),
+                    gasLimit: Long.fromNumber(2000),
+                }),
+                type,
+            });
+        }
+
+        it("addHbarTransferWithHook should attach a hook to the transfer", function () {
+            const hook = fungibleHook();
+
+            const transaction =
+                new TransferTransaction().addHbarTransferWithHook(
+                    accountId1,
+                    1,
+                    hook,
+                );
+
+            const transfer = transaction.hbarTransfersList[0];
+
+            expect(transfer.isApproved).to.be.false;
+            expect(transfer.hookCall).to.be.instanceOf(FungibleHookCall);
+            expect(transfer.hookCall.hookId).to.equal(hook.hookId);
+            expect(transfer.hookCall.type).to.equal(hook.type);
+
+            transaction
+                .setTransactionId(new TransactionId(accountId3, timestamp1))
+                .setNodeAccountIds([accountId4])
+                .freeze();
+
+            const data = transaction._makeTransactionData();
+
+            expect(data.transfers.accountAmounts[0].preTxAllowanceHook).to.not
+                .be.undefined;
+        });
+
+        it("addTokenTransferWithHook should attach a hook to the transfer", function () {
+            const hook = fungibleHook();
+
+            const transaction =
+                new TransferTransaction().addTokenTransferWithHook(
+                    tokenId1,
+                    accountId1,
+                    1,
+                    hook,
+                );
+
+            const transfer = transaction._tokenTransfers[0];
+
+            expect(transfer.isApproved).to.be.false;
+            expect(transfer.hookCall).to.be.instanceOf(FungibleHookCall);
+            expect(transfer.hookCall.hookId).to.equal(hook.hookId);
+
+            transaction
+                .setTransactionId(new TransactionId(accountId3, timestamp1))
+                .setNodeAccountIds([accountId4])
+                .freeze();
+
+            const data = transaction._makeTransactionData();
+
+            expect(data.tokenTransfers[0].transfers[0].preTxAllowanceHook).to
+                .not.be.undefined;
+        });
+
+        it("addNftTransferWithHook should attach hooks to the transfer", function () {
+            const senderHook = nftHook(NftHookType.PRE_HOOK_SENDER);
+            const receiverHook = nftHook(NftHookType.PRE_POST_HOOK_RECEIVER);
+            const serial = Long.fromNumber(555);
+
+            const transaction =
+                new TransferTransaction().addNftTransferWithHook(
+                    new NftId(tokenId1, serial),
+                    accountId1,
+                    accountId2,
+                    senderHook,
+                    receiverHook,
+                );
+
+            const transfer = transaction._nftTransfers[0];
+
+            expect(transfer.isApproved).to.be.false;
+            expect(transfer.senderHookCall).to.be.instanceOf(NftHookCall);
+            expect(transfer.senderHookCall.type).to.equal(
+                NftHookType.PRE_HOOK_SENDER,
+            );
+            expect(transfer.receiverHookCall).to.be.instanceOf(NftHookCall);
+            expect(transfer.receiverHookCall.type).to.equal(
+                NftHookType.PRE_POST_HOOK_RECEIVER,
+            );
+
+            transaction
+                .setTransactionId(new TransactionId(accountId3, timestamp1))
+                .setNodeAccountIds([accountId4])
+                .freeze();
+
+            const data = transaction._makeTransactionData();
+
+            expect(
+                data.tokenTransfers[0].nftTransfers[0].preTxSenderAllowanceHook,
+            ).to.not.be.undefined;
+            expect(
+                data.tokenTransfers[0].nftTransfers[0]
+                    .prePostTxReceiverAllowanceHook,
+            ).to.not.be.undefined;
+        });
+    });
+
+    describe("_validateChecksums", function () {
+        let mainnet, testnet;
+
+        beforeEach(function () {
+            mainnet = Client.forMainnet({ scheduleNetworkUpdate: false });
+            testnet = Client.forTestnet({ scheduleNetworkUpdate: false });
+        });
+
+        afterEach(function () {
+            mainnet.close();
+            testnet.close();
+        });
+
+        /**
+         * 0.0.123-vfmkw has the mainnet checksum
+         *
+         * @returns {AccountId}
+         */
+        function checksummedAccountId() {
+            const accountId = new AccountId(0, 0, 123);
+            accountId._checksum = "vfmkw";
+            return accountId;
+        }
+
+        it("should check the hbar transfer checksums against the client's network", function () {
+            const transaction = new TransferTransaction().addHbarTransfer(
+                checksummedAccountId(),
+                1,
+            );
+
+            expect(() =>
+                transaction._validateChecksums(mainnet),
+            ).to.not.throw();
+            expect(() => transaction._validateChecksums(testnet)).to.throw(
+                BadEntityIdError,
+            );
+        });
+
+        it("should check the token transfer checksums against the client's network", function () {
+            const tokenId = new TokenId(0, 0, 123);
+            tokenId._checksum = "vfmkw";
+
+            const transaction = new TransferTransaction().addTokenTransfer(
+                tokenId,
+                checksummedAccountId(),
+                1,
+            );
+
+            expect(() =>
+                transaction._validateChecksums(mainnet),
+            ).to.not.throw();
+            expect(() => transaction._validateChecksums(testnet)).to.throw(
+                BadEntityIdError,
+            );
+        });
+
+        it("should check the nft transfer checksums against the client's network", function () {
+            const tokenId = new TokenId(0, 0, 123);
+            tokenId._checksum = "vfmkw";
+
+            const transaction = new TransferTransaction().addNftTransfer(
+                new NftId(tokenId, Long.fromNumber(1)),
+                checksummedAccountId(),
+                checksummedAccountId(),
+            );
+
+            expect(() =>
+                transaction._validateChecksums(mainnet),
+            ).to.not.throw();
+            expect(() => transaction._validateChecksums(testnet)).to.throw(
+                BadEntityIdError,
+            );
+        });
+    });
+
+    describe("_execute", function () {
+        it("should call crypto.cryptoTransfer() with the request", async function () {
+            const request = {};
+            const response = {};
+            const calls = [];
+            const channel = {
+                crypto: {
+                    cryptoTransfer: (arg) => {
+                        calls.push(arg);
+                        return Promise.resolve(response);
+                    },
+                },
+            };
+
+            expect(
+                await new TransferTransaction()._execute(channel, request),
+            ).to.equal(response);
+            expect(calls).to.deep.equal([request]);
+        });
+    });
+
+    describe("_getLogId", function () {
+        it("should include the class name and valid start", function () {
+            const transaction = new TransferTransaction()
+                .setTransactionId(new TransactionId(accountId3, timestamp1))
+                .setNodeAccountIds([accountId4])
+                .freeze();
+
+            expect(transaction._getLogId()).to.equal(
+                `TransferTransaction:${timestamp1.toString()}`,
+            );
+        });
+    });
+
+    describe("constructor", function () {
+        it("should start without any transfers", function () {
+            const transaction = new TransferTransaction();
+
+            expect(transaction.hbarTransfersList).to.have.lengthOf(0);
+            expect(transaction.hbarTransfers.size).to.equal(0);
+            expect(transaction._tokenTransfers).to.have.lengthOf(0);
+            expect(transaction._nftTransfers).to.have.lengthOf(0);
+        });
+
+        it("should set the hbar transfers from props", function () {
+            const transaction = new TransferTransaction({
+                hbarTransfers: [
+                    { accountId: accountId1, amount: new Hbar(1) },
+                    { accountId: accountId2, amount: new Hbar(-1) },
+                ],
+            });
+
+            expect(
+                transaction.hbarTransfers
+                    .get(accountId1)
+                    .toTinybars()
+                    .toNumber(),
+            ).to.equal(100000000);
+            expect(
+                transaction.hbarTransfers
+                    .get(accountId2)
+                    .toTinybars()
+                    .toNumber(),
+            ).to.equal(-100000000);
+            expect(transaction.hbarTransfers.size).to.equal(2);
+        });
     });
 });

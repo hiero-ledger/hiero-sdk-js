@@ -370,6 +370,16 @@ describe("NodeUpdateTransaction", function () {
             }
             expect(err).to.be.true;
         });
+
+        it("should not delete grpc proxy endpoint (#4756)", function () {
+            let err = false;
+            try {
+                tx.deleteGrpcWebProxyEndpoint();
+            } catch (error) {
+                err = error.toString().includes(IMMUTABLE_ERROR);
+            }
+            expect(err).to.be.true;
+        });
     });
 
     describe("deserialization of optional parameters", function () {
@@ -737,17 +747,6 @@ describe("NodeUpdateTransaction", function () {
                 expect(
                     transaction._makeTransactionData().grpcProxyEndpoint,
                 ).to.deep.equal(new ServiceEndpoint()._toProtobuf());
-            });
-
-            // TODO(#4756): deleteGrpcWebProxyEndpoint() doesn't check that the transaction isn't frozen.
-            it.skip("should throw once frozen", function () {
-                const transaction = freezeWithIds(
-                    new NodeUpdateTransaction().setNodeId(1),
-                );
-
-                expect(() => transaction.deleteGrpcWebProxyEndpoint()).to.throw(
-                    "transaction is immutable",
-                );
             });
         });
 

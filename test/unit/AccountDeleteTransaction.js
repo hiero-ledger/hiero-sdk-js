@@ -6,6 +6,7 @@ import {
     LedgerId,
     Transaction,
     PrivateKey,
+    Timestamp,
 } from "../../src/index.js";
 
 describe("AccountDeleteTransaction", function () {
@@ -339,6 +340,46 @@ describe("AccountDeleteTransaction", function () {
 
             expect(transactionData.deleteAccountID).to.be.null;
             expect(transactionData.transferAccountID).to.be.null;
+        });
+    });
+
+    describe("_execute", function () {
+        it("should call crypto.cryptoDelete() with the request", async function () {
+            const request = {};
+            const response = {};
+            const calls = [];
+            const channel = {
+                crypto: {
+                    cryptoDelete: (arg) => {
+                        calls.push(arg);
+                        return Promise.resolve(response);
+                    },
+                },
+            };
+
+            expect(
+                await new AccountDeleteTransaction()._execute(channel, request),
+            ).to.equal(response);
+            expect(calls).to.deep.equal([request]);
+        });
+    });
+
+    describe("_getLogId", function () {
+        it("should include the class name and valid start", function () {
+            const VALID_START = new Timestamp(1596210382, 0);
+            const transaction = new AccountDeleteTransaction()
+                .setNodeAccountIds([nodeId])
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        new AccountId(0, 0, 1001),
+                        VALID_START,
+                    ),
+                )
+                .freeze();
+
+            expect(transaction._getLogId()).to.equal(
+                `AccountDeleteTransaction:${VALID_START.toString()}`,
+            );
         });
     });
 });
