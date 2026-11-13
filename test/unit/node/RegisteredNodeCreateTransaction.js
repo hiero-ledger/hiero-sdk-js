@@ -62,4 +62,88 @@ describe("RegisteredNodeCreateTransaction", function () {
     // serviceEndpoints lists (INVALID_REGISTERED_ENDPOINT,
     // REGISTERED_ENDPOINTS_EXCEEDED_LIMIT) are rejected by the consensus
     // node — see integration tests.
+
+    describe("null arguments", function () {
+        it("setAdminKey() throws a TypeError for null", function () {
+            expect(() =>
+                new RegisteredNodeCreateTransaction().setAdminKey(null),
+            ).to.throw(TypeError, "adminKey must not be null or undefined.");
+        });
+
+        it("setDescription() throws a TypeError for null", function () {
+            expect(() =>
+                new RegisteredNodeCreateTransaction().setDescription(null),
+            ).to.throw(TypeError, "description must not be null or undefined.");
+        });
+
+        it("setServiceEndpoints() throws a TypeError for null", function () {
+            expect(() =>
+                new RegisteredNodeCreateTransaction().setServiceEndpoints(null),
+            ).to.throw(
+                TypeError,
+                "serviceEndpoints must not be null or undefined.",
+            );
+        });
+
+        it("addServiceEndpoint() throws a TypeError for null", function () {
+            expect(() =>
+                new RegisteredNodeCreateTransaction().addServiceEndpoint(null),
+            ).to.throw(
+                TypeError,
+                "serviceEndpoint must not be null or undefined.",
+            );
+        });
+    });
+
+    describe("_execute", function () {
+        it("should call addressBook.createRegisteredNode() with the request", async function () {
+            const request = {};
+            const response = {};
+            const calls = [];
+            const channel = {
+                addressBook: {
+                    createRegisteredNode: (arg) => {
+                        calls.push(arg);
+                        return Promise.resolve(response);
+                    },
+                },
+            };
+
+            expect(
+                await new RegisteredNodeCreateTransaction()._execute(
+                    channel,
+                    request,
+                ),
+            ).to.equal(response);
+            expect(calls).to.deep.equal([request]);
+            expect(calls[0]).to.equal(request);
+        });
+    });
+
+    describe("_getTransactionDataCase", function () {
+        it("should return registeredNodeCreate", function () {
+            expect(
+                new RegisteredNodeCreateTransaction()._getTransactionDataCase(),
+            ).to.equal("registeredNodeCreate");
+        });
+    });
+
+    describe("_getLogId", function () {
+        it("should include the class name and valid start", function () {
+            const validStart = new Timestamp(1596210382, 0);
+            const transaction = new RegisteredNodeCreateTransaction()
+                .setNodeAccountIds([new AccountId(0, 0, 3)])
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        new AccountId(0, 0, 1001),
+                        validStart,
+                    ),
+                )
+                .freeze();
+
+            expect(transaction._getLogId()).to.equal(
+                `RegisteredNodeCreateTransaction:${validStart.toString()}`,
+            );
+        });
+    });
 });
