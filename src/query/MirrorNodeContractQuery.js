@@ -250,9 +250,6 @@ export default class MirrorNodeContractQuery {
         this._fillEvmAddress();
 
         const http = client._mirrorNodeHttpClient({
-            // `/contracts/call` is served by the mirror node's web3 module,
-            // a different port on a local network.
-            family: "web3",
             totalDeadline: requestTimeout,
         });
 

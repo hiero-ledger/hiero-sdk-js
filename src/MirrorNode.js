@@ -40,7 +40,10 @@ export default class MirrorNode extends ManagedNode {
     }
 
     /**
-     * Gets the base URL for this mirror node's REST API.
+     * Gets the base URL for this mirror node's REST API: the configured host
+     * and port, the same address the gRPC streams use. A local network has
+     * to serve every mirror node API on that one port, as Solo's ingress does
+     * on 127.0.0.1:38081.
      *
      * @returns {string} The base URL for the mirror node REST API
      * @throws {Error} When the mirror node has invalid address configuration
@@ -51,13 +54,6 @@ export default class MirrorNode extends ManagedNode {
 
         if (!host || !port) {
             throw new Error("Mirror node has invalid address configuration");
-        }
-
-        // For localhost/127.0.0.1, mirror node gRPC and REST API use different ports
-        // gRPC typically uses port 5600, but REST API uses port 5551
-        // Note: Contract calls may use port 8545 (handled separately in MirrorNodeContractQuery)
-        if (host === "localhost" || host === "127.0.0.1") {
-            return `http://${host}:5551/api/v1`;
         }
 
         const scheme = this._getSchemeFromHostAndPort(host, port);

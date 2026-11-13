@@ -185,7 +185,7 @@ export default class AccountId {
             throw new Error("field `evmAddress` should not be null");
         }
 
-        const http = client._mirrorNodeHttpClient({ family: "rest" });
+        const http = client._mirrorNodeHttpClient();
         const path = `/accounts/${this.evmAddress.toString()}`;
 
         // Give the mirror node a moment to ingest a just-created account.
@@ -230,7 +230,7 @@ export default class AccountId {
             throw new Error("field `num` should not be null");
         }
 
-        const http = client._mirrorNodeHttpClient({ family: "rest" });
+        const http = client._mirrorNodeHttpClient();
         const path = `/accounts/${this.num.toString()}`;
 
         // Give the mirror node a moment to ingest a just-created account.

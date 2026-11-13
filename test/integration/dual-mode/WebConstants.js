@@ -6,6 +6,6 @@ const network = {
     "localhost:8081": "0.0.4",
 };
 
-const mirrorNetwork = ["localhost:5551"];
+const mirrorNetwork = ["localhost:38081"];
 
 export { network, mirrorNetwork, node2Address, node2PortToReplace };
