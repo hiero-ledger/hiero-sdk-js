@@ -480,6 +480,15 @@ export default class TopicMessageSubmitTransaction extends Transaction {
     }
 
     /**
+     * @param {Client} client
+     */
+    _validateChecksums(client) {
+        if (this._topicId != null) {
+            this._topicId.validateChecksum(client);
+        }
+    }
+
+    /**
      * @override
      * @internal
      * @param {Channel} channel
