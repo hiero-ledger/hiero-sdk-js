@@ -56,6 +56,16 @@ import AccountInfoQuery from "./account/AccountInfoQuery.js";
 import AccountRecordsQuery from "./account/AccountRecordsQuery.js";
 import AccountUpdateTransaction from "./account/AccountUpdateTransaction.js";
 import TransferTransaction from "./account/TransferTransaction.js";
+import ClprCloseChannelTransaction from "./clpr/ClprCloseChannelTransaction.js";
+import ClprCompleteChannelTransaction from "./clpr/ClprCompleteChannelTransaction.js";
+import ClprCompleteConnectorTransaction from "./clpr/ClprCompleteConnectorTransaction.js";
+import ClprDeregisterConnectorTransaction from "./clpr/ClprDeregisterConnectorTransaction.js";
+import ClprGetEndpointManifestQuery from "./clpr/ClprGetEndpointManifestQuery.js";
+import ClprGetLedgerConfigurationQuery from "./clpr/ClprGetLedgerConfigurationQuery.js";
+import ClprRegisterChannelTransaction from "./clpr/ClprRegisterChannelTransaction.js";
+import ClprRegisterConnectorTransaction from "./clpr/ClprRegisterConnectorTransaction.js";
+import ClprSubmitBundleTransaction from "./clpr/ClprSubmitBundleTransaction.js";
+import ClprUpdateLedgerConfigurationTransaction from "./clpr/ClprUpdateLedgerConfigurationTransaction.js";
 import ContractByteCodeQuery from "./contract/ContractByteCodeQuery.js";
 import ContractCallQuery from "./contract/ContractCallQuery.js";
 import ContractCreateTransaction from "./contract/ContractCreateTransaction.js";
@@ -122,6 +132,38 @@ import TransactionReceiptQuery from "./transaction/TransactionReceiptQuery.js";
 import TransactionRecordQuery from "./transaction/TransactionRecordQuery.js";
 
 TRANSACTION_REGISTRY.set("atomicBatch", BatchTransaction._fromProtobuf);
+TRANSACTION_REGISTRY.set(
+    "clprCloseChannel",
+    ClprCloseChannelTransaction._fromProtobuf,
+);
+TRANSACTION_REGISTRY.set(
+    "clprCompleteChannel",
+    ClprCompleteChannelTransaction._fromProtobuf,
+);
+TRANSACTION_REGISTRY.set(
+    "clprCompleteConnector",
+    ClprCompleteConnectorTransaction._fromProtobuf,
+);
+TRANSACTION_REGISTRY.set(
+    "clprDeregisterConnector",
+    ClprDeregisterConnectorTransaction._fromProtobuf,
+);
+TRANSACTION_REGISTRY.set(
+    "clprRegisterChannel",
+    ClprRegisterChannelTransaction._fromProtobuf,
+);
+TRANSACTION_REGISTRY.set(
+    "clprRegisterConnector",
+    ClprRegisterConnectorTransaction._fromProtobuf,
+);
+TRANSACTION_REGISTRY.set(
+    "clprSubmitBundle",
+    ClprSubmitBundleTransaction._fromProtobuf,
+);
+TRANSACTION_REGISTRY.set(
+    "clprUpdateLedgerConfiguration",
+    ClprUpdateLedgerConfigurationTransaction._fromProtobuf,
+);
 TRANSACTION_REGISTRY.set(
     "consensusCreateTopic",
     TopicCreateTransaction._fromProtobuf,
@@ -265,6 +307,14 @@ TRANSACTION_REGISTRY.set("utilPrng", PrngTransaction._fromProtobuf);
 
 SCHEDULE_CREATE_TRANSACTION.push(() => new ScheduleCreateTransaction());
 
+QUERY_REGISTRY.set(
+    "clprGetEndpointManifest",
+    ClprGetEndpointManifestQuery._fromProtobuf,
+);
+QUERY_REGISTRY.set(
+    "clprGetLedgerConfiguration",
+    ClprGetLedgerConfigurationQuery._fromProtobuf,
+);
 QUERY_REGISTRY.set("consensusGetTopicInfo", TopicInfoQuery._fromProtobuf);
 QUERY_REGISTRY.set("contractCallLocal", ContractCallQuery._fromProtobuf);
 QUERY_REGISTRY.set("contractGetBytecode", ContractByteCodeQuery._fromProtobuf);

@@ -9,11 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+-   Added HIP-1535 CLPR support: eight transactions, two paid proof queries, ownership helpers and value models. Connector registration requires the existing Channel ID alongside the commitment. [#4578](https://github.com/hiero-ledger/hiero-sdk-js/issues/4578)
+-   `PublicKey.toBytesRawUncompressed()` returns ECDSA secp256k1 64-byte `x || y`. [#4578](https://github.com/hiero-ledger/hiero-sdk-js/issues/4578)
 -   `HookEntityId.setAccountId()` and the `accountId` constructor prop now accept a string such as `"0.0.123"` as well as an `AccountId`. The id is stored as a copy, like in the other `setAccountId()` setters. [#3789](https://github.com/hiero-ledger/hiero-sdk-js/issues/3789)
 
 ### Changed
 
 -   **Breaking for local networks:** `Client.forLocalNode()` and `setNetwork("local-node")` now use Solo's local ports: the consensus node at `127.0.0.1:35211` (was `50211`) and the mirror node at `127.0.0.1:38081` (was `5600` in Node.js and React Native, and `5551` in the browser). The SDK also uses a loopback mirror node address as given, and no longer sends its REST, Java REST and web3 calls to `5551`, `8084` and `8545`. Start Solo with the mirror node ingress, which serves all of them on one port, or set the network and mirror network yourself. [#3590](https://github.com/hiero-ledger/hiero-sdk-js/issues/3590)
+-   CLPR protobufs use CN main [`77c8361`](https://github.com/hiero-ledger/hiero-consensus-node/tree/77c8361520e595c25d2d943f89a57b32cb21d22c). Proof queries use the standard cost/payment flow targeting `fix-clpr-fees` [`08036e9`](https://github.com/hiero-ledger/hiero-consensus-node/tree/08036e992bd5db2feba155c11f7676778b861775), separately from the schema baseline. Live CLPR runtime and real-proof acceptance remain pending.
 
 ### Fixed
 
@@ -32,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   `PrivateKey.fromPem()` without a passphrase now throws a `BadKeyError` for input that isn't a private key. Before, any body that decoded to 48 bytes was read as an ED25519 key without checking its PKCS#8 prefix, so for example `PrivateKey.fromPem("BwcH".repeat(16))` returned a key. A body that wasn't base64 threw the base64 decoder's `SyntaxError` or `Error`, and an `EC PRIVATE KEY` whose body wasn't a SEC1 `ECPrivateKey` threw `TypeError: Cannot read properties of undefined (reading '1')`. An `EC PRIVATE KEY` whose private key is out of range for secp256k1, such as 0, threw the curve library's `RangeError` or `Error`. [#4735](https://github.com/hiero-ledger/hiero-sdk-js/issues/4735)
 -   `ContractId.fromBytes()` and `ContractId._fromProtobuf()` no longer drop the EVM address. A `ContractId.fromEvmAddress()` id with a non-long-zero address used to come back as `0.0.0` after a `toBytes()` → `fromBytes()` round trip, so a `ContractExecuteTransaction` serialized before freezing and then frozen elsewhere targeted contract `0.0.0`. `DelegateContractId`'s `fromBytes()`, `fromString()`, `clone()` and key decoding now keep the EVM address too. [#4743](https://github.com/hiero-ledger/hiero-sdk-js/issues/4743)
 -   `Client.setMaxNodeAttempts()` now takes effect: a node is closed and removed from the network after that many bad gRPC statuses. Before, nothing incremented a node's bad gRPC status count, so a node that kept failing was only backed off and readmitted, however many requests to it failed. Each `increaseBackoff()` now counts one failure, and, as in the Java and Go SDKs, the count is not reset by later successful requests. A closed node is also removed from the healthy nodes, so `getNode()` and `getNodeAccountIdsForExecute()` no longer pick it. The default `maxNodeAttempts` of `-1` still never closes a node. [#4747](https://github.com/hiero-ledger/hiero-sdk-js/issues/4747)
+-   `AccountId.clone()` and `ContractId.clone()` copy the EVM address instead of sharing it, so changing the address bytes of the clone or the original no longer changes the other. [#4578](https://github.com/hiero-ledger/hiero-sdk-js/issues/4578)
 
 # v2.91.0
 

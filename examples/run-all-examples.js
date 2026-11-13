@@ -18,6 +18,7 @@ const excludedDirectories = [
     "./demo-umd",
     "./frontend-examples",
     "./custom-grpc-web-proxies-network",
+    "./clpr",
 ];
 const excludedJSFile = [
     "run-all-examples.js",

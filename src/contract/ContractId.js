@@ -247,7 +247,8 @@ export default class ContractId extends Key {
     clone() {
         const id = new ContractId(this);
         id._checksum = this._checksum;
-        id.evmAddress = this.evmAddress;
+        id.evmAddress =
+            this.evmAddress != null ? new Uint8Array(this.evmAddress) : null;
         return id;
     }
 
