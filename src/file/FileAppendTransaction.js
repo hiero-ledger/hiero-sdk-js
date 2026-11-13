@@ -1,9 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import Hbar from "../Hbar.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import * as utf8 from "../encoding/utf8.js";
 import FileId from "./FileId.js";
 import TransactionId from "../transaction/TransactionId.js";
@@ -319,6 +317,7 @@ export default class FileAppendTransaction extends Transaction {
         if (chunkSize <= 0) {
             throw new Error("Chunk size must be greater than 0");
         }
+        this._requireNotFrozen();
         this._chunkSize = chunkSize;
         return this;
     }
@@ -335,6 +334,7 @@ export default class FileAppendTransaction extends Transaction {
      * @returns {this}
      */
     setChunkInterval(chunkInterval) {
+        this._requireNotFrozen();
         this._chunkInterval = chunkInterval;
         return this;
     }
@@ -592,6 +592,3 @@ export default class FileAppendTransaction extends Transaction {
         };
     }
 }
-
-// eslint-disable-next-line @typescript-eslint/unbound-method
-TRANSACTION_REGISTRY.set("fileAppend", FileAppendTransaction._fromProtobuf);

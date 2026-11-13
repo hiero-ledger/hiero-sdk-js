@@ -33,39 +33,14 @@ export default class WebClient extends Client {
             if (typeof props.network === "string") {
                 this._setNetworkFromName(props.network);
             } else if (props.network != null) {
-                Client._validateNetworkConsistency(props.network);
-
-                const { shard, realm } = Client._extractShardRealm(
-                    props.network,
-                );
-
-                // Shard and realm are inferred from the network, so we need to set them here
-                // to ensure that the client is properly configured.
-                this._shard = shard;
-                this._realm = realm;
-
+                // Also takes the shard and realm from the node account IDs.
                 this.setNetwork(props.network);
             }
 
-            if (typeof props.mirrorNetwork === "string") {
-                switch (props.mirrorNetwork) {
-                    case "mainnet":
-                        this.setMirrorNetwork(WebMirrorNetwork.MAINNET);
-                        break;
-
-                    case "testnet":
-                        this.setMirrorNetwork(WebMirrorNetwork.TESTNET);
-                        break;
-
-                    case "previewnet":
-                        this.setMirrorNetwork(WebMirrorNetwork.PREVIEWNET);
-                        break;
-
-                    default:
-                        this.setMirrorNetwork([props.mirrorNetwork]);
-                        break;
-                }
-            } else if (props.mirrorNetwork != null) {
+            if (props.mirrorNetwork != null) {
+                // setMirrorNetwork knows every network name, "local-node"
+                // included; a name it does not know becomes a one-address
+                // list, which is what the address form needs.
                 this.setMirrorNetwork(props.mirrorNetwork);
             }
         }
@@ -223,6 +198,10 @@ export default class WebClient extends Client {
     }
 
     /**
+     * Replaces the consensus nodes. The client's shard and realm follow the
+     * node account IDs, which must all be in the same shard and realm; the
+     * named networks are in shard 0, realm 0.
+     *
      * @param {{[key: string]: (string | AccountId)} | string} network
      * @returns {void}
      */
@@ -230,16 +209,16 @@ export default class WebClient extends Client {
         if (typeof network === "string") {
             switch (network) {
                 case "previewnet":
-                    this._network.setNetwork(WebNetwork.PREVIEWNET);
+                    this._setNetworkNodes(WebNetwork.PREVIEWNET);
                     break;
                 case "testnet":
-                    this._network.setNetwork(WebNetwork.TESTNET);
+                    this._setNetworkNodes(WebNetwork.TESTNET);
                     break;
                 case "mainnet":
-                    this._network.setNetwork(WebNetwork.MAINNET);
+                    this._setNetworkNodes(WebNetwork.MAINNET);
                     break;
                 case "local-node":
-                    this._network.setNetwork(WebNetwork.LOCAL_NODE);
+                    this._setNetworkNodes(WebNetwork.LOCAL_NODE);
                     break;
             }
         } else {
@@ -256,7 +235,7 @@ export default class WebClient extends Client {
                     );
                 }
             }
-            this._network.setNetwork(network);
+            this._setNetworkNodes(network);
         }
     }
 

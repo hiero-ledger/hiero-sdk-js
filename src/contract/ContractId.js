@@ -3,7 +3,6 @@
 import * as EntityIdHelper from "../EntityIdHelper.js";
 import Key from "../Key.js";
 import * as HieroProto from "@hiero-ledger/proto";
-import CACHE from "../Cache.js";
 import * as hex from "../encoding/hex.js";
 import { arrayEqual } from "../array.js";
 import Long from "long";
@@ -102,6 +101,11 @@ export default class ContractId extends Key {
             id.shardNum != null ? id.shardNum : 0,
             id.realmNum != null ? id.realmNum : 0,
             id.contractNum != null ? id.contractNum : 0,
+            // Copy the address: decoded bytes can be a view into the
+            // buffer they were decoded from.
+            id.evmAddress != null && id.evmAddress.length > 0
+                ? Uint8Array.from(id.evmAddress)
+                : undefined,
         );
 
         return contractId;
@@ -122,7 +126,7 @@ export default class ContractId extends Key {
      * @returns {Promise<ContractId>}
      */
     async populateAccountNum(client) {
-        const http = client._mirrorNodeHttpClient({ family: "rest" });
+        const http = client._mirrorNodeHttpClient();
         const path = `/contracts/${this.toEvmAddress()}`;
 
         const url = `${http.baseUrl}${path}`;
@@ -293,5 +297,3 @@ export default class ContractId extends Key {
         return ContractId._fromProtobuf(key);
     }
 }
-
-CACHE.setContractId((key) => ContractId.__fromProtobufKey(key));

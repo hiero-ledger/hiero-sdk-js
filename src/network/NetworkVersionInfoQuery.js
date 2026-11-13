@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Query, { QUERY_REGISTRY } from "../query/Query.js";
+import Query from "../query/Query.js";
 import NetworkVersionInfo from "./NetworkVersionInfo.js";
 
 /**
@@ -109,9 +109,3 @@ export default class NetworkVersionInfoQuery extends Query {
         return `NetworkVersionInfoQuery:${timestamp.toString()}`;
     }
 }
-
-QUERY_REGISTRY.set(
-    "networkGetVersionInfo",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    NetworkVersionInfoQuery._fromProtobuf,
-);

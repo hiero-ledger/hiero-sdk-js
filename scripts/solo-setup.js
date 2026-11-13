@@ -651,7 +651,17 @@ async function deployMirror({ mirrorVersion, mirrorNodeChartDir }) {
         );
     }
 
-    mirrorNodeArgs.push("--pinger", "--dev");
+    // The ingress serves every mirror node API (JS REST, Java REST, web3) on
+    // one port, so the SDK can use one mirror node URL as-is. Solo would
+    // forward it itself, but setupPortForwarding() restarts every forward in
+    // the namespace, so it forwards the ingress too.
+    mirrorNodeArgs.push(
+        "--pinger",
+        "--dev",
+        "--enable-ingress",
+        "--force-port-forward",
+        "false",
+    );
 
     await runCommand("npx", mirrorNodeArgs);
 

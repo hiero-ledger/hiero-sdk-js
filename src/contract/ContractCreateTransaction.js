@@ -6,11 +6,11 @@ import FileId from "../file/FileId.js";
 import ContractFunctionParameters from "./ContractFunctionParameters.js";
 import Transaction, {
     DEFAULT_AUTO_RENEW_PERIOD,
-    TRANSACTION_REGISTRY,
 } from "../transaction/Transaction.js";
 import Long from "long";
 import Duration from "../Duration.js";
 import Key from "../Key.js";
+import HookCreationDetails from "../hooks/HookCreationDetails.js";
 
 /**
  * @namespace proto
@@ -252,62 +252,76 @@ export default class ContractCreateTransaction extends Transaction {
                 body.contractCreateInstance
             );
 
+        const transaction = new ContractCreateTransaction({
+            bytecodeFileId:
+                create.fileID != null
+                    ? FileId._fromProtobuf(
+                          /** @type {HieroProto.proto.IFileID} */ (
+                              create.fileID
+                          ),
+                      )
+                    : undefined,
+            // fileID and initcode are a oneof; copy Buffer → Uint8Array so
+            // round-tripped bytecode deep-equals the original Uint8Array.
+            bytecode:
+                create.initcode != null
+                    ? new Uint8Array(
+                          /** @type {Uint8Array} */ (create.initcode),
+                      )
+                    : undefined,
+            adminKey:
+                create.adminKey != null
+                    ? Key._fromProtobufKey(create.adminKey)
+                    : undefined,
+            gas: create.gas != null ? create.gas : undefined,
+            initialBalance:
+                create.initialBalance != null
+                    ? Hbar.fromTinybars(create.initialBalance)
+                    : undefined,
+            proxyAccountId:
+                create.proxyAccountID != null
+                    ? AccountId._fromProtobuf(
+                          /** @type {HieroProto.proto.IAccountID} */ (
+                              create.proxyAccountID
+                          ),
+                      )
+                    : undefined,
+            autoRenewPeriod:
+                create.autoRenewPeriod != null
+                    ? create.autoRenewPeriod.seconds != null
+                        ? create.autoRenewPeriod.seconds
+                        : undefined
+                    : undefined,
+            constructorParameters:
+                create.constructorParameters != null
+                    ? create.constructorParameters
+                    : undefined,
+            contractMemo: create.memo != null ? create.memo : undefined,
+            maxAutomaticTokenAssociations:
+                create.maxAutomaticTokenAssociations != null
+                    ? create.maxAutomaticTokenAssociations
+                    : undefined,
+            stakedAccountId:
+                create.stakedAccountId != null
+                    ? AccountId._fromProtobuf(create.stakedAccountId)
+                    : undefined,
+            stakedNodeId:
+                create.stakedNodeId != null ? create.stakedNodeId : undefined,
+            declineStakingReward: create.declineReward == true,
+            autoRenewAccountId:
+                create.autoRenewAccountId != null
+                    ? AccountId._fromProtobuf(create.autoRenewAccountId)
+                    : undefined,
+        });
+
+        if (create.hookCreationDetails != null) {
+            transaction._hooks = create.hookCreationDetails.map((hook) =>
+                HookCreationDetails._fromProtobuf(hook),
+            );
+        }
+
         return Transaction._fromProtobufTransactions(
-            new ContractCreateTransaction({
-                bytecodeFileId:
-                    create.fileID != null
-                        ? FileId._fromProtobuf(
-                              /** @type {HieroProto.proto.IFileID} */ (
-                                  create.fileID
-                              ),
-                          )
-                        : undefined,
-                adminKey:
-                    create.adminKey != null
-                        ? Key._fromProtobufKey(create.adminKey)
-                        : undefined,
-                gas: create.gas != null ? create.gas : undefined,
-                initialBalance:
-                    create.initialBalance != null
-                        ? Hbar.fromTinybars(create.initialBalance)
-                        : undefined,
-                proxyAccountId:
-                    create.proxyAccountID != null
-                        ? AccountId._fromProtobuf(
-                              /** @type {HieroProto.proto.IAccountID} */ (
-                                  create.proxyAccountID
-                              ),
-                          )
-                        : undefined,
-                autoRenewPeriod:
-                    create.autoRenewPeriod != null
-                        ? create.autoRenewPeriod.seconds != null
-                            ? create.autoRenewPeriod.seconds
-                            : undefined
-                        : undefined,
-                constructorParameters:
-                    create.constructorParameters != null
-                        ? create.constructorParameters
-                        : undefined,
-                contractMemo: create.memo != null ? create.memo : undefined,
-                maxAutomaticTokenAssociations:
-                    create.maxAutomaticTokenAssociations != null
-                        ? create.maxAutomaticTokenAssociations
-                        : undefined,
-                stakedAccountId:
-                    create.stakedAccountId != null
-                        ? AccountId._fromProtobuf(create.stakedAccountId)
-                        : undefined,
-                stakedNodeId:
-                    create.stakedNodeId != null
-                        ? create.stakedNodeId
-                        : undefined,
-                declineStakingReward: create.declineReward == true,
-                autoRenewAccountId:
-                    create.autoRenewAccountId != null
-                        ? AccountId._fromProtobuf(create.autoRenewAccountId)
-                        : undefined,
-            }),
+            transaction,
             transactions,
             signedTransactions,
             transactionIds,
@@ -709,9 +723,3 @@ export default class ContractCreateTransaction extends Transaction {
         return `ContractCreateTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "contractCreateInstance",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    ContractCreateTransaction._fromProtobuf,
-);

@@ -85,38 +85,6 @@ describe("hex", function () {
         });
     });
 
-    describe("hexZeroPadded", function () {
-        it("should pad a short value to requested length", function () {
-            const value = new Uint8Array([0x01, 0x02]);
-            expect(hex.hexZeroPadded(value, 4)).to.equal("00000102");
-        });
-
-        it("should not pad a value that already matches requested length", function () {
-            const value = new Uint8Array([0x01, 0x02, 0x03, 0x04]);
-            expect(hex.hexZeroPadded(value, 4)).to.equal("01020304");
-        });
-
-        it("should handle empty array with padding", function () {
-            const value = new Uint8Array([]);
-            expect(hex.hexZeroPadded(value, 2)).to.equal("0000");
-        });
-
-        it("should pad values with leading zeros", function () {
-            const value = new Uint8Array([0x00, 0x01]);
-            expect(hex.hexZeroPadded(value, 4)).to.equal("00000001");
-        });
-
-        it("should output hex values without 0x prefix", function () {
-            const value = new Uint8Array([0xff]);
-            expect(hex.hexZeroPadded(value, 1)).to.equal("ff");
-        });
-
-        it("should handle padding with many zeros", function () {
-            const value = new Uint8Array([0x01]);
-            expect(hex.hexZeroPadded(value, 8)).to.equal("0000000000000001");
-        });
-    });
-
     describe("isHexString", function () {
         it("should return true for valid hex strings without 0x prefix", function () {
             expect(hex.isHexString("010203")).to.be.true;

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Query, { QUERY_REGISTRY } from "../query/Query.js";
+import Query from "../query/Query.js";
 import ScheduleId from "./ScheduleId.js";
 import ScheduleInfo from "./ScheduleInfo.js";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -185,6 +185,3 @@ export default class ScheduleInfoQuery extends Query {
         return `ScheduleInfoQuery:${timestamp.toString()}`;
     }
 }
-
-// eslint-disable-next-line @typescript-eslint/unbound-method
-QUERY_REGISTRY.set("scheduleGetInfo", ScheduleInfoQuery._fromProtobuf);

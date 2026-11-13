@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Query, { QUERY_REGISTRY } from "../query/Query.js";
+import Query from "../query/Query.js";
 import AccountId from "./AccountId.js";
 import TransactionRecord from "../transaction/TransactionRecord.js";
 
@@ -179,9 +179,3 @@ export default class AccountRecordsQuery extends Query {
         return `AccountRecordsQuery:${timestamp.toString()}`;
     }
 }
-
-QUERY_REGISTRY.set(
-    "cryptoGetAccountRecords",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    AccountRecordsQuery._fromProtobuf,
-);

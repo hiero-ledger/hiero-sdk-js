@@ -350,6 +350,134 @@ describe("TopicMessageSubmitTransaction", function () {
             );
             expect(utf8.decode(deserializedSubmit.message)).to.equal(message);
         });
+
+        describe("multi-chunk messages", function () {
+            const nodeAccountIds = [new AccountId(3), new AccountId(4)];
+
+            // 2,500 bytes is 3 chunks at the default chunk size of 1,024.
+            // The bytes differ from chunk to chunk, so chunks put back
+            // together in the wrong order don't match either.
+            const largeMessage = Uint8Array.from(
+                { length: 2500 },
+                (_, i) => i % 251,
+            );
+
+            /**
+             * @param {TopicMessageSubmitTransaction} transaction
+             * @returns {TopicMessageSubmitTransaction}
+             */
+            function roundTrip(transaction) {
+                return /** @type {TopicMessageSubmitTransaction} */ (
+                    Transaction.fromBytes(transaction.toBytes())
+                );
+            }
+
+            /**
+             * Compares bytes only: a message decoded from one chunk is a
+             * `Buffer` in Node, which never deep-equals a `Uint8Array`.
+             *
+             * @param {?Uint8Array} actual
+             * @param {Uint8Array} expected
+             */
+            function expectBytes(actual, expected) {
+                expect(actual).to.not.be.null;
+                expect(Uint8Array.from(actual)).to.deep.equal(expected);
+            }
+
+            it("should keep every chunk of the message", function () {
+                const transaction = new TopicMessageSubmitTransaction()
+                    .setTopicId(topicId)
+                    .setMessage(largeMessage)
+                    .setNodeAccountIds(nodeAccountIds)
+                    .setTransactionId(transactionId)
+                    .freeze();
+
+                const decoded = roundTrip(transaction);
+
+                expectBytes(decoded.getMessage(), largeMessage);
+                expect(decoded.getRequiredChunks()).to.equal(3);
+                expect(decoded.getChunkSize()).to.equal(1024);
+            });
+
+            it("should keep a custom chunk size", function () {
+                const transaction = new TopicMessageSubmitTransaction()
+                    .setTopicId(topicId)
+                    .setChunkSize(500)
+                    .setMessage(largeMessage)
+                    .setNodeAccountIds(nodeAccountIds)
+                    .setTransactionId(transactionId)
+                    .freeze();
+
+                const decoded = roundTrip(transaction);
+
+                expectBytes(decoded.getMessage(), largeMessage);
+                expect(decoded.getRequiredChunks()).to.equal(5);
+                expect(decoded.getChunkSize()).to.equal(500);
+            });
+
+            it("should build the same chunks when frozen again", function () {
+                const transaction = new TopicMessageSubmitTransaction()
+                    .setTopicId(topicId)
+                    .setMessage(largeMessage)
+                    .setNodeAccountIds(nodeAccountIds)
+                    .setTransactionId(transactionId)
+                    .freeze();
+
+                const decoded = roundTrip(transaction).freeze();
+
+                expect(decoded.toBytes()).to.deep.equal(transaction.toBytes());
+            });
+
+            it("should build the same chunks when frozen again with more than 20 chunks", function () {
+                const transaction = new TopicMessageSubmitTransaction()
+                    .setTopicId(topicId)
+                    .setChunkSize(100)
+                    .setMaxChunks(30)
+                    .setMessage(largeMessage)
+                    .setNodeAccountIds([nodeId])
+                    .setTransactionId(transactionId)
+                    .freeze();
+
+                expect(transaction.getRequiredChunks()).to.equal(25);
+
+                const decoded = roundTrip(transaction);
+
+                expect(decoded.getMaxChunks()).to.equal(25);
+                expect(decoded.freeze().toBytes()).to.deep.equal(
+                    transaction.toBytes(),
+                );
+            });
+
+            it("should keep the default chunk size for a single chunk", function () {
+                const transaction = new TopicMessageSubmitTransaction()
+                    .setTopicId(topicId)
+                    .setMessage(message)
+                    .setNodeAccountIds(nodeAccountIds)
+                    .setTransactionId(transactionId)
+                    .freeze();
+
+                const decoded = roundTrip(transaction);
+
+                expect(utf8.decode(decoded.getMessage())).to.equal(message);
+                expect(decoded.getRequiredChunks()).to.equal(1);
+                expect(decoded.getChunkSize()).to.equal(1024);
+                expect(decoded.getMaxChunks()).to.equal(20);
+            });
+
+            it("should keep the whole message of a transaction that was not frozen", function () {
+                const transaction = new TopicMessageSubmitTransaction()
+                    .setTopicId(topicId)
+                    .setMessage(largeMessage)
+                    .setNodeAccountIds(nodeAccountIds)
+                    .setTransactionId(transactionId);
+
+                const decoded = roundTrip(transaction);
+
+                expectBytes(decoded.getMessage(), largeMessage);
+                expect(decoded.getRequiredChunks()).to.equal(3);
+                expect(decoded.getChunkSize()).to.equal(1024);
+            });
+        });
     });
 
     describe("getters and setters", function () {
@@ -436,6 +564,19 @@ describe("TopicMessageSubmitTransaction", function () {
 
                 // Default is set from CHUNK_SIZE constant
                 expect(transaction.getChunkSize()).to.equal(1024);
+            });
+
+            it("should throw on setting chunkSize once frozen", function () {
+                const transaction = new TopicMessageSubmitTransaction()
+                    .setNodeAccountIds([nodeId])
+                    .setTransactionId(transactionId)
+                    .setTopicId(topicId)
+                    .setMessage(message)
+                    .freeze();
+
+                expect(() => transaction.setChunkSize(5)).to.throw(
+                    "transaction is immutable",
+                );
             });
         });
 

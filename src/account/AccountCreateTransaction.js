@@ -6,7 +6,6 @@ import AccountId from "./AccountId.js";
 import Transaction, {
     DEFAULT_AUTO_RENEW_PERIOD,
     DEFAULT_RECORD_THRESHOLD,
-    TRANSACTION_REGISTRY,
 } from "../transaction/Transaction.js";
 import Duration from "../Duration.js";
 import Long from "long";
@@ -14,6 +13,7 @@ import Key from "../Key.js";
 import PrivateKey from "../PrivateKey.js";
 import EvmAddress from "../EvmAddress.js";
 import PublicKey from "../PublicKey.js";
+import HookCreationDetails from "../hooks/HookCreationDetails.js";
 /**
  * @typedef {import("bignumber.js").default} BigNumber
  * @typedef {import("../channel/Channel.js").default} Channel
@@ -212,50 +212,56 @@ export default class AccountCreateTransaction extends Transaction {
             }
         }
 
+        const transaction = new AccountCreateTransaction({
+            key:
+                create.key != null
+                    ? Key._fromProtobufKey(create.key)
+                    : undefined,
+            initialBalance:
+                create.initialBalance != null
+                    ? Hbar.fromTinybars(create.initialBalance)
+                    : undefined,
+            receiverSignatureRequired:
+                create.receiverSigRequired != null
+                    ? create.receiverSigRequired
+                    : undefined,
+            proxyAccountId:
+                create.proxyAccountID != null
+                    ? AccountId._fromProtobuf(
+                          /** @type {HieroProto.proto.IAccountID} */ (
+                              create.proxyAccountID
+                          ),
+                      )
+                    : undefined,
+            autoRenewPeriod:
+                create.autoRenewPeriod != null
+                    ? create.autoRenewPeriod.seconds != null
+                        ? create.autoRenewPeriod.seconds
+                        : undefined
+                    : undefined,
+            accountMemo: create.memo != null ? create.memo : undefined,
+            maxAutomaticTokenAssociations:
+                create.maxAutomaticTokenAssociations != null
+                    ? create.maxAutomaticTokenAssociations
+                    : undefined,
+            stakedAccountId:
+                create.stakedAccountId != null
+                    ? AccountId._fromProtobuf(create.stakedAccountId)
+                    : undefined,
+            stakedNodeId:
+                create.stakedNodeId != null ? create.stakedNodeId : undefined,
+            declineStakingReward: create.declineReward == true,
+            alias,
+        });
+
+        if (create.hookCreationDetails != null) {
+            transaction._hooks = create.hookCreationDetails.map((hook) =>
+                HookCreationDetails._fromProtobuf(hook),
+            );
+        }
+
         return Transaction._fromProtobufTransactions(
-            new AccountCreateTransaction({
-                key:
-                    create.key != null
-                        ? Key._fromProtobufKey(create.key)
-                        : undefined,
-                initialBalance:
-                    create.initialBalance != null
-                        ? Hbar.fromTinybars(create.initialBalance)
-                        : undefined,
-                receiverSignatureRequired:
-                    create.receiverSigRequired != null
-                        ? create.receiverSigRequired
-                        : undefined,
-                proxyAccountId:
-                    create.proxyAccountID != null
-                        ? AccountId._fromProtobuf(
-                              /** @type {HieroProto.proto.IAccountID} */ (
-                                  create.proxyAccountID
-                              ),
-                          )
-                        : undefined,
-                autoRenewPeriod:
-                    create.autoRenewPeriod != null
-                        ? create.autoRenewPeriod.seconds != null
-                            ? create.autoRenewPeriod.seconds
-                            : undefined
-                        : undefined,
-                accountMemo: create.memo != null ? create.memo : undefined,
-                maxAutomaticTokenAssociations:
-                    create.maxAutomaticTokenAssociations != null
-                        ? create.maxAutomaticTokenAssociations
-                        : undefined,
-                stakedAccountId:
-                    create.stakedAccountId != null
-                        ? AccountId._fromProtobuf(create.stakedAccountId)
-                        : undefined,
-                stakedNodeId:
-                    create.stakedNodeId != null
-                        ? create.stakedNodeId
-                        : undefined,
-                declineStakingReward: create.declineReward == true,
-                alias,
-            }),
+            transaction,
             transactions,
             signedTransactions,
             transactionIds,
@@ -706,9 +712,3 @@ export default class AccountCreateTransaction extends Transaction {
         return `AccountCreateTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "cryptoCreateAccount",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    AccountCreateTransaction._fromProtobuf,
-);

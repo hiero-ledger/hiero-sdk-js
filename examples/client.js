@@ -6,12 +6,13 @@ import {
     FetchHttpTransport,
     HttpRequest,
 } from "@hiero-ledger/sdk";
+import { errorMessage } from "./error-message.js";
 
 /**
  * `Client.forName(name)`, pointed at the endpoints in these optional
- * environment variables, so the examples run against a local network with
- * its own port mappings (a Solo deployment, say) without source edits. An
- * unset or empty variable keeps the named network's default.
+ * environment variables, so the examples run against a local network on
+ * other ports than the `local-node` defaults without source edits. An unset
+ * or empty variable keeps the named network's default.
  *
  * - `NODE_IP` and `NODE_ACCOUNT_ID`, set together: the consensus node
  *   `host:port` and its account ID. They replace the network map.
@@ -66,9 +67,8 @@ export function clientForName(name) {
                 return url.origin;
             },
         );
-        // The SDK maps a loopback mirror node to one port per mirror service
-        // (5551, 8084, 8545); an ingress serves them all on one port, so
-        // keep the path and query the SDK built and swap the origin.
+        // REST calls go to this origin even when the mirror gRPC address
+        // differs: keep the path and query the SDK built and swap the origin.
         // Note: FetchHttpTransport owns no connections, so nothing closes it.
         const inner = FetchHttpTransport.create();
         client.setMirrorNodeHttpConfig({
@@ -103,10 +103,8 @@ function parse(name, value, apply) {
     try {
         return apply(value);
     } catch (error) {
-        throw new Error(
-            `Invalid ${name} "${value}": ${
-                error instanceof Error ? error.message : String(error)
-            }`,
-        );
+        throw new Error(`Invalid ${name} "${value}": ${errorMessage(error)}`, {
+            cause: error,
+        });
     }
 }

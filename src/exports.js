@@ -256,3 +256,9 @@ export const NetworkName = {
     Testnet: "testnet",
     Previewnet: "previewnet",
 };
+
+// Fills the lookup tables behind fromBytes(), schedule() and key parsing.
+// Imported here, not from each entry point, so that everything built on the
+// SDK's exports gets the registrations, and imported last so the classes
+// load in the same order as before.
+import "./registry.js";

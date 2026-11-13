@@ -32,7 +32,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
         with:
           egress-policy: audit
 
@@ -79,7 +79,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
         with:
           egress-policy: audit
 
@@ -115,7 +115,7 @@ jobs:
 
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@c982fe02b37db2a25a6a5e61139d9fe5d0917cff # 0.26.0
+        uses: hiero-ledger/hiero-solo-action@dd84e95ece32d42071c945214571099ffbed9cf2 # 0.27.0
         with:
           installMirrorNode: true
           soloVersion: v0.91.0
@@ -123,14 +123,17 @@ jobs:
           installBlockNode: true
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
-          haproxyPort: 50211
-          mirrorNodePortRest: 5551
+          haproxyPort: 35211
+          # One mirror node URL, 127.0.0.1:38081, for gRPC, REST, Java REST
+          # and web3: the SDK uses it as is and the local-node preset points
+          # at it (#3590).
+          enableMirrorIngress: true
           grpcProxyPort: 8080
 
       # The Solo action reaches the consensus node through a kubectl
       # port-forward and haproxy. In the hung runs that path stopped answering
       # a minute or two into the tests while envoy's direct path to the same
-      # node kept working, so 50211 (and 36211 in dual mode) is connected
+      # node kept working, so 35211 (and 36211 in dual mode) is connected
       # straight to the node's NodePort instead; the script header has the
       # details and the fallbacks.
       - name: Connect the consensus node port directly
@@ -197,7 +200,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
         with:
           egress-policy: audit
 
@@ -233,15 +236,22 @@ jobs:
 
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@c982fe02b37db2a25a6a5e61139d9fe5d0917cff # 0.26.0
+        uses: hiero-ledger/hiero-solo-action@dd84e95ece32d42071c945214571099ffbed9cf2 # 0.27.0
         with:
           installMirrorNode: true
           soloVersion: v0.91.0
           nodeVersion: ${{ matrix.node }}
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
+          # Not Solo's 35211: these tests make the SDK replace its nodes
+          # with the address book, which lists node 1 by its pod port as
+          # network-node1-svc.solo.svc.cluster.local:50211, and the action
+          # points that name at 127.0.0.1, so node 1 has to answer on 50211.
           haproxyPort: 50211
-          mirrorNodePortRest: 5551
+          # One mirror node URL, 127.0.0.1:38081, for gRPC, REST, Java REST
+          # and web3: the SDK uses it as is and the local-node preset points
+          # at it (#3590).
+          enableMirrorIngress: true
           grpcProxyPort: 8080
           dualMode: true
           dualModeGrpcProxyPort: 8081
@@ -249,10 +259,12 @@ jobs:
       # The Solo action reaches the consensus node through a kubectl
       # port-forward and haproxy. In the hung runs that path stopped answering
       # a minute or two into the tests while envoy's direct path to the same
-      # node kept working, so 50211 (and 36211 in dual mode) is connected
-      # straight to the node's NodePort instead; the script header has the
-      # details and the fallbacks.
+      # node kept working, so 50211 (see haproxyPort above) and 36211 are
+      # connected straight to the nodes' NodePorts instead; the script header
+      # has the details and the fallbacks.
       - name: Connect the consensus node port directly
+        env:
+          CONSENSUS_PORTS: "50211,36211"
         run: node .github/scripts/forward-consensus-port.mjs
 
       - name: Set Operator Account
@@ -299,7 +311,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
         with:
           egress-policy: audit
 
@@ -327,9 +339,14 @@ jobs:
       - name: Install dependencies
         run: task install
 
+      - name: Install Playwright Dependencies
+        run: |
+          sudo npx playwright install-deps
+          npx playwright install
+
       # Same kind and kubectl as the Solo action uses in the other jobs.
       - name: Setup Kind
-        uses: helm/kind-action@06c1ae10762d3b9c1644e7fe69596ae519e015a2 # v1.15.0
+        uses: helm/kind-action@ea822c7bf1874f08e5a491df991c228edffc3376 # v1.15.2
         with:
           install_only: true
           node_image: kindest/node:v1.32.2@sha256:f226345927d7e348497136874b6d207e0b32cc52154ad8323129352923a3142f
@@ -360,6 +377,21 @@ jobs:
           test/integration/AccountIdTest.js
           test/integration/ContractIdTest.js
 
+      # A browser cannot read CONFIG_FILE, so the browser suite starts from
+      # local-node and switches to the node's gRPC-Web proxy with
+      # NODE_WEB_IP and NODE_ACCOUNT_ID, which calls client.setNetwork().
+      # That keeps the client in 0.0 unless setNetwork() takes the shard and
+      # realm from the nodes (#4646).
+      - name: Run Shard and Realm Browser Integration Tests
+        timeout-minutes: 15
+        env:
+          HEDERA_NETWORK: local-node
+          NODE_WEB_IP: 127.0.0.1:8080
+          NODE_ACCOUNT_ID: 1.2.3
+        run: >-
+          task test:integration:browser -- --bail=1
+          test/integration/ShardRealmIntegrationTest.js
+
       - name: Upload consensus port forward logs
         if: failure()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -377,7 +409,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
         with:
           egress-policy: audit
 
@@ -422,7 +454,7 @@ jobs:
         node: [ "22" ]
     steps:
       -  name: Harden Runner
-         uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+         uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
          with:
           egress-policy: audit
 
@@ -452,7 +484,7 @@ jobs:
 
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@c982fe02b37db2a25a6a5e61139d9fe5d0917cff # 0.26.0
+        uses: hiero-ledger/hiero-solo-action@dd84e95ece32d42071c945214571099ffbed9cf2 # 0.27.0
         with:
           installMirrorNode: true
           soloVersion: v0.91.0
@@ -460,14 +492,17 @@ jobs:
           installBlockNode: true
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
-          haproxyPort: 50211
-          mirrorNodePortRest: 5551
+          haproxyPort: 35211
+          # One mirror node URL, 127.0.0.1:38081, for gRPC, REST, Java REST
+          # and web3: the SDK uses it as is and the local-node preset points
+          # at it (#3590).
+          enableMirrorIngress: true
           grpcProxyPort: 8080
 
       # The Solo action reaches the consensus node through a kubectl
       # port-forward and haproxy. In the hung runs that path stopped answering
       # a minute or two into the tests while envoy's direct path to the same
-      # node kept working, so 50211 (and 36211 in dual mode) is connected
+      # node kept working, so 35211 (and 36211 in dual mode) is connected
       # straight to the node's NodePort instead; the script header has the
       # details and the fallbacks.
       - name: Connect the consensus node port directly
@@ -564,7 +599,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
         with:
           egress-policy: audit
 
@@ -604,18 +639,21 @@ jobs:
 
       - name: Prepare Hiero Solo
         id: solo
-        uses: hiero-ledger/hiero-solo-action@c982fe02b37db2a25a6a5e61139d9fe5d0917cff # 0.26.0
+        uses: hiero-ledger/hiero-solo-action@dd84e95ece32d42071c945214571099ffbed9cf2 # 0.27.0
         with:
           installMirrorNode: true
           soloVersion: v0.91.0
           nodeVersion: ${{ env.NODE_VERSION }}
           hieroVersion: v0.73.0
           mirrorNodeVersion: v0.153.0
-          haproxyPort: 50211
-          mirrorNodePortRest: 5551
+          haproxyPort: 35211
+          # One mirror node URL, 127.0.0.1:38081, for gRPC, REST, Java REST
+          # and web3: the SDK uses it as is and the local-node preset points
+          # at it (#3590).
+          enableMirrorIngress: true
           grpcProxyPort: 8080
 
-      # Same reasoning as the test job: 50211 is connected straight to the
+      # Same reasoning as the test job: 35211 is connected straight to the
       # node's NodePort instead of the kubectl port-forward and haproxy chain
       # that stopped answering in the hung runs.
       - name: Connect the consensus node port directly
@@ -623,9 +661,10 @@ jobs:
 
       # The TCK's own action waits for the server, runs the suite, writes the
       # counts to the job summary, uploads the mochawesome report and fails
-      # last. Its network defaults match the Solo inputs above (consensus
-      # 50211, mirror REST 5551, mirror gRPC 5600, REST Java 8084, genesis
-      # operator 0.0.2). The commit pins the suite and the action together, so
+      # last. Its network defaults are the old per-service Solo ports, so the
+      # inputs below point it at the consensus node on 35211 and every mirror
+      # node API at the ingress on 38081; the genesis operator 0.0.2 is its
+      # default. The commit pins the suite and the action together, so
       # bump it on purpose, with a TCK release: pin the full commit SHA of the
       # release tag and name the tag in the comment. A new TCK test for a
       # feature the SDK does not have yet would otherwise turn this job red.
@@ -634,6 +673,10 @@ jobs:
         uses: hiero-ledger/hiero-sdk-tck@c9e7169888d86be4793cde5932ce57d9450a9761 # v0.14.0
         with:
           artifact-name: tck-compatibility
+          node-ip: 127.0.0.1:35211
+          mirror-network: 127.0.0.1:38081
+          mirror-node-rest-url: http://127.0.0.1:38081
+          mirror-node-rest-java-url: http://127.0.0.1:38081
 
       - name: Show the TCK server log
         if: failure()
@@ -674,9 +717,11 @@ jobs:
     timeout-minutes: 60
     env:
       NODE_VERSION: "22"
-      # Pinned together: bump them on purpose. Solo 0.93.0 deploys CN v0.77.2
-      # and mirror node v0.163.0 by default; the flags below pin them anyway.
-      SOLO_VERSION: "0.93.0"
+      # Pinned together: bump them on purpose. Solo 0.97.0 deploys CN v0.78.1
+      # and mirror node v0.164.2 by default; the flags below keep the older
+      # versions. Solo 0.97.0 is the first release whose health checks ping a
+      # real node account, so this SDK accepts them (hiero-ledger/solo#6224).
+      SOLO_VERSION: "0.97.0"
       CONSENSUS_NODE_VERSION: "v0.77.2"
       MIRROR_NODE_VERSION: "v0.163.0"
       SOLO_DEPLOYMENT: one-shot
@@ -684,7 +729,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@46b06cea07f9e64621fdf066ba77ac6915163d43 # v2.22.3
+        uses: step-security/harden-runner@1d88384fd173af6ecb012dfd0264a306b711241a # v2.22.4
         with:
           egress-policy: audit
 

@@ -8,7 +8,12 @@ import {
     Transaction,
     TransactionId,
     EvmAddress,
+    Client,
+    Hbar,
+    HookExtensionPoint,
 } from "../../src/index.js";
+import BadEntityIdError from "../../src/BadEntityIdError.js";
+import Duration from "../../src/Duration.js";
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
 import EvmHook from "../../src/hooks/EvmHook.js";
 import {
@@ -248,7 +253,7 @@ describe("AccountCreateTransaction", function () {
             it("should add a hook to the hooks array", function () {
                 const tx = new AccountCreateTransaction();
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                 });
 
                 tx.addHook(hook);
@@ -260,10 +265,10 @@ describe("AccountCreateTransaction", function () {
             it("should add multiple hooks to the hooks array", function () {
                 const tx = new AccountCreateTransaction();
                 const hook1 = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                 });
                 const hook2 = new HookCreationDetails({
-                    extensionPoint: 2,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                 });
 
                 tx.addHook(hook1);
@@ -277,7 +282,7 @@ describe("AccountCreateTransaction", function () {
             it("should return the transaction for chaining", function () {
                 const tx = new AccountCreateTransaction();
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                 });
 
                 const result = tx.addHook(hook);
@@ -290,8 +295,14 @@ describe("AccountCreateTransaction", function () {
             it("should set the hooks array", function () {
                 const tx = new AccountCreateTransaction();
                 const hooks = [
-                    new HookCreationDetails({ extensionPoint: 1 }),
-                    new HookCreationDetails({ extensionPoint: 2 }),
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
                 ];
 
                 tx.setHooks(hooks);
@@ -303,11 +314,20 @@ describe("AccountCreateTransaction", function () {
             it("should replace existing hooks", function () {
                 const tx = new AccountCreateTransaction();
                 const initialHooks = [
-                    new HookCreationDetails({ extensionPoint: 1 }),
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
                 ];
                 const newHooks = [
-                    new HookCreationDetails({ extensionPoint: 2 }),
-                    new HookCreationDetails({ extensionPoint: 3 }),
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
                 ];
 
                 tx.setHooks(initialHooks);
@@ -319,7 +339,12 @@ describe("AccountCreateTransaction", function () {
 
             it("should accept empty array", function () {
                 const tx = new AccountCreateTransaction();
-                tx.addHook(new HookCreationDetails({ extensionPoint: 1 }));
+                tx.addHook(
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
+                );
 
                 tx.setHooks([]);
 
@@ -328,7 +353,12 @@ describe("AccountCreateTransaction", function () {
 
             it("should return the transaction for chaining", function () {
                 const tx = new AccountCreateTransaction();
-                const hooks = [new HookCreationDetails({ extensionPoint: 1 })];
+                const hooks = [
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
+                ];
 
                 const result = tx.setHooks(hooks);
 
@@ -347,8 +377,14 @@ describe("AccountCreateTransaction", function () {
             it("should return the hooks array", function () {
                 const tx = new AccountCreateTransaction();
                 const hooks = [
-                    new HookCreationDetails({ extensionPoint: 1 }),
-                    new HookCreationDetails({ extensionPoint: 2 }),
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
                 ];
 
                 tx.setHooks(hooks);
@@ -360,8 +396,14 @@ describe("AccountCreateTransaction", function () {
         describe("constructor with hooks", function () {
             it("should set hooks via constructor", function () {
                 const hooks = [
-                    new HookCreationDetails({ extensionPoint: 1 }),
-                    new HookCreationDetails({ extensionPoint: 2 }),
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
                 ];
 
                 const tx = new AccountCreateTransaction({
@@ -382,7 +424,12 @@ describe("AccountCreateTransaction", function () {
             });
 
             it("should combine constructor hooks with other properties", function () {
-                const hooks = [new HookCreationDetails({ extensionPoint: 1 })];
+                const hooks = [
+                    new HookCreationDetails({
+                        extensionPoint:
+                            HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    }),
+                ];
                 const key = PrivateKey.generateED25519().publicKey;
                 const accountMemo = "test memo";
 
@@ -403,7 +450,7 @@ describe("AccountCreateTransaction", function () {
                 const contractId = new ContractId(0, 0, 100);
                 const evmHook = new EvmHook({ contractId });
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                     evmHook: evmHook,
                 });
 
@@ -411,7 +458,9 @@ describe("AccountCreateTransaction", function () {
                 tx.addHook(hook);
 
                 expect(tx.hooks).to.have.lengthOf(1);
-                expect(tx.hooks[0].extensionPoint).to.equal(1);
+                expect(tx.hooks[0].extensionPoint).to.equal(
+                    HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                );
                 expect(tx.hooks[0].evmHook).to.equal(evmHook);
                 expect(tx.hooks[0].evmHook.contractId.num.toNumber()).to.equal(
                     100,
@@ -429,7 +478,7 @@ describe("AccountCreateTransaction", function () {
                     storageUpdates: [storageSlot],
                 });
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                     evmHook: evmHook,
                 });
 
@@ -464,7 +513,7 @@ describe("AccountCreateTransaction", function () {
                     storageUpdates: [mappingEntries],
                 });
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                     evmHook: evmHook,
                 });
 
@@ -489,7 +538,7 @@ describe("AccountCreateTransaction", function () {
             it("should create a hook with adminKey", function () {
                 const adminKey = PrivateKey.generateED25519().publicKey;
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                     adminKey,
                 });
 
@@ -502,7 +551,7 @@ describe("AccountCreateTransaction", function () {
             it("should create a hook with hookId", function () {
                 const hookId = Long.fromNumber(999);
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                     hookId,
                 });
 
@@ -524,7 +573,7 @@ describe("AccountCreateTransaction", function () {
                     storageUpdates: [storageSlot],
                 });
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                     hookId,
                     evmHook: evmHook,
                     adminKey,
@@ -533,7 +582,9 @@ describe("AccountCreateTransaction", function () {
                 const tx = new AccountCreateTransaction();
                 tx.addHook(hook);
 
-                expect(tx.hooks[0].extensionPoint).to.equal(1);
+                expect(tx.hooks[0].extensionPoint).to.equal(
+                    HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                );
                 expect(tx.hooks[0].hookId).to.equal(hookId);
                 expect(tx.hooks[0].evmHook).to.equal(evmHook);
                 expect(tx.hooks[0].adminKey).to.equal(adminKey);
@@ -543,7 +594,9 @@ describe("AccountCreateTransaction", function () {
         describe("serialization with hooks", function () {
             it("should serialize with hooks", function () {
                 const key = PrivateKey.generateED25519().publicKey;
-                const hook = new HookCreationDetails({ extensionPoint: 1 });
+                const hook = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                });
 
                 const tx = new AccountCreateTransaction({
                     key,
@@ -586,7 +639,7 @@ describe("AccountCreateTransaction", function () {
                     storageUpdates: [storageSlot],
                 });
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                     hookId,
                     evmHook: evmHook,
                     adminKey,
@@ -602,7 +655,7 @@ describe("AccountCreateTransaction", function () {
                 expect(txData.hookCreationDetails).to.be.an("array");
                 expect(txData.hookCreationDetails).to.have.lengthOf(1);
                 expect(txData.hookCreationDetails[0].extensionPoint).to.equal(
-                    1,
+                    HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                 );
                 expect(txData.hookCreationDetails[0].hookId).to.equal(hookId);
                 expect(txData.hookCreationDetails[0].evmHook).to.not.be.null;
@@ -611,9 +664,15 @@ describe("AccountCreateTransaction", function () {
 
             it("should serialize multiple hooks", function () {
                 const key = PrivateKey.generateED25519().publicKey;
-                const hook1 = new HookCreationDetails({ extensionPoint: 1 });
-                const hook2 = new HookCreationDetails({ extensionPoint: 2 });
-                const hook3 = new HookCreationDetails({ extensionPoint: 3 });
+                const hook1 = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                });
+                const hook2 = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                });
+                const hook3 = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                });
 
                 const tx = new AccountCreateTransaction({
                     key,
@@ -646,7 +705,7 @@ describe("AccountCreateTransaction", function () {
                 });
 
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                     evmHook: evmHook,
                 });
 
@@ -677,7 +736,7 @@ describe("AccountCreateTransaction", function () {
                     storageUpdates: [mappingEntries],
                 });
                 const hook = new HookCreationDetails({
-                    extensionPoint: 1,
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
                     evmHook: evmHook,
                 });
 
@@ -706,7 +765,9 @@ describe("AccountCreateTransaction", function () {
             it("should work with frozen transaction with hooks", function () {
                 const key = PrivateKey.generateED25519().publicKey;
                 const accountId = new AccountId(3);
-                const hook = new HookCreationDetails({ extensionPoint: 1 });
+                const hook = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                });
 
                 const tx = new AccountCreateTransaction()
                     .setKey(key)
@@ -720,9 +781,15 @@ describe("AccountCreateTransaction", function () {
             });
 
             it("should maintain hook order", function () {
-                const hook1 = new HookCreationDetails({ extensionPoint: 1 });
-                const hook2 = new HookCreationDetails({ extensionPoint: 2 });
-                const hook3 = new HookCreationDetails({ extensionPoint: 3 });
+                const hook1 = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                });
+                const hook2 = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                });
+                const hook3 = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                });
 
                 const tx = new AccountCreateTransaction()
                     .addHook(hook1)
@@ -736,7 +803,9 @@ describe("AccountCreateTransaction", function () {
 
             it("should allow setting hooks after initial construction", function () {
                 const key = PrivateKey.generateED25519().publicKey;
-                const hook = new HookCreationDetails({ extensionPoint: 1 });
+                const hook = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                });
 
                 const tx = new AccountCreateTransaction({ key });
                 tx.addHook(hook);
@@ -749,7 +818,9 @@ describe("AccountCreateTransaction", function () {
         describe("integration with other properties", function () {
             it("should work with all account creation properties", function () {
                 const key = PrivateKey.generateED25519().publicKey;
-                const hook = new HookCreationDetails({ extensionPoint: 1 });
+                const hook = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                });
                 const accountMemo = "test account";
                 const initialBalance = 100;
 
@@ -772,6 +843,397 @@ describe("AccountCreateTransaction", function () {
                 );
                 expect(tx.declineStakingRewards).to.equal(true);
             });
+        });
+
+        describe("round-trip serialization (toBytes/fromBytes)", function () {
+            it("should preserve hooks in frozen -> toBytes() -> fromBytes() round trip", function () {
+                const key = PrivateKey.generateED25519().publicKey;
+                const accountId = new AccountId(3);
+                const hook = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    hookId: Long.fromNumber(42),
+                    evmHook: new EvmHook({
+                        contractId: new ContractId(1234),
+                    }),
+                });
+
+                const tx = new AccountCreateTransaction()
+                    .setKeyWithoutAlias(key)
+                    .addHook(hook)
+                    .setNodeAccountIds([accountId])
+                    .setTransactionId(TransactionId.generate(accountId))
+                    .freeze();
+
+                const decoded = Transaction.fromBytes(tx.toBytes());
+
+                expect(decoded.hooks).to.have.lengthOf(1);
+                expect(decoded.hooks[0].extensionPoint).to.equal(
+                    HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                );
+                expect(decoded.hooks[0].hookId.toNumber()).to.equal(42);
+                expect(
+                    decoded.hooks[0].evmHook.contractId.num.toNumber(),
+                ).to.equal(1234);
+            });
+
+            it("should preserve hooks in unfrozen -> toBytes() -> fromBytes() -> freeze() round trip", function () {
+                const key = PrivateKey.generateED25519().publicKey;
+                const accountId = new AccountId(3);
+                const hook = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    hookId: Long.fromNumber(42),
+                });
+
+                const tx = new AccountCreateTransaction()
+                    .setKeyWithoutAlias(key)
+                    .addHook(hook)
+                    .setNodeAccountIds([accountId])
+                    .setTransactionId(TransactionId.generate(accountId));
+
+                const decoded = Transaction.fromBytes(tx.toBytes()).freeze();
+
+                expect(decoded.hooks).to.have.lengthOf(1);
+                expect(decoded.hooks[0].extensionPoint).to.equal(
+                    HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                );
+                expect(decoded.hooks[0].hookId.toNumber()).to.equal(42);
+
+                const body = decoded._makeTransactionData();
+                expect(body.hookCreationDetails).to.have.lengthOf(1);
+            });
+
+            it("should preserve complex hooks with storage updates", function () {
+                const key = PrivateKey.generateED25519().publicKey;
+                const accountId = new AccountId(3);
+                const storageKey = new Uint8Array([1, 2, 3, 4]);
+                const storageValue = new Uint8Array([5, 6, 7, 8]);
+                const storageSlot = new EvmHookStorageSlot({
+                    key: storageKey,
+                    value: storageValue,
+                });
+                const hook = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    evmHook: new EvmHook({
+                        contractId: new ContractId(999),
+                        storageUpdates: [storageSlot],
+                    }),
+                });
+
+                const tx = new AccountCreateTransaction()
+                    .setKeyWithoutAlias(key)
+                    .addHook(hook)
+                    .setNodeAccountIds([accountId])
+                    .setTransactionId(TransactionId.generate(accountId))
+                    .freeze();
+
+                const decoded = Transaction.fromBytes(tx.toBytes());
+
+                expect(decoded.hooks).to.have.lengthOf(1);
+                expect(
+                    decoded.hooks[0].evmHook.storageUpdates,
+                ).to.have.lengthOf(1);
+                expect(
+                    decoded.hooks[0].evmHook.storageUpdates[0].key,
+                ).to.deep.equal(storageKey);
+                expect(
+                    decoded.hooks[0].evmHook.storageUpdates[0].value,
+                ).to.deep.equal(storageValue);
+            });
+
+            it("should preserve multiple hooks", function () {
+                const key = PrivateKey.generateED25519().publicKey;
+                const accountId = new AccountId(3);
+                const hook1 = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    hookId: Long.fromNumber(1),
+                });
+                const hook2 = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    hookId: Long.fromNumber(2),
+                });
+
+                const tx = new AccountCreateTransaction()
+                    .setKeyWithoutAlias(key)
+                    .addHook(hook1)
+                    .addHook(hook2)
+                    .setNodeAccountIds([accountId])
+                    .setTransactionId(TransactionId.generate(accountId))
+                    .freeze();
+
+                const decoded = Transaction.fromBytes(tx.toBytes());
+
+                expect(decoded.hooks).to.have.lengthOf(2);
+                expect(decoded.hooks[0].hookId.toNumber()).to.equal(1);
+                expect(decoded.hooks[1].hookId.toNumber()).to.equal(2);
+            });
+
+            it("should preserve hooks with adminKey", function () {
+                const key = PrivateKey.generateED25519().publicKey;
+                const adminKey = PrivateKey.generateED25519().publicKey;
+                const accountId = new AccountId(3);
+                const hook = new HookCreationDetails({
+                    extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                    adminKey,
+                });
+
+                const tx = new AccountCreateTransaction()
+                    .setKeyWithoutAlias(key)
+                    .addHook(hook)
+                    .setNodeAccountIds([accountId])
+                    .setTransactionId(TransactionId.generate(accountId))
+                    .freeze();
+
+                const decoded = Transaction.fromBytes(tx.toBytes());
+
+                expect(decoded.hooks).to.have.lengthOf(1);
+                expect(decoded.hooks[0].adminKey).to.not.be.null;
+                expect(decoded.hooks[0].adminKey.toString()).to.equal(
+                    adminKey.toString(),
+                );
+            });
+        });
+    });
+
+    describe("autoRenewPeriod, staking and logging", function () {
+        const VALID_START = new Timestamp(1596210382, 0);
+
+        it("should accept an autoRenewPeriod given as a Duration", function () {
+            const transaction =
+                new AccountCreateTransaction().setAutoRenewPeriod(
+                    new Duration(90),
+                );
+
+            expect(transaction.autoRenewPeriod).to.be.instanceOf(Duration);
+            expect(transaction.autoRenewPeriod.seconds.toNumber()).to.equal(90);
+        });
+
+        it("should accept an autoRenewPeriod given as a Long", function () {
+            const transaction =
+                new AccountCreateTransaction().setAutoRenewPeriod(
+                    Long.fromNumber(90),
+                );
+
+            expect(transaction.autoRenewPeriod).to.be.instanceOf(Duration);
+            expect(transaction.autoRenewPeriod.seconds.toNumber()).to.equal(90);
+        });
+
+        it("should accept an autoRenewPeriod given as a number", function () {
+            const transaction =
+                new AccountCreateTransaction().setAutoRenewPeriod(90);
+
+            expect(transaction.autoRenewPeriod).to.be.instanceOf(Duration);
+            expect(transaction.autoRenewPeriod.seconds.toNumber()).to.equal(90);
+        });
+
+        it("should set stakedAccountId from a string", function () {
+            const transaction =
+                new AccountCreateTransaction().setStakedAccountId("0.0.456");
+
+            expect(transaction.stakedAccountId.toString()).to.equal("0.0.456");
+        });
+
+        it("should set stakedAccountId from an instance", function () {
+            const transaction =
+                new AccountCreateTransaction().setStakedAccountId(
+                    new AccountId(0, 0, 456),
+                );
+
+            expect(transaction.stakedAccountId.toString()).to.equal("0.0.456");
+        });
+
+        it("should set stakedNodeId", function () {
+            const transaction = new AccountCreateTransaction().setStakedNodeId(
+                1,
+            );
+
+            expect(transaction.stakedNodeId.toNumber()).to.equal(1);
+
+            transaction.setStakedNodeId(Long.fromNumber(2));
+
+            expect(transaction.stakedNodeId.toNumber()).to.equal(2);
+        });
+
+        it("should set the staking fields from props", function () {
+            const transaction = new AccountCreateTransaction({
+                autoRenewPeriod: new Duration(90),
+                stakedAccountId: new AccountId(0, 0, 456),
+                stakedNodeId: 1,
+            });
+
+            expect(transaction.autoRenewPeriod.seconds.toNumber()).to.equal(90);
+            expect(transaction.stakedAccountId.toString()).to.equal("0.0.456");
+            expect(transaction.stakedNodeId.toNumber()).to.equal(1);
+        });
+
+        it("should keep the staking fields through a round trip", function () {
+            const transaction = new AccountCreateTransaction()
+                .setKey(PrivateKey.generateED25519().publicKey)
+                .setStakedAccountId(new AccountId(0, 0, 456))
+                .setNodeAccountIds([new AccountId(0, 0, 3)])
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        new AccountId(0, 0, 1001),
+                        VALID_START,
+                    ),
+                )
+                .freeze();
+
+            const decoded = Transaction.fromBytes(transaction.toBytes());
+
+            expect(decoded).to.be.instanceOf(AccountCreateTransaction);
+            expect(decoded.stakedAccountId.toString()).to.equal("0.0.456");
+        });
+
+        it("should throw once frozen", function () {
+            const transaction = new AccountCreateTransaction()
+                .setNodeAccountIds([new AccountId(0, 0, 3)])
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        new AccountId(0, 0, 1001),
+                        VALID_START,
+                    ),
+                )
+                .freeze();
+
+            expect(() => transaction.setAutoRenewPeriod(90)).to.throw(
+                "transaction is immutable",
+            );
+            expect(() =>
+                transaction.setStakedAccountId(new AccountId(0, 0, 456)),
+            ).to.throw("transaction is immutable");
+            expect(() => transaction.setStakedNodeId(1)).to.throw(
+                "transaction is immutable",
+            );
+        });
+    });
+
+    describe("_validateChecksums", function () {
+        let mainnet, testnet;
+
+        beforeEach(function () {
+            mainnet = Client.forMainnet({ scheduleNetworkUpdate: false });
+            testnet = Client.forTestnet({ scheduleNetworkUpdate: false });
+        });
+
+        afterEach(function () {
+            mainnet.close();
+            testnet.close();
+        });
+
+        it("should check the deprecated proxy account ID checksum", function () {
+            // 0.0.123-vfmkw has the mainnet checksum
+            const accountId = new AccountId(0, 0, 123);
+            accountId._checksum = "vfmkw";
+
+            const transaction = new AccountCreateTransaction();
+            transaction._proxyAccountId = accountId;
+
+            expect(() =>
+                transaction._validateChecksums(mainnet),
+            ).to.not.throw();
+            expect(() => transaction._validateChecksums(testnet)).to.throw(
+                BadEntityIdError,
+            );
+        });
+
+        it("should not throw when no proxy account ID is set", function () {
+            expect(() =>
+                new AccountCreateTransaction()._validateChecksums(testnet),
+            ).to.not.throw();
+        });
+    });
+
+    describe("_execute", function () {
+        it("should call crypto.createAccount() with the request", async function () {
+            const request = {};
+            const response = {};
+            const calls = [];
+            const channel = {
+                crypto: {
+                    createAccount: (arg) => {
+                        calls.push(arg);
+                        return Promise.resolve(response);
+                    },
+                },
+            };
+
+            expect(
+                await new AccountCreateTransaction()._execute(channel, request),
+            ).to.equal(response);
+            expect(calls).to.deep.equal([request]);
+        });
+    });
+
+    describe("_getLogId", function () {
+        it("should include the class name and valid start", function () {
+            const transaction = new AccountCreateTransaction()
+                .setNodeAccountIds([new AccountId(0, 0, 3)])
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        new AccountId(0, 0, 1001),
+                        new Timestamp(1596210382, 0),
+                    ),
+                )
+                .freeze();
+
+            expect(transaction._getLogId()).to.equal(
+                `AccountCreateTransaction:${new Timestamp(
+                    1596210382,
+                    0,
+                ).toString()}`,
+            );
+        });
+    });
+
+    describe("initialBalance", function () {
+        it("defaults to null", function () {
+            expect(new AccountCreateTransaction().initialBalance).to.be.null;
+        });
+
+        it("should set the initial balance from a number", function () {
+            const transaction =
+                new AccountCreateTransaction().setInitialBalance(100);
+
+            expect(transaction.initialBalance).to.be.instanceOf(Hbar);
+            expect(transaction.initialBalance.toTinybars().toNumber()).to.equal(
+                10000000000,
+            );
+        });
+
+        it("should keep an Hbar instance as is", function () {
+            const initialBalance = new Hbar(2);
+            const transaction =
+                new AccountCreateTransaction().setInitialBalance(
+                    initialBalance,
+                );
+
+            expect(transaction.initialBalance).to.equal(initialBalance);
+        });
+
+        it("should throw once frozen", function () {
+            const transaction = new AccountCreateTransaction()
+                .setNodeAccountIds([new AccountId(0, 0, 3)])
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        new AccountId(0, 0, 1001),
+                        new Timestamp(1596210382, 0),
+                    ),
+                )
+                .freeze();
+
+            expect(() => transaction.setInitialBalance(1)).to.throw(
+                "transaction is immutable",
+            );
+        });
+    });
+
+    describe("setAlias", function () {
+        it("should throw for an invalid EVM address", function () {
+            expect(() =>
+                new AccountCreateTransaction().setAlias("0x1234"),
+            ).to.throw(
+                'evmAddress must be a valid EVM address with or without "0x" prefix',
+            );
         });
     });
 });

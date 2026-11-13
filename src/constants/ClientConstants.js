@@ -58,6 +58,8 @@ export const MAINNET = {
     "node32.swirldslabs.com:443": new AccountId(35),
     "node33.swirldslabs.com:443": new AccountId(36),
     "node34.swirldslabs.com:443": new AccountId(37),
+    "node37.swirldslabs.com:443": new AccountId(40),
+    "node39.swirldslabs.com:443": new AccountId(42),
 };
 
 export const WEB_TESTNET = {
@@ -88,8 +90,9 @@ export const NATIVE_PREVIEWNET = {
     "previewnet-node00-00-grpc.hedera.com:443": new AccountId(3),
 };
 
+// Solo's local consensus node port (hiero-ledger/solo#3618).
 export const LocalNodeNetwork = {
-    "127.0.0.1:50211": new AccountId(3),
+    "127.0.0.1:35211": new AccountId(3),
 };
 
 export const LocalNodeWebNetwork = {
@@ -162,6 +165,10 @@ export const ALL_NETWORK_IPS = {
     "34.142.172.228:": "0.0.33",
     "34.16.139.248:": "0.0.34",
     "35.155.212.90:": "0.0.34",
+    "85.195.95.137:": "0.0.40",
+    "85.195.101.111:": "0.0.40",
+    "91.103.1.115:": "0.0.42",
+    "91.103.1.116:": "0.0.42",
     // TESTNET
     "34.94.106.61:": "0.0.3",
     "50.18.132.211:": "0.0.3",
@@ -223,12 +230,13 @@ export const MirrorNetwork = {
     MAINNET: ["mainnet-public.mirrornode.hedera.com:443"],
     TESTNET: ["testnet.mirrornode.hedera.com:443"],
     PREVIEWNET: ["previewnet.mirrornode.hedera.com:443"],
-    LOCAL_NODE: ["127.0.0.1:5600"],
+    // Solo's mirror node ingress, which serves gRPC, REST, Java REST and web3
+    // on one port (hiero-ledger/solo#3618).
+    LOCAL_NODE: ["127.0.0.1:38081"],
 };
 
 export const WebMirrorNetwork = {
     ...MirrorNetwork,
-    LOCAL_NODE: ["127.0.0.1:5551"],
 };
 
 export const WebNetwork = {

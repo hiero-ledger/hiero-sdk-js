@@ -41,6 +41,64 @@ describe("WebClient", function () {
         });
     });
 
+    // The mirror network name in the configuration
+    describe("mirrorNetwork in the configuration", function () {
+        it("takes the local node mirror network from the constructor", function () {
+            const client = new WebClient({
+                mirrorNetwork: "local-node",
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(client.mirrorNetwork).to.deep.equal(
+                WebMirrorNetwork.LOCAL_NODE,
+            );
+        });
+
+        it("takes the local node mirror network from a config string", function () {
+            const client = WebClient.fromConfig(
+                JSON.stringify({
+                    mirrorNetwork: "local-node",
+                    scheduleNetworkUpdate: false,
+                }),
+            );
+
+            expect(client.mirrorNetwork).to.deep.equal(
+                WebMirrorNetwork.LOCAL_NODE,
+            );
+        });
+
+        it("takes a named mirror network from the constructor as the setter does", function () {
+            for (const name of [
+                "mainnet",
+                "testnet",
+                "previewnet",
+                "local-node",
+            ]) {
+                const client = new WebClient({
+                    mirrorNetwork: name,
+                    scheduleNetworkUpdate: false,
+                });
+                const setter = new WebClient({
+                    scheduleNetworkUpdate: false,
+                });
+                setter.setMirrorNetwork(name);
+
+                expect(client.mirrorNetwork).to.deep.equal(
+                    setter.mirrorNetwork,
+                );
+            }
+        });
+
+        it("takes a mirror network address list as it is", function () {
+            const client = new WebClient({
+                mirrorNetwork: ["127.0.0.1:5551"],
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(client.mirrorNetwork).to.deep.equal(["127.0.0.1:5551"]);
+        });
+    });
+
     // Named-network static factories
     describe("named-network factories", function () {
         it("forMainnet returns a client with MAINNET ledgerId", function () {
@@ -217,6 +275,52 @@ describe("WebClient", function () {
             expect(warnSpy).toHaveBeenCalledWith(
                 expect.stringContaining("[Deprecation Notice]"),
             );
+        });
+
+        it("takes the shard and realm from a node map", function () {
+            const client = new WebClient({ scheduleNetworkUpdate: false });
+
+            client.setNetwork({ "localhost:8080": "1.2.3" });
+
+            expect(client.shard).to.equal(1);
+            expect(client.realm).to.equal(2);
+        });
+
+        it("resets to shard 0, realm 0 for a named network", function () {
+            for (const name of [
+                "testnet",
+                "mainnet",
+                "previewnet",
+                "local-node",
+            ]) {
+                const client = new WebClient({
+                    network: { "localhost:8080": "1.2.3" },
+                    scheduleNetworkUpdate: false,
+                });
+
+                client.setNetwork(name);
+
+                expect(client.shard, name).to.equal(0);
+                expect(client.realm, name).to.equal(0);
+            }
+        });
+
+        it("throws for nodes in different shards or realms and changes nothing", function () {
+            const client = new WebClient({
+                network: { "localhost:8080": "1.2.3" },
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(() =>
+                client.setNetwork({
+                    "localhost:8080": "1.2.3",
+                    "localhost:8081": "2.2.4",
+                }),
+            ).to.throw(
+                "Network is not valid, all nodes must be in the same shard and realm",
+            );
+            expect(client.shard).to.equal(1);
+            expect(client.realm).to.equal(2);
         });
     });
 

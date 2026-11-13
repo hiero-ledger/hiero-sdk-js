@@ -2,9 +2,7 @@
 
 import Long from "long";
 import Key from "../Key.js";
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import RegisteredServiceEndpoint from "./RegisteredServiceEndpoint.js";
 
 /**
@@ -339,9 +337,3 @@ export default class RegisteredNodeUpdateTransaction extends Transaction {
         return `RegisteredNodeUpdateTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "registeredNodeUpdate",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    RegisteredNodeUpdateTransaction._fromProtobuf,
-);

@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import Transaction, {
-    TRANSACTION_REGISTRY,
-} from "../transaction/Transaction.js";
+import Transaction from "../transaction/Transaction.js";
 import AccountId from "./AccountId.js";
 import ContractId from "../contract/ContractId.js";
 import TokenId from "../token/TokenId.js";
@@ -562,9 +560,3 @@ export default class AccountAllowanceApproveTransaction extends Transaction {
         return `AccountAllowanceApproveTransaction:${timestamp.toString()}`;
     }
 }
-
-TRANSACTION_REGISTRY.set(
-    "cryptoApproveAllowance",
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    AccountAllowanceApproveTransaction._fromProtobuf,
-);

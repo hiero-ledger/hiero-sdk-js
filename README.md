@@ -148,7 +148,7 @@ The SDK does not import this polyfill for you — you must import it yourself at
 ```js
 import "react-native-get-random-values";
 
-import { Client, PrivateKey } from "@hashgraph/sdk";
+import { Client, PrivateKey } from "@hiero-ledger/sdk";
 ```
 
 After installation, the native dependency must be linked for the respective platforms:

@@ -101,6 +101,35 @@ For detailed setup instructions and troubleshooting, see the [Solo Setup Guide](
 
 **Note:** Some examples may also work with Solo running locally. Check the specific example's documentation.
 
+### Property-Based Tests
+
+Most unit tests check inputs someone thought of. Property-based tests check a rule (a property) that must hold for every input, for example "`AccountId.fromString(id.toString())` gives back `id` for any shard, realm and num". We write them with [fast-check](https://fast-check.dev/). It checks each property against 100 random inputs. When a property fails, it shrinks the input to the smallest one that still fails.
+
+The property tests live in `test/unit/properties/`, one file per target (for example `EntityId.js`). They run with the other unit tests in `task test:unit`, in both Node and the browser. Each suite sets `{ retry: 0 }`, because a retry runs with a new seed and could hide a failure.
+
+#### Reproducing a Failure
+
+A failing property prints the seed and path of the failing run, and the smallest input it found:
+
+```
+Error: Property failed after 25 tests
+{ seed: 1733161097, path: "24:1:0:3:0:0:...", endOnFailure: true }
+Counterexample: [100000000000000000,0,1000000000000000000]
+```
+
+To run that exact case again, copy the printed object as it is and pass it as the second argument to the failing `fc.assert()`:
+
+```js
+fc.assert(
+    fc.property(/* ... */),
+    { seed: 1733161097, path: "24:1:0:3:0:0:...", endOnFailure: true },
+);
+```
+
+The same seed reproduces the failure in Node and in the browser. Remove the argument before you commit, and add the counterexample as a normal unit test next to the fix.
+
+To search harder on your machine, pass `{ numRuns: 10000 }` instead.
+
 ## Feature Requests
 
 Feature requests are also submitted through the [Issues][issues] page.

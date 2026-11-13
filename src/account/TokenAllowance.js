@@ -77,13 +77,16 @@ export default class TokenAllowance {
      * @returns {TokenAllowance}
      */
     static _fromProtobuf(allowance) {
+        if (allowance.tokenId == null) {
+            throw new Error("tokenId is required");
+        }
+        if (allowance.spender == null) {
+            throw new Error("spender is required");
+        }
+
         return new TokenAllowance({
-            tokenId: TokenId._fromProtobuf(
-                /** @type {HieroProto.proto.ITokenID} */ (allowance.tokenId),
-            ),
-            spenderAccountId: AccountId._fromProtobuf(
-                /** @type {HieroProto.proto.IAccountID} */ (allowance.spender),
-            ),
+            tokenId: TokenId._fromProtobuf(allowance.tokenId),
+            spenderAccountId: AccountId._fromProtobuf(allowance.spender),
             ownerAccountId:
                 allowance.owner != null
                     ? AccountId._fromProtobuf(

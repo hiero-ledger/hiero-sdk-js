@@ -5,7 +5,6 @@ import * as EntityIdHelper from "../EntityIdHelper.js";
 import * as HieroProto from "@hiero-ledger/proto";
 import Key from "../Key.js";
 import PublicKey from "../PublicKey.js";
-import CACHE from "../Cache.js";
 import EvmAddress from "../EvmAddress.js";
 import {
     bodyJson,
@@ -61,7 +60,12 @@ export default class AccountId {
         let aliasKey = undefined;
         let evmAddress = undefined;
 
-        if ((text.startsWith("0x") && text.length == 42) || text.length == 40) {
+        // A dotted shard.realm.num ID can also be 40 characters long.
+        // Only undotted input may be a standalone EVM address.
+        if (
+            !text.includes(".") &&
+            ((text.startsWith("0x") && text.length == 42) || text.length == 40)
+        ) {
             evmAddress = EvmAddress.fromString(text);
         } else {
             const result = EntityIdHelper.fromStringSplitter(text);
@@ -181,7 +185,7 @@ export default class AccountId {
             throw new Error("field `evmAddress` should not be null");
         }
 
-        const http = client._mirrorNodeHttpClient({ family: "rest" });
+        const http = client._mirrorNodeHttpClient();
         const path = `/accounts/${this.evmAddress.toString()}`;
 
         // Give the mirror node a moment to ingest a just-created account.
@@ -226,7 +230,7 @@ export default class AccountId {
             throw new Error("field `num` should not be null");
         }
 
-        const http = client._mirrorNodeHttpClient({ family: "rest" });
+        const http = client._mirrorNodeHttpClient();
         const path = `/accounts/${this.num.toString()}`;
 
         // Give the mirror node a moment to ingest a just-created account.
@@ -470,7 +474,3 @@ export default class AccountId {
         }
     }
 }
-
-CACHE.setAccountIdConstructor(
-    (shard, realm, key) => new AccountId(shard, realm, Long.ZERO, key),
-);

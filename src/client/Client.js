@@ -25,10 +25,7 @@ import HttpTransportError, {
 import MirrorNodeHttpClient from "../mirror_node/MirrorNodeHttpClient.js";
 import MirrorNodeHttpConfig from "../mirror_node/MirrorNodeHttpConfig.js";
 import MirrorNodeHttpRetryPolicy from "../mirror_node/MirrorNodeHttpRetryPolicy.js";
-import {
-    isLoopbackBaseUrl,
-    resolveMirrorRestBaseUrl,
-} from "../mirror_node/localMirrorRestBaseUrl.js";
+import { isLoopbackBaseUrl } from "../mirror_node/localMirrorRestBaseUrl.js";
 
 /**
  * Grace period `close()` gives mirror REST reads still in flight before the
@@ -44,16 +41,12 @@ const DEFAULT_MIRROR_NODE_HTTP_CLOSE_TIMEOUT = 5 * 1000;
  * @typedef {import("../address_book/NodeAddressBook.js").default} NodeAddressBook
  * @typedef {import("../http/HttpTransport.js").default} HttpTransport
  * @typedef {import("../http/HttpTransportConfiguration.js").default} HttpTransportConfiguration
- * @typedef {import("../mirror_node/localMirrorRestBaseUrl.js").MirrorRestEndpointFamily} MirrorRestEndpointFamily
  */
 
 /**
  * What a mirror REST query passes when it asks the client for an adapter.
  *
  * @typedef {object} MirrorNodeHttpClientRequest
- * @property {MirrorRestEndpointFamily} [family] - the endpoint family,
- * `"rest"` by default; only matters on a local network, where the families
- * are served on different ports
  * @property {string} [baseUrl] - an explicit base URL instead of the next
  * round-robin mirror node
  * @property {?number} [maxAttempts] - per-query override of the policy field
@@ -335,12 +328,60 @@ export default class Client {
     }
 
     /**
+     * Replaces the consensus nodes and takes the client's shard and realm
+     * from the nodes in the address book.
+     *
      * @param {NodeAddressBook} addressBook
      * @returns {this}
      */
     setNetworkFromAddressBook(addressBook) {
+        /** @type {{[key: string]: AccountId}} */
+        const nodes = {};
+        for (const { accountId } of addressBook.nodeAddresses) {
+            if (accountId != null) {
+                nodes[accountId.toString()] = accountId;
+            }
+        }
+        this._setShardRealmFromNetwork(nodes);
+
         this._network.setNetworkFromAddressBook(addressBook);
         return this;
+    }
+
+    /**
+     * Replaces the consensus nodes and takes the client's shard and realm
+     * from their account IDs. The client-specific `setNetwork()` methods
+     * call this for every node map, named networks included, so `ping()`
+     * and `updateNetwork()` query entities in the network's shard and realm.
+     *
+     * @protected
+     * @param {{[key: string]: (string | AccountId)}} network
+     * @returns {void}
+     */
+    _setNetworkNodes(network) {
+        this._setShardRealmFromNetwork(network);
+        this._network.setNetwork(network);
+    }
+
+    /**
+     * Sets the client's shard and realm from the node account IDs. Throws,
+     * without changing anything, if the nodes are in different shards or
+     * realms. An empty network keeps the current values, so a client
+     * created with an explicit shard and realm and no nodes yet keeps them.
+     *
+     * @private
+     * @param {{[key: string]: (string | AccountId)}} network
+     * @returns {void}
+     */
+    _setShardRealmFromNetwork(network) {
+        if (Object.keys(network).length === 0) {
+            return;
+        }
+
+        Client._validateNetworkConsistency(network);
+        const { shard, realm } = Client._extractShardRealm(network);
+        this._shard = shard;
+        this._realm = realm;
     }
 
     /**
@@ -508,7 +549,7 @@ export default class Client {
 
     /**
      * The adapter for one mirror REST call: the next round-robin mirror
-     * node resolved for the endpoint family, the client's transport, and the
+     * node as configured, the client's transport, and the
      * retry policy resolved as package default, then the client's policy,
      * then the query's own overrides, field by field. A `totalDeadline` of
      * `0` inherits `requestTimeout`.
@@ -521,12 +562,9 @@ export default class Client {
         // A closed client fails with `client-closed-error`, not with the
         // "no mirror network" error that clearing the network would cause.
         const transport = this._mirrorNodeHttpTransport();
-        const baseUrl = resolveMirrorRestBaseUrl(
+        const baseUrl =
             request.baseUrl ??
-                this._mirrorNetwork.nextMirrorNodeForRest()
-                    .mirrorRestApiBaseUrl,
-            request.family ?? "rest",
-        );
+            this._mirrorNetwork.nextMirrorNodeForRest().mirrorRestApiBaseUrl;
         const retryPolicy = this._resolveMirrorNodeHttpRetryPolicy(
             baseUrl,
             request,

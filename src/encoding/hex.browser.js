@@ -29,6 +29,20 @@ export function encode(data) {
  */
 export function decode(text) {
     const str = text.startsWith("0x") ? text.substring(2) : text;
+
+    // Same checks as hex.js, so every platform rejects the same input.
+    if (str.length % 2 !== 0) {
+        throw new Error(
+            "Invalid hex string: Must have an even number of characters.",
+        );
+    }
+
+    if (/[^0-9a-fA-F]/.test(str)) {
+        throw new Error(
+            "Invalid hex string: Contains non-hexadecimal characters.",
+        );
+    }
+
     const result = str.match(/.{1,2}/gu);
 
     return new Uint8Array(
@@ -61,35 +75,4 @@ export function isHexString(text) {
     // Check if all characters are valid hex digits
     const hexRegex = /^[0-9a-fA-F]+$/;
     return hexRegex.test(str);
-}
-
-/**
- * Encode with a specified length. Supports zero padding if the most significant byte is 0
- *
- * https://github.com/ethers-io/ethers.js/blob/master/packages/bytes/src.ts/index.ts#L315
- *
- * @param {Uint8Array} value
- * @param {number} length
- * @returns {string}
- */
-export function hexZeroPadded(value, length) {
-    const HexCharacters = "0123456789abcdef";
-
-    // https://github.com/ethers-io/ethers.js/blob/master/packages/bytes/src.ts/index.ts#L243
-    let result = "0x";
-    for (let i = 0; i < value.length; i++) {
-        let v = value[i];
-        result += HexCharacters[(v & 0xf0) >> 4] + HexCharacters[v & 0x0f];
-    }
-
-    // https://github.com/ethers-io/ethers.js/blob/master/packages/bytes/src.ts/index.ts#L315
-    if (result.length > 2 * length + 2) {
-        console.log("result out of range", "result");
-    }
-
-    while (result.length < 2 * length + 2) {
-        result = "0x0" + result.substring(2);
-    }
-
-    return result.substring(2);
 }

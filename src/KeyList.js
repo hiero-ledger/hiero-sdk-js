@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import Key from "./Key.js";
-import CACHE from "./Cache.js";
 
 /**
  * @namespace proto
@@ -174,6 +173,3 @@ export default class KeyList extends Key {
         return list;
     }
 }
-
-CACHE.setKeyList((key) => KeyList.__fromProtobufKeyList(key));
-CACHE.setThresholdKey((key) => KeyList.__fromProtobufThresoldKey(key));
