@@ -67,7 +67,7 @@ export default class DelegateContractId extends ContractId {
             id,
             undefined,
             undefined,
-            id.evmAddress != null ? id.evmAddress : undefined,
+            id.evmAddress != null ? new Uint8Array(id.evmAddress) : undefined,
         );
     }
 
