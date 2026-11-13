@@ -145,17 +145,17 @@ describe("MirrorNodeContractQuery", function () {
             ).to.deep.equal({ data: "0x", estimate: false });
         });
 
-        it("uses HTTP and port 8545 for localhost and 127.0.0.1", async function () {
+        it("uses HTTP and the configured port for localhost and 127.0.0.1", async function () {
             for (const host of ["localhost", "127.0.0.1"]) {
                 const fake = new FakeHttpTransport().respondJson(200, {
                     result: "0x",
                 });
-                const client = clientWith(`${host}:5600`, fake);
+                const client = clientWith(`${host}:38081`, fake);
 
                 await query().performMirrorNodeRequest(client, {});
 
                 expect(fake.requests[0].url, host).to.equal(
-                    `http://${host}:8545/api/v1/contracts/call`,
+                    `http://${host}:38081/api/v1/contracts/call`,
                 );
             }
         });

@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 -   `HookEntityId.setAccountId()` and the `accountId` constructor prop now accept a string such as `"0.0.123"` as well as an `AccountId`. The id is stored as a copy, like in the other `setAccountId()` setters. [#3789](https://github.com/hiero-ledger/hiero-sdk-js/issues/3789)
 
+### Changed
+
+-   **Breaking for local networks:** `Client.forLocalNode()` and `setNetwork("local-node")` now use Solo's local ports: the consensus node at `127.0.0.1:35211` (was `50211`) and the mirror node at `127.0.0.1:38081` (was `5600` in Node.js and React Native, and `5551` in the browser). The SDK also uses a loopback mirror node address as given, and no longer sends its REST, Java REST and web3 calls to `5551`, `8084` and `8545`. Start Solo with the mirror node ingress, which serves all of them on one port, or set the network and mirror network yourself. [#3590](https://github.com/hiero-ledger/hiero-sdk-js/issues/3590)
+
 ### Fixed
 
 -   `PrivateKey.fromPem()` with a passphrase now throws an `Error` such as `invalid DER: data too short` when the decrypted ED25519 key's DER structure is malformed, for example after decrypting with a wrong passphrase. Before, the DER decoder threw `RangeError: Offset is outside the bounds of the DataView` when the input ended before a length or an INTEGER's content, or used the indefinite length `0x80`, and returned data the input didn't contain when a length pointed past its end or an OBJECT IDENTIFIER was empty or cut off. A malformed encrypted structure still throws a `BadKeyError` that names the DER error. [#4734](https://github.com/hiero-ledger/hiero-sdk-js/issues/4734)
