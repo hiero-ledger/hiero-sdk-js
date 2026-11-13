@@ -4,6 +4,9 @@
     "description": "",
     "main": "index.js",
     "type": "module",
+    "engines": {
+        "node": ">=18.0.0"
+    },
     "scripts": {
         "lint": "run-s lint:*",
         "lint:types": "tsc",

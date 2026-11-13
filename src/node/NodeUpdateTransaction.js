@@ -604,6 +604,7 @@ export default class NodeUpdateTransaction extends Transaction {
      * @returns {NodeUpdateTransaction}
      */
     deleteGrpcWebProxyEndpoint() {
+        this._requireNotFrozen();
         this._grpcWebProxyEndpoint = new ServiceEndpoint();
         return this;
     }

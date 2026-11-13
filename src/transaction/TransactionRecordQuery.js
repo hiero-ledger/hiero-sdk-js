@@ -148,7 +148,7 @@ export default class TransactionRecordQuery extends Query {
      * @returns {TransactionRecordQuery}
      */
     setIncludeDuplicates(includeDuplicates) {
-        this._duplicates = includeDuplicates;
+        this._includeDuplicates = includeDuplicates;
         return this;
     }
 
@@ -156,7 +156,9 @@ export default class TransactionRecordQuery extends Query {
      * @returns {boolean}
      */
     get includeDuplicates() {
-        return this._duplicates != null ? this._duplicates : false;
+        return this._includeDuplicates != null
+            ? this._includeDuplicates
+            : false;
     }
 
     /**
@@ -263,6 +265,17 @@ export default class TransactionRecordQuery extends Query {
     }
 
     /**
+     * @returns {TransactionId}
+     */
+    _getTransactionId() {
+        if (this._transactionId != null) {
+            return this._transactionId;
+        }
+
+        return super._getTransactionId();
+    }
+
+    /**
      * @override
      * @internal
      * @param {HieroProto.proto.IQuery} request
@@ -286,15 +299,27 @@ export default class TransactionRecordQuery extends Query {
                 break;
 
             case Status.ContractRevertExecuted:
-                return new RecordStatusError({
-                    status,
-                    transactionId: this._getTransactionId(),
-                    transactionRecord: TransactionRecord._fromProtobuf({
-                        transactionRecord:
-                            // @ts-ignore
-                            response.transactionGetRecord.transactionRecord,
-                    }),
-                });
+                if (
+                    response.transactionGetRecord != null &&
+                    response.transactionGetRecord.transactionRecord != null
+                ) {
+                    return new RecordStatusError({
+                        status,
+                        transactionId: this._getTransactionId(),
+                        transactionRecord: TransactionRecord._fromProtobuf({
+                            transactionRecord:
+                                // @ts-ignore
+                                response.transactionGetRecord.transactionRecord,
+                        }),
+                    });
+                } else {
+                    return new PrecheckStatusError({
+                        nodeId,
+                        status,
+                        transactionId: this._getTransactionId(),
+                        contractFunctionResult: null,
+                    });
+                }
 
             default:
                 return new PrecheckStatusError({

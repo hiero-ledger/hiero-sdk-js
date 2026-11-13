@@ -1,14 +1,17 @@
 import {
+    Client,
     ContractUpdateTransaction,
     ContractId,
     AccountId,
     FileId,
     Timestamp,
+    HookExtensionPoint,
     PrivateKey,
 } from "../../src/index.js";
 import Duration from "../../src/Duration.js";
 import Long from "long";
 
+import BadEntityIdError from "../../src/BadEntityIdError.js";
 import TransactionId from "../../src/transaction/TransactionId.js";
 import HookCreationDetails from "../../src/hooks/HookCreationDetails.js";
 import EvmHook from "../../src/hooks/EvmHook.js";
@@ -860,6 +863,61 @@ describe("ContractUpdateTransaction", function () {
         });
     });
 
+    describe("hook serialization", function () {
+        it("should keep hooks in a frozen bytes round trip", function () {
+            const nodeAccountId = new AccountId(3);
+            const contractId = new ContractId(0, 0, 100);
+            const hook = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                hookId: Long.fromNumber(7),
+                evmHook: new EvmHook({
+                    contractId: new ContractId(0, 0, 200),
+                }),
+            });
+            const tx = new ContractUpdateTransaction({ contractId })
+                .addHookToCreate(hook)
+                .addHookToDelete(Long.fromNumber(9))
+                .setNodeAccountIds([nodeAccountId])
+                .setTransactionId(TransactionId.generate(nodeAccountId))
+                .freeze();
+
+            const tx2 = ContractUpdateTransaction.fromBytes(tx.toBytes());
+
+            expect(tx2.hooksToCreate).to.have.lengthOf(1);
+            expect(tx2.hooksToCreate[0].extensionPoint).to.equal(
+                HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+            );
+            expect(tx2.hooksToCreate[0].hookId.toString()).to.equal("7");
+            expect(tx2.hooksToDelete).to.have.lengthOf(1);
+            expect(tx2.hooksToDelete[0].toString()).to.equal("9");
+        });
+
+        it("should keep hooks when an unfrozen transaction is decoded and frozen", function () {
+            const nodeAccountId = new AccountId(3);
+            const contractId = new ContractId(0, 0, 100);
+            const hook = new HookCreationDetails({
+                extensionPoint: HookExtensionPoint.ACCOUNT_ALLOWANCE_HOOK,
+                hookId: Long.fromNumber(7),
+            });
+            const tx = new ContractUpdateTransaction({ contractId })
+                .addHookToCreate(hook)
+                .addHookToDelete(Long.fromNumber(9))
+                .setNodeAccountIds([nodeAccountId])
+                .setTransactionId(TransactionId.generate(nodeAccountId));
+
+            const tx2 = ContractUpdateTransaction.fromBytes(
+                tx.toBytes(),
+            ).freeze();
+            const body = tx2._makeTransactionData();
+
+            expect(tx2.hooksToCreate).to.have.lengthOf(1);
+            expect(tx2.hooksToCreate[0].hookId.toString()).to.equal("7");
+            expect(tx2.hooksToDelete).to.have.lengthOf(1);
+            expect(body.hookCreationDetails).to.have.lengthOf(1);
+            expect(body.hookIdsToDelete).to.have.lengthOf(1);
+        });
+    });
+
     describe("clearContractMemo", function () {
         it("should send an empty memo wrapper when the memo is cleared", function () {
             const tx = new ContractUpdateTransaction()
@@ -886,6 +944,145 @@ describe("ContractUpdateTransaction", function () {
             const tx = new ContractUpdateTransaction();
 
             expect(tx._makeTransactionData().memoWrapper).to.be.null;
+        });
+
+        describe("clearAutoRenewAccountId", function () {
+            it("should clear the autoRenewAccountId", function () {
+                const autoRenewAccountId = new AccountId(0, 0, 200);
+                const tx =
+                    new ContractUpdateTransaction().setAutoRenewAccountId(
+                        autoRenewAccountId,
+                    );
+
+                expect(tx.autoRenewAccountId.toString()).to.equal(
+                    autoRenewAccountId.toString(),
+                );
+
+                tx.clearAutoRenewAccountId();
+
+                expect(tx.autoRenewAccountId.toString()).to.equal(
+                    new AccountId(0).toString(),
+                );
+            });
+
+            it("should be chainable", function () {
+                const tx = new ContractUpdateTransaction();
+
+                expect(tx.clearAutoRenewAccountId()).to.equal(tx);
+            });
+        });
+
+        describe("_validateChecksums", function () {
+            let mainnet, testnet;
+
+            beforeEach(function () {
+                mainnet = Client.forMainnet({ scheduleNetworkUpdate: false });
+                testnet = Client.forTestnet({ scheduleNetworkUpdate: false });
+            });
+
+            afterEach(function () {
+                mainnet.close();
+                testnet.close();
+            });
+
+            it("should validate contractId checksum when present", function () {
+                const query = new ContractUpdateTransaction();
+                const contractId = new ContractId(0, 0, 123);
+                contractId._checksum = "vfmkw";
+                query._contractId = contractId;
+
+                expect(() => query._validateChecksums(mainnet)).to.not.throw();
+                expect(() => query._validateChecksums(testnet)).to.throw(
+                    BadEntityIdError,
+                );
+            });
+
+            it("should validate bytecodeFileId checksum when present", function () {
+                const query = new ContractUpdateTransaction();
+                const bytecodeFileId = new ContractId(0, 0, 123);
+                bytecodeFileId._checksum = "vfmkw";
+                query._bytecodeFileId = bytecodeFileId;
+
+                expect(() => query._validateChecksums(mainnet)).to.not.throw();
+                expect(() => query._validateChecksums(testnet)).to.throw(
+                    BadEntityIdError,
+                );
+            });
+
+            it("should validate proxyAccountId checksum when present (deprecated)", function () {
+                const query = new ContractUpdateTransaction();
+                const proxyAccountId = new ContractId(0, 0, 123);
+                proxyAccountId._checksum = "vfmkw";
+                query._proxyAccountId = proxyAccountId;
+
+                expect(() => query._validateChecksums(mainnet)).to.not.throw();
+                expect(() => query._validateChecksums(testnet)).to.throw(
+                    BadEntityIdError,
+                );
+            });
+
+            it("should skip validation when contractId is unset", function () {
+                const query = new ContractUpdateTransaction();
+
+                expect(() => query._validateChecksums(testnet)).to.not.throw();
+            });
+        });
+
+        describe("_execute", function () {
+            it("should call smartContract.updateContract with the request", async function () {
+                const request = {};
+                const response = {};
+                const calls = [];
+                const channel = {
+                    smartContract: {
+                        updateContract: (arg) => {
+                            calls.push(arg);
+                            return Promise.resolve(response);
+                        },
+                    },
+                };
+
+                expect(
+                    await new ContractUpdateTransaction()._execute(
+                        channel,
+                        request,
+                    ),
+                ).to.equal(response);
+                expect(calls).to.deep.equal([request]);
+            });
+        });
+
+        describe("_getLogId", function () {
+            it("should return the log ID with the transaction ID valid start", function () {
+                const tx = new ContractUpdateTransaction();
+
+                // Set up a mock transaction ID with valid start
+                const mockValidStart = new Timestamp(1596210382, 0);
+                tx._transactionIds = {
+                    current: {
+                        validStart: mockValidStart,
+                    },
+                };
+
+                expect(tx._getLogId()).to.equal(
+                    `ContractUpdateTransaction:${mockValidStart.toString()}`,
+                );
+            });
+
+            it("should fall back to the current timestamp when valid start is not set", function () {
+                const tx = new ContractUpdateTransaction();
+
+                // Set up a mock transaction ID with valid start
+                tx._transactionIds = {
+                    current: {
+                        validStart: new Timestamp(1596210382, 0),
+                    },
+                };
+
+                expect(tx._getLogId()).to.equal(
+                    `ContractUpdateTransaction:1596210382.000000000`,
+                );
+            });
         });
     });
 });

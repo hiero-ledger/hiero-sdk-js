@@ -53,6 +53,10 @@ export default class NativeClient extends Client {
                 // Also takes the shard and realm from the node account IDs.
                 this.setNetwork(props.network);
             }
+
+            if (props.mirrorNetwork != null) {
+                this.setMirrorNetwork(props.mirrorNetwork);
+            }
         }
     }
 

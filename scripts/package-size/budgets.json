@@ -2,7 +2,7 @@
     {
         "dir": ".",
         "maxFiles": 2500,
-        "maxUnpackedMB": 25,
+        "maxUnpackedMB": 20,
         "maxGrowthPercent": 25
     },
     {

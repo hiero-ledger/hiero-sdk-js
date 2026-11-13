@@ -58,11 +58,7 @@ describe("Encoding properties", function () {
     });
 
     describe("PEM", function () {
-        // Skipped until #4735 is fixed: fromPem() accepts any base64 body of
-        // 48 bytes as an ED25519 key, and throws the base64 decoder's error
-        // or a TypeError for some other input.
-        // eslint-disable-next-line vitest/no-disabled-tests
-        it.skip("PrivateKey.fromPem() rejects input that is not a key with a BadKeyError", async function () {
+        it("PrivateKey.fromPem() rejects input that is not a key with a BadKeyError", async function () {
             await fc.assert(
                 fc.asyncProperty(notAKey, async (text) => {
                     await expect(PrivateKey.fromPem(text)).rejects.toThrow(
