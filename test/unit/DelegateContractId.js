@@ -64,13 +64,42 @@ describe("DelegateContractId", function () {
             expect(keyToId.toString()).to.equal(`0.0.${evmAddress}`);
         });
 
-        it("clone() should keep the EVM address", function () {
-            const id = DelegateContractId.fromString(`0.0.${evmAddress}`);
+        it("clone() should copy the EVM address independently", function () {
+            const id = DelegateContractId.fromString(`1.2.${evmAddress}`);
+            const originalBytes = new Uint8Array(id.evmAddress);
 
             const clone = id.clone();
 
             expect(clone).to.be.instanceOf(DelegateContractId);
-            expect(clone.toString()).to.equal(`0.0.${evmAddress}`);
+            expect(clone.toString()).to.equal(`1.2.${evmAddress}`);
+            expect(clone.shard).to.deep.equal(id.shard);
+            expect(clone.realm).to.deep.equal(id.realm);
+            expect(clone.num).to.deep.equal(id.num);
+            expect(clone.evmAddress).to.deep.equal(originalBytes);
+
+            clone.evmAddress.fill(0);
+            expect(id.evmAddress).to.deep.equal(originalBytes);
+            expect(clone.evmAddress).to.not.equal(id.evmAddress);
+            id.evmAddress.fill(255);
+            expect(clone.evmAddress).to.deep.equal(new Uint8Array(20));
+        });
+
+        it("_fromContractId() should copy the EVM address independently", function () {
+            const id = ContractId.fromString(`1.2.${evmAddress}`);
+            const originalBytes = new Uint8Array(id.evmAddress);
+
+            const delegateId = DelegateContractId._fromContractId(id);
+
+            expect(delegateId).to.be.instanceOf(DelegateContractId);
+            expect(delegateId.toString()).to.equal(`1.2.${evmAddress}`);
+            expect(delegateId.shard).to.deep.equal(id.shard);
+            expect(delegateId.realm).to.deep.equal(id.realm);
+            expect(delegateId.num).to.deep.equal(id.num);
+            expect(delegateId.evmAddress).to.deep.equal(originalBytes);
+
+            delegateId.evmAddress.fill(0);
+            expect(id.evmAddress).to.deep.equal(originalBytes);
+            expect(delegateId.evmAddress).to.not.equal(id.evmAddress);
         });
 
         it("should leave evmAddress null for a numeric id", function () {
@@ -81,6 +110,18 @@ describe("DelegateContractId", function () {
             expect(roundTripped.toString()).to.equal("1.2.3");
             expect(roundTripped.evmAddress).to.be.null;
             expect(id.clone().evmAddress).to.be.null;
+        });
+
+        it("clone() should preserve a numeric id's checksum", function () {
+            const id = new DelegateContractId(1, 2, 3);
+            id._checksum = "vfmkw";
+
+            const clone = id.clone();
+
+            expect(clone).to.be.instanceOf(DelegateContractId);
+            expect(clone.toString()).to.equal("1.2.3");
+            expect(clone._checksum).to.equal("vfmkw");
+            expect(clone.evmAddress).to.be.null;
         });
     });
 });
