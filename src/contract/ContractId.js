@@ -126,7 +126,7 @@ export default class ContractId extends Key {
      * @returns {Promise<ContractId>}
      */
     async populateAccountNum(client) {
-        const http = client._mirrorNodeHttpClient({ family: "rest" });
+        const http = client._mirrorNodeHttpClient();
         const path = `/contracts/${this.toEvmAddress()}`;
 
         const url = `${http.baseUrl}${path}`;

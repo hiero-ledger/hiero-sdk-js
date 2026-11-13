@@ -236,9 +236,6 @@ export default class FeeEstimateQuery {
         let http;
         try {
             http = client._mirrorNodeHttpClient({
-                // `/network/fees` is served by the mirror node's Java REST
-                // API, a different port on a local network.
-                family: "rest-java",
                 totalDeadline: requestTimeout,
             });
         } catch (error) {
