@@ -257,4 +257,29 @@ describe("FreezeTransaction", function () {
         expect(tx2.fileHash).to.deep.equal(fileHash);
         expect(tx2.freezeType).to.equal(FreezeType.PrepareUpgrade);
     });
+
+    describe("_validateChecksums", function () {
+        const TransactionType = FreezeTransaction;
+        const field = "_fileId";
+
+        it("passes the client to the ID validator", function () {
+            const client = {};
+            const clients = [];
+            const transaction = new TransactionType();
+            transaction[field] = {
+                validateChecksum: (value) => clients.push(value),
+            };
+
+            transaction._validateChecksums(client);
+
+            expect(clients).to.have.lengthOf(1);
+            expect(clients[0]).to.equal(client);
+        });
+
+        it("skips an unset ID", function () {
+            expect(() =>
+                new TransactionType()._validateChecksums({}),
+            ).to.not.throw();
+        });
+    });
 });
