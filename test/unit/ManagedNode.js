@@ -38,6 +38,21 @@ describe("ManagedNode", function () {
         expect(node._currentBackoff).to.equal(2000);
     });
 
+    it("increaseBackoff counts every bad gRPC status and decreaseBackoff keeps the count", function () {
+        const node = client._network.getNode(new AccountId(3));
+
+        expect(node._badGrpcStatusCount).to.equal(0);
+
+        node.increaseBackoff();
+        node.increaseBackoff();
+
+        expect(node._badGrpcStatusCount).to.equal(2);
+
+        node.decreaseBackoff();
+
+        expect(node._badGrpcStatusCount).to.equal(2);
+    });
+
     it("nodes added later get the network min and max backoff", function () {
         client._network.setNetwork({
             "127.0.0.1:50211": "0.0.3",

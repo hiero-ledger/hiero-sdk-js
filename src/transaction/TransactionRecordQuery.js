@@ -265,6 +265,17 @@ export default class TransactionRecordQuery extends Query {
     }
 
     /**
+     * @returns {TransactionId}
+     */
+    _getTransactionId() {
+        if (this._transactionId != null) {
+            return this._transactionId;
+        }
+
+        return super._getTransactionId();
+    }
+
+    /**
      * @override
      * @internal
      * @param {HieroProto.proto.IQuery} request
@@ -288,15 +299,27 @@ export default class TransactionRecordQuery extends Query {
                 break;
 
             case Status.ContractRevertExecuted:
-                return new RecordStatusError({
-                    status,
-                    transactionId: this._getTransactionId(),
-                    transactionRecord: TransactionRecord._fromProtobuf({
-                        transactionRecord:
-                            // @ts-ignore
-                            response.transactionGetRecord.transactionRecord,
-                    }),
-                });
+                if (
+                    response.transactionGetRecord != null &&
+                    response.transactionGetRecord.transactionRecord != null
+                ) {
+                    return new RecordStatusError({
+                        status,
+                        transactionId: this._getTransactionId(),
+                        transactionRecord: TransactionRecord._fromProtobuf({
+                            transactionRecord:
+                                // @ts-ignore
+                                response.transactionGetRecord.transactionRecord,
+                        }),
+                    });
+                } else {
+                    return new PrecheckStatusError({
+                        nodeId,
+                        status,
+                        transactionId: this._getTransactionId(),
+                        contractFunctionResult: null,
+                    });
+                }
 
             default:
                 return new PrecheckStatusError({
