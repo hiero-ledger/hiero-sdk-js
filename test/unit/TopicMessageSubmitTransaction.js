@@ -1,4 +1,6 @@
 import {
+    Client,
+    ScheduleCreateTransaction,
     TopicMessageSubmitTransaction,
     AccountId,
     Timestamp,
@@ -13,6 +15,7 @@ import {
 
 import * as utf8 from "../../src/encoding/utf8.js";
 import * as util from "../../src/util.js";
+import BadEntityIdError from "../../src/BadEntityIdError.js";
 
 describe("TopicMessageSubmitTransaction", function () {
     let topicId;
@@ -769,6 +772,175 @@ describe("TopicMessageSubmitTransaction", function () {
                 bodySizes.forEach((size) => {
                     expect(size).to.be.greaterThan(0);
                 });
+            });
+        });
+    });
+
+    describe("fields", function () {
+        const VALID_START = new Timestamp(1596210382, 0);
+
+        let nodeId;
+
+        beforeEach(function () {
+            nodeId = new AccountId(0, 0, 3);
+        });
+
+        /**
+         * @param {TopicMessageSubmitTransaction} transaction
+         * @returns {TopicMessageSubmitTransaction}
+         */
+        function freezeWithIds(transaction) {
+            return transaction
+                .setNodeAccountIds([nodeId])
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        new AccountId(0, 0, 1001),
+                        VALID_START,
+                    ),
+                )
+                .freeze();
+        }
+
+        describe("schedule", function () {
+            it("should return a ScheduleCreateTransaction for a message that fits in one chunk", function () {
+                const scheduled = new TopicMessageSubmitTransaction()
+                    .setTopicId(new TopicId(0, 0, 7007))
+                    .setMessage("hello")
+                    .schedule();
+
+                expect(scheduled).to.be.instanceOf(ScheduleCreateTransaction);
+            });
+
+            it("should throw for a message longer than one chunk", function () {
+                expect(() =>
+                    new TopicMessageSubmitTransaction()
+                        .setTopicId(new TopicId(0, 0, 7007))
+                        .setMessage(new Uint8Array(25))
+                        .setChunkSize(10)
+                        .schedule(),
+                ).to.throw(
+                    "cannot schedule `TopicMessageSubmitTransaction` with message over 10 bytes",
+                );
+            });
+
+            it("should throw once frozen", function () {
+                const transaction = freezeWithIds(
+                    new TopicMessageSubmitTransaction().setMessage("hello"),
+                );
+
+                expect(() => transaction.schedule()).to.throw(
+                    "transaction is immutable",
+                );
+            });
+        });
+
+        describe("chunks", function () {
+            // TODO(#4753): freeze() doesn't carry the nanoseconds into the seconds.
+            it.skip("should carry the chunk transaction IDs into the next second", function () {
+                const transaction = new TopicMessageSubmitTransaction()
+                    .setTopicId(new TopicId(0, 0, 7007))
+                    .setMessage(new Uint8Array(15))
+                    .setChunkSize(10)
+                    .setNodeAccountIds([nodeId])
+                    .setTransactionId(
+                        TransactionId.withValidStart(
+                            new AccountId(0, 0, 1001),
+                            new Timestamp(1596210382, 999999999),
+                        ),
+                    )
+                    .freeze();
+
+                expect(
+                    transaction._transactionIds.list.map((id) =>
+                        id.validStart.toString(),
+                    ),
+                ).to.deep.equal([
+                    "1596210382.999999999",
+                    "1596210383.000000000",
+                ]);
+            });
+        });
+
+        describe("_validateChecksums", function () {
+            let mainnet, testnet;
+
+            beforeEach(function () {
+                mainnet = Client.forMainnet({ scheduleNetworkUpdate: false });
+                testnet = Client.forTestnet({ scheduleNetworkUpdate: false });
+            });
+
+            afterEach(function () {
+                mainnet.close();
+                testnet.close();
+            });
+
+            // TODO(#4683): TopicMessageSubmitTransaction doesn't validate the topic ID checksum.
+            it.skip("should check the topic ID checksum against the client's network", function () {
+                // 0.0.123-vfmkw has the mainnet checksum
+                const transaction =
+                    new TopicMessageSubmitTransaction().setTopicId(
+                        TopicId.fromString("0.0.123-vfmkw"),
+                    );
+
+                expect(() =>
+                    transaction._validateChecksums(mainnet),
+                ).to.not.throw();
+                expect(() => transaction._validateChecksums(testnet)).to.throw(
+                    BadEntityIdError,
+                );
+            });
+
+            it("should skip unset fields", function () {
+                expect(() =>
+                    new TopicMessageSubmitTransaction()._validateChecksums(
+                        testnet,
+                    ),
+                ).to.not.throw();
+            });
+        });
+
+        describe("_execute", function () {
+            it("should call consensus.submitMessage() with the request", async function () {
+                const request = {};
+                const response = {};
+                const calls = [];
+                const channel = {
+                    consensus: {
+                        submitMessage: (arg) => {
+                            calls.push(arg);
+                            return Promise.resolve(response);
+                        },
+                    },
+                };
+
+                expect(
+                    await new TopicMessageSubmitTransaction()._execute(
+                        channel,
+                        request,
+                    ),
+                ).to.equal(response);
+                expect(calls).to.deep.equal([request]);
+                expect(calls[0]).to.equal(request);
+            });
+        });
+
+        describe("_getTransactionDataCase", function () {
+            it("should return consensusSubmitMessage", function () {
+                expect(
+                    new TopicMessageSubmitTransaction()._getTransactionDataCase(),
+                ).to.equal("consensusSubmitMessage");
+            });
+        });
+
+        describe("_getLogId", function () {
+            it("should include the class name and valid start", function () {
+                const transaction = freezeWithIds(
+                    new TopicMessageSubmitTransaction().setMessage("hello"),
+                );
+
+                expect(transaction._getLogId()).to.equal(
+                    `TopicMessageSubmitTransaction:${VALID_START.toString()}`,
+                );
             });
         });
     });
