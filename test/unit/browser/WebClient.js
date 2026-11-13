@@ -1,8 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import WebClient from "../../../src/client/WebClient.js";
 import WebMirrorChannel from "../../../src/channel/WebMirrorChannel.js";
+import AddressBookQueryWeb from "../../../src/network/AddressBookQueryWeb.js";
 import LedgerId from "../../../src/LedgerId.js";
 import AccountId from "../../../src/account/AccountId.js";
 import {
@@ -473,6 +474,116 @@ describe("WebClient", function () {
             expect(clientNetwork["node2.example.com:443"].toString()).to.equal(
                 "0.0.4",
             );
+        });
+    });
+
+    describe("forName", function () {
+        it("returns a client for the named network", function () {
+            const client = WebClient.forName("testnet");
+
+            expect(client).to.be.instanceOf(WebClient);
+            expect(client.ledgerId).to.equal(LedgerId.TESTNET);
+            expect(client.mirrorNetwork).to.deep.equal([
+                "testnet.mirrornode.hedera.com:443",
+            ]);
+            client.close();
+        });
+    });
+
+    describe("forNameAsync", function () {
+        let updateNetwork;
+
+        beforeEach(function () {
+            updateNetwork = vi
+                .spyOn(WebClient.prototype, "updateNetwork")
+                .mockImplementation(function () {
+                    return Promise.resolve(this);
+                });
+        });
+
+        it("returns a client for the name after updating the network", async function () {
+            const client = await WebClient.forNameAsync("testnet");
+
+            expect(client).to.be.instanceOf(WebClient);
+            expect(client.ledgerId).to.equal(LedgerId.TESTNET);
+            expect(updateNetwork).toHaveBeenCalledTimes(1);
+            client.close();
+        });
+
+        it("doesn't update the network for local-node", async function () {
+            const client = await WebClient.forNameAsync("local-node");
+
+            expect(client.ledgerId).to.equal(LedgerId.LOCAL_NODE);
+            expect(updateNetwork).not.toHaveBeenCalled();
+            client.close();
+        });
+    });
+
+    describe("updateNetwork", function () {
+        it("returns the client without querying while an update is running", async function () {
+            const client = WebClient.forNetwork({
+                "node1.example.com:443": "0.0.3",
+            });
+            let rejectQuery;
+            const execute = vi
+                .spyOn(AddressBookQueryWeb.prototype, "execute")
+                .mockImplementation(
+                    () =>
+                        new Promise((resolve, reject) => {
+                            rejectQuery = reject;
+                        }),
+                );
+
+            const running = client.updateNetwork();
+
+            expect(await client.updateNetwork()).to.equal(client);
+            expect(execute).toHaveBeenCalledTimes(1);
+
+            rejectQuery(new Error("mirror node unavailable"));
+            expect(await running).to.equal(client);
+            expect(client._isUpdatingNetwork).to.be.false;
+            client.close();
+        });
+
+        it("logs the error and keeps the network when the update fails", async function () {
+            const client = WebClient.forNetwork({
+                "node1.example.com:443": "0.0.3",
+            });
+            vi.spyOn(
+                AddressBookQueryWeb.prototype,
+                "execute",
+            ).mockRejectedValue(new Error("mirror node unavailable"));
+            const logger = { trace: vi.fn() };
+            client.setLogger(logger);
+
+            expect(await client.updateNetwork()).to.equal(client);
+
+            expect(logger.trace).toHaveBeenCalledWith(
+                "failed to update client address book: mirror node unavailable",
+            );
+            expect(client.network).to.deep.equal({
+                "node1.example.com:443": new AccountId(3),
+            });
+            client.close();
+        });
+
+        it("logs a thrown value that is not an Error", async function () {
+            const client = WebClient.forNetwork({
+                "node1.example.com:443": "0.0.3",
+            });
+            vi.spyOn(
+                AddressBookQueryWeb.prototype,
+                "execute",
+            ).mockRejectedValue("mirror node unavailable");
+            const logger = { trace: vi.fn() };
+            client.setLogger(logger);
+
+            await client.updateNetwork();
+
+            expect(logger.trace).toHaveBeenCalledWith(
+                "failed to update client address book: mirror node unavailable",
+            );
+            client.close();
         });
     });
 });
