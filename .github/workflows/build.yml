@@ -694,9 +694,11 @@ jobs:
     timeout-minutes: 60
     env:
       NODE_VERSION: "22"
-      # Pinned together: bump them on purpose. Solo 0.93.0 deploys CN v0.77.2
-      # and mirror node v0.163.0 by default; the flags below pin them anyway.
-      SOLO_VERSION: "0.93.0"
+      # Pinned together: bump them on purpose. Solo 0.97.0 deploys CN v0.78.1
+      # and mirror node v0.164.2 by default; the flags below keep the older
+      # versions. Solo 0.97.0 is the first release whose health checks ping a
+      # real node account, so this SDK accepts them (hiero-ledger/solo#6224).
+      SOLO_VERSION: "0.97.0"
       CONSENSUS_NODE_VERSION: "v0.77.2"
       MIRROR_NODE_VERSION: "v0.163.0"
       SOLO_DEPLOYMENT: one-shot
