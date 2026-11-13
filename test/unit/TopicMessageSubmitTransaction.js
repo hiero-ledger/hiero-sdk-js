@@ -568,6 +568,19 @@ describe("TopicMessageSubmitTransaction", function () {
                 // Default is set from CHUNK_SIZE constant
                 expect(transaction.getChunkSize()).to.equal(1024);
             });
+
+            it("should throw on setting chunkSize once frozen", function () {
+                const transaction = new TopicMessageSubmitTransaction()
+                    .setNodeAccountIds([nodeId])
+                    .setTransactionId(transactionId)
+                    .setTopicId(topicId)
+                    .setMessage(message)
+                    .freeze();
+
+                expect(() => transaction.setChunkSize(5)).to.throw(
+                    "transaction is immutable",
+                );
+            });
         });
 
         describe("customFeeLimits", function () {
@@ -822,17 +835,6 @@ describe("TopicMessageSubmitTransaction", function () {
         });
 
         describe("chunks", function () {
-            // TODO(#4754): setChunkSize() doesn't check that the transaction isn't frozen.
-            it.skip("setChunkSize() should throw once frozen", function () {
-                const transaction = freezeWithIds(
-                    new TopicMessageSubmitTransaction().setMessage("hello"),
-                );
-
-                expect(() => transaction.setChunkSize(10)).to.throw(
-                    "transaction is immutable",
-                );
-            });
-
             // TODO(#4753): freeze() doesn't carry the nanoseconds into the seconds.
             it.skip("should carry the chunk transaction IDs into the next second", function () {
                 const transaction = new TopicMessageSubmitTransaction()

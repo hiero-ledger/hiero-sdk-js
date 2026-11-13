@@ -196,6 +196,10 @@ export default class ManagedNode {
     }
 
     increaseBackoff() {
+        // Count every bad gRPC status, so that `ManagedNetwork._removeDeadNodes()`
+        // can close the node once it reaches `maxNodeAttempts`. Like the Java and
+        // Go SDKs, the count is never reset.
+        this._badGrpcStatusCount++;
         this._currentBackoff = Math.min(
             this._currentBackoff * 2,
             this._maxBackoff,
