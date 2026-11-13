@@ -118,28 +118,241 @@ function getDataFieldNumbers() {
  * protobufjs keeps only the last one when decoding, so the extra fields are
  * invisible on the decoded object and cannot be counted there. We inspect the
  * raw bytes instead, before decoding, so an ambiguous body is refused.
+ * Identifier messages are also scanned before decoding can discard unknown
+ * wire records. Unknown identifier payloads and operation messages stay opaque.
  *
  * @param {Uint8Array} bodyBytes
+ * @returns {ReturnType<typeof readWireRecords>}
  */
 function assertSingleDataField(bodyBytes) {
-    if (bodyBytes == null || bodyBytes.length === 0) {
-        return;
-    }
-    const dataFields = getDataFieldNumbers();
-    const reader = HieroProto.Reader.create(bodyBytes);
-    let count = 0;
-    while (reader.pos < reader.len) {
-        const tag = reader.uint32();
-        if (dataFields.has(tag >>> 3)) {
-            count++;
-        }
-        reader.skipType(tag & 7);
-    }
-    if (count > 1) {
+    const records = readWireRecords(bodyBytes);
+    const operations = records.filter((record) =>
+        getDataFieldNumbers().has(record.number),
+    );
+    if (operations.length > 1) {
         throw new Error(
             "transaction body sets more than one data field; refusing to decode an ambiguous transaction",
         );
     }
+    if (operations.some((record) => record.wire !== 2)) {
+        throw new Error("invalid transaction operation wire type");
+    }
+    for (const record of records) {
+        // TransactionBody.transactionID = 1, nodeAccountID = 2.
+        if (record.number !== 1 && record.number !== 2) {
+            continue;
+        }
+        if (record.wire !== 2) {
+            throw new Error("invalid transaction identifier wire type");
+        }
+        const identifierRecords = readWireRecords(record.payload);
+        if (record.number === 1) {
+            for (const component of identifierRecords) {
+                // TransactionID.transactionValidStart = 1, accountID = 2.
+                if (component.number === 1 || component.number === 2) {
+                    if (component.wire !== 2) {
+                        throw new Error(
+                            "invalid transaction ID component wire type",
+                        );
+                    }
+                    readWireRecords(component.payload);
+                }
+            }
+        }
+    }
+    return records;
+}
+
+/**
+ * Read complete wire records without re-encoding their payloads.
+ * @param {Uint8Array} bytes
+ * @returns {{number: number, wire: number, start: number, end: number, payload: Uint8Array}[]}
+ */
+function readWireRecords(bytes) {
+    const reader = HieroProto.Reader.create(bytes);
+    const records = [];
+    while (reader.pos < reader.len) {
+        const start = reader.pos;
+        const tag = reader.tag();
+        const number = tag >>> 3;
+        const wire = tag & 7;
+        if (number === 0 || ![0, 1, 2, 5].includes(wire)) {
+            throw new Error("invalid protobuf wire record");
+        }
+        let payloadStart = reader.pos;
+        if (wire === 2) {
+            const length = reader.tag();
+            payloadStart = reader.pos;
+            reader.skip(length);
+        } else {
+            reader.skipType(wire);
+        }
+        if (
+            reader.pos > reader.len ||
+            (wire === 0 &&
+                (reader.pos - payloadStart > 10 ||
+                    (reader.pos - payloadStart === 10 &&
+                        bytes[reader.pos - 1] > 1)))
+        ) {
+            throw new Error("invalid protobuf varint");
+        }
+        records.push({
+            number,
+            wire,
+            start,
+            end: reader.pos,
+            payload: bytes.subarray(payloadStart, reader.pos),
+        });
+    }
+    return records;
+}
+
+/**
+ * Group by decoded IDs before any regrouping can discard duplicates.
+ * @param {HieroProto.proto.ITransactionBody[]} bodies
+ * @returns {{order: number[], transactionIds: TransactionId[], nodeIds: AccountId[]}}
+ */
+function groupTransactionBodies(bodies) {
+    /** @type {Map<string, Map<string, number>>} */
+    const chunks = new Map();
+    const transactionIds = [];
+    const nodeIds = [];
+    for (const [index, body] of bodies.entries()) {
+        if (body.transactionID == null || body.nodeAccountID == null) {
+            throw new Error(
+                "failed to validate transaction bodies: missing IDs",
+            );
+        }
+        const transactionId = TransactionId._fromProtobuf(body.transactionID);
+        const nodeId = AccountId._fromProtobuf(body.nodeAccountID);
+        const id = transactionId.toString();
+        const node = nodeId.toString();
+        let chunk = chunks.get(id);
+        if (chunk == null) {
+            chunk = new Map();
+            chunks.set(id, chunk);
+            transactionIds.push(transactionId);
+        }
+        if (chunk.has(node)) {
+            throw new Error(
+                "failed to validate transaction bodies: duplicate transaction ID and node ID",
+            );
+        }
+        chunk.set(node, index);
+        if (id === transactionIds[0].toString()) {
+            nodeIds.push(nodeId);
+        }
+    }
+    const order = [];
+    for (const chunk of chunks.values()) {
+        if (chunk.size !== nodeIds.length) {
+            throw new Error(
+                "failed to validate transaction bodies: inconsistent node sets",
+            );
+        }
+        for (const node of nodeIds) {
+            const index = chunk.get(node.toString());
+            if (index == null) {
+                throw new Error(
+                    "failed to validate transaction bodies: inconsistent node sets",
+                );
+            }
+            order.push(index);
+        }
+    }
+    return { order, transactionIds, nodeIds };
+}
+
+/**
+ * @param {Uint8Array[]} parts
+ * @returns {Uint8Array}
+ */
+function concatBodyHashParts(parts) {
+    const result = new Uint8Array(
+        parts.reduce((size, part) => size + part.length, 0),
+    );
+    let offset = 0;
+    for (const part of parts) {
+        result.set(part, offset);
+        offset += part.length;
+    }
+    return result;
+}
+
+/**
+ * @param {Uint8Array} bytes
+ * @returns {{body: HieroProto.proto.TransactionBody, records: ReturnType<typeof readWireRecords>}}
+ */
+function readBodyForHash(bytes) {
+    if (bytes == null || bytes.length === 0) {
+        throw new Error("missing transaction body bytes");
+    }
+    const records = assertSingleDataField(bytes);
+    const body = HieroProto.proto.TransactionBody.decode(bytes);
+    if (
+        body.data == null ||
+        body.transactionID == null ||
+        body.nodeAccountID == null
+    ) {
+        throw new Error(
+            "transaction body must have an operation, transaction ID and node ID",
+        );
+    }
+    TransactionId._fromProtobuf(body.transactionID);
+    AccountId._fromProtobuf(body.nodeAccountID);
+    return { body, records };
+}
+
+/**
+ * Extract the original child body for both hashing and content comparison.
+ * @param {Uint8Array} bytes
+ * @returns {Uint8Array}
+ */
+function readBatchChildBody(bytes) {
+    const envelope = readWireRecords(bytes);
+    const bodies = envelope.filter((record) => record.number === 1);
+    if (bodies.length !== 1 || bodies[0].wire !== 2) {
+        throw new Error("batch child must contain exactly one bodyBytes field");
+    }
+    HieroProto.proto.SignedTransaction.decode(bytes);
+    const childBytes = bodies[0].payload;
+    const { body: childBody } = readBodyForHash(childBytes);
+    if (childBody.data === "atomicBatch") {
+        throw new Error("nested atomic batches are not supported");
+    }
+    return childBytes;
+}
+
+/**
+ * Candidate batch framing in sdk-collaboration-hub #288. Hash original body slices only.
+ * @param {Uint8Array} bytes
+ * @returns {Promise<{body: HieroProto.proto.TransactionBody, hash: Uint8Array}>}
+ */
+async function hashTransactionBodyEntry(bytes) {
+    const { body, records } = readBodyForHash(bytes);
+    const batch = records.find((record) => record.number === 74);
+    if (batch == null) {
+        return { body, hash: await sha384.digest(bytes) };
+    }
+    const children = readWireRecords(batch.payload);
+    if (
+        children.length === 0 ||
+        children.some((child) => child.number !== 1 || child.wire !== 2)
+    ) {
+        throw new Error("empty or unsupported atomic batch wrapper");
+    }
+    const parts = [
+        await sha384.digest(
+            concatBodyHashParts([
+                bytes.subarray(0, batch.start),
+                bytes.subarray(batch.end),
+            ]),
+        ),
+    ];
+    for (const child of children) {
+        parts.push(await sha384.digest(readBatchChildBody(child.payload)));
+    }
+    return { body, hash: await sha384.digest(concatBodyHashParts(parts)) };
 }
 
 /**
@@ -300,6 +513,13 @@ export default class Transaction extends Executable {
          * @type {boolean}
          */
         this._highVolume = false;
+
+        /**
+         * A successful body review fixes the prepared bytes used by execution.
+         * @protected
+         * @type {boolean}
+         */
+        this._transactionBodyHashRead = false;
     }
 
     /**
@@ -378,6 +598,14 @@ export default class Transaction extends Executable {
                 const body = HieroProto.proto.TransactionBody.decode(
                     transaction.bodyBytes,
                 );
+
+                // Legacy prepared bodies must survive freezing without re-encoding.
+                if (body.transactionID != null && body.nodeAccountID != null) {
+                    signedTransactions.push({
+                        bodyBytes: transaction.bodyBytes,
+                        sigMap: transaction.sigMap,
+                    });
+                }
 
                 // Make sure the transaction ID within the body is set
                 if (body.transactionID != null) {
@@ -485,6 +713,55 @@ export default class Transaction extends Executable {
         // We should have decoded at least one transaction body
         if (bodies.length === 0) {
             throw new Error("no transactions found in bytes");
+        }
+
+        if (
+            bodies.every(
+                (body) =>
+                    body.transactionID != null && body.nodeAccountID != null,
+            )
+        ) {
+            const grouped = groupTransactionBodies(bodies);
+            if (bodies.length !== list.length) {
+                throw new Error("failed to validate transaction bodies");
+            }
+            // Preserve storage/wire order for previously supported chunk-major lists,
+            // including differing node orders within later chunks.
+            const interleaved = bodies.some(
+                (body, index) =>
+                    TransactionId._fromProtobuf(
+                        /** @type {HieroProto.proto.ITransactionID} */ (
+                            body.transactionID
+                        ),
+                    ).toString() !==
+                    grouped.transactionIds[
+                        Math.floor(index / grouped.nodeIds.length)
+                    ].toString(),
+            );
+            if (interleaved) {
+                const orderedTransactions = grouped.order.map(
+                    (index) => list[index],
+                );
+                const orderedSigned = grouped.order.map(
+                    (index) => signedTransactions[index],
+                );
+                const orderedBodies = grouped.order.map(
+                    (index) => bodies[index],
+                );
+                list.splice(0, list.length, ...orderedTransactions);
+                signedTransactions.splice(
+                    0,
+                    signedTransactions.length,
+                    ...orderedSigned,
+                );
+                bodies.splice(0, bodies.length, ...orderedBodies);
+                transactionIds.splice(
+                    0,
+                    transactionIds.length,
+                    ...grouped.transactionIds,
+                );
+                nodeIds.splice(0, nodeIds.length, ...grouped.nodeIds);
+            }
         }
 
         const body = bodies[0];
@@ -607,6 +884,21 @@ export default class Transaction extends Executable {
             throw new Error("failed to validate transaction bodies");
         }
 
+        // Compare the same child content committed by the body hash. This
+        // projection never replaces stored bodies or signed child envelopes.
+        const comparableBodies = bodies.map((body) =>
+            body.atomicBatch == null
+                ? body
+                : {
+                      ...body,
+                      atomicBatch: {
+                          ...body.atomicBatch,
+                          transactions: (
+                              body.atomicBatch.transactions ?? []
+                          ).map(readBatchChildBody),
+                      },
+                  },
+        );
         const ignoredFields = new Set();
         ignoredFields.add("nodeAccountID");
 
@@ -616,13 +908,13 @@ export default class Transaction extends Executable {
             transactionIndex++
         ) {
             const rowStart = transactionIndex * nodeCount;
-            const referenceBody = bodies[rowStart];
+            const referenceBody = comparableBodies[rowStart];
 
             for (let nodeIndex = 1; nodeIndex < nodeCount; nodeIndex++) {
                 if (
                     !util.compare(
                         referenceBody,
-                        bodies[rowStart + nodeIndex],
+                        comparableBodies[rowStart + nodeIndex],
                         ignoredFields,
                     )
                 ) {
@@ -718,6 +1010,22 @@ export default class Transaction extends Executable {
         bodies,
     ) {
         const body = bodies[0];
+        const hasPreparedIds =
+            signedTransactions.length === bodies.length &&
+            bodies.every(
+                (entry) =>
+                    entry.transactionID != null && entry.nodeAccountID != null,
+            );
+        // Embedded batch children arrive with prepared bodies but empty ID lists.
+        if (
+            hasPreparedIds &&
+            transactionIds.length === 0 &&
+            nodeIds.length === 0
+        ) {
+            const grouped = groupTransactionBodies(bodies);
+            transactionIds = grouped.transactionIds;
+            nodeIds = grouped.nodeIds;
+        }
         Transaction._validateTransactionBodies(
             transaction._getTransactionDataCase(),
             transactionIds,
@@ -725,13 +1033,14 @@ export default class Transaction extends Executable {
             bodies,
         );
 
-        // Remove node account IDs of 0
-        // _IIRC_ this was initial due to some funny behavior with `ScheduleCreateTransaction`
-        // We may be able to remove this.
-        const zero = new AccountId(0);
-        for (let i = 0; i < nodeIds.length; i++) {
-            if (nodeIds[i].equals(zero)) {
-                nodeIds.splice(i--, 1);
+        // Zero is an unset-node placeholder only for partial imports. Prepared
+        // batch children explicitly select 0.0.0 and must retain that membership.
+        if (!hasPreparedIds) {
+            const zero = new AccountId(0);
+            for (let i = 0; i < nodeIds.length; i++) {
+                if (nodeIds[i].equals(zero)) {
+                    nodeIds.splice(i--, 1);
+                }
             }
         }
 
@@ -1195,6 +1504,11 @@ export default class Transaction extends Executable {
      * @param {Client} client
      */
     _resetTransaction(client) {
+        if (this._transactionBodyHashRead) {
+            throw new Error(
+                "cannot regenerate a transaction after its body hash has been reviewed",
+            );
+        }
         if (!client.operatorAccountId) {
             throw new Error("Client must have an operator account ID");
         }
@@ -1604,7 +1918,11 @@ export default class Transaction extends Executable {
     _applyMaxNodesPerTransactionLimit(client) {
         const maxNodes = client.maxNodesPerTransaction;
 
-        if (maxNodes <= 0 || this._nodeAccountIds.length <= maxNodes) {
+        if (
+            this._transactionBodyHashRead ||
+            maxNodes <= 0 ||
+            this._nodeAccountIds.length <= maxNodes
+        ) {
             return;
         }
 
@@ -1715,7 +2033,7 @@ export default class Transaction extends Executable {
      * @private
      */
     _buildSignedTransactions() {
-        if (this._signedTransactions.locked) {
+        if (this._transactionBodyHashRead || this._signedTransactions.locked) {
             return;
         }
 
@@ -1774,6 +2092,9 @@ export default class Transaction extends Executable {
      * @returns {this}
      */
     freezeWith(client) {
+        if (this._transactionBodyHashRead) {
+            return this;
+        }
         // Set sign on demand based on client
         this._signOnDemand = client != null ? client.signOnDemand : false;
 
@@ -1952,6 +2273,78 @@ export default class Transaction extends Executable {
     }
 
     /**
+     * Hash every prepared node/chunk body, independently of envelope signatures.
+     * Returns 48 raw SHA-384 bytes and requires a frozen transaction. No signer
+     * callbacks or network requests are made. Success fixes the reviewed IDs,
+     * node membership and prepared bytes while allowing subsequent signing.
+     *
+     * This representation-based candidate (including batch framing and import
+     * rejection rules) awaits maintainer agreement in sdk-collaboration-hub #288.
+     * It does not promise semantic canonicalization across protobuf encoders.
+     * See manual/TRANSACTION_BODY_HASH.md before using it for review attestations.
+     *
+     * @returns {Promise<Uint8Array>}
+     */
+    async getTransactionBodyHash() {
+        this._requireFrozen();
+        const prepared = this._signedTransactions.list;
+        const index = this._signedTransactions.index;
+        try {
+            if (this._signedTransactions.length === 0) {
+                this._buildSignedTransactions();
+            }
+            if (this._signedTransactions.length === 0) {
+                throw new Error("missing prepared transaction bodies");
+            }
+            /** @type {{body: HieroProto.proto.TransactionBody, hash: Uint8Array}[]} */
+            const entries = [];
+            for (const transaction of this._signedTransactions.list) {
+                entries.push(
+                    await hashTransactionBodyEntry(
+                        /** @type {Uint8Array} */ (transaction.bodyBytes),
+                    ),
+                );
+            }
+            const bodies = entries.map((entry) => entry.body);
+            const grouped = groupTransactionBodies(bodies);
+            Transaction._validateTransactionBodies(
+                this._getTransactionDataCase(),
+                grouped.transactionIds,
+                grouped.nodeIds,
+                grouped.order.map((i) => bodies[i]),
+            );
+            if (
+                grouped.transactionIds.length !== this._transactionIds.length ||
+                grouped.nodeIds.length !== this._nodeAccountIds.length ||
+                !grouped.transactionIds.every(
+                    (id, i) =>
+                        id.toString() ===
+                        this._transactionIds.get(i).toString(),
+                ) ||
+                !grouped.nodeIds.every((node, i) =>
+                    node.equals(this._nodeAccountIds.get(i)),
+                )
+            ) {
+                throw new Error(
+                    "prepared transaction IDs or nodes do not match the selected set",
+                );
+            }
+            const hash = await sha384.digest(
+                concatBodyHashParts(grouped.order.map((i) => entries[i].hash)),
+            );
+            this._transactionIds.setLocked();
+            this._nodeAccountIds.setLocked();
+            this._transactionBodyHashRead = true;
+            return hash;
+        } catch (error) {
+            this._signedTransactions.list = prepared;
+            throw error;
+        } finally {
+            this._signedTransactions.index = index;
+        }
+    }
+
+    /**
      * Get all the transaction hashes
      *
      * @returns {Promise<TransactionHashMap>}
@@ -2067,9 +2460,7 @@ export default class Transaction extends Executable {
      */
     async _makeRequestAsync() {
         // The index for the transaction
-        const index =
-            this._transactionIds.index * this._nodeAccountIds.length +
-            this._nodeAccountIds.index;
+        const index = this._getSignedTransactionIndex();
 
         // If sign on demand is disabled we need to simply build that transaction
         // and return the result, without signing
@@ -2085,15 +2476,60 @@ export default class Transaction extends Executable {
     }
 
     /**
+     * Resolve reviewed traversal without changing stored envelope/wire order.
+     * @private
+     * @returns {number}
+     */
+    _getSignedTransactionIndex() {
+        const index =
+            this._transactionIds.index * this._nodeAccountIds.length +
+            this._nodeAccountIds.index;
+        if (!this._transactionBodyHashRead) {
+            return index;
+        }
+        const bodies = this._signedTransactions.list.map((transaction) =>
+            HieroProto.proto.TransactionBody.decode(
+                /** @type {Uint8Array} */ (transaction.bodyBytes),
+            ),
+        );
+        return groupTransactionBodies(bodies).order[index];
+    }
+
+    /**
      * Sign a `proto.SignedTransaction` with all the keys
      *
      * @private
      * @returns {Promise<HieroProto.proto.ISignedTransaction>}
      */
     async _signTransaction() {
-        const signedTransaction = this._makeSignedTransaction(
-            this._nodeAccountIds.next,
-        );
+        let signedTransaction;
+        if (this._transactionBodyHashRead) {
+            signedTransaction = this._signedTransactions.get(
+                this._getSignedTransactionIndex(),
+            );
+            this._nodeAccountIds.advance();
+        } else {
+            signedTransaction = this._makeSignedTransaction(
+                this._nodeAccountIds.next,
+            );
+        }
+        return this._signPreparedTransaction(signedTransaction);
+    }
+
+    /**
+     * Collect deferred signatures over a prepared body without modifying its envelopes.
+     * @private
+     * @param {HieroProto.proto.ISignedTransaction} prepared
+     * @returns {Promise<HieroProto.proto.ISignedTransaction>}
+     */
+    async _signPreparedTransaction(prepared) {
+        const signedTransaction = {
+            ...prepared,
+            sigMap: {
+                ...prepared.sigMap,
+                sigPair: [...(prepared.sigMap?.sigPair ?? [])],
+            },
+        };
 
         const bodyBytes = /** @type {Uint8Array} */ (
             signedTransaction.bodyBytes
@@ -2103,19 +2539,19 @@ export default class Transaction extends Executable {
             const publicKey = this._publicKeys[j];
             const transactionSigner = this._transactionSigners[j];
 
-            if (transactionSigner == null) {
+            if (
+                transactionSigner == null ||
+                signedTransaction.sigMap.sigPair.some(
+                    (pair) =>
+                        pair.pubKeyPrefix != null &&
+                        hex.encode(pair.pubKeyPrefix) ===
+                            hex.encode(publicKey.toBytesRaw()),
+                )
+            ) {
                 continue;
             }
 
             const signature = await transactionSigner(bodyBytes);
-
-            if (signedTransaction.sigMap == null) {
-                signedTransaction.sigMap = {};
-            }
-
-            if (signedTransaction.sigMap.sigPair == null) {
-                signedTransaction.sigMap.sigPair = [];
-            }
 
             signedTransaction.sigMap.sigPair.push(
                 publicKey._toProtobufSignature(signature),
@@ -2171,6 +2607,22 @@ export default class Transaction extends Executable {
         this._buildSignedTransactions();
 
         if (this._transactions.locked) {
+            return;
+        }
+
+        if (this._transactionBodyHashRead) {
+            const transactions = [];
+            for (const prepared of this._signedTransactions.list) {
+                transactions.push({
+                    signedTransactionBytes:
+                        HieroProto.proto.SignedTransaction.encode(
+                            await this._signPreparedTransaction(prepared),
+                        ).finish(),
+                });
+            }
+            const index = this._transactions.index;
+            this._transactions.setList(transactions);
+            this._transactions.index = index;
             return;
         }
 

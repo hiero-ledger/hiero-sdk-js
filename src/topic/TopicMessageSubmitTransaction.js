@@ -360,6 +360,9 @@ export default class TopicMessageSubmitTransaction extends Transaction {
      * @returns {this}
      */
     freezeWith(client) {
+        if (this._transactionBodyHashRead) {
+            return this;
+        }
         super.freezeWith(client);
 
         if (this._message == null) {
