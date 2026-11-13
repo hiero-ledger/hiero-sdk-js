@@ -625,6 +625,15 @@ export default class NodeUpdateTransaction extends Transaction {
     }
 
     /**
+     * @param {Client} client
+     */
+    _validateChecksums(client) {
+        if (this._accountId != null) {
+            this._accountId.validateChecksum(client);
+        }
+    }
+
+    /**
      * @override
      * @internal
      * @param {Channel} channel

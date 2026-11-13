@@ -22,6 +22,8 @@ import CustomRoyaltyFee from "./CustomRoyaltyFee.js";
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  * @typedef {import("./CustomFee.js").default} CustomFee
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../account/AccountId.js").default} AccountId
  */
 
@@ -144,6 +146,15 @@ export default class TokenFeeScheduleUpdateTransaction extends Transaction {
         this._customFees = fees;
 
         return this;
+    }
+
+    /**
+     * @param {Client} client
+     */
+    _validateChecksums(client) {
+        if (this._tokenId != null) {
+            this._tokenId.validateChecksum(client);
+        }
     }
 
     /**

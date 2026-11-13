@@ -682,4 +682,29 @@ describe("NodeUpdateTransaction", function () {
             "ServiceEndpoints list must not contain more than 8 entries.",
         );
     });
+
+    describe("_validateChecksums", function () {
+        const TransactionType = NodeUpdateTransaction;
+        const field = "_accountId";
+
+        it("passes the client to the ID validator", function () {
+            const client = {};
+            const clients = [];
+            const transaction = new TransactionType();
+            transaction[field] = {
+                validateChecksum: (value) => clients.push(value),
+            };
+
+            transaction._validateChecksums(client);
+
+            expect(clients).to.have.lengthOf(1);
+            expect(clients[0]).to.equal(client);
+        });
+
+        it("skips an unset ID", function () {
+            expect(() =>
+                new TransactionType()._validateChecksums({}),
+            ).to.not.throw();
+        });
+    });
 });

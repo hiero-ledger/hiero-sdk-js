@@ -197,8 +197,7 @@ describe("Transaction", function () {
         );
     });
 
-    // TODO(#4683): TokenRejectTransaction does not validate entity ID checksums yet.
-    describe.skip("_validateChecksums", function () {
+    describe("_validateChecksums", function () {
         let mainnet, testnet;
 
         beforeEach(function () {
@@ -229,6 +228,61 @@ describe("Transaction", function () {
             owner._checksum = "vfmkw";
 
             const transaction = new TokenRejectTransaction().setOwnerId(owner);
+
+            expect(() =>
+                transaction._validateChecksums(mainnet),
+            ).to.not.throw();
+            expect(() => transaction._validateChecksums(testnet)).to.throw(
+                BadEntityIdError,
+            );
+        });
+
+        it("validates the owner and every fungible and NFT token ID", function () {
+            const validated = [];
+            const id = (name) => ({
+                validateChecksum: (client) => {
+                    expect(client).to.equal(mainnet);
+                    validated.push(name);
+                },
+            });
+
+            const transaction = new TokenRejectTransaction();
+            transaction._owner = id("owner");
+            transaction._tokenIds = [id("token1"), null, id("token2")];
+            transaction._nftIds = [
+                { tokenId: id("nft1") },
+                { tokenId: id("nft2") },
+            ];
+
+            transaction._validateChecksums(mainnet);
+
+            expect(validated).to.have.members([
+                "owner",
+                "token1",
+                "token2",
+                "nft1",
+                "nft2",
+            ]);
+        });
+
+        it("skips unset IDs and empty lists", function () {
+            const transaction = new TokenRejectTransaction();
+
+            expect(() =>
+                transaction._validateChecksums(testnet),
+            ).to.not.throw();
+
+            transaction._tokenIds = null;
+
+            expect(() =>
+                transaction._validateChecksums(testnet),
+            ).to.not.throw();
+        });
+
+        it("checks the token checksum of an NFT", function () {
+            const transaction = new TokenRejectTransaction().addNftId(
+                new NftId(TokenId.fromString("0.0.123-vfmkw"), 1),
+            );
 
             expect(() =>
                 transaction._validateChecksums(mainnet),

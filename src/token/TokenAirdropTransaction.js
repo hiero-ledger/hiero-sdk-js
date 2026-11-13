@@ -18,6 +18,8 @@ import AbstractTokenTransferTransaction from "./AbstractTokenTransferTransaction
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  * @typedef {import("../account/AccountId.js").default} AccountId
  * @typedef {import("./NftId.js").default} NftId
@@ -180,6 +182,22 @@ export default class TokenAirdropTransaction extends AbstractTokenTransferTransa
             nodeIds,
             bodies,
         );
+    }
+
+    /**
+     * @param {Client} client
+     */
+    _validateChecksums(client) {
+        for (const transfer of this._tokenTransfers) {
+            transfer.tokenId.validateChecksum(client);
+            transfer.accountId.validateChecksum(client);
+        }
+
+        for (const transfer of this._nftTransfers) {
+            transfer.tokenId.validateChecksum(client);
+            transfer.senderAccountId.validateChecksum(client);
+            transfer.receiverAccountId.validateChecksum(client);
+        }
     }
 
     /**
