@@ -224,6 +224,13 @@ export default class ManagedNetwork {
         node.close();
         this._removeNodeFromNetwork(node);
         this._nodes.splice(i, 1);
+
+        // A closed node must not be picked again by `getNode()` or
+        // `getNodeAccountIdsForExecute()`.
+        const healthyIndex = this._healthyNodes.indexOf(node);
+        if (healthyIndex !== -1) {
+            this._healthyNodes.splice(healthyIndex, 1);
+        }
     }
 
     /**
