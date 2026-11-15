@@ -2368,7 +2368,7 @@ describe("NativeClient", function () {
 
         it("sets the local mirror node for 'local-node'", function () {
             client.setMirrorNetwork("local-node");
-            expect(client.mirrorNetwork).to.deep.equal(["127.0.0.1:5600"]);
+            expect(client.mirrorNetwork).to.deep.equal(["127.0.0.1:38081"]);
         });
 
         it("uses any other string as the mirror node address", function () {

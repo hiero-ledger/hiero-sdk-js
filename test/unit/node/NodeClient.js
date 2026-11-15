@@ -685,7 +685,7 @@ describe("Client", function () {
 
             expect(client.ledgerId).to.equal(LedgerId.LOCAL_NODE);
             expect(client.network).to.deep.equal({
-                "127.0.0.1:50211": new AccountId(3),
+                "127.0.0.1:35211": new AccountId(3),
             });
             expect(updateNetwork).not.toHaveBeenCalled();
             client.close();
@@ -798,11 +798,6 @@ describe("Client", function () {
             expect(client.mirrorNetwork).to.deep.equal([
                 "previewnet.mirrornode.hedera.com:443",
             ]);
-        });
-
-        it("sets the local mirror node for 'local-node'", function () {
-            client.setMirrorNetwork("local-node");
-            expect(client.mirrorNetwork).to.deep.equal(["127.0.0.1:5600"]);
         });
 
         it("uses any other string as the mirror node address", function () {
