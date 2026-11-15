@@ -1,24 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * The mirror node REST endpoint families a local network serves on
- * different ports: `rest` (`/balances`, `/accounts`, `/network/nodes`),
- * `rest-java` (`/network/fees`, `/network/registered-nodes`) and `web3`
- * (`/contracts/call`).
- *
- * @typedef {"rest" | "rest-java" | "web3"} MirrorRestEndpointFamily
+ * Loopback detection for mirror REST base URLs. The SDK uses a mirror node
+ * URL as it is given, also on a local network, where Solo's ingress serves
+ * every mirror node API on one port (#3590); these helpers only decide how
+ * to treat a local mirror node, such as giving it a longer startup budget.
  */
-
-import { trimTrailingSlashes } from "./MirrorNodeRestPath.js";
-
-/**
- * Ports a local mirror node (hiero-local-node, Solo) serves each family on.
- */
-const LOCAL_PORTS = Object.freeze({
-    rest: 5551,
-    "rest-java": 8084,
-    web3: 8545,
-});
 
 /**
  * `scheme://host[:port][/path]`, with a bracketed IPv6 literal allowed as
@@ -55,33 +42,6 @@ export function parseMirrorRestBaseUrl(baseUrl) {
         port: match[3] ?? null,
         path: match[4] ?? "",
     };
-}
-
-/**
- * Resolve the base URL for an endpoint family on a local network.
- *
- * A hosted mirror node serves every family behind one ingress, so the base
- * URL is returned unchanged. A local one serves them on different ports and
- * over plain HTTP, and this is the single place that mapping lives: a
- * bridge to be deleted once the ingress proposal resolves local ports at
- * the base URL, rather than a rewrite repeated at every call site.
- *
- * @param {string} baseUrl - the client's mirror REST base URL
- * @param {MirrorRestEndpointFamily} family
- * @returns {string}
- */
-export function resolveMirrorRestBaseUrl(baseUrl, family) {
-    const parsed = parseMirrorRestBaseUrl(baseUrl);
-    if (parsed == null || !isLoopbackHost(parsed.host)) {
-        return baseUrl;
-    }
-
-    const port = LOCAL_PORTS[family];
-    if (port == null) {
-        throw new Error(`unknown mirror REST endpoint family: ${family}`);
-    }
-
-    return `http://${parsed.host}:${port}${trimTrailingSlashes(parsed.path)}`;
 }
 
 /**

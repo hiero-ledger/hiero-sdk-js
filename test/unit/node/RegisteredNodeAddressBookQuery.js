@@ -112,7 +112,7 @@ describe("RegisteredNodeAddressBookQuery", function () {
 
         expect(fake.requests).to.have.length(1);
         expect(fake.requests[0].url).to.equal(
-            "http://127.0.0.1:8084/api/v1/network/registered-nodes?limit=25",
+            "http://127.0.0.1:38081/api/v1/network/registered-nodes?limit=25",
         );
         expect(fake.requests[0].method).to.equal("GET");
 

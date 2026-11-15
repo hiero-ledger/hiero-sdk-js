@@ -111,7 +111,6 @@ export default class MirrorNodeAccountBalanceQuery {
     async execute(client, requestTimeout) {
         const idString = this._idString();
         const http = client._mirrorNodeHttpClient({
-            family: "rest",
             totalDeadline: requestTimeout,
         });
 

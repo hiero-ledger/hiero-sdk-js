@@ -96,9 +96,7 @@ describe("WebClient", function () {
                 scheduleNetworkUpdate: false,
             });
 
-            expect(client.mirrorNetwork).to.deep.equal(
-                WebMirrorNetwork.LOCAL_NODE,
-            );
+            expect(client.mirrorNetwork).to.deep.equal(["127.0.0.1:5551"]);
         });
     });
 
