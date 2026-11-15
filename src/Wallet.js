@@ -34,6 +34,18 @@ import * as util from "./util.js";
  */
 
 /**
+ * @param {?AccountId | undefined} accountId
+ * @returns {AccountId}
+ */
+function requireAccountId(accountId) {
+    if (accountId == null) {
+        throw new Error("wallet does not contain an account ID");
+    }
+
+    return accountId;
+}
+
+/**
  * @implements {Signer}
  */
 export default class Wallet {
@@ -172,7 +184,9 @@ export default class Wallet {
         if (this.provider == null) {
             throw new Error("wallet does not contain a provider");
         }
-        return this.provider.getAccountBalance(this.accountId);
+        return this.provider.getAccountBalance(
+            requireAccountId(this.accountId),
+        );
     }
 
     /**
@@ -180,7 +194,11 @@ export default class Wallet {
      * @returns {Promise<AccountInfo>}
      */
     getAccountInfo() {
-        return this.call(new AccountInfoQuery().setAccountId(this.accountId));
+        return this.call(
+            new AccountInfoQuery().setAccountId(
+                requireAccountId(this.accountId),
+            ),
+        );
     }
 
     /**
@@ -189,7 +207,9 @@ export default class Wallet {
      */
     getAccountRecords() {
         return this.call(
-            new AccountRecordsQuery().setAccountId(this.accountId),
+            new AccountRecordsQuery().setAccountId(
+                requireAccountId(this.accountId),
+            ),
         );
     }
 
@@ -212,7 +232,8 @@ export default class Wallet {
         if (
             transactionId != null &&
             transactionId.accountId != null &&
-            transactionId.accountId.compare(this.accountId) != 0
+            transactionId.accountId.compare(requireAccountId(this.accountId)) !=
+                0
         ) {
             throw new Error(
                 "transaction's ID constructed with a different account ID",
@@ -254,7 +275,7 @@ export default class Wallet {
 
         if (transaction.transactionId == null) {
             transaction.setTransactionId(
-                TransactionId.generate(this.accountId),
+                TransactionId.generate(requireAccountId(this.accountId)),
             );
         }
 
@@ -296,7 +317,7 @@ export default class Wallet {
 
         return this.provider.call(
             request._setOperatorWith(
-                this.accountId,
+                requireAccountId(this.accountId),
                 this.publicKey,
                 this.signer,
             ),

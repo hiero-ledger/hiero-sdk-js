@@ -36,6 +36,7 @@ const MISMATCHED_ACCOUNT_ERROR_MESSAGE =
 const NODE_NOT_IN_NETWORK_ERROR_MESSAGE =
     "Transaction already set node account IDs to values not within the current network";
 const NO_WALLET_PROVIDER_ERROR_MESSAGE = "wallet does not contain a provider";
+const NO_ACCOUNT_ID_ERROR_MESSAGE = "wallet does not contain an account ID";
 const NO_PROVIDER_ERROR_MESSAGE =
     "cannot send request with an wallet that doesn't contain a provider";
 
@@ -289,11 +290,20 @@ describe("Wallet", function () {
                 transaction,
             );
         });
-        it("should thrown an error when checking transaction with a wallet instance without an accountId", async function () {
+        it("should throw an error when checking transaction with a wallet instance without an accountId", function () {
+            for (const accountId of [null, undefined]) {
+                const wallet = new Wallet(accountId, ED25519_PRIVATE_KEY);
+                const transaction = transferTransactionBuilder();
+                expect(() => wallet.checkTransaction(transaction)).toThrow(
+                    NO_ACCOUNT_ID_ERROR_MESSAGE,
+                );
+            }
+        });
+        it("should resolve when checking a transaction without transaction ID on a wallet without an account ID", async function () {
             const wallet = walletBuilder({ accountId: null });
-            const transaction = transferTransactionBuilder();
-            expect(() => wallet.checkTransaction(transaction)).toThrow(
-                TypeError,
+            const transaction = new TransferTransaction();
+            await expect(wallet.checkTransaction(transaction)).resolves.toBe(
+                transaction,
             );
         });
     });
@@ -302,6 +312,20 @@ describe("Wallet", function () {
         it("should throw when no provider is set", function () {
             const wallet = walletBuilder();
             expect(() => wallet.call({})).toThrow(NO_PROVIDER_ERROR_MESSAGE);
+        });
+        it("should throw when no account ID is set", function () {
+            const provider = providerStubBuilder();
+            for (const accountId of [null, undefined]) {
+                const wallet = new Wallet(
+                    accountId,
+                    ED25519_PRIVATE_KEY,
+                    provider,
+                );
+                const query = new AccountInfoQuery().setAccountId(ACCOUNT_ID);
+                expect(() => wallet.call(query)).toThrow(
+                    NO_ACCOUNT_ID_ERROR_MESSAGE,
+                );
+            }
         });
 
         it("should delegate the request to the provider", async function () {
@@ -339,6 +363,29 @@ describe("Wallet", function () {
     });
 
     describe("populateTransaction", function () {
+        it("should throw when no account ID is set and transaction has no transaction ID", function () {
+            for (const accountId of [null, undefined]) {
+                const wallet = new Wallet(accountId, ED25519_PRIVATE_KEY);
+                const transaction = new TransferTransaction();
+                expect(() => wallet.populateTransaction(transaction)).toThrow(
+                    NO_ACCOUNT_ID_ERROR_MESSAGE,
+                );
+            }
+        });
+        it("should populate node account IDs without an account ID when transaction ID is already set", async function () {
+            const provider = providerStubBuilder();
+            const wallet = walletBuilder({ accountId: null, provider });
+            const transactionId = new TransactionId(
+                ACCOUNT_ID,
+                new Timestamp(0, 0),
+            );
+            const transaction = new TransferTransaction().setTransactionId(
+                transactionId,
+            );
+            await wallet.populateTransaction(transaction);
+            expect(transaction.transactionId).toBe(transactionId);
+            expect(transaction.isFrozen()).toBe(true);
+        });
         it("should set a transaction ID generated from the wallet account ID when missing", async function () {
             const wallet = walletBuilder();
             const transaction = new TransferTransaction();
@@ -418,6 +465,19 @@ describe("Wallet", function () {
                 NO_WALLET_PROVIDER_ERROR_MESSAGE,
             );
         });
+        it("should throw when no account ID is set", function () {
+            const provider = providerStubBuilder();
+            for (const accountId of [null, undefined]) {
+                const wallet = new Wallet(
+                    accountId,
+                    ED25519_PRIVATE_KEY,
+                    provider,
+                );
+                expect(() => wallet.getAccountBalance()).toThrow(
+                    NO_ACCOUNT_ID_ERROR_MESSAGE,
+                );
+            }
+        });
         it("should request the wallet account balance from the provider", async function () {
             const provider = providerStubBuilder();
             const wallet = walletBuilder({ provider });
@@ -434,6 +494,21 @@ describe("Wallet", function () {
             expect(() => wallet.getAccountInfo()).toThrow(
                 NO_PROVIDER_ERROR_MESSAGE,
             );
+        });
+        it("should throw when no account ID is set", function () {
+            const provider = providerStubBuilder();
+            for (const accountId of [null, undefined]) {
+                expect(() =>
+                    new Wallet(accountId, ED25519_PRIVATE_KEY).getAccountInfo(),
+                ).toThrow(NO_ACCOUNT_ID_ERROR_MESSAGE);
+                expect(() =>
+                    new Wallet(
+                        accountId,
+                        ED25519_PRIVATE_KEY,
+                        provider,
+                    ).getAccountInfo(),
+                ).toThrow(NO_ACCOUNT_ID_ERROR_MESSAGE);
+            }
         });
         it("should call the provider with an AccountInfoQuery for the wallet account", async function () {
             const provider = providerStubBuilder();
@@ -453,6 +528,24 @@ describe("Wallet", function () {
             expect(() => wallet.getAccountRecords()).toThrow(
                 NO_PROVIDER_ERROR_MESSAGE,
             );
+        });
+        it("should throw when no account ID is set", function () {
+            const provider = providerStubBuilder();
+            for (const accountId of [null, undefined]) {
+                expect(() =>
+                    new Wallet(
+                        accountId,
+                        ED25519_PRIVATE_KEY,
+                    ).getAccountRecords(),
+                ).toThrow(NO_ACCOUNT_ID_ERROR_MESSAGE);
+                expect(() =>
+                    new Wallet(
+                        accountId,
+                        ED25519_PRIVATE_KEY,
+                        provider,
+                    ).getAccountRecords(),
+                ).toThrow(NO_ACCOUNT_ID_ERROR_MESSAGE);
+            }
         });
         it("should call the provider with an AccountRecordsQuery for the wallet account", async function () {
             const provider = providerStubBuilder();
