@@ -38,11 +38,7 @@ describe("Encoding properties", function () {
     });
 
     describe("DER", function () {
-        // Skipped until #4734 is fixed: decode() throws a RangeError when the
-        // input ends before a tag or a length, for example for the single
-        // byte 0xc2.
-        // eslint-disable-next-line vitest/no-disabled-tests
-        it.skip("decode() returns a value or throws an Error for random bytes", function () {
+        it("decode() returns a value or throws an Error for random bytes", function () {
             fc.assert(
                 fc.property(fc.uint8Array(), (bytes) => {
                     try {
