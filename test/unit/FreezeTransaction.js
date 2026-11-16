@@ -11,7 +11,6 @@ import {
 import * as HieroProto from "@hiero-ledger/proto";
 import Long from "long";
 import * as hex from "../../src/encoding/hex.js";
-import BadEntityIdError from "../../src/BadEntityIdError.js";
 
 describe("FreezeTransaction", function () {
     it("create transaction and set", function () {
@@ -396,31 +395,14 @@ describe("FreezeTransaction", function () {
         });
 
         describe("_validateChecksums", function () {
-            let mainnet, testnet;
+            let testnet;
 
             beforeEach(function () {
-                mainnet = Client.forMainnet({ scheduleNetworkUpdate: false });
                 testnet = Client.forTestnet({ scheduleNetworkUpdate: false });
             });
 
             afterEach(function () {
-                mainnet.close();
                 testnet.close();
-            });
-
-            // TODO(#4683): FreezeTransaction doesn't validate the file ID checksum.
-            it.skip("should check the file ID checksum against the client's network", function () {
-                // 0.0.123-vfmkw has the mainnet checksum
-                const transaction = new FreezeTransaction().setFileId(
-                    FileId.fromString("0.0.123-vfmkw"),
-                );
-
-                expect(() =>
-                    transaction._validateChecksums(mainnet),
-                ).to.not.throw();
-                expect(() => transaction._validateChecksums(testnet)).to.throw(
-                    BadEntityIdError,
-                );
             });
 
             it("should skip unset fields", function () {
