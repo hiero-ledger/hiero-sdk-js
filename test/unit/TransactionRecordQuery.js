@@ -401,8 +401,7 @@ describe("TransactionRecordQuery", function () {
             testnet.close();
         });
 
-        // TODO(#4757): AccountId.fromString() drops the checksum.
-        it.skip("should check the transaction ID's account checksum against the client's network", function () {
+        it("should check the transaction ID's account checksum against the client's network", function () {
             // 0.0.123-vfmkw has the mainnet checksum
             const query = new TransactionRecordQuery().setTransactionId(
                 TransactionId.withValidStart(

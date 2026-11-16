@@ -150,15 +150,21 @@ export default class EcdsaPublicKey extends Key {
     }
 
     /**
+     * Returns the 64-byte uncompressed x || y, without the SEC1 prefix.
+     * @returns {Uint8Array}
+     */
+    toBytesRawUncompressed() {
+        return secp256k1.Point.fromBytes(this._keyData)
+            .toBytes(false)
+            .subarray(1);
+    }
+
+    /**
      * @returns {string}
      */
     toEthereumAddress() {
-        const publicKey = secp256k1.Point.fromBytes(this._keyData).toBytes(
-            false,
-        );
-        const hash = hex.decode(
-            keccak256(`0x${hex.encode(publicKey.subarray(1))}`),
-        );
+        const publicKey = this.toBytesRawUncompressed();
+        const hash = hex.decode(keccak256(`0x${hex.encode(publicKey)}`));
         return hex.encode(hash.subarray(12));
     }
 

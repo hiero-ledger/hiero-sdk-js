@@ -171,9 +171,6 @@ export default class RegisteredNodeAddressBookQuery {
      */
     async _makeFetchRequest(client, resolve, reject, requestTimeout) {
         const http = client._mirrorNodeHttpClient({
-            // `/network/registered-nodes` is served by the mirror node's
-            // Java REST API, a different port on a local network.
-            family: "rest-java",
             maxAttempts: this._maxAttempts,
             maxBackoff: this._maxBackoff,
             totalDeadline: requestTimeout,
