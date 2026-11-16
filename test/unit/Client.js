@@ -1,4 +1,8 @@
+import { vi } from "vitest";
 import Client from "../../src/client/Client.js";
+import AccountId from "../../src/account/AccountId.js";
+import PrivateKey from "../../src/PrivateKey.js";
+import AddressBookQuery from "../../src/network/AddressBookQuery.js";
 import {
     DEFAULT_GRPC_DEADLINE,
     DEFAULT_LOCAL_MAX_ATTEMPTS,
@@ -240,5 +244,336 @@ describe("Client deadline configuration", function () {
         client2.setRequestTimeout(12000);
         expect(client2.grpcDeadline).to.equal(3000);
         expect(client2.requestTimeout).to.equal(12000);
+    });
+});
+
+describe("Client configuration", function () {
+    let client;
+
+    beforeEach(function () {
+        client = new Client({ scheduleNetworkUpdate: false });
+    });
+
+    afterEach(function () {
+        client.close();
+        vi.restoreAllMocks();
+    });
+
+    describe("operator", function () {
+        it("getOperator() returns null when no operator is set", function () {
+            expect(client.getOperator()).to.be.null;
+        });
+
+        it("sets the operator from the operator prop with a DER private key string", function () {
+            const privateKey = PrivateKey.generateED25519();
+
+            const operatorClient = new Client({
+                operator: {
+                    accountId: "0.0.1001",
+                    privateKey: privateKey.toStringDer(),
+                },
+                scheduleNetworkUpdate: false,
+            });
+
+            const operator = operatorClient.getOperator();
+            expect(operator.accountId.toString()).to.equal("0.0.1001");
+            expect(operator.publicKey.toStringDer()).to.equal(
+                privateKey.publicKey.toStringDer(),
+            );
+            operatorClient.close();
+        });
+
+        it("sets the operator from the operator prop with a PrivateKey", function () {
+            const privateKey = PrivateKey.generateECDSA();
+
+            const operatorClient = new Client({
+                operator: {
+                    accountId: new AccountId(1002),
+                    privateKey,
+                },
+                scheduleNetworkUpdate: false,
+            });
+
+            expect(operatorClient.operatorAccountId.toString()).to.equal(
+                "0.0.1002",
+            );
+            expect(operatorClient.operatorPublicKey.toStringDer()).to.equal(
+                privateKey.publicKey.toStringDer(),
+            );
+            operatorClient.close();
+        });
+
+        it("getOperator() returns the operator set with setOperator()", async function () {
+            const privateKey = PrivateKey.generateED25519();
+            const message = new Uint8Array([1, 2, 3]);
+
+            client.setOperator("0.0.1003", privateKey);
+
+            const operator = client.getOperator();
+            expect(operator.accountId.toString()).to.equal("0.0.1003");
+            expect(operator.publicKey.toStringDer()).to.equal(
+                privateKey.publicKey.toStringDer(),
+            );
+            expect(await operator.transactionSigner(message)).to.deep.equal(
+                privateKey.sign(message),
+            );
+        });
+    });
+
+    describe("transport security", function () {
+        it("is off by default", function () {
+            expect(client.isTransportSecurity()).to.be.false;
+        });
+
+        it("isTransportSecurity() returns the value set with setTransportSecurity()", function () {
+            expect(client.setTransportSecurity(true)).to.equal(client);
+            expect(client.isTransportSecurity()).to.be.true;
+
+            client.setTransportSecurity(false);
+            expect(client.isTransportSecurity()).to.be.false;
+        });
+    });
+
+    describe("checksum validation", function () {
+        it("is off by default", function () {
+            expect(client.isAutoValidateChecksumsEnabled()).to.be.false;
+        });
+
+        it("setAutoValidateChecksums() changes the value and returns the client", function () {
+            expect(client.setAutoValidateChecksums(true)).to.equal(client);
+            expect(client.isAutoValidateChecksumsEnabled()).to.be.true;
+
+            client.setAutoValidateChecksums(false);
+            expect(client.isAutoValidateChecksumsEnabled()).to.be.false;
+        });
+    });
+
+    describe("isClientShutDown", function () {
+        it("is false until close() is called", function () {
+            expect(client.isClientShutDown).to.be.false;
+
+            client.close();
+
+            expect(client.isClientShutDown).to.be.true;
+        });
+    });
+
+    describe("node backoff and readmit periods", function () {
+        it("have the network defaults", function () {
+            expect(client.nodeMinBackoff).to.equal(8000);
+            expect(client.nodeMaxBackoff).to.equal(60 * 60 * 1000);
+            expect(client.nodeMinReadmitPeriod).to.equal(8000);
+            expect(client.nodeMaxReadmitPeriod).to.equal(60 * 60 * 1000);
+        });
+
+        it("nodeMinBackoff returns the value set with setNodeMinBackoff()", function () {
+            expect(client.setNodeMinBackoff(100)).to.equal(client);
+            expect(client.nodeMinBackoff).to.equal(100);
+        });
+
+        it("nodeMaxBackoff returns the value set with setNodeMaxBackoff()", function () {
+            expect(client.setNodeMaxBackoff(5000)).to.equal(client);
+            expect(client.nodeMaxBackoff).to.equal(5000);
+        });
+
+        it("nodeMinReadmitPeriod returns the value set with setNodeMinReadmitPeriod()", function () {
+            expect(client.setNodeMinReadmitPeriod(200)).to.equal(client);
+            expect(client.nodeMinReadmitPeriod).to.equal(200);
+        });
+
+        it("nodeMaxReadmitPeriod returns the value set with setNodeMaxReadmitPeriod()", function () {
+            expect(client.setNodeMaxReadmitPeriod(6000)).to.equal(client);
+            expect(client.nodeMaxReadmitPeriod).to.equal(6000);
+        });
+    });
+
+    describe("maxNodeAttempts", function () {
+        it("is -1 by default, so nodes are never removed", function () {
+            expect(client.maxNodeAttempts).to.equal(-1);
+        });
+
+        it("returns the value set with setMaxNodeAttempts()", function () {
+            expect(client.setMaxNodeAttempts(3)).to.equal(client);
+            expect(client.maxNodeAttempts).to.equal(3);
+        });
+    });
+
+    describe("request backoff", function () {
+        it("setMinBackoff() throws for null", function () {
+            expect(() => client.setMinBackoff(null)).to.throw(
+                "minBackoff cannot be null.",
+            );
+        });
+
+        it("setMinBackoff() throws for a value larger than maxBackoff", function () {
+            expect(() => client.setMinBackoff(8001)).to.throw(
+                "minBackoff cannot be larger than maxBackoff.",
+            );
+            expect(client.minBackoff).to.equal(250);
+        });
+
+        it("setMaxBackoff() throws for null", function () {
+            expect(() => client.setMaxBackoff(null)).to.throw(
+                "maxBackoff cannot be null.",
+            );
+        });
+
+        it("setMaxBackoff() throws for a value smaller than minBackoff", function () {
+            expect(() => client.setMaxBackoff(249)).to.throw(
+                "maxBackoff cannot be smaller than minBackoff.",
+            );
+            expect(client.maxBackoff).to.equal(8000);
+        });
+    });
+
+    describe("updateNetwork()", function () {
+        it("returns the client without querying while an update is running", async function () {
+            let rejectQuery;
+            const execute = vi
+                .spyOn(AddressBookQuery.prototype, "execute")
+                .mockImplementation(
+                    () =>
+                        new Promise((resolve, reject) => {
+                            rejectQuery = reject;
+                        }),
+                );
+
+            const running = client.updateNetwork();
+
+            expect(await client.updateNetwork()).to.equal(client);
+            expect(execute).toHaveBeenCalledTimes(1);
+
+            rejectQuery(new Error("mirror node unavailable"));
+            expect(await running).to.equal(client);
+            expect(client._isUpdatingNetwork).to.be.false;
+        });
+
+        it("logs the error and keeps the network when the update fails", async function () {
+            vi.spyOn(AddressBookQuery.prototype, "execute").mockRejectedValue(
+                new Error("mirror node unavailable"),
+            );
+            const logger = { trace: vi.fn() };
+            client.setLogger(logger);
+            client._network.setNetwork({ "127.0.0.1:50211": "0.0.3" });
+
+            expect(await client.updateNetwork()).to.equal(client);
+
+            expect(logger.trace).toHaveBeenCalledWith(
+                "failed to update client address book: Error: mirror node unavailable",
+            );
+            expect(Object.keys(client.network)).to.deep.equal([
+                "127.0.0.1:50211",
+            ]);
+            expect(client._isUpdatingNetwork).to.be.false;
+        });
+
+        it("does not throw when the update fails without a logger", async function () {
+            vi.spyOn(AddressBookQuery.prototype, "execute").mockRejectedValue(
+                new Error("mirror node unavailable"),
+            );
+
+            expect(await client.updateNetwork()).to.equal(client);
+            expect(client._isUpdatingNetwork).to.be.false;
+        });
+    });
+
+    describe("scheduled network update", function () {
+        beforeEach(function () {
+            vi.useFakeTimers();
+        });
+
+        afterEach(function () {
+            vi.useRealTimers();
+        });
+
+        it("networkUpdatePeriod is 24 hours by default", function () {
+            expect(client.networkUpdatePeriod).to.equal(24 * 60 * 60 * 1000);
+        });
+
+        it("runs updateNetwork() after networkUpdatePeriod and again after each period", async function () {
+            const scheduledClient = new Client({});
+            const updateNetwork = vi
+                .spyOn(scheduledClient, "updateNetwork")
+                .mockResolvedValue(scheduledClient);
+
+            await vi.advanceTimersByTimeAsync(24 * 60 * 60 * 1000 - 1);
+            expect(updateNetwork).not.toHaveBeenCalled();
+
+            await vi.advanceTimersByTimeAsync(1);
+            expect(updateNetwork).toHaveBeenCalledTimes(1);
+
+            await vi.advanceTimersByTimeAsync(24 * 60 * 60 * 1000);
+            expect(updateNetwork).toHaveBeenCalledTimes(2);
+
+            scheduledClient.close();
+        });
+
+        it("setNetworkUpdatePeriod() restarts the timer with the new period", async function () {
+            const scheduledClient = new Client({});
+            const updateNetwork = vi
+                .spyOn(scheduledClient, "updateNetwork")
+                .mockResolvedValue(scheduledClient);
+
+            await vi.advanceTimersByTimeAsync(1000);
+
+            expect(scheduledClient.setNetworkUpdatePeriod(5000)).to.equal(
+                scheduledClient,
+            );
+            expect(scheduledClient.networkUpdatePeriod).to.equal(5000);
+
+            await vi.advanceTimersByTimeAsync(4999);
+            expect(updateNetwork).not.toHaveBeenCalled();
+
+            await vi.advanceTimersByTimeAsync(1);
+            expect(updateNetwork).toHaveBeenCalledTimes(1);
+
+            await vi.advanceTimersByTimeAsync(5000);
+            expect(updateNetwork).toHaveBeenCalledTimes(2);
+
+            scheduledClient.close();
+        });
+
+        it("stops after close()", async function () {
+            const scheduledClient = new Client({});
+            const updateNetwork = vi
+                .spyOn(scheduledClient, "updateNetwork")
+                .mockResolvedValue(scheduledClient);
+            scheduledClient.setNetworkUpdatePeriod(5000);
+
+            await vi.advanceTimersByTimeAsync(5000);
+            expect(updateNetwork).toHaveBeenCalledTimes(1);
+
+            scheduledClient.close();
+
+            await vi.advanceTimersByTimeAsync(10000);
+            expect(updateNetwork).toHaveBeenCalledTimes(1);
+        });
+
+        it("does not schedule an update with scheduleNetworkUpdate: false", async function () {
+            const updateNetwork = vi
+                .spyOn(client, "updateNetwork")
+                .mockResolvedValue(client);
+
+            await vi.advanceTimersByTimeAsync(24 * 60 * 60 * 1000);
+
+            expect(updateNetwork).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("network helpers", function () {
+        it("_isLocalNetwork(null) returns false", function () {
+            expect(client._isLocalNetwork(null)).to.be.false;
+        });
+
+        it("_validateNetworkConsistency() accepts an empty network", function () {
+            expect(() => Client._validateNetworkConsistency({})).to.not.throw();
+        });
+
+        it("_extractShardRealm() returns shard 0, realm 0 for an empty network", function () {
+            expect(Client._extractShardRealm({})).to.deep.equal({
+                shard: 0,
+                realm: 0,
+            });
+        });
     });
 });
