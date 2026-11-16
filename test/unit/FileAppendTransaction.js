@@ -233,51 +233,6 @@ describe("FileAppendTransaction", function () {
                     "1596210382.000000200",
                 ]);
             });
-
-            // TODO(#4753): freeze() doesn't carry the nanoseconds into the seconds.
-            it.skip("should carry the chunk transaction IDs into the next second", function () {
-                const transaction = new FileAppendTransaction()
-                    .setNodeAccountIds([nodeId])
-                    .setTransactionId(
-                        TransactionId.withValidStart(
-                            new AccountId(0, 0, 1001),
-                            new Timestamp(1596210382, 999999995),
-                        ),
-                    )
-                    .setFileId(fileId)
-                    .setContents(contents)
-                    .setChunkSize(10)
-                    .freeze();
-
-                expect(
-                    transaction._transactionIds.list.map((id) =>
-                        id.validStart.toString(),
-                    ),
-                ).to.deep.equal([
-                    "1596210382.999999995",
-                    "1596210383.000000005",
-                    "1596210383.000000015",
-                ]);
-            });
-
-            // TODO(#4753): fromBytes() computes the interval from the nanoseconds only.
-            it.skip("should be kept by fromBytes() when the chunk transaction IDs cross a second", function () {
-                const transaction = new FileAppendTransaction()
-                    .setTransactionId(
-                        TransactionId.withValidStart(
-                            new AccountId(0, 0, 1001),
-                            new Timestamp(1596210382, 999999995),
-                        ),
-                    )
-                    .setFileId(fileId)
-                    .setContents(contents)
-                    .setChunkSize(10)
-                    .setChunkInterval(10);
-
-                const decoded = Transaction.fromBytes(transaction.toBytes());
-
-                expect(decoded.chunkInterval).to.equal(10);
-            });
         });
 
         describe("getRequiredChunks", function () {
@@ -550,5 +505,55 @@ describe("FileAppendTransaction", function () {
         expect(() => tx.setChunkInterval(1000)).to.throw(
             "transaction is immutable",
         );
+    });
+
+    describe("chunk transaction IDs that cross a second", function () {
+        // The second chunk's valid start is 10 nanoseconds after the first,
+        // which is in the next second.
+        const transactionId = TransactionId.withValidStart(
+            AccountId.fromString("0.0.1001"),
+            new Timestamp(1596210382, 999999995),
+        );
+
+        function newTransaction() {
+            return new FileAppendTransaction()
+                .setTransactionId(transactionId)
+                .setFileId(FileId.fromString("0.0.5005"))
+                .setContents(new Uint8Array(25))
+                .setChunkSize(10)
+                .setChunkInterval(10);
+        }
+
+        it("freeze() carries the nanoseconds into the seconds", function () {
+            const tx = newTransaction()
+                .setNodeAccountIds([AccountId.fromString("0.0.3")])
+                .freeze();
+
+            expect(
+                tx._transactionIds.list.map((id) => id.validStart.toString()),
+            ).to.deep.equal([
+                "1596210382.999999995",
+                "1596210383.000000005",
+                "1596210383.000000015",
+            ]);
+        });
+
+        it("fromBytes() reads the chunk interval of a frozen transaction", function () {
+            const tx = newTransaction()
+                .setNodeAccountIds([AccountId.fromString("0.0.3")])
+                .freeze();
+
+            expect(Transaction.fromBytes(tx.toBytes()).chunkInterval).to.equal(
+                10,
+            );
+        });
+
+        it("fromBytes() reads the chunk interval of a transaction that isn't frozen", function () {
+            const tx = newTransaction();
+
+            expect(Transaction.fromBytes(tx.toBytes()).chunkInterval).to.equal(
+                10,
+            );
+        });
     });
 });

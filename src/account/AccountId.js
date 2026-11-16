@@ -59,6 +59,7 @@ export default class AccountId {
         let num = Long.ZERO;
         let aliasKey = undefined;
         let evmAddress = undefined;
+        let checksum = null;
 
         // A dotted shard.realm.num ID can also be 40 characters long.
         // Only undotted input may be a standalone EVM address.
@@ -75,6 +76,7 @@ export default class AccountId {
 
             if (result.numOrHex.length < 20) {
                 num = EntityIdHelper.parseEntityNum(result.numOrHex, text);
+                checksum = result.checksum ?? null;
             } else if (result.numOrHex.length == 40) {
                 evmAddress = EvmAddress.fromString(result.numOrHex);
             } else {
@@ -82,7 +84,9 @@ export default class AccountId {
             }
         }
 
-        return new AccountId(shard, realm, num, aliasKey, evmAddress);
+        const id = new AccountId(shard, realm, num, aliasKey, evmAddress);
+        id._checksum = checksum;
+        return id;
     }
 
     /**
@@ -185,7 +189,7 @@ export default class AccountId {
             throw new Error("field `evmAddress` should not be null");
         }
 
-        const http = client._mirrorNodeHttpClient({ family: "rest" });
+        const http = client._mirrorNodeHttpClient();
         const path = `/accounts/${this.evmAddress.toString()}`;
 
         // Give the mirror node a moment to ingest a just-created account.
@@ -230,7 +234,7 @@ export default class AccountId {
             throw new Error("field `num` should not be null");
         }
 
-        const http = client._mirrorNodeHttpClient({ family: "rest" });
+        const http = client._mirrorNodeHttpClient();
         const path = `/accounts/${this.num.toString()}`;
 
         // Give the mirror node a moment to ingest a just-created account.
@@ -421,7 +425,12 @@ export default class AccountId {
         const id = new AccountId(this);
         id._checksum = this._checksum;
         id.aliasKey = this.aliasKey;
-        id.evmAddress = this.evmAddress;
+        id.evmAddress =
+            this.evmAddress == null
+                ? this.evmAddress
+                : EvmAddress.fromBytes(
+                      new Uint8Array(this.evmAddress.toBytes()),
+                  );
         return id;
     }
 

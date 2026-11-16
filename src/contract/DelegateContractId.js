@@ -35,7 +35,10 @@ export default class DelegateContractId extends ContractId {
      * @returns {DelegateContractId}
      */
     static fromString(text) {
-        return DelegateContractId._fromContractId(ContractId.fromString(text));
+        const contractId = ContractId.fromString(text);
+        const id = DelegateContractId._fromContractId(contractId);
+        id._checksum = contractId._checksum ?? null;
+        return id;
     }
 
     /**

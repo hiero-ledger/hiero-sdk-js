@@ -175,8 +175,10 @@ export default class FileAppendTransaction extends Transaction {
             const firstValidStart = transactionIds[0].validStart;
             const secondValidStart = transactionIds[1].validStart;
             if (firstValidStart && secondValidStart) {
-                chunkInterval = secondValidStart.nanos
-                    .sub(firstValidStart.nanos)
+                chunkInterval = secondValidStart.seconds
+                    .sub(firstValidStart.seconds)
+                    .mul(1000000000)
+                    .add(secondValidStart.nanos.sub(firstValidStart.nanos))
                     .toNumber();
             }
         }
@@ -377,14 +379,9 @@ export default class FileAppendTransaction extends Transaction {
 
             nextTransactionId = new TransactionId(
                 /** @type {AccountId} */ (nextTransactionId.accountId),
-                new Timestamp(
-                    /** @type {Timestamp} */ (
-                        nextTransactionId.validStart
-                    ).seconds,
-                    /** @type {Timestamp} */ (
-                        nextTransactionId.validStart
-                    ).nanos.add(this._chunkInterval),
-                ),
+                /** @type {Timestamp} */ (
+                    nextTransactionId.validStart
+                ).plusNanos(this._chunkInterval),
             );
         }
 

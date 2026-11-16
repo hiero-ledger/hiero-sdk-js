@@ -27,7 +27,8 @@
  */
 
 /**
- * Note: may throw weird errors on malformed input. Catch and rethrow with, e.g. `BadKeyError`.
+ * Throws an `Error` on malformed input, such as `invalid DER: data too short`.
+ * Catch and rethrow it with, e.g. `BadKeyError`.
  *@param {Uint8Array} data
  *@returns {AsnType}
  */
@@ -40,13 +41,26 @@ export function decode(data) {
  * @returns {[AsnType, Uint8Array]}
  */
 function decodeIncremental(bytes) {
+    if (bytes.length === 0) {
+        throw new Error("invalid DER: data too short");
+    }
+
     // slice off the initial tag byte, `decodeLength` returns a slice of the remaining data
     const [len, rem] = decodeLength(bytes.subarray(1));
+
+    if (len > rem.length) {
+        throw new Error("invalid DER: data too short");
+    }
+
     const data = rem.subarray(0, len);
     const tail = rem.subarray(len);
 
     switch (bytes[0]) {
         case 2:
+            if (data.length === 0) {
+                throw new Error("invalid DER: INTEGER has no content");
+            }
+
             return [{ int: decodeInt(data) }, tail];
         case 4: // must always be primitive form in DER; for OCTET STRING this is literal bytes
             return [{ bytes: data }, tail];
@@ -84,6 +98,15 @@ function decodeSeq(seqBytes) {
  * @returns {string}
  */
 function decodeObjectIdent(idBytes) {
+    if (idBytes.length === 0) {
+        throw new Error("invalid DER: OBJECT IDENTIFIER has no content");
+    }
+
+    // the last byte of every component has the MSB clear
+    if (idBytes[idBytes.length - 1] >= 128) {
+        throw new Error("invalid DER: OBJECT IDENTIFIER is cut off");
+    }
+
     const id = [
         // first octet is 40 * value1 + value2
         Math.floor(idBytes[0] / 40),
@@ -117,12 +140,24 @@ function decodeObjectIdent(idBytes) {
  * @returns {[number, Uint8Array]}
  */
 function decodeLength(lenBytes) {
+    if (lenBytes.length === 0) {
+        throw new Error("invalid DER: data too short");
+    }
+
     if (lenBytes[0] < 128) {
         // definite, short form
         return [lenBytes[0], lenBytes.subarray(1)];
     }
 
     const numBytes = lenBytes[0] - 128;
+
+    if (numBytes === 0) {
+        throw new Error("invalid DER: indefinite length");
+    }
+
+    if (numBytes > lenBytes.length - 1) {
+        throw new Error("invalid DER: data too short");
+    }
 
     const intBytes = lenBytes.subarray(1, numBytes + 1);
     const rem = lenBytes.subarray(numBytes + 1);

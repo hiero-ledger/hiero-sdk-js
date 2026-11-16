@@ -28,6 +28,16 @@ describe("ContractId", function () {
         expect(emvAddresContractId.toString()).to.be.equal(`1.2.${evmAddress}`);
     });
 
+    it("clones EVM ContractId bytes independently", function () {
+        const contractId = ContractId.fromEvmAddress(1, 2, evmAddress);
+        const cloned = contractId.clone();
+
+        cloned.evmAddress.fill(0);
+        expect(contractId.toEvmAddress()).toBe(evmAddress);
+        contractId.evmAddress.fill(255);
+        expect(cloned.evmAddress).toEqual(new Uint8Array(20));
+    });
+
     it("toProtobuf() with evmAddres", function () {
         const emvAddresContractId = ContractId.fromEvmAddress(1, 2, evmAddress);
 
@@ -195,6 +205,7 @@ describe("ContractId", function () {
             expect(ContractId.fromString("0.0.123").toString()).to.equal(
                 "0.0.123",
             );
+            expect(ContractId.fromString("0.0.123").checksum).to.be.null;
             expect(ContractId.fromString("123").toString()).to.equal("0.0.123");
             expect(ContractId.fromString("1.2.3").toString()).to.equal("1.2.3");
             expect(ContractId.fromString("0.0.0123").toString()).to.equal(
@@ -202,6 +213,9 @@ describe("ContractId", function () {
             );
             expect(ContractId.fromString("0.0.123-vfmkw").toString()).to.equal(
                 "0.0.123",
+            );
+            expect(ContractId.fromString("0.0.123-vfmkw").checksum).to.equal(
+                "vfmkw",
             );
         });
 
@@ -224,6 +238,9 @@ describe("ContractId", function () {
             expect(ContractId.fromString(`0.0.${evm}`).toString()).to.equal(
                 `0.0.${evm}`,
             );
+            expect(ContractId.fromString(`0.0.${evm}`).checksum).to.be.null;
+            expect(ContractId.fromString(`0.0.${evm}-vfmkw`).checksum).to.be
+                .null;
         });
     });
     describe("toBytes() / fromBytes()", function () {
