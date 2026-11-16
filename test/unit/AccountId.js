@@ -1,12 +1,33 @@
-import { AccountId, NftId, PrivateKey } from "../../src/index.js";
+import { AccountId, EvmAddress, NftId, PrivateKey } from "../../src/index.js";
 import Long from "long";
 
 describe("AccountId", function () {
+    describe("clone()", function () {
+        it.each(["original", "clone"])(
+            "copies EVM address bytes independently when mutating the %s",
+            function (target) {
+                const address = "0011223344556677889900112233445577889900";
+                const original = AccountId.fromString(`2.3.${address}`);
+                const clone = original.clone();
+
+                expect(clone.evmAddress).toBeInstanceOf(EvmAddress);
+                expect(clone.equals(original)).toBe(true);
+                const mutated = target === "original" ? original : clone;
+                const unchanged = target === "original" ? clone : original;
+                mutated.evmAddress.toBytes().fill(255);
+
+                expect(unchanged.toString()).toBe(`2.3.${address}`);
+                expect(mutated.toString()).toBe(`2.3.${"ff".repeat(20)}`);
+            },
+        );
+    });
+
     describe("fromString()", function () {
         it("should parse valid entity IDs", function () {
             expect(AccountId.fromString("0.0.123").toString()).to.equal(
                 "0.0.123",
             );
+            expect(AccountId.fromString("0.0.123").checksum).to.be.null;
             expect(AccountId.fromString("123").toString()).to.equal("0.0.123");
             expect(AccountId.fromString("1.2.3").toString()).to.equal("1.2.3");
             expect(AccountId.fromString("0.0.0123").toString()).to.equal(
@@ -14,6 +35,9 @@ describe("AccountId", function () {
             );
             expect(AccountId.fromString("0.0.123-vfmkw").toString()).to.equal(
                 "0.0.123",
+            );
+            expect(AccountId.fromString("0.0.123-vfmkw").checksum).to.equal(
+                "vfmkw",
             );
         });
 
@@ -50,6 +74,9 @@ describe("AccountId", function () {
             expect(AccountId.fromString(`0.0.${evm}`).toString()).to.equal(
                 `0.0.${evm}`,
             );
+            expect(AccountId.fromString(`0.0.${evm}`).checksum).to.be.null;
+            expect(AccountId.fromString(`0.0.${evm}-vfmkw`).checksum).to.be
+                .null;
             expect(AccountId.fromString(evm).toString()).to.equal(`0.0.${evm}`);
             expect(AccountId.fromString(`0x${evm}`).toString()).to.equal(
                 `0.0.${evm}`,
