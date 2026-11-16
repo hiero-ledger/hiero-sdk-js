@@ -1,5 +1,6 @@
 import {
     AccountId,
+    Client,
     Hbar,
     NodeCreateTransaction,
     PrivateKey,
@@ -7,6 +8,7 @@ import {
     Timestamp,
     TransactionId,
 } from "../../../src/index.js";
+import BadEntityIdError from "../../../src/BadEntityIdError.js";
 
 describe("NodeCreateTransaction", function () {
     // setting these variables outside of the beforeEach function to avoid
@@ -446,5 +448,67 @@ describe("NodeCreateTransaction", function () {
         expect(() => {
             tx.addServiceEndpoint(new ServiceEndpoint().setIpAddressV4(Uint8Array.of(127, 0, 0, 1)));
         }).to.throw("ServiceEndpoints list must not contain more than 8 entries.");
+    });
+
+    describe("_validateChecksums", function () {
+        const TransactionType = NodeCreateTransaction;
+        const field = "_accountId";
+
+        it("passes the client to the ID validator", function () {
+            const client = {};
+            const clients = [];
+            const transaction = new TransactionType();
+            transaction[field] = {
+                validateChecksum: (value) => clients.push(value),
+            };
+
+            transaction._validateChecksums(client);
+
+            expect(clients).to.have.lengthOf(1);
+            expect(clients[0]).to.equal(client);
+        });
+
+        it("skips an unset ID", function () {
+            expect(() =>
+                new TransactionType()._validateChecksums({}),
+            ).to.not.throw();
+        });
+    });
+
+    describe("_beforeExecute account ID checksum validation", function () {
+        let client;
+        let transaction;
+
+        beforeEach(function () {
+            client = Client.forTestnet({
+                scheduleNetworkUpdate: false,
+            }).setOperator("0.0.1001", PrivateKey.generateED25519());
+
+            transaction = new NodeCreateTransaction()
+                .setAccountId("0.0.123-vfmkw")
+                .setNodeAccountIds([new AccountId(0, 0, 3)]);
+        });
+
+        afterEach(function () {
+            client.close();
+        });
+
+        it("rejects a mainnet account string when validation is enabled", async function () {
+            client.setAutoValidateChecksums(true);
+
+            expect(transaction.accountId.checksum).to.equal("vfmkw");
+            await expect(transaction._beforeExecute(client)).rejects.toThrow(
+                BadEntityIdError,
+            );
+        });
+
+        it("accepts a mainnet account string when validation is disabled", async function () {
+            client.setAutoValidateChecksums(false);
+
+            expect(transaction.accountId.checksum).to.equal("vfmkw");
+            await expect(
+                transaction._beforeExecute(client),
+            ).resolves.toBeUndefined();
+        });
     });
 });
