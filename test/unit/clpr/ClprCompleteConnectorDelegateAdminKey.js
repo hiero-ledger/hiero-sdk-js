@@ -35,6 +35,7 @@ describe("ClprCompleteConnectorTransaction delegate admin keys", function () {
                 channelId: hex.decode(vectors.channelId),
                 connectorId: hex.decode(vector.connectorId),
                 salt: hex.decode(vectors.salt),
+                connectorContract: "0.0.345",
                 adminKey,
             })
                 .setOwnershipProof(payer)

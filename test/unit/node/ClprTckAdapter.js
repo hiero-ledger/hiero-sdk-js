@@ -7,11 +7,20 @@ import { Duplex } from "node:stream";
 import { fileURLToPath } from "node:url";
 import { proto } from "@hiero-ledger/proto";
 import Long from "long";
+import { keccak256 } from "ethers";
 import { vi } from "vitest";
 import Mocker from "../Mocker.js";
 import vectors from "../utils/ClprOwnershipVectors.js";
 import { makeLedgerConfigurationResponse } from "../utils/ClprLedgerConfiguration.js";
 import { makeEndpointManifestResponse } from "../utils/ClprEndpointManifest.js";
+import { transactionFee } from "../../../examples/clpr/transaction-fee.js";
+import FakeHttpTransport, { jsonResponse } from "../utils/FakeHttpTransport.js";
+import {
+    CHANNEL,
+    CONNECTOR,
+    channelRow,
+    connectorRow,
+} from "../utils/ClprMirror.js";
 
 // Load the CommonJS TCK in its own package context, as its server does.
 const tckRequire = createRequire(
@@ -170,7 +179,12 @@ const transactionCases = [
     ],
 ];
 const queryNames = ["getClprLedgerConfiguration", "getClprEndpointManifest"];
-const names = [...transactionCases.map(([name]) => name), ...queryNames];
+const names = [
+    ...transactionCases.map(([name]) => name),
+    ...queryNames,
+    "getMirrorNodeClprChannel",
+    "getMirrorNodeClprConnector",
+];
 
 function requireMethod(name) {
     expect(methods[name], `TCK loader must discover ${name}`).toBeTypeOf(
@@ -302,7 +316,7 @@ describe("CLPR TCK adapter", function () {
         requireMethod(name);
     });
 
-    it("exports exactly the ten CLPR RPC methods, keeping helpers private", function () {
+    it("exports exactly the twelve CLPR RPC methods, keeping helpers private", function () {
         for (const name of names) requireMethod(name);
         expect(Object.keys(tckRequire("./methods/clpr.ts")).sort()).toEqual(
             [...names].sort(),
@@ -310,7 +324,7 @@ describe("CLPR TCK adapter", function () {
     });
 
     it.each(["methods", "params", "response"])(
-        "keeps %s/clpr.ts free of raw proof setters and proto imports",
+        "keeps %s/clpr.ts free of raw proof setters",
         function (folder) {
             const path = new URL(
                 `../../../tck/${folder}/clpr.ts`,
@@ -320,7 +334,7 @@ describe("CLPR TCK adapter", function () {
                 true,
             );
             expect(readFileSync(path, "utf8")).not.toMatch(
-                /@hiero-ledger\/proto|setPublicKey|setSignature|setSignatureScheme/,
+                /setPublicKey|setSignature|setSignatureScheme/,
             );
         },
     );
@@ -577,22 +591,35 @@ describe("CLPR TCK adapter", function () {
                     value.signatureScheme,
                 );
                 expect(decoded.signature).toHaveLength(64);
+                const hash = (bytes) =>
+                    Buffer.from(keccak256(bytes).slice(2), "hex");
                 const preimage = isConnector
-                    ? Buffer.from(
-                          value.connectorId + vectors.clprServiceAddress,
-                          "hex",
-                      )
-                    : Buffer.from(vectors.channelId, "hex");
+                    ? Buffer.concat([
+                          Buffer.from("hiero.clpr.complete-connector.v1"),
+                          Buffer.from(proof.channelId),
+                          Buffer.from(proof.connectorId),
+                          Buffer.from(vectors.clprServiceAddress, "hex"),
+                          hash(
+                              proto.ContractID.encode(
+                                  proof.connectorContract,
+                              ).finish(),
+                          ),
+                          hash(proto.Key.encode(proof.adminKey).finish()),
+                      ])
+                    : Buffer.concat([
+                          Buffer.from("hiero.clpr.complete-channel.v1"),
+                          Buffer.from(proof.channelId),
+                          hash(
+                              proto.ContractID.encode(
+                                  proof.verifierContract,
+                              ).finish(),
+                          ),
+                          hash(proof.configProofBytes),
+                          hash(proof.endpointManifestProofBytes),
+                      ]);
                 const message =
                     value.signatureScheme === "ED25519"
-                        ? Buffer.from(
-                              value[
-                                  isConnector
-                                      ? "connectorDigest"
-                                      : "channelDigest"
-                              ],
-                              "hex",
-                          )
+                        ? hash(preimage)
                         : preimage;
                 expect(
                     ownershipKey(value).publicKey.verify(
@@ -830,4 +857,138 @@ describe("CLPR TCK adapter", function () {
             expect(unaryRequests).not.toHaveBeenCalled();
         });
     }
+});
+
+describe("CLPR mirror TCK adapter", function () {
+    let client;
+    let transport;
+
+    beforeEach(function () {
+        transport = new FakeHttpTransport();
+        client = sdk.Client.forNetwork(
+            { "127.0.0.1:1": "0.0.3" },
+            { scheduleNetworkUpdate: false },
+        );
+        client.setMirrorNetwork(["mirror.example.com:443"]);
+        client.setMirrorNodeHttpConfig({ transport });
+        registry.setClient(client, sessionId);
+    });
+
+    afterEach(function () {
+        registry.removeClient(sessionId);
+        client.close();
+    });
+
+    it("exposes both mirror methods through the JSON-RPC server without a payer", async function () {
+        transport.respond(jsonResponse(200, { channels: [channelRow()] }));
+        const result = await rpc("getMirrorNodeClprChannel", {
+            sessionId,
+            channelId: CHANNEL,
+        });
+        expect(result.error).toBeUndefined();
+        expect(result.result).toEqual({
+            channelId: CHANNEL,
+            chainId: "eip155:1",
+            status: "ACTIVE",
+            verifierContractId: "1.2.456",
+            verifierFingerprint: "33".repeat(32),
+            trustAnchorId: "44".repeat(32),
+            nextMessageId: uint64Max,
+            ackedMessageId: "9007199254740993",
+            receivedMessageId: "0",
+            createdTimestamp: "1726874200.000000001",
+            modifiedTimestamp: "1726874345.123456789",
+        });
+        expect(transport.requests[0].url).toContain(
+            `/clpr/channels?channel.id=eq:0x${CHANNEL}`,
+        );
+
+        const adminKey = new sdk.KeyList([signer.publicKey], 1);
+        const encodedKey = hex(
+            proto.Key.encode(adminKey._toProtobufKey()).finish(),
+        );
+        transport.respond(
+            jsonResponse(200, {
+                connectors: [
+                    {
+                        ...connectorRow(),
+                        admin_key: {
+                            _type: "ProtobufEncoded",
+                            key: encodedKey,
+                        },
+                    },
+                ],
+            }),
+        );
+        const connector = await rpc("getMirrorNodeClprConnector", {
+            sessionId,
+            channelId: CHANNEL,
+            connectorId: CONNECTOR,
+        });
+        expect(connector.error).toBeUndefined();
+        expect(connector.result).toEqual({
+            channelId: CHANNEL,
+            connectorId: CONNECTOR,
+            connectorContractId: "1.2.789",
+            adminKey: { _type: "ProtobufEncoded", key: encodedKey },
+            lockedStake: stake,
+            inFlightMessageCount: uint64Max,
+            slashCount: "0",
+            createdTimestamp: "1726874345.123456789",
+        });
+        expect(transport.requests[1].url).toContain(
+            `/clpr/channels/0x${CHANNEL}/connectors?connector.id=eq:0x${CONNECTOR}&status=eq:ACTIVE`,
+        );
+    });
+
+    it.each([
+        ["getMirrorNodeClprChannel", {}],
+        ["getMirrorNodeClprChannel", { channelId: "11" }],
+        ["getMirrorNodeClprConnector", { channelId: CHANNEL }],
+        ["getMirrorNodeClprConnector", { connectorId: CONNECTOR }],
+        [
+            "getMirrorNodeClprConnector",
+            { channelId: CHANNEL, connectorId: "zz" },
+        ],
+    ])(
+        "%s rejects missing or invalid IDs before HTTP",
+        async function (name, params) {
+            const result = await rpc(name, { sessionId, ...params });
+            expect(result.error).toBeDefined();
+            expect(transport.requests).toHaveLength(0);
+        },
+    );
+
+    it("preserves not-found and malformed-response failures instead of emitting empty models", async function () {
+        transport.respond(jsonResponse(200, { channels: [] }));
+        await expect(
+            methods.getMirrorNodeClprChannel({ sessionId, channelId: CHANNEL }),
+        ).rejects.toBeInstanceOf(sdk.MirrorNodeStatusError);
+        transport.respond(
+            jsonResponse(200, { connectors: [connectorRow(), connectorRow()] }),
+        );
+        await expect(
+            methods.getMirrorNodeClprConnector({
+                sessionId,
+                channelId: CHANNEL,
+                connectorId: CONNECTOR,
+            }),
+        ).rejects.toThrow(/multiple connectors/);
+    });
+});
+
+describe("CLPR lifecycle example fee cap", function () {
+    it.each([undefined, "", "-1", "0", "1.5", "1e8", "9223372036854775808"])(
+        "rejects an invalid spending cap %s before sending a transaction",
+        function (value) {
+            expect(() => transactionFee(value)).toThrow(
+                /CLPR_MAX_TRANSACTION_FEE_TINYBARS/,
+            );
+        },
+    );
+    it("preserves a user-supplied cap beyond number precision", function () {
+        expect(transactionFee("9007199254740993").toTinybars().toString()).toBe(
+            "9007199254740993",
+        );
+    });
 });

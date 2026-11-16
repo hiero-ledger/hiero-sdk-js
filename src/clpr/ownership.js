@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
+import { proto } from "@hiero-ledger/proto";
+import * as utf8 from "../encoding/utf8.js";
 import PublicKey from "../PublicKey.js";
 import PrivateKey from "../PrivateKey.js";
 import { requireUint8ArrayLength } from "../util.js";
@@ -84,6 +86,113 @@ export function computeConnectorId(channelId, publicKey, salt) {
 export function computeConnectorCommitment(connectorId, publicKey) {
     requireUint8ArrayLength(connectorId, 32, "connectorId");
     return hash(connectorId, encodePublicKey(publicKey).publicKey);
+}
+
+/**
+ * Matches the parsed ContractID oneof that CN reserializes for signing.
+ * @param {import("@hiero-ledger/proto").proto.IContractID} contract
+ * @returns {import("@hiero-ledger/proto").proto.IContractID}
+ */
+function signingContract(contract) {
+    return contract.evmAddress != null
+        ? { ...contract, contractNum: undefined }
+        : contract;
+}
+
+/**
+ * @param {import("../contract/ContractId.js").default} contract
+ * @returns {Uint8Array}
+ */
+export function contractBytes(contract) {
+    return proto.ContractID.encode(
+        signingContract(contract._toProtobuf()),
+    ).finish();
+}
+
+/**
+ * Applies the same ContractID oneof rule inside compound administrative keys.
+ * @param {import("@hiero-ledger/proto").proto.IKey} key
+ * @returns {import("@hiero-ledger/proto").proto.IKey}
+ */
+function signingKey(key) {
+    if (key.contractID != null) {
+        return { contractID: signingContract(key.contractID) };
+    }
+    if (key.delegatableContractId != null) {
+        return {
+            delegatableContractId: signingContract(key.delegatableContractId),
+        };
+    }
+    if (key.thresholdKey != null) {
+        return {
+            thresholdKey: {
+                ...key.thresholdKey,
+                keys: {
+                    keys: key.thresholdKey.keys?.keys?.map(signingKey) ?? [],
+                },
+            },
+        };
+    }
+    if (key.keyList != null) {
+        return { keyList: { keys: key.keyList.keys?.map(signingKey) ?? [] } };
+    }
+    return key;
+}
+
+/**
+ * @param {import("../Key.js").default} key
+ * @returns {Uint8Array}
+ */
+export function keyBytes(key) {
+    return proto.Key.encode(signingKey(key._toProtobufKey())).finish();
+}
+
+// shortcut: signing follows open CN fixes, repin after final EAP-0.2 vectors.
+/**
+ * Provisional CN #28017 (807100e2) preimage; final EAP vectors remain required.
+ * @param {Uint8Array} channelId
+ * @param {import("../contract/ContractId.js").default} verifierContract
+ * @param {Uint8Array} configProof
+ * @param {Uint8Array} manifestProof
+ * @returns {Uint8Array}
+ */
+export function channelSigningPreimage(
+    channelId,
+    verifierContract,
+    configProof,
+    manifestProof,
+) {
+    return new Uint8Array([
+        ...utf8.encode("hiero.clpr.complete-channel.v1"),
+        ...channelId,
+        ...hash(contractBytes(verifierContract)),
+        ...hash(configProof),
+        ...hash(manifestProof),
+    ]);
+}
+
+/**
+ * Provisional CN #28019 (453306c6) preimage; final EAP vectors remain required.
+ * @param {Uint8Array} channelId
+ * @param {Uint8Array} connectorId
+ * @param {import("../contract/ContractId.js").default} connectorContract
+ * @param {import("../Key.js").default} adminKey
+ * @returns {Uint8Array}
+ */
+export function connectorSigningPreimage(
+    channelId,
+    connectorId,
+    connectorContract,
+    adminKey,
+) {
+    return new Uint8Array([
+        ...utf8.encode("hiero.clpr.complete-connector.v1"),
+        ...channelId,
+        ...connectorId,
+        ...CLPR_SERVICE_ADDRESS,
+        ...hash(contractBytes(connectorContract)),
+        ...hash(keyBytes(adminKey)),
+    ]);
 }
 
 /**

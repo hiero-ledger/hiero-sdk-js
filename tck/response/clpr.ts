@@ -40,3 +40,35 @@ export interface ClprEndpointManifestResponse {
     /** Hex bytes, or "" when no signed snapshot is available. */
     readonly manifestStateProof: string;
 }
+
+export interface MirrorNodeClprChannelResponse {
+    readonly channelId: string;
+    readonly chainId: string;
+    readonly status: string;
+    readonly verifierContractId: string;
+    readonly verifierFingerprint: string;
+    readonly trustAnchorId: string;
+    /** Unsigned uint64 decimal strings. */
+    readonly nextMessageId: string;
+    readonly ackedMessageId: string;
+    readonly receivedMessageId: string;
+    readonly createdTimestamp: string;
+    readonly modifiedTimestamp: string;
+}
+
+export interface MirrorNodeClprConnectorResponse {
+    readonly connectorId: string;
+    readonly channelId: string;
+    readonly connectorContractId: string;
+    /** Complete protobuf Key bytes, including composite key structure. */
+    readonly adminKey: {
+        readonly _type: "ProtobufEncoded";
+        readonly key: string;
+    };
+    /** Decimal tinybars. */
+    readonly lockedStake: string;
+    /** Unsigned uint64 decimal strings. */
+    readonly inFlightMessageCount: string;
+    readonly slashCount: string;
+    readonly createdTimestamp: string;
+}

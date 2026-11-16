@@ -5,7 +5,7 @@ import { proto } from "@hiero-ledger/proto";
 import Long from "long";
 import { Signature, SigningKey } from "ethers";
 import * as hex from "../../../src/encoding/hex.js";
-import vectors from "../utils/ClprOwnershipVectors.js";
+import vectors from "../utils/ClprPhase2OwnershipVectors.js";
 
 function bytes(value) {
     return new Uint8Array(hex.decode(value));
@@ -29,7 +29,11 @@ function completeConnector(props) {
         sdk.ClprCompleteConnectorTransaction,
         "SDK must export ClprCompleteConnectorTransaction",
     ).toBeTypeOf("function");
-    return new sdk.ClprCompleteConnectorTransaction(props);
+    return new sdk.ClprCompleteConnectorTransaction({
+        connectorContract: "1.2.345",
+        adminKey: adminKey(),
+        ...props,
+    });
 }
 
 function boundProps(vector = vectors.vectors[1]) {
@@ -613,14 +617,14 @@ describe("ClprCompleteConnectorTransaction", function () {
         );
     });
 
-    it("defaults lockedStake to zero and allows completion without a local connector contract", function () {
+    it("defaults lockedStake to zero with a configured connector contract", function () {
         const transaction = offline(ready()).freeze();
         const decoded = sdk.Transaction.fromBytes(transaction.toBytes());
 
         expect(transaction.lockedStake).toBeInstanceOf(sdk.Hbar);
         expect(transaction.lockedStake.toTinybars().toString()).toBe("0");
         expect(decoded.lockedStake.toTinybars().toString()).toBe("0");
-        expect(decoded.connectorContract).toBeNull();
+        expect(decoded.connectorContract.toString()).toBe("1.2.345");
     });
 
     it.each([
@@ -640,6 +644,7 @@ describe("ClprCompleteConnectorTransaction", function () {
         const key = value();
         const transaction = offline(ready());
         expect(transaction.setAdminKey(key)).toBe(transaction);
+        transaction.setOwnershipProof(privateKey());
         transaction.freeze();
         const decoded = sdk.Transaction.fromBytes(transaction.toBytes());
 
@@ -647,27 +652,61 @@ describe("ClprCompleteConnectorTransaction", function () {
         expect(decoded.adminKey.toString()).toBe(key.toString());
     });
 
-    it("keeps the ownership proof when setting the admin key, stake or contract", function () {
+    it("keeps the proof for identical admin/contract encodings and unsigned stake changes", function () {
         const transaction = offline(ready());
-        const publicKey = transaction.publicKey;
         const signature = transaction.signature;
-        const scheme = transaction.signatureScheme;
-
-        expect(transaction.setAdminKey(privateKey().publicKey)).toBe(
-            transaction,
-        );
-        expect(transaction.setLockedStake(new sdk.Hbar(1))).toBe(transaction);
-        expect(transaction.setConnectorContract("1.2.345")).toBe(transaction);
-        expect(transaction.publicKey).toEqual(publicKey);
+        transaction
+            .setAdminKey(adminKey())
+            .setConnectorContract("1.2.345")
+            .setLockedStake(new sdk.Hbar(1));
+        expect(() => transaction.setAdminKey(null)).toThrow();
+        expect(() => transaction.setConnectorContract("invalid")).toThrow();
         expect(transaction.signature).toEqual(signature);
-        expect(transaction.signatureScheme).toBe(scheme);
         expect(() => transaction.freeze()).not.toThrow();
     });
+
+    it.each([
+        ["setAdminKey", () => privateKey().publicKey],
+        ["setConnectorContract", () => new sdk.ContractId(346)],
+    ])(
+        "invalidates all proof fields when %s changes",
+        function (setter, value) {
+            const transaction = offline(ready());
+            transaction[setter](value());
+            expect(transaction.publicKey).toBeNull();
+            expect(transaction.signature).toBeNull();
+            expect(transaction.signatureScheme).toBeNull();
+            expect(() => transaction.freeze()).toThrow(/proof/i);
+            transaction.setOwnershipProof(privateKey());
+            expect(() => transaction.freeze()).not.toThrow();
+        },
+    );
+
+    it.each(["connectorContract", "adminKey"])(
+        "requires %s before signing",
+        function (field) {
+            const props = {
+                ...boundProps(),
+                connectorContract: "1.2.345",
+                adminKey: adminKey(),
+            };
+            delete props[field];
+            const transaction = new sdk.ClprCompleteConnectorTransaction(props);
+            expect(() => transaction.setOwnershipProof(privateKey())).toThrow(
+                new RegExp(field),
+            );
+            expect(transaction.signature).toBeNull();
+        },
+    );
 
     it("round-trips an EVM connector contract and copies its address on input and output", async function () {
         const address = "0011223344556677889900112233445577889900";
         const contract = sdk.ContractId.fromEvmAddress(0, 0, address);
-        const transaction = offline(ready().setConnectorContract(contract));
+        const transaction = offline(
+            ready()
+                .setConnectorContract(contract)
+                .setOwnershipProof(privateKey()),
+        );
 
         contract.evmAddress.fill(0);
         transaction.connectorContract.evmAddress.fill(0);

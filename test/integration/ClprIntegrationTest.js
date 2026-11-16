@@ -11,7 +11,8 @@
  * CLPR_VERIFIER_CONTRACT_ID and CLPR_CONNECTOR_CONTRACT_ID, and the lifecycle
  * fixtures documented in env.example: CLPR_CHANNEL_ID, CLPR_OWNERSHIP_KEY,
  * CLPR_CONFIG_PROOF_FILE, CLPR_MANIFEST_PROOF_FILE, CLPR_CONNECTOR_ADMIN_KEY,
- * and CLPR_LOCKED_STAKE_TINYBARS. Proof files must contain real peer-ledger
+ * CLPR_CONNECTOR_CONTRACT_ADMIN_KEY,
+ * CLPR_MAX_TRANSACTION_FEE_TINYBARS and CLPR_LOCKED_STAKE_TINYBARS. Proof files must contain real peer-ledger
  * snapshots accepted by the verifier. Synthetic proofs cannot prove this lifecycle.
  * Run live modes outside offline CI. TCK #784 owns other real-proof scenarios.
  */
@@ -86,10 +87,16 @@ async function loadFixtures() {
         adminKey: PrivateKey.fromStringDer(
             requiredSetting("CLPR_CONNECTOR_ADMIN_KEY"),
         ),
+        contractAdminKey: PrivateKey.fromStringDer(
+            requiredSetting("CLPR_CONNECTOR_CONTRACT_ADMIN_KEY"),
+        ),
         verifierContract: requiredSetting("CLPR_VERIFIER_CONTRACT_ID"),
         connectorContract: requiredSetting("CLPR_CONNECTOR_CONTRACT_ID"),
         lockedStake: Hbar.fromTinybars(
             requiredSetting("CLPR_LOCKED_STAKE_TINYBARS"),
+        ),
+        maxTransactionFee: Hbar.fromTinybars(
+            requiredSetting("CLPR_MAX_TRANSACTION_FEE_TINYBARS"),
         ),
         configProof: new Uint8Array(configProof),
         manifestProof: new Uint8Array(manifestProof),
@@ -110,6 +117,7 @@ describe.skipIf(!configured)("CLPR", function () {
         }
         env = await IntegrationTestEnv.new();
         if (mode === "true") {
+            env.client.setDefaultMaxTransactionFee(fixtures.maxTransactionFee);
             expect(
                 ["0.0.2", "0.0.50"],
                 "OPERATOR_ID must be a non-admin payer",
@@ -203,16 +211,19 @@ describe.skipIf(!configured)("CLPR", function () {
                 (await registerConnector.getReceipt(env.client)).status,
             ).toBe(Status.Success);
 
-            const completeConnector =
-                await new ClprCompleteConnectorTransaction()
-                    .setChannelId(channelId)
-                    .setConnectorId(connectorId)
-                    .setSalt(salt)
-                    .setConnectorContract(fixtures.connectorContract)
-                    .setAdminKey(adminKey.publicKey)
-                    .setLockedStake(fixtures.lockedStake)
-                    .setOwnershipProof(ownershipKey)
-                    .execute(env.client);
+            const connectorCompletion = new ClprCompleteConnectorTransaction()
+                .setChannelId(channelId)
+                .setConnectorId(connectorId)
+                .setSalt(salt)
+                .setConnectorContract(fixtures.connectorContract)
+                .setAdminKey(adminKey.publicKey)
+                .setLockedStake(fixtures.lockedStake)
+                .setOwnershipProof(ownershipKey)
+                .freezeWith(env.client);
+            await connectorCompletion.sign(fixtures.contractAdminKey);
+            const completeConnector = await connectorCompletion.execute(
+                env.client,
+            );
             expect(
                 (await completeConnector.getReceipt(env.client)).status,
             ).toBe(Status.Success);

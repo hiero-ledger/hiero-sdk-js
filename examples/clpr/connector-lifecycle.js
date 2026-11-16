@@ -9,6 +9,7 @@
  *
  * Set CLPR_CONNECTOR_CONTRACT_ID to the deployed Connector's ContractId,
  * CLPR_OWNERSHIP_KEY and CLPR_CONNECTOR_ADMIN_KEY to private keys in DER hex,
+ * CLPR_CONNECTOR_CONTRACT_ADMIN_KEY to the contract owner's private key,
  * and CLPR_LOCKED_STAKE_TINYBARS to a decimal amount meeting clpr.minLockedStake.
  * The payer is the explicit stake recipient and must sign deregistration along
  * with the Connector admin. A fresh salt gives each run a new Connector ID,
@@ -25,6 +26,7 @@ import {
 import { randomBytes } from "node:crypto";
 import dotenv from "dotenv";
 import { clientForName } from "../client.js";
+import { transactionFee } from "./transaction-fee.js";
 
 dotenv.config();
 
@@ -36,6 +38,7 @@ async function main() {
         "OPERATOR_KEY",
         "CLPR_OWNERSHIP_KEY",
         "CLPR_CONNECTOR_ADMIN_KEY",
+        "CLPR_CONNECTOR_CONTRACT_ADMIN_KEY",
         "CLPR_CONNECTOR_CONTRACT_ID",
         "CLPR_LOCKED_STAKE_TINYBARS",
     ]) {
@@ -50,6 +53,9 @@ async function main() {
         );
     }
     const channelId = new Uint8Array(Buffer.from(channelIdHex, "hex"));
+    const maxFee = transactionFee(
+        process.env.CLPR_MAX_TRANSACTION_FEE_TINYBARS,
+    );
     const salt = new Uint8Array(randomBytes(32));
     const payerKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
     const ownershipKey = PrivateKey.fromStringDer(
@@ -57,6 +63,9 @@ async function main() {
     );
     const adminKey = PrivateKey.fromStringDer(
         process.env.CLPR_CONNECTOR_ADMIN_KEY,
+    );
+    const contractAdminKey = PrivateKey.fromStringDer(
+        process.env.CLPR_CONNECTOR_CONTRACT_ADMIN_KEY,
     );
     const lockedStake = Hbar.fromTinybars(
         process.env.CLPR_LOCKED_STAKE_TINYBARS,
@@ -79,22 +88,27 @@ async function main() {
         console.log("Salt:", Buffer.from(salt).toString("hex"));
         const registerReceipt = await (
             await new ClprRegisterConnectorTransaction()
+                .setMaxTransactionFee(maxFee)
                 .setChannelId(channelId)
                 .setCommitment(commitment)
                 .execute(client)
         ).getReceipt(client);
         console.log("Register Connector:", registerReceipt.status.toString());
 
+        const complete = new ClprCompleteConnectorTransaction()
+            .setMaxTransactionFee(maxFee)
+            .setChannelId(channelId)
+            .setConnectorId(connectorId)
+            .setSalt(salt)
+            .setConnectorContract(process.env.CLPR_CONNECTOR_CONTRACT_ID)
+            .setAdminKey(adminKey.publicKey)
+            .setLockedStake(lockedStake)
+            .setOwnershipProof(ownershipKey)
+            .freezeWith(client);
+        // Contract consent uses an ordinary transaction signature, separate from ownership.
+        await complete.sign(contractAdminKey);
         const completeReceipt = await (
-            await new ClprCompleteConnectorTransaction()
-                .setChannelId(channelId)
-                .setConnectorId(connectorId)
-                .setSalt(salt)
-                .setConnectorContract(process.env.CLPR_CONNECTOR_CONTRACT_ID)
-                .setAdminKey(adminKey.publicKey)
-                .setLockedStake(lockedStake)
-                .setOwnershipProof(ownershipKey)
-                .execute(client)
+            await complete.execute(client)
         ).getReceipt(client);
         console.log("Complete Connector:", completeReceipt.status.toString());
 

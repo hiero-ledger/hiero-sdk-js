@@ -3,10 +3,11 @@
 import * as sdk from "../../../src/index.js";
 import { Client as GrpcClient } from "@grpc/grpc-js";
 import { proto } from "@hiero-ledger/proto";
+import { keccak256 } from "ethers";
 import { vi } from "vitest";
 import Mocker from "../Mocker.js";
 import * as hex from "../../../src/encoding/hex.js";
-import vectors from "../utils/ClprOwnershipVectors.js";
+import vectors from "../utils/ClprPhase2OwnershipVectors.js";
 
 function completeConnector(props) {
     expect(
@@ -56,10 +57,10 @@ describe("ClprCompleteConnectorMocking", function () {
                 .setChannelId(hex.decode(vectors.channelId))
                 .setConnectorId(hex.decode(vector.connectorId))
                 .setSalt(hex.decode(vectors.salt))
-                .setOwnershipProof(privateKey(vector))
                 .setAdminKey(adminKey)
                 .setConnectorContract(new sdk.ContractId(1, 2, 345))
                 .setLockedStake(sdk.Hbar.fromTinybars("9223372036854775807"))
+                .setOwnershipProof(privateKey(vector))
                 .setTransactionMemo("complete connector");
             const unaryRequests = vi.spyOn(
                 GrpcClient.prototype,
@@ -139,6 +140,31 @@ describe("ClprCompleteConnectorMocking", function () {
                 expect(completion.lockedStake.toString()).toBe(
                     "9223372036854775807",
                 );
+                const hash = (bytes) =>
+                    Buffer.from(keccak256(bytes).slice(2), "hex");
+                const preimage = Buffer.concat([
+                    Buffer.from("hiero.clpr.complete-connector.v1"),
+                    Buffer.from(completion.channelId),
+                    Buffer.from(completion.connectorId),
+                    Buffer.from(vectors.clprServiceAddress, "hex"),
+                    hash(
+                        proto.ContractID.encode(
+                            completion.connectorContract,
+                        ).finish(),
+                    ),
+                    hash(proto.Key.encode(completion.adminKey).finish()),
+                ]);
+                expect(keccak256(preimage).slice(2)).toBe(
+                    vector.connectorDigest,
+                );
+                expect(
+                    privateKey(vector).publicKey.verify(
+                        vector.signatureScheme === "ED25519"
+                            ? hash(preimage)
+                            : preimage,
+                        completion.signature,
+                    ),
+                ).toBe(true);
                 expect(body.memo).toBe("complete connector");
                 expect(response.transactionId.toString()).toBe(
                     transaction.transactionId.toString(),
