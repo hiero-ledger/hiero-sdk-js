@@ -88,7 +88,11 @@ export default class ContractId extends Key {
                   ]
                 : [Long.ZERO, hex.decode(result.numOrHex)];
 
-        return new ContractId(shard, realm, num, evmAddress);
+        const contractId = new ContractId(shard, realm, num, evmAddress);
+        if (evmAddress == null) {
+            contractId._checksum = result.checksum ?? null;
+        }
+        return contractId;
     }
 
     /**
