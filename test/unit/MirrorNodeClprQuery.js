@@ -299,6 +299,47 @@ describe("MirrorNodeClpr models", function () {
         expect(model.connectorContractId.toString()).toBe("1.2.789");
     });
 
+    it("maps every counter as an unsigned detached Long", function () {
+        const channel = MirrorNodeClprChannel._fromJson(channelRow());
+        const connector = MirrorNodeClprConnector._fromJson({
+            ...connectorRow(),
+            slash_count: "5",
+        });
+        for (const [value, expected] of [
+            [channel.ackedMessageId, "9007199254740993"],
+            [channel.receivedMessageId, "0"],
+            [connector.slashCount, "5"],
+        ]) {
+            expect(value.unsigned).toBe(true);
+            expect(value.toString()).toBe(expected);
+            value.low = 1;
+        }
+        expect(channel.ackedMessageId.toString()).toBe("9007199254740993");
+        expect(channel.receivedMessageId.toString()).toBe("0");
+        expect(connector.slashCount.toString()).toBe("5");
+    });
+
+    it.each(["33", "0x3", "0xzz"])(
+        "rejects malformed hex bytes %j",
+        function (verifier_fingerprint) {
+            expect(() =>
+                MirrorNodeClprChannel._fromJson({
+                    ...channelRow(),
+                    verifier_fingerprint,
+                }),
+            ).toThrow("verifier_fingerprint' must be hex bytes");
+        },
+    );
+
+    it("rejects a Channel ID that is not 32 bytes", function () {
+        expect(() =>
+            MirrorNodeClprChannel._fromJson({
+                ...channelRow(),
+                channel_id: "0x11",
+            }),
+        ).toThrow("'channel_id' must be 32 bytes");
+    });
+
     it("returns null for contract IDs and Channel bytes the mirror node leaves null", function () {
         const channel = MirrorNodeClprChannel._fromJson({
             ...channelRow(),
