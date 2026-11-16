@@ -834,33 +834,6 @@ describe("TopicMessageSubmitTransaction", function () {
             });
         });
 
-        describe("chunks", function () {
-            // TODO(#4753): freeze() doesn't carry the nanoseconds into the seconds.
-            it.skip("should carry the chunk transaction IDs into the next second", function () {
-                const transaction = new TopicMessageSubmitTransaction()
-                    .setTopicId(new TopicId(0, 0, 7007))
-                    .setMessage(new Uint8Array(15))
-                    .setChunkSize(10)
-                    .setNodeAccountIds([nodeId])
-                    .setTransactionId(
-                        TransactionId.withValidStart(
-                            new AccountId(0, 0, 1001),
-                            new Timestamp(1596210382, 999999999),
-                        ),
-                    )
-                    .freeze();
-
-                expect(
-                    transaction._transactionIds.list.map((id) =>
-                        id.validStart.toString(),
-                    ),
-                ).to.deep.equal([
-                    "1596210382.999999999",
-                    "1596210383.000000000",
-                ]);
-            });
-        });
-
         describe("_validateChecksums", function () {
             let mainnet, testnet;
 
@@ -943,5 +916,26 @@ describe("TopicMessageSubmitTransaction", function () {
                 );
             });
         });
+    });
+
+    it("freeze() carries the chunk valid start nanoseconds into the seconds", function () {
+        const transaction = new TopicMessageSubmitTransaction()
+            .setTopicId(topicId)
+            .setMessage(new Uint8Array(15))
+            .setChunkSize(10)
+            .setNodeAccountIds([nodeId])
+            .setTransactionId(
+                TransactionId.withValidStart(
+                    new AccountId(0, 0, 1001),
+                    new Timestamp(1596210382, 999999999),
+                ),
+            )
+            .freeze();
+
+        expect(
+            transaction._transactionIds.list.map((id) =>
+                id.validStart.toString(),
+            ),
+        ).to.deep.equal(["1596210382.999999999", "1596210383.000000000"]);
     });
 });

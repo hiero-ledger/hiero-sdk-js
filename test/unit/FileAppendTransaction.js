@@ -71,4 +71,54 @@ describe("FileAppendTransaction", function () {
             "transaction is immutable",
         );
     });
+
+    describe("chunk transaction IDs that cross a second", function () {
+        // The second chunk's valid start is 10 nanoseconds after the first,
+        // which is in the next second.
+        const transactionId = TransactionId.withValidStart(
+            AccountId.fromString("0.0.1001"),
+            new Timestamp(1596210382, 999999995),
+        );
+
+        function newTransaction() {
+            return new FileAppendTransaction()
+                .setTransactionId(transactionId)
+                .setFileId(FileId.fromString("0.0.5005"))
+                .setContents(new Uint8Array(25))
+                .setChunkSize(10)
+                .setChunkInterval(10);
+        }
+
+        it("freeze() carries the nanoseconds into the seconds", function () {
+            const tx = newTransaction()
+                .setNodeAccountIds([AccountId.fromString("0.0.3")])
+                .freeze();
+
+            expect(
+                tx._transactionIds.list.map((id) => id.validStart.toString()),
+            ).to.deep.equal([
+                "1596210382.999999995",
+                "1596210383.000000005",
+                "1596210383.000000015",
+            ]);
+        });
+
+        it("fromBytes() reads the chunk interval of a frozen transaction", function () {
+            const tx = newTransaction()
+                .setNodeAccountIds([AccountId.fromString("0.0.3")])
+                .freeze();
+
+            expect(Transaction.fromBytes(tx.toBytes()).chunkInterval).to.equal(
+                10,
+            );
+        });
+
+        it("fromBytes() reads the chunk interval of a transaction that isn't frozen", function () {
+            const tx = newTransaction();
+
+            expect(Transaction.fromBytes(tx.toBytes()).chunkInterval).to.equal(
+                10,
+            );
+        });
+    });
 });

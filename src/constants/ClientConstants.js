@@ -90,8 +90,9 @@ export const NATIVE_PREVIEWNET = {
     "previewnet-node00-00-grpc.hedera.com:443": new AccountId(3),
 };
 
+// Solo's local consensus node port (hiero-ledger/solo#3618).
 export const LocalNodeNetwork = {
-    "127.0.0.1:50211": new AccountId(3),
+    "127.0.0.1:35211": new AccountId(3),
 };
 
 export const LocalNodeWebNetwork = {
@@ -229,12 +230,13 @@ export const MirrorNetwork = {
     MAINNET: ["mainnet-public.mirrornode.hedera.com:443"],
     TESTNET: ["testnet.mirrornode.hedera.com:443"],
     PREVIEWNET: ["previewnet.mirrornode.hedera.com:443"],
-    LOCAL_NODE: ["127.0.0.1:5600"],
+    // Solo's mirror node ingress, which serves gRPC, REST, Java REST and web3
+    // on one port (hiero-ledger/solo#3618).
+    LOCAL_NODE: ["127.0.0.1:38081"],
 };
 
 export const WebMirrorNetwork = {
     ...MirrorNetwork,
-    LOCAL_NODE: ["127.0.0.1:5551"],
 };
 
 export const WebNetwork = {

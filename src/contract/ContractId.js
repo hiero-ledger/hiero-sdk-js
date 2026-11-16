@@ -88,7 +88,11 @@ export default class ContractId extends Key {
                   ]
                 : [Long.ZERO, hex.decode(result.numOrHex)];
 
-        return new ContractId(shard, realm, num, evmAddress);
+        const contractId = new ContractId(shard, realm, num, evmAddress);
+        if (evmAddress == null) {
+            contractId._checksum = result.checksum ?? null;
+        }
+        return contractId;
     }
 
     /**
@@ -126,7 +130,7 @@ export default class ContractId extends Key {
      * @returns {Promise<ContractId>}
      */
     async populateAccountNum(client) {
-        const http = client._mirrorNodeHttpClient({ family: "rest" });
+        const http = client._mirrorNodeHttpClient();
         const path = `/contracts/${this.toEvmAddress()}`;
 
         const url = `${http.baseUrl}${path}`;
@@ -247,7 +251,8 @@ export default class ContractId extends Key {
     clone() {
         const id = new ContractId(this);
         id._checksum = this._checksum;
-        id.evmAddress = this.evmAddress;
+        id.evmAddress =
+            this.evmAddress != null ? new Uint8Array(this.evmAddress) : null;
         return id;
     }
 

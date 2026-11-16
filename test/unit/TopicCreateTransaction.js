@@ -599,8 +599,7 @@ describe("TopicCreateTransaction", function () {
                 testnet.close();
             });
 
-            // TODO(#4757): AccountId.fromString() drops the checksum.
-            it.skip("should check the auto renew account ID checksum against the client's network", function () {
+            it("should check the auto renew account ID checksum against the client's network", function () {
                 // 0.0.123-vfmkw has the mainnet checksum
                 const transaction =
                     new TopicCreateTransaction().setAutoRenewAccountId(
