@@ -228,7 +228,7 @@ describe("FeeEstimateQuery", function () {
         beforeEach(function () {
             fake = new FakeHttpTransport(() => jsonResponse(200, FEE_RESPONSE));
             client = Client.forNetwork({ "127.0.0.1:50211": "0.0.3" });
-            client.setMirrorNetwork(["127.0.0.1:5600"]);
+            client.setMirrorNetwork(["127.0.0.1:38081"]);
             client.setOperator(new AccountId(2), PrivateKey.generateED25519());
             client.setMirrorNodeHttpConfig({
                 transport: fake,
@@ -253,7 +253,7 @@ describe("FeeEstimateQuery", function () {
             expect(fake.requests).to.have.length(1);
             expect(fake.requests[0].method).to.equal("POST");
             expect(fake.requests[0].url).to.equal(
-                "http://127.0.0.1:8084/api/v1/network/fees?mode=INTRINSIC",
+                "http://127.0.0.1:38081/api/v1/network/fees?mode=INTRINSIC",
             );
             expect(fake.requests[0].contentType).to.equal(
                 "application/protobuf",
@@ -269,7 +269,7 @@ describe("FeeEstimateQuery", function () {
                 .execute(client);
 
             expect(fake.requests[0].url).to.equal(
-                "http://127.0.0.1:8084/api/v1/network/fees?mode=STATE&high_volume_throttle=5000",
+                "http://127.0.0.1:38081/api/v1/network/fees?mode=STATE&high_volume_throttle=5000",
             );
         });
 

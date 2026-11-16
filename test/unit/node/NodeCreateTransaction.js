@@ -568,8 +568,7 @@ describe("NodeCreateTransaction", function () {
             testnet.close();
         });
 
-        // TODO(#4683, #4757): NodeCreateTransaction doesn't validate the account ID
-        // checksum, and AccountId.fromString() drops it.
+        // TODO(#4683): NodeCreateTransaction doesn't validate the account ID checksum.
         it.skip("should check the account ID checksum against the client's network", function () {
             // 0.0.123-vfmkw has the mainnet checksum
             const transaction = new NodeCreateTransaction().setAccountId(

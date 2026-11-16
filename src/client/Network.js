@@ -69,6 +69,12 @@ export default class Network extends ManagedNetwork {
             }
         }
 
+        if (Object.keys(network).length === 0) {
+            throw new Error(
+                "setNetworkFromAddressBook: address book contained no nodes matching expected ports (50211/50212); resulting network would be empty.",
+            );
+        }
+
         this.setNetwork(network);
         return this;
     }

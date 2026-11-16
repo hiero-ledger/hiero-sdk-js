@@ -242,6 +242,25 @@ describe("Wallet", function () {
         });
     });
 
+    describe("signTransaction", function () {
+        it("should add the wallet's public key to the transaction signers", async function () {
+            const wallet = walletBuilder();
+            const transaction = transferTransactionBuilder();
+            expect(wallet.publicKey.verifyTransaction(transaction)).toBe(false);
+
+            const signedTransaction = await wallet.signTransaction(transaction);
+
+            expect(signedTransaction).toBe(transaction);
+            expect(wallet.publicKey.verifyTransaction(transaction)).toBe(true);
+        });
+        it("should throw when the transaction is not frozen", async function () {
+            const wallet = walletBuilder();
+            await expect(
+                wallet.signTransaction(new TransferTransaction()),
+            ).rejects.toThrow();
+        });
+    });
+
     describe("checkTransaction", function () {
         it("should throw when the transaction ID has a different account ID", function () {
             const wallet = walletBuilder();

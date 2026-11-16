@@ -141,7 +141,6 @@ export default class MirrorNodeTokenBalanceQuery {
         const accountIdString = this._accountIdString();
         const tokenId = this._requireTokenId();
         const http = client._mirrorNodeHttpClient({
-            family: "rest",
             totalDeadline: requestTimeout,
         });
 
