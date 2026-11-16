@@ -14,6 +14,7 @@ import {
     connectorSigningPreimage,
     contractBytes,
     keyBytes,
+    requirePrivateKey,
 } from "./ownership.js";
 
 /**
@@ -53,7 +54,7 @@ import {
  * including a threshold key or key list. The payer funds the locked stake, which
  * defaults to zero and must be an integer in 0..2^63-1 tinybars. The network
  * enforces its configured minimum stake and contract requirements.
- * CLPR is off by default and requires the network setting `clpr.enabled`.
+ * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  * This transaction cannot be scheduled.
  */
 export default class ClprCompleteConnectorTransaction extends ClprTransaction {
@@ -272,6 +273,7 @@ export default class ClprCompleteConnectorTransaction extends ClprTransaction {
             },
             "calling setOwnershipProof()",
         );
+        requirePrivateKey(privateKey);
         const channelId = /** @type {Uint8Array} */ (this._channelId);
         const connectorId = /** @type {Uint8Array} */ (this._connectorId);
         const salt = /** @type {Uint8Array} */ (this._salt);

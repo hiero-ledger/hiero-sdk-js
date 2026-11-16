@@ -10,13 +10,17 @@ import { bytes, object, string, timestamp, uint64 } from "./mirror.js";
 
 /** @typedef {import("../Key.js").default} Key */
 
-/** Current active Connector state, including remaining stake and in-flight messages. */
+/**
+ * Current active Connector state, including remaining stake and in-flight messages.
+ * The Connector contract ID is null when the mirror node returns null, as it can
+ * for a contract set by EVM address.
+ */
 export default class MirrorNodeClprConnector {
     /** @type {Uint8Array} */
     #channelId;
     /** @type {Uint8Array} */
     #connectorId;
-    /** @type {ContractId} */
+    /** @type {?ContractId} */
     #connectorContractId;
     /** @type {Key} */
     #adminKey;
@@ -39,9 +43,15 @@ export default class MirrorNodeClprConnector {
         }
         this.#channelId = bytes(json.channel_id, "channel_id", 32);
         this.#connectorId = bytes(json.connector_id, "connector_id", 32);
-        this.#connectorContractId = ContractId.fromString(
-            string(json.connector_contract_id, "connector_contract_id"),
-        );
+        this.#connectorContractId =
+            json.connector_contract_id == null
+                ? null
+                : ContractId.fromString(
+                      string(
+                          json.connector_contract_id,
+                          "connector_contract_id",
+                      ),
+                  );
         const key = object(json.admin_key, "admin_key");
         this.#adminKey = keyFromJson({
             _type: string(key._type, "admin_key._type"),
@@ -77,9 +87,11 @@ export default class MirrorNodeClprConnector {
     get connectorId() {
         return new Uint8Array(this.#connectorId);
     }
-    /** @returns {ContractId} */
+    /** @returns {?ContractId} */
     get connectorContractId() {
-        return copyContractId(this.#connectorContractId);
+        return this.#connectorContractId == null
+            ? null
+            : copyContractId(this.#connectorContractId);
     }
     /** @returns {Key} */
     get adminKey() {

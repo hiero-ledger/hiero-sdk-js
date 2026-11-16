@@ -299,6 +299,23 @@ describe("MirrorNodeClpr models", function () {
         expect(model.connectorContractId.toString()).toBe("1.2.789");
     });
 
+    it("returns null for contract IDs and Channel bytes the mirror node leaves null", function () {
+        const channel = MirrorNodeClprChannel._fromJson({
+            ...channelRow(),
+            verifier_contract_id: null,
+            verifier_fingerprint: null,
+            trust_anchor_id: null,
+        });
+        expect(channel.verifierContractId).toBeNull();
+        expect(channel.verifierFingerprint).toBeNull();
+        expect(channel.trustAnchorId).toBeNull();
+        const connector = MirrorNodeClprConnector._fromJson({
+            ...connectorRow(),
+            connector_contract_id: null,
+        });
+        expect(connector.connectorContractId).toBeNull();
+    });
+
     it("uses the shared mirror key decoder for complex admin keys", function () {
         const keys = new KeyList([PublicKey.fromStringED25519(ED_KEY)]);
         const model = MirrorNodeClprConnector._fromJson({

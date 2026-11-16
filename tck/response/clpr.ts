@@ -45,9 +45,10 @@ export interface MirrorNodeClprChannelResponse {
     readonly channelId: string;
     readonly chainId: string;
     readonly status: string;
-    readonly verifierContractId: string;
-    readonly verifierFingerprint: string;
-    readonly trustAnchorId: string;
+    /** Null when the mirror node returns null. */
+    readonly verifierContractId: string | null;
+    readonly verifierFingerprint: string | null;
+    readonly trustAnchorId: string | null;
     /** Unsigned uint64 decimal strings. */
     readonly nextMessageId: string;
     readonly ackedMessageId: string;
@@ -59,7 +60,8 @@ export interface MirrorNodeClprChannelResponse {
 export interface MirrorNodeClprConnectorResponse {
     readonly connectorId: string;
     readonly channelId: string;
-    readonly connectorContractId: string;
+    /** Null when the mirror node returns null. */
+    readonly connectorContractId: string | null;
     /** Complete protobuf Key bytes, including composite key structure. */
     readonly adminKey: {
         readonly _type: "ProtobufEncoded";

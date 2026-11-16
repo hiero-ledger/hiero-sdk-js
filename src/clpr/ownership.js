@@ -196,15 +196,23 @@ export function connectorSigningPreimage(
 }
 
 /**
+ * @param {unknown} privateKey
+ * @returns {asserts privateKey is PrivateKey}
+ */
+export function requirePrivateKey(privateKey) {
+    if (!(privateKey instanceof PrivateKey)) {
+        throw new Error("privateKey must be a PrivateKey");
+    }
+}
+
+/**
  * Signs a CLPR ownership preimage without retaining the private key.
  * @param {PrivateKey} privateKey
  * @param {Uint8Array} preimage
  * @returns {OwnershipProof}
  */
 export function sign(privateKey, preimage) {
-    if (!(privateKey instanceof PrivateKey)) {
-        throw new Error("privateKey must be a PrivateKey");
-    }
+    requirePrivateKey(privateKey);
 
     const { scheme, publicKey } = encodePublicKey(privateKey.publicKey);
     // ECDSA signing hashes internally. Ed25519 signing takes the digest directly.

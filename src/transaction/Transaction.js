@@ -497,6 +497,17 @@ export default class Transaction extends Executable {
         // on the `body.data` string
         const fromProtobuf = TRANSACTION_REGISTRY.get(body.data); //NOSONAR
 
+        // The SDK deliberately does not build these node-internal or admin-only CLPR bodies.
+        if (
+            body.data === "clprEndpointPublication" ||
+            body.data === "clprMaintenance" ||
+            body.data === "clprEvictPeerEndpoint"
+        ) {
+            throw new Error(
+                `Transaction.fromBytes() does not support ${body.data}: the SDK does not build this CLPR transaction`,
+            );
+        }
+
         // If we forgot to update the registry we should error
         if (fromProtobuf == null) {
             throw new Error(

@@ -33,7 +33,7 @@ import { copyBytes32 } from "../util.js";
  * using the normal transaction signing flow. The SDK never defaults the recipient.
  * The ownership commitment stays registered, so registering another Connector
  * requires a new salt and Connector ID.
- * CLPR is off by default and requires the network setting `clpr.enabled`.
+ * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  * This transaction cannot be scheduled.
  */
 export default class ClprDeregisterConnectorTransaction extends ClprTransaction {

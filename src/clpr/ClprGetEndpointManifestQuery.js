@@ -18,7 +18,7 @@ import ClprEndpointManifestInfo from "./ClprEndpointManifestInfo.js";
  *
  * The manifest and its state proof are paired and should be kept together.
  * An empty state proof is a successful read; retry later for proof material.
- * CLPR is off by default and must be enabled with `clpr.enabled`.
+ * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  * @augments {Query<ClprEndpointManifestInfo>}
  */
 export default class ClprGetEndpointManifestQuery extends Query {

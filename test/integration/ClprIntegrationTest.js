@@ -333,7 +333,7 @@ describe.skipIf(!configured)("CLPR", function () {
     );
 
     it.runIf(mode === "false")(
-        "rejects a paid query with CLPR_NOT_ENABLED",
+        "rejects a proof query with CLPR_NOT_ENABLED",
         async function () {
             await expect(
                 new ClprGetLedgerConfigurationQuery().execute(env.client),

@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Paid endpoint manifest query on a network with clpr.enabled=true.
+ * Endpoint manifest query on a network with clpr.enabled=true.
  * Prerequisites: HEDERA_NETWORK, reachable node endpoints and a funded
- * OPERATOR_ID/OPERATOR_KEY. The client looks up the query cost and signs the
- * payment, subject to its normal maximum query payment.
+ * OPERATOR_ID/OPERATOR_KEY. The client looks up the query cost (zero on CN main)
+ * and signs the payment, subject to its normal maximum query payment.
  *
  * Keep the returned manifest and manifestStateProof paired when seeding a peer
  * cache. An empty proof is a successful read; retry later if a proof is needed.

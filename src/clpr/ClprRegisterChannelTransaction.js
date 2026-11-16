@@ -34,7 +34,7 @@ import { computeChannelCommitment } from "./ownership.js";
  * Any payer can register a 32-byte ownership commitment, computed as
  * keccak256(channelId || canonical public key). The Channel ID and public key
  * are revealed during Channel completion to prevent front-running.
- * CLPR is off by default and requires the network setting `clpr.enabled`.
+ * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  * This transaction cannot be scheduled.
  */
 export default class ClprRegisterChannelTransaction extends ClprTransaction {

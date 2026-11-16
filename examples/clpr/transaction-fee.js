@@ -3,13 +3,18 @@
 import { Hbar } from "@hiero-ledger/sdk";
 
 /**
- * The lifecycle fee schedule is provisional; require the caller's spending cap.
- * @param {string | undefined} tinybars
- * @returns {Hbar}
+ * Raises the client's default fee cap when CLPR_MAX_TRANSACTION_FEE_TINYBARS is
+ * set. Leave it unset to keep the SDK default; set it only when the target
+ * network's CLPR fee schedule needs a higher cap.
+ * @param {import("@hiero-ledger/sdk").Client} client
+ * @returns {void}
  */
-export function transactionFee(tinybars) {
+export function applyMaxTransactionFee(client) {
+    const tinybars = process.env.CLPR_MAX_TRANSACTION_FEE_TINYBARS;
+    if (!tinybars) {
+        return;
+    }
     if (
-        typeof tinybars !== "string" ||
         !/^\d+$/.test(tinybars) ||
         BigInt(tinybars) === 0n ||
         BigInt(tinybars) > 9223372036854775807n
@@ -18,5 +23,5 @@ export function transactionFee(tinybars) {
             "CLPR_MAX_TRANSACTION_FEE_TINYBARS must be a positive signed 64-bit tinybar amount.",
         );
     }
-    return Hbar.fromTinybars(tinybars);
+    client.setDefaultMaxTransactionFee(Hbar.fromTinybars(tinybars));
 }

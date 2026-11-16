@@ -9,10 +9,10 @@
  *
  * Set CLPR_CONNECTOR_CONTRACT_ID to the deployed Connector's ContractId,
  * CLPR_OWNERSHIP_KEY and CLPR_CONNECTOR_ADMIN_KEY to private keys in DER hex,
- * CLPR_CONNECTOR_CONTRACT_ADMIN_KEY to the contract owner's private key,
- * CLPR_LOCKED_STAKE_TINYBARS to a decimal amount meeting the configured USD
- * minimum converted to tinybars at consensus, and CLPR_MAX_TRANSACTION_FEE_TINYBARS
- * to the fee cap for the paid lifecycle transactions.
+ * CLPR_CONNECTOR_CONTRACT_ADMIN_KEY to the contract owner's private key, and
+ * CLPR_LOCKED_STAKE_TINYBARS to a decimal tinybar amount of at least the
+ * network's `clpr.minLockedStake`. Set CLPR_MAX_TRANSACTION_FEE_TINYBARS only
+ * if the network's CLPR fees need a cap above the SDK default.
  * The payer is the explicit stake recipient and must sign deregistration along
  * with the Connector admin. A fresh salt gives each run a new Connector ID,
  * since completed commitments stay registered after deregistration.
@@ -28,7 +28,7 @@ import {
 import { randomBytes } from "node:crypto";
 import dotenv from "dotenv";
 import { clientForName } from "../client.js";
-import { transactionFee } from "./transaction-fee.js";
+import { applyMaxTransactionFee } from "./transaction-fee.js";
 
 dotenv.config();
 
@@ -55,9 +55,6 @@ async function main() {
         );
     }
     const channelId = new Uint8Array(Buffer.from(channelIdHex, "hex"));
-    const maxFee = transactionFee(
-        process.env.CLPR_MAX_TRANSACTION_FEE_TINYBARS,
-    );
     const salt = new Uint8Array(randomBytes(32));
     const payerKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
     const ownershipKey = PrivateKey.fromStringDer(
@@ -83,6 +80,7 @@ async function main() {
             ownershipKey.publicKey,
         );
     const client = clientForName(process.env.HEDERA_NETWORK);
+    applyMaxTransactionFee(client);
 
     try {
         client.setOperator(process.env.OPERATOR_ID, payerKey);
@@ -90,7 +88,6 @@ async function main() {
         console.log("Salt:", Buffer.from(salt).toString("hex"));
         const registerReceipt = await (
             await new ClprRegisterConnectorTransaction()
-                .setMaxTransactionFee(maxFee)
                 .setChannelId(channelId)
                 .setCommitment(commitment)
                 .execute(client)
@@ -98,7 +95,6 @@ async function main() {
         console.log("Register Connector:", registerReceipt.status.toString());
 
         const complete = new ClprCompleteConnectorTransaction()
-            .setMaxTransactionFee(maxFee)
             .setChannelId(channelId)
             .setConnectorId(connectorId)
             .setSalt(salt)

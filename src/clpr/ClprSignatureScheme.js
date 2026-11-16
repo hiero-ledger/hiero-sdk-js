@@ -17,6 +17,8 @@ export default class ClprSignatureScheme {
     }
 
     /**
+     * Unknown codes decode as an UNKNOWN scheme so the transaction can still be
+     * read; the SDK cannot sign with it.
      * @internal
      * @param {number} code
      * @returns {ClprSignatureScheme}
@@ -28,9 +30,7 @@ export default class ClprSignatureScheme {
             case 1:
                 return ClprSignatureScheme.ED25519;
             default:
-                throw new Error(
-                    `unrecognized CLPR signature scheme code: ${code}`,
-                );
+                return new ClprSignatureScheme(code);
         }
     }
 

@@ -347,9 +347,13 @@ export const getMirrorNodeClprChannel = async (
         channelId: encode(info.channelId),
         chainId: info.chainId,
         status: info.status.toString(),
-        verifierContractId: info.verifierContractId.toString(),
-        verifierFingerprint: encode(info.verifierFingerprint),
-        trustAnchorId: encode(info.trustAnchorId),
+        verifierContractId: info.verifierContractId?.toString() ?? null,
+        verifierFingerprint:
+            info.verifierFingerprint == null
+                ? null
+                : encode(info.verifierFingerprint),
+        trustAnchorId:
+            info.trustAnchorId == null ? null : encode(info.trustAnchorId),
         nextMessageId: info.nextMessageId.toString(),
         ackedMessageId: info.ackedMessageId.toString(),
         receivedMessageId: info.receivedMessageId.toString(),
@@ -372,7 +376,7 @@ export const getMirrorNodeClprConnector = async (
     return {
         connectorId: encode(info.connectorId),
         channelId: encode(info.channelId),
-        connectorContractId: info.connectorContractId.toString(),
+        connectorContractId: info.connectorContractId?.toString() ?? null,
         adminKey: {
             _type: "ProtobufEncoded",
             key: encode(

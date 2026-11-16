@@ -617,6 +617,17 @@ describe("ClprCompleteConnectorTransaction", function () {
         );
     });
 
+    it("rejects a missing ownership key with a clear error", function () {
+        const transaction = completeConnector({
+            ...boundProps(),
+            adminKey: adminKey(),
+        });
+
+        expect(() => transaction.setOwnershipProof(undefined)).toThrow(
+            new Error("privateKey must be a PrivateKey"),
+        );
+    });
+
     it("defaults lockedStake to zero with a configured connector contract", function () {
         const transaction = offline(ready()).freeze();
         const decoded = sdk.Transaction.fromBytes(transaction.toBytes());

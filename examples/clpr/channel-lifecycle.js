@@ -24,7 +24,7 @@ import {
 import { readFileSync } from "node:fs";
 import dotenv from "dotenv";
 import { clientForName } from "../client.js";
-import { transactionFee } from "./transaction-fee.js";
+import { applyMaxTransactionFee } from "./transaction-fee.js";
 
 dotenv.config();
 
@@ -52,9 +52,6 @@ async function main() {
         );
     }
     const channelId = new Uint8Array(Buffer.from(channelIdHex, "hex"));
-    const maxFee = transactionFee(
-        process.env.CLPR_MAX_TRANSACTION_FEE_TINYBARS,
-    );
     const payerKey = PrivateKey.fromStringDer(process.env.OPERATOR_KEY);
     const adminKey = PrivateKey.fromStringDer(process.env.GENESIS_OPERATOR_KEY);
     const ownershipKey = PrivateKey.fromStringDer(
@@ -72,12 +69,12 @@ async function main() {
             ownershipKey.publicKey,
         );
     const client = clientForName(process.env.HEDERA_NETWORK);
+    applyMaxTransactionFee(client);
 
     try {
         client.setOperator(process.env.OPERATOR_ID, payerKey);
         const registerReceipt = await (
             await new ClprRegisterChannelTransaction()
-                .setMaxTransactionFee(maxFee)
                 .setOwnershipCommitment(commitment)
                 .execute(client)
         ).getReceipt(client);
@@ -85,7 +82,6 @@ async function main() {
 
         const completeReceipt = await (
             await new ClprCompleteChannelTransaction()
-                .setMaxTransactionFee(maxFee)
                 .setChannelId(channelId)
                 .setVerifierContract(process.env.CLPR_VERIFIER_CONTRACT_ID)
                 .setConfigProofBytes(configProof)

@@ -13,7 +13,7 @@ import Mocker from "../Mocker.js";
 import vectors from "../utils/ClprOwnershipVectors.js";
 import { makeLedgerConfigurationResponse } from "../utils/ClprLedgerConfiguration.js";
 import { makeEndpointManifestResponse } from "../utils/ClprEndpointManifest.js";
-import { transactionFee } from "../../../examples/clpr/transaction-fee.js";
+import { applyMaxTransactionFee } from "../../../examples/clpr/transaction-fee.js";
 import FakeHttpTransport, { jsonResponse } from "../utils/FakeHttpTransport.js";
 import {
     CHANNEL,
@@ -941,6 +941,44 @@ describe("CLPR mirror TCK adapter", function () {
         );
     });
 
+    it("returns null for mirror contract IDs and Channel bytes left null", async function () {
+        transport.respond(
+            jsonResponse(200, {
+                channels: [
+                    {
+                        ...channelRow(),
+                        verifier_contract_id: null,
+                        verifier_fingerprint: null,
+                        trust_anchor_id: null,
+                    },
+                ],
+            }),
+        );
+        const channel = await rpc("getMirrorNodeClprChannel", {
+            sessionId,
+            channelId: CHANNEL,
+        });
+        expect(channel.result).toMatchObject({
+            verifierContractId: null,
+            verifierFingerprint: null,
+            trustAnchorId: null,
+        });
+
+        transport.respond(
+            jsonResponse(200, {
+                connectors: [
+                    { ...connectorRow(), connector_contract_id: null },
+                ],
+            }),
+        );
+        const connector = await rpc("getMirrorNodeClprConnector", {
+            sessionId,
+            channelId: CHANNEL,
+            connectorId: CONNECTOR,
+        });
+        expect(connector.result.connectorContractId).toBeNull();
+    });
+
     it.each([
         ["getMirrorNodeClprChannel", {}],
         ["getMirrorNodeClprChannel", { channelId: "11" }],
@@ -978,16 +1016,48 @@ describe("CLPR mirror TCK adapter", function () {
 });
 
 describe("CLPR lifecycle example fee cap", function () {
-    it.each([undefined, "", "-1", "0", "1.5", "1e8", "9223372036854775808"])(
-        "rejects an invalid spending cap %s before sending a transaction",
+    const ENV = "CLPR_MAX_TRANSACTION_FEE_TINYBARS";
+
+    function capAfter(value) {
+        vi.stubEnv(ENV, value);
+        const client = sdk.Client.forNetwork(
+            {},
+            { scheduleNetworkUpdate: false },
+        );
+        try {
+            applyMaxTransactionFee(client);
+            return client.defaultMaxTransactionFee;
+        } finally {
+            client.close();
+        }
+    }
+
+    afterEach(function () {
+        vi.unstubAllEnvs();
+    });
+
+    it.each([undefined, ""])(
+        "keeps the SDK default cap when unset (%j)",
         function (value) {
-            expect(() => transactionFee(value)).toThrow(
-                /CLPR_MAX_TRANSACTION_FEE_TINYBARS/,
+            const client = sdk.Client.forNetwork(
+                {},
+                { scheduleNetworkUpdate: false },
             );
+            const expected = client.defaultMaxTransactionFee;
+            client.close();
+            expect(capAfter(value)).toEqual(expected);
         },
     );
+
+    it.each(["-1", "0", "1.5", "1e8", "9223372036854775808"])(
+        "rejects an invalid spending cap %s before sending a transaction",
+        function (value) {
+            expect(() => capAfter(value)).toThrow(new RegExp(ENV));
+        },
+    );
+
     it("preserves a user-supplied cap beyond number precision", function () {
-        expect(transactionFee("9007199254740993").toTinybars().toString()).toBe(
+        expect(capAfter("9007199254740993").toTinybars().toString()).toBe(
             "9007199254740993",
         );
     });

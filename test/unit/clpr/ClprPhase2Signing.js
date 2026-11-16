@@ -100,7 +100,7 @@ describe("provisional CLPR Phase 2 signing", function () {
                     ? new sdk.ClprCompleteChannelTransaction({
                           channelId: channelId(),
                           verifierContract: original,
-                          configProofBytes: new Uint8Array(),
+                          configProofBytes: new Uint8Array([1]),
                           endpointManifestProofBytes: new Uint8Array(),
                       })
                     : new sdk.ClprCompleteConnectorTransaction({

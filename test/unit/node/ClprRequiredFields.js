@@ -178,7 +178,7 @@ describe.each([
                     connectorId: new Uint8Array(32),
                     salt: new Uint8Array(32),
                     verifierContract: "1.2.345",
-                    configProofBytes: new Uint8Array(),
+                    configProofBytes: new Uint8Array([1]),
                     endpointManifestProofBytes: new Uint8Array(),
                     connectorContract: "1.2.345",
                     adminKey: PrivateKey.fromStringED25519(

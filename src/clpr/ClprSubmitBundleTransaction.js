@@ -35,7 +35,7 @@ import { copyBytes32 } from "../util.js";
  * The deprecated endpointNodeId and endpointSignature fields do not authenticate
  * the caller and are not exposed by this builder. Newly built bodies omit them.
  * Decoded signed transactions keep their original body bytes and signatures.
- * CLPR is off by default and requires the network setting `clpr.enabled`.
+ * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  * This transaction cannot be scheduled.
  */
 export default class ClprSubmitBundleTransaction extends ClprTransaction {

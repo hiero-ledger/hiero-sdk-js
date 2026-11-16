@@ -40,9 +40,10 @@ import { channelSigningPreimage, contractBytes } from "./ownership.js";
  * clears the proof; setting the same bytes keeps it.
  *
  * The verifier contract and its configuration and endpoint manifest proofs are
- * opaque to the SDK. Set all four signed inputs before creating the proof,
- * including explicit empty proof bytes when the verifier permits them.
- * CLPR is off by default and requires the network setting `clpr.enabled`.
+ * opaque to the SDK. Set all four signed inputs before creating the proof.
+ * The configuration proof must not be empty; the endpoint manifest proof may be
+ * empty when the verifier permits it.
+ * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  * This transaction cannot be scheduled.
  */
 export default class ClprCompleteChannelTransaction extends ClprTransaction {
@@ -129,7 +130,9 @@ export default class ClprCompleteChannelTransaction extends ClprTransaction {
                 completion.verifierContract != null
                     ? ContractId._fromProtobuf(completion.verifierContract)
                     : undefined,
-            configProofBytes: completion.configProofBytes ?? undefined,
+            configProofBytes: completion.configProofBytes?.length
+                ? completion.configProofBytes
+                : undefined,
             endpointManifestProofBytes:
                 completion.endpointManifestProofBytes ?? undefined,
         });
@@ -257,13 +260,19 @@ export default class ClprCompleteChannelTransaction extends ClprTransaction {
     }
 
     /**
-     * Sets and copies the opaque configuration proof bytes.
+     * Sets and copies the opaque configuration proof bytes. The network rejects
+     * an empty configuration proof, so empty bytes throw here.
      * @param {Uint8Array} configProofBytes
      * @returns {this}
      */
     setConfigProofBytes(configProofBytes) {
         this._requireNotFrozen();
         const bytes = new Uint8Array(requireUint8Array(configProofBytes));
+        if (bytes.length === 0) {
+            throw new Error(
+                "ClprCompleteChannelTransaction: 'configProofBytes' must not be empty.",
+            );
+        }
         this._ownershipProof.clearIfChanged(this._configProofBytes, bytes);
         this._configProofBytes = bytes;
         return this;

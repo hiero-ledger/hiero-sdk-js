@@ -609,7 +609,7 @@ describe("ClprCompleteChannelTransaction", function () {
 
     it.each([
         ["setVerifierContract", () => new sdk.ContractId(345)],
-        ["setConfigProofBytes", () => new Uint8Array()],
+        ["setConfigProofBytes", () => new Uint8Array([255])],
         ["setEndpointManifestProofBytes", () => new Uint8Array([255])],
     ])(
         "invalidates the proof when %s changes its signed input",
@@ -675,6 +675,63 @@ describe("ClprCompleteChannelTransaction", function () {
 
         expect(() => schedule(transaction)).toThrow(
             new Error("ClprCompleteChannelTransaction cannot be scheduled"),
+        );
+    });
+
+    it("rejects an empty config proof but allows an empty manifest proof", function () {
+        const transaction = completeChannel({ channelId: channelId() });
+
+        expect(() => transaction.setConfigProofBytes(new Uint8Array())).toThrow(
+            /'configProofBytes' must not be empty/,
+        );
+        expect(
+            () =>
+                new sdk.ClprCompleteChannelTransaction({
+                    configProofBytes: new Uint8Array(),
+                }),
+        ).toThrow(/configProofBytes/);
+        transaction.setEndpointManifestProofBytes(new Uint8Array());
+        expect(() => transaction.setOwnershipProof(privateKey())).not.toThrow();
+
+        const decoded = sdk.Transaction.fromBytes(
+            wireBytes({ configProofBytes: new Uint8Array() }, false),
+        );
+        expect(decoded.configProofBytes).toBeNull();
+    });
+
+    it("decodes an unknown signature scheme instead of throwing", function () {
+        const decoded = sdk.Transaction.fromBytes(
+            wireBytes(
+                {
+                    channelId: channelId(),
+                    publicKey: new Uint8Array([1]),
+                    signature: new Uint8Array([2]),
+                    signatureScheme: 7,
+                },
+                false,
+            ),
+        );
+        expect(decoded.signatureScheme.toString()).toBe("UNKNOWN (7)");
+    });
+
+    it.each([
+        "clprEndpointPublication",
+        "clprMaintenance",
+        "clprEvictPeerEndpoint",
+    ])("names the unsupported CLPR body %s in fromBytes", function (field) {
+        const bodyBytes = proto.TransactionBody.encode({
+            transactionID: sdk.TransactionId.fromString(
+                "0.0.5006@1596210382.0",
+            )._toProtobuf(),
+            nodeAccountID: new sdk.AccountId(3)._toProtobuf(),
+            [field]: {},
+        }).finish();
+        const bytes = proto.TransactionList.encode({
+            transactionList: [{ bodyBytes }],
+        }).finish();
+
+        expect(() => sdk.Transaction.fromBytes(bytes)).toThrow(
+            `does not support ${field}`,
         );
     });
 

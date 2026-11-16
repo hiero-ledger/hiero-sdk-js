@@ -33,7 +33,7 @@ import { copyBytes32 } from "../util.js";
  * An existing Channel stops accepting new messages and drains its queues before
  * closing. When no Channel exists, ownershipCommitment identifies an abandoned
  * pending registration to sweep. The commitment is ignored for an existing Channel.
- * CLPR is off by default and requires the network setting `clpr.enabled`.
+ * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  * This transaction cannot be scheduled.
  */
 export default class ClprCloseChannelTransaction extends ClprTransaction {
