@@ -331,6 +331,16 @@ describe("MirrorNodeClpr models", function () {
         },
     );
 
+    it("rejects a protobuf admin key with no key type set", function () {
+        expect(() =>
+            MirrorNodeClprConnector._fromJson({
+                ...connectorRow(),
+                // Field 15 is unknown to Key, so no key type is set.
+                admin_key: { _type: "ProtobufEncoded", key: "7801" },
+            }),
+        ).toThrow("could not be decoded");
+    });
+
     it("rejects a Channel ID that is not 32 bytes", function () {
         expect(() =>
             MirrorNodeClprChannel._fromJson({
