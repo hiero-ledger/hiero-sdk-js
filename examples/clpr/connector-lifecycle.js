@@ -10,7 +10,9 @@
  * Set CLPR_CONNECTOR_CONTRACT_ID to the deployed Connector's ContractId,
  * CLPR_OWNERSHIP_KEY and CLPR_CONNECTOR_ADMIN_KEY to private keys in DER hex,
  * CLPR_CONNECTOR_CONTRACT_ADMIN_KEY to the contract owner's private key,
- * and CLPR_LOCKED_STAKE_TINYBARS to a decimal amount meeting clpr.minLockedStake.
+ * CLPR_LOCKED_STAKE_TINYBARS to a decimal amount meeting the configured USD
+ * minimum converted to tinybars at consensus, and CLPR_MAX_TRANSACTION_FEE_TINYBARS
+ * to the fee cap for the paid lifecycle transactions.
  * The payer is the explicit stake recipient and must sign deregistration along
  * with the Connector admin. A fresh salt gives each run a new Connector ID,
  * since completed commitments stay registered after deregistration.

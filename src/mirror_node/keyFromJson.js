@@ -47,7 +47,7 @@ export default function keyFromJson(key) {
         }
         default:
             throw new Error(
-                `Unsupported registered node admin key type: ${key._type}`,
+                `Unsupported mirror node admin key type: ${key._type}`,
             );
     }
 }
