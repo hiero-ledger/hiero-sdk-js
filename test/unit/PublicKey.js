@@ -8,6 +8,28 @@ import {
 } from "../../src/index.js";
 
 describe("PublicKey", function () {
+    it("returns independent uncompressed secp256k1 coordinates without the SEC1 prefix", function () {
+        const key = PrivateKey.fromStringECDSA(
+            "0000000000000000000000000000000000000000000000000000000000000001",
+        ).publicKey;
+        const expected =
+            "79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8";
+        const bytes = key.toBytesRawUncompressed();
+        expect(
+            Array.from(bytes, (byte) =>
+                byte.toString(16).padStart(2, "0"),
+            ).join(""),
+        ).toBe(expected);
+        bytes.fill(0);
+        expect(key.toBytesRawUncompressed()).not.toEqual(bytes);
+        expect(key.toBytesRaw()).toHaveLength(33);
+    });
+
+    it("rejects uncompressed coordinate encoding for Ed25519", function () {
+        expect(() =>
+            PrivateKey.generateED25519().publicKey.toBytesRawUncompressed(),
+        ).toThrow(/Ed25519/);
+    });
     it("`verifyTransaction` works", async function () {
         const key1 = PrivateKey.generateED25519();
         const key2 = PrivateKey.generateECDSA();
