@@ -69,4 +69,8 @@ describe("Status", function () {
             "AUTHORIZATION_FAILED",
         );
     });
+
+    it("returns UNKNOWN (code) for a non-static instance", function () {
+        expect(new Status(9999).toString()).to.equal("UNKNOWN (9999)");
+    });
 });
