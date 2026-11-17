@@ -209,7 +209,7 @@ export default class Query extends QueryBase {
      * Is payment required for this query. By default most queries require payment
      * so the default implementation returns true.
      *
-     * @protected
+     * @internal
      * @returns {boolean}
      */
     _isPaymentRequired() {

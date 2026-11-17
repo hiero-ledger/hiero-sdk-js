@@ -1,5 +1,4 @@
 import {
-    Client,
     ScheduleCreateTransaction,
     TopicMessageSubmitTransaction,
     AccountId,
@@ -15,7 +14,6 @@ import {
 
 import * as utf8 from "../../src/encoding/utf8.js";
 import * as util from "../../src/util.js";
-import BadEntityIdError from "../../src/BadEntityIdError.js";
 
 describe("TopicMessageSubmitTransaction", function () {
     let topicId;
@@ -834,44 +832,6 @@ describe("TopicMessageSubmitTransaction", function () {
             });
         });
 
-        describe("_validateChecksums", function () {
-            let mainnet, testnet;
-
-            beforeEach(function () {
-                mainnet = Client.forMainnet({ scheduleNetworkUpdate: false });
-                testnet = Client.forTestnet({ scheduleNetworkUpdate: false });
-            });
-
-            afterEach(function () {
-                mainnet.close();
-                testnet.close();
-            });
-
-            // TODO(#4683): TopicMessageSubmitTransaction doesn't validate the topic ID checksum.
-            it.skip("should check the topic ID checksum against the client's network", function () {
-                // 0.0.123-vfmkw has the mainnet checksum
-                const transaction =
-                    new TopicMessageSubmitTransaction().setTopicId(
-                        TopicId.fromString("0.0.123-vfmkw"),
-                    );
-
-                expect(() =>
-                    transaction._validateChecksums(mainnet),
-                ).to.not.throw();
-                expect(() => transaction._validateChecksums(testnet)).to.throw(
-                    BadEntityIdError,
-                );
-            });
-
-            it("should skip unset fields", function () {
-                expect(() =>
-                    new TopicMessageSubmitTransaction()._validateChecksums(
-                        testnet,
-                    ),
-                ).to.not.throw();
-            });
-        });
-
         describe("_execute", function () {
             it("should call consensus.submitMessage() with the request", async function () {
                 const request = {};
@@ -937,5 +897,30 @@ describe("TopicMessageSubmitTransaction", function () {
                 id.validStart.toString(),
             ),
         ).to.deep.equal(["1596210382.999999999", "1596210383.000000000"]);
+    });
+
+    describe("_validateChecksums", function () {
+        const TransactionType = TopicMessageSubmitTransaction;
+        const field = "_topicId";
+
+        it("passes the client to the ID validator", function () {
+            const client = {};
+            const clients = [];
+            const transaction = new TransactionType();
+            transaction[field] = {
+                validateChecksum: (value) => clients.push(value),
+            };
+
+            transaction._validateChecksums(client);
+
+            expect(clients).to.have.lengthOf(1);
+            expect(clients[0]).to.equal(client);
+        });
+
+        it("skips an unset ID", function () {
+            expect(() =>
+                new TransactionType()._validateChecksums({}),
+            ).to.not.throw();
+        });
     });
 });
