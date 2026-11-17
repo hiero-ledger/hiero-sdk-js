@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { vi } from "vitest";
-import { Client } from "../../src/index.js";
+import { Client, FileId } from "../../src/index.js";
 import AddressBookQueryWeb from "../../src/network/AddressBookQueryWeb.js";
 import WebClient from "../../src/client/WebClient.js";
 import NativeClient from "../../src/client/NativeClient.js";
@@ -448,5 +448,59 @@ describe("AddressBookQueryWeb", function () {
         expect(fake.requests[0].url).to.equal(
             "https://mirror.example.com:443/api/v1/network/nodes?file.id=0.0.102&limit=25",
         );
+    });
+
+    describe("fields", function () {
+        it("should default fileId and limit to null", function () {
+            const addressBookQuery = new AddressBookQueryWeb();
+
+            expect(addressBookQuery.fileId).to.be.null;
+            expect(addressBookQuery.limit).to.be.null;
+        });
+
+        it("should set the fields given in props", function () {
+            const addressBookQuery = new AddressBookQueryWeb({
+                fileId: new FileId(0, 0, 102),
+                limit: 5,
+            });
+
+            expect(addressBookQuery.fileId.toString()).to.equal("0.0.102");
+            expect(addressBookQuery.limit).to.equal(5);
+        });
+
+        it("setFileId() should accept an instance or a string and be chainable", function () {
+            const fileId = new FileId(0, 0, 102);
+            const addressBookQuery = new AddressBookQueryWeb();
+
+            expect(addressBookQuery.setFileId(fileId)).to.equal(
+                addressBookQuery,
+            );
+            expect(addressBookQuery.fileId.toString()).to.equal("0.0.102");
+            expect(addressBookQuery.fileId).to.not.equal(fileId);
+
+            addressBookQuery.setFileId("0.0.101");
+            expect(addressBookQuery.fileId.toString()).to.equal("0.0.101");
+        });
+
+        it("setLimit() should set the limit and be chainable", function () {
+            const addressBookQuery = new AddressBookQueryWeb();
+
+            expect(addressBookQuery.setLimit(5)).to.equal(addressBookQuery);
+            expect(addressBookQuery.limit).to.equal(5);
+        });
+
+        it("should send the limit instead of the default page size", async function () {
+            const fake = new FakeHttpTransport().respondJson(200, {
+                nodes: [],
+            });
+
+            await query()
+                .setLimit(5)
+                .execute(track(fake, { mirror: "mirror.example.com:443" }));
+
+            expect(fake.requests[0].url).to.equal(
+                "https://mirror.example.com:443/api/v1/network/nodes?file.id=0.0.102&limit=5",
+            );
+        });
     });
 });

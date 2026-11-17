@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { vi } from "vitest";
-import { Client } from "../../src/index.js";
+import * as HieroProto from "@hiero-ledger/proto";
+import { AccountId, Client, FileId } from "../../src/index.js";
 import AddressBookQuery from "../../src/network/AddressBookQuery.js";
 import AddressBookQueryWeb from "../../src/network/AddressBookQueryWeb.js";
 import FakeHttpTransport, { errorResponse } from "./utils/FakeHttpTransport.js";
@@ -151,6 +152,119 @@ describe("address book query backoff", function () {
             await new AddressBookQuery().setMaxBackoff(40).execute(client);
 
             expect(retryDelays(setTimeoutSpy)).to.deep.equal([40]);
+        });
+    });
+});
+
+describe("AddressBookQuery", function () {
+    describe("constructor", function () {
+        it("should default fileId and limit to null", function () {
+            const query = new AddressBookQuery();
+
+            expect(query.fileId).to.be.null;
+            expect(query.limit).to.be.null;
+        });
+
+        it("should set the fields given in props", function () {
+            const query = new AddressBookQuery({
+                fileId: new FileId(0, 0, 102),
+                limit: 5,
+            });
+
+            expect(query.fileId.toString()).to.equal("0.0.102");
+            expect(query.limit).to.equal(5);
+        });
+
+        it("should accept a string fileId in props", function () {
+            const query = new AddressBookQuery({ fileId: "0.0.102" });
+
+            expect(query.fileId.toString()).to.equal("0.0.102");
+        });
+    });
+
+    describe("setFileId", function () {
+        it("should accept an instance or a string", function () {
+            expect(
+                new AddressBookQuery()
+                    .setFileId(new FileId(0, 0, 102))
+                    .fileId.toString(),
+            ).to.equal("0.0.102");
+            expect(
+                new AddressBookQuery().setFileId("0.0.101").fileId.toString(),
+            ).to.equal("0.0.101");
+        });
+
+        it("should store a copy of the instance", function () {
+            const fileId = new FileId(0, 0, 102);
+
+            expect(
+                new AddressBookQuery().setFileId(fileId).fileId,
+            ).to.not.equal(fileId);
+        });
+
+        it("should be chainable", function () {
+            const query = new AddressBookQuery();
+
+            expect(query.setFileId("0.0.102")).to.equal(query);
+        });
+    });
+
+    describe("setLimit", function () {
+        it("should set the limit and be chainable", function () {
+            const query = new AddressBookQuery();
+
+            expect(query.setLimit(5)).to.equal(query);
+            expect(query.limit).to.equal(5);
+        });
+    });
+
+    describe("setMaxAttempts", function () {
+        it("should stop retrying after the attempts set", async function () {
+            let calls = 0;
+            const client = stubClient(100, (_onData, onError) => {
+                calls += 1;
+                onError(new Error("stream reset"));
+            });
+            const query = new AddressBookQuery();
+
+            expect(query.setMaxAttempts(0)).to.equal(query);
+            await expect(query.execute(client)).rejects.toThrow(
+                "failed to query address book",
+            );
+            expect(calls).to.equal(1);
+        });
+    });
+
+    describe("execute", function () {
+        it("should collect the streamed node addresses and count down the limit", async function () {
+            const nodeAddress = (num) =>
+                HieroProto.proto.NodeAddress.encode({
+                    nodeId: num,
+                    nodeAccountId: new AccountId(0, 0, num)._toProtobuf(),
+                    serviceEndpoint: [
+                        {
+                            ipAddressV4: Uint8Array.of(127, 0, 0, 1),
+                            port: 50211,
+                        },
+                    ],
+                }).finish();
+            const client = stubClient(100, (onData, _onError, onEnd) => {
+                onData(nodeAddress(3));
+                onData(nodeAddress(4));
+                onEnd();
+            });
+            const query = new AddressBookQuery()
+                .setFileId("0.0.102")
+                .setLimit(5);
+
+            const book = await query.execute(client);
+
+            expect(
+                book.nodeAddresses.map((address) =>
+                    address.accountId.toString(),
+                ),
+            ).to.deep.equal(["0.0.3", "0.0.4"]);
+            expect(query.limit).to.equal(3);
         });
     });
 });
