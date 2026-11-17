@@ -203,6 +203,25 @@ export default class TokenRejectTransaction extends Transaction {
     }
 
     /**
+     * @param {Client} client
+     */
+    _validateChecksums(client) {
+        if (this._owner != null) {
+            this._owner.validateChecksum(client);
+        }
+
+        for (const tokenId of this._tokenIds != null ? this._tokenIds : []) {
+            if (tokenId != null) {
+                tokenId.validateChecksum(client);
+            }
+        }
+
+        for (const transfer of this._nftIds) {
+            transfer.tokenId.validateChecksum(client);
+        }
+    }
+
+    /**
      * @override
      * @internal
      * @param {Channel} channel
