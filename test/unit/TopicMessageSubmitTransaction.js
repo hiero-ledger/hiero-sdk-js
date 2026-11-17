@@ -1,4 +1,5 @@
 import {
+    ScheduleCreateTransaction,
     TopicMessageSubmitTransaction,
     AccountId,
     Timestamp,
@@ -769,6 +770,110 @@ describe("TopicMessageSubmitTransaction", function () {
                 bodySizes.forEach((size) => {
                     expect(size).to.be.greaterThan(0);
                 });
+            });
+        });
+    });
+
+    describe("fields", function () {
+        const VALID_START = new Timestamp(1596210382, 0);
+
+        let nodeId;
+
+        beforeEach(function () {
+            nodeId = new AccountId(0, 0, 3);
+        });
+
+        /**
+         * @param {TopicMessageSubmitTransaction} transaction
+         * @returns {TopicMessageSubmitTransaction}
+         */
+        function freezeWithIds(transaction) {
+            return transaction
+                .setNodeAccountIds([nodeId])
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        new AccountId(0, 0, 1001),
+                        VALID_START,
+                    ),
+                )
+                .freeze();
+        }
+
+        describe("schedule", function () {
+            it("should return a ScheduleCreateTransaction for a message that fits in one chunk", function () {
+                const scheduled = new TopicMessageSubmitTransaction()
+                    .setTopicId(new TopicId(0, 0, 7007))
+                    .setMessage("hello")
+                    .schedule();
+
+                expect(scheduled).to.be.instanceOf(ScheduleCreateTransaction);
+            });
+
+            it("should throw for a message longer than one chunk", function () {
+                expect(() =>
+                    new TopicMessageSubmitTransaction()
+                        .setTopicId(new TopicId(0, 0, 7007))
+                        .setMessage(new Uint8Array(25))
+                        .setChunkSize(10)
+                        .schedule(),
+                ).to.throw(
+                    "cannot schedule `TopicMessageSubmitTransaction` with message over 10 bytes",
+                );
+            });
+
+            it("should throw once frozen", function () {
+                const transaction = freezeWithIds(
+                    new TopicMessageSubmitTransaction().setMessage("hello"),
+                );
+
+                expect(() => transaction.schedule()).to.throw(
+                    "transaction is immutable",
+                );
+            });
+        });
+
+        describe("_execute", function () {
+            it("should call consensus.submitMessage() with the request", async function () {
+                const request = {};
+                const response = {};
+                const calls = [];
+                const channel = {
+                    consensus: {
+                        submitMessage: (arg) => {
+                            calls.push(arg);
+                            return Promise.resolve(response);
+                        },
+                    },
+                };
+
+                expect(
+                    await new TopicMessageSubmitTransaction()._execute(
+                        channel,
+                        request,
+                    ),
+                ).to.equal(response);
+                expect(calls).to.deep.equal([request]);
+                expect(calls[0]).to.equal(request);
+            });
+        });
+
+        describe("_getTransactionDataCase", function () {
+            it("should return consensusSubmitMessage", function () {
+                expect(
+                    new TopicMessageSubmitTransaction()._getTransactionDataCase(),
+                ).to.equal("consensusSubmitMessage");
+            });
+        });
+
+        describe("_getLogId", function () {
+            it("should include the class name and valid start", function () {
+                const transaction = freezeWithIds(
+                    new TopicMessageSubmitTransaction().setMessage("hello"),
+                );
+
+                expect(transaction._getLogId()).to.equal(
+                    `TopicMessageSubmitTransaction:${VALID_START.toString()}`,
+                );
             });
         });
     });
