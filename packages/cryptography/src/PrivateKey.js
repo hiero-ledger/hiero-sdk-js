@@ -209,11 +209,7 @@ export default class PrivateKey extends Key {
                 throw error;
             }
 
-            throw new BadKeyError(
-                error instanceof Error
-                    ? error
-                    : `cannot decode ECDSA private key from string: ${String(error)}`,
-            );
+            throw new BadKeyError(/** @type {Error} */ (error));
         }
     }
 
@@ -236,11 +232,7 @@ export default class PrivateKey extends Key {
                 throw error;
             }
 
-            throw new BadKeyError(
-                error instanceof Error
-                    ? error
-                    : `cannot decode ED25519 private key from string: ${String(error)}`,
-            );
+            throw new BadKeyError(/** @type {Error} */ (error));
         }
     }
 

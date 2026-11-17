@@ -37,6 +37,14 @@ describe("EcdsaPrivateKey", function () {
         );
     });
 
+    it("rejects an all-zero 32-byte key as BadKeyError", function () {
+        const zeroKey = new Uint8Array(32);
+        expect(() => EcdsaPrivateKey.fromBytesRaw(zeroKey)).to.throw(
+            BadKeyError,
+            /invalid scalar|out of range/i,
+        );
+    });
+
     it("generateAsync should return Ecdsa object", async function () {
         await EcdsaPrivateKey.generateAsync();
     });

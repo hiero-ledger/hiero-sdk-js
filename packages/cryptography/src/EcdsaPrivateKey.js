@@ -15,6 +15,32 @@ const derPrefixBytes2 = hex.decode(derPrefix2);
 // header. Anything shorter than header+32 cannot be a valid ECDSA DER key.
 const minEcdsaDerLength = derPrefixBytes2.length + 32;
 
+// SEC1 ECPrivateKey after the SEQUENCE tag and length: version INTEGER 1,
+// then an OCTET STRING of length 32 (the private key).
+const sec1HeaderAfterLength = Uint8Array.of(0x02, 0x01, 0x01, 0x04, 0x20);
+
+/**
+ * True when `data` looks like a SEC1 ECPrivateKey whose private-key OCTET
+ * STRING starts at offset 7 (SEQUENCE tag + 1-byte length + header above).
+ * The SEQUENCE length byte itself may vary (encrypted PEM decrypts to longer
+ * structures), so it is not compared to `derPrefix2`.
+ * @param {Uint8Array} data
+ * @returns {boolean}
+ */
+function looksLikeSec1EcdsaPrivateKey(data) {
+    if (data.length < minEcdsaDerLength || data[0] !== 0x30) {
+        return false;
+    }
+
+    for (let i = 0; i < sec1HeaderAfterLength.length; i++) {
+        if (data[2 + i] !== sec1HeaderAfterLength[i]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 /**
  * @typedef {object} KeyPair
  * @property {Uint8Array} publicKey
@@ -99,13 +125,16 @@ export default class EcdsaPrivateKey {
 
         if (arrayStartsWith(data, derPrefixBytes)) {
             ecdsaPrivateKeyBytes = data.subarray(derPrefixBytes.length);
-        } else {
-            // SEC1 ECPrivateKey and similar forms share the same header size as
-            // `derPrefix2` even when the SEQUENCE length byte differs, so the
-            // 32-byte seed still starts at this offset (see encrypted PEM path).
+        } else if (looksLikeSec1EcdsaPrivateKey(data)) {
+            // SEC1 ECPrivateKey: SEQUENCE length may differ from `derPrefix2`,
+            // but the 32-byte seed still starts at offset 7 (encrypted PEM).
             ecdsaPrivateKeyBytes = data.subarray(
                 derPrefixBytes2.length,
                 derPrefixBytes2.length + 32,
+            );
+        } else {
+            throw new BadKeyError(
+                `invalid DER encoding for ECDSA private key (got ${data.length} bytes)`,
             );
         }
 
@@ -118,11 +147,7 @@ export default class EcdsaPrivateKey {
         try {
             return new EcdsaPrivateKey(ecdsa.fromBytes(ecdsaPrivateKeyBytes));
         } catch (error) {
-            throw new BadKeyError(
-                error instanceof Error
-                    ? error
-                    : `cannot decode ECDSA private key from DER: ${String(error)}`,
-            );
+            throw new BadKeyError(/** @type {Error} */ (error));
         }
     }
 
@@ -141,11 +166,7 @@ export default class EcdsaPrivateKey {
         try {
             return new EcdsaPrivateKey(ecdsa.fromBytes(data));
         } catch (error) {
-            throw new BadKeyError(
-                error instanceof Error
-                    ? error
-                    : `cannot decode ECDSA private key: ${String(error)}`,
-            );
+            throw new BadKeyError(/** @type {Error} */ (error));
         }
     }
 
