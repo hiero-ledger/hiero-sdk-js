@@ -29,6 +29,16 @@ $ yarn add @hiero-ledger/sdk
 $ pnpm add @hiero-ledger/sdk
 ```
 
+## Troubleshooting
+
+### `INVALID_SIGNATURE` at precheck
+
+If a transaction fails precheck with `INVALID_SIGNATURE` and the key parses cleanly, check that the operator **account ID** and **private key** belong together, and that the key type matches the account (ECDSA vs ED25519). A valid key for a different account still produces `INVALID_SIGNATURE`.
+
+### Wrong-length key input
+
+`PrivateKey.fromStringECDSA` / `fromStringED25519` expect a 32-byte private key (hex). Passing an EVM address (20 bytes) or another key type now reports the expected vs actual byte length instead of an opaque cryptography error.
+
 ## Browser Usage
 
 The SDK is also available as a UMD (Universal Module Definition) build, which can be loaded directly in the browser from popular CDNs:

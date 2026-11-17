@@ -196,7 +196,25 @@ export default class PrivateKey extends Key {
      * @returns {PrivateKey}
      */
     static fromStringECDSA(text) {
-        return PrivateKey.fromBytesECDSA(hex.decode(text));
+        if (typeof text !== "string") {
+            throw new BadKeyError(
+                `expected a hex-encoded ECDSA private key string, got ${typeof text}`,
+            );
+        }
+
+        try {
+            return PrivateKey.fromBytesECDSA(hex.decode(text));
+        } catch (error) {
+            if (error instanceof BadKeyError) {
+                throw error;
+            }
+
+            throw new BadKeyError(
+                error instanceof Error
+                    ? error
+                    : `cannot decode ECDSA private key from string: ${String(error)}`,
+            );
+        }
     }
 
     /**
@@ -205,7 +223,25 @@ export default class PrivateKey extends Key {
      * @returns {PrivateKey}
      */
     static fromStringED25519(text) {
-        return PrivateKey.fromBytesED25519(hex.decode(text));
+        if (typeof text !== "string") {
+            throw new BadKeyError(
+                `expected a hex-encoded ED25519 private key string, got ${typeof text}`,
+            );
+        }
+
+        try {
+            return PrivateKey.fromBytesED25519(hex.decode(text));
+        } catch (error) {
+            if (error instanceof BadKeyError) {
+                throw error;
+            }
+
+            throw new BadKeyError(
+                error instanceof Error
+                    ? error
+                    : `cannot decode ED25519 private key from string: ${String(error)}`,
+            );
+        }
     }
 
     /**

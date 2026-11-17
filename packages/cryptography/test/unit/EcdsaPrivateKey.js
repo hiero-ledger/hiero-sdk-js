@@ -1,13 +1,40 @@
 import EcdsaPrivateKey from "../../src/EcdsaPrivateKey.js";
+import BadKeyError from "../../src/BadKeyError.js";
 import * as hex from "../../src/encoding/hex.js";
 import * as utf8 from "../../src/encoding/utf8.js";
 
 const RAW_KEY =
     "8776c6b831a1b61ac10dac0304a2843de4716f54b1919bb91a2685d0fe3f3048";
 
+// 20-byte EVM address hex (common mix-up with a private key)
+const EVM_ADDRESS = "0x0000000000000000000000000000000000000001";
+
 describe("EcdsaPrivateKey", function () {
     it("generate should return Ecdsa object", function () {
         EcdsaPrivateKey.generate();
+    });
+
+    it("rejects a 20-byte EVM address with expected vs actual length", function () {
+        expect(() => EcdsaPrivateKey.fromStringRaw(EVM_ADDRESS)).to.throw(
+            BadKeyError,
+            /expected a 32-byte ECDSA private key, got 20 bytes/,
+        );
+        expect(() => EcdsaPrivateKey.fromString(EVM_ADDRESS)).to.throw(
+            BadKeyError,
+            /expected a 32-byte ECDSA private key \(or ECDSA DER encoding\), got 20 bytes/,
+        );
+    });
+
+    it("rejects non-DER wrong-length bytes without opaque noble errors", function () {
+        const short = hex.decode("aabbccdd");
+        expect(() => EcdsaPrivateKey.fromBytes(short)).to.throw(
+            BadKeyError,
+            /got 4 bytes/,
+        );
+        expect(() => EcdsaPrivateKey.fromBytesRaw(short)).to.throw(
+            BadKeyError,
+            /got 4 bytes/,
+        );
     });
 
     it("generateAsync should return Ecdsa object", async function () {

@@ -412,4 +412,29 @@ describe("PrivateKey", function () {
 
         expect(err).to.be.false;
     });
+
+    it("fromStringECDSA reports expected vs actual length for an EVM address", function () {
+        const evmAddress = "0x0000000000000000000000000000000000000001";
+
+        expect(() => PrivateKey.fromStringECDSA(evmAddress)).to.throw(
+            BadKeyError,
+            /expected a 32-byte ECDSA private key \(or ECDSA DER encoding\), got 20 bytes/,
+        );
+    });
+
+    it("fromStringECDSA rejects non-string input", function () {
+        expect(() =>
+            PrivateKey.fromStringECDSA(/** @type {any} */ ({})),
+        ).to.throw(
+            BadKeyError,
+            /expected a hex-encoded ECDSA private key string, got object/,
+        );
+    });
+
+    it("fromStringED25519 reports expected vs actual length", function () {
+        expect(() => PrivateKey.fromStringED25519("aabbccddeeff")).to.throw(
+            BadKeyError,
+            /expected a 32- or 64-byte ED25519 private key \(or 48-byte DER\), got 6 bytes/,
+        );
+    });
 });
