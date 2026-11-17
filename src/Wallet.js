@@ -5,6 +5,7 @@ import AccountId from "./account/AccountId.js";
 import SignerSignature from "./SignerSignature.js";
 import AccountInfoQuery from "./account/AccountInfoQuery.js";
 import AccountRecordsQuery from "./account/AccountRecordsQuery.js";
+import Query from "./query/Query.js";
 import TransactionId from "./transaction/TransactionId.js";
 import * as util from "./util.js";
 
@@ -26,11 +27,6 @@ import * as util from "./util.js";
  * @typedef {import("./transaction/TransactionRecord.js").default} TransactionRecord
  * @typedef {import("./account/AccountBalance.js").default} AccountBalance
  * @typedef {import("./account/AccountInfo.js").default} AccountInfo
- */
-
-/**
- * @template O
- * @typedef {import("./query/Query.js").default<O>} Query<O>
  */
 
 /**
@@ -172,7 +168,7 @@ export default class Wallet {
         if (this.provider == null) {
             throw new Error("wallet does not contain a provider");
         }
-        return this.provider.getAccountBalance(this.accountId);
+        return this.provider.getAccountBalance(this._requireAccountId());
     }
 
     /**
@@ -180,7 +176,7 @@ export default class Wallet {
      * @returns {Promise<AccountInfo>}
      */
     getAccountInfo() {
-        return this.call(new AccountInfoQuery().setAccountId(this.accountId));
+        return this.call(new AccountInfoQuery({ accountId: this.accountId }));
     }
 
     /**
@@ -189,7 +185,7 @@ export default class Wallet {
      */
     getAccountRecords() {
         return this.call(
-            new AccountRecordsQuery().setAccountId(this.accountId),
+            new AccountRecordsQuery({ accountId: this.accountId }),
         );
     }
 
@@ -212,7 +208,7 @@ export default class Wallet {
         if (
             transactionId != null &&
             transactionId.accountId != null &&
-            transactionId.accountId.compare(this.accountId) != 0
+            transactionId.accountId.compare(this._requireAccountId()) != 0
         ) {
             throw new Error(
                 "transaction's ID constructed with a different account ID",
@@ -252,9 +248,11 @@ export default class Wallet {
     populateTransaction(transaction) {
         transaction._freezeWithAccountId(this.accountId);
 
+        // A transaction whose ID is already set can be sent by a wallet
+        // without an account ID; the account ID is only needed to generate one.
         if (transaction.transactionId == null) {
             transaction.setTransactionId(
-                TransactionId.generate(this.accountId),
+                TransactionId.generate(this._requireAccountId()),
             );
         }
 
@@ -294,6 +292,12 @@ export default class Wallet {
             );
         }
 
+        // A paid query needs the wallet's account ID to pay for it.
+        // Transactions and free queries (e.g. receipts) only use the key and signer.
+        if (request instanceof Query && request._isPaymentRequired()) {
+            this._requireAccountId();
+        }
+
         return this.provider.call(
             request._setOperatorWith(
                 this.accountId,
@@ -301,5 +305,19 @@ export default class Wallet {
                 this.signer,
             ),
         );
+    }
+
+    /**
+     * Returns the wallet's account ID, or throws if the wallet was created
+     * without one (e.g. a signing-only wallet).
+     *
+     * @private
+     * @returns {AccountId}
+     */
+    _requireAccountId() {
+        if (this.accountId == null) {
+            throw new Error("wallet does not contain an account ID");
+        }
+        return this.accountId;
     }
 }

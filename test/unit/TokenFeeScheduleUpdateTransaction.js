@@ -1,5 +1,6 @@
 import {
     AccountId,
+    Client,
     CustomFixedFee,
     CustomFractionalFee,
     CustomRoyaltyFee,
@@ -12,6 +13,7 @@ import {
     TransactionId,
 } from "../../src/index.js";
 import * as HieroProto from "@hiero-ledger/proto";
+import BadEntityIdError from "../../src/BadEntityIdError.js";
 
 /**
  * @param {import("../../src/token/CustomFee.js").default} fee
@@ -306,6 +308,47 @@ describe("TokenFeeScheduleUpdateTransaction", function () {
             expect(transaction._getLogId()).to.equal(
                 `TokenFeeScheduleUpdateTransaction:${VALID_START.toString()}`,
             );
+        });
+    });
+
+    describe("_validateChecksums", function () {
+        const TransactionType = TokenFeeScheduleUpdateTransaction;
+        const field = "_tokenId";
+
+        it("passes the client to the ID validator", function () {
+            const client = {};
+            const clients = [];
+            const transaction = new TransactionType();
+            transaction[field] = {
+                validateChecksum: (value) => clients.push(value),
+            };
+
+            transaction._validateChecksums(client);
+
+            expect(clients).to.have.lengthOf(1);
+            expect(clients[0]).to.equal(client);
+        });
+
+        it("skips an unset ID", function () {
+            expect(() =>
+                new TransactionType()._validateChecksums({}),
+            ).to.not.throw();
+        });
+
+        it("rejects a mainnet token checksum on testnet", function () {
+            const client = Client.forTestnet({ scheduleNetworkUpdate: false });
+            try {
+                const transaction =
+                    new TokenFeeScheduleUpdateTransaction().setTokenId(
+                        "0.0.123-vfmkw",
+                    );
+
+                expect(() => transaction._validateChecksums(client)).to.throw(
+                    BadEntityIdError,
+                );
+            } finally {
+                client.close();
+            }
         });
     });
 });
