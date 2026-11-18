@@ -102,7 +102,7 @@ export default class Ed25519PrivateKey {
                 return Ed25519PrivateKey.fromBytesRaw(data);
             default:
                 throw new BadKeyError(
-                    `invalid private key length: ${data.length} bytes`,
+                    `expected a 32- or 64-byte ED25519 private key (or 48-byte DER), got ${data.length} bytes`,
                 );
         }
     }
@@ -162,7 +162,7 @@ export default class Ed25519PrivateKey {
         }
 
         throw new BadKeyError(
-            `invalid private key length: ${data.length} bytes`,
+            `expected a 32- or 64-byte ED25519 private key, got ${data.length} bytes`,
         );
     }
 
