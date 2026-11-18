@@ -37,4 +37,19 @@ describe("RequestType", function () {
             "RequestType.fromCode() does not handle code: 123",
         );
     });
+
+    it.each([
+        [96, "TssMessage", RequestType.TssMessage],
+        [97, "TssVote", RequestType.TssVote],
+        [98, "TssShareSignature", RequestType.TssShareSignature],
+        [99, "TssEncryptionKey", RequestType.TssEncryptionKey],
+    ])("maps TSS code %i to %s", function (code, name, requestType) {
+        expect(RequestType._fromCode(code)).to.equal(requestType);
+        expect(requestType.toString()).to.equal(name);
+        expect(requestType.valueOf()).to.equal(code);
+    });
+
+    it("returns UNKNOWN (code) for a non-static instance", function () {
+        expect(new RequestType(9999).toString()).to.equal("UNKNOWN (9999)");
+    });
 });

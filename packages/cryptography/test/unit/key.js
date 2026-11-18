@@ -412,4 +412,50 @@ describe("PrivateKey", function () {
 
         expect(err).to.be.false;
     });
+
+    it("fromStringECDSA reports expected vs actual length for an EVM address", function () {
+        const evmAddress = "0x0000000000000000000000000000000000000001";
+
+        expect(() => PrivateKey.fromStringECDSA(evmAddress)).to.throw(
+            BadKeyError,
+            /expected a 32-byte ECDSA private key \(or ECDSA DER encoding\), got 20 bytes/,
+        );
+    });
+
+    it("fromStringECDSA rejects non-string input", function () {
+        expect(() =>
+            PrivateKey.fromStringECDSA(/** @type {any} */ ({})),
+        ).to.throw(
+            BadKeyError,
+            /expected a hex-encoded ECDSA private key string, got object/,
+        );
+    });
+
+    it("fromStringED25519 reports expected vs actual length", function () {
+        expect(() => PrivateKey.fromStringED25519("aabbccddeeff")).to.throw(
+            BadKeyError,
+            /expected a 32- or 64-byte ED25519 private key \(or 48-byte DER\), got 6 bytes/,
+        );
+    });
+
+    it("fromStringECDSA rejects ED25519 DER and raw+pub keys", function () {
+        const ed25519Der =
+            "302e020100300506032b657004220420db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10";
+        const ed25519RawPlusPub =
+            "db484b828e64b2d8f12ce3c0a0e93a0b8cce7af1bb8f39c97732394482538e10e0c8ec2758a5879ffac226a13c0c516b799e72e35141a0dd828f94d37988a4b7";
+        const junk40 = "aa".repeat(40);
+
+        expect(() => PrivateKey.fromStringECDSA(ed25519Der)).to.throw(
+            BadKeyError,
+            /invalid DER encoding for ECDSA private key/,
+        );
+        expect(() => PrivateKey.fromStringECDSA(ed25519RawPlusPub)).to.throw(
+            BadKeyError,
+            /invalid DER encoding for ECDSA private key/,
+        );
+        expect(() => PrivateKey.fromStringECDSA(junk40)).to.throw(
+            BadKeyError,
+            /invalid DER encoding for ECDSA private key/,
+        );
+    });
 });
