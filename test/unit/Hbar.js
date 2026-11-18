@@ -100,4 +100,8 @@ describe("Hbar", function () {
             }
         });
     });
+
+    it("throws for an unknown unit in HbarUnit.fromString()", function () {
+        expect(() => HbarUnit.fromString("xℏ")).to.throw("Unknown unit.");
+    });
 });
