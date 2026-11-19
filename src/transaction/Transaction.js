@@ -710,6 +710,18 @@ export default class Transaction extends Executable {
             }
         }
 
+        // An unfrozen transaction's `toBytes()` writes unsigned legacy
+        // `bodyBytes`, so that form imports unfrozen and can still be edited.
+        if (
+            list.every(
+                (transaction) =>
+                    !transaction.signedTransactionBytes?.length &&
+                    !transaction.sigMap?.sigPair?.length,
+            )
+        ) {
+            signedTransactions.length = 0;
+        }
+
         // We should have decoded at least one transaction body
         if (bodies.length === 0) {
             throw new Error("no transactions found in bytes");

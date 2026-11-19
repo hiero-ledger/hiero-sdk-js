@@ -581,6 +581,18 @@ describe("Transaction.getTransactionBodyHash (proposed whole-transaction profile
                     })),
                 }).finish();
                 for (const bytes of [modern, legacy]) {
+                    if (
+                        bytes === legacy &&
+                        envelopes.every(
+                            ({ sigMap }) => !sigMap?.sigPair?.length,
+                        )
+                    ) {
+                        // An unfrozen toBytes() writes this form, so it stays editable.
+                        expect(Transaction.fromBytes(bytes).isFrozen()).toBe(
+                            false,
+                        );
+                        continue;
+                    }
                     const tx = importFrozen(bytes);
                     expect(hex.encode(await tx.getTransactionBodyHash())).toBe(
                         fixtures.get(name).expectedHashHex,
