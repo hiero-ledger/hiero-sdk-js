@@ -116,17 +116,13 @@ async function main() {
         console.log(
             "Alice Signatures =>",
             aliceSignatures.map((aliceSig) =>
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                PrivateKey.fromBytes(aliceSig).toStringDer(),
+                Buffer.from(aliceSig).toString("hex"),
             ),
         );
 
         console.log(
             "Bob Signatures =>",
-            bobSignatures.map((bobSig) =>
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-                PrivateKey.fromBytes(bobSig).toStringDer(),
-            ),
+            bobSignatures.map((bobSig) => Buffer.from(bobSig).toString("hex")),
         );
     }
 
@@ -151,7 +147,7 @@ async function main() {
         console.log(
             "Alice removed signatures =>",
             removedAliceSignatures.map((aliceSig) =>
-                PrivateKey.fromBytes(aliceSig).toStringDer(),
+                Buffer.from(aliceSig).toString("hex"),
             ),
         );
     }
@@ -170,7 +166,7 @@ void main();
 /**
  * Extracts all signatures from a signed transaction.
  * @param {Transaction} signedTransaction - The signed transaction object containing the list of signed transactions.
- * @returns {string[]} An array of signatures in DER format.
+ * @returns {string[]} An array of hex-encoded signatures.
  */
 const getAllSignaturesFromTransaction = (signedTransaction) => {
     /** @type {string[]} */
@@ -182,15 +178,11 @@ const getAllSignaturesFromTransaction = (signedTransaction) => {
             transaction.sigMap.sigPair.forEach((sigPair) => {
                 if (sigPair.ed25519) {
                     signatures.push(
-                        PrivateKey.fromBytesECDSA(
-                            sigPair.ed25519,
-                        ).toStringDer(),
+                        Buffer.from(sigPair.ed25519).toString("hex"),
                     );
                 } else if (sigPair.ECDSASecp256k1) {
                     signatures.push(
-                        PrivateKey.fromBytesECDSA(
-                            sigPair.ECDSASecp256k1,
-                        ).toStringDer(),
+                        Buffer.from(sigPair.ECDSASecp256k1).toString("hex"),
                     );
                 }
             });

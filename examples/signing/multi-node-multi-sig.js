@@ -109,7 +109,7 @@ async function main() {
         "Alice Signatures =>",
         aliceFlatSigs.map((aliceSig) => {
             const aliceSigBytes = aliceSig.get(aliceKey.publicKey);
-            return PrivateKey.fromBytes(aliceSigBytes).toStringDer();
+            return Buffer.from(aliceSigBytes).toString("hex");
         }),
     );
 
@@ -118,7 +118,7 @@ async function main() {
         "Bob Signatures =>",
         bobFlatSigs.map((bobSig) => {
             const bobSigBytes = bobSig.get(bobKey.publicKey);
-            return PrivateKey.fromBytes(bobSigBytes).toStringDer();
+            return Buffer.from(bobSigBytes).toString("hex");
         }),
     );
 
@@ -148,7 +148,7 @@ void main();
 /**
  * Extracts all signatures from a signed transaction.
  * @param {Transaction} signedTransaction - The signed transaction object containing the list of signed transactions.
- * @returns {string[]} An array of signatures in DER format.
+ * @returns {string[]} An array of hex-encoded signatures.
  */
 
 const getAllSignaturesFromTransaction = (signedTransaction) => {
@@ -161,15 +161,11 @@ const getAllSignaturesFromTransaction = (signedTransaction) => {
             transaction.sigMap.sigPair.forEach((sigPair) => {
                 if (sigPair.ed25519) {
                     signatures.push(
-                        PrivateKey.fromBytesECDSA(
-                            sigPair.ed25519,
-                        ).toStringDer(),
+                        Buffer.from(sigPair.ed25519).toString("hex"),
                     );
                 } else if (sigPair.ECDSASecp256k1) {
                     signatures.push(
-                        PrivateKey.fromBytesECDSA(
-                            sigPair.ECDSASecp256k1,
-                        ).toStringDer(),
+                        Buffer.from(sigPair.ECDSASecp256k1).toString("hex"),
                     );
                 }
             });
