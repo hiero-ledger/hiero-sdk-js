@@ -100,11 +100,12 @@ describe("Transfer", function () {
 
             const transfers = Transfer._fromProtobuf([proto]);
             expect(transfers).to.have.lengthOf(1);
+            expect(transfers[0].amount.toTinybars().toNumber()).to.equal(500);
+            expect(transfers[0].isApproved).to.be.true;
             expect(transfers[0].hookCall).to.be.instanceOf(FungibleHookCall);
             expect(transfers[0].hookCall.type).to.equal(
                 FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
             );
-            expect(transfers[0].isApproved).to.be.true;
         });
 
         it("should parse prePostTxAllowanceHook correctly", function () {
@@ -120,6 +121,8 @@ describe("Transfer", function () {
 
             const transfers = Transfer._fromProtobuf([proto]);
             expect(transfers).to.have.lengthOf(1);
+            expect(transfers[0].amount.toTinybars().toNumber()).to.equal(500);
+            expect(transfers[0].isApproved).to.be.false;
             expect(transfers[0].hookCall).to.be.instanceOf(FungibleHookCall);
             expect(transfers[0].hookCall.type).to.equal(
                 FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK,
@@ -189,6 +192,50 @@ describe("Transfer", function () {
                 hook._toProtobuf(),
             );
             expect(proto.preTxAllowanceHook).to.be.undefined;
+        });
+    });
+
+    describe("round-trip serialization", function () {
+        it("should round-trip transfer with PRE_TX_ALLOWANCE_HOOK via protobuf", function () {
+            const hook = createHookCall(FungibleHookType.PRE_TX_ALLOWANCE_HOOK);
+            const transfer = new Transfer({
+                accountId: sampleAccountId,
+                amount: sampleAmount,
+                isApproved: true,
+                hookCall: hook,
+            });
+
+            const roundTripped = Transfer._fromProtobuf([
+                transfer._toProtobuf(),
+            ])[0];
+
+            expect(roundTripped.toJSON()).to.deep.equal(transfer.toJSON());
+            expect(roundTripped.hookCall).to.be.instanceOf(FungibleHookCall);
+            expect(roundTripped.hookCall.type).to.equal(
+                FungibleHookType.PRE_TX_ALLOWANCE_HOOK,
+            );
+        });
+
+        it("should round-trip transfer with PRE_POST_TX_ALLOWANCE_HOOK via protobuf", function () {
+            const hook = createHookCall(
+                FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK,
+            );
+            const transfer = new Transfer({
+                accountId: sampleAccountId,
+                amount: sampleAmount,
+                isApproved: false,
+                hookCall: hook,
+            });
+
+            const roundTripped = Transfer._fromProtobuf([
+                transfer._toProtobuf(),
+            ])[0];
+
+            expect(roundTripped.toJSON()).to.deep.equal(transfer.toJSON());
+            expect(roundTripped.hookCall).to.be.instanceOf(FungibleHookCall);
+            expect(roundTripped.hookCall.type).to.equal(
+                FungibleHookType.PRE_POST_TX_ALLOWANCE_HOOK,
+            );
         });
     });
 

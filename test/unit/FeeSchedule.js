@@ -55,14 +55,13 @@ describe("FeeSchedule", function () {
 
         it("should set provided properties correctly", function () {
             const txFeeSchedule = createSampleTransactionFeeSchedule();
+            const txFeeSchedules = [txFeeSchedule];
             const schedule = new FeeSchedule({
-                transactionFeeSchedule: [txFeeSchedule],
+                transactionFeeSchedule: txFeeSchedules,
                 expirationTime: sampleExpiration,
             });
 
-            expect(schedule.transactionFeeSchedule).to.deep.equal([
-                txFeeSchedule,
-            ]);
+            expect(schedule.transactionFeeSchedule).to.equal(txFeeSchedules);
             expect(schedule.expirationTime).to.equal(sampleExpiration);
         });
 
@@ -113,7 +112,9 @@ describe("FeeSchedule", function () {
             });
 
             const proto = schedule._toProtobuf();
-            expect(proto.transactionFeeSchedule).to.have.lengthOf(1);
+            expect(proto.transactionFeeSchedule).to.deep.equal([
+                txFeeSchedule._toProtobuf(),
+            ]);
             expect(proto.expiryTime).to.deep.equal(
                 sampleExpiration._toProtobuf(),
             );
