@@ -18,6 +18,8 @@ import FreezeType from "../FreezeType.js";
 
 /**
  * @typedef {import("../channel/Channel.js").default} Channel
+ * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
+ * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../account/AccountId.js").default} AccountId
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  */
@@ -376,6 +378,15 @@ export default class FreezeTransaction extends Transaction {
             this._transactionIds.current.validStart
         );
         return `FreezeTransaction:${timestamp.toString()}`;
+    }
+
+    /**
+     * @param {Client} client
+     */
+    _validateChecksums(client) {
+        if (this._fileId != null) {
+            this._fileId.validateChecksum(client);
+        }
     }
 
     /**

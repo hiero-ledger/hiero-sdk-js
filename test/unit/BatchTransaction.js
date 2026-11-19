@@ -176,4 +176,54 @@ describe("BatchTransaction", function () {
             );
         });
     });
+
+    describe("_execute", function () {
+        it("should call util.atomicBatch() with the request", async function () {
+            const request = {};
+            const response = {};
+            const calls = [];
+            const channel = {
+                util: {
+                    atomicBatch: (arg) => {
+                        calls.push(arg);
+                        return Promise.resolve(response);
+                    },
+                },
+            };
+
+            expect(
+                await new BatchTransaction()._execute(channel, request),
+            ).to.equal(response);
+            expect(calls).to.deep.equal([request]);
+            expect(calls[0]).to.equal(request);
+        });
+    });
+
+    describe("_getTransactionDataCase", function () {
+        it("should return atomicBatch", function () {
+            expect(new BatchTransaction()._getTransactionDataCase()).to.equal(
+                "atomicBatch",
+            );
+        });
+    });
+
+    describe("_getLogId", function () {
+        it("should start with AtomicBatch and include the valid start", function () {
+            const validStart = new Timestamp(1596210382, 0);
+            const transaction = new BatchTransaction()
+                .setInnerTransactions([mockTransaction1])
+                .setNodeAccountIds([new AccountId(0, 0, 3)])
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        new AccountId(0, 0, 1001),
+                        validStart,
+                    ),
+                )
+                .freeze();
+
+            expect(transaction._getLogId()).to.equal(
+                `AtomicBatch:${validStart.toString()}`,
+            );
+        });
+    });
 });
