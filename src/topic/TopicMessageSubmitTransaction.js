@@ -4,7 +4,6 @@ import Transaction, { CHUNK_SIZE } from "../transaction/Transaction.js";
 import TopicId from "./TopicId.js";
 import * as utf8 from "../encoding/utf8.js";
 import TransactionId from "../transaction/TransactionId.js";
-import Timestamp from "../Timestamp.js";
 import * as util from "../util.js";
 
 /**
@@ -26,6 +25,7 @@ import * as util from "../util.js";
  * @typedef {import("../client/Client.js").default<Channel,MirrorChannel>} Client
  * @typedef {import("../token/CustomFixedFee.js").default} CustomFixedFee
  * @typedef {import("../account/AccountId.js").default} AccountId
+ * @typedef {import("../Timestamp.js").default} Timestamp
  * @typedef {import("../transaction/TransactionResponse.js").default} TransactionResponse
  * @typedef {import("../schedule/ScheduleCreateTransaction.js").default} ScheduleCreateTransaction
  * @typedef {import("../transaction/CustomFeeLimit.js").default} CustomFeeLimit
@@ -407,14 +407,9 @@ export default class TopicMessageSubmitTransaction extends Transaction {
 
             nextTransactionId = new TransactionId(
                 /** @type {AccountId} */ (nextTransactionId.accountId),
-                new Timestamp(
-                    /** @type {Timestamp} */ (
-                        nextTransactionId.validStart
-                    ).seconds,
-                    /** @type {Timestamp} */ (
-                        nextTransactionId.validStart
-                    ).nanos.add(1),
-                ),
+                /** @type {Timestamp} */ (
+                    nextTransactionId.validStart
+                ).plusNanos(1),
             );
         }
 
@@ -485,6 +480,15 @@ export default class TopicMessageSubmitTransaction extends Transaction {
         }
 
         return responses;
+    }
+
+    /**
+     * @param {Client} client
+     */
+    _validateChecksums(client) {
+        if (this._topicId != null) {
+            this._topicId.validateChecksum(client);
+        }
     }
 
     /**

@@ -150,7 +150,7 @@ export default class AccountBalanceQuery extends Query {
     }
 
     /**
-     * @protected
+     * @internal
      * @override
      * @returns {boolean}
      */

@@ -175,7 +175,7 @@ export default class TransactionReceiptQuery extends Query {
 
     /**
      * @override
-     * @protected
+     * @internal
      * @returns {boolean}
      */
     _isPaymentRequired() {

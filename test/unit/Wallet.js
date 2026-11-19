@@ -10,6 +10,7 @@ import Timestamp from "../../src/Timestamp.js";
 import AccountBalance from "../../src/account/AccountBalance.js";
 import AccountInfoQuery from "../../src/account/AccountInfoQuery.js";
 import AccountRecordsQuery from "../../src/account/AccountRecordsQuery.js";
+import TransactionReceiptQuery from "../../src/transaction/TransactionReceiptQuery.js";
 import LedgerId from "../../src/LedgerId.js";
 import Hbar from "../../src/Hbar.js";
 
@@ -38,6 +39,7 @@ const NODE_NOT_IN_NETWORK_ERROR_MESSAGE =
 const NO_WALLET_PROVIDER_ERROR_MESSAGE = "wallet does not contain a provider";
 const NO_PROVIDER_ERROR_MESSAGE =
     "cannot send request with an wallet that doesn't contain a provider";
+const NO_ACCOUNT_ID_ERROR_MESSAGE = "wallet does not contain an account ID";
 
 const walletBuilder = ({
     accountId = ACCOUNT_ID,
@@ -242,6 +244,25 @@ describe("Wallet", function () {
         });
     });
 
+    describe("signTransaction", function () {
+        it("should add the wallet's public key to the transaction signers", async function () {
+            const wallet = walletBuilder();
+            const transaction = transferTransactionBuilder();
+            expect(wallet.publicKey.verifyTransaction(transaction)).toBe(false);
+
+            const signedTransaction = await wallet.signTransaction(transaction);
+
+            expect(signedTransaction).toBe(transaction);
+            expect(wallet.publicKey.verifyTransaction(transaction)).toBe(true);
+        });
+        it("should throw when the transaction is not frozen", async function () {
+            const wallet = walletBuilder();
+            await expect(
+                wallet.signTransaction(new TransferTransaction()),
+            ).rejects.toThrow();
+        });
+    });
+
     describe("checkTransaction", function () {
         it("should throw when the transaction ID has a different account ID", function () {
             const wallet = walletBuilder();
@@ -289,11 +310,18 @@ describe("Wallet", function () {
                 transaction,
             );
         });
-        it("should thrown an error when checking transaction with a wallet instance without an accountId", async function () {
+        it("should throw when the transaction ID has an account ID and the wallet has none", function () {
             const wallet = walletBuilder({ accountId: null });
             const transaction = transferTransactionBuilder();
             expect(() => wallet.checkTransaction(transaction)).toThrow(
-                TypeError,
+                NO_ACCOUNT_ID_ERROR_MESSAGE,
+            );
+        });
+        it("should resolve without an account ID when the transaction has no transaction ID", async function () {
+            const wallet = walletBuilder({ accountId: null });
+            const transaction = new TransferTransaction();
+            await expect(wallet.checkTransaction(transaction)).resolves.toBe(
+                transaction,
             );
         });
     });
@@ -335,6 +363,64 @@ describe("Wallet", function () {
             const query = new AccountInfoQuery().setAccountId(ACCOUNT_ID);
 
             await expect(wallet.call(query)).rejects.toBe(error);
+        });
+        it("should throw for a paid query when the wallet has no account ID", function () {
+            const provider = providerStubBuilder();
+            const wallet = walletBuilder({ accountId: null, provider });
+            const query = new AccountInfoQuery().setAccountId(ACCOUNT_ID);
+
+            expect(() => wallet.call(query)).toThrow(
+                NO_ACCOUNT_ID_ERROR_MESSAGE,
+            );
+            expect(provider.call).not.toHaveBeenCalled();
+        });
+        it("should not throw about missing account id if the query does not require payment", async function () {
+            const provider = providerStubBuilder();
+            const wallet = walletBuilder({ accountId: null, provider });
+            const query = new TransactionReceiptQuery().setTransactionId(
+                new TransactionId(ACCOUNT_ID, new Timestamp(0, 0)),
+            );
+
+            await wallet.call(query);
+
+            expect(provider.call).toHaveBeenCalledWith(query);
+        });
+        it("should send a transaction with the wallet key when the wallet has no account ID", async function () {
+            const provider = providerStubBuilder();
+            const wallet = walletBuilder({ accountId: null, provider });
+            const transaction = transferTransactionBuilder();
+
+            await wallet.call(transaction);
+
+            expect(provider.call).toHaveBeenCalledWith(transaction);
+            expect(transaction._operator.accountId).toBeNull();
+            expect(transaction._operator.publicKey.toString()).toBe(
+                wallet.publicKey.toString(),
+            );
+        });
+        it("should freeze and execute a transaction with a set ID through the wallet when it has no account ID", async function () {
+            const provider = providerStubBuilder();
+            const wallet = walletBuilder({ accountId: null, provider });
+            const transaction = new TransferTransaction()
+                .addHbarTransfer("0.0.1001", Hbar.fromTinybars(-1))
+                .addHbarTransfer("0.0.1002", Hbar.fromTinybars(1))
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        new AccountId(1001),
+                        new Timestamp(1, 0),
+                    ),
+                );
+
+            await transaction.freezeWithSigner(wallet);
+            await transaction.executeWithSigner(wallet);
+
+            expect(transaction.isFrozen()).toBe(true);
+            expect(provider.call).toHaveBeenCalledWith(transaction);
+        });
+        it("should report the missing provider before the missing account ID", function () {
+            const wallet = walletBuilder({ accountId: null });
+            const query = new AccountInfoQuery().setAccountId(ACCOUNT_ID);
+            expect(() => wallet.call(query)).toThrow(NO_PROVIDER_ERROR_MESSAGE);
         });
     });
 
@@ -409,6 +495,29 @@ describe("Wallet", function () {
             expect(transaction.nodeAccountIds[0]).toBeInstanceOf(AccountId);
             expect(transaction.nodeAccountIds[0].toString()).toBe("0.0.3");
         });
+        it("should keep an already set transaction ID when the wallet has no account ID", async function () {
+            const provider = providerStubBuilder();
+            const wallet = walletBuilder({ accountId: null, provider });
+            const transactionId = new TransactionId(
+                ACCOUNT_ID,
+                new Timestamp(0, 0),
+            );
+            const transaction = new TransferTransaction().setTransactionId(
+                transactionId,
+            );
+
+            await wallet.populateTransaction(transaction);
+
+            expect(transaction.transactionId).toBe(transactionId);
+            expect(transaction.isFrozen()).toBe(true);
+        });
+        it("should throw when no transaction ID is set and the wallet has no account ID", function () {
+            const wallet = walletBuilder({ accountId: null });
+            const transaction = new TransferTransaction();
+            expect(() => wallet.populateTransaction(transaction)).toThrow(
+                NO_ACCOUNT_ID_ERROR_MESSAGE,
+            );
+        });
     });
 
     describe("getAccountBalance", function () {
@@ -425,6 +534,20 @@ describe("Wallet", function () {
                 ACCOUNT_BALANCE,
             );
             expect(provider.getAccountBalance).toHaveBeenCalledWith(ACCOUNT_ID);
+        });
+        it("should throw when the wallet has no account ID", function () {
+            const provider = providerStubBuilder();
+            const wallet = walletBuilder({ accountId: null, provider });
+            expect(() => wallet.getAccountBalance()).toThrow(
+                NO_ACCOUNT_ID_ERROR_MESSAGE,
+            );
+            expect(provider.getAccountBalance).not.toHaveBeenCalled();
+        });
+        it("should report the missing provider before the missing account ID", function () {
+            const wallet = walletBuilder({ accountId: null });
+            expect(() => wallet.getAccountBalance()).toThrow(
+                NO_WALLET_PROVIDER_ERROR_MESSAGE,
+            );
         });
     });
 
@@ -445,6 +568,20 @@ describe("Wallet", function () {
             expect(query).toBeInstanceOf(AccountInfoQuery);
             expect(query.accountId.toString()).toBe(ACCOUNT_ID.toString());
         });
+        it("should throw when the wallet has no account ID", function () {
+            const provider = providerStubBuilder();
+            const wallet = walletBuilder({ accountId: null, provider });
+            expect(() => wallet.getAccountInfo()).toThrow(
+                NO_ACCOUNT_ID_ERROR_MESSAGE,
+            );
+            expect(provider.call).not.toHaveBeenCalled();
+        });
+        it("should report the missing provider before the missing account ID", function () {
+            const wallet = walletBuilder({ accountId: null });
+            expect(() => wallet.getAccountInfo()).toThrow(
+                NO_PROVIDER_ERROR_MESSAGE,
+            );
+        });
     });
 
     describe("getAccountRecords", function () {
@@ -463,6 +600,20 @@ describe("Wallet", function () {
             const [query] = provider.call.mock.calls[0];
             expect(query).toBeInstanceOf(AccountRecordsQuery);
             expect(query.accountId.toString()).toBe(ACCOUNT_ID.toString());
+        });
+        it("should throw when the wallet has no account ID", function () {
+            const provider = providerStubBuilder();
+            const wallet = walletBuilder({ accountId: null, provider });
+            expect(() => wallet.getAccountRecords()).toThrow(
+                NO_ACCOUNT_ID_ERROR_MESSAGE,
+            );
+            expect(provider.call).not.toHaveBeenCalled();
+        });
+        it("should report the missing provider before the missing account ID", function () {
+            const wallet = walletBuilder({ accountId: null });
+            expect(() => wallet.getAccountRecords()).toThrow(
+                NO_PROVIDER_ERROR_MESSAGE,
+            );
         });
     });
 });

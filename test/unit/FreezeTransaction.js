@@ -257,4 +257,205 @@ describe("FreezeTransaction", function () {
         expect(tx2.fileHash).to.deep.equal(fileHash);
         expect(tx2.freezeType).to.equal(FreezeType.PrepareUpgrade);
     });
+
+    describe("fields", function () {
+        const VALID_START = new Timestamp(1596210382, 0);
+        const START_TIMESTAMP = new Timestamp(1596300000, 0);
+
+        let fileId, fileHash, transactionId, nodeId;
+
+        beforeEach(function () {
+            fileId = new FileId(0, 0, 150);
+            fileHash = hex.decode("1a2b3c4d5e6f");
+            transactionId = TransactionId.withValidStart(
+                new AccountId(0, 0, 1001),
+                VALID_START,
+            );
+            nodeId = new AccountId(0, 0, 3);
+        });
+
+        /**
+         * @param {FreezeTransaction} transaction
+         * @returns {FreezeTransaction}
+         */
+        function freezeWithIds(transaction) {
+            return transaction
+                .setNodeAccountIds([nodeId])
+                .setTransactionId(transactionId)
+                .freeze();
+        }
+
+        /**
+         * @returns {FreezeTransaction}
+         */
+        function withAllFields() {
+            return new FreezeTransaction()
+                .setStartTimestamp(START_TIMESTAMP)
+                .setFileId(fileId)
+                .setFileHash(fileHash)
+                .setFreezeType(FreezeType.FreezeUpgrade);
+        }
+
+        describe("constructor", function () {
+            it("should default every field to null", function () {
+                const transaction = new FreezeTransaction();
+
+                expect(transaction.startTimestamp).to.be.null;
+                expect(transaction.fileId).to.be.null;
+                expect(transaction.fileHash).to.be.null;
+                expect(transaction.freezeType).to.be.null;
+            });
+
+            it("should set the fields given in props", function () {
+                const transaction = new FreezeTransaction({
+                    startTimestamp: START_TIMESTAMP,
+                    fileId,
+                    fileHash,
+                    freezeType: FreezeType.FreezeUpgrade,
+                });
+
+                expect(transaction.startTimestamp).to.equal(START_TIMESTAMP);
+                expect(transaction.fileId).to.equal(fileId);
+                expect(transaction.fileHash).to.equal(fileHash);
+                expect(transaction.freezeType).to.equal(
+                    FreezeType.FreezeUpgrade,
+                );
+            });
+
+            it("should decode a hex fileHash in props", function () {
+                const transaction = new FreezeTransaction({
+                    fileHash: "1a2b3c4d5e6f",
+                });
+
+                expect(transaction.fileHash).to.deep.equal(fileHash);
+            });
+        });
+
+        describe("setters", function () {
+            it("should be chainable", function () {
+                const transaction = new FreezeTransaction();
+
+                expect(transaction.setStartTimestamp(START_TIMESTAMP)).to.equal(
+                    transaction,
+                );
+                expect(transaction.setFileId(fileId)).to.equal(transaction);
+                expect(transaction.setFileHash(fileHash)).to.equal(transaction);
+                expect(
+                    transaction.setFreezeType(FreezeType.FreezeOnly),
+                ).to.equal(transaction);
+            });
+
+            it("setFileHash() should decode a hex string", function () {
+                const transaction = new FreezeTransaction().setFileHash(
+                    "1a2b3c4d5e6f",
+                );
+
+                expect(transaction.fileHash).to.deep.equal(fileHash);
+            });
+
+            it("should throw once frozen", function () {
+                const transaction = freezeWithIds(new FreezeTransaction());
+
+                expect(() =>
+                    transaction.setStartTimestamp(START_TIMESTAMP),
+                ).to.throw("transaction is immutable");
+                expect(() => transaction.setFileId(fileId)).to.throw(
+                    "transaction is immutable",
+                );
+                expect(() => transaction.setFileHash(fileHash)).to.throw(
+                    "transaction is immutable",
+                );
+                expect(() =>
+                    transaction.setFreezeType(FreezeType.FreezeOnly),
+                ).to.throw("transaction is immutable");
+            });
+        });
+
+        describe("_makeTransactionData", function () {
+            it("should encode every field", function () {
+                expect(withAllFields()._makeTransactionData()).to.deep.equal({
+                    startTime: START_TIMESTAMP._toProtobuf(),
+                    updateFile: fileId._toProtobuf(),
+                    fileHash,
+                    freezeType: FreezeType.FreezeUpgrade.valueOf(),
+                });
+            });
+
+            it("should encode unset fields as null", function () {
+                expect(
+                    new FreezeTransaction()._makeTransactionData(),
+                ).to.deep.equal({
+                    startTime: null,
+                    updateFile: null,
+                    fileHash: null,
+                    freezeType: null,
+                });
+            });
+        });
+
+        describe("_execute", function () {
+            it("should call freeze.freeze() with the request", async function () {
+                const request = {};
+                const response = {};
+                const calls = [];
+                const channel = {
+                    freeze: {
+                        freeze: (arg) => {
+                            calls.push(arg);
+                            return Promise.resolve(response);
+                        },
+                    },
+                };
+
+                expect(
+                    await new FreezeTransaction()._execute(channel, request),
+                ).to.equal(response);
+                expect(calls).to.deep.equal([request]);
+                expect(calls[0]).to.equal(request);
+            });
+        });
+
+        describe("_getTransactionDataCase", function () {
+            it("should return freeze", function () {
+                expect(
+                    new FreezeTransaction()._getTransactionDataCase(),
+                ).to.equal("freeze");
+            });
+        });
+
+        describe("_getLogId", function () {
+            it("should include the class name and valid start", function () {
+                const transaction = freezeWithIds(new FreezeTransaction());
+
+                expect(transaction._getLogId()).to.equal(
+                    `FreezeTransaction:${VALID_START.toString()}`,
+                );
+            });
+        });
+    });
+
+    describe("_validateChecksums", function () {
+        const TransactionType = FreezeTransaction;
+        const field = "_fileId";
+
+        it("passes the client to the ID validator", function () {
+            const client = {};
+            const clients = [];
+            const transaction = new TransactionType();
+            transaction[field] = {
+                validateChecksum: (value) => clients.push(value),
+            };
+
+            transaction._validateChecksums(client);
+
+            expect(clients).to.have.lengthOf(1);
+            expect(clients[0]).to.equal(client);
+        });
+
+        it("skips an unset ID", function () {
+            expect(() =>
+                new TransactionType()._validateChecksums({}),
+            ).to.not.throw();
+        });
+    });
 });

@@ -531,8 +531,7 @@ describe("TokenAirdropTransaction", function () {
         });
     });
 
-    // TODO(#4683): TokenAirdropTransaction does not validate entity ID checksums yet.
-    describe.skip("_validateChecksums", function () {
+    describe("_validateChecksums", function () {
         let mainnet, testnet;
 
         beforeEach(function () {
@@ -564,7 +563,7 @@ describe("TokenAirdropTransaction", function () {
             const sender = new AccountId(0, 0, 123);
             sender._checksum = "vfmkw";
             const receiver = new AccountId(0, 0, 456);
-            receiver._checksum = "vfmkw";
+            receiver._checksum = "whmjr";
 
             const transaction = new TokenAirdropTransaction().addTokenTransfer(
                 new TokenId(0, 0, 1),
@@ -576,6 +575,63 @@ describe("TokenAirdropTransaction", function () {
                 new NftId(new TokenId(0, 0, 1), 1),
                 sender,
                 receiver,
+            );
+
+            expect(() =>
+                transaction._validateChecksums(mainnet),
+            ).to.not.throw();
+            expect(() => transaction._validateChecksums(testnet)).to.throw(
+                BadEntityIdError,
+            );
+        });
+
+        it("validates every ID in every fungible and NFT transfer", function () {
+            const validated = [];
+            const id = (name) => ({
+                validateChecksum: (client) => {
+                    expect(client).to.equal(mainnet);
+                    validated.push(name);
+                },
+            });
+
+            const transaction = new TokenAirdropTransaction();
+            transaction._tokenTransfers = [1, 2].map((i) => ({
+                tokenId: id(`token${i}`),
+                accountId: id(`account${i}`),
+            }));
+            transaction._nftTransfers = [1, 2].map((i) => ({
+                tokenId: id(`nft${i}`),
+                senderAccountId: id(`sender${i}`),
+                receiverAccountId: id(`receiver${i}`),
+            }));
+
+            transaction._validateChecksums(mainnet);
+
+            expect(validated).to.have.members([
+                "token1",
+                "account1",
+                "token2",
+                "account2",
+                "nft1",
+                "sender1",
+                "receiver1",
+                "nft2",
+                "sender2",
+                "receiver2",
+            ]);
+        });
+
+        it("skips empty transfer lists", function () {
+            expect(() =>
+                new TokenAirdropTransaction()._validateChecksums(testnet),
+            ).to.not.throw();
+        });
+
+        it("checks the token checksum of an NFT transfer", function () {
+            const transaction = new TokenAirdropTransaction().addNftTransfer(
+                new NftId(TokenId.fromString("0.0.123-vfmkw"), 1),
+                SENDER,
+                RECEIVER,
             );
 
             expect(() =>

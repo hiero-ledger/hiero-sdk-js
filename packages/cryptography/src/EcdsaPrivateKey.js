@@ -1,3 +1,4 @@
+import BadKeyError from "./BadKeyError.js";
 import EcdsaPublicKey from "./EcdsaPublicKey.js";
 import * as hex from "./encoding/hex.js";
 import * as ecdsa from "./primitive/ecdsa.js";
@@ -9,6 +10,36 @@ const derPrefixBytes = hex.decode(derPrefix);
 
 const derPrefix2 = "30540201010420";
 const derPrefixBytes2 = hex.decode(derPrefix2);
+
+// SEC1 / PKCS#8 ECDSA private keys carry a 32-byte seed after a short ASN.1
+// header. Anything shorter than header+32 cannot be a valid ECDSA DER key.
+const minEcdsaDerLength = derPrefixBytes2.length + 32;
+
+// SEC1 ECPrivateKey after the SEQUENCE tag and length: version INTEGER 1,
+// then an OCTET STRING of length 32 (the private key).
+const sec1HeaderAfterLength = Uint8Array.of(0x02, 0x01, 0x01, 0x04, 0x20);
+
+/**
+ * True when `data` looks like a SEC1 ECPrivateKey whose private-key OCTET
+ * STRING starts at offset 7 (SEQUENCE tag + 1-byte length + header above).
+ * The SEQUENCE length byte itself may vary (encrypted PEM decrypts to longer
+ * structures), so it is not compared to `derPrefix2`.
+ * @param {Uint8Array} data
+ * @returns {boolean}
+ */
+function looksLikeSec1EcdsaPrivateKey(data) {
+    if (data.length < minEcdsaDerLength || data[0] !== 0x30) {
+        return false;
+    }
+
+    for (let i = 0; i < sec1HeaderAfterLength.length; i++) {
+        if (data[2 + i] !== sec1HeaderAfterLength[i]) {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 /**
  * @typedef {object} KeyPair
@@ -67,12 +98,20 @@ export default class EcdsaPrivateKey {
      * @returns {EcdsaPrivateKey}
      */
     static fromBytes(data) {
-        switch (data.length) {
-            case 32:
-                return EcdsaPrivateKey.fromBytesRaw(data);
-            default:
-                return EcdsaPrivateKey.fromBytesDer(data);
+        if (data.length === 32) {
+            return EcdsaPrivateKey.fromBytesRaw(data);
         }
+
+        // Common mix-up: EVM address (20 bytes) or other short hex. Reject
+        // before the DER path so callers see expected vs actual length instead
+        // of an opaque error from the cryptography primitive.
+        if (data.length < minEcdsaDerLength) {
+            throw new BadKeyError(
+                `expected a 32-byte ECDSA private key (or ECDSA DER encoding), got ${data.length} bytes`,
+            );
+        }
+
+        return EcdsaPrivateKey.fromBytesDer(data);
     }
 
     /**
@@ -86,16 +125,30 @@ export default class EcdsaPrivateKey {
 
         if (arrayStartsWith(data, derPrefixBytes)) {
             ecdsaPrivateKeyBytes = data.subarray(derPrefixBytes.length);
-        } else {
-            // For now, we assume that if we get to the `else` statement
-            // the lengths of all other bytePrefixes is equal, so we treat them equally
+        } else if (looksLikeSec1EcdsaPrivateKey(data)) {
+            // SEC1 ECPrivateKey: SEQUENCE length may differ from `derPrefix2`,
+            // but the 32-byte seed still starts at offset 7 (encrypted PEM).
             ecdsaPrivateKeyBytes = data.subarray(
                 derPrefixBytes2.length,
                 derPrefixBytes2.length + 32,
             );
+        } else {
+            throw new BadKeyError(
+                `invalid DER encoding for ECDSA private key (got ${data.length} bytes)`,
+            );
         }
 
-        return new EcdsaPrivateKey(ecdsa.fromBytes(ecdsaPrivateKeyBytes));
+        if (ecdsaPrivateKeyBytes.length !== 32) {
+            throw new BadKeyError(
+                `expected a 32-byte ECDSA private key inside DER, got ${ecdsaPrivateKeyBytes.length} bytes`,
+            );
+        }
+
+        try {
+            return new EcdsaPrivateKey(ecdsa.fromBytes(ecdsaPrivateKeyBytes));
+        } catch (error) {
+            throw new BadKeyError(/** @type {Error} */ (error));
+        }
     }
 
     /**
@@ -104,7 +157,17 @@ export default class EcdsaPrivateKey {
      * @returns {EcdsaPrivateKey}
      */
     static fromBytesRaw(data) {
-        return new EcdsaPrivateKey(ecdsa.fromBytes(data));
+        if (data.length !== 32) {
+            throw new BadKeyError(
+                `expected a 32-byte ECDSA private key, got ${data.length} bytes`,
+            );
+        }
+
+        try {
+            return new EcdsaPrivateKey(ecdsa.fromBytes(data));
+        } catch (error) {
+            throw new BadKeyError(/** @type {Error} */ (error));
+        }
     }
 
     /**
