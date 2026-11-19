@@ -18,7 +18,10 @@ export default defineConfig({
         coverage: {
             provider: "istanbul",
             include: ["src/**/*.js"],
-            reporter: ["text-summary", "lcov"],
+            // projectRoot makes lcov paths relative to the repository root so
+            // Codecov attributes coverage to packages/cryptography/src/ instead of
+            // clashing with SDK files of the same name in src/.
+            reporter: ["text-summary", ["lcov", { projectRoot: "../.." }]],
             reportsDirectory: "./coverage/browser",
         },
     },
