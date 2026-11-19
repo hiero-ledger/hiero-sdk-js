@@ -36,7 +36,7 @@ import { computeConnectorId, computeConnectorCommitment } from "./ownership.js";
  * registration by revealing the bound Channel ID, Connector ID, salt and proof with
  * ClprCompleteConnectorTransaction. The reveal's admin key keeps deregistration
  * possible, and its payer funds the locked stake.
- * CLPR is off by default and requires the network setting `clpr.enabled`.
+ * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  * This transaction cannot be scheduled.
  */
 export default class ClprRegisterConnectorTransaction extends ClprTransaction {

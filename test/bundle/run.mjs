@@ -456,7 +456,11 @@ function failures(results, inputs) {
                 failed.push(
                     `${name}: decodes now; remove it from the list of cases without a class`,
                 );
-            } else if (!result.error?.includes("not implemented for type")) {
+            } else if (
+                !/not implemented for type|does not support/.test(
+                    result.error ?? "",
+                )
+            ) {
                 failed.push(`${name}: ${result.error}`);
             }
         } else if (!result.ok) {

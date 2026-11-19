@@ -3,8 +3,10 @@
 import Transaction from "../transaction/Transaction.js";
 import ClprTransaction from "./ClprTransaction.js";
 import ContractId from "../contract/ContractId.js";
-import { copyBytes32 } from "../util.js";
+import { copyBytes32, requireUint8Array } from "../util.js";
 import OwnershipProofState from "./OwnershipProofState.js";
+import { copyContractId } from "./copy.js";
+import { channelSigningPreimage, contractBytes } from "./ownership.js";
 
 /**
  * @namespace proto
@@ -34,13 +36,14 @@ import OwnershipProofState from "./OwnershipProofState.js";
  * Completes a CLPR Channel registration by revealing its ownership proof.
  *
  * Any payer can submit this reveal. The ownership private key is used only
- * during setOwnershipProof() and is never retained. Changing channelId clears
- * the proof; setting the same bytes keeps it.
+ * during setOwnershipProof() and is never retained. Changing any signed field
+ * clears the proof; setting the same bytes keeps it.
  *
  * The verifier contract and its configuration and endpoint manifest proofs are
- * opaque to the SDK. They are optional locally because verifier families differ.
- * Only channelId and a complete ownership proof are required at freeze.
- * CLPR is off by default and requires the network setting `clpr.enabled`.
+ * opaque to the SDK. Set all four signed inputs before creating the proof.
+ * The configuration proof must not be empty; the endpoint manifest proof may be
+ * empty when the verifier permits it.
+ * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  * This transaction cannot be scheduled.
  */
 export default class ClprCompleteChannelTransaction extends ClprTransaction {
@@ -68,15 +71,15 @@ export default class ClprCompleteChannelTransaction extends ClprTransaction {
 
         /**
          * @private
-         * @type {Uint8Array}
+         * @type {?Uint8Array}
          */
-        this._configProofBytes = new Uint8Array();
+        this._configProofBytes = null;
 
         /**
          * @private
-         * @type {Uint8Array}
+         * @type {?Uint8Array}
          */
-        this._endpointManifestProofBytes = new Uint8Array();
+        this._endpointManifestProofBytes = null;
 
         /**
          * @private
@@ -127,7 +130,9 @@ export default class ClprCompleteChannelTransaction extends ClprTransaction {
                 completion.verifierContract != null
                     ? ContractId._fromProtobuf(completion.verifierContract)
                     : undefined,
-            configProofBytes: completion.configProofBytes ?? undefined,
+            configProofBytes: completion.configProofBytes?.length
+                ? completion.configProofBytes
+                : undefined,
             endpointManifestProofBytes:
                 completion.endpointManifestProofBytes ?? undefined,
         });
@@ -170,8 +175,8 @@ export default class ClprCompleteChannelTransaction extends ClprTransaction {
     }
 
     /**
-     * Signs the Channel ID using the shared ownership signer. The private key
-     * is never stored. Set channelId before calling this method.
+     * Signs all completion inputs using the shared ownership signer. The private
+     * key is never stored. Set the ID, verifier and both proof fields first.
      *
      * @param {PrivateKey} privateKey
      * @returns {this}
@@ -179,12 +184,22 @@ export default class ClprCompleteChannelTransaction extends ClprTransaction {
     setOwnershipProof(privateKey) {
         this._requireNotFrozen();
         this._requireFields(
-            { channelId: this._channelId },
+            {
+                channelId: this._channelId,
+                verifierContract: this._verifierContract,
+                configProofBytes: this._configProofBytes,
+                endpointManifestProofBytes: this._endpointManifestProofBytes,
+            },
             "calling setOwnershipProof()",
         );
         this._ownershipProof.sign(
             privateKey,
-            /** @type {Uint8Array} */ (this._channelId),
+            channelSigningPreimage(
+                /** @type {Uint8Array} */ (this._channelId),
+                /** @type {ContractId} */ (this._verifierContract),
+                /** @type {Uint8Array} */ (this._configProofBytes),
+                /** @type {Uint8Array} */ (this._endpointManifestProofBytes),
+            ),
         );
         return this;
     }
@@ -220,10 +235,18 @@ export default class ClprCompleteChannelTransaction extends ClprTransaction {
      */
     setVerifierContract(verifierContract) {
         this._requireNotFrozen();
-        this._verifierContract =
+        const contract = copyContractId(
             typeof verifierContract === "string"
                 ? ContractId.fromString(verifierContract)
-                : verifierContract.clone();
+                : verifierContract,
+        );
+        this._ownershipProof.clearIfChanged(
+            this._verifierContract == null
+                ? null
+                : contractBytes(this._verifierContract),
+            contractBytes(contract),
+        );
+        this._verifierContract = contract;
         return this;
     }
 
@@ -231,25 +254,37 @@ export default class ClprCompleteChannelTransaction extends ClprTransaction {
      * @returns {?ContractId}
      */
     get verifierContract() {
-        return this._verifierContract?.clone() ?? null;
+        return this._verifierContract == null
+            ? null
+            : copyContractId(this._verifierContract);
     }
 
     /**
-     * Sets and copies the opaque configuration proof bytes.
+     * Sets and copies the opaque configuration proof bytes. The network rejects
+     * an empty configuration proof, so empty bytes throw here.
      * @param {Uint8Array} configProofBytes
      * @returns {this}
      */
     setConfigProofBytes(configProofBytes) {
         this._requireNotFrozen();
-        this._configProofBytes = new Uint8Array(configProofBytes);
+        const bytes = new Uint8Array(requireUint8Array(configProofBytes));
+        if (bytes.length === 0) {
+            throw new Error(
+                "ClprCompleteChannelTransaction: 'configProofBytes' must not be empty.",
+            );
+        }
+        this._ownershipProof.clearIfChanged(this._configProofBytes, bytes);
+        this._configProofBytes = bytes;
         return this;
     }
 
     /**
-     * @returns {Uint8Array}
+     * @returns {?Uint8Array}
      */
     get configProofBytes() {
-        return new Uint8Array(this._configProofBytes);
+        return this._configProofBytes == null
+            ? null
+            : new Uint8Array(this._configProofBytes);
     }
 
     /**
@@ -259,17 +294,24 @@ export default class ClprCompleteChannelTransaction extends ClprTransaction {
      */
     setEndpointManifestProofBytes(endpointManifestProofBytes) {
         this._requireNotFrozen();
-        this._endpointManifestProofBytes = new Uint8Array(
-            endpointManifestProofBytes,
+        const bytes = new Uint8Array(
+            requireUint8Array(endpointManifestProofBytes),
         );
+        this._ownershipProof.clearIfChanged(
+            this._endpointManifestProofBytes,
+            bytes,
+        );
+        this._endpointManifestProofBytes = bytes;
         return this;
     }
 
     /**
-     * @returns {Uint8Array}
+     * @returns {?Uint8Array}
      */
     get endpointManifestProofBytes() {
-        return new Uint8Array(this._endpointManifestProofBytes);
+        return this._endpointManifestProofBytes == null
+            ? null
+            : new Uint8Array(this._endpointManifestProofBytes);
     }
 
     /**
@@ -290,6 +332,9 @@ export default class ClprCompleteChannelTransaction extends ClprTransaction {
         return {
             channelId: this._channelId,
             ownershipProof: this._ownershipProof,
+            verifierContract: this._verifierContract,
+            configProofBytes: this._configProofBytes,
+            endpointManifestProofBytes: this._endpointManifestProofBytes,
         };
     }
     /**

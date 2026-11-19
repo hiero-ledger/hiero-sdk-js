@@ -17,9 +17,10 @@ describe("ClprSignatureScheme", function () {
         expect(Object.isFrozen(scheme)).toBe(true);
     });
 
-    it("rejects an unknown scheme code", function () {
-        expect(sdk.ClprSignatureScheme).toBeTypeOf("function");
-        expect(() => sdk.ClprSignatureScheme._fromCode(2)).toThrow(/2/);
+    it("decodes an unknown scheme code as UNKNOWN", function () {
+        const scheme = sdk.ClprSignatureScheme._fromCode(2);
+        expect(scheme.valueOf()).toBe(2);
+        expect(scheme.toString()).toBe("UNKNOWN (2)");
     });
 
     it("exports the enum from the package entry", async function () {

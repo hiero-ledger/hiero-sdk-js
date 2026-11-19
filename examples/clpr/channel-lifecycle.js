@@ -24,6 +24,7 @@ import {
 import { readFileSync } from "node:fs";
 import dotenv from "dotenv";
 import { clientForName } from "../client.js";
+import { applyMaxTransactionFee } from "./transaction-fee.js";
 
 dotenv.config();
 
@@ -68,6 +69,7 @@ async function main() {
             ownershipKey.publicKey,
         );
     const client = clientForName(process.env.HEDERA_NETWORK);
+    applyMaxTransactionFee(client);
 
     try {
         client.setOperator(process.env.OPERATOR_ID, payerKey);

@@ -68,3 +68,13 @@ export interface GetClprLedgerConfigurationParams extends BaseParams {
     readonly maxQueryPayment?: string;
 }
 export type GetClprEndpointManifestParams = GetClprLedgerConfigurationParams;
+
+export interface GetMirrorNodeClprChannelParams extends BaseParams {
+    /** 32-byte ID as hex without 0x. */
+    readonly channelId?: string;
+}
+
+export interface GetMirrorNodeClprConnectorParams
+    extends GetMirrorNodeClprChannelParams {
+    readonly connectorId?: string;
+}

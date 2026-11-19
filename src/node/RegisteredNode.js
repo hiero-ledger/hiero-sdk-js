@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import * as HieroProto from "@hiero-ledger/proto";
 import Long from "long";
-import * as hex from "../encoding/hex.js";
-import Key from "../Key.js";
-import PublicKey from "../PublicKey.js";
+import keyFromJson from "../mirror_node/keyFromJson.js";
+
 import RegisteredServiceEndpoint from "./RegisteredServiceEndpoint.js";
+
+/** @typedef {import("../Key.js").default} Key */
 
 /**
  * Mirror-node REST shape for an admin key. The mirror node returns one of:
@@ -109,43 +109,5 @@ export default class RegisteredNode {
                 RegisteredServiceEndpoint._fromJson(endpoint),
             ),
         });
-    }
-}
-
-/**
- * Decode a mirror-node JSON admin key into a `Key`. Handles the three
- * documented shapes (`ED25519`, `ECDSA_SECP256K1`, and a generic
- * `ProtobufEncoded` envelope used for complex keys like `KeyList` and
- * `ThresholdKey`).
- *
- * @param {MirrorNodeKeyJson} key
- * @returns {Key}
- */
-function keyFromJson(key) {
-    const keyType = key._type.replace(/[^A-Za-z0-9]/g, "").toUpperCase();
-
-    switch (keyType) {
-        case "ED25519":
-            return PublicKey.fromStringED25519(key.key);
-        case "ECDSASECP256K1":
-            return PublicKey.fromStringECDSA(key.key);
-        case "PROTOBUFENCODED": {
-            const protobufKey = HieroProto.proto.Key.decode(
-                hex.decode(key.key),
-            );
-            const decodedKey = Key._fromProtobufKey(protobufKey);
-
-            if (decodedKey == null) {
-                throw new Error(
-                    "Mirror node returned a protobuf-encoded admin key that could not be decoded.",
-                );
-            }
-
-            return decodedKey;
-        }
-        default:
-            throw new Error(
-                `Unsupported registered node admin key type: ${key._type}`,
-            );
     }
 }

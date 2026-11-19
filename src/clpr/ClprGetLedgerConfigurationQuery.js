@@ -18,7 +18,7 @@ import ClprLedgerConfigurationInfo from "./ClprLedgerConfigurationInfo.js";
  *
  * Configuration fields are live, while the state proof is a signed snapshot.
  * An empty state proof is a successful read; retry later for proof material.
- * CLPR is off by default and must be enabled with `clpr.enabled`.
+ * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  * @augments {Query<ClprLedgerConfigurationInfo>}
  */
 export default class ClprGetLedgerConfigurationQuery extends Query {

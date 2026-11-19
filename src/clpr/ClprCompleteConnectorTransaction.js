@@ -8,7 +8,14 @@ import Hbar from "../Hbar.js";
 import HbarUnit from "../HbarUnit.js";
 import { arrayEqual, copyBytes32 } from "../util.js";
 import OwnershipProofState from "./OwnershipProofState.js";
-import { CLPR_SERVICE_ADDRESS, computeConnectorId } from "./ownership.js";
+import { copyContractId, copyKey } from "./copy.js";
+import {
+    computeConnectorId,
+    connectorSigningPreimage,
+    contractBytes,
+    keyBytes,
+    requirePrivateKey,
+} from "./ownership.js";
 
 /**
  * @namespace proto
@@ -39,15 +46,15 @@ import { CLPR_SERVICE_ADDRESS, computeConnectorId } from "./ownership.js";
  *
  * First register the commitment with ClprRegisterConnectorTransaction. The reveal
  * checks that connectorId matches the Channel ID, ownership public key and salt
- * before signing connectorId || the CLPR service address. The ownership private
- * key is used only during setOwnershipProof() and is never retained.
- * Changing channelId, connectorId or salt clears the proof; identical bytes keep it.
+ * before signing the IDs, service address, contract and admin key. The ownership
+ * private key is used only during setOwnershipProof() and is never retained.
+ * Changing any of those inputs or the salt clears the proof; identical bytes keep it.
  *
  * The required admin key keeps deregistration possible and may be any SDK Key,
  * including a threshold key or key list. The payer funds the locked stake, which
  * defaults to zero and must be an integer in 0..2^63-1 tinybars. The network
  * enforces its configured minimum stake and contract requirements.
- * CLPR is off by default and requires the network setting `clpr.enabled`.
+ * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  * This transaction cannot be scheduled.
  */
 export default class ClprCompleteConnectorTransaction extends ClprTransaction {
@@ -250,7 +257,7 @@ export default class ClprCompleteConnectorTransaction extends ClprTransaction {
 
     /**
      * Checks the Connector ID, then signs its reveal using the shared signer.
-     * Set channelId, connectorId and salt first. The private key is never stored.
+     * Set channelId, connectorId, salt, connectorContract and adminKey first. The private key is never stored.
      * @param {PrivateKey} privateKey
      * @returns {this}
      */
@@ -261,9 +268,12 @@ export default class ClprCompleteConnectorTransaction extends ClprTransaction {
                 channelId: this._channelId,
                 connectorId: this._connectorId,
                 salt: this._salt,
+                connectorContract: this._connectorContract,
+                adminKey: this._adminKey,
             },
             "calling setOwnershipProof()",
         );
+        requirePrivateKey(privateKey);
         const channelId = /** @type {Uint8Array} */ (this._channelId);
         const connectorId = /** @type {Uint8Array} */ (this._connectorId);
         const salt = /** @type {Uint8Array} */ (this._salt);
@@ -279,7 +289,12 @@ export default class ClprCompleteConnectorTransaction extends ClprTransaction {
         }
         this._ownershipProof.sign(
             privateKey,
-            new Uint8Array([...connectorId, ...CLPR_SERVICE_ADDRESS]),
+            connectorSigningPreimage(
+                channelId,
+                connectorId,
+                /** @type {ContractId} */ (this._connectorContract),
+                /** @type {Key} */ (this._adminKey),
+            ),
         );
         return this;
     }
@@ -315,10 +330,18 @@ export default class ClprCompleteConnectorTransaction extends ClprTransaction {
      */
     setConnectorContract(connectorContract) {
         this._requireNotFrozen();
-        this._connectorContract =
+        const contract = copyContractId(
             typeof connectorContract === "string"
                 ? ContractId.fromString(connectorContract)
-                : connectorContract.clone();
+                : connectorContract,
+        );
+        this._ownershipProof.clearIfChanged(
+            this._connectorContract == null
+                ? null
+                : contractBytes(this._connectorContract),
+            contractBytes(contract),
+        );
+        this._connectorContract = contract;
         return this;
     }
 
@@ -326,7 +349,9 @@ export default class ClprCompleteConnectorTransaction extends ClprTransaction {
      * @returns {?ContractId}
      */
     get connectorContract() {
-        return this._connectorContract?.clone() ?? null;
+        return this._connectorContract == null
+            ? null
+            : copyContractId(this._connectorContract);
     }
 
     /**
@@ -337,7 +362,12 @@ export default class ClprCompleteConnectorTransaction extends ClprTransaction {
      */
     setAdminKey(adminKey) {
         this._requireNotFrozen();
-        this._adminKey = Key._fromProtobufKey(adminKey._toProtobufKey());
+        const key = copyKey(adminKey);
+        this._ownershipProof.clearIfChanged(
+            this._adminKey == null ? null : keyBytes(this._adminKey),
+            keyBytes(key),
+        );
+        this._adminKey = key;
         return this;
     }
 
@@ -346,9 +376,7 @@ export default class ClprCompleteConnectorTransaction extends ClprTransaction {
      * @returns {?Key}
      */
     get adminKey() {
-        return this._adminKey == null
-            ? null
-            : Key._fromProtobufKey(this._adminKey._toProtobufKey());
+        return this._adminKey == null ? null : copyKey(this._adminKey);
     }
 
     /**
@@ -402,6 +430,7 @@ export default class ClprCompleteConnectorTransaction extends ClprTransaction {
             connectorId: this._connectorId,
             salt: this._salt,
             adminKey: this._adminKey,
+            connectorContract: this._connectorContract,
             ownershipProof: this._ownershipProof,
         };
     }

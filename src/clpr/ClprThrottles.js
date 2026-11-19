@@ -24,7 +24,7 @@ import Long from "long";
  * Use {@link ClprThrottles.of} to validate all seven limits before submitting
  * a configuration update. The two endpoint limits accept zero for no limit.
  * Configuration updates require treasury or system admin authority.
- * CLPR is off by default and must be enabled with `clpr.enabled`.
+ * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  */
 export default class ClprThrottles {
     /**

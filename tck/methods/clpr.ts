@@ -9,6 +9,8 @@ import {
     ClprUpdateLedgerConfigurationTransaction,
     ClprGetLedgerConfigurationQuery,
     ClprGetEndpointManifestQuery,
+    MirrorNodeClprChannelQuery,
+    MirrorNodeClprConnectorQuery,
     ClprThrottles,
     Hbar,
     PrivateKey,
@@ -16,6 +18,7 @@ import {
     Query,
 } from "@hiero-ledger/sdk";
 import Long from "long";
+import { proto } from "@hiero-ledger/proto";
 
 import { sdk } from "../sdk_data";
 import { BaseTransactionParams } from "../params/base";
@@ -31,12 +34,16 @@ import {
     UpdateClprLedgerConfigurationParams,
     GetClprLedgerConfigurationParams,
     GetClprEndpointManifestParams,
+    GetMirrorNodeClprChannelParams,
+    GetMirrorNodeClprConnectorParams,
 } from "../params/clpr";
 import {
     ClprTransactionResponse,
     ClprCompletionResponse,
     ClprLedgerConfigurationResponse,
     ClprEndpointManifestResponse,
+    MirrorNodeClprChannelResponse,
+    MirrorNodeClprConnectorResponse,
 } from "../response/clpr";
 import { DEFAULT_GRPC_DEADLINE } from "../utils/constants/config";
 import { decode } from "../utils/hex";
@@ -325,5 +332,60 @@ export const getClprEndpointManifest = async (
             accountId: encode(endpoint.accountId),
         })),
         manifestStateProof: encode(info.manifestStateProof),
+    };
+};
+
+export const getMirrorNodeClprChannel = async (
+    params: GetMirrorNodeClprChannelParams,
+): Promise<MirrorNodeClprChannelResponse> => {
+    const query = new MirrorNodeClprChannelQuery();
+    if (params.channelId != null) {
+        query.setChannelId(decode(params.channelId));
+    }
+    const info = await query.execute(sdk.getClient(params.sessionId));
+    return {
+        channelId: encode(info.channelId),
+        chainId: info.chainId,
+        status: info.status.toString(),
+        verifierContractId: info.verifierContractId?.toString() ?? null,
+        verifierFingerprint:
+            info.verifierFingerprint == null
+                ? null
+                : encode(info.verifierFingerprint),
+        trustAnchorId:
+            info.trustAnchorId == null ? null : encode(info.trustAnchorId),
+        nextMessageId: info.nextMessageId.toString(),
+        ackedMessageId: info.ackedMessageId.toString(),
+        receivedMessageId: info.receivedMessageId.toString(),
+        createdTimestamp: info.createdTimestamp.toString(),
+        modifiedTimestamp: info.modifiedTimestamp.toString(),
+    };
+};
+
+export const getMirrorNodeClprConnector = async (
+    params: GetMirrorNodeClprConnectorParams,
+): Promise<MirrorNodeClprConnectorResponse> => {
+    const query = new MirrorNodeClprConnectorQuery();
+    if (params.channelId != null) {
+        query.setChannelId(decode(params.channelId));
+    }
+    if (params.connectorId != null) {
+        query.setConnectorId(decode(params.connectorId));
+    }
+    const info = await query.execute(sdk.getClient(params.sessionId));
+    return {
+        connectorId: encode(info.connectorId),
+        channelId: encode(info.channelId),
+        connectorContractId: info.connectorContractId?.toString() ?? null,
+        adminKey: {
+            _type: "ProtobufEncoded",
+            key: encode(
+                proto.Key.encode(info.adminKey._toProtobufKey()).finish(),
+            ),
+        },
+        lockedStake: info.lockedStake.toTinybars().toString(),
+        inFlightMessageCount: info.inFlightMessageCount.toString(),
+        slashCount: info.slashCount.toString(),
+        createdTimestamp: info.createdTimestamp.toString(),
     };
 };

@@ -4,7 +4,8 @@ import * as sdk from "../../../src/exports.js";
 import { proto } from "@hiero-ledger/proto";
 import { Signature, SigningKey, keccak256 } from "ethers";
 import * as hex from "../../../src/encoding/hex.js";
-import vectors from "../utils/ClprOwnershipVectors.js";
+import { channelSigningPreimage } from "../../../src/clpr/ownership.js";
+import vectors from "../utils/ClprPhase2OwnershipVectors.js";
 
 function channelId() {
     return new Uint8Array(hex.decode(vectors.channelId));
@@ -21,7 +22,14 @@ function completeChannel(props) {
         sdk.ClprCompleteChannelTransaction,
         "SDK must export ClprCompleteChannelTransaction",
     ).toBeTypeOf("function");
-    return new sdk.ClprCompleteChannelTransaction(props);
+    return new sdk.ClprCompleteChannelTransaction({
+        verifierContract: vectors.verifierContract,
+        configProofBytes: hex.decode(vectors.configProofBytes),
+        endpointManifestProofBytes: hex.decode(
+            vectors.endpointManifestProofBytes,
+        ),
+        ...props,
+    });
 }
 
 function offline(transaction) {
@@ -51,7 +59,14 @@ function wireBytes(completion, signed = true) {
         nodeAccountID: new sdk.AccountId(3)._toProtobuf(),
         transactionFee: new sdk.Hbar(1).toTinybars(),
         transactionValidDuration: { seconds: 120 },
-        clprCompleteChannel: completion,
+        clprCompleteChannel: {
+            verifierContract: { shardNum: 1, realmNum: 2, contractNum: 345 },
+            configProofBytes: hex.decode(vectors.configProofBytes),
+            endpointManifestProofBytes: hex.decode(
+                vectors.endpointManifestProofBytes,
+            ),
+            ...completion,
+        },
     }).finish();
 
     if (!signed) {
@@ -377,7 +392,16 @@ describe("ClprCompleteChannelTransaction", function () {
             transaction.setOwnershipProof(privateKey());
             expect(
                 privateKey().publicKey.verify(
-                    hex.decode(keccak256(nextId)),
+                    hex.decode(
+                        keccak256(
+                            channelSigningPreimage(
+                                nextId,
+                                transaction.verifierContract,
+                                transaction.configProofBytes,
+                                transaction.endpointManifestProofBytes,
+                            ),
+                        ),
+                    ),
                     transaction.signature,
                 ),
             ).toBe(true);
@@ -520,10 +544,10 @@ describe("ClprCompleteChannelTransaction", function () {
         const transaction = offline(
             completeChannel()
                 .setChannelId(channelId())
-                .setOwnershipProof(privateKey())
                 .setVerifierContract(
                     sdk.ContractId.fromEvmAddress(0, 0, address),
-                ),
+                )
+                .setOwnershipProof(privateKey()),
         ).freeze();
         await transaction.sign(privateKey());
         const bytes = transaction.toBytes();
@@ -543,8 +567,8 @@ describe("ClprCompleteChannelTransaction", function () {
             const transaction = offline(
                 completeChannel()
                     .setChannelId(channelId())
-                    .setOwnershipProof(privateKey())
-                    .setVerifierContract(verifier),
+                    .setVerifierContract(verifier)
+                    .setOwnershipProof(privateKey()),
             );
             const returned =
                 source === "caller" ? verifier : transaction.verifierContract;
@@ -558,48 +582,68 @@ describe("ClprCompleteChannelTransaction", function () {
         },
     );
 
-    it("allows completion without a verifier or either opaque proof field", function () {
-        const transaction = offline(
-            completeChannel()
-                .setChannelId(channelId())
-                .setOwnershipProof(privateKey()),
-        );
+    it.each([
+        "channelId",
+        "verifierContract",
+        "configProofBytes",
+        "endpointManifestProofBytes",
+    ])(
+        "requires %s before signing and preserves an absent proof",
+        function (field) {
+            const props = {
+                channelId: channelId(),
+                verifierContract: vectors.verifierContract,
+                configProofBytes: hex.decode(vectors.configProofBytes),
+                endpointManifestProofBytes: hex.decode(
+                    vectors.endpointManifestProofBytes,
+                ),
+            };
+            delete props[field];
+            const transaction = new sdk.ClprCompleteChannelTransaction(props);
+            expect(() => transaction.setOwnershipProof(privateKey())).toThrow(
+                new RegExp(field),
+            );
+            expect(transaction.signature).toBeNull();
+        },
+    );
 
-        expect(() => transaction.freeze()).not.toThrow();
-        const body = proto.TransactionBody.decode(
-            signedBodies(transaction.toBytes())[0].bodyBytes,
-        );
-        expect(body.clprCompleteChannel.verifierContract).toBeNull();
-        expect(body.clprCompleteChannel.configProofBytes).toHaveLength(0);
-        expect(
-            body.clprCompleteChannel.endpointManifestProofBytes,
-        ).toHaveLength(0);
-    });
+    it.each([
+        ["setVerifierContract", () => new sdk.ContractId(345)],
+        ["setConfigProofBytes", () => new Uint8Array([255])],
+        ["setEndpointManifestProofBytes", () => new Uint8Array([255])],
+    ])(
+        "invalidates the proof when %s changes its signed input",
+        function (setter, value) {
+            const transaction = offline(
+                completeChannel({ channelId: channelId() }).setOwnershipProof(
+                    privateKey(),
+                ),
+            );
+            transaction[setter](value());
+            expect(transaction.publicKey).toBeNull();
+            expect(transaction.signature).toBeNull();
+            expect(transaction.signatureScheme).toBeNull();
+            expect(() => transaction.freeze()).toThrow(/proof/i);
+            transaction.setOwnershipProof(privateKey());
+            expect(() => transaction.freeze()).not.toThrow();
+        },
+    );
 
-    it("keeps the ownership proof when setting opaque verifier values", function () {
-        const transaction = offline(
-            completeChannel()
-                .setChannelId(channelId())
-                .setOwnershipProof(privateKey()),
-        );
-        const publicKey = transaction.publicKey;
+    it("keeps a proof for identical verifier/proof bytes and failed setters", function () {
+        const transaction = completeChannel({
+            channelId: channelId(),
+        }).setOwnershipProof(privateKey());
         const signature = transaction.signature;
-
-        expect(transaction.setVerifierContract(new sdk.ContractId(345))).toBe(
-            transaction,
-        );
-        expect(transaction.setConfigProofBytes(new Uint8Array())).toBe(
-            transaction,
-        );
-        expect(
-            transaction.setEndpointManifestProofBytes(new Uint8Array([255])),
-        ).toBe(transaction);
-        expect(transaction.publicKey).toEqual(publicKey);
+        transaction
+            .setVerifierContract(vectors.verifierContract)
+            .setConfigProofBytes(hex.decode(vectors.configProofBytes))
+            .setEndpointManifestProofBytes(
+                hex.decode(vectors.endpointManifestProofBytes),
+            );
+        expect(() => transaction.setVerifierContract("invalid")).toThrow();
+        expect(() => transaction.setConfigProofBytes(null)).toThrow();
+        expect(() => transaction.setEndpointManifestProofBytes(null)).toThrow();
         expect(transaction.signature).toEqual(signature);
-        expect(transaction.signatureScheme).toBe(
-            sdk.ClprSignatureScheme.ED25519,
-        );
-        expect(() => transaction.freeze()).not.toThrow();
     });
 
     it.each([
@@ -631,6 +675,63 @@ describe("ClprCompleteChannelTransaction", function () {
 
         expect(() => schedule(transaction)).toThrow(
             new Error("ClprCompleteChannelTransaction cannot be scheduled"),
+        );
+    });
+
+    it("rejects an empty config proof but allows an empty manifest proof", function () {
+        const transaction = completeChannel({ channelId: channelId() });
+
+        expect(() => transaction.setConfigProofBytes(new Uint8Array())).toThrow(
+            /'configProofBytes' must not be empty/,
+        );
+        expect(
+            () =>
+                new sdk.ClprCompleteChannelTransaction({
+                    configProofBytes: new Uint8Array(),
+                }),
+        ).toThrow(/configProofBytes/);
+        transaction.setEndpointManifestProofBytes(new Uint8Array());
+        expect(() => transaction.setOwnershipProof(privateKey())).not.toThrow();
+
+        const decoded = sdk.Transaction.fromBytes(
+            wireBytes({ configProofBytes: new Uint8Array() }, false),
+        );
+        expect(decoded.configProofBytes).toBeNull();
+    });
+
+    it("decodes an unknown signature scheme instead of throwing", function () {
+        const decoded = sdk.Transaction.fromBytes(
+            wireBytes(
+                {
+                    channelId: channelId(),
+                    publicKey: new Uint8Array([1]),
+                    signature: new Uint8Array([2]),
+                    signatureScheme: 7,
+                },
+                false,
+            ),
+        );
+        expect(decoded.signatureScheme.toString()).toBe("UNKNOWN (7)");
+    });
+
+    it.each([
+        "clprEndpointPublication",
+        "clprMaintenance",
+        "clprEvictPeerEndpoint",
+    ])("names the unsupported CLPR body %s in fromBytes", function (field) {
+        const bodyBytes = proto.TransactionBody.encode({
+            transactionID: sdk.TransactionId.fromString(
+                "0.0.5006@1596210382.0",
+            )._toProtobuf(),
+            nodeAccountID: new sdk.AccountId(3)._toProtobuf(),
+            [field]: {},
+        }).finish();
+        const bytes = proto.TransactionList.encode({
+            transactionList: [{ bodyBytes }],
+        }).finish();
+
+        expect(() => sdk.Transaction.fromBytes(bytes)).toThrow(
+            `does not support ${field}`,
         );
     });
 

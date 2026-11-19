@@ -3,10 +3,11 @@
 import * as sdk from "../../../src/index.js";
 import { Client as GrpcClient } from "@grpc/grpc-js";
 import { proto } from "@hiero-ledger/proto";
+import { keccak256 } from "ethers";
 import { vi } from "vitest";
 import Mocker from "../Mocker.js";
 import * as hex from "../../../src/encoding/hex.js";
-import vectors from "../utils/ClprOwnershipVectors.js";
+import vectors from "../utils/ClprPhase2OwnershipVectors.js";
 
 function completeChannel(props) {
     expect(
@@ -52,10 +53,10 @@ describe("ClprCompleteChannelMocking", function () {
                     : sdk.PrivateKey.fromStringED25519(vector.privateKeyOrSeed);
             const transaction = completeChannel()
                 .setChannelId(hex.decode(vectors.channelId))
-                .setOwnershipProof(key)
                 .setVerifierContract(new sdk.ContractId(1, 2, 345))
                 .setConfigProofBytes(new Uint8Array([255, 0, 7]))
                 .setEndpointManifestProofBytes(new Uint8Array([128, 0, 9, 255]))
+                .setOwnershipProof(key)
                 .setTransactionMemo("complete channel");
             const unaryRequests = vi.spyOn(
                 GrpcClient.prototype,
@@ -130,6 +131,28 @@ describe("ClprCompleteChannelMocking", function () {
                 expect(
                     new Uint8Array(completion.endpointManifestProofBytes),
                 ).toEqual(transaction.endpointManifestProofBytes);
+                const hash = (bytes) =>
+                    Buffer.from(keccak256(bytes).slice(2), "hex");
+                const preimage = Buffer.concat([
+                    Buffer.from("hiero.clpr.complete-channel.v1"),
+                    Buffer.from(completion.channelId),
+                    hash(
+                        proto.ContractID.encode(
+                            completion.verifierContract,
+                        ).finish(),
+                    ),
+                    hash(completion.configProofBytes),
+                    hash(completion.endpointManifestProofBytes),
+                ]);
+                expect(keccak256(preimage).slice(2)).toBe(vector.channelDigest);
+                expect(
+                    key.publicKey.verify(
+                        vector.signatureScheme === "ED25519"
+                            ? hash(preimage)
+                            : preimage,
+                        completion.signature,
+                    ),
+                ).toBe(true);
                 expect(body.memo).toBe("complete channel");
                 expect(response.transactionId.toString()).toBe(
                     transaction.transactionId.toString(),
