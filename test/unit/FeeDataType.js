@@ -10,7 +10,7 @@ describe("FeeDataType", function () {
 
     it("throws for an unknown code", function () {
         expect(() => FeeDataType._fromCode(99)).to.throw(
-            "(BUG) SubType.fromCode() does not handle code: 99",
+            "(BUG) FeeDataType.fromCode() does not handle code: 99",
         );
     });
 
