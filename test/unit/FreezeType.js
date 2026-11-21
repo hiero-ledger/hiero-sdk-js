@@ -16,7 +16,7 @@ describe("FreezeType", function () {
 
     it("throws for an unknown code", function () {
         expect(() => FreezeType._fromCode(99)).to.throw(
-            "(BUG) Status.fromCode() does not handle code: 99",
+            "(BUG) FreezeType.fromCode() does not handle code: 99",
         );
     });
 
