@@ -61,7 +61,7 @@ export default class FreezeType {
                 return FreezeType.TelemetryUpgrade;
             default:
                 throw new Error(
-                    `(BUG) Status.fromCode() does not handle code: ${code}`,
+                    `(BUG) FreezeType.fromCode() does not handle code: ${code}`,
                 );
         }
     }
