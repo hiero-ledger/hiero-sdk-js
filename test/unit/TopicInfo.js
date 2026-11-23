@@ -68,6 +68,7 @@ describe("TopicInfo", function () {
                 ),
                 autoRenewAccount: autoRenewAccountId._toProtobuf(),
                 autoRenewPeriod: autoRenewPeriod,
+                ledgerId: ledgerId.toBytes(),
             },
         };
 
@@ -179,5 +180,36 @@ describe("TopicInfo", function () {
         expect(topicInfo2.sequenceNumber.toInt()).to.eql(
             sequenceNumber.toInt(),
         );
+    });
+
+    it("preserves ledgerId through toBytes() and fromBytes()", function () {
+        const info = new TopicInfo({
+            topicId: new TopicId(5),
+            topicMemo: "topic",
+            runningHash: Uint8Array.from([0]),
+            sequenceNumber: Long.fromString("0"),
+            ledgerId: LedgerId.TESTNET,
+        });
+
+        const restored = TopicInfo.fromBytes(info.toBytes());
+        expect(restored.ledgerId).to.not.be.null;
+        expect(restored.ledgerId.toString()).to.equal(
+            LedgerId.TESTNET.toString(),
+        );
+    });
+
+    it("restores missing ledgerId as empty bytes LedgerId through toBytes() and fromBytes()", function () {
+        const info = new TopicInfo({
+            topicId: new TopicId(5),
+            topicMemo: "topic",
+            runningHash: Uint8Array.from([0]),
+            sequenceNumber: Long.fromString("0"),
+            ledgerId: null,
+        });
+
+        const restored = TopicInfo.fromBytes(info.toBytes());
+        expect(restored.ledgerId).to.be.instanceOf(LedgerId);
+        expect(restored.ledgerId.toBytes().length).to.equal(0);
+        expect(restored.ledgerId.toString()).to.equal("");
     });
 });
