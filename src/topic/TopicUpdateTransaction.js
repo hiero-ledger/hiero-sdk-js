@@ -286,6 +286,7 @@ export default class TopicUpdateTransaction extends Transaction {
     }
 
     /**
+     * Returns the topic memo, `null` if not set, or `""` if cleared via {@link clearTopicMemo}.
      * @returns {?string}
      */
     get topicMemo() {
@@ -304,6 +305,8 @@ export default class TopicUpdateTransaction extends Transaction {
     }
 
     /**
+     * Clears the topic memo on the network by setting it to the sentinel empty string.
+     * Note that {@link topicMemo} will return `""` after this method is called.
      * @returns {TopicUpdateTransaction}
      */
     clearTopicMemo() {
@@ -314,6 +317,7 @@ export default class TopicUpdateTransaction extends Transaction {
     }
 
     /**
+     * Returns the admin key, `null` if not set, or an empty {@link KeyList} if cleared via {@link clearAdminKey}.
      * @returns {?Key}
      */
     get adminKey() {
@@ -332,6 +336,9 @@ export default class TopicUpdateTransaction extends Transaction {
     }
 
     /**
+     * Clears the admin key on the network by setting it to an empty {@link KeyList},
+     * making the topic immutable.
+     * Note that {@link adminKey} will return an empty {@link KeyList} after this method is called.
      * @returns {TopicUpdateTransaction}
      */
     clearAdminKey() {
@@ -342,6 +349,7 @@ export default class TopicUpdateTransaction extends Transaction {
     }
 
     /**
+     * Returns the submit key, `null` if not set, or an empty {@link KeyList} if cleared via {@link clearSubmitKey}.
      * @returns {?Key}
      */
     get submitKey() {
@@ -360,6 +368,9 @@ export default class TopicUpdateTransaction extends Transaction {
     }
 
     /**
+     * Clears the submit key on the network by setting it to an empty {@link KeyList},
+     * allowing anyone to submit messages to the topic.
+     * Note that {@link submitKey} will return an empty {@link KeyList} after this method is called.
      * @returns {TopicUpdateTransaction}
      */
     clearSubmitKey() {
@@ -370,7 +381,8 @@ export default class TopicUpdateTransaction extends Transaction {
     }
 
     /**
-     * Returns the key which allows updates to the new topic’s fees.
+     * Returns the key which allows updates to the new topic’s fees, `null` if not set,
+     * or an empty {@link KeyList} if cleared via {@link clearFeeScheduleKey}.
      * @returns {?Key}
      */
     getFeeScheduleKey() {
@@ -390,6 +402,8 @@ export default class TopicUpdateTransaction extends Transaction {
     }
 
     /**
+     * Clears the fee schedule key on the network by setting it to an empty {@link KeyList}.
+     * Note that {@link getFeeScheduleKey} will return an empty {@link KeyList} after this method is called.
      * @returns {TopicUpdateTransaction}
      */
     clearFeeScheduleKey() {
@@ -447,6 +461,8 @@ export default class TopicUpdateTransaction extends Transaction {
     }
 
     /**
+     * Returns the auto renew account ID, `null` if not set, or the sentinel account ID `0.0.0`
+     * if cleared via {@link clearAutoRenewAccountId}.
      * @returns {?AccountId}
      */
     get autoRenewAccountId() {
@@ -468,6 +484,8 @@ export default class TopicUpdateTransaction extends Transaction {
     }
 
     /**
+     * Clears the auto renew account ID on the network by setting it to the sentinel `0.0.0` account.
+     * Note that {@link autoRenewAccountId} will return an {@link AccountId} for `0.0.0` after this method is called.
      * @returns {TopicUpdateTransaction}
      */
     clearAutoRenewAccountId() {

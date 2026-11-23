@@ -149,6 +149,63 @@ describe("TopicUpdate", function () {
             expect(updatedInfo.customFees.length).to.equal(1);
             expect(updatedInfo.topicMemo).to.equal("Updated topic memo");
         });
+
+        it("should clear all five fields on the network and verify with TopicInfoQuery", async function () {
+            const adminKey = env.client.operatorPublicKey;
+            const submitKey = env.client.operatorPublicKey;
+            const feeScheduleKey = env.client.operatorPublicKey;
+            const autoRenewAccountId = env.client.operatorAccountId;
+            const topicMemo = "test memo to be cleared";
+
+            // Create a topic with all five fields set
+            const response = await new TopicCreateTransaction()
+                .setAdminKey(adminKey)
+                .setSubmitKey(submitKey)
+                .setFeeScheduleKey(feeScheduleKey)
+                .setAutoRenewAccountId(autoRenewAccountId)
+                .setTopicMemo(topicMemo)
+                .execute(env.client);
+
+            const topicId = (await response.getReceipt(env.client)).topicId;
+
+            // Verify that all five fields are set in topic info
+            const info = await new TopicInfoQuery()
+                .setTopicId(topicId)
+                .execute(env.client);
+
+            expect(info.topicMemo).to.equal(topicMemo);
+            expect(info.adminKey.toString()).to.equal(adminKey.toString());
+            expect(info.submitKey.toString()).to.equal(submitKey.toString());
+            expect(info.feeScheduleKey.toString()).to.equal(
+                feeScheduleKey.toString(),
+            );
+            expect(info.autoRenewAccountId.toString()).to.equal(
+                autoRenewAccountId.toString(),
+            );
+
+            // Update the topic and clear all five fields
+            const updateResponse = await new TopicUpdateTransaction()
+                .setTopicId(topicId)
+                .clearTopicMemo()
+                .clearSubmitKey()
+                .clearFeeScheduleKey()
+                .clearAutoRenewAccountId()
+                .clearAdminKey()
+                .execute(env.client);
+
+            await updateResponse.getReceipt(env.client);
+
+            // Verify with TopicInfoQuery that all five fields are cleared
+            const updatedInfo = await new TopicInfoQuery()
+                .setTopicId(topicId)
+                .execute(env.client);
+
+            expect(updatedInfo.topicMemo).to.equal("");
+            expect(updatedInfo.adminKey).to.be.null;
+            expect(updatedInfo.submitKey).to.be.null;
+            expect(updatedInfo.feeScheduleKey).to.be.null;
+            expect(updatedInfo.autoRenewAccountId).to.be.null;
+        });
     });
 
     afterEach(async function () {
