@@ -227,6 +227,8 @@ export default class TopicInfo {
                               customFee._toProtobuf(),
                           )
                         : null,
+                ledgerId:
+                    this.ledgerId != null ? this.ledgerId.toBytes() : null,
             },
         };
     }
