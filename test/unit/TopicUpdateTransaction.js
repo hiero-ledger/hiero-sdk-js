@@ -3,6 +3,7 @@ import {
     Client,
     CustomFixedFee,
     Hbar,
+    KeyList,
     PrivateKey,
     Timestamp,
     TokenId,
@@ -43,7 +44,14 @@ describe("TopicUpdateTransaction", function () {
 
             topicUpdateTransaction.clearFeeScheduleKey();
 
-            expect(topicUpdateTransaction.getFeeScheduleKey()).to.be.null;
+            expect(topicUpdateTransaction.getFeeScheduleKey()).to.be.instanceOf(
+                KeyList,
+            );
+            expect(topicUpdateTransaction.getFeeScheduleKey().toArray()).to.be
+                .empty;
+            expect(
+                topicUpdateTransaction._makeTransactionData().feeScheduleKey,
+            ).to.deep.equal({ keyList: { keys: [] } });
         });
 
         it("should set fee exempt keys", function () {
@@ -423,7 +431,10 @@ describe("TopicUpdateTransaction", function () {
                 );
 
                 expect(transaction.clearTopicMemo()).to.equal(transaction);
-                expect(transaction.topicMemo).to.be.null;
+                expect(transaction.topicMemo).to.equal("");
+                expect(transaction._makeTransactionData().memo).to.deep.equal({
+                    value: "",
+                });
             });
         });
 
@@ -446,8 +457,16 @@ describe("TopicUpdateTransaction", function () {
 
                 expect(transaction.clearAdminKey()).to.equal(transaction);
                 expect(transaction.clearSubmitKey()).to.equal(transaction);
-                expect(transaction.adminKey).to.be.null;
-                expect(transaction.submitKey).to.be.null;
+                expect(transaction.adminKey).to.be.instanceOf(KeyList);
+                expect(transaction.adminKey.toArray()).to.be.empty;
+                expect(transaction.submitKey).to.be.instanceOf(KeyList);
+                expect(transaction.submitKey.toArray()).to.be.empty;
+                expect(
+                    transaction._makeTransactionData().adminKey,
+                ).to.deep.equal({ keyList: { keys: [] } });
+                expect(
+                    transaction._makeTransactionData().submitKey,
+                ).to.deep.equal({ keyList: { keys: [] } });
             });
         });
 
@@ -474,7 +493,62 @@ describe("TopicUpdateTransaction", function () {
                 expect(transaction.clearAutoRenewAccountId()).to.equal(
                     transaction,
                 );
-                expect(transaction.autoRenewAccountId).to.be.null;
+                expect(transaction.autoRenewAccountId).to.be.instanceOf(
+                    AccountId,
+                );
+                expect(transaction.autoRenewAccountId.toString()).to.equal(
+                    "0.0.0",
+                );
+                expect(
+                    transaction._makeTransactionData().autoRenewAccount,
+                ).to.deep.equal(new AccountId(0)._toProtobuf());
+            });
+        });
+
+        describe("clearing fields writes sentinel values to protobuf", function () {
+            it("should serialize sentinel values to clear fields on the network", function () {
+                const transaction = new TopicUpdateTransaction()
+                    .setTopicId("0.0.7007")
+                    .clearTopicMemo()
+                    .clearAdminKey()
+                    .clearSubmitKey()
+                    .clearFeeScheduleKey()
+                    .clearFeeExemptKeys()
+                    .clearAutoRenewAccountId()
+                    .clearCustomFees();
+
+                const data = transaction._makeTransactionData();
+
+                expect(data.memo).to.deep.equal({ value: "" });
+                expect(data.adminKey).to.deep.equal({ keyList: { keys: [] } });
+                expect(data.submitKey).to.deep.equal({ keyList: { keys: [] } });
+                expect(data.feeScheduleKey).to.deep.equal({
+                    keyList: { keys: [] },
+                });
+                expect(data.feeExemptKeyList).to.deep.equal({ keys: [] });
+                expect(data.autoRenewAccount).to.deep.equal(
+                    new AccountId(0)._toProtobuf(),
+                );
+                expect(data.customFees).to.deep.equal({ fees: [] });
+
+                const decoded = TopicUpdateTransaction.fromBytes(
+                    transaction
+                        .setNodeAccountIds([nodeId])
+                        .setTransactionId(transactionId)
+                        .freeze()
+                        .toBytes(),
+                );
+
+                expect(decoded.topicMemo).to.equal("");
+                expect(decoded.adminKey).to.be.instanceOf(KeyList);
+                expect(decoded.adminKey.toArray()).to.be.empty;
+                expect(decoded.submitKey).to.be.instanceOf(KeyList);
+                expect(decoded.submitKey.toArray()).to.be.empty;
+                expect(decoded.getFeeScheduleKey()).to.be.instanceOf(KeyList);
+                expect(decoded.getFeeScheduleKey().toArray()).to.be.empty;
+                expect(decoded.getFeeExemptKeys()).to.deep.equal([]);
+                expect(decoded.autoRenewAccountId.toString()).to.equal("0.0.0");
+                expect(decoded.getCustomFees()).to.deep.equal([]);
             });
         });
 

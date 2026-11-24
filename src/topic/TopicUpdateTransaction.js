@@ -5,6 +5,7 @@ import AccountId from "../account/AccountId.js";
 import TopicId from "./TopicId.js";
 import Duration from "../Duration.js";
 import Key from "../Key.js";
+import KeyList from "../KeyList.js";
 import Timestamp from "../Timestamp.js";
 import CustomFixedFee from "../token/CustomFixedFee.js";
 
@@ -285,6 +286,7 @@ export default class TopicUpdateTransaction extends Transaction {
     }
 
     /**
+     * Returns the topic memo, `null` if not set, or `""` if cleared via {@link clearTopicMemo}.
      * @returns {?string}
      */
     get topicMemo() {
@@ -303,16 +305,19 @@ export default class TopicUpdateTransaction extends Transaction {
     }
 
     /**
+     * Clears the topic memo on the network by setting it to the sentinel empty string.
+     * Note that {@link topicMemo} will return `""` after this method is called.
      * @returns {TopicUpdateTransaction}
      */
     clearTopicMemo() {
         this._requireNotFrozen();
-        this._topicMemo = null;
+        this._topicMemo = "";
 
         return this;
     }
 
     /**
+     * Returns the admin key, `null` if not set, or an empty {@link KeyList} if cleared via {@link clearAdminKey}.
      * @returns {?Key}
      */
     get adminKey() {
@@ -331,16 +336,20 @@ export default class TopicUpdateTransaction extends Transaction {
     }
 
     /**
+     * Clears the admin key on the network by setting it to an empty {@link KeyList},
+     * making the topic immutable.
+     * Note that {@link adminKey} will return an empty {@link KeyList} after this method is called.
      * @returns {TopicUpdateTransaction}
      */
     clearAdminKey() {
         this._requireNotFrozen();
-        this._adminKey = null;
+        this._adminKey = new KeyList();
 
         return this;
     }
 
     /**
+     * Returns the submit key, `null` if not set, or an empty {@link KeyList} if cleared via {@link clearSubmitKey}.
      * @returns {?Key}
      */
     get submitKey() {
@@ -359,17 +368,21 @@ export default class TopicUpdateTransaction extends Transaction {
     }
 
     /**
+     * Clears the submit key on the network by setting it to an empty {@link KeyList},
+     * allowing anyone to submit messages to the topic.
+     * Note that {@link submitKey} will return an empty {@link KeyList} after this method is called.
      * @returns {TopicUpdateTransaction}
      */
     clearSubmitKey() {
         this._requireNotFrozen();
-        this._submitKey = null;
+        this._submitKey = new KeyList();
 
         return this;
     }
 
     /**
-     * Returns the key which allows updates to the new topic’s fees.
+     * Returns the key which allows updates to the new topic’s fees, `null` if not set,
+     * or an empty {@link KeyList} if cleared via {@link clearFeeScheduleKey}.
      * @returns {?Key}
      */
     getFeeScheduleKey() {
@@ -389,11 +402,13 @@ export default class TopicUpdateTransaction extends Transaction {
     }
 
     /**
+     * Clears the fee schedule key on the network by setting it to an empty {@link KeyList}.
+     * Note that {@link getFeeScheduleKey} will return an empty {@link KeyList} after this method is called.
      * @returns {TopicUpdateTransaction}
      */
     clearFeeScheduleKey() {
         this._requireNotFrozen();
-        this._feeScheduleKey = null;
+        this._feeScheduleKey = new KeyList();
 
         return this;
     }
@@ -446,6 +461,8 @@ export default class TopicUpdateTransaction extends Transaction {
     }
 
     /**
+     * Returns the auto renew account ID, `null` if not set, or the sentinel account ID `0.0.0`
+     * if cleared via {@link clearAutoRenewAccountId}.
      * @returns {?AccountId}
      */
     get autoRenewAccountId() {
@@ -467,11 +484,13 @@ export default class TopicUpdateTransaction extends Transaction {
     }
 
     /**
+     * Clears the auto renew account ID on the network by setting it to the sentinel `0.0.0` account.
+     * Note that {@link autoRenewAccountId} will return an {@link AccountId} for `0.0.0` after this method is called.
      * @returns {TopicUpdateTransaction}
      */
     clearAutoRenewAccountId() {
         this._requireNotFrozen();
-        this._autoRenewAccountId = null;
+        this._autoRenewAccountId = new AccountId(0);
 
         return this;
     }
