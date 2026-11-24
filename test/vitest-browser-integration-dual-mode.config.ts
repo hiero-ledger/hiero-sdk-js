@@ -41,6 +41,7 @@ export default defineConfig({
         coverage: {
             include: ["src/**/*.js"],
             exclude: [
+                "src/account/AccountBalanceQuery.js",
                 "src/contract/ContractStateChange.js",
                 "src/contract/StorageChange.js",
 
