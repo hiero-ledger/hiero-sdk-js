@@ -6,6 +6,7 @@ import {
     ContractInfoQuery,
     Hbar,
     PrivateKey,
+    Status,
     TokenCreateTransaction,
     TokenSupplyType,
     TokenType,
@@ -199,4 +200,43 @@ export const deleteAccount = async (
             await accountDeleteTransaction.sign(accountPrivateKey)
         ).execute(client)
     ).getReceipt(client);
+};
+
+// Account auto-creation shares the consensus creation throttle with every
+// other test on the network, so the transfer that creates the account can be
+// rejected with THROTTLED_AT_CONSENSUS.
+const THROTTLE_RETRY_ATTEMPTS = 5;
+// Linear back-off, so a full five-attempt exhaust waits 1+2+3+4 seconds.
+const THROTTLE_RETRY_DELAY_MS = 1000;
+
+/**
+ * Execute a transaction and return its receipt, including child receipts,
+ * retrying with a fresh transaction when consensus throttles account creation.
+ * Any other failure, including a non-success receipt status, is rethrown.
+ *
+ * @param {Client} client
+ * @param {() => import("../../../src/transaction/Transaction.js").default} createTransaction
+ * @returns {Promise<import("../../../src/transaction/TransactionReceipt.js").default>}
+ */
+export const executeWithThrottleRetry = async (client, createTransaction) => {
+    for (let attempt = 1; ; attempt++) {
+        try {
+            return await (await createTransaction().execute(client))
+                .getReceiptQuery()
+                .setIncludeChildren(true)
+                .setValidateStatus(true)
+                .execute(client);
+        } catch (error) {
+            if (
+                error.status !== Status.ThrottledAtConsensus ||
+                attempt >= THROTTLE_RETRY_ATTEMPTS
+            ) {
+                throw error;
+            }
+
+            await new Promise((resolve) =>
+                setTimeout(resolve, THROTTLE_RETRY_DELAY_MS * attempt),
+            );
+        }
+    }
 };
