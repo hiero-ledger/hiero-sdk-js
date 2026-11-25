@@ -21,6 +21,7 @@ export default defineConfig({
                 "src/client/addressbooks/mainnet.js",
                 "src/client/addressbooks/previewnet.js",
                 "src/client/addressbooks/testnet.js",
+                "src/account/AccountBalanceQuery.js",
                 "src/contract/ContractStateChange.js",
                 "src/contract/StorageChange.js",
                 "src/transaction/NodeAccountIdSignatureMapLegacy.js",
