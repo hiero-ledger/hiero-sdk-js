@@ -432,3 +432,32 @@ describe("ManagedNetwork node health", function () {
         });
     });
 });
+
+describe("deprecated", function () {
+    let warn;
+
+    beforeEach(function () {
+        warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    });
+
+    afterEach(function () {
+        vi.restoreAllMocks();
+    });
+
+    // Network (client._network) overrides both members, the mirror network
+    // does not, so it runs the ManagedNetwork versions
+    it("setNetworkName sets networkName and returns the network", function () {
+        const client = new Client({ scheduleNetworkUpdate: false });
+        const mirrorNetwork = client._mirrorNetwork;
+
+        expect(mirrorNetwork.networkName).to.equal(null);
+        expect(mirrorNetwork.setNetworkName("testnet")).to.equal(mirrorNetwork);
+        expect(mirrorNetwork.networkName).to.equal("testnet");
+        expect(mirrorNetwork.ledgerId.toString()).to.equal("testnet");
+
+        expect(warn).toHaveBeenCalledWith(
+            "Deprecated: Use `setLedgerId` instead",
+        );
+        expect(warn).toHaveBeenCalledWith("Deprecated: Use `ledgerId` instead");
+    });
+});

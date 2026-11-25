@@ -1048,3 +1048,26 @@ describe("AccountUpdateTransaction", function () {
         });
     });
 });
+
+describe("deprecated", function () {
+    it("proxyAccountId returns the value that was set", function () {
+        const transaction = new AccountUpdateTransaction().setProxyAccountId(
+            new AccountId(5),
+        );
+
+        expect(transaction.proxyAccountId.toString()).to.equal("0.0.5");
+    });
+
+    it("aliasKey always returns null", function () {
+        expect(new AccountUpdateTransaction().aliasKey).to.equal(null);
+    });
+
+    it("setAliasKey returns the transaction and does nothing", function () {
+        const transaction = new AccountUpdateTransaction();
+
+        expect(
+            transaction.setAliasKey(PrivateKey.generateED25519().publicKey),
+        ).to.equal(transaction);
+        expect(transaction.aliasKey).to.equal(null);
+    });
+});

@@ -336,3 +336,34 @@ describe("TokenNftInfoQuery", function () {
         });
     });
 });
+
+describe("deprecated", function () {
+    let warn;
+
+    beforeEach(function () {
+        warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    });
+
+    afterEach(function () {
+        vi.restoreAllMocks();
+    });
+
+    it("the accountId, tokenId, start and end getters return the values that were set", function () {
+        const query = new TokenNftInfoQuery()
+            .setAccountId("0.0.5")
+            .setTokenId("0.0.6")
+            .setStart(7)
+            .setEnd(8);
+
+        expect(query.accountId.toString()).to.equal("0.0.5");
+        expect(query.tokenId.toString()).to.equal("0.0.6");
+        expect(query.start.toNumber()).to.equal(7);
+        expect(query.end.toNumber()).to.equal(8);
+
+        for (const name of ["accountId", "tokenId", "start", "end"]) {
+            expect(warn).toHaveBeenCalledWith(
+                `\`TokenNftInfoQuery.${name}\` is deprecated with no replacement`,
+            );
+        }
+    });
+});

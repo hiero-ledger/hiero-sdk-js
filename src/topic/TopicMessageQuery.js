@@ -13,7 +13,14 @@ import { RST_STREAM } from "../Executable.js";
  * @typedef {import("../channel/Channel.js").default} Channel
  * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
  * @typedef {import("../channel/MirrorChannel.js").MirrorError} MirrorError
+ * @typedef {import("../MirrorNode.js").default} MirrorNode
  */
+
+/**
+ * grpc-js reports an HTTP 504 from the gateway in front of a mirror node as
+ * `14 UNAVAILABLE: Received HTTP status code 504`.
+ */
+const HTTP_GATEWAY_TIMEOUT = /HTTP status code 504/;
 
 /**
  * @template {Channel} ChannelT
@@ -360,17 +367,23 @@ export default class TopicMessageQuery {
 
         const list = new Map();
 
-        const streamHandler = client._mirrorNetwork
-            .getNextMirrorNode()
-            .getChannel()
-            .makeServerStreamRequest(
-                "ConsensusService",
-                "subscribeTopic",
-                request,
-                (data) => this._handleMessage(data, list),
-                (error) => this._handleError(error, client),
-                this._completionHandler,
-            );
+        const node = client._mirrorNetwork.getNextMirrorNode();
+        let receivedData = false;
+
+        const streamHandler = node.getChannel().makeServerStreamRequest(
+            "ConsensusService",
+            "subscribeTopic",
+            request,
+            (data) => {
+                if (!receivedData) {
+                    receivedData = true;
+                    client._mirrorNetwork.decreaseBackoff(node);
+                }
+                this._handleMessage(data, list);
+            },
+            (error) => this._handleError(error, client, node),
+            this._completionHandler,
+        );
 
         if (this._handle != null) {
             this._handle._setCall(() => streamHandler());
@@ -492,19 +505,52 @@ export default class TopicMessageQuery {
      * @private
      * @param {MirrorError | Error} error - The error that occurred
      * @param {Client<Channel>} client - The client to use for retries
+     * @param {MirrorNode} node - The mirror node the failed stream used
      * @returns {void}
      */
-    _handleError(error, client) {
+    _handleError(error, client, node) {
         const message = error instanceof Error ? error.message : error.details;
 
         if (this._handle?._unsubscribed) {
             return;
         }
 
+        // Back the node off, so that the next attempt prefers another mirror
+        // node while this one recovers.
+        if (this._isMirrorNodeFailure(error)) {
+            client._mirrorNetwork.increaseBackoff(node);
+        }
+
         if (this.shouldRetry(error)) {
-            this._scheduleRetry(client, message);
+            this._scheduleRetry(client, message, node);
         } else {
             this._errorHandler(null, new Error(message));
+        }
+    }
+
+    /**
+     * Determines if an error means that the mirror node itself failed, as
+     * opposed to an error about the request, such as a topic that does not
+     * exist yet.
+     * @private
+     * @param {MirrorError | Error} error - The error to check
+     * @returns {boolean} - Whether the mirror node failed
+     */
+    _isMirrorNodeFailure(error) {
+        // Errors which are not `MirrorError` are lower level HTTP/2 errors.
+        if (error instanceof Error) {
+            return true;
+        }
+
+        switch (error.code) {
+            // INTERNAL
+            case 13:
+                return RST_STREAM.test(error.details.toString());
+            // UNAVAILABLE, which is also how an HTTP 504 is reported
+            case 14:
+                return true;
+            default:
+                return false;
         }
     }
 
@@ -523,16 +569,20 @@ export default class TopicMessageQuery {
      * @private
      * @param {Client<Channel>} client - The client to use for the retry
      * @param {string} errorMessage - The error message for logging
+     * @param {MirrorNode} node - The mirror node the failed stream used
      * @returns {void}
      */
-    _scheduleRetry(client, errorMessage) {
+    _scheduleRetry(client, errorMessage, node) {
         const delay = Math.min(250 * 2 ** this._attempt, this._maxBackoff);
+        const reason = HTTP_GATEWAY_TIMEOUT.test(errorMessage)
+            ? `Mirror node timed out (${errorMessage})`
+            : errorMessage;
 
         console.warn(
             `Error subscribing to topic ${
                 this._topicId?.toString() ?? "UNKNOWN"
-            } ` +
-                `during attempt ${this._attempt}. Waiting ${delay} ms before next attempt: ${errorMessage}`,
+            } on mirror node ${node.address.toString()} ` +
+                `during attempt ${this._attempt}. Waiting ${delay} ms before next attempt: ${reason}`,
         );
 
         // Without a start time the mirror node starts at its own "now" on every

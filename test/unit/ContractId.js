@@ -1,4 +1,3 @@
-import { vi } from "vitest";
 import {
     Client,
     ContractId,
@@ -371,5 +370,37 @@ describe("ContractId", function () {
                 warnSpy.mockRestore();
             }
         });
+    });
+});
+
+describe("deprecated", function () {
+    let warn;
+    let testnet;
+    let mainnet;
+
+    beforeEach(function () {
+        warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+        testnet = Client.forTestnet({ scheduleNetworkUpdate: false });
+        mainnet = Client.forMainnet({ scheduleNetworkUpdate: false });
+    });
+
+    afterEach(function () {
+        testnet.close();
+        mainnet.close();
+        vi.restoreAllMocks();
+    });
+
+    it("validate passes when the checksum matches the client's network", function () {
+        ContractId.fromString("0.0.123-esxsf").validate(testnet);
+
+        expect(warn).toHaveBeenCalledWith(
+            "Deprecated: Use `validateChecksum` instead",
+        );
+    });
+
+    it("validate throws BadEntityIdError when the checksum is for another network", function () {
+        expect(() =>
+            ContractId.fromString("0.0.123-esxsf").validate(mainnet),
+        ).to.throw(BadEntityIdError);
     });
 });

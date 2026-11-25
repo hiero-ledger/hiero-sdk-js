@@ -1,4 +1,4 @@
-import { Mnemonic } from "../../src/index.js";
+import { Mnemonic, PrivateKey } from "../../src/index.js";
 import * as hex from "../../src/encoding/hex.js";
 import * as bip32 from "../../packages/cryptography/src/primitive/bip32.js";
 
@@ -594,5 +594,18 @@ describe("Mnemonic", function () {
             const key = await mnemonic.toPrivateKey();
             expect(key.toStringRaw()).to.be.a("string");
         });
+    });
+});
+
+describe("deprecated", function () {
+    it("toPrivateKey gives the ED25519 key from toEd25519PrivateKey", async function () {
+        const mnemonic = await Mnemonic.fromString(MNEMONIC_24_WORD_STRING);
+
+        const key = await mnemonic.toPrivateKey();
+
+        expect(key).to.be.instanceOf(PrivateKey);
+        expect(key.toStringRaw()).to.equal(
+            (await mnemonic.toEd25519PrivateKey()).toStringRaw(),
+        );
     });
 });

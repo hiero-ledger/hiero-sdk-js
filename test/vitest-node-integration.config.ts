@@ -42,6 +42,7 @@ export default defineConfig({
                 "src/client/addressbooks/testnet.js",
                 "src/contract/ContractStateChange.js",
                 "src/contract/StorageChange.js",
+                "src/account/AccountBalanceQuery.js",
 
                 "src/transaction/NodeAccountIdSignatureMapLegacy.js",
                 "src/transaction/SignatureMapLegacy.js",

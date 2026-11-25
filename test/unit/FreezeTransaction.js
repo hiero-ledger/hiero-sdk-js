@@ -495,3 +495,61 @@ describe("FreezeTransaction", function () {
         });
     });
 });
+
+describe("deprecated", function () {
+    let warn;
+
+    beforeEach(function () {
+        warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    });
+
+    afterEach(function () {
+        vi.restoreAllMocks();
+    });
+
+    it("startTime always returns null", function () {
+        const transaction = new FreezeTransaction().setStartTime(10, 30);
+
+        expect(transaction.startTime).to.equal(null);
+    });
+
+    it("setStartTime accepts an hh:mm string and returns the transaction", function () {
+        const transaction = new FreezeTransaction();
+
+        expect(transaction.setStartTime("10:30")).to.equal(transaction);
+        expect(transaction._startTime).to.deep.equal({ hour: 10, minute: 30 });
+    });
+
+    it("setEndTime accepts hour and minute numbers, and endTime returns them", function () {
+        const transaction = new FreezeTransaction();
+
+        expect(transaction.setEndTime(11, 45)).to.equal(transaction);
+        expect(transaction.endTime).to.deep.equal({ hour: 11, minute: 45 });
+        expect(warn).toHaveBeenCalledTimes(2);
+    });
+
+    it("setEndTime accepts an hh:mm string", function () {
+        const transaction = new FreezeTransaction().setEndTime("11:45");
+
+        expect(transaction.endTime).to.deep.equal({ hour: 11, minute: 45 });
+    });
+
+    it("the endTime constructor prop sets endTime", function () {
+        const transaction = new FreezeTransaction({
+            endTime: { hour: 1, minute: 2 },
+        });
+
+        expect(transaction.endTime).to.deep.equal({ hour: 1, minute: 2 });
+        expect(warn).toHaveBeenCalledWith(
+            "`FreezeTransaction.endTime` is deprecated: the network ignores this field and there is no replacement",
+        );
+    });
+
+    it("updateFileId returns fileId", function () {
+        const fileId = new FileId(150);
+        const transaction = new FreezeTransaction().setUpdateFileId(fileId);
+
+        expect(transaction.updateFileId).to.equal(fileId);
+        expect(transaction.fileId).to.equal(fileId);
+    });
+});

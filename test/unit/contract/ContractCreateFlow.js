@@ -215,3 +215,12 @@ describe("ContractCreateFlow", function () {
         });
     });
 });
+
+describe("deprecated", function () {
+    it("setProxyAccountId sets proxyAccountId and returns the flow", function () {
+        const flow = new ContractCreateFlow();
+
+        expect(flow.setProxyAccountId("0.0.5")).to.equal(flow);
+        expect(flow.proxyAccountId.toString()).to.equal("0.0.5");
+    });
+});

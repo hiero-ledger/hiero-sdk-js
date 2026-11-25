@@ -168,3 +168,13 @@ describe("PublicKey", function () {
         });
     });
 });
+
+describe("deprecated", function () {
+    it("toEthereumAddress returns the same address as toEvmAddress", function () {
+        const publicKey = PrivateKey.generateECDSA().publicKey;
+
+        expect(publicKey.toEthereumAddress()).to.equal(
+            publicKey.toEvmAddress(),
+        );
+    });
+});
