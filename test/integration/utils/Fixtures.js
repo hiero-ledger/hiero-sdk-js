@@ -206,6 +206,7 @@ export const deleteAccount = async (
 // other test on the network, so the transfer that creates the account can be
 // rejected with THROTTLED_AT_CONSENSUS.
 const THROTTLE_RETRY_ATTEMPTS = 5;
+// Linear back-off, so a full five-attempt exhaust waits 1+2+3+4 seconds.
 const THROTTLE_RETRY_DELAY_MS = 1000;
 
 /**

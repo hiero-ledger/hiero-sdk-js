@@ -65,4 +65,28 @@ describe("executeWithThrottleRetry", function () {
         ).rejects.toThrow("not throttled");
         expect(getTransactionCount()).to.equal(1);
     });
+
+    it("gives up after the retry cap", async function () {
+        vi.useFakeTimers();
+
+        try {
+            const errors = Array.from({ length: 5 }, () =>
+                Object.assign(new Error("throttled"), {
+                    status: Status.ThrottledAtConsensus,
+                }),
+            );
+            const { client, createTransaction, getTransactionCount } =
+                makeClient(errors);
+
+            const result = executeWithThrottleRetry(client, createTransaction);
+            const assertion = expect(result).rejects.toThrow("throttled");
+
+            await vi.runAllTimersAsync();
+            await assertion;
+
+            expect(getTransactionCount()).to.equal(5);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
 });
