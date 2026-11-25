@@ -340,6 +340,39 @@ describe("TopicMessageQuery", function () {
             expect(nodeAt(client, calls[1].address).isHealthy()).to.be.false;
         });
 
+        it("backs the node off for INTERNAL only when the stream was reset", async function () {
+            const { client, calls } = clientWithMirrorNodes([
+                "mirror-a.example.com:443",
+            ]);
+            const errors = [];
+
+            new TopicMessageQuery().setTopicId("0.0.5").subscribe(
+                client,
+                (message, error) => errors.push(error),
+                () => {},
+            );
+
+            calls[0].onError({
+                code: 13,
+                details: "Received RST_STREAM with code 2",
+            });
+            await vi.runAllTimersAsync();
+
+            expect(nodeAt(client, calls[0].address).isHealthy()).to.be.false;
+
+            // Wait until the node is readmitted, then fail with an INTERNAL
+            // error that is not a reset. It is neither retried nor counted
+            // against the node.
+            vi.setSystemTime(Date.now() + 60 * 60 * 1000);
+            calls[1].onError({ code: 13, details: "internal error" });
+
+            expect(calls).to.have.lengthOf(2);
+            expect(errors.map((error) => error.message)).to.deep.equal([
+                "internal error",
+            ]);
+            expect(nodeAt(client, calls[1].address).isHealthy()).to.be.true;
+        });
+
         it("keeps retrying the only mirror node while it is backed off", async function () {
             const { client, calls } = clientWithMirrorNodes([
                 "mirror-a.example.com:443",
