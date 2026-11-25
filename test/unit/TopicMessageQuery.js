@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import TopicMessageQuery from "../../src/topic/TopicMessageQuery.js";
+import MirrorNetwork from "../../src/client/MirrorNetwork.js";
 import SubscriptionHandle from "../../src/topic/SubscriptionHandle.js";
 import TopicId from "../../src/topic/TopicId.js";
 import Timestamp from "../../src/Timestamp.js";
@@ -188,9 +189,15 @@ describe("TopicMessageQuery", function () {
                     return () => {};
                 },
             };
+            const node = {
+                address: "mirror.example.com:443",
+                getChannel: () => channel,
+            };
             const client = {
                 _mirrorNetwork: {
-                    getNextMirrorNode: () => ({ getChannel: () => channel }),
+                    getNextMirrorNode: () => node,
+                    increaseBackoff: () => {},
+                    decreaseBackoff: () => {},
                 },
             };
             return { client, calls };
@@ -243,6 +250,213 @@ describe("TopicMessageQuery", function () {
                     calls[1].query.consensusStartTime,
                 ).toString(),
             ).to.equal(new Timestamp(42, 0).toString());
+        });
+    });
+
+    describe("mirror node health", function () {
+        /**
+         * Client with a real `MirrorNetwork` whose channels record each
+         * subscribe request together with the address it was sent to.
+         *
+         * @param {string[]} addresses
+         */
+        function clientWithMirrorNodes(addresses) {
+            const calls = [];
+            const mirrorNetwork = new MirrorNetwork((address) => ({
+                makeServerStreamRequest(
+                    service,
+                    method,
+                    request,
+                    onData,
+                    onError,
+                ) {
+                    calls.push({ address, onData, onError });
+                    return () => {};
+                },
+                close() {},
+            }));
+            mirrorNetwork.setNetwork(addresses);
+            return { client: { _mirrorNetwork: mirrorNetwork }, calls };
+        }
+
+        /** @param {string} address */
+        function nodeAt(client, address) {
+            return client._mirrorNetwork._nodes.find(
+                (node) => node.address.toString() === address,
+            );
+        }
+
+        const GATEWAY_TIMEOUT = {
+            code: 14,
+            details: "Received HTTP status code 504",
+        };
+
+        beforeEach(function () {
+            vi.useFakeTimers({ toFake: ["setTimeout", "Date"] });
+            vi.setSystemTime(new Date(1700000000123));
+            vi.spyOn(console, "warn").mockImplementation(() => {});
+        });
+
+        afterEach(function () {
+            vi.useRealTimers();
+            vi.restoreAllMocks();
+        });
+
+        it("retries on the other mirror node after a 504", async function () {
+            const { client, calls } = clientWithMirrorNodes([
+                "mirror-a.example.com:443",
+                "mirror-b.example.com:443",
+            ]);
+
+            new TopicMessageQuery()
+                .setTopicId("0.0.5")
+                .subscribe(client, null, () => {});
+
+            calls[0].onError(GATEWAY_TIMEOUT);
+            await vi.runAllTimersAsync();
+
+            expect(calls).to.have.lengthOf(2);
+            expect(calls[1].address).to.not.equal(calls[0].address);
+            expect(nodeAt(client, calls[0].address).isHealthy()).to.be.false;
+        });
+
+        it("backs the node off for transport errors only", async function () {
+            const { client, calls } = clientWithMirrorNodes([
+                "mirror-a.example.com:443",
+            ]);
+
+            new TopicMessageQuery()
+                .setTopicId("0.0.5")
+                .subscribe(client, null, () => {});
+
+            calls[0].onError({ code: 5, details: "topic does not exist" });
+            await vi.runAllTimersAsync();
+
+            expect(nodeAt(client, calls[0].address).isHealthy()).to.be.true;
+
+            calls[1].onError(new Error("socket hang up"));
+            await vi.runAllTimersAsync();
+
+            expect(nodeAt(client, calls[1].address).isHealthy()).to.be.false;
+        });
+
+        it("backs the node off for INTERNAL only when the stream was reset", async function () {
+            const { client, calls } = clientWithMirrorNodes([
+                "mirror-a.example.com:443",
+            ]);
+            const errors = [];
+
+            new TopicMessageQuery().setTopicId("0.0.5").subscribe(
+                client,
+                (message, error) => errors.push(error),
+                () => {},
+            );
+
+            calls[0].onError({
+                code: 13,
+                details: "Received RST_STREAM with code 2",
+            });
+            await vi.runAllTimersAsync();
+
+            expect(nodeAt(client, calls[0].address).isHealthy()).to.be.false;
+
+            // Wait until the node is readmitted, then fail with an INTERNAL
+            // error that is not a reset. It is neither retried nor counted
+            // against the node.
+            vi.setSystemTime(Date.now() + 60 * 60 * 1000);
+            calls[1].onError({ code: 13, details: "internal error" });
+
+            expect(calls).to.have.lengthOf(2);
+            expect(errors.map((error) => error.message)).to.deep.equal([
+                "internal error",
+            ]);
+            expect(nodeAt(client, calls[1].address).isHealthy()).to.be.true;
+        });
+
+        it("keeps retrying the only mirror node while it is backed off", async function () {
+            const { client, calls } = clientWithMirrorNodes([
+                "mirror-a.example.com:443",
+            ]);
+
+            new TopicMessageQuery()
+                .setTopicId("0.0.5")
+                .subscribe(client, null, () => {});
+
+            calls[0].onError(GATEWAY_TIMEOUT);
+            await vi.runAllTimersAsync();
+            calls[1].onError(GATEWAY_TIMEOUT);
+            await vi.runAllTimersAsync();
+
+            expect(calls).to.have.lengthOf(3);
+            expect(calls.map((call) => call.address)).to.deep.equal([
+                "mirror-a.example.com:443",
+                "mirror-a.example.com:443",
+                "mirror-a.example.com:443",
+            ]);
+        });
+
+        it("lowers the backoff once the stream delivers a message", async function () {
+            const { client, calls } = clientWithMirrorNodes([
+                "mirror-a.example.com:443",
+            ]);
+
+            new TopicMessageQuery()
+                .setTopicId("0.0.5")
+                .subscribe(client, null, () => {});
+
+            calls[0].onError(GATEWAY_TIMEOUT);
+            await vi.runAllTimersAsync();
+
+            const node = nodeAt(client, "mirror-a.example.com:443");
+            const backoff = node._currentBackoff;
+
+            calls[1].onData(
+                HieroProto.com.hedera.mirror.api.proto.ConsensusTopicResponse.encode(
+                    {
+                        consensusTimestamp: { seconds: 1, nanos: 0 },
+                        message: new Uint8Array([1]),
+                        runningHash: new Uint8Array([2]),
+                        sequenceNumber: 1,
+                    },
+                ).finish(),
+            );
+
+            expect(node._currentBackoff).to.equal(backoff / 2);
+        });
+
+        it("logs the mirror node and says that it timed out", async function () {
+            const { client, calls } = clientWithMirrorNodes([
+                "mirror-a.example.com:443",
+            ]);
+
+            new TopicMessageQuery()
+                .setTopicId("0.0.5")
+                .subscribe(client, null, () => {});
+
+            calls[0].onError(GATEWAY_TIMEOUT);
+
+            expect(console.warn).toHaveBeenCalledWith(
+                "Error subscribing to topic 0.0.5 on mirror node mirror-a.example.com:443 " +
+                    "during attempt 0. Waiting 250 ms before next attempt: " +
+                    "Mirror node timed out (Received HTTP status code 504)",
+            );
+        });
+    });
+
+    describe("MirrorNetwork.getNextMirrorNode", function () {
+        it("returns the node readmitted first when every node is backed off", function () {
+            const mirrorNetwork = new MirrorNetwork(() => ({ close() {} }));
+            mirrorNetwork.setNetwork([
+                "mirror-a.example.com:443",
+                "mirror-b.example.com:443",
+            ]);
+            const [first, second] = mirrorNetwork._nodes;
+
+            mirrorNetwork.increaseBackoff(first);
+            mirrorNetwork.increaseBackoff(first);
+            mirrorNetwork.increaseBackoff(second);
+
+            expect(mirrorNetwork.getNextMirrorNode()).to.equal(second);
         });
     });
 
