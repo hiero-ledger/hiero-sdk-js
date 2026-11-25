@@ -364,4 +364,172 @@ describe("NativeMirrorChannel", function () {
         });
         expect(xhr.aborted).to.equal(true);
     });
+
+    it("close() aborts every open request", function () {
+        const channel = new NativeMirrorChannel("mirror.example.com:443");
+
+        for (let i = 0; i < 2; i++) {
+            channel.makeServerStreamRequest(
+                "ConsensusService",
+                "subscribeTopic",
+                new Uint8Array([0]),
+                () => {},
+                () => {},
+                () => {},
+            );
+        }
+
+        channel.close();
+
+        expect(FakeXMLHttpRequest.instances).to.have.length(2);
+        for (const xhr of FakeXMLHttpRequest.instances) {
+            expect(xhr.aborted).to.equal(true);
+        }
+    });
+
+    it("ignores frames that arrive after the trailers", function () {
+        const channel = new NativeMirrorChannel("mirror.example.com:443");
+        const received = [];
+        let ends = 0;
+
+        channel.makeServerStreamRequest(
+            "ConsensusService",
+            "subscribeTopic",
+            new Uint8Array([0]),
+            (data) => received.push([...data]),
+            (err) => {
+                throw err;
+            },
+            () => ends++,
+        );
+
+        const trailers = frame(TRAILER_FLAG, ascii("grpc-status: 0\r\n"));
+        const message = frame(0, Uint8Array.from([7, 8, 9]));
+        const chunk = new Uint8Array(trailers.length + message.length);
+        chunk.set(trailers);
+        chunk.set(message, trailers.length);
+
+        // trailers and a data frame in one chunk, so both are handled
+        // in the same pass
+        FakeXMLHttpRequest.instances[0].push(b64(chunk));
+
+        expect(ends).to.equal(1);
+        expect(received).to.deep.equal([]);
+    });
+
+    it("reports a non-zero trailer status as a MirrorError", async function () {
+        const channel = new NativeMirrorChannel("mirror.example.com:443");
+
+        const done = new Promise((resolve, reject) => {
+            channel.makeServerStreamRequest(
+                "ConsensusService",
+                "subscribeTopic",
+                new Uint8Array([0]),
+                () => {},
+                resolve,
+                () => reject(new Error("should not end cleanly")),
+            );
+        });
+
+        FakeXMLHttpRequest.instances[0].push(
+            b64(
+                frame(
+                    TRAILER_FLAG,
+                    ascii("grpc-status: 5\r\ngrpc-message: not found\r\n"),
+                ),
+            ),
+        );
+
+        const err = await done;
+        expect(err).to.deep.equal({ code: 5, details: "not found" });
+    });
+
+    it("fails the stream and aborts the request when handling a chunk throws", async function () {
+        const channel = new NativeMirrorChannel("mirror.example.com:443");
+        const boom = new Error("boom");
+
+        const done = new Promise((resolve, reject) => {
+            channel.makeServerStreamRequest(
+                "ConsensusService",
+                "subscribeTopic",
+                new Uint8Array([0]),
+                () => {
+                    throw boom;
+                },
+                resolve,
+                () => reject(new Error("should not end cleanly")),
+            );
+        });
+
+        const xhr = FakeXMLHttpRequest.instances[0];
+        xhr.push(b64(frame(0, Uint8Array.from([7, 8, 9]))));
+
+        const err = await done;
+        expect(err).to.equal(boom);
+        expect(xhr.aborted).to.equal(true);
+    });
+
+    it("reports a retryable UNAVAILABLE on a transport error", async function () {
+        const channel = new NativeMirrorChannel("mirror.example.com:443");
+
+        const done = new Promise((resolve, reject) => {
+            channel.makeServerStreamRequest(
+                "ConsensusService",
+                "subscribeTopic",
+                new Uint8Array([0]),
+                () => {},
+                resolve,
+                () => reject(new Error("should not end cleanly")),
+            );
+        });
+
+        FakeXMLHttpRequest.instances[0].onerror();
+
+        const err = await done;
+        expect(err).to.deep.equal({ code: 14, details: "transport error" });
+    });
+
+    it("the returned cancel function aborts the request and stops delivery", function () {
+        const channel = new NativeMirrorChannel("mirror.example.com:443");
+        const received = [];
+
+        const cancel = channel.makeServerStreamRequest(
+            "ConsensusService",
+            "subscribeTopic",
+            new Uint8Array([0]),
+            (data) => received.push([...data]),
+            () => {},
+            () => {},
+        );
+
+        const xhr = FakeXMLHttpRequest.instances[0];
+        cancel();
+        xhr.push(b64(frame(0, Uint8Array.from([7, 8, 9]))));
+
+        expect(xhr.aborted).to.equal(true);
+        expect(received).to.deep.equal([]);
+    });
+
+    it("uses an address that already has an http:// or https:// scheme as is", function () {
+        for (const address of [
+            "https://mirror.example.com",
+            "http://localhost:8080",
+        ]) {
+            new NativeMirrorChannel(address).makeServerStreamRequest(
+                "ConsensusService",
+                "subscribeTopic",
+                new Uint8Array([0]),
+                () => {},
+                () => {},
+                () => {},
+            );
+        }
+
+        expect(
+            FakeXMLHttpRequest.instances.map((xhr) => xhr.url),
+        ).to.deep.equal([
+            "https://mirror.example.com/com.hedera.mirror.api.proto.ConsensusService/subscribeTopic",
+            "http://localhost:8080/com.hedera.mirror.api.proto.ConsensusService/subscribeTopic",
+        ]);
+    });
 });
