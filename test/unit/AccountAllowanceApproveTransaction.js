@@ -558,4 +558,15 @@ describe("AccountAllowanceApproveTransaction", function () {
             );
         });
     });
+
+    describe("deprecated", function () {
+        it("addTokenNftAllowance() adds an NFT allowance and returns this", function () {
+            const nftId = new NftId(new TokenId(0, 0, 123), 1);
+            const spender = new AccountId(0, 0, 456);
+            const tx = new AccountAllowanceApproveTransaction();
+
+            expect(tx.addTokenNftAllowance(nftId, spender)).to.equal(tx);
+            expect(tx.tokenNftApprovals).to.have.lengthOf(1);
+        });
+    });
 });

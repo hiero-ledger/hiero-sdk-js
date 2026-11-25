@@ -113,4 +113,18 @@ describe("EthereumTransaction", function () {
             expect(tx.ethereumData).to.equal(bytes);
         });
     });
+
+    describe("deprecated", function () {
+        it("supports callData, setCallData, and setMaxGasAllowance", function () {
+            const fileId = new FileId(0, 0, 123);
+            const maxGas = new Hbar(1);
+            const tx = new EthereumTransaction();
+
+            expect(tx.setCallData(fileId)).to.equal(tx);
+            expect(tx.callData).to.equal(fileId);
+
+            expect(tx.setMaxGasAllowance(maxGas)).to.equal(tx);
+            expect(tx.maxGasAllowance).to.equal(maxGas);
+        });
+    });
 });

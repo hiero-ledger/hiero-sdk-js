@@ -587,4 +587,12 @@ describe("Mnemonic", function () {
         expect(key3.toStringRaw()).to.equal(PRIVATE_KEY_3);
         expect(key3.publicKey.toStringRaw()).to.include(PUBLIC_KEY_3);
     });
+
+    describe("deprecated", function () {
+        it("toPrivateKey() recovers a PrivateKey", async function () {
+            const mnemonic = await Mnemonic.fromString(MNEMONIC_24_WORD_STRING);
+            const key = await mnemonic.toPrivateKey();
+            expect(key.toStringRaw()).to.be.a("string");
+        });
+    });
 });

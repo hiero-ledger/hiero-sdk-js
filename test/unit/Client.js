@@ -1,5 +1,6 @@
 import { vi } from "vitest";
 import Client from "../../src/client/Client.js";
+import Hbar from "../../src/Hbar.js";
 import AccountId from "../../src/account/AccountId.js";
 import PrivateKey from "../../src/PrivateKey.js";
 import AddressBookQuery from "../../src/network/AddressBookQuery.js";
@@ -575,5 +576,28 @@ describe("Client configuration", function () {
                 realm: 0,
             });
         });
+    });
+});
+
+describe("deprecated", function () {
+    it("supports setNetworkName, networkName, maxTransactionFee, setMaxTransactionFee, maxQueryPayment, and setMaxQueryPayment", function () {
+        const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+        const client = new Client({ scheduleNetworkUpdate: false });
+        try {
+            expect(client.networkName).to.be.null;
+            expect(client.setNetworkName("testnet")).to.equal(client);
+            expect(client.networkName).to.equal("testnet");
+
+            const maxFee = new Hbar(5);
+            expect(client.setMaxTransactionFee(maxFee)).to.equal(client);
+            expect(client.maxTransactionFee).to.equal(maxFee);
+
+            const maxPayment = new Hbar(2);
+            expect(client.setMaxQueryPayment(maxPayment)).to.equal(client);
+            expect(client.maxQueryPayment).to.equal(maxPayment);
+        } finally {
+            client.close();
+            warnSpy.mockRestore();
+        }
     });
 });

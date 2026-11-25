@@ -444,4 +444,14 @@ describe("TokenUpdateTransaction", function () {
             );
         });
     });
+
+    describe("deprecated", function () {
+        it("setsupplyKey() sets the supplyKey and returns this", function () {
+            const key = PrivateKey.generateED25519().publicKey;
+            const tx = new TokenUpdateTransaction();
+
+            expect(tx.setsupplyKey(key)).to.equal(tx);
+            expect(tx.supplyKey).to.equal(key);
+        });
+    });
 });

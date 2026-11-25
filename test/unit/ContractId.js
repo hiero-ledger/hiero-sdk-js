@@ -1,4 +1,11 @@
-import { ContractId, DelegateContractId, Key } from "../../src/index.js";
+import { vi } from "vitest";
+import {
+    Client,
+    ContractId,
+    DelegateContractId,
+    Key,
+} from "../../src/index.js";
+import BadEntityIdError from "../../src/BadEntityIdError.js";
 import * as hex from "../../src/encoding/hex.js";
 import Long from "long";
 
@@ -338,6 +345,31 @@ describe("ContractId", function () {
 
             expect(contractId.evmAddress).to.be.null;
             expect(contractId.toString()).to.equal("0.0.7");
+        });
+    });
+
+    describe("deprecated", function () {
+        it("validate() succeeds for matching network checksum and throws BadEntityIdError otherwise", function () {
+            const warnSpy = vi
+                .spyOn(console, "warn")
+                .mockImplementation(() => {});
+            const testnetClient = Client.forTestnet({
+                scheduleNetworkUpdate: false,
+            });
+            const mainnetClient = Client.forMainnet({
+                scheduleNetworkUpdate: false,
+            });
+            try {
+                const contractId = ContractId.fromString("0.0.123-esxsf");
+                expect(() => contractId.validate(testnetClient)).to.not.throw();
+                expect(() => contractId.validate(mainnetClient)).to.throw(
+                    BadEntityIdError,
+                );
+            } finally {
+                testnetClient.close();
+                mainnetClient.close();
+                warnSpy.mockRestore();
+            }
         });
     });
 });

@@ -1236,4 +1236,15 @@ describe("AccountCreateTransaction", function () {
             );
         });
     });
+
+    describe("deprecated", function () {
+        it("proxyAccountId returns the set proxyAccountId", function () {
+            const proxyId = new AccountId(0, 0, 123);
+            const tx = new AccountCreateTransaction().setProxyAccountId(
+                proxyId,
+            );
+
+            expect(tx.proxyAccountId).to.equal(proxyId);
+        });
+    });
 });

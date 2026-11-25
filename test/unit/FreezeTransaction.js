@@ -1,3 +1,4 @@
+import { vi } from "vitest";
 import {
     FreezeTransaction,
     Timestamp,
@@ -456,6 +457,41 @@ describe("FreezeTransaction", function () {
             expect(() =>
                 new TransactionType()._validateChecksums({}),
             ).to.not.throw();
+        });
+    });
+
+    describe("deprecated", function () {
+        it("supports endTime constructor prop, startTime, setStartTime, endTime, setEndTime, and updateFileId", function () {
+            const warnSpy = vi
+                .spyOn(console, "warn")
+                .mockImplementation(() => {});
+            try {
+                const fileId = new FileId(0, 0, 123);
+                const tx = new FreezeTransaction({
+                    endTime: { hour: 1, minute: 2 },
+                });
+
+                expect(warnSpy).toHaveBeenCalledWith(
+                    "`FreezeTransaction.endTime` is deprecated: the network ignores this field and there is no replacement",
+                );
+
+                expect(tx.startTime).to.be.null;
+
+                expect(tx.setStartTime("12:30")).to.equal(tx);
+
+                expect(tx.endTime).to.deep.equal({ hour: 1, minute: 2 });
+
+                expect(tx.setEndTime(10, 20)).to.equal(tx);
+                expect(tx.endTime).to.deep.equal({ hour: 10, minute: 20 });
+
+                expect(tx.setEndTime("14:45")).to.equal(tx);
+                expect(tx.endTime).to.deep.equal({ hour: 14, minute: 45 });
+
+                expect(tx.setUpdateFileId(fileId)).to.equal(tx);
+                expect(tx.updateFileId).to.equal(fileId);
+            } finally {
+                warnSpy.mockRestore();
+            }
         });
     });
 });

@@ -1,3 +1,4 @@
+import { vi } from "vitest";
 import Client from "../../src/client/Client.js";
 import AccountId from "../../src/account/AccountId.js";
 import NodeAddressBook from "../../src/address_book/NodeAddressBook.js";
@@ -413,5 +414,21 @@ describe("ManagedNetwork node health", function () {
         );
 
         emptyClient.close();
+    });
+
+    describe("deprecated", function () {
+        it("setNetworkName() and networkName set and return the mirror network ledger ID", function () {
+            const warnSpy = vi
+                .spyOn(console, "warn")
+                .mockImplementation(() => {});
+            try {
+                expect(client._mirrorNetwork.networkName).to.be.null;
+                const result = client._mirrorNetwork.setNetworkName("testnet");
+                expect(result).to.equal(client._mirrorNetwork);
+                expect(client._mirrorNetwork.networkName).to.equal("testnet");
+            } finally {
+                warnSpy.mockRestore();
+            }
+        });
     });
 });

@@ -1,4 +1,7 @@
+import { vi } from "vitest";
 import TopicId from "../../src/topic/TopicId.js";
+import { Client } from "../../src/index.js";
+import BadEntityIdError from "../../src/BadEntityIdError.js";
 
 describe("TopicId", function () {
     describe("fromEvmAddress()", function () {
@@ -118,6 +121,31 @@ describe("TopicId", function () {
                 expect(() => TopicId.fromString(text)).to.throw(
                     `failed to parse entity id: ${text}`,
                 );
+            }
+        });
+    });
+
+    describe("deprecated", function () {
+        it("validate() succeeds for matching network checksum and throws BadEntityIdError otherwise", function () {
+            const warnSpy = vi
+                .spyOn(console, "warn")
+                .mockImplementation(() => {});
+            const testnetClient = Client.forTestnet({
+                scheduleNetworkUpdate: false,
+            });
+            const mainnetClient = Client.forMainnet({
+                scheduleNetworkUpdate: false,
+            });
+            try {
+                const topicId = TopicId.fromString("0.0.123-esxsf");
+                expect(() => topicId.validate(testnetClient)).to.not.throw();
+                expect(() => topicId.validate(mainnetClient)).to.throw(
+                    BadEntityIdError,
+                );
+            } finally {
+                testnetClient.close();
+                mainnetClient.close();
+                warnSpy.mockRestore();
             }
         });
     });

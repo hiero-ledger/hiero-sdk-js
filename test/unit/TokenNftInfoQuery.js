@@ -313,4 +313,26 @@ describe("TokenNftInfoQuery", function () {
             expect(query._getLogId()).to.equal("TokenNftInfoQuery:123.456");
         });
     });
+
+    describe("deprecated", function () {
+        it("returns accountId, tokenId, start, and end from getters", function () {
+            const warnSpy = vi
+                .spyOn(console, "warn")
+                .mockImplementation(() => {});
+            try {
+                const query = new TokenNftInfoQuery()
+                    .setAccountId("0.0.1")
+                    .setTokenId("0.0.2")
+                    .setStart(1)
+                    .setEnd(5);
+
+                expect(query.accountId.toString()).to.equal("0.0.1");
+                expect(query.tokenId.toString()).to.equal("0.0.2");
+                expect(query.start.toNumber()).to.equal(1);
+                expect(query.end.toNumber()).to.equal(5);
+            } finally {
+                warnSpy.mockRestore();
+            }
+        });
+    });
 });

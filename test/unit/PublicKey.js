@@ -160,4 +160,11 @@ describe("PublicKey", function () {
         const key2 = PrivateKey.generateED25519();
         expect(key2.publicKey.type).to.be.equal("ED25519");
     });
+
+    describe("deprecated", function () {
+        it("toEthereumAddress() returns the same value as toEvmAddress()", function () {
+            const key = PrivateKey.generateECDSA().publicKey;
+            expect(key.toEthereumAddress()).to.equal(key.toEvmAddress());
+        });
+    });
 });

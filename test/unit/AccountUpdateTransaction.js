@@ -1033,4 +1033,18 @@ describe("AccountUpdateTransaction", function () {
             );
         });
     });
+
+    describe("deprecated", function () {
+        it("supports proxyAccountId, aliasKey, and setAliasKey", function () {
+            const tx = new AccountUpdateTransaction();
+            const proxyId = new AccountId(0, 0, 123);
+            const key = PrivateKey.generateED25519().publicKey;
+
+            expect(tx.setProxyAccountId(proxyId)).to.equal(tx);
+            expect(tx.proxyAccountId).to.equal(proxyId);
+
+            expect(tx.setAliasKey(key)).to.equal(tx);
+            expect(tx.aliasKey).to.be.null;
+        });
+    });
 });

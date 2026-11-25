@@ -415,4 +415,20 @@ describe("Executable", function () {
             clearTimeoutSpy.mockRestore();
         }
     });
+
+    describe("deprecated", function () {
+        it("maxRetries and setMaxRetries() warn and delegate to maxAttempts", function () {
+            const warnSpy = vi
+                .spyOn(console, "warn")
+                .mockImplementation(() => {});
+            try {
+                const executable = new Executable();
+                expect(executable.setMaxRetries(5)).to.equal(executable);
+                expect(executable.maxRetries).to.equal(5);
+                expect(warnSpy).toHaveBeenCalledTimes(2);
+            } finally {
+                warnSpy.mockRestore();
+            }
+        });
+    });
 });

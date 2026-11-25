@@ -1,6 +1,7 @@
 import {
     AccountId,
     FileAppendTransaction,
+    Mnemonic,
     PrivateKey,
     Timestamp,
     Transaction,
@@ -333,6 +334,21 @@ describe("PrivateKey", function () {
             const derKey = "invalid";
             expect(() => PrivateKey.getAlgorithm(derKey)).to.throw(
                 "Only der keys are supported",
+            );
+        });
+    });
+
+    describe("deprecated", function () {
+        it("fromMnemonic() throws when cryptography mnemonic cache is not initialized", async function () {
+            const phrase =
+                "inmate flip alley wear offer often piece magnet surge toddler submit right radio absent pear floor belt raven price stove replace reduce plate home";
+            const mnemonic = await Mnemonic.fromString(phrase);
+
+            await expect(PrivateKey.fromMnemonic(mnemonic)).rejects.toThrow(
+                "Mnemonic not found in cache",
+            );
+            await expect(PrivateKey.fromMnemonic(phrase)).rejects.toThrow(
+                "Mnemonic not found in cache",
             );
         });
     });

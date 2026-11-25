@@ -1,4 +1,12 @@
-import { AccountId, EvmAddress, NftId, PrivateKey } from "../../src/index.js";
+import { vi } from "vitest";
+import {
+    AccountId,
+    Client,
+    EvmAddress,
+    NftId,
+    PrivateKey,
+} from "../../src/index.js";
+import BadEntityIdError from "../../src/BadEntityIdError.js";
 import Long from "long";
 
 describe("AccountId", function () {
@@ -97,6 +105,39 @@ describe("AccountId", function () {
             expect(() => NftId.fromString("0.0.5a/1")).to.throw(
                 "failed to parse entity id: 0.0.5a",
             );
+        });
+    });
+
+    describe("deprecated", function () {
+        it("fromEvmPublicAddress() creates an AccountId with the EvmAddress", function () {
+            const evmAddress = EvmAddress.fromString(
+                "0011223344556677889900112233445577889900",
+            );
+            const accountId = AccountId.fromEvmPublicAddress(evmAddress);
+            expect(accountId.evmAddress).to.equal(evmAddress);
+        });
+
+        it("validate() succeeds for matching network checksum and throws BadEntityIdError otherwise", function () {
+            const warnSpy = vi
+                .spyOn(console, "warn")
+                .mockImplementation(() => {});
+            const testnetClient = Client.forTestnet({
+                scheduleNetworkUpdate: false,
+            });
+            const mainnetClient = Client.forMainnet({
+                scheduleNetworkUpdate: false,
+            });
+            try {
+                const accountId = AccountId.fromString("0.0.123-esxsf");
+                expect(() => accountId.validate(testnetClient)).to.not.throw();
+                expect(() => accountId.validate(mainnetClient)).to.throw(
+                    BadEntityIdError,
+                );
+            } finally {
+                testnetClient.close();
+                mainnetClient.close();
+                warnSpy.mockRestore();
+            }
         });
     });
 });
