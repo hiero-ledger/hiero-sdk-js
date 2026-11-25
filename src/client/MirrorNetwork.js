@@ -92,7 +92,22 @@ export default class MirrorNetwork extends ManagedNetwork {
      * @returns {MirrorNode}
      */
     getNextMirrorNode() {
-        return this._getNumberOfMostHealthyNodes(1)[0];
+        const node = this._getNumberOfMostHealthyNodes(1)[0];
+        if (node != null) {
+            return node;
+        }
+
+        // Every mirror node is backed off. Return the one that is readmitted
+        // first, so that a network with a single mirror node keeps retrying
+        // it instead of having no node to use.
+        let next = this._nodes[0];
+        for (const candidate of this._nodes) {
+            if (candidate._readmitTime < next._readmitTime) {
+                next = candidate;
+            }
+        }
+
+        return next;
     }
 
     /**
