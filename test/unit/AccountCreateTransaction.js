@@ -1237,3 +1237,13 @@ describe("AccountCreateTransaction", function () {
         });
     });
 });
+
+describe("deprecated", function () {
+    it("proxyAccountId returns the value that was set", function () {
+        const transaction = new AccountCreateTransaction().setProxyAccountId(
+            new AccountId(5),
+        );
+
+        expect(transaction.proxyAccountId.toString()).to.equal("0.0.5");
+    });
+});

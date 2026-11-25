@@ -445,3 +445,13 @@ describe("TokenUpdateTransaction", function () {
         });
     });
 });
+
+describe("deprecated", function () {
+    it("setsupplyKey sets supplyKey and returns the transaction", function () {
+        const key = PrivateKey.generateED25519().publicKey;
+        const transaction = new TokenUpdateTransaction();
+
+        expect(transaction.setsupplyKey(key)).to.equal(transaction);
+        expect(transaction.supplyKey).to.equal(key);
+    });
+});

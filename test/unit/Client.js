@@ -2,6 +2,7 @@ import { vi } from "vitest";
 import Client from "../../src/client/Client.js";
 import AccountId from "../../src/account/AccountId.js";
 import PrivateKey from "../../src/PrivateKey.js";
+import Hbar from "../../src/Hbar.js";
 import AddressBookQuery from "../../src/network/AddressBookQuery.js";
 import {
     DEFAULT_GRPC_DEADLINE,
@@ -575,5 +576,47 @@ describe("Client configuration", function () {
                 realm: 0,
             });
         });
+    });
+});
+
+describe("deprecated", function () {
+    let client;
+    let warn;
+
+    beforeEach(function () {
+        client = new Client({ scheduleNetworkUpdate: false });
+        warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    });
+
+    afterEach(function () {
+        vi.restoreAllMocks();
+    });
+
+    it("setNetworkName sets the ledger ID and networkName returns it", function () {
+        expect(client.networkName).to.equal(null);
+        expect(client.setNetworkName("testnet")).to.equal(client);
+        expect(client.networkName).to.equal("testnet");
+        expect(client.ledgerId.toString()).to.equal("testnet");
+
+        expect(warn).toHaveBeenCalledWith(
+            "Deprecated: Use `setLedgerId` instead",
+        );
+        expect(warn).toHaveBeenCalledWith("Deprecated: Use `ledgerId` instead");
+    });
+
+    it("setMaxTransactionFee sets defaultMaxTransactionFee and maxTransactionFee returns it", function () {
+        const fee = new Hbar(3);
+
+        expect(client.setMaxTransactionFee(fee)).to.equal(client);
+        expect(client.defaultMaxTransactionFee).to.equal(fee);
+        expect(client.maxTransactionFee).to.equal(fee);
+    });
+
+    it("setMaxQueryPayment sets defaultMaxQueryPayment and maxQueryPayment returns it", function () {
+        const payment = new Hbar(4);
+
+        expect(client.setMaxQueryPayment(payment)).to.equal(client);
+        expect(client.defaultMaxQueryPayment).to.equal(payment);
+        expect(client.maxQueryPayment).to.equal(payment);
     });
 });
