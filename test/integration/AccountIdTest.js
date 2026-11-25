@@ -6,6 +6,7 @@ import {
     Hbar,
 } from "../../src/exports.js";
 import IntegrationTestEnv, { Client } from "./client/NodeIntegrationTestEnv.js";
+import { executeWithThrottleRetry } from "./utils/Fixtures.js";
 
 describe("AccountId", function () {
     let client;
@@ -69,18 +70,14 @@ describe("AccountId", function () {
                 evmAddress,
             );
 
-            // Transfer 1 Hbar to the EVM address account to create it
-            const transferTx = await new TransferTransaction()
-                .addHbarTransfer(evmAddressAccount, new Hbar(1))
-                .addHbarTransfer(env.operatorId, new Hbar(-1))
-                .execute(env.client);
-
-            // Get the receipt to find the new account ID (include children to get the account creation receipt)
-            const receipt = await transferTx
-                .getReceiptQuery()
-                .setIncludeChildren(true)
-                .setValidateStatus(true)
-                .execute(env.client);
+            // Transfer 1 Hbar to the EVM address account to create it. Account
+            // auto-creation can be throttled at consensus while other tests
+            // create accounts, so retry the transfer on that status only.
+            const receipt = await executeWithThrottleRetry(env.client, () =>
+                new TransferTransaction()
+                    .addHbarTransfer(evmAddressAccount, new Hbar(1))
+                    .addHbarTransfer(env.operatorId, new Hbar(-1)),
+            );
 
             // The new account ID should be in the first child receipt
             const newAccountId = receipt.children[0].accountId;
