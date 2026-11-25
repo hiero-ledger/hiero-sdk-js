@@ -1,4 +1,6 @@
 import TopicId from "../../src/topic/TopicId.js";
+import { Client } from "../../src/index.js";
+import BadEntityIdError from "../../src/BadEntityIdError.js";
 
 describe("TopicId", function () {
     describe("fromEvmAddress()", function () {
@@ -120,5 +122,37 @@ describe("TopicId", function () {
                 );
             }
         });
+    });
+});
+
+describe("deprecated", function () {
+    let warn;
+    let testnet;
+    let mainnet;
+
+    beforeEach(function () {
+        warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+        testnet = Client.forTestnet({ scheduleNetworkUpdate: false });
+        mainnet = Client.forMainnet({ scheduleNetworkUpdate: false });
+    });
+
+    afterEach(function () {
+        testnet.close();
+        mainnet.close();
+        vi.restoreAllMocks();
+    });
+
+    it("validate passes when the checksum matches the client's network", function () {
+        TopicId.fromString("0.0.123-esxsf").validate(testnet);
+
+        expect(warn).toHaveBeenCalledWith(
+            "Deprecated: Use `validateChecksum` instead",
+        );
+    });
+
+    it("validate throws BadEntityIdError when the checksum is for another network", function () {
+        expect(() =>
+            TopicId.fromString("0.0.123-esxsf").validate(mainnet),
+        ).to.throw(BadEntityIdError);
     });
 });

@@ -9,7 +9,6 @@ import FileAppendTransaction from "../../../src/file/FileAppendTransaction.js";
 import FileDeleteTransaction from "../../../src/file/FileDeleteTransaction.js";
 import ContractCreateTransaction from "../../../src/contract/ContractCreateTransaction.js";
 
-
 // Builds a minimal mock client for ContractCreateFlow.execute().
 function makeMockClient({ withOperator = true } = {}) {
     const operatorKey = withOperator
@@ -21,7 +20,7 @@ function makeMockClient({ withOperator = true } = {}) {
     };
 }
 
-// Stubs all four transaction classes 
+// Stubs all four transaction classes
 function stubTransactions() {
     const fileId = FileId.fromString("0.0.999");
 
@@ -99,7 +98,7 @@ describe("ContractCreateFlow", function () {
         });
     });
 
-    // signWith deduplication 
+    // signWith deduplication
     describe("signWith", function () {
         it("with duplicate key does not add the signer twice", function () {
             const flow = new ContractCreateFlow();
@@ -180,7 +179,7 @@ describe("ContractCreateFlow", function () {
         });
     });
 
-    // FileDeleteTransaction guard 
+    // FileDeleteTransaction guard
     describe("FileDeleteTransaction guard", function () {
         it("calls FileDeleteTransaction when operator key is present", async function () {
             const { stubs } = stubTransactions();
@@ -205,5 +204,14 @@ describe("ContractCreateFlow", function () {
 
             expect(stubs.fileDeleteExecute.called).to.be.false;
         });
+    });
+});
+
+describe("deprecated", function () {
+    it("setProxyAccountId sets proxyAccountId and returns the flow", function () {
+        const flow = new ContractCreateFlow();
+
+        expect(flow.setProxyAccountId("0.0.5")).to.equal(flow);
+        expect(flow.proxyAccountId.toString()).to.equal("0.0.5");
     });
 });

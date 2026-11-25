@@ -1,5 +1,5 @@
 import { vi } from "vitest";
-import Wallet from "../../src/Wallet.js";
+import { Wallet } from "../../src/index.js";
 import PrivateKey from "../../src/PrivateKey.js";
 import PublicKey from "../../src/PublicKey.js";
 import AccountId from "../../src/account/AccountId.js";
@@ -615,5 +615,27 @@ describe("Wallet", function () {
                 NO_PROVIDER_ERROR_MESSAGE,
             );
         });
+    });
+});
+
+describe("deprecated", function () {
+    it("createRandomED25519 resolves to a Wallet with an ED25519 key", async function () {
+        const wallet = await Wallet.createRandomED25519();
+
+        expect(wallet).to.be.instanceOf(Wallet);
+        expect(wallet.getAccountKey().type).to.equal("ED25519");
+        expect(wallet.getAccountId().aliasKey.toString()).to.equal(
+            wallet.getAccountKey().toString(),
+        );
+    });
+
+    it("createRandomECDSA resolves to a Wallet with an ECDSA key", async function () {
+        const wallet = await Wallet.createRandomECDSA();
+
+        expect(wallet).to.be.instanceOf(Wallet);
+        expect(wallet.getAccountKey().type).to.equal("secp256k1");
+        expect(wallet.getAccountId().aliasKey.toString()).to.equal(
+            wallet.getAccountKey().toString(),
+        );
     });
 });

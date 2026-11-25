@@ -416,3 +416,30 @@ describe("Executable", function () {
         }
     });
 });
+
+describe("deprecated", function () {
+    let warn;
+
+    beforeEach(function () {
+        warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    });
+
+    afterEach(function () {
+        vi.restoreAllMocks();
+    });
+
+    it("setMaxRetries sets maxAttempts and maxRetries returns it", function () {
+        const executable = new Executable();
+
+        expect(executable.setMaxRetries(4)).to.equal(executable);
+        expect(executable.maxAttempts).to.equal(4);
+        expect(executable.maxRetries).to.equal(4);
+
+        expect(warn).toHaveBeenCalledWith(
+            "Deprecated: use setMaxAttempts() instead",
+        );
+        expect(warn).toHaveBeenCalledWith(
+            "Deprecated: use maxAttempts instead",
+        );
+    });
+});

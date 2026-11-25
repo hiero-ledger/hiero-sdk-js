@@ -114,3 +114,24 @@ describe("EthereumTransaction", function () {
         });
     });
 });
+
+describe("deprecated", function () {
+    it("setCallData sets callDataFileId and callData returns it", function () {
+        const fileId = new FileId(10);
+        const transaction = new EthereumTransaction();
+
+        expect(transaction.setCallData(fileId)).to.equal(transaction);
+        expect(transaction.callData).to.equal(fileId);
+        expect(transaction.callDataFileId).to.equal(fileId);
+    });
+
+    it("setMaxGasAllowance sets maxGasAllowance", function () {
+        const transaction = new EthereumTransaction();
+
+        expect(transaction.setMaxGasAllowance(5)).to.equal(transaction);
+        expect(transaction.maxGasAllowance).to.be.instanceOf(Hbar);
+        expect(transaction.maxGasAllowance.toString()).to.equal(
+            new Hbar(5).toString(),
+        );
+    });
+});
