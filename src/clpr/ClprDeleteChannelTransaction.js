@@ -3,7 +3,6 @@
 import Transaction from "../transaction/Transaction.js";
 import ClprTransaction from "./ClprTransaction.js";
 import { copyBytes32 } from "../util.js";
-import { computeChannelCommitment } from "./ownership.js";
 
 /**
  * @namespace proto
@@ -16,7 +15,7 @@ import { computeChannelCommitment } from "./ownership.js";
 
 /**
  * @namespace com.hedera.hapi.node.clpr
- * @typedef {import("@hiero-ledger/proto").com.hedera.hapi.node.clpr.IClprRegisterChannelTransactionBody} IClprRegisterChannelTransactionBody
+ * @typedef {import("@hiero-ledger/proto").com.hedera.hapi.node.clpr.IClprDeleteChannelTransactionBody} IClprDeleteChannelTransactionBody
  */
 
 /**
@@ -25,21 +24,22 @@ import { computeChannelCommitment } from "./ownership.js";
  * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
  * @typedef {import("../account/AccountId.js").default} AccountId
- * @typedef {import("../PublicKey.js").default} PublicKey
  */
 
 /**
- * Reserves a CLPR Channel in the commit phase of HIP-1535 commit-reveal.
+ * Initiates graceful closure of a CLPR Channel under HIP-1535.
  *
- * Any payer can register a 32-byte ownership commitment, computed as
- * keccak256(channelId || canonical public key). The Channel ID and public key
- * are revealed during Channel completion to prevent front-running.
+ * This privileged operation requires the treasury or system admin authority.
+ * An existing Channel stops accepting new messages and drains its queues before
+ * closing. When no Channel exists, ownershipCommitment identifies an abandoned
+ * pending registration to sweep. The commitment is ignored for an existing Channel.
  * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  * This transaction cannot be scheduled.
  */
-export default class ClprRegisterChannelTransaction extends ClprTransaction {
+export default class ClprDeleteChannelTransaction extends ClprTransaction {
     /**
      * @param {object} [props]
+     * @param {Uint8Array} [props.channelId]
      * @param {Uint8Array} [props.ownershipCommitment]
      */
     constructor(props) {
@@ -49,23 +49,20 @@ export default class ClprRegisterChannelTransaction extends ClprTransaction {
          * @private
          * @type {?Uint8Array}
          */
+        this._channelId = null;
+
+        /**
+         * @private
+         * @type {?Uint8Array}
+         */
         this._ownershipCommitment = null;
 
+        if (props?.channelId != null) {
+            this.setChannelId(props.channelId);
+        }
         if (props?.ownershipCommitment != null) {
             this.setOwnershipCommitment(props.ownershipCommitment);
         }
-    }
-
-    /**
-     * Computes the 32-byte ownership commitment for a Channel registration.
-     * Uses the canonical key encoding for ECDSA secp256k1 or Ed25519.
-     *
-     * @param {Uint8Array} channelId - The 32-byte Channel ID.
-     * @param {PublicKey} publicKey - The ownership public key.
-     * @returns {Uint8Array}
-     */
-    static computeOwnershipCommitment(channelId, publicKey) {
-        return computeChannelCommitment(channelId, publicKey);
     }
 
     /**
@@ -75,7 +72,7 @@ export default class ClprRegisterChannelTransaction extends ClprTransaction {
      * @param {TransactionId[]} transactionIds
      * @param {AccountId[]} nodeIds
      * @param {ITransactionBody[]} bodies
-     * @returns {ClprRegisterChannelTransaction}
+     * @returns {ClprDeleteChannelTransaction}
      */
     static _fromProtobuf(
         transactions,
@@ -84,15 +81,17 @@ export default class ClprRegisterChannelTransaction extends ClprTransaction {
         nodeIds,
         bodies,
     ) {
-        const registerChannel =
-            /** @type {IClprRegisterChannelTransactionBody} */ (
-                bodies[0].clprRegisterChannel
-            );
+        const deleteChannel = /** @type {IClprDeleteChannelTransactionBody} */ (
+            bodies[0].clprDeleteChannel
+        );
 
         return Transaction._fromProtobufTransactions(
-            new ClprRegisterChannelTransaction({
-                ownershipCommitment: registerChannel.ownershipCommitment?.length
-                    ? registerChannel.ownershipCommitment
+            new ClprDeleteChannelTransaction({
+                channelId: deleteChannel.channelId?.length
+                    ? deleteChannel.channelId
+                    : undefined,
+                ownershipCommitment: deleteChannel.ownershipCommitment?.length
+                    ? deleteChannel.ownershipCommitment
                     : undefined,
             }),
             transactions,
@@ -104,7 +103,32 @@ export default class ClprRegisterChannelTransaction extends ClprTransaction {
     }
 
     /**
-     * Sets the 32-byte ownership commitment and copies its bytes.
+     * Sets the 32-byte Channel ID and copies its bytes.
+     *
+     * @param {Uint8Array} channelId
+     * @returns {this}
+     */
+    setChannelId(channelId) {
+        this._requireNotFrozen();
+        const bytes = copyBytes32(channelId, "channelId");
+        this._channelId = bytes;
+        return this;
+    }
+
+    /**
+     * Returns a copy of the Channel ID, or null when it has not been set.
+     *
+     * @returns {?Uint8Array}
+     */
+    get channelId() {
+        return this._channelId == null
+            ? null
+            : copyBytes32(this._channelId, "channelId");
+    }
+
+    /**
+     * Sets the 32-byte commitment for sweeping an abandoned pending registration.
+     * Copies the bytes. This field is ignored when the Channel already exists.
      *
      * @param {Uint8Array} ownershipCommitment
      * @returns {this}
@@ -117,7 +141,7 @@ export default class ClprRegisterChannelTransaction extends ClprTransaction {
     }
 
     /**
-     * Returns a copy of the commitment, or null when it has not been set.
+     * Returns a copy of the optional commitment, or null when it has not been set.
      *
      * @returns {?Uint8Array}
      */
@@ -133,7 +157,7 @@ export default class ClprRegisterChannelTransaction extends ClprTransaction {
      * @returns {string}
      */
     _getName() {
-        return "ClprRegisterChannelTransaction";
+        return "ClprDeleteChannelTransaction";
     }
 
     /**
@@ -143,7 +167,7 @@ export default class ClprRegisterChannelTransaction extends ClprTransaction {
      */
     _getRequiredFields() {
         return {
-            ownershipCommitment: this._ownershipCommitment,
+            channelId: this._channelId,
         };
     }
 
@@ -164,7 +188,7 @@ export default class ClprRegisterChannelTransaction extends ClprTransaction {
      * @returns {Promise<ITransactionResponse>}
      */
     _execute(channel, request) {
-        return channel.clpr.registerChannel(request);
+        return channel.clpr.deleteChannel(request);
     }
 
     /**
@@ -173,16 +197,19 @@ export default class ClprRegisterChannelTransaction extends ClprTransaction {
      * @returns {NonNullable<TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
-        return "clprRegisterChannel";
+        return "clprDeleteChannel";
     }
 
     /**
      * @override
      * @protected
-     * @returns {IClprRegisterChannelTransactionBody}
+     * @returns {IClprDeleteChannelTransactionBody}
      */
     _makeTransactionData() {
-        return { ownershipCommitment: this._ownershipCommitment };
+        return {
+            channelId: this._channelId,
+            ownershipCommitment: this._ownershipCommitment,
+        };
     }
 
     /**
@@ -192,6 +219,6 @@ export default class ClprRegisterChannelTransaction extends ClprTransaction {
         const timestamp = /** @type {import("../Timestamp.js").default} */ (
             this._transactionIds.current.validStart
         );
-        return `ClprRegisterChannelTransaction:${timestamp.toString()}`;
+        return `ClprDeleteChannelTransaction:${timestamp.toString()}`;
     }
 }

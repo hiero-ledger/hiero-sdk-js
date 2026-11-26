@@ -6,19 +6,15 @@ import { proto } from "@hiero-ledger/proto";
 import {
     AccountId,
     Client,
-    ClprCloseChannelTransaction,
-    ClprCompleteChannelTransaction,
-    ClprCompleteConnectorTransaction,
-    ClprDeregisterConnectorTransaction,
-    ClprRegisterChannelTransaction,
-    ClprRegisterConnectorTransaction,
+    ClprDeleteChannelTransaction,
+    ClprCreateChannelTransaction,
+    ClprCreateConnectorTransaction,
+    ClprDeleteConnectorTransaction,
     ClprSubmitBundleTransaction,
     ClprUpdateLedgerConfigurationTransaction,
-    PrivateKey,
     Transaction,
     TransactionId,
 } from "../../../src/index.js";
-import vectors from "../utils/ClprOwnershipVectors.js";
 
 function frozenTransactionBytes(kind, data) {
     const bodyBytes = proto.TransactionBody.encode({
@@ -61,10 +57,10 @@ async function expectLocalExecutionError(transaction, error) {
 
 describe("CLPR required fields before execution", function () {
     it.each([
-        ["clprCloseChannel", "channelId", {}],
+        ["clprDeleteChannel", "channelId", {}],
         ["clprSubmitBundle", "channelId", {}],
         [
-            "clprDeregisterConnector",
+            "clprDeleteConnector",
             "stakeRecipient",
             { channelId: new Uint8Array(32), connectorId: new Uint8Array(32) },
         ],
@@ -83,31 +79,17 @@ describe("CLPR required fields before execution", function () {
 });
 
 describe.each([
+    ["ClprCreateChannelTransaction", ClprCreateChannelTransaction, "channelId"],
     [
-        "ClprRegisterChannelTransaction",
-        ClprRegisterChannelTransaction,
-        "ownershipCommitment",
-    ],
-    [
-        "ClprRegisterConnectorTransaction",
-        ClprRegisterConnectorTransaction,
-        "commitment",
-    ],
-    [
-        "ClprCompleteChannelTransaction",
-        ClprCompleteChannelTransaction,
+        "ClprCreateConnectorTransaction",
+        ClprCreateConnectorTransaction,
         "channelId",
     ],
-    [
-        "ClprCompleteConnectorTransaction",
-        ClprCompleteConnectorTransaction,
-        "channelId",
-    ],
-    ["ClprCloseChannelTransaction", ClprCloseChannelTransaction, "channelId"],
+    ["ClprDeleteChannelTransaction", ClprDeleteChannelTransaction, "channelId"],
     ["ClprSubmitBundleTransaction", ClprSubmitBundleTransaction, "channelId"],
     [
-        "ClprDeregisterConnectorTransaction",
-        ClprDeregisterConnectorTransaction,
+        "ClprDeleteConnectorTransaction",
+        ClprDeleteConnectorTransaction,
         "channelId",
     ],
     [
@@ -150,90 +132,12 @@ describe.each([
     },
 );
 
-describe.each([
-    ["ClprCompleteChannelTransaction", ClprCompleteChannelTransaction],
-    ["ClprCompleteConnectorTransaction", ClprCompleteConnectorTransaction],
-])(
-    "%s ownership errors with a minified constructor name",
-    function (name, TransactionClass) {
-        class a extends TransactionClass {}
-
-        it("keeps the literal name when proof creation is missing a bound field", function () {
-            const key = PrivateKey.fromStringED25519(
-                vectors.vectors[1].privateKeyOrSeed,
-            );
-
-            expect(() => new a().setOwnershipProof(key)).toThrow(
-                new Error(
-                    `${name}: 'channelId' must be explicitly set before calling setOwnershipProof().`,
-                ),
-            );
-        });
-
-        it.each(["freeze", "execute"])(
-            "keeps the literal name in missing-proof errors at %s",
-            async function (method) {
-                const transaction = new a({
-                    channelId: new Uint8Array(32),
-                    connectorId: new Uint8Array(32),
-                    salt: new Uint8Array(32),
-                    verifierContract: "1.2.345",
-                    configProofBytes: new Uint8Array([1]),
-                    endpointManifestProofBytes: new Uint8Array(),
-                    connectorContract: "1.2.345",
-                    adminKey: PrivateKey.fromStringED25519(
-                        vectors.vectors[1].privateKeyOrSeed,
-                    ).publicKey,
-                });
-                const error = new Error(
-                    `${name}: a complete ownership proof must be set before freezing or executing.`,
-                );
-
-                if (method === "execute") {
-                    await expectLocalExecutionError(transaction, error);
-                } else {
-                    expect(() => transaction.freeze()).toThrow(error);
-                }
-            },
-        );
-    },
-);
-
 const deregistrationValues = {
     channelId: new Uint8Array(32).fill(1),
     connectorId: new Uint8Array(32).fill(2),
     stakeRecipient: new AccountId(123),
 };
 const incompleteCases = [
-    ...[
-        [{}, "commitment"],
-        [{ channelId: new Uint8Array(32).fill(1) }, "commitment"],
-        [{ commitment: new Uint8Array(32).fill(2) }, "channelId"],
-    ].map(([props, missing]) => ({
-        name: `register-connector missing ${missing} with ${
-            Object.keys(props).join() || "no fields"
-        }`,
-        TransactionClass: ClprRegisterConnectorTransaction,
-        kind: "clprRegisterConnector",
-        props,
-        fields: ["channelId", "commitment"],
-        missing,
-    })),
-    ...[
-        [
-            "register-channel",
-            ClprRegisterChannelTransaction,
-            "clprRegisterChannel",
-            "ownershipCommitment",
-        ],
-    ].map(([name, TransactionClass, kind, field]) => ({
-        name: `empty ${name}`,
-        TransactionClass,
-        kind,
-        props: {},
-        fields: [field],
-        missing: field,
-    })),
     ...[
         [[], "channelId"],
         [["channelId"], "connectorId"],
@@ -246,8 +150,8 @@ const incompleteCases = [
         name: `deregister-connector with ${
             present.join(" and ") || "no fields"
         }`,
-        TransactionClass: ClprDeregisterConnectorTransaction,
-        kind: "clprDeregisterConnector",
+        TransactionClass: ClprDeleteConnectorTransaction,
+        kind: "clprDeleteConnector",
         props: Object.fromEntries(
             present.map((field) => [field, deregistrationValues[field]]),
         ),
@@ -304,15 +208,11 @@ describe.each(incompleteCases)(
 );
 
 it.each([
-    [
-        "ownershipCommitment",
-        ClprRegisterChannelTransaction,
-        "setOwnershipCommitment",
-    ],
-    ["commitment", ClprRegisterConnectorTransaction, "setCommitment"],
-    ["channelId", ClprRegisterConnectorTransaction, "setChannelId"],
-    ["channelId", ClprDeregisterConnectorTransaction, "setChannelId"],
-    ["connectorId", ClprDeregisterConnectorTransaction, "setConnectorId"],
+    ["channelId", ClprCreateChannelTransaction, "setChannelId"],
+    ["salt", ClprCreateChannelTransaction, "setSalt"],
+    ["channelId", ClprCreateConnectorTransaction, "setChannelId"],
+    ["channelId", ClprDeleteConnectorTransaction, "setChannelId"],
+    ["connectorId", ClprDeleteConnectorTransaction, "setConnectorId"],
 ])(
     "still rejects explicitly empty bytes for %s through constructors and setters",
     function (field, TransactionClass, setter) {
@@ -330,10 +230,9 @@ it.each([
 );
 
 it.each([31, 33])(
-    "rejects a decoded %i-byte registration channelId",
+    "rejects a decoded %i-byte creation channelId",
     function (length) {
-        const bytes = frozenTransactionBytes("clprRegisterConnector", {
-            commitment: new Uint8Array(32),
+        const bytes = frozenTransactionBytes("clprCreateConnector", {
             channelId: new Uint8Array(length),
         });
         expect(() => Transaction.fromBytes(bytes)).toThrow(/channelId/);

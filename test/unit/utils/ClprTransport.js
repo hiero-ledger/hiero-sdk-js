@@ -3,13 +3,11 @@ import Long from "long";
 
 export const CLPR_RPC_CASES = [
     ...[
-        "registerChannel",
-        "completeChannel",
-        "closeChannel",
+        "createChannel",
+        "deleteChannel",
         "submitBundle",
-        "registerConnector",
-        "deregisterConnector",
-        "completeConnector",
+        "createConnector",
+        "deleteConnector",
         "updateLedgerConfiguration",
     ].map((method) => ({
         method,

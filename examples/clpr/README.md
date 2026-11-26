@@ -4,11 +4,9 @@ CLPR provides ordered cross-ledger messaging. A Channel binds a peer service to 
 
 ## Baseline
 
-The HAPI schema is CN `77c8361520e595c25d2d943f89a57b32cb21d22c`. Both proof queries use the standard query cost/payment flow. CN main serves them free (cost 0) since [#28279](https://github.com/hiero-ledger/hiero-consensus-node/pull/28279) reverted the paid queries of [#28137](https://github.com/hiero-ledger/hiero-consensus-node/pull/28137); executing them still needs an operator. The CN fee model is not final.
+The SDK uses the one-step HAPI schema at CN [`bbd86c90`](https://github.com/hiero-ledger/hiero-consensus-node/commit/bbd86c90cf4a5bbd209ac89b6caac0b3f06789d0). The CLPR wire schema matches Consensus Node `v0.80.0-rc.4`, which was used for the isolated two-ledger SDK test. Use proof and contract fixtures for the selected deployment. Both proof queries use the standard query cost/payment flow and require an operator when run with the SDK.
 
-Completion helpers follow **provisional** CN [#28017](https://github.com/hiero-ledger/hiero-consensus-node/pull/28017) at `807100e2` and [#28019](https://github.com/hiero-ledger/hiero-consensus-node/pull/28019) at `453306c6`. They are not compatible with the earlier ID-only signatures. Final EAP-0.2 vectors and the enabled runtime must be reconciled before release. The selected node must implement the same signing rules.
-
-Mirror queries follow the [REST design](https://github.com/hiero-ledger/hiero-mirror-node/blob/0c0a831342b134f05ce81d058e16ebf6bfaa73fb/docs/design/clpr.md#rest-api-implementation); live acceptance requires a deployed implementation of both routes, targeted for MN 0.168.
+Mirror queries follow the [REST design](https://github.com/hiero-ledger/hiero-mirror-node/blob/0c0a831342b134f05ce81d058e16ebf6bfaa73fb/docs/design/clpr.md#rest-api-implementation). Live acceptance requires a deployment with both routes.
 
 ## Run lifecycle examples
 
@@ -27,11 +25,11 @@ The lifecycle examples use the SDK's default fee cap. CN main charges a flat fee
 
 `CLPR_LOCKED_STAKE_TINYBARS` must be at least the network's `clpr.minLockedStake`, which CN main sets in tinybars. The builder's default stake is zero.
 
-Channel completion needs real peer configuration/manifest proofs accepted by the chosen verifier. A nonempty query response does not necessarily contain usable proof material: an empty proof means the signed snapshot is unavailable. Readiness retries must be bounded. Query response fields can describe live state while the proof describes a snapshot.
+The lifecycle examples keep the Channel and Connector they create, so a live run can send messages through them. Set `CLPR_CLEANUP=true` to delete the Connector, and the Channel with `GENESIS_OPERATOR_ID`/`GENESIS_OPERATOR_KEY`. Deleting a Channel starts closing it, so leave cleanup off for a live messaging test.
 
-Set all bound fields before `setOwnershipProof()`. Channel signatures bind the ID, verifier ContractID and both proof byte strings. Connector signatures bind the channel ID, derived connector ID, CLPR service address, connector ContractID and admin Key. Setters invalidate a proof when the bound value changes. Locked stake is not a signed input. Signing serializes ContractID/Key as CN reserializes them, including the active EVM-address oneof; do not hash a protobuf object containing an additional numeric contract field.
+Channel creation uses the agreed channel ID and salt, the peer verifier bytes, and real peer configuration and manifest proofs accepted by the local verifier. Check the agreed ID with `ClprCreateChannelTransaction.computeChannelId()` before submitting; a mismatch fails only after the verifier runs. An empty query proof means its signed snapshot is unavailable.
 
-Connector ownership, Connector administration and consent from the contract paying delivery are distinct. The example uses `CLPR_CONNECTOR_CONTRACT_ADMIN_KEY` for ordinary transaction signing under provisional CN [#28013](https://github.com/hiero-ledger/hiero-consensus-node/pull/28013). `CLPR_CONNECTOR_ADMIN_KEY` authorizes deregistration. The stake recipient also signs deregistration. Closing channels or updating local ledger configuration requires the Treasury/SystemAdmin privilege.
+Connector creation uses the identity public key and salt to derive a reusable Connector ID. Submit a normal transaction signature from the identity key alongside the payer signature. The Connector administrator and the stake recipient sign Connector deletion. Channel deletion and ledger configuration updates require the target network's configured admin permissions.
 
 ## Read current mirror state
 
@@ -61,19 +59,19 @@ Counters are unsigned `Long`, stake is `Hbar`, and timestamps retain nanoseconds
 
 ## Shared SDK/TCK handoff
 
-The current adapter methods remain provisional until shared TCK #784 settles the contract. The JS server exposes the ten HAPI methods in `tck/methods/clpr.ts` plus:
+The current adapter methods remain provisional until shared TCK #784 settles the contract. The JS server exposes the eight HAPI methods in `tck/methods/clpr.ts` plus:
 
 -   `getMirrorNodeClprChannel({sessionId, channelId})`
 -   `getMirrorNodeClprConnector({sessionId, channelId, connectorId})`
 
-IDs/proofs are hex strings without `0x`; counters/tinybars are decimal strings; timestamps are `seconds.nanoseconds`. Mirror contract IDs and the Channel's verifier fingerprint and trust anchor ID are JSON `null` when the mirror node returns null. Mirror Connector responses return the complete admin Key as `{_type: "ProtobufEncoded", key: "<protobuf Key hex>"}` so threshold/list structure survives. Completion responses preserve nulls and the ECDSA scheme's zero-valued enum. Ordinary transaction signer keys and max fees use existing common transaction parameters.
+IDs/proofs are hex strings without `0x`; counters/tinybars are decimal strings; timestamps are `seconds.nanoseconds`. Mirror contract IDs and the Channel's verifier fingerprint and trust anchor ID are JSON `null` when the mirror node returns null. Mirror Connector responses return the complete admin Key as `{_type: "ProtobufEncoded", key: "<protobuf Key hex>"}` so threshold/list structure survives. Ordinary transaction signer keys and max fees use existing common transaction parameters.
 
-Port the model/validation behavior and independent provisional signing vectors in `test/unit/utils/ClprPhase2OwnershipVectors.js`, together with their pinned source metadata. `ClprOwnershipVectors.js` keeps historical signing values only; its commitment/ID formulas remain useful. Test the JSON-RPC boundary as well as SDK helpers. The mock mirror fixtures are in `test/unit/utils/ClprMirror.js`.
+Test the JSON-RPC boundary as well as the SDK helpers. The mock mirror fixtures are in `test/unit/utils/ClprMirror.js`.
 
 ## Live acceptance
 
 Record the SDK ref/package, CN image/tag/config, mirror build, ledger/chain IDs, contract IDs/ABI hashes, proof provenance, account roles and pass/fail/skip results. An offline suite or previewnet smoke transaction does not establish real-proof acceptance.
 
-Run fresh two-ledger commit/reveal, contract-consented Connector setup, send/bundle processing, a response round trip, and mirror lookup ingestion. Sending application messages uses existing contract APIs at `0x16e`, not a new HAPI send transaction. Match the deployed fee implementation. CN main prices the `0x16e` calls as fixed gas and collects no attached value. Draft CN [#28269](https://github.com/hiero-ledger/hiero-consensus-node/pull/28269) proposes a different gas-only model with a 2M gas starting allowance; larger messages, routes and batches need measured allowances. Both HAPI proof queries are free on CN main.
+Run fresh two-ledger Channel and Connector creation, send/bundle processing, a response round trip, and mirror lookup ingestion. Sending application messages uses existing contract APIs at `0x16e`, not a new HAPI send transaction. Match the deployed fee implementation. CN main prices the `0x16e` calls as fixed gas and collects no attached value. Draft CN [#28269](https://github.com/hiero-ledger/hiero-consensus-node/pull/28269) proposes a different gas-only model with a 2M gas starting allowance; larger messages, routes and batches need measured allowances. Both HAPI proof queries are free on CN main.
 
 Assert destination/source application state or callback payload. A successful bundle or advancing acknowledgement counter alone does not prove that the application callback ran. Close-to-CLOSED coverage and admin cleanup remain separate acceptance gates. Repeat the live checks against installed released packages before declaring the reference ready for downstream releases.

@@ -258,6 +258,59 @@ describe("ClprSubmitBundleTransaction", function () {
         expectNoDeprecatedAccessors(transaction);
     });
 
+    it("round-trips an optional recovery manifest version, including zero", function () {
+        expect(submitBundle().expectedCachedManifestVersion).toBeNull();
+        for (const version of [
+            0,
+            Long.fromString("18446744073709551615", true),
+        ]) {
+            const transaction = offline(
+                submitBundle({
+                    channelId: channelId(),
+                    expectedCachedManifestVersion: version,
+                }),
+            ).freeze();
+            const list = proto.TransactionList.decode(transaction.toBytes());
+            const signed = proto.SignedTransaction.decode(
+                list.transactionList[0].signedTransactionBytes,
+            );
+            const body = proto.TransactionBody.decode(signed.bodyBytes);
+            expect(
+                Object.hasOwn(
+                    body.clprSubmitBundle,
+                    "expectedCachedManifestVersion",
+                ),
+            ).toBe(true);
+
+            const decoded = sdk.Transaction.fromBytes(transaction.toBytes());
+            expect(decoded.expectedCachedManifestVersion.toString()).toBe(
+                Long.fromValue(version).toUnsigned().toString(),
+            );
+            expect(decoded.toBytes()).toEqual(transaction.toBytes());
+        }
+        for (const bad of [-1, 1.5, Long.fromNumber(-1), "1"]) {
+            expect(() =>
+                submitBundle().setExpectedCachedManifestVersion(bad),
+            ).toThrow(/unsigned 64-bit/);
+        }
+    });
+
+    it("keeps the frozen recovery manifest version independent of the getter", function () {
+        const transaction = offline(
+            submitBundle({
+                channelId: channelId(),
+                expectedCachedManifestVersion: 5,
+            }),
+        ).freeze();
+
+        const version = transaction.expectedCachedManifestVersion;
+        version.low = 6;
+
+        const decoded = sdk.Transaction.fromBytes(transaction.toBytes());
+        expect(transaction.expectedCachedManifestVersion.toString()).toBe("5");
+        expect(decoded.expectedCachedManifestVersion.toString()).toBe("5");
+    });
+
     it("keeps decoded signed bytes with deprecated wire fields without exposing them", function () {
         expect(sdk.ClprSubmitBundleTransaction).toBeTypeOf("function");
         const key = sdk.PrivateKey.fromStringED25519(

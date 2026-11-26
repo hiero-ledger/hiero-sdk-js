@@ -1,11 +1,9 @@
 import {
-    ClprRegisterChannelTransaction,
-    ClprCompleteChannelTransaction,
-    ClprCloseChannelTransaction,
+    ClprCreateChannelTransaction,
+    ClprDeleteChannelTransaction,
     ClprSubmitBundleTransaction,
-    ClprRegisterConnectorTransaction,
-    ClprCompleteConnectorTransaction,
-    ClprDeregisterConnectorTransaction,
+    ClprCreateConnectorTransaction,
+    ClprDeleteConnectorTransaction,
     ClprUpdateLedgerConfigurationTransaction,
     ClprGetLedgerConfigurationQuery,
     ClprGetEndpointManifestQuery,
@@ -14,6 +12,7 @@ import {
     ClprThrottles,
     Hbar,
     PrivateKey,
+    PublicKey,
     Transaction,
     Query,
 } from "@hiero-ledger/sdk";
@@ -24,13 +23,11 @@ import { sdk } from "../sdk_data";
 import { BaseTransactionParams } from "../params/base";
 import { applyCommonTransactionParams } from "../params/common-tx-params";
 import {
-    RegisterClprChannelParams,
-    CompleteClprChannelParams,
-    CloseClprChannelParams,
+    CreateClprChannelParams,
+    DeleteClprChannelParams,
     SubmitClprBundleParams,
-    RegisterClprConnectorParams,
-    CompleteClprConnectorParams,
-    DeregisterClprConnectorParams,
+    CreateClprConnectorParams,
+    DeleteClprConnectorParams,
     UpdateClprLedgerConfigurationParams,
     GetClprLedgerConfigurationParams,
     GetClprEndpointManifestParams,
@@ -39,7 +36,6 @@ import {
 } from "../params/clpr";
 import {
     ClprTransactionResponse,
-    ClprCompletionResponse,
     ClprLedgerConfigurationResponse,
     ClprEndpointManifestResponse,
     MirrorNodeClprChannelResponse,
@@ -73,21 +69,6 @@ const parseKey = (value: string): ReturnType<typeof getKeyFromString> => {
     }
 };
 
-const ownershipPrivateKey = (value?: string): PrivateKey => {
-    if (value == null) {
-        return invalidParamError(
-            "ownershipPrivateKey must be a private key string",
-        );
-    }
-    const key = parseKey(value);
-    if (!(key instanceof PrivateKey)) {
-        return invalidParamError(
-            "ownershipPrivateKey must be a private key string",
-        );
-    }
-    return key;
-};
-
 const uint64 = (value: string): Long => {
     if (typeof value !== "string" || !/^\d+$/.test(value)) {
         return invalidParamError("uint64 must be an unsigned decimal string");
@@ -117,35 +98,19 @@ const execute = async (
     return { status: receipt.status.toString() };
 };
 
-const complete = async (
-    transaction:
-        | ClprCompleteChannelTransaction
-        | ClprCompleteConnectorTransaction,
-    params: BaseTransactionParams,
-): Promise<ClprCompletionResponse> => ({
-    ...(await execute(transaction, params)),
-    publicKey: encode(transaction.publicKey),
-    signature: encode(transaction.signature),
-    signatureScheme: transaction.signatureScheme?.toString() ?? null,
-});
-
 // Method names are provisional until hiero-sdk-tck #784 settles them.
-export const registerClprChannel = async (
-    params: RegisterClprChannelParams,
+export const createClprChannel = async (
+    params: CreateClprChannelParams,
 ): Promise<ClprTransactionResponse> => {
-    const transaction = new ClprRegisterChannelTransaction();
-    if (params.ownershipCommitment != null) {
-        transaction.setOwnershipCommitment(decode(params.ownershipCommitment));
-    }
-    return execute(transaction, params);
-};
-
-export const completeClprChannel = async (
-    params: CompleteClprChannelParams,
-): Promise<ClprCompletionResponse> => {
-    const transaction = new ClprCompleteChannelTransaction();
+    const transaction = new ClprCreateChannelTransaction();
     if (params.channelId != null) {
         transaction.setChannelId(decode(params.channelId));
+    }
+    if (params.salt != null) {
+        transaction.setSalt(decode(params.salt));
+    }
+    if (params.peerVerifier != null) {
+        transaction.setPeerVerifier(decode(params.peerVerifier));
     }
     if (params.verifierContract != null) {
         transaction.setVerifierContract(params.verifierContract);
@@ -158,16 +123,13 @@ export const completeClprChannel = async (
             decode(params.endpointManifestProofBytes),
         );
     }
-    transaction.setOwnershipProof(
-        ownershipPrivateKey(params.ownershipPrivateKey),
-    );
-    return complete(transaction, params);
+    return execute(transaction, params);
 };
 
-export const closeClprChannel = async (
-    params: CloseClprChannelParams,
+export const deleteClprChannel = async (
+    params: DeleteClprChannelParams,
 ): Promise<ClprTransactionResponse> => {
-    const transaction = new ClprCloseChannelTransaction();
+    const transaction = new ClprDeleteChannelTransaction();
     if (params.channelId != null) {
         transaction.setChannelId(decode(params.channelId));
     }
@@ -187,31 +149,32 @@ export const submitClprBundle = async (
     if (params.bundlePayload != null) {
         transaction.setBundlePayload(decode(params.bundlePayload));
     }
+    if (params.expectedCachedManifestVersion != null) {
+        transaction.setExpectedCachedManifestVersion(
+            uint64(params.expectedCachedManifestVersion),
+        );
+    }
     return execute(transaction, params);
 };
 
-export const registerClprConnector = async (
-    params: RegisterClprConnectorParams,
+export const createClprConnector = async (
+    params: CreateClprConnectorParams,
 ): Promise<ClprTransactionResponse> => {
-    const transaction = new ClprRegisterConnectorTransaction();
-    if (params.channelId != null) {
-        transaction.setChannelId(decode(params.channelId));
-    }
-    if (params.commitment != null) {
-        transaction.setCommitment(decode(params.commitment));
-    }
-    return execute(transaction, params);
-};
-
-export const completeClprConnector = async (
-    params: CompleteClprConnectorParams,
-): Promise<ClprCompletionResponse> => {
-    const transaction = new ClprCompleteConnectorTransaction();
+    const transaction = new ClprCreateConnectorTransaction();
     if (params.channelId != null) {
         transaction.setChannelId(decode(params.channelId));
     }
     if (params.connectorId != null) {
         transaction.setConnectorId(decode(params.connectorId));
+    }
+    if (params.identityKey != null) {
+        const key = parseKey(params.identityKey);
+        if (!(key instanceof PublicKey)) {
+            return invalidParamError(
+                "identityKey must be an Ed25519 or ECDSA public key string",
+            );
+        }
+        transaction.setIdentityKey(key);
     }
     if (params.salt != null) {
         transaction.setSalt(decode(params.salt));
@@ -238,16 +201,13 @@ export const completeClprConnector = async (
             );
         }
     }
-    transaction.setOwnershipProof(
-        ownershipPrivateKey(params.ownershipPrivateKey),
-    );
-    return complete(transaction, params);
+    return execute(transaction, params);
 };
 
-export const deregisterClprConnector = async (
-    params: DeregisterClprConnectorParams,
+export const deleteClprConnector = async (
+    params: DeleteClprConnectorParams,
 ): Promise<ClprTransactionResponse> => {
-    const transaction = new ClprDeregisterConnectorTransaction();
+    const transaction = new ClprDeleteConnectorTransaction();
     if (params.channelId != null) {
         transaction.setChannelId(decode(params.channelId));
     }
@@ -315,9 +275,9 @@ export const getClprEndpointManifest = async (
     params: GetClprEndpointManifestParams,
 ): Promise<ClprEndpointManifestResponse> => {
     const client = sdk.getClient(params.sessionId);
-    const query = new ClprGetEndpointManifestQuery().setGrpcDeadline(
-        DEFAULT_GRPC_DEADLINE,
-    );
+    const query = new ClprGetEndpointManifestQuery()
+        .setForManifestRecovery(params.forManifestRecovery === true)
+        .setGrpcDeadline(DEFAULT_GRPC_DEADLINE);
     applyQueryPayment(query, params);
     const info = await query.execute(client);
     return {

@@ -22,12 +22,44 @@ import ClprEndpointManifestInfo from "./ClprEndpointManifestInfo.js";
  * @augments {Query<ClprEndpointManifestInfo>}
  */
 export default class ClprGetEndpointManifestQuery extends Query {
+    constructor() {
+        super();
+
+        /**
+         * @private
+         * @type {boolean}
+         */
+        this._forManifestRecovery = false;
+    }
+
     /**
      * @internal
+     * @param {ProtoQuery} query
      * @returns {ClprGetEndpointManifestQuery}
      */
-    static _fromProtobuf() {
-        return new ClprGetEndpointManifestQuery();
+    static _fromProtobuf(query) {
+        return new ClprGetEndpointManifestQuery().setForManifestRecovery(
+            query?.clprGetEndpointManifest?.forManifestRecovery === true,
+        );
+    }
+
+    /**
+     * Requests a manifest-only proof shaped for a recovery
+     * ClprSubmitBundleTransaction instead of Channel creation.
+     *
+     * @param {boolean} forManifestRecovery
+     * @returns {this}
+     */
+    setForManifestRecovery(forManifestRecovery) {
+        this._forManifestRecovery = forManifestRecovery === true;
+        return this;
+    }
+
+    /**
+     * @returns {boolean}
+     */
+    get forManifestRecovery() {
+        return this._forManifestRecovery;
     }
 
     /**
@@ -77,7 +109,13 @@ export default class ClprGetEndpointManifestQuery extends Query {
      * @returns {ProtoQuery}
      */
     _onMakeRequest(header) {
-        return { clprGetEndpointManifest: { header } };
+        return {
+            clprGetEndpointManifest: {
+                header,
+                // Omit false so default queries keep their existing bytes.
+                forManifestRecovery: this._forManifestRecovery || null,
+            },
+        };
     }
 
     /**

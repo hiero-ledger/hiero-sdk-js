@@ -13,12 +13,12 @@ function inputs() {
     };
 }
 
-function deregisterConnector(props) {
+function deleteConnector(props) {
     expect(
-        sdk.ClprDeregisterConnectorTransaction,
-        "SDK must export ClprDeregisterConnectorTransaction",
+        sdk.ClprDeleteConnectorTransaction,
+        "SDK must export ClprDeleteConnectorTransaction",
     ).toBeTypeOf("function");
-    return new sdk.ClprDeregisterConnectorTransaction(props);
+    return new sdk.ClprDeleteConnectorTransaction(props);
 }
 
 function offline(transaction) {
@@ -81,15 +81,15 @@ const schedulingPaths = [
     ],
 ];
 
-describe("ClprDeregisterConnectorTransaction", function () {
+describe("ClprDeleteConnectorTransaction", function () {
     it("exports the class from the package entry", async function () {
         const entry = import.meta.env.SSR
             ? await import("../../../src/index.js")
             : await import("../../../src/browser.js");
 
-        expect(entry.ClprDeregisterConnectorTransaction).toBeTypeOf("function");
-        expect(entry.ClprDeregisterConnectorTransaction).toBe(
-            sdk.ClprDeregisterConnectorTransaction,
+        expect(entry.ClprDeleteConnectorTransaction).toBeTypeOf("function");
+        expect(entry.ClprDeleteConnectorTransaction).toBe(
+            sdk.ClprDeleteConnectorTransaction,
         );
     });
 
@@ -99,8 +99,8 @@ describe("ClprDeregisterConnectorTransaction", function () {
             const values = inputs();
             const transaction = offline(
                 path === "constructor"
-                    ? deregisterConnector(values)
-                    : deregisterConnector()
+                    ? deleteConnector(values)
+                    : deleteConnector()
                           .setChannelId(values.channelId)
                           .setConnectorId(values.connectorId)
                           .setStakeRecipient(values.stakeRecipient),
@@ -108,9 +108,7 @@ describe("ClprDeregisterConnectorTransaction", function () {
             const bytes = transaction.toBytes();
             const decoded = sdk.Transaction.fromBytes(bytes);
 
-            expect(decoded).toBeInstanceOf(
-                sdk.ClprDeregisterConnectorTransaction,
-            );
+            expect(decoded).toBeInstanceOf(sdk.ClprDeleteConnectorTransaction);
             expectFields(decoded);
             expect(decoded.transactionId.toString()).toBe(
                 transaction.transactionId.toString(),
@@ -121,19 +119,21 @@ describe("ClprDeregisterConnectorTransaction", function () {
             ]);
             expect(decoded.toBytes()).toEqual(bytes);
             for (const body of bodies(bytes)) {
-                expect(body.data).toBe("clprDeregisterConnector");
+                expect(body.data).toBe("clprDeleteConnector");
+                expect(Object.keys(body.clprDeleteConnector).sort()).toEqual([
+                    "channelId",
+                    "connectorId",
+                    "stakeRecipient",
+                ]);
                 expect(
-                    Object.keys(body.clprDeregisterConnector).sort(),
-                ).toEqual(["channelId", "connectorId", "stakeRecipient"]);
-                expect(
-                    Uint8Array.from(body.clprDeregisterConnector.channelId),
+                    Uint8Array.from(body.clprDeleteConnector.channelId),
                 ).toEqual(values.channelId);
                 expect(
-                    Uint8Array.from(body.clprDeregisterConnector.connectorId),
+                    Uint8Array.from(body.clprDeleteConnector.connectorId),
                 ).toEqual(values.connectorId);
                 expect(
                     sdk.AccountId._fromProtobuf(
-                        body.clprDeregisterConnector.stakeRecipient,
+                        body.clprDeleteConnector.stakeRecipient,
                     ).toString(),
                 ).toBe("2.3.9007199254740993");
             }
@@ -141,7 +141,7 @@ describe("ClprDeregisterConnectorTransaction", function () {
     );
 
     it("preserves both signatures when the admin and named recipient must sign", async function () {
-        const transaction = offline(deregisterConnector(inputs())).freeze();
+        const transaction = offline(deleteConnector(inputs())).freeze();
         const [admin, recipient] = signingKeys();
         await transaction.sign(admin);
         await transaction.sign(recipient);
@@ -149,7 +149,7 @@ describe("ClprDeregisterConnectorTransaction", function () {
         const bytes = transaction.toBytes();
         const decoded = sdk.Transaction.fromBytes(bytes);
 
-        expect(decoded).toBeInstanceOf(sdk.ClprDeregisterConnectorTransaction);
+        expect(decoded).toBeInstanceOf(sdk.ClprDeleteConnectorTransaction);
         expectFields(decoded);
         expect(decoded.toBytes()).toEqual(bytes);
         expect(decoded.getSignatures().size).toBe(2);
@@ -175,7 +175,7 @@ describe("ClprDeregisterConnectorTransaction", function () {
             nodeAccountID: new sdk.AccountId(3)._toProtobuf(),
             transactionFee: new sdk.Hbar(1).toTinybars(),
             transactionValidDuration: { seconds: 120 },
-            clprDeregisterConnector: {
+            clprDeleteConnector: {
                 channelId: values.channelId,
                 connectorId: values.connectorId,
                 stakeRecipient: values.stakeRecipient._toProtobuf(),
@@ -206,7 +206,7 @@ describe("ClprDeregisterConnectorTransaction", function () {
 
         const decoded = sdk.Transaction.fromBytes(bytes);
 
-        expect(decoded).toBeInstanceOf(sdk.ClprDeregisterConnectorTransaction);
+        expect(decoded).toBeInstanceOf(sdk.ClprDeleteConnectorTransaction);
         expectFields(decoded);
         expect(decoded.isFrozen()).toBe(true);
         expect(decoded.toBytes()).toEqual(bytes);
@@ -226,11 +226,11 @@ describe("ClprDeregisterConnectorTransaction", function () {
                     );
                     const transaction = offline(
                         path === "constructor"
-                            ? deregisterConnector({
+                            ? deleteConnector({
                                   ...inputs(),
                                   stakeRecipient: recipient,
                               })
-                            : deregisterConnector(inputs()).setStakeRecipient(
+                            : deleteConnector(inputs()).setStakeRecipient(
                                   recipient,
                               ),
                     );
@@ -262,8 +262,7 @@ describe("ClprDeregisterConnectorTransaction", function () {
                     for (const body of bodies(bytes)) {
                         expect(
                             hex.encode(
-                                body.clprDeregisterConnector.stakeRecipient
-                                    .alias,
+                                body.clprDeleteConnector.stakeRecipient.alias,
                             ),
                         ).toBe(address);
                     }
@@ -279,7 +278,7 @@ describe("ClprDeregisterConnectorTransaction", function () {
             for (const method of ["freeze", "freezeWith"]) {
                 const values = inputs();
                 delete values[field];
-                const transaction = offline(deregisterConnector(values));
+                const transaction = offline(deleteConnector(values));
 
                 expect(transaction[field]).toBeNull();
                 expect(() => transaction[method](null)).toThrow(
@@ -295,7 +294,7 @@ describe("ClprDeregisterConnectorTransaction", function () {
     it.each(fields)(
         "returns the builder from %s's setter",
         function (field, setter) {
-            const transaction = deregisterConnector();
+            const transaction = deleteConnector();
 
             expect(transaction[setter](inputs()[field])).toBe(transaction);
         },
@@ -305,7 +304,7 @@ describe("ClprDeregisterConnectorTransaction", function () {
         it.each([31, 33])(
             "rejects a %i-byte ID without changing any field",
             function (length) {
-                const transaction = deregisterConnector(inputs());
+                const transaction = deleteConnector(inputs());
 
                 expect(() =>
                     transaction[setter](new Uint8Array(length)),
@@ -318,9 +317,9 @@ describe("ClprDeregisterConnectorTransaction", function () {
         it.each([31, 33])(
             "rejects a %i-byte ID in the constructor",
             function (length) {
-                deregisterConnector();
+                deleteConnector();
                 expect(() =>
-                    deregisterConnector({
+                    deleteConnector({
                         ...inputs(),
                         [field]: new Uint8Array(length),
                     }),
@@ -334,7 +333,7 @@ describe("ClprDeregisterConnectorTransaction", function () {
         ])(
             "rejects a non-byte ID (%s) without mutation",
             function (_name, value) {
-                const transaction = deregisterConnector(inputs());
+                const transaction = deleteConnector(inputs());
 
                 expect(() => transaction[setter](value)).toThrow(
                     new RegExp(field),
@@ -350,8 +349,8 @@ describe("ClprDeregisterConnectorTransaction", function () {
                 const input = values[field];
                 const transaction =
                     path === "constructor"
-                        ? deregisterConnector(values)
-                        : deregisterConnector({
+                        ? deleteConnector(values)
+                        : deleteConnector({
                               ...values,
                               [field]: undefined,
                           })[setter](input);
@@ -372,8 +371,8 @@ describe("ClprDeregisterConnectorTransaction", function () {
             const values = inputs();
             const transaction =
                 path === "constructor"
-                    ? deregisterConnector(values)
-                    : deregisterConnector({
+                    ? deleteConnector(values)
+                    : deleteConnector({
                           ...values,
                           stakeRecipient: undefined,
                       }).setStakeRecipient(values.stakeRecipient);
@@ -392,7 +391,7 @@ describe("ClprDeregisterConnectorTransaction", function () {
     it.each(fields)(
         "rejects the %s setter after freeze and keeps signed bytes unchanged",
         async function (field, setter) {
-            const transaction = offline(deregisterConnector(inputs())).freeze();
+            const transaction = offline(deleteConnector(inputs())).freeze();
             const [, recipient] = signingKeys();
             await transaction.sign(recipient);
             const bytes = transaction.toBytes();
@@ -411,10 +410,10 @@ describe("ClprDeregisterConnectorTransaction", function () {
     );
 
     it.each(schedulingPaths)("refuses %s", function (_name, schedule) {
-        const transaction = deregisterConnector(inputs());
+        const transaction = deleteConnector(inputs());
 
         expect(() => schedule(transaction)).toThrow(
-            new Error("ClprDeregisterConnectorTransaction cannot be scheduled"),
+            new Error("ClprDeleteConnectorTransaction cannot be scheduled"),
         );
     });
 });

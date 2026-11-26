@@ -2,6 +2,7 @@
 
 import Transaction from "../transaction/Transaction.js";
 import ClprTransaction from "./ClprTransaction.js";
+import AccountId from "../account/AccountId.js";
 import { copyBytes32 } from "../util.js";
 
 /**
@@ -15,7 +16,7 @@ import { copyBytes32 } from "../util.js";
 
 /**
  * @namespace com.hedera.hapi.node.clpr
- * @typedef {import("@hiero-ledger/proto").com.hedera.hapi.node.clpr.IClprCloseChannelTransactionBody} IClprCloseChannelTransactionBody
+ * @typedef {import("@hiero-ledger/proto").com.hedera.hapi.node.clpr.IClprDeleteConnectorTransactionBody} IClprDeleteConnectorTransactionBody
  */
 
 /**
@@ -23,24 +24,24 @@ import { copyBytes32 } from "../util.js";
  * @typedef {import("../channel/MirrorChannel.js").default} MirrorChannel
  * @typedef {import("../client/Client.js").default<Channel, MirrorChannel>} Client
  * @typedef {import("../transaction/TransactionId.js").default} TransactionId
- * @typedef {import("../account/AccountId.js").default} AccountId
  */
 
 /**
- * Initiates graceful closure of a CLPR Channel under HIP-1535.
+ * Deletes a CLPR Connector and returns its locked stake only to the named account.
  *
- * This privileged operation requires the treasury or system admin authority.
- * An existing Channel stops accepting new messages and drains its queues before
- * closing. When no Channel exists, ownershipCommitment identifies an abandoned
- * pending registration to sweep. The commitment is ignored for an existing Channel.
+ * The Connector admin key and the explicitly named stake recipient must sign
+ * using the normal transaction signing flow. The SDK never defaults the recipient.
+ * The network never reuses a Connector ID on the same Channel, so creating
+ * another Connector there requires a new salt and Connector ID.
  * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  * This transaction cannot be scheduled.
  */
-export default class ClprCloseChannelTransaction extends ClprTransaction {
+export default class ClprDeleteConnectorTransaction extends ClprTransaction {
     /**
      * @param {object} [props]
      * @param {Uint8Array} [props.channelId]
-     * @param {Uint8Array} [props.ownershipCommitment]
+     * @param {Uint8Array} [props.connectorId]
+     * @param {AccountId | string} [props.stakeRecipient]
      */
     constructor(props) {
         super();
@@ -55,13 +56,22 @@ export default class ClprCloseChannelTransaction extends ClprTransaction {
          * @private
          * @type {?Uint8Array}
          */
-        this._ownershipCommitment = null;
+        this._connectorId = null;
+
+        /**
+         * @private
+         * @type {?AccountId}
+         */
+        this._stakeRecipient = null;
 
         if (props?.channelId != null) {
             this.setChannelId(props.channelId);
         }
-        if (props?.ownershipCommitment != null) {
-            this.setOwnershipCommitment(props.ownershipCommitment);
+        if (props?.connectorId != null) {
+            this.setConnectorId(props.connectorId);
+        }
+        if (props?.stakeRecipient != null) {
+            this.setStakeRecipient(props.stakeRecipient);
         }
     }
 
@@ -72,7 +82,7 @@ export default class ClprCloseChannelTransaction extends ClprTransaction {
      * @param {TransactionId[]} transactionIds
      * @param {AccountId[]} nodeIds
      * @param {ITransactionBody[]} bodies
-     * @returns {ClprCloseChannelTransaction}
+     * @returns {ClprDeleteConnectorTransaction}
      */
     static _fromProtobuf(
         transactions,
@@ -81,18 +91,25 @@ export default class ClprCloseChannelTransaction extends ClprTransaction {
         nodeIds,
         bodies,
     ) {
-        const closeChannel = /** @type {IClprCloseChannelTransactionBody} */ (
-            bodies[0].clprCloseChannel
-        );
+        const deleteConnector =
+            /** @type {IClprDeleteConnectorTransactionBody} */ (
+                bodies[0].clprDeleteConnector
+            );
 
         return Transaction._fromProtobufTransactions(
-            new ClprCloseChannelTransaction({
-                channelId: closeChannel.channelId?.length
-                    ? closeChannel.channelId
+            new ClprDeleteConnectorTransaction({
+                channelId: deleteConnector.channelId?.length
+                    ? deleteConnector.channelId
                     : undefined,
-                ownershipCommitment: closeChannel.ownershipCommitment?.length
-                    ? closeChannel.ownershipCommitment
+                connectorId: deleteConnector.connectorId?.length
+                    ? deleteConnector.connectorId
                     : undefined,
+                stakeRecipient:
+                    deleteConnector.stakeRecipient != null
+                        ? AccountId._fromProtobuf(
+                              deleteConnector.stakeRecipient,
+                          )
+                        : undefined,
             }),
             transactions,
             signedTransactions,
@@ -127,28 +144,53 @@ export default class ClprCloseChannelTransaction extends ClprTransaction {
     }
 
     /**
-     * Sets the 32-byte commitment for sweeping an abandoned pending registration.
-     * Copies the bytes. This field is ignored when the Channel already exists.
+     * Sets the 32-byte Connector ID and copies its bytes.
      *
-     * @param {Uint8Array} ownershipCommitment
+     * @param {Uint8Array} connectorId
      * @returns {this}
      */
-    setOwnershipCommitment(ownershipCommitment) {
+    setConnectorId(connectorId) {
         this._requireNotFrozen();
-        const bytes = copyBytes32(ownershipCommitment, "ownershipCommitment");
-        this._ownershipCommitment = bytes;
+        const bytes = copyBytes32(connectorId, "connectorId");
+        this._connectorId = bytes;
         return this;
     }
 
     /**
-     * Returns a copy of the optional commitment, or null when it has not been set.
+     * Returns a copy of the Connector ID, or null when it has not been set.
      *
      * @returns {?Uint8Array}
      */
-    get ownershipCommitment() {
-        return this._ownershipCommitment == null
+    get connectorId() {
+        return this._connectorId == null
             ? null
-            : copyBytes32(this._ownershipCommitment, "ownershipCommitment");
+            : copyBytes32(this._connectorId, "connectorId");
+    }
+
+    /**
+     * Sets the account that receives the returned stake. This account must sign.
+     *
+     * @param {AccountId | string} stakeRecipient
+     * @returns {this}
+     */
+    setStakeRecipient(stakeRecipient) {
+        this._requireNotFrozen();
+        this._stakeRecipient =
+            typeof stakeRecipient === "string"
+                ? AccountId.fromString(stakeRecipient)
+                : stakeRecipient.clone();
+        return this;
+    }
+
+    /**
+     * Returns a copy of the stake recipient, or null when it has not been set.
+     *
+     * @returns {?AccountId}
+     */
+    get stakeRecipient() {
+        return this._stakeRecipient == null
+            ? null
+            : this._stakeRecipient.clone();
     }
 
     /**
@@ -157,7 +199,7 @@ export default class ClprCloseChannelTransaction extends ClprTransaction {
      * @returns {string}
      */
     _getName() {
-        return "ClprCloseChannelTransaction";
+        return "ClprDeleteConnectorTransaction";
     }
 
     /**
@@ -168,7 +210,17 @@ export default class ClprCloseChannelTransaction extends ClprTransaction {
     _getRequiredFields() {
         return {
             channelId: this._channelId,
+            connectorId: this._connectorId,
+            stakeRecipient: this._stakeRecipient,
         };
+    }
+
+    /**
+     * @override
+     * @param {Client} client
+     */
+    _validateChecksums(client) {
+        this._stakeRecipient?.validateChecksum(client);
     }
 
     /**
@@ -188,7 +240,7 @@ export default class ClprCloseChannelTransaction extends ClprTransaction {
      * @returns {Promise<ITransactionResponse>}
      */
     _execute(channel, request) {
-        return channel.clpr.closeChannel(request);
+        return channel.clpr.deleteConnector(request);
     }
 
     /**
@@ -197,18 +249,19 @@ export default class ClprCloseChannelTransaction extends ClprTransaction {
      * @returns {NonNullable<TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
-        return "clprCloseChannel";
+        return "clprDeleteConnector";
     }
 
     /**
      * @override
      * @protected
-     * @returns {IClprCloseChannelTransactionBody}
+     * @returns {IClprDeleteConnectorTransactionBody}
      */
     _makeTransactionData() {
         return {
             channelId: this._channelId,
-            ownershipCommitment: this._ownershipCommitment,
+            connectorId: this._connectorId,
+            stakeRecipient: this._stakeRecipient?._toProtobuf() ?? null,
         };
     }
 
@@ -219,6 +272,6 @@ export default class ClprCloseChannelTransaction extends ClprTransaction {
         const timestamp = /** @type {import("../Timestamp.js").default} */ (
             this._transactionIds.current.validStart
         );
-        return `ClprCloseChannelTransaction:${timestamp.toString()}`;
+        return `ClprDeleteConnectorTransaction:${timestamp.toString()}`;
     }
 }

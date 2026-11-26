@@ -130,10 +130,29 @@ function assertSingleDataField(bodyBytes) {
     let count = 0;
     while (reader.pos < reader.len) {
         const tag = reader.uint32();
-        if (dataFields.has(tag >>> 3)) {
+        const field = tag >>> 3;
+        if (dataFields.has(field)) {
             count++;
         }
-        reader.skipType(tag & 7);
+        const wireType = tag & 7;
+        if (field === 83 || field === 84 || field === 90) {
+            throw new Error("RC3 does not support two-step CLPR transactions");
+        }
+        if (field === 88 && wireType === 2) {
+            // RC3 reuses tag 88. Subfield 1 was the old registration commitment.
+            const connector = HieroProto.Reader.create(reader.bytes());
+            while (connector.pos < connector.len) {
+                const nestedTag = connector.uint32();
+                if (nestedTag >>> 3 === 1) {
+                    throw new Error(
+                        "RC3 does not support two-step CLPR transactions",
+                    );
+                }
+                connector.skipType(nestedTag & 7);
+            }
+        } else {
+            reader.skipType(wireType);
+        }
     }
     if (count > 1) {
         throw new Error(

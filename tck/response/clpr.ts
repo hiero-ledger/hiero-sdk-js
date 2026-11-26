@@ -4,12 +4,6 @@ export interface ClprTransactionResponse {
     readonly status: string;
 }
 
-export interface ClprCompletionResponse extends ClprTransactionResponse {
-    readonly publicKey: string | null;
-    readonly signature: string | null;
-    readonly signatureScheme: string | null;
-}
-
 export interface ClprLedgerConfigurationResponse {
     readonly protocolVersion: number;
     readonly chainId: string;

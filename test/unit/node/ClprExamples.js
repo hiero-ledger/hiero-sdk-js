@@ -7,26 +7,13 @@ const root = new URL("../../../", import.meta.url);
 const examples = [
     [
         "channel-lifecycle.js",
-        [
-            "ClprRegisterChannelTransaction",
-            "ClprCompleteChannelTransaction",
-            "ClprCloseChannelTransaction",
-        ],
-        ["computeOwnershipCommitment", "setOwnershipProof"],
+        ["ClprCreateChannelTransaction", "ClprDeleteChannelTransaction"],
+        ["setSalt", "setPeerVerifier", "setConfigProofBytes"],
     ],
     [
         "connector-lifecycle.js",
-        [
-            "ClprRegisterConnectorTransaction",
-            "ClprCompleteConnectorTransaction",
-            "ClprDeregisterConnectorTransaction",
-        ],
-        [
-            "computeConnectorId",
-            "computeOwnershipCommitment",
-            "setOwnershipProof",
-            "setStakeRecipient",
-        ],
+        ["ClprCreateConnectorTransaction", "ClprDeleteConnectorTransaction"],
+        ["computeConnectorId", "setIdentityKey", "sign", "setStakeRecipient"],
     ],
     [
         "update-ledger-configuration.js",
@@ -114,7 +101,9 @@ describe("CLPR example recipes", function () {
             } else {
                 expect(header).toMatch(/treasury|system[ -]admin/i);
                 expect(header).toMatch(/key/i);
-                expect(header).toMatch(/deploy[\s\S]*verifier/i);
+                expect(header).toMatch(
+                    /deploy[\s\S]*verifier|verifier[\s\S]*deploy/i,
+                );
                 expect(header).toMatch(/Connector[\s\S]*contract/i);
                 expect(header).toMatch(/real[\s\S]*proof/i);
             }

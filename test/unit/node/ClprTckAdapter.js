@@ -112,26 +112,26 @@ const throttleParams = {
     maxLocalEndpoints: 0,
     maxPeerEndpoints: 0,
 };
+const identity = ownershipKey(vector);
+const reusableConnectorId = keccak256(
+    `0x${vector.publicKey}${vectors.salt}`,
+).slice(2);
 const transactionCases = [
     [
-        "registerClprChannel",
-        "registerChannel",
-        { ownershipCommitment: vector.channelCommitment },
-    ],
-    [
-        "completeClprChannel",
-        "completeChannel",
+        "createClprChannel",
+        "createChannel",
         {
             channelId: vectors.channelId,
-            ownershipPrivateKey: ownershipKey(vector).toStringDer(),
+            salt: vectors.salt,
             verifierContract: "1.2.345",
+            peerVerifier: "05ff",
             configProofBytes: "ff0007",
             endpointManifestProofBytes: "",
         },
     ],
     [
-        "closeClprChannel",
-        "closeChannel",
+        "deleteClprChannel",
+        "deleteChannel",
         {
             channelId: vectors.channelId,
             ownershipCommitment: vector.channelCommitment,
@@ -140,35 +140,31 @@ const transactionCases = [
     [
         "submitClprBundle",
         "submitBundle",
-        { channelId: vectors.channelId, bundlePayload: "ff00807f" },
-    ],
-    [
-        "registerClprConnector",
-        "registerConnector",
         {
             channelId: vectors.channelId,
-            commitment: vector.connectorCommitment,
+            bundlePayload: "ff00807f",
+            expectedCachedManifestVersion: "18446744073709551615",
         },
     ],
     [
-        "completeClprConnector",
-        "completeConnector",
+        "createClprConnector",
+        "createConnector",
         {
             channelId: vectors.channelId,
-            connectorId: vector.connectorId,
+            connectorId: reusableConnectorId,
             salt: vectors.salt,
-            ownershipPrivateKey: ownershipKey(vector).toStringDer(),
+            identityKey: identity.publicKey.toStringDer(),
             connectorContract: "1.2.346",
             adminKey: signer.publicKey.toStringDer(),
             lockedStake: stake,
         },
     ],
     [
-        "deregisterClprConnector",
-        "deregisterConnector",
+        "deleteClprConnector",
+        "deleteConnector",
         {
             channelId: vectors.channelId,
-            connectorId: vector.connectorId,
+            connectorId: reusableConnectorId,
             stakeRecipient: "1.2.347",
         },
     ],
@@ -285,7 +281,10 @@ describe("CLPR TCK adapter", function () {
                 transactionId: "0.0.1854@1700000000.000000001",
                 maxTransactionFee: 123456789,
                 memo: "CLPR adapter",
-                signers: [signer.toStringDer()],
+                signers:
+                    name === "createClprConnector"
+                        ? [signer.toStringDer(), identity.toStringDer()]
+                        : [signer.toStringDer()],
             },
         });
         return { response, signed, body };
@@ -316,7 +315,7 @@ describe("CLPR TCK adapter", function () {
         requireMethod(name);
     });
 
-    it("exports exactly the twelve CLPR RPC methods, keeping helpers private", function () {
+    it("exports exactly the ten CLPR RPC methods, keeping helpers private", function () {
         for (const name of names) requireMethod(name);
         expect(Object.keys(tckRequire("./methods/clpr.ts")).sort()).toEqual(
             [...names].sort(),
@@ -341,27 +340,17 @@ describe("CLPR TCK adapter", function () {
 
     it.each([
         [
-            "completeClprChannel",
-            { ownershipPrivateKey: undefined },
-            "ownershipPrivateKey must be a private key string",
+            "createClprConnector",
+            { identityKey: signer.toStringDer() },
+            "identityKey must be an Ed25519 or ECDSA public key string",
         ],
         [
-            "completeClprConnector",
-            { ownershipPrivateKey: undefined },
-            "ownershipPrivateKey must be a private key string",
+            "createClprConnector",
+            { identityKey: "ff" },
+            "identityKey must be an Ed25519 or ECDSA public key string",
         ],
         [
-            "completeClprChannel",
-            { ownershipPrivateKey: signer.publicKey.toStringDer() },
-            "ownershipPrivateKey must be a private key string",
-        ],
-        [
-            "completeClprChannel",
-            { ownershipPrivateKey: "ff" },
-            "ownershipPrivateKey must be a private key string",
-        ],
-        [
-            "completeClprConnector",
+            "createClprConnector",
             { adminKey: "ff" },
             "adminKey must be an SDK key string",
         ],
@@ -386,27 +375,27 @@ describe("CLPR TCK adapter", function () {
             "uint64 must fit in 64 unsigned bits",
         ],
         [
-            "completeClprConnector",
+            "createClprConnector",
             { lockedStake: "not-tinybars" },
             "uint64 must be an unsigned decimal string",
         ],
         [
-            "completeClprConnector",
+            "createClprConnector",
             { lockedStake: "0.5" },
             "uint64 must be an unsigned decimal string",
         ],
         [
-            "completeClprConnector",
+            "createClprConnector",
             { lockedStake: "-1" },
             "uint64 must be an unsigned decimal string",
         ],
         [
-            "completeClprConnector",
+            "createClprConnector",
             { lockedStake: 0 },
             "uint64 must be an unsigned decimal string",
         ],
         [
-            "completeClprConnector",
+            "createClprConnector",
             { lockedStake: "9223372036854775808" },
             "lockedStake must be a valid tinybar amount",
         ],
@@ -433,13 +422,15 @@ describe("CLPR TCK adapter", function () {
     );
 
     it.each([undefined, "", "00".repeat(31), "00".repeat(33)])(
-        "registerClprConnector rejects a missing or malformed channelId (%j) before RPC",
+        "createClprConnector rejects a missing or malformed channelId (%j) before RPC",
         async function (channelId) {
             await connect([]);
             await expect(
-                methods.registerClprConnector({
+                methods.createClprConnector({
                     sessionId,
-                    commitment: vector.connectorCommitment,
+                    ...transactionCases.find(
+                        ([name]) => name === "createClprConnector",
+                    )[2],
                     channelId,
                 }),
             ).rejects.toThrow(/channelId/);
@@ -471,7 +462,7 @@ describe("CLPR TCK adapter", function () {
                 "connectorId",
                 "salt",
                 "ownershipCommitment",
-                "commitment",
+                "peerVerifier",
                 "bundlePayload",
                 "configProofBytes",
                 "endpointManifestProofBytes",
@@ -489,6 +480,22 @@ describe("CLPR TCK adapter", function () {
                 expect(transaction.stakeRecipient.toString()).toBe("1.2.347");
             if (params.lockedStake)
                 expect(data.lockedStake.toString()).toBe(stake);
+            if (params.expectedCachedManifestVersion)
+                expect(
+                    data.expectedCachedManifestVersion.value.toString(),
+                ).toBe(params.expectedCachedManifestVersion);
+            if (params.identityKey) {
+                expect(transaction.identityKey.toStringDer()).toBe(
+                    params.identityKey,
+                );
+                expect(
+                    signed.sigMap.sigPair.some(
+                        (pair) =>
+                            hex(pair.pubKeyPrefix) ===
+                            hex(identity.publicKey.toBytesRaw()),
+                    ),
+                ).toBe(true);
+            }
             if (params.adminKey)
                 expect(transaction.adminKey.toString()).toBe(
                     signer.publicKey.toString(),
@@ -553,114 +560,16 @@ describe("CLPR TCK adapter", function () {
         );
     }
 
-    for (const name of ["completeClprChannel", "completeClprConnector"]) {
-        it.each(vectors.vectors)(
-            `${name} uses a private key string to produce a $signatureScheme ownership proof before freezing`,
-            async function (value) {
-                const params = transactionCases.find(
-                    ([method]) => method === name,
-                )[2];
-                const { body, signed, response } = await submit(name, {
-                    ...params,
-                    connectorId: value.connectorId,
-                    ownershipPrivateKey: ownershipKey(value).toStringDer(),
-                });
-                expect(response.result).toMatchObject({ status: "SUCCESS" });
-                const isConnector = name === "completeClprConnector";
-                const proof =
-                    body[
-                        isConnector
-                            ? "clprCompleteConnector"
-                            : "clprCompleteChannel"
-                    ];
-                expect(proof.signatureScheme).toBe(
-                    value.signatureScheme === "ECDSA_SECP256K1" ? 0 : 1,
-                );
-                expect(hex(proof.publicKey)).toBe(value.publicKey);
-                expect(response.result.publicKey).toBe(hex(proof.publicKey));
-                expect(response.result.signature).toBe(hex(proof.signature));
-                expect(response.result.signatureScheme).toBe(
-                    value.signatureScheme,
-                );
-                // Verify the proof against the pinned signing input.
-                const decoded = decodeTransaction(signed);
-                expect(response.result.signatureScheme).toBe(
-                    decoded.signatureScheme.toString(),
-                );
-                expect(decoded.signatureScheme.toString()).toBe(
-                    value.signatureScheme,
-                );
-                expect(decoded.signature).toHaveLength(64);
-                const hash = (bytes) =>
-                    Buffer.from(keccak256(bytes).slice(2), "hex");
-                const preimage = isConnector
-                    ? Buffer.concat([
-                          Buffer.from("hiero.clpr.complete-connector.v1"),
-                          Buffer.from(proof.channelId),
-                          Buffer.from(proof.connectorId),
-                          Buffer.from(vectors.clprServiceAddress, "hex"),
-                          hash(
-                              proto.ContractID.encode(
-                                  proof.connectorContract,
-                              ).finish(),
-                          ),
-                          hash(proto.Key.encode(proof.adminKey).finish()),
-                      ])
-                    : Buffer.concat([
-                          Buffer.from("hiero.clpr.complete-channel.v1"),
-                          Buffer.from(proof.channelId),
-                          hash(
-                              proto.ContractID.encode(
-                                  proof.verifierContract,
-                              ).finish(),
-                          ),
-                          hash(proof.configProofBytes),
-                          hash(proof.endpointManifestProofBytes),
-                      ]);
-                const message =
-                    value.signatureScheme === "ED25519"
-                        ? hash(preimage)
-                        : preimage;
-                expect(
-                    ownershipKey(value).publicKey.verify(
-                        message,
-                        proof.signature,
-                    ),
-                ).toBe(true);
-            },
-        );
-
-        it(`${name} rejects a public key supplied as the ownership private key`, async function () {
-            requireMethod(name);
-            client = sdk.Client.forNetwork(
-                { "127.0.0.1:1": "0.0.3" },
-                { scheduleNetworkUpdate: false },
-            );
-            registry.setClient(client, sessionId);
-            const params = transactionCases.find(
-                ([method]) => method === name,
-            )[2];
-            await expect(
-                methods[name]({
-                    ...params,
-                    sessionId,
-                    ownershipPrivateKey: signer.publicKey.toStringDer(),
-                }),
-            ).rejects.toThrow();
-            expect(unaryRequests).not.toHaveBeenCalled();
-        });
-    }
-
     it.each([
         signer.toStringDer(),
         convertToKeyListHex(new sdk.KeyList([signer.publicKey], 1)),
     ])(
-        "completeClprConnector accepts administrative key encoding %#",
+        "createClprConnector accepts administrative key encoding %#",
         async function (adminKey) {
             const params = transactionCases.find(
-                ([name]) => name === "completeClprConnector",
+                ([name]) => name === "createClprConnector",
             )[2];
-            const { signed, response } = await submit("completeClprConnector", {
+            const { signed, response } = await submit("createClprConnector", {
                 ...params,
                 adminKey,
             });
@@ -746,10 +655,18 @@ describe("CLPR TCK adapter", function () {
                         },
                     },
                 ]);
-                const response = await rpc(name, { sessionId });
+                const recovery = wireResponse.configuration == null;
+                const response = await rpc(
+                    name,
+                    recovery
+                        ? { sessionId, forManifestRecovery: true }
+                        : { sessionId },
+                );
                 const result = response.result;
                 expect(result).toBeDefined();
                 expect(result[proofField]).toBe(proof);
+                if (recovery)
+                    expect(received[field].forManifestRecovery).toBe(true);
                 expect(result.serviceAddress).toBe(vectors.clprServiceAddress);
                 if (wireResponse.configuration) {
                     expect(result).toMatchObject({
