@@ -88,9 +88,8 @@ export default class TokenNftAllowance {
             throw new Error("tokenId is required");
         }
 
-        const allSerials =
-            allowance.approvedForAll != null &&
-            allowance.approvedForAll.value == true;
+        const approvedForAll = allowance.approvedForAll;
+        const allSerials = approvedForAll?.value == true;
         return new TokenNftAllowance({
             tokenId: TokenId._fromProtobuf(allowance.tokenId),
             spenderAccountId:
@@ -109,13 +108,14 @@ export default class TokenNftAllowance {
                           ),
                       )
                     : null,
-            serialNumbers: allSerials
-                ? null
-                : allowance.serialNumbers != null
-                ? allowance.serialNumbers.map((serialNumber) =>
-                      Long.fromValue(serialNumber),
-                  )
-                : [],
+            serialNumbers:
+                approvedForAll != null
+                    ? null
+                    : allowance.serialNumbers != null
+                    ? allowance.serialNumbers.map((serialNumber) =>
+                          Long.fromValue(serialNumber),
+                      )
+                    : [],
             allSerials,
             delegatingSpender:
                 allowance.delegatingSpender != null
