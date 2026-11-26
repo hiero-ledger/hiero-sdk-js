@@ -387,37 +387,28 @@ describe("util", function () {
         );
     });
 
-    it("convert: convertToNumber should convert string or BigNumber to number", function () {
-        try {
-            util.convertToNumber(null);
-        } catch (error) {
-            expect(error.message).to.eql(util.REQUIRE_NON_NULL_ERROR);
-        }
+    it("convertToNumber parses supported values as integers", function () {
+        expect(util.convertToNumber(12)).to.equal(12);
+        expect(util.convertToNumber("12")).to.equal(12);
+        expect(util.convertToNumber("12px")).to.equal(12);
+        expect(util.convertToNumber(Long.fromNumber(12))).to.equal(12);
+        expect(util.convertToNumber(new BigNumber(-12.5))).to.equal(-12);
+        expect(util.convertToNumber(Object(12.5))).to.equal(12);
+    });
 
-        try {
-            util.convertToNumber(undefined);
-        } catch (error) {
-            expect(error.message).to.eql(util.REQUIRE_NON_NULL_ERROR);
-        }
-
-        try {
-            util.convertToNumber({});
-        } catch (error) {
-            expect(error.message).to.eql(util.FUNCTION_CONVERT_TO_NUMBER_ERROR);
-        }
-
-        try {
-            util.convertToNumber("asdf");
-        } catch (error) {
-            expect(error.message).to.eql(
-                util.FUNCTION_CONVERT_TO_NUMBER_PARSE_ERROR,
-            );
-        }
-
-        expect(util.convertToNumber(1)).to.eql(1);
-        expect(util.convertToNumber("1")).to.eql(1);
-        expect(util.convertToNumber(new BigNumber(1))).to.eql(1);
-        expect(util.convertToNumber(new Long(1))).to.eql(1);
+    it("convertToNumber rejects missing, unsupported, and unparseable values", function () {
+        expect(() => util.convertToNumber(null)).to.throw(
+            util.REQUIRE_NON_NULL_ERROR,
+        );
+        expect(() => util.convertToNumber(undefined)).to.throw(
+            util.REQUIRE_NON_NULL_ERROR,
+        );
+        expect(() => util.convertToNumber({})).to.throw(
+            util.FUNCTION_CONVERT_TO_NUMBER_ERROR,
+        );
+        expect(() => util.convertToNumber("abc")).to.throw(
+            util.FUNCTION_CONVERT_TO_NUMBER_PARSE_ERROR,
+        );
     });
 
     it("compare", function () {
@@ -450,5 +441,22 @@ describe("util", function () {
                 { hello: { world: false } },
             ),
         ).to.be.true;
+    });
+
+    it.each([
+        [null, null, true],
+        [null, {}, false],
+        [{}, null, false],
+        [{ field: null }, { field: null }, true],
+    ])("compares %j with %j", function (left, right, expected) {
+        expect(util.compare(left, right)).to.equal(expected);
+    });
+
+    it("compare ignores matching keys in nested objects", function () {
+        const left = { nested: { ignored: 1, value: 2 } };
+        const right = { nested: { ignored: 3, value: 2 } };
+
+        expect(util.compare(left, right)).to.be.false;
+        expect(util.compare(left, right, new Set(["ignored"]))).to.be.true;
     });
 });
