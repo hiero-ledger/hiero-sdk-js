@@ -14,13 +14,15 @@ import PublicKey from "../PublicKey.js";
  * `ThresholdKey`).
  *
  * @param {MirrorNodeKeyJson} key
+ * @param {string} [owner] Names the key's owner in the unsupported-type error.
  * @returns {Key}
  */
-export default function keyFromJson(key) {
+export default function keyFromJson(key, owner = "mirror node") {
+    // An empty key is well-formed hex; each key type rejects it below.
     if (
         typeof key?._type !== "string" ||
         typeof key.key !== "string" ||
-        !hex.isHexString(key.key)
+        (key.key !== "" && !hex.isHexString(key.key))
     ) {
         throw new Error("Mirror node returned a malformed admin key.");
     }
@@ -47,7 +49,7 @@ export default function keyFromJson(key) {
         }
         default:
             throw new Error(
-                `Unsupported mirror node admin key type: ${key._type}`,
+                `Unsupported ${owner} admin key type: ${key._type}`,
             );
     }
 }

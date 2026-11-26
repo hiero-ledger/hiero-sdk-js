@@ -5,13 +5,11 @@ const sdk = require("@hiero-ledger/sdk");
 
 // Run with NODE_OPTIONS=--no-experimental-require-module. This is offline.
 const names = [
-    "ClprRegisterChannelTransaction",
-    "ClprCompleteChannelTransaction",
-    "ClprCloseChannelTransaction",
+    "ClprCreateChannelTransaction",
+    "ClprDeleteChannelTransaction",
     "ClprSubmitBundleTransaction",
-    "ClprRegisterConnectorTransaction",
-    "ClprCompleteConnectorTransaction",
-    "ClprDeregisterConnectorTransaction",
+    "ClprCreateConnectorTransaction",
+    "ClprDeleteConnectorTransaction",
     "ClprUpdateLedgerConfigurationTransaction",
     "ClprGetLedgerConfigurationQuery",
     "ClprGetEndpointManifestQuery",
@@ -20,22 +18,27 @@ const names = [
     "ClprEndpointManifestInfo",
     "ClprEndpoint",
     "ClprServiceEndpoint",
-    "ClprSignatureScheme",
+    "ClprChannelStatus",
+    "MirrorNodeClprChannel",
+    "MirrorNodeClprChannelQuery",
+    "MirrorNodeClprConnector",
+    "MirrorNodeClprConnectorQuery",
 ];
 
 for (const name of names) {
     assert.equal(typeof sdk[name], "function", `Missing CJS export: ${name}`);
 }
-console.log("All 16 public CLPR names load through CommonJS.");
+console.log(`All ${names.length} public CLPR names load through CommonJS.`);
 
 const channelId = new Uint8Array(32).fill(1);
-const registration = new sdk.ClprRegisterConnectorTransaction({
+const deletion = new sdk.ClprDeleteConnectorTransaction({
     channelId,
-    commitment: new Uint8Array(32).fill(2),
+    connectorId: new Uint8Array(32).fill(2),
+    stakeRecipient: "0.0.3",
 });
-const decoded = sdk.Transaction.fromBytes(registration.toBytes());
-assert.ok(decoded instanceof sdk.ClprRegisterConnectorTransaction);
+const decoded = sdk.Transaction.fromBytes(deletion.toBytes());
+assert.ok(decoded instanceof sdk.ClprDeleteConnectorTransaction);
 assert.deepEqual(decoded.channelId, channelId);
 channelId.fill(0);
-assert.equal(registration.channelId[0], 1);
-console.log("CommonJS connector registration preserves and copies channelId.");
+assert.equal(deletion.channelId[0], 1);
+console.log("CommonJS Connector deletion preserves and copies channelId.");

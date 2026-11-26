@@ -103,7 +103,7 @@ export default class RegisteredNode {
             registeredNodeId: Long.fromString(
                 json.registered_node_id.toString(),
             ),
-            adminKey: keyFromJson(json.admin_key),
+            adminKey: keyFromJson(json.admin_key, "registered node"),
             description: json.description != null ? json.description : null,
             serviceEndpoints: json.service_endpoints.map((endpoint) =>
                 RegisteredServiceEndpoint._fromJson(endpoint),
