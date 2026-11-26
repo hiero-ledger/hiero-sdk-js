@@ -10,15 +10,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 -   `MirrorNodeClprChannelQuery` and `MirrorNodeClprConnectorQuery` read current Channel and active Connector state with exact counters, stake and timestamps through the shared mirror REST transport. Contract IDs, the verifier fingerprint and the trust anchor ID are `null` when the mirror node returns null, as it can for a contract set by EVM address. [#4741](https://github.com/hiero-ledger/hiero-sdk-js/issues/4741)
--   Added HIP-1535 CLPR support: eight transactions, two proof queries, ownership helpers and value models. Connector registration requires the existing Channel ID alongside the commitment. [#4578](https://github.com/hiero-ledger/hiero-sdk-js/issues/4578)
+-   Added HIP-1535 CLPR support: six transactions, two proof queries, Channel and Connector ID helpers and value models. A Channel or Connector is created in one transaction; a Connector is created on an existing Channel. [#4578](https://github.com/hiero-ledger/hiero-sdk-js/issues/4578)
 -   `PublicKey.toBytesRawUncompressed()` returns ECDSA secp256k1 64-byte `x || y`. [#4578](https://github.com/hiero-ledger/hiero-sdk-js/issues/4578)
 -   `HookEntityId.setAccountId()` and the `accountId` constructor prop now accept a string such as `"0.0.123"` as well as an `AccountId`. The id is stored as a copy, like in the other `setAccountId()` setters. [#3789](https://github.com/hiero-ledger/hiero-sdk-js/issues/3789)
 
 ### Changed
 
 -   **Breaking for local networks:** `Client.forLocalNode()` and `setNetwork("local-node")` now use Solo's local ports: the consensus node at `127.0.0.1:35211` (was `50211`) and the mirror node at `127.0.0.1:38081` (was `5600` in Node.js and React Native, and `5551` in the browser). The SDK also uses a loopback mirror node address as given, and no longer sends its REST, Java REST and web3 calls to `5551`, `8084` and `8545`. Start Solo with the mirror node ingress, which serves all of them on one port, or set the network and mirror network yourself. [#3590](https://github.com/hiero-ledger/hiero-sdk-js/issues/3590)
--   CLPR protobufs use CN main [`77c8361`](https://github.com/hiero-ledger/hiero-consensus-node/tree/77c8361520e595c25d2d943f89a57b32cb21d22c). Proof queries use the standard query cost/payment flow; CN main serves them free since [CN #28279](https://github.com/hiero-ledger/hiero-consensus-node/pull/28279) reverted the paid queries of #28137, and the CN fee model is not final. Live CLPR runtime and real-proof acceptance remain pending.
--   CLPR completion ownership proofs now bind the verifier/proof inputs or Connector contract/admin key, following provisional CN [#28017](https://github.com/hiero-ledger/hiero-consensus-node/pull/28017) and [#28019](https://github.com/hiero-ledger/hiero-consensus-node/pull/28019). Set every bound field before `setOwnershipProof()`; changing one clears the proof. Final EAP-0.2 vectors and runtime acceptance remain required before release. [#4741](https://github.com/hiero-ledger/hiero-sdk-js/issues/4741)
+-   CLPR protobufs use CN [`bbd86c90`](https://github.com/hiero-ledger/hiero-consensus-node/commit/bbd86c90cf4a5bbd209ac89b6caac0b3f06789d0), the same CLPR protos as the public tag [`v0.81.0-alpha.1`](https://github.com/hiero-ledger/hiero-consensus-node/tree/v0.81.0-alpha.1). Proof queries use the standard query cost/payment flow and need an operator.
 
 ### Fixed
 

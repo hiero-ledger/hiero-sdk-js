@@ -136,7 +136,9 @@ function assertSingleDataField(bodyBytes) {
         }
         const wireType = tag & 7;
         if (field === 83 || field === 84 || field === 90) {
-            throw new Error("RC3 does not support two-step CLPR transactions");
+            throw new Error(
+                "Transaction.fromBytes() does not support the removed two-step CLPR transactions",
+            );
         }
         if (field === 88 && wireType === 2) {
             // RC3 reuses tag 88. Subfield 1 was the old registration commitment.
@@ -145,7 +147,7 @@ function assertSingleDataField(bodyBytes) {
                 const nestedTag = connector.uint32();
                 if (nestedTag >>> 3 === 1) {
                     throw new Error(
-                        "RC3 does not support two-step CLPR transactions",
+                        "Transaction.fromBytes() does not support the removed two-step CLPR transactions",
                     );
                 }
                 connector.skipType(nestedTag & 7);

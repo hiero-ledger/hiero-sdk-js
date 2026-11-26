@@ -167,9 +167,6 @@ jobs:
       - name: Test Unit Coverage @hiero-ledger/sdk
         run: ${{ env.CG_EXEC }} task test:unit:codecov
 
-      - name: Install TCK adapter dependencies
-        run: npm ci --prefix tck --ignore-scripts --no-audit --no-fund
-
       - name: Test CLPR TCK adapters
         run: task test:unit:tck
 

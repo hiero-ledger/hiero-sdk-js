@@ -4,7 +4,7 @@ CLPR provides ordered cross-ledger messaging. A Channel binds a peer service to 
 
 ## Baseline
 
-The SDK uses the one-step HAPI schema at CN [`bbd86c90`](https://github.com/hiero-ledger/hiero-consensus-node/commit/bbd86c90cf4a5bbd209ac89b6caac0b3f06789d0). The CLPR wire schema matches Consensus Node `v0.80.0-rc.4`, which was used for the isolated two-ledger SDK test. Use proof and contract fixtures for the selected deployment. Both proof queries use the standard query cost/payment flow and require an operator when run with the SDK.
+The SDK uses the one-step HAPI schema at CN [`bbd86c90`](https://github.com/hiero-ledger/hiero-consensus-node/commit/bbd86c90cf4a5bbd209ac89b6caac0b3f06789d0). The public CN tag [`v0.81.0-alpha.1`](https://github.com/hiero-ledger/hiero-consensus-node/tree/v0.81.0-alpha.1) has the same CLPR protos. An isolated two-ledger SDK test ran against a CN build with this schema. Use proof and contract fixtures for the selected deployment. Both proof queries use the standard query cost/payment flow and require an operator when run with the SDK.
 
 Mirror queries follow the [REST design](https://github.com/hiero-ledger/hiero-mirror-node/blob/0c0a831342b134f05ce81d058e16ebf6bfaa73fb/docs/design/clpr.md#rest-api-implementation). Live acceptance requires a deployment with both routes.
 
