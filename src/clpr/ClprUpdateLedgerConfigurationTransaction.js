@@ -36,7 +36,7 @@ import ClprThrottles from "./ClprThrottles.js";
  *
  * Newly built bodies contain only configuration.throttles. Decoding exposes only
  * throttles and preserves incoming signed bytes and signatures unchanged.
- * CLPR is off by default and requires the network setting `clpr.enabled`.
+ * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  * This transaction cannot be scheduled.
  */
 export default class ClprUpdateLedgerConfigurationTransaction extends ClprTransaction {

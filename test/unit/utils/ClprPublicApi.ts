@@ -3,13 +3,11 @@
 import Long from "long";
 
 import {
-    ClprRegisterChannelTransaction,
-    ClprCompleteChannelTransaction,
-    ClprCloseChannelTransaction,
+    ClprCreateChannelTransaction,
+    ClprDeleteChannelTransaction,
     ClprSubmitBundleTransaction,
-    ClprRegisterConnectorTransaction,
-    ClprCompleteConnectorTransaction,
-    ClprDeregisterConnectorTransaction,
+    ClprCreateConnectorTransaction,
+    ClprDeleteConnectorTransaction,
     ClprUpdateLedgerConfigurationTransaction,
     ClprGetLedgerConfigurationQuery,
     ClprGetEndpointManifestQuery,
@@ -18,7 +16,6 @@ import {
     ClprEndpointManifestInfo,
     ClprEndpoint,
     ClprServiceEndpoint,
-    ClprSignatureScheme,
     Client,
     Hbar,
     PrivateKey,
@@ -26,13 +23,11 @@ import {
 } from "../../../src/index.js";
 
 export const clprPublicApi = {
-    ClprRegisterChannelTransaction,
-    ClprCompleteChannelTransaction,
-    ClprCloseChannelTransaction,
+    ClprCreateChannelTransaction,
+    ClprDeleteChannelTransaction,
     ClprSubmitBundleTransaction,
-    ClprRegisterConnectorTransaction,
-    ClprCompleteConnectorTransaction,
-    ClprDeregisterConnectorTransaction,
+    ClprCreateConnectorTransaction,
+    ClprDeleteConnectorTransaction,
     ClprUpdateLedgerConfigurationTransaction,
     ClprGetLedgerConfigurationQuery,
     ClprGetEndpointManifestQuery,
@@ -41,7 +36,6 @@ export const clprPublicApi = {
     ClprEndpointManifestInfo,
     ClprEndpoint,
     ClprServiceEndpoint,
-    ClprSignatureScheme,
 };
 
 // Reject untyped exports as well as missing names.
@@ -59,11 +53,7 @@ export function useClpr(client: Client, key: PrivateKey): Transaction[] {
     const channelId = new Uint8Array(32);
     const salt = new Uint8Array(32);
     const connectorId: Uint8Array =
-        ClprRegisterConnectorTransaction.computeConnectorId(
-            channelId,
-            key.publicKey,
-            salt,
-        );
+        ClprCreateConnectorTransaction.computeConnectorId(key.publicKey, salt);
     const throttles: ClprThrottles = ClprThrottles.of({
         maxMessagesPerBundle: 1,
         maxMessagePayloadBytes: 1,
@@ -92,22 +82,16 @@ export function useClpr(client: Client, key: PrivateKey): Transaction[] {
         const port: number | undefined = service?.port;
         return port;
     });
-    const completion = new ClprCompleteConnectorTransaction()
+    const completion = new ClprCreateConnectorTransaction()
         .setChannelId(channelId)
         .setConnectorId(connectorId)
         .setSalt(salt)
         .setAdminKey(key.publicKey)
-        .setOwnershipProof(key);
-    const scheme: ClprSignatureScheme | null = completion.signatureScheme;
-    void scheme;
+        .setIdentityKey(key.publicKey)
+        .setConnectorContract("0.0.4");
 
     // @ts-expect-error Channel IDs require bytes.
-    new ClprCloseChannelTransaction().setChannelId("invalid");
-    const registration = new ClprRegisterConnectorTransaction({ channelId });
-    const registeredChannel: Uint8Array | null = registration.channelId;
-    void registeredChannel;
-    // @ts-expect-error Registration Channel IDs require bytes.
-    registration.setChannelId("invalid");
+    new ClprDeleteChannelTransaction().setChannelId("invalid");
     // @ts-expect-error Throttles require the typed model.
     new ClprUpdateLedgerConfigurationTransaction().setThrottles({});
     // @ts-expect-error Endpoint ports are numeric.
@@ -115,29 +99,17 @@ export function useClpr(client: Client, key: PrivateKey): Transaction[] {
     void invalidPort;
 
     return [
-        new ClprRegisterChannelTransaction().setOwnershipCommitment(
-            ClprRegisterChannelTransaction.computeOwnershipCommitment(
-                channelId,
-                key.publicKey,
-            ),
-        ),
-        new ClprCompleteChannelTransaction()
+        new ClprCreateChannelTransaction()
             .setChannelId(channelId)
-            .setOwnershipProof(key),
-        new ClprCloseChannelTransaction().setChannelId(channelId),
+            .setSalt(salt)
+            .setVerifierContract("0.0.4")
+            .setConfigProofBytes(Uint8Array.of(1)),
+        new ClprDeleteChannelTransaction().setChannelId(channelId),
         new ClprSubmitBundleTransaction()
             .setChannelId(channelId)
             .setBundlePayload(new Uint8Array()),
-        new ClprRegisterConnectorTransaction({ channelId })
-            .setChannelId(channelId)
-            .setCommitment(
-                ClprRegisterConnectorTransaction.computeOwnershipCommitment(
-                    connectorId,
-                    key.publicKey,
-                ),
-            ),
         completion,
-        new ClprDeregisterConnectorTransaction()
+        new ClprDeleteConnectorTransaction()
             .setChannelId(channelId)
             .setConnectorId(connectorId)
             .setStakeRecipient("0.0.2"),

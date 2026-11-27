@@ -15,7 +15,7 @@ import { copyBytes32 } from "../util.js";
 
 /**
  * @namespace com.hedera.hapi.node.clpr
- * @typedef {import("@hiero-ledger/proto").com.hedera.hapi.node.clpr.IClprCloseChannelTransactionBody} IClprCloseChannelTransactionBody
+ * @typedef {import("@hiero-ledger/proto").com.hedera.hapi.node.clpr.IClprDeleteChannelTransactionBody} IClprDeleteChannelTransactionBody
  */
 
 /**
@@ -33,10 +33,10 @@ import { copyBytes32 } from "../util.js";
  * An existing Channel stops accepting new messages and drains its queues before
  * closing. When no Channel exists, ownershipCommitment identifies an abandoned
  * pending registration to sweep. The commitment is ignored for an existing Channel.
- * CLPR is off by default and requires the network setting `clpr.enabled`.
+ * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  * This transaction cannot be scheduled.
  */
-export default class ClprCloseChannelTransaction extends ClprTransaction {
+export default class ClprDeleteChannelTransaction extends ClprTransaction {
     /**
      * @param {object} [props]
      * @param {Uint8Array} [props.channelId]
@@ -72,7 +72,7 @@ export default class ClprCloseChannelTransaction extends ClprTransaction {
      * @param {TransactionId[]} transactionIds
      * @param {AccountId[]} nodeIds
      * @param {ITransactionBody[]} bodies
-     * @returns {ClprCloseChannelTransaction}
+     * @returns {ClprDeleteChannelTransaction}
      */
     static _fromProtobuf(
         transactions,
@@ -81,17 +81,17 @@ export default class ClprCloseChannelTransaction extends ClprTransaction {
         nodeIds,
         bodies,
     ) {
-        const closeChannel = /** @type {IClprCloseChannelTransactionBody} */ (
-            bodies[0].clprCloseChannel
+        const deleteChannel = /** @type {IClprDeleteChannelTransactionBody} */ (
+            bodies[0].clprDeleteChannel
         );
 
         return Transaction._fromProtobufTransactions(
-            new ClprCloseChannelTransaction({
-                channelId: closeChannel.channelId?.length
-                    ? closeChannel.channelId
+            new ClprDeleteChannelTransaction({
+                channelId: deleteChannel.channelId?.length
+                    ? deleteChannel.channelId
                     : undefined,
-                ownershipCommitment: closeChannel.ownershipCommitment?.length
-                    ? closeChannel.ownershipCommitment
+                ownershipCommitment: deleteChannel.ownershipCommitment?.length
+                    ? deleteChannel.ownershipCommitment
                     : undefined,
             }),
             transactions,
@@ -157,7 +157,7 @@ export default class ClprCloseChannelTransaction extends ClprTransaction {
      * @returns {string}
      */
     _getName() {
-        return "ClprCloseChannelTransaction";
+        return "ClprDeleteChannelTransaction";
     }
 
     /**
@@ -188,7 +188,7 @@ export default class ClprCloseChannelTransaction extends ClprTransaction {
      * @returns {Promise<ITransactionResponse>}
      */
     _execute(channel, request) {
-        return channel.clpr.closeChannel(request);
+        return channel.clpr.deleteChannel(request);
     }
 
     /**
@@ -197,13 +197,13 @@ export default class ClprCloseChannelTransaction extends ClprTransaction {
      * @returns {NonNullable<TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
-        return "clprCloseChannel";
+        return "clprDeleteChannel";
     }
 
     /**
      * @override
      * @protected
-     * @returns {IClprCloseChannelTransactionBody}
+     * @returns {IClprDeleteChannelTransactionBody}
      */
     _makeTransactionData() {
         return {
@@ -219,6 +219,6 @@ export default class ClprCloseChannelTransaction extends ClprTransaction {
         const timestamp = /** @type {import("../Timestamp.js").default} */ (
             this._transactionIds.current.validStart
         );
-        return `ClprCloseChannelTransaction:${timestamp.toString()}`;
+        return `ClprDeleteChannelTransaction:${timestamp.toString()}`;
     }
 }

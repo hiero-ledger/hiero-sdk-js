@@ -16,7 +16,7 @@ import { copyBytes32 } from "../util.js";
 
 /**
  * @namespace com.hedera.hapi.node.clpr
- * @typedef {import("@hiero-ledger/proto").com.hedera.hapi.node.clpr.IClprDeregisterConnectorTransactionBody} IClprDeregisterConnectorTransactionBody
+ * @typedef {import("@hiero-ledger/proto").com.hedera.hapi.node.clpr.IClprDeleteConnectorTransactionBody} IClprDeleteConnectorTransactionBody
  */
 
 /**
@@ -27,16 +27,16 @@ import { copyBytes32 } from "../util.js";
  */
 
 /**
- * Deregisters a CLPR Connector and returns its locked stake only to the named account.
+ * Deletes a CLPR Connector and returns its locked stake only to the named account.
  *
  * The Connector admin key and the explicitly named stake recipient must sign
  * using the normal transaction signing flow. The SDK never defaults the recipient.
- * The ownership commitment stays registered, so registering another Connector
- * requires a new salt and Connector ID.
- * CLPR is off by default and requires the network setting `clpr.enabled`.
+ * The network never reuses a Connector ID on the same Channel, so creating
+ * another Connector there requires a new salt and Connector ID.
+ * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  * This transaction cannot be scheduled.
  */
-export default class ClprDeregisterConnectorTransaction extends ClprTransaction {
+export default class ClprDeleteConnectorTransaction extends ClprTransaction {
     /**
      * @param {object} [props]
      * @param {Uint8Array} [props.channelId]
@@ -82,7 +82,7 @@ export default class ClprDeregisterConnectorTransaction extends ClprTransaction 
      * @param {TransactionId[]} transactionIds
      * @param {AccountId[]} nodeIds
      * @param {ITransactionBody[]} bodies
-     * @returns {ClprDeregisterConnectorTransaction}
+     * @returns {ClprDeleteConnectorTransaction}
      */
     static _fromProtobuf(
         transactions,
@@ -91,23 +91,23 @@ export default class ClprDeregisterConnectorTransaction extends ClprTransaction 
         nodeIds,
         bodies,
     ) {
-        const deregisterConnector =
-            /** @type {IClprDeregisterConnectorTransactionBody} */ (
-                bodies[0].clprDeregisterConnector
+        const deleteConnector =
+            /** @type {IClprDeleteConnectorTransactionBody} */ (
+                bodies[0].clprDeleteConnector
             );
 
         return Transaction._fromProtobufTransactions(
-            new ClprDeregisterConnectorTransaction({
-                channelId: deregisterConnector.channelId?.length
-                    ? deregisterConnector.channelId
+            new ClprDeleteConnectorTransaction({
+                channelId: deleteConnector.channelId?.length
+                    ? deleteConnector.channelId
                     : undefined,
-                connectorId: deregisterConnector.connectorId?.length
-                    ? deregisterConnector.connectorId
+                connectorId: deleteConnector.connectorId?.length
+                    ? deleteConnector.connectorId
                     : undefined,
                 stakeRecipient:
-                    deregisterConnector.stakeRecipient != null
+                    deleteConnector.stakeRecipient != null
                         ? AccountId._fromProtobuf(
-                              deregisterConnector.stakeRecipient,
+                              deleteConnector.stakeRecipient,
                           )
                         : undefined,
             }),
@@ -199,7 +199,7 @@ export default class ClprDeregisterConnectorTransaction extends ClprTransaction 
      * @returns {string}
      */
     _getName() {
-        return "ClprDeregisterConnectorTransaction";
+        return "ClprDeleteConnectorTransaction";
     }
 
     /**
@@ -240,7 +240,7 @@ export default class ClprDeregisterConnectorTransaction extends ClprTransaction 
      * @returns {Promise<ITransactionResponse>}
      */
     _execute(channel, request) {
-        return channel.clpr.deregisterConnector(request);
+        return channel.clpr.deleteConnector(request);
     }
 
     /**
@@ -249,13 +249,13 @@ export default class ClprDeregisterConnectorTransaction extends ClprTransaction 
      * @returns {NonNullable<TransactionBody["data"]>}
      */
     _getTransactionDataCase() {
-        return "clprDeregisterConnector";
+        return "clprDeleteConnector";
     }
 
     /**
      * @override
      * @protected
-     * @returns {IClprDeregisterConnectorTransactionBody}
+     * @returns {IClprDeleteConnectorTransactionBody}
      */
     _makeTransactionData() {
         return {
@@ -272,6 +272,6 @@ export default class ClprDeregisterConnectorTransaction extends ClprTransaction 
         const timestamp = /** @type {import("../Timestamp.js").default} */ (
             this._transactionIds.current.validStart
         );
-        return `ClprDeregisterConnectorTransaction:${timestamp.toString()}`;
+        return `ClprDeleteConnectorTransaction:${timestamp.toString()}`;
     }
 }

@@ -54,4 +54,24 @@ describe("ClprGetEndpointManifestQuery", function () {
         expect(restored).toBeInstanceOf(sdk.ClprGetEndpointManifestQuery);
         expect(restored.toBytes()).toEqual(bytes);
     });
+
+    it("requests a recovery-shaped proof only when asked", function () {
+        const plain = new sdk.ClprGetEndpointManifestQuery();
+        expect(plain.forManifestRecovery).toBe(false);
+        expect(
+            proto.Query.decode(plain.toBytes()).clprGetEndpointManifest
+                .forManifestRecovery,
+        ).toBe(false);
+
+        const query = new sdk.ClprGetEndpointManifestQuery();
+        expect(query.setForManifestRecovery(true)).toBe(query);
+        const bytes = query.toBytes();
+        expect(
+            proto.Query.decode(bytes).clprGetEndpointManifest
+                .forManifestRecovery,
+        ).toBe(true);
+        const restored = sdk.Query.fromBytes(bytes);
+        expect(restored.forManifestRecovery).toBe(true);
+        expect(restored.toBytes()).toEqual(bytes);
+    });
 });

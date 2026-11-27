@@ -7,28 +7,30 @@
  * CLPR_NOT_ENABLED. HEDERA_NETWORK (or CONFIG_FILE), OPERATOR_ID and
  * OPERATOR_KEY must configure a funded, non-admin payer for enabled checks.
  * Enable clpr.enabled on the consensus node for CLPR_ENABLED=true.
- * Enabled mode also needs GENESIS_OPERATOR_ID/GENESIS_OPERATOR_KEY, the deployed
- * CLPR_VERIFIER_CONTRACT_ID and CLPR_CONNECTOR_CONTRACT_ID, and the lifecycle
- * fixtures documented in env.example: CLPR_CHANNEL_ID, CLPR_OWNERSHIP_KEY,
- * CLPR_CONFIG_PROOF_FILE, CLPR_MANIFEST_PROOF_FILE, CLPR_CONNECTOR_ADMIN_KEY,
- * and CLPR_LOCKED_STAKE_TINYBARS. Proof files must contain real peer-ledger
- * snapshots accepted by the verifier. Synthetic proofs cannot prove this lifecycle.
+ * Enabled mode also needs the deployed CLPR_VERIFIER_CONTRACT_ID and
+ * CLPR_CONNECTOR_CONTRACT_ID, and the lifecycle fixtures documented in
+ * env.example: CLPR_CHANNEL_ID, CLPR_CHANNEL_SALT, CLPR_PEER_VERIFIER,
+ * CLPR_OWNERSHIP_KEY, CLPR_CONFIG_PROOF_FILE, CLPR_MANIFEST_PROOF_FILE,
+ * CLPR_CONNECTOR_ADMIN_KEY and CLPR_LOCKED_STAKE_TINYBARS.
+ * CLPR_MAX_TRANSACTION_FEE_TINYBARS is optional. Proof files must contain real
+ * peer-ledger snapshots accepted by the verifier. Synthetic proofs cannot prove
+ * this lifecycle. The lifecycle case deletes the Connector and closes the
+ * Channel, so it also needs GENESIS_OPERATOR_ID/GENESIS_OPERATOR_KEY. Do not
+ * run it against fixtures meant for a live messaging test.
  * Run live modes outside offline CI. TCK #784 owns other real-proof scenarios.
  */
 import {
     BatchTransaction,
-    ClprCompleteChannelTransaction,
-    ClprCompleteConnectorTransaction,
-    ClprDeregisterConnectorTransaction,
+    ClprCreateChannelTransaction,
+    ClprCreateConnectorTransaction,
+    ClprDeleteConnectorTransaction,
     Hbar,
-    ClprCloseChannelTransaction,
+    ClprDeleteChannelTransaction,
     ClprEndpoint,
     ClprEndpointManifestInfo,
     ClprGetEndpointManifestQuery,
     ClprGetLedgerConfigurationQuery,
     ClprLedgerConfigurationInfo,
-    ClprRegisterChannelTransaction,
-    ClprRegisterConnectorTransaction,
     ClprServiceEndpoint,
     ClprThrottles,
     ClprUpdateLedgerConfigurationTransaction,
@@ -80,6 +82,12 @@ async function loadFixtures() {
     ]);
     return {
         channelId: new Uint8Array(hex.decode(channelHex)),
+        channelSalt: new Uint8Array(
+            hex.decode(requiredSetting("CLPR_CHANNEL_SALT")),
+        ),
+        peerVerifier: new Uint8Array(
+            hex.decode(requiredSetting("CLPR_PEER_VERIFIER")),
+        ),
         ownershipKey: PrivateKey.fromStringDer(
             requiredSetting("CLPR_OWNERSHIP_KEY"),
         ),
@@ -91,9 +99,25 @@ async function loadFixtures() {
         lockedStake: Hbar.fromTinybars(
             requiredSetting("CLPR_LOCKED_STAKE_TINYBARS"),
         ),
+        maxTransactionFee: process.env.CLPR_MAX_TRANSACTION_FEE_TINYBARS
+            ? Hbar.fromTinybars(process.env.CLPR_MAX_TRANSACTION_FEE_TINYBARS)
+            : null,
         configProof: new Uint8Array(configProof),
         manifestProof: new Uint8Array(manifestProof),
     };
+}
+
+/**
+ * @param {Awaited<ReturnType<typeof loadFixtures>>} fixtures
+ */
+function createChannel(fixtures) {
+    return new ClprCreateChannelTransaction()
+        .setChannelId(fixtures.channelId)
+        .setSalt(fixtures.channelSalt)
+        .setPeerVerifier(fixtures.peerVerifier)
+        .setVerifierContract(fixtures.verifierContract)
+        .setConfigProofBytes(fixtures.configProof)
+        .setEndpointManifestProofBytes(fixtures.manifestProof);
 }
 
 describe.skipIf(!configured)("CLPR", function () {
@@ -105,11 +129,14 @@ describe.skipIf(!configured)("CLPR", function () {
     beforeAll(async function () {
         if (mode === "true") {
             fixtures = await loadFixtures();
-            requiredSetting("GENESIS_OPERATOR_ID");
-            requiredSetting("GENESIS_OPERATOR_KEY");
         }
         env = await IntegrationTestEnv.new();
         if (mode === "true") {
+            if (fixtures.maxTransactionFee != null) {
+                env.client.setDefaultMaxTransactionFee(
+                    fixtures.maxTransactionFee,
+                );
+            }
             expect(
                 ["0.0.2", "0.0.50"],
                 "OPERATOR_ID must be a non-admin payer",
@@ -155,69 +182,39 @@ describe.skipIf(!configured)("CLPR", function () {
     );
 
     it.runIf(mode === "true")(
-        "Channel lifecycle: register, complete, close; Connector lifecycle: register, complete, deregister",
+        "creates and deletes a Channel and Connector with RC3",
         async function () {
+            // Check before creating anything, so a missing key cannot strand state.
+            requiredSetting("GENESIS_OPERATOR_ID");
+            requiredSetting("GENESIS_OPERATOR_KEY");
             const { channelId, ownershipKey, adminKey } = fixtures;
-            const commitment =
-                ClprRegisterChannelTransaction.computeOwnershipCommitment(
-                    channelId,
-                    ownershipKey.publicKey,
-                );
-            const register = await new ClprRegisterChannelTransaction()
-                .setOwnershipCommitment(commitment)
-                .execute(env.client);
-            expect((await register.getReceipt(env.client)).status).toBe(
+            const channel = await createChannel(fixtures).execute(env.client);
+            expect((await channel.getReceipt(env.client)).status).toBe(
                 Status.Success,
             );
 
-            const complete = await new ClprCompleteChannelTransaction()
-                .setChannelId(channelId)
-                .setVerifierContract(fixtures.verifierContract)
-                .setConfigProofBytes(fixtures.configProof)
-                .setEndpointManifestProofBytes(fixtures.manifestProof)
-                .setOwnershipProof(ownershipKey)
-                .execute(env.client);
-            expect((await complete.getReceipt(env.client)).status).toBe(
-                Status.Success,
-            );
-
-            // Use the active Channel before closing it. A fresh salt avoids old commitments.
             const salt = crypto.getRandomValues(new Uint8Array(32));
             const connectorId =
-                ClprRegisterConnectorTransaction.computeConnectorId(
-                    channelId,
+                ClprCreateConnectorTransaction.computeConnectorId(
                     ownershipKey.publicKey,
                     salt,
                 );
-            const connectorCommitment =
-                ClprRegisterConnectorTransaction.computeOwnershipCommitment(
-                    connectorId,
-                    ownershipKey.publicKey,
-                );
-            const registerConnector =
-                await new ClprRegisterConnectorTransaction()
-                    .setChannelId(channelId)
-                    .setCommitment(connectorCommitment)
-                    .execute(env.client);
-            expect(
-                (await registerConnector.getReceipt(env.client)).status,
-            ).toBe(Status.Success);
+            const connector = new ClprCreateConnectorTransaction()
+                .setChannelId(channelId)
+                .setConnectorId(connectorId)
+                .setIdentityKey(ownershipKey.publicKey)
+                .setSalt(salt)
+                .setConnectorContract(fixtures.connectorContract)
+                .setAdminKey(adminKey.publicKey)
+                .setLockedStake(fixtures.lockedStake)
+                .freezeWith(env.client);
+            await connector.sign(ownershipKey);
+            const created = await connector.execute(env.client);
+            expect((await created.getReceipt(env.client)).status).toBe(
+                Status.Success,
+            );
 
-            const completeConnector =
-                await new ClprCompleteConnectorTransaction()
-                    .setChannelId(channelId)
-                    .setConnectorId(connectorId)
-                    .setSalt(salt)
-                    .setConnectorContract(fixtures.connectorContract)
-                    .setAdminKey(adminKey.publicKey)
-                    .setLockedStake(fixtures.lockedStake)
-                    .setOwnershipProof(ownershipKey)
-                    .execute(env.client);
-            expect(
-                (await completeConnector.getReceipt(env.client)).status,
-            ).toBe(Status.Success);
-
-            const deregister = new ClprDeregisterConnectorTransaction()
+            const deregister = new ClprDeleteConnectorTransaction()
                 .setChannelId(channelId)
                 .setConnectorId(connectorId)
                 .setStakeRecipient(env.operatorId)
@@ -234,7 +231,7 @@ describe.skipIf(!configured)("CLPR", function () {
                     env.genesisOperatorId,
                     env.genesisOperatorKey,
                 );
-                const close = await new ClprCloseChannelTransaction()
+                const close = await new ClprDeleteChannelTransaction()
                     .setChannelId(channelId)
                     .execute(env.client);
                 expect((await close.getReceipt(env.client)).status).toBe(
@@ -250,14 +247,10 @@ describe.skipIf(!configured)("CLPR", function () {
     it.runIf(mode === "true")(
         "rejects a CLPR transaction in an atomic batch by default",
         async function () {
-            const commitment =
-                ClprRegisterChannelTransaction.computeOwnershipCommitment(
-                    crypto.getRandomValues(new Uint8Array(32)),
-                    PrivateKey.generateED25519().publicKey,
-                );
-            const inner = await new ClprRegisterChannelTransaction()
-                .setOwnershipCommitment(commitment)
-                .batchify(env.client, env.operatorKey.publicKey);
+            const inner = await createChannel(fixtures).batchify(
+                env.client,
+                env.operatorKey.publicKey,
+            );
             await expect(
                 new BatchTransaction()
                     .addInnerTransaction(inner)
@@ -298,23 +291,9 @@ describe.skipIf(!configured)("CLPR", function () {
     it.runIf(mode === "true")(
         "rejects closing a Channel by a non-admin with AUTHORIZATION_FAILED",
         async function () {
-            const channelId = crypto.getRandomValues(new Uint8Array(32));
-            const key = PrivateKey.generateED25519();
-            const commitment =
-                ClprRegisterChannelTransaction.computeOwnershipCommitment(
-                    channelId,
-                    key.publicKey,
-                );
-            await (
-                await new ClprRegisterChannelTransaction()
-                    .setOwnershipCommitment(commitment)
-                    .execute(env.client)
-            ).getReceipt(env.client);
-
             await expect(
-                new ClprCloseChannelTransaction()
-                    .setChannelId(channelId)
-                    .setOwnershipCommitment(commitment)
+                new ClprDeleteChannelTransaction()
+                    .setChannelId(fixtures.channelId)
                     .execute(env.client)
                     .then((response) => response.getReceipt(env.client)),
             ).rejects.toMatchObject({ status: Status.AuthorizationFailed });
@@ -322,7 +301,7 @@ describe.skipIf(!configured)("CLPR", function () {
     );
 
     it.runIf(mode === "false")(
-        "rejects a paid query with CLPR_NOT_ENABLED",
+        "rejects a proof query with CLPR_NOT_ENABLED",
         async function () {
             await expect(
                 new ClprGetLedgerConfigurationQuery().execute(env.client),
@@ -331,19 +310,15 @@ describe.skipIf(!configured)("CLPR", function () {
     );
 
     it.runIf(mode === "false")(
-        "rejects registration with CLPR_NOT_ENABLED",
+        "rejects Channel creation with CLPR_NOT_ENABLED",
         async function () {
-            const channelId = crypto.getRandomValues(new Uint8Array(32));
-            const key = PrivateKey.generateED25519();
-            const commitment =
-                ClprRegisterChannelTransaction.computeOwnershipCommitment(
-                    channelId,
-                    key.publicKey,
-                );
-
             await expect(
-                new ClprRegisterChannelTransaction()
-                    .setOwnershipCommitment(commitment)
+                new ClprCreateChannelTransaction({
+                    channelId: new Uint8Array(32),
+                    salt: new Uint8Array(32),
+                    verifierContract: "0.0.1",
+                    configProofBytes: Uint8Array.of(1),
+                })
                     .execute(env.client)
                     .then((response) => response.getReceipt(env.client)),
             ).rejects.toMatchObject({ status: Status.ClprNotEnabled });

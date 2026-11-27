@@ -1,109 +1,97 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import PublicKey from "../PublicKey.js";
-import PrivateKey from "../PrivateKey.js";
-import { requireUint8ArrayLength } from "../util.js";
+import { requireUint8Array, requireUint8ArrayLength } from "../util.js";
 import { keccak256 } from "../cryptography/keccak.js";
 import * as hex from "../encoding/hex.js";
-import ClprSignatureScheme from "./ClprSignatureScheme.js";
-import OwnershipProof from "./OwnershipProof.js";
-
-/** The CLPR system contract address used in Connector proof preimages. */
-export const CLPR_SERVICE_ADDRESS = hex.decode(
-    "000000000000000000000000000000000000016e",
-);
+import * as utf8 from "../encoding/utf8.js";
 
 /**
- * Encodes a key for CLPR ownership and derives the signature scheme.
- * @param {PublicKey} publicKey
- * @returns {{ scheme: ClprSignatureScheme, publicKey: Uint8Array }}
+ * @param {Uint8Array} bytes
+ * @returns {Uint8Array}
  */
-export function encodePublicKey(publicKey) {
-    if (!(publicKey instanceof PublicKey)) {
-        throw new Error("ownership key must be a PublicKey");
-    }
+function keccak(bytes) {
+    return hex.decode(keccak256(`0x${hex.encode(bytes)}`));
+}
 
-    switch (publicKey.type) {
-        case "secp256k1": {
-            return {
-                scheme: ClprSignatureScheme.ECDSA_SECP256K1,
-                publicKey: publicKey.toBytesRawUncompressed(),
-            };
-        }
+/**
+ * Canonical bytes of a single key accepted as an RC3 Connector identity.
+ * @param {PublicKey} identityKey
+ * @returns {Uint8Array}
+ */
+export function encodePublicKey(identityKey) {
+    if (!(identityKey instanceof PublicKey)) {
+        throw new Error("identityKey must be an Ed25519 or ECDSA public key");
+    }
+    switch (identityKey.type) {
+        case "secp256k1":
+            return identityKey.toBytesRawUncompressed();
         case "ED25519":
-            return {
-                scheme: ClprSignatureScheme.ED25519,
-                publicKey: publicKey.toBytesRaw(),
-            };
+            return identityKey.toBytesRaw();
         default:
             throw new Error(
-                `unsupported ownership key type: ${publicKey.type}`,
+                `Unsupported identity key type: ${identityKey.type}`,
             );
     }
 }
 
 /**
- * Hashes concatenated bytes using the SDK's keccak256 encoding.
- * @param {...Uint8Array} parts
- * @returns {Uint8Array}
- */
-function hash(...parts) {
-    return hex.decode(keccak256(`0x${parts.map(hex.encode).join("")}`));
-}
-
-/**
- * Computes keccak256(channelId || key).
- * @param {Uint8Array} channelId
- * @param {PublicKey} publicKey
- * @returns {Uint8Array}
- */
-export function computeChannelCommitment(channelId, publicKey) {
-    requireUint8ArrayLength(channelId, 32, "channelId");
-    return hash(channelId, encodePublicKey(publicKey).publicKey);
-}
-
-/**
- * Computes keccak256(channelId || key || salt).
- * @param {Uint8Array} channelId
- * @param {PublicKey} publicKey
+ * Derives the reusable Connector ID from the identity bytes and salt.
+ * @param {PublicKey} identityKey
  * @param {Uint8Array} salt
  * @returns {Uint8Array}
  */
-export function computeConnectorId(channelId, publicKey, salt) {
-    requireUint8ArrayLength(channelId, 32, "channelId");
+export function computeReusableConnectorId(identityKey, salt) {
     requireUint8ArrayLength(salt, 32, "salt");
-    return hash(channelId, encodePublicKey(publicKey).publicKey, salt);
+    return keccak(new Uint8Array([...encodePublicKey(identityKey), ...salt]));
 }
 
 /**
- * Computes keccak256(connectorId || key).
- * @param {Uint8Array} connectorId
- * @param {PublicKey} publicKey
+ * keccak(chainId) || keccak(service) || keccak(verifier) for one ledger.
+ * @param {string} chainId
+ * @param {Uint8Array} service
+ * @param {Uint8Array} verifier
  * @returns {Uint8Array}
  */
-export function computeConnectorCommitment(connectorId, publicKey) {
-    requireUint8ArrayLength(connectorId, 32, "connectorId");
-    return hash(connectorId, encodePublicKey(publicKey).publicKey);
+function endpointHashFields(chainId, service, verifier) {
+    if (typeof chainId !== "string" || chainId.length === 0) {
+        throw new Error("chain IDs must be non-empty strings");
+    }
+    return new Uint8Array([
+        ...keccak(utf8.encode(chainId)),
+        ...keccak(requireUint8Array(service)),
+        ...keccak(requireUint8Array(verifier)),
+    ]);
 }
 
 /**
- * Signs a CLPR ownership preimage without retaining the private key.
- * @param {PrivateKey} privateKey
- * @param {Uint8Array} preimage
- * @returns {OwnershipProof}
+ * Derives the Channel ID that RC3 checks on creation: keccak256 of both ledgers'
+ * hashed (chain ID, service, verifier) fields in unsigned byte order, then the
+ * salt. Either ledger derives the same ID.
+ * @param {object} params
+ * @param {string} params.localChainId
+ * @param {Uint8Array} params.localService
+ * @param {Uint8Array} params.localVerifier
+ * @param {string} params.peerChainId
+ * @param {Uint8Array} params.peerService
+ * @param {Uint8Array} params.peerVerifier
+ * @param {Uint8Array} params.salt
+ * @returns {Uint8Array}
  */
-export function sign(privateKey, preimage) {
-    if (!(privateKey instanceof PrivateKey)) {
-        throw new Error("privateKey must be a PrivateKey");
-    }
-
-    const { scheme, publicKey } = encodePublicKey(privateKey.publicKey);
-    // ECDSA signing hashes internally. Ed25519 signing takes the digest directly.
-    const message =
-        scheme === ClprSignatureScheme.ED25519 ? hash(preimage) : preimage;
-    return new OwnershipProof({
-        scheme,
-        publicKey,
-        signature: privateKey.sign(message),
-    });
+export function computeChannelId(params) {
+    requireUint8ArrayLength(params.salt, 32, "salt");
+    const local = endpointHashFields(
+        params.localChainId,
+        params.localService,
+        params.localVerifier,
+    );
+    const peer = endpointHashFields(
+        params.peerChainId,
+        params.peerService,
+        params.peerVerifier,
+    );
+    const index = local.findIndex((byte, i) => byte !== peer[i]);
+    const localFirst = index === -1 || local[index] < peer[index];
+    const [first, second] = localFirst ? [local, peer] : [peer, local];
+    return keccak(new Uint8Array([...first, ...second, ...params.salt]));
 }

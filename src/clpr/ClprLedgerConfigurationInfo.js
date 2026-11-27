@@ -14,7 +14,7 @@ import ClprThrottles from "./ClprThrottles.js";
  * Configuration fields are live, while the proof describes a signed snapshot.
  * An empty proof is a successful read when no signed snapshot is available yet.
  * Mutable values returned by this model are copies.
- * CLPR is off by default and must be enabled with `clpr.enabled`.
+ * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  */
 export default class ClprLedgerConfigurationInfo {
     /** @type {Uint8Array} */

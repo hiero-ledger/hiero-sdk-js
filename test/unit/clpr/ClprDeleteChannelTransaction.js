@@ -13,12 +13,12 @@ function commitment() {
     return new Uint8Array(hex.decode(vectors.vectors[0].channelCommitment));
 }
 
-function closeChannel(props) {
+function deleteChannel(props) {
     expect(
-        sdk.ClprCloseChannelTransaction,
-        "SDK must export ClprCloseChannelTransaction",
+        sdk.ClprDeleteChannelTransaction,
+        "SDK must export ClprDeleteChannelTransaction",
     ).toBeTypeOf("function");
-    return new sdk.ClprCloseChannelTransaction(props);
+    return new sdk.ClprDeleteChannelTransaction(props);
 }
 
 function offline(transaction) {
@@ -53,15 +53,15 @@ const schedulingPaths = [
     ],
 ];
 
-describe("ClprCloseChannelTransaction", function () {
+describe("ClprDeleteChannelTransaction", function () {
     it("exports the class from the package entry", async function () {
         const entry = import.meta.env.SSR
             ? await import("../../../src/index.js")
             : await import("../../../src/browser.js");
 
-        expect(entry.ClprCloseChannelTransaction).toBeTypeOf("function");
-        expect(entry.ClprCloseChannelTransaction).toBe(
-            sdk.ClprCloseChannelTransaction,
+        expect(entry.ClprDeleteChannelTransaction).toBeTypeOf("function");
+        expect(entry.ClprDeleteChannelTransaction).toBe(
+            sdk.ClprDeleteChannelTransaction,
         );
     });
 
@@ -69,7 +69,7 @@ describe("ClprCloseChannelTransaction", function () {
         "round-trips fields and identifiers with ownershipCommitment set to %s",
         function (withCommitment) {
             const transaction = offline(
-                closeChannel({
+                deleteChannel({
                     channelId: channelId(),
                     ownershipCommitment: withCommitment
                         ? commitment()
@@ -79,7 +79,7 @@ describe("ClprCloseChannelTransaction", function () {
             const bytes = transaction.toBytes();
             const decoded = sdk.Transaction.fromBytes(bytes);
 
-            expect(decoded).toBeInstanceOf(sdk.ClprCloseChannelTransaction);
+            expect(decoded).toBeInstanceOf(sdk.ClprDeleteChannelTransaction);
             expect(decoded.channelId).toEqual(channelId());
             expect(decoded.ownershipCommitment).toEqual(
                 withCommitment ? commitment() : null,
@@ -99,7 +99,7 @@ describe("ClprCloseChannelTransaction", function () {
         "preserves both signing schemes and every node signature with ownershipCommitment set to %s",
         async function (withCommitment) {
             const transaction = offline(
-                closeChannel().setChannelId(channelId()),
+                deleteChannel().setChannelId(channelId()),
             );
             if (withCommitment) {
                 transaction.setOwnershipCommitment(commitment());
@@ -120,7 +120,7 @@ describe("ClprCloseChannelTransaction", function () {
             const bytes = transaction.toBytes();
             const decoded = sdk.Transaction.fromBytes(bytes);
 
-            expect(decoded).toBeInstanceOf(sdk.ClprCloseChannelTransaction);
+            expect(decoded).toBeInstanceOf(sdk.ClprDeleteChannelTransaction);
             expect(decoded.channelId).toEqual(channelId());
             expect(decoded.ownershipCommitment).toEqual(
                 withCommitment ? commitment() : null,
@@ -144,7 +144,7 @@ describe("ClprCloseChannelTransaction", function () {
         "rejects %s without channelId before freezing",
         function (method) {
             const transaction = offline(
-                closeChannel().setOwnershipCommitment(commitment()),
+                deleteChannel().setOwnershipCommitment(commitment()),
             );
 
             expect(transaction.channelId).toBeNull();
@@ -156,7 +156,7 @@ describe("ClprCloseChannelTransaction", function () {
     );
 
     it("allows closing an existing Channel without an ownership commitment", function () {
-        const transaction = offline(closeChannel().setChannelId(channelId()));
+        const transaction = offline(deleteChannel().setChannelId(channelId()));
 
         expect(transaction.ownershipCommitment).toBeNull();
         expect(() => transaction.freeze()).not.toThrow();
@@ -165,15 +165,15 @@ describe("ClprCloseChannelTransaction", function () {
             list.transactionList[0].signedTransactionBytes,
         );
         const body = proto.TransactionBody.decode(signed.bodyBytes);
-        expect(body.data).toBe("clprCloseChannel");
+        expect(body.data).toBe("clprDeleteChannel");
         expect(
-            Object.hasOwn(body.clprCloseChannel, "ownershipCommitment"),
+            Object.hasOwn(body.clprDeleteChannel, "ownershipCommitment"),
         ).toBe(false);
     });
 
     describe.each(byteFields)("%s", function (field, setter, value) {
         it("returns the builder from its setter", function () {
-            const transaction = closeChannel();
+            const transaction = deleteChannel();
             expect(transaction[setter](value())).toBe(transaction);
         });
 
@@ -181,7 +181,7 @@ describe("ClprCloseChannelTransaction", function () {
             "rejects %i bytes without changing any builder fields",
             function (length) {
                 const transaction = offline(
-                    closeChannel({
+                    deleteChannel({
                         channelId: channelId(),
                         ownershipCommitment: commitment(),
                     }),
@@ -201,9 +201,9 @@ describe("ClprCloseChannelTransaction", function () {
         it.each([31, 33])(
             "rejects %i bytes in the constructor",
             function (length) {
-                closeChannel();
+                deleteChannel();
                 expect(() =>
-                    closeChannel({ [field]: new Uint8Array(length) }),
+                    deleteChannel({ [field]: new Uint8Array(length) }),
                 ).toThrow(new RegExp(field));
             },
         );
@@ -214,8 +214,8 @@ describe("ClprCloseChannelTransaction", function () {
                 const input = value();
                 const transaction =
                     path === "constructor"
-                        ? closeChannel({ [field]: input })
-                        : closeChannel()[setter](input);
+                        ? deleteChannel({ [field]: input })
+                        : deleteChannel()[setter](input);
 
                 input.fill(255);
                 expect(transaction[field]).toEqual(value());
@@ -226,7 +226,7 @@ describe("ClprCloseChannelTransaction", function () {
 
         it("rejects its setter after freeze and preserves signed bytes", async function () {
             const transaction = offline(
-                closeChannel({
+                deleteChannel({
                     channelId: channelId(),
                     ownershipCommitment: commitment(),
                 }),
@@ -247,10 +247,10 @@ describe("ClprCloseChannelTransaction", function () {
     });
 
     it.each(schedulingPaths)("refuses %s", function (_name, schedule) {
-        const transaction = closeChannel().setChannelId(channelId());
+        const transaction = deleteChannel().setChannelId(channelId());
 
         expect(() => schedule(transaction)).toThrow(
-            new Error("ClprCloseChannelTransaction cannot be scheduled"),
+            new Error("ClprDeleteChannelTransaction cannot be scheduled"),
         );
     });
 });

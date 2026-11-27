@@ -11,7 +11,7 @@ import ClprServiceEndpoint from "./ClprServiceEndpoint.js";
  *
  * The TLS certificate and account ID remain opaque bytes. Mutable values
  * returned by this model are copies.
- * CLPR is off by default and must be enabled with `clpr.enabled`.
+ * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  */
 export default class ClprEndpoint {
     /** @type {ClprServiceEndpoint} */

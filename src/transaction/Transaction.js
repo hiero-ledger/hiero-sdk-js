@@ -130,10 +130,31 @@ function assertSingleDataField(bodyBytes) {
     let count = 0;
     while (reader.pos < reader.len) {
         const tag = reader.uint32();
-        if (dataFields.has(tag >>> 3)) {
+        const field = tag >>> 3;
+        if (dataFields.has(field)) {
             count++;
         }
-        reader.skipType(tag & 7);
+        const wireType = tag & 7;
+        if (field === 83 || field === 84 || field === 90) {
+            throw new Error(
+                "Transaction.fromBytes() does not support the removed two-step CLPR transactions",
+            );
+        }
+        if (field === 88 && wireType === 2) {
+            // RC3 reuses tag 88. Subfield 1 was the old registration commitment.
+            const connector = HieroProto.Reader.create(reader.bytes());
+            while (connector.pos < connector.len) {
+                const nestedTag = connector.uint32();
+                if (nestedTag >>> 3 === 1) {
+                    throw new Error(
+                        "Transaction.fromBytes() does not support the removed two-step CLPR transactions",
+                    );
+                }
+                connector.skipType(nestedTag & 7);
+            }
+        } else {
+            reader.skipType(wireType);
+        }
     }
     if (count > 1) {
         throw new Error(
@@ -496,6 +517,17 @@ export default class Transaction extends Executable {
         // Use the registry to call the right transaction's `fromProtobuf` method based
         // on the `body.data` string
         const fromProtobuf = TRANSACTION_REGISTRY.get(body.data); //NOSONAR
+
+        // The SDK deliberately does not build these node-internal or admin-only CLPR bodies.
+        if (
+            body.data === "clprEndpointPublication" ||
+            body.data === "clprMaintenance" ||
+            body.data === "clprEvictPeerEndpoint"
+        ) {
+            throw new Error(
+                `Transaction.fromBytes() does not support ${body.data}: the SDK does not build this CLPR transaction`,
+            );
+        }
 
         // If we forgot to update the registry we should error
         if (fromProtobuf == null) {
