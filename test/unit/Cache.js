@@ -2,9 +2,16 @@ import CACHE from "../../src/Cache.js";
 
 describe("Cache", function () {
     describe("mnemonicFromString", function () {
-        afterEach(function () {
-            // CACHE is shared, so put it back the way it started
+        let original;
+
+        beforeEach(function () {
+            // CACHE is shared with other test files, so keep whatever they set
+            original = CACHE._mnemonicFromString;
             CACHE._mnemonicFromString = null;
+        });
+
+        afterEach(function () {
+            CACHE._mnemonicFromString = original;
         });
 
         it("throws when it is read before it is set", function () {
