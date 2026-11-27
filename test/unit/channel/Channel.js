@@ -3,13 +3,12 @@ import { vi } from "vitest";
 import Channel from "../../../src/channel/Channel.js";
 
 const RPC_METHODS = [
-    "registerChannel",
-    "completeChannel",
-    "closeChannel",
+    "createChannel",
+    "deleteChannel",
+    "evictPeerEndpoint",
     "submitBundle",
-    "registerConnector",
-    "deregisterConnector",
-    "completeConnector",
+    "createConnector",
+    "deleteConnector",
     "updateLedgerConfiguration",
     "getLedgerConfiguration",
     "getEndpointManifest",

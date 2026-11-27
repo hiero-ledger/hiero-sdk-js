@@ -8,12 +8,12 @@ import Mocker from "../Mocker.js";
 import * as hex from "../../../src/encoding/hex.js";
 import vectors from "../utils/ClprOwnershipVectors.js";
 
-function closeChannel(props) {
+function deleteChannel(props) {
     expect(
-        sdk.ClprCloseChannelTransaction,
-        "SDK must export ClprCloseChannelTransaction",
+        sdk.ClprDeleteChannelTransaction,
+        "SDK must export ClprDeleteChannelTransaction",
     ).toBeTypeOf("function");
-    return new sdk.ClprCloseChannelTransaction(props);
+    return new sdk.ClprDeleteChannelTransaction(props);
 }
 
 function signedBody(transaction) {
@@ -23,7 +23,7 @@ function signedBody(transaction) {
     );
 }
 
-describe("ClprCloseChannelMocking", function () {
+describe("ClprDeleteChannelMocking", function () {
     describe.each([
         ["channelId", "setChannelId", vectors.channelId],
         [
@@ -38,8 +38,8 @@ describe("ClprCloseChannelMocking", function () {
                 const input = Buffer.from(expected, "hex");
                 const transaction =
                     path === "constructor"
-                        ? closeChannel({ [field]: input })
-                        : closeChannel()[setter](input);
+                        ? deleteChannel({ [field]: input })
+                        : deleteChannel()[setter](input);
 
                 input.fill(255);
                 expect(hex.encode(transaction[field])).toBe(expected);
@@ -50,9 +50,9 @@ describe("ClprCloseChannelMocking", function () {
     });
 
     it.each([false, true])(
-        "executes closeChannel over Node gRPC with the builder body and ownershipCommitment set to %s",
+        "executes deleteChannel over Node gRPC with the builder body and ownershipCommitment set to %s",
         async function (withCommitment) {
-            const transaction = closeChannel()
+            const transaction = deleteChannel()
                 .setChannelId(hex.decode(vectors.channelId))
                 .setTransactionMemo("close channel")
                 .setMaxAttempts(1);
@@ -100,23 +100,26 @@ describe("ClprCloseChannelMocking", function () {
                 const response = await transaction.execute(mock.client);
 
                 expect(unaryRequests.mock.calls.map(([path]) => path)).toEqual([
-                    "/proto.ClprService/closeChannel",
+                    "/proto.ClprService/deleteChannel",
                 ]);
                 expect(received.bodyBytes).toEqual(
                     signedBody(transaction).bodyBytes,
                 );
                 expect(Mocker.verifySignatures(received)).toBe(true);
                 const body = proto.TransactionBody.decode(received.bodyBytes);
-                expect(body.data).toBe("clprCloseChannel");
-                expect(hex.encode(body.clprCloseChannel.channelId)).toBe(
+                expect(body.data).toBe("clprDeleteChannel");
+                expect(hex.encode(body.clprDeleteChannel.channelId)).toBe(
                     vectors.channelId,
                 );
                 expect(
-                    Object.hasOwn(body.clprCloseChannel, "ownershipCommitment"),
+                    Object.hasOwn(
+                        body.clprDeleteChannel,
+                        "ownershipCommitment",
+                    ),
                 ).toBe(withCommitment);
                 if (withCommitment) {
                     expect(
-                        hex.encode(body.clprCloseChannel.ownershipCommitment),
+                        hex.encode(body.clprDeleteChannel.ownershipCommitment),
                     ).toBe(vectors.vectors[0].channelCommitment);
                 }
                 expect(body.memo).toBe("close channel");
@@ -126,7 +129,7 @@ describe("ClprCloseChannelMocking", function () {
                 const receipt = await response.getReceipt(mock.client);
                 expect(receipt.status).toBe(sdk.Status.Success);
                 expect(unaryRequests.mock.calls.map(([path]) => path)).toEqual([
-                    "/proto.ClprService/closeChannel",
+                    "/proto.ClprService/deleteChannel",
                     "/proto.CryptoService/getTransactionReceipts",
                 ]);
             } finally {

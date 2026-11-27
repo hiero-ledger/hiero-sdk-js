@@ -6,15 +6,13 @@ const { proto } = HieroProto;
 describe("CLPR protobufs", function () {
     it.each([
         ["clprUpdateLedgerConfiguration", [146, 5, 0]],
-        ["clprRegisterChannel", [154, 5, 0]],
-        ["clprCompleteChannel", [162, 5, 0]],
-        ["clprCloseChannel", [170, 5, 0]],
+        ["clprDeleteChannel", [170, 5, 0]],
         ["clprSubmitBundle", [178, 5, 0]],
-        ["clprRegisterConnector", [194, 5, 0]],
-        ["clprDeregisterConnector", [202, 5, 0]],
-        ["clprCompleteConnector", [210, 5, 0]],
+        ["clprCreateConnector", [194, 5, 0]],
+        ["clprDeleteConnector", [202, 5, 0]],
         ["clprEndpointPublication", [218, 5, 0]],
         ["clprMaintenance", [226, 5, 0]],
+        ["clprCreateChannel", [242, 5, 0]],
     ])(
         "round-trips TransactionBody.%s at its pinned tag",
         function (field, wire) {
@@ -57,12 +55,6 @@ describe("CLPR protobufs", function () {
             bytes,
         );
         expect(proto.Response.encode(response).finish()).to.deep.equal(bytes);
-    });
-
-    it("includes both CLPR signature schemes in the service namespace", function () {
-        expect({
-            ...HieroProto.com.hedera.hapi.node.clpr?.ClprSignatureScheme,
-        }).to.deep.equal({ ECDSA_SECP256K1: 0, ED25519: 1 });
     });
 
     it("keeps uint64 throttle limits and an empty configuration proof through Response bytes", function () {

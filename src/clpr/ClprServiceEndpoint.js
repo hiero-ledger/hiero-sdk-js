@@ -8,7 +8,7 @@
  * Read-only IP address and port for a CLPR endpoint.
  *
  * The IP address is an IPv4 or IPv6 numeric string.
- * CLPR is off by default and must be enabled with `clpr.enabled`.
+ * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  */
 export default class ClprServiceEndpoint {
     /**

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Public test keys only. Never use these keys for accounts or funds.
+// Historical completion-signature formulas; commitments and IDs remain current.
 // Source: hiero-ledger/sdk-collaboration-hub, proposals/hips/hip-1535.md
 // Ref: d04df37ca47fe67efc11fe2838b51f22f55cfe8e, Ownership test vectors.
 export default {

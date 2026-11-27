@@ -46,10 +46,7 @@ describe("CLPR live test opt-in", function () {
             expect(names).toEqual(
                 expect.arrayContaining([
                     expect.stringContaining(
-                        "Channel lifecycle: register, complete, close",
-                    ),
-                    expect.stringContaining(
-                        "Connector lifecycle: register, complete, deregister",
+                        "creates and deletes a Channel and Connector with RC3",
                     ),
                     expect.stringContaining(
                         "rejects a CLPR transaction in an atomic batch by default",
