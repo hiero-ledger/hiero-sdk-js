@@ -1,5 +1,6 @@
 import Long from "long";
 import BadEntityIdError from "../../src/BadEntityIdError.js";
+import * as sdk from "../../src/index.js";
 
 const ERROR_NAME = "BadEntityIdException";
 const SHARD = Long.ZERO;
@@ -51,5 +52,37 @@ describe("BadEntityIdError", function () {
         const badEntityIdError = badEntityIdErrorBuilder();
         expect(badEntityIdError.stack).toEqual(expect.any(String));
         expect(badEntityIdError.stack).toContain(ERROR_NAME);
+    });
+});
+
+describe("BadEntityIdError export", function () {
+    it("should be exported from the SDK entry point as the same class", function () {
+        // A missing named export is undefined, so check the export itself first.
+        expect(sdk.BadEntityIdError).toBeTypeOf("function");
+        expect(sdk.BadEntityIdError).toBe(BadEntityIdError);
+    });
+
+    it("should be what validateChecksum throws for a wrong checksum", function () {
+        const client = sdk.Client.forTestnet();
+        try {
+            const expectedChecksum = sdk.AccountId.fromString("0.0.123")
+                .toStringWithChecksum(client)
+                .split("-")[1];
+
+            let error;
+            try {
+                sdk.AccountId.fromString("0.0.123-aaaaa").validateChecksum(
+                    client,
+                );
+            } catch (err) {
+                error = err;
+            }
+
+            expect(error).toBeInstanceOf(sdk.BadEntityIdError);
+            expect(error.presentChecksum).toBe("aaaaa");
+            expect(error.expectedChecksum).toBe(expectedChecksum);
+        } finally {
+            client.close();
+        }
     });
 });
