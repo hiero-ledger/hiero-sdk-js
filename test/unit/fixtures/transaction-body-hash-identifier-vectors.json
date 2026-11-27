@@ -1,0 +1,32 @@
+{
+  "profile": "transaction-body-hash-proposed-v1",
+  "encoding": "transactionListHex is serialized proto.TransactionList; expectedHashHex is 48-byte SHA-384 in lowercase hex. Error labels are fixture categories, not new public SDK error types.",
+  "provenance": "Identifier boundary vectors derived by raw splices from ordinary-single. The positive digest and four rejections are independently calculated by the Python wire-only reference. Unknown identifier fields are content; unsupported records must be rejected before permissive decoders discard evidence.",
+  "vectors": [
+    {
+      "name": "ordinary-node-id-unknown-nonminimal-varint",
+      "transactionListHex": "0a3f2a3d0a3b0a150a080880e2cfaa06107b12070800100018e9071800120a080010001803a00681001880c2d72f220208783209726576696577206d6572020a00",
+      "expectedHashHex": "6edfe56e0cd667cc8e23222e36d6f0b42660669441cb309d623608fa94184c03a5d7bca2d2d155d4668bb1d24ddb1183"
+    },
+    {
+      "name": "ordinary-node-id-overlong-tag-rejected",
+      "transactionListHex": "0a422a400a3e0a150a080880e2cfaa06107b12070800100018e9071800120d080010001803a08680808000011880c2d72f220208783209726576696577206d6572020a00",
+      "expectedError": "invalid-identifier-wire"
+    },
+    {
+      "name": "ordinary-node-id-overlong-length-rejected",
+      "transactionListHex": "0a442a420a400a150a080880e2cfaa06107b12070800100018e9071800120f080010001803a206818080808000781880c2d72f220208783209726576696577206d6572020a00",
+      "expectedError": "invalid-identifier-wire"
+    },
+    {
+      "name": "ordinary-node-id-legacy-group-rejected",
+      "transactionListHex": "0a3f2a3d0a3b0a150a080880e2cfaa06107b12070800100018e9071800120a080010001803a306a4061880c2d72f220208783209726576696577206d6572020a00",
+      "expectedError": "invalid-identifier-wire"
+    },
+    {
+      "name": "ordinary-node-id-overflow-varint-rejected",
+      "transactionListHex": "0a472a450a430a150a080880e2cfaa06107b12070800100018e90718001212080010001803a006ffffffffffffffffff021880c2d72f220208783209726576696577206d6572020a00",
+      "expectedError": "invalid-identifier-wire"
+    }
+  ]
+}

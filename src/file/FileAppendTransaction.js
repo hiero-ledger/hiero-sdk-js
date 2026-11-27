@@ -352,6 +352,9 @@ export default class FileAppendTransaction extends Transaction {
      * @returns {this}
      */
     freezeWith(client) {
+        if (this._transactionBodyHashRead) {
+            return this;
+        }
         super.freezeWith(client);
 
         if (this._contents == null) {
