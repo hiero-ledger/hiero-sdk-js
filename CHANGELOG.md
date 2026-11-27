@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+-   `Cache.mnemonicFromString` now returns the function set by `setMnemonicFromString()` without overflowing the stack. [#4817](https://github.com/hiero-ledger/hiero-sdk-js/issues/4817)
 -   Preserve all-serial NFT allowance revocations when rebuilding an allowance approval transaction from bytes. [#4821](https://github.com/hiero-ledger/hiero-sdk-js/issues/4821)
 -   `TopicMessageQuery` now backs off a mirror node whose subscription fails with a transport error, such as `UNAVAILABLE` from an HTTP 504, so that the next attempt goes to another mirror node when the client has more than one. Before, the failing node stayed in the pool and could be picked again on every attempt. When every mirror node is backed off, `getNextMirrorNode()` returns the node that is readmitted first, so a single mirror node keeps being retried as before. The retry warning now names the mirror node and says when it timed out. [#3485](https://github.com/hiero-ledger/hiero-sdk-js/issues/3485)
 -   `TopicUpdateTransaction`'s clear methods (`clearTopicMemo`, `clearAdminKey`, `clearSubmitKey`, `clearFeeScheduleKey`, `clearAutoRenewAccountId`) now write the HAPI sentinel values to the protobuf so fields are cleared on the network instead of being silently ignored. [#4190](https://github.com/hiero-ledger/hiero-sdk-js/issues/4190) [#4801](https://github.com/hiero-ledger/hiero-sdk-js/pull/4801)

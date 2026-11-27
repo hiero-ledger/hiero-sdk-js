@@ -231,7 +231,7 @@ class Cache {
     }
 
     /**
-     * @returns {((key: cryptography.PrivateKey) => PrivateKey)}
+     * @returns {((key: cryptography.Mnemonic) => Mnemonic)}
      */
     get mnemonicFromString() {
         if (this._mnemonicFromString == null) {
@@ -240,7 +240,7 @@ class Cache {
             );
         }
 
-        return this.mnemonicFromString;
+        return this._mnemonicFromString;
     }
 
     /**
