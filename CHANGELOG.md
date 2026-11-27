@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   Added HIP-1535 CLPR support: six transactions, two proof queries, Channel and Connector ID helpers and value models. A Channel or Connector is created in one transaction; a Connector is created on an existing Channel. [#4578](https://github.com/hiero-ledger/hiero-sdk-js/issues/4578)
 -   `PublicKey.toBytesRawUncompressed()` returns ECDSA secp256k1 64-byte `x || y`. [#4578](https://github.com/hiero-ledger/hiero-sdk-js/issues/4578)
 -   `HookEntityId.setAccountId()` and the `accountId` constructor prop now accept a string such as `"0.0.123"` as well as an `AccountId`. The id is stored as a copy, like in the other `setAccountId()` setters. [#3789](https://github.com/hiero-ledger/hiero-sdk-js/issues/3789)
+-   `BadEntityIdError` is now exported from the SDK entry point, so code can check `err instanceof BadEntityIdError` when `validateChecksum()` finds a wrong checksum. Before, the class was only reachable through an internal path. [#4823](https://github.com/hiero-ledger/hiero-sdk-js/issues/4823)
 
 ### Changed
 

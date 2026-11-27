@@ -201,6 +201,7 @@ export { default as FreezeType } from "./FreezeType.js";
 export { default as TokenKeyValidation } from "./token/TokenKeyValidation.js";
 
 export { default as StatusError } from "./StatusError.js";
+export { default as BadEntityIdError } from "./BadEntityIdError.js";
 export { default as MaxAttemptsOrTimeoutError } from "./MaxAttemptsOrTimeoutError.js";
 export { default as MirrorNodeStatusError } from "./MirrorNodeStatusError.js";
 export { default as HttpMethod } from "./http/HttpMethod.js";
