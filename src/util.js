@@ -31,8 +31,9 @@ export const FUNCTION_CONVERT_TO_NUMBER_PARSE_ERROR =
 /**
  * Takes any param and returns false if null or undefined.
  *
- * @param {any | null | undefined} variable
- * @returns {boolean}
+ * @template T
+ * @param {T} variable
+ * @returns {variable is NonNullable<T>}
  */
 export function isNonNull(variable) {
     return variable != null;
@@ -41,8 +42,8 @@ export function isNonNull(variable) {
 /**
  * Takes any param and returns true if param variable and type are the same.
  *
- * @param {any | null | undefined} variable
- * @param {any | null | undefined} type
+ * @param {unknown} variable
+ * @param {unknown} type
  * @returns {boolean}
  */
 export function isType(variable, type) {
@@ -52,7 +53,7 @@ export function isType(variable, type) {
 /**
  * Takes any param and returns true if param is not null and of type Uint8Array.
  *
- * @param {any | null | undefined} variable
+ * @param {unknown} variable
  * @returns {boolean}
  */
 export function isUint8Array(variable) {
@@ -62,7 +63,7 @@ export function isUint8Array(variable) {
 /**
  * Takes any param and returns true if param is not null and of type Number.
  *
- * @param {any | null | undefined} variable
+ * @param {unknown} variable
  * @returns {boolean}
  */
 export function isNumber(variable) {
@@ -75,7 +76,7 @@ export function isNumber(variable) {
 /**
  * Takes any param and returns true if param is not null and of type BigNumber.
  *
- * @param {any | null | undefined} variable
+ * @param {unknown} variable
  * @returns {boolean}
  */
 export function isBigNumber(variable) {
@@ -85,7 +86,7 @@ export function isBigNumber(variable) {
 /**
  * Takes any param and returns true if param is not null and of type BigNumber.
  *
- * @param {any | null | undefined} variable
+ * @param {unknown} variable
  * @returns {boolean}
  */
 export function isLong(variable) {
@@ -95,7 +96,7 @@ export function isLong(variable) {
 /**
  * Takes any param and returns true if param is not null and of type string.
  *
- * @param {any | null | undefined} variable
+ * @param {unknown} variable
  * @returns {boolean}
  */
 export function isString(variable) {
@@ -105,7 +106,7 @@ export function isString(variable) {
 /**
  * Takes any param and returns true if param is not null and type string or Uint8Array.
  *
- * @param {any | null | undefined} variable
+ * @param {unknown} variable
  * @returns {boolean}
  */
 export function isStringOrUint8Array(variable) {
@@ -132,14 +133,14 @@ export function isLongZeroAddress(address) {
 /**
  * Takes any param and throws custom error if null or undefined.
  *
- * @param {any} variable
- * @returns {object}
+ * @template T
+ * @param {T} variable
+ * @returns {NonNullable<T>}
  */
 export function requireNonNull(variable) {
     if (!isNonNull(variable)) {
         throw new Error(REQUIRE_NON_NULL_ERROR);
     } else {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return variable;
     }
 }
@@ -147,15 +148,15 @@ export function requireNonNull(variable) {
 /**
  * Takes any param and throws custom error if params are not same type.
  *
- * @param {any | null | undefined} variable
- * @param {any | null | undefined} type
- * @returns {object}
+ * @template T
+ * @param {T} variable
+ * @param {unknown} type
+ * @returns {T}
  */
 export function requireType(variable, type) {
     if (!isType(variable, type)) {
         throw new Error(REQUIRE_TYPE_ERROR);
     } else {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return variable;
     }
 }
@@ -163,14 +164,13 @@ export function requireType(variable, type) {
 /**
  * Takes any param and throws custom error if non BigNumber.
  *
- * @param {any | null | undefined} variable
+ * @param {unknown} variable
  * @returns {BigNumber}
  */
 export function requireBigNumber(variable) {
     if (!isBigNumber(requireNonNull(variable))) {
         throw new Error(REQUIRE_BIGNUMBER_ERROR);
     } else {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return /** @type {BigNumber} */ (variable);
     }
 }
@@ -178,14 +178,13 @@ export function requireBigNumber(variable) {
 /**
  * Takes any param and throws custom error if non BigNumber.
  *
- * @param {any | null | undefined} variable
+ * @param {unknown} variable
  * @returns {Long}
  */
 export function requireLong(variable) {
     if (!isLong(requireNonNull(variable))) {
         throw new Error(REQUIRE_LONG_ERROR);
     } else {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return /** @type {Long} */ (variable);
     }
 }
@@ -193,14 +192,13 @@ export function requireLong(variable) {
 /**
  * Takes any param and throws custom error if non string.
  *
- * @param {any | null | undefined} variable
+ * @param {unknown} variable
  * @returns {string}
  */
 export function requireString(variable) {
     if (!isString(requireNonNull(variable))) {
         throw new Error(REQUIRE_STRING_ERROR);
     } else {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return /** @type {string} */ (variable);
     }
 }
@@ -208,14 +206,13 @@ export function requireString(variable) {
 /**
  * Takes any param and throws custom error if non Uint8Array.
  *
- * @param {any | null | undefined} variable
+ * @param {unknown} variable
  * @returns {Uint8Array}
  */
 export function requireUint8Array(variable) {
     if (!isUint8Array(requireNonNull(variable))) {
         throw new Error(REQUIRE_UINT8ARRAY_ERROR);
     } else {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return /** @type {Uint8Array} */ (variable);
     }
 }
@@ -249,14 +246,13 @@ export function copyBytes32(value, fieldName) {
 /**
  * Takes any param and throws custom error if non Uint8Array.
  *
- * @param {any | null | undefined} variable
+ * @param {unknown} variable
  * @returns {number}
  */
 export function requireNumber(variable) {
     if (!isNumber(requireNonNull(variable))) {
         throw new Error(REQUIRE_NUMBER_ERROR);
     } else {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return /** @type {number} */ (variable);
     }
 }
@@ -264,12 +260,11 @@ export function requireNumber(variable) {
 /**
  * Takes any param and throws custom error if null or undefined and not a string or Uint8Array.
  *
- * @param {any | null | undefined} variable
+ * @param {unknown} variable
  * @returns {string | Uint8Array}
  */
 export function requireStringOrUint8Array(variable) {
     if (isStringOrUint8Array(requireNonNull(variable))) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return /** @type {string | Uint8Array} */ (variable);
     } else {
         throw new Error(REQUIRE_STRING_OR_UINT8ARRAY_ERROR);
@@ -281,18 +276,16 @@ export function requireStringOrUint8Array(variable) {
 /**
  * Converts number or string to BigNumber.
  *
- * @param {any | null | undefined} variable
+ * @param {unknown} variable
  * @returns {BigNumber}
  */
 export function convertToBigNumber(variable) {
     requireNonNull(variable);
     if (isBigNumber(variable) || isString(variable) || isNumber(variable)) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        return new BigNumber(variable);
+        return new BigNumber(/** @type {BigNumber.Value} */ (variable));
     }
     if (isLong(variable)) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument
-        return new BigNumber(variable.toString());
+        return new BigNumber(/** @type {Long} */ (variable).toString());
     }
     throw new Error(FUNCTION_CONVERT_TO_BIGNUMBER_ERROR);
 }
@@ -326,7 +319,7 @@ export function convertAmountToLong(amount) {
 /**
  * Converts Array of Numbers or Strings to Array of BigNumbers.
  *
- * @param {any | null | undefined} variable
+ * @param {unknown} variable
  * @returns {Array<BigNumber>}
  */
 export function convertToBigNumberArray(variable) {
@@ -340,7 +333,7 @@ export function convertToBigNumberArray(variable) {
 }
 
 /**
- * @param {*} variable
+ * @param {unknown} variable
  * @returns {number}
  */
 export function convertToNumber(variable) {
@@ -351,8 +344,7 @@ export function convertToNumber(variable) {
         isNumber(variable) ||
         isLong(variable)
     ) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        const num = parseInt(variable);
+        const num = parseInt(/** @type {string} */ (variable));
         if (isNaN(num)) {
             throw new Error(FUNCTION_CONVERT_TO_NUMBER_PARSE_ERROR);
         } else {
@@ -384,17 +376,21 @@ export function safeView(arr, offset = 0, length = arr.byteLength) {
 }
 
 /**
- * @param {any} a
- * @param {any} b
+ * @param {unknown} a
+ * @param {unknown} b
  * @param {Set<string>=} ignore
  * @returns {boolean}
  */
 export function compare(a, b, ignore = new Set()) {
+    if (a === null || b === null) {
+        return a === b;
+    }
+
     if (typeof a === "object" && typeof b === "object") {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        const aKeys = Object.keys(a);
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-        const bKeys = Object.keys(b);
+        const left = /** @type {Record<string, unknown>} */ (a);
+        const right = /** @type {Record<string, unknown>} */ (b);
+        const aKeys = Object.keys(left);
+        const bKeys = Object.keys(right);
 
         if (aKeys.length !== bKeys.length) {
             return false;
@@ -409,8 +405,7 @@ export function compare(a, b, ignore = new Set()) {
                 continue;
             }
 
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-            if (!compare(a[aKeys[i]], b[bKeys[i]], ignore)) {
+            if (!compare(left[aKeys[i]], right[bKeys[i]], ignore)) {
                 return false;
             }
         }
