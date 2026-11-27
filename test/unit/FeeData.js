@@ -8,14 +8,14 @@ describe("FeeData", function () {
         min: Long.fromNumber(10),
         max: Long.fromNumber(100),
         constant: Long.fromNumber(5),
-        bpt: Long.fromNumber(2),
-        vpt: Long.fromNumber(1),
-        rbh: Long.fromNumber(3),
-        sbh: Long.fromNumber(4),
-        gas: Long.fromNumber(6),
-        tv: Long.fromNumber(7),
-        bpr: Long.fromNumber(8),
-        sbpr: Long.fromNumber(9),
+        transactionBandwidthByte: Long.fromNumber(2),
+        transactionVerification: Long.fromNumber(1),
+        transactionRamByteHour: Long.fromNumber(3),
+        transactionStorageByteHour: Long.fromNumber(4),
+        contractTransactionGas: Long.fromNumber(6),
+        transferVolumeHbar: Long.fromNumber(7),
+        responseMemoryByte: Long.fromNumber(8),
+        responseDiskByte: Long.fromNumber(9),
     };
 
     describe("constructor", function () {
@@ -37,7 +37,7 @@ describe("FeeData", function () {
                 ...sampleFeeComponents,
                 max: Long.fromNumber(200),
             });
-            const feeDataType = FeeDataType.DEFAULT;
+            const feeDataType = FeeDataType.Default;
 
             const feeData = new FeeData({
                 nodedata,
@@ -54,7 +54,7 @@ describe("FeeData", function () {
 
         it("should handle partial properties", function () {
             const nodedata = new FeeComponents(sampleFeeComponents);
-            const feeDataType = FeeDataType.DEFAULT;
+            const feeDataType = FeeDataType.Default;
 
             const feeData = new FeeData({
                 nodedata,
@@ -81,17 +81,23 @@ describe("FeeData", function () {
                     ...sampleFeeComponents,
                     max: Long.fromNumber(200),
                 }),
-                subType: 0, // DEFAULT
+                subType: 0,
             };
 
             // Deserialize using _fromProtobuf
             const feeData = FeeData._fromProtobuf(protoData);
 
             // Verify all properties
-            expect(feeData.nodedata.min.toNumber()).to.equal(10);
-            expect(feeData.networkdata.min.toNumber()).to.equal(20);
-            expect(feeData.servicedata.max.toNumber()).to.equal(200);
-            expect(feeData.feeDataType.valueOf()).to.equal(0); // DEFAULT
+            expect(feeData.nodedata).to.deep.include(sampleFeeComponents);
+            expect(feeData.networkdata).to.deep.include({
+                ...sampleFeeComponents,
+                min: Long.fromNumber(20),
+            });
+            expect(feeData.servicedata).to.deep.include({
+                ...sampleFeeComponents,
+                max: Long.fromNumber(200),
+            });
+            expect(feeData.feeDataType).to.equal(FeeDataType.Default);
         });
 
         it("should correctly deserialize from protobuf with missing fields", function () {
@@ -100,17 +106,19 @@ describe("FeeData", function () {
                 nodedata: createFeeComponentsProto(sampleFeeComponents),
                 // networkdata is missing
                 // servicedata is missing
-                subType: 1, // HANDLING
+                subType: 1,
             };
 
             // Deserialize using _fromProtobuf
             const feeData = FeeData._fromProtobuf(protoData);
 
             // Verify properties
-            expect(feeData.nodedata.min.toNumber()).to.equal(10);
+            expect(feeData.nodedata).to.deep.include(sampleFeeComponents);
             expect(feeData.networkdata).to.be.undefined;
             expect(feeData.servicedata).to.be.undefined;
-            expect(feeData.feeDataType.valueOf()).to.equal(1); // HANDLING
+            expect(feeData.feeDataType).to.equal(
+                FeeDataType.TokenFungibleCommon,
+            );
         });
 
         it("should handle completely empty protobuf object", function () {
@@ -136,7 +144,7 @@ describe("FeeData", function () {
                 ...sampleFeeComponents,
                 max: Long.fromNumber(200),
             });
-            const feeDataType = FeeDataType.DEFAULT;
+            const feeDataType = FeeDataType.Default;
 
             const feeData = new FeeData({
                 nodedata,
@@ -149,19 +157,28 @@ describe("FeeData", function () {
             const proto = feeData._toProtobuf();
 
             // Verify fields
-            expect(proto.nodedata).to.exist;
-            expect(proto.nodedata.min.toNumber()).to.equal(10);
-            expect(proto.networkdata).to.exist;
-            expect(proto.networkdata.min.toNumber()).to.equal(20);
-            expect(proto.servicedata).to.exist;
-            expect(proto.servicedata.max.toNumber()).to.equal(200);
-            expect(proto.subType).to.equal(FeeDataType.DEFAULT); // DEFAULT
+            expect(proto.nodedata).to.deep.equal(
+                createFeeComponentsProto(sampleFeeComponents),
+            );
+            expect(proto.networkdata).to.deep.equal(
+                createFeeComponentsProto({
+                    ...sampleFeeComponents,
+                    min: Long.fromNumber(20),
+                }),
+            );
+            expect(proto.servicedata).to.deep.equal(
+                createFeeComponentsProto({
+                    ...sampleFeeComponents,
+                    max: Long.fromNumber(200),
+                }),
+            );
+            expect(proto.subType).to.equal(0);
         });
 
         it("should correctly serialize to protobuf with missing fields", function () {
             // Create a FeeData instance with some fields missing
             const nodedata = new FeeComponents(sampleFeeComponents);
-            const feeDataType = FeeDataType.HANDLING; // 1
+            const feeDataType = FeeDataType.TokenFungibleCommon;
 
             const feeData = new FeeData({
                 nodedata,
@@ -172,11 +189,12 @@ describe("FeeData", function () {
             const proto = feeData._toProtobuf();
 
             // Verify fields
-            expect(proto.nodedata).to.exist;
-            expect(proto.nodedata.min.toNumber()).to.equal(10);
+            expect(proto.nodedata).to.deep.equal(
+                createFeeComponentsProto(sampleFeeComponents),
+            );
             expect(proto.networkdata).to.be.undefined;
             expect(proto.servicedata).to.be.undefined;
-            expect(proto.subType).to.equal(FeeDataType.HANDLING); // HANDLING
+            expect(proto.subType).to.equal(1);
         });
 
         it("should handle completely empty instance", function () {
@@ -203,7 +221,7 @@ describe("FeeData", function () {
                     ...sampleFeeComponents,
                     max: Long.fromNumber(200),
                 }),
-                feeDataType: FeeDataType.DEFAULT,
+                feeDataType: FeeDataType.Default,
             });
 
             // Convert to protobuf and back
@@ -211,15 +229,7 @@ describe("FeeData", function () {
             const roundTripped = FeeData._fromProtobuf(proto);
 
             // Verify all properties match
-            expect(roundTripped.nodedata.min.toNumber()).to.equal(
-                original.nodedata.min.toNumber(),
-            );
-            expect(roundTripped.networkdata.min.toNumber()).to.equal(
-                original.networkdata.min.toNumber(),
-            );
-            expect(roundTripped.servicedata.max.toNumber()).to.equal(
-                original.servicedata.max.toNumber(),
-            );
+            expect(roundTripped).to.deep.equal(original);
         });
 
         it("should correctly round-trip with toBytes/fromBytes", function () {
@@ -230,23 +240,33 @@ describe("FeeData", function () {
                     ...sampleFeeComponents,
                     min: Long.fromNumber(20),
                 }),
-                feeDataType: FeeDataType.HANDLING,
+                feeDataType: FeeDataType.TokenFungibleCommon,
             });
 
             // Convert to bytes and back
             const bytes = original.toBytes();
             const roundTripped = FeeData.fromBytes(bytes);
 
-            // Verify properties match
-            expect(roundTripped.nodedata.min.toNumber()).to.equal(
-                original.nodedata.min.toNumber(),
+            expectFeeComponentValues(
+                roundTripped.nodedata,
+                sampleFeeComponents,
             );
-            expect(roundTripped.networkdata.min.toNumber()).to.equal(
-                original.networkdata.min.toNumber(),
+            expectFeeComponentValues(roundTripped.networkdata, {
+                ...sampleFeeComponents,
+                min: Long.fromNumber(20),
+            });
+            expect(roundTripped.servicedata).to.be.undefined;
+            expect(roundTripped.feeDataType).to.equal(
+                FeeDataType.TokenFungibleCommon,
             );
-            expect(roundTripped.servicedata).to.equal(original.servicedata); // Both undefined
         });
     });
+
+    function expectFeeComponentValues(actual, expected) {
+        for (const [field, value] of Object.entries(expected)) {
+            expect(actual[field]?.toString(), field).to.equal(value.toString());
+        }
+    }
 
     // Helper function to create a FeeComponents protobuf object
     function createFeeComponentsProto(props) {
@@ -254,14 +274,14 @@ describe("FeeData", function () {
             min: props.min,
             max: props.max,
             constant: props.constant,
-            bpt: props.bpt,
-            vpt: props.vpt,
-            rbh: props.rbh,
-            sbh: props.sbh,
-            gas: props.gas,
-            tv: props.tv,
-            bpr: props.bpr,
-            sbpr: props.sbpr,
+            bpt: props.transactionBandwidthByte,
+            vpt: props.transactionVerification,
+            rbh: props.transactionRamByteHour,
+            sbh: props.transactionStorageByteHour,
+            gas: props.contractTransactionGas,
+            tv: props.transferVolumeHbar,
+            bpr: props.responseMemoryByte,
+            sbpr: props.responseDiskByte,
         };
     }
 });
