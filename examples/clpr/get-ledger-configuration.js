@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /**
- * Paid ledger configuration query on a network with clpr.enabled=true.
+ * Ledger configuration query on a network with clpr.enabled=true.
  * Prerequisites: HEDERA_NETWORK, reachable node endpoints and a funded
- * OPERATOR_ID/OPERATOR_KEY. The client looks up the query cost and signs the
- * payment, subject to its normal maximum query payment.
+ * OPERATOR_ID/OPERATOR_KEY. The client looks up the query cost (zero on CN main)
+ * and signs the payment, subject to its normal maximum query payment.
  *
  * Configuration fields are live; configurationStateProof describes a signed
  * snapshot. An empty proof is a successful read; retry later if a proof is needed.

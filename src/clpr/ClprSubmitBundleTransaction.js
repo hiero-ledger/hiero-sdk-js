@@ -2,6 +2,7 @@
 
 import Transaction from "../transaction/Transaction.js";
 import ClprTransaction from "./ClprTransaction.js";
+import Long from "long";
 import { copyBytes32 } from "../util.js";
 
 /**
@@ -35,7 +36,7 @@ import { copyBytes32 } from "../util.js";
  * The deprecated endpointNodeId and endpointSignature fields do not authenticate
  * the caller and are not exposed by this builder. Newly built bodies omit them.
  * Decoded signed transactions keep their original body bytes and signatures.
- * CLPR is off by default and requires the network setting `clpr.enabled`.
+ * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  * This transaction cannot be scheduled.
  */
 export default class ClprSubmitBundleTransaction extends ClprTransaction {
@@ -43,6 +44,7 @@ export default class ClprSubmitBundleTransaction extends ClprTransaction {
      * @param {object} [props]
      * @param {Uint8Array} [props.channelId]
      * @param {Uint8Array} [props.bundlePayload]
+     * @param {Long | number} [props.expectedCachedManifestVersion]
      */
     constructor(props) {
         super();
@@ -59,11 +61,22 @@ export default class ClprSubmitBundleTransaction extends ClprTransaction {
          */
         this._bundlePayload = null;
 
+        /**
+         * @private
+         * @type {?Long}
+         */
+        this._expectedCachedManifestVersion = null;
+
         if (props?.channelId != null) {
             this.setChannelId(props.channelId);
         }
         if (props?.bundlePayload != null) {
             this.setBundlePayload(props.bundlePayload);
+        }
+        if (props?.expectedCachedManifestVersion != null) {
+            this.setExpectedCachedManifestVersion(
+                props.expectedCachedManifestVersion,
+            );
         }
     }
 
@@ -93,6 +106,14 @@ export default class ClprSubmitBundleTransaction extends ClprTransaction {
                     ? submitBundle.channelId
                     : undefined,
                 bundlePayload: submitBundle.bundlePayload ?? undefined,
+                expectedCachedManifestVersion:
+                    submitBundle.expectedCachedManifestVersion == null
+                        ? undefined
+                        : Long.fromValue(
+                              submitBundle.expectedCachedManifestVersion
+                                  .value ?? 0,
+                              true,
+                          ),
             }),
             transactions,
             signedTransactions,
@@ -153,6 +174,42 @@ export default class ClprSubmitBundleTransaction extends ClprTransaction {
     }
 
     /**
+     * Requests admin manifest recovery from this exact cached peer manifest
+     * version. The verifier must then return a lower manifest version without
+     * queue metadata or messages. Leave it unset for ordinary bundles.
+     *
+     * @param {Long | number} version
+     * @returns {this}
+     */
+    setExpectedCachedManifestVersion(version) {
+        this._requireNotFrozen();
+        if (
+            typeof version === "number"
+                ? !Number.isSafeInteger(version) || version < 0
+                : !Long.isLong(version) ||
+                  (!version.unsigned && version.isNegative())
+        ) {
+            throw new Error(
+                "expectedCachedManifestVersion must be an unsigned 64-bit integer",
+            );
+        }
+        this._expectedCachedManifestVersion =
+            Long.fromValue(version).toUnsigned();
+        return this;
+    }
+
+    /**
+     * Returns the recovery manifest version, or null for an ordinary bundle.
+     *
+     * @returns {?Long}
+     */
+    get expectedCachedManifestVersion() {
+        return this._expectedCachedManifestVersion == null
+            ? null
+            : Long.fromValue(this._expectedCachedManifestVersion, true);
+    }
+
+    /**
      * @override
      * @protected
      * @returns {string}
@@ -210,6 +267,10 @@ export default class ClprSubmitBundleTransaction extends ClprTransaction {
         return {
             channelId: this._channelId,
             bundlePayload: this._bundlePayload,
+            expectedCachedManifestVersion:
+                this._expectedCachedManifestVersion == null
+                    ? null
+                    : { value: this._expectedCachedManifestVersion },
         };
     }
 

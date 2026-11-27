@@ -8,15 +8,15 @@ import Mocker from "../Mocker.js";
 import * as hex from "../../../src/encoding/hex.js";
 import vectors from "../utils/ClprOwnershipVectors.js";
 
-function deregisterConnector(props) {
+function deleteConnector(props) {
     expect(
-        sdk.ClprDeregisterConnectorTransaction,
-        "SDK must export ClprDeregisterConnectorTransaction",
+        sdk.ClprDeleteConnectorTransaction,
+        "SDK must export ClprDeleteConnectorTransaction",
     ).toBeTypeOf("function");
-    return new sdk.ClprDeregisterConnectorTransaction(props);
+    return new sdk.ClprDeleteConnectorTransaction(props);
 }
 
-describe("ClprDeregisterConnectorMocking", function () {
+describe("ClprDeleteConnectorMocking", function () {
     describe.each([
         ["channelId", "setChannelId", vectors.channelId],
         ["connectorId", "setConnectorId", vectors.vectors[0].connectorId],
@@ -27,8 +27,8 @@ describe("ClprDeregisterConnectorMocking", function () {
                 const input = Buffer.from(expected, "hex");
                 const transaction =
                     path === "constructor"
-                        ? deregisterConnector({ [field]: input })
-                        : deregisterConnector()[setter](input);
+                        ? deleteConnector({ [field]: input })
+                        : deleteConnector()[setter](input);
 
                 input.fill(0);
                 expect(hex.encode(transaction[field])).toBe(expected);
@@ -39,7 +39,7 @@ describe("ClprDeregisterConnectorMocking", function () {
     });
 
     it("never defaults stakeRecipient to the client operator", function () {
-        const transaction = deregisterConnector({
+        const transaction = deleteConnector({
             channelId: hex.decode(vectors.channelId),
             connectorId: hex.decode(vectors.vectors[0].connectorId),
         });
@@ -63,8 +63,8 @@ describe("ClprDeregisterConnectorMocking", function () {
         }
     });
 
-    it("executes deregisterConnector over Node gRPC with the builder body and explicit stake recipient", async function () {
-        const transaction = deregisterConnector({
+    it("executes deleteConnector over Node gRPC with the builder body and explicit stake recipient", async function () {
+        const transaction = deleteConnector({
             channelId: hex.decode(vectors.channelId),
             connectorId: hex.decode(vectors.vectors[0].connectorId),
             stakeRecipient: sdk.AccountId.fromString("2.3.9007199254740993"),
@@ -110,7 +110,7 @@ describe("ClprDeregisterConnectorMocking", function () {
 
             expect(submissions).toBe(1);
             expect(unaryRequests.mock.calls.map(([path]) => path)).toEqual([
-                "/proto.ClprService/deregisterConnector",
+                "/proto.ClprService/deleteConnector",
             ]);
             const sent = proto.TransactionList.decode(transaction.toBytes());
             const builder = proto.SignedTransaction.decode(
@@ -119,15 +119,15 @@ describe("ClprDeregisterConnectorMocking", function () {
             expect(received.bodyBytes).toEqual(builder.bodyBytes);
             expect(Mocker.verifySignatures(received)).toBe(true);
             const body = proto.TransactionBody.decode(received.bodyBytes);
-            expect(body.data).toBe("clprDeregisterConnector");
+            expect(body.data).toBe("clprDeleteConnector");
+            expect(Uint8Array.from(body.clprDeleteConnector.channelId)).toEqual(
+                transaction.channelId,
+            );
             expect(
-                Uint8Array.from(body.clprDeregisterConnector.channelId),
-            ).toEqual(transaction.channelId);
-            expect(
-                Uint8Array.from(body.clprDeregisterConnector.connectorId),
+                Uint8Array.from(body.clprDeleteConnector.connectorId),
             ).toEqual(transaction.connectorId);
             const recipient = sdk.AccountId._fromProtobuf(
-                body.clprDeregisterConnector.stakeRecipient,
+                body.clprDeleteConnector.stakeRecipient,
             );
             expect(recipient.toString()).toBe("2.3.9007199254740993");
             expect(recipient.equals(transaction.stakeRecipient)).toBe(true);
@@ -139,7 +139,7 @@ describe("ClprDeregisterConnectorMocking", function () {
             const receipt = await response.getReceipt(mock.client);
             expect(receipt.status).toBe(sdk.Status.Success);
             expect(unaryRequests.mock.calls.map(([path]) => path)).toEqual([
-                "/proto.ClprService/deregisterConnector",
+                "/proto.ClprService/deleteConnector",
                 "/proto.CryptoService/getTransactionReceipts",
             ]);
         } finally {

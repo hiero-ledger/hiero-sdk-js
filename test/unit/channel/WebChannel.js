@@ -71,8 +71,8 @@ describe("WebChannel", function () {
         },
     );
 
-    it("executes the registerChannel builder with one CLPR fetch after the health check", async function () {
-        expect(sdk.ClprRegisterChannelTransaction).toBeTypeOf("function");
+    it("executes the createChannel builder with one CLPR fetch after the health check", async function () {
+        expect(sdk.ClprCreateChannelTransaction).toBeTypeOf("function");
         const address = "http://127.0.0.1:50211";
         const calls = [];
         const frame = encodeRequest(
@@ -100,16 +100,17 @@ describe("WebChannel", function () {
         );
 
         try {
-            const transaction = new sdk.ClprRegisterChannelTransaction()
-                .setOwnershipCommitment(
-                    hex.decode(vectors.vectors[0].channelCommitment),
-                )
+            const transaction = new sdk.ClprCreateChannelTransaction()
+                .setChannelId(hex.decode(vectors.channelId))
+                .setSalt(hex.decode(vectors.salt))
+                .setVerifierContract("0.0.4")
+                .setConfigProofBytes(Uint8Array.of(1))
                 .setMaxAttempts(1);
             const response = await transaction.execute(client);
 
             expect(calls.map(({ url }) => url)).toEqual([
                 address,
-                `${address}/proto.ClprService/registerChannel`,
+                `${address}/proto.ClprService/createChannel`,
             ]);
             expect(calls[0].init.body).toHaveLength(0);
             expect(calls[1].init.method).toBe("POST");
@@ -120,9 +121,9 @@ describe("WebChannel", function () {
                 request.signedTransactionBytes,
             );
             const body = proto.TransactionBody.decode(signed.bodyBytes);
-            expect(body.data).toBe("clprRegisterChannel");
-            expect(body.clprRegisterChannel.ownershipCommitment).toEqual(
-                transaction.ownershipCommitment,
+            expect(body.data).toBe("clprCreateChannel");
+            expect(body.clprCreateChannel.channelId).toEqual(
+                transaction.channelId,
             );
             expect(response.transactionId.toString()).toBe(
                 transaction.transactionId.toString(),

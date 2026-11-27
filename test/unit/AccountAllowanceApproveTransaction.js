@@ -275,6 +275,44 @@ describe("AccountAllowanceApproveTransaction", function () {
         expect(transaction2.tokenNftApprovals[0].allSerials).to.be.false;
     });
 
+    it.each([
+        ["unfrozen", false],
+        ["frozen", true],
+    ])(
+        "round trips an all-serial NFT revocation when %s",
+        function (_, frozen) {
+            const nodeAccountId = new AccountId(3);
+            const ownerAccountId = new AccountId(45);
+            const transaction = new AccountAllowanceApproveTransaction()
+                .setTransactionId(
+                    TransactionId.withValidStart(
+                        ownerAccountId,
+                        new Timestamp(14, 15),
+                    ),
+                )
+                .setNodeAccountIds([nodeAccountId])
+                .deleteTokenNftAllowanceAllSerials(
+                    new TokenId(40),
+                    ownerAccountId,
+                    new AccountId(50),
+                );
+
+            if (frozen) {
+                transaction.freeze();
+            }
+
+            const rebuilt = Transaction.fromBytes(transaction.toBytes());
+            const [allowance] = rebuilt.tokenNftApprovals;
+
+            expect(allowance.allSerials).to.be.false;
+            expect(allowance.serialNumbers).to.be.null;
+            expect(
+                rebuilt._makeTransactionBody(nodeAccountId)
+                    .cryptoApproveAllowance.nftAllowances[0].approvedForAll,
+            ).to.deep.equal({ value: false });
+        },
+    );
+
     // Test for _validateChecksums
     it("should validate checksums for all approvals", function () {
         const client = new Client({

@@ -7,11 +7,20 @@ import { Duplex } from "node:stream";
 import { fileURLToPath } from "node:url";
 import { proto } from "@hiero-ledger/proto";
 import Long from "long";
+import { keccak256 } from "ethers";
 import { vi } from "vitest";
 import Mocker from "../Mocker.js";
 import vectors from "../utils/ClprOwnershipVectors.js";
 import { makeLedgerConfigurationResponse } from "../utils/ClprLedgerConfiguration.js";
 import { makeEndpointManifestResponse } from "../utils/ClprEndpointManifest.js";
+import { applyMaxTransactionFee } from "../../../examples/clpr/transaction-fee.js";
+import FakeHttpTransport, { jsonResponse } from "../utils/FakeHttpTransport.js";
+import {
+    CHANNEL,
+    CONNECTOR,
+    channelRow,
+    connectorRow,
+} from "../utils/ClprMirror.js";
 
 // Load the CommonJS TCK in its own package context, as its server does.
 const tckRequire = createRequire(
@@ -103,26 +112,26 @@ const throttleParams = {
     maxLocalEndpoints: 0,
     maxPeerEndpoints: 0,
 };
+const identity = ownershipKey(vector);
+const reusableConnectorId = keccak256(
+    `0x${vector.publicKey}${vectors.salt}`,
+).slice(2);
 const transactionCases = [
     [
-        "registerClprChannel",
-        "registerChannel",
-        { ownershipCommitment: vector.channelCommitment },
-    ],
-    [
-        "completeClprChannel",
-        "completeChannel",
+        "createClprChannel",
+        "createChannel",
         {
             channelId: vectors.channelId,
-            ownershipPrivateKey: ownershipKey(vector).toStringDer(),
+            salt: vectors.salt,
             verifierContract: "1.2.345",
+            peerVerifier: "05ff",
             configProofBytes: "ff0007",
             endpointManifestProofBytes: "",
         },
     ],
     [
-        "closeClprChannel",
-        "closeChannel",
+        "deleteClprChannel",
+        "deleteChannel",
         {
             channelId: vectors.channelId,
             ownershipCommitment: vector.channelCommitment,
@@ -131,35 +140,31 @@ const transactionCases = [
     [
         "submitClprBundle",
         "submitBundle",
-        { channelId: vectors.channelId, bundlePayload: "ff00807f" },
-    ],
-    [
-        "registerClprConnector",
-        "registerConnector",
         {
             channelId: vectors.channelId,
-            commitment: vector.connectorCommitment,
+            bundlePayload: "ff00807f",
+            expectedCachedManifestVersion: "18446744073709551615",
         },
     ],
     [
-        "completeClprConnector",
-        "completeConnector",
+        "createClprConnector",
+        "createConnector",
         {
             channelId: vectors.channelId,
-            connectorId: vector.connectorId,
+            connectorId: reusableConnectorId,
             salt: vectors.salt,
-            ownershipPrivateKey: ownershipKey(vector).toStringDer(),
+            identityKey: identity.publicKey.toStringDer(),
             connectorContract: "1.2.346",
             adminKey: signer.publicKey.toStringDer(),
             lockedStake: stake,
         },
     ],
     [
-        "deregisterClprConnector",
-        "deregisterConnector",
+        "deleteClprConnector",
+        "deleteConnector",
         {
             channelId: vectors.channelId,
-            connectorId: vector.connectorId,
+            connectorId: reusableConnectorId,
             stakeRecipient: "1.2.347",
         },
     ],
@@ -170,7 +175,12 @@ const transactionCases = [
     ],
 ];
 const queryNames = ["getClprLedgerConfiguration", "getClprEndpointManifest"];
-const names = [...transactionCases.map(([name]) => name), ...queryNames];
+const names = [
+    ...transactionCases.map(([name]) => name),
+    ...queryNames,
+    "getMirrorNodeClprChannel",
+    "getMirrorNodeClprConnector",
+];
 
 function requireMethod(name) {
     expect(methods[name], `TCK loader must discover ${name}`).toBeTypeOf(
@@ -271,7 +281,10 @@ describe("CLPR TCK adapter", function () {
                 transactionId: "0.0.1854@1700000000.000000001",
                 maxTransactionFee: 123456789,
                 memo: "CLPR adapter",
-                signers: [signer.toStringDer()],
+                signers:
+                    name === "createClprConnector"
+                        ? [signer.toStringDer(), identity.toStringDer()]
+                        : [signer.toStringDer()],
             },
         });
         return { response, signed, body };
@@ -310,7 +323,7 @@ describe("CLPR TCK adapter", function () {
     });
 
     it.each(["methods", "params", "response"])(
-        "keeps %s/clpr.ts free of raw proof setters and proto imports",
+        "keeps %s/clpr.ts free of raw proof setters",
         function (folder) {
             const path = new URL(
                 `../../../tck/${folder}/clpr.ts`,
@@ -320,34 +333,24 @@ describe("CLPR TCK adapter", function () {
                 true,
             );
             expect(readFileSync(path, "utf8")).not.toMatch(
-                /@hiero-ledger\/proto|setPublicKey|setSignature|setSignatureScheme/,
+                /setPublicKey|setSignature|setSignatureScheme/,
             );
         },
     );
 
     it.each([
         [
-            "completeClprChannel",
-            { ownershipPrivateKey: undefined },
-            "ownershipPrivateKey must be a private key string",
+            "createClprConnector",
+            { identityKey: signer.toStringDer() },
+            "identityKey must be an Ed25519 or ECDSA public key string",
         ],
         [
-            "completeClprConnector",
-            { ownershipPrivateKey: undefined },
-            "ownershipPrivateKey must be a private key string",
+            "createClprConnector",
+            { identityKey: "ff" },
+            "identityKey must be an Ed25519 or ECDSA public key string",
         ],
         [
-            "completeClprChannel",
-            { ownershipPrivateKey: signer.publicKey.toStringDer() },
-            "ownershipPrivateKey must be a private key string",
-        ],
-        [
-            "completeClprChannel",
-            { ownershipPrivateKey: "ff" },
-            "ownershipPrivateKey must be a private key string",
-        ],
-        [
-            "completeClprConnector",
+            "createClprConnector",
             { adminKey: "ff" },
             "adminKey must be an SDK key string",
         ],
@@ -372,27 +375,27 @@ describe("CLPR TCK adapter", function () {
             "uint64 must fit in 64 unsigned bits",
         ],
         [
-            "completeClprConnector",
+            "createClprConnector",
             { lockedStake: "not-tinybars" },
             "uint64 must be an unsigned decimal string",
         ],
         [
-            "completeClprConnector",
+            "createClprConnector",
             { lockedStake: "0.5" },
             "uint64 must be an unsigned decimal string",
         ],
         [
-            "completeClprConnector",
+            "createClprConnector",
             { lockedStake: "-1" },
             "uint64 must be an unsigned decimal string",
         ],
         [
-            "completeClprConnector",
+            "createClprConnector",
             { lockedStake: 0 },
             "uint64 must be an unsigned decimal string",
         ],
         [
-            "completeClprConnector",
+            "createClprConnector",
             { lockedStake: "9223372036854775808" },
             "lockedStake must be a valid tinybar amount",
         ],
@@ -419,13 +422,15 @@ describe("CLPR TCK adapter", function () {
     );
 
     it.each([undefined, "", "00".repeat(31), "00".repeat(33)])(
-        "registerClprConnector rejects a missing or malformed channelId (%j) before RPC",
+        "createClprConnector rejects a missing or malformed channelId (%j) before RPC",
         async function (channelId) {
             await connect([]);
             await expect(
-                methods.registerClprConnector({
+                methods.createClprConnector({
                     sessionId,
-                    commitment: vector.connectorCommitment,
+                    ...transactionCases.find(
+                        ([name]) => name === "createClprConnector",
+                    )[2],
                     channelId,
                 }),
             ).rejects.toThrow(/channelId/);
@@ -457,7 +462,7 @@ describe("CLPR TCK adapter", function () {
                 "connectorId",
                 "salt",
                 "ownershipCommitment",
-                "commitment",
+                "peerVerifier",
                 "bundlePayload",
                 "configProofBytes",
                 "endpointManifestProofBytes",
@@ -475,6 +480,22 @@ describe("CLPR TCK adapter", function () {
                 expect(transaction.stakeRecipient.toString()).toBe("1.2.347");
             if (params.lockedStake)
                 expect(data.lockedStake.toString()).toBe(stake);
+            if (params.expectedCachedManifestVersion)
+                expect(
+                    data.expectedCachedManifestVersion.value.toString(),
+                ).toBe(params.expectedCachedManifestVersion);
+            if (params.identityKey) {
+                expect(transaction.identityKey.toStringDer()).toBe(
+                    params.identityKey,
+                );
+                expect(
+                    signed.sigMap.sigPair.some(
+                        (pair) =>
+                            hex(pair.pubKeyPrefix) ===
+                            hex(identity.publicKey.toBytesRaw()),
+                    ),
+                ).toBe(true);
+            }
             if (params.adminKey)
                 expect(transaction.adminKey.toString()).toBe(
                     signer.publicKey.toString(),
@@ -539,101 +560,16 @@ describe("CLPR TCK adapter", function () {
         );
     }
 
-    for (const name of ["completeClprChannel", "completeClprConnector"]) {
-        it.each(vectors.vectors)(
-            `${name} uses a private key string to produce a $signatureScheme ownership proof before freezing`,
-            async function (value) {
-                const params = transactionCases.find(
-                    ([method]) => method === name,
-                )[2];
-                const { body, signed, response } = await submit(name, {
-                    ...params,
-                    connectorId: value.connectorId,
-                    ownershipPrivateKey: ownershipKey(value).toStringDer(),
-                });
-                expect(response.result).toMatchObject({ status: "SUCCESS" });
-                const isConnector = name === "completeClprConnector";
-                const proof =
-                    body[
-                        isConnector
-                            ? "clprCompleteConnector"
-                            : "clprCompleteChannel"
-                    ];
-                expect(proof.signatureScheme).toBe(
-                    value.signatureScheme === "ECDSA_SECP256K1" ? 0 : 1,
-                );
-                expect(hex(proof.publicKey)).toBe(value.publicKey);
-                expect(response.result.publicKey).toBe(hex(proof.publicKey));
-                expect(response.result.signature).toBe(hex(proof.signature));
-                expect(response.result.signatureScheme).toBe(
-                    value.signatureScheme,
-                );
-                // Verify the proof against the pinned signing input.
-                const decoded = decodeTransaction(signed);
-                expect(response.result.signatureScheme).toBe(
-                    decoded.signatureScheme.toString(),
-                );
-                expect(decoded.signatureScheme.toString()).toBe(
-                    value.signatureScheme,
-                );
-                expect(decoded.signature).toHaveLength(64);
-                const preimage = isConnector
-                    ? Buffer.from(
-                          value.connectorId + vectors.clprServiceAddress,
-                          "hex",
-                      )
-                    : Buffer.from(vectors.channelId, "hex");
-                const message =
-                    value.signatureScheme === "ED25519"
-                        ? Buffer.from(
-                              value[
-                                  isConnector
-                                      ? "connectorDigest"
-                                      : "channelDigest"
-                              ],
-                              "hex",
-                          )
-                        : preimage;
-                expect(
-                    ownershipKey(value).publicKey.verify(
-                        message,
-                        proof.signature,
-                    ),
-                ).toBe(true);
-            },
-        );
-
-        it(`${name} rejects a public key supplied as the ownership private key`, async function () {
-            requireMethod(name);
-            client = sdk.Client.forNetwork(
-                { "127.0.0.1:1": "0.0.3" },
-                { scheduleNetworkUpdate: false },
-            );
-            registry.setClient(client, sessionId);
-            const params = transactionCases.find(
-                ([method]) => method === name,
-            )[2];
-            await expect(
-                methods[name]({
-                    ...params,
-                    sessionId,
-                    ownershipPrivateKey: signer.publicKey.toStringDer(),
-                }),
-            ).rejects.toThrow();
-            expect(unaryRequests).not.toHaveBeenCalled();
-        });
-    }
-
     it.each([
         signer.toStringDer(),
         convertToKeyListHex(new sdk.KeyList([signer.publicKey], 1)),
     ])(
-        "completeClprConnector accepts administrative key encoding %#",
+        "createClprConnector accepts administrative key encoding %#",
         async function (adminKey) {
             const params = transactionCases.find(
-                ([name]) => name === "completeClprConnector",
+                ([name]) => name === "createClprConnector",
             )[2];
-            const { signed, response } = await submit("completeClprConnector", {
+            const { signed, response } = await submit("createClprConnector", {
                 ...params,
                 adminKey,
             });
@@ -719,10 +655,18 @@ describe("CLPR TCK adapter", function () {
                         },
                     },
                 ]);
-                const response = await rpc(name, { sessionId });
+                const recovery = wireResponse.configuration == null;
+                const response = await rpc(
+                    name,
+                    recovery
+                        ? { sessionId, forManifestRecovery: true }
+                        : { sessionId },
+                );
                 const result = response.result;
                 expect(result).toBeDefined();
                 expect(result[proofField]).toBe(proof);
+                if (recovery)
+                    expect(received[field].forManifestRecovery).toBe(true);
                 expect(result.serviceAddress).toBe(vectors.clprServiceAddress);
                 if (wireResponse.configuration) {
                     expect(result).toMatchObject({
@@ -830,4 +774,208 @@ describe("CLPR TCK adapter", function () {
             expect(unaryRequests).not.toHaveBeenCalled();
         });
     }
+});
+
+describe("CLPR mirror TCK adapter", function () {
+    let client;
+    let transport;
+
+    beforeEach(function () {
+        transport = new FakeHttpTransport();
+        client = sdk.Client.forNetwork(
+            { "127.0.0.1:1": "0.0.3" },
+            { scheduleNetworkUpdate: false },
+        );
+        client.setMirrorNetwork(["mirror.example.com:443"]);
+        client.setMirrorNodeHttpConfig({ transport });
+        registry.setClient(client, sessionId);
+    });
+
+    afterEach(function () {
+        registry.removeClient(sessionId);
+        client.close();
+    });
+
+    it("exposes both mirror methods through the JSON-RPC server without a payer", async function () {
+        transport.respond(jsonResponse(200, { channels: [channelRow()] }));
+        const result = await rpc("getMirrorNodeClprChannel", {
+            sessionId,
+            channelId: CHANNEL,
+        });
+        expect(result.error).toBeUndefined();
+        expect(result.result).toEqual({
+            channelId: CHANNEL,
+            chainId: "eip155:1",
+            status: "ACTIVE",
+            verifierContractId: "1.2.456",
+            verifierFingerprint: "33".repeat(32),
+            trustAnchorId: "44".repeat(32),
+            nextMessageId: uint64Max,
+            ackedMessageId: "9007199254740993",
+            receivedMessageId: "0",
+            createdTimestamp: "1726874200.000000001",
+            modifiedTimestamp: "1726874345.123456789",
+        });
+        expect(transport.requests[0].url).toContain(
+            `/clpr/channels?channel.id=eq:0x${CHANNEL}`,
+        );
+
+        const adminKey = new sdk.KeyList([signer.publicKey], 1);
+        const encodedKey = hex(
+            proto.Key.encode(adminKey._toProtobufKey()).finish(),
+        );
+        transport.respond(
+            jsonResponse(200, {
+                connectors: [
+                    {
+                        ...connectorRow(),
+                        admin_key: {
+                            _type: "ProtobufEncoded",
+                            key: encodedKey,
+                        },
+                    },
+                ],
+            }),
+        );
+        const connector = await rpc("getMirrorNodeClprConnector", {
+            sessionId,
+            channelId: CHANNEL,
+            connectorId: CONNECTOR,
+        });
+        expect(connector.error).toBeUndefined();
+        expect(connector.result).toEqual({
+            channelId: CHANNEL,
+            connectorId: CONNECTOR,
+            connectorContractId: "1.2.789",
+            adminKey: { _type: "ProtobufEncoded", key: encodedKey },
+            lockedStake: stake,
+            inFlightMessageCount: uint64Max,
+            slashCount: "0",
+            createdTimestamp: "1726874345.123456789",
+        });
+        expect(transport.requests[1].url).toContain(
+            `/clpr/channels/0x${CHANNEL}/connectors?connector.id=eq:0x${CONNECTOR}&status=eq:ACTIVE`,
+        );
+    });
+
+    it("returns null for mirror contract IDs and Channel bytes left null", async function () {
+        transport.respond(
+            jsonResponse(200, {
+                channels: [
+                    {
+                        ...channelRow(),
+                        verifier_contract_id: null,
+                        verifier_fingerprint: null,
+                        trust_anchor_id: null,
+                    },
+                ],
+            }),
+        );
+        const channel = await rpc("getMirrorNodeClprChannel", {
+            sessionId,
+            channelId: CHANNEL,
+        });
+        expect(channel.result).toMatchObject({
+            verifierContractId: null,
+            verifierFingerprint: null,
+            trustAnchorId: null,
+        });
+
+        transport.respond(
+            jsonResponse(200, {
+                connectors: [
+                    { ...connectorRow(), connector_contract_id: null },
+                ],
+            }),
+        );
+        const connector = await rpc("getMirrorNodeClprConnector", {
+            sessionId,
+            channelId: CHANNEL,
+            connectorId: CONNECTOR,
+        });
+        expect(connector.result.connectorContractId).toBeNull();
+    });
+
+    it.each([
+        ["getMirrorNodeClprChannel", {}],
+        ["getMirrorNodeClprChannel", { channelId: "11" }],
+        ["getMirrorNodeClprConnector", { channelId: CHANNEL }],
+        ["getMirrorNodeClprConnector", { connectorId: CONNECTOR }],
+        [
+            "getMirrorNodeClprConnector",
+            { channelId: CHANNEL, connectorId: "zz" },
+        ],
+    ])(
+        "%s rejects missing or invalid IDs before HTTP",
+        async function (name, params) {
+            const result = await rpc(name, { sessionId, ...params });
+            expect(result.error).toBeDefined();
+            expect(transport.requests).toHaveLength(0);
+        },
+    );
+
+    it("preserves not-found and malformed-response failures instead of emitting empty models", async function () {
+        transport.respond(jsonResponse(200, { channels: [] }));
+        await expect(
+            methods.getMirrorNodeClprChannel({ sessionId, channelId: CHANNEL }),
+        ).rejects.toBeInstanceOf(sdk.MirrorNodeStatusError);
+        transport.respond(
+            jsonResponse(200, { connectors: [connectorRow(), connectorRow()] }),
+        );
+        await expect(
+            methods.getMirrorNodeClprConnector({
+                sessionId,
+                channelId: CHANNEL,
+                connectorId: CONNECTOR,
+            }),
+        ).rejects.toThrow(/multiple connectors/);
+    });
+});
+
+describe("CLPR lifecycle example fee cap", function () {
+    const ENV = "CLPR_MAX_TRANSACTION_FEE_TINYBARS";
+
+    function capAfter(value) {
+        vi.stubEnv(ENV, value);
+        const client = sdk.Client.forNetwork(
+            {},
+            { scheduleNetworkUpdate: false },
+        );
+        try {
+            applyMaxTransactionFee(client);
+            return client.defaultMaxTransactionFee;
+        } finally {
+            client.close();
+        }
+    }
+
+    afterEach(function () {
+        vi.unstubAllEnvs();
+    });
+
+    it.each([undefined, ""])(
+        "keeps the SDK default cap when unset (%j)",
+        function (value) {
+            const client = sdk.Client.forNetwork(
+                {},
+                { scheduleNetworkUpdate: false },
+            );
+            const expected = client.defaultMaxTransactionFee;
+            client.close();
+            expect(capAfter(value)).toEqual(expected);
+        },
+    );
+
+    it.each(["-1", "0", "1.5", "1e8", "9223372036854775808"])(
+        "rejects an invalid spending cap %s before sending a transaction",
+        function (value) {
+            expect(() => capAfter(value)).toThrow(new RegExp(ENV));
+        },
+    );
+
+    it("preserves a user-supplied cap beyond number precision", function () {
+        expect(capAfter("9007199254740993").toTinybars().toString()).toBe(
+            "9007199254740993",
+        );
+    });
 });

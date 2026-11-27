@@ -235,16 +235,16 @@ export default class RequestType {
                 return "ClprRegisterChannel";
             case RequestType.ClprCompleteChannel:
                 return "ClprCompleteChannel";
-            case RequestType.ClprCloseChannel:
-                return "ClprCloseChannel";
+            case RequestType.ClprDeleteChannel:
+                return "ClprDeleteChannel";
             case RequestType.ClprGetLedgerConfiguration:
                 return "ClprGetLedgerConfiguration";
             case RequestType.ClprSubmitBundle:
                 return "ClprSubmitBundle";
-            case RequestType.ClprRegisterConnector:
-                return "ClprRegisterConnector";
-            case RequestType.ClprDeregisterConnector:
-                return "ClprDeregisterConnector";
+            case RequestType.ClprCreateConnector:
+                return "ClprCreateConnector";
+            case RequestType.ClprDeleteConnector:
+                return "ClprDeleteConnector";
             case RequestType.ClprCompleteConnector:
                 return "ClprCompleteConnector";
             case RequestType.ClprEndpointPublication:
@@ -255,6 +255,8 @@ export default class RequestType {
                 return "ClprMaintenance";
             case RequestType.ClprEvictPeerEndpoint:
                 return "ClprEvictPeerEndpoint";
+            case RequestType.ClprCreateChannel:
+                return "ClprCreateChannel";
             default:
                 return `UNKNOWN (${this._code})`;
         }
@@ -480,15 +482,15 @@ export default class RequestType {
             case 119:
                 return RequestType.ClprCompleteChannel;
             case 120:
-                return RequestType.ClprCloseChannel;
+                return RequestType.ClprDeleteChannel;
             case 121:
                 return RequestType.ClprGetLedgerConfiguration;
             case 122:
                 return RequestType.ClprSubmitBundle;
             case 124:
-                return RequestType.ClprRegisterConnector;
+                return RequestType.ClprCreateConnector;
             case 125:
-                return RequestType.ClprDeregisterConnector;
+                return RequestType.ClprDeleteConnector;
             case 126:
                 return RequestType.ClprCompleteConnector;
             case 127:
@@ -499,6 +501,8 @@ export default class RequestType {
                 return RequestType.ClprMaintenance;
             case 130:
                 return RequestType.ClprEvictPeerEndpoint;
+            case 131:
+                return RequestType.ClprCreateChannel;
         }
 
         throw new Error(
@@ -1061,7 +1065,7 @@ RequestType.ClprCompleteChannel = new RequestType(119);
 /**
  * Initiate graceful closure of a CLPR Channel.
  */
-RequestType.ClprCloseChannel = new RequestType(120);
+RequestType.ClprDeleteChannel = new RequestType(120);
 
 /**
  * Get the current CLPR ledger configuration.
@@ -1076,12 +1080,12 @@ RequestType.ClprSubmitBundle = new RequestType(122);
 /**
  * Register a Connector on the CLPR Service.
  */
-RequestType.ClprRegisterConnector = new RequestType(124);
+RequestType.ClprCreateConnector = new RequestType(124);
 
 /**
  * Remove a Connector from the CLPR Service.
  */
-RequestType.ClprDeregisterConnector = new RequestType(125);
+RequestType.ClprDeleteConnector = new RequestType(125);
 
 /**
  * Complete a Connector registration (reveal phase).
@@ -1107,3 +1111,8 @@ RequestType.ClprMaintenance = new RequestType(129);
  * Remove a peer endpoint from a CLPR Channel's cached endpoint manifest.
  */
 RequestType.ClprEvictPeerEndpoint = new RequestType(130);
+
+/**
+ * Create a CLPR channel in a single transaction.
+ */
+RequestType.ClprCreateChannel = new RequestType(131);

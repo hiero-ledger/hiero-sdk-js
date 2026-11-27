@@ -14,7 +14,7 @@ import ClprEndpoint from "./ClprEndpoint.js";
  * or a manifest recovery request. An empty proof is a successful read when no
  * signed snapshot is available yet; retry later for proof material.
  * Mutable values returned by this model are copies, and endpoint lists are frozen.
- * CLPR is off by default and must be enabled with `clpr.enabled`.
+ * CLPR needs the network setting `clpr.enabled`, which a network can turn off.
  */
 export default class ClprEndpointManifestInfo {
     /** @type {Long} */
