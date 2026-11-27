@@ -1697,8 +1697,6 @@ function argumentToBytes(param, ty) {
             value[31] = /** @type {boolean} */ (param) ? 1 : 0;
             return value;
         case ArgumentType.func:
-            value.set(/** @type {Uint8Array} */ (param), 32 - 24);
-            return value;
         case ArgumentType.bytes32:
             value.set(/** @type {Uint8Array} */ (param), 0);
             return value;

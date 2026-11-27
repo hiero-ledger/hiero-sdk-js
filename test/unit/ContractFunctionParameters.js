@@ -1,4 +1,7 @@
-import { ContractFunctionParameters } from "../../src/index.js";
+import {
+    ContractFunctionParameters,
+    ContractFunctionSelector,
+} from "../../src/index.js";
 import * as hex from "../../src/encoding/hex.js";
 
 import BigNumber from "bignumber.js";
@@ -541,6 +544,48 @@ describe("ContractFunctionParameters", function () {
             "00000000000000000000000000000000000000000000000000000000000022b8",
         );
         expect(finished.length).to.be.equal(672);
+    });
+
+    describe("addFunction()", function () {
+        const address = "0x1111111111111111111111111111111111111111";
+        const functionWord =
+            "11111111111111111111111111111111111111112fbebd380000000000000000";
+
+        it("encodes a function reference as a right-padded bytes24", function () {
+            const selector = new ContractFunctionSelector("foo").addUint256();
+            const params = new ContractFunctionParameters().addFunction(
+                address,
+                selector,
+            );
+
+            expect(hex.encode(params._build())).to.equal(functionWord);
+        });
+
+        it("encodes a function reference before a uint256 in named calldata", function () {
+            const selector = new ContractFunctionSelector("foo").addUint256();
+            const params = new ContractFunctionParameters()
+                .addFunction(address, selector)
+                .addUint256(5);
+
+            const expected =
+                "f54d7154" +
+                functionWord +
+                "0000000000000000000000000000000000000000000000000000000000000005";
+            expect(hex.encode(params._build("myFunc"))).to.equal(expected);
+        });
+
+        it("rejects a function address shorter than 20 bytes", function () {
+            const selector = new ContractFunctionSelector("foo").addUint256();
+
+            expect(() =>
+                new ContractFunctionParameters().addFunction(
+                    address.slice(0, -2),
+                    selector,
+                ),
+            ).to.throw(
+                "`function` type requires parameter `address` to be exactly 20 bytes",
+            );
+        });
     });
 
     it("encodes bytes32 correctly", function () {
